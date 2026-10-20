@@ -40,6 +40,30 @@ Breaking changes: add `!` after the type or scope (`feat(extension)!: ...`)
 and a `BREAKING CHANGE: <what breaks and how to migrate>` paragraph in the pull
 request description. Before 1.0.0 a breaking change bumps the minor version.
 
+## Versions and releases
+
+Releases are automated with
+[release-please](https://github.com/googleapis/release-please). The whole
+repository has one version (ADR 0004):
+
+1. Each push to `main` updates a pull request titled
+   `chore(main): release x.y.z`. It bumps the version in `package.json` and
+   `packages/extension/package.json` and adds the `CHANGELOG.md` section, both
+   computed from the Conventional Commits since the last release. It appears
+   only once a commit of a visible type (`feat`, `fix`, `perf`, `revert`,
+   `build`) has landed.
+2. Merging that pull request tags `vX.Y.Z` and creates the GitHub release with
+   the changelog section as release notes.
+3. The release workflow then builds the tagged commit and attaches
+   `etch-win32-x64-X.Y.Z.vsix` and `SHA256SUMS.txt`, with a build provenance
+   attestation (`gh attestation verify <vsix> -R happy-dwarf-team/etch`).
+
+Do not edit the versions or `CHANGELOG.md` by hand; packaging fails when the
+two `package.json` versions differ. To force a specific next version, put
+`Release-As: x.y.z` in the body of a commit on `main`. Publishing to the VS
+Code Marketplace and Open VSX starts with 0.1.0, the first release of
+milestone M1; until M1 is complete the release pull request stays unmerged.
+
 ## Repository layout
 
 A pnpm workspace (ADR 0001):
