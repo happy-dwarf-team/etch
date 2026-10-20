@@ -26,6 +26,7 @@ export interface GameFile {
 interface DirEntry {
   name: string;
   isFile: boolean;
+  isDirectory: boolean;
 }
 
 /**
@@ -89,6 +90,28 @@ export class GameFiles {
       .map(([, f]) => f);
   }
 
+  /**
+   * The subfolders directly in a game-relative folder across all layers, as game-relative paths
+   * sorted without regard to case. `replace_path` hides files, not subfolders, so every layer
+   * counts.
+   */
+  async folders(dir: string): Promise<string[]> {
+    const parts = splitPath(dir);
+    if (parts === undefined) return [];
+    const folder = parts.join('/');
+    const found = new Map<string, string>();
+    for (let i = 0; i < this.layers.length; i++) {
+      for (const [key, entry] of await this.listing(i, folder)) {
+        if (entry.isDirectory && !found.has(key)) {
+          found.set(key, folder === '' ? entry.name : `${folder}/${entry.name}`);
+        }
+      }
+    }
+    return [...found.entries()]
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+      .map(([, path]) => path);
+  }
+
   private firstVisibleLayer(dir: string): number {
     const key = dir.toLowerCase();
     for (let i = this.layers.length - 1; i > 0; i--) {
@@ -126,13 +149,13 @@ async function readListing(folder: string): Promise<Map<string, DirEntry>> {
   }
   for (const dirent of dirents) {
     let isFile = dirent.isFile();
+    let isDirectory = dirent.isDirectory();
     if (dirent.isSymbolicLink()) {
-      isFile = await stat(join(folder, dirent.name)).then(
-        (s) => s.isFile(),
-        () => false,
-      );
+      const target = await stat(join(folder, dirent.name)).catch(() => undefined);
+      isFile = target?.isFile() === true;
+      isDirectory = target?.isDirectory() === true;
     }
-    entries.set(dirent.name.toLowerCase(), { name: dirent.name, isFile });
+    entries.set(dirent.name.toLowerCase(), { name: dirent.name, isFile, isDirectory });
   }
   return entries;
 }
