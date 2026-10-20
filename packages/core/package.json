@@ -1,0 +1,14 @@
+{
+  "name": "@etch/core",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Parser, model, layout, draw list and diagnostics; never imports vscode.",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  }
+}

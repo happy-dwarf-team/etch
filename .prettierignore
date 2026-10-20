@@ -1,0 +1,8 @@
+# Prose keeps its own line breaks and tables; release-please writes the changelog.
+*.md
+pnpm-lock.yaml
+dist/
+dist-test/
+.vscode-test/
+test-results/
+playwright-report/

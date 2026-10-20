@@ -4,10 +4,12 @@ Etch is a planned tool for Europa Universalis IV interface mods: edit a `.gui`
 or `.gfx` file and see the window as the game draws it, within moments, without
 restarting the game.
 
-Status: specified, not yet built. The [v1 specification](docs/spec/v1.md)
-says what 1.0.0 contains and in what order it is built; the decisions behind
-it are in [docs/adr](docs/adr) and in the wayfinder map in this repository's
-issues (label `wayfinder:map`). There is no code yet.
+Status: specified; the foundation (milestone M0) is being built and the
+extension has no features yet. The [v1 specification](docs/spec/v1.md) says
+what 1.0.0 contains and in what order it is built; the decisions behind it are
+in [docs/adr](docs/adr) and in the wayfinder map in this repository's issues
+(label `wayfinder:map`). [CONTRIBUTING.md](CONTRIBUTING.md) says how to build
+and test it.
 
 ## v1 in brief
 

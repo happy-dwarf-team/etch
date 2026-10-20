@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/happy-dwarf-team/etch/security/advisories/new
+    about: Report privately; see SECURITY.md.
+  - name: Anvil (game-side loader) issues
+    url: https://github.com/happy-dwarf-team/anvil/issues/new/choose
+    about: Problems that also happen in the game without Etch belong to Anvil or its plugins.
+  - name: What Etch v1 contains
+    url: https://github.com/happy-dwarf-team/etch/blob/main/docs/spec/v1.md
+    about: The v1 specification and the order it is built in.

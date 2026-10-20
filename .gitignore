@@ -1,0 +1,10 @@
+node_modules/
+dist/
+dist-test/
+*.vsix
+*.tsbuildinfo
+.vscode-test/
+test-results/
+playwright-report/
+# Copied from the repository root when the VSIX is packaged.
+/packages/extension/LICENSE
