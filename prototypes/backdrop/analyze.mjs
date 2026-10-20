@@ -40,7 +40,7 @@ function writePng(file, { w, h, px }) {
   fs.writeFileSync(file, Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk('IHDR', ihdr), chunk('IDAT', zlib.deflateSync(raw)), chunk('IEND', Buffer.alloc(0))]));
 }
 const files = fs.readdirSync(capDir).filter((f) => f.endsWith('.bmp')).sort();
-const find = (suffix) => { const f = files.find((x) => x.replace(/^\d+-/, '') === `${suffix}.bmp`); return f ? path.join(capDir, f) : null; };
+const find = (suffix) => { const f = files.findLast((x) => x.replace(/^\d+-/, '') === `${suffix}.bmp`); return f ? path.join(capDir, f) : null; };
 const load = (suffix) => { const f = find(suffix); return f ? readBmp(f) : null; };
 const png = (img, name) => { writePng(path.join(capDir, `${name}.png`), img); return `captures/${name}.png`; };
 function diff(a, b) {
@@ -71,9 +71,15 @@ function windowReport(win) {
   }
   r.alpha = { opaque, clear, partial, channelSpreadOver1: spreadOver1, maxChannelSpread: maxSpread, whiteBelowBlack: negative };
   // Opaque pixels: the window over the menu against the window over black.
+  // The menu animates (its map), so only pixels that are the same in both menu captures and in both
+  // over-menu captures are compared.
   if (V0) {
-    let opaqueChanged = 0, clearChanged = 0, predMax = 0, pred1 = 0, pred2 = 0;
+    const M2 = load(`${win}-menu-b`), V02 = load(`${win}-over-menu-b`);
+    let opaqueChanged = 0, clearChanged = 0, predMax = 0, pred1 = 0, pred2 = 0, compared = 0;
     for (let i = 0; i < n; i++) {
+      const still = [0, 1, 2].every((c) => (!M || !M2 || M.px[i * 4 + c] === M2.px[i * 4 + c]) && (!V02 || V0.px[i * 4 + c] === V02.px[i * 4 + c]));
+      if (!still) continue;
+      compared++;
       for (let c = 0; c < 3; c++) {
         const k = i * 4 + c;
         if (alpha[i] === 255 && V0.px[k] !== B.px[k]) { opaqueChanged++; break; }
@@ -85,7 +91,7 @@ function windowReport(win) {
         if (d > predMax) predMax = d; if (d <= 1) pred1++; if (d <= 2) pred2++;
       }
     }
-    r.overMenu = { opaquePixelsChanged: opaqueChanged, clearPixelsNotMenu: clearChanged, prediction: M ? { maxDiff: +predMax.toFixed(2), within1: +(pred1 / n).toFixed(5), within2: +(pred2 / n).toFixed(5) } : null };
+    r.overMenu = { stillPixels: compared, of: n, opaquePixelsChanged: opaqueChanged, clearPixelsNotMenu: clearChanged, prediction: M ? { maxDiff: +predMax.toFixed(2), within1: +(pred1 / compared).toFixed(5), within2: +(pred2 / compared).toFixed(5) } : null };
   }
   // Recovered straight RGBA and the alpha map.
   const rgba = Buffer.alloc(n * 4), amap = Buffer.alloc(n * 4);

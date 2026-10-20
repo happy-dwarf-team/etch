@@ -58,7 +58,7 @@ const close = (w) => cmd(`window close ${w}`);
 
 async function rect(sel) {
   const a = await tongs(`ui find ${sel} all`);
-  const m = a.matches?.[0];
+  const m = a.matches?.find((x) => x.visible) ?? a.matches?.[0];
   return m ? m.rect : null;
 }
 async function topLevel(note) {
@@ -117,6 +117,70 @@ function writeCopy(file) {
   fs.writeFileSync(path.join(overlay, `etch_${file}`), text, 'latin1');
   log({ wrote: `etch_${file}`, renamed: names });
 }
+// The console keeps one window open: `window open B` closes A. So the backdrop goes into the
+// preview copy itself, as the previewed window's first child: an icon of the solid sprite at
+// (-4000, -4000) scaled 300x (9600 px), which covers the screen wherever the window sits.
+const backdropChild = (c) => `\r\n\t\ticonType = {\r\n\t\t\tname = "etch_backdrop_fill"\r\n\t\t\tspriteType = "GFX_etch_backdrop_${c}"\r\n\t\t\tposition = { x = -4000 y = -4000 }\r\n\t\t\tscale = 300\r\n\t\t}`;
+function inject(text, windowName, c) {
+  const at = `name = "${windowName}"`;
+  if (!text.includes(at)) throw new Error(`no ${at}`);
+  return text.replace(at, at + backdropChild(c));
+}
+// Two copies per previewed file: etch_<file>.gui with a black backdrop child, etchw_<file>.gui
+// (prefix etchw_) with a white one. Returns the window names.
+function writeInjected(file, win, source) {
+  const out = {};
+  for (const [prefix, c] of [['etch_', 'black'], ['etchw_', 'white']]) {
+    const { text } = prefixTopLevel(source, prefix);
+    fs.writeFileSync(path.join(overlay, `${prefix}${file}`), inject(text, prefix + win, c), 'latin1');
+    out[c] = prefix + win;
+  }
+  log({ wrote: [`etch_${file}`, `etchw_${file}`], windows: out });
+  return out;
+}
+// A window's backGround widget is drawn before every child, so an injected first child covers it
+// (goto_box). The wrapper keeps the window whole: a new full-screen top-level window
+// <prefix><win>_backdrop holds the backdrop icon and then the previewed window's block, nested.
+// Top-level blocks: [start, end) of each direct child of guiTypes, with its depth-2 name.
+function topBlocks(text) {
+  const blocks = [];
+  let depth = 0, i = 0, start = -1, keyStart = 0;
+  while (i < text.length) {
+    const c = text[i];
+    if (c === '#') { const e = text.indexOf('\n', i); i = e < 0 ? text.length : e; continue; }
+    if (c === '"') { i = text.indexOf('"', i + 1) + 1; continue; }
+    if (c === '{') { if (depth === 1) start = keyStart; depth++; }
+    else if (c === '}') { depth--; if (depth === 1) { const body = text.slice(start, i + 1); blocks.push({ start, end: i + 1, name: /name\s*=\s*"([^"]*)"/.exec(body)?.[1] }); } }
+    else if (depth === 1 && /\s/.test(text[i - 1] ?? ' ') && /[A-Za-z_]/.test(c)) keyStart = i;
+    i++;
+  }
+  return blocks;
+}
+function wrap(text, windowName, c) {
+  const b = topBlocks(text).find((x) => x.name === windowName);
+  if (!b) throw new Error(`no top-level ${windowName}`);
+  const inner = text.slice(b.start, b.end);
+  const wrapper = [`windowType = {`, `\t\tname = "${windowName}_backdrop"`, '\t\tposition = { x = 0 y = 0 }', '\t\tsize = { x = 3440 y = 1440 }',
+    '\t\tmoveable = 0', '\t\tfullscreen = yes', '\t\ticonType = {', '\t\t\tname = "etch_backdrop_fill"', `\t\t\tspriteType = "GFX_etch_backdrop_${c}"`,
+    '\t\t\tposition = { x = 0 y = 0 }', '\t\t\tscale = 120', '\t\t}', '\t\t' + inner, '\t}'].join('\r\n');
+  return text.slice(0, b.start) + wrapper + text.slice(b.end);
+}
+function writeWrapped(file, win, source) {
+  const out = {};
+  for (const [prefix, c] of [['etch_', 'black'], ['etchw_', 'white']]) {
+    const { text } = prefixTopLevel(source, prefix);
+    fs.writeFileSync(path.join(overlay, `${prefix}${file}`), wrap(text, prefix + win, c), 'latin1');
+    out[c] = `${prefix}${win}_backdrop`;
+    out[`${c}Inner`] = prefix + win;
+  }
+  log({ wrote: [`etch_${file}`, `etchw_${file}`], windows: out });
+  return out;
+}
+const INJECT = {
+  etch_probe_window: { file: 'probe.gui', win: 'probe_window', source: (x = 400) => probeGui(x).replace('"etch_probe_window"', '"probe_window"') },
+  etch_topbar: { file: 'topbar.gui', win: 'topbar', source: () => fs.readFileSync(path.join(p2ke, 'topbar.gui'), 'latin1'), maxH: 200 },
+  etch_goto_box: { file: 'goto.gui', win: 'goto_box', source: () => fs.readFileSync(path.join(p2ke, 'goto.gui'), 'latin1') },
+};
 
 // The probe window: a 300x120 window with the alpha ramp (alpha = column) and a text box with
 // antialiased glyph edges; no background sprite, so everything else is the window's transparency.
@@ -231,6 +295,129 @@ const phases = {
     }
     await close(w); await close(bd('white')); await close(bd('black'));
     await etch('ping');
+  },
+  // The backdrop inside the copy: per window, menu alone and the plain copy over the menu, then the
+  // black and white injected copies (the second open replaces the first).
+  async inject() {
+    const names = rest.length ? rest : Object.keys(INJECT);
+    for (const w of names) {
+      const t = INJECT[w];
+      // Plain copy first (as the windows phase), for the rect and the over-menu captures.
+      const { text } = prefixTopLevel(t.source(), 'etch_');
+      fs.writeFileSync(path.join(overlay, `etch_${t.file}`), text, 'latin1');
+      await cmd(`reload etch_${t.file}`);
+      await open(w);
+      const wr = await rect(w);
+      const c = cropOf(wr, 6, t.maxH ?? 1440);
+      log({ result: 'window rect', window: w, rect: wr, crop: c });
+      await close(w);
+      await shot(c, `${w}-menu-a`); await shot(c, `${w}-menu-b`);
+      await open(w);
+      await shot(c, `${w}-over-menu-a`); await shot(c, `${w}-over-menu-b`);
+      await close(w);
+      const v = writeInjected(t.file, t.win, t.source());
+      await cmd(`reload etch_${t.file}`); await cmd(`reload etchw_${t.file}`);
+      await open(v.black);
+      log({ result: 'injected rect', window: v.black, rect: await rect(v.black) });
+      await shot(c, `${w}-over-black-a`); await shot(c, `${w}-over-black-b`);
+      await open(v.white);
+      await topLevel(`${v.white} open after ${v.black}`);
+      await shot(c, `${w}-over-white-a`); await shot(c, `${w}-over-white-b`);
+      await close(v.white);
+    }
+  },
+  // Jobs with the backdrop inside the copy: 10 x (edit -> close -> reload -> open -> crop), then
+  // 5 dual captures (open the black copy, crop, open the white copy, crop).
+  async injectcycle() {
+    const t = INJECT.etch_probe_window;
+    const c = { x: 154, y: 290, w: 792, h: 140 };
+    for (let i = 0; i < 10; i++) {
+      const x = 400 + (i % 2 ? -60 : 60) * ((i >> 1) % 3 + 1);
+      const v = writeInjected(t.file, t.win, t.source(x));
+      const t0 = performance.now();
+      await close(v.black); await cmd(`reload etch_${t.file}`); const o = await open(v.black);
+      const t1 = performance.now();
+      const s = await shot(c, `cycle${i}-x${x}`);
+      const row = { result: 'cycle', i, x, job_roundtrip_ms: +(t1 - t0).toFixed(1), with_capture_ms: +(performance.now() - t0).toFixed(1), job_frame: o.frame, capture_frame: s.frame };
+      log(row); console.log(JSON.stringify(row));
+    }
+    const v = writeInjected(t.file, t.win, t.source(400));
+    await cmd(`reload etch_${t.file}`); await cmd(`reload etchw_${t.file}`);
+    const r = cropOf({ x: 400, y: 300, w: 300, h: 120 });
+    for (let i = 0; i < 5; i++) {
+      const t0 = performance.now();
+      await open(v.black); const b = await shot(r, `dual${i}-black`);
+      await open(v.white); const wh = await shot(r, `dual${i}-white`);
+      const row = { result: 'dual', i, both_ms: +(performance.now() - t0).toFixed(1), frames: [b.frame, wh.frame] };
+      log(row); console.log(JSON.stringify(row));
+    }
+    await close(v.white);
+    await etch('ping');
+  },
+  // The wrapper: as inject, but the black and white copies wrap the window.
+  async wrap() {
+    const names = rest.length ? rest : Object.keys(INJECT);
+    for (const w of names) {
+      const t = INJECT[w];
+      const { text } = prefixTopLevel(t.source(), 'etch_');
+      fs.writeFileSync(path.join(overlay, `etch_${t.file}`), text, 'latin1');
+      await cmd(`reload etch_${t.file}`);
+      await open(w);
+      const wr = await rect(w);
+      const c = cropOf(wr, 6, t.maxH ?? 1440);
+      log({ result: 'window rect', window: w, rect: wr, crop: c });
+      await close(w);
+      await shot(c, `${w}-menu-a`); await shot(c, `${w}-menu-b`);
+      await open(w);
+      await shot(c, `${w}-over-menu-a`); await shot(c, `${w}-over-menu-b`);
+      await close(w);
+      const v = writeWrapped(t.file, t.win, t.source());
+      await cmd(`reload etch_${t.file}`); await cmd(`reload etchw_${t.file}`);
+      await open(v.black);
+      log({ result: 'wrapped rect', window: v.blackInner, rect: await rect(v.blackInner), wrapper: await rect(v.black) });
+      await shot(c, `${w}-over-black-a`); await shot(c, `${w}-over-black-b`);
+      await open(v.white);
+      await topLevel(`${v.white} open after ${v.black}`);
+      await shot(c, `${w}-over-white-a`); await shot(c, `${w}-over-white-b`);
+      await close(v.white);
+    }
+  },
+  // Jobs with the wrapper, always close -> reload -> open: 10 x edit, then 5 dual jobs (close,
+  // reload both copies, open black, crop, open white, crop).
+  async wrapcycle() {
+    const t = INJECT.etch_probe_window;
+    const c = { x: 154, y: 290, w: 792, h: 140 };
+    let v;
+    for (let i = 0; i < 10; i++) {
+      const x = 400 + (i % 2 ? -60 : 60) * ((i >> 1) % 3 + 1);
+      v = writeWrapped(t.file, t.win, t.source(x));
+      const t0 = performance.now();
+      await close(v.black); await cmd(`reload etch_${t.file}`); const o = await open(v.black);
+      const t1 = performance.now();
+      const s = await shot(c, `cycle${i}-x${x}`);
+      const row = { result: 'cycle', i, x, job_roundtrip_ms: +(t1 - t0).toFixed(1), with_capture_ms: +(performance.now() - t0).toFixed(1), job_frame: o.frame, capture_frame: s.frame };
+      log(row); console.log(JSON.stringify(row));
+    }
+    const r = cropOf({ x: 400, y: 300, w: 300, h: 120 });
+    for (let i = 0; i < 5; i++) {
+      v = writeWrapped(t.file, t.win, t.source(400));
+      const t0 = performance.now();
+      await close(v.black); await close(v.white);
+      await cmd(`reload etch_${t.file}`); await cmd(`reload etchw_${t.file}`);
+      await open(v.black); const b = await shot(r, `dual${i}-black`);
+      await open(v.white); const wh = await shot(r, `dual${i}-white`);
+      const row = { result: 'dual', i, job_with_both_captures_ms: +(performance.now() - t0).toFixed(1), frames: [b.frame, wh.frame] };
+      log(row); console.log(JSON.stringify(row));
+    }
+    await close(v.white);
+    await etch('ping');
+  },
+  // The green FPS counter top right: does the console's fps command turn it off?
+  async fps() {
+    const r = { x: 3340, y: 0, w: 100, h: 24 };
+    await shot(r, 'fps-before');
+    await cmd('fps'); await shot(r, 'fps-after-1');
+    await cmd('fps'); await shot(r, 'fps-after-2');
   },
   async frontend() {
     await shot(FULL, 'frontend-before-full');
