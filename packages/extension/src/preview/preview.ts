@@ -462,7 +462,13 @@ export class Preview implements PreviewApi, vscode.Disposable {
       screen.height,
       session.serial,
     ].join('|');
-    if (!changed && key === this.renderKey) return;
+    if (!changed && key === this.renderKey) {
+      // The same screen can come from another source (the setting, settings.txt, the monitor).
+      if (this.lastState) {
+        this.show({ title: this.lastState.title, file: shownPath, notices: session.notices });
+      }
+      return;
+    }
     this.renderKey = key;
 
     const layout = await layOutPreview(session.ui, session.assets, file, window, {
