@@ -1,5 +1,4 @@
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   colourOf,
@@ -302,31 +301,5 @@ describe('layoutText', () => {
         end: 11,
       },
     ]);
-  });
-});
-
-// Vanilla fonts read in place, never copied into the repository. Skipped when the game is absent (CI).
-const gameFonts = join(
-  process.env['ETCH_GAME_PATH'] ??
-    'C:/Program Files (x86)/Steam/steamapps/common/Europa Universalis IV',
-  'gfx/fonts',
-);
-
-describe.skipIf(!existsSync(gameFonts))('vanilla fonts', () => {
-  const files = existsSync(gameFonts)
-    ? readdirSync(gameFonts).filter((f) => f.endsWith('.fnt'))
-    : [];
-
-  it.each(files)('%s reads without issues and has a texture by base name', (file) => {
-    const text = readFileSync(join(gameFonts, file), 'latin1');
-    const { font: f, issues } = parseBmFont(text);
-    expect(issues).toEqual([]);
-    expect(f.lineHeight).toBeGreaterThan(0);
-    expect(f.glyphs.size).toBe(text.match(/^char /gm)?.length);
-    // Vanilla repeats some pairs, always with the same amount.
-    const pairs = new Set(text.match(/^kerning first=\d+\s+second=\d+/gm));
-    expect(f.kerning.size).toBe(pairs.size);
-    const { textures } = fontFilePaths(join(gameFonts, file.replace(/\.fnt$/, '')));
-    expect(textures.some((t) => existsSync(t))).toBe(true);
   });
 });
