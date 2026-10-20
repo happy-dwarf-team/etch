@@ -14,3 +14,4 @@ export * from './text/index.ts';
 export * from './game-text.ts';
 export * from './localisation.ts';
 export * from './draw-list.ts';
+export * from './model/index.ts';
