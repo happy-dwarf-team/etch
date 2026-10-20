@@ -37,6 +37,35 @@
         }
       ]
     },
+    "commands": [
+      {
+        "command": "etch.openPreview",
+        "title": "Open Preview",
+        "category": "Etch",
+        "icon": "$(open-preview)"
+      },
+      {
+        "command": "etch.togglePreviewPin",
+        "title": "Pin or Unpin the Previewed Window",
+        "category": "Etch",
+        "icon": "$(pin)"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "etch.openPreview",
+          "when": "resourceExtname =~ /^\\.gui$/i",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "etch.togglePreviewPin",
+          "when": "etch.previewOpen"
+        }
+      ]
+    },
     "configuration": {
       "title": "Etch",
       "properties": {
@@ -54,18 +83,31 @@
           "default": [],
           "scope": "resource",
           "markdownDescription": "Mods to preview with, in load order (a later mod's file wins), as mod names or as mod folders or `.mod` descriptors. When not empty it replaces the default playset: the edited mod and the `dependencies` of its descriptor. The edited mod is added last unless the list names it."
+        },
+        "etch.language": {
+          "type": "string",
+          "default": "english",
+          "enum": [
+            "english",
+            "french",
+            "german",
+            "spanish"
+          ],
+          "scope": "resource",
+          "markdownDescription": "The localisation language the preview shows a `.gui` file's texts in."
         }
       }
     }
   },
   "scripts": {
     "build": "node build.mts",
-    "typecheck": "tsc -p .",
+    "typecheck": "tsc -p . && tsc -p webview",
     "test": "node build.mts && node test/run.mts",
     "package": "node build.mts && node package.mts"
   },
   "devDependencies": {
     "@etch/core": "workspace:*",
+    "@etch/renderer": "workspace:*",
     "@types/vscode": "~1.100.0",
     "@vscode/test-electron": "^3.1.0",
     "@vscode/vsce": "^4.0.0",

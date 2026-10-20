@@ -24,7 +24,7 @@ export const REOPEN_WITH_ENCODING = 'etch.reopenWithEncoding';
 /** VS Code's own command that offers Reopen and Save with Encoding. */
 const CHANGE_ENCODING = 'workbench.action.editor.changeEncoding';
 
-/** The same debounce as the preview's parse (spec section 7). */
+/** Diagnostics are not on the preview's path to pixels; a short debounce spares bursts of typing. */
 const DEBOUNCE_MS = 30;
 
 /** The encoding the game expects for each kind of game text. */
