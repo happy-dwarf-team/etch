@@ -83,8 +83,9 @@ Both runs left the player's profile unchanged and the Steam folder without
     165,215 333×454; `topbar` 0,−1 3440×1440.
   - `goto_box` keeps its background (141,500 opaque pixels).
   - The probe's crops equal the first-child variant byte for byte.
-  - Among the pixels where the menu stood still, no opaque pixel differs from
-    the plain copy over the menu. The topbar's 6 are the FPS counter.
+  - Among the pixels where the menu stood still, no opaque pixel (W = B)
+    differs from the plain copy over the menu. `summary.json` shows 6 for the
+    topbar, because it rounds alpha 254.7 up to 255.
 - **Exact RGBA from black + white.**
   - Two captures of one state are identical.
   - The ramp's recovered alpha matches the texture exactly; the colour is
