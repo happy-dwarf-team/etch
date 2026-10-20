@@ -26,6 +26,16 @@ Hand-written stand-in values for code-filled content, used so a layout preview
 can show a plausible window.
 _Avoid_: mock data, fixtures
 
+**Warm reload**:
+Redrawing a window in the preview after one of its files changes, while the
+sprites, textures and fonts it uses are already loaded.
+_Avoid_: refresh, rerender
+
+**Cold open**:
+The first preview of a window, including loading the mod's sprite index and the
+textures and fonts that window uses.
+_Avoid_: first load, startup
+
 ## Backends
 
 **Preview backend**:
