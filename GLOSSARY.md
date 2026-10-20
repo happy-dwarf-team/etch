@@ -66,6 +66,12 @@ Etch's private copy of the game, with its own user profile, in which the game
 host runs; never the player's own installation or profile.
 _Avoid_: game copy, sandbox
 
+**Pinned build**:
+One release of a game-side tool (Anvil, Bellows), identified by its hash, that
+an Etch release carries and puts into the game host install; never a newer or
+locally built copy.
+_Avoid_: vendored copy, bundled dependency, latest build
+
 **Overlay mod**:
 Etch's own mod, loaded by the game host after the playset, that carries the
 versions of interface files being previewed.
