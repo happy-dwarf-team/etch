@@ -73,13 +73,14 @@ export class Localisation {
   static load(language: string, files: Iterable<LocalisationFile>): Localisation {
     if (!isLanguageName(language)) throw new Error(`Not a localisation language: ${language}`);
     const loc = new Localisation(language);
+    const shown = new Map<string, LocalisationFile>();
     for (const file of files) {
       if (!isLocalisationPath(file.path, language)) continue;
-      const key = normalisePath(file.path);
-      const shown = loc.files.get(key);
-      if (shown !== undefined && shown.layer > file.layer) continue;
-      loc.files.set(key, parseFile(file, language));
+      const id = normalisePath(file.path);
+      const other = shown.get(id);
+      if (other === undefined || other.layer <= file.layer) shown.set(id, file);
     }
+    for (const [id, file] of shown) loc.files.set(id, parseFile(file, language));
     const order = [...loc.files.values()].sort(precedence);
     for (const file of order) for (const key of file.entries.keys()) loc.winners.set(key, file);
     return loc;
