@@ -13,3 +13,4 @@ export * from './script/index.ts';
 export * from './text/index.ts';
 export * from './game-text.ts';
 export * from './localisation.ts';
+export * from './draw-list.ts';
