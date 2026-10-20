@@ -214,6 +214,8 @@ export class WidgetNavigation implements vscode.Disposable {
   private highlightedWidget: Widget | undefined;
   private lastHighlight: WidgetHighlight | undefined;
   private readonly timers = new Map<string, ReturnType<typeof setTimeout>>();
+  /** Counts model reads, so that only the latest one is used. */
+  private reads = 0;
   private disposed = false;
 
   constructor() {
@@ -334,7 +336,9 @@ export class WidgetNavigation implements vscode.Disposable {
   /** Reads a `.gui` document the editor shows and, unless the preview decides, previews from it. */
   private async follow(document: vscode.TextDocument): Promise<void> {
     if (this.model?.document !== document || this.model.version !== document.version) {
+      const read = ++this.reads;
       const model = await readModel(document);
+      if (read !== this.reads) return; // A later read wins.
       if (this.disposed || document.isClosed || document.version !== model?.version) {
         if (!model && !this.disposed && !this.fromPreview) this.show(undefined);
         return;
