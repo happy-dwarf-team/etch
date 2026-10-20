@@ -9,12 +9,14 @@ export class WebGL2UnavailableError extends Error {
 /**
  * The WebGL2 context the preview draws into. The render is transparent and is
  * composited over the webview's background (spec section 2), so the context
- * keeps an alpha channel and does not premultiply.
+ * keeps an alpha channel. It holds premultiplied colour: blending
+ * premultiplied draws is what reproduces the game's `src_alpha` blending over
+ * any background, and {@link readPixels} turns it back into straight RGBA.
  */
 export function createContext(canvas: HTMLCanvasElement): WebGL2RenderingContext {
   const gl = canvas.getContext('webgl2', {
     alpha: true,
-    premultipliedAlpha: false,
+    premultipliedAlpha: true,
     antialias: false,
     preserveDrawingBuffer: false,
   });
@@ -24,7 +26,7 @@ export function createContext(canvas: HTMLCanvasElement): WebGL2RenderingContext
   return gl;
 }
 
-/** Clears the whole canvas to one straight RGBA colour, each channel from 0 to 1. */
+/** Clears the whole canvas to one premultiplied RGBA colour, each channel from 0 to 1. */
 export function clear(
   gl: WebGL2RenderingContext,
   r: number,
@@ -37,4 +39,5 @@ export function clear(
   gl.clear(gl.COLOR_BUFFER_BIT);
 }
 
+export * from './draw/index.ts';
 export * from './textures/index.ts';
