@@ -1,0 +1,12 @@
+{
+  "//": "PROTOTYPE sample data for the main menu as captured in menu.png (code-filled text and visibility).",
+  "text": {
+    "country_selection_panel/mainmenu/mainmenu_panel_bottom/continue_container/text": "Continue Game\nRussia - 01 January 1720",
+    "country_selection_panel/mainmenu/mainmenu_panel_bottom/version_label": "EU4 v1.37.5.0 Inca (491d)"
+  },
+  "hidden": [
+    "country_selection_panel/mainmenu/new_content",
+    "country_selection_panel/mainmenu/mainmenu_panel_bottom/nudge_button",
+    "country_selection_panel/mainmenu/mainmenu_panel_bottom/continue_container/ironman_icon"
+  ]
+}
