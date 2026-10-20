@@ -282,7 +282,7 @@ describe('findPlayset', () => {
         'home/Documents/Paradox Interactive/Europa Universalis IV/mod/core.mod': descriptor({
           name: 'Core',
           path: 'mod/core',
-          dependencies: ['Gone', 'Stale Name'],
+          dependencies: ['Gone', 'Stale Name', 'old'],
         }),
         'home/Documents/Paradox Interactive/Europa Universalis IV/mod/gone.mod': descriptor({
           name: 'Gone',
@@ -294,10 +294,26 @@ describe('findPlayset', () => {
       const byCode = Object.fromEntries(playset.diagnostics.map((d) => [d.code + d.message, d]));
       const find = (code: string, text: string) =>
         Object.entries(byCode).find(([key]) => key.startsWith(code) && key.includes(text))?.[1];
-      expect(find('mod-archive-unsupported', '"Old"')?.severity).toBe('warning');
+      expect(find('mod-archive-unsupported', '"old"')?.severity).toBe('information');
       expect(find('mod-folder-missing', '"Gone"')?.severity).toBe('warning');
       expect(find('dependency-not-found', '"Stale Name"')?.severity).toBe('information');
       expect(find('dependency-not-found', '"Missing"')?.severity).toBe('warning');
+    });
+
+    it('mentions an archived mod only when the playset needs it', async () => {
+      await addFiles(root, {
+        'home/Documents/Paradox Interactive/Europa Universalis IV/mod/old.mod': descriptor({
+          name: 'Old',
+          archive: 'mod/old.zip',
+        }),
+      });
+      expect(codes(await findPlayset(options(root)))).not.toContain('mod-archive-unsupported');
+      const listed = await findPlayset(options(root, { playsetOverride: ['Old'] }));
+      expect(listed.diagnostics.find((d) => d.code === 'mod-archive-unsupported')).toMatchObject({
+        severity: 'warning',
+        path: join(profile, 'mod', 'old.mod'),
+      });
+      expect(names(listed)).toEqual(['My Mod']);
     });
 
     it('uses the first of several mods with one name and says so', async () => {

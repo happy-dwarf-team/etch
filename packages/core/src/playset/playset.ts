@@ -113,7 +113,7 @@ export async function findPlayset(options: FindPlaysetOptions): Promise<Playset>
   }
 
   const workshopFolder = await findWorkshopFolder(gameFolder, options.gamePath, environment);
-  const index = await readModIndex(profileFolder, workshopFolder, diagnostics);
+  const index = await readModIndex(profileFolder, workshopFolder);
   const byName = new ModsByName(index, diagnostics);
 
   const workspaceFolder = resolve(options.workspaceFolder);
@@ -296,8 +296,14 @@ function dependencyPlayset(
       } else if (!reported.has(name.toLowerCase())) {
         reported.add(name.toLowerCase());
         // Large mods list stale names; only the workspace mod's own dependencies are worth a warning.
+        const severity = direct ? 'warning' : 'information';
+        const archive = byName.archive(name);
+        if (archive !== undefined) {
+          diagnostics.push(archiveDiagnostic(name, archive, severity));
+          continue;
+        }
         diagnostics.push({
-          severity: direct ? 'warning' : 'information',
+          severity,
           code: 'dependency-not-found',
           message: `Mod "${mod.name}" depends on "${name}", which is neither a Workshop item nor in the profile's mod folder; the playset goes on without it.`,
           ...(mod.descriptorPath === undefined ? {} : { path: mod.descriptorPath }),
@@ -336,7 +342,10 @@ async function overridePlayset(
       : workspaceMod !== undefined && workspaceMod.name.toLowerCase() === entry.toLowerCase()
         ? workspaceMod
         : byName.get(entry);
-    if (mod === undefined) {
+    const archive = mod === undefined && !looksLikePath(entry) ? byName.archive(entry) : undefined;
+    if (archive !== undefined) {
+      diagnostics.push(archiveDiagnostic(entry, archive, 'warning'));
+    } else if (mod === undefined) {
       diagnostics.push({
         severity: 'warning',
         code: 'playset-entry-not-found',
@@ -365,6 +374,19 @@ async function modFromPath(
     : readProfileDescriptor(path, profileFolder, 'setting', diagnostics);
 }
 
+function archiveDiagnostic(
+  name: string,
+  descriptorPath: string,
+  severity: PlaysetDiagnostic['severity'],
+): PlaysetDiagnostic {
+  return {
+    severity,
+    code: 'mod-archive-unsupported',
+    message: `Mod "${name}" is an archive (archive=); Etch reads only mods in folders and goes on without it.`,
+    path: descriptorPath,
+  };
+}
+
 function looksLikePath(entry: string): boolean {
   return isAbsolute(entry) || /[\\/]/.test(entry) || entry.toLowerCase().endsWith('.mod');
 }
@@ -383,11 +405,13 @@ function isInside(path: string, folder: string): boolean {
 class ModsByName {
   private readonly mods = new Map<string, Mod[]>();
   private readonly ids = new Map<string, Mod>();
+  private readonly archives: ReadonlyMap<string, string>;
   private readonly reported = new Set<string>();
   private readonly diagnostics: PlaysetDiagnostic[];
 
   constructor(index: ModIndex, diagnostics: PlaysetDiagnostic[]) {
     this.diagnostics = diagnostics;
+    this.archives = index.archives;
     for (const mod of index.mods) {
       const key = mod.name.trim().toLowerCase();
       const list = this.mods.get(key);
@@ -397,6 +421,11 @@ class ModsByName {
         this.ids.set(mod.workshopId, mod);
       }
     }
+  }
+
+  /** The descriptor of an archived mod with this name, which Etch cannot load. */
+  archive(name: string): string | undefined {
+    return this.archives.get(name.trim().toLowerCase());
   }
 
   get(name: string): Mod | undefined {

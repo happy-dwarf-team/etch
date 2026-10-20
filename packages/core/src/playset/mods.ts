@@ -27,19 +27,21 @@ export interface Mod {
 export interface ModIndex {
   /** Profile descriptors first (by file name), then Workshop items (by folder name). */
   mods: readonly Mod[];
+  /** Descriptors of mods in archives (`archive=`), which Etch cannot read, by lowercase name. */
+  archives: ReadonlyMap<string, string>;
 }
 
 /**
  * Reads the profile's `mod/*.mod` descriptors and the Workshop items' `descriptor.mod`. A profile
  * descriptor and a Workshop item with the same folder are one mod, kept as the profile's. Mods in
- * archives are skipped with a diagnostic.
+ * archives are only noted, so that a playset that needs one can say why it is missing.
  */
 export async function readModIndex(
   profileFolder: string | undefined,
   workshopFolder: string | undefined,
-  diagnostics: PlaysetDiagnostic[],
 ): Promise<ModIndex> {
   const mods: Mod[] = [];
+  const archives = new Map<string, string>();
   const roots = new Set<string>();
   const add = (mod: Mod | undefined): void => {
     if (mod === undefined || roots.has(pathKey(mod.root))) return;
@@ -51,9 +53,15 @@ export async function readModIndex(
     const modFolder = join(profileFolder, 'mod');
     for (const name of await listNames(modFolder)) {
       if (!name.toLowerCase().endsWith('.mod')) continue;
-      add(
-        await readProfileDescriptor(join(modFolder, name), profileFolder, 'profile', diagnostics),
-      );
+      const descriptorPath = join(modFolder, name);
+      const skipped: PlaysetDiagnostic[] = [];
+      const mod = await readProfileDescriptor(descriptorPath, profileFolder, 'profile', skipped);
+      if (mod !== undefined) {
+        add(mod);
+      } else if (skipped.some((d) => d.code === 'mod-archive-unsupported')) {
+        const descriptor = await readDescriptor(descriptorPath);
+        archives.set((descriptor?.name ?? name).trim().toLowerCase(), descriptorPath);
+      }
     }
   }
   if (workshopFolder !== undefined) {
@@ -61,7 +69,7 @@ export async function readModIndex(
       add(await readFolderMod(join(workshopFolder, name), 'workshop'));
     }
   }
-  return { mods };
+  return { mods, archives };
 }
 
 /**
