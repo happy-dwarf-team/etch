@@ -22,7 +22,12 @@ export interface Size {
 }
 
 const NUMBER = /^[+-]?(?:\d+\.?\d*|\.\d+)$/;
-const FLAGS: Readonly<Record<string, boolean>> = { yes: true, no: false, true: true, false: false };
+const FLAGS: ReadonlyMap<string, boolean> = new Map([
+  ['yes', true],
+  ['no', false],
+  ['true', true],
+  ['false', false],
+]);
 
 /** A property's key as the model compares it: lower case, since the game reads keys without regard to case (etch#3). */
 export function keyOf(property: PropertyNode): string {
@@ -111,7 +116,7 @@ export class Properties {
   flag(key: string): boolean | undefined {
     const text = this.text(key)?.toLowerCase();
     if (text === undefined) return undefined;
-    const flag = FLAGS[text];
+    const flag = FLAGS.get(text);
     if (flag !== undefined) return flag;
     const n = parseNumber(text);
     return n === undefined ? undefined : n !== 0;

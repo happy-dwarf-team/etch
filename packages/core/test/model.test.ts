@@ -52,6 +52,7 @@ describe('Properties', () => {
     expect(p.point('offset')).toEqual({ x: -5, y: -4 });
     expect(p.point('bad')).toBeUndefined();
     expect(p.number('n')).toBeUndefined();
+    expect(properties('a = constructor').flag('a')).toBeUndefined();
   });
 });
 
