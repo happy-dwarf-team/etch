@@ -12,3 +12,4 @@ export function isSupportedGameVersion(version: string): boolean {
 export * from './script/index.ts';
 export * from './text/index.ts';
 export * from './game-text.ts';
+export * from './localisation.ts';
