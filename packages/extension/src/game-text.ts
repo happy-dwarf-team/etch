@@ -101,6 +101,7 @@ class GameTextDiagnostics implements vscode.Disposable {
   private readonly collection = vscode.languages.createDiagnosticCollection('etch-game-text');
   private readonly timers = new Map<string, ReturnType<typeof setTimeout>>();
   private readonly subscriptions: vscode.Disposable[];
+  private disposed = false;
 
   constructor() {
     this.subscriptions = [
@@ -146,6 +147,9 @@ class GameTextDiagnostics implements vscode.Disposable {
       // VS Code could not encode it; leave the last diagnostics in place.
       return;
     }
+    if (this.disposed) {
+      return;
+    }
     if (document.isClosed || document.version !== version || document.encoding !== id) {
       return; // A newer update is scheduled.
     }
@@ -174,6 +178,7 @@ class GameTextDiagnostics implements vscode.Disposable {
   }
 
   dispose(): void {
+    this.disposed = true;
     for (const timer of this.timers.values()) {
       clearTimeout(timer);
     }
