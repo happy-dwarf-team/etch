@@ -28,7 +28,23 @@ export type ModelDiagnosticCode =
   /** A named block whose kind vanilla 1.37.5 does not use; Etch neither models nor draws it. */
   | 'unknown-widget-kind'
   /** A named block in `spriteTypes` whose kind vanilla 1.37.5 does not use. */
-  | 'unknown-sprite-kind';
+  | 'unknown-sprite-kind'
+  /** Layout: a sprite's `effectFile` names a shader the renderer does not port; it draws with `default`. */
+  | 'unhandled-shader'
+  /** Layout: an `orientation` value the game's token table does not list; Etch anchors it upper left. */
+  | 'unknown-orientation'
+  /** Layout: a property that changes how a widget looks but that Etch does not apply (`rotation`, `origo`). */
+  | 'not-applied'
+  /** Layout: a texture or `.fnt` file that exists but cannot be read. */
+  | 'unreadable-file'
+  /** Layout: a character of a widget's text that its font has no glyph for. */
+  | 'missing-glyph'
+  /** Layout: a character of a widget's text outside Windows-1252. */
+  | 'not-cp1252'
+  /** Layout: a `§` colour letter no `textcolors` table defines. */
+  | 'unknown-colour'
+  /** Layout: a `£key£` text icon whose `GFX_text_key` sprite the playset lacks. */
+  | 'missing-icon';
 
 /** A problem the extension's model finds in one `.gui` or `.gfx` file; the range is in that file's game text. */
 export interface ModelDiagnostic extends SourceRange {
