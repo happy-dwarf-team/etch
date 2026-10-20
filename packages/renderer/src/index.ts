@@ -36,3 +36,5 @@ export function clear(
   gl.clearColor(r, g, b, a);
   gl.clear(gl.COLOR_BUFFER_BIT);
 }
+
+export * from './textures/index.ts';
