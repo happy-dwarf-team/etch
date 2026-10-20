@@ -52,6 +52,22 @@ The preview backend in which a running copy of the game draws the window and
 reloads it when the mod's files change.
 _Avoid_: live mode, emulator
 
+**Game host install**:
+Etch's private copy of the game, with its own user profile, in which the game
+host runs; never the player's own installation or profile.
+_Avoid_: game copy, sandbox
+
+**Overlay mod**:
+Etch's own mod, loaded by the game host after the playset, that carries the
+versions of interface files being previewed.
+_Avoid_: temp mod, shadow mod
+
+**Preview copy**:
+A copy of an edited interface file, with its file and window names prefixed,
+kept in the overlay mod so the game host can reload it without disturbing the
+game's own windows.
+_Avoid_: shadow file, temp file
+
 **Precision corpus**:
 The set of game windows rendered by the offline renderer and compared with the
 same windows captured from the game, which measures how faithful the offline
