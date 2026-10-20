@@ -2,6 +2,7 @@
 // error fails the run.
 import * as assert from 'node:assert/strict';
 import * as vscode from 'vscode';
+import { testGameText } from './game-text.ts';
 
 export async function run(): Promise<void> {
   const extension = vscode.extensions.getExtension('happy-dwarf-team.etch');
@@ -12,4 +13,6 @@ export async function run(): Promise<void> {
   const settings = vscode.workspace.getConfiguration('etch');
   assert.equal(settings.get('gamePath'), '', 'etch.gamePath is contributed');
   assert.deepEqual(settings.get('playset'), [], 'etch.playset is contributed');
+
+  await testGameText();
 }

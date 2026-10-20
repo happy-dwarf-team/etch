@@ -22,7 +22,11 @@
     "vscode": "^1.100.0"
   },
   "main": "./dist/extension.js",
-  "activationEvents": [],
+  "activationEvents": [
+    "workspaceContains:**/*.gui",
+    "workspaceContains:**/*.gfx",
+    "workspaceContains:**/localisation/**/*.yml"
+  ],
   "contributes": {
     "configuration": {
       "title": "Etch",
