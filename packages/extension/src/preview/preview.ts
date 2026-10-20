@@ -8,6 +8,10 @@ import * as vscode from 'vscode';
 import {
   DEFAULT_LANGUAGE,
   allWidgets,
+  choosePreviewResolution,
+  formatResolution,
+  isSide,
+  parseResolution,
   gameTextKind,
   guiDiagnostics,
   laidOutIndexOf,
@@ -22,6 +26,8 @@ import {
   type GameTextOffsets,
   type GuiFile,
   type ModelDiagnostic,
+  type PreviewResolution,
+  type ResolutionContext,
   type Screen,
   type Widget,
   type WindowLayout,
@@ -41,8 +47,14 @@ import type {
 import { RenderLoop } from './render-loop.ts';
 import { PreviewSession, type SessionSettings } from './session.ts';
 
-/** The preview resolution until the resolution choice (etch#38) sets it. */
-export const DEFAULT_SCREEN: Screen = { width: 1920, height: 1080 };
+/** The setting of the preview resolution (spec section 6), in the `etch` section. */
+export const RESOLUTION_SETTING = 'previewResolution';
+
+/** The command that chooses the preview resolution. */
+export const CHOOSE_RESOLUTION = 'etch.choosePreviewResolution';
+
+/** Where the monitor's native resolution is kept between sessions, so a cold open knows it. */
+const NATIVE_SCREEN_KEY = 'etch.nativeScreen';
 
 /** The context key that is true while the preview is open. */
 export const PREVIEW_OPEN_CONTEXT = 'etch.previewOpen';
@@ -89,8 +101,15 @@ export interface PreviewApi {
   readonly onDidPaint: vscode.Event<PreviewPaint>;
   /** The latest render, `undefined` before the first one or after the preview closes. */
   readonly current: PreviewRender | undefined;
-  /** The preview resolution; setting it lays the window out again. */
-  screen: Screen;
+  /**
+   * The preview resolution and where it came from: the `etch.previewResolution` setting, the
+   * player's `settings.txt` or the monitor. Changing any of them lays the window out again.
+   */
+  readonly resolution: PreviewResolution;
+  /** The player's and the monitor's resolution, as far as the preview knows them. */
+  readonly resolutionContext: ResolutionContext;
+  /** The notices the preview shows above the window, such as a game that was not found. */
+  readonly notices: readonly Notice[];
   /** Opens the preview beside the editor, or reveals it. */
   open(): void;
   /** Pins the previewed window, or unpins it. */
@@ -130,6 +149,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
   private readonly extensionUri: vscode.Uri;
   private readonly output: vscode.LogOutputChannel;
   private readonly navigation: WidgetNavigation;
+  private readonly memento: vscode.Memento;
   private readonly loop: RenderLoop;
   private readonly diagnostics = vscode.languages.createDiagnosticCollection('etch-preview');
   private readonly renderEmitter = new vscode.EventEmitter<PreviewRender>();
@@ -150,7 +170,8 @@ export class Preview implements PreviewApi, vscode.Disposable {
   private renderKey: string | undefined;
   private lastDraw: HostMessage | undefined;
   private lastState: ViewState | undefined;
-  private screenSize: Screen = DEFAULT_SCREEN;
+  /** The monitor's resolution in device pixels, as the webview last reported it. */
+  private native: Screen | undefined;
   private renderCount = 0;
   private requestedAt: number | undefined;
   /** Game text files whose buffer changed, or closed, since the session last read them. */
@@ -171,10 +192,13 @@ export class Preview implements PreviewApi, vscode.Disposable {
     extensionUri: vscode.Uri,
     output: vscode.LogOutputChannel,
     navigation: WidgetNavigation,
+    memento: vscode.Memento,
   ) {
     this.extensionUri = extensionUri;
     this.output = output;
     this.navigation = navigation;
+    this.memento = memento;
+    this.native = validScreen(memento.get(NATIVE_SCREEN_KEY));
     this.loop = new RenderLoop(
       () => this.renderNow(),
       (error) => {
@@ -216,13 +240,19 @@ export class Preview implements PreviewApi, vscode.Disposable {
     return this.render;
   }
 
-  get screen(): Screen {
-    return this.screenSize;
+  get resolution(): PreviewResolution {
+    return choosePreviewResolution(
+      parseResolution(resolutionValue()) ?? { kind: 'default' },
+      this.resolutionContext,
+    );
   }
 
-  set screen(screen: Screen) {
-    this.screenSize = screen;
-    this.request();
+  get resolutionContext(): ResolutionContext {
+    return { player: this.session?.player?.screen, native: this.native };
+  }
+
+  get notices(): readonly Notice[] {
+    return this.lastState?.notices ?? [];
   }
 
   open(): void {
@@ -416,26 +446,27 @@ export class Preview implements PreviewApi, vscode.Disposable {
       this.post({
         type: 'draw',
         id: ++this.renderCount,
-        list: { version: 1, ...this.screenSize, textures: [], draws: [] },
+        list: { version: 1, ...this.resolution.screen, textures: [], draws: [] },
       });
       return;
     }
 
     // Several events can answer one change (an edit also moves the selection).
+    const { screen } = this.resolution;
     const key = [
       uri.toString(),
       source.version ?? 'disk',
       file.definitions.indexOf(window),
       this.pin !== undefined,
-      this.screenSize.width,
-      this.screenSize.height,
+      screen.width,
+      screen.height,
       session.serial,
     ].join('|');
     if (!changed && key === this.renderKey) return;
     this.renderKey = key;
 
     const layout = await layOutPreview(session.ui, session.assets, file, window, {
-      screen: this.screenSize,
+      screen,
       localise: session.localise,
     });
     if (panel !== this.panel) return;
@@ -579,12 +610,27 @@ export class Preview implements PreviewApi, vscode.Disposable {
     if (first) panel.webview.html = previewHtml(panel.webview, this.extensionUri);
   }
 
-  private show(state: Omit<ViewState, 'pinned' | 'pinnable' | 'backend'>): void {
+  private show(state: Omit<ViewState, 'pinned' | 'pinnable' | 'backend' | 'resolution'>): void {
+    const { screen, source } = this.resolution;
+    const value = resolutionValue();
     const full: ViewState = {
       ...state,
+      notices:
+        parseResolution(value) === undefined
+          ? [
+              ...state.notices,
+              {
+                severity: 'warning',
+                message:
+                  `etch.${RESOLUTION_SETTING} "${value}" is not default, native or a width × ` +
+                  'height such as 1920x1080; the preview uses the default.',
+              },
+            ]
+          : state.notices,
       pinned: this.pin !== undefined,
       pinnable: this.pin !== undefined || this.render !== undefined,
       backend: 'offline',
+      resolution: { text: formatResolution(screen), source },
     };
     if (JSON.stringify(full) === JSON.stringify(this.lastState)) return;
     this.lastState = full;
@@ -605,6 +651,12 @@ export class Preview implements PreviewApi, vscode.Disposable {
         if (this.lastDraw) void this.panel?.webview.postMessage(this.lastDraw);
         this.lastOverlay = undefined;
         this.updateOverlay();
+        break;
+      case 'monitor':
+        this.monitor(message.screen);
+        break;
+      case 'resolution':
+        void vscode.commands.executeCommand(CHOOSE_RESOLUTION);
         break;
       case 'pointer':
         this.hover(message.point);
@@ -648,6 +700,16 @@ export class Preview implements PreviewApi, vscode.Disposable {
           void this.panel?.webview.postMessage({ type: 'state', state: this.lastState });
         break;
     }
+  }
+
+  /** Keeps the monitor's resolution, and lays out again when the preview uses it. */
+  private monitor(reported: Screen): void {
+    const screen = validScreen(reported);
+    if (screen === undefined) return;
+    if (this.native?.width === screen.width && this.native.height === screen.height) return;
+    this.native = screen;
+    void this.memento.update(NATIVE_SCREEN_KEY, screen);
+    this.request();
   }
 
   private painted(paint: PreviewPaint): void {
@@ -764,6 +826,20 @@ function readSettings(uri: vscode.Uri): SessionSettings {
     playset: settings.get<string[]>('playset', []),
     language: settings.get<string>('language', DEFAULT_LANGUAGE),
   };
+}
+
+/** The `etch.previewResolution` setting as written. */
+function resolutionValue(): string {
+  return vscode.workspace.getConfiguration('etch').get<string>(RESOLUTION_SETTING, 'default');
+}
+
+/** A screen from storage or the webview, `undefined` unless both sides are valid. */
+function validScreen(value: unknown): Screen | undefined {
+  if (typeof value !== 'object' || value === null) return undefined;
+  const { width, height } = value as Partial<Screen>;
+  return typeof width === 'number' && typeof height === 'number' && isSide(width) && isSide(height)
+    ? { width, height }
+    : undefined;
 }
 
 function isGui(uri: vscode.Uri): boolean {

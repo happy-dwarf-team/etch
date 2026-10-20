@@ -2,6 +2,7 @@
 // only: they cross postMessage. The webview script (webview/main.ts) imports these types too, so
 // this file imports nothing at run time.
 
+import type { ResolutionSource } from '@etch/core';
 import type { DrawList, DrawRect } from '@etch/core/draw-list';
 
 /** The preview backends of spec section 2. Only the offline renderer exists before M3. */
@@ -23,6 +24,8 @@ export interface ViewState {
   /** Whether there is a window that could be pinned. */
   readonly pinnable: boolean;
   readonly backend: PreviewBackend;
+  /** The preview resolution as `1920×1080`, and where it came from (spec section 6). */
+  readonly resolution: { readonly text: string; readonly source: ResolutionSource };
   readonly notices: readonly Notice[];
 }
 
@@ -86,4 +89,11 @@ export type WebviewMessage =
   | { readonly type: 'pointer'; readonly point?: Point }
   | { readonly type: 'click'; readonly point: Point }
   | { readonly type: 'pin'; readonly pinned: boolean }
+  /** The monitor's resolution in device pixels, at start and when it changes. */
+  | {
+      readonly type: 'monitor';
+      readonly screen: { readonly width: number; readonly height: number };
+    }
+  /** The resolution button was clicked: choose the preview resolution. */
+  | { readonly type: 'resolution' }
   | { readonly type: 'backend'; readonly backend: PreviewBackend };

@@ -49,6 +49,12 @@
         "title": "Pin or Unpin the Previewed Window",
         "category": "Etch",
         "icon": "$(pin)"
+      },
+      {
+        "command": "etch.choosePreviewResolution",
+        "title": "Choose the Preview Resolution",
+        "category": "Etch",
+        "icon": "$(screen-full)"
       }
     ],
     "menus": {
@@ -95,6 +101,24 @@
           ],
           "scope": "resource",
           "markdownDescription": "The localisation language the preview shows a `.gui` file's texts in."
+        },
+        "etch.previewResolution": {
+          "type": "string",
+          "default": "default",
+          "pattern": "^\\s*(?:[Dd][Ee][Ff][Aa][Uu][Ll][Tt]|[Nn][Aa][Tt][Ii][Vv][Ee]|\\d+\\s*[xX×*]\\s*\\d+)?\\s*$",
+          "patternErrorMessage": "Write default, native or a width × height such as 1920x1080.",
+          "examples": [
+            "default",
+            "native",
+            "1280x720",
+            "1366x768",
+            "1600x900",
+            "1680x1050",
+            "1920x1080",
+            "3440x1440"
+          ],
+          "scope": "window",
+          "markdownDescription": "The screen size the preview lays windows out on and evaluates `if_resolution` blocks against: `default` (the resolution in the game's `settings.txt`, else the monitor's), `native` (the monitor's resolution), or a width × height such as `1920x1080`. UI scale is always 1.0. The command **Etch: Choose the Preview Resolution** also offers the corpus resolutions."
         }
       }
     }

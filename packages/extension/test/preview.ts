@@ -1,6 +1,7 @@
 // The preview end to end in a real VS Code: a fixture game in a temp folder (an `eu4.exe` that is
-// not the game, one `.gfx`, one `.gui`, a TGA texture, a BMFont and English localisation), opened
-// through the command, drawn by the webview, and followed through unsaved edits.
+// not the game, one `.gfx`, one `.gui`, a TGA texture, a BMFont and English localisation) with its
+// own profile (`userdir.txt`, a player's `settings.txt`), opened through the command, drawn by the
+// webview, followed through unsaved edits and laid out at each preview resolution.
 import * as assert from 'node:assert/strict';
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -8,7 +9,14 @@ import * as path from 'node:path';
 import * as vscode from 'vscode';
 import type { SpriteDraw, TextDraw } from '@etch/core';
 import type { EtchApi } from '../src/extension.ts';
-import type { PreviewApi, PreviewPaint, PreviewRender } from '../src/preview/index.ts';
+import {
+  CHOOSE_RESOLUTION,
+  RESOLUTION_SETTING,
+  writeResolution,
+  type PreviewApi,
+  type PreviewPaint,
+  type PreviewRender,
+} from '../src/preview/index.ts';
 
 const COLD_TIMEOUT_MS = 30_000;
 const TIMEOUT_MS = 5_000;
@@ -61,6 +69,7 @@ const GUI = `guiTypes = {
 			name = "box"
 			spriteType = "GFX_etch_box"
 			position = { x = 10 y = 20 }
+			if_resolution = { max_height = 768 position = { x = 40 y = 20 } }
 		}
 		instantTextBoxType = {
 			name = "hello"
@@ -81,10 +90,26 @@ const GUI = `guiTypes = {
 }
 `;
 
+// The player's settings as the game writes them: the default preview resolution, and a UI scale
+// the preview reports.
+const SETTINGS = `language="l_english"
+graphics={
+	size={
+		x=1600
+		y=900
+	}
+	game_ui_scale=1.250
+	fullScreen=no
+}
+`;
+
 async function fixtureGame(): Promise<string> {
   const root = await mkdtemp(path.join(tmpdir(), 'etch-preview-'));
   const files: Record<string, string | Uint8Array> = {
     'eu4.exe': 'not the game',
+    // The profile is the game's own `profile` folder, so the tests never read the player's.
+    'userdir.txt': 'profile',
+    'profile/settings.txt': SETTINGS,
     'interface/etch.gfx': GFX,
     'interface/etch.gui': GUI,
     'gfx/interface/etch_box.tga': tga(4, 4, [0, 0, 255, 255]),
@@ -174,6 +199,61 @@ function moveCursor(editor: vscode.TextEditor, needle: string): void {
   editor.selection = new vscode.Selection(at, at);
 }
 
+/** The preview resolution: the setting, `if_resolution` blocks, the monitor and the command. */
+async function testResolution(preview: PreviewApi): Promise<void> {
+  // A corpus resolution: the box's if_resolution block applies at heights up to 768.
+  const small = await nextPaint(
+    preview,
+    (r) => r.drawList.width === 1280,
+    () => writeResolution('1280x720'),
+  );
+  assert.equal(small.render.drawList.height, 720);
+  assert.equal(sprites(small.render)[0]?.x, 140);
+  assert.deepEqual(preview.resolution.source, 'setting');
+
+  // The monitor's resolution, as the webview reported it.
+  const native = preview.resolutionContext.native;
+  assert.ok(native, 'the webview reports the monitor');
+  const shown = await nextPaint(
+    preview,
+    (r) => r.drawList.width === native.width && r.drawList.height === native.height,
+    () => writeResolution('native'),
+  );
+  assert.equal(preview.resolution.source, 'native');
+  assert.equal(sprites(shown.render)[0]?.x, native.height <= 768 ? 140 : 130);
+
+  // A custom size, then a value that is none: the default with a warning.
+  await nextPaint(
+    preview,
+    (r) => r.drawList.width === 1000 && r.drawList.height === 700,
+    () => writeResolution('1000 x 700'),
+  );
+  const settings = vscode.workspace.getConfiguration('etch');
+  await nextPaint(
+    preview,
+    (r) => r.drawList.width === 1600,
+    () => settings.update(RESOLUTION_SETTING, 'big', vscode.ConfigurationTarget.Global),
+  );
+  assert.ok(
+    preview.notices.some((n) => n.severity === 'warning' && /previewResolution/.test(n.message)),
+    JSON.stringify(preview.notices),
+  );
+
+  // The command: the first choice is the default, which removes the setting.
+  await writeResolution('1366x768');
+  await preview.idle();
+  const chosen = vscode.commands.executeCommand<string | undefined>(CHOOSE_RESOLUTION);
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  await vscode.commands.executeCommand('workbench.action.acceptSelectedQuickOpenItem');
+  assert.equal(await chosen, 'default');
+  assert.equal(settings.inspect(RESOLUTION_SETTING)?.globalValue, undefined);
+  await preview.idle();
+  assert.deepEqual(preview.resolution, {
+    screen: { width: 1600, height: 900 },
+    source: 'settings.txt',
+  });
+}
+
 function previewTab(): vscode.Tab | undefined {
   return vscode.window.tabGroups.all
     .flatMap((group) => group.tabs)
@@ -206,7 +286,16 @@ export async function testPreview(api: EtchApi): Promise<void> {
       COLD_TIMEOUT_MS,
     );
     console.log(`[etch] preview cold open: ${(cold.paint.at - opened).toFixed(0)} ms`);
-    assert.equal(cold.render.drawList.width, 1920);
+    // The default preview resolution is the player's, and their UI scale gets a notice.
+    assert.deepEqual(preview.resolution, {
+      screen: { width: 1600, height: 900 },
+      source: 'settings.txt',
+    });
+    assert.deepEqual([cold.render.drawList.width, cold.render.drawList.height], [1600, 900]);
+    assert.ok(
+      preview.notices.some((n) => n.severity === 'information' && /game_ui_scale/.test(n.message)),
+      JSON.stringify(preview.notices),
+    );
     const [box] = sprites(cold.render);
     assert.ok(box);
     assert.deepEqual([box.x, box.y, box.width, box.height], [110, 70, 4, 4]);
@@ -245,6 +334,8 @@ export async function testPreview(api: EtchApi): Promise<void> {
     );
     assert.equal(gui.document.isDirty, true);
     assert.equal(moved.render.window.name, 'etch_first');
+
+    await testResolution(preview);
 
     // The cursor picks the window; the model's diagnostics reach the Problems panel.
     const second = await nextPaint(
@@ -315,5 +406,6 @@ export async function testPreview(api: EtchApi): Promise<void> {
     await vscode.commands.executeCommand('workbench.action.files.revert');
   } finally {
     await settings.update('gamePath', undefined, vscode.ConfigurationTarget.Global);
+    await settings.update(RESOLUTION_SETTING, undefined, vscode.ConfigurationTarget.Global);
   }
 }
