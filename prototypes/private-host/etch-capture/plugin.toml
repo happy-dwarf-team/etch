@@ -1,0 +1,16 @@
+id = "etch-capture-proto"
+name = "Etch capture prototype"
+version = "0.0.1"
+authors = ["Happy Dwarf Team"]
+description = "PROTOTYPE for happy-dwarf-team/etch#21, throwaway: copies the back buffer at Present on request over a pipe and reports readiness."
+api = 2
+entry = "etch_capture_proto.dll"
+# Early: it hooks Direct3DCreate9(Ex) before the game creates its renderer, as anvil-overlay does.
+phase = "early"
+affects_gameplay = false
+issues = "https://github.com/happy-dwarf-team/etch/issues/21"
+repository = "https://github.com/happy-dwarf-team/etch"
+
+[[dependencies]]
+id = "anvil-game"
+version = "^1"

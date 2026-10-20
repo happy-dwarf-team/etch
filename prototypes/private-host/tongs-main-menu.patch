@@ -1,0 +1,50 @@
+diff --git a/src/game_console.cpp b/src/game_console.cpp
+index 89fa7d7..44553c3 100644
+--- a/src/game_console.cpp
++++ b/src/game_console.cpp
+@@ -92,17 +92,20 @@ bool FreeText(StringFreeFn fn, RawString* text, std::uint32_t* code) {
+ 
+ std::string ReadGameConsole(std::uintptr_t base, const ConsoleLayout& layout, ConsoleRaw& out) {
+     out = {};
++    // PROTOTYPE etch#21: without a root or a game session (the main menu holds an
++    // object of another class there) there is no ironman or multiplayer to check;
++    // go on to the console manager.
+     std::uintptr_t root = 0;
+-    if (!Read(base + layout.root_rva, root) || root == 0) return "no game loaded (root object is null)";
+     std::uintptr_t session = 0, vtable = 0;
+-    if (!Read(root + layout.session, session) || session == 0) return "no game loaded (session is null)";
+-    if (!Read(session, vtable) || vtable != base + layout.session_vtable_rva) return "session object has an unexpected vtable";
+-    out.session = session;
+-    std::uint8_t ironman = 0;
+-    if (!Read(root + layout.ironman, ironman)) return "cannot read the ironman flag";
+-    out.ironman = ironman != 0;
+-    if (!IsMultiplayer(reinterpret_cast<MultiplayerFn>(base + layout.multiplayer_rva), session, out.multiplayer)) {
+-        return "the multiplayer check faulted";
++    if (Read(base + layout.root_rva, root) && root != 0 && Read(root + layout.session, session) && session != 0 &&
++        Read(session, vtable) && vtable == base + layout.session_vtable_rva) {
++        out.session = session;
++        std::uint8_t ironman = 0;
++        if (!Read(root + layout.ironman, ironman)) return "cannot read the ironman flag";
++        out.ironman = ironman != 0;
++        if (!IsMultiplayer(reinterpret_cast<MultiplayerFn>(base + layout.multiplayer_rva), session, out.multiplayer)) {
++            return "the multiplayer check faulted";
++        }
+     }
+ 
+     std::uintptr_t manager = 0;
+diff --git a/src/protocol.cpp b/src/protocol.cpp
+index 018cc58..c5be969 100644
+--- a/src/protocol.cpp
++++ b/src/protocol.cpp
+@@ -1281,10 +1281,7 @@ private:
+     // Main thread, after an outer frame: checks the game, then calls.
+     std::string OnMainThread() {
+         before_ = h_.read_state();
+-        if (!before_.in_game) {
+-            refusal_ = {"not_in_game", before_.reason ? before_.reason : "no game loaded"};
+-            return {};
+-        }
++        // PROTOTYPE etch#21: console calls in the main menu (no session) are allowed.
+         if (std::string error = h_.read_console(raw_); !error.empty()) {
+             refusal_ = {"console_unavailable", error};
+             return {};
