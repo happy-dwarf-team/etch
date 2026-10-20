@@ -1,0 +1,57 @@
+name: Bug report
+description: A preview that is wrong or missing, a wrong diagnostic, or an error from the extension.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Security problems go through [private reporting](https://github.com/happy-dwarf-team/etch/security/advisories/new).
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you saw, and what you expected instead. Describe the preview; do not attach game assets.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: The file and window you previewed and what you changed.
+      placeholder: |
+        1. Open interface/countrydiplomacyview.gui of mod X
+        2. Open the preview
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Etch and VS Code versions
+      description: From the Extensions view and Help > About.
+    validations:
+      required: true
+  - type: dropdown
+    id: backend
+    attributes:
+      label: Preview backend
+      options:
+        - Offline renderer
+        - Game host
+        - Both
+        - Not applicable
+    validations:
+      required: true
+  - type: textarea
+    id: playset
+    attributes:
+      label: Playset
+      description: The mods loaded, with their versions (or "vanilla"), and the game version from the launcher.
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Etch output
+      description: The "Etch" channel of the Output view. Check it for anything you do not want to share, such as your Windows user name in paths.
+      render: text

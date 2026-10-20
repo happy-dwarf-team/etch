@@ -1,0 +1,40 @@
+{
+  "name": "etch",
+  "displayName": "Etch",
+  "description": "Preview Europa Universalis IV interface mods while you edit them.",
+  "version": "0.0.0",
+  "publisher": "happy-dwarf-team",
+  "preview": true,
+  "private": true,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/happy-dwarf-team/etch.git",
+    "directory": "packages/extension"
+  },
+  "bugs": {
+    "url": "https://github.com/happy-dwarf-team/etch/issues"
+  },
+  "categories": [
+    "Visualization"
+  ],
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+  "main": "./dist/extension.js",
+  "activationEvents": [],
+  "contributes": {},
+  "scripts": {
+    "build": "node build.mts",
+    "typecheck": "tsc -p .",
+    "test": "node build.mts && node test/run.mts",
+    "package": "node build.mts && node package.mts"
+  },
+  "devDependencies": {
+    "@etch/core": "workspace:*",
+    "@types/vscode": "~1.100.0",
+    "@vscode/test-electron": "^3.1.0",
+    "@vscode/vsce": "^4.0.0",
+    "esbuild": "^0.28.2"
+  }
+}

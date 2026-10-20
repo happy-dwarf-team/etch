@@ -1,0 +1,2 @@
+# Prettier and the checks expect LF on every platform, also on Windows runners.
+* text=auto eol=lf

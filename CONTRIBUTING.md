@@ -1,0 +1,87 @@
+# Contributing to Etch
+
+## Pull requests
+
+Every change goes to `main` through a pull request; nobody pushes to `main`
+directly. A pull request needs the `windows` check (typecheck, lint, format,
+tests, VSIX package) and the `conventional-title` check to pass, and is
+**squash-merged**: the pull request title becomes the single commit on `main`
+and, through it, the changelog entry. Keep one topic per pull request; split
+unrelated changes.
+
+Research and prototypes go on `research/*` and `prototype/*` branches, which
+are pushed and never merged (specification, section 13).
+
+## Commit and pull request titles
+
+Titles follow [Conventional Commits](https://www.conventionalcommits.org/):
+
+```
+<type>(<optional scope>): <summary in the imperative, lowercase, no period>
+```
+
+| Type       | Use for                                        | Release | Changelog   |
+| ---------- | ---------------------------------------------- | ------- | ----------- |
+| `feat`     | new capability for mod authors                 | minor   | Features    |
+| `fix`      | bug fix                                        | patch   | Bug Fixes   |
+| `perf`     | faster or lighter, same behaviour              | patch   | Performance |
+| `revert`   | reverting an earlier change                    | patch   | Reverts     |
+| `build`    | packaging, pinned builds, shipped dependencies | patch   | Build       |
+| `docs`     | documentation only                             | none    | hidden      |
+| `refactor` | code change without behaviour change           | none    | hidden      |
+| `test`     | tests only                                     | none    | hidden      |
+| `ci`       | GitHub Actions, Dependabot                     | none    | hidden      |
+| `chore`    | anything else (dev dependencies, release PRs)  | none    | hidden      |
+
+Scopes in use: `core`, `renderer`, `extension`, and later `plugin`, `corpus`
+and `pins`. A scope is optional; leave it out when a change spans several.
+
+Breaking changes: add `!` after the type or scope (`feat(extension)!: ...`)
+and a `BREAKING CHANGE: <what breaks and how to migrate>` paragraph in the pull
+request description. Before 1.0.0 a breaking change bumps the minor version.
+
+## Repository layout
+
+A pnpm workspace (ADR 0001):
+
+| Folder               | Holds                                                          |
+| -------------------- | -------------------------------------------------------------- |
+| `packages/core`      | parser, model, layout, draw list, diagnostics; never `vscode`  |
+| `packages/renderer`  | WebGL2 drawing in the preview webview                          |
+| `packages/extension` | VS Code glue and the VSIX manifest                             |
+| `docs/adr`           | architecture decisions                                         |
+| `docs/spec`          | the v1 specification                                           |
+
+Workspace packages are TypeScript sources that esbuild bundles into the
+extension and the webview script. The VSIX has no runtime dependencies besides
+the VS Code API; anything that would ship in it must be MIT, Apache-2.0, BSD or
+BSL-1.0 (ADR 0004).
+
+## Building and testing
+
+Node.js 22.18 or later (build scripts are TypeScript run by Node directly) and
+the pnpm version in `package.json`:
+
+```powershell
+pnpm install
+pnpm typecheck
+pnpm lint
+pnpm format:check
+pnpm test:unit       # Vitest
+pnpm --filter @etch/renderer exec playwright install chromium   # once
+pnpm test:renderer   # Playwright: WebGL2 in Chromium
+pnpm test:extension  # @vscode/test-electron: downloads VS Code into .vscode-test
+pnpm package         # packages/extension/dist/etch-win32-x64-<version>.vsix
+```
+
+`pnpm format` rewrites files with Prettier. Markdown is not formatted; keep its
+line breaks and tables as they are.
+
+The reload budgets and the precision corpus are measured on the maintainer's
+machine, not in CI (ADR 0004): shared runners are too noisy to time, and the
+corpus needs a licensed game. A change that touches the reload path says in the
+pull request what was measured. Every run of the game follows the EU4 engine
+lab's procedure: `eu4.exe`, saves and mods are never changed, and a process is
+closed only after its PID, path and creation time are checked.
+
+Screenshots and other game assets never enter Git.
