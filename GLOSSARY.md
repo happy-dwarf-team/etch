@@ -16,6 +16,17 @@ An image of a window's skeleton as the interface files define it: positions,
 sizes, sprites and static text, without content the game's code fills in.
 _Avoid_: draft preview, mockup
 
+**Previewed window**:
+The top-level window the preview shows: the one that contains the cursor in
+the edited file, or the one the user pinned.
+_Avoid_: current window, active window
+
+**Diff view**:
+A way of showing the previewed window as the per-pixel difference between the
+offline renderer's image and the game host's, at the same resolution and with
+the same playset.
+_Avoid_: comparison mode, overlay
+
 **Code-filled content**:
 What the game's own code puts into a window at run time: hidden or moved
 widgets, list entries, values and text that depend on game data.
