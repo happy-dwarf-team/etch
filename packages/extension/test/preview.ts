@@ -1,7 +1,8 @@
 // The preview end to end in a real VS Code: a fixture game in a temp folder (an `eu4.exe` that is
 // not the game, one `.gfx`, one `.gui`, a TGA texture, a BMFont and English localisation) with its
 // own profile (`userdir.txt`, a player's `settings.txt`), opened through the command, drawn by the
-// webview, followed through unsaved edits and laid out at each preview resolution.
+// webview, followed through unsaved edits and through textures and fonts changed on disk, laid out
+// at each preview resolution, and restored as after a window reload.
 import * as assert from 'node:assert/strict';
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -13,6 +14,7 @@ import {
   CHOOSE_RESOLUTION,
   RESOLUTION_SETTING,
   writeResolution,
+  PREVIEW_VIEW_TYPE,
   type PreviewApi,
   type PreviewPaint,
   type PreviewRender,
@@ -172,6 +174,13 @@ async function nextPaint(
 
 function sprites(render: PreviewRender): SpriteDraw[] {
   return render.drawList.draws.filter((d): d is SpriteDraw => d.kind === 'sprite');
+}
+
+/** How far the second glyph of the first text stands from the first. */
+function secondGlyphOffset(render: PreviewRender): number | undefined {
+  const text = render.drawList.draws.find((d): d is TextDraw => d.kind === 'text');
+  const [first, second] = [text?.glyphs[0], text?.glyphs[7]];
+  return first === undefined || second === undefined ? undefined : second - first;
 }
 
 function glyphCount(render: PreviewRender): number {
@@ -391,16 +400,87 @@ export async function testPreview(api: EtchApi): Promise<void> {
     );
     assert.equal(reverted.render.window.name, 'etch_first');
 
+    // A texture overwritten on disk is fetched again, though the draw list stays the same.
+    const boxFile = path.join(game, 'gfx', 'interface', 'etch_box.tga');
+    const inBox = { x: 131, y: 71 };
+    assert.deepEqual((await preview.probe([inBox])).pixels, [[255, 0, 0, 255]]);
+    const retextured = next(preview.onDidRender, () => true, TIMEOUT_MS);
+    await writeFile(boxFile, tga(4, 4, [0, 255, 0, 255]));
+    await retextured;
+    await preview.idle();
+    assert.deepEqual((await preview.probe([inBox])).pixels, [[0, 255, 0, 255]], 'green on disk');
+
+    // One of another size lays the window out again: its header is read again too.
+    const resized = await nextPaint(
+      preview,
+      (r) => sprites(r)[0]?.width === 8,
+      () => writeFile(boxFile, tga(8, 8, [255, 0, 0, 255])),
+    );
+    assert.equal(resized.render.window.name, 'etch_first');
+    assert.deepEqual((await preview.probe([{ x: 137, y: 77 }])).pixels, [[0, 0, 255, 255]]);
+
+    // A font changed on disk: A advances 9 pixels instead of 6.
+    const advance = secondGlyphOffset(resized.render);
+    assert.ok(advance !== undefined);
+    await nextPaint(
+      preview,
+      (r) => secondGlyphOffset(r) === advance + 3,
+      () =>
+        writeFile(
+          path.join(game, 'gfx', 'fonts', 'etch_tiny.fnt'),
+          FONT.replace('xadvance=6', 'xadvance=9'),
+        ),
+    );
+
+    // The webview keeps the window and the pin for a window reload.
+    preview.togglePin();
+    await preview.idle();
+    const memento: unknown = JSON.parse(JSON.stringify(preview.reloadState));
+    assert.deepEqual(memento, {
+      uri: guiUri.toString(),
+      window: 'etch_first',
+      index: 0,
+      pinned: true,
+    });
+
     // Closing the preview removes its diagnostics.
-    const tab = previewTab();
+    let tab = previewTab();
     assert.ok(tab, 'the preview is a tab');
     await vscode.window.tabGroups.close(tab);
     await preview.idle();
     assert.equal(preview.current, undefined);
+    assert.equal(preview.reloadState, undefined);
     assert.equal(
       vscode.languages.getDiagnostics(guiUri).filter((d) => d.code === 'missing-sprite').length,
       0,
     );
+
+    // After a window reload VS Code activates Etch for the panel and gives its serializer the
+    // panel and the webview's state; restoring it here goes through the same path.
+    const extension = vscode.extensions.getExtension('happy-dwarf-team.etch');
+    const { activationEvents } = extension?.packageJSON as { activationEvents: string[] };
+    assert.ok(activationEvents.includes(`onWebviewPanel:${PREVIEW_VIEW_TYPE}`));
+    const restored = await nextPaint(
+      preview,
+      (r) => r.window.name === 'etch_first' && r.pinned,
+      () => {
+        const panel = vscode.window.createWebviewPanel(
+          PREVIEW_VIEW_TYPE,
+          'Etch Preview',
+          { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true },
+          { enableScripts: true, retainContextWhenHidden: true },
+        );
+        preview.restore(panel, memento);
+        return undefined;
+      },
+      COLD_TIMEOUT_MS,
+    );
+    assert.equal(sprites(restored.render)[0]?.width, 8);
+    tab = previewTab();
+    assert.ok(tab, 'the restored preview is a tab');
+    await vscode.window.tabGroups.close(tab);
+    await preview.idle();
+    assert.equal(preview.current, undefined);
 
     await vscode.window.showTextDocument(gui.document);
     await vscode.commands.executeCommand('workbench.action.files.revert');

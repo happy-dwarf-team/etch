@@ -1,10 +1,16 @@
 import * as vscode from 'vscode';
 import type { WidgetNavigation } from '../navigation.ts';
-import { CHOOSE_RESOLUTION, Preview, type PreviewApi } from './preview.ts';
+import { CHOOSE_RESOLUTION, PREVIEW_VIEW_TYPE, Preview, type PreviewApi } from './preview.ts';
 import { chooseResolution } from './resolution.ts';
 
 export type { PreviewApi, PreviewPaint, PreviewRender, SourceText } from './preview.ts';
-export { CHOOSE_RESOLUTION, PREVIEW_OPEN_CONTEXT, RESOLUTION_SETTING } from './preview.ts';
+export type { PreviewMemento } from './protocol.ts';
+export {
+  CHOOSE_RESOLUTION,
+  PREVIEW_OPEN_CONTEXT,
+  PREVIEW_VIEW_TYPE,
+  RESOLUTION_SETTING,
+} from './preview.ts';
 export { writeResolution } from './resolution.ts';
 
 /** Opens the preview beside the editor (the editor title of a `.gui` file shows it). */
@@ -31,6 +37,13 @@ export function registerPreview(
       preview.togglePin();
     }),
     vscode.commands.registerCommand(CHOOSE_RESOLUTION, () => chooseResolution(preview)),
+    // Reopens the preview after a window reload (`onWebviewPanel:etch.preview` activates Etch).
+    vscode.window.registerWebviewPanelSerializer(PREVIEW_VIEW_TYPE, {
+      deserializeWebviewPanel(panel, state: unknown) {
+        preview.restore(panel, state);
+        return Promise.resolve();
+      },
+    }),
   );
   return preview;
 }

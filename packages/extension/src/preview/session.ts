@@ -132,6 +132,16 @@ export class PreviewSession {
     return this.playset.files.layers.map((layer) => layer.root);
   }
 
+  /**
+   * The folders whose textures and fonts may change while the preview is open: the mods, and the
+   * game folder only when its own files are edited (it changes only when the game updates).
+   */
+  get watchedRoots(): string[] {
+    const game = this.playset.gameFolder;
+    if (this.playset.workspaceMod === undefined || game === undefined) return this.roots;
+    return this.roots.filter((root) => pathKey(root) !== pathKey(game));
+  }
+
   /** Where a file on disk sits in the playset, or `undefined` when no layer holds it. */
   async place(file: string): Promise<PlaysetPlace | undefined> {
     const layers = this.playset.files.layers;
