@@ -8,4 +8,8 @@ export async function run(): Promise<void> {
   assert.ok(extension, 'the extension is installed');
   await extension.activate();
   assert.equal(extension.isActive, true, 'the extension activates');
+
+  const settings = vscode.workspace.getConfiguration('etch');
+  assert.equal(settings.get('gamePath'), '', 'etch.gamePath is contributed');
+  assert.deepEqual(settings.get('playset'), [], 'etch.playset is contributed');
 }
