@@ -6,6 +6,7 @@ export { parseModDescriptor, decodeDescriptor, type ModDescriptor } from './desc
 export type { PlaysetDiagnostic, PlaysetDiagnosticSeverity } from './diagnostics.ts';
 export { GameFiles, type GameFile, type GameFilesLayer } from './game-files.ts';
 export { PlaysetInterface } from './interface.ts';
+export { PlaysetAssets, layOutPreview } from './assets.ts';
 export { loadPlaysetLocalisation } from './localisation.ts';
 export {
   EU4_STEAM_APP_ID,
