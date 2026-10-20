@@ -244,7 +244,7 @@ export function parseScript(text: string): ParsedScript {
       t++;
     } else {
       const key = scalar(t);
-      const next = kinds[t + 1];
+      const next = t + 1 < count ? kinds[t + 1] : undefined;
       if (next === OPEN) {
         // `key { … }`, written so in vanilla's contentview.gui and tutorial.gui.
         open(t + 1, key, undefined);
