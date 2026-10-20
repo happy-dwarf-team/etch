@@ -51,8 +51,8 @@ export const REVEAL_WIDGET_SOURCE = 'etch.revealWidgetSource';
 const OUTLINE_CONTEXT = 'etch.widgetOutline.available';
 
 const NO_WINDOW = 'Open a .gui file to see the widgets of its window.';
-
-/** The same debounce as the preview's parse (spec section 7). */
+/** While the preview is closed, the outline follows the editor after this pause in typing. */
+/** While the preview is closed the outline follows the editor; a short debounce spares bursts of typing. */
 const DEBOUNCE_MS = 30;
 
 /** The previewed window and the model it comes from. */

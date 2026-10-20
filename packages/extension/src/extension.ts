@@ -2,10 +2,12 @@ import * as vscode from 'vscode';
 import { SUPPORTED_GAME_VERSION } from '@etch/core';
 import { registerGameText } from './game-text.ts';
 import { WidgetNavigation } from './navigation.ts';
+import { registerPreview, type PreviewApi } from './preview/index.ts';
 
 /** What `activate` returns: for Etch's own tests, not a stable API for other extensions. */
 export interface EtchApi {
   readonly navigation: WidgetNavigation;
+  readonly preview: PreviewApi;
 }
 
 export function activate(context: vscode.ExtensionContext): EtchApi {
@@ -16,7 +18,7 @@ export function activate(context: vscode.ExtensionContext): EtchApi {
   context.subscriptions.push(registerGameText());
   const navigation = new WidgetNavigation();
   context.subscriptions.push(navigation);
-  return { navigation };
+  return { navigation, preview: registerPreview(context, output, navigation) };
 }
 
 export function deactivate(): void {

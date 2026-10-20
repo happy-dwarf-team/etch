@@ -195,6 +195,9 @@ importers:
       '@etch/core':
         specifier: workspace:*
         version: link:../core
+      '@etch/renderer':
+        specifier: workspace:*
+        version: link:../renderer
       '@types/vscode':
         specifier: ~1.100.0
         version: 1.100.0
