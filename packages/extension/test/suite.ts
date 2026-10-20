@@ -2,12 +2,14 @@
 // error fails the run.
 import * as assert from 'node:assert/strict';
 import * as vscode from 'vscode';
+import type { EtchApi } from '../src/extension.ts';
 import { testGameText } from './game-text.ts';
+import { testNavigation } from './navigation.ts';
 
 export async function run(): Promise<void> {
-  const extension = vscode.extensions.getExtension('happy-dwarf-team.etch');
+  const extension = vscode.extensions.getExtension<EtchApi>('happy-dwarf-team.etch');
   assert.ok(extension, 'the extension is installed');
-  await extension.activate();
+  const api = await extension.activate();
   assert.equal(extension.isActive, true, 'the extension activates');
 
   const settings = vscode.workspace.getConfiguration('etch');
@@ -15,4 +17,5 @@ export async function run(): Promise<void> {
   assert.deepEqual(settings.get('playset'), [], 'etch.playset is contributed');
 
   await testGameText();
+  await testNavigation(api);
 }

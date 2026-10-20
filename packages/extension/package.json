@@ -28,6 +28,15 @@
     "workspaceContains:**/localisation/**/*.yml"
   ],
   "contributes": {
+    "views": {
+      "explorer": [
+        {
+          "id": "etch.widgetOutline",
+          "name": "Widget Outline",
+          "when": "etch.widgetOutline.available"
+        }
+      ]
+    },
     "configuration": {
       "title": "Etch",
       "properties": {

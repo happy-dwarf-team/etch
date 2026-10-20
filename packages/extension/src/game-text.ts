@@ -71,7 +71,10 @@ export async function readGameText(uri: vscode.Uri): Promise<GameText | undefine
  * encoded through VS Code, which is asynchronous, so the runs core will ask
  * for are encoded up front.
  */
-async function saveEncodingOf(document: vscode.TextDocument, text: string): Promise<SaveEncoding> {
+export async function saveEncodingOf(
+  document: vscode.TextDocument,
+  text: string,
+): Promise<SaveEncoding> {
   const id = document.encoding;
   const builtIn = builtInSaveEncoding(id);
   if (builtIn) {
