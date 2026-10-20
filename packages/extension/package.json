@@ -23,7 +23,28 @@
   },
   "main": "./dist/extension.js",
   "activationEvents": [],
-  "contributes": {},
+  "contributes": {
+    "configuration": {
+      "title": "Etch",
+      "properties": {
+        "etch.gamePath": {
+          "type": "string",
+          "default": "",
+          "scope": "machine-overridable",
+          "markdownDescription": "The Europa Universalis IV game folder, the one that holds `eu4.exe`. When empty, Etch finds it through Steam's library list. Etch only reads this folder."
+        },
+        "etch.playset": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "scope": "resource",
+          "markdownDescription": "Mods to preview with, in load order (a later mod's file wins), as mod names or as mod folders or `.mod` descriptors. When not empty it replaces the default playset: the edited mod and the `dependencies` of its descriptor. The edited mod is added last unless the list names it."
+        }
+      }
+    }
+  },
   "scripts": {
     "build": "node build.mts",
     "typecheck": "tsc -p .",
