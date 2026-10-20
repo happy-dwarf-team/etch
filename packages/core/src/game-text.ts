@@ -244,3 +244,107 @@ export function diagnoseGameText(
   }
   return diagnostics;
 }
+
+/**
+ * Maps offsets between an editor text and its game text. The model, layout
+ * and the draw list's `source` count UTF-16 offsets in the game text; the
+ * editor counts them in its own text. They differ only after a run of
+ * characters outside ASCII that the game reads as another number of
+ * characters, such as `é` saved as UTF-8 (`Ã©`).
+ */
+export interface GameTextOffsets {
+  /** The game text offset of an editor offset; inside a changed run, its start. */
+  toGame(editorOffset: number): number;
+  /** The editor offset of a game text offset; inside a changed run, its start. */
+  toEditor(gameOffset: number): number;
+}
+
+interface ChangedRun {
+  readonly editorStart: number;
+  readonly editorEnd: number;
+  readonly gameStart: number;
+  readonly gameEnd: number;
+}
+
+/** The game text of an editor text, with the map between their offsets. */
+export interface MappedGameText extends GameTextOffsets {
+  /** The characters the game reads, without a byte order mark. */
+  readonly text: string;
+}
+
+/**
+ * The game text the next save of an editor text gives, read as the game reads
+ * it, with the offset map between the two; `undefined` in UTF-16, which the
+ * game cannot read. Only the runs outside ASCII are encoded, so an encoding
+ * from the extension needs only those (see {@link nonAsciiRuns}).
+ */
+export function mapGameText(
+  text: string,
+  kind: GameTextKind,
+  encoding: SaveEncoding,
+): MappedGameText | undefined {
+  if (UNREADABLE.has(encoding.id)) {
+    return undefined;
+  }
+  const runs: ChangedRun[] = [];
+  const parts: string[] = [];
+  let shift = 0;
+  let copied = 0;
+  for (const range of nonAsciiRuns(text)) {
+    // Not decodeGameText: a U+FEFF inside the text is no byte order mark.
+    const game = decode(encoding.encode(text.slice(range.start, range.end)), kind);
+    if (game === text.slice(range.start, range.end)) {
+      continue;
+    }
+    const gameStart = range.start + shift;
+    runs.push({
+      editorStart: range.start,
+      editorEnd: range.end,
+      gameStart,
+      gameEnd: gameStart + game.length,
+    });
+    parts.push(text.slice(copied, range.start), game);
+    copied = range.end;
+    shift += game.length - (range.end - range.start);
+  }
+  if (runs.length === 0) {
+    return { text, toGame: (offset) => offset, toEditor: (offset) => offset };
+  }
+  parts.push(text.slice(copied));
+  return {
+    text: parts.join(''),
+    toGame: (offset) => mapOffset(runs, offset, 'editorStart', 'editorEnd', 'gameStart', 'gameEnd'),
+    toEditor: (offset) =>
+      mapOffset(runs, offset, 'gameStart', 'gameEnd', 'editorStart', 'editorEnd'),
+  };
+}
+
+type RunEdge = keyof ChangedRun;
+
+function mapOffset(
+  runs: readonly ChangedRun[],
+  offset: number,
+  fromStart: RunEdge,
+  fromEnd: RunEdge,
+  toStart: RunEdge,
+  toEnd: RunEdge,
+): number {
+  // The last run that starts at or before the offset.
+  let low = 0;
+  let high = runs.length - 1;
+  let found = -1;
+  while (low <= high) {
+    const middle = (low + high) >> 1;
+    if ((runs[middle] as ChangedRun)[fromStart] <= offset) {
+      found = middle;
+      low = middle + 1;
+    } else {
+      high = middle - 1;
+    }
+  }
+  if (found < 0) {
+    return offset;
+  }
+  const run = runs[found] as ChangedRun;
+  return offset < run[fromEnd] ? run[toStart] : offset - run[fromEnd] + run[toEnd];
+}
