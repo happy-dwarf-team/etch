@@ -5,6 +5,8 @@
  * them, and the offline renderer shows them literally (spec section 3).
  */
 
+import type { SourceRange } from '../script/tree.ts';
+
 /** An RGB colour of a `textcolors` table, 0–255 per channel. */
 export type Rgb = readonly [number, number, number];
 
@@ -17,12 +19,10 @@ export interface TextColours {
   readonly global?: Readonly<Record<string, Rgb>>;
 }
 
-export interface TextIssue {
+/** A problem in laid-out text; its range is in UTF-16 units of that text. */
+export interface TextIssue extends SourceRange {
   readonly code: 'missing-glyph' | 'not-cp1252' | 'unknown-colour' | 'missing-icon';
   readonly message: string;
-  /** UTF-16 range in the laid-out text. */
-  readonly start: number;
-  readonly end: number;
 }
 
 export type Atom =
