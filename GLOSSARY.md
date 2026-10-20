@@ -57,3 +57,20 @@ The set of game windows rendered by the offline renderer and compared with the
 same windows captured from the game, which measures how faithful the offline
 renderer is.
 _Avoid_: golden set, test suite
+
+## Measuring precision
+
+**Playset**:
+The ordered set of mods, each at a pinned version, loaded on top of the game.
+Previews and captures are comparable only within one playset.
+_Avoid_: mod list, load order
+
+**Capture**:
+One window as the game drew it, its widget tree and its pixels, at one
+resolution, with one playset and one game build.
+_Avoid_: screenshot, golden image
+
+**Known deviation**:
+A difference between the offline renderer and a capture that is accepted for
+now and tracked by its own issue.
+_Avoid_: exception, waiver, allowlist
