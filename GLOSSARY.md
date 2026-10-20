@@ -36,6 +36,15 @@ The first preview of a window, including loading the mod's sprite index and the
 textures and fonts that window uses.
 _Avoid_: first load, startup
 
+## Files
+
+**Game text**:
+The characters the game reads from an interface or localisation file: the
+file's bytes, as they are on disk or as the next save from the editor would
+write them, read the way the game reads them (Windows-1252 for interface files,
+UTF-8 for localisation).
+_Avoid_: decoded text, buffer text
+
 ## Backends
 
 **Preview backend**:
