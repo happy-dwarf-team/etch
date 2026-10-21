@@ -293,8 +293,9 @@ export function parseCorpusManifest(value: unknown): ManifestResult {
   if (tongs !== undefined) {
     c.string(tongs['version'], 'tongs.version', /^\d+\.\d+\.\d+$/, 'a version such as 0.14.1');
   }
-  if ('uiScale' in root && root['uiScale'] !== 1)
+  if ('uiScale' in root && root['uiScale'] !== 1) {
     c.fail('uiScale', 'Only a UI scale of 1 is checked (ADR 0002).');
+  }
 
   const resolutions =
     c.array(root['resolutions'], 'resolutions', (v, at) => checkResolution(c, v, at), true) ?? [];
