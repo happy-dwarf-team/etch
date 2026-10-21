@@ -29,6 +29,19 @@ export interface ViewState {
   readonly notices: readonly Notice[];
 }
 
+/**
+ * What the preview keeps across a window reload (the webview's state, which VS Code gives the
+ * panel serializer): the previewed window and whether it is pinned.
+ */
+export interface PreviewMemento {
+  /** The `.gui` file, as a URI string. */
+  readonly uri: string;
+  /** The window's name; `index`, its place among the file's definitions, when it has none. */
+  readonly window: string | undefined;
+  readonly index: number;
+  readonly pinned: boolean;
+}
+
 /** A point of the preview screen, in pixels. */
 export interface Point {
   readonly x: number;
@@ -58,7 +71,9 @@ export type HostMessage =
       readonly selected?: DrawRect;
     }
   /** Forget textures that changed on disk, so the next draw fetches them again. */
-  | { readonly type: 'invalidate'; readonly urls: readonly string[] };
+  | { readonly type: 'invalidate'; readonly urls: readonly string[] }
+  /** Keep this as the webview's state, for the next window reload. */
+  | { readonly type: 'remember'; readonly memento: PreviewMemento };
 
 /** A texture the webview could not load, as `@etch/renderer` reports it. */
 export interface TextureFailure {

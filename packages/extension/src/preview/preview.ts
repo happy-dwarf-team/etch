@@ -1,7 +1,8 @@
 // The preview (spec section 2): one webview beside the editor that shows the previewed window,
 // follows the unsaved buffer of every game text file of the playset on each change, and publishes
 // the model's diagnostics in the Problems panel. The extension host parses, models and lays out;
-// the webview draws the draw list with WebGL2 (ADR 0001).
+// the webview draws the draw list with WebGL2 (ADR 0001). Textures and fonts changed on disk are
+// read again, and the preview reopens on the same window after a window reload.
 
 import { dirname } from 'node:path';
 import * as vscode from 'vscode';
@@ -40,6 +41,7 @@ import type {
   HostMessage,
   Notice,
   Point,
+  PreviewMemento,
   TextureFailure,
   ViewState,
   WebviewMessage,
@@ -58,6 +60,9 @@ const NATIVE_SCREEN_KEY = 'etch.nativeScreen';
 
 /** The context key that is true while the preview is open. */
 export const PREVIEW_OPEN_CONTEXT = 'etch.previewOpen';
+
+/** The preview's webview type, which its panel serializer is registered for. */
+export const PREVIEW_VIEW_TYPE = 'etch.preview';
 
 /** One render of the previewed window, posted to the webview. */
 export interface PreviewRender {
@@ -112,6 +117,13 @@ export interface PreviewApi {
   readonly notices: readonly Notice[];
   /** Opens the preview beside the editor, or reveals it. */
   open(): void;
+  /**
+   * Makes a panel VS Code restored after a window reload the preview, on the window its memento
+   * names (the panel serializer's work). A panel restored while the preview is open is closed.
+   */
+  restore(panel: vscode.WebviewPanel, memento: unknown): void;
+  /** What the webview keeps for the next window reload; `undefined` before the first render. */
+  readonly reloadState: PreviewMemento | undefined;
   /** Pins the previewed window, or unpins it. */
   togglePin(): void;
   /** Draws the current render again and reads the straight RGBA of points of the screen. */
@@ -184,6 +196,13 @@ export class Preview implements PreviewApi, vscode.Disposable {
   /** The pointer over the preview, in screen pixels. */
   private pointer: Point | undefined;
   private lastOverlay: string | undefined;
+  private lastMemento: PreviewMemento | undefined;
+  /** The watchers of the session's textures and fonts on disk. */
+  private watchers: vscode.Disposable | undefined;
+  /** Textures and fonts changed on disk since the last render, by URI string. */
+  private readonly changedAssets = new Map<string, vscode.Uri>();
+  /** A texture or font was created or deleted: the session's folder listings are out of date. */
+  private listingsChanged = false;
 
   readonly onDidRender = this.renderEmitter.event;
   readonly onDidPaint = this.paintEmitter.event;
@@ -255,18 +274,43 @@ export class Preview implements PreviewApi, vscode.Disposable {
     return this.lastState?.notices ?? [];
   }
 
+  get reloadState(): PreviewMemento | undefined {
+    return this.lastMemento;
+  }
+
   open(): void {
     if (this.panel) {
       this.panel.reveal(undefined, true);
       this.request();
       return;
     }
-    const panel = vscode.window.createWebviewPanel(
-      'etch.preview',
-      'Etch Preview',
-      { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true },
-      { enableScripts: true, retainContextWhenHidden: true, localResourceRoots: [this.distUri] },
+    this.attach(
+      vscode.window.createWebviewPanel(
+        PREVIEW_VIEW_TYPE,
+        'Etch Preview',
+        { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true },
+        { enableScripts: true, retainContextWhenHidden: true, localResourceRoots: [this.distUri] },
+      ),
     );
+  }
+
+  restore(panel: vscode.WebviewPanel, memento: unknown): void {
+    if (this.panel) {
+      panel.dispose();
+      return;
+    }
+    const restored = mementoOf(memento);
+    if (restored !== undefined) {
+      this.last = { uri: restored.uri, name: restored.window };
+      if (restored.pinned) {
+        this.pin = { uri: restored.uri, name: restored.window, index: restored.index };
+      }
+    }
+    this.attach(panel);
+  }
+
+  /** Makes a panel the preview's and renders into it. */
+  private attach(panel: vscode.WebviewPanel): void {
     this.panel = panel;
     this.ready = false;
     this.roots = undefined;
@@ -360,6 +404,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
 
   dispose(): void {
     this.loop.dispose();
+    this.watchers?.dispose();
     this.panel?.dispose();
     vscode.Disposable.from(...this.subscriptions).dispose();
     this.diagnostics.dispose();
@@ -414,6 +459,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
     if (panel !== this.panel) return;
     this.allowRoots(panel, session.roots);
     const { touched, changed } = await this.applyPending(session);
+    const assetsChanged = await this.applyAssetChanges(session, panel);
 
     const source = await sourceText(uri);
     if (source === undefined) {
@@ -462,7 +508,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
       screen.height,
       session.serial,
     ].join('|');
-    if (!changed && key === this.renderKey) {
+    if (!changed && !assetsChanged && key === this.renderKey) {
       // The same screen can come from another source (the setting, settings.txt, the monitor).
       if (this.lastState) {
         this.show({ title: this.lastState.title, file: shownPath, notices: session.notices });
@@ -478,11 +524,9 @@ export class Preview implements PreviewApi, vscode.Disposable {
     if (panel !== this.panel) return;
     const drawList: DrawList = {
       ...layout.drawList,
-      textures: layout.drawList.textures.map((path) => {
-        const found = session.ui.gameFile(path);
-        const absolute = found?.absolutePath ?? path;
-        return panel.webview.asWebviewUri(vscode.Uri.file(absolute)).toString();
-      }),
+      textures: layout.drawList.textures.map((path) =>
+        webviewUrl(panel, session.ui.gameFile(path)?.absolutePath ?? path),
+      ),
     };
     const id = ++this.renderCount;
     const pinned = this.pin !== undefined;
@@ -490,6 +534,12 @@ export class Preview implements PreviewApi, vscode.Disposable {
     this.last = { uri: uri.toString(), name: window.name };
     // The draw goes first: diagnostics are not on the warm reload's path to pixels.
     this.post({ type: 'draw', id, list: drawList });
+    this.remember({
+      uri: uri.toString(),
+      window: window.name,
+      index: file.definitions.indexOf(window),
+      pinned,
+    });
     panel.title = `Preview ${window.name ?? window.kind}`;
     this.show({ title: window.name ?? window.kind, file: shownPath, notices: session.notices });
     this.navigation.setPreviewed(
@@ -552,11 +602,15 @@ export class Preview implements PreviewApi, vscode.Disposable {
     const settings = readSettings(uri);
     const workspaceFolder =
       vscode.workspace.getWorkspaceFolder(uri)?.uri.fsPath ?? dirname(uri.fsPath);
-    if (this.session?.serves(settings, workspaceFolder, uri.fsPath) === true) return this.session;
+    if (!this.listingsChanged && this.session?.serves(settings, workspaceFolder, uri.fsPath)) {
+      return this.session;
+    }
 
     const started = performance.now();
+    this.listingsChanged = false;
     const session = await PreviewSession.load(settings, workspaceFolder, uri.fsPath);
     this.session = session;
+    this.watch(session);
     const { gameFolder, mods } = session.playset;
     this.output.info(
       `Preview playset loaded in ${(performance.now() - started).toFixed(0)} ms: ` +
@@ -602,6 +656,64 @@ export class Preview implements PreviewApi, vscode.Disposable {
   }
 
   /**
+   * Watches the session's folders for textures and fonts that change on disk. A changed file is
+   * read again by the next render; a created or deleted one loads the session again, since the
+   * playset keeps its folder listings.
+   */
+  private watch(session: PreviewSession): void {
+    this.watchers?.dispose();
+    const changed = (uri: vscode.Uri, listing: boolean): void => {
+      if (session !== this.session || !this.panel || !isAsset(uri)) return;
+      if (listing) this.listingsChanged = true;
+      this.changedAssets.set(uri.toString(), uri);
+      this.request();
+    };
+    this.watchers = vscode.Disposable.from(
+      ...session.watchedRoots.map((root) => {
+        // Every file, filtered by `isAsset`: a glob would compare the extension with case.
+        const pattern = new vscode.RelativePattern(vscode.Uri.file(root), '**/*');
+        const watcher = vscode.workspace.createFileSystemWatcher(pattern);
+        watcher.onDidChange((uri) => {
+          changed(uri, false);
+        });
+        watcher.onDidCreate((uri) => {
+          changed(uri, true);
+        });
+        watcher.onDidDelete((uri) => {
+          changed(uri, true);
+        });
+        return watcher;
+      }),
+    );
+  }
+
+  /**
+   * Makes the session and the webview read the textures and fonts changed on disk again. Returns
+   * whether the playset reads any of them.
+   */
+  private async applyAssetChanges(
+    session: PreviewSession,
+    panel: vscode.WebviewPanel,
+  ): Promise<boolean> {
+    const uris = [...this.changedAssets.values()];
+    this.changedAssets.clear();
+    const urls = new Set<string>();
+    let read = false;
+    for (const uri of uris) {
+      // A deleted or hidden file's texture may still be loaded under its own URL.
+      urls.add(webviewUrl(panel, uri.fsPath));
+      const place = await session.place(uri.fsPath);
+      if (place === undefined) continue;
+      session.assets.forget(place.path);
+      const winner = session.ui.gameFile(place.path);
+      if (winner !== undefined) urls.add(webviewUrl(panel, winner.absolutePath));
+      read ||= place.wins;
+    }
+    if (urls.size > 0) this.post({ type: 'invalidate', urls: [...urls] });
+    return read;
+  }
+
+  /**
    * Lets the webview read the playset's folders. Changing the roots reloads the webview, so the
    * page is set only once they are known, and the last draw is posted again when it is ready.
    */
@@ -643,6 +755,12 @@ export class Preview implements PreviewApi, vscode.Disposable {
     if (this.ready) void this.panel?.webview.postMessage({ type: 'state', state: full });
   }
 
+  private remember(memento: PreviewMemento): void {
+    if (JSON.stringify(memento) === JSON.stringify(this.lastMemento)) return;
+    this.lastMemento = memento;
+    if (this.ready) void this.panel?.webview.postMessage({ type: 'remember', memento });
+  }
+
   private post(message: HostMessage): void {
     if (message.type === 'draw') this.lastDraw = message;
     if (this.ready) void this.panel?.webview.postMessage(message);
@@ -655,6 +773,9 @@ export class Preview implements PreviewApi, vscode.Disposable {
         if (this.lastState)
           void this.panel?.webview.postMessage({ type: 'state', state: this.lastState });
         if (this.lastDraw) void this.panel?.webview.postMessage(this.lastDraw);
+        if (this.lastMemento) {
+          void this.panel?.webview.postMessage({ type: 'remember', memento: this.lastMemento });
+        }
         this.lastOverlay = undefined;
         this.updateOverlay();
         break;
@@ -798,6 +919,11 @@ export class Preview implements PreviewApi, vscode.Disposable {
     this.ready = false;
     this.roots = undefined;
     this.session = undefined;
+    this.watchers?.dispose();
+    this.watchers = undefined;
+    this.changedAssets.clear();
+    this.listingsChanged = false;
+    this.lastMemento = undefined;
     this.render = undefined;
     this.renderKey = undefined;
     this.pointer = undefined;
@@ -850,6 +976,31 @@ function validScreen(value: unknown): Screen | undefined {
 
 function isGui(uri: vscode.Uri): boolean {
   return uri.scheme === 'file' && /\.gui$/i.test(uri.path);
+}
+
+/** Whether a file is a texture or a font, which layout and the webview read from disk. */
+function isAsset(uri: vscode.Uri): boolean {
+  return uri.scheme === 'file' && /\.(?:dds|tga|fnt)$/i.test(uri.path);
+}
+
+/** The URL the webview fetches a file of the playset from. */
+function webviewUrl(panel: vscode.WebviewPanel, absolutePath: string): string {
+  return panel.webview.asWebviewUri(vscode.Uri.file(absolutePath)).toString();
+}
+
+/** A memento the webview kept, checked: it comes back from VS Code's storage. */
+function mementoOf(state: unknown): PreviewMemento | undefined {
+  if (typeof state !== 'object' || state === null) return undefined;
+  const { uri, window, index, pinned } = state as Record<string, unknown>;
+  if (typeof uri !== 'string' || (window !== undefined && typeof window !== 'string')) {
+    return undefined;
+  }
+  return {
+    uri,
+    window,
+    index: typeof index === 'number' && Number.isInteger(index) ? index : 0,
+    pinned: pinned === true,
+  };
 }
 
 function openDocument(uri: vscode.Uri): vscode.TextDocument | undefined {

@@ -8,11 +8,15 @@ import type {
   HostMessage,
   Point,
   PreviewBackend,
+  PreviewMemento,
   ViewState,
   WebviewMessage,
 } from '../src/preview/protocol.ts';
 
-declare function acquireVsCodeApi(): { postMessage(message: WebviewMessage): void };
+declare function acquireVsCodeApi(): {
+  postMessage(message: WebviewMessage): void;
+  setState(state: PreviewMemento): void;
+};
 
 const vscode = acquireVsCodeApi();
 const post = (message: WebviewMessage): void => {
@@ -116,6 +120,9 @@ async function receive(message: HostMessage): Promise<void> {
       break;
     case 'invalidate':
       for (const url of message.urls) painter?.textures.invalidate(url);
+      break;
+    case 'remember':
+      vscode.setState(message.memento);
       break;
   }
 }
