@@ -58,3 +58,31 @@ export {
   splitWidgetPath,
   widgetPatternProblem,
 } from './widget-path.ts';
+export {
+  CHANNEL_TOLERANCE,
+  PASS_SHARE,
+  PIXEL,
+  WIDGET_STATUSES,
+  compareCapture,
+  differenceImage,
+  planCapture,
+  spriteShaderOf,
+  type CaptureComparison,
+  type CapturePlan,
+  type CapturePlanInput,
+  type PixelCounts,
+  type PixelMap,
+  type PlanWindow,
+  type PlannedWidget,
+  type WidgetComparison,
+  type WidgetRect,
+  type WidgetStatus,
+} from './compare.ts';
+export { decodePng, encodePng, type RgbaImage } from './png.ts';
+export {
+  corpusSummary,
+  gates,
+  outcomePassed,
+  windowReport,
+  type CaptureOutcome,
+} from './report.ts';

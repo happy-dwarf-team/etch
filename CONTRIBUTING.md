@@ -77,6 +77,7 @@ A pnpm workspace (ADR 0001):
 | `packages/core`      | parser, model, layout, draw list, diagnostics; never `vscode`  |
 | `packages/renderer`  | WebGL2 drawing in the preview webview                          |
 | `packages/extension` | VS Code glue and the VSIX manifest                             |
+| `packages/compare`   | the precision corpus's headless comparison; never shipped      |
 | `corpus`             | precision corpus manifest and capture records (no screenshots) |
 | `docs/adr`           | architecture decisions                                         |
 | `docs/spec`          | the v1 specification                                           |
@@ -98,7 +99,7 @@ pnpm lint
 pnpm format:check
 pnpm test:unit       # Vitest
 pnpm --filter @etch/renderer exec playwright install chromium   # once
-pnpm test:renderer   # Playwright: WebGL2 in Chromium
+pnpm test:renderer   # Playwright: WebGL2 in Chromium (renderer and corpus comparison)
 pnpm test:extension  # @vscode/test-electron: downloads VS Code into .vscode-test
 pnpm package         # packages/extension/dist/etch-win32-x64-<version>.vsix
 ```

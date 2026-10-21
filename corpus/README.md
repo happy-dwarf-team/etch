@@ -203,3 +203,71 @@ Tools that derive files from captures (renders, diffs, reports of etch#43)
 put them in other top-level folders of the same local corpus folder. Nothing
 in it is committed; a private bucket waits for the headless CI decision
 (spec section 14).
+
+## The comparison
+
+`@etch/compare` (`packages/compare`) compares the corpus as ADR 0002 says
+([etch#43](https://github.com/happy-dwarf-team/etch/issues/43)). For each
+capture the manifest wants, it lays out the windows of the view's roots with
+`core` in Node, draws them with the preview's own `renderer` bundle in
+headless Chromium, and compares the render with the screenshot widget by
+widget. It runs on the maintainer's machine, read only:
+
+```powershell
+$env:ETCH_CORPUS_PATH = 'D:\etch-corpus'                    # the local corpus folder
+$env:ETCH_GAME_PATH = '...\Europa Universalis IV'           # optional; else found through Steam
+pnpm --filter @etch/compare compare                         # every capture
+pnpm --filter @etch/compare compare --playset vanilla --view main-menu --resolution 1920x1080
+```
+
+Filters take several values separated by commas. `--gpu` draws with ANGLE on
+Direct3D 11, as VS Code's webview does; by default it draws with SwiftShader,
+which gives the same pixels on every machine. Each report names the renderer.
+The exit code is 1 when a capture of a release playset at a confirmed
+resolution fails or cannot be compared.
+
+Before it renders, it checks that `eu4.exe` and each pinned mod (by Workshop
+item, else by name) are the manifest's. A capture is not compared when it has
+no record or screenshot, when `captureProblems` asks for a recapture, or when
+the screenshot's hash is not the record's. Text is English, the language of
+the captures.
+
+How a view is compared (`planCapture` and `compareCapture` in
+`@etch/core/corpus`):
+
+- **Matching.** The first step of each root's path names a top-level window
+  of the playset. Below it, the capture's children pair with the layout's by
+  name, ignoring case, in order among siblings of the same name; unnamed
+  children pair in order among the unnamed ones.
+- **What is drawn.** The roots' widgets in paint order, without the widgets the
+  capture reports hidden (`visible` false): the game's code hides them, so they
+  are code-filled content that the capture itself records.
+- **A widget's pixels** are those where its own draws (sprite and glyph rects)
+  are the topmost in the render, so each pixel counts for one widget only.
+- **Masks.** Pixels the render does not cover fully (alpha below 255); and
+  code-filled content: the game's rects of the widgets the view's `codeFilled`
+  patterns or the manifest's `codeFilledKinds` name and of everything inside
+  them, and the render's draws of those widgets.
+- **A widget passes** when its rect rounds to the game's rect and at least
+  99 % of its compared pixels are within ±2 in red, green and blue (the
+  screenshot's alpha is ignored). The difference of a pixel is its largest
+  channel difference.
+- **Statuses.** `pass`; `fail`; `deviation` (a failure a known deviation
+  covers); `code-filled`; `hidden`; `not-covered` (a `notCovered` kind or
+  shader: compared, gates nothing); `absent` (a widget only one side has that
+  draws nothing: a layout widget without draws, or a game widget of zero
+  size). A widget only the game shows, or only the render draws, fails.
+- **A capture passes** when no widget fails and every root was found. Totals
+  (share within ±2, mean difference) cover the widgets that gate and gate
+  nothing themselves.
+
+Results go to the local corpus folder:
+
+```
+<ETCH_CORPUS_PATH>/
+  renders/captures/<playset>/<WxH>/<view>.png   the offline renderer's image (transparent where nothing is drawn)
+  diffs/captures/<playset>/<WxH>/<view>.png     red where a pixel differs, blue where masked, green where equal
+  reports/captures/<playset>/<WxH>/<view>.json  every widget's status, rects and pixel counts
+  reports/<window>.md                           one page per corpus window
+  reports/README.md                             the summary and whether the layout preview meets its target
+```

@@ -16,7 +16,7 @@
     "format:check": "prettier --check .",
     "test": "pnpm test:unit && pnpm test:renderer && pnpm test:extension",
     "test:unit": "vitest run",
-    "test:renderer": "pnpm --filter @etch/renderer test",
+    "test:renderer": "pnpm --filter @etch/renderer --filter @etch/compare test",
     "test:extension": "pnpm --filter etch test",
     "package": "pnpm --filter etch package"
   },
