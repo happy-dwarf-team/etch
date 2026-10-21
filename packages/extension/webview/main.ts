@@ -30,6 +30,7 @@ const title = element('title', HTMLSpanElement);
 const file = element('file', HTMLSpanElement);
 const notices = element('notices', HTMLUListElement);
 const pin = element('pin', HTMLButtonElement);
+const resolution = element('resolution', HTMLButtonElement);
 const backend = element('backend', HTMLSelectElement);
 const hoverBox = element('hover', HTMLDivElement);
 const selectedBox = element('selected', HTMLDivElement);
@@ -54,6 +55,10 @@ window.addEventListener('message', (event: MessageEvent<HostMessage>) => {
 
 pin.addEventListener('click', () => {
   post({ type: 'pin', pinned: state?.pinned !== true });
+});
+
+resolution.addEventListener('click', () => {
+  post({ type: 'resolution' });
 });
 
 backend.addEventListener('change', () => {
@@ -83,7 +88,19 @@ canvas.addEventListener('click', (event) => {
 
 window.addEventListener('resize', () => {
   showOverlay();
+  reportMonitor();
 });
+
+let monitor = '';
+/** Tells the host the monitor's resolution in device pixels (spec section 6), when it changed. */
+function reportMonitor(): void {
+  const width = Math.round(window.screen.width * window.devicePixelRatio);
+  const height = Math.round(window.screen.height * window.devicePixelRatio);
+  const key = `${String(width)}x${String(height)}`;
+  if (key === monitor || width <= 0 || height <= 0) return;
+  monitor = key;
+  post({ type: 'monitor', screen: { width, height } });
+}
 
 async function receive(message: HostMessage): Promise<void> {
   switch (message.type) {
@@ -196,6 +213,10 @@ function show(next: ViewState): void {
     ? 'The preview stays on this window. Click to follow the cursor again.'
     : 'Keep the preview on this window while other files are edited.';
   backend.value = next.backend;
+  resolution.textContent = next.resolution.text;
+  resolution.title =
+    `Preview resolution ${next.resolution.text}, ${SOURCES[next.resolution.source]}. ` +
+    'Click to choose another.';
   const shown = failure === undefined ? next.notices : [...next.notices, failureNotice(failure)];
   notices.replaceChildren(
     ...shown.map((notice) => {
@@ -206,6 +227,13 @@ function show(next: ViewState): void {
     }),
   );
 }
+
+const SOURCES: Readonly<Record<ViewState['resolution']['source'], string>> = {
+  setting: 'chosen in the settings',
+  'settings.txt': "from the game's settings.txt",
+  native: "the monitor's resolution",
+  fallback: 'until the monitor is known',
+};
 
 function failureNotice(message: string): ViewState['notices'][number] {
   return { severity: 'error', message: `The preview cannot draw: ${message}` };
@@ -222,4 +250,5 @@ if (failure !== undefined) {
   item.textContent = failureNotice(failure).message;
   notices.append(item);
 }
+reportMonitor();
 post({ type: 'ready' });

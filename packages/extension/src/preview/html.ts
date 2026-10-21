@@ -8,7 +8,7 @@ import * as vscode from 'vscode';
 export const BACKDROP = '#808080';
 
 /**
- * The preview's page: a toolbar (previewed window, backend switch, pin), notices, the canvas the
+ * The preview's page: a toolbar (previewed window, backend switch, resolution, pin), notices, the canvas the
  * webview script (`dist/webview.js`, from `webview/main.ts`) draws into, and the outlines of the
  * hovered and the highlighted widget over it. Textures are fetched from the game and mod folders
  * through webview URIs, so `connect-src` allows them.
@@ -82,6 +82,7 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
       <option value="game-host" disabled>Game host (not yet available)</option>
     </select>
   </label>
+  <button id="resolution" type="button">1920×1080</button>
   <button id="pin" type="button" aria-pressed="false" disabled>Pin</button>
 </header>
 <ul id="notices"></ul>

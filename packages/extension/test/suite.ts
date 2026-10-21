@@ -18,6 +18,11 @@ export async function run(): Promise<void> {
   assert.equal(settings.get('gamePath'), '', 'etch.gamePath is contributed');
   assert.deepEqual(settings.get('playset'), [], 'etch.playset is contributed');
   assert.equal(settings.get('language'), 'english', 'etch.language is contributed');
+  assert.equal(
+    settings.get('previewResolution'),
+    'default',
+    'etch.previewResolution is contributed',
+  );
 
   await testGameText();
   await testNavigation(api);

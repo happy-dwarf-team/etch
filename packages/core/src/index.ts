@@ -16,3 +16,4 @@ export * from './localisation.ts';
 export * from './draw-list.ts';
 export * from './model/index.ts';
 export * from './layout/index.ts';
+export * from './resolution.ts';

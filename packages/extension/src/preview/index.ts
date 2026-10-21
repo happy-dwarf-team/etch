@@ -1,9 +1,11 @@
 import * as vscode from 'vscode';
 import type { WidgetNavigation } from '../navigation.ts';
-import { Preview, type PreviewApi } from './preview.ts';
+import { CHOOSE_RESOLUTION, Preview, type PreviewApi } from './preview.ts';
+import { chooseResolution } from './resolution.ts';
 
 export type { PreviewApi, PreviewPaint, PreviewRender, SourceText } from './preview.ts';
-export { DEFAULT_SCREEN, PREVIEW_OPEN_CONTEXT } from './preview.ts';
+export { CHOOSE_RESOLUTION, PREVIEW_OPEN_CONTEXT, RESOLUTION_SETTING } from './preview.ts';
+export { writeResolution } from './resolution.ts';
 
 /** Opens the preview beside the editor (the editor title of a `.gui` file shows it). */
 export const OPEN_PREVIEW = 'etch.openPreview';
@@ -19,7 +21,7 @@ export function registerPreview(
   output: vscode.LogOutputChannel,
   navigation: WidgetNavigation,
 ): PreviewApi {
-  const preview = new Preview(context.extensionUri, output, navigation);
+  const preview = new Preview(context.extensionUri, output, navigation, context.globalState);
   context.subscriptions.push(
     preview,
     vscode.commands.registerCommand(OPEN_PREVIEW, () => {
@@ -28,6 +30,7 @@ export function registerPreview(
     vscode.commands.registerCommand(TOGGLE_PREVIEW_PIN, () => {
       preview.togglePin();
     }),
+    vscode.commands.registerCommand(CHOOSE_RESOLUTION, () => chooseResolution(preview)),
   );
   return preview;
 }

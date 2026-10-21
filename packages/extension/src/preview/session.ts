@@ -1,6 +1,8 @@
 // The playset one preview draws with (spec sections 2 and 8): the game, the mods, their interface
 // files, the texture sizes and fonts layout has read, and the localisation in `etch.language`.
-// Loading it is the bulk of a cold open; a warm reload only updates the files that changed.
+// It also holds the player's `settings.txt`, read once per session, for the default preview
+// resolution (spec section 6). Loading it is the bulk of a cold open; a warm reload only updates
+// the files that changed.
 
 import { resolve } from 'node:path';
 import type { GuiFile, Localisation } from '@etch/core';
@@ -9,7 +11,9 @@ import {
   PlaysetInterface,
   findPlayset,
   loadPlaysetLocalisation,
+  readPlayerSettings,
   type Playset,
+  type PlayerSettings,
 } from '@etch/core/playset';
 import type { Notice } from './protocol.ts';
 
@@ -42,6 +46,8 @@ export class PreviewSession {
   readonly assets: PlaysetAssets;
   /** `undefined` when the localisation could not be loaded; a notice says why. */
   readonly localisation: Localisation | undefined;
+  /** The player's `settings.txt` in the profile folder, `undefined` when there is none. */
+  readonly player: PlayerSettings | undefined;
   readonly notices: readonly Notice[];
 
   private constructor(
@@ -50,6 +56,7 @@ export class PreviewSession {
     playset: Playset,
     ui: PlaysetInterface,
     localisation: Localisation | undefined,
+    player: PlayerSettings | undefined,
     notices: readonly Notice[],
   ) {
     this.settings = settings;
@@ -58,6 +65,7 @@ export class PreviewSession {
     this.ui = ui;
     this.assets = new PlaysetAssets(ui);
     this.localisation = localisation;
+    this.player = player;
     this.notices = notices;
   }
 
@@ -77,7 +85,7 @@ export class PreviewSession {
       severity: found.severity,
       message: found.path === undefined ? found.message : `${found.message} (${found.path})`,
     }));
-    const [ui, localisation] = await Promise.all([
+    const [ui, localisation, player] = await Promise.all([
       PlaysetInterface.load(playset.files),
       loadPlaysetLocalisation(playset.files, settings.language).catch((error: unknown) => {
         notices.push({
@@ -86,8 +94,25 @@ export class PreviewSession {
         });
         return undefined;
       }),
+      readPlayerSettings(playset.profileFolder),
     ]);
-    return new PreviewSession(settings, workspaceFolder, playset, ui, localisation, notices);
+    if (player?.uiScale !== undefined && player.uiScale !== 1) {
+      notices.push({
+        severity: 'information',
+        message:
+          `The game's settings.txt sets game_ui_scale = ${String(player.uiScale)}; ` +
+          'the preview draws at UI scale 1.0 only.',
+      });
+    }
+    return new PreviewSession(
+      settings,
+      workspaceFolder,
+      playset,
+      ui,
+      localisation,
+      player,
+      notices,
+    );
   }
 
   /**

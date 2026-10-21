@@ -19,6 +19,11 @@ fonts and textures, duplicate names and more) appear in the Problems panel.
   and rect, and the widget at the cursor is outlined in the preview.
 - The offline renderer draws the window from the mod's files alone; the game
   host backend comes in a later release.
+- The preview resolution is the one in the game's `settings.txt`, else the
+  monitor's. **Etch: Choose the Preview Resolution**, or the resolution button
+  in the preview, picks the monitor's, one of the corpus resolutions (1280×720
+  to 3440×1440) or any width × height (`etch.previewResolution`).
+  `if_resolution` blocks follow it. UI scale is always 1.0.
 - The game is found through Steam, or set `etch.gamePath`. The playset is the
   edited mod and the `dependencies` of its descriptor, or `etch.playset`.
   `etch.language` picks the localisation language.
