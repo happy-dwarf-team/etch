@@ -54,9 +54,12 @@ secrets.
 ## Update (21 October 2026)
 
 OIDC is not yet possible for the first store release. The VS Code Marketplace
-offers no trusted publishing policies yet, so the `marketplace` job publishes
-with a `VSCE_PAT` secret until it does, and must leave that token before Azure
-DevOps retires global PATs on 1 December 2026. Open VSX registers a trusted
-publisher only for an extension that already has a version, so 0.1.0 goes
-there with an `OVSX_PAT` secret that is deleted afterwards.
+offers no trusted publishing policies yet, and its other automatic routes need
+Azure (a token from an Azure DevOps organization, which new organizations get
+only with an Azure subscription and which Azure DevOps retires on 1 December
+2026, or Microsoft Entra ID). Until `vsce publish --oidc` works, the release
+VSIX is uploaded to the Marketplace by hand; the `marketplace` job publishes
+only when a `VSCE_PAT` secret is set. Open VSX registers a trusted publisher
+only for an extension that already has a version, so 0.1.0 goes there with an
+`OVSX_PAT` secret that is deleted afterwards.
 [docs/release.md](../release.md) has the steps.

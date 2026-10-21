@@ -85,10 +85,10 @@ jobs:
         working-directory: dist
         run: gh release upload "$TAG" "$VSIX" SHA256SUMS.txt --clobber
 
-  # Needs the VSCE_PAT secret: an Azure DevOps token for all accessible
-  # organizations with the Marketplace (Manage) scope. The Marketplace does not
-  # offer trusted publishing policies yet, so `vsce publish --oidc` cannot be
-  # used (docs/release.md).
+  # Publishes with the VSCE_PAT secret when it is set. The Marketplace offers
+  # no trusted publishing (OIDC) yet, and a token needs an Azure DevOps
+  # organization, so until then the job leaves a warning with the VSIX to
+  # upload by hand (docs/release.md).
   marketplace:
     needs: [release-please, publish]
     runs-on: ubuntu-24.04
@@ -121,11 +121,21 @@ jobs:
         env:
           MARKETPLACE_TOKEN: ${{ secrets.VSCE_PAT }}
         run: |
+          vsix="etch-win32-x64-${TAG#v}.vsix"
           if [ -z "$MARKETPLACE_TOKEN" ]; then
-            echo "::error::the VSCE_PAT secret is not set (docs/release.md)"
-            exit 1
+            url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/$TAG/$vsix"
+            manage="https://marketplace.visualstudio.com/manage/publishers/happy-dwarf-team"
+            echo "::warning title=Upload to the Marketplace by hand::VSCE_PAT is not set. Upload $url at $manage (docs/release.md)."
+            {
+              echo "### VS Code Marketplace: upload by hand"
+              echo
+              echo "VSCE_PAT is not set, so this job did not publish. Download [$vsix]($url)"
+              echo "and upload it at <$manage> (docs/release.md)."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
           fi
-          VSCE_PAT="$MARKETPLACE_TOKEN" pnpm --filter etch exec vsce publish             --packagePath "$GITHUB_WORKSPACE/release/etch-win32-x64-${TAG#v}.vsix" --skip-duplicate
+          export VSCE_PAT="$MARKETPLACE_TOKEN"
+          pnpm --filter etch exec vsce publish --packagePath "$GITHUB_WORKSPACE/release/$vsix" --skip-duplicate
 
   # Open VSX trusted publishing (OIDC) works only for an extension that already
   # has a version, so the first release needs the OVSX_PAT secret. Once the
