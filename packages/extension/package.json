@@ -2,7 +2,7 @@
   "name": "etch",
   "displayName": "Etch",
   "description": "Preview Europa Universalis IV interface mods while you edit them.",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "publisher": "happy-dwarf-team",
   "preview": true,
   "private": true,
