@@ -7,6 +7,12 @@
   "preview": true,
   "private": true,
   "license": "MIT",
+  "icon": "media/icon.png",
+  "galleryBanner": {
+    "color": "#16171a",
+    "theme": "dark"
+  },
+  "homepage": "https://github.com/happy-dwarf-team/etch#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/happy-dwarf-team/etch.git",
@@ -15,8 +21,19 @@
   "bugs": {
     "url": "https://github.com/happy-dwarf-team/etch/issues"
   },
+  "qna": "https://github.com/happy-dwarf-team/etch/issues",
   "categories": [
     "Visualization"
+  ],
+  "keywords": [
+    "Europa Universalis IV",
+    "EU4",
+    "Paradox",
+    "Clausewitz",
+    "modding",
+    "gui",
+    "gfx",
+    "interface"
   ],
   "engines": {
     "vscode": "^1.100.0"
@@ -136,6 +153,7 @@
     "@types/vscode": "~1.100.0",
     "@vscode/test-electron": "^3.1.0",
     "@vscode/vsce": "^4.0.0",
-    "esbuild": "^0.28.2"
+    "esbuild": "^0.28.2",
+    "ovsx": "^1.3.0"
   }
 }

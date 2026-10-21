@@ -3,8 +3,9 @@ name: release
 # release-please keeps a "chore(main): release x.y.z" pull request up to date
 # from the Conventional Commits on main (package.json versions + CHANGELOG.md).
 # Merging it tags vX.Y.Z and creates the GitHub release; the jobs below then
-# build that commit and attach the win32-x64 VSIX. Store publishing comes with
-# the 0.1.0 release (milestone M1).
+# build that commit, attach the win32-x64 VSIX and publish the same file to the
+# VS Code Marketplace and Open VSX (ADR 0004). Each store job can be re-run on
+# its own: an already published version is skipped.
 on:
   push:
     branches: [main]
@@ -83,3 +84,89 @@ jobs:
       - name: Upload release assets
         working-directory: dist
         run: gh release upload "$TAG" "$VSIX" SHA256SUMS.txt --clobber
+
+  # Needs the VSCE_PAT secret: an Azure DevOps token for all accessible
+  # organizations with the Marketplace (Manage) scope. The Marketplace does not
+  # offer trusted publishing policies yet, so `vsce publish --oidc` cannot be
+  # used (docs/release.md).
+  marketplace:
+    needs: [release-please, publish]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    env:
+      TAG: ${{ needs.release-please.outputs.tag_name }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      # vsce at the version in pnpm-lock.yaml.
+      - name: Install
+        run: pnpm install --frozen-lockfile --filter etch
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: etch-${{ github.sha }}
+          path: release
+
+      - name: Publish to the VS Code Marketplace
+        env:
+          MARKETPLACE_TOKEN: ${{ secrets.VSCE_PAT }}
+        run: |
+          if [ -z "$MARKETPLACE_TOKEN" ]; then
+            echo "::error::the VSCE_PAT secret is not set (docs/release.md)"
+            exit 1
+          fi
+          VSCE_PAT="$MARKETPLACE_TOKEN" pnpm --filter etch exec vsce publish             --packagePath "$GITHUB_WORKSPACE/release/etch-win32-x64-${TAG#v}.vsix" --skip-duplicate
+
+  # Open VSX trusted publishing (OIDC) works only for an extension that already
+  # has a version, so the first release needs the OVSX_PAT secret. Once the
+  # trusted publisher for release.yml is registered and the secret is deleted,
+  # releases publish without a token (docs/release.md).
+  open-vsx:
+    needs: [release-please, publish]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      TAG: ${{ needs.release-please.outputs.tag_name }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      # ovsx at the version in pnpm-lock.yaml.
+      - name: Install
+        run: pnpm install --frozen-lockfile --filter etch
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: etch-${{ github.sha }}
+          path: release
+
+      - name: Publish to Open VSX
+        env:
+          OPEN_VSX_TOKEN: ${{ secrets.OVSX_PAT }}
+        run: |
+          vsix="$GITHUB_WORKSPACE/release/etch-win32-x64-${TAG#v}.vsix"
+          if [ -n "$OPEN_VSX_TOKEN" ]; then
+            OVSX_PAT="$OPEN_VSX_TOKEN" pnpm --filter etch exec ovsx publish "$vsix" --skip-duplicate
+          else
+            pnpm --filter etch exec ovsx publish "$vsix" --trusted-publishing --skip-duplicate
+          fi

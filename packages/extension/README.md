@@ -3,6 +3,17 @@
 Etch previews Europa Universalis IV 1.37.5 interface mods in Visual Studio
 Code while they are edited.
 
+This is a preview release: the offline renderer and the editor features
+below work, and the game host, the precision corpus and the diff view follow
+before 1.0.0.
+
+## Requirements
+
+- Windows (x64) and Visual Studio Code 1.100 or later.
+- Europa Universalis IV 1.37.5 installed through Steam, or its folder in
+  `etch.gamePath`. Etch draws with the game's own textures, fonts and
+  localisation, and ships none of them.
+
 ## Preview
 
 Open a `.gui` file and run **Etch: Open Preview**, or click the preview button
@@ -36,6 +47,12 @@ for what 1.0.0 contains and in what order it is built.
 Etch only reads the game folder, the mods and the profile. It sends nothing
 anywhere: it has no telemetry.
 
+## Feedback
+
+Report problems and ideas in the
+[issue tracker](https://github.com/happy-dwarf-team/etch/issues). The
+[changelog](https://github.com/happy-dwarf-team/etch/blob/main/CHANGELOG.md) lists what each release changed.
+
 ## License
 
-MIT, see [LICENSE](LICENSE).
+MIT, see [LICENSE](https://github.com/happy-dwarf-team/etch/blob/main/LICENSE).
