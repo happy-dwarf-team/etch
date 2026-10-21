@@ -119,12 +119,12 @@ describe('the committed corpus', () => {
     expect(manifest.uiScale).toBe(1);
   });
 
-  it('lists the corpus resolutions, gating at 3440×1440 until etch#18 confirms others', async () => {
+  it('lists the corpus resolutions, all confirmed by etch#18', async () => {
     const manifest = await committedManifest();
     expect(manifest.resolutions.map((r) => ({ width: r.width, height: r.height }))).toEqual(
       CORPUS_RESOLUTIONS,
     );
-    expect(manifest.resolutions.filter((r) => r.confirmed).map((r) => r.width)).toEqual([3440]);
+    expect(manifest.resolutions.every((r) => r.confirmed)).toBe(true);
   });
 
   it('has the 11 vanilla corpus windows of etch#10 in both release playsets', async () => {

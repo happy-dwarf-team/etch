@@ -34,7 +34,7 @@ export interface CorpusManifest {
 export interface CorpusResolution extends Screen {
   /**
    * Whether captures at this size are known to be pixel-exact. Only confirmed resolutions gate a
-   * release; etch#18 confirms the sizes smaller than the lab's monitor.
+   * release; etch#18 confirmed the sizes smaller than the lab's monitor.
    */
   readonly confirmed: boolean;
   /** Why it is confirmed, or what will confirm it. */

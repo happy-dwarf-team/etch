@@ -10,38 +10,38 @@
     {
       "width": 1280,
       "height": 720,
-      "confirmed": false,
-      "evidence": "A client area smaller than the lab's monitor; etch#18 decides."
+      "confirmed": true,
+      "evidence": "A windowed client area on the lab's 3440x1440 monitor, set in the profile's pdx_settings.txt (etch#18): exact client size, the if_resolution band of its height, two identical screenshots equal to the back buffer, unchanged widgets pixel-identical to 3440x1440."
     },
     {
       "width": 1366,
       "height": 768,
-      "confirmed": false,
-      "evidence": "A client area smaller than the lab's monitor; etch#18 decides."
+      "confirmed": true,
+      "evidence": "A windowed client area on the lab's 3440x1440 monitor, set in the profile's pdx_settings.txt (etch#18): exact client size, the if_resolution band of its height, two identical screenshots equal to the back buffer, unchanged widgets pixel-identical to 3440x1440."
     },
     {
       "width": 1600,
       "height": 900,
-      "confirmed": false,
-      "evidence": "A client area smaller than the lab's monitor; etch#18 decides."
+      "confirmed": true,
+      "evidence": "A windowed client area on the lab's 3440x1440 monitor, set in the profile's pdx_settings.txt (etch#18): exact client size, the if_resolution band of its height, two identical screenshots equal to the back buffer, unchanged widgets pixel-identical to 3440x1440."
     },
     {
       "width": 1680,
       "height": 1050,
-      "confirmed": false,
-      "evidence": "A client area smaller than the lab's monitor; etch#18 decides."
+      "confirmed": true,
+      "evidence": "A windowed client area on the lab's 3440x1440 monitor, set in the profile's pdx_settings.txt (etch#18): exact client size, the if_resolution band of its height, two identical screenshots equal to the back buffer, unchanged widgets pixel-identical to 3440x1440."
     },
     {
       "width": 1920,
       "height": 1080,
-      "confirmed": false,
-      "evidence": "A client area smaller than the lab's monitor; etch#18 decides."
+      "confirmed": true,
+      "evidence": "A windowed client area on the lab's 3440x1440 monitor, set in the profile's pdx_settings.txt (etch#18): exact client size, the if_resolution band of its height, two identical screenshots equal to the back buffer, unchanged widgets pixel-identical to 3440x1440."
     },
     {
       "width": 3440,
       "height": 1440,
       "confirmed": true,
-      "evidence": "The lab's monitor at its native size, borderless (etch#5); captured and compared in etch#9. ADR 0002 gates at this size until etch#18 confirms others."
+      "evidence": "The lab's monitor at its native size, borderless (etch#5); captured and compared in etch#9, and the reference of etch#18."
     }
   ],
   "codeFilledKinds": [
