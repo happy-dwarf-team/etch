@@ -545,7 +545,8 @@ export function compareCapture(
       if (drawsOf[i] !== 1) return { ...base, status: 'absent', problems: [] };
       problems.push('The game has no such widget, but the render draws it.');
     } else if (widget.laidOut === undefined) {
-      if (gameRect !== undefined && (gameRect.w === 0 || gameRect.h === 0)) {
+      // The .gui's size, which can be negative (provinceview's foreign_province_window).
+      if (gameRect !== undefined && (gameRect.w <= 0 || gameRect.h <= 0)) {
         return { ...base, status: 'absent', problems: [] };
       }
       problems.push('The render has no such widget.');

@@ -512,6 +512,13 @@ describe('compareCapture', () => {
               visible: true,
               rect: { x: 0, y: 0, w: 0, h: 0 },
             },
+            {
+              path: 'panel/negative',
+              name: 'negative',
+              type: 'window',
+              visible: true,
+              rect: { x: 0, y: 0, w: 300, h: -100 },
+            },
           ],
         })),
     });
@@ -520,6 +527,7 @@ describe('compareCapture', () => {
       problems: ['The render has no such widget.'],
     });
     expect(widget(result, 'panel/empty').status).toBe('absent');
+    expect(widget(result, 'panel/negative').status).toBe('absent');
     expect(widget(result, 'panel/flag')).toMatchObject({
       status: 'fail',
       problems: ['The game has no such widget, but the render draws it.'],

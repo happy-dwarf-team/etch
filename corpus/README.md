@@ -367,7 +367,7 @@ How a view is compared (`planCapture` and `compareCapture` in
   covers); `code-filled`; `hidden`; `not-covered` (a `notCovered` kind or
   shader: compared, gates nothing); `absent` (a widget only one side has that
   draws nothing: a layout widget without draws, or a game widget of zero
-  size). A widget only the game shows, or only the render draws, fails.
+  or negative size). A widget only the game shows, or only the render draws, fails.
 - **A capture passes** when no widget fails and every root was found. Totals
   (share within ±2, mean difference) cover the widgets that gate and gate
   nothing themselves.
