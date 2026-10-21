@@ -39,3 +39,20 @@ not redistribute game assets.
   with a frame.
 - The corpus cannot run in CI as it stands: it needs a licensed game, a GPU
   and screenshots that live outside the repository.
+
+## Update (21 October 2026)
+
+[etch#18](https://github.com/happy-dwarf-team/etch/issues/18) confirmed live
+that all six corpus resolutions capture pixel-exact on the lab's 3440×1440
+monitor. Each size below the monitor's is a windowed client area set in the
+profile's `pdx_settings.txt`. At each size the game picks the `if_resolution`
+band of the client height. Its two screenshots are identical and equal to the
+back buffer, and widgets whose layout does not change are pixel-identical to
+3440×1440. The corpus therefore gates at all six resolutions.
+
+The same runs show that two whole screenshots of the main menu never match:
+its background is animated. Inside widget rects, the changing pixels were
+under semi-transparent widgets, which this decision already masks, and a few
+edge pixels of two buttons. How the
+two-shot check applies to views over the main menu is left to the capture
+driver ([etch#42](https://github.com/happy-dwarf-team/etch/issues/42)).

@@ -32,7 +32,7 @@ joined by `-`, because they become file names.
 | `game` | `version` and `exeSha256` (uppercase) of the build every capture comes from: 1.37.5 |
 | `tongs` | `version` of the Tongs release every capture is taken with. 0.14.1 is the first release that reads no false stale widgets on a fresh start (tongs#61, tongs#63) |
 | `uiScale` | `1`: no other `game_ui_scale` is checked |
-| `resolutions` | `width`, `height`, `confirmed` and `evidence` per size. Only confirmed sizes gate a release; [etch#18](https://github.com/happy-dwarf-team/etch/issues/18) confirms the ones below the lab's 3440×1440 monitor |
+| `resolutions` | `width`, `height`, `confirmed` and `evidence` per size. Only confirmed sizes gate a release. [etch#18](https://github.com/happy-dwarf-team/etch/issues/18) confirmed all six: 3440×1440 is the lab's monitor, borderless; the smaller sizes are windowed client areas (below) |
 | `codeFilledKinds` | `.gui` widget kinds whose content the game always fills (lists, grids, overlapping elements), masked in every view |
 | `notCovered` | widget kinds (`widgetKind`) and shaders (`shader`) that the offline renderer draws but the corpus does not measure, each with a `reason`. Parts of a not-covered kind (`background`, `slider`, …) are listed too |
 | `playsets` | below |
@@ -88,6 +88,19 @@ empty: the driver (etch#42) verifies each one live, fills in what is missing
 and sets `verified`. A view that needs a step the format does not have yet
 (the province view opens with a click on the map) waits for the driver to add
 that step kind.
+
+Each resolution is a fresh start of the game, with the size in the
+capturing profile's `pdx_settings.txt` (etch#18). After its first start in a
+profile the game reads the size from that file, not from `settings.txt`, and
+writes it back into `settings.txt`:
+
+- below the monitor's size: `Graphics` → `windowed_resolution` = `"WxH"` and
+  `display_mode` = `"windowed"` give exactly that client area;
+- the monitor's size: `display_mode` = `"borderless_fullscreen"`, which always
+  fills the monitor whatever the resolution says.
+
+`settings.txt` gets the same `graphics.size` and `borderless`. Exclusive full
+screen (`"fullscreen"`) is not used, because it changes the monitor's mode.
 
 The driver brings the game back to the recipe's start state before each view,
 moves the pointer away after the last step (no hover frame or tooltip), and
