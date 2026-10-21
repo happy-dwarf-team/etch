@@ -104,7 +104,8 @@ line breaks and tables as they are.
 The reload budgets and the precision corpus are measured on the maintainer's
 machine, not in CI (ADR 0004): shared runners are too noisy to time, and the
 corpus needs a licensed game. A change that touches the reload path says in the
-pull request what was measured. Every run of the game follows the EU4 engine
+pull request what was measured: [docs/budgets.md](docs/budgets.md) says how,
+and a new result goes there. Every run of the game follows the EU4 engine
 lab's procedure: `eu4.exe`, saves and mods are never changed, and a process is
 closed only after its PID, path and creation time are checked.
 
