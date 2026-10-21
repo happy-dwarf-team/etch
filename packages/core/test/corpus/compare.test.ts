@@ -176,7 +176,7 @@ function recordOf(root: CapturedWidget): CaptureRecord {
     disabledDlcs: [],
     recipe: { from: 'main-menu', steps: [], verified: true, evidence: 'a test' },
     window: { ...SCREEN, dpi: 96 },
-    screenshot: { sha256: 'C'.repeat(64), ...SCREEN },
+    screenshot: { sha256: 'C'.repeat(64), ...SCREEN, shots: 2 },
     widgets: [root],
   };
 }
@@ -216,6 +216,7 @@ function compare(
     capture?: (root: CapturedWidget) => CapturedWidget;
     render?: (image: RgbaImage) => void;
     game?: (image: RgbaImage) => void;
+    unstable?: RgbaImage;
   } = {},
 ): CaptureComparison {
   const manifest = options.manifest ?? manifestWith();
@@ -230,7 +231,7 @@ function compare(
   );
   options.render?.(render);
   options.game?.(game);
-  return compareCapture(manifest, plan, render, game).comparison;
+  return compareCapture(manifest, plan, render, game, options.unstable).comparison;
 }
 
 function widget(comparison: CaptureComparison, path: string): WidgetComparison {
@@ -341,6 +342,7 @@ describe('compareCapture', () => {
       meanDifference: 0,
       partial: 0,
       masked: 0,
+      unstable: 0,
     });
     // The background's pixels are those no icon covers, outside the list's game rect.
     expect(widget(result, 'panel/bg').pixels).toMatchObject({
@@ -400,6 +402,29 @@ describe('compareCapture', () => {
     const icon = widget(result, 'panel/icon[1]');
     expect(icon.status).toBe('pass');
     expect(icon.pixels).toMatchObject({ compared: 90, partial: 10 });
+  });
+
+  it('compares no unstable pixel and fails a widget that has one', () => {
+    // The capture's mask marks 3 pixels of icon[1] and one of the list, whose code-filled
+    // content is masked anyway.
+    const unstable = { ...SCREEN, data: new Uint8Array(SCREEN.width * SCREEN.height * 4) };
+    for (const [x, y] of [
+      [15, 25],
+      [16, 25],
+      [17, 30],
+      [75, 30],
+    ] as const) {
+      unstable.data[(y * SCREEN.width + x) * 4] = 255;
+    }
+    const result = compare({ unstable });
+    const icon = widget(result, 'panel/icon[1]');
+    expect(icon.status).toBe('fail');
+    expect(icon.pixels).toMatchObject({ compared: 97, unstable: 3 });
+    expect(icon.problems).toEqual([
+      "3 of its pixels changed between the capture's shots; recapture it, or mask what the game animates there.",
+    ]);
+    expect(result.passed).toBe(false);
+    expect(result.totals.pixels.unstable).toBe(3);
   });
 
   it('masks code-filled content under its game rect, even over static widgets', () => {

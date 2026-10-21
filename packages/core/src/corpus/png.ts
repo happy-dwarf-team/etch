@@ -120,6 +120,29 @@ export function encodePng(image: RgbaImage): Uint8Array {
   ]);
 }
 
+/**
+ * Writes 8-bit greyscale, one byte per pixel, as a PNG file: the capture driver's unstable masks
+ * (etch#42), which are mostly zero and small this way.
+ */
+export function encodeGreyPng(width: number, height: number, pixels: Uint8Array): Uint8Array {
+  if (pixels.length !== width * height) throw new Error('The pixels do not match the size.');
+  const raw = new Uint8Array((width + 1) * height);
+  for (let y = 0; y < height; y++) {
+    raw.set(pixels.subarray(y * width, (y + 1) * width), y * (width + 1) + 1);
+  }
+  const header = new Uint8Array(13);
+  const view = new DataView(header.buffer);
+  view.setUint32(0, width);
+  view.setUint32(4, height);
+  header.set([8, 0, 0, 0, 0], 8);
+  return Buffer.concat([
+    Uint8Array.from(SIGNATURE),
+    chunk('IHDR', header),
+    chunk('IDAT', deflateSync(raw)),
+    chunk('IEND', new Uint8Array(0)),
+  ]);
+}
+
 function chunk(type: string, body: Uint8Array): Uint8Array {
   const out = new Uint8Array(12 + body.length);
   const view = new DataView(out.buffer);

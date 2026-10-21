@@ -117,6 +117,12 @@ The keys and clicks that open one state of a corpus window from a known start
 (the main menu, or the playset's save loaded and paused), without game calls.
 _Avoid_: script, macro
 
+**Unstable pixel**:
+A pixel of a capture that was not the same in every screenshot of it, because
+the game animates what is under it (the main menu's background, the map); the
+comparison never uses it.
+_Avoid_: noisy pixel, flicker
+
 **Known deviation**:
 A difference between the offline renderer and a capture that is accepted for
 now and tracked by its own issue.

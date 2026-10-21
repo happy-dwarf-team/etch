@@ -48,6 +48,11 @@ export function screenshotFile(localFolder: string, key: CaptureKey): string {
   return join(localFolder, ...`${capturePath(key)}.png`.split('/'));
 }
 
+/** The unstable mask of a capture's screenshot in the local corpus folder (`CapturedScreenshot`). */
+export function unstableMaskFile(localFolder: string, key: CaptureKey): string {
+  return join(localFolder, ...`${capturePath(key)}.unstable.png`.split('/'));
+}
+
 export async function readCorpusManifest(file: string): Promise<ManifestResult> {
   return parseCorpusManifest(JSON.parse(await readFile(file, 'utf8')) as unknown);
 }

@@ -38,9 +38,13 @@ describe.skipIf(gamePath === undefined)('the corpus manifest on the installed ga
         }
         for (const step of view.recipe.steps) {
           if (!('click' in step)) continue;
-          // The Esc menu's buttons open other windows: look in menubar.gui too.
-          const last = step.click.split('/').pop()?.toLowerCase() ?? '';
-          if (!anywhere.has(last) && !inMenubar(gamePath ?? '', last)) {
+          // A click may be on another window (the Esc menu's buttons in menubar.gui, the
+          // outliner's entries in outliner.gui): look in those files too.
+          const last = (step.click.split('/').pop() ?? '').replace(/\[\d+\]$/, '').toLowerCase();
+          if (
+            !anywhere.has(last) &&
+            !inFiles(gamePath ?? '', ['menubar.gui', 'outliner.gui'], last)
+          ) {
             missing.push(`${view.id}: click ${step.click}`);
           }
         }
@@ -50,11 +54,11 @@ describe.skipIf(gamePath === undefined)('the corpus manifest on the installed ga
   });
 });
 
-function inMenubar(game: string, name: string): boolean {
-  const file = readGuiFile(
-    parseScript(
-      decodeGameText(readFileSync(join(game, 'interface', 'menubar.gui')), 'interface').text,
-    ),
-  );
-  return [...allWidgets(file)].some(({ widget }) => (widget.name ?? '').toLowerCase() === name);
+function inFiles(game: string, names: readonly string[], name: string): boolean {
+  return names.some((gui) => {
+    const file = readGuiFile(
+      parseScript(decodeGameText(readFileSync(join(game, 'interface', gui)), 'interface').text),
+    );
+    return [...allWidgets(file)].some(({ widget }) => (widget.name ?? '').toLowerCase() === name);
+  });
 }

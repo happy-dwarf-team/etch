@@ -219,14 +219,17 @@ describe('parseCorpusManifest', () => {
           { key: 'F1' },
           { key: 'f1', click: 'x' },
           { click: 'a///b' },
+          { point: { x: 0.5, y: 1.5 } },
+          { point: { x: 0, y: 1 } },
         ]);
         set(m, 'windows.1.views.0.roots', []);
         set(m, 'windows.1.views.0.codeFilled', ['a/[x]']);
       }),
     ).toEqual([
       expect.stringMatching(/^windows\[1\]\.views\[0\]\.recipe\.steps\[0\]\.key: Expected one of /),
-      'windows[1].views[0].recipe.steps[1]: Give either "key" or "click".',
+      'windows[1].views[0].recipe.steps[1]: Give one of "key", "click" or "point".',
       'windows[1].views[0].recipe.steps[2].click: "a///b" has more than two slashes in a row.',
+      'windows[1].views[0].recipe.steps[3].point.y: Expected a fraction from 0 to 1.',
       'windows[1].views[0].roots: A verified recipe names the roots it reads.',
       'windows[1].views[0].codeFilled[0]: "[x]" in "a/[x]" is not a name with an optional [n].',
     ]);

@@ -38,6 +38,7 @@ export {
   parseCaptureRecord,
   type CaptureRecord,
   type CaptureResult,
+  type CapturedScreenshot,
   type CapturedWidget,
   type TongsWidgetType,
 } from './capture.ts';
@@ -51,7 +52,9 @@ export {
   readCaptureRecord,
   readCorpusManifest,
   screenshotFile,
+  unstableMaskFile,
 } from './files.ts';
+export { compareShots, unstableIn, type ShotComparison } from './shots.ts';
 export {
   matchesWidgetPattern,
   parentWidgetPath,
@@ -78,7 +81,7 @@ export {
   type WidgetRect,
   type WidgetStatus,
 } from './compare.ts';
-export { decodePng, encodePng, type RgbaImage } from './png.ts';
+export { decodePng, encodeGreyPng, encodePng, type RgbaImage } from './png.ts';
 export {
   corpusSummary,
   gates,

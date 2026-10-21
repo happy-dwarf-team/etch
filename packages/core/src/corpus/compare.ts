@@ -356,6 +356,11 @@ export interface PixelCounts {
   readonly partial: number;
   /** Its pixels under code-filled content. */
   readonly masked: number;
+  /**
+   * Its pixels that would be compared but were not the same in every shot of the capture
+   * (the capture's unstable mask, etch#42); they are left out, and any of them fail the widget.
+   */
+  readonly unstable: number;
 }
 
 export interface WidgetComparison {
@@ -394,18 +399,21 @@ export interface CaptureComparison {
 
 /**
  * Compares the render of a plan with the capture's screenshot. Both are straight RGBA at the
- * capture's resolution; the screenshot's alpha is ignored.
+ * capture's resolution; the screenshot's alpha is ignored. `unstable` is the capture's unstable
+ * mask (any channel above 0 marks a pixel that differed between the shots), when it has one.
  */
 export function compareCapture(
   manifest: CorpusManifest,
   plan: CapturePlan,
   render: RgbaImage,
   screenshot: RgbaImage,
+  unstable?: RgbaImage,
 ): { comparison: CaptureComparison; map: PixelMap } {
   const { width, height } = plan.drawList;
   for (const [name, image] of [
     ['render', render],
     ['screenshot', screenshot],
+    ...(unstable === undefined ? [] : ([['unstable mask', unstable]] as const)),
   ] as const) {
     if (image.width !== width || image.height !== height) {
       throw new Error(
@@ -456,6 +464,8 @@ export function compareCapture(
   const sum = new Float64Array(n);
   const partial = new Float64Array(n);
   const maskedBy = new Float64Array(n);
+  const unstableBy = new Float64Array(n);
+  const shaky = unstable?.data;
   const classes = new Uint8Array(count);
   const differences = new Uint8Array(count);
   const r = render.data;
@@ -473,6 +483,9 @@ export function compareCapture(
       classes[p] = PIXEL.partial;
     } else if (masked[p] === 1 || plan.widgets[owner]?.codeFilled !== undefined) {
       maskedBy[owner] = (maskedBy[owner] ?? 0) + 1;
+      classes[p] = PIXEL.masked;
+    } else if (shaky !== undefined && (shaky[o] ?? 0) > 0) {
+      unstableBy[owner] = (unstableBy[owner] ?? 0) + 1;
       classes[p] = PIXEL.masked;
     } else {
       const difference = Math.max(
@@ -502,6 +515,7 @@ export function compareCapture(
       meanDifference: (compared[i] ?? 0) === 0 ? 0 : (sum[i] ?? 0) / (compared[i] ?? 1),
       partial: partial[i] ?? 0,
       masked: maskedBy[i] ?? 0,
+      unstable: unstableBy[i] ?? 0,
     };
     const gameRect = widget.captured?.rect;
     const renderRect =
@@ -543,6 +557,12 @@ export function compareCapture(
         problems.push(`The rect is ${showRect(renderRect)}; the game's is ${showRect(gameRect)}.`);
       }
     }
+    if (pixels.unstable > 0) {
+      problems.push(
+        `${String(pixels.unstable)} of its pixels changed between the capture's shots; ` +
+          'recapture it, or mask what the game animates there.',
+      );
+    }
     if (pixels.compared > 0 && pixels.within / pixels.compared < PASS_SHARE) {
       problems.push(
         `${percent(pixels.within / pixels.compared)} of ${String(pixels.compared)} pixels ` +
@@ -571,6 +591,7 @@ export function compareCapture(
   let totalSum = 0;
   let totalPartial = 0;
   let totalMasked = 0;
+  let totalUnstable = 0;
   results.forEach((result, i) => {
     byStatus[result.status]++;
     if (result.status !== 'pass' && result.status !== 'fail' && result.status !== 'deviation') {
@@ -581,6 +602,7 @@ export function compareCapture(
     totalSum += sum[i] ?? 0;
     totalPartial += result.pixels.partial;
     totalMasked += result.pixels.masked;
+    totalUnstable += result.pixels.unstable;
   });
 
   const found = findView(manifest, key.view);
@@ -603,6 +625,7 @@ export function compareCapture(
           meanDifference: totalCompared === 0 ? 0 : totalSum / totalCompared,
           partial: totalPartial,
           masked: totalMasked,
+          unstable: totalUnstable,
         },
       },
     },

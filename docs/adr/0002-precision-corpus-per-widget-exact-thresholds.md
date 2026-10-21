@@ -56,3 +56,13 @@ under semi-transparent widgets, which this decision already masks, and a few
 edge pixels of two buttons. How the
 two-shot check applies to views over the main menu is left to the capture
 driver ([etch#42](https://github.com/happy-dwarf-team/etch/issues/42)).
+
+## Update (21 October 2026, etch#42)
+
+The capture driver takes at least two shots of every view, four when the first
+two differ, and records the pixels that were not the same in all of them as
+the view's unstable mask. A capture no longer needs two identical shots; the
+comparison instead compares no unstable pixel, and a compared pixel that is
+unstable makes its widget an unstable capture, not a pass. Over the main menu
+the opaque widgets were stable in every live run, and the animated background
+and the FPS counter were unstable, as etch#18 found.
