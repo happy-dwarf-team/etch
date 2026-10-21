@@ -7,7 +7,7 @@ times (ADR 0004):
 | Job           | Where                                                                                                      | Authentication                                             |
 | ------------- | ---------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
 | `publish`     | the GitHub release, with `SHA256SUMS.txt` and a provenance attestation                                      | `GITHUB_TOKEN`                                             |
-| `marketplace` | [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=happy-dwarf-team.etch)            | secret `VSCE_PAT`                                          |
+| `marketplace` | [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=happy-dwarf-team.etch)            | secret `VSCE_PAT` if set, otherwise upload by hand          |
 | `open-vsx`    | [Open VSX](https://open-vsx.org/extension/happy-dwarf-team/etch)                                            | secret `OVSX_PAT` if set, otherwise OIDC trusted publishing |
 
 The store jobs start after the GitHub release has its assets and pass
@@ -25,11 +25,15 @@ the first release:
   4.0.0 (hidden from `--help`), but the Marketplace does not yet let a
   publisher register a trusted publishing policy, and the token exchange of
   4.0.0 predates the Marketplace's contract (fixed in the 4.0.1 pre-releases).
-  The job therefore uses a personal access token. Azure DevOps retires global
-  personal access tokens, which the Marketplace needs, on **1 December 2026**;
-  before then the job must move to `--oidc` (once the Marketplace offers it)
-  or to Microsoft Entra ID (`--azure-credential` after `azure/login` with a
-  federated credential).
+  The other automatic routes need Azure: a personal access token needs an
+  Azure DevOps organization, and new organizations need an Azure subscription
+  (since late 2025); Azure DevOps retires the global tokens the Marketplace
+  needs on 1 December 2026; Microsoft Entra ID (`--azure-credential`) needs an
+  Azure identity. Etch therefore uploads to the Marketplace **by hand** until
+  `--oidc` works: without a `VSCE_PAT` secret the `marketplace` job publishes
+  nothing, succeeds, and leaves a warning and a step summary with the
+  release's VSIX link. A `VSCE_PAT` from an existing Azure DevOps organization
+  still makes the job publish.
 - **Open VSX.** `ovsx publish --trusted-publishing` (ovsx 1.1.0 and later)
   works, but a trusted publisher can only be registered for an extension that
   already has a version, by a namespace owner. The first release publishes
@@ -41,34 +45,43 @@ the first release:
 1. **Marketplace publisher.** At <https://marketplace.visualstudio.com/manage>,
    signed in with a Microsoft account, create the publisher with ID
    `happy-dwarf-team` (it cannot change later) and name `Happy Dwarf Team`.
-2. **Marketplace token.** At <https://dev.azure.com>, in the same Microsoft
-   account's user settings, create a personal access token with
-   **Organization: All accessible organizations** and the custom scope
-   **Marketplace → Manage**, with an expiry after the next planned release and
-   no later than 1 December 2026. Save it as the repository secret `VSCE_PAT`.
-3. **Open VSX account.** Create an Eclipse Foundation account at
+2. **Open VSX account.** Create an Eclipse Foundation account at
    <https://accounts.eclipse.org/user/register> with the same GitHub user name
    you log in to <https://open-vsx.org> with. On
    <https://open-vsx.org/user-settings/profile>, log in with Eclipse and accept
    the Publisher Agreement.
-4. **Open VSX token and namespace.** Create a token at
+3. **Open VSX token and namespace.** Create a token at
    <https://open-vsx.org/user-settings/tokens>, then create the namespace
-   (case-sensitive, equal to `publisher`):
-   `npx ovsx create-namespace happy-dwarf-team` with the token in `OVSX_PAT`.
-   Save the token as the repository secret `OVSX_PAT`.
-5. **Open VSX ownership.** Claim the namespace in a public issue at
+   (case-sensitive, equal to `publisher`) with the token in `OVSX_PAT`:
+   `npx ovsx create-namespace happy-dwarf-team`. Save the token as the
+   repository secret `OVSX_PAT`
+   (`gh secret set OVSX_PAT --repo happy-dwarf-team/etch`, which prompts for
+   the value).
+4. **Open VSX ownership.** Claim the namespace in a public issue at
    <https://github.com/EclipseFdn/open-vsx.org/issues/new/choose> ("Claiming
-   namespace `happy-dwarf-team`", the option for a VS Code publisher with a
-   repository). Until it is granted the namespace is unverified, and an
-   extension with the Marketplace's identifier may stay under review.
+   namespace `happy-dwarf-team`"). Until it is granted the namespace is
+   unverified, and an extension with the Marketplace's identifier may stay
+   under review.
+
+## Each release
+
+The `marketplace` job's summary links the VSIX. Download it from the GitHub
+release and, at
+<https://marketplace.visualstudio.com/manage/publishers/happy-dwarf-team>,
+upload it: **New extension → Visual Studio Code** the first time, **Update**
+on the extension afterwards. The Marketplace scans the file and lists it after
+a few minutes.
 
 ## After the first release
 
-1. On <https://open-vsx.org/user-settings/trusted-publishers>, register a
-   trusted publisher for `happy-dwarf-team.etch`: GitHub Actions, owner
-   `happy-dwarf-team`, repository `etch`, workflow `release.yml`, no
+1. Once the Open VSX namespace is owned, register a trusted publisher for
+   `happy-dwarf-team.etch` on
+   <https://open-vsx.org/user-settings/trusted-publishers>: GitHub Actions,
+   owner `happy-dwarf-team`, repository `etch`, workflow `release.yml`, no
    environment.
 2. Delete the `OVSX_PAT` repository secret and revoke the token. A set
    `OVSX_PAT` always wins over trusted publishing.
-3. Before 1 December 2026, move the `marketplace` job off `VSCE_PAT` (see
-   above).
+3. When the Marketplace offers trusted publishing policies, register one for
+   `release.yml`, update `@vscode/vsce` to a version with the current token
+   exchange, and switch the `marketplace` job to `vsce publish --oidc` with
+   `id-token: write`.
