@@ -1,5 +1,10 @@
 # Etch
 
+[![build](https://github.com/happy-dwarf-team/etch/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/happy-dwarf-team/etch/actions/workflows/build.yml)
+[![VS Code Marketplace](https://img.shields.io/badge/VS%20Code%20Marketplace-Etch-007ACC)](https://marketplace.visualstudio.com/items?itemName=happy-dwarf-team.etch)
+[![Open VSX](https://img.shields.io/open-vsx/v/happy-dwarf-team/etch?label=Open%20VSX)](https://open-vsx.org/extension/happy-dwarf-team/etch)
+[![License: MIT](https://img.shields.io/github/license/happy-dwarf-team/etch)](LICENSE)
+
 Etch is a planned tool for Europa Universalis IV interface mods: edit a `.gui`
 or `.gfx` file and see the window as the game draws it, within moments, without
 restarting the game.
