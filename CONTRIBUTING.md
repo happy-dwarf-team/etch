@@ -57,12 +57,15 @@ repository has one version (ADR 0004):
 3. The release workflow then builds the tagged commit and attaches
    `etch-win32-x64-X.Y.Z.vsix` and `SHA256SUMS.txt`, with a build provenance
    attestation (`gh attestation verify <vsix> -R happy-dwarf-team/etch`).
+4. It publishes the same VSIX to the VS Code Marketplace and Open VSX.
+   [docs/release.md](docs/release.md) describes the store accounts, the
+   repository secrets and the move to trusted publishing.
 
 Do not edit the versions or `CHANGELOG.md` by hand; packaging fails when the
 two `package.json` versions differ. To force a specific next version, put
-`Release-As: x.y.z` in the body of a commit on `main`. Publishing to the VS
-Code Marketplace and Open VSX starts with 0.1.0, the first release of
-milestone M1; until M1 is complete the release pull request stays unmerged.
+`Release-As: x.y.z` in the body of a commit on `main`. Merging the release pull
+request publishes to both stores at once, so it is merged only on the
+maintainer's go-ahead.
 
 ## Repository layout
 
