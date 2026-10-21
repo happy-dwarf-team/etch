@@ -24,11 +24,12 @@ export async function run(): Promise<void> {
     'etch.previewResolution is contributed',
   );
 
+  // Local only: the vanilla budgets, read from an installed game in place. They run first, so that
+  // the first cold open is the first preview of this VS Code process.
+  const gamePath = process.env['ETCH_GAME_PATH'];
+  if (gamePath !== undefined && gamePath !== '') await testPreviewBudget(api, gamePath);
+
   await testGameText();
   await testNavigation(api);
   await testPreview(api);
-
-  // Local only: the vanilla budgets, read from an installed game in place.
-  const gamePath = process.env['ETCH_GAME_PATH'];
-  if (gamePath !== undefined && gamePath !== '') await testPreviewBudget(api, gamePath);
 }
