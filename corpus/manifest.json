@@ -226,8 +226,8 @@
                 "click": "country_selection_panel/mainmenu/mainmenu_panel_bottom/single_player_button"
               }
             ],
-            "verified": false,
-            "evidence": "The button is named in vanilla frontend.gui; not yet run."
+            "verified": true,
+            "evidence": "Run by the capture driver (etch#42) at 1280x720 and 1920x1080 on 2026-10-21: the steps opened the view and its roots were read and shown."
           },
           "roots": ["country_selection_panel"],
           "codeFilled": []
@@ -251,8 +251,8 @@
           "recipe": {
             "from": "save",
             "steps": [],
-            "verified": false,
-            "evidence": "Always shown on a loaded save. Tongs read topbar, speed_controls and outliner on this save (tongs#61, tongs#63); the menubar root is not yet read."
+            "verified": true,
+            "evidence": "Run by the capture driver (etch#42) at 1280x720 and 1920x1080 on 2026-10-21: the steps opened the view and its roots were read and shown."
           },
           "roots": ["topbar", "speed_controls", "outliner", "menubar"],
           "codeFilled": []
@@ -271,8 +271,8 @@
           "recipe": {
             "from": "save",
             "steps": [{ "key": "escape" }],
-            "verified": false,
-            "evidence": "etch#10; not yet run."
+            "verified": true,
+            "evidence": "Run by the capture driver (etch#42) at 1280x720 and 1920x1080 on 2026-10-21: the steps opened the view and its roots were read and shown."
           },
           "roots": ["menu"],
           "codeFilled": []
@@ -283,8 +283,8 @@
           "recipe": {
             "from": "save",
             "steps": [{ "key": "escape" }, { "click": "menu//menu_message_button" }],
-            "verified": false,
-            "evidence": "The button and menu_message_settings are named in vanilla menubar.gui; not yet run."
+            "verified": true,
+            "evidence": "Run by the capture driver (etch#42) at 1280x720 and 1920x1080 on 2026-10-21: the steps opened the view and its roots were read and shown."
           },
           "roots": ["menu"],
           "codeFilled": []
@@ -303,8 +303,8 @@
           "recipe": {
             "from": "save",
             "steps": [{ "key": "f1" }],
-            "verified": false,
-            "evidence": "F1 opened countryview and countrycourtview live (etch#5); which of them the tree starts from is not yet read."
+            "verified": true,
+            "evidence": "Run by the capture driver (etch#42) at 1280x720 and 1920x1080 on 2026-10-21: the steps opened the view and its roots were read and shown."
           },
           "roots": ["countrycourtview"],
           "codeFilled": []
@@ -323,8 +323,8 @@
           "recipe": {
             "from": "save",
             "steps": [{ "key": "f1" }, { "key": "3" }],
-            "verified": false,
-            "evidence": "etch#10 (F1, then 3); not yet run."
+            "verified": true,
+            "evidence": "Run by the capture driver (etch#42) at 1280x720 and 1920x1080 on 2026-10-21: the steps opened the view and its roots were read and shown."
           },
           "roots": ["countrydiplomacyview"],
           "codeFilled": []
@@ -354,9 +354,12 @@
           "title": "Province",
           "recipe": {
             "from": "save",
-            "steps": [],
-            "verified": false,
-            "evidence": "Opens with a click on a province of the map. Tongs' click on the map is not verified (etch#5), and the point depends on the resolution and the camera, so the recipe has no step yet."
+            "steps": [
+              { "click": "outliner//outliner_buildnavy_entry[1]/outliner_standard" },
+              { "point": { "x": 0.5, "y": 0.5 } }
+            ],
+            "verified": true,
+            "evidence": "Run by the capture driver (etch#42) at 1280x720 and 1920x1080 on 2026-10-21: the steps opened the view and its roots were read and shown. The outliner's first ship in construction (Macedonia in this save) centres the map on its province, and a click on the middle of the client area opens it (etch#42). A map click alone depends on where the camera is."
           },
           "roots": ["provinceview"],
           "codeFilled": []
@@ -375,8 +378,8 @@
           "recipe": {
             "from": "save",
             "steps": [{ "key": "l" }],
-            "verified": false,
-            "evidence": "etch#10; not yet run."
+            "verified": true,
+            "evidence": "Run by the capture driver (etch#42) at 1280x720 and 1920x1080 on 2026-10-21: the steps opened the view and its roots were read and shown."
           },
           "roots": ["ledger"],
           "codeFilled": []
@@ -395,8 +398,8 @@
           "recipe": {
             "from": "save",
             "steps": [{ "key": "escape" }, { "click": "menu//menu_options_button" }],
-            "verified": false,
-            "evidence": "The button is named in vanilla menubar.gui and the window in settings.gui; not yet run."
+            "verified": true,
+            "evidence": "Run by the capture driver (etch#42) at 1280x720 and 1920x1080 on 2026-10-21: the steps opened the view and its roots were read and shown."
           },
           "roots": ["menu_settings_ingame"],
           "codeFilled": []
@@ -415,8 +418,8 @@
           "recipe": {
             "from": "save",
             "steps": [{ "key": "b" }],
-            "verified": false,
-            "evidence": "etch#10; not yet run."
+            "verified": true,
+            "evidence": "Run by the capture driver (etch#42) at 1280x720 and 1920x1080 on 2026-10-21: the steps opened the view and its roots were read and shown."
           },
           "roots": ["macro_build_interface"],
           "codeFilled": []
@@ -435,8 +438,8 @@
           "recipe": {
             "from": "save",
             "steps": [{ "key": "f1" }, { "key": "k" }],
-            "verified": false,
-            "evidence": "etch#10 (F1, then K); not yet run."
+            "verified": true,
+            "evidence": "Run by the capture driver (etch#42) at 1280x720 and 1920x1080 on 2026-10-21: the steps opened the view and its roots were read and shown."
           },
           "roots": ["countryestatesview"],
           "codeFilled": []
@@ -456,9 +459,9 @@
             "from": "save",
             "steps": [],
             "verified": false,
-            "evidence": "Only if the save opens an event without running time (etch#10); not yet checked."
+            "evidence": "No event is open when the save loads (Tongs event list, etch#42), and a recipe runs no time; it needs another save or start state. Its root would be EventWindow."
           },
-          "roots": ["EventWindow"],
+          "roots": [],
           "codeFilled": []
         }
       ]

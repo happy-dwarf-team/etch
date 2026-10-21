@@ -66,10 +66,24 @@ export interface CaptureRecord {
   readonly recipe: Recipe;
   /** Tongs' `window`: the client area and DPI. */
   readonly window: { readonly width: number; readonly height: number; readonly dpi: number };
-  /** The screenshot both shots matched (a capture is accepted only when two shots are identical). */
-  readonly screenshot: { readonly sha256: string; readonly width: number; readonly height: number };
+  /** The screenshot: the first of the shots the driver took of the view. */
+  readonly screenshot: CapturedScreenshot;
   /** The trees of the view's roots. */
   readonly widgets: readonly CapturedWidget[];
+}
+
+export interface CapturedScreenshot {
+  readonly sha256: string;
+  readonly width: number;
+  readonly height: number;
+  /** How many shots the driver took and compared, at least two (ADR 0002). */
+  readonly shots: number;
+  /**
+   * The pixels that were not the same in every shot (an animated background or map, etch#18), as
+   * a mask next to the screenshot (`unstableMaskFile`). Left out when every shot was identical.
+   * The comparison compares no unstable pixel.
+   */
+  readonly unstable?: { readonly pixels: number; readonly sha256: string };
 }
 
 export interface CaptureResult {
@@ -149,9 +163,27 @@ export function parseCaptureRecord(value: unknown): CaptureResult {
     c.fail('recipe.verified', 'A capture is taken only with a recipe that worked.');
   }
   size(c, root['window'], 'window', ['width', 'height', 'dpi']);
-  const screenshot = size(c, root['screenshot'], 'screenshot', ['width', 'height'], ['sha256']);
+  const screenshot = c.object(
+    root['screenshot'],
+    'screenshot',
+    ['sha256', 'width', 'height', 'shots'],
+    ['unstable'],
+  );
   if (screenshot !== undefined) {
     c.string(screenshot['sha256'], 'screenshot.sha256', SHA256, 'an uppercase SHA-256');
+    c.integer(screenshot['width'], 'screenshot.width', 1);
+    c.integer(screenshot['height'], 'screenshot.height', 1);
+    c.integer(screenshot['shots'], 'screenshot.shots', 2);
+    if ('unstable' in screenshot) {
+      const unstable = c.object(screenshot['unstable'], 'screenshot.unstable', [
+        'pixels',
+        'sha256',
+      ]);
+      if (unstable !== undefined) {
+        c.integer(unstable['pixels'], 'screenshot.unstable.pixels', 1);
+        c.string(unstable['sha256'], 'screenshot.unstable.sha256', SHA256, 'an uppercase SHA-256');
+      }
+    }
   }
 
   const paths = new Set<string>();
@@ -259,14 +291,8 @@ function sameRecipe(a: Recipe, b: Recipe): boolean {
   return a.from === b.from && JSON.stringify(a.steps) === JSON.stringify(b.steps);
 }
 
-function size(
-  c: Checker,
-  value: unknown,
-  at: string,
-  keys: readonly string[],
-  optional: readonly string[] = [],
-): Json | undefined {
-  const json = c.object(value, at, [...keys, ...optional]);
+function size(c: Checker, value: unknown, at: string, keys: readonly string[]): Json | undefined {
+  const json = c.object(value, at, keys);
   if (json === undefined) return undefined;
   for (const key of keys) c.integer(json[key], field(at, key), 1);
   return json;
@@ -310,8 +336,9 @@ function checkWidget(
   if (rect !== undefined) {
     c.integer(rect['x'], field(at, 'rect.x'));
     c.integer(rect['y'], field(at, 'rect.y'));
-    c.integer(rect['w'], field(at, 'rect.w'), 0);
-    c.integer(rect['h'], field(at, 'rect.h'), 0);
+    // Sizes are the .gui's, which can be negative (provinceview's foreign_province_window).
+    c.integer(rect['w'], field(at, 'rect.w'));
+    c.integer(rect['h'], field(at, 'rect.h'));
   }
   if ('text' in json && typeof json['text'] !== 'string')
     c.fail(field(at, 'text'), 'Expected a string.');

@@ -76,7 +76,7 @@ function record(): Record<string, unknown> {
     disabledDlcs: [],
     recipe: { from: 'save', steps: [{ key: 'f1' }], verified: true, evidence: 'live' },
     window: { width: 3440, height: 1440, dpi: 96 },
-    screenshot: { sha256: 'C'.repeat(64), width: 3440, height: 1440 },
+    screenshot: { sha256: 'C'.repeat(64), width: 3440, height: 1440, shots: 2 },
     widgets: [
       {
         path: 'countrycourtview',
@@ -131,6 +131,29 @@ describe('parseCaptureRecord', () => {
     ]);
   });
 
+  it('holds how many shots were taken and the unstable pixels', () => {
+    expect(
+      parsed((r) => {
+        set(r, 'screenshot.unstable', { pixels: 12, sha256: 'D'.repeat(64) });
+      }).screenshot.unstable,
+    ).toEqual({ pixels: 12, sha256: 'D'.repeat(64) });
+    expect(
+      problemsOf((r) => {
+        set(r, 'screenshot.shots', 1);
+        set(r, 'screenshot.unstable', { pixels: 0, sha256: 'd' });
+      }),
+    ).toEqual([
+      'screenshot.shots: Expected at least 2.',
+      'screenshot.unstable.pixels: Expected at least 1.',
+      'screenshot.unstable.sha256: "d" is not an uppercase SHA-256.',
+    ]);
+    expect(
+      problemsOf((r) => {
+        r['screenshot'] = { width: 3440, height: 1440 };
+      }),
+    ).toEqual(['screenshot: Missing field "sha256".', 'screenshot: Missing field "shots".']);
+  });
+
   it('rejects stale widgets and trees cut by depth', () => {
     expect(
       problemsOf((r) => {
@@ -160,7 +183,8 @@ describe('parseCaptureRecord', () => {
     expect(
       problemsOf((r) => {
         set(r, 'widgets.0.type', 'guiButtonType');
-        set(r, 'widgets.0.rect.w', -1);
+        set(r, 'widgets.0.rect.w', 1.5);
+        set(r, 'widgets.0.rect.h', -100);
         set(r, 'takenAt', '22 October 2026');
         set(r, 'recipe.verified', false);
       }),
@@ -168,7 +192,7 @@ describe('parseCaptureRecord', () => {
       'takenAt: "22 October 2026" is not an ISO 8601 time in UTC.',
       'recipe.verified: A capture is taken only with a recipe that worked.',
       expect.stringMatching(/^widgets\[0\]\.type: Expected one of "window"/),
-      'widgets[0].rect.w: Expected at least 0.',
+      'widgets[0].rect.w: Expected an integer.',
     ]);
   });
 });

@@ -209,7 +209,7 @@ test('compares a corpus of a fixture game and writes the reports', async () => {
         disabledDlcs: [],
         recipe: { from: 'main-menu', steps: [], verified: true, evidence: 'a fixture' },
         window: { width: 200, height: 100, dpi: 96 },
-        screenshot: { sha256: sha256(png), width: 200, height: 100 },
+        screenshot: { sha256: sha256(png), width: 200, height: 100, shots: 2 },
         widgets: [
           {
             ...widget('panel', 10, 20, 100, 50),

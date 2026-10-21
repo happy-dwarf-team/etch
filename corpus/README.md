@@ -77,17 +77,18 @@ A **recipe** is the Tongs input that opens a view from a known start state:
 
 - `from`: `main-menu` (a fresh start, at the main menu, no save loaded) or
   `save` (the playset's save loaded and paused);
-- `steps`: in order, `{ "key": "f1" }` (Tongs `key`, its key names) or
+- `steps`: in order, `{ "key": "f1" }` (Tongs `key`, its key names),
   `{ "click": "menu//menu_options_button" }` (Tongs `ui click`, a widget
-  pattern);
+  pattern) or `{ "point": { "x": 0.5, "y": 0.5 } }` (Tongs `click` at a point
+  of the client area, as fractions of its width and height, for what has no
+  widget, such as a province on the map);
 - `verified`: whether the steps and roots were seen to work in the game;
 - `evidence`: where, or what is still unknown.
 
 A verified recipe names its roots. Unverified recipes may leave steps or roots
 empty: the driver (etch#42) verifies each one live, fills in what is missing
-and sets `verified`. A view that needs a step the format does not have yet
-(the province view opens with a click on the map) waits for the driver to add
-that step kind.
+and sets `verified`. The province view
+opens with a `point` step on the map.
 
 Each resolution is a fresh start of the game, with the size in the
 capturing profile's `pdx_settings.txt` (etch#18). After its first start in a
@@ -169,17 +170,29 @@ One file per capture at `captures/<playset>/<WxH>/<view>.json`:
 | `disabledDlcs` | as the playset |
 | `recipe` | the recipe as it was run; it must be verified |
 | `window` | Tongs' `window`: client `width`, `height` and `dpi` |
-| `screenshot` | `sha256`, `width`, `height` of the screenshot; a capture is accepted only when two shots were identical, so there is one hash |
+| `screenshot` | `sha256`, `width`, `height` of the screenshot (the first shot), `shots` (how many the driver took, at least 2) and `unstable` (`pixels` and the `sha256` of the unstable mask) when not every shot was identical |
 | `widgets` | the trees of the view's roots |
 
 Each widget is Tongs' `ui tree … all` answer without `click_point` (the centre
 of `rect`): `path`, `name` (case kept; empty for an unnamed widget), `type`
 (Tongs' coarse kind: `window`, `button`, `icon`, `text`, `listbox`,
 `checkbox`, `editbox`, `other`), `visible`, `rect` (`x`, `y`, `w`, `h` in
-client pixels; sizes come from the `.gui`, tongs#50), and `text`, `enabled`,
+client pixels; sizes come from the `.gui`, tongs#50, and can be negative: the
+vanilla `foreign_province_window` is `y=-100`, an empty rect), and `text`, `enabled`,
 `checked`, `children` where they apply. Hidden widgets are kept. A record
 never has a stale widget (the tree was read after a reload) or
 `children_count` (a tree cut by `depth=`).
+
+Two shots of the same view are not always identical: the main menu's
+background is animated (etch#18), and so is the FPS counter in the top-right
+corner. The driver therefore records which pixels changed instead of
+requiring identical shots. When the first two shots differ it takes two more,
+and every pixel that differs between the first shot and any later one is
+**unstable**. The unstable mask is an 8-bit greyscale PNG of the screenshot's
+size next to it in the local corpus folder (255 unstable, 0 stable). The
+comparison (etch#43) compares no unstable pixel: a compared pixel (unmasked,
+render alpha 255) that is unstable makes its widget an unstable capture, not
+a pass. A record without `unstable` had identical shots.
 
 `captureProblems(manifest, record)` says when a record no longer fits the
 manifest. A capture is retaken when the EXE hash, the Tongs version, the save,
@@ -196,13 +209,107 @@ it mirrors the capture records:
 
 ```
 <ETCH_CORPUS_PATH>/
-  captures/<playset>/<WxH>/<view>.png        the screenshot whose hash the record holds
+  captures/<playset>/<WxH>/<view>.png            the screenshot whose hash the record holds
+  captures/<playset>/<WxH>/<view>.unstable.png   its unstable mask, when it has unstable pixels
+  runs/<run id>/                                 the capture driver's report and logs of a run
 ```
 
 Tools that derive files from captures (renders, diffs, reports of etch#43)
 put them in other top-level folders of the same local corpus folder. Nothing
 in it is committed; a private bucket waits for the headless CI decision
 (spec section 14).
+
+## The capture driver
+
+`packages/core/src/corpus/driver/` takes the captures (etch#42). It runs only
+in the EU4 engine lab, because it starts and closes the game with the lab's
+`scripts/lib/LabProcess.psm1` and follows the lab's procedure (its
+`AGENTS.md`). It needs Node 22.18 or newer, PowerShell 7 and the game.
+
+1. **Capture host install**, once: a junction copy of the Steam game with the
+   Anvil and Tongs releases. Download `anvil-windows-x64.zip` and
+   `tongs-windows-x64.zip` of the pinned releases (Tongs: the manifest's
+   version), each with its `SHA256SUMS.txt` in the same folder, then:
+
+   ```powershell
+   packages/core/src/corpus/driver/game.ps1 -Action Prepare -Lab <lab> -HostDir <host> `
+     -AnvilZip <anvil zip> -TongsZip <tongs zip>
+   ```
+
+   Prepare checks both archives against their sums, turns Tongs on with
+   `input = true` and `game_calls = false`, turns `anvil-overlay` off (its
+   notifications would be in the screenshots), and writes `host.json` with
+   every hash. Nothing goes into the Steam folder.
+
+2. **A run**, with `ETCH_CORPUS_PATH` set:
+
+   ```powershell
+   node packages/core/src/corpus/driver/cli.ts plan --playset vanilla
+   node packages/core/src/corpus/driver/cli.ts run --lab <lab> --host <host> `
+     --monitor 3440x1440 --settings-baseline <settings.txt> [--records <folder>] `
+     [--playset a,b] [--resolution 1920x1080,…] [--view a,b] [--all]
+   ```
+
+   Without filters a run takes every capture a release needs (`--all` adds the
+   report playsets). `--settings-baseline` is the `settings.txt` a new
+   playset profile starts from (UI scale 1). Records go into this folder, or
+   into `--records` for a trial run whose records are not to be committed.
+
+What a run does:
+
+- **One playset profile** per playset in `<host>/profiles/<playset>/profile`
+  (`-userdir`): descriptors with absolute paths to the pinned Workshop
+  items, `dlc_load.json`, and a copy of the playset's save. Every mod's
+  content hash and the save's hash are checked against the manifest before
+  and after each start. The player's own profile, saves and mods are only
+  read; a run stops when the player's profile changed.
+- **A fresh start for each playset, resolution and start state**: one for the
+  views opened from the main menu and one for those opened from the save
+  (`continue=<save>`, which goes before `-userdir=`: the game takes the rest of
+  the command line as the profile's path). Before each start: the Process Lasso rule, the hashes
+  of both `eu4.exe` and of the host install, and no game running. The copy
+  starts suspended with the mask 1–7 and is ready when Tongs answers from that
+  process, `system.log` says `Running application`, the save is loaded and
+  paused, and a frame has passed.
+- **Settings**: the size goes into named variants of the profile's named
+  baselines (`settings-1920x1080-windowed.txt`, `pdx-settings-…`), as above.
+  After each start the variants are compared with what the game left (only
+  `refreshRate` and `graceful_exit` may change) and the baselines are put
+  back.
+- **Each view**: Escape, one press at a time, until the visible top-level
+  windows are those of the start state (map icons and tooltips left out); the
+  recipe's steps; Tongs' pointer to its resting place, which is the
+  bottom-right client pixel in the main menu (`--away-menu x,y`, as
+  fractions) and the pause banner over a save (`--away-save <pattern>`), off
+  the map's scrolling edges and tooltips; the
+  trees of the roots read with `ui tree ROOT all`; the shots; the trees and
+  the window read again, which must not have changed. The game must still be
+  the started process, with no game call made, and from the save still
+  paused. The record must pass `parseCaptureRecord` and `captureProblems`
+  before it is written. No step is a game call and no `reload` is sent.
+- **Closing**: only after the PID, image path and creation time are verified
+  again, with any game the process restarted itself. A run stops when a game
+  could not be closed, the settings are not back to their baselines, or the
+  save, a mod or the player's profile changed. A game left running after an
+  interrupted run is closed with `game.ps1 -Action Stop -Record
+  <run>/<session>/game.json`.
+- A view whose recipe was not verified in the manifest and worked gets a
+  record whose recipe says so; set `verified` and the evidence in the
+  manifest by hand. When a view loses the start state (Escape cannot close
+  what it opened), the session ends and a fresh start takes the remaining
+  views.
+
+**The mouse.** The game scrolls the map towards the real mouse cursor when it
+is outside the game's window, even without focus, and the interface sees the
+real cursor again as soon as it moves. Before a run, put the cursor over the
+middle of the game's monitor, where the client area of every size lies, and
+leave the mouse alone. From a save the driver reads the cursor (it never moves
+it) before each view and after its shots, and stops the run when the cursor is
+not inside the client area or has moved.
+
+`--hold <minutes>` keeps each game open after its views until a file named
+`release` appears in the session's run folder, for working out recipes by hand
+with Tongs; closing and the settings are handled as always.
 
 ## The comparison
 
@@ -248,6 +355,10 @@ How a view is compared (`planCapture` and `compareCapture` in
   code-filled content: the game's rects of the widgets the view's `codeFilled`
   patterns or the manifest's `codeFilledKinds` name and of everything inside
   them, and the render's draws of those widgets.
+- **Unstable pixels.** A pixel that would be compared but is in the
+  capture's unstable mask (it changed between the shots) is left out, and
+  fails its widget: the capture shows something the game animates there.
+  The mask's hash must be the record's, like the screenshot's.
 - **A widget passes** when its rect rounds to the game's rect and at least
   99 % of its compared pixels are within ±2 in red, green and blue (the
   screenshot's alpha is ignored). The difference of a pixel is its largest

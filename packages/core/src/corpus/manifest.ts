@@ -121,8 +121,15 @@ export interface Recipe {
   readonly evidence: string;
 }
 
-/** `key NAME` or `ui click SELECTOR` in Tongs. */
-export type RecipeStep = { readonly key: TongsKey } | { readonly click: string };
+/**
+ * `key NAME`, `ui click SELECTOR`, or `click X Y` at a point of the client area given as fractions
+ * of its width and height (`{ "x": 0.5, "y": 0.5 }` is the centre), for what has no widget, such as
+ * a province on the map.
+ */
+export type RecipeStep =
+  | { readonly key: TongsKey }
+  | { readonly click: string }
+  | { readonly point: { readonly x: number; readonly y: number } };
 
 /** The key names Tongs' `key` command accepts (tongs README). */
 export const TONGS_KEYS = [
@@ -491,13 +498,24 @@ export function checkRecipe(
   c.oneOf(json['from'], field(at, 'from'), ['main-menu', 'save'] as const);
   c.string(json['evidence'], field(at, 'evidence'));
   c.array(json['steps'], field(at, 'steps'), (v, stepAt) => {
-    const step = c.object(v, stepAt, [], ['key', 'click']);
+    const step = c.object(v, stepAt, [], ['key', 'click', 'point']);
     if (step === undefined) return undefined;
-    if ('key' in step === 'click' in step) {
-      c.fail(stepAt, 'Give either "key" or "click".');
+    if (Object.keys(step).length !== 1) {
+      c.fail(stepAt, 'Give one of "key", "click" or "point".');
       return undefined;
     }
     if ('key' in step) return c.oneOf(step['key'], field(stepAt, 'key'), TONGS_KEYS);
+    if ('point' in step) {
+      const point = c.object(step['point'], field(stepAt, 'point'), ['x', 'y']);
+      if (point === undefined) return undefined;
+      for (const axis of ['x', 'y']) {
+        const value = point[axis];
+        if (typeof value !== 'number' || !(value >= 0 && value <= 1)) {
+          c.fail(field(stepAt, `point.${axis}`), 'Expected a fraction from 0 to 1.');
+        }
+      }
+      return true;
+    }
     return pattern(c, step['click'], field(stepAt, 'click'));
   });
   const verified = c.boolean(json['verified'], field(at, 'verified'));

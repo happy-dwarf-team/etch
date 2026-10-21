@@ -23,6 +23,7 @@ import {
   requiredCaptures,
   resolutionKey,
   screenshotFile,
+  unstableMaskFile,
   splitWidgetPath,
   windowReport,
   type CaptureKey,
@@ -83,7 +84,12 @@ export async function runCorpus(options: RunOptions): Promise<RunResult> {
   // First what can be compared at all, so that no playset is opened (and its mods hashed) for
   // nothing.
   const outcomes = new Map<CaptureKey, CaptureOutcome>();
-  const ready: { key: CaptureKey; record: CaptureRecord; screenshot: string }[] = [];
+  const ready: {
+    key: CaptureKey;
+    record: CaptureRecord;
+    screenshot: string;
+    unstable?: string;
+  }[] = [];
   for (const key of keys) {
     const reasons = await readiness(manifest, key, options);
     if (typeof reasons === 'string' || Array.isArray(reasons)) {
@@ -96,7 +102,7 @@ export async function runCorpus(options: RunOptions): Promise<RunResult> {
   let renderer: HeadlessRenderer | undefined;
   const playsets = new Map<string, Promise<CorpusPlaysetFiles>>();
   try {
-    for (const { key, record, screenshot } of ready) {
+    for (const { key, record, screenshot, unstable } of ready) {
       const name = capturePath(key);
       log(`${name}: comparing`);
       try {
@@ -121,7 +127,8 @@ export async function runCorpus(options: RunOptions): Promise<RunResult> {
         renderer ??= await HeadlessRenderer.launch({ gpu: options.gpu ?? false });
         const painted = await renderer.paint(plan.drawList, files.fileOf);
         const game = decodePng(await readFile(screenshot));
-        const { comparison, map } = compareCapture(manifest, plan, painted.image, game);
+        const mask = unstable === undefined ? undefined : decodePng(await readFile(unstable));
+        const { comparison, map } = compareCapture(manifest, plan, painted.image, game, mask);
         const result =
           painted.problems.length === 0
             ? comparison
@@ -195,7 +202,7 @@ async function readiness(
   manifest: CorpusManifest,
   key: CaptureKey,
   options: RunOptions,
-): Promise<{ record: CaptureRecord; screenshot: string } | string | string[]> {
+): Promise<{ record: CaptureRecord; screenshot: string; unstable?: string } | string | string[]> {
   const recordFile = captureRecordFile(options.corpusFolder, key);
   let parsed;
   try {
@@ -223,7 +230,19 @@ async function readiness(
   if (sha256 !== record.screenshot.sha256) {
     return 'The screenshot is not the one the capture record holds.';
   }
-  return { record, screenshot };
+  if (record.screenshot.unstable === undefined) return { record, screenshot };
+  // The pixels that changed between the shots (etch#42) are never compared.
+  const unstable = unstableMaskFile(options.localFolder, key);
+  let maskSha256;
+  try {
+    maskSha256 = await hashFile(unstable);
+  } catch {
+    return 'The capture has unstable pixels, but no unstable mask in the local corpus folder.';
+  }
+  if (maskSha256 !== record.screenshot.unstable.sha256) {
+    return 'The unstable mask is not the one the capture record holds.';
+  }
+  return { record, screenshot, unstable };
 }
 
 function wanted(filter: readonly string[] | undefined, value: string): boolean {
