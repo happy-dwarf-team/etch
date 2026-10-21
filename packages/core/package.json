@@ -8,7 +8,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./draw-list": "./src/draw-list.ts",
-    "./playset": "./src/playset/index.ts"
+    "./playset": "./src/playset/index.ts",
+    "./corpus": "./src/corpus/index.ts"
   },
   "scripts": {
     "typecheck": "tsc -p ."

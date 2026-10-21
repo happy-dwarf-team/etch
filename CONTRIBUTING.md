@@ -77,6 +77,7 @@ A pnpm workspace (ADR 0001):
 | `packages/core`      | parser, model, layout, draw list, diagnostics; never `vscode`  |
 | `packages/renderer`  | WebGL2 drawing in the preview webview                          |
 | `packages/extension` | VS Code glue and the VSIX manifest                             |
+| `corpus`             | precision corpus manifest and capture records (no screenshots) |
 | `docs/adr`           | architecture decisions                                         |
 | `docs/spec`          | the v1 specification                                           |
 

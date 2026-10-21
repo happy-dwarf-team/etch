@@ -9,3 +9,5 @@ playwright-report/
 # Copied from the repository root when the VSIX is packaged.
 /packages/extension/LICENSE
 /packages/extension/CHANGELOG.md
+# The precision corpus keeps its screenshots outside Git (corpus/README.md).
+/corpus/**/*.png
