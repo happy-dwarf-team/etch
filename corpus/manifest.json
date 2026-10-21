@@ -1,0 +1,468 @@
+{
+  "formatVersion": 1,
+  "game": {
+    "version": "1.37.5",
+    "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A"
+  },
+  "tongs": { "version": "0.14.1" },
+  "uiScale": 1,
+  "resolutions": [
+    {
+      "width": 1280,
+      "height": 720,
+      "confirmed": false,
+      "evidence": "A client area smaller than the lab's monitor; etch#18 decides."
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "confirmed": false,
+      "evidence": "A client area smaller than the lab's monitor; etch#18 decides."
+    },
+    {
+      "width": 1600,
+      "height": 900,
+      "confirmed": false,
+      "evidence": "A client area smaller than the lab's monitor; etch#18 decides."
+    },
+    {
+      "width": 1680,
+      "height": 1050,
+      "confirmed": false,
+      "evidence": "A client area smaller than the lab's monitor; etch#18 decides."
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "confirmed": false,
+      "evidence": "A client area smaller than the lab's monitor; etch#18 decides."
+    },
+    {
+      "width": 3440,
+      "height": 1440,
+      "confirmed": true,
+      "evidence": "The lab's monitor at its native size, borderless (etch#5); captured and compared in etch#9. ADR 0002 gates at this size until etch#18 confirms others."
+    }
+  ],
+  "codeFilledKinds": [
+    "listboxType",
+    "smoothListboxType",
+    "gridBoxType",
+    "OverlappingElementsBoxType"
+  ],
+  "notCovered": [
+    {
+      "widgetKind": "buttonType",
+      "reason": "Not in the corpus windows (etch#10)."
+    },
+    {
+      "widgetKind": "containerWindowType",
+      "reason": "Music player and social windows, which the corpus does not open (etch#10)."
+    },
+    {
+      "widgetKind": "background",
+      "reason": "The background part of a containerWindowType."
+    },
+    {
+      "widgetKind": "extendedScrollbarType",
+      "reason": "Music player and social windows, which the corpus does not open (etch#10)."
+    },
+    {
+      "widgetKind": "slider",
+      "reason": "A part of an extendedScrollbarType."
+    },
+    {
+      "widgetKind": "track",
+      "reason": "A part of an extendedScrollbarType."
+    },
+    {
+      "widgetKind": "increaseButton",
+      "reason": "A part of an extendedScrollbarType."
+    },
+    {
+      "widgetKind": "decreaseButton",
+      "reason": "A part of an extendedScrollbarType."
+    },
+    {
+      "shader": "gui_rendertarget",
+      "reason": "The end-of-combat window, which needs a battle (etch#10)."
+    },
+    {
+      "shader": "buttonstate_onlydisable",
+      "reason": "Not in the corpus windows (etch#10)."
+    },
+    {
+      "shader": "buttonstate_nodisable",
+      "reason": "Not in the corpus windows (etch#10)."
+    }
+  ],
+  "playsets": [
+    {
+      "id": "vanilla",
+      "title": "Vanilla, no mods",
+      "gate": "release",
+      "save": {
+        "file": "mp_Russia1719_03_17.eu4",
+        "sha256": "2A4CAF306CCDDB2DAFC7EE015C4ECFFB260654A1D10D86F5F4F768D3C3F56F6A",
+        "description": "Russia, 17 March 1719: the EU4 engine lab's save."
+      },
+      "mods": [],
+      "disabledDlcs": [],
+      "windows": [
+        "frontend",
+        "hud",
+        "esc-menu",
+        "court",
+        "diplomacy",
+        "province",
+        "ledger",
+        "settings",
+        "macro-builder",
+        "estates",
+        "event"
+      ]
+    },
+    {
+      "id": "proper-2k-ui-enhanced",
+      "title": "Vanilla + Proper 2K UI Enhanced",
+      "gate": "release",
+      "save": {
+        "file": "mp_Russia1719_03_17.eu4",
+        "sha256": "2A4CAF306CCDDB2DAFC7EE015C4ECFFB260654A1D10D86F5F4F768D3C3F56F6A",
+        "description": "Russia, 17 March 1719: the EU4 engine lab's save."
+      },
+      "mods": [
+        {
+          "name": "Proper 2K UI Enhanced",
+          "workshopId": "3290499798",
+          "sha256": "B411CFAEAC291CA1DB8CE6FA4C83FC5BD6D547A503A16C29ED7783C2CBCED1F9",
+          "note": "Hashed from the Workshop item on 2026-10-21. It overrides all 114 vanilla .gui files (etch#10)."
+        }
+      ],
+      "disabledDlcs": [],
+      "windows": [
+        "frontend",
+        "hud",
+        "esc-menu",
+        "court",
+        "diplomacy",
+        "province",
+        "ledger",
+        "settings",
+        "macro-builder",
+        "estates",
+        "event"
+      ]
+    },
+    {
+      "id": "anbennar",
+      "title": "Anbennar + Proper 2K UI - Anbennar",
+      "gate": "report",
+      "mods": [
+        {
+          "name": "Anbennar: A Fantasy Total Conversion",
+          "workshopId": "1385440355"
+        },
+        { "name": "Proper 2K UI - Anbennar" }
+      ],
+      "disabledDlcs": [],
+      "windows": [
+        "frontend",
+        "hud",
+        "esc-menu",
+        "court",
+        "diplomacy",
+        "estates",
+        "province",
+        "event"
+      ],
+      "note": "Reported in M4 (spec section 11). Its own save, the Workshop item of the UI mod and the pins are set then; the windows are those the mods override (etch#10)."
+    },
+    {
+      "id": "dwarven-knowledge",
+      "title": "Dwarven Knowledge + DK-2KUI",
+      "gate": "report",
+      "mods": [
+        { "name": "Dwarven Knowledge", "workshopId": "2967823492" },
+        { "name": "Dwarven Knowledge + Proper 2k UI Compatiblity Patch" }
+      ],
+      "disabledDlcs": [],
+      "windows": ["hud", "province", "macro-builder"],
+      "note": "Reported in M4 (spec section 11). The save, the full load order and the pins are set then. DK-2KUI overrides topbar.gui, provinceview.gui and macrobuildinterface.gui (etch#10)."
+    }
+  ],
+  "windows": [
+    {
+      "id": "frontend",
+      "title": "Main menu and lobby",
+      "files": ["interface/frontend.gui"],
+      "why": "Edit boxes, check boxes, a smooth list, a cornered tile and a masked shield.",
+      "views": [
+        {
+          "id": "main-menu",
+          "title": "Main menu",
+          "recipe": {
+            "from": "main-menu",
+            "steps": [],
+            "verified": true,
+            "evidence": "etch#9 captured the main menu with Tongs and read these paths."
+          },
+          "roots": ["country_selection_panel"],
+          "codeFilled": [
+            "country_selection_panel/mainmenu/mainmenu_panel_bottom/continue_container/text",
+            "country_selection_panel/mainmenu/mainmenu_panel_bottom/continue_container/ironman_icon",
+            "country_selection_panel/mainmenu/mainmenu_panel_bottom/version_label",
+            "country_selection_panel/mainmenu/mainmenu_panel_bottom/nudge_button",
+            "country_selection_panel/mainmenu/new_content"
+          ]
+        },
+        {
+          "id": "lobby",
+          "title": "Single-player lobby",
+          "recipe": {
+            "from": "main-menu",
+            "steps": [
+              {
+                "click": "country_selection_panel/mainmenu/mainmenu_panel_bottom/single_player_button"
+              }
+            ],
+            "verified": false,
+            "evidence": "The button is named in vanilla frontend.gui; not yet run."
+          },
+          "roots": ["country_selection_panel"],
+          "codeFilled": []
+        }
+      ]
+    },
+    {
+      "id": "hud",
+      "title": "HUD",
+      "files": [
+        "interface/topbar.gui",
+        "interface/speed_controls.gui",
+        "interface/outliner.gui",
+        "interface/menubar.gui"
+      ],
+      "why": "The only button_overlay, progress bars and masked flags.",
+      "views": [
+        {
+          "id": "hud",
+          "title": "Top bar, speed controls, outliner and menu bar",
+          "recipe": {
+            "from": "save",
+            "steps": [],
+            "verified": false,
+            "evidence": "Always shown on a loaded save. Tongs read topbar, speed_controls and outliner on this save (tongs#61, tongs#63); the menubar root is not yet read."
+          },
+          "roots": ["topbar", "speed_controls", "outliner", "menubar"],
+          "codeFilled": []
+        }
+      ]
+    },
+    {
+      "id": "esc-menu",
+      "title": "Esc menu and message settings",
+      "files": ["interface/menubar.gui"],
+      "why": "A frame-animated sprite, maskedflag_greydown and position types.",
+      "views": [
+        {
+          "id": "esc-menu",
+          "title": "Esc menu",
+          "recipe": {
+            "from": "save",
+            "steps": [{ "key": "escape" }],
+            "verified": false,
+            "evidence": "etch#10; not yet run."
+          },
+          "roots": ["menu"],
+          "codeFilled": []
+        },
+        {
+          "id": "message-settings",
+          "title": "Message settings",
+          "recipe": {
+            "from": "save",
+            "steps": [{ "key": "escape" }, { "click": "menu//menu_message_button" }],
+            "verified": false,
+            "evidence": "The button and menu_message_settings are named in vanilla menubar.gui; not yet run."
+          },
+          "roots": ["menu"],
+          "codeFilled": []
+        }
+      ]
+    },
+    {
+      "id": "court",
+      "title": "Court",
+      "files": ["interface/countryview.gui", "interface/countrycourtview.gui"],
+      "why": "A pie chart and buttonstate_linear.",
+      "views": [
+        {
+          "id": "court",
+          "title": "Court",
+          "recipe": {
+            "from": "save",
+            "steps": [{ "key": "f1" }],
+            "verified": false,
+            "evidence": "F1 opened countryview and countrycourtview live (etch#5); which of them the tree starts from is not yet read."
+          },
+          "roots": ["countrycourtview"],
+          "codeFilled": []
+        }
+      ]
+    },
+    {
+      "id": "diplomacy",
+      "title": "Diplomacy and one eu3 dialog",
+      "files": ["interface/countryview.gui", "interface/countrydiplomacyview.gui"],
+      "why": "The largest file: shields, cornered tiles, masked flags and progress bars.",
+      "views": [
+        {
+          "id": "diplomacy",
+          "title": "Diplomacy",
+          "recipe": {
+            "from": "save",
+            "steps": [{ "key": "f1" }, { "key": "3" }],
+            "verified": false,
+            "evidence": "etch#10 (F1, then 3); not yet run."
+          },
+          "roots": ["countrydiplomacyview"],
+          "codeFilled": []
+        },
+        {
+          "id": "diplomacy-dialog",
+          "title": "One eu3 dialog",
+          "recipe": {
+            "from": "save",
+            "steps": [],
+            "verified": false,
+            "evidence": "Which eu3 dialog, and how it opens without a game call, is not chosen yet (etch#10)."
+          },
+          "roots": [],
+          "codeFilled": []
+        }
+      ]
+    },
+    {
+      "id": "province",
+      "title": "Province",
+      "files": ["interface/provinceview.gui"],
+      "why": "The most check boxes and edit boxes.",
+      "views": [
+        {
+          "id": "province",
+          "title": "Province",
+          "recipe": {
+            "from": "save",
+            "steps": [],
+            "verified": false,
+            "evidence": "Opens with a click on a province of the map. Tongs' click on the map is not verified (etch#5), and the point depends on the resolution and the camera, so the recipe has no step yet."
+          },
+          "roots": ["provinceview"],
+          "codeFilled": []
+        }
+      ]
+    },
+    {
+      "id": "ledger",
+      "title": "Ledger",
+      "files": ["interface/ledger.gui"],
+      "why": "The only line chart.",
+      "views": [
+        {
+          "id": "ledger",
+          "title": "Ledger",
+          "recipe": {
+            "from": "save",
+            "steps": [{ "key": "l" }],
+            "verified": false,
+            "evidence": "etch#10; not yet run."
+          },
+          "roots": ["ledger"],
+          "codeFilled": []
+        }
+      ]
+    },
+    {
+      "id": "settings",
+      "title": "Settings",
+      "files": ["interface/settings.gui"],
+      "why": "textBoxType and dense buttonstate.",
+      "views": [
+        {
+          "id": "settings",
+          "title": "Settings",
+          "recipe": {
+            "from": "save",
+            "steps": [{ "key": "escape" }, { "click": "menu//menu_options_button" }],
+            "verified": false,
+            "evidence": "The button is named in vanilla menubar.gui and the window in settings.gui; not yet run."
+          },
+          "roots": ["menu_settings_ingame"],
+          "codeFilled": []
+        }
+      ]
+    },
+    {
+      "id": "macro-builder",
+      "title": "Macro builder",
+      "files": ["interface/macrobuildinterface_override.gui", "interface/macrobuildinterface.gui"],
+      "why": "A grid box and buttonstate_nodowneffect; macrobuildinterface.gui is the file DK-2KUI overrides (etch#10).",
+      "views": [
+        {
+          "id": "macro-builder",
+          "title": "Macro builder",
+          "recipe": {
+            "from": "save",
+            "steps": [{ "key": "b" }],
+            "verified": false,
+            "evidence": "etch#10; not yet run."
+          },
+          "roots": ["macro_build_interface"],
+          "codeFilled": []
+        }
+      ]
+    },
+    {
+      "id": "estates",
+      "title": "Estates",
+      "files": ["interface/countryview.gui", "interface/countryestatesview.gui"],
+      "why": "Grid boxes and a pie chart.",
+      "views": [
+        {
+          "id": "estates",
+          "title": "Estates",
+          "recipe": {
+            "from": "save",
+            "steps": [{ "key": "f1" }, { "key": "k" }],
+            "verified": false,
+            "evidence": "etch#10 (F1, then K); not yet run."
+          },
+          "roots": ["countryestatesview"],
+          "codeFilled": []
+        }
+      ]
+    },
+    {
+      "id": "event",
+      "title": "Event",
+      "files": ["interface/eventwindow.gui"],
+      "why": "A cornered background.",
+      "views": [
+        {
+          "id": "event",
+          "title": "Event",
+          "recipe": {
+            "from": "save",
+            "steps": [],
+            "verified": false,
+            "evidence": "Only if the save opens an event without running time (etch#10); not yet checked."
+          },
+          "roots": ["EventWindow"],
+          "codeFilled": []
+        }
+      ]
+    }
+  ],
+  "knownDeviations": []
+}

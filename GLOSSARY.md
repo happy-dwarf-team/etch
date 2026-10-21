@@ -112,6 +112,11 @@ One window as the game drew it, its widget tree and its pixels, at one
 resolution, with one playset and one game build.
 _Avoid_: screenshot, golden image
 
+**Recipe**:
+The keys and clicks that open one state of a corpus window from a known start
+(the main menu, or the playset's save loaded and paused), without game calls.
+_Avoid_: script, macro
+
 **Known deviation**:
 A difference between the offline renderer and a capture that is accepted for
 now and tracked by its own issue.
