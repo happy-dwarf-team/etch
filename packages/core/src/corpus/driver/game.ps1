@@ -9,16 +9,22 @@ param(
     #   -userdir=<ProfileDir>/ and continue=<Save> when given; prints the verified session record.
     # Stop: close only the process of -Record after its PID, image path and creation time are
     #   verified again, and the games it restarted itself; prints what happened.
-    # Cursor: where the real mouse cursor is, in screen pixels (read only). The game scrolls the
-    #   map towards a cursor outside its window, so captures from a save need it inside.
-    [Parameter(Mandatory)][ValidateSet('Prepare', 'Check', 'Start', 'Stop', 'Cursor')][string]$Action,
+    # Cursor: where the real mouse cursor is and the rectangle Windows confines it to, in screen
+    #   pixels (read only). The game scrolls the map towards a cursor outside its window, so
+    #   captures from a save need it inside.
+    # Pin: put the real cursor on -X,-Y and confine it to that one pixel (ClipCursor). The clip
+    #   outlives this process; Ctrl+Alt+Del, Win+L and UAC clear it, which is the user's way out.
+    # Release: confine the cursor no more (ClipCursor(NULL)).
+    [Parameter(Mandatory)][ValidateSet('Prepare', 'Check', 'Start', 'Stop', 'Cursor', 'Pin', 'Release')][string]$Action,
     [Parameter(Mandatory)][string]$Lab,
     [Parameter(Mandatory)][string]$HostDir,
     [string]$AnvilZip,
     [string]$TongsZip,
     [string]$ProfileDir,
     [ValidatePattern('^[A-Za-z0-9_.-]+\.eu4$')][string]$Save,
-    [string]$Record
+    [string]$Record,
+    [int]$X,
+    [int]$Y
 )
 # The capture driver of happy-dwarf-team/etch#42. Every game run follows the EU4 engine lab's
 # procedure (its AGENTS.md): hashes and the Process Lasso rule checked before the start, the copy
@@ -27,10 +33,36 @@ param(
 # the Steam folder; Windows display settings are never touched. Output: one JSON object.
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
-if ($Action -eq 'Cursor') {
-    Add-Type -AssemblyName System.Windows.Forms
-    $p = [System.Windows.Forms.Cursor]::Position
-    [ordered]@{ ok = $true; x = $p.X; y = $p.Y } | ConvertTo-Json -Compress
+if ($Action -in 'Cursor', 'Pin', 'Release') {
+    Add-Type -Namespace EtchCapture -Name Mouse -MemberDefinition @'
+[StructLayout(LayoutKind.Sequential)] public struct POINT { public int X, Y; }
+[StructLayout(LayoutKind.Sequential)] public struct RECT { public int Left, Top, Right, Bottom; }
+[DllImport("user32.dll")] public static extern IntPtr SetThreadDpiAwarenessContext(IntPtr context);
+[DllImport("user32.dll", SetLastError = true)] public static extern bool GetCursorPos(out POINT point);
+[DllImport("user32.dll", SetLastError = true)] public static extern bool SetCursorPos(int x, int y);
+[DllImport("user32.dll", SetLastError = true)] public static extern bool GetClipCursor(out RECT rect);
+[DllImport("user32.dll", SetLastError = true)] public static extern bool ClipCursor(ref RECT rect);
+[DllImport("user32.dll", SetLastError = true)] public static extern bool ClipCursor(IntPtr none);
+'@
+    # Physical pixels, as Tongs reports the window, whatever the display scaling.
+    [EtchCapture.Mouse]::SetThreadDpiAwarenessContext([IntPtr]-4) | Out-Null
+    function Assert-Win32([bool]$Ok, [string]$What) {
+        if (-not $Ok) { throw "$What failed: Win32 error $([Runtime.InteropServices.Marshal]::GetLastWin32Error())" }
+    }
+    if ($Action -eq 'Pin') {
+        if (-not $PSBoundParameters.ContainsKey('X') -or -not $PSBoundParameters.ContainsKey('Y')) { throw '-X and -Y are required for Pin' }
+        Assert-Win32 ([EtchCapture.Mouse]::SetCursorPos($X, $Y)) 'SetCursorPos'
+        $r = New-Object EtchCapture.Mouse+RECT
+        $r.Left = $X; $r.Top = $Y; $r.Right = $X + 1; $r.Bottom = $Y + 1
+        Assert-Win32 ([EtchCapture.Mouse]::ClipCursor([ref]$r)) 'ClipCursor'
+    }
+    if ($Action -eq 'Release') { Assert-Win32 ([EtchCapture.Mouse]::ClipCursor([IntPtr]::Zero)) 'ClipCursor' }
+    $p = New-Object EtchCapture.Mouse+POINT
+    Assert-Win32 ([EtchCapture.Mouse]::GetCursorPos([ref]$p)) 'GetCursorPos'
+    $c = New-Object EtchCapture.Mouse+RECT
+    Assert-Win32 ([EtchCapture.Mouse]::GetClipCursor([ref]$c)) 'GetClipCursor'
+    [ordered]@{ ok = $true; x = $p.X; y = $p.Y
+        clip = [ordered]@{ left = $c.Left; top = $c.Top; right = $c.Right; bottom = $c.Bottom } } | ConvertTo-Json -Compress
     return
 }
 Import-Module (Join-Path $Lab 'scripts\lib\LabProcess.psm1') -Force
