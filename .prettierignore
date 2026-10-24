@@ -6,3 +6,5 @@ dist-test/
 .vscode-test/
 test-results/
 playwright-report/
+# EU4 localisation is not YAML.
+packages/media/demo-mod/

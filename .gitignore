@@ -11,3 +11,5 @@ playwright-report/
 /packages/extension/CHANGELOG.md
 # The precision corpus keeps its screenshots outside Git (corpus/README.md).
 /corpus/**/*.png
+# The media capture writes masters, loops and stills, which show game art (docs/media.md).
+/packages/media/out/

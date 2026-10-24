@@ -1,6 +1,7 @@
 // The preview webview's script (bundled to dist/webview.js): draws each draw list the extension
-// host posts with `@etch/renderer`, fetching textures through webview URIs (ADR 0001), and shows
-// the toolbar and notices the host describes.
+// host posts with `@etch/renderer`, fetching textures through webview URIs (ADR 0001), marks each
+// paint on the canvas for Etch's own tools (paint-marker.ts), and shows the toolbar and notices the
+// host describes.
 
 import { Painter, createContext, readPixels } from '@etch/renderer';
 import type { DrawRect } from '@etch/core/draw-list';
@@ -12,6 +13,7 @@ import type {
   ViewState,
   WebviewMessage,
 } from '../src/preview/protocol.ts';
+import { markPaint, paintResult } from './paint-marker.ts';
 
 declare function acquireVsCodeApi(): {
   postMessage(message: WebviewMessage): void;
@@ -129,6 +131,7 @@ async function receive(message: HostMessage): Promise<void> {
 
 async function draw(message: Extract<HostMessage, { type: 'draw' }>): Promise<void> {
   if (painter === undefined) {
+    markPaint(canvas, message.id, 'failed');
     post({ type: 'failed', id: message.id, message: failure ?? 'no WebGL2 context' });
     return;
   }
@@ -150,6 +153,7 @@ async function draw(message: Extract<HostMessage, { type: 'draw' }>): Promise<vo
         gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4));
       }
     }
+    markPaint(canvas, message.id, paintResult(result.painted, result.problems.length));
     post({
       type: 'painted',
       id: message.id,
@@ -164,6 +168,7 @@ async function draw(message: Extract<HostMessage, { type: 'draw' }>): Promise<vo
       at: performance.timeOrigin + performance.now(),
     });
   } catch (error) {
+    markPaint(canvas, message.id, 'failed');
     post({ type: 'failed', id: message.id, message: messageOf(error) });
   }
 }

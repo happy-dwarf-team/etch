@@ -1,0 +1,7 @@
+# Etch demo mod: our own sprites, on the base game's textures.
+spriteTypes = {
+	textSpriteType = {
+		name = "GFX_etch_demo_option"
+		texturefile = "gfx/interface/button_straight_300_32.dds"
+	}
+}
