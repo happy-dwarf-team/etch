@@ -369,7 +369,9 @@ How a view is compared (`planCapture` and `compareCapture` in
 - **Moved widgets.** A widget a `codeMoved` pattern names is drawn, with
   everything inside it, moved by the difference between the game's rect and
   the layout's; its report says how far (`moved`).
-- **What is drawn.** The roots' widgets in paint order, without the widgets the
+- **What is drawn.** The roots' widgets in paint order, without code-filled
+  widgets the game did not create (only the layout has them: alternative
+  sub-windows the code never opens) and without the widgets the
   capture reports hidden (`visible` false): the game's code hides them, so they
   are code-filled content that the capture itself records.
 - **A widget's pixels** are those where its own draws (sprite and glyph rects)
@@ -377,7 +379,8 @@ How a view is compared (`planCapture` and `compareCapture` in
 - **Masks.** Pixels the render does not cover fully (alpha below 255); and
   code-filled content: the game's rects of the widgets the view's `codeFilled`
   patterns or the manifest's `codeFilledKinds` name and of everything inside
-  them, and the render's draws of those widgets. A widget the capture reports
+  them, and the render's draws of those widgets. A game rect 0 or 1 pixel
+  wide and taller than that, which Tongs gives shields, is masked as a square. A widget the capture reports
   disabled (`enabled` false) or checked (`checked` true) is code-filled too:
   the game's code set that state, and the offline renderer draws the `.gui`'s
   (etch#44: the Esc menu's AI settings, greyed out in the game).

@@ -287,7 +287,11 @@ export function planCapture(input: CapturePlanInput): CapturePlan {
     });
     layout.widgets.forEach((laidOut, at) => {
       const owner = planned[w]?.[at] ?? -1;
-      if (owner < 0 || widgets[owner]?.hidden !== false) return;
+      const widget = widgets[owner];
+      if (owner < 0 || widget?.hidden !== false) return;
+      // A code-filled widget the game did not create (only the layout has it) is not drawn: it
+      // would cover what the game shows there (etch#44).
+      if (widget.captured === undefined && widget.codeFilled !== undefined) return;
       for (let d = laidOut.drawStart; d < laidOut.drawEnd; d++) {
         const draw = layout.drawList.draws[d];
         if (draw === undefined) continue;
@@ -472,13 +476,15 @@ export function compareCapture(
     }
   });
 
-  // Code-filled content, by the game's rects.
+  // Code-filled content, by the game's rects. Tongs gives shields a width of 0 or 1 (etch#42); the
+  // game draws them about as wide as they are high, so such a rect is taken as a square (etch#44).
   const masked = new Uint8Array(count);
   for (const widget of plan.widgets) {
     const rect = widget.captured?.rect;
     if (widget.codeFilled === undefined || widget.hidden || rect === undefined) continue;
+    const w = rect.w <= 1 && rect.h > 1 ? rect.h : rect.w;
     const x0 = Math.max(0, rect.x);
-    const x1 = Math.min(width, rect.x + rect.w);
+    const x1 = Math.min(width, rect.x + w);
     if (x1 <= x0) continue;
     for (let row = Math.max(0, rect.y); row < Math.min(height, rect.y + rect.h); row++) {
       masked.fill(1, row * width + x0, row * width + x1);
