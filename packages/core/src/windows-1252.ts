@@ -11,6 +11,8 @@ const HIGH_CONTROLS = [
 const DECODE = new Uint16Array(256);
 /** The byte a save writes for each UTF-16 code unit, or `?` (0x3F) when there is none. */
 const ENCODE = new Uint8Array(65536).fill(0x3f);
+/** The byte each character of game text was decoded from, or `?` (0x3F) when there is none. */
+const ENCODE_DECODED = new Uint8Array(65536).fill(0x3f);
 
 for (let byte = 0; byte < 256; byte++) {
   const mapped = byte >= 0x80 && byte < 0xa0 ? (HIGH_CONTROLS[byte - 0x80] as number) : byte;
@@ -24,6 +26,7 @@ for (let byte = 0; byte < 256; byte++) {
     DECODE[byte] = byte;
     ENCODE[0xfffd] = byte;
   }
+  ENCODE_DECODED[DECODE[byte] as number] = byte;
 }
 
 const CHUNK = 8192;
@@ -50,6 +53,20 @@ export function encodeWindows1252(text: string): Uint8Array {
   const bytes = new Uint8Array(text.length);
   for (let i = 0; i < text.length; i++) {
     bytes[i] = ENCODE[text.charCodeAt(i)] as number;
+  }
+  return bytes;
+}
+
+/**
+ * Encodes game text back into the bytes it was decoded from, the inverse of
+ * {@link decodeWindows1252}: unlike a save, the five undefined bytes, kept as
+ * C1 controls, come back as themselves. Anything else outside the code page
+ * becomes `?`, as a save would write it.
+ */
+export function encodeDecodedWindows1252(text: string): Uint8Array {
+  const bytes = new Uint8Array(text.length);
+  for (let i = 0; i < text.length; i++) {
+    bytes[i] = ENCODE_DECODED[text.charCodeAt(i)] as number;
   }
   return bytes;
 }
