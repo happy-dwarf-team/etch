@@ -99,11 +99,12 @@ where `<hash8>` is the first 8 hex digits of the file's SHA-256. A key therefore
 its content, and every object is uploaded with `Cache-Control: public, max-age=31536000, immutable`
 and the file's media type (`video/webm`, `video/mp4`) as its `Content-Type`.
 
-The upload token is the Account API token `happydwarf-media-upload` (Object Read & Write on
-`happydwarf-media` only, one year), in two **user** environment variables:
-`HAPPYDWARF_MEDIA_ACCESS_KEY_ID` and `HAPPYDWARF_MEDIA_SECRET_ACCESS_KEY`. Set them in Windows'
-user environment variables, never in a `.env` file, a script or a CI secret, and open a new
-terminal afterwards. Without both the command stops before it reads anything; it never prints
+Each machine you upload from has its own Account API token,
+`happydwarf-media-upload-<computer>` with the Windows computer name in lower case (Object Read &
+Write on `happydwarf-media` only, one year; hub specification 7.4), in two **user** environment
+variables: `HAPPYDWARF_MEDIA_ACCESS_KEY_ID` and `HAPPYDWARF_MEDIA_SECRET_ACCESS_KEY`. Set them in
+Windows' user environment variables, never in a `.env` file, a script or a CI secret, and never
+copy them to another machine; open a new terminal afterwards. Without both the command stops before it reads anything; it never prints
 their values. The bucket name and the account's S3 endpoint are in
 `packages/media/src/config.ts`.
 
