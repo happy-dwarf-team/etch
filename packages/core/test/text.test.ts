@@ -180,11 +180,18 @@ describe('layoutText', () => {
     expect(t.width).toBe(13);
   });
 
-  it('centres rounding half up (etch#9)', () => {
-    expect(layoutText(font, 'ab', box(15), { ...options, align: 'centre' }).lines[0]?.x).toBe(3);
-    expect(layoutText(font, 'ab', box(9), { ...options, align: 'centre' }).lines[0]?.x).toBe(0);
-    const loose = layoutText(font, 'ab', box(15), { ...options, align: 'centre', snap: false });
-    expect(loose.lines[0]?.x).toBe(2.5);
+  it('centres by halving both widths, rounded down, then moves right by the border (etch#44)', () => {
+    const centred = (text: string, width: number, border = 0): number | undefined =>
+      layoutText(font, text, box(width, { border: { x: border, y: 0 } }), {
+        ...options,
+        align: 'centre',
+      }).lines[0]?.x;
+    // "ab" is 10 px and "a" 5 px wide.
+    expect(centred('ab', 15)).toBe(2);
+    expect(centred('a', 14)).toBe(5);
+    expect(centred('a', 15)).toBe(5);
+    expect(centred('ab', 9)).toBe(-1);
+    expect(centred('ab', 15, 4)).toBe(6);
   });
 
   it('wraps at spaces and measures a wrapped line with its trailing space (etch#9)', () => {
@@ -225,10 +232,9 @@ describe('layoutText', () => {
 
   it('aligns vertically in the box height', () => {
     const b = box(30, { height: 25, border: { x: 0, y: 2 } });
-    const at = (verticalAlign: 'centre' | 'bottom', snap = true) =>
-      layoutText(font, 'a', b, { ...options, verticalAlign, snap }).lines[0]?.y;
+    const at = (verticalAlign: 'centre' | 'bottom') =>
+      layoutText(font, 'a', b, { ...options, verticalAlign }).lines[0]?.y;
     expect(at('centre')).toBe(8);
-    expect(at('centre', false)).toBe(7.5);
     expect(at('bottom')).toBe(13);
   });
 

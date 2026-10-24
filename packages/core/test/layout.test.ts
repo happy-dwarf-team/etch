@@ -350,31 +350,40 @@ describe('layoutWindow: text', () => {
       { localise: (text) => (text === 'KEY' ? 'A§GV§!' : text) },
     );
     const l = layout();
-    expect(rectOf(l, 't')).toEqual([10, 20, 40, 20]);
+    // One 10 px line and the 3 px border above and below, not maxHeight (etch#44).
+    expect(rectOf(l, 't')).toEqual([10, 20, 40, 16]);
     const text = only(drawsOf(l, 't'));
     if (text.kind !== 'text') throw new Error('expected text');
     expect(l.drawList.textures[text.texture]).toBe('gfx/fonts/tiny.dds');
     expect(text.border).toBe(0xff000000);
     expect(text.glyphs).toHaveLength(2 * GLYPH_STRIDE);
-    // "AV" is 10 px wide with kerning: centred at 10 + round(30 / 2), 3 px below the top.
-    expect(text.glyphs.slice(0, GLYPH_STRIDE)).toEqual([25, 24, 6, 8, 0, 0, 0xff102030]);
-    expect(text.glyphs.slice(GLYPH_STRIDE)).toEqual([29, 24, 6, 8, 7, 0, 0xff00ff00]);
+    // "AV" is 10 px wide with kerning: centred at 10 + 2 + 40 / 2 − 10 / 2, 3 px below the top.
+    expect(text.glyphs.slice(0, GLYPH_STRIDE)).toEqual([27, 24, 6, 8, 0, 0, 0xff102030]);
+    expect(text.glyphs.slice(GLYPH_STRIDE)).toEqual([31, 24, 6, 8, 7, 0, 0xff00ff00]);
   });
 
-  it('centres button text in the button without rounding', () => {
+  it('centres button text in the button on whole pixels', () => {
     const { layout } = setUp(`guiTypes = { windowType = { name = "w"
       guiButtonType = { name = "b" quadTextureSprite = "GFX_button" buttonText = "a" buttonFont = "tiny" position = { x = 1 y = 1 } }
-      checkboxType = { name = "c" quadTextureSprite = "GFX_button" buttonText = "a" buttonFont = "tiny" format = left }
+      guiButtonType = { name = "c" quadTextureSprite = "GFX_button" buttonText = "a" buttonFont = "tiny" format = left }
     } }`);
     const l = layout();
     const [sprite, text] = drawsOf(l, 'b');
     expect(sprite).toMatchObject({ kind: 'sprite', width: 30, height: 12 });
     if (text?.kind !== 'text') throw new Error('expected text');
-    // "a" advances 5: x = 1 + (30 − 5) / 2; one 10 px line in 12 px: top = 1 + 1, glyph yoffset 3.
-    expect(text.glyphs.slice(0, 2)).toEqual([13.5, 5]);
+    // "a" advances 5: x = 1 + 30 / 2 − floor(5 / 2); one 10 px line in 12 px: top = 1 + 1, glyph
+    // yoffset 3 (etch#44).
+    expect(text.glyphs.slice(0, 2)).toEqual([14, 5]);
     const left = drawsOf(l, 'c')[1];
     if (left?.kind !== 'text') throw new Error('expected text');
     expect(left.glyphs[0]).toBe(0);
+  });
+
+  it('draws no buttonText on a check box, as the game does not (etch#44)', () => {
+    const { layout } = setUp(`guiTypes = { windowType = { name = "w"
+      checkboxType = { name = "c" quadTextureSprite = "GFX_button" buttonText = "a" buttonFont = "tiny" }
+    } }`);
+    expect(drawsOf(layout(), 'c').map((d) => d.kind)).toEqual(['sprite']);
   });
 
   it('draws text icons as sprites and reports text problems at the text property', () => {
@@ -409,6 +418,22 @@ describe('layoutWindow: text', () => {
     const l = layout();
     expect(drawsOf(l, 'empty')).toEqual([]);
     expect(rectOf(l, 'open')).toEqual([0, 0, 50, 20]);
+  });
+
+  it('sizes an instant text box to its lines and border, whatever maxHeight says', () => {
+    const { layout } = setUp(`guiTypes = { windowType = { name = "w"
+      instantTextBoxType = { name = "one" font = "tiny" text = "a" maxWidth = 50 maxHeight = 32 borderSize = { x = 4 y = 4 } }
+      instantTextBoxType = { name = "fixed" font = "tiny" text = "a" maxWidth = 50 maxHeight = 6 fixedsize = yes }
+      instantTextBoxType = { name = "two" font = "tiny" text = "a\\nb" maxWidth = 50 maxHeight = 12 borderSize = { x = 0 y = 2 } }
+      instantTextBoxType = { name = "empty" font = "tiny" text = "" maxWidth = 50 maxHeight = 40 borderSize = { x = 4 y = 4 } }
+      editBoxType = { name = "edit" font = "tiny" text = "a" size = { x = 50 y = 30 } borderSize = { x = 4 y = 4 } }
+    } }`);
+    const l = layout();
+    expect(rectOf(l, 'one')).toEqual([0, 0, 50, 18]);
+    expect(rectOf(l, 'fixed')).toEqual([0, 0, 50, 10]);
+    expect(rectOf(l, 'two')).toEqual([0, 0, 50, 24]);
+    expect(rectOf(l, 'empty')).toEqual([0, 0, 50, 18]);
+    expect(rectOf(l, 'edit')).toEqual([0, 0, 50, 30]);
   });
 });
 

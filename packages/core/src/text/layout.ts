@@ -28,12 +28,6 @@ export interface TextOptions {
   readonly verticalAlign?: TextVerticalAlign;
   /** `text_color_code`: the colour letter the text starts with. */
   readonly colourCode?: string;
-  /**
-   * Round centred positions half up (verified for `format = centre` in text
-   * boxes). `false` keeps fractions, which came closest for `buttonText` in
-   * etch#9 (still 1 px off, spec section 15).
-   */
-  readonly snap?: boolean;
   /** Size of an icon sprite such as `GFX_text_yes`, or `undefined` when it does not exist. */
   readonly icon?: (sprite: string) => { width: number; height: number } | undefined;
 }
@@ -264,8 +258,6 @@ export function layoutText(
 
   const border = box.border ?? { x: 0, y: 0 };
   const align = options.align ?? 'left';
-  const snap = options.snap ?? true;
-  const centre = (offset: number): number => (snap ? Math.round(offset) : offset);
 
   const rows: (Row & { at: number })[] = [];
   for (const p of paragraphs) {
@@ -278,7 +270,7 @@ export function layoutText(
   const height = rows.length * lineHeight;
   const boxHeight = box.height ?? 0;
   let top = box.y + border.y;
-  if (options.verticalAlign === 'centre') top = box.y + centre((boxHeight - height) / 2);
+  if (options.verticalAlign === 'centre') top = box.y + Math.round((boxHeight - height) / 2);
   else if (options.verticalAlign === 'bottom') top = box.y + boxHeight - border.y - height;
 
   const lines: TextLine[] = [];
@@ -287,8 +279,11 @@ export function layoutText(
   let width = 0;
   rows.forEach((row, index) => {
     let x = box.x + border.x;
-    if (align === 'centre') x = box.x + centre((box.width - row.width) / 2);
-    else if (align === 'right') x = box.x + box.width - border.x - row.width;
+    if (align === 'centre') {
+      // Verified in the corpus (etch#44): the game centres in the whole width and then moves the
+      // line right by the border, halving both widths separately, rounded down.
+      x += Math.floor(box.width / 2) - Math.floor(row.width / 2);
+    } else if (align === 'right') x = box.x + box.width - border.x - row.width;
     const y = top + index * lineHeight;
     const last = row.items[row.items.length - 1];
     lines.push({ x, y, width: row.width, start: row.at, end: last?.end ?? row.at });

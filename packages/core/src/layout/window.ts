@@ -194,12 +194,14 @@ class Layout {
     } else if (SPRITE_WIDGETS.has(kind)) {
       const drawn = this.drawSpriteOf(props, x, y, source, fill);
       if (drawn !== undefined) rect = { x, y, ...drawn };
-      if (BUTTONS.has(kind)) this.drawButtonText(props, rect, source);
+      // Verified in the corpus (etch#44): the game draws no `buttonText` on a check box; the
+      // message settings lay a text box over each of theirs instead.
+      if (BUTTONS.has(kind) && kind !== 'checkboxType') this.drawButtonText(props, rect, source);
     } else if (kind === 'shieldtype') {
       const drawn = this.drawSpriteOf(props, x, y, source, undefined);
       if (drawn !== undefined) rect = { x, y, ...drawn };
     } else if (TEXT_BOXES.has(kind)) {
-      rect = this.drawTextBox(props, x, y, source);
+      rect = this.drawTextBox(kind, props, x, y, source);
     } else if (LISTS.has(kind)) {
       rect = { x, y, ...sizeIn(props.size('size'), parent) };
       // Hypothesis: a list draws its `background` sprite behind its (empty) rows.
@@ -573,10 +575,13 @@ class Layout {
 
   /**
    * A text box: `maxWidth` × `maxHeight` (an edit box: `size`) with `borderSize` inside (etch#3).
-   * Verified on the main menu: the text starts at `y + borderSize.y`, wraps at the inner width, and
-   * centres rounding half up (etch#9). `fixedsize` and `truncate` are not applied.
+   * Verified on the main menu: the text starts at `y + borderSize.y` and wraps at the inner width
+   * (etch#9); centring is in `layoutText` (etch#44). `fixedsize` and `truncate` are not applied.
+   *
+   * Verified in the corpus (etch#44): an `instantTextBoxType` is as tall as its lines plus the
+   * border above and below, whatever `maxHeight` and `fixedsize` say; empty text is one line.
    */
-  private drawTextBox(props: Properties, x: number, y: number, source: number): Rect {
+  private drawTextBox(kind: string, props: Properties, x: number, y: number, source: number): Rect {
     const size = props.point('size');
     const width = props.number('maxwidth') ?? size?.x ?? 0;
     const height = props.number('maxheight') ?? size?.y;
@@ -585,16 +590,33 @@ class Layout {
     const laid = this.drawText(props, 'text', 'font', box, source, {
       align: textAlign(props.text('format')),
       verticalAlign: verticalAlign(props.text('vertical_alignment')) ?? 'top',
-      snap: true,
       ...colourCode(props),
     });
+    if (kind === 'instantTextBoxType') {
+      const lineHeight = this.lineHeightOf(props, 'font');
+      if (lineHeight !== undefined) {
+        return { x, y, width, height: Math.max(laid ?? 0, lineHeight) + 2 * border.y };
+      }
+    }
     return { x, y, width, height: height ?? laid ?? 0 };
+  }
+
+  /** The `lineHeight` of a widget's font, when the font is loaded. */
+  private lineHeightOf(props: Properties, fontKey: string): number | undefined {
+    const fontName = props.text(fontKey);
+    if (fontName === undefined) return undefined;
+    const definition = this.input.index.font(fontName)?.item;
+    if (definition === undefined) return undefined;
+    const fnt = resolveFontFiles(definition, this.input.exists).fnt;
+    if (fnt === undefined) return undefined;
+    const font = this.input.assets.font(fnt);
+    return font === undefined || 'problem' in font ? undefined : font.lineHeight;
   }
 
   /**
    * `buttonText` in `buttonFont`, centred in the button both ways (or as `format` and
-   * `vertical_alignment` say) without rounding: the closest rule found in etch#9, which still draws
-   * 1 px higher than the game (spec section 15). `text` and `font` stand in when they are missing.
+   * `vertical_alignment` say) on whole pixels, by the rules of text boxes (etch#44). `text` and
+   * `font` stand in when they are missing.
    */
   private drawButtonText(props: Properties, rect: Rect, source: number): void {
     const textKey = props.has('buttontext') ? 'buttontext' : 'text';
@@ -603,7 +625,6 @@ class Layout {
     this.drawText(props, textKey, fontKey, rect, source, {
       align: format === undefined ? 'centre' : textAlign(format),
       verticalAlign: verticalAlign(props.text('vertical_alignment')) ?? 'centre',
-      snap: false,
     });
   }
 
@@ -617,7 +638,6 @@ class Layout {
     options: {
       align: TextAlign;
       verticalAlign: TextVerticalAlign;
-      snap: boolean;
       colourCode?: string;
     },
   ): number | undefined {
@@ -654,7 +674,6 @@ class Layout {
       },
       align: options.align,
       verticalAlign: options.verticalAlign,
-      snap: options.snap,
       ...(options.colourCode === undefined ? {} : { colourCode: options.colourCode }),
       icon: (name) => {
         const sprite = this.input.index.sprite(name)?.item;
