@@ -392,6 +392,19 @@ describe('compareCapture', () => {
     expect(widget(result, 'panel/flag').status).toBe('fail');
   });
 
+  it("compares a window's position but not its size (etch#44)", () => {
+    const resized = compare({
+      capture: (root) => ({ ...root, rect: { ...root.rect, w: 1921, h: 80 } }),
+    });
+    expect(widget(resized, 'panel').status).toBe('pass');
+    const moved = compare({
+      capture: (root) => ({ ...root, rect: { ...root.rect, x: root.rect.x + 1 } }),
+    });
+    expect(widget(moved, 'panel').problems).toEqual([
+      "The rect is (10, 20) 100×50; the game's is (11, 20) 100×50.",
+    ]);
+  });
+
   it('leaves out pixels the render covers only partly', () => {
     const result = compare({
       render: (r) => {

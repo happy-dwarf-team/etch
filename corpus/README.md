@@ -389,7 +389,9 @@ How a view is compared (`planCapture` and `compareCapture` in
   more than 5 % of a widget's pixels are unstable, it fails: the capture
   shows something the game animates there. The mask's hash must be the
   record's, like the screenshot's.
-- **A widget passes** when its rect rounds to the game's rect and at least
+- **A widget passes** when its rect rounds to the game's rect (a window's
+  position only: a window draws nothing itself, and Tongs' window sizes may
+  not be the drawn panel) and at least
   99 % of its compared pixels are within ±2 in red, green and blue (the
   screenshot's alpha is ignored). The difference of a pixel is its largest
   channel difference.
