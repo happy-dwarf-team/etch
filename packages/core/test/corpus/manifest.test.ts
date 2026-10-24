@@ -224,6 +224,7 @@ describe('parseCorpusManifest', () => {
         ]);
         set(m, 'windows.1.views.0.roots', []);
         set(m, 'windows.1.views.0.codeFilled', ['a/[x]']);
+        set(m, 'windows.1.views.0.codeMoved', ['a/b', 'c/[y]']);
       }),
     ).toEqual([
       expect.stringMatching(/^windows\[1\]\.views\[0\]\.recipe\.steps\[0\]\.key: Expected one of /),
@@ -232,6 +233,7 @@ describe('parseCorpusManifest', () => {
       'windows[1].views[0].recipe.steps[3].point.y: Expected a fraction from 0 to 1.',
       'windows[1].views[0].roots: A verified recipe names the roots it reads.',
       'windows[1].views[0].codeFilled[0]: "[x]" in "a/[x]" is not a name with an optional [n].',
+      'windows[1].views[0].codeMoved[1]: "[y]" in "c/[y]" is not a name with an optional [n].',
     ]);
   });
 

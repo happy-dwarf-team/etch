@@ -454,6 +454,30 @@ describe('compareCapture', () => {
     expect(widget(result, 'panel/bg').pixels.masked).toBe(30 * 10 - 100 - 50 + 30 * 30);
   });
 
+  it('compares a widget the game moves where the game shows it (codeMoved)', () => {
+    // The game draws the flag 15 px lower than the layout puts it.
+    const capture = (root: CapturedWidget): CapturedWidget =>
+      editWidget(root, 'panel/flag', (w) => ({ ...w, rect: { ...w.rect, y: w.rect.y + 15 } }));
+    const game = (g: RgbaImage): void => {
+      fill(g, 50, 25, 10, 10, [40, 50, 60]);
+      fill(g, 50, 40, 10, 10, [200, 100, 0]);
+    };
+    expect(widget(compare({ capture, game }), 'panel/flag').status).toBe('fail');
+
+    const manifest = manifestWith((json) => {
+      set(json, 'windows.0.views.0.codeMoved', ['panel/flag']);
+    });
+    const result = compare({ manifest, capture, game });
+    expect(result.passed).toBe(true);
+    expect(widget(result, 'panel/flag')).toMatchObject({
+      status: 'pass',
+      moved: { x: 0, y: 15 },
+      renderRect: { x: 50, y: 40, w: 10, h: 10 },
+      pixels: { compared: 100, within: 100 },
+    });
+    expect(widget(result, 'panel/bg').status).toBe('pass');
+  });
+
   it('masks the widgets the game disables or checks: its code sets their state', () => {
     const result = compare({
       capture: (root) =>
