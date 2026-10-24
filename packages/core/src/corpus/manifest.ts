@@ -105,6 +105,11 @@ export interface CorpusView {
   readonly roots: readonly string[];
   /** Patterns of the widgets whose content the game's code fills or hides; masked by game rect. */
   readonly codeFilled: readonly string[];
+  /**
+   * Patterns of the widgets the game's code moves: the comparison draws each, and everything inside
+   * it, where the game shows it, and compares it there.
+   */
+  readonly codeMoved?: readonly string[];
   readonly note?: string;
 }
 
@@ -472,7 +477,12 @@ function checkWindow(
 }
 
 function checkView(c: Checker, value: unknown, at: string): { id: string | undefined } | undefined {
-  const json = c.object(value, at, ['id', 'title', 'recipe', 'roots', 'codeFilled'], ['note']);
+  const json = c.object(
+    value,
+    at,
+    ['id', 'title', 'recipe', 'roots', 'codeFilled'],
+    ['codeMoved', 'note'],
+  );
   if (json === undefined) return undefined;
   const id = c.string(json['id'], field(at, 'id'), ID, 'an id in lowercase words joined by -');
   c.string(json['title'], field(at, 'title'));
@@ -484,6 +494,9 @@ function checkView(c: Checker, value: unknown, at: string): { id: string | undef
     c.fail(field(at, 'roots'), 'A verified recipe names the roots it reads.');
   }
   c.array(json['codeFilled'], field(at, 'codeFilled'), (v, pathAt) => pattern(c, v, pathAt));
+  if (json['codeMoved'] !== undefined) {
+    c.array(json['codeMoved'], field(at, 'codeMoved'), (v, pathAt) => pattern(c, v, pathAt));
+  }
   return { id };
 }
 

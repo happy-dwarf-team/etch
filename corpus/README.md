@@ -72,6 +72,7 @@ opens and one capture records, such as the main menu and the lobby of
 | `recipe` | how to open it, below |
 | `roots` | Tongs selectors of the widgets whose trees the capture reads, `ui tree ROOT all` |
 | `codeFilled` | widget patterns of what the game's code fills or hides in this view. The comparison masks these widgets, and every pixel under their game rect, as ADR 0002 says. The lists start from the window's sample data and are completed with the first captures (etch#44) |
+| `codeMoved` | optional widget patterns of what the game's code moves away from where its `.gui` puts it: a dialog the game opens beside the panel that asked for it, a section the game moves on a taller screen. The comparison draws each such widget and everything inside it where the game shows it, and compares it there (etch#44) |
 
 A **recipe** is the Tongs input that opens a view from a known start state:
 
@@ -365,6 +366,9 @@ How a view is compared (`planCapture` and `compareCapture` in
   of the playset. Below it, the capture's children pair with the layout's by
   name, ignoring case, in order among siblings of the same name; unnamed
   children pair in order among the unnamed ones.
+- **Moved widgets.** A widget a `codeMoved` pattern names is drawn, with
+  everything inside it, moved by the difference between the game's rect and
+  the layout's; its report says how far (`moved`).
 - **What is drawn.** The roots' widgets in paint order, without the widgets the
   capture reports hidden (`visible` false): the game's code hides them, so they
   are code-filled content that the capture itself records.

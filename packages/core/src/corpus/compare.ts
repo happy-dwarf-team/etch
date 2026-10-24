@@ -94,6 +94,8 @@ export interface PlannedWidget {
   readonly codeFilled?: string;
   /** Why the corpus does not measure it: the manifest's not-covered kind or shader. */
   readonly notCovered?: string;
+  /** How far the layout was moved to where the game's code put it (the view's `codeMoved`). */
+  readonly moved?: { readonly x: number; readonly y: number };
 }
 
 export interface CapturePlan {
@@ -165,19 +167,26 @@ export function planCapture(input: CapturePlanInput): CapturePlan {
     return widgets.length - 1;
   };
 
+  /** Each planned widget's offset from its layout, inherited from a moved ancestor. */
+  const shifts: ({ x: number; y: number } | undefined)[] = [];
+  const shifted = (laid: LaidOutWidget, shift: { x: number; y: number } | undefined) =>
+    shift === undefined ? laid : { ...laid, x: laid.x + shift.x, y: laid.y + shift.y };
+
   const addLayoutOnly = (w: number, at: number, path: string, parent: number): void => {
     const window = input.windows[w];
     const laidOut = window?.layout.widgets[at];
     if (window === undefined || laidOut === undefined) return;
+    const shift = shifts[parent];
     const index = add({
       path,
       parent,
-      laidOut,
+      laidOut: shifted(laidOut, shift),
       kind: laidOut.widget.kind,
       hidden: widgets[parent]?.hidden ?? false,
       ...flags(path, laidOut.widget.kind, laidOut.widget, window, parent, undefined),
     });
     (planned[w] ?? [])[at] = index;
+    shifts[index] = shift;
     const kids = children[w]?.[at] ?? [];
     kids.forEach((kid, position) => {
       const name = window.layout.widgets[kid]?.widget.name ?? '';
@@ -200,16 +209,21 @@ export function planCapture(input: CapturePlanInput): CapturePlan {
     const window = input.windows[w];
     const laidOut = window?.layout.widgets[at];
     if (window === undefined || laidOut === undefined) return;
+    let shift = shifts[parent];
+    const moves = view?.codeMoved?.some((p) => matchesWidgetPattern(p, captured.path)) === true;
+    if (moves) shift = { x: captured.rect.x - laidOut.x, y: captured.rect.y - laidOut.y };
     const index = add({
       path: captured.path,
       parent,
       captured,
-      laidOut,
+      laidOut: shifted(laidOut, shift),
       kind: laidOut.widget.kind,
       hidden: (widgets[parent]?.hidden ?? false) || !captured.visible,
       ...flags(captured.path, laidOut.widget.kind, laidOut.widget, window, parent, captured),
+      ...(moves && shift !== undefined ? { moved: shift } : {}),
     });
     (planned[w] ?? [])[at] = index;
+    shifts[index] = shift;
 
     const kids = children[w]?.[at] ?? [];
     const byName = new Map<string, number[]>();
@@ -277,7 +291,8 @@ export function planCapture(input: CapturePlanInput): CapturePlan {
       for (let d = laidOut.drawStart; d < laidOut.drawEnd; d++) {
         const draw = layout.drawList.draws[d];
         if (draw === undefined) continue;
-        draws.push(remapTextures(draw, remap));
+        const shift = shifts[owner];
+        draws.push(remapTextures(shift === undefined ? draw : moveDraw(draw, shift), remap));
         drawOwners.push(owner);
       }
     });
@@ -384,7 +399,10 @@ export interface WidgetComparison {
   /** The known deviations that cover a failure. */
   readonly deviations?: readonly string[];
   readonly gameRect?: WidgetRect;
+  /** Where the render drew it; moved with a widget the game's code moves. */
   readonly renderRect?: WidgetRect;
+  /** How far the render was moved to where the game's code put this widget (`codeMoved`). */
+  readonly moved?: { readonly x: number; readonly y: number };
   readonly pixels: PixelCounts;
 }
 
@@ -542,6 +560,7 @@ export function compareCapture(
       ...(widget.captured === undefined ? {} : { type: widget.captured.type }),
       ...(gameRect === undefined ? {} : { gameRect }),
       ...(renderRect === undefined ? {} : { renderRect }),
+      ...(widget.moved === undefined ? {} : { moved: widget.moved }),
       pixels,
     };
     if (widget.hidden) return { ...base, status: 'hidden', problems: [] };
@@ -730,6 +749,17 @@ function findRoot(
     at = next;
   }
   return { window, at };
+}
+
+/** A draw moved by an offset: its rect, or each glyph of a text. */
+function moveDraw(draw: Draw, by: { x: number; y: number }): Draw {
+  if (draw.kind !== 'text') return { ...draw, x: draw.x + by.x, y: draw.y + by.y };
+  const glyphs = [...draw.glyphs];
+  for (let i = 0; i + 1 < glyphs.length; i += GLYPH_STRIDE) {
+    glyphs[i] = (glyphs[i] ?? 0) + by.x;
+    glyphs[i + 1] = (glyphs[i + 1] ?? 0) + by.y;
+  }
+  return { ...draw, glyphs };
 }
 
 function remapTextures(draw: Draw, remap: readonly number[]): Draw {
