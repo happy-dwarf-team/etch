@@ -72,6 +72,9 @@ upload it: **New extension → Visual Studio Code** the first time, **Update**
 on the extension afterwards. The Marketplace scans the file and lists it after
 a few minutes.
 
+After a release that changes what any media scene shows, do a media refresh
+([docs/media.md](media.md#media-refresh-checklist)); release-please triggers none.
+
 ## After the first release
 
 1. Once the Open VSX namespace is owned, register a trusted publisher for

@@ -37,6 +37,24 @@ export const MEDIA_TYPES = {
   mp4: `video/mp4; codecs="${H264_PROFILE.codecs}"`,
 } as const;
 
+/**
+ * The media bucket behind `media.happydwarf.dev` (hub spec 7.2): the Happy Dwarf Cloudflare
+ * account's R2 S3 endpoint, and Etch's prefix in the bucket's keys (section 8.8).
+ */
+export const MEDIA_BUCKET = {
+  name: 'happydwarf-media',
+  endpoint: 'https://e3c697b3d2be7d32a12d08b7ae12398b.r2.cloudflarestorage.com',
+  origin: 'https://media.happydwarf.dev',
+  prefix: 'etch',
+} as const;
+/** A key never changes its content, so caches may keep it for a year. */
+export const CACHE_CONTROL = 'public, max-age=31536000, immutable';
+/** The user environment variables that hold the upload token (hub spec 7.4); never printed. */
+export const CREDENTIAL_VARIABLES = {
+  accessKeyId: 'HAPPYDWARF_MEDIA_ACCESS_KEY_ID',
+  secretAccessKey: 'HAPPYDWARF_MEDIA_SECRET_ACCESS_KEY',
+} as const;
+
 /** The VS Code settings every capture starts from (section 8.4). */
 export function workbenchSettings(gamePath: string | undefined): Record<string, unknown> {
   return {

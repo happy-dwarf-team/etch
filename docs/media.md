@@ -11,8 +11,13 @@ A media refresh has two steps with a human review between them:
 
 1. `pnpm media capture` captures and encodes into the git-ignored `packages/media/out/v<version>/`.
    It publishes nothing.
-2. `pnpm media publish --site <etch-website checkout>` uploads the loops and writes the site's
-   files. It comes with [etch#89](https://github.com/happy-dwarf-team/etch/issues/89).
+2. `pnpm media publish --site <etch-website checkout>` uploads the loops to the media bucket and
+   then writes the posters, stills and media manifest into the site's checkout. It commits
+   nothing.
+
+A media refresh is due after an Etch release that changes what any scene shows, not after every
+release; the site keeps the last published set. [The checklist](#media-refresh-checklist) at the
+end lists every step.
 
 ## Before capturing
 
@@ -80,6 +85,63 @@ Look at every frame before anything is published:
 Known artefacts of the capture setup, not of Etch: VS Code's title bar says
 `[Extension Development Host]`, and the resolution quick pick's **Native** shows the monitor's
 resolution as Chromium sees it under the forced device scale (1720 × 720 on a 3440 × 1440 monitor).
+
+## Publishing
+
+```powershell
+pnpm media publish --site ..\etch-website              # the capture of the current version
+pnpm media publish --site ..\etch-website --etch 0.2.0 # the capture in out/v0.2.0/
+```
+
+The loops go to the R2 bucket `happydwarf-media` behind `media.happydwarf.dev` (the hub
+specification's section 7). Its key for a loop file is `etch/v<version>/<scene>.<hash8>.<webm|mp4>`,
+where `<hash8>` is the first 8 hex digits of the file's SHA-256. A key therefore never changes
+its content, and every object is uploaded with `Cache-Control: public, max-age=31536000, immutable`
+and the file's media type (`video/webm`, `video/mp4`) as its `Content-Type`.
+
+The upload token is the Account API token `happydwarf-media-upload` (Object Read & Write on
+`happydwarf-media` only, one year), in two **user** environment variables:
+`HAPPYDWARF_MEDIA_ACCESS_KEY_ID` and `HAPPYDWARF_MEDIA_SECRET_ACCESS_KEY`. Set them in Windows'
+user environment variables, never in a `.env` file, a script or a CI secret, and open a new
+terminal afterwards. Without both the command stops before it reads anything; it never prints
+their values. The bucket name and the account's S3 endpoint are in
+`packages/media/src/config.ts`.
+
+The command:
+
+1. Reads `media.draft.json` of the capture and checks that it is complete: the `hero` loop with
+   its poster and all six stills, every image a 2560 × 1440 PNG, every loop file the size the
+   draft says. It checks that `--site` is an etch-website checkout.
+2. Uploads each loop file with `PutObject` and `If-None-Match: *`, so it never overwrites a key.
+   When the bucket answers `412` the key exists: an object of the same size and type counts as
+   already uploaded (`Kept …`), and anything else stops the run. So `publish` can run again
+   without capturing again.
+3. Reads every key back with `HeadObject` and checks its size and type.
+4. Only then copies the posters and stills to the site's `src/assets/media/<scene>.png` and writes
+   `src/data/media.json`. The manifest never names a key that is not in the bucket.
+
+A failure in steps 1–3 leaves the site's checkout untouched. The command does not commit, push or
+open a pull request: the site's change goes through the team's pull request process like any
+other.
+
+## Media refresh checklist
+
+1. **The Paradox User Agreement.** Compare the "Last update" date of the
+   [Paradox User Agreement](https://legal.paradoxplaza.com/eula) with **2026-01-21**. If it has
+   changed, re-read sections 5 and 6 and check trigger 4 of the Etch site specification's
+   section 1.1 (sections 5–6 changed in a way that weakens our reading) before uploading
+   anything; if it fires, stop and write to Paradox first.
+2. Check out Etch at the release tag and run `pnpm install`.
+3. `pnpm media capture` (see [Before capturing](#before-capturing)).
+4. Review every still and the whole loop ([Reviewing](#reviewing)).
+5. In an up-to-date etch-website checkout, create a branch for the refresh.
+6. With the upload token in the user environment variables,
+   `pnpm media publish --site <that checkout>`.
+7. In the site, `npm run check:media`: it sends `HEAD` to every loop through
+   `media.happydwarf.dev` and checks the status, type and length.
+8. Commit `src/data/media.json` and `src/assets/media/` and open the site's pull request; its
+   description names the Etch version and links the capture's Etch release.
+9. After it merges and deploys, look at the loop and the stills on etch.happydwarf.dev.
 
 ## The demo mod
 
