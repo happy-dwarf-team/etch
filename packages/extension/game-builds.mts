@@ -161,11 +161,11 @@ function parseBuild(c: Checker, value: unknown, at: string): PinnedBuild | undef
     (v, licenseAt) => parseLicense(c, v, licenseAt),
     true,
   );
+  const licensesRead = c.problems.length === beforeLicenses;
   const match = url === undefined ? null : RELEASE_URL.exec(url);
   if (match !== null && tag !== undefined && match[2] !== tag) {
     c.fail(field(at, 'url'), `The URL is of the release ${String(match[2])}, not ${tag}.`);
   }
-  const licensesRead = c.problems.length === beforeLicenses;
   if (
     licensesRead &&
     licenses !== undefined &&
