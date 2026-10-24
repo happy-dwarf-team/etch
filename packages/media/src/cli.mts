@@ -73,7 +73,8 @@ if (step === 'publish') {
   try {
     await publish({
       capture: path.join(repository, 'packages', 'media', 'out', `v${version}`),
-      site: path.resolve(values.site),
+      // pnpm runs the script in the repository root; INIT_CWD is where it was typed.
+      site: path.resolve(process.env['INIT_CWD'] ?? process.cwd(), values.site),
       bucket: r2Bucket(client),
     });
   } catch (error) {
