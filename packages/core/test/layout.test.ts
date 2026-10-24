@@ -38,6 +38,11 @@ spriteTypes = {
   }
   PieChartType = { name = "GFX_pie" size = { x = 20 y = 20 } }
   spriteType = { name = "GFX_text_gold" texturefile = "gfx/interface/gold.dds" }
+  spriteType = { name = "GFX_panel_standard" texturefile = "gfx/interface/panel.dds" }
+  spriteType = { name = "GFX_panel_large" texturefile = "gfx/interface/panel_large.dds" }
+  spriteType = { name = "GFX_panel_huge" texturefile = "gfx/interface/panel_huge.dds" }
+  spriteType = { name = "GFX_crest" texturefile = "gfx/interface/panel.dds" }
+  spriteType = { name = "GFX_crest_large" texturefile = "gfx/interface/panel_large.dds" }
 }
 bitmapfonts = {
   bitmapfont = { name = "tiny" path = "gfx/fonts/tiny" color = 0xff102030 border_color = 0xff000000 }
@@ -53,6 +58,9 @@ const TEXTURES: Record<string, TextureSize> = {
   'gfx/interface/shield_frame.dds': { width: 24, height: 26 },
   'gfx/interface/shield_mask.dds': { width: 24, height: 26 },
   'gfx/interface/gold.dds': { width: 8, height: 8 },
+  'gfx/interface/panel.dds': { width: 30, height: 20 },
+  'gfx/interface/panel_large.dds': { width: 30, height: 40 },
+  'gfx/interface/panel_huge.dds': { width: 30, height: 60 },
   'gfx/fonts/tiny.dds': { width: 64, height: 64 },
 };
 const FONTS = new Set(['gfx/fonts/tiny.fnt']);
@@ -230,6 +238,36 @@ describe('layoutWindow: sprites', () => {
     expect(l.drawList.textures).toEqual(['gfx/interface/strip.dds']);
     expect(only(drawsOf(l, 'first'))).toMatchObject({ sx: 0, width: 16, height: 8 });
     expect(only(drawsOf(l, 'beyond'))).toMatchObject({ sx: 48 });
+  });
+
+  it('draws a scaled sprite at its exact size, bottom edge on a whole pixel (etch#44)', () => {
+    const { layout } = setUp(`guiTypes = { windowType = { name = "w"
+      iconType = { name = "scaled" spriteType = "GFX_strip" scale = 0.7 position = { x = 4 y = 4 } }
+    } }`);
+    const l = layout();
+    // A 16 × 8 cell at 0.7 is 11.2 × 5.6: drawn from y = 4 + 5 − 5.6, the widget 11 × 5.
+    const draw = only(drawsOf(l, 'scaled'));
+    if (draw.kind !== 'sprite') throw new Error('expected a sprite');
+    expect(draw.x).toBe(4);
+    expect(draw.y).toBeCloseTo(3.4);
+    expect(draw.width).toBeCloseTo(11.2);
+    expect(draw.height).toBeCloseTo(5.6);
+    expect(rectOf(l, 'scaled')).toEqual([4, 4, 11, 5]);
+  });
+
+  it("draws a sprite's _large and _huge variants on taller screens (etch#44)", () => {
+    const gui = `guiTypes = { windowType = { name = "w"
+      iconType = { name = "panel" spriteType = "GFX_panel_standard" }
+      iconType = { name = "crest" spriteType = "GFX_crest" }
+    } }`;
+    const heights = (height: number): number[] => {
+      const l = setUp(gui, { screen: { width: 1920, height } }).layout();
+      return [rectOf(l, 'panel')[3], rectOf(l, 'crest')[3]];
+    };
+    expect(heights(768)).toEqual([20, 20]);
+    expect(heights(900)).toEqual([40, 40]);
+    // Without a _huge variant the _large one stays.
+    expect(heights(1080)).toEqual([60, 40]);
   });
 
   it('draws shaders the renderer does not port with the default shader and reports them', () => {
