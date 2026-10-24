@@ -454,6 +454,42 @@ describe('compareCapture', () => {
     expect(widget(result, 'panel/bg').pixels.masked).toBe(30 * 10 - 100 - 50 + 30 * 30);
   });
 
+  it('masks a code-filled shield Tongs gives no width as a square (etch#44)', () => {
+    const manifest = manifestWith((json) => {
+      set(json, 'windows.0.views.0.codeFilled', ['panel/flag']);
+    });
+    // The game draws the flag 10 × 10 at (70, 40) over the background; Tongs says 0 × 10.
+    const result = compare({
+      manifest,
+      capture: (root) =>
+        editWidget(root, 'panel/flag', (w) => ({ ...w, rect: { x: 70, y: 40, w: 0, h: 10 } })),
+      game: (g) => {
+        fill(g, 70, 40, 10, 10, [255, 255, 255]);
+      },
+    });
+    expect(result.passed).toBe(true);
+    expect(widget(result, 'panel/bg').status).toBe('pass');
+  });
+
+  it('does not draw a code-filled widget the game did not create (etch#44)', () => {
+    const manifest = manifestWith((json) => {
+      set(json, 'windows.0.views.0.codeFilled', ['panel/icon[2]']);
+    });
+    // The game has no icon[2]: the background shows there.
+    const result = compare({
+      manifest,
+      capture: (root) => editWidget(root, 'panel/icon[2]', () => undefined),
+      game: (g) => {
+        fill(g, 30, 25, 10, 10, [40, 50, 60]);
+      },
+    });
+    expect(result.passed).toBe(true);
+    expect(widget(result, 'panel/icon[2]').status).toBe('code-filled');
+    // The background is compared where the icon would have been: all of it but icon[1], the
+    // flag, the target and the code-filled list.
+    expect(widget(result, 'panel/bg').pixels.compared).toBe(100 * 50 - 3 * 100 - 30 * 30);
+  });
+
   it('compares a widget the game moves where the game shows it (codeMoved)', () => {
     // The game draws the flag 15 px lower than the layout puts it.
     const capture = (root: CapturedWidget): CapturedWidget =>
