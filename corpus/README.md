@@ -363,7 +363,8 @@ How a view is compared (`planCapture` and `compareCapture` in
 `@etch/core/corpus`):
 
 - **Matching.** The first step of each root's path names a top-level window
-  of the playset. Below it, the capture's children pair with the layout's by
+  of the playset; a root the game's code creates, which no file defines (the
+  lobby's bookmark shields), is taken when the view names it code-filled. Below it, the capture's children pair with the layout's by
   name, ignoring case, in order among siblings of the same name; unnamed
   children pair in order among the unnamed ones.
 - **Moved widgets.** A widget a `codeMoved` pattern names is drawn, with

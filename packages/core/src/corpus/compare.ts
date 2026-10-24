@@ -263,7 +263,9 @@ export function planCapture(input: CapturePlanInput): CapturePlan {
   for (const root of record.widgets) {
     const found = findRoot(input.windows, children, root.path);
     if (typeof found === 'string') {
-      problems.push(found);
+      // A root the game's code creates (the lobby's bookmark shields) has no layout; the view names
+      // it code-filled, and it masks what it covers (etch#44).
+      if (!view?.codeFilled.some((p) => matchesWidgetPattern(p, root.path))) problems.push(found);
       addCaptureOnly(root, -1);
       continue;
     }

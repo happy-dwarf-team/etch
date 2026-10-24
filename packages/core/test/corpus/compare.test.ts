@@ -315,6 +315,29 @@ describe('planCapture', () => {
     expect(plan.drawList.draws).toEqual([]);
   });
 
+  it('takes a code-filled root the code creates, which no file defines (etch#44)', () => {
+    const window = laidOut();
+    const shield: CapturedWidget = {
+      path: 'shield[1]',
+      name: 'shield',
+      type: 'button',
+      visible: true,
+      rect: { x: 150, y: 60, w: 0, h: 20 },
+    };
+    const record = { ...recordOf(captureOf(window.layout)) };
+    const manifest = manifestWith((json) => {
+      set(json, 'windows.0.views.0.roots', ['panel', 'shield']);
+      set(json, 'windows.0.views.0.codeFilled', ['shield']);
+    });
+    const plan = planCapture({
+      manifest,
+      record: { ...record, widgets: [...record.widgets, shield] },
+      windows: [window],
+    });
+    expect(plan.problems).toEqual([]);
+    expect(plan.widgets.find((w) => w.path === 'shield[1]')?.codeFilled).toBe('shield');
+  });
+
   it('finds a root below a top-level window', () => {
     const window = laidOut();
     const root = captureOf(window.layout).children?.[1];
