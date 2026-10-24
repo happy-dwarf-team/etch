@@ -66,3 +66,15 @@ comparison instead compares no unstable pixel, and a compared pixel that is
 unstable makes its widget an unstable capture, not a pass. Over the main menu
 the opaque widgets were stable in every live run, and the animated background
 and the FPS counter were unstable, as etch#18 found.
+
+## Update (24 October 2026, etch#44)
+
+The full captures of both release playsets show that the main menu and
+the lobby animate more than their background: the text of their buttons
+changes between shots by up to 80 per channel, and a few other widgets
+have one to five changing pixels. With the rule above every one of those
+widgets failed although its stable pixels matched. The comparison now
+leaves unstable pixels out, like masked ones, and a widget is an unstable
+capture, not a pass, only when more than 5 % of its pixels changed between
+the shots. The maintainer agreed to this change in
+[etch#44](https://github.com/happy-dwarf-team/etch/issues/44#issuecomment-6388493594).
