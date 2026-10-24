@@ -1,0 +1,2077 @@
+{
+  "formatVersion": 1,
+  "playset": "vanilla",
+  "resolution": { "width": 1600, "height": 900 },
+  "view": "estates",
+  "takenAt": "2026-10-24T20:51:20.972Z",
+  "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
+  "tongs": { "version": "0.14.1" },
+  "save": { "sha256": "2A4CAF306CCDDB2DAFC7EE015C4ECFFB260654A1D10D86F5F4F768D3C3F56F6A" },
+  "mods": [],
+  "disabledDlcs": [],
+  "recipe": {
+    "from": "save",
+    "steps": [{ "key": "f1" }, { "click": "countryview/countryview_tabs/tab_estates" }],
+    "verified": true,
+    "evidence": "Run by the capture driver (etch#42) at 1600x900: the steps opened the view and its roots were read."
+  },
+  "window": { "width": 1600, "height": 900, "dpi": 96 },
+  "screenshot": {
+    "sha256": "B30B525C92EA42DAEE89B9FD39204219A2AFFC53007F9DF9EFEEF3F5F14F9A8F",
+    "width": 1600,
+    "height": 900,
+    "shots": 4,
+    "unstable": {
+      "pixels": 588941,
+      "sha256": "D62B7D86E2C98656AE3AEA76FC6ED60806E6F1AD91E7A3D18E59457D3B8FA71E"
+    }
+  },
+  "widgets": [
+    {
+      "name": "countryestatesview",
+      "path": "countryestatesview",
+      "type": "window",
+      "visible": true,
+      "rect": { "x": -3, "y": 140, "w": 1024, "h": 100 },
+      "children": [
+        {
+          "name": "agenda_state",
+          "path": "countryestatesview/agenda_state",
+          "type": "button",
+          "visible": false,
+          "rect": { "x": 800, "y": 402, "w": 48, "h": 48 },
+          "enabled": true
+        },
+        {
+          "name": "close_button",
+          "path": "countryestatesview/close_button",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 514, "y": 139, "w": 36, "h": 36 },
+          "enabled": true
+        },
+        {
+          "name": "background",
+          "path": "countryestatesview/background",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": -7, "y": 130, "w": 583, "h": 743 }
+        },
+        {
+          "name": "estate_header",
+          "path": "countryestatesview/estate_header",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 10, "y": 256, "w": 536, "h": 124 }
+        },
+        {
+          "name": "dev_share_pie_chart",
+          "path": "countryestatesview/dev_share_pie_chart",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 47, "y": 291, "w": 32, "h": 32 }
+        },
+        {
+          "name": "dev_share_pie_chart_overlays",
+          "path": "countryestatesview/dev_share_pie_chart_overlays",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": -3, "y": 281, "w": 105, "h": 110 }
+        },
+        {
+          "name": "agenda_icon",
+          "path": "countryestatesview/agenda_icon",
+          "type": "icon",
+          "visible": false,
+          "rect": { "x": 800, "y": 406, "w": 43, "h": 44 }
+        },
+        {
+          "name": "crown_land_modifier_icon_1",
+          "path": "countryestatesview/crown_land_modifier_icon_1",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 267, "y": 277, "w": 32, "h": 32 }
+        },
+        {
+          "name": "crown_land_modifier_icon_2",
+          "path": "countryestatesview/crown_land_modifier_icon_2",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 267, "y": 295, "w": 32, "h": 32 }
+        },
+        {
+          "name": "crown_land_modifier_icon_3",
+          "path": "countryestatesview/crown_land_modifier_icon_3",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 342, "y": 277, "w": 32, "h": 32 }
+        },
+        {
+          "name": "crown_land_modifier_icon_4",
+          "path": "countryestatesview/crown_land_modifier_icon_4",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 342, "y": 295, "w": 32, "h": 32 }
+        },
+        {
+          "name": "window_title",
+          "path": "countryestatesview/window_title",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 12, "y": 218, "w": 512, "h": 37 },
+          "text": "Estates"
+        },
+        {
+          "name": "dev_share_title",
+          "path": "countryestatesview/dev_share_title",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 32, "y": 256, "w": 200, "h": 26 },
+          "text": "Estate Land"
+        },
+        {
+          "name": "crownland_title",
+          "path": "countryestatesview/crownland_title",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 270, "y": 256, "w": 130, "h": 26 },
+          "text": "Crownland"
+        },
+        {
+          "name": "agenda_title",
+          "path": "countryestatesview/agenda_title",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 419, "y": 256, "w": 100, "h": 26 },
+          "text": "Agenda"
+        },
+        {
+          "name": "agenda_effects",
+          "path": "countryestatesview/agenda_effects",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 427, "y": 280, "w": 512, "h": 26 },
+          "text": ""
+        },
+        {
+          "name": "crown_land_modifier_desc_1",
+          "path": "countryestatesview/crown_land_modifier_desc_1",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 297, "y": 277, "w": 104, "h": 26 },
+          "text": "+15.00"
+        },
+        {
+          "name": "crown_land_modifier_desc_2",
+          "path": "countryestatesview/crown_land_modifier_desc_2",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 297, "y": 295, "w": 54, "h": 26 },
+          "text": "+1.00"
+        },
+        {
+          "name": "crown_land_modifier_desc_3",
+          "path": "countryestatesview/crown_land_modifier_desc_3",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 370, "y": 277, "w": 64, "h": 26 },
+          "text": "+80.0%"
+        },
+        {
+          "name": "crown_land_modifier_desc_4",
+          "path": "countryestatesview/crown_land_modifier_desc_4",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 370, "y": 295, "w": 64, "h": 26 },
+          "text": "-0.025"
+        },
+        {
+          "name": "estates_listbox",
+          "path": "countryestatesview/estates_listbox",
+          "type": "listbox",
+          "visible": true,
+          "rect": { "x": 27, "y": 380, "w": 600, "h": 520 },
+          "children": [
+            {
+              "name": "estate_gridbox_proxy",
+              "path": "countryestatesview/estates_listbox/estate_gridbox_proxy",
+              "type": "window",
+              "visible": true,
+              "rect": { "x": 27, "y": 380, "w": 600, "h": 520 },
+              "children": [
+                {
+                  "name": "estate_item",
+                  "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[1]",
+                  "type": "window",
+                  "visible": true,
+                  "rect": { "x": -1, "y": 373, "w": 600, "h": 200 },
+                  "children": [
+                    {
+                      "name": "estate_entry",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[1]/estate_entry",
+                      "type": "icon",
+                      "visible": true,
+                      "rect": { "x": 9, "y": 383, "w": 550, "h": 132 }
+                    },
+                    {
+                      "name": "icon",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[1]/icon",
+                      "type": "icon",
+                      "visible": true,
+                      "rect": { "x": 29, "y": 383, "w": 43, "h": 44 }
+                    },
+                    {
+                      "name": "loyalty_icon",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[1]/loyalty_icon",
+                      "type": "icon",
+                      "visible": true,
+                      "rect": { "x": 44, "y": 436, "w": 15, "h": 15 }
+                    },
+                    {
+                      "name": "influence_icon",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[1]/influence_icon",
+                      "type": "icon",
+                      "visible": true,
+                      "rect": { "x": 144, "y": 436, "w": 15, "h": 16 }
+                    },
+                    {
+                      "name": "modifier_icon_1",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[1]/modifier_icon_1",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 450, "w": 48, "h": 48 }
+                    },
+                    {
+                      "name": "modifier_icon_2",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[1]/modifier_icon_2",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 450, "w": 48, "h": 48 }
+                    },
+                    {
+                      "name": "modifier_icon_3",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[1]/modifier_icon_3",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 450, "w": 48, "h": 48 }
+                    },
+                    {
+                      "name": "name",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[1]/name",
+                      "type": "text",
+                      "visible": true,
+                      "rect": { "x": 73, "y": 398, "w": 200, "h": 26 },
+                      "text": "Patriarchs"
+                    },
+                    {
+                      "name": "loyalty",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[1]/loyalty",
+                      "type": "text",
+                      "visible": true,
+                      "rect": { "x": 64, "y": 430, "w": 44, "h": 26 },
+                      "text": "100%"
+                    },
+                    {
+                      "name": "influence",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[1]/influence",
+                      "type": "text",
+                      "visible": true,
+                      "rect": { "x": 165, "y": 430, "w": 44, "h": 26 },
+                      "text": "0%"
+                    },
+                    {
+                      "name": "modifier_desc_1",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[1]/modifier_desc_1",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 258, "y": 57, "w": 64, "h": 26 },
+                      "text": ""
+                    },
+                    {
+                      "name": "modifier_desc_2",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[1]/modifier_desc_2",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 355, "y": 57, "w": 64, "h": 26 },
+                      "text": ""
+                    },
+                    {
+                      "name": "modifier_desc_3",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[1]/modifier_desc_3",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 450, "y": 57, "w": 64, "h": 26 },
+                      "text": ""
+                    },
+                    {
+                      "name": "privileges_count",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[1]/privileges_count",
+                      "type": "text",
+                      "visible": true,
+                      "rect": { "x": 449, "y": 401, "w": 60, "h": 18 },
+                      "text": "2 / 9"
+                    },
+                    {
+                      "name": "privileges_scrollbar",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[1]/privileges_scrollbar",
+                      "type": "other",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 423, "w": 446, "h": 39 },
+                      "children": [
+                        {
+                          "name": "landslider_SliderButton",
+                          "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[1]/privileges_scrollbar/landslider_SliderButton",
+                          "type": "button",
+                          "visible": false,
+                          "rect": { "x": 800, "y": 434, "w": 16, "h": 16 }
+                        },
+                        {
+                          "name": "landslider_TrackButton",
+                          "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[1]/privileges_scrollbar/landslider_TrackButton",
+                          "type": "button",
+                          "visible": false,
+                          "rect": { "x": 800, "y": 450, "w": 446, "h": 12 }
+                        },
+                        {
+                          "name": "landslider_upButton",
+                          "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[1]/privileges_scrollbar/landslider_upButton",
+                          "type": "button",
+                          "visible": false,
+                          "rect": { "x": 800, "y": 423, "w": 22, "h": 27 },
+                          "enabled": true
+                        },
+                        {
+                          "name": "landslider_downButton",
+                          "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[1]/privileges_scrollbar/landslider_downButton",
+                          "type": "button",
+                          "visible": false,
+                          "rect": { "x": 800, "y": 423, "w": 22, "h": 27 },
+                          "enabled": true
+                        }
+                      ]
+                    },
+                    {
+                      "name": "privileges_list",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[1]/privileges_list",
+                      "type": "listbox",
+                      "visible": true,
+                      "rect": { "x": 33, "y": 451, "w": 144, "h": 48 },
+                      "children": [
+                        {
+                          "name": "estate_privilege_item",
+                          "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[1]/privileges_list/estate_privilege_item[1]",
+                          "type": "window",
+                          "visible": true,
+                          "rect": { "x": 33, "y": 451, "w": 48, "h": 48 },
+                          "children": [
+                            {
+                              "name": "privilege_frame_button",
+                              "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[1]/privileges_list/estate_privilege_item[1]/privilege_frame_button",
+                              "type": "button",
+                              "visible": true,
+                              "rect": { "x": 33, "y": 451, "w": 62, "h": 60 },
+                              "enabled": true
+                            },
+                            {
+                              "name": "privilege_button",
+                              "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[1]/privileges_list/estate_privilege_item[1]/privilege_button",
+                              "type": "button",
+                              "visible": true,
+                              "rect": { "x": 30, "y": 452, "w": 63, "h": 60 },
+                              "enabled": true
+                            }
+                          ]
+                        },
+                        {
+                          "name": "estate_privilege_item",
+                          "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[1]/privileges_list/estate_privilege_item[2]",
+                          "type": "window",
+                          "visible": true,
+                          "rect": { "x": 81, "y": 451, "w": 48, "h": 48 },
+                          "children": [
+                            {
+                              "name": "privilege_frame_button",
+                              "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[1]/privileges_list/estate_privilege_item[2]/privilege_frame_button",
+                              "type": "button",
+                              "visible": true,
+                              "rect": { "x": 81, "y": 451, "w": 62, "h": 60 },
+                              "enabled": true
+                            },
+                            {
+                              "name": "privilege_button",
+                              "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[1]/privileges_list/estate_privilege_item[2]/privilege_button",
+                              "type": "button",
+                              "visible": true,
+                              "rect": { "x": 78, "y": 452, "w": 63, "h": 60 },
+                              "enabled": true
+                            }
+                          ]
+                        },
+                        {
+                          "name": "estate_privilege_item",
+                          "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[1]/privileges_list/estate_privilege_item[3]",
+                          "type": "window",
+                          "visible": true,
+                          "rect": { "x": 129, "y": 451, "w": 48, "h": 48 },
+                          "children": [
+                            {
+                              "name": "privilege_frame_button",
+                              "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[1]/privileges_list/estate_privilege_item[3]/privilege_frame_button",
+                              "type": "button",
+                              "visible": true,
+                              "rect": { "x": 129, "y": 451, "w": 62, "h": 60 },
+                              "enabled": true
+                            },
+                            {
+                              "name": "privilege_button",
+                              "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[1]/privileges_list/estate_privilege_item[3]/privilege_button",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 800, "y": 386, "w": 64, "h": 64 },
+                              "enabled": true
+                            }
+                          ]
+                        },
+                        {
+                          "name": "standardlistbox_invisible",
+                          "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[1]/privileges_list/standardlistbox_invisible",
+                          "type": "other",
+                          "visible": false,
+                          "rect": { "x": 800, "y": 402, "w": 16, "h": 102 },
+                          "children": [
+                            {
+                              "name": "listboxSliderButton",
+                              "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[1]/privileges_list/standardlistbox_invisible/listboxSliderButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 800, "y": 402, "w": 12, "h": 48 }
+                            },
+                            {
+                              "name": "listboxTrackButton",
+                              "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[1]/privileges_list/standardlistbox_invisible/listboxTrackButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 800, "y": 450, "w": 16, "h": 54 }
+                            },
+                            {
+                              "name": "upButton",
+                              "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[1]/privileges_list/standardlistbox_invisible/upButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 800, "y": 402, "w": 12, "h": 48 },
+                              "enabled": true
+                            },
+                            {
+                              "name": "downButton",
+                              "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[1]/privileges_list/standardlistbox_invisible/downButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 800, "y": 402, "w": 12, "h": 48 },
+                              "enabled": true
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "estate_item",
+                  "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[2]",
+                  "type": "window",
+                  "visible": true,
+                  "rect": { "x": -1, "y": 503, "w": 600, "h": 200 },
+                  "children": [
+                    {
+                      "name": "estate_entry",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[2]/estate_entry",
+                      "type": "icon",
+                      "visible": true,
+                      "rect": { "x": 9, "y": 513, "w": 550, "h": 132 }
+                    },
+                    {
+                      "name": "icon",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[2]/icon",
+                      "type": "icon",
+                      "visible": true,
+                      "rect": { "x": 29, "y": 513, "w": 43, "h": 44 }
+                    },
+                    {
+                      "name": "loyalty_icon",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[2]/loyalty_icon",
+                      "type": "icon",
+                      "visible": true,
+                      "rect": { "x": 44, "y": 566, "w": 15, "h": 15 }
+                    },
+                    {
+                      "name": "influence_icon",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[2]/influence_icon",
+                      "type": "icon",
+                      "visible": true,
+                      "rect": { "x": 144, "y": 566, "w": 15, "h": 16 }
+                    },
+                    {
+                      "name": "modifier_icon_1",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[2]/modifier_icon_1",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 450, "w": 48, "h": 48 }
+                    },
+                    {
+                      "name": "modifier_icon_2",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[2]/modifier_icon_2",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 450, "w": 48, "h": 48 }
+                    },
+                    {
+                      "name": "modifier_icon_3",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[2]/modifier_icon_3",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 450, "w": 48, "h": 48 }
+                    },
+                    {
+                      "name": "name",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[2]/name",
+                      "type": "text",
+                      "visible": true,
+                      "rect": { "x": 73, "y": 528, "w": 200, "h": 26 },
+                      "text": "Boyars"
+                    },
+                    {
+                      "name": "loyalty",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[2]/loyalty",
+                      "type": "text",
+                      "visible": true,
+                      "rect": { "x": 64, "y": 560, "w": 44, "h": 26 },
+                      "text": "95%"
+                    },
+                    {
+                      "name": "influence",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[2]/influence",
+                      "type": "text",
+                      "visible": true,
+                      "rect": { "x": 165, "y": 560, "w": 44, "h": 26 },
+                      "text": "0%"
+                    },
+                    {
+                      "name": "modifier_desc_1",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[2]/modifier_desc_1",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 258, "y": 57, "w": 64, "h": 26 },
+                      "text": ""
+                    },
+                    {
+                      "name": "modifier_desc_2",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[2]/modifier_desc_2",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 355, "y": 57, "w": 64, "h": 26 },
+                      "text": ""
+                    },
+                    {
+                      "name": "modifier_desc_3",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[2]/modifier_desc_3",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 450, "y": 57, "w": 64, "h": 26 },
+                      "text": ""
+                    },
+                    {
+                      "name": "privileges_count",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[2]/privileges_count",
+                      "type": "text",
+                      "visible": true,
+                      "rect": { "x": 449, "y": 531, "w": 60, "h": 18 },
+                      "text": "0 / 8"
+                    },
+                    {
+                      "name": "privileges_scrollbar",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[2]/privileges_scrollbar",
+                      "type": "other",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 423, "w": 446, "h": 39 },
+                      "children": [
+                        {
+                          "name": "landslider_SliderButton",
+                          "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[2]/privileges_scrollbar/landslider_SliderButton",
+                          "type": "button",
+                          "visible": false,
+                          "rect": { "x": 800, "y": 434, "w": 16, "h": 16 }
+                        },
+                        {
+                          "name": "landslider_TrackButton",
+                          "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[2]/privileges_scrollbar/landslider_TrackButton",
+                          "type": "button",
+                          "visible": false,
+                          "rect": { "x": 800, "y": 450, "w": 446, "h": 12 }
+                        },
+                        {
+                          "name": "landslider_upButton",
+                          "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[2]/privileges_scrollbar/landslider_upButton",
+                          "type": "button",
+                          "visible": false,
+                          "rect": { "x": 800, "y": 423, "w": 22, "h": 27 },
+                          "enabled": true
+                        },
+                        {
+                          "name": "landslider_downButton",
+                          "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[2]/privileges_scrollbar/landslider_downButton",
+                          "type": "button",
+                          "visible": false,
+                          "rect": { "x": 800, "y": 423, "w": 22, "h": 27 },
+                          "enabled": true
+                        }
+                      ]
+                    },
+                    {
+                      "name": "privileges_list",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[2]/privileges_list",
+                      "type": "listbox",
+                      "visible": true,
+                      "rect": { "x": 33, "y": 581, "w": 48, "h": 48 },
+                      "children": [
+                        {
+                          "name": "estate_privilege_item",
+                          "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[2]/privileges_list/estate_privilege_item",
+                          "type": "window",
+                          "visible": true,
+                          "rect": { "x": 33, "y": 581, "w": 48, "h": 48 },
+                          "children": [
+                            {
+                              "name": "privilege_frame_button",
+                              "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[2]/privileges_list/estate_privilege_item/privilege_frame_button",
+                              "type": "button",
+                              "visible": true,
+                              "rect": { "x": 33, "y": 581, "w": 62, "h": 60 },
+                              "enabled": true
+                            },
+                            {
+                              "name": "privilege_button",
+                              "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[2]/privileges_list/estate_privilege_item/privilege_button",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 800, "y": 386, "w": 64, "h": 64 },
+                              "enabled": true
+                            }
+                          ]
+                        },
+                        {
+                          "name": "standardlistbox_invisible",
+                          "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[2]/privileges_list/standardlistbox_invisible",
+                          "type": "other",
+                          "visible": false,
+                          "rect": { "x": 800, "y": 402, "w": 16, "h": 102 },
+                          "children": [
+                            {
+                              "name": "listboxSliderButton",
+                              "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[2]/privileges_list/standardlistbox_invisible/listboxSliderButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 800, "y": 402, "w": 12, "h": 48 }
+                            },
+                            {
+                              "name": "listboxTrackButton",
+                              "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[2]/privileges_list/standardlistbox_invisible/listboxTrackButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 800, "y": 450, "w": 16, "h": 54 }
+                            },
+                            {
+                              "name": "upButton",
+                              "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[2]/privileges_list/standardlistbox_invisible/upButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 800, "y": 402, "w": 12, "h": 48 },
+                              "enabled": true
+                            },
+                            {
+                              "name": "downButton",
+                              "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[2]/privileges_list/standardlistbox_invisible/downButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 800, "y": 402, "w": 12, "h": 48 },
+                              "enabled": true
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "estate_item",
+                  "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[3]",
+                  "type": "window",
+                  "visible": true,
+                  "rect": { "x": -1, "y": 633, "w": 600, "h": 200 },
+                  "children": [
+                    {
+                      "name": "estate_entry",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[3]/estate_entry",
+                      "type": "icon",
+                      "visible": true,
+                      "rect": { "x": 9, "y": 643, "w": 550, "h": 132 }
+                    },
+                    {
+                      "name": "icon",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[3]/icon",
+                      "type": "icon",
+                      "visible": true,
+                      "rect": { "x": 29, "y": 643, "w": 43, "h": 44 }
+                    },
+                    {
+                      "name": "loyalty_icon",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[3]/loyalty_icon",
+                      "type": "icon",
+                      "visible": true,
+                      "rect": { "x": 44, "y": 696, "w": 15, "h": 15 }
+                    },
+                    {
+                      "name": "influence_icon",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[3]/influence_icon",
+                      "type": "icon",
+                      "visible": true,
+                      "rect": { "x": 144, "y": 696, "w": 15, "h": 16 }
+                    },
+                    {
+                      "name": "modifier_icon_1",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[3]/modifier_icon_1",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 450, "w": 48, "h": 48 }
+                    },
+                    {
+                      "name": "modifier_icon_2",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[3]/modifier_icon_2",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 450, "w": 48, "h": 48 }
+                    },
+                    {
+                      "name": "modifier_icon_3",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[3]/modifier_icon_3",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 450, "w": 48, "h": 48 }
+                    },
+                    {
+                      "name": "name",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[3]/name",
+                      "type": "text",
+                      "visible": true,
+                      "rect": { "x": 73, "y": 658, "w": 200, "h": 26 },
+                      "text": "Burghers"
+                    },
+                    {
+                      "name": "loyalty",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[3]/loyalty",
+                      "type": "text",
+                      "visible": true,
+                      "rect": { "x": 64, "y": 690, "w": 44, "h": 26 },
+                      "text": "100%"
+                    },
+                    {
+                      "name": "influence",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[3]/influence",
+                      "type": "text",
+                      "visible": true,
+                      "rect": { "x": 165, "y": 690, "w": 44, "h": 26 },
+                      "text": "0%"
+                    },
+                    {
+                      "name": "modifier_desc_1",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[3]/modifier_desc_1",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 258, "y": 57, "w": 64, "h": 26 },
+                      "text": ""
+                    },
+                    {
+                      "name": "modifier_desc_2",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[3]/modifier_desc_2",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 355, "y": 57, "w": 64, "h": 26 },
+                      "text": ""
+                    },
+                    {
+                      "name": "modifier_desc_3",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[3]/modifier_desc_3",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 450, "y": 57, "w": 64, "h": 26 },
+                      "text": ""
+                    },
+                    {
+                      "name": "privileges_count",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[3]/privileges_count",
+                      "type": "text",
+                      "visible": true,
+                      "rect": { "x": 449, "y": 661, "w": 60, "h": 18 },
+                      "text": "2 / 8"
+                    },
+                    {
+                      "name": "privileges_scrollbar",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[3]/privileges_scrollbar",
+                      "type": "other",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 423, "w": 446, "h": 39 },
+                      "children": [
+                        {
+                          "name": "landslider_SliderButton",
+                          "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[3]/privileges_scrollbar/landslider_SliderButton",
+                          "type": "button",
+                          "visible": false,
+                          "rect": { "x": 800, "y": 434, "w": 16, "h": 16 }
+                        },
+                        {
+                          "name": "landslider_TrackButton",
+                          "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[3]/privileges_scrollbar/landslider_TrackButton",
+                          "type": "button",
+                          "visible": false,
+                          "rect": { "x": 800, "y": 450, "w": 446, "h": 12 }
+                        },
+                        {
+                          "name": "landslider_upButton",
+                          "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[3]/privileges_scrollbar/landslider_upButton",
+                          "type": "button",
+                          "visible": false,
+                          "rect": { "x": 800, "y": 423, "w": 22, "h": 27 },
+                          "enabled": true
+                        },
+                        {
+                          "name": "landslider_downButton",
+                          "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[3]/privileges_scrollbar/landslider_downButton",
+                          "type": "button",
+                          "visible": false,
+                          "rect": { "x": 800, "y": 423, "w": 22, "h": 27 },
+                          "enabled": true
+                        }
+                      ]
+                    },
+                    {
+                      "name": "privileges_list",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[3]/privileges_list",
+                      "type": "listbox",
+                      "visible": true,
+                      "rect": { "x": 33, "y": 711, "w": 144, "h": 48 },
+                      "children": [
+                        {
+                          "name": "estate_privilege_item",
+                          "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[3]/privileges_list/estate_privilege_item[1]",
+                          "type": "window",
+                          "visible": true,
+                          "rect": { "x": 33, "y": 711, "w": 48, "h": 48 },
+                          "children": [
+                            {
+                              "name": "privilege_frame_button",
+                              "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[3]/privileges_list/estate_privilege_item[1]/privilege_frame_button",
+                              "type": "button",
+                              "visible": true,
+                              "rect": { "x": 33, "y": 711, "w": 62, "h": 60 },
+                              "enabled": true
+                            },
+                            {
+                              "name": "privilege_button",
+                              "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[3]/privileges_list/estate_privilege_item[1]/privilege_button",
+                              "type": "button",
+                              "visible": true,
+                              "rect": { "x": 30, "y": 712, "w": 63, "h": 60 },
+                              "enabled": true
+                            }
+                          ]
+                        },
+                        {
+                          "name": "estate_privilege_item",
+                          "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[3]/privileges_list/estate_privilege_item[2]",
+                          "type": "window",
+                          "visible": true,
+                          "rect": { "x": 81, "y": 711, "w": 48, "h": 48 },
+                          "children": [
+                            {
+                              "name": "privilege_frame_button",
+                              "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[3]/privileges_list/estate_privilege_item[2]/privilege_frame_button",
+                              "type": "button",
+                              "visible": true,
+                              "rect": { "x": 81, "y": 711, "w": 62, "h": 60 },
+                              "enabled": true
+                            },
+                            {
+                              "name": "privilege_button",
+                              "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[3]/privileges_list/estate_privilege_item[2]/privilege_button",
+                              "type": "button",
+                              "visible": true,
+                              "rect": { "x": 78, "y": 712, "w": 64, "h": 64 },
+                              "enabled": true
+                            }
+                          ]
+                        },
+                        {
+                          "name": "estate_privilege_item",
+                          "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[3]/privileges_list/estate_privilege_item[3]",
+                          "type": "window",
+                          "visible": true,
+                          "rect": { "x": 129, "y": 711, "w": 48, "h": 48 },
+                          "children": [
+                            {
+                              "name": "privilege_frame_button",
+                              "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[3]/privileges_list/estate_privilege_item[3]/privilege_frame_button",
+                              "type": "button",
+                              "visible": true,
+                              "rect": { "x": 129, "y": 711, "w": 62, "h": 60 },
+                              "enabled": true
+                            },
+                            {
+                              "name": "privilege_button",
+                              "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[3]/privileges_list/estate_privilege_item[3]/privilege_button",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 800, "y": 386, "w": 64, "h": 64 },
+                              "enabled": true
+                            }
+                          ]
+                        },
+                        {
+                          "name": "standardlistbox_invisible",
+                          "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[3]/privileges_list/standardlistbox_invisible",
+                          "type": "other",
+                          "visible": false,
+                          "rect": { "x": 800, "y": 402, "w": 16, "h": 102 },
+                          "children": [
+                            {
+                              "name": "listboxSliderButton",
+                              "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[3]/privileges_list/standardlistbox_invisible/listboxSliderButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 800, "y": 402, "w": 12, "h": 48 }
+                            },
+                            {
+                              "name": "listboxTrackButton",
+                              "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[3]/privileges_list/standardlistbox_invisible/listboxTrackButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 800, "y": 450, "w": 16, "h": 54 }
+                            },
+                            {
+                              "name": "upButton",
+                              "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[3]/privileges_list/standardlistbox_invisible/upButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 800, "y": 402, "w": 12, "h": 48 },
+                              "enabled": true
+                            },
+                            {
+                              "name": "downButton",
+                              "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[3]/privileges_list/standardlistbox_invisible/downButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 800, "y": 402, "w": 12, "h": 48 },
+                              "enabled": true
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "estate_item",
+                  "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[4]",
+                  "type": "window",
+                  "visible": true,
+                  "rect": { "x": -1, "y": 763, "w": 600, "h": 200 },
+                  "children": [
+                    {
+                      "name": "estate_entry",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[4]/estate_entry",
+                      "type": "icon",
+                      "visible": true,
+                      "rect": { "x": 9, "y": 773, "w": 550, "h": 132 }
+                    },
+                    {
+                      "name": "icon",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[4]/icon",
+                      "type": "icon",
+                      "visible": true,
+                      "rect": { "x": 29, "y": 773, "w": 43, "h": 44 }
+                    },
+                    {
+                      "name": "loyalty_icon",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[4]/loyalty_icon",
+                      "type": "icon",
+                      "visible": true,
+                      "rect": { "x": 44, "y": 826, "w": 15, "h": 15 }
+                    },
+                    {
+                      "name": "influence_icon",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[4]/influence_icon",
+                      "type": "icon",
+                      "visible": true,
+                      "rect": { "x": 144, "y": 826, "w": 15, "h": 16 }
+                    },
+                    {
+                      "name": "modifier_icon_1",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[4]/modifier_icon_1",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 450, "w": 48, "h": 48 }
+                    },
+                    {
+                      "name": "modifier_icon_2",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[4]/modifier_icon_2",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 450, "w": 48, "h": 48 }
+                    },
+                    {
+                      "name": "modifier_icon_3",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[4]/modifier_icon_3",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 450, "w": 48, "h": 48 }
+                    },
+                    {
+                      "name": "name",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[4]/name",
+                      "type": "text",
+                      "visible": true,
+                      "rect": { "x": 73, "y": 788, "w": 200, "h": 26 },
+                      "text": "Eunuchs"
+                    },
+                    {
+                      "name": "loyalty",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[4]/loyalty",
+                      "type": "text",
+                      "visible": true,
+                      "rect": { "x": 64, "y": 820, "w": 44, "h": 26 },
+                      "text": "100%"
+                    },
+                    {
+                      "name": "influence",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[4]/influence",
+                      "type": "text",
+                      "visible": true,
+                      "rect": { "x": 165, "y": 820, "w": 44, "h": 26 },
+                      "text": "0%"
+                    },
+                    {
+                      "name": "modifier_desc_1",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[4]/modifier_desc_1",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 258, "y": 57, "w": 64, "h": 26 },
+                      "text": ""
+                    },
+                    {
+                      "name": "modifier_desc_2",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[4]/modifier_desc_2",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 355, "y": 57, "w": 64, "h": 26 },
+                      "text": ""
+                    },
+                    {
+                      "name": "modifier_desc_3",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[4]/modifier_desc_3",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 450, "y": 57, "w": 64, "h": 26 },
+                      "text": ""
+                    },
+                    {
+                      "name": "privileges_count",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[4]/privileges_count",
+                      "type": "text",
+                      "visible": true,
+                      "rect": { "x": 449, "y": 791, "w": 60, "h": 18 },
+                      "text": "0 / 8"
+                    },
+                    {
+                      "name": "privileges_scrollbar",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[4]/privileges_scrollbar",
+                      "type": "other",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 423, "w": 446, "h": 39 },
+                      "children": [
+                        {
+                          "name": "landslider_SliderButton",
+                          "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[4]/privileges_scrollbar/landslider_SliderButton",
+                          "type": "button",
+                          "visible": false,
+                          "rect": { "x": 800, "y": 434, "w": 16, "h": 16 }
+                        },
+                        {
+                          "name": "landslider_TrackButton",
+                          "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[4]/privileges_scrollbar/landslider_TrackButton",
+                          "type": "button",
+                          "visible": false,
+                          "rect": { "x": 800, "y": 450, "w": 446, "h": 12 }
+                        },
+                        {
+                          "name": "landslider_upButton",
+                          "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[4]/privileges_scrollbar/landslider_upButton",
+                          "type": "button",
+                          "visible": false,
+                          "rect": { "x": 800, "y": 423, "w": 22, "h": 27 },
+                          "enabled": true
+                        },
+                        {
+                          "name": "landslider_downButton",
+                          "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[4]/privileges_scrollbar/landslider_downButton",
+                          "type": "button",
+                          "visible": false,
+                          "rect": { "x": 800, "y": 423, "w": 22, "h": 27 },
+                          "enabled": true
+                        }
+                      ]
+                    },
+                    {
+                      "name": "privileges_list",
+                      "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[4]/privileges_list",
+                      "type": "listbox",
+                      "visible": true,
+                      "rect": { "x": 33, "y": 841, "w": 48, "h": 48 },
+                      "children": [
+                        {
+                          "name": "estate_privilege_item",
+                          "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[4]/privileges_list/estate_privilege_item",
+                          "type": "window",
+                          "visible": true,
+                          "rect": { "x": 33, "y": 841, "w": 48, "h": 48 },
+                          "children": [
+                            {
+                              "name": "privilege_frame_button",
+                              "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[4]/privileges_list/estate_privilege_item/privilege_frame_button",
+                              "type": "button",
+                              "visible": true,
+                              "rect": { "x": 33, "y": 841, "w": 62, "h": 60 },
+                              "enabled": true
+                            },
+                            {
+                              "name": "privilege_button",
+                              "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[4]/privileges_list/estate_privilege_item/privilege_button",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 800, "y": 386, "w": 64, "h": 64 },
+                              "enabled": true
+                            }
+                          ]
+                        },
+                        {
+                          "name": "standardlistbox_invisible",
+                          "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[4]/privileges_list/standardlistbox_invisible",
+                          "type": "other",
+                          "visible": false,
+                          "rect": { "x": 800, "y": 402, "w": 16, "h": 102 },
+                          "children": [
+                            {
+                              "name": "listboxSliderButton",
+                              "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[4]/privileges_list/standardlistbox_invisible/listboxSliderButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 800, "y": 402, "w": 12, "h": 48 }
+                            },
+                            {
+                              "name": "listboxTrackButton",
+                              "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[4]/privileges_list/standardlistbox_invisible/listboxTrackButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 800, "y": 450, "w": 16, "h": 54 }
+                            },
+                            {
+                              "name": "upButton",
+                              "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[4]/privileges_list/standardlistbox_invisible/upButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 800, "y": 402, "w": 12, "h": 48 },
+                              "enabled": true
+                            },
+                            {
+                              "name": "downButton",
+                              "path": "countryestatesview/estates_listbox/estate_gridbox_proxy/estate_item[4]/privileges_list/standardlistbox_invisible/downButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 800, "y": 402, "w": 12, "h": 48 },
+                              "enabled": true
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "standardlistbox_slider",
+              "path": "countryestatesview/estates_listbox/standardlistbox_slider",
+              "type": "other",
+              "visible": false,
+              "rect": { "x": 800, "y": 434, "w": 16, "h": 434 },
+              "children": [
+                {
+                  "name": "listboxSliderButton",
+                  "path": "countryestatesview/estates_listbox/standardlistbox_slider/listboxSliderButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 434, "w": 16, "h": 16 }
+                },
+                {
+                  "name": "listboxTrackButton",
+                  "path": "countryestatesview/estates_listbox/standardlistbox_slider/listboxTrackButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 450, "w": 12, "h": 418 }
+                },
+                {
+                  "name": "downButton",
+                  "path": "countryestatesview/estates_listbox/standardlistbox_slider/downButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 434, "w": 16, "h": 16 },
+                  "enabled": true
+                },
+                {
+                  "name": "upButton",
+                  "path": "countryestatesview/estates_listbox/standardlistbox_slider/upButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 434, "w": 16, "h": 16 },
+                  "enabled": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "estate_dev_share_item",
+          "path": "countryestatesview/estate_dev_share_item[1]",
+          "type": "window",
+          "visible": true,
+          "rect": { "x": 83, "y": 280, "w": 0, "h": 0 },
+          "children": [
+            {
+              "name": "estate_icon",
+              "path": "countryestatesview/estate_dev_share_item[1]/estate_icon",
+              "type": "icon",
+              "visible": true,
+              "rect": { "x": 83, "y": 286, "w": 21, "h": 22 }
+            },
+            {
+              "name": "dev_share_text",
+              "path": "countryestatesview/estate_dev_share_item[1]/dev_share_text",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 103, "y": 285, "w": 48, "h": 26 },
+              "text": "0%"
+            }
+          ]
+        },
+        {
+          "name": "estate_dev_share_item",
+          "path": "countryestatesview/estate_dev_share_item[2]",
+          "type": "window",
+          "visible": true,
+          "rect": { "x": 141, "y": 280, "w": 0, "h": 0 },
+          "children": [
+            {
+              "name": "estate_icon",
+              "path": "countryestatesview/estate_dev_share_item[2]/estate_icon",
+              "type": "icon",
+              "visible": true,
+              "rect": { "x": 141, "y": 286, "w": 21, "h": 22 }
+            },
+            {
+              "name": "dev_share_text",
+              "path": "countryestatesview/estate_dev_share_item[2]/dev_share_text",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 161, "y": 285, "w": 48, "h": 26 },
+              "text": "0%"
+            }
+          ]
+        },
+        {
+          "name": "estate_dev_share_item",
+          "path": "countryestatesview/estate_dev_share_item[3]",
+          "type": "window",
+          "visible": true,
+          "rect": { "x": 199, "y": 280, "w": 0, "h": 0 },
+          "children": [
+            {
+              "name": "estate_icon",
+              "path": "countryestatesview/estate_dev_share_item[3]/estate_icon",
+              "type": "icon",
+              "visible": true,
+              "rect": { "x": 199, "y": 286, "w": 21, "h": 22 }
+            },
+            {
+              "name": "dev_share_text",
+              "path": "countryestatesview/estate_dev_share_item[3]/dev_share_text",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 219, "y": 285, "w": 48, "h": 26 },
+              "text": "0%"
+            }
+          ]
+        },
+        {
+          "name": "estate_dev_share_item",
+          "path": "countryestatesview/estate_dev_share_item[4]",
+          "type": "window",
+          "visible": true,
+          "rect": { "x": 83, "y": 310, "w": 0, "h": 0 },
+          "children": [
+            {
+              "name": "estate_icon",
+              "path": "countryestatesview/estate_dev_share_item[4]/estate_icon",
+              "type": "icon",
+              "visible": true,
+              "rect": { "x": 83, "y": 316, "w": 21, "h": 22 }
+            },
+            {
+              "name": "dev_share_text",
+              "path": "countryestatesview/estate_dev_share_item[4]/dev_share_text",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 103, "y": 315, "w": 48, "h": 26 },
+              "text": "0%"
+            }
+          ]
+        },
+        {
+          "name": "estate_dev_share_item",
+          "path": "countryestatesview/estate_dev_share_item[5]",
+          "type": "window",
+          "visible": true,
+          "rect": { "x": 141, "y": 310, "w": 0, "h": 0 },
+          "children": [
+            {
+              "name": "estate_icon",
+              "path": "countryestatesview/estate_dev_share_item[5]/estate_icon",
+              "type": "icon",
+              "visible": true,
+              "rect": { "x": 141, "y": 316, "w": 22, "h": 22 }
+            },
+            {
+              "name": "dev_share_text",
+              "path": "countryestatesview/estate_dev_share_item[5]/dev_share_text",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 161, "y": 315, "w": 48, "h": 26 },
+              "text": "99%"
+            }
+          ]
+        },
+        {
+          "name": "crown_land_interaction_item",
+          "path": "countryestatesview/crown_land_interaction_item[1]",
+          "type": "window",
+          "visible": true,
+          "rect": { "x": 267, "y": 320, "w": 48, "h": 48 },
+          "children": [
+            {
+              "name": "interaction_button",
+              "path": "countryestatesview/crown_land_interaction_item[1]/interaction_button",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 267, "y": 320, "w": 48, "h": 48 },
+              "enabled": true
+            }
+          ]
+        },
+        {
+          "name": "crown_land_interaction_item",
+          "path": "countryestatesview/crown_land_interaction_item[2]",
+          "type": "window",
+          "visible": true,
+          "rect": { "x": 315, "y": 320, "w": 48, "h": 48 },
+          "children": [
+            {
+              "name": "interaction_button",
+              "path": "countryestatesview/crown_land_interaction_item[2]/interaction_button",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 315, "y": 320, "w": 48, "h": 48 },
+              "enabled": true
+            }
+          ]
+        },
+        {
+          "name": "crown_land_interaction_item",
+          "path": "countryestatesview/crown_land_interaction_item[3]",
+          "type": "window",
+          "visible": true,
+          "rect": { "x": 363, "y": 320, "w": 48, "h": 48 },
+          "children": [
+            {
+              "name": "interaction_button",
+              "path": "countryestatesview/crown_land_interaction_item[3]/interaction_button",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 363, "y": 320, "w": 48, "h": 48 },
+              "enabled": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "countryview",
+      "path": "countryview",
+      "type": "window",
+      "visible": true,
+      "rect": { "x": 22, "y": 0, "w": 1024, "h": 100 },
+      "children": [
+        {
+          "name": "countryview_tabs",
+          "path": "countryview/countryview_tabs",
+          "type": "window",
+          "visible": true,
+          "rect": { "x": 9, "y": 3, "w": 1024, "h": 100 },
+          "children": [
+            {
+              "name": "tab_court",
+              "path": "countryview/countryview_tabs/tab_court",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 6, "y": 171, "w": 45, "h": 47 },
+              "enabled": true
+            },
+            {
+              "name": "tab_gov",
+              "path": "countryview/countryview_tabs/tab_gov",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 44, "y": 171, "w": 45, "h": 47 },
+              "enabled": true
+            },
+            {
+              "name": "tab_diplomacy",
+              "path": "countryview/countryview_tabs/tab_diplomacy",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 82, "y": 171, "w": 45, "h": 47 },
+              "enabled": true
+            },
+            {
+              "name": "tab_economy",
+              "path": "countryview/countryview_tabs/tab_economy",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 121, "y": 171, "w": 45, "h": 47 },
+              "enabled": true
+            },
+            {
+              "name": "tab_trade",
+              "path": "countryview/countryview_tabs/tab_trade",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 159, "y": 171, "w": 45, "h": 47 },
+              "enabled": true
+            },
+            {
+              "name": "tab_technology",
+              "path": "countryview/countryview_tabs/tab_technology",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 197, "y": 171, "w": 45, "h": 47 },
+              "enabled": true
+            },
+            {
+              "name": "tab_ideas",
+              "path": "countryview/countryview_tabs/tab_ideas",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 236, "y": 171, "w": 45, "h": 47 },
+              "enabled": true
+            },
+            {
+              "name": "tab_missions",
+              "path": "countryview/countryview_tabs/tab_missions",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 273, "y": 171, "w": 45, "h": 47 },
+              "enabled": true
+            },
+            {
+              "name": "tab_decisions",
+              "path": "countryview/countryview_tabs/tab_decisions",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 312, "y": 171, "w": 45, "h": 47 },
+              "enabled": true
+            },
+            {
+              "name": "tab_stability",
+              "path": "countryview/countryview_tabs/tab_stability",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 349, "y": 171, "w": 45, "h": 47 },
+              "enabled": true
+            },
+            {
+              "name": "tab_religion",
+              "path": "countryview/countryview_tabs/tab_religion",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 388, "y": 171, "w": 45, "h": 47 },
+              "enabled": true
+            },
+            {
+              "name": "tab_military",
+              "path": "countryview/countryview_tabs/tab_military",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 426, "y": 171, "w": 45, "h": 47 },
+              "enabled": true
+            },
+            {
+              "name": "tab_subjects",
+              "path": "countryview/countryview_tabs/tab_subjects",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 465, "y": 171, "w": 45, "h": 47 },
+              "enabled": true
+            },
+            {
+              "name": "tab_estates",
+              "path": "countryview/countryview_tabs/tab_estates",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 503, "y": 171, "w": 45, "h": 47 },
+              "enabled": true
+            },
+            {
+              "name": " ",
+              "path": "countryview/countryview_tabs/[15]",
+              "type": "icon",
+              "visible": true,
+              "rect": { "x": 24, "y": 171, "w": 521, "h": 41 }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "topbar",
+      "path": "topbar",
+      "type": "window",
+      "visible": true,
+      "rect": { "x": 0, "y": -1, "w": 1600, "h": 900 },
+      "children": [
+        {
+          "name": "player_shield",
+          "path": "topbar/player_shield",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": -5, "y": 1, "w": 1, "h": 152 },
+          "enabled": true
+        },
+        {
+          "name": "open_build_interface_button",
+          "path": "topbar/open_build_interface_button",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 6, "y": 108, "w": 40, "h": 40 },
+          "enabled": true
+        },
+        {
+          "name": "great_power_button",
+          "path": "topbar/great_power_button",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 115, "y": 83, "w": 22, "h": 22 },
+          "enabled": true
+        },
+        {
+          "name": "government_reforms_button",
+          "path": "topbar/government_reforms_button",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 100, "y": 109, "w": 40, "h": 40 },
+          "enabled": true
+        },
+        {
+          "name": "icon_merchant",
+          "path": "topbar/icon_merchant",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 739, "y": 8, "w": 31, "h": 31 },
+          "enabled": true
+        },
+        {
+          "name": "icon_settler",
+          "path": "topbar/icon_settler",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 780, "y": 8, "w": 31, "h": 31 },
+          "enabled": true
+        },
+        {
+          "name": "icon_diplomat",
+          "path": "topbar/icon_diplomat",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 821, "y": 8, "w": 31, "h": 31 },
+          "enabled": true
+        },
+        {
+          "name": "icon_missionary",
+          "path": "topbar/icon_missionary",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 862, "y": 8, "w": 31, "h": 31 },
+          "enabled": true
+        },
+        {
+          "name": "current_age_button",
+          "path": "topbar/current_age_button",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 722, "y": 31, "w": 195, "h": 48 },
+          "enabled": true
+        },
+        {
+          "name": "age_icon",
+          "path": "topbar/age_icon",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 705, "y": 46, "w": 37, "h": 37 },
+          "enabled": true
+        },
+        {
+          "name": "brown_bg",
+          "path": "topbar/brown_bg",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 676, "y": 19, "w": 194, "h": 34 }
+        },
+        {
+          "name": "topbar_1",
+          "path": "topbar/topbar_1",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 99512, "y": -2, "w": 109, "h": 31 }
+        },
+        {
+          "name": "topbar_2",
+          "path": "topbar/topbar_2",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 991024, "y": -2, "w": 109, "h": 31 }
+        },
+        {
+          "name": "topbar_3",
+          "path": "topbar/topbar_3",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 991532, "y": -2, "w": 109, "h": 31 }
+        },
+        {
+          "name": "topbar_upper_left_bg",
+          "path": "topbar/topbar_upper_left_bg",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 0, "y": -1, "w": 927, "h": 160 }
+        },
+        {
+          "name": "topbar_upper_left_bg4",
+          "path": "topbar/topbar_upper_left_bg4",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 70, "y": 39, "w": 674, "h": 69 }
+        },
+        {
+          "name": "government_reforms_button_base",
+          "path": "topbar/government_reforms_button_base",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 93, "y": 103, "w": 54, "h": 54 }
+        },
+        {
+          "name": "player_shield_glow",
+          "path": "topbar/player_shield_glow",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": -5, "y": 1, "w": 152, "h": 152 }
+        },
+        {
+          "name": "great_power_button_base",
+          "path": "topbar/great_power_button_base",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 111, "y": 79, "w": 30, "h": 30 }
+        },
+        {
+          "name": "government_reforms_progress",
+          "path": "topbar/government_reforms_progress",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 100, "y": 109, "w": 40, "h": 40 }
+        },
+        {
+          "name": "topbar_upper_left_bg2",
+          "path": "topbar/topbar_upper_left_bg2",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 731, "y": 29, "w": 168, "h": 24 }
+        },
+        {
+          "name": "icon_gold",
+          "path": "topbar/icon_gold",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 146, "y": 9, "w": 27, "h": 27 }
+        },
+        {
+          "name": "icon_manpower",
+          "path": "topbar/icon_manpower",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 228, "y": 10, "w": 27, "h": 27 }
+        },
+        {
+          "name": "icon_sailors",
+          "path": "topbar/icon_sailors",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 311, "y": 13, "w": 27, "h": 27 }
+        },
+        {
+          "name": "icon_stability",
+          "path": "topbar/icon_stability",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 394, "y": 9, "w": 27, "h": 27 }
+        },
+        {
+          "name": "icon_prestige",
+          "path": "topbar/icon_prestige",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 524, "y": 9, "w": 27, "h": 27 }
+        },
+        {
+          "name": "icon_dev",
+          "path": "topbar/icon_dev",
+          "type": "icon",
+          "visible": false,
+          "rect": { "x": 800, "y": 423, "w": 27, "h": 27 }
+        },
+        {
+          "name": "icon_meritocracy",
+          "path": "topbar/icon_meritocracy",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 588, "y": 9, "w": 27, "h": 27 }
+        },
+        {
+          "name": "icon_leg",
+          "path": "topbar/icon_leg",
+          "type": "icon",
+          "visible": false,
+          "rect": { "x": 800, "y": 423, "w": 27, "h": 27 }
+        },
+        {
+          "name": "icon_rep",
+          "path": "topbar/icon_rep",
+          "type": "icon",
+          "visible": false,
+          "rect": { "x": 800, "y": 423, "w": 27, "h": 27 }
+        },
+        {
+          "name": "icon_unity",
+          "path": "topbar/icon_unity",
+          "type": "icon",
+          "visible": false,
+          "rect": { "x": 800, "y": 423, "w": 27, "h": 27 }
+        },
+        {
+          "name": "icon_corruption",
+          "path": "topbar/icon_corruption",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 458, "y": 10, "w": 26, "h": 26 }
+        },
+        {
+          "name": "icon_ADM",
+          "path": "topbar/icon_ADM",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 498, "y": 48, "w": 28, "h": 28 }
+        },
+        {
+          "name": "icon_DIP",
+          "path": "topbar/icon_DIP",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 558, "y": 48, "w": 28, "h": 28 }
+        },
+        {
+          "name": "icon_MIL",
+          "path": "topbar/icon_MIL",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 616, "y": 48, "w": 28, "h": 28 }
+        },
+        {
+          "name": "button_base",
+          "path": "topbar/button_base",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 690, "y": 29, "w": 63, "h": 61 }
+        },
+        {
+          "name": "text_merchants",
+          "path": "topbar/text_merchants",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 732, "y": 33, "w": 42, "h": 18 },
+          "text": "0/24"
+        },
+        {
+          "name": "text_settlers",
+          "path": "topbar/text_settlers",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 773, "y": 33, "w": 42, "h": 18 },
+          "text": "1/1"
+        },
+        {
+          "name": "text_diplomats",
+          "path": "topbar/text_diplomats",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 814, "y": 33, "w": 42, "h": 18 },
+          "text": "3/5"
+        },
+        {
+          "name": "text_missionaries",
+          "path": "topbar/text_missionaries",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 855, "y": 33, "w": 42, "h": 18 },
+          "text": "0/6"
+        },
+        {
+          "name": "text_gold",
+          "path": "topbar/text_gold",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 152, "y": 12, "w": 60, "h": 26 },
+          "text": "1000k"
+        },
+        {
+          "name": "text_manpower",
+          "path": "topbar/text_manpower",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 248, "y": 12, "w": 50, "h": 26 },
+          "text": "2534k"
+        },
+        {
+          "name": "text_sailors",
+          "path": "topbar/text_sailors",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 331, "y": 12, "w": 50, "h": 26 },
+          "text": "218k"
+        },
+        {
+          "name": "text_stability",
+          "path": "topbar/text_stability",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 405, "y": 12, "w": 40, "h": 26 },
+          "text": "+3"
+        },
+        {
+          "name": "text_prestige",
+          "path": "topbar/text_prestige",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 536, "y": 12, "w": 40, "h": 26 },
+          "text": "+100"
+        },
+        {
+          "name": "text_dev",
+          "path": "topbar/text_dev",
+          "type": "text",
+          "visible": false,
+          "rect": { "x": 605, "y": 13, "w": 40, "h": 26 },
+          "text": "100"
+        },
+        {
+          "name": "text_meritocracy",
+          "path": "topbar/text_meritocracy",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 605, "y": 12, "w": 40, "h": 26 },
+          "text": "100"
+        },
+        {
+          "name": "text_leg",
+          "path": "topbar/text_leg",
+          "type": "text",
+          "visible": false,
+          "rect": { "x": 605, "y": 13, "w": 40, "h": 26 },
+          "text": "100"
+        },
+        {
+          "name": "text_rep",
+          "path": "topbar/text_rep",
+          "type": "text",
+          "visible": false,
+          "rect": { "x": 606, "y": 13, "w": 40, "h": 26 },
+          "text": "100"
+        },
+        {
+          "name": "text_unity",
+          "path": "topbar/text_unity",
+          "type": "text",
+          "visible": false,
+          "rect": { "x": 606, "y": 13, "w": 40, "h": 26 },
+          "text": "100"
+        },
+        {
+          "name": "text_corruption",
+          "path": "topbar/text_corruption",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 463, "y": 12, "w": 46, "h": 26 },
+          "text": "0"
+        },
+        {
+          "name": "text_ADM",
+          "path": "topbar/text_ADM",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 520, "y": 51, "w": 36, "h": 26 },
+          "text": "649"
+        },
+        {
+          "name": "text_DIP",
+          "path": "topbar/text_DIP",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 581, "y": 51, "w": 36, "h": 26 },
+          "text": "999"
+        },
+        {
+          "name": "text_MIL",
+          "path": "topbar/text_MIL",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 639, "y": 51, "w": 36, "h": 26 },
+          "text": "999"
+        },
+        {
+          "name": "age_title",
+          "path": "topbar/age_title",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 740, "y": 51, "w": 160, "h": 26 },
+          "text": "Age of Revolutions"
+        },
+        {
+          "name": "PlayerNationText",
+          "path": "topbar/PlayerNationText",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 151, "y": 49, "w": 340, "h": 30 },
+          "text": "Russia"
+        },
+        {
+          "name": "powerprojection_topbar",
+          "path": "topbar/powerprojection_topbar",
+          "type": "window",
+          "visible": true,
+          "rect": { "x": 148, "y": -1, "w": 100, "h": 100 },
+          "children": [
+            {
+              "name": "topbar_liberty_overlay",
+              "path": "topbar/powerprojection_topbar/topbar_liberty_overlay",
+              "type": "icon",
+              "visible": true,
+              "rect": { "x": 639, "y": -2, "w": 95, "h": 51 }
+            },
+            {
+              "name": "icon_powerprojection",
+              "path": "topbar/powerprojection_topbar/icon_powerprojection",
+              "type": "icon",
+              "visible": true,
+              "rect": { "x": 666, "y": 9, "w": 11, "h": 28 }
+            },
+            {
+              "name": "text_powerprojection",
+              "path": "topbar/powerprojection_topbar/text_powerprojection",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 675, "y": 12, "w": 40, "h": 26 },
+              "text": "+100"
+            }
+          ]
+        },
+        {
+          "name": "liberty_desire_topbar",
+          "path": "topbar/liberty_desire_topbar",
+          "type": "window",
+          "visible": false,
+          "rect": { "x": 0, "y": 0, "w": 100, "h": 100 },
+          "children": [
+            {
+              "name": "topbar_liberty_overlay",
+              "path": "topbar/liberty_desire_topbar/topbar_liberty_overlay",
+              "type": "icon",
+              "visible": false,
+              "rect": { "x": 800, "y": 399, "w": 95, "h": 51 }
+            },
+            {
+              "name": "topbar_liberty_icon",
+              "path": "topbar/liberty_desire_topbar/topbar_liberty_icon",
+              "type": "icon",
+              "visible": false,
+              "rect": { "x": 800, "y": 423, "w": 25, "h": 27 }
+            },
+            {
+              "name": "topbar_liberty_value",
+              "path": "topbar/liberty_desire_topbar/topbar_liberty_value",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 527, "y": 13, "w": 40, "h": 26 },
+              "text": "100"
+            }
+          ]
+        },
+        {
+          "name": "pause_window",
+          "path": "topbar/pause_window",
+          "type": "window",
+          "visible": true,
+          "rect": { "x": 597, "y": 99, "w": 406, "h": 70 },
+          "children": [
+            {
+              "name": "pause_banner",
+              "path": "topbar/pause_window/pause_banner",
+              "type": "icon",
+              "visible": true,
+              "rect": { "x": 597, "y": 84, "w": 406, "h": 67 }
+            },
+            {
+              "name": "pause_banner_text",
+              "path": "topbar/pause_window/pause_banner_text",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 737, "y": 108, "w": 120, "h": 30 },
+              "text": "Paused"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

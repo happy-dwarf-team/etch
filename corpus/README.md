@@ -71,7 +71,7 @@ opens and one capture records, such as the main menu and the lobby of
 | `id`, `title`, `note` | |
 | `recipe` | how to open it, below |
 | `roots` | Tongs selectors of the widgets whose trees the capture reads, `ui tree ROOT all` |
-| `codeFilled` | widget patterns of what the game's code fills or hides in this view. The comparison masks these widgets, and every pixel under their game rect, as ADR 0002 says. The lists start from the window's sample data and are completed with the first captures (etch#44) |
+| `codeFilled` | widget patterns of what the game's code fills or hides in this view. The comparison masks these widgets, and every pixel under their game rect, as ADR 0002 says. The lists were completed from the captures of etch#44 |
 | `codeMoved` | optional widget patterns of what the game's code moves away from where its `.gui` puts it: a dialog the game opens beside the panel that asked for it, a section the game moves on a taller screen. The comparison draws each such widget and everything inside it where the game shows it, and compares it there (etch#44) |
 
 A **recipe** is the Tongs input that opens a view from a known start state:
@@ -352,6 +352,12 @@ Direct3D 11, as VS Code's webview does; by default it draws with SwiftShader,
 which gives the same pixels on every machine. Each report names the renderer.
 The exit code is 1 when a capture of a release playset at a confirmed
 resolution fails or cannot be compared.
+
+The release gate is the run with `--gpu`, the webview's renderer: with it
+both release playsets pass (etch#44). SwiftShader rounds the linear
+filtering of scaled sprites differently: with it a few scaled icons of the
+diplomacy view, the declare war dialog and the province view fall to 94–99 %
+(130 of the 156 gating captures pass).
 
 Before it renders, it checks that `eu4.exe` and each pinned mod (by Workshop
 item, else by name) are the manifest's. A capture is not compared when it has

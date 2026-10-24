@@ -4,7 +4,9 @@
     "version": "1.37.5",
     "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A"
   },
-  "tongs": { "version": "0.14.1" },
+  "tongs": {
+    "version": "0.14.1"
+  },
   "uiScale": 1,
   "resolutions": [
     {
@@ -118,9 +120,9 @@
         "ledger",
         "settings",
         "macro-builder",
-        "estates",
-        "event"
-      ]
+        "estates"
+      ],
+      "note": "The event window is out of the 0.2.0 gate until a recipe opens an event (https://github.com/happy-dwarf-team/etch/issues/97, maintainer's consent in https://github.com/happy-dwarf-team/etch/issues/44#issuecomment-6388493594)."
     },
     {
       "id": "proper-2k-ui-enhanced",
@@ -150,9 +152,9 @@
         "ledger",
         "settings",
         "macro-builder",
-        "estates",
-        "event"
-      ]
+        "estates"
+      ],
+      "note": "The event window is out of the 0.2.0 gate until a recipe opens an event (https://github.com/happy-dwarf-team/etch/issues/97, maintainer's consent in https://github.com/happy-dwarf-team/etch/issues/44#issuecomment-6388493594)."
     },
     {
       "id": "anbennar",
@@ -163,7 +165,9 @@
           "name": "Anbennar: A Fantasy Total Conversion",
           "workshopId": "1385440355"
         },
-        { "name": "Proper 2K UI - Anbennar" }
+        {
+          "name": "Proper 2K UI - Anbennar"
+        }
       ],
       "disabledDlcs": [],
       "windows": [
@@ -183,8 +187,13 @@
       "title": "Dwarven Knowledge + DK-2KUI",
       "gate": "report",
       "mods": [
-        { "name": "Dwarven Knowledge", "workshopId": "2967823492" },
-        { "name": "Dwarven Knowledge + Proper 2k UI Compatiblity Patch" }
+        {
+          "name": "Dwarven Knowledge",
+          "workshopId": "2967823492"
+        },
+        {
+          "name": "Dwarven Knowledge + Proper 2k UI Compatiblity Patch"
+        }
       ],
       "disabledDlcs": [],
       "windows": ["hud", "province", "macro-builder"],
@@ -205,15 +214,16 @@
             "from": "main-menu",
             "steps": [],
             "verified": true,
-            "evidence": "etch#9 captured the main menu with Tongs and read these paths."
+            "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown. etch#9 first captured the main menu with Tongs."
           },
           "roots": ["country_selection_panel"],
           "codeFilled": [
-            "country_selection_panel/mainmenu/mainmenu_panel_bottom/continue_container/text",
-            "country_selection_panel/mainmenu/mainmenu_panel_bottom/continue_container/ironman_icon",
-            "country_selection_panel/mainmenu/mainmenu_panel_bottom/version_label",
+            "country_selection_panel/mainmenu/new_content",
+            "country_selection_panel/mainmenu/PersistentSocialButtons/frontend_link_item",
             "country_selection_panel/mainmenu/mainmenu_panel_bottom/nudge_button",
-            "country_selection_panel/mainmenu/new_content"
+            "country_selection_panel/mainmenu/mainmenu_panel_bottom/version_label",
+            "country_selection_panel/mainmenu/mainmenu_panel_bottom/continue_container/ironman_icon",
+            "country_selection_panel/mainmenu/mainmenu_panel_bottom/continue_container/text"
           ]
         },
         {
@@ -227,10 +237,23 @@
               }
             ],
             "verified": true,
-            "evidence": "Run by the capture driver (etch#42) at 1280x720 and 1920x1080 on 2026-10-21: the steps opened the view and its roots were read and shown."
+            "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown."
           },
-          "roots": ["country_selection_panel"],
-          "codeFilled": []
+          "roots": ["country_selection_panel", "shield", "shield_thin_glow"],
+          "codeFilled": [
+            "country_selection_panel/lobby/left/start_type_option",
+            "country_selection_panel/lobby/bottom/scenario_description",
+            "country_selection_panel/lobby/top/year_label",
+            "country_selection_panel/lobby/top/mapmode_political",
+            "country_selection_panel/lobby/left/gameoptions_button",
+            "country_selection_panel/lobby/right/nation_designer_button",
+            "country_selection_panel/lobby/right/random_country_button",
+            "country_selection_panel/lobby/right/random_new_world_button",
+            "shield",
+            "shield_thin_glow",
+            "country_selection_panel/lobby/left/datewidget/daymonth",
+            "country_selection_panel/lobby/left/datewidget/year"
+          ]
         }
       ]
     },
@@ -252,10 +275,33 @@
             "from": "save",
             "steps": [],
             "verified": true,
-            "evidence": "Run by the capture driver (etch#42) at 1280x720 and 1920x1080 on 2026-10-21: the steps opened the view and its roots were read and shown."
+            "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown."
           },
           "roots": ["topbar", "speed_controls", "outliner", "menubar"],
-          "codeFilled": []
+          "codeFilled": [
+            "topbar/player_shield",
+            "topbar/player_shield_glow",
+            "topbar/text_*",
+            "topbar/age_title",
+            "topbar/age_icon",
+            "topbar/government_reforms_button",
+            "topbar/great_power_button",
+            "topbar/great_power_button_base",
+            "topbar/open_build_interface_button",
+            "speed_controls/DateText",
+            "speed_controls/text_score",
+            "speed_controls/text_score_rank",
+            "speed_controls/speed_indicator",
+            "speed_controls/button_pause",
+            "outliner/outliner_bottom",
+            "menubar/WarOverviewButtonWindow/waroverview_shieldItem",
+            "menubar/floating_buttons/f_button_*",
+            "menubar/floating_buttons/floating_number_*",
+            "topbar/PlayerNationText",
+            "topbar/powerprojection_topbar/text_powerprojection",
+            "speed_controls/icon_date_bg"
+          ],
+          "codeMoved": ["menubar/WarOverviewButtonWindow", "menubar/message_window_container"]
         }
       ]
     },
@@ -270,9 +316,13 @@
           "title": "Esc menu",
           "recipe": {
             "from": "save",
-            "steps": [{ "key": "escape" }],
+            "steps": [
+              {
+                "key": "escape"
+              }
+            ],
             "verified": true,
-            "evidence": "Run by the capture driver (etch#42) at 1280x720 and 1920x1080 on 2026-10-21: the steps opened the view and its roots were read and shown."
+            "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown."
           },
           "roots": ["menu"],
           "codeFilled": []
@@ -282,19 +332,33 @@
           "title": "Message settings",
           "recipe": {
             "from": "save",
-            "steps": [{ "key": "escape" }, { "click": "menu//menu_message_button" }],
+            "steps": [
+              {
+                "key": "escape"
+              },
+              {
+                "click": "menu//menu_message_button"
+              }
+            ],
             "verified": true,
-            "evidence": "Run by the capture driver (etch#42) at 1280x720 and 1920x1080 on 2026-10-21: the steps opened the view and its roots were read and shown."
+            "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown."
           },
           "roots": ["menu"],
-          "codeFilled": []
+          "codeFilled": [
+            "menu/menu_message_settings/messageicon_*",
+            "menu/menu_message_settings/search_edit"
+          ]
         }
       ]
     },
     {
       "id": "court",
       "title": "Court",
-      "files": ["interface/countryview.gui", "interface/countrycourtview.gui"],
+      "files": [
+        "interface/countryview.gui",
+        "interface/countrycourtview.gui",
+        "interface/topbar.gui"
+      ],
       "why": "A pie chart and buttonstate_linear.",
       "views": [
         {
@@ -302,19 +366,50 @@
           "title": "Court",
           "recipe": {
             "from": "save",
-            "steps": [{ "key": "f1" }],
+            "steps": [
+              {
+                "key": "f1"
+              }
+            ],
             "verified": true,
-            "evidence": "Run by the capture driver (etch#42) at 1280x720 and 1920x1080 on 2026-10-21: the steps opened the view and its roots were read and shown."
+            "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown."
           },
-          "roots": ["countrycourtview"],
-          "codeFilled": []
+          "roots": ["countrycourtview", "countryview", "topbar"],
+          "codeFilled": [
+            "countrycourtview/monarch_*_value",
+            "countrycourtview/monarch_heir_*_value",
+            "countrycourtview/monarch_title",
+            "countrycourtview/monarch_gender",
+            "countrycourtview/national_focus_*",
+            "countryview/countryview_tabs/tab_court",
+            "countrycourtview/monarch_heir_name",
+            "countrycourtview/monarch_queen_name",
+            "countrycourtview/heir_gender",
+            "countrycourtview/monarch_*_age",
+            "countrycourtview/monarch_heir_age",
+            "topbar/player_shield",
+            "topbar/player_shield_glow",
+            "topbar/text_*",
+            "topbar/age_title",
+            "topbar/age_icon",
+            "topbar/government_reforms_button",
+            "topbar/great_power_button",
+            "topbar/great_power_button_base",
+            "topbar/open_build_interface_button",
+            "topbar/PlayerNationText",
+            "topbar/powerprojection_topbar/text_powerprojection"
+          ]
         }
       ]
     },
     {
       "id": "diplomacy",
       "title": "Diplomacy and one eu3 dialog",
-      "files": ["interface/countryview.gui", "interface/countrydiplomacyview.gui"],
+      "files": [
+        "interface/countryview.gui",
+        "interface/countrydiplomacyview.gui",
+        "interface/topbar.gui"
+      ],
       "why": "The largest file: shields, cornered tiles, masked flags and progress bars.",
       "views": [
         {
@@ -322,31 +417,99 @@
           "title": "Diplomacy",
           "recipe": {
             "from": "save",
-            "steps": [{ "key": "f1" }, { "key": "3" }],
+            "steps": [
+              {
+                "key": "f1"
+              },
+              {
+                "key": "3"
+              }
+            ],
             "verified": true,
-            "evidence": "Run by the capture driver (etch#42) at 1280x720 and 1920x1080 on 2026-10-21: the steps opened the view and its roots were read and shown."
+            "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown."
           },
-          "roots": ["countrydiplomacyview"],
-          "codeFilled": []
+          "roots": ["countrydiplomacyview", "countryview", "topbar"],
+          "codeFilled": [
+            "countrydiplomacyview/*_value",
+            "countrydiplomacyview/label_nation",
+            "countrydiplomacyview/label_fog",
+            "countrydiplomacyview/countryshield",
+            "countrydiplomacyview/countryshield_glow",
+            "countrydiplomacyview/government_rank",
+            "countrydiplomacyview/monarch_gender",
+            "countrydiplomacyview/religion_icon",
+            "countrydiplomacyview/techgroup_icon",
+            "countrydiplomacyview/show_opinions",
+            "countryview/countryview_tabs/tab_diplomacy",
+            "countrydiplomacyview/heir_gender",
+            "countrydiplomacyview/label_ruler",
+            "countrydiplomacyview/monarch_heir_name",
+            "countrydiplomacyview/monarch_heir_info",
+            "countrydiplomacyview/personality_icons_strip",
+            "topbar/player_shield",
+            "topbar/player_shield_glow",
+            "topbar/text_*",
+            "topbar/age_title",
+            "topbar/age_icon",
+            "topbar/government_reforms_button",
+            "topbar/great_power_button",
+            "topbar/great_power_button_base",
+            "topbar/open_build_interface_button",
+            "topbar/PlayerNationText",
+            "topbar/powerprojection_topbar/text_powerprojection"
+          ]
         },
         {
           "id": "diplomacy-dialog",
-          "title": "One eu3 dialog",
+          "title": "Declare war dialog",
           "recipe": {
             "from": "save",
-            "steps": [],
-            "verified": false,
-            "evidence": "Which eu3 dialog, and how it opens without a game call, is not chosen yet (etch#10)."
+            "steps": [
+              {
+                "key": "f1"
+              },
+              {
+                "key": "3"
+              },
+              {
+                "click": "countrydiplomacyview/diplomatic_listbox/countrydiplomacyview_diplistitem[2]/countrydiplomacyview_shieldprogressitem[1]"
+              },
+              {
+                "click": "countrydiplomacyview/diploaction_list/diploactionentry[1]/button_diploaction"
+              }
+            ],
+            "verified": true,
+            "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown. The first shield of the second relation in Russia's diplomacy list is the Commonwealth, visible at every corpus size; its diplomacy shows Declare War first, which opens DeclareWarDialog and declares nothing."
           },
-          "roots": [],
-          "codeFilled": []
+          "roots": ["DeclareWarDialog", "topbar"],
+          "codeFilled": [
+            "DeclareWarDialog/LeftShield",
+            "DeclareWarDialog/RightShield",
+            "DeclareWarDialog/Description",
+            "DeclareWarDialog/*_value",
+            "DeclareWarDialog/aggressive_expansion/aggressive_expansion_desc",
+            "DeclareWarDialog/standardtext_slider",
+            "DeclareWarDialog/Title",
+            "topbar/player_shield",
+            "topbar/player_shield_glow",
+            "topbar/text_*",
+            "topbar/age_title",
+            "topbar/age_icon",
+            "topbar/government_reforms_button",
+            "topbar/great_power_button",
+            "topbar/great_power_button_base",
+            "topbar/open_build_interface_button",
+            "topbar/PlayerNationText",
+            "topbar/powerprojection_topbar/text_powerprojection"
+          ],
+          "codeMoved": ["DeclareWarDialog"]
         }
       ]
     },
     {
       "id": "province",
       "title": "Province",
-      "files": ["interface/provinceview.gui"],
+      "files": ["interface/provinceview.gui", "interface/topbar.gui", "interface/menubar.gui"],
       "why": "The most check boxes and edit boxes.",
       "views": [
         {
@@ -355,14 +518,70 @@
           "recipe": {
             "from": "save",
             "steps": [
-              { "click": "outliner//outliner_buildnavy_entry[1]/outliner_standard" },
-              { "point": { "x": 0.5, "y": 0.5 } }
+              {
+                "click": "outliner//outliner_buildnavy_entry[1]/outliner_standard"
+              },
+              {
+                "point": {
+                  "x": 0.5,
+                  "y": 0.5
+                }
+              }
             ],
             "verified": true,
-            "evidence": "Run by the capture driver (etch#42) at 1280x720 and 1920x1080 on 2026-10-21: the steps opened the view and its roots were read and shown. The outliner's first ship in construction (Macedonia in this save) centres the map on its province, and a click on the middle of the client area opens it (etch#42). A map click alone depends on where the camera is."
+            "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown. The outliner's first ship in construction (Macedonia in this save) centres the map on its province, and a click on the middle of the client area opens it (etch#42); a map click alone depends on where the camera is."
           },
-          "roots": ["provinceview"],
-          "codeFilled": []
+          "roots": ["provinceview", "topbar", "menubar"],
+          "codeFilled": [
+            "provinceview/province_modifier_item",
+            "provinceview/province_terrain",
+            "provinceview/province_window/CoreShieldItem",
+            "provinceview/province_window/*_value",
+            "provinceview/province_window/culture",
+            "provinceview/province_window/religion",
+            "provinceview/province_window/fort_number",
+            "provinceview/province_window/building_fort",
+            "provinceview/province_window/resource_icon",
+            "provinceview/province_window/trade_pie",
+            "provinceview/province_window/trade_pie_overlay",
+            "provinceview/province_window/trade_shield",
+            "provinceview/province_window/likely_rebel_shield",
+            "provinceview/province_window/tradenode_button",
+            "provinceview/province_window/queue_window/*_amount",
+            "provinceview/province_window/hidden_latent_resource_icon",
+            "provinceview/province_window/loot_*",
+            "provinceview/province_window/progress_bar_window",
+            "provinceview/top_section_window/province_tab_button",
+            "provinceview/top_section_window/states_tab_button",
+            "provinceview/top_section_window/province_banner",
+            "provinceview/buildings_window/natives_buildings_window*",
+            "provinceview/buildings_window/select_building*",
+            "provinceview/province_window/fort_maintenance_checkbox",
+            "provinceview/buildings_window/province_values_window/*_value",
+            "provinceview/buildings_window/province_values_window/*_modifier",
+            "provinceview/buildings_window/general_buildings_window",
+            "topbar/player_shield",
+            "topbar/player_shield_glow",
+            "topbar/text_*",
+            "topbar/age_title",
+            "topbar/age_icon",
+            "topbar/government_reforms_button",
+            "topbar/great_power_button",
+            "topbar/great_power_button_base",
+            "topbar/open_build_interface_button",
+            "topbar/PlayerNationText",
+            "topbar/powerprojection_topbar/text_powerprojection",
+            "menubar/WarOverviewButtonWindow/waroverview_shieldItem",
+            "menubar/floating_buttons/f_button_*",
+            "menubar/floating_buttons/floating_number_*"
+          ],
+          "codeMoved": [
+            "provinceview/top_section_window",
+            "provinceview/top_section_window/history",
+            "provinceview/top_section_window/river_indicator_2",
+            "menubar/WarOverviewButtonWindow",
+            "menubar/message_window_container"
+          ]
         }
       ]
     },
@@ -377,9 +596,13 @@
           "title": "Ledger",
           "recipe": {
             "from": "save",
-            "steps": [{ "key": "l" }],
+            "steps": [
+              {
+                "key": "l"
+              }
+            ],
             "verified": true,
-            "evidence": "Run by the capture driver (etch#42) at 1280x720 and 1920x1080 on 2026-10-21: the steps opened the view and its roots were read and shown."
+            "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown."
           },
           "roots": ["ledger"],
           "codeFilled": []
@@ -397,19 +620,34 @@
           "title": "Settings",
           "recipe": {
             "from": "save",
-            "steps": [{ "key": "escape" }, { "click": "menu//menu_options_button" }],
+            "steps": [
+              {
+                "key": "escape"
+              },
+              {
+                "click": "menu//menu_options_button"
+              }
+            ],
             "verified": true,
-            "evidence": "Run by the capture driver (etch#42) at 1280x720 and 1920x1080 on 2026-10-21: the steps opened the view and its roots were read and shown."
+            "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown."
           },
           "roots": ["menu_settings_ingame"],
-          "codeFilled": []
+          "codeFilled": [
+            "menu_settings_ingame/settings_tab_*",
+            "menu_settings_ingame/menu_settings_GAME/rich_presence_checkbox",
+            "menu_settings_ingame/menu_settings_GAME/hide_chat"
+          ]
         }
       ]
     },
     {
       "id": "macro-builder",
       "title": "Macro builder",
-      "files": ["interface/macrobuildinterface_override.gui", "interface/macrobuildinterface.gui"],
+      "files": [
+        "interface/macrobuildinterface_override.gui",
+        "interface/macrobuildinterface.gui",
+        "interface/menubar.gui"
+      ],
       "why": "A grid box and buttonstate_nodowneffect; macrobuildinterface.gui is the file DK-2KUI overrides (etch#10).",
       "views": [
         {
@@ -417,19 +655,39 @@
           "title": "Macro builder",
           "recipe": {
             "from": "save",
-            "steps": [{ "key": "b" }],
+            "steps": [
+              {
+                "key": "b"
+              }
+            ],
             "verified": true,
-            "evidence": "Run by the capture driver (etch#42) at 1280x720 and 1920x1080 on 2026-10-21: the steps opened the view and its roots were read and shown."
+            "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown."
           },
-          "roots": ["macro_build_interface"],
-          "codeFilled": []
+          "roots": ["macro_build_interface", "menubar"],
+          "codeFilled": [
+            "macro_build_interface/macro_title",
+            "macro_build_interface/force_limit",
+            "macro_build_interface/units_in_production",
+            "macro_build_interface/land_units_header/build_troops_button",
+            "macro_build_interface/development_button",
+            "macro_build_interface/diplomacy_button",
+            "macro_build_interface/states_button",
+            "menubar/WarOverviewButtonWindow/waroverview_shieldItem",
+            "menubar/floating_buttons/f_button_*",
+            "menubar/floating_buttons/floating_number_*"
+          ],
+          "codeMoved": ["menubar/WarOverviewButtonWindow", "menubar/message_window_container"]
         }
       ]
     },
     {
       "id": "estates",
       "title": "Estates",
-      "files": ["interface/countryview.gui", "interface/countryestatesview.gui"],
+      "files": [
+        "interface/countryview.gui",
+        "interface/countryestatesview.gui",
+        "interface/topbar.gui"
+      ],
       "why": "Grid boxes and a pie chart.",
       "views": [
         {
@@ -437,12 +695,39 @@
           "title": "Estates",
           "recipe": {
             "from": "save",
-            "steps": [{ "key": "f1" }, { "key": "k" }],
+            "steps": [
+              {
+                "key": "f1"
+              },
+              {
+                "click": "countryview/countryview_tabs/tab_estates"
+              }
+            ],
             "verified": true,
-            "evidence": "Run by the capture driver (etch#42) at 1280x720 and 1920x1080 on 2026-10-21: the steps opened the view and its roots were read and shown."
+            "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown. Proper 2K UI Enhanced has no K hotkey for the estates, so the recipe clicks the country view's estates tab."
           },
-          "roots": ["countryestatesview"],
-          "codeFilled": []
+          "roots": ["countryestatesview", "countryview", "topbar"],
+          "codeFilled": [
+            "countryestatesview/crown_land_interaction_item",
+            "countryestatesview/estate_dev_share_item",
+            "countryestatesview/dev_share_pie_chart",
+            "countryestatesview/dev_share_pie_chart_overlays",
+            "countryestatesview/agenda_effects",
+            "countryestatesview/crown_land_modifier_icon_*",
+            "countryview/countryview_tabs/tab_estates",
+            "countryestatesview/crown_land_modifier_desc_*",
+            "topbar/player_shield",
+            "topbar/player_shield_glow",
+            "topbar/text_*",
+            "topbar/age_title",
+            "topbar/age_icon",
+            "topbar/government_reforms_button",
+            "topbar/great_power_button",
+            "topbar/great_power_button_base",
+            "topbar/open_build_interface_button",
+            "topbar/PlayerNationText",
+            "topbar/powerprojection_topbar/text_powerprojection"
+          ]
         }
       ]
     },
@@ -459,7 +744,7 @@
             "from": "save",
             "steps": [],
             "verified": false,
-            "evidence": "No event is open when the save loads (Tongs event list, etch#42), and a recipe runs no time; it needs another save or start state. Its root would be EventWindow."
+            "evidence": "No event is open when the save loads, a recipe runs no time, and three game years run from the save with Tongs opened none (etch#44); a recipe is etch#97's."
           },
           "roots": [],
           "codeFilled": []
@@ -467,5 +752,94 @@
       ]
     }
   ],
-  "knownDeviations": []
+  "knownDeviations": [
+    {
+      "id": "button-text-edges-esc-menu",
+      "widgets": "menu/menu_panel/*",
+      "kinds": ["guiButtonType"],
+      "difference": "The game draws the anti-aliased edges of a button's text fainter than the same font in a text box; the text sits on the same pixels.",
+      "issue": "https://github.com/happy-dwarf-team/etch/issues/96",
+      "consent": "https://github.com/happy-dwarf-team/etch/issues/44#issuecomment-6388493594"
+    },
+    {
+      "id": "button-text-edges-settings-apply",
+      "widgets": "menu_settings_ingame/ApplyButton",
+      "kinds": ["guiButtonType"],
+      "difference": "The game draws the anti-aliased edges of a button's text fainter than the same font in a text box; the text sits on the same pixels.",
+      "issue": "https://github.com/happy-dwarf-team/etch/issues/96",
+      "consent": "https://github.com/happy-dwarf-team/etch/issues/44#issuecomment-6388493594"
+    },
+    {
+      "id": "button-text-edges-settings-back",
+      "widgets": "menu_settings_ingame/BackButton",
+      "kinds": ["guiButtonType"],
+      "difference": "The game draws the anti-aliased edges of a button's text fainter than the same font in a text box; the text sits on the same pixels.",
+      "issue": "https://github.com/happy-dwarf-team/etch/issues/96",
+      "consent": "https://github.com/happy-dwarf-team/etch/issues/44#issuecomment-6388493594"
+    },
+    {
+      "id": "button-text-edges-message-settings-clear",
+      "widgets": "menu/menu_message_settings/button_clear",
+      "kinds": ["guiButtonType"],
+      "difference": "The game draws the anti-aliased edges of a button's text fainter than the same font in a text box; the text sits on the same pixels.",
+      "issue": "https://github.com/happy-dwarf-team/etch/issues/96",
+      "consent": "https://github.com/happy-dwarf-team/etch/issues/44#issuecomment-6388493594"
+    },
+    {
+      "id": "button-text-edges-message-settings-search",
+      "widgets": "menu/menu_message_settings/button_search",
+      "kinds": ["guiButtonType"],
+      "difference": "The game draws the anti-aliased edges of a button's text fainter than the same font in a text box; the text sits on the same pixels.",
+      "issue": "https://github.com/happy-dwarf-team/etch/issues/96",
+      "consent": "https://github.com/happy-dwarf-team/etch/issues/44#issuecomment-6388493594"
+    },
+    {
+      "id": "button-text-edges-main-menu-credits",
+      "widgets": "country_selection_panel/mainmenu/mainmenu_panel_bottom/credits_button",
+      "kinds": ["guiButtonType"],
+      "difference": "The game draws the anti-aliased edges of a button's text fainter than the same font in a text box; the text sits on the same pixels.",
+      "issue": "https://github.com/happy-dwarf-team/etch/issues/96",
+      "consent": "https://github.com/happy-dwarf-team/etch/issues/44#issuecomment-6388493594"
+    },
+    {
+      "id": "button-text-edges-main-menu-options",
+      "widgets": "country_selection_panel/mainmenu/mainmenu_panel_bottom/settings_button",
+      "kinds": ["guiButtonType"],
+      "difference": "The game draws the anti-aliased edges of a button's text fainter than the same font in a text box; the text sits on the same pixels.",
+      "issue": "https://github.com/happy-dwarf-team/etch/issues/96",
+      "consent": "https://github.com/happy-dwarf-team/etch/issues/44#issuecomment-6388493594"
+    },
+    {
+      "id": "button-text-edges-diplomacy-sort-name",
+      "widgets": "countrydiplomacyview/sort_name",
+      "kinds": ["guiButtonType"],
+      "difference": "The game draws the anti-aliased edges of a button's text fainter than the same font in a text box; the text sits on the same pixels.",
+      "issue": "https://github.com/happy-dwarf-team/etch/issues/96",
+      "consent": "https://github.com/happy-dwarf-team/etch/issues/44#issuecomment-6388493594"
+    },
+    {
+      "id": "button-text-edges-diplomacy-sort-opinion",
+      "widgets": "countrydiplomacyview/sort_opinion",
+      "kinds": ["guiButtonType"],
+      "difference": "The game draws the anti-aliased edges of a button's text fainter than the same font in a text box; the text sits on the same pixels.",
+      "issue": "https://github.com/happy-dwarf-team/etch/issues/96",
+      "consent": "https://github.com/happy-dwarf-team/etch/issues/44#issuecomment-6388493594"
+    },
+    {
+      "id": "button-text-edges-declare-war-cancel",
+      "widgets": "DeclareWarDialog/DeclineButton",
+      "kinds": ["guiButtonType"],
+      "difference": "The game draws the anti-aliased edges of a button's text fainter than the same font in a text box; the text sits on the same pixels.",
+      "issue": "https://github.com/happy-dwarf-team/etch/issues/96",
+      "consent": "https://github.com/happy-dwarf-team/etch/issues/44#issuecomment-6388493594"
+    },
+    {
+      "id": "button-text-edges-lobby",
+      "widgets": "country_selection_panel/lobby/left/*_button",
+      "kinds": ["guiButtonType"],
+      "difference": "The game draws the anti-aliased edges of a button's text fainter than the same font in a text box; the text sits on the same pixels.",
+      "issue": "https://github.com/happy-dwarf-team/etch/issues/96",
+      "consent": "https://github.com/happy-dwarf-team/etch/issues/44#issuecomment-6388493594"
+    }
+  ]
 }

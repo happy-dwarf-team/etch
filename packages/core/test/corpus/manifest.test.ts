@@ -133,13 +133,23 @@ describe('the committed corpus', () => {
     const release = manifest.playsets.filter((p) => p.gate === 'release');
     expect(release.map((p) => p.id)).toEqual(['vanilla', 'proper-2k-ui-enhanced']);
     for (const playset of release) {
-      expect(playset.windows).toEqual(manifest.windows.map((w) => w.id));
+      // The event window waits for a recipe (etch#97) and gates nothing until then.
+      expect(playset.windows).toEqual(
+        manifest.windows.map((w) => w.id).filter((id) => id !== 'event'),
+      );
     }
   });
 
-  it('decides no known deviation yet', async () => {
-    // The first candidate, buttonText of etch#9, needs the maintainer's consent in etch#44.
-    expect((await committedManifest()).knownDeviations).toEqual([]);
+  it('records each known deviation with its issue and the consent of etch#44', async () => {
+    const deviations = (await committedManifest()).knownDeviations;
+    expect(deviations.length).toBeGreaterThan(0);
+    for (const deviation of deviations) {
+      expect(deviation.id).toMatch(/^button-text-edges-/);
+      expect(deviation.issue).toBe('https://github.com/happy-dwarf-team/etch/issues/96');
+      expect(deviation.consent).toBe(
+        'https://github.com/happy-dwarf-team/etch/issues/44#issuecomment-6388493594',
+      );
+    }
   });
 
   it('has capture records that match the manifest', async () => {
