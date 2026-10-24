@@ -317,7 +317,7 @@ describe('captureView', () => {
       view: 'ledger',
       ok: false,
       reason:
-        'The mouse was released (Ctrl+Alt+Del, Win+L, a UAC prompt or another window in front).',
+        'The mouse was released (Ctrl+Alt+Del, Win+L, the Windows key or another window in front).',
       lost: true,
       retry: true,
       released: true,
@@ -555,6 +555,7 @@ describe('runCaptures', () => {
       [true, [false]],
       [undefined, [true]],
     ]);
+    expect(report.sessions[0]?.views[0]).toMatchObject({ ok: false, released: true });
     expect(lines).toContain('  resumed');
     // Released by each session; the fresh start pins it again only after `resume`.
     expect(mouse.pins).toEqual(['100,100', '100,100']);
@@ -580,16 +581,67 @@ describe('runCaptures', () => {
     expect(mouse.releases).toBe(1);
   });
 
-  it('fails the session when Windows does not take the pin', async () => {
-    const { games, mouse, options } = await runFixture();
-    mouse.pin = () => mouse.read();
+  it('takes a locked screen for a released mouse, during a view and when the game gets ready', async () => {
+    const { root, games, mouse, options } = await runFixture();
+    const lines: string[] = [];
     const report = await runCaptures({
       ...options,
       sessions: options.sessions.filter((s) => s.start === 'save'),
       maxStarts: 1,
+      launcher: {
+        ...options.launcher,
+        async start(profile, save) {
+          const record = await options.launcher.start(profile, save);
+          const game = games.at(-1);
+          if (game !== undefined && games.length === 1) {
+            game.onCall = (command) => {
+              if (command.startsWith('screenshot')) mouse.lock();
+            };
+          }
+          return record;
+        },
+      },
+      print: (line) => lines.push(line),
+      sleep: async () => {
+        // The user unlocks the screen, then creates `resume`.
+        if (lines.some((l) => l.includes('paused'))) {
+          mouse.locked = false;
+          const runs = join(root, 'local', 'runs');
+          const [run = ''] = await readdir(runs);
+          await writeFile(join(runs, run, 'resume'), '');
+        }
+      },
     });
-    expect(report.sessions[0]?.error).toBe('Windows did not confine the mouse cursor to 100,100.');
-    expect(games[0]?.calls).not.toContain('key l');
-    expect(report.notTried).toEqual(['vanilla 640x360 ledger']);
+    expect(
+      report.sessions.map((s) => [s.mouseReleased, s.error, s.views.map((v) => v.ok)]),
+    ).toEqual([
+      [true, undefined, [false]],
+      [undefined, undefined, [true]],
+    ]);
+    expect(report.sessions[0]?.views[0]).toMatchObject({
+      reason:
+        'The mouse cursor cannot be read or pinned: the screen is locked (GetCursorPos failed: Win32 error 203).',
+    });
+
+    const early = await runFixture();
+    let now = Date.parse('2026-10-22T10:00:00Z');
+    const stopped = await runCaptures({
+      ...early.options,
+      sessions: early.options.sessions.filter((s) => s.start === 'save'),
+      connect: () => {
+        early.mouse.lock(); // Win+L while the save loads
+        return Promise.resolve(early.games.at(-1) as FakeGame);
+      },
+      now: () => new Date(now),
+      sleep: (ms) => {
+        now += ms;
+        return Promise.resolve();
+      },
+      resumeTimeoutMs: 60_000,
+    });
+    expect(stopped.sessions[0]).toMatchObject({ mouseReleased: true, views: [] });
+    expect(stopped.sessions[0]?.error).toBeUndefined();
+    expect(early.games[0]?.calls).not.toContain('key l');
+    expect(stopped.stopped).toBe('The mouse was released and the run was not resumed.');
   });
 });

@@ -167,11 +167,20 @@ export class FakeMouse implements MouseCursor {
   readonly pins: string[] = [];
   releases = 0;
 
+  /** While the screen is locked Windows refuses every call (Win32 error 203). */
+  locked = false;
+
   read(): Promise<CursorState> {
-    return Promise.resolve({ x: this.x, y: this.y, clip: this.clip });
+    return Promise.resolve(
+      this.locked
+        ? { unavailable: 'GetCursorPos failed: Win32 error 203' }
+        : { x: this.x, y: this.y, clip: this.clip },
+    );
   }
 
   pin(x: number, y: number): Promise<CursorState> {
+    if (this.locked)
+      return Promise.resolve({ unavailable: 'SetCursorPos failed: Win32 error 203' });
     this.pins.push(`${String(x)},${String(y)}`);
     this.x = x;
     this.y = y;
@@ -189,5 +198,11 @@ export class FakeMouse implements MouseCursor {
   takeBack(): void {
     this.clip = FREE;
     this.x = 3000;
+  }
+
+  /** Win+L: the clip is gone and, until the user unlocks, Windows answers nothing. */
+  lock(): void {
+    this.takeBack();
+    this.locked = true;
   }
 }

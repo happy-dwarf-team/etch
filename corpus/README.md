@@ -315,7 +315,8 @@ does the same. Windows clears the clip, the driver notices it before the next
 view or after the current one's shots, closes the game as always and waits
 for a file named `resume` in the run folder (30 minutes, then the run stops).
 Creating it starts the session again with the views not yet captured; such a
-session does not count towards the fresh starts allowed. The clip outlives the
+session does not count towards the fresh starts allowed, and the view it gave
+back is not counted as failed. The clip outlives the
 driver: if it ended without releasing the mouse, press Ctrl+Alt+Del, or run
 `game.ps1 -Action Release -Lab <lab> -HostDir <host>`.
 

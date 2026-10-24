@@ -146,7 +146,13 @@ export type ViewSummary =
       readonly unstableInWidgets: number;
       readonly verifiedNow: boolean;
     }
-  | { readonly view: string; readonly ok: false; readonly reason: string };
+  | {
+      readonly view: string;
+      readonly ok: false;
+      readonly reason: string;
+      /** Given back when the user took the mouse back; the next start takes it again. */
+      readonly released?: true;
+    };
 
 export interface RunReport {
   readonly runId: string;
@@ -465,7 +471,14 @@ async function waitResume(
 }
 
 function summary(outcome: ViewOutcome): ViewSummary {
-  if (!outcome.ok) return { view: outcome.view, ok: false, reason: outcome.reason };
+  if (!outcome.ok) {
+    return {
+      view: outcome.view,
+      ok: false,
+      reason: outcome.reason,
+      ...(outcome.released === true ? { released: true as const } : {}),
+    };
+  }
   const shot = outcome.capture.record.screenshot;
   return {
     view: outcome.view,

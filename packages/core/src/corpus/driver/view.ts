@@ -101,18 +101,22 @@ export interface ScreenRect {
   readonly bottom: number;
 }
 
-export interface CursorState {
-  readonly x: number;
-  readonly y: number;
-  /** The rectangle Windows confines the cursor to: the whole virtual screen when it is free. */
-  readonly clip: ScreenRect;
-}
+export type CursorState =
+  | {
+      readonly x: number;
+      readonly y: number;
+      /** The rectangle Windows confines the cursor to: the whole virtual screen when it is free. */
+      readonly clip: ScreenRect;
+    }
+  /** Windows refused the call that failed, as it does while the screen is locked. */
+  | { readonly unavailable: string };
 
 /**
  * The real mouse cursor. The game scrolls the map towards a cursor outside its window even without
  * focus, and sees the real cursor again whenever it moves, so a session pins it to one pixel of the
- * client area (`ClipCursor`). Windows clears that clip on Ctrl+Alt+Del, Win+L, a UAC prompt or
- * another window coming to the front: that is the user's way to take the mouse back.
+ * client area (`ClipCursor`). Windows clears that clip on Ctrl+Alt+Del, Win+L, the Windows key or
+ * another window coming to the front, and refuses the calls while the screen is locked: that is
+ * the user's way to take the mouse back.
  */
 export interface MouseCursor {
   read(): Promise<CursorState>;
@@ -420,14 +424,16 @@ const CURSOR_MARGIN = 100;
 /**
  * Pins the real cursor where Tongs' pointer rests (`AwayPoint`), moved inside the client area's
  * margin, and checks that Windows took the clip. The session does this as soon as the game is
- * ready, before the map could scroll towards a cursor left elsewhere.
+ * ready, before the map could scroll towards a cursor left elsewhere. A pin Windows refuses (the
+ * screen is locked) is the user's too: `MouseReleased`.
  */
 export async function pinCursor(ctx: ViewContext): Promise<void> {
   if (ctx.mouse === undefined) return;
   const target = await pinTarget(ctx, await gameWindow(ctx));
   const pinned = await ctx.mouse.pin(target.x, target.y);
-  if (!clipsTo(pinned.clip, target)) {
-    throw new Error(
+  if ('unavailable' in pinned) throw released(pinned);
+  if (!clipsTo(pinned, target)) {
+    throw new MouseReleased(
       `Windows did not confine the mouse cursor to ${String(target.x)},${String(target.y)}.`,
     );
   }
@@ -435,7 +441,14 @@ export async function pinCursor(ctx: ViewContext): Promise<void> {
 }
 
 const RELEASED =
-  'The mouse was released (Ctrl+Alt+Del, Win+L, a UAC prompt or another window in front).';
+  'The mouse was released (Ctrl+Alt+Del, Win+L, the Windows key or another window in front).';
+const UNAVAILABLE = 'The mouse cursor cannot be read or pinned: the screen is locked';
+
+function released(state: CursorState): MouseReleased {
+  return new MouseReleased(
+    'unavailable' in state ? `${UNAVAILABLE} (${state.unavailable}).` : RELEASED,
+  );
+}
 
 /**
  * Before a view: the cursor still pinned where it belongs. A clip that Windows cleared means the
@@ -449,12 +462,13 @@ async function holdCursor(
   if (ctx.mouse === undefined) return undefined;
   const target = await pinTarget(ctx, window);
   const now = await ctx.mouse.read();
-  if (clipsTo(now.clip, target)) return target;
+  if (clipsTo(now, target)) return target;
+  if ('unavailable' in now) throw released(now);
   const { left, top, right, bottom } = now.clip;
-  if (right - left !== 1 || bottom - top !== 1) throw new MouseReleased(RELEASED);
+  if (right - left !== 1 || bottom - top !== 1) throw released(now);
   ctx.log({ repin: target, clip: now.clip });
   const pinned = await ctx.mouse.pin(target.x, target.y);
-  if (!clipsTo(pinned.clip, target)) throw new MouseReleased(RELEASED);
+  if (!clipsTo(pinned, target)) throw released(pinned);
   return target;
 }
 
@@ -464,7 +478,8 @@ async function stillPinned(
   target: { x: number; y: number } | undefined,
 ): Promise<void> {
   if (ctx.mouse === undefined || target === undefined) return;
-  if (!clipsTo((await ctx.mouse.read()).clip, target)) throw new MouseReleased(RELEASED);
+  const now = await ctx.mouse.read();
+  if (!clipsTo(now, target)) throw released(now);
 }
 
 async function pinTarget(ctx: ViewContext, window: Screen): Promise<{ x: number; y: number }> {
@@ -475,7 +490,9 @@ async function pinTarget(ctx: ViewContext, window: Screen): Promise<{ x: number;
   return { x: left + clamp(away.x, window.width), y: top + clamp(away.y, window.height) };
 }
 
-function clipsTo(clip: ScreenRect, point: { x: number; y: number }): boolean {
+function clipsTo(state: CursorState, point: { x: number; y: number }): boolean {
+  if ('unavailable' in state) return false;
+  const { clip } = state;
   return (
     clip.left === point.x &&
     clip.top === point.y &&
@@ -500,6 +517,7 @@ async function checkCursor(
 ): Promise<{ x: number; y: number } | undefined> {
   if (ctx.start !== 'save' || ctx.mouse === undefined) return undefined;
   const cursor = await ctx.mouse.read();
+  if ('unavailable' in cursor) throw released(cursor);
   const { left, top } = await screenOrigin(ctx);
   const inside =
     cursor.x >= left + CURSOR_MARGIN &&

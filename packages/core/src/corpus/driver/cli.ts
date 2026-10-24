@@ -141,6 +141,7 @@ function scriptArgs(lab: string, hostDir: string, args: readonly string[]): stri
 }
 
 function cursorState(answer: Record<string, unknown>): CursorState {
+  if (typeof answer['unavailable'] === 'string') return { unavailable: answer['unavailable'] };
   const clip = answer['clip'] as Record<string, unknown> | undefined;
   return {
     x: Number(answer['x']),
@@ -247,10 +248,13 @@ async function main(): Promise<void> {
       console.log(line);
     },
   });
-  const captured = report.sessions.flatMap((s) => s.views).filter((v) => v.ok).length;
-  const failed = report.sessions.flatMap((s) => s.views).filter((v) => !v.ok).length;
+  const views = report.sessions.flatMap((s) => s.views);
+  const captured = views.filter((v) => v.ok).length;
+  // A view given back when the mouse was released is taken again by the next start.
+  const failed = views.filter((v) => !v.ok && v.released !== true).length;
+  const released = views.filter((v) => !v.ok && v.released === true).length;
   console.log(
-    `run ${report.runId}: ${String(captured)} captured, ${String(failed)} failed, ${String(report.notTried.length)} not tried${report.stopped !== undefined ? `; STOPPED: ${report.stopped}` : ''}`,
+    `run ${report.runId}: ${String(captured)} captured, ${String(failed)} failed, ${String(report.notTried.length)} not tried${released > 0 ? `, ${String(released)} given back when the mouse was released` : ''}${report.stopped !== undefined ? `; STOPPED: ${report.stopped}` : ''}`,
   );
   console.log(`report: ${join(localDir, 'runs', report.runId, 'report.json')}`);
   if (report.stopped !== undefined || failed > 0 || report.notTried.length > 0) {

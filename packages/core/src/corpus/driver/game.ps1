@@ -13,8 +13,10 @@ param(
     #   pixels (read only). The game scrolls the map towards a cursor outside its window, so
     #   captures from a save need it inside.
     # Pin: put the real cursor on -X,-Y and confine it to that one pixel (ClipCursor). The clip
-    #   outlives this process; Ctrl+Alt+Del, Win+L and UAC clear it, which is the user's way out.
+    #   outlives this process; Ctrl+Alt+Del, Win+L and any window coming to the front clear it: the user's way out.
     # Release: confine the cursor no more (ClipCursor(NULL)).
+    # While the screen is locked these calls fail (Win32 error 203): the three print
+    #   `unavailable` with the failed call instead of the cursor.
     [Parameter(Mandatory)][ValidateSet('Prepare', 'Check', 'Start', 'Stop', 'Cursor', 'Pin', 'Release')][string]$Action,
     [Parameter(Mandatory)][string]$Lab,
     [Parameter(Mandatory)][string]$HostDir,
@@ -47,22 +49,26 @@ if ($Action -in 'Cursor', 'Pin', 'Release') {
     # Physical pixels, as Tongs reports the window, whatever the display scaling.
     [EtchCapture.Mouse]::SetThreadDpiAwarenessContext([IntPtr]-4) | Out-Null
     function Assert-Win32([bool]$Ok, [string]$What) {
-        if (-not $Ok) { throw "$What failed: Win32 error $([Runtime.InteropServices.Marshal]::GetLastWin32Error())" }
+        if (-not $Ok) { throw [ComponentModel.Win32Exception]::new("$What failed: Win32 error $([Runtime.InteropServices.Marshal]::GetLastWin32Error())") }
     }
-    if ($Action -eq 'Pin') {
-        if (-not $PSBoundParameters.ContainsKey('X') -or -not $PSBoundParameters.ContainsKey('Y')) { throw '-X and -Y are required for Pin' }
-        Assert-Win32 ([EtchCapture.Mouse]::SetCursorPos($X, $Y)) 'SetCursorPos'
-        $r = New-Object EtchCapture.Mouse+RECT
-        $r.Left = $X; $r.Top = $Y; $r.Right = $X + 1; $r.Bottom = $Y + 1
-        Assert-Win32 ([EtchCapture.Mouse]::ClipCursor([ref]$r)) 'ClipCursor'
+    if ($Action -eq 'Pin' -and (-not $PSBoundParameters.ContainsKey('X') -or -not $PSBoundParameters.ContainsKey('Y'))) { throw '-X and -Y are required for Pin' }
+    try {
+        if ($Action -eq 'Pin') {
+            Assert-Win32 ([EtchCapture.Mouse]::SetCursorPos($X, $Y)) 'SetCursorPos'
+            $r = New-Object EtchCapture.Mouse+RECT
+            $r.Left = $X; $r.Top = $Y; $r.Right = $X + 1; $r.Bottom = $Y + 1
+            Assert-Win32 ([EtchCapture.Mouse]::ClipCursor([ref]$r)) 'ClipCursor'
+        }
+        if ($Action -eq 'Release') { Assert-Win32 ([EtchCapture.Mouse]::ClipCursor([IntPtr]::Zero)) 'ClipCursor' }
+        $p = New-Object EtchCapture.Mouse+POINT
+        Assert-Win32 ([EtchCapture.Mouse]::GetCursorPos([ref]$p)) 'GetCursorPos'
+        $c = New-Object EtchCapture.Mouse+RECT
+        Assert-Win32 ([EtchCapture.Mouse]::GetClipCursor([ref]$c)) 'GetClipCursor'
+        $out = [ordered]@{ ok = $true; x = $p.X; y = $p.Y
+            clip = [ordered]@{ left = $c.Left; top = $c.Top; right = $c.Right; bottom = $c.Bottom } }
     }
-    if ($Action -eq 'Release') { Assert-Win32 ([EtchCapture.Mouse]::ClipCursor([IntPtr]::Zero)) 'ClipCursor' }
-    $p = New-Object EtchCapture.Mouse+POINT
-    Assert-Win32 ([EtchCapture.Mouse]::GetCursorPos([ref]$p)) 'GetCursorPos'
-    $c = New-Object EtchCapture.Mouse+RECT
-    Assert-Win32 ([EtchCapture.Mouse]::GetClipCursor([ref]$c)) 'GetClipCursor'
-    [ordered]@{ ok = $true; x = $p.X; y = $p.Y
-        clip = [ordered]@{ left = $c.Left; top = $c.Top; right = $c.Right; bottom = $c.Bottom } } | ConvertTo-Json -Compress
+    catch [ComponentModel.Win32Exception] { $out = [ordered]@{ ok = $true; unavailable = $_.Exception.Message } }
+    $out | ConvertTo-Json -Compress
     return
 }
 Import-Module (Join-Path $Lab 'scripts\lib\LabProcess.psm1') -Force
