@@ -44,7 +44,17 @@ export type ModelDiagnosticCode =
   /** Layout: a `§` colour letter no `textcolors` table defines. */
   | 'unknown-colour'
   /** Layout: a `£key£` text icon whose `GFX_text_key` sprite the playset lacks. */
-  | 'missing-icon';
+  | 'missing-icon'
+  /** Game host: a top-level kind other than `windowType` and `eu3dialogtype`, which `window open` cannot show (etch#16). */
+  | 'game-host-window-kind'
+  /** Game host: no preview copy, because the file or window cannot be copied (not an interface `.gui`, no such window, unclosed block). */
+  | 'not-previewable'
+  /** Game host: a name the preview copy defines is already defined, by the file itself or by the playset. */
+  | 'copy-name-taken'
+  /** Game host: what the preview copy leaves out of the original (a second definition of a name, `default_*sound`). */
+  | 'copy-leaves-out'
+  /** Game host: a previewed window with `parent`, which inside the backdrop wrapper names a sibling instead. */
+  | 'wrapped-parent';
 
 /** A problem the extension's model finds in one `.gui` or `.gfx` file; the range is in that file's game text. */
 export interface ModelDiagnostic extends SourceRange {
