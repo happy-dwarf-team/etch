@@ -255,19 +255,21 @@ describe('layoutWindow: sprites', () => {
     expect(rectOf(l, 'scaled')).toEqual([4, 4, 11, 5]);
   });
 
-  it("draws a sprite's _large and _huge variants on taller screens (etch#44)", () => {
+  it("draws the largest of a sprite's _huge and _large variants that ends on the screen", () => {
     const gui = `guiTypes = { windowType = { name = "w"
       iconType = { name = "panel" spriteType = "GFX_panel_standard" }
       iconType = { name = "crest" spriteType = "GFX_crest" }
+      iconType = { name = "low" spriteType = "GFX_panel_standard" position = { x = 0 y = 20 } }
     } }`;
     const heights = (height: number): number[] => {
       const l = setUp(gui, { screen: { width: 1920, height } }).layout();
-      return [rectOf(l, 'panel')[3], rectOf(l, 'crest')[3]];
+      return [rectOf(l, 'panel')[3], rectOf(l, 'crest')[3], rectOf(l, 'low')[3]];
     };
-    expect(heights(768)).toEqual([20, 20]);
-    expect(heights(900)).toEqual([40, 40]);
-    // Without a _huge variant the _large one stays.
-    expect(heights(1080)).toEqual([60, 40]);
+    // The variants are 40 and 60 high; drawn from y = 20, the 60 one ends at 80 (etch#44).
+    expect(heights(30)).toEqual([20, 20, 20]);
+    expect(heights(50)).toEqual([40, 40, 20]);
+    expect(heights(70)).toEqual([60, 40, 40]);
+    expect(heights(80)).toEqual([60, 40, 60]);
   });
 
   it('draws shaders the renderer does not port with the default shader and reports them', () => {
