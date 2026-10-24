@@ -315,7 +315,26 @@ class Layout {
     const key = props.has('spritetype') ? 'spritetype' : 'quadtexturesprite';
     const name = props.text(key);
     if (name === undefined || name === '') return undefined;
-    return this.drawSprite(name, props.scalar(key), props, x, y, source, fill);
+    return this.drawSprite(this.sizedSprite(name), props.scalar(key), props, x, y, source, fill);
+  }
+
+  /**
+   * The sprite the game draws for a widget's sprite at this screen size. Verified in the corpus
+   * (etch#44) on the diplomacy and estates backgrounds: from 900 pixels high the game draws the
+   * sprite's `_large` variant and from 1080 its `_huge` one, when the variant exists, with a
+   * `_standard` suffix replaced; a sprite without variants stays.
+   */
+  private sizedSprite(name: string): string {
+    const height = this.input.screen.height;
+    const base = name.replace(/_standard$/i, '');
+    for (const [from, suffix] of [
+      [1080, '_huge'],
+      [900, '_large'],
+    ] as const) {
+      const variant = base + suffix;
+      if (height >= from && this.input.index.sprite(variant) !== undefined) return variant;
+    }
+    return name;
   }
 
   /**
@@ -373,7 +392,8 @@ class Layout {
       sprite.frames - 1,
       Math.max(0, Math.floor(props.number('frame') ?? 1) - 1),
     );
-    // Hypothesis: a scaled sprite keeps fractional pixels.
+    // Verified in the corpus (etch#44) on five scaled icons: the game draws the scaled size
+    // exactly, its bottom edge on whole pixels, and the widget is that size rounded down.
     const scale = props.number('scale') ?? 1;
     const width = cell * scale;
     const height = texture.size.height * scale;
@@ -382,7 +402,7 @@ class Layout {
       source,
       texture: texture.index,
       x,
-      y,
+      y: y + Math.floor(height) - height,
       width,
       height,
       sx: frame * cell,
@@ -391,7 +411,7 @@ class Layout {
       sh: texture.size.height,
       shader: this.shader(sprite, reference),
     });
-    return { width, height };
+    return { width: Math.floor(width), height: Math.floor(height) };
   }
 
   /**
