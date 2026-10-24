@@ -279,7 +279,9 @@ test('draws uncompressed DDS and TGA texels as straight RGBA', async ({ page }) 
   }
 });
 
-test('uploads DXT that is not a multiple of 4 compressed at the padded size', async ({ page }) => {
+test('draws DXT that is not a multiple of 4 at its whole blocks, as the game does', async ({
+  page,
+}) => {
   await open(page);
   const result = await page.evaluate((bytes) => {
     const compressed = etchTest.upload('pad.dds', bytes, true);
@@ -292,34 +294,23 @@ test('uploads DXT that is not a multiple of 4 compressed at the padded size', as
     return {
       compressed: info(compressed),
       cpu: info(cpu),
-      // 1:1 point sampling at texel centres.
-      point: [etchTest.draw(compressed, 6, 5, 'point'), etchTest.draw(cpu, 6, 5, 'point')],
-      // Magnified with linear filtering, the edges sample between texels. The
-      // reference is the unpadded texture under plain CLAMP_TO_EDGE.
-      linear: [
-        etchTest.draw(compressed, 15, 13, 'linear'),
-        etchTest.draw(cpu, 15, 13, 'linear', false),
-      ],
-      unclamped: etchTest.draw(compressed, 15, 13, 'linear', false),
+      // 1:1 point sampling at texel centres, padding included (etch#44).
+      point: [etchTest.draw(compressed, 8, 8, 'point'), etchTest.draw(cpu, 8, 8, 'point')],
     };
   }, Array.from(paddedDxt1()));
 
-  expect(result.compressed).toEqual({
-    path: 'compressed',
-    size: [6, 5, 8, 8],
-    uvScale: [0.75, 0.625],
-  });
-  expect(result.cpu).toEqual({ path: 'cpu-dxt', size: [6, 5, 6, 5], uvScale: [1, 1] });
+  // The game reports and draws a 535×122 DXT5 image at 536×124 (etch#44).
+  expect(result.compressed).toEqual({ path: 'compressed', size: [8, 8, 8, 8], uvScale: [1, 1] });
+  expect(result.cpu).toEqual({ path: 'cpu-dxt', size: [8, 8, 8, 8], uvScale: [1, 1] });
   const [gpuPoint, cpuPoint] = result.point;
-  const [gpuLinear, cpuLinear] = result.linear;
   // GPUs round the 2/3 mixes their own way; the prototype saw up to 6.
   expect(maxDifference(gpuPoint ?? [], cpuPoint ?? [])).toBeLessThanOrEqual(8);
-  expect(maxDifference(gpuLinear ?? [], cpuLinear ?? [])).toBeLessThanOrEqual(8);
-  // Without the clamp, the right column blends in the green padding.
+  // The padding column and row are the file's green texels.
   const greenAt = (pixels: number[], x: number, y: number): number =>
-    pixels[(y * 15 + x) * 4 + 1] ?? 0;
-  expect(greenAt(result.unclamped, 14, 0)).toBeGreaterThan(40);
-  expect(greenAt(gpuLinear ?? [], 14, 0)).toBe(0);
+    pixels[(y * 8 + x) * 4 + 1] ?? 0;
+  expect(greenAt(cpuPoint ?? [], 7, 0)).toBeGreaterThan(200);
+  expect(greenAt(cpuPoint ?? [], 0, 7)).toBeGreaterThan(200);
+  expect(greenAt(cpuPoint ?? [], 0, 0)).toBe(0);
 });
 
 test('caches textures per URL and reports files it cannot load', async ({ page }) => {

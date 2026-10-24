@@ -81,11 +81,12 @@ describe('readDds', () => {
     expect(pixels(readDds(file)).data).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
   });
 
-  it('keeps the first mip level of DXT data, padded to whole blocks', () => {
+  it('keeps the first mip level of DXT data, sized to its whole blocks as the game draws it', () => {
     const level0 = concat(dxt1Block(RED_565, 0, 0), dxt1Block(BLUE_565, 0, 0));
     const mip1 = dxt1Block(GREEN_565, 0, 0);
     const image = readDds(dds({ width: 5, height: 3, fourCC: 'DXT1', data: concat(level0, mip1) }));
-    expect(image).toEqual({ kind: 'dxt', width: 5, height: 3, format: 'DXT1', data: level0 });
+    // etch#44: the game reports and draws a 535×122 DXT5 image at 536×124.
+    expect(image).toEqual({ kind: 'dxt', width: 8, height: 4, format: 'DXT1', data: level0 });
   });
 
   it('reads the DX10 header for the same formats', () => {

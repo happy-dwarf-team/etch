@@ -129,10 +129,12 @@ export function readDds(bytes: Uint8Array): TextureImage {
 
   if (isDxt(format)) {
     const length = dxtLevelBytes(format, width, height);
+    // Verified in etch#44: the game draws a DXT image whose size is not a multiple of 4 at the
+    // size of its whole blocks, padding texels included.
     return {
       kind: 'dxt',
-      width,
-      height,
+      width: Math.ceil(width / 4) * 4,
+      height: Math.ceil(height / 4) * 4,
       format,
       data: slice(bytes, dataOffset, length, `DDS ${format}`),
     };

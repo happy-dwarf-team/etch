@@ -519,6 +519,28 @@ describe('readTextureSize', () => {
     expect(readTextureSize(tga)).toEqual({ width: 300, height: 9 });
   });
 
+  it('gives a DXT image the size of its whole blocks, as the game draws it (etch#44)', () => {
+    const header = (fourCC: string, dxgi = 0): Uint8Array => {
+      const dds = new Uint8Array(148);
+      const view = new DataView(dds.buffer);
+      view.setUint32(0, 0x20534444, true);
+      view.setUint32(12, 122, true);
+      view.setUint32(16, 535, true);
+      view.setUint32(80, 0x4, true); // DDPF_FOURCC
+      dds.set(
+        Array.from({ length: 4 }, (_, i) => fourCC.charCodeAt(i)),
+        84,
+      );
+      view.setUint32(128, dxgi, true);
+      return dds;
+    };
+    expect(readTextureSize(header('DXT5'))).toEqual({ width: 536, height: 124 });
+    expect(readTextureSize(header('DX10', 71))).toEqual({ width: 536, height: 124 });
+    expect(readTextureSize(header('DX10', 87))).toEqual({ width: 535, height: 122 });
+    // Cut before its format, a header gives the size it holds.
+    expect(readTextureSize(header('DXT5').subarray(0, 20))).toEqual({ width: 535, height: 122 });
+  });
+
   it('gives a reason for anything else', () => {
     expect(readTextureSize(new Uint8Array(4))).toHaveProperty('problem');
     const png = new Uint8Array(20);
