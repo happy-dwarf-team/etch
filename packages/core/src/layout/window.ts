@@ -635,6 +635,7 @@ class Layout {
     const fnt = resolveFontFiles(definition, this.input.exists).fnt;
     if (fnt === undefined) return undefined;
     const font = this.input.assets.font(fnt);
+    if (font === undefined) this.unloaded.add(fnt);
     return font === undefined || 'problem' in font ? undefined : font.lineHeight;
   }
 
