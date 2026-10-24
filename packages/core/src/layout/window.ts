@@ -315,24 +315,29 @@ class Layout {
     const key = props.has('spritetype') ? 'spritetype' : 'quadtexturesprite';
     const name = props.text(key);
     if (name === undefined || name === '') return undefined;
-    return this.drawSprite(this.sizedSprite(name), props.scalar(key), props, x, y, source, fill);
+    return this.drawSprite(this.sizedSprite(name, y), props.scalar(key), props, x, y, source, fill);
   }
 
   /**
    * The sprite the game draws for a widget's sprite at this screen size. Verified in the corpus
-   * (etch#44) on the diplomacy and estates backgrounds: from 900 pixels high the game draws the
-   * sprite's `_large` variant and from 1080 its `_huge` one, when the variant exists, with a
-   * `_standard` suffix replaced; a sprite without variants stays.
+   * (etch#44) on the diplomacy and estates backgrounds of both release playsets: the game draws the
+   * largest of the sprite's `_huge` and `_large` variants (a `_standard` suffix replaced) whose
+   * texture, drawn from the widget's top, ends on the screen, else the sprite itself.
    */
-  private sizedSprite(name: string): string {
-    const height = this.input.screen.height;
+  private sizedSprite(name: string, y: number): string {
     const base = name.replace(/_standard$/i, '');
-    for (const [from, suffix] of [
-      [1080, '_huge'],
-      [900, '_large'],
-    ] as const) {
-      const variant = base + suffix;
-      if (height >= from && this.input.index.sprite(variant) !== undefined) return variant;
+    for (const suffix of ['_huge', '_large']) {
+      const sprite = this.input.index.sprite(base + suffix)?.item;
+      const written = sprite?.textures.find((t) => t.key === 'texturefile');
+      if (written === undefined) continue;
+      const path = resolveTexture(written.path, this.input.exists);
+      if (path === undefined) continue;
+      const size = this.input.assets.textureSize(path);
+      if (size === undefined) {
+        this.unloaded.add(path);
+        continue;
+      }
+      if (!('problem' in size) && y + size.height <= this.input.screen.height) return base + suffix;
     }
     return name;
   }
