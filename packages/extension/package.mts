@@ -1,5 +1,6 @@
 // Packages the win32-x64 VSIX into dist/ (ADR 0004). The extension is bundled
-// by build.mts, so vsce does not look at dependencies.
+// by build.mts and the game-side builds are staged under game/ by stage-game.mts,
+// so vsce does not look at dependencies.
 import { copyFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { createVSIX, listFiles, PackageManager } from '@vscode/vsce';
 
@@ -24,6 +25,9 @@ if (hasChangelog) {
 
 // The same file goes to the GitHub release and both stores, so what it holds
 // is checked on every pull request rather than at publish time.
+const game = JSON.parse(readFileSync('game/manifest.json', 'utf8')) as {
+  files: { path: string }[];
+};
 const expected = [
   'dist/extension.js',
   'dist/webview.js',
@@ -33,6 +37,8 @@ const expected = [
   'LICENSE',
   'THIRD-PARTY-NOTICES.md',
   ...(hasChangelog ? ['CHANGELOG.md'] : []),
+  'game/manifest.json',
+  ...game.files.map((file) => `game/${file.path}`),
 ].sort();
 const files = (await listFiles({ packageManager: PackageManager.None })).sort();
 if (files.join() !== expected.join()) {

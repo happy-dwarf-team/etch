@@ -1,0 +1,67 @@
+{
+  "formatVersion": 1,
+  "game": {
+    "version": "1.37.5",
+    "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A"
+  },
+  "builds": [
+    {
+      "id": "anvil",
+      "name": "Anvil",
+      "tag": "v1.3.0",
+      "url": "https://github.com/happy-dwarf-team/anvil/releases/download/v1.3.0/anvil-windows-x64.zip",
+      "sha256": "8C23C806B68BF97D6C94406C2233FBB74AD3CC2DC763E53A825D8C143B64F266",
+      "files": [
+        "version.dll",
+        "anvil/anvil.toml",
+        "anvil/plugins/anvil-game/",
+        "anvil/docs/LICENSE",
+        "anvil/docs/third-party/safetyhook-LICENSE.txt",
+        "anvil/docs/third-party/zydis-LICENSE.txt",
+        "anvil/docs/third-party/zycore-LICENSE.txt",
+        "anvil/docs/third-party/tomlplusplus-LICENSE.txt"
+      ],
+      "licenses": [
+        { "component": "Anvil", "spdx": "MIT", "file": "anvil/docs/LICENSE" },
+        {
+          "component": "SafetyHook",
+          "spdx": "BSL-1.0",
+          "file": "anvil/docs/third-party/safetyhook-LICENSE.txt"
+        },
+        { "component": "Zydis", "spdx": "MIT", "file": "anvil/docs/third-party/zydis-LICENSE.txt" },
+        {
+          "component": "Zycore",
+          "spdx": "MIT",
+          "file": "anvil/docs/third-party/zycore-LICENSE.txt"
+        },
+        {
+          "component": "toml++",
+          "spdx": "MIT",
+          "file": "anvil/docs/third-party/tomlplusplus-LICENSE.txt"
+        }
+      ]
+    },
+    {
+      "id": "bellows",
+      "name": "Bellows",
+      "tag": "v0.9.0",
+      "url": "https://github.com/happy-dwarf-team/bellows/releases/download/v0.9.0/bellows-windows-x64.zip",
+      "sha256": "87618DA744317987A855FD69889AFEC918EE35895F6A8EDC6B4899E39B3F25BF",
+      "into": "anvil/plugins/",
+      "files": ["bellows/"],
+      "licenses": [
+        { "component": "Bellows", "spdx": "MIT", "file": "bellows/LICENSE" },
+        {
+          "component": "mimalloc",
+          "spdx": "MIT",
+          "file": "bellows/third-party/mimalloc-LICENSE.txt"
+        },
+        {
+          "component": "toml++",
+          "spdx": "MIT",
+          "file": "bellows/third-party/tomlplusplus-LICENSE.txt"
+        }
+      ]
+    }
+  ]
+}

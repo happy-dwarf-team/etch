@@ -12,7 +12,8 @@ times (ADR 0004):
 
 The store jobs start after the GitHub release has its assets and pass
 `--skip-duplicate`, so a failed job can be re-run alone. The VSIX contents are
-checked by `pnpm package` on every pull request (`package.mts`); the stores
+checked by `pnpm package` on every pull request (`package.mts`, and the
+pinned builds and notices by `stage-game.mts`, pins/README.md); the stores
 show the extension's `README.md`, `CHANGELOG.md`, icon and `preview` flag.
 
 ## Authentication
