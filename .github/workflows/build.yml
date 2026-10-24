@@ -43,10 +43,27 @@ jobs:
       - name: Unit tests
         run: pnpm test:unit
 
-      - name: Renderer tests
+      # The headless Chromium the renderer and compare tests run in, cached per Playwright
+      # version: its download host has failed runs before (ENOTFOUND), and a hit skips it.
+      - name: Playwright version
+        id: playwright
+        shell: pwsh
         run: |
-          pnpm --filter @etch/renderer exec playwright install --only-shell chromium
-          pnpm test:renderer
+          $version = (pnpm --filter @etch/renderer exec playwright --version).Split(' ')[-1]
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        id: playwright-cache
+        with:
+          path: ~\AppData\Local\ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}-chromium-shell
+
+      - name: Playwright browser
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: pnpm --filter @etch/renderer exec playwright install --only-shell chromium
+
+      - name: Renderer tests
+        run: pnpm test:renderer
 
       # Downloads the current stable VS Code and runs the suite in it.
       - name: Extension tests
