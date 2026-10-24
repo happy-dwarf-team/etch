@@ -483,6 +483,14 @@ describe('layoutWindow: assets', () => {
     instantTextBoxType = { name = "t" font = "tiny" text = "A" maxWidth = 50 }
   } }`;
 
+  it('asks for the font of an empty text box, whose height it needs (etch#44)', () => {
+    const empty = `guiTypes = { windowType = { name = "w"
+      instantTextBoxType = { name = "t" font = "tiny" text = "" maxWidth = 50 maxHeight = 40 }
+    } }`;
+    const l = setUp(empty, { missing: new Set(['gfx/fonts/tiny.fnt']) }).layout();
+    expect(l.unloaded).toEqual(['gfx/fonts/tiny.fnt']);
+  });
+
   it('lists files the assets have not loaded and lays out the rest', () => {
     const l = setUp(text, {
       missing: new Set(['gfx/interface/plain.dds', 'gfx/fonts/tiny.fnt']),
