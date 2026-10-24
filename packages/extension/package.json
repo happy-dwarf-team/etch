@@ -73,6 +73,11 @@
         "title": "Choose the Preview Resolution",
         "category": "Etch",
         "icon": "$(screen-full)"
+      },
+      {
+        "command": "etch.removeGameHostInstall",
+        "title": "Remove the Game Host Install",
+        "category": "Etch"
       }
     ],
     "menus": {

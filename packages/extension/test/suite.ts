@@ -29,6 +29,12 @@ export async function run(): Promise<void> {
   const gamePath = process.env['ETCH_GAME_PATH'];
   if (gamePath !== undefined && gamePath !== '') await testPreviewBudget(api, gamePath);
 
+  const commands = await vscode.commands.getCommands(true);
+  assert.ok(
+    commands.includes('etch.removeGameHostInstall'),
+    'the game host install can be removed by command',
+  );
+
   await testGameText();
   await testNavigation(api);
   await testPreview(api);

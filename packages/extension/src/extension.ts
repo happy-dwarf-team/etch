@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { SUPPORTED_GAME_VERSION } from '@etch/core';
+import { registerGameHostInstall, type GameHostInstall } from './game-host/index.ts';
 import { registerGameText } from './game-text.ts';
 import { WidgetNavigation } from './navigation.ts';
 import { registerPreview, type PreviewApi } from './preview/index.ts';
@@ -8,6 +9,7 @@ import { registerPreview, type PreviewApi } from './preview/index.ts';
 export interface EtchApi {
   readonly navigation: WidgetNavigation;
   readonly preview: PreviewApi;
+  readonly gameHostInstall: GameHostInstall;
 }
 
 export function activate(context: vscode.ExtensionContext): EtchApi {
@@ -18,7 +20,8 @@ export function activate(context: vscode.ExtensionContext): EtchApi {
   context.subscriptions.push(registerGameText());
   const navigation = new WidgetNavigation();
   context.subscriptions.push(navigation);
-  return { navigation, preview: registerPreview(context, output, navigation) };
+  const gameHostInstall = registerGameHostInstall(context, output);
+  return { navigation, preview: registerPreview(context, output, navigation), gameHostInstall };
 }
 
 export function deactivate(): void {
