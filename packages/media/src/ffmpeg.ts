@@ -53,7 +53,8 @@ export function cutArgs(master: string, start: number, duration: number, out: st
     ...['-hide_banner', '-loglevel', 'error', '-y'],
     ...['-ss', start.toFixed(3), '-i', master, '-t', duration.toFixed(3)],
     '-filter_complex',
-    `[0:v]crop=${width}:${String(rows)}:0:0,split[top][edge];` +
+    // In RGB: a recordVideo master is 4:2:0, where a row of one pixel cannot be cut.
+    `[0:v]format=gbrp,crop=${width}:${String(rows)}:0:0,split[top][edge];` +
       `[edge]crop=${width}:1:0:${String(rows - 1)}[row];[top][row]vstack,` +
       `fps=${String(LOOP_FPS)},tpad=stop_mode=clone:stop_duration=5[v]`,
     ...['-map', '[v]', '-an', '-c:v', 'ffv1', out],

@@ -117,7 +117,7 @@ export async function capture(options: CaptureOptions): Promise<string> {
         etch: version,
         commit: gitCommit(options.repository),
         vscode: VSCODE_VERSION,
-        ffmpeg: (await run(options.ffmpeg, ['-hide_banner', '-version'])).split('\n')[0],
+        ffmpeg: (await run(options.ffmpeg, ['-hide_banner', '-version'])).split('\n')[0]?.trim(),
         scenes,
       },
       null,

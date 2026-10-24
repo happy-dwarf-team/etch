@@ -262,8 +262,7 @@ export class Workbench {
 
   /** Runs a command through the command palette, by its title. */
   async command(title: string, options: { keepsQuickInput?: boolean } = {}): Promise<void> {
-    await this.page.keyboard.press('F1');
-    await this.page.locator('.quick-input-widget input').waitFor({ state: 'visible' });
+    await this.openQuickInput('F1');
     await this.page.keyboard.type(title);
     await this.page
       .locator('.quick-input-list .monaco-list-row.focused', { hasText: title })
@@ -275,8 +274,7 @@ export class Workbench {
   /** Opens a workspace file through Quick Open, by its file name, in the editor's group. */
   async quickOpen(name: string): Promise<void> {
     await this.focusEditor();
-    await this.page.keyboard.press('Control+P');
-    await this.page.locator('.quick-input-widget input').waitFor({ state: 'visible' });
+    await this.openQuickInput('Control+P');
     await this.page.keyboard.type(name);
     await this.page
       .locator('.quick-input-list .monaco-list-row.focused', { hasText: name })
@@ -284,6 +282,24 @@ export class Workbench {
     await this.page.keyboard.press('Enter');
     await this.quickInputClosed();
     await this.page.locator('.tab.active', { hasText: name }).waitFor();
+  }
+
+  /**
+   * Opens the command palette or Quick Open by its key. A key pressed while the focus is still
+   * leaving the preview's webview can be lost, so the key is pressed again until it opens.
+   */
+  private async openQuickInput(key: string): Promise<void> {
+    const input = this.page.locator('.quick-input-widget input');
+    for (let attempt = 0; attempt < 3; attempt++) {
+      await this.page.keyboard.press(key);
+      try {
+        await input.waitFor({ state: 'visible', timeout: 2_000 });
+        return;
+      } catch {
+        // Pressed again below.
+      }
+    }
+    await input.waitFor({ state: 'visible', timeout: 2_000 });
   }
 
   private async quickInputClosed(): Promise<void> {
@@ -438,7 +454,17 @@ export class Workbench {
 
   /** Moves the keyboard focus to the editor beside the preview. */
   async focusEditor(): Promise<void> {
-    await this.page.keyboard.press('Control+1');
+    const focused = this.page.locator('.part.editor .monaco-editor.focused');
+    for (let attempt = 0; attempt < 3; attempt++) {
+      await this.page.keyboard.press('Control+1');
+      try {
+        await focused.waitFor({ timeout: 2_000 });
+        return;
+      } catch {
+        // Pressed again below, as for a lost key in openQuickInput.
+      }
+    }
+    await focused.waitFor({ timeout: 2_000 });
   }
 
   /**
