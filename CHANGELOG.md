@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.2.0](https://github.com/happy-dwarf-team/etch/compare/v0.1.0...v0.2.0) (2026-10-24)
+
+
+### Features
+
+* **corpus:** compare a window's position, not its size ([#102](https://github.com/happy-dwarf-team/etch/issues/102)) ([e2ffc00](https://github.com/happy-dwarf-team/etch/commit/e2ffc008427e97defdc00b33b3e4be6df5e09842))
+* **corpus:** compare captures widget by widget ([#82](https://github.com/happy-dwarf-team/etch/issues/82)) ([2263581](https://github.com/happy-dwarf-team/etch/commit/2263581231fe37b7695dabaf2f32159bfb431444))
+* **corpus:** compare what the game's code moves where the game shows it ([#98](https://github.com/happy-dwarf-team/etch/issues/98)) ([34e56d2](https://github.com/happy-dwarf-team/etch/commit/34e56d2dbf4597d55abf22c584ab42072f634a38))
+* **corpus:** confirm the five corpus resolutions below the monitor ([#81](https://github.com/happy-dwarf-team/etch/issues/81)) ([d604b46](https://github.com/happy-dwarf-team/etch/commit/d604b467dc2b71688b486c86ad0052bc18ee2f4e)), closes [#18](https://github.com/happy-dwarf-team/etch/issues/18)
+* **corpus:** define the corpus manifest and capture records ([#79](https://github.com/happy-dwarf-team/etch/issues/79)) ([d067494](https://github.com/happy-dwarf-team/etch/commit/d067494c854f3e13c20fc0d4c9a068eb71f695ee))
+* **corpus:** leave out a few unstable pixels instead of failing on one ([#95](https://github.com/happy-dwarf-team/etch/issues/95)) ([ef9a3a9](https://github.com/happy-dwarf-team/etch/commit/ef9a3a9a3b59a30443bff6f11de78ae21b6a6b07))
+* **corpus:** leave out code-filled widgets the game never made ([#101](https://github.com/happy-dwarf-team/etch/issues/101)) ([fb3263b](https://github.com/happy-dwarf-team/etch/commit/fb3263b310c07e0c49d3da0445e29652aa901a46))
+* **corpus:** mask the states the game's code sets ([#90](https://github.com/happy-dwarf-team/etch/issues/90)) ([8f882bb](https://github.com/happy-dwarf-team/etch/commit/8f882bb591c07c3b4f9591f2c45264d12edaf5b5))
+* **corpus:** pin the real mouse cursor during a capture run ([#87](https://github.com/happy-dwarf-team/etch/issues/87)) ([0f9dbeb](https://github.com/happy-dwarf-team/etch/commit/0f9dbeb613a54fb15ba4f9aa521793bed74c4700))
+* **corpus:** script the capture driver with Tongs ([#84](https://github.com/happy-dwarf-team/etch/issues/84)) ([922a610](https://github.com/happy-dwarf-team/etch/commit/922a610288edac6ce2c1f3c3fa21fec44aaa04d6))
+* **corpus:** take code-created roots the view names code-filled ([#103](https://github.com/happy-dwarf-team/etch/issues/103)) ([77af07e](https://github.com/happy-dwarf-team/etch/commit/77af07e79d851ea2983441b87cab40645c5723e7))
+
+
+### Bug Fixes
+
+* **core:** draw DXT images at the size of their whole blocks ([#92](https://github.com/happy-dwarf-team/etch/issues/92)) ([7275b21](https://github.com/happy-dwarf-team/etch/commit/7275b211118a6e2726728d09bf4f4d1d94c66907))
+* **core:** draw scaled and screen-sized sprites as the game does ([#91](https://github.com/happy-dwarf-team/etch/issues/91)) ([4320525](https://github.com/happy-dwarf-team/etch/commit/4320525696b540a09aea6b5decb5e3216dbcb3df))
+* **core:** keep resolution-picked sprites and measure variants from the window ([#100](https://github.com/happy-dwarf-team/etch/issues/100)) ([abe6fdd](https://github.com/happy-dwarf-team/etch/commit/abe6fdd097c62fc25a0b3cd2580047638ce24a3e))
+* **core:** load the font of an empty text box to size it ([#99](https://github.com/happy-dwarf-team/etch/issues/99)) ([675dd01](https://github.com/happy-dwarf-team/etch/commit/675dd01d26548ac822cd87108376a1872dbca600))
+* **core:** pick the sprite variant that fits on the screen ([#94](https://github.com/happy-dwarf-team/etch/issues/94)) ([30a2dbd](https://github.com/happy-dwarf-team/etch/commit/30a2dbd6071098f0c2b58baa50d7bc4969e3dee1))
+* **core:** size and place text as the game does ([#86](https://github.com/happy-dwarf-team/etch/issues/86)) ([7ebf902](https://github.com/happy-dwarf-team/etch/commit/7ebf902caaea32631dc4b0223168337606d5183f))
+* **corpus:** treat a game widget of negative size as absent ([#85](https://github.com/happy-dwarf-team/etch/issues/85)) ([c5ba370](https://github.com/happy-dwarf-team/etch/commit/c5ba370dbefa7d39a651dc8084503bf7c42d39a8))
+
 ## 0.1.0 (2026-10-21)
 
 
