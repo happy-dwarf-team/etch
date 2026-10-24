@@ -255,21 +255,33 @@ describe('layoutWindow: sprites', () => {
     expect(rectOf(l, 'scaled')).toEqual([4, 4, 11, 5]);
   });
 
-  it("draws the largest of a sprite's _huge and _large variants that ends on the screen", () => {
-    const gui = `guiTypes = { windowType = { name = "w"
+  it("draws the largest of a sprite's variants that ends on the screen from its window's top", () => {
+    const gui = `guiTypes = { windowType = { name = "w" position = { x = 0 y = 20 }
       iconType = { name = "panel" spriteType = "GFX_panel_standard" }
       iconType = { name = "crest" spriteType = "GFX_crest" }
-      iconType = { name = "low" spriteType = "GFX_panel_standard" position = { x = 0 y = 20 } }
+      iconType = { name = "high" spriteType = "GFX_panel_standard" position = { x = 0 y = -15 } }
     } }`;
     const heights = (height: number): number[] => {
       const l = setUp(gui, { screen: { width: 1920, height } }).layout();
-      return [rectOf(l, 'panel')[3], rectOf(l, 'crest')[3], rectOf(l, 'low')[3]];
+      return [rectOf(l, 'panel')[3], rectOf(l, 'crest')[3], rectOf(l, 'high')[3]];
     };
-    // The variants are 40 and 60 high; drawn from y = 20, the 60 one ends at 80 (etch#44).
-    expect(heights(30)).toEqual([20, 20, 20]);
-    expect(heights(50)).toEqual([40, 40, 20]);
-    expect(heights(70)).toEqual([60, 40, 40]);
+    // The variants are 40 and 60 high, measured from the window's top at 20 (etch#44): at 50 the
+    // 40 one does not fit, although from "high"'s own top at 5 it would.
+    expect(heights(50)).toEqual([20, 20, 20]);
+    expect(heights(60)).toEqual([40, 40, 40]);
     expect(heights(80)).toEqual([60, 40, 60]);
+  });
+
+  it('keeps the sprite a widget picks by if_resolution, with no variant (etch#44)', () => {
+    const gui = `guiTypes = { windowType = { name = "w"
+      iconType = { name = "picked" if_resolution = { max_height = 50 spriteType = "GFX_crest" }
+        if_resolution = { min_height = 51 spriteType = "GFX_panel_standard" } }
+    } }`;
+    const height = (screen: number): number =>
+      rectOf(setUp(gui, { screen: { width: 1920, height: screen } }).layout(), 'picked')[3];
+    // GFX_crest has a _large variant that fits at 45; the .gui's choice stays.
+    expect(height(45)).toBe(20);
+    expect(height(80)).toBe(20);
   });
 
   it('draws shaders the renderer does not port with the default shader and reports them', () => {

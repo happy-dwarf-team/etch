@@ -192,13 +192,16 @@ class Layout {
         props.flag('fullscreen') === true ? this.input.screen : sizeIn(props.size('size'), parent);
       rect = { x, y, ...extent };
     } else if (SPRITE_WIDGETS.has(kind)) {
-      const drawn = this.drawSpriteOf(props, x, y, source, fill);
+      // Verified in the corpus (etch#44): a widget whose `.gui` picks its sprite by
+      // `if_resolution` (the declare war dialog's background) gets no screen-sized variant.
+      const variantTop = widget.resolutionBlocks.length === 0 ? parent.y : undefined;
+      const drawn = this.drawSpriteOf(props, x, y, source, fill, variantTop);
       if (drawn !== undefined) rect = { x, y, ...drawn };
       // Verified in the corpus (etch#44): the game draws no `buttonText` on a check box; the
       // message settings lay a text box over each of theirs instead.
       if (BUTTONS.has(kind) && kind !== 'checkboxType') this.drawButtonText(props, rect, source);
     } else if (kind === 'shieldtype') {
-      const drawn = this.drawSpriteOf(props, x, y, source, undefined);
+      const drawn = this.drawSpriteOf(props, x, y, source, undefined, undefined);
       if (drawn !== undefined) rect = { x, y, ...drawn };
     } else if (TEXT_BOXES.has(kind)) {
       rect = this.drawTextBox(kind, props, x, y, source);
@@ -311,20 +314,24 @@ class Layout {
     y: number,
     source: number,
     fill: Extent | undefined,
+    variantTop: number | undefined,
   ): Extent | undefined {
     const key = props.has('spritetype') ? 'spritetype' : 'quadtexturesprite';
     const name = props.text(key);
     if (name === undefined || name === '') return undefined;
-    return this.drawSprite(this.sizedSprite(name, y), props.scalar(key), props, x, y, source, fill);
+    const sprite = variantTop === undefined ? name : this.sizedSprite(name, variantTop);
+    return this.drawSprite(sprite, props.scalar(key), props, x, y, source, fill);
   }
 
   /**
    * The sprite the game draws for a widget's sprite at this screen size. Verified in the corpus
    * (etch#44) on the diplomacy and estates backgrounds of both release playsets: the game draws the
    * largest of the sprite's `_huge` and `_large` variants (a `_standard` suffix replaced) whose
-   * texture, drawn from the widget's top, ends on the screen, else the sprite itself.
+   * texture, measured from the top of the widget's window, ends on the screen, else the sprite
+   * itself (Proper 2K UI Enhanced's estates background, 892 high in a window at 168, is not
+   * drawn at 1050 although it would end at 1048 from its own top at 156).
    */
-  private sizedSprite(name: string, y: number): string {
+  private sizedSprite(name: string, top: number): string {
     const base = name.replace(/_standard$/i, '');
     for (const suffix of ['_huge', '_large']) {
       const sprite = this.input.index.sprite(base + suffix)?.item;
@@ -337,7 +344,9 @@ class Layout {
         this.unloaded.add(path);
         continue;
       }
-      if (!('problem' in size) && y + size.height <= this.input.screen.height) return base + suffix;
+      if (!('problem' in size) && top + size.height <= this.input.screen.height) {
+        return base + suffix;
+      }
     }
     return name;
   }
