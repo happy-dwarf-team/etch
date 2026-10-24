@@ -170,6 +170,16 @@ export interface PrepareOptions {
   readonly buildsFolder: string;
   /** The playset in load order; the overlay mod is added after it. */
   readonly mods: readonly GameHostMod[];
+  readonly display: HostDisplay;
+}
+
+/** How the game host shows itself (spec section 6): borderless at this size, UI scale 1.0. */
+export interface HostDisplay {
+  /** The monitor's native resolution, in device pixels. */
+  readonly width: number;
+  readonly height: number;
+  /** The localisation language, such as `english` (`etch.language`). */
+  readonly language: string;
 }
 
 /** What a start of the game host needs. */
@@ -253,6 +263,7 @@ export async function prepareInstall(options: PrepareOptions): Promise<PreparedI
   }
   await writeOverlay(layout);
   await writeProfile(layout, options.mods);
+  await writeDisplay(layout, options.display);
   return {
     exe,
     gameFolder: layout.game,
@@ -489,6 +500,57 @@ async function writeProfile(layout: GameHostLayout, mods: readonly GameHostMod[]
     join(layout.profile, 'dlc_load.json'),
     JSON.stringify({ enabled_mods: enabled, disabled_dlcs: [] }),
   );
+}
+
+/**
+ * The private profile's settings, written whole before every start. After its first start the
+ * game takes the display mode and size from `pdx_settings.txt` instead of `settings.txt` (etch#18),
+ * so both say borderless at the native resolution. The rest is the lab's verified configuration,
+ * silent.
+ */
+async function writeDisplay(layout: GameHostLayout, display: HostDisplay): Promise<void> {
+  const width = Math.round(display.width);
+  const height = Math.round(display.height);
+  if (!(width > 0 && height > 0) || !/^[a-z_]+$/.test(display.language)) {
+    throw new GameHostInstallError('install-failed', 'The game host display is not valid.');
+  }
+  const settings = [
+    `language="l_${display.language}"`,
+    'graphics={',
+    '\tsize={',
+    `\t\tx=${String(width)}`,
+    `\t\ty=${String(height)}`,
+    '\t}',
+    '\tgame_ui_scale=1.000',
+    '\tfullScreen=no',
+    '\tborderless=yes',
+    '\tshadows=no',
+    '\tmulti_sampling=8',
+    '\tvsync=yes',
+    '}',
+    'master_volume=0.000000',
+    'music_volume=0.000000',
+    'sound_fx_volume=0.000000',
+    'ambient_volume=0.000000',
+    '',
+  ];
+  await writeFile(join(layout.profile, 'settings.txt'), settings.join('\n'));
+  const size = `${String(width)}x${String(height)}`;
+  const entry = (key: string, value: string) => [
+    `\t"${key}"={`,
+    `\t\tvalue="${value}"`,
+    '\t\tversion=0',
+    '\t}',
+  ];
+  const pdx = [
+    '"Graphics"={',
+    ...entry('fullscreen_resolution', size),
+    ...entry('windowed_resolution', size),
+    ...entry('display_mode', 'borderless_fullscreen'),
+    '}',
+    '',
+  ];
+  await writeFile(join(layout.profile, 'pdx_settings.txt'), pdx.join('\n'));
 }
 
 /**

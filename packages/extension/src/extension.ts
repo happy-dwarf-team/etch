@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { SUPPORTED_GAME_VERSION } from '@etch/core';
-import { registerGameHostInstall, type GameHostInstall } from './game-host/index.ts';
+import { registerGameHost, type GameHost } from './game-host/index.ts';
+import { closeWindowsHelper } from './game-host/windows.ts';
 import { registerGameText } from './game-text.ts';
 import { WidgetNavigation } from './navigation.ts';
 import { registerPreview, type PreviewApi } from './preview/index.ts';
@@ -9,8 +10,10 @@ import { registerPreview, type PreviewApi } from './preview/index.ts';
 export interface EtchApi {
   readonly navigation: WidgetNavigation;
   readonly preview: PreviewApi;
-  readonly gameHostInstall: GameHostInstall;
+  readonly gameHost: GameHost;
 }
+
+let gameHost: GameHost | undefined;
 
 export function activate(context: vscode.ExtensionContext): EtchApi {
   const { version } = context.extension.packageJSON as { version: string };
@@ -20,10 +23,17 @@ export function activate(context: vscode.ExtensionContext): EtchApi {
   context.subscriptions.push(registerGameText());
   const navigation = new WidgetNavigation();
   context.subscriptions.push(navigation);
-  const gameHostInstall = registerGameHostInstall(context, output);
-  return { navigation, preview: registerPreview(context, output, navigation), gameHostInstall };
+  gameHost = registerGameHost(context, output);
+  return {
+    navigation,
+    preview: registerPreview(context, output, navigation, gameHost),
+    gameHost,
+  };
 }
 
-export function deactivate(): void {
-  // Everything Etch creates is disposed through context.subscriptions.
+/** The game host stops when the window closes (spec section 4); VS Code waits for it. */
+export async function deactivate(): Promise<void> {
+  await gameHost?.stop();
+  closeWindowsHelper();
+  // Everything else Etch creates is disposed through context.subscriptions.
 }

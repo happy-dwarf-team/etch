@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { START_GAME_HOST, type GameHost } from '../game-host/index.ts';
 import type { WidgetNavigation } from '../navigation.ts';
 import { CHOOSE_RESOLUTION, PREVIEW_VIEW_TYPE, Preview, type PreviewApi } from './preview.ts';
 import { chooseResolution } from './resolution.ts';
@@ -26,8 +27,15 @@ export function registerPreview(
   context: vscode.ExtensionContext,
   output: vscode.LogOutputChannel,
   navigation: WidgetNavigation,
+  gameHost?: GameHost,
 ): PreviewApi {
-  const preview = new Preview(context.extensionUri, output, navigation, context.globalState);
+  const preview = new Preview(
+    context.extensionUri,
+    output,
+    navigation,
+    context.globalState,
+    gameHost,
+  );
   context.subscriptions.push(
     preview,
     vscode.commands.registerCommand(OPEN_PREVIEW, () => {
@@ -35,6 +43,11 @@ export function registerPreview(
     }),
     vscode.commands.registerCommand(TOGGLE_PREVIEW_PIN, () => {
       preview.togglePin();
+    }),
+    // The game host starts at a switch of the preview to it (spec section 4).
+    vscode.commands.registerCommand(START_GAME_HOST, () => {
+      preview.open();
+      preview.setBackend('game-host');
     }),
     vscode.commands.registerCommand(CHOOSE_RESOLUTION, () => chooseResolution(preview)),
     // Reopens the preview after a window reload (`onWebviewPanel:etch.preview` activates Etch).
