@@ -450,6 +450,32 @@ describe('compareCapture', () => {
     expect(widget(result, 'panel/bg').pixels.masked).toBe(30 * 10 - 100 - 50 + 30 * 30);
   });
 
+  it('masks the widgets the game disables or checks: its code sets their state', () => {
+    const result = compare({
+      capture: (root) =>
+        editWidget(
+          editWidget(root, 'panel/flag', (w) => ({ ...w, enabled: false })),
+          'panel/icon[1]',
+          (w) => ({ ...w, checked: true }),
+        ),
+      game: (g) => {
+        // A disabled widget in grey, a checked one in another frame.
+        fill(g, 50, 25, 10, 10, [128, 128, 128]);
+        fill(g, 15, 25, 10, 10, [9, 9, 9]);
+      },
+    });
+    expect(result.passed).toBe(true);
+    expect(widget(result, 'panel/flag')).toMatchObject({
+      status: 'code-filled',
+      reason: 'disabled by the game',
+    });
+    expect(widget(result, 'panel/icon[1]')).toMatchObject({
+      status: 'code-filled',
+      reason: 'checked by the game',
+    });
+    expect(widget(result, 'panel/icon[2]').status).toBe('pass');
+  });
+
   it('treats what is inside a code-filled widget as code-filled', () => {
     const window = laidOut();
     const result = compare({
