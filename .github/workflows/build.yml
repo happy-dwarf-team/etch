@@ -52,6 +52,39 @@ jobs:
       - name: Extension tests
         run: pnpm test:extension
 
+      # Etch's Anvil plugin (plugin/): the CMake build with /W4 /WX against the
+      # Anvil SDK pinned in plugin/CMakeLists.txt, and its tests.
+      - name: Plugin build
+        run: |
+          cmake -S plugin -B plugin/build -G "Visual Studio 17 2022" -A x64
+          cmake --build plugin/build --config Release
+
+      - name: Plugin tests
+        run: ctest --test-dir plugin/build -C Release --output-on-failure
+
+      # plugin.toml and symbols.toml against Anvil's schemas, and
+      # plugin/symbols.lock against symbols.toml (the lock comes from
+      # `anvil check plugin --exe` on the real eu4.exe), as annotations.
+      - name: anvil check
+        shell: pwsh
+        run: |
+          $anvil = (Get-Content plugin/build/anvil-tool.txt -Raw).Trim()
+          & $anvil --version
+          & $anvil check plugin --format github
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      # One clang-format version for everyone (CONTRIBUTING.md).
+      - name: Plugin format
+        shell: pwsh
+        run: |
+          $files = git ls-files 'plugin/*.cpp' 'plugin/*.hpp'
+          pipx run --spec clang-format==21.1.8 clang-format --dry-run --Werror @files
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      # The plugin folder that packaging takes whole for anvil/plugins/etch/ (pins/README.md).
+      - name: Plugin install
+        run: cmake --install plugin/build --config Release --component plugin --prefix plugin/dist
+
       # The pin and notices checks (pins/README.md): downloads Anvil and Bellows at
       # their pinned hashes, checks their licences and writes THIRD-PARTY-NOTICES.md.
       - name: Pins and notices

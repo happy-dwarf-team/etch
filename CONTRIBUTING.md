@@ -4,10 +4,10 @@
 
 Every change goes to `main` through a pull request; nobody pushes to `main`
 directly. A pull request needs the `windows` check (typecheck, lint, format,
-tests, VSIX package) and the `conventional-title` check to pass, and is
-**squash-merged**: the pull request title becomes the single commit on `main`
-and, through it, the changelog entry. Keep one topic per pull request; split
-unrelated changes.
+tests, the game host plugin, VSIX package) and the `conventional-title` check
+to pass, and is **squash-merged**: the pull request title becomes the single
+commit on `main` and, through it, the changelog entry. Keep one topic per pull
+request; split unrelated changes.
 
 Research and prototypes go on `research/*` and `prototype/*` branches, which
 are pushed and never merged (specification, section 13).
@@ -33,8 +33,8 @@ Titles follow [Conventional Commits](https://www.conventionalcommits.org/):
 | `ci`       | GitHub Actions, Dependabot                     | none    | hidden      |
 | `chore`    | anything else (dev dependencies, release PRs)  | none    | hidden      |
 
-Scopes in use: `core`, `renderer`, `extension`, and later `plugin`, `corpus`
-and `pins`. A scope is optional; leave it out when a change spans several.
+Scopes in use: `core`, `renderer`, `extension`, `plugin`, `corpus` and
+`pins`. A scope is optional; leave it out when a change spans several.
 
 Breaking changes: add `!` after the type or scope (`feat(extension)!: ...`)
 and a `BREAKING CHANGE: <what breaks and how to migrate>` paragraph in the pull
@@ -47,8 +47,9 @@ Releases are automated with
 repository has one version (ADR 0004):
 
 1. Each push to `main` updates a pull request titled
-   `chore(main): release x.y.z`. It bumps the version in `package.json` and
-   `packages/extension/package.json` and adds the `CHANGELOG.md` section, both
+   `chore(main): release x.y.z`. It bumps the version in `package.json`,
+   `packages/extension/package.json` and `plugin/plugin.toml` and adds the
+   `CHANGELOG.md` section, both
    computed from the Conventional Commits since the last release. It appears
    only once a commit of a visible type (`feat`, `fix`, `perf`, `revert`,
    `build`) has landed.
@@ -63,7 +64,8 @@ repository has one version (ADR 0004):
    repository secrets and each release's steps.
 
 Do not edit the versions or `CHANGELOG.md` by hand; packaging fails when the
-two `package.json` versions differ. To force a specific next version, put
+two `package.json` versions differ, and the plugin's build when
+`plugin/plugin.toml` differs from `package.json`. To force a specific next version, put
 `Release-As: x.y.z` in the body of a commit on `main`. Merging the release pull
 request publishes to both stores at once, so it is merged only on the
 maintainer's go-ahead.
@@ -79,6 +81,7 @@ A pnpm workspace (ADR 0001):
 | `packages/extension` | VS Code glue and the VSIX manifest                             |
 | `packages/compare`   | the precision corpus's headless comparison; never shipped      |
 | `packages/media`     | the Etch site's media: demo mod, scenes (docs/media.md); never shipped |
+| `plugin`             | the game host's Anvil plugin (C++, CMake, Anvil SDK)           |
 | `corpus`             | precision corpus manifest and capture records (no screenshots) |
 | `pins`               | pinned game-side builds: release tag, URL and SHA-256 (pins/README.md) |
 | `docs/adr`           | architecture decisions                                         |
@@ -111,6 +114,39 @@ pnpm package         # packages/extension/dist/etch-win32-x64-<version>.vsix (ru
 
 `pnpm format` rewrites files with Prettier. Markdown is not formatted; keep its
 line breaks and tables as they are.
+
+### The game host plugin
+
+`plugin/` is a CMake project of its own, built with Visual Studio 2022 (or its
+Build Tools) and CMake 3.28 or later against the Anvil SDK that
+`plugin/CMakeLists.txt` pins by release URL and SHA-256. The `windows` check
+builds it with `/W4 /WX`, runs its tests and `anvil check`, and checks the
+format with clang-format 21.1.8:
+
+```powershell
+cmake -S plugin -B plugin/build -G "Visual Studio 17 2022" -A x64
+cmake --build plugin/build --config Release
+ctest --test-dir plugin/build -C Release --output-on-failure
+pipx run --spec clang-format==21.1.8 clang-format -i (git ls-files 'plugin/*.cpp' 'plugin/*.hpp')
+```
+
+The build leaves the plugin folder in `plugin/build/plugin/etch/` (`etch.dll`,
+`plugin.toml`, `symbols.toml`). `pnpm package` needs it installed, with
+`LICENSE`, in `plugin/dist/etch/`, which it stages for
+`<game host install>/anvil/plugins/etch` (pins/README.md):
+
+```powershell
+cmake --install plugin/build --config Release --component plugin --prefix plugin/dist
+```
+
+The pipe between the plugin and the extension is described in
+[docs/plugin-protocol.md](docs/plugin-protocol.md).
+
+`plugin/symbols.lock` records that `plugin/symbols.toml` was checked against
+the pinned `eu4.exe`. After changing `symbols.toml`, run
+`anvil check plugin --exe "<game folder>/eu4.exe"` with the SDK's
+`anvil.exe` (its path is in `plugin/build/anvil-tool.txt`) and commit the
+lock; CI, which has no game, only checks that it matches.
 
 The reload budgets and the precision corpus are measured on the maintainer's
 machine, not in CI (ADR 0004): shared runners are too noisy to time, and the

@@ -12,7 +12,8 @@ playwright-report/
 # Written when the VSIX is packaged: the staged game-side builds and their notices (pins/README.md).
 /packages/extension/game/
 /packages/extension/THIRD-PARTY-NOTICES.md
-# The game plugin's build output (etch#45).
+# The game plugin's CMake build and its installed folder (CONTRIBUTING.md).
+/plugin/build/
 /plugin/dist/
 # The precision corpus keeps its screenshots outside Git (corpus/README.md).
 /corpus/**/*.png
