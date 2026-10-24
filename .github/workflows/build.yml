@@ -52,6 +52,11 @@ jobs:
       - name: Extension tests
         run: pnpm test:extension
 
+      # The pin and notices checks (pins/README.md): downloads Anvil and Bellows at
+      # their pinned hashes, checks their licences and writes THIRD-PARTY-NOTICES.md.
+      - name: Pins and notices
+        run: pnpm pins
+
       - name: Package
         run: pnpm package
 

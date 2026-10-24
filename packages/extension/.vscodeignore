@@ -1,4 +1,5 @@
-# Only the bundle, the manifest, the icon and the documents go into the VSIX;
+# Only the bundle, the manifest, the icon, the documents and the staged
+# game-side builds go into the VSIX;
 # package.mts checks the list.
 **
 !dist/extension.js
@@ -9,3 +10,4 @@
 !CHANGELOG.md
 !LICENSE
 !THIRD-PARTY-NOTICES.md
+!game/**

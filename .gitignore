@@ -9,6 +9,11 @@ playwright-report/
 # Copied from the repository root when the VSIX is packaged.
 /packages/extension/LICENSE
 /packages/extension/CHANGELOG.md
+# Written when the VSIX is packaged: the staged game-side builds and their notices (pins/README.md).
+/packages/extension/game/
+/packages/extension/THIRD-PARTY-NOTICES.md
+# The game plugin's build output (etch#45).
+/plugin/dist/
 # The precision corpus keeps its screenshots outside Git (corpus/README.md).
 /corpus/**/*.png
 # The media capture writes masters, loops and stills, which show game art (docs/media.md).

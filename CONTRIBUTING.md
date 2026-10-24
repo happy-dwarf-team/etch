@@ -80,13 +80,16 @@ A pnpm workspace (ADR 0001):
 | `packages/compare`   | the precision corpus's headless comparison; never shipped      |
 | `packages/media`     | the Etch site's media: demo mod, scenes (docs/media.md); never shipped |
 | `corpus`             | precision corpus manifest and capture records (no screenshots) |
+| `pins`               | pinned game-side builds: release tag, URL and SHA-256 (pins/README.md) |
 | `docs/adr`           | architecture decisions                                         |
 | `docs/spec`          | the v1 specification                                           |
 
 Workspace packages are TypeScript sources that esbuild bundles into the
 extension and the webview script. The VSIX has no runtime dependencies besides
 the VS Code API; anything that would ship in it must be MIT, Apache-2.0, BSD or
-BSL-1.0 (ADR 0004).
+BSL-1.0 (ADR 0004). Packaging also puts the pinned builds of Anvil and Bellows
+into it unchanged, with their licence texts, and writes
+`THIRD-PARTY-NOTICES.md` from `pins/game-builds.json`.
 
 ## Building and testing
 
@@ -102,7 +105,8 @@ pnpm test:unit       # Vitest
 pnpm --filter @etch/renderer exec playwright install chromium   # once
 pnpm test:renderer   # Playwright: WebGL2 in Chromium (renderer and corpus comparison)
 pnpm test:extension  # @vscode/test-electron: downloads VS Code into .vscode-test
-pnpm package         # packages/extension/dist/etch-win32-x64-<version>.vsix
+pnpm pins            # download and check the pinned builds, stage them, write the notices
+pnpm package         # packages/extension/dist/etch-win32-x64-<version>.vsix (runs pnpm pins)
 ```
 
 `pnpm format` rewrites files with Prettier. Markdown is not formatted; keep its

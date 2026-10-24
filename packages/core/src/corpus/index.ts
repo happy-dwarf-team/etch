@@ -3,7 +3,7 @@
  * widget trees, and where the screenshots live. Uses Node's file system, so it is a separate entry
  * point, `@etch/core/corpus`, that the browser-side renderer never imports.
  */
-export type { CorpusProblem } from './check.ts';
+export { Checker, ID, SHA256, field, type CorpusProblem, type Json } from './check.ts';
 export {
   CORPUS_FORMAT_VERSION,
   TONGS_KEYS,

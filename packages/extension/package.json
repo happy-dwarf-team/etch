@@ -145,7 +145,8 @@
     "build": "node build.mts",
     "typecheck": "tsc -p . && tsc -p webview",
     "test": "node build.mts && node test/run.mts",
-    "package": "node build.mts && node package.mts"
+    "pins": "node stage-game.mts",
+    "package": "node build.mts && node stage-game.mts && node package.mts"
   },
   "devDependencies": {
     "@etch/core": "workspace:*",
