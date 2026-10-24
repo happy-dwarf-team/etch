@@ -192,13 +192,16 @@ class Layout {
         props.flag('fullscreen') === true ? this.input.screen : sizeIn(props.size('size'), parent);
       rect = { x, y, ...extent };
     } else if (SPRITE_WIDGETS.has(kind)) {
-      const drawn = this.drawSpriteOf(props, x, y, source, fill);
+      // Verified in the corpus (etch#44): a widget whose `.gui` picks its sprite by
+      // `if_resolution` (the declare war dialog's background) gets no screen-sized variant.
+      const variants = widget.resolutionBlocks.length === 0;
+      const drawn = this.drawSpriteOf(props, x, y, source, fill, variants);
       if (drawn !== undefined) rect = { x, y, ...drawn };
       // Verified in the corpus (etch#44): the game draws no `buttonText` on a check box; the
       // message settings lay a text box over each of theirs instead.
       if (BUTTONS.has(kind) && kind !== 'checkboxType') this.drawButtonText(props, rect, source);
     } else if (kind === 'shieldtype') {
-      const drawn = this.drawSpriteOf(props, x, y, source, undefined);
+      const drawn = this.drawSpriteOf(props, x, y, source, undefined, false);
       if (drawn !== undefined) rect = { x, y, ...drawn };
     } else if (TEXT_BOXES.has(kind)) {
       rect = this.drawTextBox(kind, props, x, y, source);
@@ -311,11 +314,13 @@ class Layout {
     y: number,
     source: number,
     fill: Extent | undefined,
+    variants: boolean,
   ): Extent | undefined {
     const key = props.has('spritetype') ? 'spritetype' : 'quadtexturesprite';
     const name = props.text(key);
     if (name === undefined || name === '') return undefined;
-    return this.drawSprite(this.sizedSprite(name, y), props.scalar(key), props, x, y, source, fill);
+    const sprite = variants ? this.sizedSprite(name, y) : name;
+    return this.drawSprite(sprite, props.scalar(key), props, x, y, source, fill);
   }
 
   /**
