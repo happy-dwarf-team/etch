@@ -47,6 +47,9 @@ import type { RgbaImage } from './png.ts';
 export const CHANNEL_TOLERANCE = 2;
 /** The share of a widget's compared pixels that must be within {@link CHANNEL_TOLERANCE}. */
 export const PASS_SHARE = 0.99;
+const RECT_FIELDS = ['x', 'y', 'w', 'h'] as const;
+/** Widget kinds whose rect is compared by position only: windows, which draw nothing themselves. */
+const WINDOW_KINDS: ReadonlySet<string> = new Set(['windowType', 'eu3dialogtype']);
 /**
  * The largest share of a widget's pixels that may have changed between the shots: they are left
  * out like masked ones, and more of them make the widget an unstable capture (ADR 0002, etch#44).
@@ -585,9 +588,10 @@ export function compareCapture(
       }
       problems.push('The render has no such widget.');
     } else if (gameRect !== undefined && renderRect !== undefined) {
-      const differs = (['x', 'y', 'w', 'h'] as const).filter(
-        (c) => Math.round(renderRect[c]) !== gameRect[c],
-      );
+      // A window draws nothing itself, and Tongs' window sizes may not be the drawn panel (its
+      // README): Proper 2K UI Enhanced's ledger is 1921 × 80 to Tongs at every size (etch#44).
+      const fields = WINDOW_KINDS.has(widget.kind ?? '') ? (['x', 'y'] as const) : RECT_FIELDS;
+      const differs = fields.filter((c) => Math.round(renderRect[c]) !== gameRect[c]);
       if (differs.length > 0) {
         problems.push(`The rect is ${showRect(renderRect)}; the game's is ${showRect(gameRect)}.`);
       }
