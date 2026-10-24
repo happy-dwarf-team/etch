@@ -20,8 +20,9 @@ export interface GpuTexture {
   /**
    * The allocated size. A compressed DXT texture whose size is not a multiple
    * of 4 is allocated at the next multiple of 4, because WebGL refuses partial
-   * blocks (etch#9); the extra texels are the file's block padding. Use
-   * {@link uvScale} and clamp, as `etchImageUv` in {@link TEXTURE_GLSL} does.
+   * blocks (etch#9); `readDds` already gives such an image the size of its
+   * whole blocks, as the game draws it (etch#44). Use {@link uvScale} and
+   * clamp, as `etchImageUv` in {@link TEXTURE_GLSL} does.
    */
   readonly storedWidth: number;
   readonly storedHeight: number;
