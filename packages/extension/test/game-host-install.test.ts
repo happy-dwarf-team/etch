@@ -122,7 +122,13 @@ afterEach(async () => {
 });
 
 const prepare = (folder = game) =>
-  prepareInstall({ layout, gameFolder: folder, buildsFolder: builds, mods });
+  prepareInstall({
+    layout,
+    gameFolder: folder,
+    buildsFolder: builds,
+    mods,
+    display: { width: 3440, height: 1440, language: 'english' },
+  });
 
 describe('prepareInstall', () => {
   it('links the folders, copies the top-level files and installs the pinned builds', async () => {
@@ -173,6 +179,15 @@ describe('prepareInstall', () => {
     expect(await readFile(join(layout.profile, 'mod', 'overlay.mod'), 'utf8')).toBe(
       `name="Etch overlay"\npath="${slash(layout.overlay)}"\n`,
     );
+    const settings = await readFile(join(layout.profile, 'settings.txt'), 'utf8');
+    expect(settings).toContain(
+      'language="l_english"\ngraphics={\n\tsize={\n\t\tx=3440\n\t\ty=1440\n',
+    );
+    expect(settings).toContain('\tfullScreen=no\n\tborderless=yes\n');
+    expect(settings).toContain('master_volume=0.000000');
+    const pdx = await readFile(join(layout.profile, 'pdx_settings.txt'), 'utf8');
+    expect(pdx).toContain('"windowed_resolution"={\n\t\tvalue="3440x1440"');
+    expect(pdx).toContain('"display_mode"={\n\t\tvalue="borderless_fullscreen"');
     // A later start with a smaller playset leaves no descriptor of the earlier one behind.
     mods = [];
     await prepare();

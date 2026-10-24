@@ -35,12 +35,14 @@ import {
 } from '@etch/core';
 import { layOutPreview } from '@etch/core/playset';
 import { readGameText, saveEncodingOf } from '../game-text.ts';
+import type { GameHost, GameHostState } from '../game-host/index.ts';
 import type { WidgetNavigation } from '../navigation.ts';
 import { previewHtml } from './html.ts';
 import type {
   HostMessage,
   Notice,
   Point,
+  PreviewBackend,
   PreviewMemento,
   TextureFailure,
   ViewState,
@@ -126,6 +128,13 @@ export interface PreviewApi {
   readonly reloadState: PreviewMemento | undefined;
   /** Pins the previewed window, or unpins it. */
   togglePin(): void;
+  /** The preview backend the switch shows. */
+  readonly backend: PreviewBackend;
+  /**
+   * Switches the preview backend. The game host starts at the first switch to it (spec section 4),
+   * and a start that failed is tried again.
+   */
+  setBackend(backend: PreviewBackend): void;
   /** Draws the current render again and reads the straight RGBA of points of the screen. */
   probe(points: readonly Point[]): Promise<PreviewPaint>;
   /** Resolves when no render runs or waits. */
@@ -168,8 +177,14 @@ export class Preview implements PreviewApi, vscode.Disposable {
   private readonly paintEmitter = new vscode.EventEmitter<PreviewPaint>();
   private readonly subscriptions: vscode.Disposable[];
 
+  private readonly gameHost: GameHost | undefined;
   private panel: vscode.WebviewPanel | undefined;
   private roots: string | undefined;
+  private backendValue: PreviewBackend = 'offline';
+  /** The preview switched to the game host and has not handed it a playset yet. */
+  private hostStartPending = false;
+  /** What the last `show` was given, to show again when the game host's state changes. */
+  private lastShown: Omit<ViewState, 'pinned' | 'pinnable' | 'backend' | 'resolution'> | undefined;
   private ready = false;
   /** A render was skipped while the panel was hidden. */
   private stale = false;
@@ -212,8 +227,10 @@ export class Preview implements PreviewApi, vscode.Disposable {
     output: vscode.LogOutputChannel,
     navigation: WidgetNavigation,
     memento: vscode.Memento,
+    gameHost?: GameHost,
   ) {
     this.extensionUri = extensionUri;
+    this.gameHost = gameHost;
     this.output = output;
     this.navigation = navigation;
     this.memento = memento;
@@ -225,6 +242,13 @@ export class Preview implements PreviewApi, vscode.Disposable {
       },
     );
     this.subscriptions = [
+      ...(gameHost === undefined
+        ? []
+        : [
+            gameHost.onDidChangeState(() => {
+              if (this.lastShown !== undefined) this.show(this.lastShown);
+            }),
+          ]),
       navigation.onDidHighlight(() => {
         this.updateOverlay();
       }),
@@ -325,6 +349,36 @@ export class Preview implements PreviewApi, vscode.Disposable {
     });
     void vscode.commands.executeCommand('setContext', PREVIEW_OPEN_CONTEXT, true);
     this.request();
+  }
+
+  get backend(): PreviewBackend {
+    return this.backendValue;
+  }
+
+  setBackend(backend: PreviewBackend): void {
+    this.backendValue = backend;
+    this.hostStartPending = backend === 'game-host';
+    if (backend === 'game-host') this.useGameHost();
+    else this.gameHost?.use(undefined);
+    if (this.lastShown !== undefined) this.show(this.lastShown);
+  }
+
+  /**
+   * Hands the game host the preview's playset and display after a switch to it, which starts it
+   * (again after a failed start or a stop), once the preview has a playset with a game folder.
+   */
+  private useGameHost(): void {
+    const host = this.gameHost;
+    const session = this.session;
+    if (host === undefined || !this.hostStartPending || this.panel === undefined) return;
+    const gameFolder = session?.playset.gameFolder;
+    if (session === undefined || gameFolder === undefined) return;
+    this.hostStartPending = false;
+    host.use({
+      gameFolder,
+      mods: session.playset.mods,
+      display: { ...(this.native ?? this.resolution.screen), language: session.settings.language },
+    });
   }
 
   togglePin(): void {
@@ -729,9 +783,11 @@ export class Preview implements PreviewApi, vscode.Disposable {
   }
 
   private show(state: Omit<ViewState, 'pinned' | 'pinnable' | 'backend' | 'resolution'>): void {
+    this.lastShown = state;
+    this.useGameHost();
     const { screen, source } = this.resolution;
     const value = resolutionValue();
-    const full: ViewState = {
+    let full: ViewState = {
       ...state,
       notices:
         parseResolution(value) === undefined
@@ -747,9 +803,15 @@ export class Preview implements PreviewApi, vscode.Disposable {
           : state.notices,
       pinned: this.pin !== undefined,
       pinnable: this.pin !== undefined || this.render !== undefined,
-      backend: 'offline',
+      backend: this.backendValue,
       resolution: { text: formatResolution(screen), source },
     };
+    if (this.backendValue === 'game-host' && this.gameHost !== undefined) {
+      full = {
+        ...full,
+        notices: [gameHostNotice(this.gameHost.state, this.session), ...full.notices],
+      };
+    }
     if (JSON.stringify(full) === JSON.stringify(this.lastState)) return;
     this.lastState = full;
     if (this.ready) void this.panel?.webview.postMessage({ type: 'state', state: full });
@@ -818,11 +880,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
         if (message.pinned !== (this.pin !== undefined)) this.togglePin();
         break;
       case 'backend':
-        if (message.backend === 'game-host') {
-          void vscode.window.showInformationMessage(
-            'The game host preview backend comes in a later release of Etch.',
-          );
-        }
+        this.setBackend(message.backend);
         if (this.lastState)
           void this.panel?.webview.postMessage({ type: 'state', state: this.lastState });
         break;
@@ -916,6 +974,10 @@ export class Preview implements PreviewApi, vscode.Disposable {
 
   private closed(): void {
     this.panel = undefined;
+    this.backendValue = 'offline';
+    this.hostStartPending = false;
+    this.lastShown = undefined;
+    this.gameHost?.use(undefined);
     this.ready = false;
     this.roots = undefined;
     this.session = undefined;
@@ -1080,4 +1142,36 @@ function toDiagnostic(found: ModelDiagnostic, source: SourceText): vscode.Diagno
 
 function severityLog(notice: Notice): 'error' | 'warn' | 'info' {
   return notice.severity === 'error' ? 'error' : notice.severity === 'warning' ? 'warn' : 'info';
+}
+
+/** What the preview says about the game host while it shows it. */
+function gameHostNotice(state: GameHostState, session: PreviewSession | undefined): Notice {
+  if (session !== undefined && session.playset.gameFolder === undefined) {
+    return { severity: 'error', message: 'The game host needs the game folder (etch.gamePath).' };
+  }
+  switch (state.status) {
+    case 'stopped':
+      return { severity: 'information', message: 'The game host is stopped.' };
+    case 'starting':
+      return {
+        severity: 'information',
+        message: 'The game host is starting; this takes about 15 seconds.',
+      };
+    case 'ready':
+      return {
+        severity: 'information',
+        message:
+          `The game host is running (ready after ${(state.readyMs / 1000).toFixed(1)} s). ` +
+          'Its previews come in a later release; until then the preview shows the offline renderer.',
+      };
+    case 'stopping':
+      return { severity: 'information', message: 'The game host is stopping.' };
+    case 'busy':
+      return {
+        severity: 'warning',
+        message: 'Another VS Code window runs the game host; Etch runs one per machine.',
+      };
+    case 'failed':
+      return { severity: 'error', message: `The game host is not running: ${state.message}` };
+  }
 }

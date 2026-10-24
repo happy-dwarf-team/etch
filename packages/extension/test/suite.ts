@@ -3,6 +3,7 @@
 import * as assert from 'node:assert/strict';
 import * as vscode from 'vscode';
 import type { EtchApi } from '../src/extension.ts';
+import { testGameHost } from './game-host.ts';
 import { testGameText } from './game-text.ts';
 import { testNavigation } from './navigation.ts';
 import { testPreviewBudget } from './preview-budget.ts';
@@ -30,10 +31,17 @@ export async function run(): Promise<void> {
   if (gamePath !== undefined && gamePath !== '') await testPreviewBudget(api, gamePath);
 
   const commands = await vscode.commands.getCommands(true);
-  assert.ok(
-    commands.includes('etch.removeGameHostInstall'),
-    'the game host install can be removed by command',
-  );
+  for (const command of ['etch.startGameHost', 'etch.stopGameHost', 'etch.removeGameHostInstall']) {
+    assert.ok(commands.includes(command), `${command} is registered`);
+  }
+  assert.equal(api.gameHost.state.status, 'stopped', 'the game host starts only on demand');
+
+  // Local only: one start of the real game host from a game host install.
+  const gameHostPath = process.env['ETCH_GAME_HOST_PATH'];
+  if (gameHostPath !== undefined && gameHostPath !== '') {
+    await testGameHost(api, gameHostPath);
+    return;
+  }
 
   await testGameText();
   await testNavigation(api);

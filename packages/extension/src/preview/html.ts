@@ -79,7 +79,7 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
   <label>Backend
     <select id="backend">
       <option value="offline">Offline renderer</option>
-      <option value="game-host" disabled>Game host (not yet available)</option>
+      <option value="game-host">Game host</option>
     </select>
   </label>
   <button id="resolution" type="button">1920×1080</button>

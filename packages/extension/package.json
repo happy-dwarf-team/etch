@@ -75,6 +75,16 @@
         "icon": "$(screen-full)"
       },
       {
+        "command": "etch.startGameHost",
+        "title": "Start the Game Host",
+        "category": "Etch"
+      },
+      {
+        "command": "etch.stopGameHost",
+        "title": "Stop the Game Host",
+        "category": "Etch"
+      },
+      {
         "command": "etch.removeGameHostInstall",
         "title": "Remove the Game Host Install",
         "category": "Etch"

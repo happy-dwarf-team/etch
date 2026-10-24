@@ -1,10 +1,12 @@
-# The game host install
+# The game host
 
-The game host (spec section 4, ADR 0003) runs from Etch's private copy of the
-game, the **game host install**, never from the player's own game folder or
-profile. The extension creates it on first use, after one confirmation, and
+The game host (spec section 4, ADR 0003) is a disposable game process that the
+extension starts, owns and stops. It runs from Etch's private copy of the game,
+the **game host install**, never from the player's own game folder or profile.
+The extension creates the install on first use, after one confirmation, and
 **Etch: Remove the Game Host Install** removes it.
-`packages/extension/src/game-host/install.ts` implements it (etch#48).
+`packages/extension/src/game-host/install.ts` implements the install (etch#48),
+`process.ts` and `host.ts` the process (etch#49).
 
 ## Layout
 
@@ -47,6 +49,10 @@ cannot be trusted:
 6. It writes the private profile: one descriptor per playset mod in
    `mod/mod-NNN.mod`, then `mod/overlay.mod`, and `dlc_load.json` with them in
    that order and no DLC disabled, so every DLC the player owns is on.
+7. It writes `settings.txt` and `pdx_settings.txt` whole: borderless at the
+   monitor's native resolution, UI scale 1.0, `etch.language`, the sound off,
+   and otherwise the lab's verified graphics settings. After its first start the
+   game takes the display mode and size from `pdx_settings.txt` (etch#18).
 
 A playset mod's descriptor is its own (the profile's `.mod` or the mod
 folder's `descriptor.mod`) with `path` and `archive` replaced by the mod's
@@ -68,3 +74,60 @@ folder that already holds anything else when the install would be created.
   junction targets.
 - It never changes `eu4.exe`: the install's `eu4.exe` is a byte-for-byte copy
   that is checked against the pin before every start.
+
+## The process
+
+The preview starts the game host at its first switch to the game host backend
+(or **Etch: Start the Game Host**); **Etch: Stop the Game Host** stops it, and
+so does closing the VS Code window and 30 minutes without a game host preview
+(switching the preview back to the offline renderer, or closing it, starts that
+timer).
+
+1. **Lock.** One game host per machine: `game-host.lock` in the global storage
+   names the owning extension host (its PID, image path and creation time), the
+   session id and, once started, the game process. A lock whose owner still
+   runs means another window has the game host. A lock whose owner is gone
+   names an orphan: its game is closed after its identity is checked, then the
+   lock is taken. Each window looks for an orphan when Etch activates.
+2. **Start.** `eu4.exe` of the install starts with the install as working
+   directory, `-userdir=<profile>/`, `ETCH_HOST_SESSION` set to a fresh session
+   id and Steam's `SteamAppId` and `SteamGameId`. Its PID, image path and
+   creation time are read at once and must be the install's `eu4.exe`.
+3. **Handshake.** The extension connects to the session pipe and sends
+   `hello` (docs/plugin-protocol.md); the answer's `pid` and `process_start_ms`
+   must be the process it started, to the millisecond. It then pings every
+   250 ms until `ready` (`anvil-game.ready`).
+4. **Behind VS Code.** The game's window takes the foreground when it appears;
+   while the game starts, every 250 ms it is sent to the bottom of the Z order
+   without being activated, the foreground goes back to the window that had it,
+   and a minimised window is restored without activation. The game host is
+   never minimised: minimised it draws at about 8 fps (etch#21).
+5. **Stop.** The game is closed only through a handle on which its PID, image
+   path and creation time were checked again, so a reused PID is never closed.
+   A `CrashReporter.exe` the game started (its parent PID, created after the
+   game, from the install or the game folder) is closed the same way, so no
+   report is sent. The lock is released.
+
+The game is started as a child of the extension host, so Windows ends it with
+the extension host: when VS Code crashes, the game goes too, and the lock it
+leaves behind is cleared by the next window. Node has no Win32 bindings and
+Etch ships no native code besides the plugin, so one Windows PowerShell
+process (`windows.ts`) compiles a small C# class once and answers the identity,
+stop, crash reporter and window requests; it ends after a minute without
+requests.
+
+## Measured
+
+On the maintainer's machine (EU4 1.37.5 `9AD3EFE1…D771A`, Anvil 1.3.0,
+Bellows 0.9.0, 3440×1440, no mods, a new private profile each time; etch#49,
+2026-10-25):
+
+| Run | Pipe up | Window found | Ready | Sent behind | Frames in 3 s behind VS Code | Stopped |
+| --- | --- | --- | --- | --- | --- | --- |
+| VS Code, preview switch | 0.23 s | 1.3 s | 17.8 s | once, stayed behind | 486 | after the idle time, verified |
+| Owner killed | 0.22 s | 1.3 s | 18.7 s | once, stayed behind | | with its owner; the orphaned lock cleared |
+
+Both games ran borderless at 3440×1440, never minimised; `system.log` had
+`Running application` and `error.log` only the news banner's two lines. The
+player's profile and the Steam folder were unchanged, and no `eu4.exe` or
+`CrashReporter.exe` ran afterwards.
