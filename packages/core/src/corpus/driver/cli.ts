@@ -9,7 +9,7 @@
  * Filters: --playset a,b  --resolution 1920x1080,…  --view a,b  --all (report playsets and
  * unconfirmed sizes too). corpus/README.md, "The capture driver", describes the procedure.
  */
-import { execFile } from 'node:child_process';
+import { execFile, execFileSync } from 'node:child_process';
 import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -17,7 +17,7 @@ import { localCorpusFolder, readCorpusManifest } from '../files.ts';
 import { describeSession, planCaptures, type PlanFilter } from './plan.ts';
 import { runCaptures, type GameLauncher, type GameRecord, type StopResult } from './run.ts';
 import { connectTongs } from './tongs.ts';
-import { DEFAULT_AWAY, type AwayPoint } from './view.ts';
+import { DEFAULT_AWAY, type AwayPoint, type CursorState } from './view.ts';
 import type { RecipeStart } from '../manifest.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -68,22 +68,11 @@ function required(flags: Map<string, string>, name: string): string {
 
 /** `game.ps1` through PowerShell 7; its last output line is one JSON object. */
 function gameScript(lab: string, hostDir: string): GameLauncher {
-  const script = join(here, 'game.ps1');
   const run = (args: string[]): Promise<Record<string, unknown>> =>
     new Promise((ok, fail) => {
       execFile(
         'pwsh',
-        [
-          '-NoProfile',
-          '-NonInteractive',
-          '-File',
-          script,
-          '-Lab',
-          lab,
-          '-HostDir',
-          hostDir,
-          ...args,
-        ],
+        scriptArgs(lab, hostDir, args),
         { windowsHide: true, maxBuffer: 16 * 1024 * 1024 },
         (error, stdout, stderr) => {
           const last = stdout.trim().split(/\r?\n/).pop() ?? '';
@@ -118,9 +107,13 @@ function gameScript(lab: string, hostDir: string): GameLauncher {
       ]);
       return answer as unknown as GameRecord;
     },
-    async cursor() {
-      const answer = await run(['-Action', 'Cursor']);
-      return { x: Number(answer['x']), y: Number(answer['y']) };
+    mouse: {
+      read: async () => cursorState(await run(['-Action', 'Cursor'])),
+      pin: async (x, y) =>
+        cursorState(await run(['-Action', 'Pin', '-X', String(x), '-Y', String(y)])),
+      async release() {
+        await run(['-Action', 'Release']);
+      },
     },
     async stop(record) {
       const { writeFile, mkdtemp } = await import('node:fs/promises');
@@ -130,6 +123,56 @@ function gameScript(lab: string, hostDir: string): GameLauncher {
       return (await run(['-Action', 'Stop', '-Record', file])) as StopResult;
     },
   };
+}
+
+function scriptArgs(lab: string, hostDir: string, args: readonly string[]): string[] {
+  const script = join(here, 'game.ps1');
+  return [
+    '-NoProfile',
+    '-NonInteractive',
+    '-File',
+    script,
+    '-Lab',
+    lab,
+    '-HostDir',
+    hostDir,
+    ...args,
+  ];
+}
+
+function cursorState(answer: Record<string, unknown>): CursorState {
+  if (typeof answer['unavailable'] === 'string') return { unavailable: answer['unavailable'] };
+  const clip = answer['clip'] as Record<string, unknown> | undefined;
+  return {
+    x: Number(answer['x']),
+    y: Number(answer['y']),
+    clip: {
+      left: Number(clip?.['left']),
+      top: Number(clip?.['top']),
+      right: Number(clip?.['right']),
+      bottom: Number(clip?.['bottom']),
+    },
+  };
+}
+
+/**
+ * Ctrl+C ends Node before any `finally` runs, and the clip outlives the process: release the mouse
+ * on the way out. A game still running is closed with `game.ps1 -Action Stop` (corpus/README.md).
+ */
+function releaseOnSignal(lab: string, hostDir: string): void {
+  for (const signal of ['SIGINT', 'SIGTERM', 'SIGBREAK'] as const) {
+    process.once(signal, () => {
+      try {
+        execFileSync('pwsh', scriptArgs(lab, hostDir, ['-Action', 'Release']), {
+          windowsHide: true,
+        });
+        console.error(`${signal}: the mouse is released.`);
+      } catch {
+        console.error(`${signal}: the mouse could not be released; press Ctrl+Alt+Del.`);
+      }
+      process.exit(130);
+    });
+  }
 }
 
 /** `--away-menu x,y` as fractions of the client area, `--away-save` as a widget pattern. */
@@ -180,6 +223,7 @@ async function main(): Promise<void> {
   const lab = resolve(required(flags, 'lab'));
   const hostDir = resolve(required(flags, 'host'));
   const playerProfile = resolve(flags.get('player-profile') ?? DEFAULTS.playerProfile);
+  releaseOnSignal(lab, hostDir);
   const prettier = await import('prettier');
   const report = await runCaptures({
     manifest,
@@ -204,10 +248,13 @@ async function main(): Promise<void> {
       console.log(line);
     },
   });
-  const captured = report.sessions.flatMap((s) => s.views).filter((v) => v.ok).length;
-  const failed = report.sessions.flatMap((s) => s.views).filter((v) => !v.ok).length;
+  const views = report.sessions.flatMap((s) => s.views);
+  const captured = views.filter((v) => v.ok).length;
+  // A view given back when the mouse was released is taken again by the next start.
+  const failed = views.filter((v) => !v.ok && v.released !== true).length;
+  const released = views.filter((v) => !v.ok && v.released === true).length;
   console.log(
-    `run ${report.runId}: ${String(captured)} captured, ${String(failed)} failed, ${String(report.notTried.length)} not tried${report.stopped !== undefined ? `; STOPPED: ${report.stopped}` : ''}`,
+    `run ${report.runId}: ${String(captured)} captured, ${String(failed)} failed, ${String(report.notTried.length)} not tried${released > 0 ? `, ${String(released)} given back when the mouse was released` : ''}${report.stopped !== undefined ? `; STOPPED: ${report.stopped}` : ''}`,
   );
   console.log(`report: ${join(localDir, 'runs', report.runId, 'report.json')}`);
   if (report.stopped !== undefined || failed > 0 || report.notTried.length > 0) {

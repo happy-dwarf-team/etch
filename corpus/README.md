@@ -299,17 +299,35 @@ What a run does:
   what it opened), the session ends and a fresh start takes the remaining
   views.
 
-**The mouse.** The game scrolls the map towards the real mouse cursor when it
-is outside the game's window, even without focus, and the interface sees the
-real cursor again as soon as it moves. Before a run, put the cursor over the
-middle of the game's monitor, where the client area of every size lies, and
-leave the mouse alone. From a save the driver reads the cursor (it never moves
-it) before each view and after its shots, and stops the run when the cursor is
-not inside the client area or has moved.
+**The mouse is locked while a game runs.** The game scrolls the map towards
+the real mouse cursor when it is outside the game's window, even without
+focus, and the interface sees the real cursor again as soon as it moves. So
+the driver places the cursor itself: as soon as a game is ready it moves the
+cursor onto Tongs' resting point (at least 100 pixels inside the client area)
+and confines it to that one pixel with `ClipCursor` (`game.ps1 -Action Pin`).
+Moving the mouse then does nothing, and the cursor does not need to be put
+anywhere by hand. Each session releases the mouse when its game closes, on
+every path; Ctrl+C releases it too.
+
+To take the mouse back during a run, press **Ctrl+Alt+Del** (then Esc) or
+**Win+L**; bringing another window to the front (Alt+Tab, the Windows key)
+does the same. Windows clears the clip, the driver notices it before the next
+view or after the current one's shots, closes the game as always and waits
+for a file named `resume` in the run folder (30 minutes, then the run stops).
+Creating it starts the session again with the views not yet captured; such a
+session does not count towards the fresh starts allowed, and the view it gave
+back is not counted as failed. The clip outlives the
+driver: if it ended without releasing the mouse, press Ctrl+Alt+Del, or run
+`game.ps1 -Action Release -Lab <lab> -HostDir <host>`.
+
+From a save the driver also checks before each view and after its shots that
+the cursor is inside the client area and has not moved; when it is not, the
+view fails before anything is written and a fresh start takes it again.
 
 `--hold <minutes>` keeps each game open after its views until a file named
 `release` appears in the session's run folder, for working out recipes by hand
-with Tongs; closing and the settings are handled as always.
+with Tongs; the mouse is released while the game is held, and closing and the
+settings are handled as always.
 
 ## The comparison
 

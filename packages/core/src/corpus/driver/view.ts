@@ -67,12 +67,8 @@ export interface ViewContext {
   readonly saveSha256?: string;
   readonly mods: readonly { readonly name: string; readonly sha256: string }[];
   readonly disabledDlcs: readonly string[];
-  /**
-   * The real mouse cursor in screen pixels. The game scrolls the map towards a cursor outside its
-   * window even without focus, so from a save the cursor must rest inside the client area, away
-   * from its edges, and must not move while a view is captured.
-   */
-  readonly cursor?: () => Promise<{ readonly x: number; readonly y: number }>;
+  /** The real mouse cursor, which the session pins inside the client area (`pinCursor`). */
+  readonly mouse?: MouseCursor;
   /** Where the pointer rests while the view is read and shot, by start state. */
   readonly away: Readonly<Record<RecipeStart, AwayPoint>>;
   readonly readFile: (path: string) => Promise<Uint8Array>;
@@ -97,6 +93,41 @@ export const DEFAULT_AWAY: Readonly<Record<RecipeStart, AwayPoint>> = {
   save: { widget: 'topbar//pause_banner' },
 };
 
+/** A rectangle in screen pixels, right and bottom excluded, as Windows' `RECT`. */
+export interface ScreenRect {
+  readonly left: number;
+  readonly top: number;
+  readonly right: number;
+  readonly bottom: number;
+}
+
+export type CursorState =
+  | {
+      readonly x: number;
+      readonly y: number;
+      /** The rectangle Windows confines the cursor to: the whole virtual screen when it is free. */
+      readonly clip: ScreenRect;
+    }
+  /** Windows refused the call that failed, as it does while the screen is locked. */
+  | { readonly unavailable: string };
+
+/**
+ * The real mouse cursor. The game scrolls the map towards a cursor outside its window even without
+ * focus, and sees the real cursor again whenever it moves, so a session pins it to one pixel of the
+ * client area (`ClipCursor`). Windows clears that clip on Ctrl+Alt+Del, Win+L, the Windows key or
+ * another window coming to the front, and refuses the calls while the screen is locked: that is
+ * the user's way to take the mouse back.
+ */
+export interface MouseCursor {
+  read(): Promise<CursorState>;
+  /** Moves the cursor to a screen point and confines it there. */
+  pin(x: number, y: number): Promise<CursorState>;
+  release(): Promise<void>;
+}
+
+/** The user took the mouse back: the session ends cleanly and the run waits for them. */
+export class MouseReleased extends Error {}
+
 export interface ViewCapture {
   readonly record: CaptureRecord;
   /** The first shot's PNG file as Tongs wrote it; its hash is in the record. */
@@ -117,16 +148,15 @@ export type ViewOutcome =
       readonly reason: string;
       /** The game could not be brought back to the start state: the session ends here. */
       readonly lost: boolean;
-      /** It failed before its own steps ran, so a fresh start can take it again. */
+      /** Nothing of it was written, so a fresh start can take it again. */
       readonly retry?: boolean;
-      /** Nothing can be captured until someone acts (the mouse cursor): the run stops. */
-      readonly stop?: boolean;
+      /** The user took the mouse back (`MouseReleased`): the run waits for them. */
+      readonly released?: boolean;
     };
 
 class ViewFailure extends Error {
   readonly lost: boolean;
   retry = false;
-  stop = false;
 
   constructor(message: string, lost = false) {
     super(message);
@@ -162,6 +192,7 @@ export async function startWindows(tongs: Tongs): Promise<string[]> {
  */
 export async function settleStart(ctx: ViewContext): Promise<string[]> {
   const window = await gameWindow(ctx);
+  await holdCursor(ctx, window);
   const away = await awayPoint(ctx, window);
   await ask(ctx.tongs, `move ${String(away.x)} ${String(away.y)}`);
   await ctx.sleep((ctx.timing ?? DEFAULT_TIMING).settleMs);
@@ -174,6 +205,17 @@ export async function captureView(ctx: ViewContext, view: CorpusView): Promise<V
   try {
     return { view: view.id, ok: true, capture: await capture(ctx, view) };
   } catch (error) {
+    if (error instanceof MouseReleased) {
+      ctx.log({ view: view.id, failed: error.message, released: true });
+      return {
+        view: view.id,
+        ok: false,
+        reason: error.message,
+        lost: true,
+        retry: true,
+        released: true,
+      };
+    }
     if (!(error instanceof ViewFailure)) throw error;
     ctx.log({ view: view.id, failed: error.message, lost: error.lost, retry: error.retry });
     return {
@@ -182,7 +224,6 @@ export async function captureView(ctx: ViewContext, view: CorpusView): Promise<V
       reason: error.message,
       lost: error.lost,
       ...(error.retry ? { retry: true } : {}),
-      ...(error.stop ? { stop: true } : {}),
     };
   }
 }
@@ -197,6 +238,7 @@ async function capture(ctx: ViewContext, view: CorpusView): Promise<ViewCapture>
   }
 
   const window = await gameWindow(ctx);
+  const pinned = await holdCursor(ctx, window);
   const cursor = await checkCursor(ctx, undefined);
   for (const step of view.recipe.steps) {
     const answer = await runStep(ctx, stepCommand(step, window), timing);
@@ -246,6 +288,7 @@ async function capture(ctx: ViewContext, view: CorpusView): Promise<ViewCapture>
     throw new ViewFailure('The widget trees changed while the screenshots were taken.');
   }
   await noTooltip(ctx);
+  await stillPinned(ctx, pinned);
   await checkCursor(ctx, cursor);
   const windowAfter = await gameWindow(ctx);
   if (JSON.stringify(windowAfter) !== JSON.stringify(window)) {
@@ -379,18 +422,103 @@ async function noTooltip(ctx: ViewContext): Promise<void> {
 const CURSOR_MARGIN = 100;
 
 /**
+ * Pins the real cursor where Tongs' pointer rests (`AwayPoint`), moved inside the client area's
+ * margin, and checks that Windows took the clip. The session does this as soon as the game is
+ * ready, before the map could scroll towards a cursor left elsewhere. A pin Windows refuses (the
+ * screen is locked) is the user's too: `MouseReleased`.
+ */
+export async function pinCursor(ctx: ViewContext): Promise<void> {
+  if (ctx.mouse === undefined) return;
+  const target = await pinTarget(ctx, await gameWindow(ctx));
+  const pinned = await ctx.mouse.pin(target.x, target.y);
+  if ('unavailable' in pinned) throw released(pinned);
+  if (!clipsTo(pinned, target)) {
+    throw new MouseReleased(
+      `Windows did not confine the mouse cursor to ${String(target.x)},${String(target.y)}.`,
+    );
+  }
+  ctx.log({ pinned: target });
+}
+
+const RELEASED =
+  'The mouse was released (Ctrl+Alt+Del, Win+L, the Windows key or another window in front).';
+const UNAVAILABLE = 'The mouse cursor cannot be read or pinned: the screen is locked';
+
+function released(state: CursorState): MouseReleased {
+  return new MouseReleased(
+    'unavailable' in state ? `${UNAVAILABLE} (${state.unavailable}).` : RELEASED,
+  );
+}
+
+/**
+ * Before a view: the cursor still pinned where it belongs. A clip that Windows cleared means the
+ * user took the mouse back (`MouseReleased`); a pixel left behind by a moved window is pinned
+ * again. Resolves with the pinned point.
+ */
+async function holdCursor(
+  ctx: ViewContext,
+  window: Screen,
+): Promise<{ x: number; y: number } | undefined> {
+  if (ctx.mouse === undefined) return undefined;
+  const target = await pinTarget(ctx, window);
+  const now = await ctx.mouse.read();
+  if (clipsTo(now, target)) return target;
+  if ('unavailable' in now) throw released(now);
+  const { left, top, right, bottom } = now.clip;
+  if (right - left !== 1 || bottom - top !== 1) throw released(now);
+  ctx.log({ repin: target, clip: now.clip });
+  const pinned = await ctx.mouse.pin(target.x, target.y);
+  if (!clipsTo(pinned, target)) throw released(pinned);
+  return target;
+}
+
+/** After the shots: the clip of `holdCursor` was not cleared while the view was captured. */
+async function stillPinned(
+  ctx: ViewContext,
+  target: { x: number; y: number } | undefined,
+): Promise<void> {
+  if (ctx.mouse === undefined || target === undefined) return;
+  const now = await ctx.mouse.read();
+  if (!clipsTo(now, target)) throw released(now);
+}
+
+async function pinTarget(ctx: ViewContext, window: Screen): Promise<{ x: number; y: number }> {
+  const { left, top } = await screenOrigin(ctx);
+  const away = await awayPoint(ctx, window);
+  const clamp = (v: number, size: number): number =>
+    Math.min(Math.max(v, CURSOR_MARGIN), size - 1 - CURSOR_MARGIN);
+  return { x: left + clamp(away.x, window.width), y: top + clamp(away.y, window.height) };
+}
+
+function clipsTo(state: CursorState, point: { x: number; y: number }): boolean {
+  if ('unavailable' in state) return false;
+  const { clip } = state;
+  return (
+    clip.left === point.x &&
+    clip.top === point.y &&
+    clip.right === point.x + 1 &&
+    clip.bottom === point.y + 1
+  );
+}
+
+async function screenOrigin(ctx: ViewContext): Promise<{ left: number; top: number }> {
+  const window = await ask(ctx.tongs, 'window');
+  return { left: Number(window['screen_x']), top: Number(window['screen_y']) };
+}
+
+/**
  * From a save: the real cursor inside the client area, away from its edges, and where it was at
- * the start of the view. Breaking this stops the run, because only a person can move the mouse.
+ * the start of the view. The pin keeps it there, so this is a safety net; breaking it fails the
+ * view before anything is written, and a fresh start takes it again.
  */
 async function checkCursor(
   ctx: ViewContext,
   before: { x: number; y: number } | undefined,
 ): Promise<{ x: number; y: number } | undefined> {
-  if (ctx.start !== 'save' || ctx.cursor === undefined) return undefined;
-  const cursor = await ctx.cursor();
-  const window = await ask(ctx.tongs, 'window');
-  const left = Number(window['screen_x']);
-  const top = Number(window['screen_y']);
+  if (ctx.start !== 'save' || ctx.mouse === undefined) return undefined;
+  const cursor = await ctx.mouse.read();
+  if ('unavailable' in cursor) throw released(cursor);
+  const { left, top } = await screenOrigin(ctx);
   const inside =
     cursor.x >= left + CURSOR_MARGIN &&
     cursor.x < left + ctx.resolution.width - CURSOR_MARGIN &&
@@ -398,18 +526,18 @@ async function checkCursor(
     cursor.y < top + ctx.resolution.height - CURSOR_MARGIN;
   const fail = (message: string): never => {
     const error = new ViewFailure(message, true);
-    error.stop = true;
+    error.retry = true;
     throw error;
   };
   if (!inside) {
     fail(
-      `The mouse cursor is at ${String(cursor.x)},${String(cursor.y)}, outside the game's client area; the game scrolls the map towards it. Put it over the middle of the game window and leave it there.`,
+      `The mouse cursor is at ${String(cursor.x)},${String(cursor.y)}, outside the game's client area; the game scrolls the map towards it.`,
     );
   }
   if (before !== undefined && (before.x !== cursor.x || before.y !== cursor.y)) {
-    fail('The mouse cursor moved while the view was captured; leave the mouse alone during a run.');
+    fail('The mouse cursor moved while the view was captured.');
   }
-  return cursor;
+  return { x: cursor.x, y: cursor.y };
 }
 
 /**

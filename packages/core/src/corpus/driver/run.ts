@@ -46,9 +46,12 @@ import {
 import type { Tongs } from './tongs.ts';
 import {
   DEFAULT_AWAY,
+  MouseReleased,
   captureView,
+  pinCursor,
   settleStart,
   type AwayPoint,
+  type MouseCursor,
   type ViewContext,
   type CaptureTiming,
   type ViewOutcome,
@@ -75,8 +78,8 @@ export interface GameLauncher {
   check(): Promise<string>;
   start(profile: string, save: string | undefined): Promise<GameRecord>;
   stop(record: GameRecord): Promise<StopResult>;
-  /** The real mouse cursor in screen pixels (only read, never moved). */
-  cursor(): Promise<{ x: number; y: number }>;
+  /** The real mouse cursor, pinned while a session runs. */
+  readonly mouse: MouseCursor;
 }
 
 export interface RunOptions {
@@ -112,6 +115,11 @@ export interface RunOptions {
    * are handled as always.
    */
   readonly holdMs?: number;
+  /**
+   * How long the run waits for a file named `resume` in its run folder after the user took the
+   * mouse back; then it stops.
+   */
+  readonly resumeTimeoutMs?: number;
 }
 
 export interface SessionReport {
@@ -124,6 +132,8 @@ export interface SessionReport {
   readonly pdxSettingsChanges: readonly string[];
   readonly baselinesRestored: boolean;
   readonly playerProfileChanges: readonly string[];
+  /** The user took the mouse back during this session. */
+  readonly mouseReleased?: boolean;
   readonly error?: string;
 }
 
@@ -136,7 +146,13 @@ export type ViewSummary =
       readonly unstableInWidgets: number;
       readonly verifiedNow: boolean;
     }
-  | { readonly view: string; readonly ok: false; readonly reason: string };
+  | {
+      readonly view: string;
+      readonly ok: false;
+      readonly reason: string;
+      /** Given back when the user took the mouse back; the next start takes it again. */
+      readonly released?: true;
+    };
 
 export interface RunReport {
   readonly runId: string;
@@ -173,7 +189,9 @@ export async function runCaptures(options: RunOptions): Promise<RunReport> {
   try {
     for (const planned of options.sessions) {
       let views: readonly CorpusView[] = planned.views;
-      for (let start = 1; views.length > 0; start++) {
+      // A session the user ended by taking the mouse back is not counted.
+      let starts = 0;
+      while (views.length > 0) {
         const session = { ...planned, views };
         print(`session ${describeSession(session)}`);
         const result = await runSession(options, session, runDir, report.sessions.length + 1, {
@@ -188,9 +206,17 @@ export async function runCaptures(options: RunOptions): Promise<RunReport> {
           return report;
         }
         views = result.remaining;
-        if (views.length > 0 && start >= (options.maxStarts ?? 2)) {
+        if (result.report.mouseReleased === true) {
+          if (!(await waitResume(options, runDir, { now, sleep, print }))) {
+            report.stopped = 'The mouse was released and the run was not resumed.';
+            return report;
+          }
+          continue;
+        }
+        starts++;
+        if (views.length > 0 && starts >= (options.maxStarts ?? 2)) {
           print(
-            `  giving up on ${views.map((v) => v.id).join(', ')} after ${String(start)} starts`,
+            `  giving up on ${views.map((v) => v.id).join(', ')} after ${String(starts)} starts`,
           );
           for (const v of views) {
             report.notTried.push(
@@ -266,7 +292,8 @@ async function runSession(
   let readyMs: number | undefined;
   let error: string | undefined;
   let remaining: CorpusView[] = [];
-  let fatalCursor: string | undefined;
+  let mouseReleased = false;
+  const { mouse } = options.launcher;
   try {
     game = await options.launcher.start(
       profile,
@@ -274,35 +301,42 @@ async function runSession(
     );
     await writeFile(join(dir, 'game.json'), `${JSON.stringify(game, null, 2)}\n`);
     env.print(`  game pid ${String(game.pid)}`);
-    const ready = await waitReady(options, game, session, profile, env, log);
+    const pid = game.pid;
+    const context = (
+      tongs: Tongs,
+      tongsVersion: string,
+      startWindows: readonly string[],
+    ): ViewContext => ({
+      tongs,
+      manifest: options.manifest,
+      playset: session.playset.id,
+      resolution: session.resolution,
+      start: session.start,
+      pid,
+      startWindows,
+      exeSha256,
+      tongsVersion,
+      ...(prepared.saveSha256 !== undefined ? { saveSha256: prepared.saveSha256 } : {}),
+      mods: prepared.mods,
+      disabledDlcs: session.playset.disabledDlcs,
+      away: options.away ?? DEFAULT_AWAY,
+      mouse,
+      readFile: async (path) => new Uint8Array(await readFile(path)),
+      sleep: env.sleep,
+      now: env.now,
+      log,
+      ...(options.timing !== undefined ? { timing: options.timing } : {}),
+    });
+    const ready = await waitReady(options, game, session, profile, env, log, (tongs) =>
+      pinCursor(context(tongs, 'unknown', [])),
+    );
     readyMs = ready.readyMs;
     const tongs = ready.tongs;
     try {
-      const context = (startWindows: readonly string[]): ViewContext => ({
-        tongs,
-        manifest: options.manifest,
-        playset: session.playset.id,
-        resolution: session.resolution,
-        start: session.start,
-        pid: game?.pid ?? 0,
-        startWindows,
-        exeSha256,
-        tongsVersion: ready.version,
-        ...(prepared.saveSha256 !== undefined ? { saveSha256: prepared.saveSha256 } : {}),
-        mods: prepared.mods,
-        disabledDlcs: session.playset.disabledDlcs,
-        away: options.away ?? DEFAULT_AWAY,
-        cursor: () => options.launcher.cursor(),
-        readFile: async (path) => new Uint8Array(await readFile(path)),
-        sleep: env.sleep,
-        now: env.now,
-        log,
-        ...(options.timing !== undefined ? { timing: options.timing } : {}),
-      });
-      const windows = await settleStart(context([]));
+      const windows = await settleStart(context(tongs, ready.version, []));
       log({ startWindows: windows });
       for (const [i, view] of session.views.entries()) {
-        const outcome = await captureView(context(windows), view);
+        const outcome = await captureView(context(tongs, ready.version, windows), view);
         outcomes.push(outcome);
         if (outcome.ok) {
           await writeCapture(options, outcome.capture);
@@ -311,18 +345,15 @@ async function runSession(
           );
         } else {
           env.print(`  ${view.id}: FAILED: ${outcome.reason}`);
-          if (outcome.stop === true) {
-            remaining = [];
-            fatalCursor = outcome.reason;
-            break;
-          }
           if (outcome.lost) {
             remaining = session.views.slice(outcome.retry === true ? i : i + 1);
+            mouseReleased = outcome.released === true;
             break;
           }
         }
       }
-      if (options.holdMs !== undefined) {
+      if (options.holdMs !== undefined && !mouseReleased) {
+        await releaseMouse(mouse, log);
         const release = join(dir, 'release');
         env.print(`  holding the game open; create ${release} to close it`);
         const until = env.now().getTime() + options.holdMs;
@@ -332,10 +363,20 @@ async function runSession(
       tongs.close();
     }
   } catch (e) {
-    error = message(e);
-    env.print(`  session failed: ${error}`);
-    log({ error });
+    if (e instanceof MouseReleased) {
+      env.print(`  ${e.message}`);
+      log({ released: e.message });
+      mouseReleased = true;
+      const done = new Set(outcomes.map((o) => o.view));
+      remaining = session.views.filter((v) => !done.has(v.id));
+    } else {
+      error = message(e);
+      env.print(`  session failed: ${error}`);
+      log({ error });
+    }
   } finally {
+    // The user gets the mouse back first, whatever happens to the game.
+    await releaseMouse(mouse, log);
     if (game !== undefined) {
       stop = await options.launcher.stop(game);
       log({ stop });
@@ -367,7 +408,6 @@ async function runSession(
     await snapshotFolder(options.playerProfile),
   );
   if (playerProfileChanges.length > 0) problems.push("The player's profile changed.");
-  if (fatalCursor !== undefined) problems.push(fatalCursor);
 
   const report: SessionReport = {
     ...base,
@@ -379,6 +419,7 @@ async function runSession(
     pdxSettingsChanges: restored.pdxChanges,
     baselinesRestored: restored.restored,
     playerProfileChanges,
+    ...(mouseReleased ? { mouseReleased } : {}),
     ...(error !== undefined ? { error } : {}),
   };
   if (problems.length > 0) {
@@ -392,8 +433,52 @@ async function runSession(
   return { report, remaining };
 }
 
+async function releaseMouse(
+  mouse: MouseCursor,
+  log: (event: Readonly<Record<string, unknown>>) => void,
+): Promise<void> {
+  try {
+    await mouse.release();
+  } catch (error) {
+    log({ releaseFailed: message(error) });
+  }
+}
+
+/**
+ * After the user took the mouse back, with no game running: waits until they create `resume` in
+ * the run folder (removed again), or for the timeout.
+ */
+async function waitResume(
+  options: RunOptions,
+  runDir: string,
+  env: { now: () => Date; sleep: (ms: number) => Promise<void>; print: (line: string) => void },
+): Promise<boolean> {
+  const resume = join(runDir, 'resume');
+  const timeoutMs = options.resumeTimeoutMs ?? 30 * 60_000;
+  env.print(
+    `  paused: the mouse is yours; create ${resume} to go on (the mouse is pinned again), or wait ${String(Math.round(timeoutMs / 60_000))} minutes to stop the run`,
+  );
+  const until = env.now().getTime() + timeoutMs;
+  while (env.now().getTime() < until) {
+    if (await exists(resume)) {
+      await rm(resume, { force: true });
+      env.print('  resumed');
+      return true;
+    }
+    await env.sleep(1000);
+  }
+  return false;
+}
+
 function summary(outcome: ViewOutcome): ViewSummary {
-  if (!outcome.ok) return { view: outcome.view, ok: false, reason: outcome.reason };
+  if (!outcome.ok) {
+    return {
+      view: outcome.view,
+      ok: false,
+      reason: outcome.reason,
+      ...(outcome.released === true ? { released: true as const } : {}),
+    };
+  }
   const shot = outcome.capture.record.screenshot;
   return {
     view: outcome.view,
@@ -501,7 +586,8 @@ async function restoreSettings(
 /**
  * Waits until the game is ready: Tongs answers from the started process, `system.log` says
  * `Running application` (the lab's two signs), the save is loaded and paused when the session
- * starts from it, and a frame of the main loop has passed.
+ * starts from it, and a frame of the main loop has passed. `loaded` runs then, before the wait
+ * for the menu's animation or the load's ignored input.
  */
 async function waitReady(
   options: RunOptions,
@@ -510,13 +596,15 @@ async function waitReady(
   profile: string,
   env: { now: () => Date; sleep: (ms: number) => Promise<void> },
   log: (event: Readonly<Record<string, unknown>>) => void,
+  loaded: (tongs: Tongs) => Promise<void>,
 ): Promise<{ tongs: Tongs; version: string; readyMs: number }> {
   const deadline = env.now().getTime() + (options.readyTimeoutMs ?? 5 * 60_000);
   const systemLog = join(profile, 'logs', 'system.log');
   let tongs: Tongs | undefined;
   let version: string | undefined;
   let runningSince: number | undefined;
-  for (;;) {
+  let ready: { tongs: Tongs; state: unknown } | undefined;
+  while (ready === undefined) {
     if (env.now().getTime() > deadline) {
       tongs?.close();
       throw new Error('The game was not ready in time.');
@@ -547,15 +635,12 @@ async function waitReady(
         ) {
           throw new Error('Tongs answers from the game, but the save did not load in 2 minutes.');
         }
-        const loaded = state['in_game'] === true && state['paused'] === true;
-        if (session.start === 'main-menu' ? state['in_game'] === false : loaded) {
+        const inGame = state['in_game'] === true && state['paused'] === true;
+        if (session.start === 'main-menu' ? state['in_game'] === false : inGame) {
           const frames = await tongs.call('frames timeout=30', 40_000);
           if (frames.ok) {
-            // The menu's opening animation, or the input the game ignores right after a load.
-            await env.sleep(session.start === 'save' ? 5000 : 3000);
-            const readyMs = env.now().getTime() - game.creationUnixMs;
-            log({ ready: true, readyMs, version, state });
-            return { tongs, version: version ?? 'unknown', readyMs };
+            ready = { tongs, state };
+            break;
           }
         }
       }
@@ -569,6 +654,17 @@ async function waitReady(
     }
     await env.sleep(500);
   }
+  try {
+    await loaded(ready.tongs);
+  } catch (error) {
+    ready.tongs.close();
+    throw error;
+  }
+  // The menu's opening animation, or the input the game ignores right after a load.
+  await env.sleep(session.start === 'save' ? 5000 : 3000);
+  const readyMs = env.now().getTime() - game.creationUnixMs;
+  log({ ready: true, readyMs, version, state: ready.state });
+  return { tongs: ready.tongs, version: version ?? 'unknown', readyMs };
 }
 
 async function runningApplication(systemLog: string, sinceMs: number): Promise<boolean> {

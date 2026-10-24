@@ -8,6 +8,7 @@ import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { encodePng } from '../../src/corpus/index.ts';
 import type { Tongs, TongsAnswer } from '../../src/corpus/driver/tongs.ts';
+import type { CursorState, MouseCursor, ScreenRect } from '../../src/corpus/driver/view.ts';
 
 export interface FakeWindow {
   readonly name: string;
@@ -83,8 +84,12 @@ export class FakeGame implements Tongs {
 
   call(command: string): Promise<TongsAnswer> {
     this.calls.push(command);
+    this.onCall?.(command);
     return Promise.resolve(this.answer(command));
   }
+
+  /** Called with each command before it is answered, for a test to act in the middle of a view. */
+  onCall: ((command: string) => void) | undefined;
 
   close(): void {
     this.calls.push('close');
@@ -149,5 +154,55 @@ export class FakeGame implements Tongs {
       return ok({ path, width, height, method: 'PrintWindow' });
     }
     return { ok: false, error: `unknown command ${command}` };
+  }
+}
+
+const FREE: ScreenRect = { left: 0, top: 0, right: 6000, bottom: 1440 };
+
+/** The real mouse cursor as Windows keeps it: `pin` confines it to one pixel, `release` frees it. */
+export class FakeMouse implements MouseCursor {
+  x = 2000;
+  y = 100;
+  clip: ScreenRect = FREE;
+  readonly pins: string[] = [];
+  releases = 0;
+
+  /** While the screen is locked Windows refuses every call (Win32 error 203). */
+  locked = false;
+
+  read(): Promise<CursorState> {
+    return Promise.resolve(
+      this.locked
+        ? { unavailable: 'GetCursorPos failed: Win32 error 203' }
+        : { x: this.x, y: this.y, clip: this.clip },
+    );
+  }
+
+  pin(x: number, y: number): Promise<CursorState> {
+    if (this.locked)
+      return Promise.resolve({ unavailable: 'SetCursorPos failed: Win32 error 203' });
+    this.pins.push(`${String(x)},${String(y)}`);
+    this.x = x;
+    this.y = y;
+    this.clip = { left: x, top: y, right: x + 1, bottom: y + 1 };
+    return this.read();
+  }
+
+  release(): Promise<void> {
+    this.releases++;
+    this.clip = FREE;
+    return Promise.resolve();
+  }
+
+  /** What Win+L or Ctrl+Alt+Del does: Windows clears the clip, and the user moves the mouse. */
+  takeBack(): void {
+    this.clip = FREE;
+    this.x = 3000;
+  }
+
+  /** Win+L: the clip is gone and, until the user unlocks, Windows answers nothing. */
+  lock(): void {
+    this.takeBack();
+    this.locked = true;
   }
 }
