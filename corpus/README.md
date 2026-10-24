@@ -372,7 +372,10 @@ How a view is compared (`planCapture` and `compareCapture` in
 - **Masks.** Pixels the render does not cover fully (alpha below 255); and
   code-filled content: the game's rects of the widgets the view's `codeFilled`
   patterns or the manifest's `codeFilledKinds` name and of everything inside
-  them, and the render's draws of those widgets.
+  them, and the render's draws of those widgets. A widget the capture reports
+  disabled (`enabled` false) or checked (`checked` true) is code-filled too:
+  the game's code set that state, and the offline renderer draws the `.gui`'s
+  (etch#44: the Esc menu's AI settings, greyed out in the game).
 - **Unstable pixels.** A pixel that would be compared but is in the
   capture's unstable mask (it changed between the shots) is left out, and
   fails its widget: the capture shows something the game animates there.

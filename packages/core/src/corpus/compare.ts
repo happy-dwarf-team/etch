@@ -126,10 +126,14 @@ export function planCapture(input: CapturePlanInput): CapturePlan {
     widget: Widget | undefined,
     window: PlanWindow | undefined,
     parent: number,
+    captured: CapturedWidget | undefined,
   ): Pick<PlannedWidget, 'codeFilled' | 'notCovered'> => {
     const up = widgets[parent];
     let codeFilled: string | undefined;
     if (up?.codeFilled !== undefined) codeFilled = `inside ${up.path}`;
+    // The game's code sets these states; the offline renderer draws the .gui's (spec section 3).
+    else if (captured?.enabled === false) codeFilled = 'disabled by the game';
+    else if (captured?.checked === true) codeFilled = 'checked by the game';
     else {
       const pattern = view?.codeFilled.find((p) => matchesWidgetPattern(p, path));
       if (pattern !== undefined) codeFilled = pattern;
@@ -166,7 +170,7 @@ export function planCapture(input: CapturePlanInput): CapturePlan {
       laidOut,
       kind: laidOut.widget.kind,
       hidden: widgets[parent]?.hidden ?? false,
-      ...flags(path, laidOut.widget.kind, laidOut.widget, window, parent),
+      ...flags(path, laidOut.widget.kind, laidOut.widget, window, parent, undefined),
     });
     (planned[w] ?? [])[at] = index;
     const kids = children[w]?.[at] ?? [];
@@ -182,7 +186,7 @@ export function planCapture(input: CapturePlanInput): CapturePlan {
       parent,
       captured,
       hidden: (widgets[parent]?.hidden ?? false) || !captured.visible,
-      ...flags(captured.path, undefined, undefined, undefined, parent),
+      ...flags(captured.path, undefined, undefined, undefined, parent, captured),
     });
     for (const child of captured.children ?? []) addCaptureOnly(child, index);
   };
@@ -198,7 +202,7 @@ export function planCapture(input: CapturePlanInput): CapturePlan {
       laidOut,
       kind: laidOut.widget.kind,
       hidden: (widgets[parent]?.hidden ?? false) || !captured.visible,
-      ...flags(captured.path, laidOut.widget.kind, laidOut.widget, window, parent),
+      ...flags(captured.path, laidOut.widget.kind, laidOut.widget, window, parent, captured),
     });
     (planned[w] ?? [])[at] = index;
 
