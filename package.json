@@ -18,7 +18,8 @@
     "test:unit": "vitest run",
     "test:renderer": "pnpm --filter @etch/renderer --filter @etch/compare test",
     "test:extension": "pnpm --filter etch test",
-    "package": "pnpm --filter etch package"
+    "package": "pnpm --filter etch package",
+    "media": "node packages/media/src/cli.mts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

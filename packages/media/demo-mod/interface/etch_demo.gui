@@ -1,0 +1,102 @@
+# Etch demo mod: our own windows, drawn with the base game's sprites and fonts.
+guiTypes = {
+	containerWindowType = {
+		name = "etch_demo_dialog"
+		position = { x = 160 y = 100 }
+		size = { x = 380 y = 330 }
+
+		background = {
+			name = "background"
+			quadTextureSprite = "SandboxFloaterBackground"
+		}
+
+		guiButtonType = {
+			name = "option_strike"
+			position = { x = 40 y = 226 }
+			spriteType = "GFX_etch_demo_option"
+			buttonText = "ETCH_DEMO_OPTION_STRIKE"
+			buttonFont = "vic_18"
+		}
+
+		guiButtonType = {
+			name = "option_rest"
+			position = { x = 40 y = 270 }
+			spriteType = "GFX_etch_demo_option"
+			buttonText = "ETCH_DEMO_OPTION_REST"
+			buttonFont = "vic_18"
+		}
+
+		instantTextBoxType = {
+			name = "title"
+			position = { x = 32 y = 30 }
+			font = "vic_22"
+			text = "ETCH_DEMO_TITLE"
+			maxWidth = 316
+			maxHeight = 28
+		}
+
+		iconType = {
+			name = "icon_frame"
+			quadTextureSprite = "GFX_mission_icons_frame"
+			position = { x = 28 y = 72 }
+		}
+
+		iconType = {
+			name = "icon"
+			spriteType = "mission_have_manufactories"
+			position = { x = 50 y = 96 }
+		}
+
+		instantTextBoxType = {
+			name = "description"
+			position = { x = 146 y = 78 }
+			font = "vic_18"
+			text = "ETCH_DEMO_DESC"
+			maxWidth = 206
+			maxHeight = 136
+			multiline = yes
+		}
+
+		guiButtonType = {
+			name = "close"
+			position = { x = -46 y = 14 }
+			spriteType = "GFX_close"
+			Orientation = "UPPER_RIGHT"
+		}
+
+		if_resolution = {
+			max_height = 768
+			position = { x = 160 y = 70 }
+		}
+	}
+
+	containerWindowType = {
+		name = "etch_demo_panel"
+		position = { x = 820 y = 100 }
+		size = { x = 280 y = 150 }
+
+		background = {
+			name = "background"
+			quadTextureSprite = "SandboxFloaterBackground"
+		}
+
+		instantTextBoxType = {
+			name = "title"
+			position = { x = 28 y = 26 }
+			font = "vic_22"
+			text = "ETCH_DEMO_PANEL_TITLE"
+			maxWidth = 224
+			maxHeight = 28
+		}
+
+		instantTextBoxType = {
+			name = "text"
+			position = { x = 28 y = 66 }
+			font = "vic_18"
+			text = "ETCH_DEMO_PANEL_TEXT"
+			maxWidth = 224
+			maxHeight = 60
+			multiline = yes
+		}
+	}
+}

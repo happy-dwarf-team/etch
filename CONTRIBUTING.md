@@ -78,6 +78,7 @@ A pnpm workspace (ADR 0001):
 | `packages/renderer`  | WebGL2 drawing in the preview webview                          |
 | `packages/extension` | VS Code glue and the VSIX manifest                             |
 | `packages/compare`   | the precision corpus's headless comparison; never shipped      |
+| `packages/media`     | the Etch site's media: demo mod, scenes (docs/media.md); never shipped |
 | `corpus`             | precision corpus manifest and capture records (no screenshots) |
 | `docs/adr`           | architecture decisions                                         |
 | `docs/spec`          | the v1 specification                                           |

@@ -127,3 +127,20 @@ _Avoid_: noisy pixel, flicker
 A difference between the offline renderer and a capture that is accepted for
 now and tracked by its own issue.
 _Avoid_: exception, waiver, allowlist
+
+## Media
+
+**Demo mod**:
+The mod Etch's media show being edited; our own files, drawn with the game's
+art.
+_Avoid_: sample mod, test mod, fixture
+
+**Scene**:
+One named shot (`hero`, `preview`, …) that the script captures; its id appears
+in the bucket key, the file name and the media manifest.
+_Avoid_: shot, clip
+
+**Media refresh**:
+Capturing Etch's media for one Etch release and publishing them: loops to the
+media bucket; posters, stills and the media manifest to the Etch site.
+_Avoid_: media update, re-record
