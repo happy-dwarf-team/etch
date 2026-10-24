@@ -132,10 +132,9 @@ describe('planCaptures', () => {
       'vanilla 1280x720 from main-menu: main-menu, lobby',
     );
     expect(plan.sessions[1]?.start).toBe('save');
-    expect(plan.sessions[1]?.views.map((v) => v.id)).not.toContain('diplomacy-dialog');
-    expect(plan.skipped.filter((s) => s.view === 'diplomacy-dialog')).toHaveLength(
-      release * manifest.resolutions.length,
-    );
+    expect(plan.sessions[1]?.views.map((v) => v.id)).toContain('diplomacy-dialog');
+    // The event view is in no release playset until it has a recipe (etch#97).
+    expect(plan.skipped).toEqual([]);
   });
 
   it('filters by playset, resolution and view, and refuses unknown names', async () => {

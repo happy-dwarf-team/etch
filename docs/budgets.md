@@ -45,6 +45,38 @@ The suite is run three times, so the table has three first cold opens.
 
 ## Results
 
+### 2026-10-24, etch#44 (after the corpus's renderer fixes)
+
+Checked again after the text, sprite and texture rules of etch#44 (#86, #91,
+#92, #94, #99, #100), with the method above. Machine as below; VS Code 1.143.1
+from `.vscode-test`. EU4 1.37.5, `eu4.exe` SHA-256 `9AD3EFE1…DC4D771A`.
+
+Warm reload, from the edit to the paint (120 edits per row: 3 runs of 40):
+
+| Process | Resolution | Median | p95 | Max |
+| --- | --- | --- | --- | --- |
+| 1 | 1920×1080 | 6.4 ms | 9.8 ms | 37.0 ms |
+| 1 | 3440×1440 | 6.3 ms | 8.1 ms | 11.5 ms |
+| 2 | 1920×1080 | 6.5 ms | 12.2 ms | 35.2 ms |
+| 2 | 3440×1440 | 6.3 ms | 7.9 ms | 9.6 ms |
+| 3 | 1920×1080 | 7.2 ms | 12.6 ms | 51.5 ms |
+| 3 | 3440×1440 | 7.2 ms | 9.3 ms | 12.0 ms |
+
+From the change event the medians are 0.7–0.8 ms lower (5.5–6.5 ms, p95
+6.9–11.8 ms).
+
+Cold open, from the command to the paint, in run order:
+
+| Process | 1920×1080 | 3440×1440 |
+| --- | --- | --- |
+| 1 | 519, 302, 293 ms | 297, 291, 297 ms |
+| 2 | 510, 299, 293 ms | 298, 295, 292 ms |
+| 3 | 523, 300, 294 ms | 290, 308, 292 ms |
+
+Both vanilla budgets still hold: warm reload p95 at most 12.6 ms against
+50 ms, cold open at most 523 ms against 1 s. One warm reload of 720 went
+above 50 ms (51.5 ms), as in etch#39.
+
 ### 2026-10-21, etch#39 (after etch#38)
 
 Machine: Intel Core i9-13900KF, 64 GB, NVIDIA GeForce RTX 4090, NVMe SSD,

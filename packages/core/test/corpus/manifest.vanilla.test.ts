@@ -34,6 +34,8 @@ describe.skipIf(gamePath === undefined)('the corpus manifest on the installed ga
       );
       for (const view of window.views) {
         for (const root of view.roots) {
+          // A root the game's code creates (the lobby's bookmark shields) is in no file.
+          if (view.codeFilled.includes(root)) continue;
           if (!topLevel.has(root.toLowerCase())) missing.push(`${view.id}: root ${root}`);
         }
         for (const step of view.recipe.steps) {
