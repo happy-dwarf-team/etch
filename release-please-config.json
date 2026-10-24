@@ -8,7 +8,8 @@
       "bump-minor-pre-major": true,
       "initial-version": "0.1.0",
       "extra-files": [
-        { "type": "json", "path": "packages/extension/package.json", "jsonpath": "$.version" }
+        { "type": "json", "path": "packages/extension/package.json", "jsonpath": "$.version" },
+        { "type": "toml", "path": "plugin/plugin.toml", "jsonpath": "$.version" }
       ],
       "changelog-sections": [
         { "type": "feat", "section": "Features" },

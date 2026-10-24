@@ -1,0 +1,13 @@
+# The plugin's C++ style; CI checks it with the clang-format version in
+# .github/workflows/build.yml (CONTRIBUTING.md, "The game host plugin").
+BasedOnStyle: Google
+IndentWidth: 4
+ColumnLimit: 120
+AccessModifierOffset: -4
+AllowShortFunctionsOnASingleLine: All
+AllowShortIfStatementsOnASingleLine: WithoutElse
+AllowShortLoopsOnASingleLine: true
+DerivePointerAlignment: false
+PointerAlignment: Left
+# windows.h must come before the Windows headers that need it.
+SortIncludes: Never
