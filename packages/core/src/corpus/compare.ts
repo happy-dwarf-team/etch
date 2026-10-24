@@ -47,6 +47,11 @@ import type { RgbaImage } from './png.ts';
 export const CHANNEL_TOLERANCE = 2;
 /** The share of a widget's compared pixels that must be within {@link CHANNEL_TOLERANCE}. */
 export const PASS_SHARE = 0.99;
+/**
+ * The largest share of a widget's pixels that may have changed between the shots: they are left
+ * out like masked ones, and more of them make the widget an unstable capture (ADR 0002, etch#44).
+ */
+export const UNSTABLE_SHARE = 0.05;
 
 /** A rect in client pixels, as Tongs reports it. */
 export interface WidgetRect {
@@ -562,10 +567,10 @@ export function compareCapture(
         problems.push(`The rect is ${showRect(renderRect)}; the game's is ${showRect(gameRect)}.`);
       }
     }
-    if (pixels.unstable > 0) {
+    if (pixels.unstable > UNSTABLE_SHARE * (pixels.compared + pixels.unstable)) {
       problems.push(
-        `${String(pixels.unstable)} of its pixels changed between the capture's shots; ` +
-          'recapture it, or mask what the game animates there.',
+        `${String(pixels.unstable)} of its pixels changed between the capture's shots, more ` +
+          `than ${percent(UNSTABLE_SHARE)}; recapture it, or mask what the game animates there.`,
       );
     }
     if (pixels.compared > 0 && pixels.within / pixels.compared < PASS_SHARE) {

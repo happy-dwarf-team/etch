@@ -190,9 +190,10 @@ requiring identical shots. When the first two shots differ it takes two more,
 and every pixel that differs between the first shot and any later one is
 **unstable**. The unstable mask is an 8-bit greyscale PNG of the screenshot's
 size next to it in the local corpus folder (255 unstable, 0 stable). The
-comparison (etch#43) compares no unstable pixel: a compared pixel (unmasked,
-render alpha 255) that is unstable makes its widget an unstable capture, not
-a pass. A record without `unstable` had identical shots.
+comparison (etch#43) compares no unstable pixel: unstable pixels are left
+out like masked ones, and a widget with more than 5 % of its pixels
+unstable is an unstable capture, not a pass (etch#44). A record without
+`unstable` had identical shots.
 
 `captureProblems(manifest, record)` says when a record no longer fits the
 manifest. A capture is retaken when the EXE hash, the Tongs version, the save,
@@ -377,9 +378,10 @@ How a view is compared (`planCapture` and `compareCapture` in
   the game's code set that state, and the offline renderer draws the `.gui`'s
   (etch#44: the Esc menu's AI settings, greyed out in the game).
 - **Unstable pixels.** A pixel that would be compared but is in the
-  capture's unstable mask (it changed between the shots) is left out, and
-  fails its widget: the capture shows something the game animates there.
-  The mask's hash must be the record's, like the screenshot's.
+  capture's unstable mask (it changed between the shots) is left out. When
+  more than 5 % of a widget's pixels are unstable, it fails: the capture
+  shows something the game animates there. The mask's hash must be the
+  record's, like the screenshot's.
 - **A widget passes** when its rect rounds to the game's rect and at least
   99 % of its compared pixels are within ±2 in red, green and blue (the
   screenshot's alpha is ignored). The difference of a pixel is its largest

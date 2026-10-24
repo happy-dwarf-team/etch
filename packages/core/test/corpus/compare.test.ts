@@ -404,27 +404,31 @@ describe('compareCapture', () => {
     expect(icon.pixels).toMatchObject({ compared: 90, partial: 10 });
   });
 
-  it('compares no unstable pixel and fails a widget that has one', () => {
-    // The capture's mask marks 3 pixels of icon[1] and one of the list, whose code-filled
-    // content is masked anyway.
+  it('compares no unstable pixel and fails a widget with more than 5 % of them', () => {
+    // The capture's mask marks 3 pixels of icon[1], 6 of icon[2] and one of the list, whose
+    // code-filled content is masked anyway.
     const unstable = { ...SCREEN, data: new Uint8Array(SCREEN.width * SCREEN.height * 4) };
-    for (const [x, y] of [
+    const marks: (readonly [number, number])[] = [
       [15, 25],
       [16, 25],
       [17, 30],
       [75, 30],
-    ] as const) {
-      unstable.data[(y * SCREEN.width + x) * 4] = 255;
-    }
+      ...[0, 1, 2, 3, 4, 5].map((i) => [30 + i, 26] as const),
+    ];
+    for (const [x, y] of marks) unstable.data[(y * SCREEN.width + x) * 4] = 255;
     const result = compare({ unstable });
-    const icon = widget(result, 'panel/icon[1]');
+    expect(widget(result, 'panel/icon[1]')).toMatchObject({
+      status: 'pass',
+      pixels: { compared: 97, unstable: 3 },
+    });
+    const icon = widget(result, 'panel/icon[2]');
     expect(icon.status).toBe('fail');
-    expect(icon.pixels).toMatchObject({ compared: 97, unstable: 3 });
+    expect(icon.pixels).toMatchObject({ compared: 94, unstable: 6 });
     expect(icon.problems).toEqual([
-      "3 of its pixels changed between the capture's shots; recapture it, or mask what the game animates there.",
+      "6 of its pixels changed between the capture's shots, more than 5.00 %; recapture it, or mask what the game animates there.",
     ]);
     expect(result.passed).toBe(false);
-    expect(result.totals.pixels.unstable).toBe(3);
+    expect(result.totals.pixels.unstable).toBe(9);
   });
 
   it('masks code-filled content under its game rect, even over static widgets', () => {
