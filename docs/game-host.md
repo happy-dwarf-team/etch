@@ -186,6 +186,17 @@ edited file (spec section 10, etch#52; `game-host/error-log.ts`, core's
 The game's report belongs to the text the job was made from: it shows while
 the preview shows the game host and that text, and the next job replaces it.
 
+In two live runs (etch#52, 2026-10-25, the machine and builds of etch#50, the
+test mod's `countrydiplomacyview.gui` with two icons of one name and a sprite
+no `.gfx` defines), every line was in `error.log` by the job's answer. The
+`reload` of each copy wrote `Guitype 'etch_probe_icon' already exists in
+windowtype 'etch_countrydiplomacyview'. file:
+interface/etch_countrydiplomacyview.gui line: 43`, which became one Warning on
+line 31 of the original, the second icon. Each `window open` wrote `Could not
+find sprite type [GFX_etch_probe_missing]` twice, all left out because the
+model reports the sprite missing. `reloadtexture` answered "Reload failed" and
+showed as a Warning.
+
 What the live runs of etch#50 found:
 
 - **Show animation.** `window open` creates a window at its `position`; the
