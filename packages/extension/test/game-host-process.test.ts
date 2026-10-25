@@ -1,6 +1,6 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 import { realpathSync } from 'node:fs';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { createServer, type Server } from 'node:net';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -18,7 +18,12 @@ import {
   releaseLock,
   type LockOptions,
 } from '../src/game-host/process.ts';
-import { creationUnixMs, processIdentity, type ProcessIdentity } from '../src/game-host/windows.ts';
+import {
+  closeWindowsHelper,
+  creationUnixMs,
+  processIdentity,
+  type ProcessIdentity,
+} from '../src/game-host/windows.ts';
 
 // The Win32 helper runs in Windows PowerShell, about a second per call.
 const windows = process.platform === 'win32' ? describe : describe.skip;
@@ -78,6 +83,30 @@ windows('process identity', () => {
       expect(created).toBeLessThanOrEqual(Date.now());
       expect(created).toBeGreaterThan(Date.now() - process.uptime() * 1000 - 5_000);
       expect(await processIdentity(0x7ffffff0)).toBeUndefined();
+    },
+    TIMEOUT,
+  );
+
+  it(
+    'starts the helper without searching the modules on PSModulePath',
+    async () => {
+      // Autoloading would search the path's modules and take this Add-Type over $PSHOME's: the
+      // helper ends before it is ready, as it does only when it searches.
+      const modules = join(temp, 'Modules');
+      await mkdir(join(modules, 'EtchShadow'), { recursive: true });
+      await writeFile(
+        join(modules, 'EtchShadow', 'EtchShadow.psm1'),
+        'function Add-Type { exit 3 }\n',
+      );
+      const path = process.env['PSModulePath'] ?? '';
+      closeWindowsHelper();
+      process.env['PSModulePath'] = `${modules};${path}`;
+      try {
+        expect((await self()).pid).toBe(process.pid);
+      } finally {
+        closeWindowsHelper();
+        process.env['PSModulePath'] = path;
+      }
     },
     TIMEOUT,
   );
