@@ -446,6 +446,23 @@ first window of the root's file, 321–582 ms. Why the second is slower was not
 looked into. Restarts were measured in etch#51 and etch#118 (a `.gfx` save:
 ready 14.7–18.5 s).
 
+## The diff view
+
+The diff view (spec section 5, etch#54) was checked live once
+(`ETCH_GAME_HOST_CHECK=diff`, `test/game-host-diff.ts`): vanilla
+`countrydiplomacyview` from a temporary mod, the game host at 3440×1440 and
+the preview resolution set to it. Its job's crop is 4,506,400 pixels, of which
+9.6 % differ: 234,526 drawn by both differently, 183,937 only by the offline
+renderer, 12,503 only by the game host, by up to 255. The panel is red because
+in the main menu no game code hides the nested `vassal_select_window`, whose
+background and back button the game host draws over the rest of the window
+(etch#126); the back button itself is the same in both. The diff view of the
+image already shown took 212 ms from the toggle to its pixels; after an edit,
+399 ms from the change to the diff view of the new job's image. The game
+host was ready after 19.4 s. `eu4.exe` (`9AD3EFE1…771A`), the Process Lasso
+rule `eu4.exe,0,1-7`, the player's profile and the game folder were unchanged
+afterwards.
+
 ## Texture reload
 
 Why `reloadtexture` answered "Reload failed" in the main menu (etch#117; the

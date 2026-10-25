@@ -18,6 +18,8 @@ export { writeResolution } from './resolution.ts';
 export const OPEN_PREVIEW = 'etch.openPreview';
 /** Pins the previewed window, so that the preview stays on it while other files are edited. */
 export const TOGGLE_PREVIEW_PIN = 'etch.togglePreviewPin';
+/** Turns the diff view on or off (spec section 5). */
+export const TOGGLE_DIFF_VIEW = 'etch.toggleDiffView';
 
 /**
  * Starts the preview and its commands. The preview decides the previewed window of the widget
@@ -43,6 +45,12 @@ export function registerPreview(
     }),
     vscode.commands.registerCommand(TOGGLE_PREVIEW_PIN, () => {
       preview.togglePin();
+    }),
+    // A diff view that cannot show stays off, and the command says why, as the disabled toggle does.
+    vscode.commands.registerCommand(TOGGLE_DIFF_VIEW, () => {
+      const { on, blocked } = preview.diff;
+      if (!on && blocked !== undefined) void vscode.window.showInformationMessage(blocked);
+      else preview.setDiffView(!on);
     }),
     // The game host starts at a switch of the preview to it (spec section 4).
     vscode.commands.registerCommand(START_GAME_HOST, () => {

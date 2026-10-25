@@ -3,9 +3,9 @@
 Etch previews Europa Universalis IV 1.37.5 interface mods in Visual Studio
 Code while they are edited.
 
-This is a preview release: the offline renderer and the editor features
-below work, and the game host, the precision corpus and the diff view follow
-before 1.0.0.
+This is a preview release: the
+[v1 specification](https://github.com/happy-dwarf-team/etch/blob/main/docs/spec/v1.md)
+says what comes before 1.0.0.
 
 ## Requirements
 
@@ -28,8 +28,14 @@ fonts and textures, duplicate names and more) appear in the Problems panel.
 - The **Widget Outline** in the Explorer lists the previewed window's widgets.
   Clicking a widget in the preview reveals its source, hovering shows its path
   and rect, and the widget at the cursor is outlined in the preview.
-- The offline renderer draws the window from the mod's files alone; the game
-  host backend comes in a later release.
+- The **Backend** switch chooses the offline renderer, which draws the window
+  from the mod's files alone, or the game host, a private copy of the game
+  that draws the window itself (**Etch: Start the Game Host**).
+- With the game host, **Diff** (**Etch: Toggle the Diff View**) shows where its
+  image differs from the offline renderer's: red where both draw differently,
+  blue where only the offline renderer draws, yellow where only the game host
+  does. It needs the preview resolution to be the game host's and the same
+  playset.
 - The preview resolution is the one in the game's `settings.txt`, else the
   monitor's. **Etch: Choose the Preview Resolution**, or the resolution button
   in the preview, picks the monitor's, one of the corpus resolutions (1280×720
