@@ -47,9 +47,25 @@ export interface GameHostDiagnosticsRequest {
   readonly offline: readonly ModelDiagnostic[];
 }
 
-/** `[file.cpp:123]: message`, after an optional `[hh:mm:ss]` time. */
-const LOG_LINE = /^(?:\[\d{1,2}:\d{2}:\d{2}\])?\[[^\]]*:\d+\]:\s*(.*)$/;
-const MISSING_SPRITE = /Could not find sprite type \[([^\]]+)\]/i;
+/** The message of a log line: what follows `[file.cpp:123]: `, after an optional `[hh:mm:ss]`. */
+function logMessage(line: string): string {
+  let rest = line;
+  if (/^\[\d{1,2}:\d{2}:\d{2}\]/.test(rest)) rest = rest.slice(rest.indexOf(']') + 1);
+  const end = rest.startsWith('[') ? rest.indexOf(']:') : -1;
+  return end < 0 ? line : rest.slice(end + 2).trim();
+}
+
+const MISSING_SPRITE = 'could not find sprite type [';
+
+/** The sprite of `Could not find sprite type [GFX_x]`, or `undefined` for another message. */
+function missingSprite(message: string): string | undefined {
+  const start = message.toLowerCase().indexOf(MISSING_SPRITE);
+  if (start < 0) return undefined;
+  const from = start + MISSING_SPRITE.length;
+  const end = message.indexOf(']', from);
+  return end > from ? message.slice(from, end) : undefined;
+}
+
 const LINE_NUMBER = /\bline:?\s*(\d+)/i;
 const PARSE_ERROR = /\bparsing error\b|\bunexpected token\b/i;
 
@@ -76,7 +92,7 @@ export function gameHostDiagnostics(request: GameHostDiagnosticsRequest): ModelD
     const line = raw.trim();
     if (line === '') continue;
     const mapped = copyLineRange(request, line);
-    let message = originalMessage(LOG_LINE.exec(line)?.[1] ?? line, request);
+    let message = originalMessage(logMessage(line), request);
     // The line number the game gives is the copy's; the message gives the original's.
     if (mapped !== undefined) {
       message = message.replace(LINE_NUMBER, (found, n: string) =>
@@ -85,7 +101,7 @@ export function gameHostDiagnostics(request: GameHostDiagnosticsRequest): ModelD
     }
     const severity = PARSE_ERROR.test(message) ? 'error' : 'warning';
     const text = `error.log: ${message}`;
-    const sprite = MISSING_SPRITE.exec(message)?.[1];
+    const sprite = missingSprite(message);
     if (sprite !== undefined) {
       // The game names the sprite, not the widget: every widget of the window that uses it.
       const uses = valuesNamed(request.window, sprite);
