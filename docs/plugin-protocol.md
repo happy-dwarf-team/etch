@@ -116,10 +116,11 @@ The job runs in steps, each where the game allows it:
 1. **Main thread, after the next frame** (`anvil-game`'s `run_on_main_thread`):
    `window close` of the wrapper the last job left open (a reload of an open
    window's file crashes the game, etch#22), `reload` of each copy,
-   `reloadtexture` of each texture, `reloadloc` when asked, then
-   `window open <black>`. The plugin calls the game's console dispatcher
-   itself, as Tongs does, because the main menu has the console but no game
-   session (etch#21).
+   `reloadloc` when asked, `window open <black>`, then `reloadtexture` of
+   each texture: the game reloads only a texture it holds, and closing the
+   wrapper drops the window's textures (etch#117). The plugin calls the game's
+   console dispatcher itself, as Tongs does, because the main menu has the
+   console but no game session (etch#21).
 2. **The next `IDirect3DDevice9::Present`** (the first one `settle_ms` after
    the open): a `StretchRect` of the crop,
    clamped to the back buffer, into a render target of its size and a readback

@@ -170,8 +170,10 @@ edited file (spec section 10, etch#52; `game-host/error-log.ts`, core's
   Error, the rest Warnings.
 - **Console answers** (`game-console-answer`): a `reload` that is refused or
   does not answer "reloaded" (an Error), a `reloadtexture` that answers "Reload
-  failed", a `reloadloc` that does not reload, and a refused `window open`, on
-  the window's name. A `window close` of a wrapper that is not open is
+  failed" when no other spelling of the same file reloaded (the `.gfx` files
+  may write one file in several spellings, and the game holds only the ones
+  the window draws), a `reloadloc` that does not reload, and a refused `window
+  open`, on the window's name. A `window close` of a wrapper that is not open is
   expected and not reported.
 - **The game's own window** (`game-original-differs`, a Warning, H6 of
   etch#16): when a later mod of the playset has a file at the edited file's
@@ -208,11 +210,10 @@ What the live runs of etch#50 found:
 - **`eu3dialogtype`.** Nested in the wrapper, `GiftDiplomacyDialog` draws
   nothing anywhere on the screen; opened on its own it draws. Until the wrapper
   handles dialogs the preview shows a notice for them instead of a job.
-- **`reloadtexture`** answers "Reload failed" in the main menu at once
+- **`reloadtexture`** answered "Reload failed" in the main menu at once
   (under 0.01 ms) for `gfx//interface//country_diplomacy_view_bg_top.dds` and
-  every other spelling tried (single slashes, backslashes, `.tga`, the absolute
-  path), and the window keeps the old pixels. The job still runs it and reports
-  the answer.
+  every other spelling tried, and the window kept the old pixels. etch#117
+  found why; see "Texture reload" below.
 - **`reloadloc`** answers "Localisation reloaded!" and takes about 200 ms.
 
 ## The preview copy draws the original
@@ -295,6 +296,37 @@ What the runs also showed:
 Not checked: other resolutions and the other `if_resolution` branch (H2 of
 etch#16), modded playsets, windows with a `show_position`, whose original the
 console leaves at `position` (etch#50), and `eu3dialogtype` (etch#118).
+
+## Texture reload
+
+Why `reloadtexture` answered "Reload failed" in the main menu (etch#117; the
+game's code read in the EU4 engine lab, then four live runs of the game host
+test on 2026-10-25 with a probe that only read the game's memory).
+
+Verified:
+
+- The command looks the name up, exactly as written (no case or slash
+  folding), in the texture handler's map of the textures the game holds, and
+  answers "Reload failed" only when the name is not there. In the main menu
+  it reaches the same texture handler as the sprites, and the name it finds is
+  the `texturefile` value as the `.gfx` writes it
+  (`gfx//interface//country_diplomacy_view_bg_top.dds`).
+- While a wrapper is open the name is in the map. Between a job's `window
+  close` and `window open` about 50 names of the window's textures leave the
+  map, and the open loads them again under new entries. The job ran
+  `reloadtexture` exactly there.
+- Run after `window open <black>`, `reloadtexture` answers "<name> reloaded"
+  and takes about 200–250 ms for the 582 × 122 texture of
+  `countrydiplomacyview`. The spelling `countrygovernmentview.gfx` writes for
+  the same file (`gfx/interface/...`) is not held and still answers "Reload
+  failed"; the Problems panel leaves a spelling out when another one of the
+  same file reloaded.
+
+Not solved: the image still does not change. The test mod's copy of the
+texture, inverted before the game host started, draws exactly like the base
+game's file, also with Bellows' file modules off for that start. The game
+host does not draw a mod's file that overrides one of the base game, so a
+saved texture of a mod does not reach the preview yet (etch#126).
 
 ## Restart and watchdog
 

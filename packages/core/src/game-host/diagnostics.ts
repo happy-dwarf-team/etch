@@ -114,13 +114,44 @@ export function gameHostDiagnostics(request: GameHostDiagnosticsRequest): ModelD
     add(diagnostic(severity, 'game-error-log', mapped?.range ?? windowRange, text));
   }
 
+  // `textures` names a saved texture in every spelling the `.gfx` files write; the game holds only
+  // the ones the previewed window draws, so a spelling it does not hold answers "Reload failed"
+  // although another one reloaded the file (etch#117).
+  const reloaded = new Set(
+    request.commands
+      .filter((c) => c.success && !/\bfail/i.test(c.text))
+      .map(reloadTextureFile)
+      .filter((key) => key !== undefined),
+  );
   for (const command of request.commands) {
+    const texture = reloadTextureFile(command);
+    if (texture !== undefined && reloaded.has(texture)) continue;
     const problem = consoleProblem(command, request);
     if (problem !== undefined) {
       add(diagnostic(problem.severity, 'game-console-answer', windowRange, problem.message));
     }
   }
   return out.sort((a, b) => a.start - b.start);
+}
+
+/**
+ * One key for the spellings of a texture file: `gfx//interface//x.tga` and `gfx/interface/x.dds`
+ * name the same file, since the game falls back from `.tga` to `.dds` (etch#6).
+ */
+function textureFileKey(name: string): string {
+  return name
+    .replace(/[\\/]+/g, '/')
+    .replace(/\.(?:dds|tga)$/i, '')
+    .toLowerCase();
+}
+
+const RELOAD_TEXTURE = 'reloadtexture ';
+
+/** The texture file a `reloadtexture` line names, or `undefined` for another line. */
+function reloadTextureFile(command: GameConsoleLine): string | undefined {
+  return command.line.startsWith(RELOAD_TEXTURE)
+    ? textureFileKey(command.line.slice(RELOAD_TEXTURE.length))
+    : undefined;
 }
 
 /** What a console answer says went wrong, or `undefined` when the game did what was asked. */

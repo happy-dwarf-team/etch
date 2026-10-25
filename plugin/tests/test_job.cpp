@@ -207,9 +207,10 @@ void TestRunner() {
     assert(busy && busy->code == "busy");
     for (int i = 0; i < 5 && !result; ++i) game.Frame(runner);
     assert(result && result->error.empty());
-    assert((game.lines == std::vector<std::string>{"reload etch_goto.gui", "reload etchw_goto.gui",
-                                                   "reloadtexture gfx//interface//x.tga", "reloadloc",
+    // reloadtexture runs once the black wrapper holds the window's textures (etch#117).
+    assert((game.lines == std::vector<std::string>{"reload etch_goto.gui", "reload etchw_goto.gui", "reloadloc",
                                                    "window open etch_goto_box_backdrop",
+                                                   "reloadtexture gfx//interface//x.tga",
                                                    "window open etchw_goto_box_backdrop"}));
     assert(result->commands.size() == 6 && result->commands[0].success && result->commands[0].text == "done");
     assert(result->crop.width == 3 && result->crop.height == 2);
@@ -286,7 +287,7 @@ void TestRunnerFailures() {
     assert(!runner.Start(Request(), done));
     for (int i = 0; i < 5 && !result; ++i) game.Frame(runner);
     assert(result && result->error.empty());
-    assert(!result->commands[2].success && result->commands[2].text == "no such texture");
+    assert(!result->commands[4].success && result->commands[4].text == "no such texture");
     game.answers.clear();
 
     // No Present: the capture times out after kCaptureFrames frames.

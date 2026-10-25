@@ -220,6 +220,24 @@ describe('gameHostDiagnostics', () => {
     ]);
     expect(found.every((d) => d.start === at('"goto_box"').start)).toBe(true);
   });
+
+  it('leaves out a spelling of a texture the game reloaded under another one', () => {
+    const found = report({
+      commands: [
+        {
+          line: 'reloadtexture gfx//interface//goto.tga',
+          success: true,
+          text: 'gfx//interface//goto.tga reloaded',
+        },
+        { line: 'reloadtexture gfx/interface/goto.dds', success: true, text: 'Reload failed' },
+        { line: 'reloadtexture gfx/interface/other.dds', success: true, text: 'Reload failed' },
+      ],
+    });
+    expect(found.map((d) => d.message)).toEqual([
+      'The game did not reload the texture gfx/interface/other.dds; it answered "Reload failed", ' +
+        'so the game host draws the texture as it was when the game host started.',
+    ]);
+  });
 });
 
 describe('originalWindowDiagnostics', () => {
