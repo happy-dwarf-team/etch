@@ -5,6 +5,7 @@ import * as vscode from 'vscode';
 import type { EtchApi } from '../src/extension.ts';
 import { testGameHost } from './game-host.ts';
 import { testGameHostCorpus } from './game-host-corpus.ts';
+import { testGameHostDiff } from './game-host-diff.ts';
 import { testPreviewCopyH1 } from './game-host-h1.ts';
 import { testGameText } from './game-text.ts';
 import { testNavigation } from './navigation.ts';
@@ -42,10 +43,11 @@ export async function run(): Promise<void> {
   const gameHostPath = process.env['ETCH_GAME_HOST_PATH'];
   if (gameHostPath !== undefined && gameHostPath !== '') {
     // ETCH_GAME_HOST_CHECK=h1 runs H1 of etch#16 instead (etch#119), =corpus the corpus's windows
-    // (etch#53).
+    // (etch#53), =diff the diff view (etch#54).
     const check = process.env['ETCH_GAME_HOST_CHECK'];
     if (check === 'h1') await testPreviewCopyH1(api, gameHostPath);
     else if (check === 'corpus') await testGameHostCorpus(api, gameHostPath);
+    else if (check === 'diff') await testGameHostDiff(api, gameHostPath);
     else await testGameHost(api, gameHostPath);
     return;
   }
