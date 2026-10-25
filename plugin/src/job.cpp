@@ -235,14 +235,16 @@ void JobRunner::Commands() {
     }
     // A texture or localisation that does not reload leaves the old one on screen; the job goes on
     // and the extension reports the answer.
-    for (const std::string& texture : request_.textures) {
-        if (!Run({"reloadtexture", texture}, r)) return Faulted(r);
-    }
     if (request_.localisation && !Run({"reloadloc"}, r)) return Faulted(r);
     if (!Run({"window", "open", request_.black}, r)) return Faulted(r);
     if (!r.called) return Fail("console_unavailable", "the game's console is not set up yet");
     if (!r.success) return Refused("open_failed");
     open_ = request_.black;
+    // `reloadtexture` finds only a texture the game holds: closing the wrapper drops its textures,
+    // and the open loads them again (etch#117). The white wrapper then draws the reloaded one.
+    for (const std::string& texture : request_.textures) {
+        if (!Run({"reloadtexture", texture}, r)) return Faulted(r);
+    }
     result_.commands_ms = env_.now_ms() - started;
     Arm(kCaptureBlack);
 }

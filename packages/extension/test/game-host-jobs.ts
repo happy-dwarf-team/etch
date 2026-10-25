@@ -193,19 +193,25 @@ export async function testGameHostJobs(
     console.log(`[etch] "${c.line}" answered "${c.text}" (${String(c.success)})`);
   }
   const after = await readTga(textured.outcome.image.path);
-  console.log(`[etch] ${String(differing(before, after))} pixels changed with the texture`);
-  if (
+  const changedPixels = differing(before, after);
+  console.log(`[etch] ${String(changedPixels)} pixels changed with the texture`);
+  // The job reloads the texture once the black wrapper holds it (etch#117). The window's own
+  // spelling reloads; countrygovernmentview.gfx's spelling of the same file is not held, and the
+  // Problems panel leaves it out.
+  assert.ok(
     textured.outcome.commands.some(
-      (c) => c.line.startsWith('reloadtexture ') && /fail/i.test(c.text),
-    )
-  ) {
-    assert.ok(
-      gameDiagnostics(editor.document.uri).some((d) => d.code === 'game-console-answer'),
-      'a refused reloadtexture is in the Problems panel',
-    );
-  }
-  // In etch#50's live runs reloadtexture answered "Reload failed" at once in the main menu, for
-  // every spelling of the name: reported here, not asserted.
+      (c) => c.line.startsWith('reloadtexture ') && c.success && !/fail/i.test(c.text),
+    ),
+    'the game reloaded the texture',
+  );
+  // The test mod's texture overrides the base game's, and the game host draws the base game's
+  // (etch#126): the pixels are reported, not asserted.
+  assert.ok(
+    !gameDiagnostics(editor.document.uri).some(
+      (d) => d.code === 'game-console-answer' && d.message.includes('texture'),
+    ),
+    'no texture problem in the Problems panel',
+  );
 
   // A saved localisation file: reloadloc.
   const loc = await vscode.workspace.openTextDocument(vscode.Uri.file(fixture.localisation));
