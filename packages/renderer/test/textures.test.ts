@@ -385,5 +385,14 @@ describe('readTexture', () => {
       code: 'unsupported',
       message: 'texture file type of gfx/a.png',
     });
+    expect(readTexture('gfx/a.tga#b.dds', file).kind).toBe('pixels');
+  });
+
+  it('finds the extension in time linear in the name', () => {
+    const file = tga({ width: 1, height: 1, imageType: 2, pixelBits: 24, data: bytes(1, 2, 3) });
+    // /[?#].*$/ took seconds on it (CodeQL js/polynomial-redos).
+    const started = performance.now();
+    expect(readTexture(`a.tga${'#'.repeat(100_000)}\n`, file).kind).toBe('pixels');
+    expect(performance.now() - started).toBeLessThan(250);
   });
 });

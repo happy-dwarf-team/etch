@@ -246,4 +246,15 @@ describe('what packaging writes', () => {
       'and the game plugin `game/anvil/plugins/etch/`',
     );
   });
+
+  it('escapes a backslash before a pipe in a notices cell', () => {
+    const [first, ...rest] = pins.builds;
+    const [own, ...parts] = first?.licenses ?? [];
+    if (first === undefined || own === undefined) throw new Error('expected a pinned licence');
+    const odd: GameBuildPins = {
+      ...pins,
+      builds: [{ ...first, licenses: [{ ...own, component: 'a\\|b' }, ...parts] }, ...rest],
+    };
+    expect(renderNotices(odd, '0.3.0', false)).toContain('| a\\\\\\|b |');
+  });
 });

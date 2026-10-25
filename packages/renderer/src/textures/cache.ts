@@ -21,7 +21,8 @@ export type TextureResult =
 
 /** Reads a DDS or TGA file, chosen by the extension of `name` (case-insensitive). */
 export function readTexture(name: string, bytes: Uint8Array): TextureImage {
-  const path = name.replace(/[?#].*$/, '').toLowerCase();
+  const cut = name.search(/[?#]/);
+  const path = (cut < 0 ? name : name.slice(0, cut)).toLowerCase();
   if (path.endsWith('.dds')) return readDds(bytes);
   if (path.endsWith('.tga')) return readTga(bytes);
   throw new TextureReadError('unsupported', `texture file type of ${name}`);

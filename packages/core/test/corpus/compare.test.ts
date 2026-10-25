@@ -774,6 +774,22 @@ describe('reports', () => {
       '| `panel/icon[1]` | iconType | fail | 75.00 % of 100 pixels are within ±2',
     );
 
+    // A backslash is escaped before the pipe, so neither can end the cell (CodeQL
+    // js/incomplete-sanitization).
+    const escaped = windowReport(manifest, 'panel', [
+      {
+        kind: 'compared',
+        key,
+        comparison: {
+          ...failing,
+          widgets: failing.widgets.map((w) =>
+            w.path === 'panel/icon[1]' ? { ...w, problems: ['Read a\\|b.'] } : w,
+          ),
+        },
+      },
+    ]);
+    expect(escaped).toContain('| `panel/icon[1]` | iconType | fail | Read a\\\\\\|b. |');
+
     const missing = corpusSummary(manifest, [
       { kind: 'not-compared', key, reasons: ['No capture record.'] },
     ]);

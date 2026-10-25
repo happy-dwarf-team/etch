@@ -21,7 +21,7 @@ export interface Size {
   readonly height: Length;
 }
 
-const NUMBER = /^[+-]?(?:\d+\.?\d*|\.\d+)$/;
+const NUMBER = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/;
 const FLAGS: ReadonlyMap<string, boolean> = new Map([
   ['yes', true],
   ['no', false],

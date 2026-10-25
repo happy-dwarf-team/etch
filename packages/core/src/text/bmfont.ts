@@ -52,7 +52,8 @@ export function kerningKey(first: number, second: number): number {
 }
 
 const CHAR_FIELDS = ['id', 'x', 'y', 'width', 'height', 'xoffset', 'yoffset', 'xadvance'] as const;
-const PAIR = /(\w+)=(-?\d+)/g;
+// Matched per whitespace-separated token: unanchored and global, it is quadratic in a long word.
+const PAIR = /^(\w+)=(-?\d+)/;
 
 /** Reads a `.fnt` text file. Broken lines are skipped with an issue; reading never fails. */
 export function parseBmFont(text: string): BmFontResult {
@@ -67,7 +68,10 @@ export function parseBmFont(text: string): BmFontResult {
     const tag = /^\s*(\w+)/.exec(line)?.[1];
     if (tag !== 'common' && tag !== 'char' && tag !== 'kerning') continue;
     const fields: Record<string, number> = {};
-    for (const m of line.matchAll(PAIR)) fields[m[1] ?? ''] = Number(m[2]);
+    for (const token of line.split(/\s+/)) {
+      const m = PAIR.exec(token);
+      if (m !== null) fields[m[1] ?? ''] = Number(m[2]);
+    }
 
     if (tag === 'common') {
       common = fields;
