@@ -31,4 +31,5 @@ See [GLOSSARY.md](GLOSSARY.md) for the terms used in the issues.
 
 ## License
 
-MIT, see [LICENSE](LICENSE).
+MIT, see [LICENSE](LICENSE). Etch is an unofficial community project, not affiliated
+with or endorsed by Paradox Interactive.
