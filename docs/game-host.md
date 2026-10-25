@@ -353,6 +353,99 @@ test the dialog's job took 61 ms and its image showed 82 ms after the change
 Not checked: dialogs of mods, a dialog's shield outside the main menu, and the
 flags that keep the stars.
 
+## The corpus windows
+
+The game host on the precision corpus's windows (etch#53): live runs on
+2026-10-25 (EU4 1.37.5 `9AD3EFE1…D771A`, Anvil 1.3.0, Bellows 0.9.0,
+3440×1440), one per release playset: vanilla and Proper 2K UI Enhanced, the
+mod read in place from the Workshop and checked against the manifest's pin.
+
+**How.** `packages/extension/test/game-host-corpus.ts`
+(`ETCH_GAME_HOST_CHECK=corpus` beside `ETCH_GAME_HOST_PATH`,
+`ETCH_CORPUS_PATH` and `ETCH_CORPUS_PLAYSET`) puts the corpus windows' files,
+as the playset has them, into a test mod after the playset, with every
+top-level window's `position` set to its `show_position` (so that `window open`
+puts the original where the copy and the game draw it) and the H1 check's
+black backdrop under `mainmenu`. For every root window of every view captured
+at the game host's resolution, the preview shows the root as a mod author would
+(cursor on its name, the preview's own job), and the check
+
+- runs H1 of etch#16 as the H1 check does, with the copy and the original both
+  captured on the whole screen;
+- lays the preview's images of a view's roots over each other, in the order
+  the comparison renders them, into one straight RGBA image of the screen;
+  `pnpm --filter @etch/compare compare --game-host` compares it widget by
+  widget with the capture's screenshot, as it compares the offline renderer's
+  render (corpus/README.md).
+
+`shield` and `shield_thin_glow`, roots of the lobby view, are a top-level
+`guiButtonType` and `iconType`, which the game host cannot open; the
+comparison masks them as code-filled.
+
+**H1 holds for every root of both playsets.** The copy's straight RGBA laid
+over the menu differs from the original by at most 2 per channel, except where
+something animates:
+
+| Root | Vanilla: pixels drawn | off by 1–2 | over 2 | Proper 2K UI Enhanced: pixels drawn | off by 1–2 | over 2 |
+| --- | --- | --- | --- | --- | --- | --- |
+| `country_selection_panel` | 4,953,600 | 0 | 0 | 4,953,600 | 1 | 0 |
+| `topbar` | 98,690 | 139 | 0 | 148,437 | 226 | 0 |
+| `speed_controls` | 20,123 | 26 | 0 | 45,508 | 84 | 0 |
+| `outliner` | 6,637 | 0 | 0 | 2,152 | 0 | 0 |
+| `menubar` | 150,417 | 238 | 833 | 257,140 | 1,598 | 3 (by 3) |
+| `menu` | 342,418 | 0 | 0 | 489,988 | 0 | 0 |
+| `countrycourtview` | 336,190 | 0 | 0 | 770,513 | 0 | 0 |
+| `countryview` | 24,892 | 0 | 0 | 35,837 | 0 | 0 |
+| `countrydiplomacyview` | 335,594 | 0 | 0 | 761,364 | 7 | 0 |
+| `DeclareWarDialog` | 449,079 | 45 | 0 | 648,312 | 96 | 0 |
+| `provinceview` | 644,106 | 29 | 0 | 1,401,537 | 76 | 0 |
+| `ledger` | 642,517 | 0 | 0 | 2,194,812 | 285 | 0 |
+| `menu_settings_ingame` | 249,304 | 0 | 0 | 340,694 | 3 | 0 |
+| `macro_build_interface` | 431,439 | 6 | 0 | 889,149 | 179 | 0 |
+| `countryestatesview` | 321,601 | 204 | 0 | 460,823 | 206 | 0 |
+
+The vanilla `menubar`'s 833 pixels lie in one 40 × 37 medallion near
+(3034, 1385), whose shine moves: the original and the copy show it at
+different points (three vanilla runs: 379, 496 and 833 pixels in that box).
+The preview's crop held every pixel the copy drew but the FPS counter's.
+
+**Against the corpus captures** (the same 13 views per playset at 3440×1440),
+2 of 26 captures pass, `ledger` in both playsets, where the offline renderer
+passes all 26 (etch#44):
+
+| Playset | Widgets that pass | Fail | Offline renderer: pass, fail |
+| --- | --- | --- | --- |
+| Vanilla | 355 | 242 | 595, 0 |
+| Proper 2K UI Enhanced | 350 | 251 | 598, 0 |
+
+The game host shows the window as its `.gui` file draws it in the main menu,
+without the game's code; the captures show it in a game. What was looked at:
+
+- **Nested windows the code hides** draw: in `court`, the advisor selection
+  window ("Select Advisor", "No Advisors available") covers the court panel,
+  as `vassal_select_window` covers `countrydiplomacyview` (etch#126). The
+  comparison takes the capture's hidden widgets out of the render, so their
+  pixels count against the widgets under them (`background`, labels, icons).
+- **Button frames the code chooses** differ: `countryview`'s tab buttons draw
+  opaque white or black squares around their icons in the main menu, in the
+  original as in the copy, where the game shows the tab frames.
+- **The frontend views** (`main-menu`, `lobby`) cannot be compared this way:
+  the check's own backdrop lies inside `country_selection_panel`, the root of
+  both, so their images are opaque where the game shows the moving menu
+  through translucent widgets.
+
+Not looked at one by one: the failures of `settings`, `message-settings` and
+`esc-menu` (the Esc menu's background, 11.5 % of its pixels within ±2).
+
+**Times.** The game host got ready 13.2–20.7 s after it was created in the
+seven runs (vanilla and Proper 2K UI Enhanced alike). A root's job, as the
+preview runs it when the cursor moves to the root, took 47–201 ms in the first
+complete vanilla run (crops up to the whole screen, 18 MB images); in the last
+three runs, where each root's job came right after the preview's job of the
+first window of the root's file, 321–582 ms. Why the second is slower was not
+looked into. Restarts were measured in etch#51 and etch#118 (a `.gfx` save:
+ready 14.7–18.5 s).
+
 ## Texture reload
 
 Why `reloadtexture` answered "Reload failed" in the main menu (etch#117; the

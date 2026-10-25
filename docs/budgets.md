@@ -45,6 +45,23 @@ The suite is run three times, so the table has three first cold opens.
 
 ## Results
 
+### 2026-10-25, etch#53 (game host on the corpus windows, reported, not gated)
+
+The game host's times on the corpus windows (docs/game-host.md, "The corpus
+windows"), 3440×1440, EU4 1.37.5 `9AD3EFE1…DC4D771A`, Anvil 1.3.0, Bellows
+0.9.0, vanilla and Proper 2K UI Enhanced:
+
+| Measure | Result |
+| --- | --- |
+| Restart time to ready (seven starts) | 13.2–20.7 s |
+| Job of a root window, from the cursor on its name (first complete vanilla run, 15 roots) | 47–201 ms |
+| The same, right after the preview's job of another window of the file (runs 5–7) | 321–582 ms |
+
+The jobs test of the same day (etch#118) measured warm edits of
+`countrydiplomacyview` at a job median of 194 ms (p95 221 ms) and a 573 × 580
+dialog at 61 ms: the 150 ms target is met for small windows, not for
+full-screen crops.
+
 ### 2026-10-25, etch#50 (game host jobs, reported, not gated)
 
 The game host's job time (spec section 7: target ≤ 150 ms for files outside
