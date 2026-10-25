@@ -155,10 +155,14 @@ describe('planCaptures', () => {
 
   it('leaves out report playsets unless every capture is asked for', async () => {
     const manifest = await corpusManifest();
-    const all = planCaptures(manifest, { gating: false });
-    // Report playsets have no save and no pins yet, so each of their views is skipped.
-    expect(all.sessions.every((s) => s.playset.gate === 'release')).toBe(true);
-    expect(all.skipped.some((s) => s.playset === 'anbennar')).toBe(true);
+    const gating = planCaptures(manifest);
+    expect(gating.sessions.every((s) => s.playset.gate === 'release')).toBe(true);
+    const all = planCaptures(manifest, { gating: false, playsets: ['anbennar'] });
+    // The Anbennar playset has its save and pins (etch#55): every view of its windows is planned.
+    expect(all.skipped).toEqual([]);
+    expect(all.sessions.map(describeSession)).toContain(
+      'anbennar 3440x1440 from save: hud, esc-menu, message-settings, court, diplomacy, diplomacy-dialog, province, ledger, settings, macro-builder, estates',
+    );
   });
 });
 
