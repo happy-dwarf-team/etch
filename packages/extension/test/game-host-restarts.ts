@@ -9,6 +9,7 @@ import * as assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { rm, writeFile } from 'node:fs/promises';
 import * as path from 'node:path';
+import * as vscode from 'vscode';
 import type { EtchApi } from '../src/extension.ts';
 import type { GameHostState } from '../src/game-host/index.ts';
 import {
@@ -126,10 +127,18 @@ public static class EtchSuspend {
   console.log(`[etch] suspended thread ${thread} of game host PID ${String(game.pid)}`);
 }
 
-export async function testGameHostRestarts(api: EtchApi, mod: string): Promise<void> {
+export async function testGameHostRestarts(api: EtchApi, mod: string, gui: string): Promise<void> {
   const { gameHost, preview } = api;
   assert.equal(gameHost.state.status, 'ready', 'the game host is ready before the restarts');
   const first = await verifiedGame(api);
+
+  // Back to the window the game host draws (the jobs ended on a dialog it does not), with its image.
+  const document = await vscode.workspace.openTextDocument(vscode.Uri.file(gui));
+  const editor = await vscode.window.showTextDocument(document, vscode.ViewColumn.One);
+  const shown = nextImage(api, 30_000);
+  const start = document.positionAt(document.getText().indexOf('name = "countrydiplomacyview"'));
+  editor.selection = new vscode.Selection(start, start);
+  await shown;
 
   // A .gfx file saved twice in a row: one restart, the last image stale meanwhile.
   const gfx = path.join(mod, 'interface', 'etch_watchdog_test.gfx');

@@ -203,6 +203,22 @@ and the last ten lines of the private profile's `logs/error.log`. It stays
 stopped until a manual start (**Etch: Start the Game Host**, or a switch of
 the preview to it), which forgets the earlier crashes.
 
+Measured live (etch#51, 2026-10-25, the machine and builds of the table
+below, the extension's test suite with `ETCH_GAME_HOST_PATH`, run 3 of 3):
+
+| Step | Result |
+| --- | --- |
+| A `.gfx` file created, then saved again 100 ms later | one restart; ready 18.5 s and the next image 18.9 s after the first save; the last image stayed, stale, meanwhile |
+| The same file deleted | one restart |
+| The game ended from outside | a crash, restarted at once |
+| Its main thread suspended | a hang after 11.0 s ("the frame counter stayed at 87 for 10 s": the plugin's pipe thread kept answering), the game closed and restarted |
+| The game ended again | the third crash: stopped, with the edited file and the end of `error.log`; no restart in the next 5 s |
+| A switch to the game host | a manual start, ready |
+
+The seven starts of that run got ready in 14.2–17.2 s. Run 2 saw the same
+restart (ready 16.5 s); its test then waited for an image of a dialog, for
+which the game host runs no job, and the test was fixed.
+
 ## Measured
 
 On the maintainer's machine (EU4 1.37.5 `9AD3EFE1…D771A`, Anvil 1.3.0,

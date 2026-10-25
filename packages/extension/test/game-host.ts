@@ -122,7 +122,7 @@ export async function testGameHost(api: EtchApi, gamePath: string): Promise<void
     assert.equal(later.iconic, false, 'the game host stays restored');
 
     await testGameHostJobs(api, { gui: copy, texture, localisation }, firstImage);
-    await testGameHostRestarts(api, mod);
+    await testGameHostRestarts(api, mod, copy);
     const last = gameHost.running;
     assert.ok(last, 'the game host runs after the restarts');
 
