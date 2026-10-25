@@ -435,19 +435,27 @@ export class GameHost implements vscode.Disposable {
     }
   }
 
-  /** Watches the started process: an exit Etch did not ask for, and a hang, are crashes. */
+  /**
+   * Watches the started process: an exit Etch did not ask for, and a hang, are crashes. Once a
+   * restart is asked for, the process is about to be closed anyway: nothing more counts.
+   */
   private watch(started: GameHostProcess): void {
     const watching = new AbortController();
     this.watching = watching;
     void started.onExit.then(async (code) => {
-      if (this.process !== started) return;
+      if (!this.serving(started)) return;
       this.release();
       await this.crashed(`the game exited (exit code ${String(code)})`);
     });
     void watchHang(started, { signal: watching.signal }).then(async (hang) => {
-      if (this.process !== started) return;
+      if (!this.serving(started)) return;
       await this.crashed(`the game hangs: ${hang}`);
     });
+  }
+
+  /** Whether `process` is the ready game host, with no restart asked for. */
+  private serving(process: GameHostProcess): boolean {
+    return this.process === process && this.current.status === 'ready';
   }
 
   /**
@@ -525,7 +533,7 @@ export class GameHost implements vscode.Disposable {
         }
         this.jobEmitter.fire(outcome);
         // After a console fault the plugin refuses every later job (docs/plugin-protocol.md).
-        if (!outcome.ok && outcome.code === 'game_fault' && this.process === process) {
+        if (!outcome.ok && outcome.code === 'game_fault' && this.serving(process)) {
           void this.crashed(`a console call faulted: ${outcome.message}`);
         }
       },
