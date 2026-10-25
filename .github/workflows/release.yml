@@ -85,15 +85,20 @@ jobs:
         working-directory: dist
         run: gh release upload "$TAG" "$VSIX" SHA256SUMS.txt --clobber
 
-  # Publishes with the VSCE_PAT secret when it is set. The Marketplace offers
-  # no trusted publishing (OIDC) yet, and a token needs an Azure DevOps
-  # organization, so until then the job leaves a warning with the VSIX to
-  # upload by hand (docs/release.md).
+  # The Marketplace offers no trusted publishing (OIDC) policies yet, so the job
+  # signs in over OIDC as the Microsoft Entra ID identity of the
+  # vscode-marketplace environment (variables AZURE_CLIENT_ID and
+  # AZURE_TENANT_ID) and publishes with `vsce --azure-credential`, with no
+  # stored token. Without that identity a VSCE_PAT secret publishes, and without
+  # either the job leaves a warning with the VSIX to upload by hand
+  # (docs/release.md).
   marketplace:
     needs: [release-please, publish]
     runs-on: ubuntu-24.04
+    environment: vscode-marketplace
     permissions:
       contents: read
+      id-token: write
     env:
       TAG: ${{ needs.release-please.outputs.tag_name }}
     steps:
@@ -117,19 +122,32 @@ jobs:
           name: etch-${{ github.sha }}
           path: release
 
+      - name: Sign in to Microsoft Entra ID
+        if: vars.AZURE_CLIENT_ID != ''
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+
       - name: Publish to the VS Code Marketplace
         env:
+          ENTRA_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
           MARKETPLACE_TOKEN: ${{ secrets.VSCE_PAT }}
         run: |
           vsix="etch-win32-x64-${TAG#v}.vsix"
+          if [ -n "$ENTRA_CLIENT_ID" ]; then
+            pnpm --filter etch exec vsce publish --packagePath "$GITHUB_WORKSPACE/release/$vsix" --azure-credential --skip-duplicate
+            exit 0
+          fi
           if [ -z "$MARKETPLACE_TOKEN" ]; then
             url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/$TAG/$vsix"
             manage="https://marketplace.visualstudio.com/manage/publishers/happy-dwarf-team"
-            echo "::warning title=Upload to the Marketplace by hand::VSCE_PAT is not set. Upload $url at $manage (docs/release.md)."
+            echo "::warning title=Upload to the Marketplace by hand::Neither AZURE_CLIENT_ID nor VSCE_PAT is set. Upload $url at $manage (docs/release.md)."
             {
               echo "### VS Code Marketplace: upload by hand"
               echo
-              echo "VSCE_PAT is not set, so this job did not publish. Download [$vsix]($url)"
+              echo "Neither AZURE_CLIENT_ID nor VSCE_PAT is set, so this job did not publish. Download [$vsix]($url)"
               echo "and upload it at <$manage> (docs/release.md)."
             } >> "$GITHUB_STEP_SUMMARY"
             exit 0

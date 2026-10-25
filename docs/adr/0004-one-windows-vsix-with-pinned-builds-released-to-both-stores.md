@@ -63,3 +63,16 @@ only when a `VSCE_PAT` secret is set. Open VSX registers a trusted publisher
 only for an extension that already has a version, so 0.1.0 goes there with an
 `OVSX_PAT` secret that is deleted afterwards.
 [docs/release.md](../release.md) has the steps.
+
+## Update (26 October 2026)
+
+The Marketplace still offers no trusted publishing policies, and Azure DevOps
+retires the global tokens on 1 December 2026, so the `marketplace` job publishes
+with Microsoft Entra ID instead of by hand. An app registration with a
+federated credential for the `vscode-marketplace` environment signs in with
+GitHub's OIDC token (`azure/login`, no subscription), and
+`vsce publish --azure-credential` publishes as that identity, a Contributor of
+the `happy-dwarf-team` publisher. No publishing token is stored, which keeps the
+goal of this decision; the identity lives in Entra instead of a Marketplace
+policy. When `vsce publish --oidc` works, the job moves to it and the identity
+is removed. [docs/release.md](../release.md) has the steps.

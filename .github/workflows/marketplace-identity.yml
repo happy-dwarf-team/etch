@@ -1,0 +1,57 @@
+name: marketplace-identity
+
+# One-time setup of Marketplace publishing with Microsoft Entra ID
+# (docs/release.md): signs in over OIDC as the identity of the
+# vscode-marketplace environment, prints the ID the Marketplace knows it by, to
+# add it to the happy-dwarf-team publisher as a Contributor, and checks that it
+# may publish. Run it by hand; it publishes nothing.
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  identity:
+    runs-on: ubuntu-24.04
+    environment: vscode-marketplace
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+
+      # 499b84ac-1321-427f-aa17-267ca6975798 is the Azure DevOps resource, which
+      # holds the Marketplace profile of the signed-in identity.
+      - name: Marketplace profile ID
+        run: |
+          id=$(az rest --method get --url https://app.vssps.visualstudio.com/_apis/profile/profiles/me --resource 499b84ac-1321-427f-aa17-267ca6975798 --query id --output tsv)
+          echo "Marketplace profile ID: $id"
+          {
+            echo "### Marketplace identity"
+            echo
+            echo "Profile ID: \`$id\`. Add it as a **Contributor** of the publisher at"
+            echo "<https://marketplace.visualstudio.com/manage/publishers/happy-dwarf-team> (Members), then run this workflow again."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      # vsce at the version in pnpm-lock.yaml.
+      - name: Install
+        run: pnpm install --frozen-lockfile --filter etch
+
+      # Fails until the profile ID above is a Contributor of the publisher.
+      - name: Check publish rights
+        run: pnpm --filter etch exec vsce verify-pat --azure-credential happy-dwarf-team
