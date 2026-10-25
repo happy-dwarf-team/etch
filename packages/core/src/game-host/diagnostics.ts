@@ -120,11 +120,11 @@ export function gameHostDiagnostics(request: GameHostDiagnosticsRequest): ModelD
   const reloaded = new Set(
     request.commands
       .filter((c) => c.success && !/\bfail/i.test(c.text))
-      .map(reloadedTexture)
+      .map(reloadTextureFile)
       .filter((key) => key !== undefined),
   );
   for (const command of request.commands) {
-    const texture = reloadedTexture(command);
+    const texture = reloadTextureFile(command);
     if (texture !== undefined && reloaded.has(texture)) continue;
     const problem = consoleProblem(command, request);
     if (problem !== undefined) {
@@ -148,7 +148,7 @@ function textureFileKey(name: string): string {
 const RELOAD_TEXTURE = 'reloadtexture ';
 
 /** The texture file a `reloadtexture` line names, or `undefined` for another line. */
-function reloadedTexture(command: GameConsoleLine): string | undefined {
+function reloadTextureFile(command: GameConsoleLine): string | undefined {
   return command.line.startsWith(RELOAD_TEXTURE)
     ? textureFileKey(command.line.slice(RELOAD_TEXTURE.length))
     : undefined;

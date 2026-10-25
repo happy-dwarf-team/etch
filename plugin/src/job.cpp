@@ -241,7 +241,7 @@ void JobRunner::Commands() {
     if (!r.success) return Refused("open_failed");
     open_ = request_.black;
     // `reloadtexture` finds only a texture the game holds: closing the wrapper drops its textures,
-    // and the open loads them again (etch#117). The white wrapper then draws the reloaded one.
+    // and the open loads them again (etch#117).
     for (const std::string& texture : request_.textures) {
         if (!Run({"reloadtexture", texture}, r)) return Faulted(r);
     }
