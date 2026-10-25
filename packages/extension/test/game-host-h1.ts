@@ -20,14 +20,14 @@ import { processIdentity } from '../src/game-host/windows.ts';
 import { waitFor } from './game-host.ts';
 import { nextImage } from './game-host-jobs.ts';
 
-interface Tga {
+export interface Tga {
   readonly width: number;
   readonly height: number;
   /** B, G, R, A bytes, rows top first. */
   readonly pixels: Uint8Array;
 }
 
-async function readTga(file: string): Promise<Tga> {
+export async function readTga(file: string): Promise<Tga> {
   const bytes = await readFile(file);
   assert.equal(bytes[2], 2, 'an uncompressed true-colour TGA');
   assert.equal(bytes[16], 32, '32 bits per pixel');
@@ -48,9 +48,9 @@ const WINDOWS = [
 ] as const;
 
 /** A window that draws nothing, which a job opens to capture the main menu alone. */
-const BLANK_FILE = 'h1_blank.gui';
-const BLANK_WINDOW = 'h1_blank';
-const BLANK_GUI =
+export const BLANK_FILE = 'h1_blank.gui';
+export const BLANK_WINDOW = 'h1_blank';
+export const BLANK_GUI =
   'guiTypes = {\r\n\twindowType = {\r\n\t\tname = "h1_blank"\r\n\t\tbackGround = ""\r\n' +
   '\t\tposition = { x = 0 y = 0 }\r\n\t\tsize = { x = 1 y = 1 }\r\n\t\tdontRender = ""\r\n\t}\r\n}\r\n';
 
@@ -58,7 +58,7 @@ const BLANK_GUI =
  * The main menu's own file with the overlay mod's backdrop sprite as the first child of `mainmenu`
  * (full-screen, upper left), under everything else the menu draws.
  */
-function frontendWithBackdrop(text: string, colour: string): string {
+export function frontendWithBackdrop(text: string, colour: string): string {
   const menu = text.indexOf('name ="mainmenu"');
   const panel = text.indexOf('### MAIN MENU PANEL (upperleft)', menu);
   assert.ok(menu >= 0 && panel > menu, 'frontend.gui has the main menu as in 1.37.5');
@@ -72,10 +72,10 @@ function frontendWithBackdrop(text: string, colour: string): string {
 const COUNTER = { width: 80, height: 32 };
 
 /** Time after the first image for the main menu to finish fading in. */
-const MENU_SETTLE_MS = 5_000;
+export const MENU_SETTLE_MS = 5_000;
 
 /** Time from each open to its capture for the jobs this check sends, past any first-frame effect. */
-const SETTLE_MS = 300;
+export const SETTLE_MS = 300;
 
 interface Difference {
   /** Pixels whose largest channel difference is above 0, 2 and 8. */
@@ -88,7 +88,7 @@ interface Difference {
 }
 
 /** Compares the colour of two images, the counter's corner left out; `only` limits the pixels. */
-function compare(a: Tga, b: Tga, only?: (i: number) => boolean): Difference {
+export function compare(a: Tga, b: Tga, only?: (i: number) => boolean): Difference {
   assert.equal(a.width, b.width);
   assert.equal(a.height, b.height);
   let above0 = 0;
@@ -125,7 +125,7 @@ function compare(a: Tga, b: Tga, only?: (i: number) => boolean): Difference {
 }
 
 /** The copy's straight RGBA laid over the main menu, as the game blends a window over it. */
-function over(copy: Tga, menu: Tga): Tga {
+export function over(copy: Tga, menu: Tga): Tga {
   const pixels = new Uint8Array(copy.pixels.length);
   for (let i = 0; i < pixels.length; i += 4) {
     const a = (copy.pixels[i + 3] ?? 0) / 255;
