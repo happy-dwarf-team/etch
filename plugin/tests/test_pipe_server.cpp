@@ -10,6 +10,9 @@
 #include <atomic>
 #include <cassert>
 #include <cstdio>
+#include <functional>
+#include <memory>
+#include <optional>
 #include <string>
 
 namespace {
@@ -136,6 +139,44 @@ void TestClosingAnswers() {
     }
 }
 
+// A job's answer is written from another thread while the pipe thread waits
+// for the client's next line: it must not wait for that line.
+void TestLateAnswer(etch::Host& host) {
+    HANDLE finished = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+    host.start_job = [finished](etch::JobRequest, std::function<void(const etch::JobResult&)> done) {
+        auto* later = new std::function<void(const etch::JobResult&)>(std::move(done));
+        HANDLE thread = CreateThread(
+            nullptr, 0,
+            [](void* context) -> DWORD {
+                const std::unique_ptr<std::function<void(const etch::JobResult&)>> answer(
+                    static_cast<std::function<void(const etch::JobResult&)>*>(context));
+                Sleep(50);
+                etch::JobResult result;
+                result.error = "capture_timeout";
+                result.message = "test";
+                (*answer)(result);
+                return 0;
+            },
+            later, 0, nullptr);
+        CloseHandle(thread);
+        SetEvent(finished);
+        return std::optional<etch::Refusal>{};
+    };
+    Client c;
+    assert(c.Request(R"({"id":1,"type":"hello","protocol":1})").Find("ok")->AsBool() == true);
+    c.Send(std::string(R"({"id":2,"type":"job","reload":["a.gui"],"black":"b","white":"w",)") +
+           R"("crop":{"x":0,"y":0,"width":1,"height":1},"output":"C:/x.tga"})" + '\n');
+    assert(WaitForSingleObject(finished, 5000) == WAIT_OBJECT_0);
+    // Nothing more is sent: the answer arrives on its own.
+    const etch::json::Value a = Client::Parse(c.ReadLine());
+    assert(a.Find("id")->AsUint() == 2u);
+    assert(a.Find("error")->AsString() == "capture_timeout");
+    // A ping still works afterwards.
+    assert(c.Request(R"({"id":3,"type":"ping"})").Find("id")->AsUint() == 3u);
+    host.start_job = nullptr;
+    CloseHandle(finished);
+}
+
 }  // namespace
 
 int main() {
@@ -159,6 +200,7 @@ int main() {
     TestHandshakeAndPing();
     TestOneClientAtATime();
     TestClosingAnswers();
+    TestLateAnswer(host);
     std::puts("pipe_server: ok");
     std::fflush(stdout);
     // Not `return`: exit() would destroy statics while the server thread still runs.

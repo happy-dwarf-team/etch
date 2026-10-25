@@ -203,6 +203,21 @@ describe('writePreviewCopy', () => {
     expect(out.files?.[1].wrapper).toBe('etchw_dlg_backdrop');
   });
 
+  it('places the wrapped window at its show position, where the offline renderer draws it', () => {
+    const text =
+      'guiTypes = { windowType = { name = "w" position = { x=-600 y=140 } ' +
+      'show_position = { x=0 y =140 } hide_position = { x=-600 y =140 } ' +
+      'windowType = { name = "inner" position = { x=-5 y=0 } show_position = { x=9 y=9 } } } }';
+    const copied = writePreviewCopy(request({ text, window: 'w' })).files?.[0].text ?? '';
+    expect(copied).toContain(
+      'name = "etch_w" position = { x=0 y =140 } show_position = { x=0 y =140 } hide_position = { x=-600 y =140 }',
+    );
+    // Only the window's own position: nested windows keep theirs.
+    expect(copied).toContain('name = "inner" position = { x=-5 y=0 }');
+    // Without a show position nothing changes.
+    expect(black?.text).toContain('position = { x = 165 y = 215 }');
+  });
+
   it('refuses names the file or the playset already defines', () => {
     const text = 'guiTypes = { windowType = { name = "w" } windowType = { name = "w_backdrop" } }';
     expect(writePreviewCopy(request({ text, window: 'w' })).diagnostics[0]?.code).toBe(

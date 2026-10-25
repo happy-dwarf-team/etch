@@ -5,6 +5,7 @@ import { GameHostInstallError } from './install.ts';
 export type { GameHostMod, HostDisplay, PreparedInstall } from './install.ts';
 export { GameHostInstallError } from './install.ts';
 export { GameHost, GameHostInstall, type GameHostRequest, type GameHostState } from './host.ts';
+export type { JobChange, JobCommand, JobOutcome, PluginTimes } from './jobs.ts';
 
 /** Starts the game host: switches the preview to it (spec section 2). */
 export const START_GAME_HOST = 'etch.startGameHost';

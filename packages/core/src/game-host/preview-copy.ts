@@ -16,6 +16,12 @@
  * - a second top-level definition of a name is left out, since a reload of a file that defines
  *   a name twice frees the old definition twice;
  * - file-level `default_*sound` keys are left out, since a reload would apply them game-wide.
+ *
+ * One rule comes from the wrapper (etch#50): the previewed window's own `position` takes the value
+ * of its `show_position`. `window open` animates a top-level window from its `hide_position` to
+ * its `show_position`, but the wrapped window is nested and stays at its `position` (in the live
+ * run `countrydiplomacyview` stayed at x = −600, off the screen), while the offline renderer lays
+ * a window out at its `show_position`.
  */
 import type { Screen } from '../model/gui.ts';
 import { readGuiFile, type Widget } from '../model/gui.ts';
@@ -249,6 +255,7 @@ export function writePreviewCopy(request: PreviewCopyRequest): PreviewCopy {
     }
   }
 
+  const shownAt = showPositionEdit(request.text, window.node.value.entries);
   const file = readGuiFile(parsed);
   const references = registryReferences(file.definitions, names);
   const eol = request.text.includes('\r\n') ? '\r\n' : '\n';
@@ -261,6 +268,7 @@ export function writePreviewCopy(request: PreviewCopyRequest): PreviewCopy {
       for (const n of t.names) copyEdits.push(prefixed(n, prefix));
     }
     for (const n of references) copyEdits.push(prefixed(n, prefix));
+    if (shownAt !== undefined) copyEdits.push(shownAt);
     const [head, tail] = wrapperText(wrapper, colour, request.screen, eol);
     copyEdits.push(
       { start: window.node.start, end: window.node.start, text: head },
@@ -283,6 +291,27 @@ export function writePreviewCopy(request: PreviewCopyRequest): PreviewCopy {
 
   const [black, white] = files as [PreviewCopyFile, PreviewCopyFile];
   return { files: [black, white], diagnostics: diagnostics.sort((a, b) => a.start - b.start) };
+}
+
+/**
+ * The edit that gives a window's `position` the value of its `show_position`, among its own
+ * properties (the last of each applies); none when it lacks either.
+ */
+function showPositionEdit(text: string, entries: readonly EntryNode[]): Edit | undefined {
+  let position: PropertyNode | undefined;
+  let shown: PropertyNode | undefined;
+  for (const entry of entries) {
+    if (entry.kind !== 'property' || entry.value === undefined) continue;
+    const key = keyOf(entry);
+    if (key === 'position') position = entry;
+    else if (key === 'show_position') shown = entry;
+  }
+  if (position?.value === undefined || shown?.value === undefined) return undefined;
+  return {
+    start: position.value.start,
+    end: position.value.end,
+    text: text.slice(shown.value.start, shown.value.end),
+  };
 }
 
 /**

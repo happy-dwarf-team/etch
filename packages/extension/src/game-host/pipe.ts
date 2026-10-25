@@ -33,10 +33,13 @@ export interface Ping {
 /** An `"ok": false` answer, or a pipe that broke before the answer. */
 export class PipeError extends Error {
   readonly code: string;
-  constructor(code: string, message: string) {
+  /** The whole `"ok": false` answer, when the plugin sent one. */
+  readonly answer: Record<string, unknown> | undefined;
+  constructor(code: string, message: string, answer?: Record<string, unknown>) {
     super(message);
     this.name = 'PipeError';
     this.code = code;
+    this.answer = answer;
   }
 }
 
@@ -169,7 +172,7 @@ export class HostPipe {
             else {
               const code = typeof answer['error'] === 'string' ? answer['error'] : 'error';
               const message = typeof answer['message'] === 'string' ? answer['message'] : code;
-              reject(new PipeError(code, message));
+              reject(new PipeError(code, message, answer));
             }
           },
           reject,

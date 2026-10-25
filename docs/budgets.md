@@ -45,6 +45,22 @@ The suite is run three times, so the table has three first cold opens.
 
 ## Results
 
+### 2026-10-25, etch#50 (game host jobs, reported, not gated)
+
+The game host's job time (spec section 7: target ≤ 150 ms for files outside
+the HUD) from the extension's test suite with `ETCH_GAME_HOST_PATH`, four runs
+of 10 warm edits of a copy of vanilla `countrydiplomacyview.gui` at 3440×1440
+(EU4 1.37.5 `9AD3EFE1…DC4D771A`, Anvil 1.3.0, Bellows 0.9.0). The crop is
+3440×1310:
+
+| Measure | Median | p95 |
+| --- | --- | --- |
+| Job (copies written to answer) | 175–195 ms | 187–208 ms |
+| Change to the drawn image | 295–300 ms | 343–366 ms |
+
+Most of a job is the first `window open` of the wrapper (about 80 ms for this
+window); a 573×580 dialog took 72–75 ms. docs/game-host.md has the breakdown.
+
 ### 2026-10-24, etch#44 (after the corpus's renderer fixes)
 
 Checked again after the text, sprite and texture rules of etch#44 (#86, #91,

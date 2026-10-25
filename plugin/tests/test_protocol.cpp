@@ -3,7 +3,10 @@
 
 #include <cassert>
 #include <cstdio>
+#include <functional>
+#include <optional>
 #include <string>
+#include <vector>
 
 using etch::Connection;
 using etch::Reply;
@@ -106,10 +109,54 @@ void TestBadRequests() {
     AssertError(c.Handle(R"({"id":4})"), "bad_request", true, 4);
     AssertError(c.Handle(R"({"id":4,"type":7})"), "bad_request", true, 4);
     assert(!c.Handle(R"({"id":1,"type":"hello","protocol":1})").close);
-    AssertError(c.Handle(R"({"id":11,"type":"job"})"), "unknown_type", true, 11);
+    AssertError(c.Handle(R"({"id":11,"type":"jobs"})"), "unknown_type", true, 11);
     const Reply too_long = c.LineTooLong();
     assert(too_long.close);
     AssertError(too_long, "line_too_long", false);
+}
+
+const char* const kJob =
+    R"({"id":12,"type":"job","reload":["etch_a.gui","etchw_a.gui"],"black":"etch_a_backdrop",)"
+    R"("white":"etchw_a_backdrop","crop":{"x":1,"y":2,"width":3,"height":4},"output":"C:/c/job-12.tga"})";
+
+void TestJob() {
+    etch::Host host = TestHost();
+    std::vector<std::string> sent;
+    Connection c(host, [&](const std::string& line) { sent.push_back(line); });
+    assert(!c.Handle(R"({"id":1,"type":"hello","protocol":1})").close);
+    // No jobs before the game is ready, and none from a plugin that takes none.
+    g_ready = true;
+    AssertError(c.Handle(kJob), "not_ready", true, 12);
+    std::function<void(const etch::JobResult&)> finish;
+    etch::JobRequest started;
+    std::optional<etch::Refusal> refusal;
+    host.start_job = [&](etch::JobRequest request, std::function<void(const etch::JobResult&)> done) {
+        started = std::move(request);
+        finish = std::move(done);
+        return refusal;
+    };
+    g_ready = false;
+    AssertError(c.Handle(kJob), "not_ready", true, 12);
+    g_ready = true;
+    AssertError(c.Handle(R"({"id":13,"type":"job","reload":["a.gui"]})"), "bad_request", true, 13);
+    assert(!finish);
+    // Accepted: no answer now; the answer goes out through Send when the job ends.
+    const Reply accepted = c.Handle(kJob);
+    assert(accepted.line.empty() && !accepted.close);
+    assert(started.black == "etch_a_backdrop" && started.crop.height == 4);
+    assert(sent.empty());
+    etch::JobResult result;
+    result.output = started.output;
+    result.crop = started.crop;
+    finish(result);
+    assert(sent.size() == 1);
+    const Value a = Answer({sent[0]});
+    assert(a.Find("id")->AsUint() == 12u);
+    assert(a.Find("ok")->AsBool() == true);
+    assert(a.Find("output")->AsString() == "C:/c/job-12.tga");
+    // A refusal is answered at once.
+    refusal = etch::Refusal{"busy", "a preview job is running"};
+    AssertError(c.Handle(kJob), "busy", true, 12);
 }
 
 }  // namespace
@@ -119,6 +166,7 @@ int main() {
     TestProtocolMismatch();
     TestPing();
     TestBadRequests();
+    TestJob();
     std::puts("protocol: ok");
     return 0;
 }
