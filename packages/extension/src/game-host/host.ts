@@ -2,6 +2,7 @@ import { mkdir, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import * as vscode from 'vscode';
 import type { Screen } from '@etch/core';
+import { ErrorLogTail } from './error-log.ts';
 import { JobQueue, pruneCaptures, runJob, type JobChange, type JobOutcome } from './jobs.ts';
 import {
   copySize,
@@ -416,7 +417,11 @@ export class GameHost implements vscode.Disposable {
       // A restart keeps the images, so that the preview can show the last one meanwhile.
       if (!restart) await rm(this.capturesFolder, { recursive: true, force: true });
       await mkdir(this.capturesFolder, { recursive: true });
-      this.jobs = this.jobQueue(started, prepared.overlayFolder, this.lastJob);
+      // What the game wrote while it started is not a job's; the jobs report what comes after.
+      const errorLog = new ErrorLogTail(errorLogPath(prepared.profileFolder));
+      const startLines = await errorLog.skip();
+      this.output.info(`The game host's error.log had ${String(startLines)} lines at ready.`);
+      this.jobs = this.jobQueue(started, prepared.overlayFolder, this.lastJob, errorLog);
       this.watch(started);
       this.set({ status: 'ready', pid: started.identity.pid, readyMs: started.times.ready });
       return true;
@@ -498,11 +503,17 @@ export class GameHost implements vscode.Disposable {
     this.display = undefined;
   }
 
-  private jobQueue(process: GameHostProcess, overlayFolder: string, first: number): JobQueue {
+  private jobQueue(
+    process: GameHostProcess,
+    overlayFolder: string,
+    first: number,
+    errorLog: ErrorLogTail,
+  ): JobQueue {
     const target = {
       overlayFolder,
       capturesFolder: this.capturesFolder,
       request: process.request.bind(process),
+      errorLog,
     };
     const shown: string[] = [];
     return new JobQueue(
@@ -531,6 +542,10 @@ export class GameHost implements vscode.Disposable {
             this.output.warn(`  "${command.line}" answered: ${command.text || 'nothing'}`);
           }
         }
+        for (const line of outcome.earlierErrorLog) {
+          this.output.info(`  error.log before the job: ${line}`);
+        }
+        for (const line of outcome.errorLog) this.output.warn(`  error.log: ${line}`);
         this.jobEmitter.fire(outcome);
         // After a console fault the plugin refuses every later job (docs/plugin-protocol.md).
         if (!outcome.ok && outcome.code === 'game_fault' && this.serving(process)) {

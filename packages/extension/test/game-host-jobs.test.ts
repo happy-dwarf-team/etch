@@ -121,6 +121,32 @@ describe('runJob', () => {
     expect(outcome.commands).toHaveLength(1);
   });
 
+  it('reports the error.log lines of the job and those that came before it', async () => {
+    const reads = [['before'], ['during 1', 'during 2']];
+    const target: JobTarget = {
+      overlayFolder: folder,
+      capturesFolder: folder,
+      request: (body) =>
+        Promise.resolve({ ok: true, output: body['output'], ms: {}, commands: [] }),
+      errorLog: { read: () => Promise.resolve(reads.shift() ?? []) },
+    };
+    const outcome = await runJob(target, change(1), 1);
+    expect(outcome.earlierErrorLog).toEqual(['before']);
+    expect(outcome.errorLog).toEqual(['during 1', 'during 2']);
+  });
+
+  it('reports the error.log lines of a failed job', async () => {
+    const reads = [[], ['[persistent.cpp:88]: Parsing Error.']];
+    const target: JobTarget = {
+      overlayFolder: folder,
+      capturesFolder: folder,
+      request: () => Promise.reject(new PipeError('reload_failed', 'Failed to reload the file')),
+      errorLog: { read: () => Promise.resolve(reads.shift() ?? []) },
+    };
+    const outcome = await runJob(target, change(1), 1);
+    expect(outcome).toMatchObject({ ok: false, errorLog: ['[persistent.cpp:88]: Parsing Error.'] });
+  });
+
   it('asks again while the plugin still runs a job Etch stopped waiting for', async () => {
     let calls = 0;
     const target: JobTarget = {
@@ -157,6 +183,8 @@ describe('JobQueue', () => {
                 tag: c.tag,
                 requestedAt: c.requestedAt,
                 commands: [],
+                errorLog: [],
+                earlierErrorLog: [],
               });
             },
           });
@@ -209,6 +237,8 @@ describe('JobQueue', () => {
               tag: c.tag,
               requestedAt: 0,
               commands: [],
+              errorLog: [],
+              earlierErrorLog: [],
             });
           };
         }),

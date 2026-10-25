@@ -54,7 +54,15 @@ export type ModelDiagnosticCode =
   /** Game host: what the preview copy leaves out of the original (a second definition of a name, `default_*sound`). */
   | 'copy-leaves-out'
   /** Game host: a previewed window with `parent`, which inside the backdrop wrapper names a sibling instead. */
-  | 'wrapped-parent';
+  | 'wrapped-parent'
+  /** Game host: a line the game wrote to `error.log` during a preview job (etch#52). */
+  | 'game-error-log'
+  /** Game host: a console command of a preview job that the game refused (etch#52). */
+  | 'game-console-answer'
+  /** Game host: the game's own window of that name may not be the edited text (H6 of etch#16). */
+  | 'game-original-differs'
+  /** Game host: the crop reaches the corner where the game draws its FPS counter (etch#22). */
+  | 'fps-counter-corner';
 
 /** A problem the extension's model finds in one `.gui` or `.gfx` file; the range is in that file's game text. */
 export interface ModelDiagnostic extends SourceRange {
