@@ -49,7 +49,10 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
   }
   button[aria-pressed="true"] { background: var(--vscode-button-background); color: var(--vscode-button-foreground); }
   #notices { margin: 0; padding: 0; list-style: none; }
-  #notices li { padding: 4px 8px; border-left: 3px solid var(--vscode-notificationsInfoIcon-foreground); }
+  #notices li {
+    padding: 4px 8px; border-left: 3px solid var(--vscode-notificationsInfoIcon-foreground);
+    white-space: pre-wrap;
+  }
   #notices li.warning { border-color: var(--vscode-notificationsWarningIcon-foreground); }
   #notices li.error { border-color: var(--vscode-notificationsErrorIcon-foreground); }
   label { white-space: nowrap; }
@@ -59,6 +62,8 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
     position: absolute; inset: 8px; margin: auto; max-width: calc(100% - 16px); max-height: calc(100% - 16px);
     background: ${BACKDROP};
   }
+  /* The game host's last image while it restarts (spec section 4). */
+  canvas.stale { opacity: 0.5; filter: grayscale(1); }
   canvas[hidden], .box[hidden], #tip[hidden] { display: none; }
   .box { position: absolute; pointer-events: none; box-sizing: border-box; }
   #hover { border: 1px dashed var(--vscode-editorCursor-foreground, #fff); }

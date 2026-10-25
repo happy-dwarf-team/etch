@@ -27,6 +27,8 @@ export interface ViewState {
   /** The preview resolution as `1920×1080`, and where it came from (spec section 6). */
   readonly resolution: { readonly text: string; readonly source: ResolutionSource };
   readonly notices: readonly Notice[];
+  /** The image is the game host's last one, from before a restart: it is shown as stale. */
+  readonly stale: boolean;
 }
 
 /**

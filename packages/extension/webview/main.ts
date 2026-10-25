@@ -225,6 +225,7 @@ function show(next: ViewState): void {
     ? 'The preview stays on this window. Click to follow the cursor again.'
     : 'Keep the preview on this window while other files are edited.';
   backend.value = next.backend;
+  canvas.classList.toggle('stale', next.stale);
   resolution.textContent = next.resolution.text;
   resolution.title =
     `Preview resolution ${next.resolution.text}, ${SOURCES[next.resolution.source]}. ` +

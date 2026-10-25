@@ -206,12 +206,20 @@ export class JobQueue {
   private count = 0;
   private disposed = false;
 
+  /** `first` is the number of the job before the first: a restarted game host goes on counting. */
   constructor(
     run: (change: JobChange, job: number) => Promise<JobOutcome>,
     done: (outcome: JobOutcome) => void,
+    first = 0,
   ) {
     this.run = run;
     this.done = done;
+    this.count = first;
+  }
+
+  /** The number of the last job started. */
+  get last(): number {
+    return this.count;
   }
 
   submit(change: JobChange): void {

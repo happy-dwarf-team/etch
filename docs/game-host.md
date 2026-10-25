@@ -166,6 +166,43 @@ What the live runs of etch#50 found:
   the answer.
 - **`reloadloc`** answers "Localisation reloaded!" and takes about 200 ms.
 
+## Restart and watchdog
+
+The game host restarts by itself (etch#51, `game-host/watchdog.ts` and
+`host.ts`):
+
+| Cause | Seen by |
+| --- | --- |
+| A `.gfx` or `.fnt` file the playset reads is saved, created or deleted | the preview's file watcher; the game reads sprite types and fonts only when it starts |
+| The resolution, the playset or `etch.language` changed | the preview, which hands the game host its request at every change |
+| The game ended by itself | the process's exit |
+| The game hangs | a ping every second: no answer for 10 s (a dead plugin or a stuck pipe), or a frame counter that stood still for 10 s (the pipe thread answers while the main thread is stuck) |
+| A console call faulted | a job's `game_fault`: the plugin refuses every later job (docs/plugin-protocol.md) |
+| The game ended, or did not get ready in time, while it started | the start |
+
+A restart waits 300 ms, closes the game after its PID, path and creation
+time are checked, as at a stop, and starts it again with the preview's latest
+playset and display. Changes that come until the old game is closed join that
+restart; a change that comes while the new game starts makes one more restart
+after it, since the new game may have read the file already. The editor
+buffer of a `.gfx` file reaches the offline renderer at once; the game host
+reads the file once it is saved.
+
+Meanwhile the preview lays the window out at the screen the game host
+restarts at and keeps its last image, greyed out and marked as stale, until
+the new game draws the next one; textures and localisation saved meanwhile are
+not reloaded, since the new game reads them anyway. The captures folder is
+emptied only at a manual start, and job numbers go on across restarts, so no
+new image takes the name of the one on screen.
+
+A dead process, a hang, a console fault and a start that ends or hangs are
+**crashes**. The third crash within 5 minutes stops the game host: the
+preview's notice and the output channel give the last cause, the file the
+game host was last given (the previewed `.gui` or the file that restarted it)
+and the last ten lines of the private profile's `logs/error.log`. It stays
+stopped until a manual start (**Etch: Start the Game Host**, or a switch of
+the preview to it), which forgets the earlier crashes.
+
 ## Measured
 
 On the maintainer's machine (EU4 1.37.5 `9AD3EFE1…D771A`, Anvil 1.3.0,

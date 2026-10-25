@@ -17,12 +17,24 @@ import {
 import {
   GameHostProcess,
   HostBusyError,
+  HostCrashedError,
   closeOrphan,
   lockHeldElsewhere,
   lockPath,
   readLock,
   type LockOptions,
 } from './process.ts';
+import {
+  CRASH_LIMIT,
+  CRASH_WINDOW_MS,
+  CrashLimit,
+  RestartQueue,
+  errorLogPath,
+  logTail,
+  requestChange,
+  watch as watchHang,
+  type HostStartRequest,
+} from './watchdog.ts';
 import { processIdentity, type ProcessIdentity } from './windows.ts';
 
 /**
@@ -113,6 +125,8 @@ export type GameHostState =
   | { readonly status: 'stopped' }
   | { readonly status: 'starting' }
   | { readonly status: 'ready'; readonly pid: number; readonly readyMs: number }
+  /** It restarts (spec section 4); the preview keeps its last image, marked as stale. */
+  | { readonly status: 'restarting'; readonly reason: string }
   | { readonly status: 'stopping' }
   /** Another VS Code window runs the machine's game host. */
   | { readonly status: 'busy' }
@@ -123,22 +137,28 @@ export function capturesFolder(storageFolder: string): string {
   return join(storageFolder, 'captures');
 }
 
-/** What a game host start needs from the preview. */
-export interface GameHostRequest {
-  /** The player's game folder, which the install links to. */
-  readonly gameFolder: string;
-  /** The playset in load order. */
-  readonly mods: readonly GameHostMod[];
-  readonly display: HostDisplay;
-}
+/**
+ * What a game host start needs from the preview: the player's game folder, which the install
+ * links to, the playset in load order and the display. A change of it restarts the game host.
+ */
+export type GameHostRequest = HostStartRequest;
 
 /** How long the game host runs without a game host preview (spec section 4). */
 export const IDLE_STOP_MS = 30 * 60_000;
 
+/** The restart reason of a start that is not a restart. */
+const START = 'start';
+
+/** How long a restart waits before it closes the game, for more changes to join it. */
+const RESTART_SETTLE_MS = 300;
+
 /**
  * The machine's one game host, owned by this VS Code window: started on demand, stopped by
  * command, when the window closes (`stop` from `deactivate`) or after `IDLE_STOP_MS` without a
- * game host preview. A start, a stop and a removal of the install never overlap.
+ * game host preview. Its watchdog (etch#51) restarts it for a start-up-only file, a new request, a
+ * dead process, a hang or a console fault, and stops it after `CRASH_LIMIT` crashes in
+ * `CRASH_WINDOW_MS` until a manual start. A start, a restart, a stop and a removal of the install
+ * never overlap.
  */
 export class GameHost implements vscode.Disposable {
   readonly install: GameHostInstall;
@@ -148,13 +168,25 @@ export class GameHost implements vscode.Disposable {
   private readonly jobEmitter = new vscode.EventEmitter<JobOutcome>();
   /** The folder the plugin writes job images to. */
   readonly capturesFolder: string;
+  private readonly restarts = new RestartQueue((take) => this.cycle(take));
+  private readonly crashes = new CrashLimit();
   private jobs: JobQueue | undefined;
+  /** The number of the last job of the game host's earlier processes since its manual start. */
+  private lastJob = 0;
   /** The screen of the running game host. */
   private display: Screen | undefined;
   private current: GameHostState = { status: 'stopped' };
   private process: GameHostProcess | undefined;
-  private starting: Promise<void> | undefined;
+  /** What the game host should run with: the preview's latest request. */
+  private wanted: GameHostRequest | undefined;
+  /** What the running or starting game host runs with. */
+  private runs: GameHostRequest | undefined;
+  /** Cancels the start or restart that runs. */
   private abort: AbortController | undefined;
+  /** Ends the hang watch of the running process. */
+  private watching: AbortController | undefined;
+  /** The file whose change the game host was last given, for the crash diagnostic. */
+  private lastChange: string | undefined;
   private idle: NodeJS.Timeout | undefined;
   private owner: Promise<ProcessIdentity> | undefined;
   private idleMs = IDLE_STOP_MS;
@@ -170,17 +202,26 @@ export class GameHost implements vscode.Disposable {
     this.capturesFolder = capturesFolder(storageFolder);
   }
 
-  /** The running game host's screen: the size its preview copies cover and its crops are cut from. */
+  /**
+   * The game host's screen: the size its preview copies cover and its crops are cut from. While it
+   * restarts, the screen it restarts at.
+   */
   get screen(): Screen | undefined {
-    return this.process === undefined ? undefined : this.display;
+    if (this.process !== undefined) return this.display;
+    const runs = this.runs;
+    return this.current.status === 'restarting' && runs !== undefined
+      ? { width: runs.display.width, height: runs.display.height }
+      : undefined;
   }
 
   /**
    * Hands the running game host a change of the previewed window (spec section 4): one job runs
-   * at a time, and later changes coalesce. False when the game host is not ready.
+   * at a time, and later changes coalesce. `file` is the edited file, named if the game host
+   * crashes. False when the game host is not ready.
    */
-  submit(change: JobChange): boolean {
+  submit(change: JobChange, file?: string): boolean {
     if (this.jobs === undefined || this.current.status !== 'ready') return false;
+    if (file !== undefined) this.lastChange = file;
     this.jobs.submit(change);
     return true;
   }
@@ -199,99 +240,77 @@ export class GameHost implements vscode.Disposable {
     return this.process;
   }
 
+  /** Whether the game host runs, starts or restarts. */
+  private get active(): boolean {
+    return this.process !== undefined || this.restarts.busy;
+  }
+
   /**
-   * Called by the preview: with a request while it shows the game host, which starts it when it is
-   * not running; with `undefined` when it stops showing it, which starts the idle timer.
+   * Called by the preview: with a request at a switch to the game host, which starts it when it is
+   * not running (also after the crash limit stopped it); with `undefined` when it stops showing it,
+   * which starts the idle timer.
    */
   use(request: GameHostRequest | undefined): void {
     if (request === undefined) {
-      if (this.process !== undefined || this.starting !== undefined) this.armIdle();
+      if (this.active) this.armIdle();
       return;
     }
     this.disarmIdle();
-    if (this.process !== undefined || this.starting !== undefined) return;
-    void this.start(request);
+    if (this.active) this.update(request);
+    else void this.start(request);
   }
 
-  /** Starts the game host and waits until it is ready or the start failed (see `state`). */
+  /**
+   * Called by the preview while it shows the game host, with its playset and display: a game host
+   * that runs or starts with another restarts. A stopped one stays stopped.
+   */
+  update(request: GameHostRequest): void {
+    this.wanted = request;
+    const runs = this.runs;
+    if (!this.active || runs === undefined) return;
+    const change = requestChange(runs, request);
+    if (change !== undefined) this.restart(change);
+  }
+
+  /**
+   * Restarts a game host that runs or starts, for a change it reads only when it starts (spec
+   * section 4), such as a saved `.gfx` file. Restarts asked for meanwhile coalesce into one.
+   */
+  restart(reason: string, file?: string): void {
+    if (!this.active) return;
+    if (file !== undefined) this.lastChange = file;
+    this.output.info(`The game host restarts: ${reason}.`);
+    this.restarts.request(reason);
+    if (this.process !== undefined) this.set({ status: 'restarting', reason });
+  }
+
+  /**
+   * Starts the game host (a manual start, which forgets earlier crashes) and waits until it is
+   * ready or the start failed (see `state`).
+   */
   start(request: GameHostRequest): Promise<void> {
-    if (this.starting !== undefined) return this.starting;
-    if (this.process !== undefined) return Promise.resolve();
-    const abort = new AbortController();
-    this.abort = abort;
-    this.set({ status: 'starting' });
-    this.starting = (async () => {
-      try {
-        const prepared = await this.install.prepare(
-          request.gameFolder,
-          request.mods,
-          request.display,
-        );
-        if (prepared === undefined) {
-          this.set({ status: 'failed', message: 'The game host install was not created.' });
-          return;
-        }
-        if (abort.signal.aborted) {
-          this.set({ status: 'stopped' });
-          return;
-        }
-        const started = await GameHostProcess.start({
-          install: prepared,
-          originalGameFolder: request.gameFolder,
-          lock: await this.lockOptions(),
-          log: (message) => {
-            this.output.info(message);
-          },
-          signal: abort.signal,
-        });
-        this.process = started;
-        this.display = { width: request.display.width, height: request.display.height };
-        await rm(this.capturesFolder, { recursive: true, force: true });
-        await mkdir(this.capturesFolder, { recursive: true });
-        this.jobs = this.jobQueue(started, prepared.overlayFolder);
-        this.set({ status: 'ready', pid: started.identity.pid, readyMs: started.times.ready });
-        void started.onExit.then((code) => {
-          if (this.process !== started) return;
-          this.process = undefined;
-          this.endJobs();
-          this.disarmIdle();
-          this.output.warn(`The game host exited by itself (exit code ${String(code)}).`);
-          this.set({
-            status: 'failed',
-            message: `The game host exited (exit code ${String(code)}).`,
-          });
-        });
-      } catch (error) {
-        if (error instanceof HostBusyError) {
-          this.set({ status: 'busy' });
-        } else if (abort.signal.aborted) {
-          this.set({ status: 'stopped' });
-        } else {
-          const message = error instanceof Error ? error.message : String(error);
-          this.output.error(`The game host did not start: ${message}`);
-          this.set({ status: 'failed', message });
-        }
-      } finally {
-        this.starting = undefined;
-        this.abort = undefined;
-      }
-    })();
-    return this.starting;
+    this.wanted = request;
+    if (this.active) return this.restarts.idle();
+    this.crashes.reset();
+    this.lastJob = 0;
+    this.lastChange = undefined;
+    this.restarts.request(START);
+    return this.restarts.idle();
   }
 
-  /** Stops the game host (also one still starting); false when there was none. */
+  /** Stops the game host (also one still starting or restarting); false when there was none. */
   async stop(): Promise<boolean> {
     this.disarmIdle();
-    const wasStarting = this.starting !== undefined;
+    const wasStarting = this.restarts.busy;
+    this.restarts.clear();
     this.abort?.abort();
-    await this.starting;
+    await this.restarts.idle();
     const running = this.process;
     if (running === undefined) {
       if (this.current.status !== 'busy') this.set({ status: 'stopped' });
       return wasStarting;
     }
-    this.process = undefined;
-    this.endJobs();
+    this.release();
     this.set({ status: 'stopping' });
     const outcome = await running.stop();
     if (outcome === 'terminated' || outcome === 'already-exited') {
@@ -333,7 +352,145 @@ export class GameHost implements vscode.Disposable {
     this.jobEmitter.dispose();
   }
 
-  private jobQueue(process: GameHostProcess, overlayFolder: string): JobQueue {
+  /**
+   * One start or restart: closes the running process, takes the restarts asked for so far and
+   * starts the game host with the latest request. False when it should stay down.
+   */
+  private async cycle(take: () => readonly string[]): Promise<boolean> {
+    const abort = new AbortController();
+    this.abort = abort;
+    try {
+      const old = this.process;
+      if (old !== undefined) {
+        // Files saved together (Save All, a checkout) come as several changes: one restart.
+        await new Promise((resolve) => setTimeout(resolve, RESTART_SETTLE_MS));
+        if (abort.signal.aborted) return false;
+        this.release();
+        const outcome = await old.stop();
+        if (outcome !== 'terminated' && outcome !== 'already-exited') {
+          this.set({ status: 'failed', message: `The game host could not be closed: ${outcome}.` });
+          return false;
+        }
+      }
+      const request = this.wanted;
+      if (abort.signal.aborted || request === undefined) return false;
+      const reasons = take().filter((reason) => reason !== START);
+      const restart = reasons.length > 0;
+      this.runs = request;
+      this.set(
+        restart ? { status: 'restarting', reason: reasons.join('; ') } : { status: 'starting' },
+      );
+      return await this.startProcess(request, restart, abort.signal);
+    } finally {
+      if (this.abort === abort) this.abort = undefined;
+    }
+  }
+
+  private async startProcess(
+    request: GameHostRequest,
+    restart: boolean,
+    signal: AbortSignal,
+  ): Promise<boolean> {
+    try {
+      const prepared = await this.install.prepare(
+        request.gameFolder,
+        request.mods,
+        request.display,
+      );
+      if (prepared === undefined) {
+        this.set({ status: 'failed', message: 'The game host install was not created.' });
+        return false;
+      }
+      if (signal.aborted) return false;
+      const started = await GameHostProcess.start({
+        install: prepared,
+        originalGameFolder: request.gameFolder,
+        lock: await this.lockOptions(),
+        log: (message) => {
+          this.output.info(message);
+        },
+        signal,
+      });
+      this.process = started;
+      this.display = { width: request.display.width, height: request.display.height };
+      // A restart keeps the images, so that the preview can show the last one meanwhile.
+      if (!restart) await rm(this.capturesFolder, { recursive: true, force: true });
+      await mkdir(this.capturesFolder, { recursive: true });
+      this.jobs = this.jobQueue(started, prepared.overlayFolder, this.lastJob);
+      this.watch(started);
+      this.set({ status: 'ready', pid: started.identity.pid, readyMs: started.times.ready });
+      return true;
+    } catch (error) {
+      if (signal.aborted) return false;
+      if (error instanceof HostBusyError) {
+        this.set({ status: 'busy' });
+        return false;
+      }
+      const message = error instanceof Error ? error.message : String(error);
+      // A game that dies or hangs while it starts is a crash: it starts again, up to the limit.
+      if (error instanceof HostCrashedError) return this.crashed(message);
+      this.output.error(`The game host did not start: ${message}`);
+      this.set({ status: 'failed', message });
+      return false;
+    }
+  }
+
+  /** Watches the started process: an exit Etch did not ask for, and a hang, are crashes. */
+  private watch(started: GameHostProcess): void {
+    const watching = new AbortController();
+    this.watching = watching;
+    void started.onExit.then(async (code) => {
+      if (this.process !== started) return;
+      this.release();
+      await this.crashed(`the game exited (exit code ${String(code)})`);
+    });
+    void watchHang(started, { signal: watching.signal }).then(async (hang) => {
+      if (this.process !== started) return;
+      await this.crashed(`the game hangs: ${hang}`);
+    });
+  }
+
+  /**
+   * A crash: restarts the game host, or after `CRASH_LIMIT` crashes in `CRASH_WINDOW_MS` stops it
+   * with the end of `error.log` and the file changed just before. False when it stopped.
+   */
+  private async crashed(reason: string): Promise<boolean> {
+    this.output.warn(`The game host crashed: ${reason}.`);
+    if (!this.crashes.crash(performance.now())) {
+      this.restarts.request(reason);
+      this.set({ status: 'restarting', reason });
+      return true;
+    }
+    // From a running start the cycle ends by returning false; from the watch, nothing runs.
+    this.restarts.clear();
+    const running = this.process;
+    this.release();
+    if (running !== undefined) await running.stop();
+    const tail = await logTail(errorLogPath(this.install.layout.profile));
+    const message =
+      `It crashed ${String(CRASH_LIMIT)} times in ${String(CRASH_WINDOW_MS / 60_000)} minutes ` +
+      `(last: ${reason}) and stays stopped until it is started again. ` +
+      (this.lastChange === undefined ? '' : `Changed just before: ${this.lastChange}. `) +
+      (tail.length === 0
+        ? 'error.log has no lines.'
+        : `The end of error.log:\n${tail.map((line) => `  ${line}`).join('\n')}`);
+    this.output.error(`The game host stopped. ${message}`);
+    this.set({ status: 'failed', message });
+    return false;
+  }
+
+  /** Lets go of the running process: its jobs and its hang watch end. */
+  private release(): void {
+    this.process = undefined;
+    this.watching?.abort();
+    this.watching = undefined;
+    if (this.jobs !== undefined) this.lastJob = this.jobs.last;
+    this.jobs?.dispose();
+    this.jobs = undefined;
+    this.display = undefined;
+  }
+
+  private jobQueue(process: GameHostProcess, overlayFolder: string, first: number): JobQueue {
     const target = {
       overlayFolder,
       capturesFolder: this.capturesFolder,
@@ -367,14 +524,13 @@ export class GameHost implements vscode.Disposable {
           }
         }
         this.jobEmitter.fire(outcome);
+        // After a console fault the plugin refuses every later job (docs/plugin-protocol.md).
+        if (!outcome.ok && outcome.code === 'game_fault' && this.process === process) {
+          void this.crashed(`a console call faulted: ${outcome.message}`);
+        }
       },
+      first,
     );
-  }
-
-  private endJobs(): void {
-    this.jobs?.dispose();
-    this.jobs = undefined;
-    this.display = undefined;
   }
 
   private async lockOptions(): Promise<LockOptions> {
