@@ -3,6 +3,7 @@ import {
   backdropFiles,
   decodeGameText,
   isPreviewCopyFile,
+  originalOffset,
   parseScript,
   previewCopyPath,
   readGuiFile,
@@ -196,11 +197,29 @@ describe('writePreviewCopy', () => {
     ]);
   });
 
-  it('opens eu3dialogtype windows', () => {
-    const out = writePreviewCopy(
-      request({ text: 'guiTypes = { eu3dialogtype = { name = "dlg" } }', window: 'dlg' }),
-    );
+  it('wraps an eu3dialogtype as a windowType without its shields', () => {
+    const text =
+      'guiTypes = { eu3dialogtype = { name = "dlg" iconType = { name = "bg" } ' +
+      'shieldtype = { name = "LeftShield" spriteType = "s" } ' +
+      'windowType = { name = "inner" shieldtype = { name = "kept" } } } ' +
+      'eu3dialogtype = { name = "other" shieldtype = { name = "theirs" } } }';
+    const out = writePreviewCopy(request({ text, window: 'dlg' }));
     expect(out.files?.[1].wrapper).toBe('etchw_dlg_backdrop');
+    const copied = out.files?.[0].text ?? '';
+    // The game's windowType parser refuses a nested eu3dialogtype and shieldtype (etch#118).
+    expect(copied).toContain('\t\twindowType = { name = "etch_dlg" iconType = { name = "bg" }  ');
+    expect(copied).not.toContain('LeftShield');
+    // Only the dialog's own shields go, and other dialogs of the file stay as they are.
+    expect(copied).toContain('shieldtype = { name = "kept" }');
+    expect(copied).toContain(
+      'eu3dialogtype = { name = "etch_other" shieldtype = { name = "theirs" } }',
+    );
+    expect(out.diagnostics.map((d) => [d.code, d.severity, text.slice(d.start, d.end)])).toEqual([
+      ['wrapped-shield', 'information', 'shieldtype'],
+    ]);
+    // What the copy writer changed maps back to where it stood.
+    const at = copied.indexOf('windowType = { name = "etch_dlg"');
+    expect(out.files && originalOffset(out.files[0], at)).toBe(text.indexOf('eu3dialogtype'));
   });
 
   it('places the wrapped window at its show position, where the offline renderer draws it', () => {

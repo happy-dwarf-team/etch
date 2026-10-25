@@ -37,11 +37,17 @@ async function readTga(file: string): Promise<Tga> {
   return { width, height, pixels: bytes.subarray(18) };
 }
 
-/** The windows #16 named for H1: plain, `if_resolution` with `CENTER`, a same-file `scrollbartype`. */
+/**
+ * The windows #16 named for H1: plain, `if_resolution` with `CENTER`, a same-file `scrollbartype`;
+ * and two dialogs, which the copy wraps as windows without their shields (etch#118): a `CENTER`
+ * one and the corpus's.
+ */
 const WINDOWS = [
   { file: 'ages_view.gui', window: 'ages_view', reloadOriginal: true },
   // core.gui holds the types the main menu itself draws with: its own reload is left out.
   { file: 'core.gui', window: 'console_wnd', reloadOriginal: false },
+  { file: 'eu3dialog.gui', window: 'DefaultDialog', reloadOriginal: true },
+  { file: 'countrydiplomacyview.gui', window: 'DeclareWarDialog', reloadOriginal: true },
   // Last: once goto_box has been open, its edit box's caret blinks at (201, 208) in every later
   // capture, also after the window is closed (etch#119).
   { file: 'goto.gui', window: 'goto_box', reloadOriginal: true },

@@ -22,6 +22,9 @@
  * its `show_position`, but the wrapped window is nested and stays at its `position` (in the live
  * run `countrydiplomacyview` stayed at x = −600, off the screen), while the offline renderer lays
  * a window out at its `show_position`.
+ *
+ * Another comes from the game's parser (etch#118): a `windowType` cannot hold an `eu3dialogtype`,
+ * so a wrapped dialog is written as a `windowType`, without its `shieldtype` children.
  */
 import type { Screen } from '../model/gui.ts';
 import { readGuiFile, type Widget } from '../model/gui.ts';
@@ -268,6 +271,8 @@ export function writePreviewCopy(request: PreviewCopyRequest): PreviewCopy {
   }
 
   const shownAt = showPositionEdit(request.text, window.node.value.entries);
+  const dialog =
+    keyOf(window.node) === 'eu3dialogtype' ? dialogEdits(window.node, diagnostics) : [];
   const file = readGuiFile(parsed);
   const references = registryReferences(file.definitions, names);
   const eol = request.text.includes('\r\n') ? '\r\n' : '\n';
@@ -281,6 +286,7 @@ export function writePreviewCopy(request: PreviewCopyRequest): PreviewCopy {
     }
     for (const n of references) copyEdits.push(prefixed(n, prefix));
     if (shownAt !== undefined) copyEdits.push(shownAt);
+    copyEdits.push(...dialog);
     const [head, tail] = wrapperText(wrapper, colour, request.screen, eol);
     copyEdits.push(
       { start: window.node.start, end: window.node.start, text: head },
@@ -325,6 +331,32 @@ function showPositionEdit(text: string, entries: readonly EntryNode[]): Edit | u
     end: position.value.end,
     text: text.slice(shown.value.start, shown.value.end),
   };
+}
+
+/**
+ * The edits that let the wrapper hold a dialog (etch#118): the game reads a `windowType`'s
+ * children with the `windowType` parser, which refuses `eu3dialogtype` and `shieldtype` ("Unexpected
+ * token") and leaves the block out. The dialog is therefore written as a `windowType`, which draws
+ * the same pixels at the same place, and its own `shieldtype` children are left out; in the main
+ * menu the game draws nothing for them.
+ */
+function dialogEdits(node: PropertyNode, diagnostics: ModelDiagnostic[]): Edit[] {
+  const edits: Edit[] = [{ start: node.key.start, end: node.key.end, text: 'windowType' }];
+  for (const entry of node.value?.kind === 'block' ? node.value.entries : []) {
+    if (entry.kind !== 'property' || keyOf(entry) !== 'shieldtype') continue;
+    edits.push({ start: entry.start, end: entry.end, text: '' });
+    diagnostics.push(
+      diagnostic(
+        'information',
+        'wrapped-shield',
+        entry.key,
+        'The game host leaves out this shieldtype: inside the backdrop wrapper the dialog is ' +
+          'written as a windowType, which cannot hold one, and in the main menu the game draws ' +
+          'nothing for a dialog’s shield (etch#118).',
+      ),
+    );
+  }
+  return edits;
 }
 
 /**

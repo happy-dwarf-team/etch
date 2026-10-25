@@ -208,8 +208,8 @@ What the live runs of etch#50 found:
   `position` the value of its `show_position`, where the offline renderer lays
   it out, and the window then draws in the first Present after the open.
 - **`eu3dialogtype`.** Nested in the wrapper, `GiftDiplomacyDialog` draws
-  nothing anywhere on the screen; opened on its own it draws. Until the wrapper
-  handles dialogs the preview shows a notice for them instead of a job.
+  nothing anywhere on the screen; opened on its own it draws. etch#118 found
+  why; see "Dialogs" below.
 - **`reloadtexture`** answered "Reload failed" in the main menu at once
   (under 0.01 ms) for `gfx//interface//country_diplomacy_view_bg_top.dds` and
   every other spelling tried, and the window kept the old pixels. etch#117
@@ -293,9 +293,65 @@ What the runs also showed:
   the first `goto_box` opens, the copy's opaque backdrop hides what lies
   under the wrapper, and `goto_box` comes last.
 
+etch#118 added two dialogs to the check, `DefaultDialog` of `eu3dialog.gui`
+(`CENTER`, with a `backGround`) and the corpus's `DeclareWarDialog`, which
+the copy wraps as windows without their shields (see "Dialogs"). In its run
+(2026-10-25, the same machine and builds, over black) the five windows passed:
+
+| Window | Pixels the copy draws (opaque / translucent) | Over the black backdrop | Reloaded original |
+| --- | --- | --- | --- |
+| `ages_view` | 430,668 / 21,701 | equal | equal |
+| `console_wnd` | 2,273 / 191,661 | equal | |
+| `DefaultDialog` | 24,145 / 135,902 | equal | equal |
+| `DeclareWarDialog` | 430,665 / 18,622 | 45 pixels off by 1 | equal |
+| `goto_box` | 99,255 / 5,845 | 5 pixels off by 1 | 408 pixels darker, as before |
+
 Not checked: other resolutions and the other `if_resolution` branch (H2 of
-etch#16), modded playsets, windows with a `show_position`, whose original the
-console leaves at `position` (etch#50), and `eu3dialogtype` (etch#118).
+etch#16), modded playsets, and windows with a `show_position`, whose original
+the console leaves at `position` (etch#50).
+
+## Dialogs
+
+Why an `eu3dialogtype` nested in the wrapper drew nothing, and how the game
+host shows dialogs (etch#118; the game's code read in the EU4 engine lab, then
+four live runs on 2026-10-25, EU4 1.37.5 `9AD3EFE1…D771A`, Anvil 1.3.0,
+Bellows 0.9.0, vanilla, 3440×1440).
+
+Verified:
+
+- **The parser refuses it.** Each block inside a `windowType` goes to the
+  `windowType` definition's keyword handler, a switch over the engine's
+  tokens. `eu3dialogtype` and `shieldtype` are tokens the game adds, which
+  that switch does not know, so it reports "Unexpected token" and leaves the
+  block out. Only the `eu3dialogtype` definition's own handler adds
+  `shieldtype`; nothing adds `eu3dialogtype` inside a window. Vanilla agrees:
+  its 54 dialogs are all top-level, and its 70 shields all lie directly in a
+  dialog. Live, every reload of a copy with the dialog nested wrote
+  `Parsing Error. File: "interface/etch_countrydiplomacyview.gui", Error:
+  Unexpected token: eu3dialogtype` to `error.log`: the wrapper held only the
+  backdrop.
+- **A dialog drawn as a window.** With the wrapped dialog's key written as
+  `windowType`, the copy drew `GiftDiplomacyDialog`, `DeclareWarDialog` and
+  `DefaultDialog` at the place where `window open` draws the original, and
+  laid over the menu gave the original's pixels within 1 per channel (30, 45
+  and 0 pixels off by 1). The dialog's shields then wrote "Unexpected token:
+  shieldtype"; without them the image was the same and `error.log` stayed
+  empty, because in the main menu the game draws nothing for a dialog's
+  shield (it shows a country's flag).
+- **The rest of the dialog class.** In the code, a dialog differs from a
+  window in its constructor (it creates its shields, keeps them by name and
+  sets its position) and in its show and hide, which also show and hide the
+  shields and hide `LeftStar` and `RightStar` unless two flags are set. In
+  `DefaultDialog` both stars drew in the original and in the copy.
+
+The copy writer therefore writes a wrapped dialog as a `windowType` and
+leaves out its own `shieldtype` children, each reported as information
+(`wrapped-shield`). Other dialogs of the file stay as they are. In the jobs
+test the dialog's job took 61 ms and its image showed 82 ms after the change
+(573 × 580 crop).
+
+Not checked: dialogs of mods, a dialog's shield outside the main menu, and the
+flags that keep the stars.
 
 ## Texture reload
 

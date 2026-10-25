@@ -79,7 +79,7 @@ function copyAll(root: string): Tally {
           c.text.slice(0, wrapper.node.start) +
           c.text.slice(inner.node.start, inner.node.end) +
           c.text.slice(wrapper.node.end);
-        expect(unwrapped.replaceAll(prefix, '')).toBe(atShowPosition(text, definition));
+        expect(unwrapped.replaceAll(prefix, '')).toBe(asWrapped(text, definition));
         expect(c.bytes.length).toBe(c.text.length + (bom ? 3 : 0));
         if (c.colour === 'white') {
           // Prefixes beyond the top-level names (the wrapper's included) and the inner window's.
@@ -92,24 +92,39 @@ function copyAll(root: string): Tally {
   return tally;
 }
 
-/** The original with the window's `position` set to its `show_position`, as the copy writes it. */
-function atShowPosition(text: string, window: Widget): string {
+/**
+ * The original as the copy writes the wrapped window: its `position` set to its `show_position`,
+ * and a dialog written as a `windowType` without its `shieldtype` children (etch#118).
+ */
+function asWrapped(text: string, window: Widget): string {
   const block = window.node.value;
   if (block?.kind !== 'block') return text;
+  const edits: { start: number; end: number; text: string }[] = [];
   let position: PropertyNode | undefined;
   let shown: PropertyNode | undefined;
+  const dialog = window.kind === 'eu3dialogtype';
+  if (dialog)
+    edits.push({ start: window.node.key.start, end: window.node.key.end, text: 'windowType' });
   for (const entry of block.entries) {
     if (entry.kind !== 'property' || entry.value === undefined) continue;
     const key = entry.key.text.toLowerCase();
     if (key === 'position') position = entry;
     else if (key === 'show_position') shown = entry;
+    else if (dialog && key === 'shieldtype')
+      edits.push({ start: entry.start, end: entry.end, text: '' });
   }
-  if (position?.value === undefined || shown?.value === undefined) return text;
-  return (
-    text.slice(0, position.value.start) +
-    text.slice(shown.value.start, shown.value.end) +
-    text.slice(position.value.end)
-  );
+  if (position?.value !== undefined && shown?.value !== undefined) {
+    edits.push({
+      start: position.value.start,
+      end: position.value.end,
+      text: text.slice(shown.value.start, shown.value.end),
+    });
+  }
+  let out = text;
+  for (const edit of edits.sort((a, b) => b.start - a.start)) {
+    out = out.slice(0, edit.start) + edit.text + out.slice(edit.end);
+  }
+  return out;
 }
 
 describe.skipIf(gamePath === undefined)('preview copies of the installed game', () => {

@@ -1,6 +1,6 @@
 // Local only, part of the game host run (game-host.ts): preview jobs against the real game host
 // (spec sections 4 and 7, etch#50). Measures the first image and warm edits, and reports what a
-// texture saved to disk and a saved localisation file do; a nested eu3dialogtype gets a notice.
+// texture saved to disk and a saved localisation file do, and shows an eu3dialogtype.
 // The images are game art: they are read here and never written outside the test VS Code's
 // storage.
 import * as assert from 'node:assert/strict';
@@ -292,17 +292,26 @@ export async function testGameHostJobs(
   });
   await unprobed;
 
-  // A nested eu3dialogtype (etch#47): in etch#50's live runs the backdrop wrapper hid it (the
-  // same dialog opened on its own drew), so the preview says so instead of running a job.
+  // An eu3dialogtype (etch#118): the copy wraps it as a windowType without its shields, which the
+  // game's windowType parser refuses inside the wrapper, and the game draws it.
+  const dialogShown = nextImage(api);
   await cursorAt(guiEditor, 'name = "GiftDiplomacyDialog"');
-  // The selection's event can come after a turn of the event loop.
-  for (let i = 0; i < 100 && preview.current?.window.name !== 'GiftDiplomacyDialog'; i++) {
-    await new Promise((resolve) => setTimeout(resolve, 20));
-  }
-  await preview.idle();
+  const dialog = await dialogShown;
+  console.log(`[etch] eu3dialogtype GiftDiplomacyDialog, ${describe(dialog)}`);
+  assert.equal(preview.current?.window.name, 'GiftDiplomacyDialog');
+  const dialogImage = await readTga(dialog.outcome.image.path);
+  const dialogAlpha = alphaCounts(dialogImage);
+  console.log(`[etch] dialog alpha ${JSON.stringify(dialogAlpha)}`);
+  assert.ok(dialogAlpha.opaque > 100_000, 'the game host draws the dialog');
+  const dialogDiagnostics = vscode.languages.getDiagnostics(guiEditor.document.uri);
   assert.ok(
-    preview.notices.some((n) => n.message.includes('eu3dialogtype')),
-    `the preview says the game host cannot show the dialog: ${JSON.stringify(preview.notices)}`,
+    !gameDiagnostics(guiEditor.document.uri).some((d) => d.code === 'game-error-log'),
+    `the game reads the dialog's copy without an error: ${JSON.stringify(gameDiagnostics(guiEditor.document.uri))}`,
+  );
+  assert.equal(
+    dialogDiagnostics.filter((d) => d.code === 'wrapped-shield').length,
+    2,
+    'the two shields the copy leaves out are reported',
   );
 }
 
