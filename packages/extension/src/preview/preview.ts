@@ -20,7 +20,6 @@ import {
   parseScript,
   previewCrop,
   readGuiFile,
-  showAnimationMs,
   textureReloadNames,
   widgetAt,
   widgetHoverText,
@@ -63,9 +62,6 @@ export const CHOOSE_RESOLUTION = 'etch.choosePreviewResolution';
 
 /** Where the monitor's native resolution is kept between sessions, so a cold open knows it. */
 const NATIVE_SCREEN_KEY = 'etch.nativeScreen';
-
-/** What a job waits after a window's show animation, in milliseconds. */
-const SETTLE_MARGIN_MS = 50;
 
 /** The context key that is true while the preview is open. */
 export const PREVIEW_OPEN_CONTEXT = 'etch.previewOpen';
@@ -1165,12 +1161,9 @@ export class Preview implements PreviewApi, vscode.Disposable {
       return copy.diagnostics;
     }
     if (this.hostProblem?.severity === 'warning') this.setHostProblem(undefined);
-    const animation = showAnimationMs(file, window, screen);
     const submitted = host.submit({
       copies: copy.files,
       crop,
-      // Two frames more than the animation: the game starts it in the frame after the open.
-      settleMs: animation > 0 ? animation + SETTLE_MARGIN_MS : 0,
       textures: [...this.hostTextures],
       localisation: this.hostLocalisation,
       requestedAt: this.render?.requestedAt ?? Date.now(),

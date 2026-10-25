@@ -7,7 +7,14 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { decodeGameText, parseScript, readGuiFile, writePreviewCopy } from '../src/index.ts';
+import {
+  decodeGameText,
+  parseScript,
+  readGuiFile,
+  writePreviewCopy,
+  type PropertyNode,
+  type Widget,
+} from '../src/index.ts';
 
 const gamePath = process.env['ETCH_GAME_PATH'];
 const modPaths = (process.env['ETCH_MOD_PATHS'] ?? '').split(';').filter((p) => p.trim() !== '');
@@ -72,7 +79,7 @@ function copyAll(root: string): Tally {
           c.text.slice(0, wrapper.node.start) +
           c.text.slice(inner.node.start, inner.node.end) +
           c.text.slice(wrapper.node.end);
-        expect(unwrapped.replaceAll(prefix, '')).toBe(text);
+        expect(unwrapped.replaceAll(prefix, '')).toBe(atShowPosition(text, definition));
         expect(c.bytes.length).toBe(c.text.length + (bom ? 3 : 0));
         if (c.colour === 'white') {
           // Prefixes beyond the top-level names (the wrapper's included) and the inner window's.
@@ -83,6 +90,26 @@ function copyAll(root: string): Tally {
     }
   }
   return tally;
+}
+
+/** The original with the window's `position` set to its `show_position`, as the copy writes it. */
+function atShowPosition(text: string, window: Widget): string {
+  const block = window.node.value;
+  if (block?.kind !== 'block') return text;
+  let position: PropertyNode | undefined;
+  let shown: PropertyNode | undefined;
+  for (const entry of block.entries) {
+    if (entry.kind !== 'property' || entry.value === undefined) continue;
+    const key = entry.key.text.toLowerCase();
+    if (key === 'position') position = entry;
+    else if (key === 'show_position') shown = entry;
+  }
+  if (position?.value === undefined || shown?.value === undefined) return text;
+  return (
+    text.slice(0, position.value.start) +
+    text.slice(shown.value.start, shown.value.end) +
+    text.slice(position.value.end)
+  );
 }
 
 describe.skipIf(gamePath === undefined)('preview copies of the installed game', () => {

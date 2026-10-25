@@ -4,8 +4,6 @@ import {
   parseScript,
   previewCrop,
   readGfxFile,
-  readGuiFile,
-  showAnimationMs,
   textureReloadNames,
 } from '../src/index.ts';
 
@@ -70,26 +68,5 @@ describe('textureReloadNames', () => {
     expect(textureReloadNames(index, 'gfx/interface/unused.tga')).toEqual([
       'gfx/interface/unused.tga',
     ]);
-  });
-});
-
-describe('showAnimationMs', () => {
-  const file = readGuiFile(
-    parseScript(
-      [
-        'guiTypes = {',
-        '\twindowType = { name = "a" position = { x=-600 y=140 } show_position = { x=0 y=140 } animation_time = 300 }',
-        '\twindowType = { name = "b" position = { x=0 y=0 } animation_time = 300 }',
-        '\twindowType = { name = "c" show_position = { x=0 y=0 } }',
-        '}',
-      ].join('\n'),
-    ),
-  );
-
-  it('is the animation time of a window that moves to its show position', () => {
-    const [a, b, c] = file.definitions;
-    expect(a && showAnimationMs(file, a, screen)).toBe(300);
-    expect(b && showAnimationMs(file, b, screen)).toBe(0);
-    expect(c && showAnimationMs(file, c, screen)).toBe(0);
   });
 });
