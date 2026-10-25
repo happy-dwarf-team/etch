@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.3.0](https://github.com/happy-dwarf-team/etch/compare/v0.2.0...v0.3.0) (2026-10-25)
+
+
+### Features
+
+* **core:** write the preview copy with the backdrop ([#107](https://github.com/happy-dwarf-team/etch/issues/107)) ([97965e5](https://github.com/happy-dwarf-team/etch/commit/97965e530a90d6051347cc69507730233f0b74c7))
+* **extension:** create and remove the game host install ([#110](https://github.com/happy-dwarf-team/etch/issues/110)) ([600f67f](https://github.com/happy-dwarf-team/etch/commit/600f67fc66e39b8ec9bfb2a8af3321fbbffb5e25)), closes [#48](https://github.com/happy-dwarf-team/etch/issues/48)
+* **extension:** restart and watch the game host ([#121](https://github.com/happy-dwarf-team/etch/issues/121)) ([17a906d](https://github.com/happy-dwarf-team/etch/commit/17a906d50d622e293e2e9478c69635a71169e95c))
+* **extension:** start, stop and own the game host process ([#112](https://github.com/happy-dwarf-team/etch/issues/112)) ([6567ddd](https://github.com/happy-dwarf-team/etch/commit/6567ddde967b8ebc8f9f076def16f0c31b9284e7)), closes [#49](https://github.com/happy-dwarf-team/etch/issues/49)
+* **plugin:** add Etch's Anvil plugin with the session pipe ([#109](https://github.com/happy-dwarf-team/etch/issues/109)) ([7a3ef25](https://github.com/happy-dwarf-team/etch/commit/7a3ef25a5772bd9e58b8469807d03d2fc9ddd8dd)), closes [#45](https://github.com/happy-dwarf-team/etch/issues/45)
+* preview eu3dialogtype windows in the game host ([#129](https://github.com/happy-dwarf-team/etch/issues/129)) ([1dc3ce1](https://github.com/happy-dwarf-team/etch/commit/1dc3ce1cd57a0860aa4e68c8e4a86d4977756ec1)), closes [#118](https://github.com/happy-dwarf-team/etch/issues/118)
+* report diagnostics from the game ([#120](https://github.com/happy-dwarf-team/etch/issues/120)) ([9d2e1b5](https://github.com/happy-dwarf-team/etch/commit/9d2e1b572c6bc02d1ddd84d4bee0db9db39aa13c))
+* run preview jobs with dual capture ([#115](https://github.com/happy-dwarf-team/etch/issues/115)) ([95ed054](https://github.com/happy-dwarf-team/etch/commit/95ed054c9b2ff236c45308892fb8a9e794d05f0d))
+
+
+### Bug Fixes
+
+* close the CodeQL polynomial ReDoS and escaping alerts ([#124](https://github.com/happy-dwarf-team/etch/issues/124)) ([97769e9](https://github.com/happy-dwarf-team/etch/commit/97769e9e8a1363046c9e5d316c7272557d7dc96a))
+* **extension:** start the Windows helper without module discovery ([#114](https://github.com/happy-dwarf-team/etch/issues/114)) ([2587c38](https://github.com/happy-dwarf-team/etch/commit/2587c388b2da4d31c2d1140ad7ac4bddd5568274))
+* **plugin:** reload textures once the wrapper holds them ([#127](https://github.com/happy-dwarf-team/etch/issues/127)) ([fc1f821](https://github.com/happy-dwarf-team/etch/commit/fc1f821510daa390af0aec0287d40b4d6c585b1c))
+
+
+### Build
+
+* **pins:** pin anvil and bellows and package them with their notices ([#106](https://github.com/happy-dwarf-team/etch/issues/106)) ([efb6209](https://github.com/happy-dwarf-team/etch/commit/efb6209c3450efa3140446dc43df6e920656c719))
+
 ## [0.2.0](https://github.com/happy-dwarf-team/etch/compare/v0.1.0...v0.2.0) (2026-10-24)
 
 
