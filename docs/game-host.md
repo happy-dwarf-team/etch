@@ -446,6 +446,51 @@ first window of the root's file, 321–582 ms. Why the second is slower was not
 looked into. Restarts were measured in etch#51 and etch#118 (a `.gfx` save:
 ready 14.7–18.5 s).
 
+## A playset's windows
+
+Every window a report playset's mods override opens in both backends (spec
+section 8, etch#55). `packages/extension/test/playset-windows.ts` checks it for
+a playset of the corpus manifest: `ETCH_PLAYSET_CHECK=<playset>` beside
+`ETCH_GAME_PATH` and `ETCH_CORPUS_PATH`, and `ETCH_GAME_HOST_PATH` for the game
+host as well (`pnpm --filter etch test`; `ETCH_PLAYSET_FILES` limits it to some
+files). It copies every `.gui` file a mod of the playset wins over the game,
+unchanged, into a test mod after the playset, so that previewing them never
+changes the playset, and previews every top-level definition with the cursor
+on it: first in the offline renderer, then each `windowType` and
+`eu3dialogtype` in the game host. It records whether the webview drew it,
+texture problems, the file's Problems panel, and, from the game host, the
+image or the job's failure or the preview's notice, the `error.log` lines of
+the job, the pixels the image draws and any restart. The report goes to
+`<corpus>/playset-windows/<playset>.json` and `.md`.
+
+**Anbennar** (2026-10-26, EU4 1.37.5 `9AD3EFE1…D771A`, Anvil 1.3.0, Bellows
+0.9.0, 3440×1440; Anbennar, Proper 2K UI Enhanced and P2KE Patch - Anbennar at
+the manifest's pins, read in place). The mods win 162 `.gui` files (99 of
+Proper 2K UI Enhanced, 63 of the patch, none of Anbennar's own), with 979
+top-level definitions. Nothing crashed in either backend:
+
+- **Offline renderer:** all 979 drawn, no texture problem, in 76 s.
+- **Game host:** of the 796 windows `window open` can show, 781 gave an image
+  and 15 a notice that no part of the window is on the screen (list entries
+  and tutorial markers placed off it); no job failed and the game host never
+  restarted. It got ready 35.9 s and 40.4 s after it was created in two runs,
+  more than twice vanilla's time; a job took 70 ms at the median, 126 ms at
+  the 95th percentile and 549 ms at most (`provinceview`). The 183 other
+  top-level definitions are kinds the game host cannot open.
+- **`countryreformview.gui`**, with `gov_view_reform_level_entry_4` twice at
+  top level, is reported and its windows open in the game host: the copy
+  writes the name once, and no job reloads the original.
+- **What the game said:** 22 jobs wrote `error.log` lines, all about the mods'
+  own files: `button1` and `button2` twice in the patch's
+  `countrydecisionsview_activepolicy`, `format` in an edit box of Proper 2K UI
+  Enhanced's `settings.gui`, sprites and fonts the files name but no mod
+  defines, a texture with a compression the game refuses.
+- **Code-filled windows:** 38 of the game host's images draw no pixel (list
+  entries, bars and grids the code fills, such as `hre_members_grid` and the
+  government mechanics' `*_bar` windows), and 34 `windowType` definitions
+  draw nothing offline. Their previews show what the file draws, which is
+  nothing until the game's code fills them.
+
 ## The diff view
 
 The diff view (spec section 5, etch#54) was checked live once
