@@ -104,9 +104,9 @@ async function cursorAt(editor: vscode.TextEditor, text: string): Promise<void> 
 export interface JobFixture {
   /** The test mod's copy of `countrydiplomacyview.gui`. */
   readonly gui: string;
-  /** The test mod's copy of the window's top background texture. */
+  /** The test mod's copy of the background of the window's nested `vassal_select_window`. */
   readonly texture: string;
-  /** The test mod's localisation file, `HEADER_DIPLOMACY` in it. */
+  /** The test mod's localisation file, `BACK` (its back button) in it. */
   readonly localisation: string;
 }
 
@@ -195,17 +195,16 @@ export async function testGameHostJobs(
   const after = await readTga(textured.outcome.image.path);
   const changedPixels = differing(before, after);
   console.log(`[etch] ${String(changedPixels)} pixels changed with the texture`);
-  // The job reloads the texture once the black wrapper holds it (etch#117). The window's own
-  // spelling reloads; countrygovernmentview.gfx's spelling of the same file is not held, and the
-  // Problems panel leaves it out.
+  // The job reloads the texture once the black wrapper holds it (etch#117).
   assert.ok(
     textured.outcome.commands.some(
       (c) => c.line.startsWith('reloadtexture ') && c.success && !/fail/i.test(c.text),
     ),
     'the game reloaded the texture',
   );
-  // The test mod's texture overrides the base game's, and the game host draws the base game's
-  // (etch#126): the pixels are reported, not asserted.
+  // The test mod's texture overrides the base game's, so the game host draws the saved file
+  // (etch#126).
+  assert.ok(changedPixels > 0, "the saved texture reached the game host's image");
   assert.ok(
     !gameDiagnostics(editor.document.uri).some(
       (d) => d.code === 'game-console-answer' && d.message.includes('texture'),
