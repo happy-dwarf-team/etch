@@ -8,9 +8,10 @@ import * as vscode from 'vscode';
 export const BACKDROP = '#808080';
 
 /**
- * The preview's page: a toolbar (previewed window, backend switch, resolution, pin), notices, the canvas the
- * webview script (`dist/webview.js`, from `webview/main.ts`) draws into, and the outlines of the
- * hovered and the highlighted widget over it. Textures are fetched from the game and mod folders
+ * The preview's page: a toolbar (previewed window, backend switch, diff view, resolution, pin),
+ * notices, the canvas the webview script (`dist/webview.js`, from `webview/main.ts`) draws into,
+ * the diff view's canvas and legend (spec section 5), and the outlines of the hovered and the
+ * highlighted widget over them. Textures are fetched from the game and mod folders
  * through webview URIs, so `connect-src` allows them.
  */
 export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): string {
@@ -57,14 +58,20 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
   #notices li.error { border-color: var(--vscode-notificationsErrorIcon-foreground); }
   label { white-space: nowrap; }
   main { flex: 1; min-height: 0; position: relative; }
-  /* Scaled down to fit, keeping its aspect ratio, and centred. */
+  /* Scaled down to fit, keeping its aspect ratio, and centred; the diff view lies on the screen. */
   canvas {
     position: absolute; inset: 8px; margin: auto; max-width: calc(100% - 16px); max-height: calc(100% - 16px);
     background: ${BACKDROP};
   }
   /* The game host's last image while it restarts (spec section 4). */
   canvas.stale { opacity: 0.5; filter: grayscale(1); }
-  canvas[hidden], .box[hidden], #tip[hidden] { display: none; }
+  #diffview { pointer-events: none; }
+  canvas[hidden], .box[hidden], #tip[hidden], #legend[hidden] { display: none; }
+  #legend { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding: 4px 8px; }
+  #legend .swatch {
+    display: inline-block; width: 10px; height: 10px; margin-right: 4px; vertical-align: -1px;
+    border: 1px solid var(--vscode-panel-border, transparent);
+  }
   .box { position: absolute; pointer-events: none; box-sizing: border-box; }
   #hover { border: 1px dashed var(--vscode-editorCursor-foreground, #fff); }
   #selected { border: 2px solid var(--vscode-focusBorder, #0af); }
@@ -87,12 +94,15 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
       <option value="game-host">Game host</option>
     </select>
   </label>
+  <button id="diff" type="button" aria-pressed="false" disabled>Diff</button>
   <button id="resolution" type="button">1920×1080</button>
   <button id="pin" type="button" aria-pressed="false" disabled>Pin</button>
 </header>
 <ul id="notices"></ul>
+<div id="legend" hidden></div>
 <main>
   <canvas id="screen" hidden></canvas>
+  <canvas id="diffview" hidden></canvas>
   <div id="selected" class="box" hidden></div>
   <div id="hover" class="box" hidden></div>
   <div id="tip" hidden></div>

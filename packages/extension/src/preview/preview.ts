@@ -2,7 +2,8 @@
 // follows the unsaved buffer of every game text file of the playset on each change, and publishes
 // the model's diagnostics in the Problems panel. The extension host parses, models and lays out;
 // the webview draws the draw list with WebGL2 (ADR 0001). Textures and fonts changed on disk are
-// read again, and the preview reopens on the same window after a window reload.
+// read again, and the preview reopens on the same window after a window reload. With the game host,
+// the diff view shows its image's difference from the offline renderer's (spec section 5).
 
 import { dirname } from 'node:path';
 import * as vscode from 'vscode';
@@ -51,6 +52,8 @@ import {
 import type { WidgetNavigation } from '../navigation.ts';
 import { previewHtml } from './html.ts';
 import type {
+  DiffState,
+  DiffSummary,
   HostMessage,
   Notice,
   Point,
@@ -113,6 +116,8 @@ export interface PreviewPaint {
   readonly problems: readonly TextureFailure[];
   readonly skipped: readonly number[];
   readonly pixels?: readonly (readonly number[])[];
+  /** What the diff view found, when the paint showed it. */
+  readonly diff?: DiffSummary;
   /** When the pixels were drawn, in ms since the Unix epoch; for budgets (spec section 7). */
   readonly at: number;
   /** Why nothing was drawn, such as a webview without WebGL2. */
@@ -161,6 +166,13 @@ export interface PreviewApi {
    * and a start that failed is tried again.
    */
   setBackend(backend: PreviewBackend): void;
+  /** The diff view's toggle, and why it cannot show now (spec section 5). */
+  readonly diff: DiffState;
+  /**
+   * Turns the diff view on or off. It shows over the game host's image while both backends use
+   * the same resolution and playset.
+   */
+  setDiffView(on: boolean): void;
   /** Draws the current render again and reads the straight RGBA of points of the screen. */
   probe(points: readonly Point[]): Promise<PreviewPaint>;
   /** Resolves when no render runs or waits. */
@@ -199,6 +211,10 @@ interface HostJobContext {
   readonly copies: readonly PreviewCopyFile[];
   /** The model's diagnostics of that text, set when the render publishes them. */
   offline: readonly ModelDiagnostic[];
+  /** The offline renderer's draw list of the same render, which the diff view compares with. */
+  readonly drawList: DrawList;
+  /** The playset the job ran with (`playsetKey`). */
+  readonly playset: string;
 }
 
 /** The game's report of the last job (spec section 10), for the text it was made from. */
@@ -211,6 +227,10 @@ interface GameReport {
 /** The game host's image the preview shows, as posted to the webview. */
 interface HostImage {
   readonly draw: Extract<HostMessage, { type: 'draw' }>;
+  /** Its diff view, with the offline renderer's draw list of the render the job answered. */
+  readonly diff: Extract<HostMessage, { type: 'diff' }> | undefined;
+  /** The playset it was drawn with (`playsetKey`). */
+  readonly playset: string;
   readonly url: string;
   readonly screen: Screen;
   /** The game process that drew it; after a restart it is stale until the new one draws. */
@@ -240,11 +260,14 @@ export class Preview implements PreviewApi, vscode.Disposable {
   private panel: vscode.WebviewPanel | undefined;
   private roots: string | undefined;
   private backendValue: PreviewBackend = 'offline';
+  /** The diff view's toggle; it shows only while it is not blocked (`diffBlocker`). */
+  private diffOn = false;
   /** The preview switched to the game host and has not handed it a playset yet. */
   private hostStartPending = false;
   /** What the last `show` was given, to show again when the game host's state changes. */
   private lastShown:
-    Omit<ViewState, 'pinned' | 'pinnable' | 'backend' | 'resolution' | 'stale'> | undefined;
+    | Omit<ViewState, 'pinned' | 'pinnable' | 'backend' | 'resolution' | 'stale' | 'diff'>
+    | undefined;
   private ready = false;
   /** A render was skipped while the panel was hidden. */
   private stale = false;
@@ -465,6 +488,16 @@ export class Preview implements PreviewApi, vscode.Disposable {
     if (this.lastShown !== undefined) this.show(this.lastShown);
   }
 
+  get diff(): DiffState {
+    const blocked = this.diffBlocker();
+    return { on: this.diffOn, ...(blocked === undefined ? {} : { blocked }) };
+  }
+
+  setDiffView(on: boolean): void {
+    this.diffOn = on;
+    if (this.lastShown !== undefined) this.show(this.lastShown);
+  }
+
   /**
    * Hands the game host the preview's playset and display after a switch to it, which starts it
    * (again after a failed start or a stop), once the preview has a playset with a game folder.
@@ -505,7 +538,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
 
   probe(points: readonly Point[]): Promise<PreviewPaint> {
     const message = this.lastDraw;
-    if (!this.panel || message?.type !== 'draw') {
+    if (!this.panel || (message?.type !== 'draw' && message?.type !== 'diff')) {
       return Promise.reject(new Error('the preview has drawn nothing yet'));
     }
     const id = ++this.renderCount;
@@ -705,7 +738,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
     // last image stays until its next one comes.
     const hostImage = this.shownHostImage(screen);
     if (hostImage === undefined) this.post({ type: 'draw', id, list: drawList });
-    else if (this.lastDraw !== hostImage.draw) this.post(hostImage.draw);
+    else this.showHostImage(hostImage);
     const copyDiagnostics =
       host === undefined
         ? []
@@ -717,6 +750,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
             file,
             window,
             layout,
+            drawList,
             id,
           });
     this.remember({
@@ -949,10 +983,14 @@ export class Preview implements PreviewApi, vscode.Disposable {
   }
 
   private show(
-    state: Omit<ViewState, 'pinned' | 'pinnable' | 'backend' | 'resolution' | 'stale'>,
+    state: Omit<ViewState, 'pinned' | 'pinnable' | 'backend' | 'resolution' | 'stale' | 'diff'>,
   ): void {
     this.lastShown = state;
     this.useGameHost();
+    // Whether the diff view can show depends on what the state shows.
+    if (this.hostImage !== undefined && this.showsHostImage(this.hostImage)) {
+      this.showHostImage(this.hostImage);
+    }
     const { screen, source } = this.resolution;
     const value = resolutionValue();
     let full: ViewState = {
@@ -974,6 +1012,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
       backend: this.backendValue,
       resolution: { text: formatResolution(screen), source },
       stale: this.hostImageStale(),
+      diff: this.diff,
     };
     if (this.backendValue === 'game-host' && this.gameHost !== undefined) {
       full = {
@@ -981,6 +1020,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
         notices: [
           gameHostNotice(this.gameHost.state, this.session),
           ...this.hostNotices(),
+          ...this.diffNotices(),
           ...full.notices,
         ],
       };
@@ -997,7 +1037,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
   }
 
   private post(message: HostMessage): void {
-    if (message.type === 'draw') this.lastDraw = message;
+    if (message.type === 'draw' || message.type === 'diff') this.lastDraw = message;
     if (this.ready) void this.panel?.webview.postMessage(message);
   }
 
@@ -1034,6 +1074,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
           skipped: message.skipped,
           at: message.at,
           ...(message.pixels === undefined ? {} : { pixels: message.pixels }),
+          ...(message.diff === undefined ? {} : { diff: message.diff }),
         });
         break;
       case 'failed':
@@ -1056,6 +1097,9 @@ export class Preview implements PreviewApi, vscode.Disposable {
         this.setBackend(message.backend);
         if (this.lastState)
           void this.panel?.webview.postMessage({ type: 'state', state: this.lastState });
+        break;
+      case 'diff':
+        this.setDiffView(message.on);
         break;
     }
   }
@@ -1228,10 +1272,74 @@ export class Preview implements PreviewApi, vscode.Disposable {
   private hostImageStale(): boolean {
     const image = this.hostImage;
     const state = this.gameHost?.state;
-    if (image === undefined || this.backendValue !== 'game-host' || this.lastDraw !== image.draw) {
+    if (image === undefined || this.backendValue !== 'game-host' || !this.showsHostImage(image)) {
       return false;
     }
     return state?.status !== 'ready' || state.pid !== image.pid;
+  }
+
+  /** Whether the webview was last given this game host image, or its diff view. */
+  private showsHostImage(image: HostImage): boolean {
+    return (
+      this.lastDraw === image.draw || (image.diff !== undefined && this.lastDraw === image.diff)
+    );
+  }
+
+  /** Shows a game host image, as its diff view while that can show (spec section 5). */
+  private showHostImage(image: HostImage): void {
+    const message =
+      this.diffOn && image.diff !== undefined && this.diffBlocker() === undefined
+        ? image.diff
+        : image.draw;
+    if (this.lastDraw !== message) this.post(message);
+  }
+
+  /**
+   * Why the diff view cannot show: it compares the game host's image with the offline renderer's
+   * of the same resolution and playset (spec sections 5 and 6).
+   */
+  private diffBlocker(): string | undefined {
+    const host = this.gameHost;
+    if (host === undefined || this.backendValue !== 'game-host') {
+      return 'The diff view compares the offline renderer with the game host: switch the backend to the game host.';
+    }
+    const chosen = this.resolution.screen;
+    const image = this.hostImage;
+    const screen = host.screen ?? image?.screen;
+    if (
+      screen !== undefined &&
+      (screen.width !== chosen.width || screen.height !== chosen.height)
+    ) {
+      return (
+        `The diff view is off: it needs the preview resolution to be the game host's, ` +
+        `${formatResolution(screen)}, not ${formatResolution(chosen)}.`
+      );
+    }
+    const session = this.session;
+    if (image !== undefined && session !== undefined && image.playset !== playsetKey(session)) {
+      return (
+        "The diff view is off: the game host's image is of another playset or language. It " +
+        'shows again once the game host has drawn the window with this one.'
+      );
+    }
+    return undefined;
+  }
+
+  /** What the preview says about the diff view while it shows the game host. */
+  private diffNotices(): Notice[] {
+    if (!this.diffOn) return [];
+    const blocked = this.diffBlocker();
+    if (blocked !== undefined) return [{ severity: 'information', message: blocked }];
+    const image = this.hostImage;
+    if (image?.diff === undefined || this.lastDraw !== image.diff) {
+      return [
+        {
+          severity: 'information',
+          message: 'The diff view shows once the game host has drawn the window.',
+        },
+      ];
+    }
+    return [{ severity: 'information', message: DIFF_NOTE }];
   }
 
   /** The game host's image, while the preview shows the game host at that image's screen. */
@@ -1257,11 +1365,12 @@ export class Preview implements PreviewApi, vscode.Disposable {
       file: GuiFile;
       window: Widget;
       layout: WindowLayout;
+      drawList: DrawList;
       id: number;
     },
   ): readonly ModelDiagnostic[] {
     const host = this.gameHost;
-    const { session, uri, place, source, file, window, layout, id } = render;
+    const { session, uri, place, source, file, window, layout, drawList, id } = render;
     if (host === undefined) return [];
     const jobKey = [
       uri.toString(),
@@ -1345,6 +1454,8 @@ export class Preview implements PreviewApi, vscode.Disposable {
         names: file.definitions.flatMap((d) => (d.name === undefined ? [] : [d.name])),
         copies: copy.files,
         offline: [],
+        drawList,
+        playset: playsetKey(session),
       });
     } else {
       this.output.warn('The game host took no job: it is not ready.');
@@ -1366,6 +1477,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
     const panel = this.panel;
     const screen = this.gameHost?.screen;
     if (panel === undefined || this.backendValue !== 'game-host' || screen === undefined) return;
+    const context = this.hostJobContexts.get(outcome.tag);
     this.reportGame(outcome);
     if (!outcome.ok) {
       this.setHostProblem({
@@ -1403,12 +1515,18 @@ export class Preview implements PreviewApi, vscode.Disposable {
       const state = this.gameHost?.state;
       this.hostImage = {
         draw,
+        // The same id: either is the drawn image of the job.
+        diff:
+          context === undefined
+            ? undefined
+            : { type: 'diff', id: draw.id, list: context.drawList, image: { url, crop } },
+        playset: context?.playset ?? '',
         url,
         screen,
         pid: state?.status === 'ready' ? state.pid : undefined,
       };
       this.hostDraws.set(draw.id, outcome);
-      this.post(draw);
+      this.showHostImage(this.hostImage);
       // Each image has a file of its own; the last one's texture is no longer needed.
       if (previous !== undefined && previous !== url) {
         this.post({ type: 'invalidate', urls: [previous] });
@@ -1440,6 +1558,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
   private closed(): void {
     this.panel = undefined;
     this.backendValue = 'offline';
+    this.diffOn = false;
     this.hostStartPending = false;
     this.lastShown = undefined;
     this.gameHost?.use(undefined);
@@ -1614,6 +1733,24 @@ function toDiagnostic(found: ModelDiagnostic, source: SourceText): vscode.Diagno
 
 function severityLog(notice: Notice): 'error' | 'warn' | 'info' {
   return notice.severity === 'error' ? 'error' : notice.severity === 'warning' ? 'warn' : 'info';
+}
+
+/**
+ * What the diff view's differences mean: neither backend runs the game's code, but the game host
+ * draws each widget as the game leaves it without that code (etch#53).
+ */
+const DIFF_NOTE =
+  "The diff view shows where the game host's image differs from the offline renderer's. The game " +
+  'host draws the window as the game leaves it without its code, so widgets that code fills in, ' +
+  'hides, moves or chooses a frame for differ by design; hover a widget for its share.';
+
+/** The playset a game host image is drawn with, to tell whether the diff view can compare it. */
+function playsetKey(session: PreviewSession): string {
+  return JSON.stringify([
+    session.playset.gameFolder ?? '',
+    session.playset.mods.map((mod) => [mod.root, mod.descriptorPath ?? '']),
+    session.settings.language,
+  ]);
 }
 
 /** What the preview says about the game host while it shows it. */
