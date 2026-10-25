@@ -128,7 +128,8 @@ export async function foregroundWindow(): Promise<string | undefined> {
 class WindowsHelper {
   private child: ChildProcess | undefined;
   private lines: string[] = [];
-  private waiting: ((line: string | undefined) => void) | undefined;
+  /** The request waiting for a line, and the helper process it waits on. */
+  private waiting: { child: ChildProcess; resolve: (line: string | undefined) => void } | undefined;
   private queue: Promise<unknown> = Promise.resolve();
   private idle: NodeJS.Timeout | undefined;
 
@@ -151,14 +152,14 @@ class WindowsHelper {
     if (this.idle !== undefined) clearTimeout(this.idle);
     const child = this.child ?? (await this.start());
     child.stdin?.write(`${JSON.stringify(request)}\n`);
-    const line = await this.nextLine(HELPER_TIMEOUT_MS);
+    const line = await this.nextLine(child, HELPER_TIMEOUT_MS);
     this.idle = setTimeout(() => {
       this.close();
     }, HELPER_IDLE_MS);
     this.idle.unref();
     if (line === undefined) {
-      this.child?.kill();
-      this.child = undefined;
+      child.kill();
+      if (this.child === child) this.child = undefined;
       throw new Error('The Windows helper did not answer.');
     }
     const answer = JSON.parse(line) as { error?: string } & T;
@@ -192,29 +193,30 @@ class WindowsHelper {
         const line = buffered.slice(0, end).trim();
         buffered = buffered.slice(end + 1);
         if (!line.startsWith('{')) continue;
-        if (this.waiting !== undefined) this.waiting(line);
-        else this.lines.push(line);
+        if (this.waiting?.child === child) this.waiting.resolve(line);
+        else if (this.child === child) this.lines.push(line);
       }
     });
     child.stderr.on('data', (chunk: string) => {
       errors += chunk;
     });
-    child.once('exit', () => {
+    // A helper that was given up on may exit while its successor starts: only its own request
+    // hears of it.
+    const ended = () => {
       if (this.child === child) this.child = undefined;
-      this.waiting?.(undefined);
-    });
-    child.once('error', () => {
-      if (this.child === child) this.child = undefined;
-      this.waiting?.(undefined);
-    });
+      if (this.waiting?.child === child) this.waiting.resolve(undefined);
+    };
+    child.once('exit', ended);
+    child.once('error', ended);
     // The helper does not keep Node alive between requests.
     child.unref();
     for (const stream of [child.stdin, child.stdout, child.stderr]) {
       (stream as unknown as { unref?: () => void } | null)?.unref?.();
     }
-    const ready = await this.nextLine(HELPER_TIMEOUT_MS);
+    const ready = await this.nextLine(child, HELPER_TIMEOUT_MS);
     if (ready === undefined) {
       child.kill();
+      if (this.child === child) this.child = undefined;
       throw new Error(
         `The Windows helper did not start${errors === '' ? '' : `: ${errors.trim()}`}`,
       );
@@ -222,7 +224,7 @@ class WindowsHelper {
     return child;
   }
 
-  private nextLine(timeoutMs: number): Promise<string | undefined> {
+  private nextLine(child: ChildProcess, timeoutMs: number): Promise<string | undefined> {
     const queued = this.lines.shift();
     if (queued !== undefined) return Promise.resolve(queued);
     return new Promise((resolve) => {
@@ -230,10 +232,13 @@ class WindowsHelper {
         this.waiting = undefined;
         resolve(undefined);
       }, timeoutMs);
-      this.waiting = (line) => {
-        clearTimeout(timer);
-        this.waiting = undefined;
-        resolve(line);
+      this.waiting = {
+        child,
+        resolve: (line) => {
+          clearTimeout(timer);
+          this.waiting = undefined;
+          resolve(line);
+        },
       };
     });
   }
@@ -255,8 +260,18 @@ export function closeWindowsHelper(): void {
 // Windows PowerShell 5.1 runs this, one request per stdin line. Identity is read through a handle opened with
 // PROCESS_QUERY_LIMITED_INFORMATION | SYNCHRONIZE (and PROCESS_TERMINATE to stop), so the PID
 // cannot be reused between the check and TerminateProcess.
+//
+// The cmdlets it uses come from Microsoft.PowerShell.Utility, imported from $PSHOME by path with
+// module autoloading off. Autoloading would look for Add-Type in every module on PSModulePath
+// before $PSHOME's, analysing those it has no cache entry for, and write "Preparing modules for
+// first use." to stderr: its time grows with the modules installed (a CI runner has Az's and
+// PowerShell 7's), a start on a fresh runner once stalled right in it past the start timeout, and
+// a module earlier on the path that exports Add-Type would win.
 const HELPER_SCRIPT = String.raw`
 $ErrorActionPreference = 'Stop'
+$ProgressPreference = 'SilentlyContinue'
+$PSModuleAutoLoadingPreference = 'None'
+Import-Module ([IO.Path]::Combine($PSHOME, 'Modules', 'Microsoft.PowerShell.Utility', 'Microsoft.PowerShell.Utility.psd1'))
 [Console]::InputEncoding = [Text.UTF8Encoding]::new($false)
 [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
 Add-Type -TypeDefinition @'
