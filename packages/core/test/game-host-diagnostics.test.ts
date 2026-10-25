@@ -72,6 +72,7 @@ function report(over: Partial<GameHostDiagnosticsRequest>): ModelDiagnostic[] {
     text: source,
     path: 'interface/goto.gui',
     window,
+    names: file.definitions.map((d) => d.name ?? ''),
     copies,
     errorLog: [],
     commands: [],
@@ -174,6 +175,18 @@ describe('gameHostDiagnostics', () => {
         message: `error.log: Failed to create window "goto_box's backdrop"`,
       },
     ]);
+  });
+
+  it('keeps the prefix of a name the copy writer did not prefix', () => {
+    // The live run of etch#52: a nested icon of its own named etch_probe_icon.
+    const [found] = report({
+      errorLog: [
+        "[windowtype.cpp:809]: Guitype 'etch_probe_icon' already exists in windowtype 'etchw_goto_box'.",
+      ],
+    });
+    expect(found?.message).toBe(
+      "error.log: Guitype 'etch_probe_icon' already exists in windowtype 'goto_box'.",
+    );
   });
 
   it('reports the console lines the game refused', () => {

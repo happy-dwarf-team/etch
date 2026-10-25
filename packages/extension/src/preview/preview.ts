@@ -194,6 +194,8 @@ interface HostJobContext {
   readonly text: string;
   readonly path: string;
   readonly window: Widget;
+  /** The file's top-level names, which the copies prefix. */
+  readonly names: readonly string[];
   readonly copies: readonly PreviewCopyFile[];
   /** The model's diagnostics of that text, set when the render publishes them. */
   offline: readonly ModelDiagnostic[];
@@ -1176,6 +1178,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
       text: context.text,
       path: context.path,
       window: context.window,
+      names: context.names,
       copies: context.copies,
       errorLog: outcome.errorLog,
       commands: outcome.commands,
@@ -1350,6 +1353,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
         text: source.text,
         path: place.path,
         window,
+        names: file.definitions.flatMap((d) => (d.name === undefined ? [] : [d.name])),
         copies: copy.files,
         offline: [],
       });

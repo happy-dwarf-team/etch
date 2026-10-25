@@ -255,6 +255,23 @@ export async function testGameHostJobs(
     found.every((d) => !/etchw?_countrydiplomacyview/i.test(d.message)),
     'the messages name the original, not the copies',
   );
+  // The game names the second icon of the name; it is on the line after the anchor's.
+  const second = guiEditor.document.positionAt(anchor).line + 1;
+  assert.ok(
+    found.some(
+      (d) =>
+        d.code === 'game-error-log' &&
+        d.range.start.line === second &&
+        d.message.includes("'etch_probe_icon'") &&
+        d.message.includes(`interface/countrydiplomacyview.gui line: ${String(second + 1)}`),
+    ),
+    'the duplicate name is on the second icon, with the original line',
+  );
+  assert.equal(
+    found.filter((d) => d.message.includes('already exists')).length,
+    1,
+    'what both copies report is reported once',
+  );
   assert.ok(
     !found.some((d) => d.code === 'game-original-differs'),
     'the test mod file is the one the game reads',

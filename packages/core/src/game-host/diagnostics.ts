@@ -35,6 +35,8 @@ export interface GameHostDiagnosticsRequest {
   readonly path: string;
   /** The previewed window, in the model of `text`. */
   readonly window: Widget;
+  /** The original's top-level names, which the copies write with their prefix. */
+  readonly names: readonly string[];
   /** The two copies the job reloaded. */
   readonly copies: readonly PreviewCopyFile[];
   /** The lines the game wrote to `error.log` while the job ran. */
@@ -225,19 +227,30 @@ function originalMessage(message: string, request: GameHostDiagnosticsRequest): 
     }
   }
   const window = request.window.name ?? '';
+  // Only the names the copy writer prefixed: a nested name may start with etch_ of its own.
   for (const prefix of Object.values(PREVIEW_COPY_PREFIXES)) {
-    text = replaceAll(text, prefix + window + BACKDROP_WRAPPER_SUFFIX, `${window}'s backdrop`);
+    text = replaceAll(
+      text,
+      prefix + window + BACKDROP_WRAPPER_SUFFIX,
+      `${window}'s backdrop`,
+      true,
+    );
+    for (const name of request.names) text = replaceAll(text, prefix + name, name, true);
   }
-  return text.replace(/(?<![\w])etchw?_(?=\w)/gi, '');
+  return text;
 }
 
-function replaceAll(text: string, find: string, by: string): string {
+/** Replaces every occurrence, ignoring case; with `word`, only where no name character adjoins. */
+function replaceAll(text: string, find: string, by: string, word = false): string {
   if (find === '') return text;
   const lower = text.toLowerCase();
   const key = find.toLowerCase();
+  const nameChar = (c: string | undefined): boolean => c !== undefined && /\w/.test(c);
   let out = '';
   let at = 0;
-  for (let i = lower.indexOf(key); i >= 0; i = lower.indexOf(key, at)) {
+  for (let i = lower.indexOf(key); i >= 0; i = lower.indexOf(key, i + 1)) {
+    if (i < at) continue;
+    if (word && (nameChar(text[i - 1]) || nameChar(text[i + find.length]))) continue;
     out += text.slice(at, i) + by;
     at = i + find.length;
   }
