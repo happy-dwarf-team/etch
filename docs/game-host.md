@@ -148,6 +148,24 @@ A job that fails (a `reload` or `window open` the game refuses, a capture that
 does not come) shows its reason as a notice and in the output channel, with
 every console line it ran; the last image stays.
 
+What the live runs of etch#50 found:
+
+- **Show animation.** `window open` creates a window at its `position`; the
+  game animates it to `show_position` only for its own windows. Nested in the
+  wrapper, `countrydiplomacyview` stayed at x = −600, off the screen, also
+  after 384 ms. The preview copy therefore gives the wrapped window's
+  `position` the value of its `show_position`, where the offline renderer lays
+  it out, and the window then draws in the first Present after the open.
+- **`eu3dialogtype`.** Nested in the wrapper, `GiftDiplomacyDialog` draws
+  nothing anywhere on the screen; opened on its own it draws. Until the wrapper
+  handles dialogs the preview shows a notice for them instead of a job.
+- **`reloadtexture`** answers "Reload failed" in the main menu at once
+  (under 0.01 ms) for `gfx//interface//country_diplomacy_view_bg_top.dds` and
+  every other spelling tried (single slashes, backslashes, `.tga`, the absolute
+  path), and the window keeps the old pixels. The job still runs it and reports
+  the answer.
+- **`reloadloc`** answers "Localisation reloaded!" and takes about 200 ms.
+
 ## Measured
 
 On the maintainer's machine (EU4 1.37.5 `9AD3EFE1…D771A`, Anvil 1.3.0,
@@ -163,3 +181,31 @@ Both games ran borderless at 3440×1440, never minimised; `system.log` had
 `Running application` and `error.log` only the news banner's two lines. The
 player's profile and the Steam folder were unchanged, and no `eu4.exe` or
 `CrashReporter.exe` ran afterwards.
+
+Preview jobs (etch#50, 2026-10-25, the same machine and builds, vanilla plus a
+test mod with a copy of `countrydiplomacyview.gui`; the extension's test suite
+with `ETCH_GAME_HOST_PATH`, runs 6–9). The window's crop is 3440×1310, so each
+image is an 18 MB TGA:
+
+| | Job (extension) | Change to drawn image |
+| --- | --- | --- |
+| First image after ready | 196–226 ms | 334–377 ms |
+| 10 warm edits per run, median | 175–195 ms | 295–300 ms |
+| 10 warm edits per run, p95 | 187–208 ms | 343–366 ms |
+| `GiftDiplomacyDialog` (573×580, drew nothing) | 72–75 ms | 98–105 ms |
+| Saved localisation (`reloadloc`) | 390–412 ms | 500–533 ms |
+
+Inside a warm job of `countrydiplomacyview` (plugin times): console calls
+105–125 ms, of which each `reload` of the 148 KB copy about 8 ms and the first
+`window open` of the black wrapper about 80 ms (the white one about 9 ms);
+black capture about 24 ms and white 15 ms from the open to the copied crop,
+recovery 10–13 ms, the file 7–9 ms. The rest of the time to the drawn image
+is the webview loading the TGA and painting. The 150 ms target of spec
+section 7 is missed for this large window; the small crop of a dialog took
+half of it.
+
+All nine game host runs of etch#50 got ready in 13.1–18.3 s, were closed
+after their PID, path and creation time were checked, and left the player's
+profile and the Steam folder unchanged.
+
+
