@@ -236,6 +236,28 @@ void TestRunner() {
     assert(result && result->error.empty());
     assert(game.lines.front() == "window close etchw_goto_box_backdrop");
     assert(game.lines[1] == "reload etch_goto.gui");
+
+    // A show animation: each capture waits until its settle time has passed (6 ms per fake frame).
+    result.reset();
+    JobRequest settling = Request();
+    settling.settle_ms = 20;
+    assert(!runner.Start(settling, done));
+    for (int i = 0; i < 20 && !result; ++i) game.Frame(runner);
+    assert(result && result->error.empty());
+    assert(result->black_ms >= 20 && result->white_ms >= 20);
+    assert(result->white_frame >= result->black_frame + 4);
+
+    JobRequest parsed;
+    assert(!etch::ReadJobRequest(
+        Json(R"({"reload":["a"],"black":"b","white":"w","crop":{"x":0,"y":0,"width":1,"height":1},)"
+             R"("settle_ms":300,"output":"C:/a.tga"})"),
+        parsed));
+    assert(parsed.settle_ms == 300);
+    assert(etch::ReadJobRequest(
+               Json(R"({"reload":["a"],"black":"b","white":"w","crop":{"x":0,"y":0,"width":1,"height":1},)"
+                    R"("settle_ms":5001,"output":"C:/a.tga"})"),
+               parsed)
+               .has_value());
 }
 
 void TestRunnerFailures() {

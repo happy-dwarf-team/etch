@@ -4,7 +4,7 @@
  */
 import type { DrawRect } from '../draw-list.ts';
 import type { InterfaceIndex } from '../model/interface-index.ts';
-import type { Screen } from '../model/gui.ts';
+import { widgetProperties, type GuiFile, type Screen, type Widget } from '../model/gui.ts';
 import { textureCandidates } from '../model/references.ts';
 
 /** A rectangle of the game host's screen, in whole pixels. */
@@ -38,6 +38,23 @@ export function previewCrop(widgets: readonly DrawRect[], screen: Screen): CropR
   const y2 = Math.min(screen.height, Math.ceil(bottom));
   if (!(x2 > x && y2 > y)) return undefined;
   return { x, y, width: x2 - x, height: y2 - y };
+}
+
+/** The longest show animation a job waits for, in milliseconds. */
+export const MAX_SHOW_ANIMATION_MS = 5000;
+
+/**
+ * How long the game animates a window into its place after `window open`: its `animation_time`
+ * in milliseconds, when it has a `show_position` to move to, else 0. The offline renderer lays such
+ * a window out at its `show_position`; in etch#50's first live run the frames right after
+ * `window open` showed nothing of `countrydiplomacyview` (`hide_position` x = −600, 300 ms) in its
+ * crop, so a job captures only after the animation.
+ */
+export function showAnimationMs(file: GuiFile, window: Widget, screen: Screen): number {
+  const props = widgetProperties(window, file.constants, screen);
+  if (props.point('show_position') === undefined) return 0;
+  const time = props.number('animation_time') ?? 0;
+  return Math.min(MAX_SHOW_ANIMATION_MS, Math.max(0, Math.ceil(time)));
 }
 
 /**

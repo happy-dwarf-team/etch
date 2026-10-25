@@ -20,6 +20,7 @@ import {
   parseScript,
   previewCrop,
   readGuiFile,
+  showAnimationMs,
   textureReloadNames,
   widgetAt,
   widgetHoverText,
@@ -62,6 +63,9 @@ export const CHOOSE_RESOLUTION = 'etch.choosePreviewResolution';
 
 /** Where the monitor's native resolution is kept between sessions, so a cold open knows it. */
 const NATIVE_SCREEN_KEY = 'etch.nativeScreen';
+
+/** What a job waits after a window's show animation, in milliseconds. */
+const SETTLE_MARGIN_MS = 50;
 
 /** The context key that is true while the preview is open. */
 export const PREVIEW_OPEN_CONTEXT = 'etch.previewOpen';
@@ -1126,12 +1130,12 @@ export class Preview implements PreviewApi, vscode.Disposable {
     this.hostJobKey = jobKey;
     this.hostCopyDiagnostics = [];
     if (place === undefined || !/^interface[\\/]/i.test(place.path) || window.name === undefined) {
-      this.hostProblem = {
+      this.setHostProblem({
         severity: 'warning',
         message:
           'The game host previews named windows of .gui files in the interface folder of the game ' +
           'or of a mod of the playset.',
-      };
+      });
       return [];
     }
     const copy = writePreviewCopy({
@@ -1146,24 +1150,27 @@ export class Preview implements PreviewApi, vscode.Disposable {
     this.hostCopyDiagnostics = copy.diagnostics;
     if (copy.files === undefined) {
       const why = copy.diagnostics.find((d) => d.severity === 'error') ?? copy.diagnostics[0];
-      this.hostProblem = {
+      this.setHostProblem({
         severity: 'warning',
         message: `The game host cannot show this window${why === undefined ? '.' : `: ${why.message}`}`,
-      };
+      });
       return copy.diagnostics;
     }
     const crop = previewCrop(layout.widgets, screen);
     if (crop === undefined) {
-      this.hostProblem = {
+      this.setHostProblem({
         severity: 'warning',
         message: "No part of this window is on the game host's screen.",
-      };
+      });
       return copy.diagnostics;
     }
-    if (this.hostProblem?.severity === 'warning') this.hostProblem = undefined;
+    if (this.hostProblem?.severity === 'warning') this.setHostProblem(undefined);
+    const animation = showAnimationMs(file, window, screen);
     const submitted = host.submit({
       copies: copy.files,
       crop,
+      // Two frames more than the animation: the game starts it in the frame after the open.
+      settleMs: animation > 0 ? animation + SETTLE_MARGIN_MS : 0,
       textures: [...this.hostTextures],
       localisation: this.hostLocalisation,
       requestedAt: this.render?.requestedAt ?? Date.now(),
@@ -1173,9 +1180,18 @@ export class Preview implements PreviewApi, vscode.Disposable {
       this.hostTextures.clear();
       this.hostLocalisation = false;
     } else {
+      this.output.warn('The game host took no job: it is not ready.');
       this.hostJobKey = undefined;
     }
     return copy.diagnostics;
+  }
+
+  /** Keeps why the game host cannot show the window, and logs it when it changes. */
+  private setHostProblem(problem: Notice | undefined): void {
+    if (problem !== undefined && problem.message !== this.hostProblem?.message) {
+      this.output[severityLog(problem)](problem.message);
+    }
+    this.hostProblem = problem;
   }
 
   /** Shows a finished job's image, or why there is none. */
@@ -1184,13 +1200,13 @@ export class Preview implements PreviewApi, vscode.Disposable {
     const screen = this.gameHost?.screen;
     if (panel === undefined || this.backendValue !== 'game-host' || screen === undefined) return;
     if (!outcome.ok) {
-      this.hostProblem = {
+      this.setHostProblem({
         severity: 'error',
         message: `The game host could not draw the window (${outcome.code}): ${outcome.message}`,
-      };
+      });
     } else {
       // A failed job is over once one succeeds.
-      if (this.hostProblem?.severity === 'error') this.hostProblem = undefined;
+      if (this.hostProblem?.severity === 'error') this.setHostProblem(undefined);
       const { crop, path } = outcome.image;
       const url = webviewUrl(panel, path);
       const draw: Extract<HostMessage, { type: 'draw' }> = {

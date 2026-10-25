@@ -31,7 +31,7 @@ async function readTga(file: string): Promise<Tga> {
 }
 
 /** The next game host image the preview draws; a failed job rejects. */
-function nextImage(api: EtchApi, timeoutMs = 30_000): Promise<HostImagePaint> {
+export function nextImage(api: EtchApi, timeoutMs = 30_000): Promise<HostImagePaint> {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => {
       done();
@@ -112,24 +112,34 @@ export interface JobFixture {
   readonly localisation: string;
 }
 
-export async function testGameHostJobs(api: EtchApi, fixture: JobFixture): Promise<void> {
+export async function testGameHostJobs(
+  api: EtchApi,
+  fixture: JobFixture,
+  firstImage: Promise<HostImagePaint>,
+): Promise<void> {
   const { preview, gameHost } = api;
   const running = gameHost.running;
   const screen = gameHost.screen;
   assert.ok(running !== undefined && screen !== undefined, 'the game host runs');
   const editor = vscode.window.visibleTextEditors.find(
-    (e) => e.document.uri.fsPath === fixture.gui,
+    (e) => e.document.uri.fsPath.toLowerCase() === fixture.gui.toLowerCase(),
   );
   assert.ok(editor, 'the copy of countrydiplomacyview.gui is open');
 
   // The first image: the window under the cursor.
-  const first = await nextImage(api, 60_000);
+  const current = preview.current;
+  console.log(
+    `[etch] preview render ${String(current?.id)} of ${String(current?.window.name)} at ` +
+      `${String(current?.drawList.width)}×${String(current?.drawList.height)}; notices ` +
+      JSON.stringify(preview.notices),
+  );
+  const first = await firstImage;
   console.log(`[etch] first game host image, ${describe(first)}`);
-  const firstImage = await readTga(first.outcome.image.path);
+  const image = await readTga(first.outcome.image.path);
   const { crop } = first.outcome.image;
-  assert.equal(firstImage.width, crop.width);
-  assert.equal(firstImage.height, crop.height);
-  const counts = alphaCounts(firstImage);
+  assert.equal(image.width, crop.width);
+  assert.equal(image.height, crop.height);
+  const counts = alphaCounts(image);
   console.log(`[etch] alpha of the first image: ${JSON.stringify(counts)}`);
   assert.ok(counts.opaque > 0, 'the window draws opaque pixels');
   assert.ok(
@@ -159,6 +169,8 @@ export async function testGameHostJobs(api: EtchApi, fixture: JobFixture): Promi
       black: 'countrydiplomacyview',
       white: 'countrydiplomacyview',
       crop,
+      // Its show animation, as the preview's own jobs wait for it.
+      settle_ms: 350,
       output: original,
     },
     10_000,
@@ -167,12 +179,12 @@ export async function testGameHostJobs(api: EtchApi, fixture: JobFixture): Promi
   let opaque = 0;
   let same = 0;
   let maxDiff = 0;
-  for (let i = 0; i < firstImage.pixels.length; i += 4) {
-    if (firstImage.pixels[i + 3] !== 255) continue;
+  for (let i = 0; i < image.pixels.length; i += 4) {
+    if (image.pixels[i + 3] !== 255) continue;
     opaque++;
     let diff = 0;
     for (let c = 0; c < 3; c++) {
-      diff = Math.max(diff, Math.abs((firstImage.pixels[i + c] ?? 0) - (plain.pixels[i + c] ?? 0)));
+      diff = Math.max(diff, Math.abs((image.pixels[i + c] ?? 0) - (plain.pixels[i + c] ?? 0)));
     }
     if (diff === 0) same++;
     maxDiff = Math.max(maxDiff, diff);

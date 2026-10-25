@@ -11,6 +11,8 @@ namespace {
 // The largest crop side: the largest screen Direct3D 9 gives the game.
 constexpr std::uint64_t kMaxSide = 16384;
 constexpr std::size_t kMaxNames = 64;
+// The longest wait for a show animation.
+constexpr std::uint64_t kMaxSettleMs = 5000;
 
 std::optional<std::string> ReadName(const json::Value& request, std::string_view key, std::string& out) {
     const json::Value* member = request.Find(key);
@@ -111,6 +113,13 @@ std::optional<std::string> ReadJobRequest(const json::Value& request, JobRequest
                    " to " + std::to_string(kMaxSide);
         }
         *sides[i] = static_cast<std::uint32_t>(*value);
+    }
+    if (const json::Value* member = request.Find("settle_ms")) {
+        const std::optional<std::uint64_t> value = member->AsUint();
+        if (!value || *value > kMaxSettleMs) {
+            return "\"settle_ms\" must be a whole number from 0 to " + std::to_string(kMaxSettleMs);
+        }
+        out.settle_ms = static_cast<std::uint32_t>(*value);
     }
     if (auto error = ReadName(request, "output", out.output)) return error;
     if (!IsAbsoluteTga(out.output)) return "\"output\" must be an absolute path ending in .tga";
@@ -260,13 +269,16 @@ void JobRunner::Refused(const char* code) {
 
 void JobRunner::Arm(State capture) {
     armed_at_ = env_.now_ms();
-    armed_frame_.store(env_.frame());
+    due_at_ = armed_at_ + request_.settle_ms;
+    due_frame_.store(0);
     state_.store(capture);
 }
 
 void JobRunner::OnPresent(const std::function<Grab(const Rect& crop)>& grab) {
     int state = state_.load();
     if (state != kCaptureBlack && state != kCaptureWhite) return;
+    // A window with a show animation reaches its place only after it.
+    if (env_.now_ms() < due_at_) return;
     const bool black = state == kCaptureBlack;
     if (!state_.compare_exchange_strong(state, black ? kGrabBlack : kGrabWhite)) return;
     Grab g = grab(request_.crop);
@@ -297,7 +309,13 @@ void JobRunner::OnPresent(const std::function<Grab(const Rect& crop)>& grab) {
 void JobRunner::OnFrame(std::uint64_t frame) {
     int state = state_.load();
     if (state != kCaptureBlack && state != kCaptureWhite) return;
-    if (frame < armed_frame_.load() + kCaptureFrames) return;
+    if (env_.now_ms() < due_at_) return;
+    std::uint64_t due = due_frame_.load();
+    if (due == 0) {
+        due_frame_.store(frame);
+        return;
+    }
+    if (frame < due + kCaptureFrames) return;
     if (!state_.compare_exchange_strong(state, kFinishing)) return;
     Fail("capture_timeout", "no Present drew the " + std::string(state == kCaptureBlack ? "black" : "white") +
                                 " wrapper within " + std::to_string(kCaptureFrames) + " frames");

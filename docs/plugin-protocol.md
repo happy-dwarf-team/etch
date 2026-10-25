@@ -108,6 +108,7 @@ copies into the overlay mod, and the plugin shows them and captures them.
 | `black`        | the wrapper window of the copy over black, for `window open`                                         |
 | `white`        | the wrapper window of the copy over white                                                            |
 | `crop`         | the screen rectangle to capture, from the offline renderer's layout; sides from 1 to 16,384          |
+| `settle_ms`    | optional: capture no earlier than this many milliseconds after each wrapper opens, for a window with a show animation; 0 to 5,000 |
 | `output`       | where the image goes: an absolute path ending in `.tga`                                              |
 
 The job runs in steps, each where the game allows it:
@@ -119,7 +120,8 @@ The job runs in steps, each where the game allows it:
    `window open <black>`. The plugin calls the game's console dispatcher
    itself, as Tongs does, because the main menu has the console but no game
    session (etch#21).
-2. **The next `IDirect3DDevice9::Present`**: a `StretchRect` of the crop,
+2. **The next `IDirect3DDevice9::Present`** (the first one `settle_ms` after
+   the open): a `StretchRect` of the crop,
    clamped to the back buffer, into a render target of its size and a readback
    of only that. No full-frame readback.
 3. **Main thread**: `window open <white>`, which also closes the black wrapper
@@ -174,7 +176,7 @@ A `job` can also get these:
 | `console_unavailable` | the game's console manager is not set up                                                   |
 | `reload_failed`       | the game refused a `reload`; the message has its answer                                    |
 | `open_failed`         | the game refused a `window open`                                                           |
-| `capture_timeout`     | no Present drew the opened wrapper within 10 frames                                        |
+| `capture_timeout`     | no Present drew the opened wrapper within 10 frames after it was due                       |
 | `capture_failed`      | the crop lies outside the back buffer, the back buffer is not 32-bit, or the copy failed   |
 | `write_failed`        | the image cannot be written                                                                |
 | `game_fault`          | a console call raised a structured exception; the plugin refuses every later job, and the game host must be restarted |

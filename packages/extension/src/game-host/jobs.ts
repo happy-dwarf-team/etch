@@ -14,6 +14,8 @@ export interface JobChange {
   readonly copies: readonly [PreviewCopyFile, PreviewCopyFile];
   /** The part of the game host's screen to capture, from the offline renderer's layout. */
   readonly crop: CropRect;
+  /** How long after each `window open` the capture waits: the window's show animation. */
+  readonly settleMs: number;
   /** `texturefile` values to `reloadtexture`, for textures saved to disk. */
   readonly textures: readonly string[];
   /** Whether to `reloadloc`, after a localisation file was saved. */
@@ -113,6 +115,7 @@ export async function runJob(
     black: black.wrapper,
     white: white.wrapper,
     crop: change.crop,
+    settle_ms: change.settleMs,
     output,
   };
   const base = { job, tag: change.tag, requestedAt: change.requestedAt };
@@ -187,6 +190,7 @@ export function mergeChanges(earlier: JobChange, later: JobChange): JobChange {
   return {
     copies: later.copies,
     crop: later.crop,
+    settleMs: later.settleMs,
     textures: [...new Set([...earlier.textures, ...later.textures])],
     localisation: earlier.localisation || later.localisation,
     requestedAt: Math.min(earlier.requestedAt, later.requestedAt),

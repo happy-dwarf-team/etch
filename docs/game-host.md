@@ -116,6 +116,38 @@ process (`windows.ts`) compiles a small C# class once and answers the identity,
 stop, crash reporter and window requests; it ends after a minute without
 requests.
 
+## Preview jobs
+
+While the preview shows the game host and it is ready (etch#50,
+`game-host/jobs.ts`, the plugin's `job.cpp`):
+
+1. **Layout at the game host's screen.** The preview lays the window out at
+   the game host's resolution (the monitor's), so that the crop and the copy's
+   wrapper fit its back buffer; a note says so when the chosen preview
+   resolution differs.
+2. **The copies.** Each change of the previewed window's text (the unsaved
+   buffer), a texture saved to disk that the playset reads, or a saved
+   localisation file makes a job. The extension writes both preview copies
+   (`etch_<file>.gui`, `etchw_<file>.gui`) into the overlay mod's `interface/`
+   folder; their diagnostics go to the Problems panel, and a window the game
+   host cannot show gets a notice instead of a job.
+3. **The job.** One `job` request over the pipe (docs/plugin-protocol.md) names
+   both files, both wrappers, the textures to `reloadtexture` (the
+   `texturefile` values as the `.gfx` files write them), whether to
+   `reloadloc`, the crop (every laid-out widget, in whole pixels, clamped to
+   the screen) and the image's path in `<global storage>/captures/`. One job
+   runs at a time; changes that come meanwhile merge into one more, the latest
+   copy winning and the textures and `reloadloc` adding up.
+4. **The image.** The plugin answers when the TGA of straight RGBA is written.
+   The webview draws it at the crop's place like any texture, over the same
+   neutral background as the offline renderer, and keeps it until the next
+   one; hover, outline and navigation keep using the extension's layout. The
+   captures folder keeps the last two images and is emptied at every start.
+
+A job that fails (a `reload` or `window open` the game refuses, a capture that
+does not come) shows its reason as a notice and in the output channel, with
+every console line it ran; the last image stays.
+
 ## Measured
 
 On the maintainer's machine (EU4 1.37.5 `9AD3EFE1…D771A`, Anvil 1.3.0,

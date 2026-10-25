@@ -37,6 +37,7 @@ struct JobRequest {
     std::string black;                  // the wrapper window over black, for `window open`
     std::string white;                  // the wrapper window over white
     Rect crop;                          // from the offline renderer's layout
+    std::uint32_t settle_ms = 0;        // capture no earlier than this after each wrapper opens
     std::string output;                 // an absolute path ending in .tga, UTF-8
 };
 
@@ -107,7 +108,7 @@ struct Refusal {
 // Runs one job at a time.
 class JobRunner {
 public:
-    // A capture not taken this many frames after its window opened fails.
+    // A capture not taken this many frames after it was due fails.
     static constexpr std::uint64_t kCaptureFrames = 10;
 
     struct Env {
@@ -156,7 +157,7 @@ private:
     Env env_;
     std::atomic<int> state_{kIdle};
     std::atomic<bool> faulted_{false};
-    std::atomic<std::uint64_t> armed_frame_{0};
+    std::atomic<std::uint64_t> due_frame_{0};  // the first frame at or after due_at_
 
     // Owned by whichever thread runs the job's current step.
     JobRequest request_;
@@ -166,6 +167,7 @@ private:
     Bgra white_;
     double started_ = 0;
     double armed_at_ = 0;
+    double due_at_ = 0;  // armed_at_ plus the request's settle time
     // Main thread: the wrapper the last job left open, closed before the next
     // reload (a reload of an open window's file crashes the game, etch#22).
     std::string open_;

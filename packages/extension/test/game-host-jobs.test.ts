@@ -27,6 +27,7 @@ function change(tag: number, more: Partial<JobChange> = {}): JobChange {
   return {
     copies,
     crop: { x: 165, y: 215, width: 333, height: 454 },
+    settleMs: 0,
     textures: [],
     localisation: false,
     requestedAt: 1000 + tag,
@@ -83,6 +84,7 @@ describe('runJob', () => {
         black: 'etch_goto_box_backdrop',
         white: 'etchw_goto_box_backdrop',
         crop: { x: 165, y: 215, width: 333, height: 454 },
+        settle_ms: 0,
         output: captureFile(join(folder, 'captures'), 7),
       },
     ]);

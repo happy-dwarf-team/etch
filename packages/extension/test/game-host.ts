@@ -14,7 +14,7 @@ import * as vscode from 'vscode';
 import type { EtchApi } from '../src/extension.ts';
 import type { GameHostState } from '../src/game-host/index.ts';
 import { prepareInstall } from '../src/game-host/install.ts';
-import { testGameHostJobs } from './game-host-jobs.ts';
+import { nextImage, testGameHostJobs } from './game-host-jobs.ts';
 import { processIdentity } from '../src/game-host/windows.ts';
 
 function waitFor(
@@ -68,7 +68,11 @@ export async function testGameHost(api: EtchApi, gamePath: string): Promise<void
   await settings.update('gamePath', gamePath, vscode.ConfigurationTarget.Global);
   try {
     const document = await vscode.workspace.openTextDocument(vscode.Uri.file(copy));
-    await vscode.window.showTextDocument(document, vscode.ViewColumn.One);
+    const editor = await vscode.window.showTextDocument(document, vscode.ViewColumn.One);
+    // The file starts with a top-level positionType, which the game host cannot open: the cursor
+    // goes into the window itself.
+    const start = document.positionAt(document.getText().indexOf('name = "countrydiplomacyview"'));
+    editor.selection = new vscode.Selection(start, start);
     const { preview, gameHost } = api;
     preview.open();
     await preview.idle();
@@ -86,6 +90,9 @@ export async function testGameHost(api: EtchApi, gamePath: string): Promise<void
     const switched = Date.now();
     preview.setBackend('game-host');
     assert.equal(preview.backend, 'game-host');
+    // The first image comes right after the game host is ready.
+    const firstImage = nextImage(api, 90_000);
+    firstImage.catch(() => undefined);
     const ready = await waitFor(api, 'ready', 180_000);
     assert.ok(ready.status === 'ready');
     const running = gameHost.running;
@@ -113,7 +120,7 @@ export async function testGameHost(api: EtchApi, gamePath: string): Promise<void
     );
     assert.equal(later.iconic, false, 'the game host stays restored');
 
-    await testGameHostJobs(api, { gui: copy, texture, localisation });
+    await testGameHostJobs(api, { gui: copy, texture, localisation }, firstImage);
 
     // Switching away starts the idle timer; it stops the game host after it.
     gameHost.setIdleTime(2_000);
