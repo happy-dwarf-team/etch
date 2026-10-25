@@ -1,7 +1,9 @@
 // A stand-in for eu4.exe with Etch's plugin in the game host tests: serves the session pipe of
 // docs/plugin-protocol.md with the session id from ETCH_HOST_SESSION. Its creation time comes from
 // the lock file the extension writes once it has the process's identity (argv[2]); it is ready
-// after argv[3] milliseconds. With argv[4] = "exit" it ends before it is ready.
+// after argv[3] milliseconds. With argv[4] = "exit" it ends before it is ready; with "freeze" its
+// frame counter stops half a second after it is ready, and with "mute" it stops answering pings
+// then, as a hung game and a dead plugin would (etch#51).
 import { readFileSync } from 'node:fs';
 import { createServer } from 'node:net';
 
@@ -26,11 +28,12 @@ function startMs(): number {
   }
 }
 
+const ready = (): boolean => Date.now() - started >= Number(readyAfter);
+const stuck = (): boolean => Date.now() - started >= Number(readyAfter) + 500;
 let frame = 0;
 setInterval(() => {
-  frame++;
+  if (mode !== 'freeze' || !stuck()) frame++;
 }, 10);
-const ready = (): boolean => Date.now() - started >= Number(readyAfter);
 createServer((socket) => {
   let buffered = '';
   socket.setEncoding('utf8');
@@ -39,6 +42,7 @@ createServer((socket) => {
     for (let end = buffered.indexOf('\n'); end >= 0; end = buffered.indexOf('\n')) {
       const request = JSON.parse(buffered.slice(0, end)) as { id: number; type: string };
       buffered = buffered.slice(end + 1);
+      if (mode === 'mute' && request.type === 'ping' && stuck()) continue;
       const answer =
         request.type === 'hello'
           ? {

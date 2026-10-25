@@ -15,6 +15,7 @@ import type { EtchApi } from '../src/extension.ts';
 import type { GameHostState } from '../src/game-host/index.ts';
 import { prepareInstall } from '../src/game-host/install.ts';
 import { nextImage, testGameHostJobs } from './game-host-jobs.ts';
+import { testGameHostRestarts } from './game-host-restarts.ts';
 import { processIdentity } from '../src/game-host/windows.ts';
 
 function waitFor(
@@ -121,17 +122,16 @@ export async function testGameHost(api: EtchApi, gamePath: string): Promise<void
     assert.equal(later.iconic, false, 'the game host stays restored');
 
     await testGameHostJobs(api, { gui: copy, texture, localisation }, firstImage);
+    await testGameHostRestarts(api, mod, copy);
+    const last = gameHost.running;
+    assert.ok(last, 'the game host runs after the restarts');
 
     // Switching away starts the idle timer; it stops the game host after it.
     gameHost.setIdleTime(2_000);
     preview.setBackend('offline');
     await waitFor(api, 'stopped', 60_000);
     assert.equal(gameHost.running, undefined);
-    assert.equal(
-      await processIdentity(running.identity.pid),
-      undefined,
-      'the game process is gone',
-    );
+    assert.equal(await processIdentity(last.identity.pid), undefined, 'the game process is gone');
     console.log('[etch] game host stopped after the idle time');
 
     await vscode.commands.executeCommand('etch.removeGameHostInstall');

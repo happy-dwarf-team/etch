@@ -43,6 +43,17 @@ export function lockPath(storageFolder: string): string {
   return join(storageFolder, 'game-host.lock');
 }
 
+/**
+ * The game ended, or did not get ready in time, while it started: a crash for the watchdog
+ * (etch#51), unlike a start Etch refused or cancelled.
+ */
+export class HostCrashedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'HostCrashedError';
+  }
+}
+
 /** Another VS Code window owns the game host. */
 export class HostBusyError extends Error {
   constructor() {
@@ -322,9 +333,11 @@ export class GameHostProcess {
         alive = false;
       });
       const check = (): void => {
-        if (!alive) throw new Error('The game host exited while it started.');
+        if (!alive) throw new HostCrashedError('The game host exited while it started.');
         if (options.signal?.aborted === true) throw new Error('The game host start was cancelled.');
-        if (Date.now() > deadline) throw new Error('The game host did not get ready in time.');
+        if (Date.now() > deadline) {
+          throw new HostCrashedError('The game host did not get ready in time.');
+        }
       };
       let pipeMs: number | undefined;
       for (;;) {
@@ -409,8 +422,8 @@ export class GameHostProcess {
     return this.child.exitCode === null && this.child.signalCode === null;
   }
 
-  ping() {
-    return this.pipe.ping();
+  ping(timeoutMs?: number) {
+    return this.pipe.ping(timeoutMs);
   }
 
   /** Sends one request over the session pipe (docs/plugin-protocol.md). */

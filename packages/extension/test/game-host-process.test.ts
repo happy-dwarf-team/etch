@@ -11,6 +11,7 @@ import { HostPipe, PipeError, newSessionId, pipePath } from '../src/game-host/pi
 import {
   GameHostProcess,
   HostBusyError,
+  HostCrashedError,
   acquireLock,
   closeOrphan,
   lockHeldElsewhere,
@@ -24,6 +25,7 @@ import {
   processIdentity,
   type ProcessIdentity,
 } from '../src/game-host/windows.ts';
+import { watch } from '../src/game-host/watchdog.ts';
 
 // The Win32 helper runs in Windows PowerShell, about a second per call.
 const windows = process.platform === 'win32' ? describe : describe.skip;
@@ -318,9 +320,38 @@ windows('GameHostProcess', () => {
           originalGameFolder: temp,
           lock,
         }),
-      ).rejects.toThrow(/exited/);
+      ).rejects.toThrow(HostCrashedError);
       expect(await readFile(lock.path).catch(() => undefined)).toBeUndefined();
     },
     TIMEOUT,
   );
+
+  // The watchdog (etch#51) against a game whose frame counter stops, and one that stops answering.
+  for (const [mode, hang] of [
+    ['freeze', /^the frame counter stayed at \d+ for/],
+    ['mute', /^no answer to a ping for/],
+  ] as const) {
+    it(
+      `finds a hang: ${mode}`,
+      async () => {
+        const lock: LockOptions = { path: join(temp, 'game-host.lock'), owner: await self() };
+        const host = await GameHostProcess.start({
+          install: install([lock.path, '200', mode]),
+          originalGameFolder: temp,
+          lock,
+        });
+        try {
+          const abort = new AbortController();
+          const started = performance.now();
+          const reason = await watch(host, { intervalMs: 50, hangMs: 1_000, signal: abort.signal });
+          expect(reason).toMatch(hang);
+          // Not before the game got stuck, half a second after it was ready.
+          expect(performance.now() - started).toBeGreaterThan(1_000);
+        } finally {
+          await host.stop();
+        }
+      },
+      TIMEOUT,
+    );
+  }
 });

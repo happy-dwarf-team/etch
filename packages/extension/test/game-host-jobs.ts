@@ -222,6 +222,10 @@ export async function testGameHostJobs(
   // A nested eu3dialogtype (etch#47): in etch#50's live runs the backdrop wrapper hid it (the
   // same dialog opened on its own drew), so the preview says so instead of running a job.
   await cursorAt(guiEditor, 'name = "GiftDiplomacyDialog"');
+  // The selection's event can come after a turn of the event loop.
+  for (let i = 0; i < 100 && preview.current?.window.name !== 'GiftDiplomacyDialog'; i++) {
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
   await preview.idle();
   assert.ok(
     preview.notices.some((n) => n.message.includes('eu3dialogtype')),
