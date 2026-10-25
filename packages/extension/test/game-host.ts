@@ -18,7 +18,7 @@ import { nextImage, testGameHostJobs } from './game-host-jobs.ts';
 import { testGameHostRestarts } from './game-host-restarts.ts';
 import { processIdentity } from '../src/game-host/windows.ts';
 
-function waitFor(
+export function waitFor(
   api: EtchApi,
   status: GameHostState['status'],
   timeoutMs: number,
