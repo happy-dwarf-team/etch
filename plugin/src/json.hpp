@@ -36,6 +36,8 @@ public:
     // exact), or nullopt.
     std::optional<std::uint64_t> AsUint() const;
     std::optional<bool> AsBool() const;
+    // The items of an array, or nullptr for any other kind.
+    const std::vector<Value>* AsArray() const;
 
 private:
     Kind kind_ = Kind::Null;
@@ -64,6 +66,8 @@ public:
     Writer& Raw(std::string_view key, std::string_view json);
     Writer& Str(std::string_view key, std::string_view value);
     Writer& Uint(std::string_view key, std::uint64_t value);
+    // A number with up to three decimals, such as a time in milliseconds.
+    Writer& Fixed(std::string_view key, double value);
     Writer& Bool(std::string_view key, bool value);
     Writer& Null(std::string_view key);
     std::string Finish() const { return out_ + "}"; }

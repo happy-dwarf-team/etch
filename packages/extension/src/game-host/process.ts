@@ -413,6 +413,11 @@ export class GameHostProcess {
     return this.pipe.ping();
   }
 
+  /** Sends one request over the session pipe (docs/plugin-protocol.md). */
+  request(body: { type: string } & Record<string, unknown>, timeoutMs?: number) {
+    return this.pipe.request(body, timeoutMs);
+  }
+
   /** Sends the game's window behind VS Code again and restores it if it was minimised. */
   keepBehind(foreground?: string): Promise<GameWindow> {
     return keepBehind(this.identity, foreground);

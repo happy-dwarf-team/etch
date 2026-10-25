@@ -1,4 +1,8 @@
+import { mkdir, rm } from 'node:fs/promises';
+import { join } from 'node:path';
 import * as vscode from 'vscode';
+import type { Screen } from '@etch/core';
+import { JobQueue, pruneCaptures, runJob, type JobChange, type JobOutcome } from './jobs.ts';
 import {
   copySize,
   gameHostLayout,
@@ -114,6 +118,11 @@ export type GameHostState =
   | { readonly status: 'busy' }
   | { readonly status: 'failed'; readonly message: string };
 
+/** Where the game host's images go, in the extension's global storage; the webview reads them. */
+export function capturesFolder(storageFolder: string): string {
+  return join(storageFolder, 'captures');
+}
+
 /** What a game host start needs from the preview. */
 export interface GameHostRequest {
   /** The player's game folder, which the install links to. */
@@ -136,6 +145,12 @@ export class GameHost implements vscode.Disposable {
   private readonly output: vscode.LogOutputChannel;
   private readonly lockFile: string;
   private readonly emitter = new vscode.EventEmitter<GameHostState>();
+  private readonly jobEmitter = new vscode.EventEmitter<JobOutcome>();
+  /** The folder the plugin writes job images to. */
+  readonly capturesFolder: string;
+  private jobs: JobQueue | undefined;
+  /** The screen of the running game host. */
+  private display: Screen | undefined;
   private current: GameHostState = { status: 'stopped' };
   private process: GameHostProcess | undefined;
   private starting: Promise<void> | undefined;
@@ -145,11 +160,34 @@ export class GameHost implements vscode.Disposable {
   private idleMs = IDLE_STOP_MS;
 
   readonly onDidChangeState = this.emitter.event;
+  /** Fires when a preview job ends, with its image or why there is none. */
+  readonly onDidFinishJob = this.jobEmitter.event;
 
   constructor(storageFolder: string, buildsFolder: string, output: vscode.LogOutputChannel) {
     this.install = new GameHostInstall(storageFolder, buildsFolder, output);
     this.output = output;
     this.lockFile = lockPath(storageFolder);
+    this.capturesFolder = capturesFolder(storageFolder);
+  }
+
+  /** The running game host's screen: the size its preview copies cover and its crops are cut from. */
+  get screen(): Screen | undefined {
+    return this.process === undefined ? undefined : this.display;
+  }
+
+  /**
+   * Hands the running game host a change of the previewed window (spec section 4): one job runs
+   * at a time, and later changes coalesce. False when the game host is not ready.
+   */
+  submit(change: JobChange): boolean {
+    if (this.jobs === undefined || this.current.status !== 'ready') return false;
+    this.jobs.submit(change);
+    return true;
+  }
+
+  /** Resolves when no preview job runs or waits, for Etch's own tests. */
+  async jobsIdle(): Promise<void> {
+    await this.jobs?.idle();
   }
 
   get state(): GameHostState {
@@ -207,10 +245,15 @@ export class GameHost implements vscode.Disposable {
           signal: abort.signal,
         });
         this.process = started;
+        this.display = { width: request.display.width, height: request.display.height };
+        await rm(this.capturesFolder, { recursive: true, force: true });
+        await mkdir(this.capturesFolder, { recursive: true });
+        this.jobs = this.jobQueue(started, prepared.overlayFolder);
         this.set({ status: 'ready', pid: started.identity.pid, readyMs: started.times.ready });
         void started.onExit.then((code) => {
           if (this.process !== started) return;
           this.process = undefined;
+          this.endJobs();
           this.disarmIdle();
           this.output.warn(`The game host exited by itself (exit code ${String(code)}).`);
           this.set({
@@ -248,6 +291,7 @@ export class GameHost implements vscode.Disposable {
       return wasStarting;
     }
     this.process = undefined;
+    this.endJobs();
     this.set({ status: 'stopping' });
     const outcome = await running.stop();
     if (outcome === 'terminated' || outcome === 'already-exited') {
@@ -286,6 +330,51 @@ export class GameHost implements vscode.Disposable {
     this.disarmIdle();
     void this.stop();
     this.emitter.dispose();
+    this.jobEmitter.dispose();
+  }
+
+  private jobQueue(process: GameHostProcess, overlayFolder: string): JobQueue {
+    const target = {
+      overlayFolder,
+      capturesFolder: this.capturesFolder,
+      request: process.request.bind(process),
+    };
+    const shown: string[] = [];
+    return new JobQueue(
+      (change, job) => runJob(target, change, job),
+      (outcome) => {
+        if (outcome.ok) {
+          const { plugin } = outcome;
+          this.output.info(
+            `Game host job ${String(outcome.job)}: ${outcome.ms.job.toFixed(0)} ms ` +
+              `(copies ${outcome.ms.copies.toFixed(1)} ms; in the game: commands ${String(plugin.commands)}, ` +
+              `black ${String(plugin.black)}, white ${String(plugin.white)}, recovery ${String(plugin.recover)}, ` +
+              `file ${String(plugin.write)} ms), crop ${String(outcome.image.crop.width)}×` +
+              String(outcome.image.crop.height),
+          );
+          // The image on screen and the new one stay; older ones go.
+          shown.push(outcome.image.path);
+          if (shown.length > 2) shown.shift();
+          void pruneCaptures(this.capturesFolder, shown);
+        } else {
+          this.output.warn(
+            `Game host job ${String(outcome.job)} failed (${outcome.code}): ${outcome.message}`,
+          );
+        }
+        for (const command of outcome.commands) {
+          if (!command.success && !command.line.startsWith('window close')) {
+            this.output.warn(`  "${command.line}" answered: ${command.text || 'nothing'}`);
+          }
+        }
+        this.jobEmitter.fire(outcome);
+      },
+    );
+  }
+
+  private endJobs(): void {
+    this.jobs?.dispose();
+    this.jobs = undefined;
+    this.display = undefined;
   }
 
   private async lockOptions(): Promise<LockOptions> {

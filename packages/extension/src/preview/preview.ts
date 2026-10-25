@@ -18,10 +18,13 @@ import {
   laidOutIndexOf,
   mapGameText,
   parseScript,
+  previewCrop,
   readGuiFile,
+  textureReloadNames,
   widgetAt,
   widgetHoverText,
   widgetPathAt,
+  writePreviewCopy,
   type DrawList,
   type DrawRect,
   type GameTextOffsets,
@@ -35,7 +38,7 @@ import {
 } from '@etch/core';
 import { layOutPreview } from '@etch/core/playset';
 import { readGameText, saveEncodingOf } from '../game-text.ts';
-import type { GameHost, GameHostState } from '../game-host/index.ts';
+import type { GameHost, GameHostState, JobOutcome } from '../game-host/index.ts';
 import type { WidgetNavigation } from '../navigation.ts';
 import { previewHtml } from './html.ts';
 import type {
@@ -49,7 +52,7 @@ import type {
   WebviewMessage,
 } from './protocol.ts';
 import { RenderLoop } from './render-loop.ts';
-import { PreviewSession, type SessionSettings } from './session.ts';
+import { PreviewSession, type PlaysetPlace, type SessionSettings } from './session.ts';
 
 /** The setting of the preview resolution (spec section 6), in the `etch` section. */
 export const RESOLUTION_SETTING = 'previewResolution';
@@ -84,6 +87,16 @@ export interface PreviewRender {
   readonly requestedAt: number;
 }
 
+/** A game host image the webview drew (spec sections 4 and 7). */
+export interface HostImagePaint {
+  /** The job that captured it, with the plugin's times. */
+  readonly outcome: Extract<JobOutcome, { ok: true }>;
+  /** When the webview drew it, in ms since the Unix epoch. */
+  readonly at: number;
+  /** From the first change the job answered to the drawn image, in milliseconds. */
+  readonly fromChangeMs: number;
+}
+
 /** The webview's answer to a render. */
 export interface PreviewPaint {
   readonly id: number;
@@ -106,6 +119,8 @@ export interface PreviewApi {
   readonly onDidRender: vscode.Event<PreviewRender>;
   /** Fires when the webview has drawn (or failed to draw) a render. */
   readonly onDidPaint: vscode.Event<PreviewPaint>;
+  /** Fires when the webview has drawn an image from the game host. */
+  readonly onDidPaintHostImage: vscode.Event<HostImagePaint>;
   /** The latest render, `undefined` before the first one or after the preview closes. */
   readonly current: PreviewRender | undefined;
   /**
@@ -155,8 +170,17 @@ export interface SourceText {
   /** The document version the text is from. */
   readonly version: number | undefined;
   readonly text: string;
+  /** Whether the file starts with a UTF-8 byte order mark, as saved. */
+  readonly bom: boolean;
   /** Offsets between the editor's text and the game text, which the model counts in. */
   readonly offsets: GameTextOffsets;
+}
+
+/** The game host's image the preview shows, as posted to the webview. */
+interface HostImage {
+  readonly draw: Extract<HostMessage, { type: 'draw' }>;
+  readonly url: string;
+  readonly screen: Screen;
 }
 
 interface Pin {
@@ -175,6 +199,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
   private readonly diagnostics = vscode.languages.createDiagnosticCollection('etch-preview');
   private readonly renderEmitter = new vscode.EventEmitter<PreviewRender>();
   private readonly paintEmitter = new vscode.EventEmitter<PreviewPaint>();
+  private readonly hostPaintEmitter = new vscode.EventEmitter<HostImagePaint>();
   private readonly subscriptions: vscode.Disposable[];
 
   private readonly gameHost: GameHost | undefined;
@@ -218,9 +243,23 @@ export class Preview implements PreviewApi, vscode.Disposable {
   private readonly changedAssets = new Map<string, vscode.Uri>();
   /** A texture or font was created or deleted: the session's folder listings are out of date. */
   private listingsChanged = false;
+  /** `texturefile` values of textures saved since the last game host job, for `reloadtexture`. */
+  private readonly hostTextures = new Set<string>();
+  /** A localisation file was saved since the last game host job: it adds `reloadloc`. */
+  private hostLocalisation = false;
+  /** What the last game host job was made from, to skip a job that would show the same. */
+  private hostJobKey: string | undefined;
+  /** The preview copy's diagnostics for the last job. */
+  private hostCopyDiagnostics: readonly ModelDiagnostic[] = [];
+  /** Why the game host cannot show the window, or why its last job failed. */
+  private hostProblem: Notice | undefined;
+  private hostImage: HostImage | undefined;
+  /** Game host images posted and not drawn yet, by draw id. */
+  private readonly hostDraws = new Map<number, Extract<JobOutcome, { ok: true }>>();
 
   readonly onDidRender = this.renderEmitter.event;
   readonly onDidPaint = this.paintEmitter.event;
+  readonly onDidPaintHostImage = this.hostPaintEmitter.event;
 
   constructor(
     extensionUri: vscode.Uri,
@@ -245,8 +284,14 @@ export class Preview implements PreviewApi, vscode.Disposable {
       ...(gameHost === undefined
         ? []
         : [
-            gameHost.onDidChangeState(() => {
+            gameHost.onDidChangeState((state) => {
+              if (state.status !== 'ready') this.hostJobKey = undefined;
               if (this.lastShown !== undefined) this.show(this.lastShown);
+              // A game host that got ready lays the window out at its screen and runs a job.
+              if (this.panel && this.backendValue === 'game-host') this.request();
+            }),
+            gameHost.onDidFinishJob((outcome) => {
+              this.hostJobDone(outcome);
             }),
           ]),
       navigation.onDidHighlight(() => {
@@ -266,6 +311,13 @@ export class Preview implements PreviewApi, vscode.Disposable {
       vscode.workspace.onDidChangeConfiguration((event) => {
         // The session is loaded again when the settings it was loaded with changed.
         if (this.panel && event.affectsConfiguration('etch')) this.request();
+      }),
+      vscode.workspace.onDidSaveTextDocument((document) => {
+        // The game host reads localisation from disk: a save reloads it (spec section 4).
+        if (this.panel && this.backendValue === 'game-host' && /\.yml$/i.test(document.uri.path)) {
+          this.hostLocalisation = true;
+          this.request();
+        }
       }),
       vscode.workspace.onDidCloseTextDocument((document) => {
         const key = document.uri.toString();
@@ -464,6 +516,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
     this.diagnostics.dispose();
     this.renderEmitter.dispose();
     this.paintEmitter.dispose();
+    this.hostPaintEmitter.dispose();
   }
 
   private get distUri(): vscode.Uri {
@@ -552,7 +605,9 @@ export class Preview implements PreviewApi, vscode.Disposable {
     }
 
     // Several events can answer one change (an edit also moves the selection).
-    const { screen } = this.resolution;
+    const host = this.readyHost();
+    // The game host draws at its own screen (spec section 6), so the window is laid out there.
+    const screen = host?.screen ?? this.resolution.screen;
     const key = [
       uri.toString(),
       source.version ?? 'disk',
@@ -561,8 +616,11 @@ export class Preview implements PreviewApi, vscode.Disposable {
       screen.width,
       screen.height,
       session.serial,
+      this.backendValue,
+      host?.pid ?? '',
     ].join('|');
-    if (!changed && !assetsChanged && key === this.renderKey) {
+    const hostWork = host !== undefined && (this.hostTextures.size > 0 || this.hostLocalisation);
+    if (!changed && !assetsChanged && !hostWork && key === this.renderKey) {
       // The same screen can come from another source (the setting, settings.txt, the monitor).
       if (this.lastState) {
         this.show({ title: this.lastState.title, file: shownPath, notices: session.notices });
@@ -586,8 +644,24 @@ export class Preview implements PreviewApi, vscode.Disposable {
     const pinned = this.pin !== undefined;
     this.render = { id, uri, file, window, layout, drawList, source, pinned, requestedAt };
     this.last = { uri: uri.toString(), name: window.name };
-    // The draw goes first: diagnostics are not on the warm reload's path to pixels.
-    this.post({ type: 'draw', id, list: drawList });
+    // The draw goes first: diagnostics are not on the warm reload's path to pixels. The game host's
+    // last image stays until its next one comes.
+    const hostImage = this.shownHostImage(screen);
+    if (hostImage === undefined) this.post({ type: 'draw', id, list: drawList });
+    else if (this.lastDraw !== hostImage.draw) this.post(hostImage.draw);
+    const copyDiagnostics =
+      host === undefined
+        ? []
+        : this.submitHostJob(host.screen, {
+            session,
+            uri,
+            place,
+            source,
+            file,
+            window,
+            layout,
+            id,
+          });
     this.remember({
       uri: uri.toString(),
       window: window.name,
@@ -616,6 +690,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
         ? session.ui.diagnostics(place.path)
         : guiDiagnostics(file, session.ui.index, session.ui.exists)),
       ...layout.diagnostics,
+      ...copyDiagnostics,
     ];
     this.publish(uri, model, source);
     for (const other of touched) {
@@ -762,6 +837,12 @@ export class Preview implements PreviewApi, vscode.Disposable {
       const winner = session.ui.gameFile(place.path);
       if (winner !== undefined) urls.add(webviewUrl(panel, winner.absolutePath));
       read ||= place.wins;
+      // The game host reads the saved texture again only when told (spec section 4).
+      if (place.wins && this.backendValue === 'game-host' && /\.(?:dds|tga)$/i.test(place.path)) {
+        for (const name of textureReloadNames(session.ui.index, place.path)) {
+          this.hostTextures.add(name);
+        }
+      }
     }
     if (urls.size > 0) this.post({ type: 'invalidate', urls: [...urls] });
     return read;
@@ -772,7 +853,12 @@ export class Preview implements PreviewApi, vscode.Disposable {
    * page is set only once they are known, and the last draw is posted again when it is ready.
    */
   private allowRoots(panel: vscode.WebviewPanel, folders: readonly string[]): void {
-    const roots = [this.distUri, ...folders.map((folder) => vscode.Uri.file(folder))];
+    const roots = [
+      this.distUri,
+      ...folders.map((folder) => vscode.Uri.file(folder)),
+      // The game host's images, which the webview draws like textures.
+      ...(this.gameHost === undefined ? [] : [vscode.Uri.file(this.gameHost.capturesFolder)]),
+    ];
     const key = roots.map((root) => root.toString()).join('\n');
     if (key === this.roots) return;
     const first = this.roots === undefined;
@@ -809,7 +895,11 @@ export class Preview implements PreviewApi, vscode.Disposable {
     if (this.backendValue === 'game-host' && this.gameHost !== undefined) {
       full = {
         ...full,
-        notices: [gameHostNotice(this.gameHost.state, this.session), ...full.notices],
+        notices: [
+          gameHostNotice(this.gameHost.state, this.session),
+          ...this.hostNotices(),
+          ...full.notices,
+        ],
       };
     }
     if (JSON.stringify(full) === JSON.stringify(this.lastState)) return;
@@ -898,6 +988,17 @@ export class Preview implements PreviewApi, vscode.Disposable {
   }
 
   private painted(paint: PreviewPaint): void {
+    const outcome = this.hostDraws.get(paint.id);
+    if (outcome !== undefined) {
+      this.hostDraws.delete(paint.id);
+      if (paint.painted) {
+        const fromChangeMs = paint.at - outcome.requestedAt;
+        this.output.info(
+          `Game host image of job ${String(outcome.job)} drawn ${fromChangeMs.toFixed(0)} ms after the change.`,
+        );
+        this.hostPaintEmitter.fire({ outcome, at: paint.at, fromChangeMs });
+      }
+    }
     const probe = this.probes.get(paint.id);
     if (probe) {
       this.probes.delete(paint.id);
@@ -972,6 +1073,180 @@ export class Preview implements PreviewApi, vscode.Disposable {
     });
   }
 
+  /** The game host while the preview shows it and it is ready, with its screen. */
+  private readyHost(): { screen: Screen; pid: number } | undefined {
+    const host = this.gameHost;
+    if (host === undefined || this.backendValue !== 'game-host') return undefined;
+    const { state, screen } = host;
+    return state.status === 'ready' && screen !== undefined
+      ? { screen, pid: state.pid }
+      : undefined;
+  }
+
+  /** The game host's image, while the preview shows the game host at that image's screen. */
+  private shownHostImage(screen: Screen): HostImage | undefined {
+    const image = this.hostImage;
+    if (this.backendValue !== 'game-host' || image === undefined) return undefined;
+    return image.screen.width === screen.width && image.screen.height === screen.height
+      ? image
+      : undefined;
+  }
+
+  /**
+   * Writes the preview copy of the previewed window and hands the game host a job for it (spec
+   * section 4), unless the last job showed the same. Returns the copy's diagnostics.
+   */
+  private submitHostJob(
+    screen: Screen,
+    render: {
+      session: PreviewSession;
+      uri: vscode.Uri;
+      place: PlaysetPlace | undefined;
+      source: SourceText;
+      file: GuiFile;
+      window: Widget;
+      layout: WindowLayout;
+      id: number;
+    },
+  ): readonly ModelDiagnostic[] {
+    const host = this.gameHost;
+    const { session, uri, place, source, file, window, layout, id } = render;
+    if (host === undefined) return [];
+    const jobKey = [
+      uri.toString(),
+      source.version ?? 'disk',
+      file.definitions.indexOf(window),
+      screen.width,
+      screen.height,
+      session.serial,
+      host.state.status === 'ready' ? host.state.pid : '',
+    ].join('|');
+    const extra = this.hostTextures.size > 0 || this.hostLocalisation;
+    if (jobKey === this.hostJobKey && !extra) return this.hostCopyDiagnostics;
+    this.hostJobKey = jobKey;
+    this.hostCopyDiagnostics = [];
+    if (place === undefined || !/^interface[\\/]/i.test(place.path) || window.name === undefined) {
+      this.hostProblem = {
+        severity: 'warning',
+        message:
+          'The game host previews named windows of .gui files in the interface folder of the game ' +
+          'or of a mod of the playset.',
+      };
+      return [];
+    }
+    const copy = writePreviewCopy({
+      path: place.path,
+      text: source.text,
+      bom: source.bom,
+      window: window.name,
+      screen,
+      // The playset's own definitions; the overlay mod is not part of it.
+      isTopLevelName: (name) => session.ui.index.guiType(name) !== undefined,
+    });
+    this.hostCopyDiagnostics = copy.diagnostics;
+    if (copy.files === undefined) {
+      const why = copy.diagnostics.find((d) => d.severity === 'error') ?? copy.diagnostics[0];
+      this.hostProblem = {
+        severity: 'warning',
+        message: `The game host cannot show this window${why === undefined ? '.' : `: ${why.message}`}`,
+      };
+      return copy.diagnostics;
+    }
+    const crop = previewCrop(layout.widgets, screen);
+    if (crop === undefined) {
+      this.hostProblem = {
+        severity: 'warning',
+        message: "No part of this window is on the game host's screen.",
+      };
+      return copy.diagnostics;
+    }
+    if (this.hostProblem?.severity === 'warning') this.hostProblem = undefined;
+    const submitted = host.submit({
+      copies: copy.files,
+      crop,
+      textures: [...this.hostTextures],
+      localisation: this.hostLocalisation,
+      requestedAt: this.render?.requestedAt ?? Date.now(),
+      tag: id,
+    });
+    if (submitted) {
+      this.hostTextures.clear();
+      this.hostLocalisation = false;
+    } else {
+      this.hostJobKey = undefined;
+    }
+    return copy.diagnostics;
+  }
+
+  /** Shows a finished job's image, or why there is none. */
+  private hostJobDone(outcome: JobOutcome): void {
+    const panel = this.panel;
+    const screen = this.gameHost?.screen;
+    if (panel === undefined || this.backendValue !== 'game-host' || screen === undefined) return;
+    if (!outcome.ok) {
+      this.hostProblem = {
+        severity: 'error',
+        message: `The game host could not draw the window (${outcome.code}): ${outcome.message}`,
+      };
+    } else {
+      // A failed job is over once one succeeds.
+      if (this.hostProblem?.severity === 'error') this.hostProblem = undefined;
+      const { crop, path } = outcome.image;
+      const url = webviewUrl(panel, path);
+      const draw: Extract<HostMessage, { type: 'draw' }> = {
+        type: 'draw',
+        id: ++this.renderCount,
+        list: {
+          version: 1,
+          ...screen,
+          textures: [url],
+          draws: [
+            {
+              kind: 'sprite',
+              texture: 0,
+              shader: 'default',
+              source: this.render?.window.node.start ?? 0,
+              ...crop,
+              sx: 0,
+              sy: 0,
+              sw: crop.width,
+              sh: crop.height,
+            },
+          ],
+        },
+      };
+      const previous = this.hostImage?.url;
+      this.hostImage = { draw, url, screen };
+      this.hostDraws.set(draw.id, outcome);
+      this.post(draw);
+      // Each image has a file of its own; the last one's texture is no longer needed.
+      if (previous !== undefined && previous !== url) {
+        this.post({ type: 'invalidate', urls: [previous] });
+      }
+    }
+    if (this.lastShown !== undefined) this.show(this.lastShown);
+  }
+
+  /** What the preview says about the game host's work beside its state. */
+  private hostNotices(): Notice[] {
+    const notices: Notice[] = [];
+    if (this.hostProblem !== undefined) notices.push(this.hostProblem);
+    const host = this.readyHost();
+    const chosen = this.resolution.screen;
+    if (
+      host !== undefined &&
+      (host.screen.width !== chosen.width || host.screen.height !== chosen.height)
+    ) {
+      notices.push({
+        severity: 'information',
+        message:
+          `The game host runs at ${formatResolution(host.screen)}, so the preview shows that ` +
+          `resolution instead of ${formatResolution(chosen)}.`,
+      });
+    }
+    return notices;
+  }
+
   private closed(): void {
     this.panel = undefined;
     this.backendValue = 'offline';
@@ -985,6 +1260,13 @@ export class Preview implements PreviewApi, vscode.Disposable {
     this.watchers = undefined;
     this.changedAssets.clear();
     this.listingsChanged = false;
+    this.hostTextures.clear();
+    this.hostLocalisation = false;
+    this.hostJobKey = undefined;
+    this.hostCopyDiagnostics = [];
+    this.hostProblem = undefined;
+    this.hostImage = undefined;
+    this.hostDraws.clear();
     this.lastMemento = undefined;
     this.render = undefined;
     this.renderKey = undefined;
@@ -1094,14 +1376,14 @@ async function sourceText(uri: vscode.Uri): Promise<SourceText | undefined> {
   if (document === undefined) {
     const game = await readGameText(uri).catch(() => undefined);
     if (game === undefined) return undefined;
-    return { document, version: undefined, text: game.text, offsets: IDENTITY };
+    return { document, version: undefined, text: game.text, bom: game.bom, offsets: IDENTITY };
   }
   const version = document.version;
   const text = document.getText();
   const encoding = await saveEncodingOf(document, text).catch(() => undefined);
   const mapped = encoding && mapGameText(text, kind, encoding);
   if (!mapped) return undefined;
-  return { document, version, text: mapped.text, offsets: mapped };
+  return { document, version, text: mapped.text, bom: encoding.id === 'utf8bom', offsets: mapped };
 }
 
 const IDENTITY: GameTextOffsets = { toGame: (offset) => offset, toEditor: (offset) => offset };
@@ -1160,9 +1442,7 @@ function gameHostNotice(state: GameHostState, session: PreviewSession | undefine
     case 'ready':
       return {
         severity: 'information',
-        message:
-          `The game host is running (ready after ${(state.readyMs / 1000).toFixed(1)} s). ` +
-          'Its previews come in a later release; until then the preview shows the offline renderer.',
+        message: `The game host draws the preview (ready after ${(state.readyMs / 1000).toFixed(1)} s).`,
       };
     case 'stopping':
       return { severity: 'information', message: 'The game host is stopping.' };

@@ -14,6 +14,7 @@ import * as vscode from 'vscode';
 import type { EtchApi } from '../src/extension.ts';
 import type { GameHostState } from '../src/game-host/index.ts';
 import { prepareInstall } from '../src/game-host/install.ts';
+import { testGameHostJobs } from './game-host-jobs.ts';
 import { processIdentity } from '../src/game-host/windows.ts';
 
 function waitFor(
@@ -52,6 +53,17 @@ export async function testGameHost(api: EtchApi, gamePath: string): Promise<void
   await writeFile(path.join(mod, 'descriptor.mod'), 'name="Etch game host test"\n');
   const copy = path.join(mod, 'interface', 'countrydiplomacyview.gui');
   await copyFile(path.join(gamePath, 'interface', 'countrydiplomacyview.gui'), copy);
+  // A texture and a localisation key of the window in the mod before the game host starts, which
+  // the jobs then change on disk.
+  const texture = path.join(mod, 'gfx', 'interface', 'country_diplomacy_view_bg_top.dds');
+  await mkdir(path.dirname(texture), { recursive: true });
+  await copyFile(
+    path.join(gamePath, 'gfx', 'interface', 'country_diplomacy_view_bg_top.dds'),
+    texture,
+  );
+  const localisation = path.join(mod, 'localisation', 'replace', 'etch_test_l_english.yml');
+  await mkdir(path.dirname(localisation), { recursive: true });
+  await writeFile(localisation, '﻿l_english:\n HEADER_DIPLOMACY:0 "Etch test"\n');
   const settings = vscode.workspace.getConfiguration('etch');
   await settings.update('gamePath', gamePath, vscode.ConfigurationTarget.Global);
   try {
@@ -84,7 +96,7 @@ export async function testGameHost(api: EtchApi, gamePath: string): Promise<void
         `window ${JSON.stringify(running.window)}`,
     );
     assert.ok(
-      preview.notices.some((n) => n.message.startsWith('The game host is running')),
+      preview.notices.some((n) => n.message.startsWith('The game host draws the preview')),
       'the preview says the game host runs',
     );
     assert.ok(running.window.found, "the game's window was found");
@@ -100,6 +112,8 @@ export async function testGameHost(api: EtchApi, gamePath: string): Promise<void
         `window ${JSON.stringify(later)}`,
     );
     assert.equal(later.iconic, false, 'the game host stays restored');
+
+    await testGameHostJobs(api, { gui: copy, texture, localisation });
 
     // Switching away starts the idle timer; it stops the game host after it.
     gameHost.setIdleTime(2_000);

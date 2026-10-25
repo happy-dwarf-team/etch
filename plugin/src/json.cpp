@@ -65,6 +65,8 @@ std::optional<bool> Value::AsBool() const {
     return bool_;
 }
 
+const std::vector<Value>* Value::AsArray() const { return kind_ == Kind::Array ? array_.get() : nullptr; }
+
 namespace {
 
 constexpr int kMaxDepth = 32;
@@ -374,6 +376,19 @@ Writer& Writer::Raw(std::string_view key, std::string_view json) {
 Writer& Writer::Str(std::string_view key, std::string_view value) { return Raw(key, Quote(value)); }
 
 Writer& Writer::Uint(std::string_view key, std::uint64_t value) { return Raw(key, std::to_string(value)); }
+
+Writer& Writer::Fixed(std::string_view key, double value) {
+    if (!std::isfinite(value)) return Raw(key, "null");
+    char text[64];
+    const auto [end, error] = std::to_chars(text, text + sizeof text, value, std::chars_format::fixed, 3);
+    if (error != std::errc{}) return Raw(key, "null");
+    std::string_view number(text, static_cast<std::size_t>(end - text));
+    // 1.500 -> 1.5, 2.000 -> 2
+    while (number.back() == '0') number.remove_suffix(1);
+    if (number.back() == '.') number.remove_suffix(1);
+    if (number == "-0") number = "0";
+    return Raw(key, number);
+}
 
 Writer& Writer::Bool(std::string_view key, bool value) { return Raw(key, value ? "true" : "false"); }
 

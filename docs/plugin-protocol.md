@@ -8,8 +8,8 @@ change to it changes `kProtocolVersion` in
 would misread it. The extension and the plugin ship together in one VSIX
 (ADR 0004), so a peer of another version is refused, not negotiated with.
 
-Protocol version: **1**. It has the handshake and the ping; preview jobs
-(etch#50) come as new request types.
+Protocol version: **1**. It has the handshake, the ping and the preview job
+(etch#50), which came as a new request type without a new version.
 
 ## Finding the pipe
 
@@ -91,6 +91,67 @@ missing answer as a dead plugin and a `frame` that stops advancing between
 pings as a hung game. The game host is ready when `ready` is true after a
 successful handshake.
 
+## Preview job: `job`
+
+One preview job of spec section 4: the extension has written both preview
+copies into the overlay mod, and the plugin shows them and captures them.
+
+```json
+{"id":3,"type":"job","reload":["etch_goto.gui","etchw_goto.gui"],"textures":["gfx//interface//goto_bg.tga"],"localisation":false,"black":"etch_goto_box_backdrop","white":"etchw_goto_box_backdrop","crop":{"x":165,"y":215,"width":333,"height":454},"output":"C:\\Users\\me\\AppData\\Roaming\\Code\\User\\globalStorage\\happy-dwarf-team.etch\\captures\\job-3.tga"}
+```
+
+| Member         | Meaning                                                                                              |
+| -------------- | ---------------------------------------------------------------------------------------------------- |
+| `reload`       | the copies' file names, for `reload`; 1 to 64                                                        |
+| `textures`     | optional: `texturefile` values as the `.gfx` writes them, for `reloadtexture` (textures saved to disk) |
+| `localisation` | optional: `true` adds `reloadloc` (a localisation file was saved)                                    |
+| `black`        | the wrapper window of the copy over black, for `window open`                                         |
+| `white`        | the wrapper window of the copy over white                                                            |
+| `crop`         | the screen rectangle to capture, from the offline renderer's layout; sides from 1 to 16,384          |
+| `output`       | where the image goes: an absolute path ending in `.tga`                                              |
+
+The job runs in steps, each where the game allows it:
+
+1. **Main thread, after the next frame** (`anvil-game`'s `run_on_main_thread`):
+   `window close` of the wrapper the last job left open (a reload of an open
+   window's file crashes the game, etch#22), `reload` of each copy,
+   `reloadtexture` of each texture, `reloadloc` when asked, then
+   `window open <black>`. The plugin calls the game's console dispatcher
+   itself, as Tongs does, because the main menu has the console but no game
+   session (etch#21).
+2. **The next `IDirect3DDevice9::Present`**: a `StretchRect` of the crop,
+   clamped to the back buffer, into a render target of its size and a readback
+   of only that. No full-frame readback.
+3. **Main thread**: `window open <white>`, which also closes the black wrapper
+   (the console keeps one window open).
+4. **The next Present**: the same crop over white.
+5. **A worker thread**: straight colour and alpha from the two crops (etch#22):
+   over black B = c·a, over white W = c·a + 255·(1 − a), so per pixel
+   a = 255 − (W − B), averaged over the three channels and rounded, and
+   c = B · 255 / a, rounded. It writes them to `output` as an uncompressed
+   32-bit TGA, rows top first, which the webview draws like any texture.
+
+The answer comes when the job ends, usually after the answers to later pings:
+
+```json
+{"id":3,"ok":true,"output":"C:\\Users\\me\\...\\captures\\job-3.tga","crop":{"x":165,"y":215,"width":333,"height":454},"frames":{"black":5120,"white":5121},"ms":{"queued":3.1,"commands":18.4,"black":6.2,"white":6.9,"recover":0.4,"write":0.3,"total":38.2},"commands":[{"line":"reload etch_goto.gui","success":true,"text":"etch_goto.gui reloaded!","ms":7.9}]}
+```
+
+| Member     | Meaning                                                                                                   |
+| ---------- | --------------------------------------------------------------------------------------------------------- |
+| `output`   | the image's path, as asked                                                                                 |
+| `crop`     | the rectangle captured: the request's, clamped to the back buffer; the image's size                        |
+| `frames`   | the frame counter when each crop was taken                                                                 |
+| `ms`       | waiting for the main thread, step 1's console calls, each capture (from its window opening), the recovery, the file, and the whole job |
+| `commands` | every console line the job ran, with the dispatcher's success byte, its answer and its time                |
+
+A failed job answers `"ok": false` with its `error`, `message`, `ms` and
+`commands`. A `reloadtexture` or `reloadloc` the game refuses does not fail
+the job; its answer is in `commands`. One job runs at a time.
+
+The pipe is opened for overlapped I/O, so that a job's answer is written from
+a worker thread while the pipe thread waits for the next request.
+
 ## Error codes
 
 | `error`              | When                                                          | Disconnects |
@@ -102,3 +163,18 @@ successful handshake.
 | `protocol_mismatch`  | `hello` with another protocol version                         | yes         |
 | `unknown_type`       | a `type` this version does not know                           | no          |
 | `line_too_long`      | a line over 65,536 bytes                                      | yes         |
+
+A `job` can also get these:
+
+| `error`               | When                                                                                       |
+| --------------------- | ------------------------------------------------------------------------------------------ |
+| `not_ready`           | before `anvil-game.ready`, or the main thread takes no work                                |
+| `no_capture`          | the game's Direct3D 9 device was not hooked (see `anvil.log`)                              |
+| `busy`                | another job runs (one Etch stopped waiting for)                                            |
+| `console_unavailable` | the game's console manager is not set up                                                   |
+| `reload_failed`       | the game refused a `reload`; the message has its answer                                    |
+| `open_failed`         | the game refused a `window open`                                                           |
+| `capture_timeout`     | no Present drew the opened wrapper within 10 frames                                        |
+| `capture_failed`      | the crop lies outside the back buffer, the back buffer is not 32-bit, or the copy failed   |
+| `write_failed`        | the image cannot be written                                                                |
+| `game_fault`          | a console call raised a structured exception; the plugin refuses every later job, and the game host must be restarted |

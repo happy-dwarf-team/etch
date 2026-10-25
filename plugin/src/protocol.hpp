@@ -5,11 +5,13 @@
 // answered by id. This part knows nothing of pipes or of the game, so the tests
 // drive it directly.
 
+#include "job.hpp"
 #include "json.hpp"
 
 #include <cstddef>
 #include <cstdint>
 #include <functional>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -31,10 +33,17 @@ struct Host {
     std::uint64_t process_start_ms = 0;
     std::string session;  // the session id the pipe is named after
     std::string plugin_version;
+    // Starts a preview job, or says why not; `done` gets its result later, on
+    // another thread. Unset: the plugin takes no jobs (not_ready).
+    std::function<std::optional<Refusal>(JobRequest request, std::function<void(const JobResult&)> done)> start_job;
 };
 
+// Writes one answer line (without "\n") to the connection it belongs to, from
+// any thread; does nothing once that client is gone.
+using Send = std::function<void(const std::string& line)>;
+
 struct Reply {
-    std::string line;    // the answer, without "\n"
+    std::string line;    // the answer, without "\n"; empty when it comes later through Send
     bool close = false;  // disconnect the client after sending it
 };
 
@@ -42,7 +51,8 @@ struct Reply {
 // the handshake.
 class Connection {
 public:
-    explicit Connection(const Host& host) : host_(host) {}
+    // `send` carries the answers that come later, such as a job's.
+    explicit Connection(const Host& host, Send send = {}) : host_(host), send_(std::move(send)) {}
 
     Reply Handle(std::string_view line);
     // The answer to a line longer than kMaxLine, after which the client is
@@ -52,8 +62,10 @@ public:
 private:
     Reply Hello(std::uint64_t id, const json::Value& request);
     Reply Ping(std::uint64_t id) const;
+    Reply Job(std::uint64_t id, const json::Value& request);
 
     const Host& host_;
+    Send send_;
     bool greeted_ = false;
 };
 
