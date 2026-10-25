@@ -49,6 +49,12 @@ export interface RunOptions {
   readonly resolutions?: readonly string[];
   /** Render on the GPU instead of SwiftShader. */
   readonly gpu?: boolean;
+  /**
+   * Compare the game host's images (etch#53) instead of headless renders: the local corpus
+   * folder's `game-host/images/captures/...png`, which the extension's corpus check writes. The
+   * results then go to `game-host/diffs/` and `game-host/reports/`.
+   */
+  readonly gameHost?: boolean;
   readonly environment?: DiscoveryEnvironment;
   readonly log?: (line: string) => void;
 }
@@ -64,6 +70,14 @@ export interface RunResult {
 
 /** The folders of the local corpus folder a run writes. */
 export const RESULT_FOLDERS = { renders: 'renders', diffs: 'diffs', reports: 'reports' } as const;
+
+/** The game host's images and results in the local corpus folder (etch#53). */
+export const GAME_HOST_FOLDER = 'game-host';
+
+/** The folder of the local corpus folder a run writes `folder` (diffs, reports) to. */
+export function resultFolder(options: Pick<RunOptions, 'gameHost'>, folder: string): string {
+  return options.gameHost === true ? join(GAME_HOST_FOLDER, folder) : folder;
+}
 
 export async function runCorpus(options: RunOptions): Promise<RunResult> {
   const log = options.log ?? (() => undefined);
@@ -124,8 +138,17 @@ export async function runCorpus(options: RunOptions): Promise<RunResult> {
           if (window !== undefined) windows.push(window);
         }
         const plan = planCapture({ manifest, record, windows });
-        renderer ??= await HeadlessRenderer.launch({ gpu: options.gpu ?? false });
-        const painted = await renderer.paint(plan.drawList, files.fileOf);
+        let painted;
+        if (options.gameHost === true) {
+          const image = join(options.localFolder, GAME_HOST_FOLDER, 'images', `${name}.png`);
+          const bytes = await readFile(image).catch(() => {
+            throw new Error('No game host image.');
+          });
+          painted = { image: decodePng(bytes), problems: [] };
+        } else {
+          renderer ??= await HeadlessRenderer.launch({ gpu: options.gpu ?? false });
+          painted = await renderer.paint(plan.drawList, files.fileOf);
+        }
         const game = decodePng(await readFile(screenshot));
         const mask = unstable === undefined ? undefined : decodePng(await readFile(unstable));
         const { comparison, map } = compareCapture(manifest, plan, painted.image, game, mask);
@@ -140,23 +163,25 @@ export async function runCorpus(options: RunOptions): Promise<RunResult> {
                   ...painted.problems.map((p) => `A texture could not be drawn: ${p}`),
                 ],
               };
+        if (options.gameHost !== true) {
+          await write(
+            options.localFolder,
+            RESULT_FOLDERS.renders,
+            `${name}.png`,
+            encodePng(painted.image),
+          );
+        }
         await write(
           options.localFolder,
-          RESULT_FOLDERS.renders,
-          `${name}.png`,
-          encodePng(painted.image),
-        );
-        await write(
-          options.localFolder,
-          RESULT_FOLDERS.diffs,
+          resultFolder(options, RESULT_FOLDERS.diffs),
           `${name}.png`,
           encodePng(differenceImage(map, game)),
         );
         await write(
           options.localFolder,
-          RESULT_FOLDERS.reports,
+          resultFolder(options, RESULT_FOLDERS.reports),
           `${name}.json`,
-          `${JSON.stringify({ ...result, renderer: renderer.gpu }, null, 1)}\n`,
+          `${JSON.stringify({ ...result, renderer: options.gameHost === true ? 'game host' : renderer?.gpu }, null, 1)}\n`,
         );
         outcomes.set(key, { kind: 'compared', key, comparison: result });
         log(`${name}: ${result.passed ? 'pass' : 'FAIL'}`);
@@ -177,13 +202,18 @@ export async function runCorpus(options: RunOptions): Promise<RunResult> {
     if (!ordered.some((o) => manifestWindowOf(manifest, o.key) === window.id)) continue;
     await write(
       options.localFolder,
-      RESULT_FOLDERS.reports,
+      resultFolder(options, RESULT_FOLDERS.reports),
       `${window.id}.md`,
       windowReport(manifest, window.id, ordered),
     );
   }
   const summary = corpusSummary(manifest, ordered);
-  await write(options.localFolder, RESULT_FOLDERS.reports, 'README.md', summary.markdown);
+  await write(
+    options.localFolder,
+    resultFolder(options, RESULT_FOLDERS.reports),
+    'README.md',
+    summary.markdown,
+  );
   const gating = ordered.filter((o) => gates(manifest, o.key));
   return {
     manifest,
