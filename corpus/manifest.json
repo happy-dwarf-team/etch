@@ -158,15 +158,31 @@
     },
     {
       "id": "anbennar",
-      "title": "Anbennar + Proper 2K UI - Anbennar",
+      "title": "Anbennar + Proper 2K UI Enhanced + P2KE Patch - Anbennar",
       "gate": "report",
+      "save": {
+        "file": "Verne1444_11_11.eu4",
+        "sha256": "E5B785E1D711353FB5D23F4DE16991CF35FAC2EAB9F5D1C202B065B91D0851FD",
+        "description": "Verne, 11 November 1444: the maintainer's Anbennar start, saved with Anbennar, Proper 2K UI Enhanced and an earlier Anbennar UI patch."
+      },
       "mods": [
         {
           "name": "Anbennar: A Fantasy Total Conversion",
-          "workshopId": "1385440355"
+          "workshopId": "1385440355",
+          "sha256": "99DAB21EA321F176E23824D8EC3A8B75928A92EE68082C589557D219D654A1DD",
+          "note": "Hashed from the Workshop item on 2026-10-26. The patch below overrides every .gui file it has."
         },
         {
-          "name": "Proper 2K UI - Anbennar"
+          "name": "Proper 2K UI Enhanced",
+          "workshopId": "3290499798",
+          "sha256": "B411CFAEAC291CA1DB8CE6FA4C83FC5BD6D547A503A16C29ED7783C2CBCED1F9",
+          "note": "The release playset's pin. It loads after Anbennar, as in the maintainer's launcher playset; the order decides papacy.gfx, the vic_29s font and credits.txt, which both mods have."
+        },
+        {
+          "name": "P2KE Patch - Anbennar",
+          "workshopId": "3777997797",
+          "sha256": "E4ABCD62FCE34798AC0CF4BBB76CA147BE105E00D8E3F04B643062EF8C25FC55",
+          "note": "Hashed from the Workshop item on 2026-10-26. It overrides 63 .gui files, among them topbar.gui (347 KB) and countryreformview.gui, which defines gov_view_reform_level_entry_4 twice at top level (etch#16). Its descriptor also names \"Anbennar Chinese ver\", which the playset leaves out."
         }
       ],
       "disabledDlcs": [],
@@ -176,11 +192,13 @@
         "esc-menu",
         "court",
         "diplomacy",
-        "estates",
         "province",
-        "event"
+        "ledger",
+        "settings",
+        "macro-builder",
+        "estates"
       ],
-      "note": "Reported in M4 (spec section 11). Its own save, the Workshop item of the UI mod and the pins are set then; the windows are those the mods override (etch#10)."
+      "note": "Reported in M4 (spec section 11), gating nothing (etch#55). Proper 2K UI Enhanced overrides every vanilla .gui file, so every corpus window is one the playset's mods override; the event window waits for a recipe (https://github.com/happy-dwarf-team/etch/issues/97)."
     }
   ],
   "windows": [
