@@ -132,7 +132,7 @@ export async function testGameHostRestarts(api: EtchApi, mod: string, gui: strin
   assert.equal(gameHost.state.status, 'ready', 'the game host is ready before the restarts');
   const first = await verifiedGame(api);
 
-  // Back to the window the game host draws (the jobs ended on a dialog it does not), with its image.
+  // Back to the main window (the jobs ended on a dialog), with its image.
   const document = await vscode.workspace.openTextDocument(vscode.Uri.file(gui));
   const editor = await vscode.window.showTextDocument(document, vscode.ViewColumn.One);
   const shown = nextImage(api, 30_000);

@@ -55,6 +55,8 @@ export type ModelDiagnosticCode =
   | 'copy-leaves-out'
   /** Game host: a previewed window with `parent`, which inside the backdrop wrapper names a sibling instead. */
   | 'wrapped-parent'
+  /** Game host: a dialog's `shieldtype`, which the preview copy leaves out when it wraps the dialog as a `windowType` (etch#118). */
+  | 'wrapped-shield'
   /** Game host: a line the game wrote to `error.log` during a preview job (etch#52). */
   | 'game-error-log'
   /** Game host: a console command of a preview job that the game refused (etch#52). */

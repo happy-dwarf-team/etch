@@ -1285,17 +1285,6 @@ export class Preview implements PreviewApi, vscode.Disposable {
       });
       return [];
     }
-    if (window.kind.toLowerCase() === 'eu3dialogtype') {
-      // etch#50's live runs: an eu3dialogtype nested in the backdrop wrapper draws nothing, while
-      // the same dialog opened on its own draws.
-      this.setHostProblem({
-        severity: 'warning',
-        message:
-          'The game host cannot show eu3dialogtype windows yet: inside the backdrop wrapper the ' +
-          'game draws nothing of them.',
-      });
-      return [];
-    }
     const copy = writePreviewCopy({
       path: place.path,
       text: source.text,
