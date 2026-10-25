@@ -4,6 +4,7 @@ import * as assert from 'node:assert/strict';
 import * as vscode from 'vscode';
 import type { EtchApi } from '../src/extension.ts';
 import { testGameHost } from './game-host.ts';
+import { testPreviewCopyH1 } from './game-host-h1.ts';
 import { testGameText } from './game-text.ts';
 import { testNavigation } from './navigation.ts';
 import { testPreviewBudget } from './preview-budget.ts';
@@ -39,7 +40,9 @@ export async function run(): Promise<void> {
   // Local only: one start of the real game host from a game host install.
   const gameHostPath = process.env['ETCH_GAME_HOST_PATH'];
   if (gameHostPath !== undefined && gameHostPath !== '') {
-    await testGameHost(api, gameHostPath);
+    // ETCH_GAME_HOST_CHECK=h1 runs H1 of etch#16 instead (etch#119).
+    if (process.env['ETCH_GAME_HOST_CHECK'] === 'h1') await testPreviewCopyH1(api, gameHostPath);
+    else await testGameHost(api, gameHostPath);
     return;
   }
 

@@ -215,6 +215,87 @@ What the live runs of etch#50 found:
   the answer.
 - **`reloadloc`** answers "Localisation reloaded!" and takes about 200 ms.
 
+## The preview copy draws the original
+
+H1 of etch#16, checked live in etch#119: the preview copy, wrapped and
+captured over black and white, gives the pixels the game draws for the
+original window. `packages/extension/test/game-host-h1.ts` runs the check
+(`ETCH_GAME_HOST_CHECK=h1` beside `ETCH_GAME_HOST_PATH`, `pnpm --filter etch
+test`).
+
+**How.** Three vanilla windows that `window open` draws on the screen by
+themselves, at their `position` and without a `show_position` (so the copy's
+`show_position` rule moves nothing):
+
+| Window | File | What it covers |
+| --- | --- | --- |
+| `goto_box` | `goto.gui` | a plain window with a list box and an edit box |
+| `ages_view` | `ages_view.gui` | `if_resolution`, `CENTER` orientation |
+| `console_wnd` | `core.gui` | the same-file `scrollbartype` (`console_list`), the one reference the copy rewrites; mostly translucent |
+
+A test mod holds the three files as the game has them and a `frontend.gui`
+whose `mainmenu` gets the overlay mod's black or white backdrop sprite as its
+first child, because the main menu's map moves under every window. For each
+window the plugin's `job` request captures the whole 3440×1440 screen four
+times: the main menu alone (a 1 × 1 window that draws nothing), the original
+by its own name (opened twice, so a pixel that changed between the two frames
+gets an alpha below 255), the preview copy through `runJob` as the preview
+sends it, and the main menu again. The copy's straight RGBA laid over the menu
+must give the original's pixels. Left out: the FPS counter's corner, and
+pixels that changed within a capture or, outside the copy, between the two
+menu captures.
+
+**Result** (2026-10-25, EU4 1.37.5 `9AD3EFE1…D771A`, Anvil 1.3.0, Bellows
+0.9.0, plugin of `main`, vanilla, 3440×1440). The copy's pixels laid over the
+menu differ from the original's by at most 1 per channel on every compared
+pixel, with no pixel of the screen left out:
+
+| Window | Pixels the copy draws (opaque / translucent) | Over the black backdrop | Over the white backdrop |
+| --- | --- | --- | --- |
+| `goto_box` | 99,255 / 5,845 | 5 pixels off by 1 | 17 pixels off by 1 |
+| `ages_view` | 430,661 / 21,708 | equal | 392 pixels off by 1 |
+| `console_wnd` | 2,304 / 191,630 | equal | equal |
+
+The black column is the test as committed (run 4 of etch#119). The white
+column is run 3, whose test still left out every pixel the menu changed after
+the window closed, which hid all of `goto_box` (see below); the numbers are
+the committed rule applied to its images afterwards. Runs 1 and 2 found the
+moving menu and the fading-in menu.
+
+None of the four rules of etch#16 changes a pixel: prefixed names, the
+rewritten `scrollbartype`, the wrapper and the dual capture give the
+original's window. The image of the preview's own path (`runJob`, captured in
+the first Present) equals one captured 300 ms after the open in every run.
+The original reloaded by its own `reload` equals the one the game loaded at
+startup (`ages_view` in both colours, `goto_box` over white), as etch#16 read
+from the code; over black, the reloaded `goto_box` drew the translucent shadow
+of its top and bottom edges darker (408 pixels, up to 61), as if a second
+`goto_box` lay under it.
+
+What the runs also showed:
+
+- **The main menu moves.** The map behind it pans and shimmers, the tip at
+  the bottom changes, and for the first seconds after `ready` the whole menu
+  fades in. A capture of the original over the plain menu therefore cannot be
+  compared with one of the menu alone; only opaque pixels can (0 differing
+  pixels for `goto_box` and `console_wnd`, 21 off by 1 for `ages_view`, in
+  the first run).
+- **`ages_view` varies by 1.** Some of its opaque pixels differ by 1 between
+  two opens: copy against original 21, 126 and 0 pixels in runs 1, 3 and 4,
+  and the original against itself reloaded 5 in run 1. Why is not known.
+- **A closed `goto_box` lingers.** After `window close goto_box` the next
+  capture of the menu alone, about 300 ms later, still showed the whole
+  window (runs 3 and 4), and later captures showed the caret of its edit box
+  blinking at (201, 208), over any window (run 2). A lingering instance under
+  a new one would explain the darker shadow of the reloaded `goto_box`; this
+  is not verified. It cannot reach the check: the original is captured before
+  the first `goto_box` opens, the copy's opaque backdrop hides what lies
+  under the wrapper, and `goto_box` comes last.
+
+Not checked: other resolutions and the other `if_resolution` branch (H2 of
+etch#16), modded playsets, windows with a `show_position`, whose original the
+console leaves at `position` (etch#50), and `eu3dialogtype` (etch#118).
+
 ## Restart and watchdog
 
 The game host restarts by itself (etch#51, `game-host/watchdog.ts` and
