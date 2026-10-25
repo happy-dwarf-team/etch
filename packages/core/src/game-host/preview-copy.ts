@@ -106,6 +106,18 @@ export interface PreviewCopyFile {
   readonly text: string;
   /** The text as the game reads it: Windows-1252, with the original's byte order mark if any. */
   readonly bytes: Uint8Array;
+  /** Where each part of `text` comes from in the original, for `originalOffset`. */
+  readonly spans: readonly CopySpan[];
+}
+
+/**
+ * A part of a copy's text from `copy` on: kept from the original at `original` on, or, when
+ * `inserted`, written by the copy writer in place of (or before) the original at `original`.
+ */
+export interface CopySpan {
+  readonly copy: number;
+  readonly original: number;
+  readonly inserted: boolean;
 }
 
 export interface PreviewCopy {
@@ -274,7 +286,7 @@ export function writePreviewCopy(request: PreviewCopyRequest): PreviewCopy {
       { start: window.node.start, end: window.node.start, text: head },
       { start: window.node.end, end: window.node.end, text: tail },
     );
-    const text = applyEdits(request.text, copyEdits);
+    const { text, spans } = applyEdits(request.text, copyEdits);
     const path = previewCopyPath(request.path, colour) ?? '';
     const body = encodeDecodedWindows1252(text);
     const bytes = request.bom ? withBom(body) : body;
@@ -286,6 +298,7 @@ export function writePreviewCopy(request: PreviewCopyRequest): PreviewCopy {
       window: copyWindow,
       text,
       bytes,
+      spans,
     };
   });
 
@@ -455,20 +468,58 @@ function wrapperText(
   return [head, `${eol}\t}`];
 }
 
-/** Applies non-overlapping edits; inserts at one offset keep their order. */
-function applyEdits(text: string, edits: readonly Edit[]): string {
+/**
+ * Applies non-overlapping edits; inserts at one offset keep their order. Returns the text and
+ * where each part of it comes from.
+ */
+function applyEdits(
+  text: string,
+  edits: readonly Edit[],
+): { text: string; spans: readonly CopySpan[] } {
   const sorted = edits
     .map((edit, order) => ({ edit, order }))
     .sort((a, b) => a.edit.start - b.edit.start || a.edit.end - b.edit.end || a.order - b.order);
   const parts: string[] = [];
+  const spans: CopySpan[] = [];
   let at = 0;
+  let length = 0;
+  const push = (part: string, original: number, inserted: boolean): void => {
+    if (part === '') return;
+    spans.push({ copy: length, original, inserted });
+    parts.push(part);
+    length += part.length;
+  };
   for (const { edit } of sorted) {
     if (edit.start < at) continue; // inside a range already left out
-    parts.push(text.slice(at, edit.start), edit.text);
+    push(text.slice(at, edit.start), at, false);
+    push(edit.text, edit.start, true);
     at = edit.end;
   }
-  parts.push(text.slice(at));
-  return parts.join('');
+  push(text.slice(at), at, false);
+  return { text: parts.join(''), spans };
+}
+
+/**
+ * The offset in the original's text that an offset of a copy's text comes from; text the copy
+ * writer added (the wrapper, a prefix, the moved `position`) maps to where it went in.
+ */
+export function originalOffset(copy: PreviewCopyFile, offset: number): number {
+  let low = 0;
+  let high = copy.spans.length - 1;
+  let found: CopySpan | undefined;
+  while (low <= high) {
+    const middle = (low + high) >> 1;
+    const span = copy.spans[middle];
+    if (span === undefined) break;
+    if (span.copy <= offset) {
+      found = span;
+      low = middle + 1;
+    } else {
+      high = middle - 1;
+    }
+  }
+  if (found === undefined) return 0;
+  return found.inserted ? found.original : found.original + (offset - found.copy);
 }
 
 function withBom(body: Uint8Array): Uint8Array {

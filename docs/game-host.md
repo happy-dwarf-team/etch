@@ -148,6 +148,55 @@ A job that fails (a `reload` or `window open` the game refuses, a capture that
 does not come) shows its reason as a notice and in the output channel, with
 every console line it ran; the last image stays.
 
+## Diagnostics from the game
+
+What the game itself says about a job goes to the Problems panel, on the
+edited file (spec section 10, etch#52; `game-host/error-log.ts`, core's
+`game-host/diagnostics.ts`):
+
+- **`error.log`.** The game writes `<profile>/logs/error.log` a line at a
+  time. When the game host gets ready, the extension skips what the start
+  wrote; each job then reads the whole lines added while it ran
+  (`game-error-log`). Lines written between two jobs go to the output channel
+  only. A line that names a preview copy and a line
+  (`file: interface/etch_goto.gui line: 12`, `near line: 12`) is put on the
+  original's line it comes from, through the copy writer's spans, and its
+  message names the original's path and line. The copies' names lose their
+  `etch_` or `etchw_` prefix, the wrapper is called the window's backdrop, and
+  what both copies report is reported once. `Could not find sprite type
+  [GFX_x]` (the game draws the magenta placeholder) goes on every value of the
+  window that names the sprite, unless the model already reports that sprite
+  missing there. Any other line goes on the window's name. A parse error is an
+  Error, the rest Warnings.
+- **Console answers** (`game-console-answer`): a `reload` that is refused or
+  does not answer "reloaded" (an Error), a `reloadtexture` that answers "Reload
+  failed", a `reloadloc` that does not reload, and a refused `window open`, on
+  the window's name. A `window close` of a wrapper that is not open is
+  expected and not reported.
+- **The game's own window** (`game-original-differs`, a Warning, H6 of
+  etch#16): when a later mod of the playset has a file at the edited file's
+  path, which the game reads instead, or when an earlier file in load order
+  defines the window's name, whose definition the game keeps. The game host
+  still shows the edited text, through the preview copy.
+- **The FPS counter** (`fps-counter-corner`, a Warning, etch#22): a crop that
+  reaches the top-right 60 × 20 pixels of the screen, where the game draws a
+  green FPS counter over every window. The corner was measured at 3440×1440
+  only; its size at other resolutions is assumed the same.
+
+The game's report belongs to the text the job was made from: it shows while
+the preview shows the game host and that text, and the next job replaces it.
+
+In two live runs (etch#52, 2026-10-25, the machine and builds of etch#50, the
+test mod's `countrydiplomacyview.gui` with two icons of one name and a sprite
+no `.gfx` defines), every line was in `error.log` by the job's answer. The
+`reload` of each copy wrote `Guitype 'etch_probe_icon' already exists in
+windowtype 'etch_countrydiplomacyview'. file:
+interface/etch_countrydiplomacyview.gui line: 43`, which became one Warning on
+line 31 of the original, the second icon. Each `window open` wrote `Could not
+find sprite type [GFX_etch_probe_missing]` twice, all left out because the
+model reports the sprite missing. `reloadtexture` answered "Reload failed" and
+showed as a Warning.
+
 What the live runs of etch#50 found:
 
 - **Show animation.** `window open` creates a window at its `position`; the

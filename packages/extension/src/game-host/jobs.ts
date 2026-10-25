@@ -49,6 +49,10 @@ interface OutcomeBase {
   readonly tag: number;
   readonly requestedAt: number;
   readonly commands: readonly JobCommand[];
+  /** The lines the game wrote to `error.log` while the job ran. */
+  readonly errorLog: readonly string[];
+  /** The lines it wrote between the last job's end and this one's start. */
+  readonly earlierErrorLog: readonly string[];
 }
 
 export type JobOutcome =
@@ -77,6 +81,8 @@ export interface JobTarget {
     body: { type: string } & Record<string, unknown>,
     timeoutMs?: number,
   ): Promise<Record<string, unknown>>;
+  /** The game host's `error.log`: the whole lines added since the last read. */
+  readonly errorLog?: { read(): Promise<string[]> };
 }
 
 /** How long a job may take before Etch stops waiting for its answer. */
@@ -97,6 +103,7 @@ export async function runJob(
   job: number,
 ): Promise<JobOutcome> {
   const started = performance.now();
+  const earlierErrorLog = (await target.errorLog?.read()) ?? [];
   const [black, white] = change.copies;
   for (const copy of change.copies) {
     const path = join(target.overlayFolder, ...copy.path.split('/'));
@@ -115,7 +122,7 @@ export async function runJob(
     crop: change.crop,
     output,
   };
-  const base = { job, tag: change.tag, requestedAt: change.requestedAt };
+  const base = { job, tag: change.tag, requestedAt: change.requestedAt, earlierErrorLog };
   const sent = performance.now();
   let answer: Record<string, unknown>;
   try {
@@ -124,6 +131,7 @@ export async function runJob(
     if (!(error instanceof PipeError)) throw error;
     return {
       ...base,
+      errorLog: (await target.errorLog?.read()) ?? [],
       ok: false,
       code: error.code,
       message: error.message,
@@ -131,10 +139,13 @@ export async function runJob(
     };
   }
   const finished = performance.now();
+  // The game writes each line of its log as it goes, so the job's lines are there by its answer.
+  const errorLog = (await target.errorLog?.read()) ?? [];
   const crop = answer['crop'] as CropRect | undefined;
   const frames = answer['frames'] as { black: number; white: number } | undefined;
   return {
     ...base,
+    errorLog,
     ok: true,
     image: { path: output, crop: crop ?? change.crop },
     frames: frames ?? { black: 0, white: 0 },
@@ -253,6 +264,8 @@ export class JobQueue {
             tag: change.tag,
             requestedAt: change.requestedAt,
             commands: [],
+            errorLog: [],
+            earlierErrorLog: [],
             ok: false,
             code: 'error',
             message: error instanceof Error ? error.message : String(error),

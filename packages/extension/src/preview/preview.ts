@@ -11,12 +11,15 @@ import {
   allWidgets,
   choosePreviewResolution,
   formatResolution,
+  fpsCounterDiagnostics,
+  gameHostDiagnostics,
   isSide,
   parseResolution,
   gameTextKind,
   guiDiagnostics,
   laidOutIndexOf,
   mapGameText,
+  originalWindowDiagnostics,
   parseScript,
   previewCrop,
   readGuiFile,
@@ -30,6 +33,7 @@ import {
   type GameTextOffsets,
   type GuiFile,
   type ModelDiagnostic,
+  type PreviewCopyFile,
   type PreviewResolution,
   type ResolutionContext,
   type Screen,
@@ -183,6 +187,27 @@ export interface SourceText {
   readonly offsets: GameTextOffsets;
 }
 
+/** What a game host job was made from, to put the game's report of it on the original's text. */
+interface HostJobContext {
+  readonly uri: string;
+  /** The game text the copies were written from. */
+  readonly text: string;
+  readonly path: string;
+  readonly window: Widget;
+  /** The file's top-level names, which the copies prefix. */
+  readonly names: readonly string[];
+  readonly copies: readonly PreviewCopyFile[];
+  /** The model's diagnostics of that text, set when the render publishes them. */
+  offline: readonly ModelDiagnostic[];
+}
+
+/** The game's report of the last job (spec section 10), for the text it was made from. */
+interface GameReport {
+  readonly uri: string;
+  readonly text: string;
+  readonly diagnostics: readonly ModelDiagnostic[];
+}
+
 /** The game host's image the preview shows, as posted to the webview. */
 interface HostImage {
   readonly draw: Extract<HostMessage, { type: 'draw' }>;
@@ -242,6 +267,8 @@ export class Preview implements PreviewApi, vscode.Disposable {
   private readonly fromBuffer = new Set<string>();
   /** The model diagnostics last published for each file, before texture problems are added. */
   private readonly published = new Map<string, vscode.Diagnostic[]>();
+  /** The texture problems last reported for each file, added to its model diagnostics. */
+  private readonly textureProblems = new Map<string, vscode.Diagnostic[]>();
   private readonly probes = new Map<number, (paint: PreviewPaint) => void>();
   /** The pointer over the preview, in screen pixels. */
   private pointer: Point | undefined;
@@ -264,6 +291,10 @@ export class Preview implements PreviewApi, vscode.Disposable {
   /** Why the game host cannot show the window, or why its last job failed. */
   private hostProblem: Notice | undefined;
   private hostImage: HostImage | undefined;
+  /** The game host jobs submitted and not answered yet, by their render's id. */
+  private readonly hostJobContexts = new Map<number, HostJobContext>();
+  /** What the game said about the last job. */
+  private gameReport: GameReport | undefined;
   /** Game host images posted and not drawn yet, by draw id. */
   private readonly hostDraws = new Map<number, Extract<JobOutcome, { ok: true }>>();
 
@@ -718,7 +749,9 @@ export class Preview implements PreviewApi, vscode.Disposable {
       ...layout.diagnostics,
       ...copyDiagnostics,
     ];
-    this.publish(uri, model, source);
+    const context = this.hostJobContexts.get(id);
+    if (context !== undefined) context.offline = model;
+    this.publish(uri, [...model, ...this.gameDiagnostics(uri, source)], source);
     for (const other of touched) {
       if (other.uri.toString() === uri.toString()) continue;
       this.publish(other.uri, session.ui.diagnostics(other.path), other.source);
@@ -1096,18 +1129,66 @@ export class Preview implements PreviewApi, vscode.Disposable {
       }
     }
     const key = render.uri.toString();
+    this.textureProblems.set(key, extra);
     this.diagnostics.set(render.uri, [...(this.published.get(key) ?? []), ...extra]);
   }
 
+  /** Publishes a file's model diagnostics; its texture problems go until the next paint. */
   private publish(uri: vscode.Uri, found: readonly ModelDiagnostic[], source: SourceText): void {
+    this.textureProblems.delete(uri.toString());
+    this.republish(uri, found, source);
+  }
+
+  /** Publishes a file's model diagnostics and keeps the texture problems last reported for it. */
+  private republish(uri: vscode.Uri, found: readonly ModelDiagnostic[], source: SourceText): void {
+    const key = uri.toString();
     const diagnostics = found.map((d) => toDiagnostic(d, source));
-    this.published.set(uri.toString(), diagnostics);
-    this.diagnostics.set(uri, diagnostics);
+    this.published.set(key, diagnostics);
+    this.diagnostics.set(uri, [...diagnostics, ...(this.textureProblems.get(key) ?? [])]);
   }
 
   private forget(uri: vscode.Uri): void {
     this.published.delete(uri.toString());
+    this.textureProblems.delete(uri.toString());
     this.diagnostics.delete(uri);
+  }
+
+  /** The game's report of the last job, while the preview shows the game host and the same text. */
+  private gameDiagnostics(uri: vscode.Uri, source: SourceText): readonly ModelDiagnostic[] {
+    const report = this.gameReport;
+    return this.backendValue === 'game-host' &&
+      report !== undefined &&
+      report.uri === uri.toString() &&
+      report.text === source.text
+      ? report.diagnostics
+      : [];
+  }
+
+  /**
+   * Keeps what the game said about a job, on the original's lines, and shows it in the Problems
+   * panel while the previewed text is the one the job was made from (spec section 10).
+   */
+  private reportGame(outcome: JobOutcome): void {
+    const context = this.hostJobContexts.get(outcome.tag);
+    for (const tag of this.hostJobContexts.keys()) {
+      if (tag <= outcome.tag) this.hostJobContexts.delete(tag);
+    }
+    if (context === undefined) return;
+    const diagnostics = gameHostDiagnostics({
+      text: context.text,
+      path: context.path,
+      window: context.window,
+      names: context.names,
+      copies: context.copies,
+      errorLog: outcome.errorLog,
+      commands: outcome.commands,
+      offline: context.offline,
+    });
+    this.gameReport = { uri: context.uri, text: context.text, diagnostics };
+    const render = this.render;
+    if (render?.uri.toString() === context.uri && render.source.text === context.text) {
+      this.republish(render.uri, [...context.offline, ...diagnostics], render.source);
+    }
   }
 
   private fail(error: unknown): void {
@@ -1224,8 +1305,8 @@ export class Preview implements PreviewApi, vscode.Disposable {
       // The playset's own definitions; the overlay mod is not part of it.
       isTopLevelName: (name) => session.ui.index.guiType(name) !== undefined,
     });
-    this.hostCopyDiagnostics = copy.diagnostics;
     if (copy.files === undefined) {
+      this.hostCopyDiagnostics = copy.diagnostics;
       const why = copy.diagnostics.find((d) => d.severity === 'error') ?? copy.diagnostics[0];
       this.setHostProblem({
         severity: 'warning',
@@ -1233,14 +1314,25 @@ export class Preview implements PreviewApi, vscode.Disposable {
       });
       return copy.diagnostics;
     }
+    const diagnostics = [
+      ...copy.diagnostics,
+      ...originalWindowDiagnostics({
+        path: place.path,
+        wins: place.wins,
+        window,
+        index: session.ui.index,
+      }),
+    ];
+    this.hostCopyDiagnostics = diagnostics;
     const crop = previewCrop(layout.widgets, screen);
     if (crop === undefined) {
       this.setHostProblem({
         severity: 'warning',
         message: "No part of this window is on the game host's screen.",
       });
-      return copy.diagnostics;
+      return diagnostics;
     }
+    diagnostics.push(...fpsCounterDiagnostics(window, crop, screen));
     if (this.hostProblem?.severity === 'warning') this.setHostProblem(undefined);
     const submitted = host.submit(
       {
@@ -1256,11 +1348,20 @@ export class Preview implements PreviewApi, vscode.Disposable {
     if (submitted) {
       this.hostTextures.clear();
       this.hostLocalisation = false;
+      this.hostJobContexts.set(id, {
+        uri: uri.toString(),
+        text: source.text,
+        path: place.path,
+        window,
+        names: file.definitions.flatMap((d) => (d.name === undefined ? [] : [d.name])),
+        copies: copy.files,
+        offline: [],
+      });
     } else {
       this.output.warn('The game host took no job: it is not ready.');
       this.hostJobKey = undefined;
     }
-    return copy.diagnostics;
+    return diagnostics;
   }
 
   /** Keeps why the game host cannot show the window, and logs it when it changes. */
@@ -1276,6 +1377,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
     const panel = this.panel;
     const screen = this.gameHost?.screen;
     if (panel === undefined || this.backendValue !== 'game-host' || screen === undefined) return;
+    this.reportGame(outcome);
     if (!outcome.ok) {
       this.setHostProblem({
         severity: 'error',

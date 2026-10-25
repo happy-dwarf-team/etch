@@ -194,6 +194,16 @@ export async function testGameHostJobs(
   }
   const after = await readTga(textured.outcome.image.path);
   console.log(`[etch] ${String(differing(before, after))} pixels changed with the texture`);
+  if (
+    textured.outcome.commands.some(
+      (c) => c.line.startsWith('reloadtexture ') && /fail/i.test(c.text),
+    )
+  ) {
+    assert.ok(
+      gameDiagnostics(editor.document.uri).some((d) => d.code === 'game-console-answer'),
+      'a refused reloadtexture is in the Problems panel',
+    );
+  }
   // In etch#50's live runs reloadtexture answered "Reload failed" at once in the main menu, for
   // every spelling of the name: reported here, not asserted.
 
@@ -219,6 +229,64 @@ export async function testGameHostJobs(
   );
   const guiEditor = await vscode.window.showTextDocument(editor.document, vscode.ViewColumn.One);
 
+  // Diagnostics from the game (etch#52): two icons of one name and a sprite no .gfx defines.
+  const probe =
+    '\t\ticonType = { name = "etch_probe_icon" spriteType = "GFX_etch_probe_missing" position = { x = 0 y = 0 } }\r\n';
+  const anchor = guiEditor.document.getText().indexOf('\t\tupsound = tab_diplomacy');
+  assert.ok(anchor >= 0, 'the window has its upsound');
+  const probed = nextImage(api);
+  await guiEditor.edit((builder) => {
+    builder.insert(guiEditor.document.positionAt(anchor), probe + probe);
+  });
+  const probedPaint = await probed;
+  console.log(`[etch] probe edit, ${describe(probedPaint)}`);
+  for (const line of probedPaint.outcome.errorLog) console.log(`[etch] error.log: ${line}`);
+  const found = gameDiagnostics(guiEditor.document.uri);
+  for (const d of found) {
+    console.log(
+      `[etch] Problems (${JSON.stringify(d.code)}, line ${String(d.range.start.line + 1)}): ${d.message}`,
+    );
+  }
+  assert.ok(
+    !found.some((d) => d.message.includes('GFX_etch_probe_missing')),
+    'the missing sprite is reported once, by the model',
+  );
+  assert.ok(
+    found.every((d) => !/etchw?_countrydiplomacyview/i.test(d.message)),
+    'the messages name the original, not the copies',
+  );
+  // The game names the second icon of the name; it is on the line after the anchor's.
+  const second = guiEditor.document.positionAt(anchor).line + 1;
+  assert.ok(
+    found.some(
+      (d) =>
+        d.code === 'game-error-log' &&
+        d.range.start.line === second &&
+        d.message.includes("'etch_probe_icon'") &&
+        d.message.includes(`interface/countrydiplomacyview.gui line: ${String(second + 1)}`),
+    ),
+    'the duplicate name is on the second icon, with the original line',
+  );
+  assert.equal(
+    found.filter((d) => d.message.includes('already exists')).length,
+    1,
+    'what both copies report is reported once',
+  );
+  assert.ok(
+    !found.some((d) => d.code === 'game-original-differs'),
+    'the test mod file is the one the game reads',
+  );
+  const unprobed = nextImage(api);
+  await guiEditor.edit((builder) => {
+    builder.delete(
+      new vscode.Range(
+        guiEditor.document.positionAt(anchor),
+        guiEditor.document.positionAt(anchor + 2 * probe.length),
+      ),
+    );
+  });
+  await unprobed;
+
   // A nested eu3dialogtype (etch#47): in etch#50's live runs the backdrop wrapper hid it (the
   // same dialog opened on its own drew), so the preview says so instead of running a job.
   await cursorAt(guiEditor, 'name = "GiftDiplomacyDialog"');
@@ -231,6 +299,13 @@ export async function testGameHostJobs(
     preview.notices.some((n) => n.message.includes('eu3dialogtype')),
     `the preview says the game host cannot show the dialog: ${JSON.stringify(preview.notices)}`,
   );
+}
+
+/** Etch's diagnostics of a file that come from the game host. */
+function gameDiagnostics(uri: vscode.Uri): vscode.Diagnostic[] {
+  return vscode.languages
+    .getDiagnostics(uri)
+    .filter((d) => typeof d.code === 'string' && /^(?:game-|fps-)/.test(d.code));
 }
 
 /** Makes an edit that changes nothing and waits for the image it brings. */
