@@ -181,23 +181,6 @@
         "event"
       ],
       "note": "Reported in M4 (spec section 11). Its own save, the Workshop item of the UI mod and the pins are set then; the windows are those the mods override (etch#10)."
-    },
-    {
-      "id": "dwarven-knowledge",
-      "title": "Dwarven Knowledge + DK-2KUI",
-      "gate": "report",
-      "mods": [
-        {
-          "name": "Dwarven Knowledge",
-          "workshopId": "2967823492"
-        },
-        {
-          "name": "Dwarven Knowledge + Proper 2k UI Compatiblity Patch"
-        }
-      ],
-      "disabledDlcs": [],
-      "windows": ["hud", "province", "macro-builder"],
-      "note": "Reported in M4 (spec section 11). The save, the full load order and the pins are set then. DK-2KUI overrides topbar.gui, provinceview.gui and macrobuildinterface.gui (etch#10)."
     }
   ],
   "windows": [
@@ -648,7 +631,7 @@
         "interface/macrobuildinterface.gui",
         "interface/menubar.gui"
       ],
-      "why": "A grid box and buttonstate_nodowneffect; macrobuildinterface.gui is the file DK-2KUI overrides (etch#10).",
+      "why": "A grid box and buttonstate_nodowneffect.",
       "views": [
         {
           "id": "macro-builder",
