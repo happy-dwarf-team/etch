@@ -322,11 +322,46 @@ Verified:
   failed"; the Problems panel leaves a spelling out when another one of the
   same file reloaded.
 
-Not solved: the image still does not change. The test mod's copy of the
-texture, inverted before the game host started, draws exactly like the base
-game's file, also with Bellows' file modules off for that start. The game
-host does not draw a mod's file that overrides one of the base game, so a
-saved texture of a mod does not reach the preview yet (etch#126).
+The image still did not change, and the test mod's copy, inverted before the
+game host started, drew exactly like the base game's file. etch#126 found why:
+the texture was not visible, and a mod's file does reach the game host.
+
+## Mod files over the base game
+
+What etch#126 found (the game's file system code read in the EU4 engine lab,
+then four live runs of the game host test on 2026-10-25, EU4 1.37.5
+`9AD3EFE1…D771A`, Anvil 1.3.0, Bellows 0.9.0, 3440×1440):
+
+- **Search order** (static). The game mounts its folder first, then the
+  enabled DLCs and mods, then the profile, each with `PHYSFS_mount(path, NULL,
+  0)`, which puts it in front of the search path, so the last one mounted is
+  searched first. A texture is found by its `.gfx` path (backslashes made
+  slashes, `.dds` tried before `.tga`), and opened and read with
+  `PHYSFS_openRead`; PhysFS folds the `//` of `gfx//interface//...`. Nothing
+  between the open and the GPU texture caches it, and the junctions of the
+  install are not symbolic links to PhysFS, which refuses only
+  `IO_REPARSE_TAG_SYMLINK`.
+- **Search order** (live). The game host's search path, read from the game's
+  memory, starts with the profile, then the test mod in its temporary folder,
+  then the overlay mod, the 127 DLC archives, and the install's game folder
+  last.
+- **The test's texture was hidden.** In the main menu no game code hides the
+  nested `vassal_select_window` of `countrydiplomacyview`, so its background
+  (`GFX_court_view_select_advisor_bg`, 573 × 589, at the same position as the
+  window's top background) covers `country_diplomacy_view_bg_top.dds`, whose
+  top 122 rows look the same. Only the top background's last 9 columns stay
+  uncovered, and they are transparent, so inverting its colours with the alpha
+  kept changed no pixel. With the mod's copy replaced by opaque magenta before
+  the start, those 9 × 122 pixels drew magenta in the first image, and the
+  test's later save of the file changed exactly those 1,098 pixels.
+- `reloadloc` changed no pixel for the same reason: `HEADER_DIPLOMACY` is the
+  window's title, which lies under the same background.
+
+The live test now saves the nested window's background and the text of its
+back button (`BACK`), which the image shows, and asserts that the saved
+texture changes the image. In its run (the fifth, the same machine and
+builds) the saved texture changed 49,564 pixels and the saved localisation
+381.
 
 ## Restart and watchdog
 

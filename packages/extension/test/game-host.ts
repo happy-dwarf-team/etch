@@ -54,17 +54,19 @@ export async function testGameHost(api: EtchApi, gamePath: string): Promise<void
   await writeFile(path.join(mod, 'descriptor.mod'), 'name="Etch game host test"\n');
   const copy = path.join(mod, 'interface', 'countrydiplomacyview.gui');
   await copyFile(path.join(gamePath, 'interface', 'countrydiplomacyview.gui'), copy);
-  // A texture and a localisation key of the window in the mod before the game host starts, which
-  // the jobs then change on disk.
-  const texture = path.join(mod, 'gfx', 'interface', 'country_diplomacy_view_bg_top.dds');
+  // A texture and a localisation key the window shows, in the mod before the game host starts,
+  // which the jobs then change on disk. In the main menu no game code hides the nested
+  // `vassal_select_window`, so its background and its back button lie over the rest of the
+  // window, the top background included (etch#126).
+  const texture = path.join(mod, 'gfx', 'interface', 'court_view_select_advisor_bg.dds');
   await mkdir(path.dirname(texture), { recursive: true });
   await copyFile(
-    path.join(gamePath, 'gfx', 'interface', 'country_diplomacy_view_bg_top.dds'),
+    path.join(gamePath, 'gfx', 'interface', 'court_view_select_advisor_bg.dds'),
     texture,
   );
   const localisation = path.join(mod, 'localisation', 'replace', 'etch_test_l_english.yml');
   await mkdir(path.dirname(localisation), { recursive: true });
-  await writeFile(localisation, '﻿l_english:\n HEADER_DIPLOMACY:0 "Etch test"\n');
+  await writeFile(localisation, '﻿l_english:\n BACK:0 "Etch test"\n');
   const settings = vscode.workspace.getConfiguration('etch');
   await settings.update('gamePath', gamePath, vscode.ConfigurationTarget.Global);
   try {
