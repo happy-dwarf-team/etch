@@ -17,6 +17,7 @@ import {
   type GuiFile,
   type ModelDiagnostic,
 } from '../src/index.ts';
+import { parseNumber } from '../src/model/properties.ts';
 
 const gui = (text: string): GuiFile => readGuiFile(parseScript(text));
 const gfx = (text: string): GfxFile => readGfxFile(parseScript(text));
@@ -53,6 +54,20 @@ describe('Properties', () => {
     expect(p.point('bad')).toBeUndefined();
     expect(p.number('n')).toBeUndefined();
     expect(properties('a = constructor').flag('a')).toBeUndefined();
+  });
+
+  it('reads numbers in time linear in their length', () => {
+    expect([parseNumber('12'), parseNumber('-3.'), parseNumber('+.25'), parseNumber('.')]).toEqual([
+      12,
+      -3,
+      0.25,
+      undefined,
+    ]);
+    // A long run of digits that is not a number took seconds when the digits could split
+    // between two loops (CodeQL js/polynomial-redos).
+    const started = performance.now();
+    expect(parseNumber(`${'9'.repeat(100_000)}x`)).toBeUndefined();
+    expect(performance.now() - started).toBeLessThan(250);
   });
 });
 

@@ -367,7 +367,7 @@ export function renderNotices(
   etchVersion: string,
   hasPlugin: boolean,
 ): string {
-  const cell = (s: string) => s.replace(/\|/g, '\\|');
+  const cell = (s: string) => s.replace(/\\/g, '\\\\').replace(/\|/g, '\\|');
   const rows = [
     `| Etch | ${etchVersion} | MIT | \`LICENSE\` | the extension (\`dist/\`, \`media/icon.png\`)${
       hasPlugin ? `, and the game plugin \`game/${PLUGIN_FOLDER}\`` : ''

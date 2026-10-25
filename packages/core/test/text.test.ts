@@ -62,6 +62,14 @@ describe('parseBmFont', () => {
     ]);
   });
 
+  it('reads a line with a long word in time linear in its length', () => {
+    // An unanchored global key=value regex took seconds on it (CodeQL js/polynomial-redos).
+    const started = performance.now();
+    const { font: f } = parseBmFont(`common lineHeight=12 ${'a'.repeat(100_000)}\n`);
+    expect(performance.now() - started).toBeLessThan(250);
+    expect(f.lineHeight).toBe(12);
+  });
+
   it('reports a file without a common line', () => {
     const { font: f, issues } = parseBmFont('info face="x"\n');
     expect(f.lineHeight).toBe(0);

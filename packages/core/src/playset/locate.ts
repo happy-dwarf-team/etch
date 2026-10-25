@@ -236,7 +236,11 @@ export function samePath(a: string, b: string): boolean {
 
 /** A comparable form of an absolute path: resolved, `/` separators, lowercase, no trailing `/`. */
 export function pathKey(path: string): string {
-  return resolve(path).replace(/\\/g, '/').replace(/\/+$/, '').toLowerCase();
+  const key = resolve(path).replace(/\\/g, '/').toLowerCase();
+  // A loop, not /\/+$/, which is quadratic in a long run of '/' that does not end the path.
+  let end = key.length;
+  while (end > 0 && key[end - 1] === '/') end--;
+  return key.slice(0, end);
 }
 
 function expandEnv(text: string, env: Readonly<Record<string, string | undefined>>): string {

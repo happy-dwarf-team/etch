@@ -110,7 +110,7 @@ export function windowReport(
       ];
       lines.push(
         `| \`${widget.path}\` | ${widget.kind ?? widget.type ?? ''} | ${widget.status} | ` +
-          `${what.join(' ').replace(/\|/g, '\\|')} |`,
+          `${what.join(' ').replace(/\\/g, '\\\\').replace(/\|/g, '\\|')} |`,
       );
     }
   }
