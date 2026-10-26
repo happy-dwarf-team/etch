@@ -2,7 +2,7 @@
  * Runs the preview's render on every request, with no debounce: a request while idle renders at
  * once (the leading edge), and requests while a render runs coalesce into one more render after
  * it (the trailing edge, latest state wins). In etch#9 a 30 ms debounce timer dominated warm
- * reload and fired late under load (spec section 15); the work itself takes a few milliseconds.
+ * reload and fired late under load (spec section 7); the work itself takes a few milliseconds.
  */
 export class RenderLoop {
   private readonly render: () => Promise<void>;
