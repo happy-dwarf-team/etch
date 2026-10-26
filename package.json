@@ -20,7 +20,8 @@
     "test:extension": "pnpm --filter etch test",
     "pins": "pnpm --filter etch pins",
     "package": "pnpm --filter etch package",
-    "media": "node packages/media/src/cli.mts"
+    "media": "node packages/media/src/cli.mts",
+    "proto:views": "node packages/compare/prototype-view-switching/server.mts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

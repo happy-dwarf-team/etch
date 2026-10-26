@@ -1,0 +1,156 @@
+<!doctype html>
+<!-- PROTOTYPE (etch#159), throwaway: three variants of switching views and sample data in the
+     preview, on provinceview of the Anbennar playset. ?variant=A|B|C, or the bar at the bottom. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Etch prototype: views and sample data</title>
+<style>
+  :root {
+    --bg: #1e1e1e; --side: #252526; --bar: #333333; --border: #3c3c3c; --fg: #cccccc; --dim: #8b8b8b;
+    --accent: #0e639c; --focus: #007fd4; --hover: #2a2d2e; --select: #04395e; --status: #007acc;
+    --save: #4ec9b0; --you: #3794ff; --gen: #c586c0; --live: #ce9178; --res: #dcdcaa;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { display: grid; grid-template-rows: 1fr 22px; background: var(--bg); color: var(--fg);
+    font: 13px "Segoe UI", system-ui, sans-serif; overflow: hidden; }
+  #workbench { display: grid; grid-template-columns: 48px 300px 1fr; min-height: 0; }
+  #activity { background: var(--bar); display: flex; flex-direction: column; align-items: center; padding-top: 10px; gap: 18px; color: var(--dim); font-size: 20px; }
+  #activity .on { color: #fff; border-left: 2px solid #fff; width: 100%; text-align: center; }
+  #sidebar { background: var(--side); display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--border); }
+  .pane-title { display: flex; align-items: center; gap: 6px; padding: 6px 12px; font-size: 11px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; }
+  .pane-title .desc { font-weight: 400; text-transform: none; color: var(--dim); letter-spacing: 0; }
+  .pane-title .spacer { flex: 1; }
+  .pane-title button { font-size: 11px; }
+  #outline { flex: 1; overflow: auto; padding-bottom: 40px; }
+  .row { display: flex; align-items: center; gap: 4px; height: 22px; padding-right: 8px; white-space: nowrap; cursor: default; }
+  .row:hover { background: var(--hover); }
+  .row.sel { background: var(--select); outline: 1px solid var(--focus); outline-offset: -1px; }
+  .row .twisty { width: 14px; text-align: center; color: var(--dim); cursor: pointer; flex: none; }
+  .row .name { overflow: hidden; text-overflow: ellipsis; }
+  .row .descr { color: var(--dim); font-size: 12px; overflow: hidden; text-overflow: ellipsis; }
+  .row.hidden .name { opacity: .5; }
+  .row.absent .name { opacity: .35; text-decoration: line-through; }
+  .row.manual .name { font-style: italic; }
+  .row.manual .name::after { content: " ●"; color: #e2c08d; font-style: normal; font-size: 10px; }
+  .row .eye, .row .tick { width: 18px; flex: none; text-align: center; cursor: pointer; color: var(--fg); }
+  .row .tick { font-size: 12px; }
+  .row.text .name { color: #9cdcfe; }
+  .badge { font-size: 10px; padding: 0 4px; border-radius: 3px; color: #1e1e1e; flex: none; font-weight: 700; }
+  .b-save { background: var(--save); } .b-you { background: var(--you); } .b-generated { background: var(--gen); }
+  .b-snapshot { background: var(--live); } .b-resolution { background: var(--res); } .b-default { background: #6b6b6b; }
+  .b-files { background: #9da5b4; }
+  .group-head { color: var(--dim); font-size: 11px; padding-left: 8px; height: 20px; display: flex; align-items: center; }
+  #editor { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+  #tabs { background: var(--side); height: 35px; display: flex; align-items: flex-end; }
+  #tabs .tab { background: var(--bg); padding: 8px 14px; border-top: 1px solid var(--focus); }
+  #preview { flex: 1; display: grid; grid-template-columns: 1fr auto; min-height: 0; }
+  #previewmain { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+  header { display: flex; align-items: center; gap: 8px; padding: 4px 8px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  header #title { font-weight: 600; }
+  header #file { opacity: .7; }
+  header .spacer { flex: 1; }
+  select, button, input { font: inherit; color: var(--fg); background: #3c3c3c; border: 1px solid #3c3c3c; padding: 1px 6px; }
+  button { cursor: pointer; }
+  button:hover { background: #45494e; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+  button.menu::after { content: " ▾"; color: var(--dim); }
+  button.chip { border-radius: 10px; padding: 1px 10px; }
+  #notices { margin: 0; padding: 0; list-style: none; }
+  #notices li { padding: 4px 8px; border-left: 3px solid #3794ff; }
+  #notices li.warning { border-color: #cca700; }
+  #notices button { margin-left: 8px; }
+  main { flex: 1; min-height: 0; position: relative; }
+  canvas { position: absolute; inset: 8px; margin: auto; max-width: calc(100% - 16px); max-height: calc(100% - 16px); background: #808080; }
+  .box { position: absolute; pointer-events: none; }
+  #hoverbox { border: 1px dashed #fff; }
+  #selbox { border: 2px solid var(--focus); }
+  #tip { position: fixed; pointer-events: none; white-space: pre; padding: 3px 7px; background: #252526; border: 1px solid #454545; z-index: 20; font-size: 12px; }
+  [hidden] { display: none !important; }
+  #inspector { width: 330px; border-left: 1px solid var(--border); background: var(--side); overflow: auto; padding-bottom: 40px; }
+  .section { padding: 6px 12px 10px; border-bottom: 1px solid var(--border); }
+  .section h3 { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; margin: 4px 0 8px; display: flex; gap: 6px; align-items: center; }
+  .sel-row { margin-bottom: 8px; }
+  .sel-row .label { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+  .sel-row .label .x { cursor: pointer; color: var(--dim); }
+  .sel-row .rule { color: var(--dim); font-size: 11px; margin-top: 2px; }
+  .seg { display: inline-flex; flex-wrap: wrap; gap: 2px; }
+  .seg button { padding: 1px 8px; }
+  .seg button:disabled { opacity: .5; cursor: default; }
+  .layer { border: 1px solid var(--border); border-radius: 4px; padding: 6px 8px; margin-bottom: 6px; }
+  .layer .head { display: flex; align-items: center; gap: 6px; }
+  .layer .head .count { margin-left: auto; color: var(--dim); font-size: 11px; }
+  .layer .body { margin-top: 6px; display: grid; gap: 4px; }
+  .layer .note { color: var(--dim); font-size: 11px; }
+  .layer.off { opacity: .6; }
+  .field { display: grid; grid-template-columns: 70px 1fr; align-items: center; gap: 6px; }
+  .field input, .field select { width: 100%; }
+  .popover { position: fixed; z-index: 30; background: var(--side); border: 1px solid #454545; box-shadow: 0 4px 16px #0008; min-width: 280px; max-width: 380px; padding: 4px 0; }
+  .popover .item { padding: 3px 12px; display: flex; gap: 8px; align-items: center; cursor: pointer; }
+  .popover .item:hover { background: var(--select); }
+  .popover .item .check { width: 12px; }
+  .popover .sep { height: 1px; background: var(--border); margin: 4px 0; }
+  .popover .hint { padding: 3px 12px; color: var(--dim); font-size: 11px; }
+  .popover .pad { padding: 4px 12px; }
+  #quickpick { position: fixed; top: 44px; left: 50%; transform: translateX(-50%); width: 560px; z-index: 40; background: var(--side); border: 1px solid #454545; box-shadow: 0 6px 24px #000a; }
+  #quickpick input { width: calc(100% - 12px); margin: 6px; padding: 4px 6px; border: 1px solid var(--focus); }
+  #qp-list { max-height: 420px; overflow: auto; }
+  #qp-list .item { padding: 3px 10px; display: flex; gap: 8px; cursor: pointer; }
+  #qp-list .item.active, #qp-list .item:hover { background: var(--select); }
+  #qp-list .item .d { color: var(--dim); margin-left: auto; font-size: 12px; }
+  #statusbar { background: var(--status); color: #fff; display: flex; align-items: center; gap: 2px; padding: 0 8px; font-size: 12px; }
+  #statusbar .item { padding: 0 6px; height: 100%; display: flex; align-items: center; cursor: default; }
+  #statusbar .item.click { cursor: pointer; }
+  #statusbar .item.click:hover { background: #ffffff1f; }
+  #statusbar .spacer { flex: 1; }
+  #switcher { position: fixed; bottom: 34px; left: 50%; transform: translateX(-50%); z-index: 50; display: flex; align-items: center; gap: 4px;
+    background: #ff3d7f; color: #fff; border-radius: 20px; padding: 4px 6px; box-shadow: 0 4px 14px #000a; font-weight: 600; }
+  #switcher button { background: transparent; border: none; color: #fff; font-size: 16px; padding: 0 8px; }
+  #switcher .label { padding: 0 6px; min-width: 260px; text-align: center; }
+  #question { position: fixed; top: 4px; right: 8px; z-index: 50; color: #ff8fb5; font-size: 11px; }
+</style>
+</head>
+<body>
+<div id="workbench">
+  <nav id="activity"><span>📄</span><span class="on">🧩</span><span>🔍</span></nav>
+  <aside id="sidebar">
+    <div class="pane-title">Widget Outline <span class="desc" id="outline-desc"></span><span class="spacer"></span><span id="outline-actions"></span></div>
+    <div id="outline"></div>
+  </aside>
+  <section id="editor">
+    <div id="tabs"><div class="tab">Etch Preview: provinceview</div></div>
+    <div id="preview">
+      <div id="previewmain">
+        <header>
+          <span id="title">provinceview</span>
+          <span id="file"></span>
+          <span id="variant-controls" style="display:contents"></span>
+          <span class="spacer"></span>
+          <label>Backend <select disabled><option>Offline renderer</option></select></label>
+          <button disabled>Diff</button>
+          <button id="resolution" type="button">1920×1080</button>
+          <button disabled>Pin</button>
+        </header>
+        <ul id="notices"></ul>
+        <main>
+          <canvas id="screen"></canvas>
+          <div id="selbox" class="box" hidden></div>
+          <div id="hoverbox" class="box" hidden></div>
+        </main>
+      </div>
+      <aside id="inspector" hidden></aside>
+    </div>
+  </section>
+</div>
+<footer id="statusbar"></footer>
+<div id="tip" hidden></div>
+<div id="popover" class="popover" hidden></div>
+<div id="quickpick" hidden><input id="qp-input" placeholder=""><div id="qp-list"></div></div>
+<div id="question">PROTOTYPE etch#159 · How should views and sample data be switched in the preview?</div>
+<div id="switcher"><button id="sw-prev" title="Previous variant (←)">‹</button><span class="label" id="sw-label"></span><button id="sw-next" title="Next variant (→)">›</button></div>
+<script src="/renderer.js"></script>
+<script type="module" src="/page.js"></script>
+</body>
+</html>

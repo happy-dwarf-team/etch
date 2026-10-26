@@ -76,7 +76,11 @@ export async function layOutPreview(
   assets: PlaysetAssets,
   file: GuiFile,
   window: Widget,
-  options: { readonly screen: Screen; readonly localise?: (text: string) => string },
+  options: {
+    readonly screen: Screen;
+    readonly localise?: (text: string) => string;
+    readonly sample?: (source: number) => string | undefined;
+  },
 ): Promise<WindowLayout> {
   const input: LayoutInput = {
     file,

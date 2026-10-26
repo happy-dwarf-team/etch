@@ -65,6 +65,8 @@ export interface LayoutInput {
   readonly screen: Screen;
   /** A `.gui` text as the game shows it: its localised value, or the text itself. Default: as written. */
   readonly localise?: (text: string) => string;
+  /** PROTOTYPE (etch#159): a sample text for the widget starting at this offset, if any. */
+  readonly sample?: (source: number) => string | undefined;
 }
 
 /** One laid-out widget, in paint order: a parent comes before its children. */
@@ -679,7 +681,8 @@ class Layout {
       colourCode?: string;
     },
   ): number | undefined {
-    const written = props.text(textKey);
+    // PROTOTYPE (etch#159): sample data fills a code-filled text by the widget's source offset.
+    const written = this.input.sample?.(source) ?? props.text(textKey);
     const fontName = props.text(fontKey);
     if (written === undefined || written === '' || fontName === undefined) return undefined;
     const definition = this.input.index.font(fontName)?.item;
