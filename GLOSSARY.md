@@ -32,10 +32,23 @@ What the game's own code puts into a window at run time: hidden or moved
 widgets, list entries, values and text that depend on game data.
 _Avoid_: dynamic content, runtime data
 
+**View**:
+One situation of a window as the game shows it: which of its nested windows
+and widgets are visible, such as a province view of the player's own province,
+of a foreign province or of a state.
+_Avoid_: state (a group of provinces in the game), mode, layer
+
+**Window profile**:
+What Etch knows about one game window beyond its interface files: its views,
+when the game shows each of them, and where the content of each widget the
+game's code fills comes from.
+_Avoid_: catalog entry, schema, binding
+
 **Sample data**:
-Hand-written stand-in values for code-filled content, used so a layout preview
-can show a plausible window.
-_Avoid_: mock data, fixtures
+Stand-in values for code-filled content, such as text of a chosen length, used
+so a layout preview can show a plausible window; written by hand, generated or
+taken from the game.
+_Avoid_: mock data, fixtures, placeholders
 
 **Warm reload**:
 Redrawing a window in the preview after one of its files changes, while the
@@ -71,6 +84,11 @@ _Avoid_: emulator, standalone renderer
 The preview backend in which a running copy of the game draws the window and
 reloads it when the mod's files change.
 _Avoid_: live mode, emulator
+
+**Live game**:
+Etch's private copy of the game, started with the edited mod's playset, that
+the user plays while Etch reloads the files they save into it.
+_Avoid_: game host, play mode, hot reload mode
 
 **Game host install**:
 Etch's private copy of the game, with its own user profile, in which the game
