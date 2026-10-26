@@ -526,6 +526,32 @@ describe('runCaptures', () => {
     ).toBeGreaterThan(0);
   });
 
+  it('starts no session once the game lock has expired', async () => {
+    const { started, stopped, options } = await runFixture();
+    let clock = new Date('2026-10-26T10:00:00Z');
+    const expires = new Date('2026-10-26T11:00:00Z');
+    const report = await runCaptures({
+      ...options,
+      now: () => clock,
+      lockExpiresAt: expires,
+      launcher: {
+        ...options.launcher,
+        async stop(record) {
+          const result = await options.launcher.stop(record);
+          clock = expires;
+          return result;
+        },
+      },
+    });
+
+    expect(started).toEqual(['menu']);
+    expect(stopped).toEqual([4242]);
+    expect(report.sessions).toHaveLength(1);
+    expect(report.stopped).toBe(
+      "The lab's game lock expired at 2026-10-26T11:00:00.000Z; no game was started after it.",
+    );
+  });
+
   it("clicks the save's confirmation when a dialog asks before the save loads", async () => {
     const { root, games, options } = await runFixture();
     const json = JSON.parse(JSON.stringify(options.manifest)) as {

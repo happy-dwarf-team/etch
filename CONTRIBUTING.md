@@ -162,9 +162,9 @@ skews the first one's timings.
 These runs print progress for every view or window. When watching one, follow
 only the lines that end it or need action:
 
-| Run                                                  | Ends with                                     | Needs action                                     |
-| ---------------------------------------------------- | --------------------------------------------- | ------------------------------------------------ |
-| corpus driver (`packages/core/src/corpus/driver`)    | `run <id>: … captured, … failed` and `report:` | `<view>: FAILED:`, `session failed:`, `crashed`  |
-| game host checks (`ETCH_GAME_HOST_CHECK`, extension) | `Exit code:` from the VS Code test runner      | `Error`, `AssertionError`, `"outcome":"timeout"` |
+| Run                                                  | Ends with                                     | Needs action                                                          |
+| ---------------------------------------------------- | --------------------------------------------- | --------------------------------------------------------------------- |
+| corpus driver (`packages/core/src/corpus/driver`)    | `run <id>: … captured, … failed` and `report:` | `<view>: FAILED:`, `session failed:`, `crashed`, `game lock is held by` |
+| game host checks (`ETCH_GAME_HOST_CHECK`, extension) | `Exit code:` from the VS Code test runner      | `Error`, `AssertionError`, `"outcome":"timeout"`                      |
 
 Screenshots and other game assets never enter Git.
