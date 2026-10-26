@@ -43,7 +43,130 @@ disabled):
 
 The suite is run three times, so the table has three first cold opens.
 
+## Method: Anbennar
+
+The same test, on the Anbennar playset (etch#57), runs after vanilla's;
+`ETCH_BUDGET_PLAYSETS` (playset ids separated by `,`, default
+`vanilla,anbennar`) picks the playsets and their order:
+
+```powershell
+$env:ETCH_GAME_PATH = 'C:\Program Files (x86)\Steam\steamapps\common\Europa Universalis IV'
+$env:ETCH_BUDGET_PLAYSETS = 'anbennar'   # only Anbennar, so its first cold open is the process's first
+pnpm --filter etch test
+```
+
+- The mods are the corpus manifest's Workshop items of the playset (Anbennar,
+  Proper 2K UI Enhanced, P2KE Patch - Anbennar), each checked against its pin
+  and read in place. The edited file is a copy of the patch's
+  `interface/topbar.gui` (347 KB) in a temporary mod that the playset
+  override lists after them, with the cursor in the `topbar` window (1,331
+  draws, 209 textures, 1,309 widgets). The edit toggles the `x` of its
+  `show_position`.
+- Everything else is vanilla's method: two resolutions, three runs of a cold
+  open and 40 warm reloads each, the preview closed between runs. The test
+  fails when a warm reload p95 is over 50 ms or a cold open over 2 s.
+
+The game host's times on the playset are reported, not gated, from
+`packages/extension/test/game-host-budget.ts`, with `ETCH_GAME_HOST_PATH` and
+`ETCH_GAME_HOST_CHECK=budget` (the pinned builds staged by `pnpm pins`): the
+same mods and a test mod with copies of the patch's `topbar.gui` and
+`countrydiplomacyview.gui`. It times the start to ready and to the first image,
+20 warm edits of each file's window from the change to the drawn image and the
+job alone, and two restarts that a `.gfx` file in the test mod causes (saved,
+then deleted), from the save to ready and to the next image.
+
 ## Results
+
+### 2026-10-26, etch#57 (the Anbennar budgets)
+
+Machine as in etch#39 (Intel Core i9-13900KF, 64 GB, NVIDIA GeForce RTX 4090,
+NVMe SSD, Windows 11 Pro 26200); VS Code 1.143.1 from `.vscode-test`. EU4
+1.37.5, `eu4.exe` SHA-256 `9AD3EFE1…DC4D771A`. The playset at the corpus
+manifest's pins, which the test checks: Anbennar `99DAB21E…54A1DD`, Proper 2K
+UI Enhanced `B411CFAE…CED1F9`, P2KE Patch - Anbennar `E4ABCD62…25FC55`.
+Processes 1–5 measured Anbennar alone (`ETCH_BUDGET_PLAYSETS=anbennar`), so
+their first cold open is the first preview of the process; process 6 was the
+default run, Anbennar after vanilla. No run timed out and no sample was lost.
+
+Warm reload of the patch's `topbar.gui`, from the edit to the paint (120 edits
+per row: 3 runs of 40):
+
+| Process | Resolution | Median | p95 | Max |
+| --- | --- | --- | --- | --- |
+| 1 | 1920×1080 | 19.0 ms | 23.5 ms | 48.0 ms |
+| 1 | 3440×1440 | 18.7 ms | 22.6 ms | 29.1 ms |
+| 2 | 1920×1080 | 19.7 ms | 23.3 ms | 41.5 ms |
+| 2 | 3440×1440 | 19.6 ms | 23.8 ms | 27.3 ms |
+| 3 | 1920×1080 | 19.8 ms | 23.4 ms | 44.6 ms |
+| 3 | 3440×1440 | 19.8 ms | 23.2 ms | 31.1 ms |
+| 4 | 1920×1080 | 19.5 ms | 23.5 ms | 37.8 ms |
+| 4 | 3440×1440 | 18.9 ms | 22.3 ms | 28.3 ms |
+| 5 | 1920×1080 | 20.0 ms | 23.3 ms | 41.4 ms |
+| 5 | 3440×1440 | 19.7 ms | 23.3 ms | 27.7 ms |
+| 6 | 1920×1080 | 19.0 ms | 22.1 ms | 58.9 ms |
+| 6 | 3440×1440 | 18.8 ms | 22.3 ms | 26.1 ms |
+
+From the change event the medians are 0.7–1.0 ms lower (17.9–19.1 ms, p95
+21.2–22.6 ms).
+
+Cold open, from the command to the paint, in run order (the first number of
+processes 1–5 is the process's first preview):
+
+| Process | 1920×1080 | 3440×1440 |
+| --- | --- | --- |
+| 1 | 1156, 821, 705 ms | 687, 798, 871 ms |
+| 2 | 1011, 707, 766 ms | 764, 734, 755 ms |
+| 3 | 1870, 728, 665 ms | 740, 725, 704 ms |
+| 4 | 1258, 721, 751 ms | 790, 715, 776 ms |
+| 5 | 1256, 799, 746 ms | 719, 689, 688 ms |
+| 6 | 1288, 751, 771 ms | 923, 733, 817 ms |
+
+Both Anbennar budgets hold: warm reload p95 at most 23.8 ms against 50 ms,
+cold open at most 1.87 s against 2 s. The first preview of a process is the
+slowest, 1.01–1.87 s; the margin is thin there, and the 1.87 s of process 3
+was not traced. Later cold opens take 0.67–0.92 s. One warm reload of 1,440
+went above 50 ms (58.9 ms). The window is about ten times vanilla's (1,331
+draws, 209 textures, 1,309 widgets against 135, 63 and 146), and a warm
+reload takes about three times as long (19 ms against 7 ms).
+
+Where the cold open goes, from the same steps in plain Node 24 (two runs):
+finding the playset 34–91 ms (the first hashes `eu4.exe`), reading and
+modelling every `.gui` and `.gfx` file of the playset (162 `.gui` files, all
+of them a mod's) 469–512 ms, with the English localisation (59 MB of
+Anbennar's) 469–503 ms alongside. The rest, about 0.2–1.3 s, is the webview,
+the window's 209 textures, and the extension host's first run of that code.
+
+Vanilla in process 6, after the change: warm reload p95 10.0 ms (1920×1080)
+and 9.0 ms (3440×1440), cold opens 509, 315, 303 ms and 324, 303, 300 ms.
+Both vanilla budgets still hold.
+
+The game host on the same playset (reported, not gated; Anvil 1.3.0, Bellows
+0.9.0, 3440×1440, a new private profile each run), four runs of
+`ETCH_GAME_HOST_CHECK=budget`, each under the EU4 engine lab's procedure
+(`eu4.exe` hash and the Process Lasso rule before and after, the player's
+profile and the Steam folder unchanged, every game closed after its PID, path
+and creation time were checked, none left running):
+
+| Measure | Runs 1–4 |
+| --- | --- |
+| Start: switch to ready (to the first image) | 40.8–42.6 s |
+| Start: process creation to ready | 38.9–40.9 s |
+| `topbar` (crop 3440×1440), 20 warm edits: job median / p95 | 333–439 / 359–505 ms |
+| `topbar`, change to the drawn image, median / p95 | 469–647 / 551–742 ms |
+| `countrydiplomacyview` (crop 3440×1284): job median / p95 | 215–224 / 251–263 ms |
+| `countrydiplomacyview`, change to the drawn image, median / p95 | 423–447 / 461–495 ms |
+| Restart (a `.gfx` file saved or deleted): save to ready | 35.8–38.3 s |
+| Restart: process creation to ready | 34.4–36.7 s |
+| Restart: save to the new game's first image (run 4) | 36.5–37.0 s (0.44–0.59 s after ready) |
+
+A start with Anbennar takes about 40 s, twice vanilla's 13–21 s (etch#53), and
+a restart about 36 s. The 150 ms job target of spec section 7 is missed for
+both windows: `countrydiplomacyview` of the patch takes 215–224 ms against
+vanilla's 175–195 ms (etch#50), and the full-screen `topbar` 333–439 ms; the
+topbar is a HUD file, which the target leaves out. Runs 1–3 timed the image
+after a restart wrongly (the old game still answers the changed file's job
+before it closes, and the restarting preview draws that image again, stale),
+so that row is run 4's alone; the test was fixed before it.
 
 ### 2026-10-25, etch#53 (game host on the corpus windows, reported, not gated)
 
