@@ -74,6 +74,12 @@ The game Etch starts from its private install with the edited mod's playset,
 which the user plays while Etch reloads the files they save into it.
 _Avoid_: game host, play mode, hot reload mode
 
+**Planned restart**:
+A restart of the live game that Etch asks the player for, from a save the live
+game makes just before it, so that no play is lost; unlike the restart after a
+crash, which goes back to the newest save there is.
+_Avoid_: forced restart, hard reload, reboot
+
 **Private install**:
 Etch's private copy of the game, with its own user profile, in which the live
 game runs; never the player's own installation or profile.
