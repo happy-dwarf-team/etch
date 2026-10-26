@@ -96,6 +96,11 @@ export interface RunOptions {
   /** The player's own profile, which must not change. */
   readonly playerProfile: string;
   readonly launcher: GameLauncher;
+  /**
+   * When the lab's game lock of the run expires: no session starts after it, since the lock no
+   * longer keeps other sessions from starting a game.
+   */
+  readonly lockExpiresAt?: Date;
   readonly connect: () => Promise<Tongs>;
   /** Formats a capture record's JSON as the repository does (Prettier). */
   readonly format: (json: string, file: string) => Promise<string>;
@@ -193,6 +198,10 @@ export async function runCaptures(options: RunOptions): Promise<RunReport> {
       let starts = 0;
       while (views.length > 0) {
         const session = { ...planned, views };
+        if (options.lockExpiresAt !== undefined && now() >= options.lockExpiresAt) {
+          report.stopped = `The lab's game lock expired at ${options.lockExpiresAt.toISOString()}; no game was started after it.`;
+          return report;
+        }
         print(`session ${describeSession(session)}`);
         const result = await runSession(options, session, runDir, report.sessions.length + 1, {
           now,

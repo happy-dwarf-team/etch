@@ -226,7 +226,10 @@ in it is committed; a private bucket waits for the headless CI decision
 `packages/core/src/corpus/driver/` takes the captures (etch#42). It runs only
 in the EU4 engine lab, because it starts and closes the game with the lab's
 `scripts/lib/LabProcess.psm1` and follows the lab's procedure (its
-`AGENTS.md`). It needs Node 22.18 or newer, PowerShell 7 and the game.
+`AGENTS.md`). It needs Node 22.18 or newer, PowerShell 7, the game and a lab
+whose game lock passes to child processes through `EU4LAB_GAME_LOCK_TOKEN`
+(an older lab refuses the run's first start: the run's own lock looks like
+another session's).
 
 1. **Capture host install**, once: a junction copy of the Steam game with the
    Anvil and Tongs releases. Download `anvil-windows-x64.zip` and
@@ -249,13 +252,29 @@ in the EU4 engine lab, because it starts and closes the game with the lab's
    node packages/core/src/corpus/driver/cli.ts plan --playset vanilla
    node packages/core/src/corpus/driver/cli.ts run --lab <lab> --host <host> `
      --monitor 3440x1440 --settings-baseline <settings.txt> [--records <folder>] `
-     [--playset a,b] [--resolution 1920x1080,…] [--view a,b] [--all]
+     [--playset a,b] [--resolution 1920x1080,…] [--view a,b] [--all] [--lock-minutes 240]
    ```
 
    Without filters a run takes every capture a release needs (`--all` adds the
    report playsets). `--settings-baseline` is the `settings.txt` a new
    playset profile starts from (UI scale 1). Records go into this folder, or
    into `--records` for a trial run whose records are not to be committed.
+
+**The run holds the lab's game lock** from before its first start to its end,
+so no other session of the lab or of Etch starts a game between this run's
+games (each start, close and mouse call is its own `game.ps1` process). It
+takes the lock with `game.ps1 -Action Lock`, held by the driver's Node process
+for at most `--lock-minutes` (240, the lab's longest), and sets
+`EU4LAB_GAME_LOCK_TOKEN` to its token, which every `game.ps1` it starts
+inherits; the lab's `Start-LabGame` leaves it out of the game's environment.
+The run gives the lock back at its end, after a failure and on Ctrl+C; when
+Node is killed, the lab treats the lock as free once the process is gone.
+When another session holds the lock, the run stops before anything starts,
+with that session's name: wait for it or ask the user. A run started under a
+batch's lock (`Invoke-WithLabGameLock`, or `EU4LAB_GAME_LOCK_TOKEN` set to the
+token of `Enter-LabGameLock`) keeps that lock and leaves releasing it to the
+batch. No session starts once the lock has expired: the run stops with the
+captures it has.
 
 What a run does:
 

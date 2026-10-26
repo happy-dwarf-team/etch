@@ -17,7 +17,12 @@ param(
     # Release: confine the cursor no more (ClipCursor(NULL)).
     # While the screen is locked these calls fail (Win32 error 203): the three print
     #   `unavailable` with the failed call instead of the cursor.
-    [Parameter(Mandatory)][ValidateSet('Prepare', 'Check', 'Start', 'Stop', 'Cursor', 'Pin', 'Release')][string]$Action,
+    # Lock: the lab's game lock for a whole run. When EU4LAB_GAME_LOCK_TOKEN is the token of the
+    #   lock held now (the run was started under a batch's lock), that lock, with inherited = true;
+    #   otherwise a new one for -Owner, held by -HolderPid for at most -Minutes. Throws when another
+    #   session holds it. Prints the token and when the lock expires.
+    # Unlock: release the lock of -Token; prints whether it was still held by that token.
+    [Parameter(Mandatory)][ValidateSet('Prepare', 'Check', 'Start', 'Stop', 'Cursor', 'Pin', 'Release', 'Lock', 'Unlock')][string]$Action,
     [Parameter(Mandatory)][string]$Lab,
     [Parameter(Mandatory)][string]$HostDir,
     [string]$AnvilZip,
@@ -26,7 +31,11 @@ param(
     [ValidatePattern('^[A-Za-z0-9_.-]+\.eu4$')][string]$Save,
     [string]$Record,
     [int]$X,
-    [int]$Y
+    [int]$Y,
+    [string]$Owner,
+    [ValidateRange(1, 240)][int]$Minutes = 240,
+    [int]$HolderPid,
+    [string]$Token
 )
 # The capture driver of happy-dwarf-team/etch#42. Every game run follows the EU4 engine lab's
 # procedure (its AGENTS.md): hashes and the Process Lasso rule checked before the start, the copy
@@ -122,6 +131,18 @@ function Assert-Host {
 }
 
 switch ($Action) {
+    'Lock' {
+        if (-not $Owner -or -not $HolderPid) { throw '-Owner and -HolderPid are required for Lock' }
+        $held = Get-LabGameLock
+        $inherited = [bool]($held -and -not $held.Stale -and $held.Token -and $held.Token -ceq $env:EU4LAB_GAME_LOCK_TOKEN)
+        if (-not $inherited) { $held = Enter-LabGameLock -Owner $Owner -Minutes $Minutes -HolderPid $HolderPid }
+        Out-Json ([ordered]@{ ok = $true; token = $held.Token; owner = $held.Owner; inherited = $inherited
+                expiresUtc = $held.ExpiresUtc.ToString('o') })
+    }
+    'Unlock' {
+        if (-not $Token) { throw '-Token is required for Unlock' }
+        Out-Json ([ordered]@{ ok = $true; released = [bool](Exit-LabGameLock -Token $Token) })
+    }
     'Prepare' {
         if (-not $AnvilZip -or -not $TongsZip) { throw '-AnvilZip and -TongsZip are required for Prepare' }
         if (Test-Path -LiteralPath $HostDir) { throw "$HostDir exists; remove it first to prepare again" }
