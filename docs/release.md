@@ -10,6 +10,10 @@ times (ADR 0004):
 | `marketplace` | [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=happy-dwarf-team.etch)            | Microsoft Entra ID over OIDC; else `VSCE_PAT`; else by hand |
 | `open-vsx`    | [Open VSX](https://open-vsx.org/extension/happy-dwarf-team/etch)                                            | secret `OVSX_PAT` if set, otherwise OIDC trusted publishing |
 
+Once the GitHub release has its assets, `notify-website` (`website.yml`) asks
+etch.happydwarf.dev and happydwarf.dev to rebuild, so their badges show the new
+version; run `website.yml` by hand to ask again.
+
 The store jobs start after the GitHub release has its assets and pass
 `--skip-duplicate`, so a failed job can be re-run alone. The VSIX contents are
 checked by `pnpm package` on every pull request (`package.mts`, and the
