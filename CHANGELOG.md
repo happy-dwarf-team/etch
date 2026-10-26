@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.0](https://github.com/happy-dwarf-team/etch/compare/v0.4.0...v1.0.0) (2026-10-26)
+
+
+### Features
+
+* **extension:** leave preview with 1.0.0 ([#147](https://github.com/happy-dwarf-team/etch/issues/147)) ([093deec](https://github.com/happy-dwarf-team/etch/commit/093deec4073bb9c507657d1a8726918634456667))
+
 ## [0.4.0](https://github.com/happy-dwarf-team/etch/compare/v0.3.0...v0.4.0) (2026-10-26)
 
 
