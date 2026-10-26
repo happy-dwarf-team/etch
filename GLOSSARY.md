@@ -21,11 +21,9 @@ The top-level window the preview shows: the one that contains the cursor in
 the edited file, or the one the user pinned.
 _Avoid_: current window, active window
 
-**Diff view**:
-A way of showing the previewed window as the per-pixel difference between the
-offline renderer's image and the game host's, at the same resolution and with
-the same playset.
-_Avoid_: comparison mode, overlay
+**Offline renderer**:
+What draws the preview from the mod's files alone, with no game running.
+_Avoid_: emulator, standalone renderer, backend
 
 **Code-filled content**:
 What the game's own code puts into a window at run time: hidden or moved
@@ -69,56 +67,31 @@ write them, read the way the game reads them (Windows-1252 for interface files,
 UTF-8 for localisation).
 _Avoid_: decoded text, buffer text
 
-## Backends
-
-**Preview backend**:
-What actually produces the image behind the one preview the editor shows.
-_Avoid_: renderer (when the game is meant), engine
-
-**Offline renderer**:
-The preview backend that draws windows from the mod's files alone, with no game
-running.
-_Avoid_: emulator, standalone renderer
-
-**Game host**:
-The preview backend in which a running copy of the game draws the window and
-reloads it when the mod's files change.
-_Avoid_: live mode, emulator
+## The live game
 
 **Live game**:
-Etch's private copy of the game, started with the edited mod's playset, that
-the user plays while Etch reloads the files they save into it.
+The game Etch starts from its private install with the edited mod's playset,
+which the user plays while Etch reloads the files they save into it.
 _Avoid_: game host, play mode, hot reload mode
 
-**Game host install**:
-Etch's private copy of the game, with its own user profile, in which the game
-host runs; never the player's own installation or profile.
-_Avoid_: game copy, sandbox
+**Private install**:
+Etch's private copy of the game, with its own user profile, in which the live
+game runs; never the player's own installation or profile.
+_Avoid_: game host install, game copy, sandbox
 
 **Pinned build**:
 One release of a game-side tool (Anvil, Bellows), identified by its hash, that
-an Etch release carries and puts into the game host install; never a newer or
+an Etch release carries and puts into the private install; never a newer or
 locally built copy.
 _Avoid_: vendored copy, bundled dependency, latest build
 
-**Overlay mod**:
-Etch's own mod, loaded by the game host after the playset, that carries the
-versions of interface files being previewed.
-_Avoid_: temp mod, shadow mod
-
-**Preview copy**:
-A copy of an edited interface file, with its file and window names prefixed,
-kept in the overlay mod so the game host can reload it without disturbing the
-game's own windows.
-_Avoid_: shadow file, temp file
+## Measuring precision
 
 **Precision corpus**:
 The set of game windows rendered by the offline renderer and compared with the
 same windows captured from the game, which measures how faithful the offline
 renderer is.
 _Avoid_: golden set, test suite
-
-## Measuring precision
 
 **Playset**:
 The ordered set of mods, each at a pinned version, loaded on top of the game.
@@ -162,3 +135,40 @@ _Avoid_: shot, clip
 Capturing Etch's media for one Etch release and publishing them: loops to the
 media bucket; posters, stills and the media manifest to the Etch site.
 _Avoid_: media update, re-record
+
+## Etch 1.x
+
+Terms of Etch 1.x, which 2.0.0 removes (ADR 0005). The v1 specification and
+`docs/game-host.md` use them.
+
+**Preview backend**:
+What actually produced the image behind the one preview the editor showed: the
+offline renderer or the game host.
+_Avoid_: renderer (when the game is meant), engine
+
+**Game host**:
+The preview backend in which a hidden copy of the game, sitting in the main
+menu, drew a renamed copy of the previewed window and reloaded it when the
+mod's files changed.
+_Avoid_: live game, live mode, emulator
+
+**Game host install**:
+The private install as Etch 1.x laid it out for the game host.
+_Avoid_: game copy, sandbox
+
+**Diff view**:
+A way of showing the previewed window as the per-pixel difference between the
+offline renderer's image and the game host's, at the same resolution and with
+the same playset.
+_Avoid_: comparison mode, overlay
+
+**Overlay mod**:
+Etch's own mod, loaded by the game host after the playset, that carried the
+preview copies and the backdrop.
+_Avoid_: temp mod, shadow mod
+
+**Preview copy**:
+A copy of an edited interface file, with its file and window names prefixed,
+kept in the overlay mod so the game host could reload it without disturbing
+the game's own windows.
+_Avoid_: shadow file, temp file
