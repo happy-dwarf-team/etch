@@ -2,6 +2,7 @@
 // The run's game lock through the real game.ps1 and PowerShell 7, against fake-lab.psm1 in a temp
 // lab: no game starts, and the machine's own lab lock is never touched.
 import { createHash } from 'node:crypto';
+import { realpathSync } from 'node:fs';
 import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -50,12 +51,15 @@ async function fixture(): Promise<{
   profile: string;
   calls: () => Promise<Call[]>;
 }> {
-  const root = await makeTree({
+  const tree = await makeTree({
     ...Object.fromEntries(Object.entries(HOST_FILES).map(([path, text]) => [`host/${path}`, text])),
     'host/profiles/vanilla/profile/settings.txt': '',
     'lab/work/.keep': '',
   });
-  trees.push(root);
+  trees.push(tree);
+  // The long path: a runner's temp folder can be an 8.3 name (RUNNER~1), and game.ps1 cuts the
+  // plugins' paths by the length of the host folder as given.
+  const root = realpathSync.native(tree);
   const hashes = {
     copyExe: sha(HOST_FILES['game/eu4.exe'] ?? ''),
     versionDll: sha(HOST_FILES['game/version.dll'] ?? ''),
