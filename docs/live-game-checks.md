@@ -3,8 +3,8 @@
 What the real game did with the reloads and restarts that the live game's
 policy (etch#157) relies on: the live checks H1–H10 of the reload research
 (etch#152, branch `research/live-game-reload`) and H11, run for etch#166 on
-2026-10-26. Each section gives the result and what it changes in the policy.
-H11 is still open.
+2026-10-26 (H11 on 2026-10-27). Each section gives the result and what it
+changes in the policy.
 
 ## How it was run
 
@@ -227,12 +227,23 @@ own; a `.gfx` change stays a planned restart.
 
 ### H11: beside the player's own game
 
-Open. The lab's launcher refuses to start a game while any `eu4.exe` runs, so
-the check would start the private copy first and the player's game from Steam
-beside it; it waits for a free lab and the player.
+Does not hold for a game started through Steam. The private copy was started
+first (the lab's launcher refuses to start a game while any `eu4.exe` runs),
+with `SteamAppId` and `SteamGameId` set as the game host and the live game do,
+and loaded its save in 18.3 s. With it running, the player pressed Play in
+Steam: Steam refused because the game was already running, and the player's
+Steam profile showed them playing EU4. Starting the player's `eu4.exe`
+directly, without Steam, was not tried.
 
-**Policy:** unchanged until checked: Etch does not start the live game while
-the player's game runs, and warns when the player starts theirs later.
+**Policy:**
+
+- The live game counts as the player's EU4 session for Steam: while it runs
+  the player cannot start their own game through Steam, and Steam shows them
+  playing. Etch's first-start confirmation says so.
+- "If the player starts their game later, Etch warns but does not block"
+  becomes: Steam blocks it; when the live game runs, Etch offers **Etch: Stop
+  the Live Game** (which saves first) so the player can start their own.
+- Etch still does not start the live game while the player's game runs.
 
 ## Budgets: saved file to the changed frame
 
