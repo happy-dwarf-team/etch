@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/happy-dwarf-team/etch/compare/v1.0.0...v1.0.1) (2026-10-26)
+
+
+### Bug Fixes
+
+* **corpus:** hold the lab's game lock for a whole capture run ([#148](https://github.com/happy-dwarf-team/etch/issues/148)) ([7f013d4](https://github.com/happy-dwarf-team/etch/commit/7f013d45db7ddf896104e9d4f5beaa7a263e7df3))
+
 ## [1.0.0](https://github.com/happy-dwarf-team/etch/compare/v0.4.0...v1.0.0) (2026-10-26)
 
 
