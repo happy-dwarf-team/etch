@@ -70,6 +70,11 @@ export interface CorpusSave {
   readonly sha256: string;
   /** What the save is, such as `Russia, 17 March 1719`. */
   readonly description: string;
+  /**
+   * A widget pattern the capture driver clicks when it shows while the save loads: a dialog that
+   * asks before the game goes on loading, such as Anbennar's achievements warning (etch#55).
+   */
+  readonly confirm?: string;
 }
 
 export interface CorpusMod {
@@ -410,11 +415,12 @@ function checkPlayset(
 
   if ('save' in json) {
     const saveAt = field(at, 'save');
-    const save = c.object(json['save'], saveAt, ['file', 'sha256', 'description']);
+    const save = c.object(json['save'], saveAt, ['file', 'sha256', 'description'], ['confirm']);
     if (save !== undefined) {
       c.string(save['file'], field(saveAt, 'file'), /^[^/\\]+\.eu4$/, 'a save file name');
       c.string(save['sha256'], field(saveAt, 'sha256'), SHA256, 'an uppercase SHA-256');
       c.string(save['description'], field(saveAt, 'description'));
+      if ('confirm' in save) pattern(c, save['confirm'], field(saveAt, 'confirm'));
     }
   } else if (release) {
     c.fail(at, 'A release playset pins its save.');

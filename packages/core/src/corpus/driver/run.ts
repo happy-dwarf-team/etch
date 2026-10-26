@@ -628,6 +628,18 @@ async function waitReady(
       if (await runningApplication(systemLog, game.creationUnixMs)) {
         runningSince ??= env.now().getTime();
         const state = await tongs.call('state');
+        const confirm = session.playset.save?.confirm;
+        if (session.start === 'save' && state['in_game'] !== true && confirm !== undefined) {
+          // A dialog that asks before the save goes on loading (Anbennar's achievements warning,
+          // etch#55): its button is clicked like a recipe's, and the load starts from there.
+          const found = await tongs.call(`ui find ${confirm}`);
+          const matches = Array.isArray(found['matches']) ? (found['matches'] as unknown[]) : [];
+          if (matches.some((m) => (m as { visible?: unknown }).visible !== false)) {
+            const clicked = await tongs.call(`ui click ${confirm} timeout=10`);
+            log({ confirm, ok: clicked.ok, ...(clicked.ok ? {} : { error: clicked.error }) });
+            runningSince = env.now().getTime();
+          }
+        }
         if (
           session.start === 'save' &&
           state['in_game'] !== true &&

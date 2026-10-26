@@ -526,6 +526,57 @@ describe('runCaptures', () => {
     ).toBeGreaterThan(0);
   });
 
+  it("clicks the save's confirmation when a dialog asks before the save loads", async () => {
+    const { root, games, options } = await runFixture();
+    const json = JSON.parse(JSON.stringify(options.manifest)) as {
+      playsets: { save: Record<string, unknown> }[];
+    };
+    const playset = json.playsets[0];
+    if (playset === undefined) throw new Error('no playset');
+    playset.save['confirm'] = 'DefaultConfirm/AgreeButton';
+    const manifest = parseCorpusManifest(json).manifest;
+    if (manifest === undefined) throw new Error('invalid manifest');
+    const confirm: FakeWindow = { name: 'DefaultConfirm', children: ['AgreeButton'] };
+    const launcher: GameLauncher = {
+      ...options.launcher,
+      async start(profile, save) {
+        const record = await options.launcher.start(profile, save);
+        if (save !== undefined) {
+          // The save waits behind the dialog until its button is clicked.
+          const game = new FakeGame(
+            [...WINDOWS, confirm],
+            ['topbar', 'DefaultConfirm'],
+            join(root, 'shots'),
+            SIZE,
+          );
+          game.onClick = () => {
+            game.open.splice(game.open.indexOf('DefaultConfirm'), 1);
+            game.inGame = true;
+          };
+          games.push(game);
+        }
+        return record;
+      },
+    };
+    const report = await runCaptures({
+      ...options,
+      manifest,
+      sessions: planCaptures(manifest).sessions,
+      launcher,
+    });
+
+    expect(report.stopped).toBeUndefined();
+    expect(report.sessions.map((s) => s.views.map((v) => `${v.view} ${String(v.ok)}`))).toEqual([
+      ['main-menu true', 'lobby true'],
+      ['ledger true'],
+    ]);
+    const save = games.at(-1);
+    expect(save?.calls.filter((c) => c.includes('DefaultConfirm'))).toEqual([
+      'ui find DefaultConfirm/AgreeButton',
+      'ui click DefaultConfirm/AgreeButton timeout=10',
+    ]);
+  });
+
   it('pauses when the user takes the mouse back, and goes on in a fresh start once resumed', async () => {
     const { root, started, stopped, games, mouse, options } = await runFixture();
     const lines: string[] = [];
