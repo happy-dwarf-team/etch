@@ -11,6 +11,7 @@ import { testGameText } from './game-text.ts';
 import { testNavigation } from './navigation.ts';
 import { testPreviewBudget } from './preview-budget.ts';
 import { testPreview } from './preview.ts';
+import { testPlaysetWindows } from './playset-windows.ts';
 
 export async function run(): Promise<void> {
   const extension = vscode.extensions.getExtension<EtchApi>('happy-dwarf-team.etch');
@@ -28,9 +29,20 @@ export async function run(): Promise<void> {
     'etch.previewResolution is contributed',
   );
 
+  const gamePath = process.env['ETCH_GAME_PATH'];
+  const gameHostPath = process.env['ETCH_GAME_HOST_PATH'];
+
+  // Local only: every window a corpus playset's mods override, in both backends (etch#55).
+  const playsetCheck = process.env['ETCH_PLAYSET_CHECK'];
+  if (playsetCheck !== undefined && playsetCheck !== '') {
+    const game = gamePath ?? gameHostPath;
+    assert.ok(game !== undefined && game !== '', 'ETCH_GAME_PATH names the game folder');
+    await testPlaysetWindows(api, game, gameHostPath === '' ? undefined : gameHostPath);
+    return;
+  }
+
   // Local only: the vanilla budgets, read from an installed game in place. They run first, so that
   // the first cold open is the first preview of this VS Code process.
-  const gamePath = process.env['ETCH_GAME_PATH'];
   if (gamePath !== undefined && gamePath !== '') await testPreviewBudget(api, gamePath);
 
   const commands = await vscode.commands.getCommands(true);
@@ -40,7 +52,6 @@ export async function run(): Promise<void> {
   assert.equal(api.gameHost.state.status, 'stopped', 'the game host starts only on demand');
 
   // Local only: one start of the real game host from a game host install.
-  const gameHostPath = process.env['ETCH_GAME_HOST_PATH'];
   if (gameHostPath !== undefined && gameHostPath !== '') {
     // ETCH_GAME_HOST_CHECK=h1 runs H1 of etch#16 instead (etch#119), =corpus the corpus's windows
     // (etch#53), =diff the diff view (etch#54).
