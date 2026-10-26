@@ -7,6 +7,7 @@ const VARIANTS = {
   A: 'Toolbar menus: View ▾ and Data ▾',
   B: 'Inspector: selectors and data layers beside the preview',
   C: 'Outline-driven: radios in the outline, data from the status bar',
+  D: 'Combined: View ▾ with selectors and your views, outline radios and eyes',
 };
 const KEYS = Object.keys(VARIANTS);
 const params = new URLSearchParams(location.search);
@@ -45,6 +46,8 @@ let province; // the chosen province, with fields and localised names
 let derived = { samples: new Map(), selectors: {}, states: new Map(), drawn: [] };
 let selected = -1;
 const collapsed = new Set();
+/** D: windows whose single elements the outline lists. */
+const expanded = new Set();
 
 const canvas = $('screen');
 const gl = EtchRenderer.createContext(canvas);
@@ -93,7 +96,8 @@ async function refresh() {
   const key = JSON.stringify(plain);
   if (key !== layout.samplesKey) await relayout(plain, key);
   const selectors = V.effectiveSelectors(state, s, province, state.country);
-  const windows = layout.widgets.filter((w) => CONTAINERS.has(w.kind) || PROFILE_WIDGETS.test(w.path));
+  // Every widget: hand toggles reach single elements, not only windows.
+  const windows = layout.widgets;
   const states = V.windowStates(state, windows, selectors);
   const drawn = V.drawnWidgets(layout.widgets, states);
   derived = { samples, selectors, states, drawn };
@@ -125,12 +129,14 @@ function render() {
   renderNotices();
   renderStatus();
   if (variant === 'B') renderInspector();
+  if (!$('popover').hidden && popover !== undefined) $('popover').replaceChildren(...popover.build(closePopover));
 }
 
 function viewLabel() {
   if (!state.profile) return 'All windows (no profile)';
-  const v = V.PROFILE.views.find((x) => x.id === state.view);
-  const edited = Object.keys(state.manual).length;
+  const v = V.allViews(state).find((x) => x.id === state.view);
+  // Hand toggles a view of your own saved are part of it, not edits.
+  const edited = Object.entries(state.manual).filter(([p, on]) => v?.manual?.[p] !== on).length;
   let base = v === undefined ? 'Custom view' : v.label;
   // Data selectors that follow the save may differ from what the view says.
   const followed = Object.entries(derived.selectors).filter(([k, s]) => s.source === 'save' && v?.set[k] !== undefined && v.set[k] !== s.value);
@@ -190,6 +196,12 @@ function windowRows() {
     if (!CONTAINERS.has(w.kind)) return;
     if (isCollapsedUnder(w.path)) return;
     rows.push({ w, i, depth: depthOf(w) });
+    if (variant === 'D' && expanded.has(w.path)) {
+      // Single elements of the window, each with its own eye.
+      layout.widgets.forEach((t, j) => {
+        if (t.parent === i && !CONTAINERS.has(t.kind)) rows.push({ w: t, i: j, depth: depthOf(t), element: true });
+      });
+    }
     if (variant === 'C' && !collapsed.has(w.path)) {
       // Text widgets the game's code fills, with their sample value.
       layout.widgets.forEach((t, j) => {
@@ -238,17 +250,45 @@ function renderOutline() {
       );
       continue;
     }
-    const twisty = hasChildWindows(i)
+    if (row.element) {
+      const s = derived.samples.get(w.path);
+      const shown = st?.shown ?? true;
+      const toggle = (e) => {
+        e.stopPropagation();
+        dispatch({ type: 'toggle', path: w.path, current: shown });
+      };
+      const cls = ['row'];
+      if (!drawn) cls.push('hidden');
+      if (st?.manual) cls.push('manual');
+      if (i === selected) cls.push('sel');
+      box.append(
+        h('div', { class: cls.join(' '), title: `${w.path}\nline ${w.line}\n${st?.why ?? ''}`, onclick: () => select(i) },
+          indent, h('span', { class: 'twisty' }), h('span', { class: 'eye', title: 'Show or hide this element', onclick: toggle }, shown ? '👁' : '—'),
+          h('span', { class: 'name' }, w.name),
+          s ? h('span', { class: `badge b-${s.layer}`, title: `${s.layer}: ${s.detail}` }, LAYER_BADGE[s.layer]) : undefined,
+          h('span', { class: 'descr' }, s ? `“${s.text}”` : w.kind.replace(/Type$/, ''))),
+      );
+      continue;
+    }
+    if (variant === 'D') {
+      const any = layout.widgets.some((t) => t.parent === i && !CONTAINERS.has(t.kind));
+      const twistyD = any
+        ? h('span', { class: 'twisty', title: 'Show its elements', onclick: (e) => { e.stopPropagation(); expanded.has(w.path) ? expanded.delete(w.path) : expanded.add(w.path); render(); } },
+            expanded.has(w.path) ? '⌄' : '›')
+        : h('span', { class: 'twisty' });
+      row.twisty = twistyD;
+    }
+    const twisty = row.twisty ?? (hasChildWindows(i)
       ? h('span', { class: 'twisty', onclick: (e) => { e.stopPropagation(); collapsed.has(w.path) ? collapsed.delete(w.path) : collapsed.add(w.path); render(); } },
           collapsed.has(w.path) ? '›' : '⌄')
-      : h('span', { class: 'twisty' });
+      : h('span', { class: 'twisty' }));
     const cls = ['row'];
     if (st && !st.created) cls.push('absent');
     else if (!drawn) cls.push('hidden');
     if (st?.manual) cls.push('manual');
     if (i === selectedWindow()) cls.push('sel');
     const control = outlineControl(w, i, st, drawn);
-    if (variant === 'C' && st?.selector && st.value !== undefined && state.profile) {
+    if ((variant === 'C' || variant === 'D') && st?.selector && st.value !== undefined && state.profile) {
       const label = V.PROFILE.selectors.find((s) => s.id === st.selector)?.label;
       const head = `${w.path.split('/').slice(0, -1).join('/')}|${st.selector}`;
       if (head !== lastGroupHead) {
@@ -277,7 +317,7 @@ function outlineControl(w, i, st, drawn) {
     e.stopPropagation();
     dispatch({ type: 'toggle', path: w.path, current: st?.shown ?? true });
   };
-  if (variant === 'C' && st?.selector && st.value !== undefined && state.profile) {
+  if ((variant === 'C' || variant === 'D') && st?.selector && st.value !== undefined && state.profile) {
     const on = derived.selectors[st.selector]?.value === st.value;
     const pick = (e) => {
       e.stopPropagation();
@@ -307,7 +347,7 @@ function select(i) {
 function renderControls() {
   const slot = $('variant-controls');
   slot.replaceChildren();
-  if (variant === 'A') {
+  if (variant === 'A' || variant === 'D') {
     slot.append(
       h('button', { class: 'menu', onclick: (e) => openViewMenu(e.currentTarget) }, `View: ${viewLabel()}`),
       h('button', { class: 'menu', onclick: (e) => openDataMenu(e.currentTarget) }, `Data: ${dataLabel()}`),
@@ -317,9 +357,13 @@ function renderControls() {
   }
 }
 
+let popover; // { build }: rebuilt on every render while open, so it shows the current state
+const closePopover = () => ($('popover').hidden = true);
+
 function openPopover(anchor, build) {
   const pop = $('popover');
-  pop.replaceChildren(...build(() => (pop.hidden = true)));
+  popover = { build };
+  pop.replaceChildren(...build(closePopover));
   const r = anchor.getBoundingClientRect();
   pop.style.left = `${r.left}px`;
   pop.style.top = `${r.bottom + 2}px`;
@@ -327,11 +371,37 @@ function openPopover(anchor, build) {
 }
 document.addEventListener('mousedown', (e) => {
   const pop = $('popover');
-  if (!pop.hidden && !pop.contains(e.target) && !e.target.classList.contains('menu')) pop.hidden = true;
+  if (!pop.hidden && !pop.contains(e.target) && !e.target.classList.contains('menu') && !$('outline').contains(e.target)) pop.hidden = true;
 });
 
 function openViewMenu(anchor) {
-  openPopover(anchor, (close) => {
+  openPopover(anchor, (close) => (variant === 'D' ? viewMenuD() : viewMenuA(close)));
+}
+
+/** D: ready views and your own as chips, then every selector compactly, as B's inspector has them. */
+function viewMenuD() {
+  const edited = Object.keys(state.manual).length;
+  return [
+    h('div', { class: 'pad' },
+      h('div', { class: 'note', style: 'color:var(--dim);font-size:11px;margin-bottom:4px' }, `Profile: provinceview · ${V.PROFILE.playset}`),
+      h('div', { class: 'seg', style: 'margin-bottom:6px' }, V.allViews(state).map((v) =>
+        h('button', { class: 'chip', title: v.mine ? 'Your view (kept per window)' : v.from === 'anbennar' ? 'Anbennar profile' : 'Vanilla profile',
+          'aria-pressed': String(state.profile && state.view === v.id), onclick: () => dispatch({ type: 'view', id: v.id }) },
+          v.mine ? `★ ${v.label}` : v.label))),
+      h('div', { class: 'seg' },
+        h('button', { onclick: () => {
+          const label = prompt('Name of the view', `My view ${(state.custom?.length ?? 0) + 1}`);
+          if (label) dispatch({ type: 'saveView', label });
+        } }, '★ Save as view…'),
+        edited > 0 ? h('button', { onclick: () => dispatch({ type: 'resetManual' }) }, `↺ Reset ${edited} by hand`) : undefined,
+        h('button', { 'aria-pressed': String(!state.profile), onclick: () => dispatch({ type: 'profile', on: !state.profile }) }, 'All windows'))),
+    h('div', { class: 'sep' }),
+    h('div', { class: 'pad', style: 'max-height:60vh;overflow:auto' }, selectorRows()),
+  ];
+}
+
+function viewMenuA(close) {
+  {
     const item = (on, label, desc, action) =>
       h('div', { class: 'item', onclick: () => { action(); close(); } }, h('span', { class: 'check' }, on ? '✓' : ''), label,
         desc ? h('span', { class: 'hint', style: 'margin-left:auto;padding:0' }, desc) : undefined);
@@ -348,7 +418,7 @@ function openViewMenu(anchor) {
       h('div', { class: 'hint' }, `Height ${screen().height} px → ${derived.selectors.resolution?.value} variants (automatic)`),
       h('div', { class: 'hint' }, 'Toggle windows by hand with 👁 in the Widget Outline.'),
     ].filter(Boolean);
-  });
+  }
 }
 
 function openDataMenu(anchor) {
@@ -421,6 +491,21 @@ async function pickProvince(id) {
 
 function renderInspector() {
   const box = $('inspector');
+  const rows = selectorRows();
+  box.replaceChildren(
+    h('div', { class: 'section' },
+      h('h3', {}, 'View', h('span', { style: 'flex:1' }),
+        h('label', { style: 'text-transform:none;font-weight:400' },
+          h('input', { type: 'checkbox', checked: state.profile, onchange: (e) => dispatch({ type: 'profile', on: e.target.checked }) }), ' profile')),
+      h('div', { class: 'seg', style: 'margin-bottom:10px' }, V.PROFILE.views.map((v) =>
+        h('button', { class: 'chip', 'aria-pressed': String(state.profile && state.view === v.id), onclick: () => dispatch({ type: 'view', id: v.id }) }, v.label))),
+      rows,
+      Object.keys(state.manual).length > 0 ? h('button', { onclick: () => dispatch({ type: 'resetManual' }) }, `Reset ${Object.keys(state.manual).length} hand toggle(s)`) : undefined),
+    h('div', { class: 'section' }, h('h3', {}, 'Sample data'), dataLayers()),
+  );
+}
+
+function selectorRows() {
   const sel = derived.selectors;
   const rows = V.PROFILE.selectors.map((s) => {
     const cur = sel[s.id];
@@ -443,17 +528,7 @@ function renderInspector() {
       control,
       s.rule ? h('div', { class: 'rule' }, `${s.kind}: ${s.rule}`) : h('div', { class: 'rule' }, `${s.kind}: chosen in the game by a click`));
   });
-  box.replaceChildren(
-    h('div', { class: 'section' },
-      h('h3', {}, 'View', h('span', { style: 'flex:1' }),
-        h('label', { style: 'text-transform:none;font-weight:400' },
-          h('input', { type: 'checkbox', checked: state.profile, onchange: (e) => dispatch({ type: 'profile', on: e.target.checked }) }), ' profile')),
-      h('div', { class: 'seg', style: 'margin-bottom:10px' }, V.PROFILE.views.map((v) =>
-        h('button', { class: 'chip', 'aria-pressed': String(state.profile && state.view === v.id), onclick: () => dispatch({ type: 'view', id: v.id }) }, v.label))),
-      rows,
-      Object.keys(state.manual).length > 0 ? h('button', { onclick: () => dispatch({ type: 'resetManual' }) }, `Reset ${Object.keys(state.manual).length} hand toggle(s)`) : undefined),
-    h('div', { class: 'section' }, h('h3', {}, 'Sample data'), dataLayers()),
-  );
+  return rows;
 }
 
 function sourceTitle(s, source) {

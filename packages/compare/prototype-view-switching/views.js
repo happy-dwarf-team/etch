@@ -213,13 +213,21 @@ export function reduce(state, action) {
     case 'profile':
       return { ...state, profile: action.on };
     case 'view': {
-      const view = PROFILE.views.find((v) => v.id === action.id);
+      const view = allViews(state).find((v) => v.id === action.id);
       if (view === undefined) return state;
       const pinned = { ...state.pinned };
       for (const k of Object.keys(view.set)) pinned[k] = true;
       // A view sets UI state; ownership follows the save again when a province is chosen.
       if (state.layers.save && state.province !== undefined) delete pinned.ownership;
-      return { ...state, profile: true, view: view.id, selectors: { ...state.selectors, ...view.set }, pinned, manual: {} };
+      return { ...state, profile: true, view: view.id, selectors: { ...state.selectors, ...view.set }, pinned, manual: { ...(view.manual ?? {}) } };
+    }
+    case 'saveView': {
+      // A view of the user's own: the selectors and hand toggles as they are now, per window.
+      const id = `mine-${(state.custom?.length ?? 0) + 1}`;
+      const set = { ...state.selectors };
+      delete set.resolution;
+      const view = { id, label: action.label, mine: true, set, manual: { ...state.manual } };
+      return { ...state, custom: [...(state.custom ?? []), view], view: id };
     }
     case 'select':
       return {
@@ -262,6 +270,11 @@ export function reduce(state, action) {
 function matchingView(selectors) {
   const v = PROFILE.views.find((view) => Object.entries(view.set).every(([k, val]) => selectors[k] === val));
   return v?.id;
+}
+
+/** The profile's views, then the user's own. */
+export function allViews(state) {
+  return [...PROFILE.views, ...(state.custom ?? [])];
 }
 
 /**

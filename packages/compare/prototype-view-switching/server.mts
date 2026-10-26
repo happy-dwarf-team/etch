@@ -1,7 +1,7 @@
 // PROTOTYPE (etch#159), throwaway, never merged: how should views and sample data be switched in
 // the preview? A local page that mimics the preview and the Widget Outline on `provinceview` of
 // the Anbennar playset, drawn by the real offline renderer from the playset's files (read only),
-// in three variants (?variant=A|B|C).
+// in three variants (?variant=A|B|C|D).
 //
 //   pnpm proto:views          # then open http://localhost:5159/?variant=A
 //

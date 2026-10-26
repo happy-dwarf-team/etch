@@ -15,12 +15,17 @@ playset's files, read only. Three variants of where the switches live:
   (auto, save, you, default), and the data layers; the outline only says why.
 - **C**: the outline itself: exclusive windows as radios, others as check boxes, code-filled
   texts with their sample value; data and views from quick picks on the status bar.
+- **D** (after the maintainer's reaction: B's choice without its panel, A's two menus and eyes,
+  C's radios): `View ▾` holds the ready views, your own saved views (selectors and hand toggles,
+  per window) and every selector compactly with its source; the outline has radios for windows
+  that exclude one another and an eye on every other window and, once a window is opened, on each
+  of its single elements.
 
 ```bash
 pnpm proto:views
 ```
 
-Then open `http://localhost:5159/?variant=A` (B, C; arrow keys or the bar at the bottom switch).
+Then open `http://localhost:5159/?variant=A` (B, C, D; arrow keys or the bar at the bottom switch).
 The game is found through Steam or `ETCH_GAME_PATH`. The save is `ETCH_PROTO_SAVE`, else
 `saves/Verne1444_11_11_test.eu4` under `ETCH_CORPUS_PATH`, else `Verne1444_11_11.eu4` in the
 player's save games folder. The live snapshot is a mock: no game is started.
