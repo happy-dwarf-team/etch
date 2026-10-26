@@ -1,5 +1,8 @@
 # Extension-driven game host in a private game install, previewing renamed copies
 
+Partly superseded by ADR 0005 for 2.0.0: the game host and its preview copies
+go; the private install, the process and the pipe stay for the live game.
+
 The game host is a disposable game process that the extension starts, owns and
 stops. It runs from a game host install (a junction copy of the game with
 Anvil and Etch's plugin inside and its own user profile), sits in the main
