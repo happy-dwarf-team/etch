@@ -1,6 +1,6 @@
 id = "etch"
 name = "Etch"
-version = "1.0.0"          # release-please sets it with package.json in each release pull request
+version = "1.0.1"          # release-please sets it with package.json in each release pull request
 authors = ["Happy Dwarf Team"]
 description = "The game host of Etch, the VS Code previewer for interface mods: answers Etch over a private pipe. Idle unless Etch started the game."
 api = 2
