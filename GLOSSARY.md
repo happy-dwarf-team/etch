@@ -74,6 +74,12 @@ The game Etch starts from its private install with the edited mod's playset,
 which the user plays while Etch reloads the files they save into it.
 _Avoid_: game host, play mode, hot reload mode
 
+**Pick mode**:
+A mode of the live game, turned on and off with one key, in which the widget
+under the cursor is outlined and named, and a click opens its definition and
+pins the preview on its window instead of acting in the game.
+_Avoid_: inspect mode, debug view, guibounds
+
 **Planned restart**:
 A restart of the live game that Etch asks the player for, from a save the live
 game makes just before it, so that no play is lost; unlike the restart after a
