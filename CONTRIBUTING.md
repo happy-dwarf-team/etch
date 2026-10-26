@@ -154,6 +154,17 @@ corpus needs a licensed game. A change that touches the reload path says in the
 pull request what was measured: [docs/budgets.md](docs/budgets.md) says how,
 and a new result goes there. Every run of the game follows the EU4 engine
 lab's procedure: `eu4.exe`, saves and mods are never changed, and a process is
-closed only after its PID, path and creation time are checked.
+closed only after its PID, path and creation time are checked. Only one game
+or heavy run (a corpus capture, a game host check, `compare --gpu`) runs on the
+machine at a time, under the lab's game lock for its whole length: a second one
+skews the first one's timings.
+
+These runs print progress for every view or window. When watching one, follow
+only the lines that end it or need action:
+
+| Run                                                  | Ends with                                     | Needs action                                     |
+| ---------------------------------------------------- | --------------------------------------------- | ------------------------------------------------ |
+| corpus driver (`packages/core/src/corpus/driver`)    | `run <id>: … captured, … failed` and `report:` | `<view>: FAILED:`, `session failed:`, `crashed`  |
+| game host checks (`ETCH_GAME_HOST_CHECK`, extension) | `Exit code:` from the VS Code test runner      | `Error`, `AssertionError`, `"outcome":"timeout"` |
 
 Screenshots and other game assets never enter Git.
