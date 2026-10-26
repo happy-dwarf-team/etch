@@ -10,10 +10,10 @@ mods: edit a `.gui` or `.gfx` file and see the window as the game draws it,
 within moments, without restarting the game. Website:
 [etch.happydwarf.dev](https://etch.happydwarf.dev/).
 
-Status: preview. The latest release, 0.3.0, has both preview backends: the
-offline renderer (0.1.0, measured against the game's precision corpus since
-0.2.0) and the game host (0.3.0), a private copy of the game with Etch's Anvil
-plugin that draws the window itself. Releases are on
+Status: preview. Etch has had the offline renderer since 0.1.0, measured
+against the game's precision corpus since 0.2.0; the game host, a private copy
+of the game with Etch's Anvil plugin that draws the window itself, since 0.3.0;
+and the diff view between the two since 0.4.0. Releases are on
 [Open VSX](https://open-vsx.org/extension/happy-dwarf-team/etch), the
 [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=happy-dwarf-team.etch)
 and the [GitHub releases](https://github.com/happy-dwarf-team/etch/releases);
