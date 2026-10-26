@@ -1,0 +1,18 @@
+id = "etch-pick-probe"
+name = "Etch pick mode probe"
+version = "0.0.1"
+authors = ["Happy Dwarf Team"]
+description = "Throwaway probe for the live checks of Etch's pick mode (etch#171). Not shipped."
+api = 2
+entry = "etch_pick_probe.dll"
+affects_gameplay = false
+issues = "https://github.com/happy-dwarf-team/etch/issues"
+repository = "https://github.com/happy-dwarf-team/etch"
+
+[[dependencies]]
+id = "anvil-game"
+version = "^1"
+
+[[dependencies]]
+id = "tongs"
+version = ">=0.17.0"
