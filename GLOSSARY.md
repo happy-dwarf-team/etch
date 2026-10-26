@@ -42,6 +42,12 @@ when the game shows each of them, and where the content of each widget the
 game's code fills comes from.
 _Avoid_: catalog entry, schema, binding
 
+**Selector**:
+One of the things that decide which view of a window the game shows: the
+screen height, the game's data (whose province it is), what the player clicked
+open, or the state of a mod's scripted interface.
+_Avoid_: condition, switch, flag
+
 **Sample data**:
 Stand-in values for code-filled content, such as text of a chosen length, used
 so a layout preview can show a plausible window; written by hand, generated or
