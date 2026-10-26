@@ -108,25 +108,29 @@ describe.runIf(process.platform === 'win32')('the game lock of a capture run', (
       expect(lock.inherited).toBe(false);
       expect(process.env[GAME_LOCK_VARIABLE]).toBe(lock.token);
       expect(lock.expiresAt.getTime()).toBeGreaterThan(Date.now() + 230 * 60_000);
-      await launcher.check();
-      const record = await launcher.start(profile, undefined);
-      expect(await exists(lockFile)).toBe(true);
-      const stop = await launcher.stop(record);
-      expect(stop.ok).toBe(true);
+      // Two sessions, as a run has them; Check also hashes the Steam game's eu4.exe, which CI
+      // does not have, and Start runs the same preflight.
+      for (let session = 0; session < 2; session++) {
+        const record = await launcher.start(profile, undefined);
+        expect(await exists(lockFile)).toBe(true);
+        const stop = await launcher.stop(record);
+        expect(stop.ok).toBe(true);
+      }
       return lock.token;
     });
 
     const all = await calls();
-    expect(all.map((c) => c.call)).toEqual([
-      'Enter-LabGameLock',
-      'Assert-LabPreflight',
-      'Assert-LabPreflight',
-      'Assert-NoGameRunning',
+    const session = [
       'Assert-LabPreflight',
       'Assert-LabPreflight',
       'Assert-NoGameRunning',
       'Start-LabGame',
       'Open-VerifiedSession',
+    ];
+    expect(all.map((c) => c.call)).toEqual([
+      'Enter-LabGameLock',
+      ...session,
+      ...session,
       'Exit-LabGameLock',
     ]);
     // Held by this Node process, so it ends with the run even when Node is killed.
