@@ -75,4 +75,6 @@ GitHub's OIDC token (`azure/login`, no subscription), and
 the `happy-dwarf-team` publisher. No publishing token is stored, which keeps the
 goal of this decision; the identity lives in Entra instead of a Marketplace
 policy. When `vsce publish --oidc` works, the job moves to it and the identity
-is removed. [docs/release.md](../release.md) has the steps.
+is removed. The identity needs a work or school tenant, and the maintainer's
+personal Microsoft account has none, so until one exists the release VSIX is
+still uploaded by hand. [docs/release.md](../release.md) has the steps.

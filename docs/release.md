@@ -40,6 +40,13 @@ the first release:
   below). Without `AZURE_CLIENT_ID`, a `VSCE_PAT` secret publishes; without
   either, the job publishes nothing, succeeds, and leaves a warning and a step
   summary with the release's VSIX link to upload by hand.
+
+  The Entra ID route needs a work or school tenant to register the identity
+  in. A personal Microsoft account has none: the Entra admin center turns it
+  away with "The selected user account does not exist in tenant 'Microsoft
+  Services'". The maintainer's account is personal (October 2026), so until
+  `--oidc` works or a tenant exists, releases reach the Marketplace by hand
+  (see [Each release](#each-release)).
 - **Open VSX.** `ovsx publish --trusted-publishing` (ovsx 1.1.0 and later)
   works, but a trusted publisher can only be registered for an extension that
   already has a version, by a namespace owner. The first release publishes
@@ -68,7 +75,8 @@ the first release:
    namespace `happy-dwarf-team`"). Until it is granted the namespace is
    unverified, and an extension with the Marketplace's identifier may stay
    under review.
-5. **Marketplace identity (Microsoft Entra ID).** In the
+5. **Marketplace identity (Microsoft Entra ID), only with a work or school
+   tenant** (see Authentication). In the
    [Microsoft Entra admin center](https://entra.microsoft.com), in a tenant you
    administer:
    1. **App registrations → New registration**: name `etch-marketplace`,
