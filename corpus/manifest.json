@@ -161,9 +161,10 @@
       "title": "Anbennar + Proper 2K UI Enhanced + P2KE Patch - Anbennar",
       "gate": "report",
       "save": {
-        "file": "Verne1444_11_11.eu4",
-        "sha256": "E5B785E1D711353FB5D23F4DE16991CF35FAC2EAB9F5D1C202B065B91D0851FD",
-        "description": "Verne, 11 November 1444: the maintainer's Anbennar start, saved with Anbennar, Proper 2K UI Enhanced and an earlier Anbennar UI patch."
+        "file": "Verne1444_11_11_test.eu4",
+        "sha256": "57CB4550073A4142E20FBB6439E32A68E420A5DB3F680EAEF138223264704AA0",
+        "description": "Verne, 11 November 1444: a new game the maintainer saved with exactly this playset on 2026-10-26.",
+        "confirm": "DefaultConfirm/AgreeButton"
       },
       "mods": [
         {

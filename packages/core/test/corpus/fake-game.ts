@@ -91,6 +91,17 @@ export class FakeGame implements Tongs {
   /** Called with each command before it is answered, for a test to act in the middle of a view. */
   onCall: ((command: string) => void) | undefined;
 
+  /** Called when a `ui click` hits a child of an open window (`window/child`). */
+  onClick: ((selector: string) => void) | undefined;
+
+  /** The child `window/child` of an open window, as `ui find` reports it. */
+  private openChild(selector: string): Record<string, unknown> | undefined {
+    const [window = '', child, ...more] = selector.split('/');
+    if (child === undefined || more.length > 0 || !this.open.includes(window)) return undefined;
+    const children = (this.widget(window)['children'] ?? []) as Record<string, unknown>[];
+    return children.find((c) => c['name'] === child);
+  }
+
   close(): void {
     this.calls.push('close');
   }
@@ -106,7 +117,11 @@ export class FakeGame implements Tongs {
     if (verb === 'frames' || verb === 'move') return ok(this.state());
     if (verb === 'ui' && rest[0] === 'find') {
       const name = rest[1] ?? '';
-      const matches = this.open.filter((w) => w === name).map((w) => this.widget(w));
+      const child = this.openChild(name);
+      const matches =
+        child !== undefined
+          ? [child]
+          : this.open.filter((w) => w === name).map((w) => this.widget(w));
       return ok({ count: matches.length, truncated: false, matches });
     }
     if (command.startsWith('ui tree depth=0')) {
@@ -136,6 +151,11 @@ export class FakeGame implements Tongs {
       if (this.covered > 0) {
         this.covered--;
         return { ok: false, error: 'covered', covered_by: 'menu/menu' };
+      }
+      const child = this.openChild(selector);
+      if (child !== undefined) {
+        this.onClick?.(selector);
+        return ok({ clicked: selector, ...this.state() });
       }
       const opened = this.windows.find(
         (w) => w.openedBy !== undefined && 'click' in w.openedBy && w.openedBy.click === selector,

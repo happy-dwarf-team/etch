@@ -45,7 +45,7 @@ joined by `-`, because they become file names.
 | --- | --- |
 | `id`, `title` | |
 | `gate` | `release`: must pass for a release; `report`: reported, blocks nothing |
-| `save` | `file` (in the profile's `save games`), `sha256`, `description`. Required for a release playset |
+| `save` | `file` (in the profile's `save games`), `sha256`, `description`, and `confirm`, a widget pattern the driver clicks when it shows while the save loads: Anbennar asks to confirm an achievements warning first (`DefaultConfirm/AgreeButton`, etch#55). Required for a release playset |
 | `mods` | load order, a later mod winning: `name` (the descriptor's), `workshopId`, `sha256`, `note` |
 | `disabledDlcs` | `dlc_load.json`'s `disabled_dlcs` while capturing; empty means every owned DLC |
 | `windows` | ids of the corpus windows captured with this playset |
@@ -272,7 +272,9 @@ What a run does:
   of both `eu4.exe` and of the host install, and no game running. The copy
   starts suspended with the mask 1–7 and is ready when Tongs answers from that
   process, `system.log` says `Running application`, the save is loaded and
-  paused, and a frame has passed.
+  paused, and a frame has passed. A save that has not loaded 2 minutes after
+  `Running application` fails the session; the save's `confirm` button is
+  clicked as soon as it shows, and the 2 minutes count from that click.
 - **Settings**: the size goes into named variants of the profile's named
   baselines (`settings-1920x1080-windowed.txt`, `pdx-settings-…`), as above.
   After each start the variants are compared with what the game left (only
