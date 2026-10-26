@@ -11,6 +11,7 @@
 // The frontend views' images are not comparable: H1's backdrop lies inside their root. The images
 // are game art: they stay in the local corpus folder, which never enters Git.
 import * as assert from 'node:assert/strict';
+import { existsSync } from 'node:fs';
 import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import * as path from 'node:path';
@@ -288,9 +289,12 @@ export async function testGameHostCorpus(api: EtchApi, gamePath: string): Promis
     const roots = new Map<string, { result: RootResult; image?: Tga }>();
     const views: unknown[] = [];
     for (const key of keys) {
-      const record = (
-        await readCaptureRecord(captureRecordFile(path.join(repository, 'corpus'), key))
-      ).capture;
+      // A view the capture driver could not open has no record (the Anbennar save's province and
+      // declare war dialog, etch#55).
+      const recordFile = captureRecordFile(path.join(repository, 'corpus'), key);
+      const record = existsSync(recordFile)
+        ? (await readCaptureRecord(recordFile)).capture
+        : undefined;
       if (record === undefined) {
         views.push({ view: key.view, skipped: 'no capture record' });
         continue;

@@ -225,6 +225,7 @@
             "country_selection_panel/mainmenu/mainmenu_panel_bottom/nudge_button",
             "country_selection_panel/mainmenu/mainmenu_panel_bottom/version_label",
             "country_selection_panel/mainmenu/mainmenu_panel_bottom/continue_container/ironman_icon",
+            "country_selection_panel/mainmenu/mainmenu_panel_bottom/continue_container/continue_game_shield",
             "country_selection_panel/mainmenu/mainmenu_panel_bottom/continue_container/text"
           ]
         },
@@ -301,9 +302,14 @@
             "menubar/floating_buttons/floating_number_*",
             "topbar/PlayerNationText",
             "topbar/powerprojection_topbar/text_powerprojection",
-            "speed_controls/icon_date_bg"
+            "speed_controls/icon_date_bg",
+            "topbar/p2kuie_mana_window/p2kuie_mana_value"
           ],
-          "codeMoved": ["menubar/WarOverviewButtonWindow", "menubar/message_window_container"]
+          "codeMoved": [
+            "menubar/WarOverviewButtonWindow",
+            "menubar/message_window_container",
+            "menubar/floating_buttons"
+          ]
         }
       ]
     },
@@ -399,7 +405,9 @@
             "topbar/great_power_button_base",
             "topbar/open_build_interface_button",
             "topbar/PlayerNationText",
-            "topbar/powerprojection_topbar/text_powerprojection"
+            "topbar/powerprojection_topbar/text_powerprojection",
+            "countrycourtview/queen_gender",
+            "topbar/p2kuie_mana_window/p2kuie_mana_value"
           ]
         }
       ]
@@ -458,7 +466,10 @@
             "topbar/great_power_button_base",
             "topbar/open_build_interface_button",
             "topbar/PlayerNationText",
-            "topbar/powerprojection_topbar/text_powerprojection"
+            "topbar/powerprojection_topbar/text_powerprojection",
+            "countrydiplomacyview/ruler_race_icon",
+            "countrydiplomacyview/countrydiplomacyview_shielditem*",
+            "topbar/p2kuie_mana_window/p2kuie_mana_value"
           ]
         },
         {
@@ -502,7 +513,8 @@
             "topbar/great_power_button_base",
             "topbar/open_build_interface_button",
             "topbar/PlayerNationText",
-            "topbar/powerprojection_topbar/text_powerprojection"
+            "topbar/powerprojection_topbar/text_powerprojection",
+            "topbar/p2kuie_mana_window/p2kuie_mana_value"
           ],
           "codeMoved": ["DeclareWarDialog"]
         }
@@ -575,14 +587,16 @@
             "topbar/powerprojection_topbar/text_powerprojection",
             "menubar/WarOverviewButtonWindow/waroverview_shieldItem",
             "menubar/floating_buttons/f_button_*",
-            "menubar/floating_buttons/floating_number_*"
+            "menubar/floating_buttons/floating_number_*",
+            "topbar/p2kuie_mana_window/p2kuie_mana_value"
           ],
           "codeMoved": [
             "provinceview/top_section_window",
             "provinceview/top_section_window/history",
             "provinceview/top_section_window/river_indicator_2",
             "menubar/WarOverviewButtonWindow",
-            "menubar/message_window_container"
+            "menubar/message_window_container",
+            "menubar/floating_buttons"
           ]
         }
       ]
@@ -678,7 +692,11 @@
             "menubar/floating_buttons/f_button_*",
             "menubar/floating_buttons/floating_number_*"
           ],
-          "codeMoved": ["menubar/WarOverviewButtonWindow", "menubar/message_window_container"]
+          "codeMoved": [
+            "menubar/WarOverviewButtonWindow",
+            "menubar/message_window_container",
+            "menubar/floating_buttons"
+          ]
         }
       ]
     },
@@ -728,7 +746,8 @@
             "topbar/great_power_button_base",
             "topbar/open_build_interface_button",
             "topbar/PlayerNationText",
-            "topbar/powerprojection_topbar/text_powerprojection"
+            "topbar/powerprojection_topbar/text_powerprojection",
+            "topbar/p2kuie_mana_window/p2kuie_mana_value"
           ]
         }
       ]

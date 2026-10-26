@@ -491,6 +491,35 @@ top-level definitions. Nothing crashed in either backend:
   draw nothing offline. Their previews show what the file draws, which is
   nothing until the game's code fills them.
 
+**The Anbennar corpus report** (2026-10-26, the same builds, 3440×1440 only,
+the save `Verne1444_11_11_test.eu4` that the maintainer made with exactly the
+playset's mods). The capture driver, without Bellows as for the release
+playsets, took 11 of the 13 views of the ten corpus windows:
+
+- **Not taken:** `province` and `diplomacy-dialog`, whose recipes click an
+  outliner entry and a diplomacy row that Verne in 1444 does not have. The
+  recipes are the release playsets' Russia of 1719; a recipe per playset is
+  not in the manifest's format.
+- **The save asks first:** Anbennar shows a `DefaultConfirm` dialog ("Vanilla
+  achievements can no longer be earned") before it loads a save, which the
+  driver now clicks (the playset's `save.confirm`, etch#55).
+- **Offline renderer:** all 11 pass with `--gpu` (457 widgets pass, 17 are
+  known deviations, 848 code-filled), after five rules: the playset's own
+  code-filled widgets (the continue box's shield in the main menu, the
+  consort's gender icon, the ruler's race icon, the diplomacy view's shield
+  items and Proper 2K UI Enhanced's mana value), `menubar/floating_buttons`
+  as code-moved (the game leaves it at its `position`, x = −90, not at its
+  `show_position`), and a scaled frame of a strip whose width is no multiple
+  of its frames sized by a whole cell (etch#55).
+- **Game host:** H1 holds for all 13 root windows (at most 2 per channel, but
+  3 pixels of `menubar` off by 3 in a 31 × 5 box that animates). Against the
+  captures 1 of 11 views pass, `ledger`, as in the release playsets (271
+  widgets pass, 189 fail): the game host draws the files in the main menu,
+  without the game's code.
+- **Animation:** the main menu and lobby change 3.6–4.3 million pixels between
+  shots, and the views over the map about 3 million; the comparison leaves
+  them out, and no widget lost more than 5 % of its pixels to them.
+
 ## The diff view
 
 The diff view (spec section 5, etch#54) was checked live once
