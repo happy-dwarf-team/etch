@@ -425,7 +425,10 @@ class Layout {
       sh: texture.size.height,
       shader: this.shader(sprite, reference),
     });
-    return { width: Math.floor(width), height: Math.floor(height) };
+    // A texture whose width is no multiple of its frames gives the widget the width of a whole
+    // cell, rounded down before the scale: Anbennar's 162-pixel legitimacy strip of 5 frames at a
+    // scale of 0.9 makes a widget 28 pixels wide, not 29 (etch#55). It draws as before.
+    return { width: Math.floor(Math.floor(cell) * scale), height: Math.floor(height) };
   }
 
   /**
