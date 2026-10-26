@@ -5,13 +5,19 @@
 [![Open VSX](https://img.shields.io/open-vsx/v/happy-dwarf-team/etch?label=Open%20VSX)](https://open-vsx.org/extension/happy-dwarf-team/etch)
 [![License: MIT](https://img.shields.io/github/license/happy-dwarf-team/etch)](LICENSE)
 
-Etch is a planned tool for Europa Universalis IV interface mods: edit a `.gui`
-or `.gfx` file and see the window as the game draws it, within moments, without
-restarting the game.
+Etch is a Visual Studio Code extension for Europa Universalis IV interface
+mods: edit a `.gui` or `.gfx` file and see the window as the game draws it,
+within moments, without restarting the game. Website:
+[etch.happydwarf.dev](https://etch.happydwarf.dev/).
 
-Status: preview. Milestone M1, the offline preview, ships as 0.1.0 on the
+Status: preview. The latest release, 0.3.0, has both preview backends: the
+offline renderer (0.1.0, measured against the game's precision corpus since
+0.2.0) and the game host (0.3.0), a private copy of the game with Etch's Anvil
+plugin that draws the window itself. Releases are on
+[Open VSX](https://open-vsx.org/extension/happy-dwarf-team/etch), the
 [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=happy-dwarf-team.etch)
-and [Open VSX](https://open-vsx.org/extension/happy-dwarf-team/etch); the
+and the [GitHub releases](https://github.com/happy-dwarf-team/etch/releases);
+the [changelog](CHANGELOG.md) lists what each one changed, and the
 extension's [README](packages/extension/README.md) says what it does. The
 [v1 specification](docs/spec/v1.md) says what 1.0.0 contains and in what
 order it is built; the decisions behind it are in [docs/adr](docs/adr) and in
@@ -28,6 +34,14 @@ the wayfinder map in this repository's issues (label `wayfinder:map`).
 - Target: EU4 1.37.5 (Steam, win64) on Windows.
 
 See [GLOSSARY.md](GLOSSARY.md) for the terms used in the issues.
+
+## Built on Anvil
+
+The game host runs on [Anvil](https://anvil.happydwarf.dev/), the team's
+plugin loader for EU4, with the [Bellows](https://anvil.happydwarf.dev/plugins/bellows/)
+plugin for a faster start; the precision corpus is captured with
+[Tongs](https://anvil.happydwarf.dev/plugins/tongs/). Etch is a project of the
+[Happy Dwarf Team](https://happydwarf.dev/).
 
 ## License
 
