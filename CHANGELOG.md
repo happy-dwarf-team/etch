@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.4.0](https://github.com/happy-dwarf-team/etch/compare/v0.3.0...v0.4.0) (2026-10-26)
+
+
+### Features
+
+* add the diff view ([#131](https://github.com/happy-dwarf-team/etch/issues/131)) ([b05a14f](https://github.com/happy-dwarf-team/etch/commit/b05a14fbb7b0e86ba857822438de96a70d457b04))
+
+
+### Bug Fixes
+
+* **core:** size a scaled frame of an uneven strip by a whole cell ([#138](https://github.com/happy-dwarf-team/etch/issues/138)) ([e708c59](https://github.com/happy-dwarf-team/etch/commit/e708c59334b5f373151ac463f51cbc2760ed2b73))
+* **corpus:** click a playset's save confirmation while the save loads ([#137](https://github.com/happy-dwarf-team/etch/issues/137)) ([f559764](https://github.com/happy-dwarf-team/etch/commit/f559764a7ea3887e502eef596abc6cf68c5c6ce5))
+
 ## [0.3.0](https://github.com/happy-dwarf-team/etch/compare/v0.2.0...v0.3.0) (2026-10-25)
 
 
