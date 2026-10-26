@@ -4,7 +4,6 @@
   "description": "Preview Europa Universalis IV interface mods while you edit them.",
   "version": "0.4.0",
   "publisher": "happy-dwarf-team",
-  "preview": true,
   "private": true,
   "license": "MIT",
   "icon": "media/icon.png",

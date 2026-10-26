@@ -4,10 +4,6 @@ Etch previews Europa Universalis IV 1.37.5 interface mods in Visual Studio
 Code while they are edited. Website:
 [etch.happydwarf.dev](https://etch.happydwarf.dev/).
 
-This is a preview release: the
-[v1 specification](https://github.com/happy-dwarf-team/etch/blob/main/docs/spec/v1.md)
-says what comes before 1.0.0.
-
 ## Requirements
 
 - Windows (x64) and Visual Studio Code 1.100 or later.
@@ -50,9 +46,9 @@ fonts and textures, duplicate names and more) appear in the Problems panel.
   `etch.language` picks the localisation language.
 
 This is a layout preview: content the game's code fills in (lists, flags,
-values) is not shown. See the
+values) is not shown. The
 [v1 specification](https://github.com/happy-dwarf-team/etch/blob/main/docs/spec/v1.md)
-for what 1.0.0 contains and in what order it is built.
+says what 1.0.0 contains and how it was measured against the game.
 
 Etch only reads the game folder, the mods and the profile. It sends nothing
 anywhere: it has no telemetry.
