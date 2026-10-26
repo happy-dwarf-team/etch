@@ -25,6 +25,7 @@ const GFX = `
 spriteTypes = {
   spriteType = { name = "GFX_plain" texturefile = "gfx/interface/plain.dds" }
   spriteType = { name = "GFX_strip" texturefile = "gfx//interface//strip.tga" noOfFrames = 4 effectFile = "gfx/FX/buttonstate.lua" }
+  spriteType = { name = "GFX_odd_strip" texturefile = "gfx/interface/odd_strip.dds" noOfFrames = 5 }
   spriteType = { name = "GFX_target" texturefile = "gfx/interface/plain.dds" effectFile = "gfx/FX/gui_rendertarget.shader" }
   textSpriteType = { name = "GFX_button" texturefile = "gfx/interface/button.dds" }
   corneredTileSpriteType = { name = "GFX_tile" texturefile = "gfx/interface/tile.dds" borderSize = { x = 4 y = 2 } size = { x = 50 y = 30 } }
@@ -52,6 +53,7 @@ bitmapfonts = {
 const TEXTURES: Record<string, TextureSize> = {
   'gfx/interface/plain.dds': { width: 20, height: 10 },
   'gfx/interface/strip.dds': { width: 64, height: 8 },
+  'gfx/interface/odd_strip.dds': { width: 162, height: 33 },
   'gfx/interface/button.dds': { width: 30, height: 12 },
   'gfx/interface/tile.dds': { width: 16, height: 8 },
   'gfx/interface/bar_green.dds': { width: 4, height: 4 },
@@ -253,6 +255,21 @@ describe('layoutWindow: sprites', () => {
     expect(draw.width).toBeCloseTo(11.2);
     expect(draw.height).toBeCloseTo(5.6);
     expect(rectOf(l, 'scaled')).toEqual([4, 4, 11, 5]);
+  });
+
+  it('sizes a scaled frame of a strip whose width is no multiple of them by a whole cell (etch#55)', () => {
+    const { layout } = setUp(`guiTypes = { windowType = { name = "w"
+      iconType = { name = "odd" spriteType = "GFX_odd_strip" frame = 4 scale = 0.9 }
+    } }`);
+    const l = layout();
+    // 162 / 5 frames is 32.4: the fourth cell starts at 97.2 and draws 29.16 wide; the widget is
+    // 32 × 0.9 = 28.8, rounded down.
+    const draw = only(drawsOf(l, 'odd'));
+    if (draw.kind !== 'sprite') throw new Error('expected a sprite');
+    expect(draw.sx).toBeCloseTo(97.2);
+    expect(draw.sw).toBeCloseTo(32.4);
+    expect(draw.width).toBeCloseTo(29.16);
+    expect(rectOf(l, 'odd')).toEqual([0, 0, 28, 29]);
   });
 
   it("draws the largest of a sprite's variants that ends on the screen from its window's top", () => {
