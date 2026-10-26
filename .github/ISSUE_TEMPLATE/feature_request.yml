@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Check [what v1 contains and what comes after it](https://github.com/happy-dwarf-team/etch/blob/main/docs/spec/v1.md) first.
+        Check [what v1 contains](https://github.com/happy-dwarf-team/etch/blob/main/docs/spec/v1.md) and [what comes after it](https://github.com/happy-dwarf-team/etch/blob/main/docs/spec/after-v1.md) first.
   - type: textarea
     id: problem
     attributes:

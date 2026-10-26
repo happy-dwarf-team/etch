@@ -27,7 +27,7 @@ const LINEAR_WRAP: SamplerState = { min: 'linear', mag: 'linear', wrap: true };
 /**
  * The samplers of each shader by index: the texture, then the mask (masked
  * shaders) or the second fill (`progress`). `default` is a hypothesis: the
- * game's shader for sprites without `effectFile` is unknown (spec section 15),
+ * game's shader for sprites without `effectFile` is unknown (docs/spec/after-v1.md),
  * so it starts as linear and clamped.
  */
 export const SHADER_SAMPLERS: Readonly<Record<ShaderName, readonly SamplerState[]>> = {

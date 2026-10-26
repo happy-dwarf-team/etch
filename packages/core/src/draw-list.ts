@@ -64,7 +64,7 @@ interface DrawBase {
 /**
  * The shaders a sprite draws with, named as `effectFile` names them without
  * folder and extension (see {@link effectName}). `default` stands for sprites
- * without `effectFile`, whose real shader is unknown (spec section 15).
+ * without `effectFile`, whose real shader is unknown (docs/spec/after-v1.md).
  */
 export const SPRITE_SHADERS = [
   'default',

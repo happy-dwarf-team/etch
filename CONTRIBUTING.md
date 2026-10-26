@@ -38,7 +38,7 @@ Scopes in use: `core`, `renderer`, `extension`, `plugin`, `corpus` and
 
 Breaking changes: add `!` after the type or scope (`feat(extension)!: ...`)
 and a `BREAKING CHANGE: <what breaks and how to migrate>` paragraph in the pull
-request description. Before 1.0.0 a breaking change bumps the minor version.
+request description. Since 1.0.0 a breaking change bumps the major version.
 
 ## Versions and releases
 
