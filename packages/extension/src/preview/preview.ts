@@ -49,7 +49,7 @@ import {
   type WindowView,
 } from '@etch/core/profile';
 import { readGameText, saveEncodingOf } from '../game-text.ts';
-import type { LiveGame } from '../live-game/index.ts';
+import { pickKeySetting, type LiveGame } from '../live-game/index.ts';
 import { listSaves, savesFolder } from '../live-game/saves.ts';
 import type { OutlineToggle, WidgetNavigation } from '../navigation.ts';
 import { PreviewData } from './data.ts';
@@ -470,6 +470,8 @@ export class Preview implements PreviewApi, vscode.Disposable {
       gameFolder,
       mods: session.playset.mods,
       display: { ...(this.native ?? this.resolution.screen), language: session.settings.language },
+      editedRoot: session.playset.workspaceMod?.root,
+      pickModeKey: pickKeySetting(),
     });
   }
 

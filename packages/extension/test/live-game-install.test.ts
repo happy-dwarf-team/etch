@@ -287,6 +287,10 @@ describe('prepareInstall', () => {
     ).toBe('written by Bellows');
     // Tongs runs with its defaults: no pipe.
     expect(await readdir(join(layout.game, 'anvil', 'data', 'tongs'))).toEqual([]);
+    // Etch's plugin gets the pick mode key (spec section 7).
+    expect(
+      await readFile(join(layout.game, 'anvil', 'data', 'etch', 'settings.toml'), 'utf8'),
+    ).toBe('pick_mode_key = "Ctrl+Shift+E"\n');
   });
 
   it('refuses a pinned file of the VSIX that does not match the manifest', async () => {
