@@ -14,6 +14,7 @@ import {
   HostCrashedError,
   acquireLock,
   closeOrphan,
+  gameEnvironment,
   lockHeldElsewhere,
   readLock,
   releaseLock,
@@ -353,4 +354,20 @@ windows('LiveGameProcess', () => {
       TIMEOUT,
     );
   }
+});
+
+describe('gameEnvironment', () => {
+  it("adds Steam's ids and the session, and drops every override of Tongs' settings", () => {
+    const env = gameEnvironment(
+      { PATH: 'C:/bin', ANVIL_TONGS_ENABLED: '1', anvil_tongs_input: '1', ANVIL_BELLOWS_X: '1' },
+      'a'.repeat(32),
+    );
+    expect(env).toEqual({
+      PATH: 'C:/bin',
+      ANVIL_BELLOWS_X: '1',
+      SteamAppId: '236850',
+      SteamGameId: '236850',
+      ETCH_HOST_SESSION: 'a'.repeat(32),
+    });
+  });
 });

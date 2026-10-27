@@ -118,8 +118,8 @@ export class PrivateInstall {
         modal: true,
         detail:
           `The live game runs a private copy of EU4 in Etch's storage: links to the game's folders, ` +
-          `a copy of its top-level files (about ${String(megabytes)} MB), Anvil, Bellows and Etch's ` +
-          `plugin, and a profile of its own. Your game folder, profile and mods are not changed. ` +
+          `a copy of its top-level files (about ${String(megabytes)} MB), Anvil, Bellows, Tongs and ` +
+          `Etch's plugin, and a profile of its own. Your game folder, profile and mods are not changed. ` +
           `Etch: Remove the Private Install removes it again.`,
       },
       create,

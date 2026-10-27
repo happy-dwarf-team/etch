@@ -4,7 +4,7 @@ version = "1.0.1"          # release-please sets it with package.json in each re
 authors = ["Happy Dwarf Team"]
 description = "The live game of Etch, the VS Code previewer for interface mods: answers Etch over a private pipe. Idle unless Etch started the game."
 api = 2
-anvil = ">=1.3.0"
+anvil = ">=1.5.2"
 entry = "etch.dll"
 # Early: the pipe is up a fraction of a second after start.
 phase = "early"

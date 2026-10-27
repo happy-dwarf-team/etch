@@ -84,11 +84,11 @@ const archive = (files: Record<string, string>) =>
   new Map(Object.entries(files).map(([path, text]) => [path, Buffer.from(text)]));
 
 describe('the pin file', () => {
-  it('pins Anvil and Bellows with allowed licences and the 1.37.5 game', () => {
+  it('pins Anvil, Bellows and Tongs with allowed licences and the 1.37.5 game', () => {
     const { pins, problems } = parsePins(committed());
     expect(problems).toEqual([]);
     expect(pins?.game.version).toBe('1.37.5');
-    expect(pins?.builds.map((b) => b.id)).toEqual(['anvil', 'bellows']);
+    expect(pins?.builds.map((b) => b.id)).toEqual(['anvil', 'bellows', 'tongs']);
   });
 
   it('reports each wrong field where it is', () => {

@@ -82,6 +82,14 @@ export const PINNED_TOP_LEVEL = ['version.dll', 'anvil'] as const;
 /** The plugins folder: whatever the manifest does not list is removed from it before a start. */
 const PLUGINS_FOLDER = 'anvil/plugins/';
 
+/**
+ * Where Anvil keeps the values of Tongs' settings that differ from its defaults. The live game
+ * loads Tongs for its in-process service `tongs.ui` only, with `enabled = false` (spec section
+ * 6), so the file is removed before every start and Tongs' defaults apply: no pipe, no input, no
+ * game calls.
+ */
+export const TONGS_SETTINGS = 'anvil/data/tongs/settings.toml';
+
 /** Top-level files of the game folder the copy leaves out. */
 const LEFT_OUT = [/^launcher-installer/i, /^userdir\.txt$/i, /^console_history\.txt$/i];
 
@@ -225,7 +233,8 @@ export async function copySize(gameFolder: string): Promise<number> {
  * Creates the private install if it is missing and brings it up to date before a start: refuses
  * an `eu4.exe` other than the pinned build; links every folder of the game and copies its top-level
  * files; checks every pinned file's hash, installs it again from the VSIX when it differs and
- * removes any other file from the plugins folder; and writes the private profile's descriptors and
+ * removes any other file from the plugins folder; removes Tongs' settings, so that it opens no
+ * pipe; and writes the private profile's descriptors and
  * `dlc_load.json` (all owned DLC on). Never writes outside the install.
  */
 export async function prepareInstall(options: PrepareOptions): Promise<PreparedInstall> {
@@ -263,6 +272,7 @@ export async function prepareInstall(options: PrepareOptions): Promise<PreparedI
 
   await linkGame(layout, gameFolder);
   const restored = await installPinned(layout, buildsFolder, manifest);
+  await removeTree(join(layout.game, ...TONGS_SETTINGS.split('/')), layout.root);
   const exe = join(layout.game, 'eu4.exe');
   if ((await sha256File(exe)) !== manifest.game.exeSha256) {
     throw new PrivateInstallError(

@@ -28,6 +28,20 @@ export const CRASH_REPORTER = 'CrashReporter.exe';
 /** Steam's ids, without which `eu4.exe` started outside Steam would hand itself to Steam. */
 const STEAM_ENVIRONMENT = { SteamAppId: '236850', SteamGameId: '236850' };
 
+/**
+ * The live game's environment: this process's, with Steam's ids and the session id, and without
+ * the `ANVIL_TONGS_*` overrides of Tongs' settings, which could open its pipe (spec section 6).
+ */
+export function gameEnvironment(
+  base: NodeJS.ProcessEnv,
+  session: string,
+): Record<string, string | undefined> {
+  const env = Object.fromEntries(
+    Object.entries(base).filter(([name]) => !name.toUpperCase().startsWith('ANVIL_TONGS_')),
+  );
+  return { ...env, ...STEAM_ENVIRONMENT, ETCH_HOST_SESSION: session };
+}
+
 /** The lock file: who owns the machine's one live game, and which game process it started. */
 export interface HostLock {
   readonly formatVersion: 1;
@@ -290,7 +304,7 @@ export class LiveGameProcess {
       const { install } = options;
       child = spawn(install.exe, [...install.arguments], {
         cwd: install.gameFolder,
-        env: { ...process.env, ...STEAM_ENVIRONMENT, ETCH_HOST_SESSION: session },
+        env: gameEnvironment(process.env, session),
         stdio: 'ignore',
         windowsHide: false,
       });
