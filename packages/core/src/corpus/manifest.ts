@@ -67,6 +67,11 @@ export interface CorpusPlayset {
    * too, and the comparison masks them as code-filled.
    */
   readonly covers?: readonly string[];
+  /**
+   * Pixels around each cover's rect masked with it: what its sprites draw past the rect Tongs reads
+   * from the `.gui` (the frame of an event window).
+   */
+  readonly coverMargin?: number;
   readonly note?: string;
 }
 
@@ -485,7 +490,7 @@ function checkPlayset(
     value,
     at,
     ['id', 'title', 'gate', 'mods', 'disabledDlcs', 'windows'],
-    ['save', 'covers', 'note'],
+    ['save', 'covers', 'coverMargin', 'note'],
   );
   if (json === undefined) return undefined;
   const id = c.string(json['id'], field(at, 'id'), ID, 'an id in lowercase words joined by -');
@@ -526,6 +531,7 @@ function checkPlayset(
   if ('covers' in json) {
     c.array(json['covers'], field(at, 'covers'), (v, coverAt) => pattern(c, v, coverAt), true);
   }
+  if ('coverMargin' in json) c.integer(json['coverMargin'], field(at, 'coverMargin'), 0);
 
   const windows =
     c.array(

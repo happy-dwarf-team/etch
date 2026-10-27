@@ -494,15 +494,25 @@ export function compareCapture(
 
   // Code-filled content, by the game's rects. Tongs gives shields a width of 0 or 1 (etch#42); the
   // game draws them about as wide as they are high, so such a rect is taken as a square (etch#44).
+  // A window the playset's save shows over the view (`covers`) is masked with its margin.
   const masked = new Uint8Array(count);
+  const playset = manifest.playsets.find((p) => p.id === plan.key.playset);
+  const covers = playset?.covers ?? [];
+  const margin = playset?.coverMargin ?? 0;
   for (const widget of plan.widgets) {
     const rect = widget.captured?.rect;
     if (widget.codeFilled === undefined || widget.hidden || rect === undefined) continue;
+    const grow =
+      widget.parent === -1 && covers.some((p) => matchesWidgetPattern(p, widget.path)) ? margin : 0;
     const w = rect.w <= 1 && rect.h > 1 ? rect.h : rect.w;
-    const x0 = Math.max(0, rect.x);
-    const x1 = Math.min(width, rect.x + w);
+    const x0 = Math.max(0, rect.x - grow);
+    const x1 = Math.min(width, rect.x + w + grow);
     if (x1 <= x0) continue;
-    for (let row = Math.max(0, rect.y); row < Math.min(height, rect.y + rect.h); row++) {
+    for (
+      let row = Math.max(0, rect.y - grow);
+      row < Math.min(height, rect.y + rect.h + grow);
+      row++
+    ) {
       masked.fill(1, row * width + x0, row * width + x1);
     }
   }

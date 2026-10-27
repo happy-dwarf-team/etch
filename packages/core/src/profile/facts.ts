@@ -50,6 +50,20 @@ export const FACTS: readonly Fact[] = [
     inSave: true,
   },
   {
+    name: 'province.hasFort',
+    values: ['yes', 'no'],
+    description:
+      "Whether the province's `buildings` hold a fort (a building whose name starts with `fort_`), which hides its no-fort icon.",
+    inSave: true,
+  },
+  {
+    name: 'province.hreIndicator',
+    values: ['yes', 'no'],
+    description:
+      "Whether the game shows the province's Holy Roman Empire indicator: the empire exists and the province can be part of it (in the Anbennar playset, its Empire). The map decides that, not the save, so it stays at the selector's default.",
+    inSave: false,
+  },
+  {
     name: 'owner.buildsNativeBuildings',
     values: ['yes', 'no'],
     description:
