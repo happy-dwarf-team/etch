@@ -215,6 +215,7 @@ describe('prepareInstall', () => {
       'anvil/plugins/etch/extra.dll': 'extra',
       'anvil/anvil.log': 'written by Anvil',
       'anvil/data/bellows/profile.txt': 'written by Bellows',
+      'anvil/data/tongs/settings.toml': 'enabled = true',
     });
     const prepared = await prepare();
     expect([...prepared.restored].sort()).toEqual(['anvil/plugins/etch/etch.dll', 'version.dll']);
@@ -234,6 +235,8 @@ describe('prepareInstall', () => {
     expect(
       await readFile(join(layout.game, 'anvil', 'data', 'bellows', 'profile.txt'), 'utf8'),
     ).toBe('written by Bellows');
+    // Tongs runs with its defaults: no pipe.
+    expect(await readdir(join(layout.game, 'anvil', 'data', 'tongs'))).toEqual([]);
   });
 
   it('refuses a pinned file of the VSIX that does not match the manifest', async () => {

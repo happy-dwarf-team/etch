@@ -1,8 +1,8 @@
 # Pinned builds
 
 `game-builds.json` pins the game-side builds every Etch release carries into
-the private install (ADR 0004, ADR 0005): Anvil with `anvil-game`, and
-Bellows, each one release asset of the team's GitHub releases, identified by
+the private install (ADR 0004, ADR 0005): Anvil with `anvil-game`, Bellows
+and Tongs, each one release asset of the team's GitHub releases, identified by
 its SHA-256. It also pins the game build the live game starts. Etch's own
 game plugin is not pinned: it is built from `plugin/` in the same commit
 (etch#45).
@@ -33,7 +33,12 @@ Only what the live game loads is taken, with its licence texts: from Anvil
 (its notices would be drawn into the captures), `AnvilManager.exe` or the
 example plugins, and so not the licences of Dear ImGui and miniz, which only
 those contain. From Bellows its whole plugin folder, which goes to
-`anvil/plugins/bellows/`.
+`anvil/plugins/bellows/`. From Tongs its plugin folder without `include/`
+(the header of `tongs.ui`, which Etch's plugin vendors), to
+`anvil/plugins/tongs/`: the live game loads Tongs for that in-process service
+only, and the private install removes `anvil/data/tongs/settings.toml` and the
+`ANVIL_TONGS_*` variables before every start, so Tongs keeps its defaults
+(`enabled = false`: no pipe, input or game calls; v2 specification section 6).
 
 ## What packaging does
 
