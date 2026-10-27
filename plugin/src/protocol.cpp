@@ -40,7 +40,6 @@ Reply Connection::Handle(std::string_view line) {
     if (*type == "hello") return Hello(*id, request);
     if (!greeted_) return {Error(id, "handshake_required", "send hello first")};
     if (*type == "ping") return Ping(*id);
-    if (*type == "job") return Job(*id, request);
     return {Error(id, "unknown_type", "unknown request type")};
 }
 
@@ -78,19 +77,6 @@ Reply Connection::Hello(std::uint64_t id, const json::Value& request) {
 
 Reply Connection::Ping(std::uint64_t id) const {
     return {Ok(id).Bool("ready", host_.ready()).Uint("frame", host_.frame()).Finish()};
-}
-
-Reply Connection::Job(std::uint64_t id, const json::Value& request) {
-    JobRequest job;
-    if (const std::optional<std::string> error = ReadJobRequest(request, job))
-        return {Error(id, "bad_request", *error)};
-    if (!host_.start_job || !host_.ready()) return {Error(id, "not_ready", "the game host is not ready for jobs")};
-    const Send send = send_;
-    const std::optional<Refusal> refused = host_.start_job(std::move(job), [send, id](const JobResult& result) {
-        if (send) send(JobAnswer(id, result));
-    });
-    if (refused) return {Error(id, refused->code, refused->message)};
-    return {};  // answered when the job ends
 }
 
 }  // namespace etch
