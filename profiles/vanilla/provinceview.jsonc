@@ -79,6 +79,165 @@
       "values": { "yes": "Native", "no": "Normal" },
       "default": "no",
     },
+    "colonised": {
+      "kind": "data",
+      "label": "Colonised",
+      "fact": "province.owned",
+      "values": { "yes": "Owned", "no": "Uncolonised" },
+      "default": "yes",
+      "note": "An uncolonised province opens colonisationpanel instead (etch#155).",
+    },
+  },
+  // Sample data (spec section 5): the save's values where a province block holds them (etch#154),
+  // engine values (income, unrest, supply, modifiers) only from a live snapshot, generated text
+  // under everything. Area and region names need the map files, which Etch does not read.
+  "content": {
+    "provinceview/top_section_window/provincename": { "save": "provinces.{province}.name" },
+    "provinceview/top_section_window/capitalname": { "save": "provinces.{province}.capital" },
+    "provinceview/top_section_window/area_name": { "generated": "text" },
+    "provinceview/top_section_window/region_name": { "generated": "text" },
+    "provinceview/province_window/tax_base_value": {
+      "save": "provinces.{province}.base_tax",
+      "format": "number",
+    },
+    "provinceview/province_window/prod_base_value": {
+      "save": "provinces.{province}.base_production",
+      "format": "number",
+    },
+    "provinceview/province_window/mp_base_value": {
+      "save": "provinces.{province}.base_manpower",
+      "format": "number",
+    },
+    "provinceview/province_window/development_value": {
+      "save": [
+        "provinces.{province}.base_tax",
+        "provinces.{province}.base_production",
+        "provinces.{province}.base_manpower",
+      ],
+      "transform": "sum",
+    },
+    "provinceview/province_window/tax_value": { "engine": true, "generated": "number" },
+    "provinceview/province_window/production_value": { "engine": true, "generated": "number" },
+    "provinceview/province_window/total_value": { "engine": true, "generated": "number" },
+    "provinceview/province_window/religion": {
+      "save": "provinces.{province}.religion",
+      "transform": "localise",
+    },
+    "provinceview/province_window/culture": {
+      "save": "provinces.{province}.culture",
+      "transform": "localise",
+    },
+    "provinceview/province_window/unrest_value": { "engine": true, "generated": "number" },
+    "provinceview/province_window/local_autonomy_value": {
+      "save": "provinces.{province}.local_autonomy",
+      "format": "percent",
+    },
+    "provinceview/province_window/queue_window/land_amount": {
+      "engine": true,
+      "generated": "number",
+    },
+    "provinceview/province_window/queue_window/naval_amount": {
+      "engine": true,
+      "generated": "number",
+    },
+    "provinceview/province_window/occupied_by": {
+      "save": "provinces.{province}.controller",
+      "transform": "localise",
+    },
+    "provinceview/province_window/sailor_value": { "engine": true, "generated": "number" },
+    "provinceview/province_window/manpower_value": { "engine": true, "generated": "number" },
+    "provinceview/province_window/supply_value": { "engine": true, "generated": "number" },
+    "provinceview/province_window/attrition_value": { "engine": true, "generated": "number" },
+    "provinceview/province_window/warscore_value": { "engine": true, "generated": "percent" },
+    "provinceview/province_window/defensiveness_value": { "engine": true, "generated": "percent" },
+    "provinceview/province_window/garrison_value": {
+      "save": "provinces.{province}.garrison",
+      "format": "number",
+      "decimals": 0,
+    },
+    "provinceview/province_window/fort_number": { "engine": true, "generated": "number" },
+    "provinceview/province_window/tradepower_value": {
+      "save": "provinces.{province}.trade_power",
+      "format": "number",
+    },
+    "provinceview/province_window/tradevalue_value": { "engine": true, "generated": "number" },
+    "provinceview/province_window/goodsproduced_value": { "engine": true, "generated": "number" },
+    "provinceview/province_window/resource_price_value": { "engine": true, "generated": "number" },
+    "provinceview/province_window/devastation_value": {
+      "save": "provinces.{province}.devastation",
+      "format": "percent",
+    },
+    "provinceview/province_window/foreign_province_window/country_name": {
+      "save": "provinces.{province}.owner",
+      "transform": "localise",
+    },
+    "provinceview/province_window/foreign_province_window/opinion_box": {
+      "engine": true,
+      "generated": "number",
+    },
+    "provinceview/province_window/foreign_province_window/miltech_value": {
+      "engine": true,
+      "generated": "number",
+    },
+    "provinceview/province_window/tradegoods_province_window/tradegoods_name": {
+      "save": "provinces.{province}.trade_goods",
+      "transform": "localise",
+    },
+    "provinceview/province_window/tradegoods_province_window/tradegoods_base_price_value": {
+      "engine": true,
+      "generated": "number",
+    },
+    "provinceview/province_window/tradegoods_province_window/tradegoods_current_price_value": {
+      "engine": true,
+      "generated": "number",
+    },
+    "provinceview/province_window/tradegoods_province_window/tradegoods_production_value": {
+      "engine": true,
+      "generated": "number",
+    },
+    "provinceview/state_window/state_name": { "generated": "text" },
+    "provinceview/state_window/income_value": { "engine": true, "generated": "number" },
+    "provinceview/state_window/governing_capacity_value": { "engine": true, "generated": "number" },
+    "provinceview/state_window/current_edict": { "generated": "text" },
+    "provinceview/buildings_window/**/naval_forcelimit_value": {
+      "engine": true,
+      "generated": "number",
+    },
+    "provinceview/buildings_window/**/land_forcelimit_value": {
+      "engine": true,
+      "generated": "number",
+    },
+    "provinceview/buildings_window/**/capacity_value": { "engine": true, "generated": "number" },
+    "provinceview/buildings_window/**/build_allowed_value": {
+      "engine": true,
+      "generated": "number",
+    },
+    "provinceview/buildings_window/**/build_cost_modifier": {
+      "engine": true,
+      "generated": "percent",
+    },
+    "provinceview/buildings_window/**/build_time_modifier": {
+      "engine": true,
+      "generated": "percent",
+    },
+  },
+  "repeaters": {
+    "provinceview/buildings_window/great_projects_window/great_projects_list": {
+      "note": "Entries of great_project_entry (0x1398C30, etch#155), one per great project of the province.",
+      "template": "great_project_entry",
+      "from": "provinces.{province}.great_projects",
+      "count": 1,
+      "fields": {
+        "great_project_entry/name_label": { "save": "entry", "transform": "localise" },
+      },
+    },
+  },
+  "links": {
+    "uncolonised": {
+      "when": { "colonised": "no" },
+      "window": "colonisationpanel",
+      "label": "The game opens the colonisation panel for an uncolonised province, not the province view.",
+    },
   },
   "groups": {
     "tab": {
