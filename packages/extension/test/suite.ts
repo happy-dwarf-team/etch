@@ -3,6 +3,7 @@
 import * as assert from 'node:assert/strict';
 import * as vscode from 'vscode';
 import type { EtchApi } from '../src/extension.ts';
+import { testData } from './data.ts';
 import { testGameText } from './game-text.ts';
 import { testNavigation } from './navigation.ts';
 import { testPreviewBudget } from './preview-budget.ts';
@@ -54,4 +55,5 @@ export async function run(): Promise<void> {
   await testNavigation(api);
   await testPreview(api);
   await testViews(api);
+  await testData(api);
 }

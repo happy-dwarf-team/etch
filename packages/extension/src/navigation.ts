@@ -44,7 +44,7 @@ import {
   type Widget,
   type WidgetKind,
 } from '@etch/core';
-import type { GroupState, WindowView } from '@etch/core/profile';
+import type { GroupState, SampleData, WindowView } from '@etch/core/profile';
 import { saveEncodingOf } from './game-text.ts';
 
 /** The tree view of the previewed window's widgets. */
@@ -81,6 +81,8 @@ export interface PreviewedWindow {
   readonly layout?: readonly LaidOutWidget[];
   /** The view drawn, when the window has a window profile. */
   readonly view?: WindowView;
+  /** The sample data drawn, when the window has a window profile (spec section 5). */
+  readonly sample?: SampleData;
 }
 
 /** A hand toggle from the outline: an eye, or a radio of an exclusive group (`undefined`: none). */
@@ -274,6 +276,9 @@ class OutlineTree implements vscode.TreeDataProvider<OutlineNode> {
     } else {
       item.iconPath = new vscode.ThemeIcon(ICONS[widget.kind] ?? 'symbol-field');
     }
+    // A text shows its sample value and the layer it comes from (spec section 2).
+    const sample = this.previewed?.sample?.text(widget);
+    if (sample !== undefined) notes.push(`"${sample.text}" (${sample.layer})`);
     item.description = notes.join(' · ');
     item.tooltip = this.tooltip(widget);
     item.command = {

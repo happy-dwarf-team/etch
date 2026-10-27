@@ -7,7 +7,7 @@
 import { readFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import * as vscode from 'vscode';
-import { SUPPORTED_GAME_VERSION, type GuiFile, type Widget } from '@etch/core';
+import { SUPPORTED_GAME_VERSION, type GuiFile, type InterfaceIndex, type Widget } from '@etch/core';
 import {
   checkProfile,
   layerProfiles,
@@ -70,6 +70,7 @@ export class ProfileStore {
    */
   async load(
     playset: Playset,
+    index: InterfaceIndex,
     file: GuiFile,
     window: Widget,
   ): Promise<{
@@ -138,6 +139,8 @@ export class ProfileStore {
         file.definitions.some(
           (d) => d.kind === 'positionType' && d.name?.toLowerCase() === type.toLowerCase(),
         ),
+      template: (name) => index.guiType(name)?.item,
+      windowExists: (name) => index.guiType(name) !== undefined,
     });
     const own: ProfileDiagnostic[] = [];
     for (const layer of layers) {
