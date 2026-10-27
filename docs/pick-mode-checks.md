@@ -272,8 +272,9 @@ section 14 asks of the plugin.
   with `definition_line` (tongs#86): built from commit `46d483c` of
   happy-dwarf-team/tongs#92, whose sources are those of Tongs' `main` at
   `0379d5c` (the squash merge; only `docs/design.md` differs), unreleased and
-  still versioned 0.17.0, `tongs.dll` SHA-256 `7742CB95…CDE3E330`. Etch's pin
-  stays on the released Tongs 0.17.0, which has no line. Tongs' pipe and input
+  still versioned 0.17.0, `tongs.dll` SHA-256 `7742CB95…CDE3E330`. Etch then
+  pinned the released Tongs 0.17.0, which has no line; Tongs 0.18.0 is pinned
+  since, checked below ("Tongs 0.18.0 pinned"). Tongs' pipe and input
   were switched on in the lab's copy for the lab's own steps (opening a
   province, reading widget rectangles), never for pick mode.
 - **VS Code:** a separate VS Code 1.143.1 (`@vscode/test-electron`) with the
@@ -339,3 +340,24 @@ playset over 10 890 frames.
   of before (not checked live: the lab's clicks went to the game in front).
 - The snapshot's "values that no longer match" leave out copies the game's
   code builds.
+
+### Tongs 0.18.0 pinned
+
+Run on 2026-10-27 after Etch pinned Tongs 0.18.0, the first release with
+`definition_line` (`tongs-windows-x64.zip` SHA-256 `FCBDCA68…07A9D28`, the
+private install staged by `pnpm pins` from the pin, nothing swapped by hand),
+with the same procedure, playsets, saves and VS Code as the M9 checks above.
+The game logged `tongs 0.18.0: loaded`.
+
+- **Picks land by the line:** 7 picks in vanilla and 6 in the Anbennar playset,
+  every one opened at the line the game reported, found by that line (`line`
+  match): vanilla `provinceview.gui` 596, 1117, 1505, 386, `speed_controls.gui`
+  89 (the lab mod's copy), `outliner.gui` 451; P2KE's `provinceview.gui` 651,
+  6590, 7595, 2772, and `minimap_pic` (Proper 2K's `menubar.gui:2135`) opened
+  `minimappanel.gui:3` with **Go to template**. From the click to the line in
+  the editor: 41–106 ms in vanilla, 32–144 ms in the Anbennar playset.
+- **A reload with the stale check:** saving `provinceview.gui` reloaded it with
+  the view open: vanilla 277 ms (2 424 windows built from the file checked,
+  2 423 of them hidden stale rows, none visible), the Anbennar playset 102 ms
+  (none stale); no planned restart was asked for, and the next pick of the tax
+  button landed by its line again.
