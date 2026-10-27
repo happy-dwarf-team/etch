@@ -224,17 +224,47 @@ void TestReloadClosesByClicks() {
     assert((got->closed == std::vector<std::string>{"DeclareWarDialog"}));
     assert(got->hidden_again.empty());
 
-    // A rebuild that shows the hidden province view: it is closed again by its own button.
+    // A rebuild that shows the hidden province view: it is closed again by an Escape, and the job
+    // waits for the key to land.
     clicks.clear();
     got.reset();
     assert(!jobs.Reload({{"reload provinceview.gui"}, {"interface/provinceview.gui"}, {}, {"provinceview"}},
                         [&](const ReloadResult& r) { got = r; }));
     game.Frame();
-    assert(got.has_value());
     assert((clicks == std::vector<std::string>{"provinceview"}));
+    for (int frame = 0; frame < etch::kKeyFrames && !got.has_value(); ++frame) game.Frame();
+    assert(got.has_value());
     assert((got->hidden_again == std::vector<std::string>{"provinceview"}));
-    // It closes in the next frame, so it is not listed as visible.
-    for (const Root& root : got->visible) assert(root.name != "provinceview");
+    assert(!got->menu_undone);
+}
+
+void TestReloadUndoesAnEscapeThatOpenedTheMenu() {
+    // Before any province was shown the rebuilt view is in no panel stack: the Escape opens the
+    // game's menu, which is closed again and the view is not reported closed.
+    FakeGame game;
+    game.roots = {MakeRoot(1, "provinceview", "interface/provinceview.gui", false),
+                  MakeRoot(2, "menu", "interface/menubar.gui", false)};
+    game.effect = RebuildProvinceView;
+    std::vector<std::string> presses;
+    LiveJobs::Env env = game.Env();
+    env.press = [&](const std::string& selector, etch::Key key) {
+        assert(key == etch::Key::Escape);
+        presses.push_back(selector);
+        for (Root& root : game.roots) {
+            if (root.name == "menu") root.visible = selector == "provinceview";
+        }
+        return etch::PressResult{true, true};
+    };
+    LiveJobs jobs(env);
+    std::optional<ReloadResult> got;
+    assert(!jobs.Reload({{"reload provinceview.gui"}, {"interface/provinceview.gui"}, {}, {"provinceview"}},
+                        [&](const ReloadResult& r) { got = r; }));
+    for (int frame = 0; frame <= etch::kKeyFrames + 1 && !got.has_value(); ++frame) game.Frame();
+    assert(got.has_value());
+    assert((presses == std::vector<std::string>{"provinceview", "menu"}));
+    assert(got->menu_undone && got->hidden_again.empty());
+    for (const Root& root : got->visible) assert(root.name != "menu");
+    assert(AnswerOf(3, *got).Find("menu_undone")->AsBool() == true);
 }
 
 void TestReloadKeepsAShownView() {
@@ -250,6 +280,29 @@ void TestReloadKeepsAShownView() {
     assert(got->stale.stale.empty() && got->stale.checked == 1);
     assert(got->visible.size() == 1 && got->visible[0].file == "interface/provinceview.gui");
     assert((game.calls == std::vector<std::string>{"reload provinceview.gui"}));
+}
+
+void TestReloadLeavesAnOffScreenView() {
+    // Before any province was shown, the rebuild leaves the view visible but off screen: an Escape
+    // would open the game's menu, so nothing is pressed.
+    FakeGame game;
+    game.roots = {MakeRoot(1, "provinceview", "interface/provinceview.gui", false)};
+    game.effect = [](const std::vector<std::string>& tokens, FakeGame& g) {
+        RebuildProvinceView(tokens, g);
+        for (Root& root : g.roots) root.on_screen = false;
+    };
+    std::vector<std::string> presses;
+    LiveJobs::Env env = game.Env();
+    env.press = [&](const std::string& selector, etch::Key) {
+        presses.push_back(selector);
+        return etch::PressResult{true, true};
+    };
+    LiveJobs jobs(env);
+    std::optional<ReloadResult> got;
+    assert(!jobs.Reload({{"reload provinceview.gui"}, {"interface/provinceview.gui"}, {}, {"provinceview"}},
+                        [&](const ReloadResult& r) { got = r; }));
+    game.Frame();
+    assert(got.has_value() && got->hidden_again.empty() && presses.empty());
 }
 
 void TestReloadWithoutTheTree() {
@@ -366,6 +419,8 @@ int main() {
     TestReloadClosesTheViewItOpened();
     TestReloadClosesByClicks();
     TestReloadKeepsAShownView();
+    TestReloadLeavesAnOffScreenView();
+    TestReloadUndoesAnEscapeThatOpenedTheMenu();
     TestReloadWithoutTheTree();
     TestRefusedInIronmanAndMultiplayer();
     TestFaultStopsTheConsole();

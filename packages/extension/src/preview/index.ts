@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { START_LIVE_GAME, type LiveGame } from '../live-game/index.ts';
+import { START_LIVE_GAME, type LiveGame, type PickMode } from '../live-game/index.ts';
 import type { WidgetNavigation } from '../navigation.ts';
 import { CHOOSE_RESOLUTION, PREVIEW_VIEW_TYPE, Preview, type PreviewApi } from './preview.ts';
 import { chooseResolution } from './resolution.ts';
@@ -18,6 +18,8 @@ export { writeResolution } from './resolution.ts';
 export const OPEN_PREVIEW = 'etch.openPreview';
 /** Pins the previewed window, so that the preview stays on it while other files are edited. */
 export const TOGGLE_PREVIEW_PIN = 'etch.togglePreviewPin';
+/** Takes a live snapshot of the previewed window from the live game (spec section 7). */
+export const SNAPSHOT_FROM_LIVE_GAME = 'etch.snapshotFromLiveGame';
 
 /**
  * Starts the preview and its commands. The preview decides the previewed window of the widget
@@ -28,6 +30,7 @@ export function registerPreview(
   output: vscode.LogOutputChannel,
   navigation: WidgetNavigation,
   liveGame?: LiveGame,
+  pickMode?: PickMode,
 ): PreviewApi {
   const preview = new Preview(
     context.extensionUri,
@@ -35,6 +38,8 @@ export function registerPreview(
     navigation,
     context.globalState,
     liveGame,
+    pickMode,
+    context.storageUri?.fsPath,
   );
   context.subscriptions.push(
     preview,
@@ -50,6 +55,15 @@ export function registerPreview(
       preview.startLiveGame();
     }),
     vscode.commands.registerCommand(CHOOSE_RESOLUTION, () => chooseResolution(preview)),
+    vscode.commands.registerCommand(SNAPSHOT_FROM_LIVE_GAME, async () => {
+      if (preview.current === undefined) {
+        void vscode.window.showInformationMessage(
+          'A live snapshot is of the previewed window: open the preview on it first.',
+        );
+        return;
+      }
+      await preview.takeSnapshot();
+    }),
     // Reopens the preview after a window reload (`onWebviewPanel:etch.preview` activates Etch).
     vscode.window.registerWebviewPanelSerializer(PREVIEW_VIEW_TYPE, {
       deserializeWebviewPanel(panel, state: unknown) {

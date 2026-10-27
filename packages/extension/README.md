@@ -1,7 +1,8 @@
 # Etch
 
 Etch previews Europa Universalis IV 1.37.5 interface mods in Visual Studio
-Code while they are edited. Website:
+Code while they are edited, and runs the game itself beside the editor, each
+saved file reloaded into the game's own window. Website:
 [etch.happydwarf.dev](https://etch.happydwarf.dev/).
 
 ## Requirements
@@ -10,9 +11,9 @@ Code while they are edited. Website:
 - Europa Universalis IV 1.37.5 installed through Steam, or its folder in
   `etch.gamePath`. Etch draws with the game's own textures, fonts and
   localisation, and ships none of them.
-- For the game host: the same game folder with build 1.37.5 exactly (the
-  game host refuses any other `eu4.exe`). The extension creates the game host
-  install on first use, after one confirmation; it needs no other download.
+- For the live game: the same game folder with build 1.37.5 exactly (the live
+  game refuses any other `eu4.exe`). The extension creates its private install
+  on first use, after one confirmation; it needs no other download.
 
 ## Preview
 
@@ -28,14 +29,6 @@ fonts and textures, duplicate names and more) appear in the Problems panel.
 - The **Widget Outline** in the Explorer lists the previewed window's widgets.
   Clicking a widget in the preview reveals its source, hovering shows its path
   and rect, and the widget at the cursor is outlined in the preview.
-- The **Backend** switch chooses the offline renderer, which draws the window
-  from the mod's files alone, or the game host, a private copy of the game
-  that draws the window itself (**Etch: Start the Game Host**).
-- With the game host, **Diff** (**Etch: Toggle the Diff View**) shows where its
-  image differs from the offline renderer's: red where both draw differently,
-  blue where only the offline renderer draws, yellow where only the game host
-  does. It needs the preview resolution to be the game host's and the same
-  playset.
 - The preview resolution is the one in the game's `settings.txt`, else the
   monitor's. **Etch: Choose the Preview Resolution**, or the resolution button
   in the preview, picks the monitor's, one of the corpus resolutions (1280×720
@@ -45,43 +38,107 @@ fonts and textures, duplicate names and more) appear in the Problems panel.
   edited mod and the `dependencies` of its descriptor, or `etch.playset`.
   `etch.language` picks the localisation language.
 
-This is a layout preview: content the game's code fills in (lists, flags,
-values) is not shown. The
-[v1 specification](https://github.com/happy-dwarf-team/etch/blob/main/docs/spec/v1.md)
-says what 1.0.0 contains and how it was measured against the game.
+### Views
 
-Etch only reads the game folder, the mods and the profile. It sends nothing
-anywhere: it has no telemetry.
+A window with a **window profile** is drawn in one **view**, as the game would
+show it, instead of every widget at once: the province view as an own or a
+foreign province, with its province or state tab, one side panel and one
+sub-panel. Etch ships profiles for `provinceview` and the windows of its
+precision corpus, for the base game and for Anbennar.
 
-## The game host
+- **View ▾** in the preview lists the profile's views and every selector with
+  where its value comes from; the Widget Outline shows a window's alternatives
+  as radios and an eye on every other widget. A radio or an eye set by hand is
+  marked "by hand" and counted in the view's label.
+- **Save as view…** writes the selectors and hand toggles into the mod's
+  `.etch/profiles/<window>.jsonc`, which can be committed with the mod. A mod can
+  write its own profile there; VS Code checks it as you type.
+- Of a `_large` pair the preview draws only the variant the game creates at the
+  preview's height, and the province view's sections move where the game's code
+  moves them.
 
-The game host is a private copy of the game that draws the previewed window
-itself. Its folders are links to your game folder and its top-level files are
-copies, with its own profile and an overlay mod for the preview; it lives in
-the extension's storage. Into the copy Etch puts the builds of
-[Anvil](https://anvil.happydwarf.dev/) (the plugin loader),
-[Bellows](https://anvil.happydwarf.dev/plugins/bellows/) (a faster start) and
+How to write a profile:
+[docs/window-profiles.md](https://github.com/happy-dwarf-team/etch/blob/main/docs/window-profiles.md).
+
+### Sample data
+
+Texts the game's code fills (a province's name, its development, culture,
+religion, a list of great projects) show **sample data** where the profile
+names their source. **Data ▾** shows the layers, the upper winning: a live
+snapshot, a save (a country and a province of it), the game's and the mod's
+files, and generated text of a chosen length. Etch reads text saves itself,
+zipped or plain; ironman and other binary saves are not readable. A value the
+save does not hold, which the engine works out (income, modifiers), comes from
+a live snapshot or is generated: Etch never computes one.
+
+## The live game
+
+**Etch: Start the Live Game**, or the preview's **Live game** button, starts a
+private copy of the game with the edited mod's playset. You play it; each file
+you **save** is reloaded into the game's own window, with its real data.
+
+- The first start asks for confirmation. The live game takes your
+  `settings.txt` and `pdx_settings.txt` at every start (changes in it do not
+  persist), copies a save you choose, and counts as your EU4 session for
+  Steam: Steam does not start your own game beside it. **Etch: Stop the Live
+  Game** saves and stops it, as does closing the VS Code window.
+- A quick pick offers **Continue** (the newest private save), **Main menu** or
+  one of your saves; ironman saves are greyed out. **Etch: Open the Live Game's
+  Saves Folder** opens its saves.
+- Panels the game rebuilds (the province view, the country view's tabs, the
+  ledger, settings, the event window, the HUD) are reloaded in place.
+  Localisation and textures are reloaded too. A file nothing rebuilds
+  (`countryview.gui`, `.gfx` files, fonts, `core.gui`, scripted GUIs) asks for a
+  **planned restart**: Etch saves, starts the game again and continues the save,
+  only after you click **Restart now**. A crash restarts the game at the newest
+  save.
+- New `error.log` lines go to the Problems panel on the edited file. A saved
+  file whose copy in another mod of the playset wins is not reloaded, and Etch
+  names that mod.
+- Reloading does not work in ironman or multiplayer games.
+
+The private install lives in the extension's storage: links to your game
+folder, copies of its top-level files, its own profile and saves, and the
+builds of [Anvil](https://anvil.happydwarf.dev/) (the plugin loader),
+[Bellows](https://anvil.happydwarf.dev/plugins/bellows/) (a faster start),
+[Tongs](https://anvil.happydwarf.dev/plugins/tongs/) (the widget tree) and
 Etch's own Anvil plugin that come in the extension, checked against their
-SHA-256 before every start. Plugins of your own Anvil install do not load into
-it.
+SHA-256 before every start. It never writes to your game folder, your profile
+or your mods, and never changes `eu4.exe`. **Etch: Remove the Private Install**
+deletes it.
 
-- It never writes to your game folder, your profile or your mods, and never
-  changes `eu4.exe`: the copy's `eu4.exe` is checked against the 1.37.5 build
-  before every start.
-- Its playset is the preview's, with every DLC you own on. It runs borderless
-  at the monitor's resolution, UI scale 1.0, with the sound off, behind VS
-  Code.
-- One game host runs per machine. It stops with **Etch: Stop the Game Host**,
-  when the VS Code window closes, or after 30 minutes without a game host
-  preview. **Etch: Remove the Game Host Install** deletes the copy.
+### Pick mode
+
+In the live game, **Ctrl+Shift+E** (`etch.liveGame.pickModeKey`) or **Etch:
+Toggle Pick Mode** turns on pick mode: the widget under the pointer is outlined
+with its name, kind, size and file, the wheel steps through the
+widgets under the pointer, and a click opens its definition in VS Code, without
+the game taking the click. A file of the base game or another mod
+opens read-only; **Override in my mod** (also **Etch: Override in My Mod**)
+copies it to the same path in your mod and opens the copy. A pick also pins the
+preview on the picked window and takes a **live snapshot** of it: the texts,
+visibility and states the game shows, which the preview uses as its upper data
+layer. **Etch: Snapshot from the Live Game** takes one of the previewed window
+when the game has it open.
+
+## Etch 1.x
+
+Etch 2.0.0 replaced 1.x's game host and its diff view with the live game. To
+keep them, install 1.0.x: in the Extensions view, **Install Specific
+Version…** on Etch, then 1.0.x, and turn off automatic updates for it. 1.0.x
+gets bug fixes only until 2.0.0 and none after.
+
+Etch only reads the game folder, the mods and the profile, and writes into the
+mod's project only on request (**Save as view…**, **Override in my mod**). It
+sends nothing anywhere: it has no telemetry.
 
 ## More from the Happy Dwarf Team
 
 - [Anvil](https://anvil.happydwarf.dev/): the plugin loader for EU4 that the
-  game host runs on, with its plugin catalog.
+  live game runs on, with its plugin catalog.
 - [Tongs](https://anvil.happydwarf.dev/plugins/tongs/): an Anvil plugin that
   lets scripts and agents control a running game; Etch's precision corpus is
-  captured with it.
+  captured with it, and the live game reads the widget tree through it.
 - [happydwarf.dev](https://happydwarf.dev/): all of the team's projects.
 
 ## Feedback

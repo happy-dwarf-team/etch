@@ -19,6 +19,8 @@ requirement. This page says how it is built. The code is in
 | `policy.ts` | the reload policy: what a saved file makes the game do |
 | `error-log.ts` | `error.log`: new lines, collapsed repeats, textures drawn missing |
 | `live-game.ts` | `LiveGame`, the owner: start, stop, reloads, planned restarts, crashes |
+| `pick.ts` | what a pick opens: the winning file, the line, templates and sprites; **Override in my mod** |
+| `pick-mode.ts` | pick mode in VS Code: the toggle, the key setting, opening a pick, read-only files |
 | `index.ts` | the commands, the status bar item, the save and texture watchers |
 | `windows.ts` | the Win32 helper: identities, verified stops, child processes, `eu4.exe` processes |
 
@@ -114,7 +116,7 @@ workspace and they stay unchanged for 300 ms.
 | another mod's copy wins in the playset | nothing; a `game-original-differs` warning names the mod |
 | a `.gui` file with a listener (the province view, the country view's tabs, the ledger, settings, the event window, any other) | `reload <file>`, stale check; counted as a panel rebuild |
 | one of the in-game idler's 13 files (`main`, `topbar`, `menubar`, `macrobuildinterface`, `macrobuildinterface_override`, `papacy`, `great_powers`, `parliament`, `mapmode_more`, `more_interface`, `unitpanel`, `outliner`, `core`) | `reload <file>`, stale check; counted as a HUD rebuild |
-| `provinceview.gui` | as a panel; a rebuild shows the view when it was closed (H2), and it stays open for now (Open points) |
+| `provinceview.gui` | as a panel; when the rebuild shows the view it was closed, the plugin closes it again with Escape (H2) |
 | `speed_controls.gui` | `reload`, then `reload topbar.gui`, which rebuilds it; a HUD rebuild (H6) |
 | `countrydiplomacyview.gui` | an open `DeclareWarDialog` is closed through the game first; Etch asks the player to open it again |
 | `countryview.gui`, `core.gui`, `.gfx`, fonts, `common/custom_gui`, `common/scripted_guis`, a `.gui` with a top-level name written twice, any other file the game reads only at start | planned restart, with the reason (`core.gui` is in the idler's list, but its templates build windows nothing rebuilds: a reload left the map's unit icons stale on screen, live) |
@@ -196,6 +198,102 @@ can reach yet. When the province view or the country view was on screen at the
 last reload, Etch says after the restart that it was not reopened. This is the
 recorded workaround of H8 until the plugin has it.
 
+## Pick mode
+
+Pick mode (spec section 7, etch#158) points at a widget in the live game and
+opens the definition the game built it from. The plugin's half (the hotkey,
+the swallowed click, the outline and label, the stack under the pointer) is
+in [plugin-protocol.md](plugin-protocol.md), "Pick mode"; the checks it rests
+on are in [pick-mode-checks.md](pick-mode-checks.md).
+
+- **On and off.** The hotkey in the game (`etch.liveGame.pickModeKey`,
+  default `Ctrl+Shift+E`), or **Etch: Toggle Pick Mode**, which also asks the
+  plugin to bring the game forward. The key is written to the plugin's Anvil
+  setting (`anvil/data/etch/settings.toml`) before every start and sent over
+  the pipe when the setting changes while the game runs. When the game is
+  ready the extension sends the key, the mod that supplies each of the
+  playset's interface files (for the label) and VS Code's window: the
+  extension host's parent process, VS Code's main process, which owns the
+  windows, and the workspace's name, which its title holds.
+- **What a pick opens** (`pick.ts`): the picked widget's game path resolved to
+  the playset's winning file. In that file, as the editor has it (its buffer
+  when it is open), the widget whose opening `{` is on the reported line and
+  whose name matches (H2: the keyword may be on the line before); else, when
+  the file changed since the game read it, the widget found by the names of
+  its chain from the outermost parent in the same file; else the first widget
+  of its name; else the file at the reported line. A stale widget has no file:
+  it opens by its names in the nearest file of its chain.
+- **Templates.** Where the chain's file changes above the picked widget (a
+  list row built by name, a `core.gui` scroll bar part, an icon template from
+  another file, H3), the widget that references the template opens first, and
+  **Go to template** opens the picked widget's own definition.
+- **Sprites.** An icon or button that names a sprite (`spriteType`,
+  `quadTextureSprite`) offers **Go to sprite**, through Etch's `.gfx` index:
+  the game keeps no file or line for sprites (H9).
+- **Read-only.** A file outside the edited mod (vanilla, another mod) opens
+  read-only for the session, with "Defined in <mod>, read-only" and
+  **Override in my mod**.
+- **Override in my mod** (also **Etch: Override in My Mod** on any interface
+  file of the playset): copies the winning file byte for byte to the same game
+  path in the edited mod's folder and opens the copy at the same line. It
+  warns, and still copies, when a later mod of the playset has the same file;
+  if the mod has the file already nothing is copied. A `.gui` file created
+  after the start reloads like any other (H9 of the reload checks).
+- **VS Code in front.** The game is the foreground process at the click, so
+  the plugin calls `AllowSetForegroundWindow` and brings VS Code's window
+  forward itself; the extension then shows the file at the line. Pick mode
+  stays on. The log line of each pick gives the time from the click (the
+  plugin's system clock) to the line shown in the editor.
+
+## Live snapshot
+
+A live snapshot (spec section 7, etch#170) is every widget of one top-level
+window as the live game showed it, hidden ones too: path, type, `visible`,
+`enabled`, `checked`, text and rectangle, the fields of `tongs.ui` version 1,
+read in one `find` on the main thread (the plugin's `snapshot`,
+[plugin-protocol.md](plugin-protocol.md)). The core's `profile/live.ts` holds
+the format and what the preview takes from it; the extension's
+`preview/live-snapshots.ts` keeps them.
+
+- **Taken** by a pick (the plugin pushes the snapshot of the picked widget's
+  top-level window right after the pick), by **Etch: Snapshot from the Live
+  Game**, or by **Refresh from live game** in `Data ▾`, of the previewed
+  window when the game shows it ("not on screen" otherwise). No snapshot is
+  taken of a stale window; stale widgets inside one are left out and counted.
+- **Format:** JSON, `formatVersion: 1`: the window, the time, the save the
+  live game started from, the SHA-256 of the window's winning `.gui` file, the
+  game process (PID and start time), the game window's size, the widgets and
+  the stale count. A list box's rows are by position, `…/listbox/row[2]/…`: a
+  window under a list box is one of its rows, numbered in the order the game
+  holds them. The game date waits for `anvil-game` to offer it (spec
+  section 17).
+- **Kept** in the extension's workspace storage (`live-snapshots/<playset>/
+  <window>.json`), the latest per top-level window and playset; a snapshot of
+  another playset drops the others. Never in the mod's project, never shared
+  or exported.
+- **Texts:** the top layer of `Data ▾`, matched by widget path; a value whose
+  widget the window no longer has falls through to the lower layers, and
+  `Data ▾` counts it ("N values no longer match"). After a restart or with
+  another save it is marked "older"; it never expires by time.
+- **Selectors (`live`):** the `resolution` selector takes the game window's
+  size; every other selector the value whose rules and groups predict exactly
+  the visibility the snapshot shows for the widgets they name (the default
+  when several fit; when none fits, `View ▾` names it and the selector keeps
+  its other source). Two passes, so that one selector's value can follow
+  another's. Etch reads no facts from the game.
+- **Against the profile:** where the profile, with those selectors, still
+  predicts otherwise than the game showed (a widget whose parent the game
+  showed, created in the view, shown or hidden against the game), the path
+  becomes a toggle "from the game": applied before the hand toggles, marked in
+  the Widget Outline, counted in the `View ▾` label ("live · 2 from the game")
+  and noted as "Profile differs in N paths" beside **Open profile** and
+  **Save as view**. Etch writes no rules, and the differences are not
+  Problems.
+- **A pick** pins the preview on the picked widget's top-level window with
+  its view cleared to the game's (no view, no selector set by hand, no hand
+  toggles) and the live layer on. A pick is a moment: the preview does not
+  follow the game afterwards.
+
 ## Live runs
 
 Run on 2026-10-27 under the EU4 engine lab's procedure (its game lock for the
@@ -272,12 +370,27 @@ notices, the status bar, the watchers and their latency), textures,
 `DeclareWarDialog`, ironman and multiplayer, a hang timed by the watchdog,
 reopening the view (H8).
 
+## The province view after a rebuild (H2)
+
+Run on 2026-10-27 for M10 with Etch's plugin from this change (Escape through
+the game's SDL queue), in vanilla (Russia, 17 March 1719) and the Anbennar
+playset (Verne, 11 November 1444, its three opening events on screen), through
+the lab's script of the M8 runs, under the lab's game lock with the procedure
+above; Tongs' input on in the lab's copy for opening and closing a province.
+
+| Before the reload of `provinceview.gui` | Vanilla | Anbennar playset |
+| --- | --- | --- |
+| No province shown yet | the rebuild set the view visible; the Escape opened the game's menu, which the plugin closed again (`menu_undone`) — twice; without that undo (the first build) the menu stayed open | the same, once |
+| A province shown, the view closed (by its close button, or Escape) | the view stayed closed: three reloads, one of them of an edited file | the rebuild set the view visible, the Escape opened the menu, undone; the view hidden after |
+| The view open | it stayed open | it stayed open |
+
+The Anbennar prompt was answered by the first Enter through the SDL queue
+(4.8 s after ready). No crash. The reopening on the province the M8 check saw
+(H2) did not come back in these runs; when the rebuild leaves the view open
+on screen the same Escape closes it, as Tongs' did.
+
 ## Open points
 
-- **The province view after a rebuild (H2).** Closing it again needs a way the
-  game takes: a posted Escape is to be checked without Tongs' input and
-  without event windows, and must not open the game's menu when the rebuild
-  left the view off screen. Until then the extension does not ask for it.
 - **The province view's reload budget:** the stale check's two reads make the
   vanilla reload miss 150 ms at p95; reading only the windows built from the
   file, or the windows before the job from the last job's read, would cut it.

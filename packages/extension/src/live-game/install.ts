@@ -97,6 +97,38 @@ const PLUGINS_FOLDER = 'anvil/plugins/';
  */
 export const TONGS_SETTINGS = 'anvil/data/tongs/settings.toml';
 
+/**
+ * Where Anvil keeps the values of Etch's plugin settings: the pick mode key, from
+ * `etch.liveGame.pickModeKey`, written before every start (spec section 7).
+ */
+export const ETCH_SETTINGS = 'anvil/data/etch/settings.toml';
+
+/** The pick mode key the plugin defaults to. */
+export const DEFAULT_PICK_KEY = 'Ctrl+Shift+E';
+
+/**
+ * A pick mode key as Anvil and the plugin take it: Ctrl or Alt, Shift if wanted, and a letter, a
+ * digit or F1-F24, in the plugin's spelling (`Ctrl+Shift+E`); `undefined` for anything else.
+ */
+export function pickKey(text: string): string | undefined {
+  const parts = text.split('+').map((p) => p.trim().toLowerCase());
+  const key = parts.pop() ?? '';
+  const mods = new Set(parts);
+  if (parts.length !== mods.size || [...mods].some((m) => !['ctrl', 'shift', 'alt'].includes(m))) {
+    return undefined;
+  }
+  if (!mods.has('ctrl') && !mods.has('alt')) return undefined;
+  const letter = /^[a-z0-9]$/.test(key);
+  const fn = /^f([1-9]|1[0-9]|2[0-4])$/.test(key);
+  if (!letter && !fn) return undefined;
+  return [
+    ...(mods.has('ctrl') ? ['Ctrl'] : []),
+    ...(mods.has('shift') ? ['Shift'] : []),
+    ...(mods.has('alt') ? ['Alt'] : []),
+    key.toUpperCase(),
+  ].join('+');
+}
+
 /** Top-level files of the game folder the copy leaves out. */
 const LEFT_OUT = [/^launcher-installer/i, /^userdir\.txt$/i, /^console_history\.txt$/i];
 
@@ -209,6 +241,8 @@ export interface PrepareOptions {
    * which is copied there once the install exists; the main menu without one.
    */
   readonly continueSave?: string | SaveFile | undefined;
+  /** The pick mode key, in the plugin's spelling (`pickKey`); its default when not given. */
+  readonly pickModeKey?: string | undefined;
 }
 
 /**
@@ -301,6 +335,9 @@ export async function prepareInstall(options: PrepareOptions): Promise<PreparedI
   await linkGame(layout, gameFolder);
   const restored = await installPinned(layout, buildsFolder, manifest);
   await removeTree(join(layout.game, ...TONGS_SETTINGS.split('/')), layout.root);
+  const etchSettings = join(layout.game, ...ETCH_SETTINGS.split('/'));
+  await mkdir(dirname(etchSettings), { recursive: true });
+  await writeFile(etchSettings, `pick_mode_key = "${options.pickModeKey ?? DEFAULT_PICK_KEY}"\n`);
   const exe = join(layout.game, 'eu4.exe');
   if ((await sha256File(exe)) !== manifest.game.exeSha256) {
     throw new PrivateInstallError(

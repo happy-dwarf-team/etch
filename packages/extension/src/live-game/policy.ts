@@ -43,12 +43,14 @@ export const ON_DEMAND_WINDOWS: ReadonlyMap<string, readonly string[]> = new Map
 
 /**
  * Windows a rebuild shows even when they were closed (H2), to be closed again when they were
- * hidden before the reload. Empty for now: the console's `window close` does not close the
- * province view, a posted Escape did not in the live runs, and an Escape could open the game's
- * menu when the rebuild leaves the view off screen (before any province was shown), so the
- * rebuilt view stays open (docs/live-game.md, open points).
+ * hidden before the reload. The plugin closes them with Escape through the game's SDL event queue
+ * (the console's `window close` does not close the province view, nor did a posted Escape), and
+ * only when the rebuilt window is on screen: before any province was shown the rebuild leaves the
+ * view off screen, and an Escape would open the game's menu (docs/live-game.md).
  */
-export const SHOWN_BY_REBUILD: ReadonlyMap<string, readonly string[]> = new Map();
+export const SHOWN_BY_REBUILD: ReadonlyMap<string, readonly string[]> = new Map([
+  ['provinceview.gui', ['provinceview']],
+]);
 
 /**
  * Panels whose own listener rebuilds them on a reload of their file (research of etch#152 and

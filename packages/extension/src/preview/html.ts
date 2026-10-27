@@ -85,6 +85,7 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
   .popup .detail { padding: 0 10px 2px 30px; font-size: 0.85em; opacity: 0.8; }
   .popup .actions { display: flex; flex-wrap: wrap; gap: 4px; padding: 2px 10px 4px 30px; }
   .popup .warning { color: var(--vscode-notificationsWarningIcon-foreground); }
+  .popup .note { padding: 2px 10px; font-size: 0.85em; opacity: 0.85; }
   main { flex: 1; min-height: 0; position: relative; }
   /* Scaled down to fit, keeping its aspect ratio, and centred. */
   canvas {

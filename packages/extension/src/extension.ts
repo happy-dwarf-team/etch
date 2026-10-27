@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { SUPPORTED_GAME_VERSION } from '@etch/core';
-import { registerLiveGame, type LiveGame } from './live-game/index.ts';
+import { registerLiveGame, type LiveGame, type PickMode } from './live-game/index.ts';
 import { closeWindowsHelper } from './live-game/windows.ts';
 import { registerGameText } from './game-text.ts';
 import { WidgetNavigation } from './navigation.ts';
@@ -11,6 +11,7 @@ export interface EtchApi {
   readonly navigation: WidgetNavigation;
   readonly preview: PreviewApi;
   readonly liveGame: LiveGame;
+  readonly pickMode: PickMode;
 }
 
 let liveGame: LiveGame | undefined;
@@ -23,11 +24,13 @@ export function activate(context: vscode.ExtensionContext): EtchApi {
   context.subscriptions.push(registerGameText());
   const navigation = new WidgetNavigation();
   context.subscriptions.push(navigation);
-  liveGame = registerLiveGame(context, output);
+  const live = registerLiveGame(context, output);
+  liveGame = live.game;
   return {
     navigation,
-    preview: registerPreview(context, output, navigation, liveGame),
-    liveGame,
+    preview: registerPreview(context, output, navigation, live.game, live.pick),
+    liveGame: live.game,
+    pickMode: live.pick,
   };
 }
 

@@ -8,9 +8,10 @@ change to it changes `kProtocolVersion` in
 would misread it. The extension and the plugin ship together in one VSIX
 (ADR 0004), so a peer of another version is refused, not negotiated with.
 
-Protocol version: **2**, the live game's (v2 specification section 6): the
-handshake, the ping, and the jobs the plugin runs on the game's main thread:
-`reload`, `save` and `confirm`. Protocol 1 was Etch 1.x's game host: its preview
+Protocol version: **2**, the live game's (v2 specification sections 6 and 7):
+the handshake, the ping, the jobs the plugin runs on the game's main thread
+(`reload`, `save` and `confirm`), pick mode (`pick_mode`, `snapshot`) and the
+plugin's pushes (`pick`, `snapshot`, `pick_mode`). Protocol 1 was Etch 1.x's game host: its preview
 job (`job`, etch#50) and frame capture are gone (ADR 0005), and a `job` now
 gets `unknown_type`; their description is in this page's history on
 `release/1.x`.
@@ -92,7 +93,7 @@ connection gets `already_greeted`.
 ```
 
 ```json
-{"id":2,"ok":true,"ready":true,"frame":4711,"responding":true,"busy":false,"game_session":{"ironman":false,"multiplayer":false,"number":1}}
+{"id":2,"ok":true,"ready":true,"frame":4711,"responding":true,"busy":false,"pick":false,"game_session":{"ironman":false,"multiplayer":false,"number":1}}
 ```
 
 | Member         | Meaning                                                                                                     |
@@ -101,6 +102,7 @@ connection gets `already_greeted`.
 | `frame`        | as in `hello`; it stands still while a save loads (the whole load is one frame of the main loop) or saves  |
 | `responding`   | the game's window takes messages (`IsHungAppWindow` is false); true while no window is found yet           |
 | `busy`         | a `reload` or `save` waits for or runs on the main thread                                                   |
+| `pick`         | pick mode is on                                                                                             |
 | `game_session` | the game session as `anvil-game` last published it, `null` in the main menu: `ironman`, `multiplayer`, `number` (1 for the first since the start) |
 
 The pipe thread answers without waiting for the game's main thread, so a ping
@@ -142,22 +144,26 @@ game's console manager does not exist yet.
 | `lines`       | 1–64 console lines, each `reload <name>.gui`, `reloadloc` or `reloadtexture <texture>`; anything else, among them `reload guianim`, `reload texture` and `reload assets` (H10), is `bad_request` |
 | `check`       | game paths of the saved files; the top-level windows built from them are checked for stale ones     |
 | `close`       | top-level windows closed with a posted Escape before the lines, when visible (an on-demand window such as `DeclareWarDialog`); the lines then wait a few frames for the key |
-| `keep_hidden` | top-level windows closed again with a posted Escape after the lines, when they were hidden before and are visible now (a rebuild opens the province view, H2); the extension sends none for now (see below) |
+| `keep_hidden` | top-level windows closed again with an Escape after the lines, when they were hidden before and are visible and on screen now (a rebuild opens the province view, H2); the extension sends `provinceview` with a reload of `provinceview.gui` |
 
 In one job the plugin reads the top-level windows through `tongs.ui` (hidden
 and stale ones too), closes the `close` windows, runs the lines (4 frames later
 when it pressed a key, so that the game takes it first), closes the
-`keep_hidden` windows the lines showed, and reads the windows again.
+`keep_hidden` windows the lines showed, and reads the windows again (4 frames
+later when it pressed a key: when that Escape opened the game's menu `menu`,
+because the rebuilt window was in no panel stack, it presses Escape again to
+close the menu and reports `menu_undone`).
 
 The game's console cannot close these windows: `window close` closes only
 windows `window open` opened, and answered an empty failure for the province
 view (live). Mouse clicks do not work either: the game's interface takes the
 pointer from the real cursor (`GetCursorPos`, pick mode checks), which Etch
-never moves. So the plugin posts Escape, down and up a frame apart, which closes
-the topmost panel as the player's key would. In the live runs it closed nothing
-while Tongs' lab input was on and event windows were open, while Tongs' own
-Escape closed the province view; it is checked again before the extension
-relies on it. A window
+never moves. So the plugin presses Escape, which closes the topmost panel as
+the player's key would, through the game's SDL event queue (`SDL_PushEvent`
+found through the `sdl_dynapi_init` symbol, as Tongs' input does): a key posted
+to the game's window closed nothing in the M8 and M9 runs, while Tongs' Escape,
+through the queue, did. Before SDL has started the plugin posts the key
+messages instead. Enter, for Anbennar's prompt, goes the same way. A window
 built from a `check` file before the lines whose widget id is still there
 after them was not rebuilt: it is **stale** (H3). The check compares ids only;
 it never trusts a liveness read of the definitions, whose memory the game
@@ -172,6 +178,7 @@ reuses.
 | `lines`             | each line run: the line, the console's success byte, its answer text, its time    |
 | `closed`            | the `close` windows that were visible and were closed                             |
 | `hidden_again`      | the `keep_hidden` windows closed again                                            |
+| `menu_undone`       | an Escape for `keep_hidden` opened the game's menu, which was closed again; the window is not in `hidden_again` |
 | `tree`              | the windows were read; without `tongs.ui` it is false and the next three are left out |
 | `checked`           | top-level windows built from the `check` files before the lines                   |
 | `stale`             | those not rebuilt, with their name and whether they are visible now               |
@@ -210,8 +217,8 @@ gives a save 30 s before it closes the game anyway.
 
 The pipe is opened for overlapped I/O, so that an answer can be written from
 another thread while the pipe thread waits for the next request: the answers
-to `reload` and `save` are written that way, and pick mode's pushes will be
-(v2 specification section 7).
+to `reload`, `save` and `snapshot` are written that way, and so are the
+plugin's pushes (Pick mode, below).
 
 ### `confirm`
 
@@ -234,6 +241,118 @@ click did not work (the game reads the real cursor). `found` is false while the 
 job answers `no_tree`. Unlike `reload` and `save` it is not refused in ironman
 or multiplayer: the prompt comes before the game session.
 
+## Pick mode
+
+Pick mode (v2 specification section 7, [pick-mode-checks.md](pick-mode-checks.md))
+lives in the plugin: the hotkey, the outline and label, the stack under the
+pointer and the swallowed click. Etch turns it on and off, gives it the hotkey
+and the names of the mods for the label, and takes picks and snapshots. It
+needs `tongs.ui`; without it `pick_mode` and `snapshot` answer `no_tree`.
+
+### `pick_mode`
+
+```json
+{"id":6,"type":"pick_mode","on":true,"key":"Ctrl+Shift+E","sources":{"interface/provinceview.gui":"P2KE Patch - Anbennar"},"editor":{"pid":4321,"title":"my-mod"},"front":true}
+```
+
+```json
+{"id":6,"ok":true,"on":true,"key":"Ctrl+Shift+E","front":true}
+```
+
+Every member is optional, so one request can set the key alone.
+
+| Member    | Meaning |
+| --------- | ------- |
+| `on`      | turn pick mode on (`true`) or off (`false`); `null` or absent leaves it. On needs a ready game (`not_ready`) |
+| `key`     | the hotkey: Ctrl or Alt with a letter, a digit or F1–F24 (`Ctrl+Shift+E`, `Alt+F9`). It replaces the plugin's setting `pick_mode_key` until the game ends; anything else is `bad_request` |
+| `sources` | the playset's interface files that a mod supplies, by game path, with the mod's name: what the label names (`<mod> › interface/<file>.gui:<line>`); a path not listed is the game's (`EU4`). It replaces the earlier list |
+| `editor`  | VS Code's window, which the game brings forward after a pick: the process (`pid`, VS Code's main process, which owns its windows) and a fragment of its title (the workspace's name) |
+| `front`   | bring the game's window to the front (**Etch: Toggle Pick Mode**). VS Code is the foreground process then, so the plugin's `SetForegroundWindow` may be refused under Windows' foreground lock; it then attaches its thread's input to the foreground window's thread (`AttachThreadInput`) for the call and tries again. It sends no key: an Alt would reach VS Code's menu. The answer's `front` says whether the game came to the front |
+
+The answer gives the state after the request: `on` and `key`.
+
+### What pick mode does in the game
+
+- **Hotkey:** the plugin subclasses the game window's procedure when the game is
+  ready. A key-down of the hotkey's key, not a repeat, with exactly its
+  modifiers toggles pick mode and is swallowed, with its repeats, its
+  character and its key-up. The modifiers count as held when `GetKeyState`
+  says so or when the plugin saw their key messages (the pick mode checks
+  tracked them from messages; which of the two matched is logged). Esc is
+  never touched.
+- **Mouse:** in pick mode every button message (down, up, double click, all
+  five buttons) and both wheels are dropped, and every other mouse message is
+  passed on with the `MK_*` button bits of its `wParam` cleared (H6). A left
+  button down is the pick, except the click that activates the game's window
+  (`WM_ACTIVATE` with `WA_CLICKACTIVE`): the game reads the pointer only while
+  it is in front, so that click only brings it forward. The wheel steps
+  through the stack. `eu4.exe`'s
+  imports of `GetAsyncKeyState` and `GetKeyState` read the mouse buttons as up.
+- **Every frame**, on the main thread, the plugin reads the hovered widget and
+  its parents (`tongs.ui` `hovered` without paths) and hands the outline and
+  label to its `IDirect3DDevice9::Present` hook: the widget outlined (red when
+  stale), its top-level window dashed, the label beside the pointer (name,
+  kind, size, `<mod> › <file>:<line>`, the path shortened, the place in the
+  stack) and the badge "Etch pick — <key> to leave".
+- **The stack:** on the first wheel turn over a widget the plugin reads the
+  visible tree once: the hovered widget, then the visible widgets inside it
+  whose rectangle holds the pointer (a button's own text), smallest first, then
+  its parents, nearest first, then any other visible widget there, smallest
+  first (a map icon under the window: `tongs.ui` gives no order between
+  top-level windows), without top-level windows that cover the screen
+  (`menubar`, `floating_buttons`, H5). The wheel turned towards the player
+  steps down the stack.
+- **A click:** on the next frame the plugin reads the visible tree with stale
+  widgets (paths, files, lines), takes the widget the stack points
+  at, calls `AllowSetForegroundWindow(ASFW_ANY)`, brings VS Code's window
+  forward (`editor`; the game is the foreground process at the click), and
+  pushes `pick`, then `snapshot` of the widget's top-level window. A click with
+  nothing under the pointer opens nothing. Pick mode stays on.
+- The plugin logs each pick and, on leaving pick mode, the hovered read's
+  median, p90 and maximum, the picks, how the hotkey was matched and how often
+  the game polled a mouse button.
+
+### `snapshot`
+
+```json
+{"id":7,"type":"snapshot","window":"provinceview"}
+```
+
+```json
+{"id":7,"ok":true,"queued_ms":11.2,"window":"provinceview","file":"interface/provinceview.gui","screen":{"width":3440,"height":1440},"widgets":[{"path":"provinceview","type":"window","visible":true,"enabled":true,"checked":false,"text":null,"rect":[1200,180,620,980]}],"stale":0,"read_ms":7.1}
+```
+
+The live snapshot of a top-level window (etch#170): every widget of the
+visible top-level window of that name, hidden ones too, in one `tongs.ui` read
+on the main thread. The read is of that window's subtree only (`<window>//*` with hidden
+and stale widgets): the whole tree with hidden widgets took 150–215 ms in a vanilla game.
+
+| Member      | Meaning |
+| ----------- | ------- |
+| `window`, `file` | the window's name and the game path of its definition's file |
+| `screen`    | the game window's client size, which the preview's `resolution` selector takes |
+| `widgets`   | each widget's `path` (Tongs' widget path from the window; list rows by position, `…/listbox/row[2]`), `type`, `visible`, `enabled`, `checked`, `text` (`null` for a widget without text) and `rect` (`[x, y, width, height]` in client pixels) |
+| `stale`     | the stale widgets inside the window, left out |
+| `read_ms`, `queued_ms` | the read on the main thread, and from the request to it |
+
+`not_open` when no visible top-level window has that name, `stale` when the
+one on screen is stale (no snapshot is taken of it).
+
+### Pushes
+
+The plugin writes these lines to the greeted client on its own; they have no
+`id`, and an `event` member instead. A client that has not greeted gets none.
+
+```json
+{"event":"pick","seq":3,"window":"provinceview","screen":{"width":3440,"height":1440},"chain":[{"name":"tax_base_increase_button","type":"button","path":"provinceview/province_window/tax_base_increase_button","file":"interface/provinceview.gui","line":596,"rect":[1290,610,30,30],"visible":true,"stale":false}],"stack":{"index":0,"size":3},"front":true,"timing":{"click_unix_ms":1761542400123,"click_to_frame_ms":9.4,"read_ms":15.2}}
+```
+
+| `event`     | When, and its members |
+| ----------- | --------------------- |
+| `pick`      | a click in pick mode: `seq` (from 1 in the process), `window` (the top-level window), `screen`, `chain` (the picked widget, then its parents up to its top-level window, each with `name`, `type`, `path`, `file` (`null` when stale or unknown), `line` (the 1-based line of the `{` that opens it, H2; 0 when unknown, as with a Tongs without `definition_line`), `rect`, `visible` and `stale`), `stack` (the picked widget's place among those under the pointer), `front` (VS Code's window was brought forward) and `timing` (the click by the system clock in Unix ms, which the extension compares with its own to time a pick, and the times in the game) |
+| `snapshot`  | right after a `pick`, with its `seq`: the members of a `snapshot` answer (read apart from the pick, after it is pushed), or `"error":"stale"` when the window is stale |
+| `pick_mode` | pick mode turned on or off, by the hotkey or by a `pick_mode` request: `on` |
+
 ## Error codes
 
 | `error`              | When                                                          | Disconnects |
@@ -246,4 +365,5 @@ or multiplayer: the prompt comes before the game session.
 | `unknown_type`       | a `type` this version does not know                           | no          |
 | `not_ready`, `busy`, `not_available`, `console_broken`, `no_main_thread`, `not_in_game` | a job refused (above) | no |
 | `console_fault`, `no_console`, `no_tree` | a job that ran and failed (above)         | no          |
+| `not_open`, `stale`  | a `snapshot` of a window that is not on screen, or is stale   | no          |
 | `line_too_long`      | a line over 65,536 bytes                                      | yes         |

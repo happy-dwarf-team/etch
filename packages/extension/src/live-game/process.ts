@@ -7,7 +7,15 @@ import { spawn, type ChildProcess } from 'node:child_process';
 import { readFile, realpath, stat, unlink, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import type { PreparedInstall } from './install.ts';
-import { HostPipe, PipeError, newSessionId, type Hello, type ReloadRequest } from './pipe.ts';
+import {
+  HostPipe,
+  PipeError,
+  newSessionId,
+  type Hello,
+  type PickModeRequest,
+  type PipeEvent,
+  type ReloadRequest,
+} from './pipe.ts';
 import {
   childProcesses,
   creationUnixMs,
@@ -477,6 +485,19 @@ export class LiveGameProcess {
 
   confirm(path: string, timeoutMs?: number) {
     return this.pipe.confirm(path, timeoutMs);
+  }
+
+  pickMode(request: PickModeRequest, timeoutMs?: number) {
+    return this.pipe.pickMode(request, timeoutMs);
+  }
+
+  snapshot(window: string, timeoutMs?: number) {
+    return this.pipe.snapshot(window, timeoutMs);
+  }
+
+  /** The plugin's pushes: picks, their snapshots, pick mode changes. Returns what stops them. */
+  onEvent(listener: (event: PipeEvent) => void): () => void {
+    return this.pipe.onEvent(listener);
   }
 
   /** Sends one request over the session pipe (docs/plugin-protocol.md). */

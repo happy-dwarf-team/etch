@@ -33,6 +33,7 @@ struct Root {
     std::string name;
     std::string file;  // the game path of its definition's file; empty when stale or unknown
     bool visible = false;
+    bool on_screen = true;  // its rect meets the game window's client area
 };
 
 // The game session, as anvil-game last reported it.
@@ -83,6 +84,7 @@ struct ReloadResult {
     std::vector<LineResult> lines;
     std::vector<std::string> closed;        // windows of `close` that were visible and were closed
     std::vector<std::string> hidden_again;  // windows of `keep_hidden` closed again
+    bool menu_undone = false;               // the Escape opened the game's menu, which was closed again
     bool tree = false;                      // tongs.ui read the windows; without it no stale check
     StaleCheck stale;
     std::vector<Root> visible;  // the visible top-level windows after the job that have a file
@@ -110,6 +112,10 @@ bool IsConfirmPath(std::string_view path);
 // Frames a posted key takes to land: it goes up a frame after it went down,
 // and the game takes it in its next frame.
 inline constexpr int kKeyFrames = 4;
+
+// The game's Esc menu (menubar.gui), which an Escape opens when no panel is
+// open to close.
+inline constexpr std::string_view kGameMenu = "menu";
 
 // The keys the live game presses for the player: Enter, which answers a
 // prompt with its default button, and Escape, which closes the topmost panel.
@@ -178,6 +184,9 @@ private:
     std::optional<Refusal> Begin();
     void ReloadFirst(const std::shared_ptr<ReloadState>& state);
     void ReloadRest(const std::shared_ptr<ReloadState>& state);
+    void ReloadKeysLanded(const std::shared_ptr<ReloadState>& state,
+                          const std::optional<std::vector<Root>>& pressed_on);
+    void ReloadEnd(const std::shared_ptr<ReloadState>& state, const std::optional<std::vector<Root>>& after);
     void Finish(const std::shared_ptr<ReloadState>& state);
     // Runs `work` on the main thread `frames` frames from now; false when it cannot be queued.
     bool AfterFrames(int frames, std::function<void()> work);

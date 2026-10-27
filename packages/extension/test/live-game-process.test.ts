@@ -241,6 +241,47 @@ describe('the session pipe', () => {
     tree: true,
   });
 
+  it('takes the plugin pushes between answers, and asks for pick mode and snapshots', async () => {
+    const session = newSessionId();
+    server = createServer((socket) => {
+      socket.setEncoding('utf8');
+      let buffered = '';
+      socket.on('data', (chunk: string) => {
+        buffered += chunk;
+        for (let end = buffered.indexOf('\n'); end >= 0; end = buffered.indexOf('\n')) {
+          const request = JSON.parse(buffered.slice(0, end)) as { id: number; type: string };
+          buffered = buffered.slice(end + 1);
+          const reply = (body: object): void => {
+            socket.write(`${JSON.stringify({ id: request.id, ...body })}\n`);
+          };
+          if (request.type === 'hello') reply(hello(session));
+          else if (request.type === 'pick_mode') {
+            socket.write(`${JSON.stringify({ event: 'pick_mode', on: true })}\n`);
+            reply({ ok: true, on: true, key: 'Ctrl+Shift+E', front: false });
+          } else {
+            reply({ ok: false, error: 'not_open', message: 'topbar is not on screen' });
+          }
+        }
+      });
+    });
+    const listening = server;
+    await new Promise<void>((resolve) => listening.listen(pipePath(session), resolve));
+    const pipe = await HostPipe.connect(session);
+    const pushes: unknown[] = [];
+    const stop = pipe.onEvent((event) => pushes.push(event));
+    expect(await pipe.pickMode({ on: true, front: true })).toEqual({
+      on: true,
+      key: 'Ctrl+Shift+E',
+      front: false,
+    });
+    expect(pushes).toEqual([{ kind: 'pickMode', on: true }]);
+    stop();
+    await expect(pipe.snapshot('topbar')).rejects.toMatchObject({ code: 'not_open' });
+    await pipe.pickMode({ on: false });
+    expect(pushes).toHaveLength(1);
+    pipe.close();
+  });
+
   it('greets the plugin and pings it', async () => {
     const session = newSessionId();
     expect(session).toMatch(/^[0-9a-f]{32}$/);
@@ -264,6 +305,7 @@ describe('the session pipe', () => {
       frame: 7,
       responding: false,
       busy: true,
+      pick: false,
       gameSession: { ironman: false, multiplayer: true, number: 2 },
     });
     pipe.close();
@@ -309,6 +351,7 @@ describe('the session pipe', () => {
       lines: [{ line: 'reload provinceview.gui', success: true, text: 'reloaded!', ms: 59 }],
       closed: [],
       hiddenAgain: ['provinceview'],
+      menuUndone: false,
       check: {
         checked: 2,
         stale: [{ name: 'culture_item', visible: false }],

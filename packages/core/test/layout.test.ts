@@ -290,6 +290,26 @@ describe('layoutWindow: sprites', () => {
     expect(heights(80)).toEqual([60, 40, 60]);
   });
 
+  it('draws the variant of the size step the screen reaches, when the file has the steps', () => {
+    const gui = `guiTypes = {
+      positionType = { name = "view_scaling_large_min_inc" position = { x = 900 y = 100 } }
+      positionType = { name = "view_scaling_huge_min_inc" position = { x = 1089 y = 300 } }
+      windowType = { name = "w" position = { x = 0 y = 20 }
+        iconType = { name = "panel" spriteType = "GFX_panel_standard" }
+        iconType = { name = "crest" spriteType = "GFX_crest" }
+    } }`;
+    const heights = (height: number): number[] => {
+      const l = setUp(gui, { screen: { width: 1920, height } }).layout('w');
+      return [rectOf(l, 'panel')[3], rectOf(l, 'crest')[3]];
+    };
+    // Below 900 the standard sprite, from 900 the _large one, from 1089 the _huge one, wherever
+    // the textures end; GFX_crest has no _huge variant and keeps its _large one.
+    expect(heights(899)).toEqual([20, 20]);
+    expect(heights(900)).toEqual([40, 40]);
+    expect(heights(1080)).toEqual([40, 40]);
+    expect(heights(1089)).toEqual([60, 40]);
+  });
+
   it('keeps the sprite a widget picks by if_resolution, with no variant (etch#44)', () => {
     const gui = `guiTypes = { windowType = { name = "w"
       iconType = { name = "picked" if_resolution = { max_height = 50 spriteType = "GFX_crest" }

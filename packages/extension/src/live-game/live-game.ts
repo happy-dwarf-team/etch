@@ -42,7 +42,14 @@ import {
   readLock,
   type LockOptions,
 } from './process.ts';
-import { PipeError, type ReloadAnswer, type ReloadRequest } from './pipe.ts';
+import {
+  PipeError,
+  type PipeEvent,
+  type PickModeRequest,
+  type ReloadAnswer,
+  type ReloadRequest,
+  type SnapshotAnswer,
+} from './pipe.ts';
 import {
   HUD_FILES,
   HUD_LIMIT,
@@ -183,6 +190,10 @@ export interface LiveGameRequest {
   readonly gameFolder: string;
   readonly mods: readonly LiveGameMod[];
   readonly display: LiveGameDisplay;
+  /** The edited mod's folder: files elsewhere open read-only after a pick (spec section 7). */
+  readonly editedRoot?: string | undefined;
+  /** The pick mode key (`etch.liveGame.pickModeKey`), in the plugin's spelling. */
+  readonly pickModeKey?: string | undefined;
 }
 
 /** The restart reason of a start that is not a restart. */
@@ -266,6 +277,9 @@ export class LiveGame implements vscode.Disposable {
   private notAvailableSaid = 0;
 
   readonly onDidChangeState = this.emitter.event;
+  private readonly pushEmitter = new vscode.EventEmitter<PipeEvent>();
+  /** The plugin's pushes: picks, their snapshots and pick mode changes (spec section 7). */
+  readonly onDidPush = this.pushEmitter.event;
 
   constructor(
     storageFolder: string,
@@ -383,7 +397,69 @@ export class LiveGame implements vscode.Disposable {
   dispose(): void {
     void this.stop();
     this.emitter.dispose();
+    this.pushEmitter.dispose();
     this.diagnostics.dispose();
+  }
+
+  // ---- Pick mode -------------------------------------------------------------------------------
+
+  /** The playset the live game runs, as one file system; `undefined` before a start. */
+  get files(): GameFiles | undefined {
+    return this.wanted === undefined ? undefined : playsetFiles(this.wanted);
+  }
+
+  /** What the live game was last started with. */
+  get request(): LiveGameRequest | undefined {
+    return this.wanted;
+  }
+
+  /** The save the live game was started from, by file name; `undefined` for the main menu. */
+  get saveName(): string | undefined {
+    const save = this.startAt.save;
+    return typeof save === 'object' ? save.name : save;
+  }
+
+  /** The running game process: its PID and creation time, as its plugin reported them. */
+  get identity(): { pid: number; startMs: number } | undefined {
+    const running = this.process;
+    return running === undefined
+      ? undefined
+      : { pid: running.hello.pid, startMs: running.hello.process_start_ms };
+  }
+
+  /** The edited mod's folder of the running playset. */
+  get editedRoot(): string | undefined {
+    return this.wanted?.editedRoot;
+  }
+
+  /**
+   * Sends a `pick_mode` request to the running game (docs/plugin-protocol.md); `undefined` when no
+   * game is ready to take it.
+   */
+  async pickMode(request: PickModeRequest) {
+    const running = this.process;
+    if (
+      running === undefined ||
+      (this.current.status !== 'ready' && this.current.status !== 'stale')
+    ) {
+      return undefined;
+    }
+    return running.pickMode(request);
+  }
+
+  /**
+   * A live snapshot of a top-level window the game shows (spec section 7). Rejects with
+   * `PipeError` `not_open` or `stale`; `undefined` when no game runs.
+   */
+  async snapshot(window: string): Promise<SnapshotAnswer | undefined> {
+    const running = this.process;
+    if (
+      running === undefined ||
+      (this.current.status !== 'ready' && this.current.status !== 'stale')
+    ) {
+      return undefined;
+    }
+    return running.snapshot(window);
   }
 
   // ---- Reloads ---------------------------------------------------------------------------------
@@ -785,6 +861,7 @@ export class LiveGame implements vscode.Disposable {
         display: request.display,
         playerProfile: await this.playerProfile(request.gameFolder),
         continueSave: this.startAt.save,
+        pickModeKey: request.pickModeKey,
       });
       if (prepared === undefined) {
         this.set({ status: 'failed', message: 'The private install was not created.' });
@@ -836,6 +913,10 @@ export class LiveGame implements vscode.Disposable {
     this.readyAt = Date.now();
     this.index = undefined;
     this.errorLog = new ErrorLogTail(this.errorLogPath);
+    // The pipe and its pushes end with the process.
+    started.onEvent((event) => {
+      if (this.process === started) this.pushEmitter.fire(event);
+    });
     const startLines = await this.errorLog.skip();
     this.output.info(`The live game's error.log had ${String(startLines)} lines at ready.`);
     this.watch(started);

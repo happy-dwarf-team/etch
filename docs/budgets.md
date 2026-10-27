@@ -171,6 +171,25 @@ the 112 MB gamestate was held twice, which set off collections of the extension
 host's heap (about 330 MB with the Anbennar playset). Measured the same way
 before that change, one process failed the 2 s budget (4,131 ms).
 
+### 2026-10-27, M9 (pick mode, reported, not gated)
+
+Pick mode with Etch's own plugin and extension, in a separate VS Code with the
+extension, the lab's clicks posted to the game window; how they were run is in
+[pick-mode-checks.md](pick-mode-checks.md#checks-with-etchs-own-plugin-m9).
+From the click in the game (the plugin's system clock) to the picked line shown
+in the editor, through the pipe:
+
+| Playset | Picks | Measured | Target |
+| --- | --- | --- | --- |
+| Vanilla | 9 | 58–133 ms, median 84 ms | 1 s |
+| Anbennar playset | 12 | 32–119 ms, median 36 ms | 1 s |
+
+On the main thread: the click reached the next frame after 7–20 ms; the
+chain's read (the visible tree) took 21–37 ms in vanilla and 11–14 ms in the
+Anbennar playset; the snapshot that follows the pick (the window's subtree)
+13–16 ms for the province view. The hovered read of every frame in pick mode
+took a median of 0.28–0.43 ms. VS Code had the focus 31–68 ms after the click.
+
 ### 2026-10-27, M8 (the live game, reported, not gated)
 
 The live game's reloads with Etch's own plugin (spec section 9, reported),

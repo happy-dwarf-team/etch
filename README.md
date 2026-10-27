@@ -6,15 +6,20 @@
 [![License: MIT](https://img.shields.io/github/license/happy-dwarf-team/etch)](LICENSE)
 
 Etch is a Visual Studio Code extension for Europa Universalis IV interface
-mods: edit a `.gui` or `.gfx` file and see the window as the game draws it,
-within moments, without restarting the game. Website:
-[etch.happydwarf.dev](https://etch.happydwarf.dev/).
+mods: edit a `.gui` or `.gfx` file and see the window as the game would show
+it, within moments, and have each saved file reloaded into the running game.
+Website: [etch.happydwarf.dev](https://etch.happydwarf.dev/).
 
-Status: 1.0.0, the whole of the v1 specification. Etch has had the offline
-renderer since 0.1.0, measured
-against the game's precision corpus since 0.2.0; the game host, a private copy
-of the game with Etch's Anvil plugin that draws the window itself, since 0.3.0;
-and the diff view between the two since 0.4.0. Releases are on
+Status: `main` is built to the [v2 specification](docs/spec/v2.md) for 2.0.0,
+not yet released; 1.0.x, the whole of the v1 specification, is the release in
+the stores. v2 replaces 1.x's game host and its diff view with the **live
+game**: Etch's private copy of the game, played beside the editor, with each
+saved file reloaded into the game's own window, **pick mode** to jump from a
+widget in the game to its definition, and **live snapshots** of a window's
+texts and states. The preview gains **views** of a window from window profiles
+and **sample data** from saves (ADR 0005). Users who want the game host stay
+on 1.0.x: the extension's [README](packages/extension/README.md#etch-1x) says
+how. Releases are on
 [Open VSX](https://open-vsx.org/extension/happy-dwarf-team/etch), the
 [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=happy-dwarf-team.etch)
 and the [GitHub releases](https://github.com/happy-dwarf-team/etch/releases);
@@ -25,23 +30,26 @@ order it was built; the decisions behind it are in [docs/adr](docs/adr) and in
 the wayfinder map in this repository's issues (label `wayfinder:map`).
 [CONTRIBUTING.md](CONTRIBUTING.md) says how to build and test it.
 
-## v1 in brief
+## v2 in brief
 
 - The editor is a Visual Studio Code extension: preview, widget outline,
   diagnostics and jump from a widget to its source line.
-- Two preview backends behind one preview: an offline renderer that needs no
-  game, and a private copy of the running game that draws the window itself.
-- Precision is measured against the game, not claimed.
+- One preview, drawn by the offline renderer, which needs no game: a window in
+  one view, with sample data, as the game would show it.
+- The live game is the game itself, with Etch's Anvil plugin: reloads, pick
+  mode and live snapshots.
+- Precision is measured against the game, not claimed: the precision corpus
+  of three playsets, the Anbennar playset among them, at six resolutions.
 - Target: EU4 1.37.5 (Steam, win64) on Windows.
 
 See [GLOSSARY.md](GLOSSARY.md) for the terms used in the issues.
 
 ## Built on Anvil
 
-The game host runs on [Anvil](https://anvil.happydwarf.dev/), the team's
+The live game runs on [Anvil](https://anvil.happydwarf.dev/), the team's
 plugin loader for EU4, with the [Bellows](https://anvil.happydwarf.dev/plugins/bellows/)
-plugin for a faster start; the precision corpus is captured with
-[Tongs](https://anvil.happydwarf.dev/plugins/tongs/). Etch is a project of the
+plugin for a faster start and [Tongs](https://anvil.happydwarf.dev/plugins/tongs/)
+for the widget tree; the precision corpus is captured with Tongs. Etch is a project of the
 [Happy Dwarf Team](https://happydwarf.dev/).
 
 ## License

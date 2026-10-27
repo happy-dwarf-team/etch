@@ -198,6 +198,7 @@ std::string ReloadAnswer(std::uint64_t id, const ReloadResult& result) {
     w.Raw("lines", LinesJson(result.lines))
         .Raw("closed", NamesJson(result.closed))
         .Raw("hidden_again", NamesJson(result.hidden_again))
+        .Bool("menu_undone", result.menu_undone)
         .Bool("tree", result.tree);
     if (result.tree) {
         std::string stale = "[";
@@ -333,20 +334,53 @@ void LiveJobs::ReloadRest(const std::shared_ptr<ReloadState>& state) {
         if (!Run(tokens, result.lines.back(), result.error, result.message)) return Finish(state);
     }
     std::optional<std::vector<Root>> after = env_.roots();
+    bool keys = false;
     if (before && after) {
         bool reread = false;
         for (const std::string& name : state->request.keep_hidden) {
             const Root* was = FindRoot(*before, name);
             const Root* now = FindRoot(*after, name);
-            if ((was != nullptr && was->visible) || now == nullptr || !now->visible) continue;
+            // A rebuilt window off screen needs no Escape, which would open the game's menu.
+            if ((was != nullptr && was->visible) || now == nullptr || !now->visible || !now->on_screen) continue;
             bool pressed = false;
             const bool closed = CloseWindow(name, result, pressed);
             if (!result.error.empty()) return Finish(state);
             if (closed) result.hidden_again.push_back(name);
             reread = reread || (closed && !pressed);
+            keys = keys || pressed;
         }
         if (reread) after = env_.roots();
     }
+    if (keys) {
+        // Before any province was shown, the rebuilt view is visible but in no panel stack: the
+        // Escape then opens the game's menu (live, M10). A few frames later that is undone.
+        std::optional<std::vector<Root>> pressed_on = after;
+        if (AfterFrames(kKeyFrames, [this, state, pressed_on] { ReloadKeysLanded(state, pressed_on); })) return;
+    }
+    ReloadEnd(state, after);
+}
+
+void LiveJobs::ReloadKeysLanded(const std::shared_ptr<ReloadState>& state,
+                                const std::optional<std::vector<Root>>& pressed_on) {
+    ReloadResult& result = state->result;
+    std::optional<std::vector<Root>> after = env_.roots();
+    if (after && pressed_on) {
+        const Root* was = FindRoot(*pressed_on, kGameMenu);
+        const Root* now = FindRoot(*after, kGameMenu);
+        if ((was == nullptr || !was->visible) && now != nullptr && now->visible) {
+            bool pressed = false;
+            CloseWindow(std::string(kGameMenu), result, pressed);
+            result.hidden_again.clear();
+            result.menu_undone = true;
+            if (!pressed) after = env_.roots();
+        }
+    }
+    ReloadEnd(state, after ? after : pressed_on);
+}
+
+void LiveJobs::ReloadEnd(const std::shared_ptr<ReloadState>& state, const std::optional<std::vector<Root>>& after) {
+    ReloadResult& result = state->result;
+    const std::optional<std::vector<Root>>& before = state->before;
     result.tree = before.has_value() && after.has_value();
     if (result.tree) {
         result.stale = CompareRoots(*before, *after, state->request.check);
@@ -354,7 +388,8 @@ void LiveJobs::ReloadRest(const std::shared_ptr<ReloadState>& state) {
         for (const Root& root : *after) {
             // A window closed again by a key closes in a later frame.
             const bool closing = std::find(result.hidden_again.begin(), result.hidden_again.end(), root.name) !=
-                                 result.hidden_again.end();
+                                     result.hidden_again.end() ||
+                                 (result.menu_undone && root.name == kGameMenu);
             if (root.visible && !root.file.empty() && !closing) result.visible.push_back(root);
         }
     }

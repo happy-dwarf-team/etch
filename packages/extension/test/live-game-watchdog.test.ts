@@ -17,6 +17,7 @@ const ping = (frame: number, more: Partial<Ping> = {}): Ping => ({
   frame,
   responding: false,
   busy: false,
+  pick: false,
   gameSession: undefined,
   ...more,
 });
