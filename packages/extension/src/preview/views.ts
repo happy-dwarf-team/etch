@@ -156,6 +156,7 @@ export function viewMenu(
   view: WindowView,
   choice: ChoiceState,
   canSave: boolean,
+  liveUnknown: readonly string[] = [],
 ): ViewMenu {
   const value = new Map(view.selectors.map((s) => [s.selector.id, s.value]));
   const picked = profile.views.find((v) => v.id === choice.view);
@@ -163,8 +164,16 @@ export function viewMenu(
   const current = holds ? picked : undefined;
   const name = current?.label ?? (profile.views.length === 0 ? 'Profile' : 'Custom view');
   const hand = view.handToggles;
+  const game = view.gameToggles;
+  const live = view.selectors.some((s) => s.source === 'live');
+  const label = [
+    name,
+    ...(live ? ['live'] : []),
+    ...(game > 0 ? [`${String(game)} from the game`] : []),
+    ...(hand > 0 ? [`${String(hand)} by hand`] : []),
+  ].join(' · ');
   return {
-    label: hand === 0 ? name : `${name} · ${String(hand)} by hand`,
+    label,
     views: profile.views.map((v) => ({
       id: v.id,
       label: v.label,
@@ -181,6 +190,10 @@ export function viewMenu(
       ...(selector.note === undefined ? {} : { note: selector.note }),
     })),
     handToggles: hand,
+    gameToggles: game,
+    liveUnknown: view.selectors
+      .filter((s) => liveUnknown.includes(s.selector.id))
+      .map((s) => s.selector.label),
     canSave,
   };
 }

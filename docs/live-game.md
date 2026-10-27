@@ -245,6 +245,55 @@ on are in [pick-mode-checks.md](pick-mode-checks.md).
   stays on. The log line of each pick gives the time from the click (the
   plugin's system clock) to the line shown in the editor.
 
+## Live snapshot
+
+A live snapshot (spec section 7, etch#170) is every widget of one top-level
+window as the live game showed it, hidden ones too: path, type, `visible`,
+`enabled`, `checked`, text and rectangle, the fields of `tongs.ui` version 1,
+read in one `find` on the main thread (the plugin's `snapshot`,
+[plugin-protocol.md](plugin-protocol.md)). The core's `profile/live.ts` holds
+the format and what the preview takes from it; the extension's
+`preview/live-snapshots.ts` keeps them.
+
+- **Taken** by a pick (the plugin pushes the snapshot of the picked widget's
+  top-level window right after the pick), by **Etch: Snapshot from the Live
+  Game**, or by **Refresh from live game** in `Data ▾`, of the previewed
+  window when the game shows it ("not on screen" otherwise). No snapshot is
+  taken of a stale window; stale widgets inside one are left out and counted.
+- **Format:** JSON, `formatVersion: 1`: the window, the time, the save the
+  live game started from, the SHA-256 of the window's winning `.gui` file, the
+  game process (PID and start time), the game window's size, the widgets and
+  the stale count. A list box's rows are by position, `…/listbox/row[2]/…`: a
+  window under a list box is one of its rows, numbered in the order the game
+  holds them. The game date waits for `anvil-game` to offer it (spec
+  section 17).
+- **Kept** in the extension's workspace storage (`live-snapshots/<playset>/
+  <window>.json`), the latest per top-level window and playset; a snapshot of
+  another playset drops the others. Never in the mod's project, never shared
+  or exported.
+- **Texts:** the top layer of `Data ▾`, matched by widget path; a value whose
+  widget the window no longer has falls through to the lower layers, and
+  `Data ▾` counts it ("N values no longer match"). After a restart or with
+  another save it is marked "older"; it never expires by time.
+- **Selectors (`live`):** the `resolution` selector takes the game window's
+  size; every other selector the value whose rules and groups predict exactly
+  the visibility the snapshot shows for the widgets they name (the default
+  when several fit; when none fits, `View ▾` names it and the selector keeps
+  its other source). Two passes, so that one selector's value can follow
+  another's. Etch reads no facts from the game.
+- **Against the profile:** where the profile, with those selectors, still
+  predicts otherwise than the game showed (a widget whose parent the game
+  showed, created in the view, shown or hidden against the game), the path
+  becomes a toggle "from the game": applied before the hand toggles, marked in
+  the Widget Outline, counted in the `View ▾` label ("live · 2 from the game")
+  and noted as "Profile differs in N paths" beside **Open profile** and
+  **Save as view**. Etch writes no rules, and the differences are not
+  Problems.
+- **A pick** pins the preview on the picked widget's top-level window with
+  its view cleared to the game's (no view, no selector set by hand, no hand
+  toggles) and the live layer on. A pick is a moment: the preview does not
+  follow the game afterwards.
+
 ## Live runs
 
 Run on 2026-10-27 under the EU4 engine lab's procedure (its game lock for the
