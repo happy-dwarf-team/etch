@@ -6,8 +6,8 @@
 // the live game with the preview's playset (spec section 2). A window with a window profile is
 // drawn in one view, chosen in `View ▾` and the Widget Outline (spec section 4).
 
-import { mkdir, writeFile } from 'node:fs/promises';
-import { dirname } from 'node:path';
+import { mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
 import * as vscode from 'vscode';
 import {
   DEFAULT_LANGUAGE,
@@ -38,18 +38,24 @@ import {
 } from '@etch/core';
 import { layOutPreview } from '@etch/core/playset';
 import {
+  activeLinks,
   evaluateView,
+  layoutContentOf,
   layoutViewOf,
+  sampleData,
   withView,
   type ProfileDiagnostic,
+  type SampleData,
   type WindowView,
 } from '@etch/core/profile';
 import { readGameText, saveEncodingOf } from '../game-text.ts';
 import type { LiveGame } from '../live-game/index.ts';
 import type { OutlineToggle, WidgetNavigation } from '../navigation.ts';
+import { PreviewData } from './data.ts';
 import { previewHtml } from './html.ts';
 import { ProfileStore, type LoadedProfile, type ProjectProblems } from './profiles.ts';
 import type {
+  DataAction,
   HostMessage,
   Notice,
   Point,
@@ -82,6 +88,9 @@ export const CHOOSE_RESOLUTION = 'etch.choosePreviewResolution';
 /** Where the monitor's native resolution is kept between sessions, so a cold open knows it. */
 const NATIVE_SCREEN_KEY = 'etch.nativeScreen';
 
+/** The save the preview last used, by workspace folder, read again when the preview opens. */
+const SAMPLE_SAVE_KEY = 'etch.sampleSave';
+
 /** The context key that is true while the preview is open. */
 export const PREVIEW_OPEN_CONTEXT = 'etch.previewOpen';
 
@@ -106,6 +115,8 @@ export interface PreviewRender {
   readonly requestedAt: number;
   /** The view drawn, when the window has a window profile (spec section 4). */
   readonly view?: { readonly profile: LoadedProfile; readonly view: WindowView };
+  /** The sample data drawn, when the window has a window profile (spec section 5). */
+  readonly sample?: SampleData;
 }
 
 /** The webview's answer to a render. */
@@ -141,6 +152,8 @@ export interface PreviewApi {
   readonly resolutionContext: ResolutionContext;
   /** The notices the preview shows above the window, such as a game that was not found. */
   readonly notices: readonly Notice[];
+  /** What the toolbar, its menus and the notices show, as last posted to the webview. */
+  readonly viewState: ViewState | undefined;
   /** Opens the preview beside the editor, or reveals it. */
   open(): void;
   /**
@@ -170,6 +183,17 @@ export interface PreviewApi {
   click(point: Point): Promise<boolean>;
   /** What a click in `View ▾` does (spec section 4); Save as view asks for a name. */
   viewAction(action: ViewAction): Promise<void>;
+  /** What a click in `Data ▾` does (spec section 5); a save, country or province is asked for. */
+  dataAction(action: DataAction): Promise<void>;
+  /**
+   * Reads a save file and makes it the preview's sample data, on its player and capital; resolves
+   * once it is read (or refused) and the window is laid out again.
+   */
+  chooseSave(path: string): Promise<void>;
+  /** Chooses a country or a province of the chosen save. */
+  chooseData(choice: { readonly country?: string; readonly province?: number }): void;
+  /** Pins the window the game opens instead of the previewed one, through a link. */
+  openLink(window: string): Promise<boolean>;
 }
 
 /** The game text of a file, from its editor buffer or from disk (etch#15). */
@@ -205,6 +229,10 @@ export class Preview implements PreviewApi, vscode.Disposable {
   private readonly profiles: ProfileStore;
   /** The view chosen for each window while the preview is open, by window name. */
   private readonly choices = new Map<string, ChoiceState>();
+  /** The sample data: the chosen save, its country and province, the generated length. */
+  private readonly data: PreviewData;
+  /** The save to read again once the preview has painted, off the cold-open path. */
+  private restoreSave: string | undefined;
   private readonly renderEmitter = new vscode.EventEmitter<PreviewRender>();
   private readonly paintEmitter = new vscode.EventEmitter<PreviewPaint>();
   private readonly subscriptions: vscode.Disposable[];
@@ -266,6 +294,17 @@ export class Preview implements PreviewApi, vscode.Disposable {
     this.navigation = navigation;
     this.memento = memento;
     this.profiles = new ProfileStore(extensionUri, output);
+    this.data = new PreviewData(
+      {
+        changed: () => {
+          this.request();
+        },
+        read: (path, ms) => {
+          this.output.info(`Sample data: read ${path} in ${ms.toFixed(0)} ms.`);
+        },
+      },
+      (path) => readFile(path),
+    );
     this.native = validScreen(memento.get(NATIVE_SCREEN_KEY));
     this.loop = new RenderLoop(
       () => this.renderNow(),
@@ -333,6 +372,10 @@ export class Preview implements PreviewApi, vscode.Disposable {
 
   get notices(): readonly Notice[] {
     return this.lastState?.notices ?? [];
+  }
+
+  get viewState(): ViewState | undefined {
+    return this.lastState;
   }
 
   get reloadState(): PreviewMemento | undefined {
@@ -550,6 +593,10 @@ export class Preview implements PreviewApi, vscode.Disposable {
 
     const session = await this.sessionFor(uri);
     if (panel !== this.panel) return;
+    if (this.restoreSave === undefined) {
+      const saves = this.memento.get<Record<string, string>>(SAMPLE_SAVE_KEY) ?? {};
+      this.restoreSave = saves[session.workspaceFolder] ?? '';
+    }
     this.startPendingLiveGame(session);
     this.allowRoots(panel, session.roots);
     const { touched, changed } = await this.applyPending(session);
@@ -593,7 +640,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
 
     // The window's profile, and the view the user chose of it.
     const screen = this.resolution.screen;
-    const found = await this.profiles.load(session.playset, file, window);
+    const found = await this.profiles.load(session.playset, session.ui.index, file, window);
     if (panel !== this.panel) return;
     this.publishProfileProblems(found.project);
     const loaded = found.loaded;
@@ -619,6 +666,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
       session.serial,
       loaded?.key ?? '',
       JSON.stringify(choice ?? null),
+      loaded === undefined ? '' : this.data.key,
     ].join('|');
     if (!changed && !assetsChanged && key === this.renderKey) {
       // The same screen can come from another source (the setting, settings.txt, the monitor).
@@ -628,6 +676,8 @@ export class Preview implements PreviewApi, vscode.Disposable {
           file: shownPath,
           notices,
           ...(this.lastState.menu === undefined ? {} : { menu: this.lastState.menu }),
+          ...(this.lastState.data === undefined ? {} : { data: this.lastState.data }),
+          ...(this.lastState.links === undefined ? {} : { links: this.lastState.links }),
         });
       }
       return;
@@ -637,11 +687,32 @@ export class Preview implements PreviewApi, vscode.Disposable {
     const view =
       loaded === undefined || choice === undefined
         ? undefined
-        : evaluateView(loaded.profile, window, screen, viewChoiceOf(choice));
+        : evaluateView(loaded.profile, window, screen, {
+            ...viewChoiceOf(choice),
+            facts: this.data.facts(),
+          });
+    const localiseKey = (key: string): string | undefined => session.localisation?.get(key);
+    const choiceOfSave = this.data.choice;
+    const sample =
+      loaded === undefined
+        ? undefined
+        : sampleData(loaded.profile, window, view, {
+            ...(choiceOfSave === undefined ? {} : { save: choiceOfSave }),
+            localise: localiseKey,
+            length: this.data.length,
+            template: (name) => {
+              const found = session.ui.index.guiType(name);
+              const owner = found === undefined ? undefined : session.guiFile(found.path);
+              return found === undefined || owner === undefined
+                ? undefined
+                : { widget: found.item, file: owner };
+            },
+          });
     const layout = await layOutPreview(session.ui, session.assets, file, window, {
       screen,
       localise: session.localise,
       ...(view === undefined ? {} : { view: layoutViewOf(view) }),
+      ...(sample === undefined ? {} : { content: layoutContentOf(sample) }),
     });
     if (panel !== this.panel) return;
     const drawList: DrawList = {
@@ -663,6 +734,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
       pinned,
       requestedAt,
       ...(loaded === undefined || view === undefined ? {} : { view: { profile: loaded, view } }),
+      ...(sample === undefined ? {} : { sample }),
     };
     this.last = { uri: uri.toString(), name: window.name };
     // The draw goes first: diagnostics are not on the warm reload's path to pixels.
@@ -681,6 +753,23 @@ export class Preview implements PreviewApi, vscode.Disposable {
       ...(loaded === undefined || view === undefined || choice === undefined
         ? {}
         : { menu: viewMenu(loaded.profile, view, choice, loaded.projectFile !== undefined) }),
+      ...(loaded === undefined
+        ? {}
+        : {
+            data: this.data.menu(
+              sample,
+              session.playset.mods.map((m) => m.name),
+              localiseKey,
+            ),
+          }),
+      ...(loaded === undefined || view === undefined
+        ? {}
+        : {
+            links: activeLinks(loaded.profile, view).map((link) => ({
+              window: link.window,
+              label: link.label ?? `The game opens ${link.window} instead.`,
+            })),
+          }),
     });
     this.navigation.setPreviewed(
       document && source.version !== undefined
@@ -692,6 +781,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
             offsets: source.offsets,
             layout: layout.widgets,
             ...(view === undefined ? {} : { view }),
+            ...(sample === undefined ? {} : { sample }),
           }
         : undefined,
     );
@@ -963,6 +1053,12 @@ export class Preview implements PreviewApi, vscode.Disposable {
       case 'view':
         void this.viewAction(message.action);
         break;
+      case 'data':
+        void this.dataAction(message.action);
+        break;
+      case 'openLink':
+        void this.openLink(message.window);
+        break;
     }
   }
 
@@ -994,6 +1090,141 @@ export class Preview implements PreviewApi, vscode.Disposable {
     }
     this.choices.set(key, applyViewAction(viewed.profile.profile, choice, action));
     this.request();
+  }
+
+  async dataAction(action: DataAction): Promise<void> {
+    const session = this.session;
+    const localise = (key: string): string | undefined => session?.localisation?.get(key);
+    switch (action.kind) {
+      case 'chooseSave': {
+        const path = await this.pickSave(session);
+        if (path !== undefined) await this.chooseSave(path);
+        return;
+      }
+      case 'dropSave':
+        this.data.drop();
+        await this.rememberSave(undefined);
+        return;
+      case 'chooseCountry': {
+        const picked = await vscode.window.showQuickPick(
+          this.data
+            .countries(localise)
+            .map((c) => ({ label: c.label, description: c.detail, tag: c.tag })),
+          {
+            title: 'Country of the save',
+            placeHolder: 'The country whose view the preview shows',
+            matchOnDescription: true,
+          },
+        );
+        if (picked !== undefined) this.chooseData({ country: picked.tag });
+        return;
+      }
+      case 'chooseProvince': {
+        const provinces = this.data.provinces(localise);
+        const own = provinces.filter((p) => p.own);
+        const items: (vscode.QuickPickItem & { id?: number })[] = [];
+        const add = (label: string, list: typeof provinces): void => {
+          if (list.length === 0) return;
+          items.push({ label, kind: vscode.QuickPickItemKind.Separator });
+          for (const p of list) items.push({ label: p.label, description: p.detail, id: p.id });
+        };
+        add('Of the chosen country', own);
+        add(
+          own.length === 0 ? 'Provinces' : 'Others, own or foreign',
+          provinces.filter((p) => !p.own),
+        );
+        const picked = await vscode.window.showQuickPick(items, {
+          title: 'Province of the save',
+          placeHolder: 'Any province, own or foreign',
+          matchOnDescription: true,
+        });
+        if (picked?.id !== undefined) this.chooseData({ province: picked.id });
+        return;
+      }
+      case 'length':
+        this.data.length = action.length;
+        this.request();
+        return;
+      case 'live':
+        this.data.live = action.on;
+        this.request();
+        return;
+    }
+  }
+
+  async chooseSave(path: string): Promise<void> {
+    await this.data.open(path);
+    await this.rememberSave(this.data.path);
+    await this.idle();
+  }
+
+  chooseData(choice: { readonly country?: string; readonly province?: number }): void {
+    if (choice.country !== undefined) this.data.chooseCountry(choice.country);
+    if (choice.province !== undefined) this.data.chooseProvince(choice.province);
+  }
+
+  async openLink(window: string): Promise<boolean> {
+    const session = this.session;
+    const found = session?.ui.index.guiType(window);
+    const absolute =
+      found === undefined
+        ? undefined
+        : (await session?.playset.files.find(found.path))?.absolutePath;
+    const file = found === undefined ? undefined : session?.guiFile(found.path);
+    if (found === undefined || absolute === undefined || file === undefined) {
+      void vscode.window.showWarningMessage(`Etch: the playset defines no window ${window}.`);
+      return false;
+    }
+    this.pin = {
+      uri: vscode.Uri.file(absolute).toString(),
+      name: found.item.name,
+      index: file.definitions.indexOf(found.item),
+    };
+    this.request();
+    await this.idle();
+    return true;
+  }
+
+  /**
+   * Asks for a save: those of the player's `save games/` (read only), newest first, or any file
+   * (spec section 5). The live game's private saves join the list once it offers them (M8).
+   */
+  private async pickSave(session: PreviewSession | undefined): Promise<string | undefined> {
+    const folder = session?.playset.profileFolder;
+    const saves = folder === undefined ? [] : await listSaves(join(folder, 'save games'));
+    const items: (vscode.QuickPickItem & { path?: string })[] = [
+      ...saves.map((save) => ({
+        label: save.name,
+        description: new Date(save.modified).toLocaleString(),
+        path: save.path,
+      })),
+      { label: '$(folder-opened) Choose a save file…' },
+    ];
+    const picked = await vscode.window.showQuickPick(items, {
+      title: 'Save for sample data',
+      placeHolder: 'A text save; an ironman save cannot be read',
+    });
+    if (picked === undefined) return undefined;
+    if (picked.path !== undefined) return picked.path;
+    const chosen = await vscode.window.showOpenDialog({
+      canSelectMany: false,
+      filters: { 'EU4 saves': ['eu4'] },
+      ...(folder === undefined ? {} : { defaultUri: vscode.Uri.file(join(folder, 'save games')) }),
+      openLabel: 'Use for sample data',
+    });
+    return chosen?.[0]?.fsPath;
+  }
+
+  /** Keeps the chosen save's path for the workspace folder, to read it again next time. */
+  private async rememberSave(path: string | undefined): Promise<void> {
+    const folder = this.session?.workspaceFolder;
+    if (folder === undefined) return;
+    const saves = Object.entries(this.memento.get<Record<string, string>>(SAMPLE_SAVE_KEY) ?? {});
+    const kept = saves.filter(([key]) => key !== folder);
+    await this.memento.update(
+      SAMPLE_SAVE_KEY,
+      Object.fromEntries(path === undefined ? kept : [...kept, [folder, path]]),
+    );
   }
 
   /** An eye or a radio of the Widget Outline: a hand toggle of the previewed window. */
@@ -1113,6 +1344,12 @@ export class Preview implements PreviewApi, vscode.Disposable {
       this.publishTextureProblems(render, paint.problems);
     }
     this.paintEmitter.fire(paint);
+    // The save last used is read once the preview has painted without it (spec section 5).
+    const restore = this.restoreSave;
+    if (restore !== undefined && paint.painted) {
+      this.restoreSave = '';
+      if (restore !== '') void this.data.open(restore);
+    }
   }
 
   /** Reports the textures the webview could not load on the widgets that draw them. */
@@ -1379,4 +1616,21 @@ function toDiagnostic(found: ModelDiagnostic, source: SourceText): vscode.Diagno
 
 function severityLog(notice: Notice): 'error' | 'warn' | 'info' {
   return notice.severity === 'error' ? 'error' : notice.severity === 'warning' ? 'warn' : 'info';
+}
+
+/** The `.eu4` files of a folder, newest first; none when it cannot be read. */
+async function listSaves(
+  folder: string,
+): Promise<{ readonly name: string; readonly path: string; readonly modified: number }[]> {
+  const names = await readdir(folder).catch(() => [] as string[]);
+  const saves = await Promise.all(
+    names
+      .filter((name) => name.toLowerCase().endsWith('.eu4'))
+      .map(async (name) => {
+        const path = join(folder, name);
+        const info = await stat(path).catch(() => undefined);
+        return info?.isFile() === true ? { name, path, modified: info.mtimeMs } : undefined;
+      }),
+  );
+  return saves.filter((save) => save !== undefined).sort((a, b) => b.modified - a.modified);
 }

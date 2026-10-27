@@ -25,7 +25,56 @@ export interface ViewState {
   readonly notices: readonly Notice[];
   /** `View ▾`: the previewed window's views and selectors; none without a window profile. */
   readonly menu?: ViewMenu;
+  /** `Data ▾`: the sample data layers; none without a window profile (spec section 5). */
+  readonly data?: DataMenu;
+  /** The windows the game opens instead of this one in the view shown (spec section 2). */
+  readonly links?: readonly { readonly window: string; readonly label: string }[];
 }
+
+/** A layer of sample data (core's `DataLayer`). */
+export type DataLayerName = 'live' | 'save' | 'files' | 'generated';
+
+/** A length of generated text (core's `TextLength`). */
+export type TextLengthName = 'short' | 'typical' | 'long' | 'overflow';
+
+/** `Data ▾` (spec section 5, etch#159): the layers, upper ones winning. */
+export interface DataMenu {
+  /** The toolbar's label: the save and its province, or the generated text's length. */
+  readonly label: string;
+  /** Each layer, live snapshot first, with how many texts it fills. */
+  readonly layers: readonly {
+    readonly id: DataLayerName;
+    readonly label: string;
+    readonly detail: string;
+    readonly count: number;
+    readonly on: boolean;
+    /** Whether the user can turn it on or off: only the live snapshot. */
+    readonly canToggle: boolean;
+  }[];
+  readonly save: {
+    readonly state: 'none' | 'loading' | 'ready' | 'failed';
+    /** The save's file name. */
+    readonly name?: string;
+    /** Why it cannot be read, such as a binary (ironman) save. */
+    readonly problem?: string;
+    readonly date?: string;
+    readonly country?: string;
+    readonly province?: string;
+    /** How the save's mods differ from the preview's playset. */
+    readonly mismatch?: string;
+  };
+  readonly length: TextLengthName;
+}
+
+/** What a click in `Data ▾` asks for. */
+export type DataAction =
+  /** Choose a save: the host offers the player's and the live game's saves, or any file. */
+  | { readonly kind: 'chooseSave' }
+  | { readonly kind: 'dropSave' }
+  | { readonly kind: 'chooseCountry' }
+  | { readonly kind: 'chooseProvince' }
+  | { readonly kind: 'length'; readonly length: TextLengthName }
+  | { readonly kind: 'live'; readonly on: boolean };
 
 /** Where a selector's value came from (core's `SelectorSource`). */
 export type SelectorSourceName = 'auto' | 'save' | 'live' | 'you' | 'default';
@@ -151,4 +200,8 @@ export type WebviewMessage =
   /** The live game's button was clicked: start it with the preview's playset. */
   | { readonly type: 'startLiveGame' }
   /** A click in `View ▾`. */
-  | { readonly type: 'view'; readonly action: ViewAction };
+  | { readonly type: 'view'; readonly action: ViewAction }
+  /** A click in `Data ▾`. */
+  | { readonly type: 'data'; readonly action: DataAction }
+  /** The button of a link's note: pin the window the game opens instead. */
+  | { readonly type: 'openLink'; readonly window: string };

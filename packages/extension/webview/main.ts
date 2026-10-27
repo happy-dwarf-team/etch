@@ -1,14 +1,17 @@
 // The preview webview's script (bundled to dist/webview.js): draws each draw list the extension
 // host posts with `@etch/renderer`, fetching textures through webview URIs (ADR 0001), marks each
 // paint on the canvas for Etch's own tools (paint-marker.ts), and shows the toolbar, its menus
-// (`View ▾`, spec section 4) and the notices the host describes.
+// (`View ▾`, spec section 4; `Data ▾`, section 5) and the notices and links the host describes.
 
 import { Painter, createContext, readPixels } from '@etch/renderer';
 import type { DrawRect } from '@etch/core/draw-list';
 import type {
+  DataAction,
+  DataMenu,
   HostMessage,
   Point,
   PreviewMemento,
+  TextLengthName,
   ViewAction,
   ViewMenu,
   ViewState,
@@ -41,6 +44,8 @@ const resolution = element('resolution', HTMLButtonElement);
 const liveGame = element('live-game', HTMLButtonElement);
 const viewButton = element('view-menu', HTMLButtonElement);
 const viewPopup = element('view-popup', HTMLDivElement);
+const dataButton = element('data-menu', HTMLButtonElement);
+const dataPopup = element('data-popup', HTMLDivElement);
 const hoverBox = element('hover', HTMLDivElement);
 const selectedBox = element('selected', HTMLDivElement);
 const tip = element('tip', HTMLDivElement);
@@ -73,22 +78,151 @@ liveGame.addEventListener('click', () => {
   post({ type: 'startLiveGame' });
 });
 
-// `View ▾` stays open while the user clicks in it; a click elsewhere or Escape closes it.
+// `View ▾` and `Data ▾` stay open while the user clicks in them; a click elsewhere or Escape
+// closes them.
 viewButton.addEventListener('click', () => {
+  openDataMenu(false);
   openViewMenu(viewPopup.hidden === true);
+});
+dataButton.addEventListener('click', () => {
+  openViewMenu(false);
+  openDataMenu(dataPopup.hidden === true);
 });
 document.addEventListener('mousedown', (event) => {
   const target = event.target;
-  if (target instanceof Node && (viewPopup.contains(target) || viewButton.contains(target))) return;
-  openViewMenu(false);
+  if (!(target instanceof Node)) return;
+  if (!viewPopup.contains(target) && !viewButton.contains(target)) openViewMenu(false);
+  if (!dataPopup.contains(target) && !dataButton.contains(target)) openDataMenu(false);
 });
 document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape') openViewMenu(false);
+  if (event.key === 'Escape') {
+    openViewMenu(false);
+    openDataMenu(false);
+  }
 });
 
 function openViewMenu(open: boolean): void {
   viewPopup.hidden = !open || state?.menu === undefined;
   viewButton.setAttribute('aria-expanded', String(!viewPopup.hidden));
+}
+
+function openDataMenu(open: boolean): void {
+  dataPopup.hidden = !open || state?.data === undefined;
+  dataPopup.style.left = `${String(dataButton.offsetLeft)}px`;
+  dataButton.setAttribute('aria-expanded', String(!dataPopup.hidden));
+}
+
+const dataAction = (action: DataAction): void => {
+  post({ type: 'data', action });
+};
+
+const LENGTHS: readonly TextLengthName[] = ['short', 'typical', 'long', 'overflow'];
+
+/**
+ * Fills `Data ▾` (spec section 5): the layers, upper ones winning, each with how many texts it
+ * fills; the save's choices under its layer, and the generated text's length under its own.
+ */
+function showDataMenu(menu: DataMenu | undefined): void {
+  dataButton.hidden = menu === undefined;
+  if (menu === undefined) {
+    dataPopup.hidden = true;
+    dataPopup.replaceChildren();
+    return;
+  }
+  dataButton.textContent = `${menu.label} ▾`;
+  dataButton.title =
+    "Sample data of this window: a save, the playset's files, generated text (Data ▾).";
+  const button = (text: string, onClick: () => void, title?: string): HTMLButtonElement => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = text;
+    if (title !== undefined) b.title = title;
+    b.addEventListener('click', onClick);
+    return b;
+  };
+  const line = (className: string, text: string): HTMLElement => {
+    const div = document.createElement('div');
+    div.className = className;
+    div.textContent = text;
+    return div;
+  };
+  const heading = document.createElement('h4');
+  heading.textContent = 'Layers, upper ones winning';
+  const children: HTMLElement[] = [heading];
+  for (const layer of menu.layers) {
+    const row = document.createElement('div');
+    row.className = 'layer';
+    const box = document.createElement('input');
+    box.type = 'checkbox';
+    box.checked = layer.on;
+    box.disabled = !layer.canToggle;
+    box.title = layer.canToggle ? 'Use this layer' : 'This layer is on when it has data';
+    box.addEventListener('change', () => {
+      dataAction({ kind: 'live', on: box.checked });
+    });
+    const label = document.createElement('span');
+    label.textContent = layer.label;
+    const count = document.createElement('span');
+    count.className = 'count';
+    count.textContent = `${String(layer.count)} ${layer.count === 1 ? 'text' : 'texts'}`;
+    row.append(box, label, count);
+    children.push(row, line('detail', layer.detail));
+    if (layer.id === 'save') {
+      const actions = document.createElement('div');
+      actions.className = 'actions';
+      actions.append(
+        button(menu.save.state === 'none' ? 'Choose save…' : 'Other save…', () => {
+          dataAction({ kind: 'chooseSave' });
+        }),
+      );
+      if (menu.save.state === 'ready') {
+        actions.append(
+          button(
+            'Country…',
+            () => {
+              dataAction({ kind: 'chooseCountry' });
+            },
+            'The country that plays the player: own and foreign provinces follow from it',
+          ),
+          button(
+            'Province…',
+            () => {
+              dataAction({ kind: 'chooseProvince' });
+            },
+            'Any province, own or foreign',
+          ),
+        );
+      }
+      if (menu.save.state !== 'none') {
+        actions.append(
+          button(
+            'Drop',
+            () => {
+              dataAction({ kind: 'dropSave' });
+            },
+            'Show no save',
+          ),
+        );
+      }
+      children.push(actions);
+      if (menu.save.mismatch !== undefined) {
+        children.push(line('detail warning', menu.save.mismatch));
+      }
+    }
+    if (layer.id === 'generated') {
+      const actions = document.createElement('div');
+      actions.className = 'actions';
+      for (const length of LENGTHS) {
+        const b = button(length, () => {
+          dataAction({ kind: 'length', length });
+        });
+        b.setAttribute('aria-pressed', String(length === menu.length));
+        actions.append(b);
+      }
+      children.push(actions);
+    }
+  }
+  dataPopup.replaceChildren(...children);
 }
 
 const viewAction = (action: ViewAction): void => {
@@ -362,11 +496,27 @@ function show(next: ViewState): void {
     ? 'The preview stays on this window. Click to follow the cursor again.'
     : 'Keep the preview on this window while other files are edited.';
   showViewMenu(next.menu);
+  showDataMenu(next.data);
   resolution.textContent = next.resolution.text;
   resolution.title =
     `Preview resolution ${next.resolution.text}, ${SOURCES[next.resolution.source]}. ` +
     'Click to choose another.';
   const shown = failure === undefined ? next.notices : [...next.notices, failureNotice(failure)];
+  // A link that holds: a note with a button that pins the window the game opens instead.
+  const links = (next.links ?? []).map((link) => {
+    const item = document.createElement('li');
+    item.className = 'information link';
+    const text = document.createElement('span');
+    text.textContent = link.label;
+    const open = document.createElement('button');
+    open.type = 'button';
+    open.textContent = `Pin ${link.window}`;
+    open.addEventListener('click', () => {
+      post({ type: 'openLink', window: link.window });
+    });
+    item.append(text, open);
+    return item;
+  });
   notices.replaceChildren(
     ...shown.map((notice) => {
       const item = document.createElement('li');
@@ -374,6 +524,7 @@ function show(next: ViewState): void {
       item.textContent = notice.message;
       return item;
     }),
+    ...links,
   );
 }
 

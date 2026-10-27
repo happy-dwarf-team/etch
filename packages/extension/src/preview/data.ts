@@ -1,0 +1,293 @@
+// The sample data the preview shows (spec section 5, etch#159): the chosen save, read off the
+// cold-open path, its country and province, the generated text's length and whether a live
+// snapshot is on, kept for the whole preview; and `Data ▾`, drawn from them. Plain data and core
+// calls; no vscode.
+
+import {
+  DATA_LAYERS,
+  SaveChoice,
+  defaultSaveChoice,
+  saveFacts,
+  type DataLayer,
+  type SampleData,
+  type TextLength,
+} from '@etch/core/profile';
+import type { BlockNode } from '@etch/core';
+import { SaveReadError, readSave, scalarIn, type Save } from '@etch/core/save';
+import type { DataMenu } from './protocol.ts';
+
+/** Where the chosen save is, and how far it is read. */
+type SaveState =
+  | { readonly state: 'loading'; readonly path: string; readonly abort: AbortController }
+  | { readonly state: 'failed'; readonly path: string; readonly problem: string }
+  | {
+      readonly state: 'ready';
+      readonly path: string;
+      readonly save: Save;
+      readonly choice: SaveChoice;
+    };
+
+/** What the preview tells the user while a save is read, and when it is ready. */
+export interface DataEvents {
+  /** The data changed: lay the window out again. */
+  changed(): void;
+  /** A save was read, with the time from the choice to its index, in ms. */
+  read?(path: string, ms: number): void;
+}
+
+const LAYER_LABELS: Readonly<Record<DataLayer, string>> = {
+  live: 'Live snapshot',
+  save: 'Save',
+  files: 'Game and mod files',
+  generated: 'Generated',
+};
+
+export class PreviewData {
+  /** The generated text's length; `typical` by default. */
+  length: TextLength = 'typical';
+  /** Whether a live snapshot, when there is one, is used (M9). */
+  live = true;
+  private current: SaveState | undefined;
+  private serial = 0;
+  private readonly events: DataEvents;
+  private readonly read: (path: string) => Promise<Uint8Array>;
+
+  constructor(events: DataEvents, read: (path: string) => Promise<Uint8Array>) {
+    this.events = events;
+    this.read = read;
+  }
+
+  /** The save's path, while one is chosen. */
+  get path(): string | undefined {
+    return this.current?.path;
+  }
+
+  /** What the render key needs to tell two data states apart. */
+  get key(): string {
+    const c = this.current;
+    const choice =
+      c?.state === 'ready' ? `${c.choice.country ?? ''}:${String(c.choice.province)}` : '';
+    return [this.serial, c?.state ?? 'none', choice, this.length, this.live].join('|');
+  }
+
+  /** The chosen save, country and province, once the save is read. */
+  get choice(): SaveChoice | undefined {
+    return this.current?.state === 'ready' ? this.current.choice : undefined;
+  }
+
+  /** The facts of the chosen province, for the view's `data` selectors. */
+  facts(): Record<string, string> {
+    const choice = this.choice;
+    return choice === undefined ? {} : saveFacts(choice);
+  }
+
+  /**
+   * Reads a save and makes it the chosen one, on the player's country and its capital. A save
+   * chosen before it is read cancels that read.
+   */
+  async open(path: string): Promise<void> {
+    this.drop();
+    const abort = new AbortController();
+    this.current = { state: 'loading', path, abort };
+    this.serial++;
+    this.events.changed();
+    const started = performance.now();
+    try {
+      const bytes = await this.read(path);
+      const save = await readSave(bytes, { signal: abort.signal });
+      if (this.current.path !== path || abort.signal.aborted) return;
+      const { country, province } = defaultSaveChoice(save);
+      this.current = {
+        state: 'ready',
+        path,
+        save,
+        choice: new SaveChoice(save, country, province),
+      };
+      this.events.read?.(path, performance.now() - started);
+    } catch (error) {
+      if (abort.signal.aborted || this.current.path !== path) return;
+      this.current = { state: 'failed', path, problem: problemOf(error) };
+    }
+    this.serial++;
+    this.events.changed();
+  }
+
+  /** Forgets the save; the save layer is empty again. */
+  drop(): void {
+    if (this.current === undefined) return;
+    if (this.current.state === 'loading') this.current.abort.abort(new Error('another save'));
+    this.current = undefined;
+    this.serial++;
+    this.events.changed();
+  }
+
+  /** Chooses a country of the save, keeping the province. */
+  chooseCountry(tag: string): void {
+    const c = this.current;
+    if (c?.state !== 'ready' || !c.save.index.countries.has(tag)) return;
+    this.current = { ...c, choice: new SaveChoice(c.save, tag, c.choice.province) };
+    this.events.changed();
+  }
+
+  /** Chooses a province of the save, own or foreign. */
+  chooseProvince(id: number): void {
+    const c = this.current;
+    if (c?.state !== 'ready' || !c.save.index.provinces.has(id)) return;
+    this.current = { ...c, choice: new SaveChoice(c.save, c.choice.country, id) };
+    this.events.changed();
+  }
+
+  /** The countries of the save for a pick: the chosen one and the save's player first. */
+  countries(
+    localise: (key: string) => string | undefined,
+  ): { tag: string; label: string; detail: string }[] {
+    const c = this.current;
+    if (c?.state !== 'ready') return [];
+    const player = c.save.meta.player;
+    const first = [c.choice.country, player].filter((t): t is string => t !== undefined);
+    const tags = [...new Set([...first, ...c.save.countries])];
+    return tags.map((tag) => ({
+      tag,
+      label: localise(tag) ?? tag,
+      detail: [tag, ...(tag === player ? ["the save's player"] : [])].join(' · '),
+    }));
+  }
+
+  /** The provinces for a pick: those of the chosen country first, then every other one. */
+  provinces(
+    localise: (key: string) => string | undefined,
+  ): { id: number; label: string; detail: string; own: boolean }[] {
+    const c = this.current;
+    if (c?.state !== 'ready') return [];
+    const country = c.choice.block('country');
+    const owned = country === undefined ? undefined : ownedProvinces(country);
+    const own = new Set(owned ?? []);
+    const ids = [
+      ...(owned ?? []).filter((id) => c.save.index.provinces.has(id)),
+      ...c.save.provinces.filter((id) => !own.has(id)),
+    ];
+    return ids.map((id) => ({
+      id,
+      label: localise(`PROV${String(id)}`) ?? `Province ${String(id)}`,
+      detail: `#${String(id)}`,
+      own: own.has(id),
+    }));
+  }
+
+  /** `Data ▾` for the sample data drawn, and how the save's mods differ from the playset's. */
+  menu(
+    sample: SampleData | undefined,
+    playsetMods: readonly string[],
+    localise: (key: string) => string | undefined,
+  ): DataMenu {
+    const counts = sample?.counts ?? { live: 0, save: 0, files: 0, generated: 0 };
+    const c = this.current;
+    const save: DataMenu['save'] =
+      c === undefined
+        ? { state: 'none' }
+        : c.state === 'loading'
+          ? { state: 'loading', name: fileName(c.path) }
+          : c.state === 'failed'
+            ? { state: 'failed', name: fileName(c.path), problem: c.problem }
+            : readySave(c.save, c.choice, c.path, playsetMods, localise);
+    const detail: Readonly<Record<DataLayer, string>> = {
+      live: 'no snapshot yet',
+      save:
+        save.state === 'ready'
+          ? [save.name, save.country, save.province].filter((x) => x !== undefined).join(' · ')
+          : save.state === 'loading'
+            ? `reading ${save.name ?? ''}…`
+            : save.state === 'failed'
+              ? (save.problem ?? 'not readable')
+              : 'no save chosen',
+      files: 'localisation, names (always on)',
+      generated: this.length,
+    };
+    const label =
+      save.state === 'ready'
+        ? `Data: ${[save.province, save.date].filter((x) => x !== undefined).join(' · ') || (save.name ?? 'save')}`
+        : save.state === 'loading'
+          ? 'Data: reading save…'
+          : `Data: generated, ${this.length}`;
+    return {
+      label,
+      layers: DATA_LAYERS.map((id) => ({
+        id,
+        label: LAYER_LABELS[id],
+        detail: detail[id],
+        count: counts[id],
+        on: id === 'live' ? this.live : id === 'save' ? save.state === 'ready' : true,
+        canToggle: id === 'live',
+      })),
+      save,
+      length: this.length,
+    };
+  }
+}
+
+function readySave(
+  save: Save,
+  choice: SaveChoice,
+  path: string,
+  playsetMods: readonly string[],
+  localise: (key: string) => string | undefined,
+): DataMenu['save'] {
+  const country = choice.country;
+  const province = choice.block('province');
+  const provinceName = province === undefined ? undefined : scalarIn(province, 'name');
+  const mismatch = modsMismatch(save.meta.mods, playsetMods);
+  return {
+    state: 'ready',
+    name: fileName(path),
+    ...(save.meta.date === undefined ? {} : { date: save.meta.date }),
+    ...(country === undefined ? {} : { country: localise(country) ?? country }),
+    ...(provinceName === undefined ? {} : { province: provinceName }),
+    ...(mismatch === undefined ? {} : { mismatch }),
+  };
+}
+
+/**
+ * How the save's mods differ from the playset's, by display name, for a warning (etch#154): the
+ * save still applies, as values a playset lacks fall through.
+ */
+export function modsMismatch(
+  saveMods: readonly string[],
+  playsetMods: readonly string[],
+): string | undefined {
+  const key = (name: string): string => name.trim().toLowerCase();
+  const inPlayset = new Set(playsetMods.map(key));
+  const inSave = new Set(saveMods.map(key));
+  const missing = playsetMods.filter((m) => !inSave.has(key(m)));
+  const extra = saveMods.filter((m) => !inPlayset.has(key(m)));
+  if (missing.length === 0 && extra.length === 0) return undefined;
+  const list = (names: readonly string[]): string =>
+    names.length <= 3
+      ? names.join(', ')
+      : `${names.slice(0, 3).join(', ')} and ${String(names.length - 3)} more`;
+  const parts = [
+    ...(missing.length === 0 ? [] : [`made without ${list(missing)}`]),
+    ...(extra.length === 0 ? [] : [`made with ${list(extra)}`]),
+  ];
+  return `This save was ${parts.join(' and ')}; values the playset lacks fall through.`;
+}
+
+/** A country's `owned_provinces`, the ids as the save writes them. */
+function ownedProvinces(country: BlockNode): number[] {
+  for (const entry of country.entries) {
+    if (entry.kind !== 'property' || entry.key.text !== 'owned_provinces') continue;
+    if (entry.value?.kind !== 'block') return [];
+    return entry.value.entries.flatMap((e) =>
+      e.kind === 'scalar' && /^\d+$/.test(e.text) ? [Number(e.text)] : [],
+    );
+  }
+  return [];
+}
+
+function fileName(path: string): string {
+  return path.split(/[\\/]/).at(-1) ?? path;
+}
+
+function problemOf(error: unknown): string {
+  if (error instanceof SaveReadError) return error.message;
+  return `The save cannot be read: ${error instanceof Error ? error.message : String(error)}.`;
+}
