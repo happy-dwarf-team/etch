@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { expect, test } from '@playwright/test';
 import { decodePng, encodePng, type RgbaImage } from '@etch/core/corpus';
+import { DRAW_LIST_VERSION } from '@etch/core/draw-list';
 import { HeadlessRenderer, runCorpus } from '../src/index.ts';
 
 type Rgba = readonly [number, number, number, number];
@@ -73,7 +74,7 @@ test('draws a draw list headless as the preview does', async () => {
       expect(renderer.gpu).toContain('SwiftShader');
       const { image, problems } = await renderer.paint(
         {
-          version: 1,
+          version: DRAW_LIST_VERSION,
           width: 8,
           height: 4,
           textures: ['gfx/icon.dds', 'gfx/missing.dds'],
