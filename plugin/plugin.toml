@@ -28,4 +28,4 @@ version = "^1"
 # The private install pins Tongs and keeps it at enabled = false (no pipe).
 [[dependencies]]
 id = "tongs"
-version = "^0.17"
+version = "^0.18"
