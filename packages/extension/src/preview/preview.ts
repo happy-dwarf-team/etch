@@ -192,8 +192,18 @@ export interface PreviewApi {
   chooseSave(path: string): Promise<void>;
   /** Chooses a country or a province of the chosen save. */
   chooseData(choice: { readonly country?: string; readonly province?: number }): void;
+  /** The countries and provinces of the chosen save, in the order the picks list them, and the chosen ones. */
+  dataChoices(): DataChoices;
   /** Pins the window the game opens instead of the previewed one, through a link. */
   openLink(window: string): Promise<boolean>;
+}
+
+/** The countries and provinces of the chosen save, and the chosen ones. */
+export interface DataChoices {
+  readonly countries: readonly string[];
+  readonly provinces: readonly number[];
+  readonly country?: string;
+  readonly province?: number;
 }
 
 /** The game text of a file, from its editor buffer or from disk (etch#15). */
@@ -1161,6 +1171,16 @@ export class Preview implements PreviewApi, vscode.Disposable {
   chooseData(choice: { readonly country?: string; readonly province?: number }): void {
     if (choice.country !== undefined) this.data.chooseCountry(choice.country);
     if (choice.province !== undefined) this.data.chooseProvince(choice.province);
+  }
+
+  dataChoices(): DataChoices {
+    const localise = (key: string): string | undefined => this.session?.localisation?.get(key);
+    return {
+      countries: this.data.countries(localise).map((c) => c.tag),
+      provinces: this.data.provinces(localise).map((p) => p.id),
+      ...(this.data.choice?.country === undefined ? {} : { country: this.data.choice.country }),
+      ...(this.data.choice?.province === undefined ? {} : { province: this.data.choice.province }),
+    };
   }
 
   async openLink(window: string): Promise<boolean> {
