@@ -1,0 +1,670 @@
+{
+  "formatVersion": 1,
+  "playset": "anbennar",
+  "resolution": { "width": 1366, "height": 768 },
+  "view": "esc-menu",
+  "takenAt": "2026-10-27T06:16:11.636Z",
+  "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
+  "tongs": { "version": "0.14.1" },
+  "save": { "sha256": "57CB4550073A4142E20FBB6439E32A68E420A5DB3F680EAEF138223264704AA0" },
+  "mods": [
+    {
+      "name": "Anbennar: A Fantasy Total Conversion",
+      "sha256": "99DAB21EA321F176E23824D8EC3A8B75928A92EE68082C589557D219D654A1DD"
+    },
+    {
+      "name": "Proper 2K UI Enhanced",
+      "sha256": "B411CFAEAC291CA1DB8CE6FA4C83FC5BD6D547A503A16C29ED7783C2CBCED1F9"
+    },
+    {
+      "name": "P2KE Patch - Anbennar",
+      "sha256": "E4ABCD62FCE34798AC0CF4BBB76CA147BE105E00D8E3F04B643062EF8C25FC55"
+    }
+  ],
+  "disabledDlcs": [],
+  "recipe": {
+    "from": "save",
+    "steps": [{ "key": "escape" }],
+    "verified": true,
+    "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown."
+  },
+  "window": { "width": 1366, "height": 768, "dpi": 96 },
+  "screenshot": {
+    "sha256": "B406CE8C0E62A367DB76671EB1C584CD91C2BA1299C3C534CAD4AA34CCEC4AE5",
+    "width": 1366,
+    "height": 768,
+    "shots": 4,
+    "unstable": {
+      "pixels": 334237,
+      "sha256": "D70F40D8C39F1C538B76A1E5350DBE5D038832FFCF82446E39828A69B436A6BB"
+    }
+  },
+  "widgets": [
+    {
+      "name": "menu",
+      "path": "menu",
+      "type": "window",
+      "visible": true,
+      "rect": { "x": 409, "y": 69, "w": 567, "h": 629 },
+      "children": [
+        {
+          "name": "menu",
+          "path": "menu/menu",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 397, "y": 62, "w": 568, "h": 629 }
+        },
+        {
+          "name": "menu_panel",
+          "path": "menu/menu_panel",
+          "type": "window",
+          "visible": true,
+          "rect": { "x": 464, "y": 98, "w": 504, "h": 600 },
+          "children": [
+            {
+              "name": "menu_load_button",
+              "path": "menu/menu_panel/menu_load_button",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 567, "y": 194, "w": 227, "h": 37 },
+              "text": "Load Game",
+              "enabled": true
+            },
+            {
+              "name": "menu_save_button",
+              "path": "menu/menu_panel/menu_save_button",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 567, "y": 236, "w": 227, "h": 37 },
+              "text": "Save Game",
+              "enabled": true
+            },
+            {
+              "name": "menu_options_button",
+              "path": "menu/menu_panel/menu_options_button",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 567, "y": 278, "w": 227, "h": 37 },
+              "text": "Game Options",
+              "enabled": true
+            },
+            {
+              "name": "menu_message_button",
+              "path": "menu/menu_panel/menu_message_button",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 567, "y": 320, "w": 227, "h": 37 },
+              "text": "Message Settings",
+              "enabled": true
+            },
+            {
+              "name": "menu_ai_prefs_button",
+              "path": "menu/menu_panel/menu_ai_prefs_button",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 567, "y": 362, "w": 227, "h": 37 },
+              "text": "AI Settings",
+              "enabled": false
+            },
+            {
+              "name": "menu_stats_button",
+              "path": "menu/menu_panel/menu_stats_button",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 567, "y": 404, "w": 227, "h": 37 },
+              "text": "Statistics",
+              "enabled": true
+            },
+            {
+              "name": "privacy_policy_button",
+              "path": "menu/menu_panel/privacy_policy_button",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 567, "y": 446, "w": 227, "h": 37 },
+              "text": "Privacy Policy",
+              "enabled": true
+            },
+            {
+              "name": "menu_resign_button",
+              "path": "menu/menu_panel/menu_resign_button",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 567, "y": 488, "w": 227, "h": 37 },
+              "text": "Exit to Menu",
+              "enabled": true
+            },
+            {
+              "name": "menu_quit_button",
+              "path": "menu/menu_panel/menu_quit_button",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 567, "y": 530, "w": 227, "h": 37 },
+              "text": "Exit Game",
+              "enabled": true
+            },
+            {
+              "name": "menu_close_button",
+              "path": "menu/menu_panel/menu_close_button",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 635, "y": 572, "w": 95, "h": 37 },
+              "text": "Close",
+              "enabled": true
+            }
+          ]
+        },
+        {
+          "name": "menu_unsync",
+          "path": "menu/menu_unsync",
+          "type": "window",
+          "visible": false,
+          "rect": { "x": 0, "y": 0, "w": 567, "h": 629 },
+          "children": [
+            {
+              "name": "cancel",
+              "path": "menu/menu_unsync/cancel",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 683, "y": 347, "w": 179, "h": 37 },
+              "text": "Cancel",
+              "enabled": true
+            },
+            {
+              "name": "exit",
+              "path": "menu/menu_unsync/exit",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 683, "y": 347, "w": 179, "h": 37 },
+              "text": "Exit to Menu",
+              "enabled": true
+            },
+            {
+              "name": "disk_space_needed",
+              "path": "menu/menu_unsync/disk_space_needed",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 126, "y": 78, "w": 300, "h": 21 },
+              "text": " needed to save the game."
+            },
+            {
+              "name": "cloudsave_unsync_label",
+              "path": "menu/menu_unsync/cloudsave_unsync_label",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 102, "y": 102, "w": 360, "h": 63 },
+              "text": "Select game(s) to remove from cloud.\nFile(s) will not be removed from local computer."
+            },
+            {
+              "name": "games",
+              "path": "menu/menu_unsync/games",
+              "type": "listbox",
+              "visible": false,
+              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "children": [
+                {
+                  "name": "standardlistbox_slider",
+                  "path": "menu/menu_unsync/games/standardlistbox_slider",
+                  "type": "other",
+                  "visible": false,
+                  "rect": { "x": 683, "y": 365, "w": 19, "h": 341 },
+                  "children": [
+                    {
+                      "name": "listboxSliderButton",
+                      "path": "menu/menu_unsync/games/standardlistbox_slider/listboxSliderButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 683, "y": 365, "w": 19, "h": 19 }
+                    },
+                    {
+                      "name": "listboxTrackButton",
+                      "path": "menu/menu_unsync/games/standardlistbox_slider/listboxTrackButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 683, "y": 384, "w": 15, "h": 322 }
+                    },
+                    {
+                      "name": "downButton",
+                      "path": "menu/menu_unsync/games/standardlistbox_slider/downButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 683, "y": 365, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "upButton",
+                      "path": "menu/menu_unsync/games/standardlistbox_slider/upButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 683, "y": 365, "w": 19, "h": 19 },
+                      "enabled": true
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "menu_message_settings",
+          "path": "menu/menu_message_settings",
+          "type": "window",
+          "visible": false,
+          "rect": { "x": 0, "y": 0, "w": 504, "h": 600 },
+          "children": [
+            {
+              "name": "messagesettings_filter",
+              "path": "menu/menu_message_settings/messagesettings_filter",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 683, "y": 347, "w": 179, "h": 37 },
+              "text": "Filter",
+              "enabled": true
+            },
+            {
+              "name": "button_search",
+              "path": "menu/menu_message_settings/button_search",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 683, "y": 347, "w": 95, "h": 37 },
+              "text": "Search",
+              "enabled": true
+            },
+            {
+              "name": "button_clear",
+              "path": "menu/menu_message_settings/button_clear",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 683, "y": 347, "w": 95, "h": 37 },
+              "text": "Clear",
+              "enabled": true
+            },
+            {
+              "name": "messageicon_pause_all",
+              "path": "menu/menu_message_settings/messageicon_pause_all",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 683, "y": 365, "w": 19, "h": 19 },
+              "enabled": true
+            },
+            {
+              "name": "messageicon_dialog_all",
+              "path": "menu/menu_message_settings/messageicon_dialog_all",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 683, "y": 365, "w": 19, "h": 19 },
+              "enabled": true
+            },
+            {
+              "name": "messageicon_icon_all",
+              "path": "menu/menu_message_settings/messageicon_icon_all",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 683, "y": 365, "w": 19, "h": 19 },
+              "enabled": true
+            },
+            {
+              "name": "messageicon_log_all",
+              "path": "menu/menu_message_settings/messageicon_log_all",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 683, "y": 365, "w": 19, "h": 19 },
+              "enabled": true
+            },
+            {
+              "name": "messageicon_map_all",
+              "path": "menu/menu_message_settings/messageicon_map_all",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 683, "y": 365, "w": 19, "h": 19 },
+              "enabled": true
+            },
+            {
+              "name": "reset",
+              "path": "menu/menu_message_settings/reset",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 683, "y": 347, "w": 179, "h": 37 },
+              "enabled": true
+            },
+            {
+              "name": "close",
+              "path": "menu/menu_message_settings/close",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 683, "y": 347, "w": 179, "h": 37 },
+              "enabled": true
+            },
+            {
+              "name": "disable_all_messages",
+              "path": "menu/menu_message_settings/disable_all_messages",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 683, "y": 347, "w": 179, "h": 37 },
+              "text": "Disable all",
+              "enabled": true
+            },
+            {
+              "name": "messagesettings_bg",
+              "path": "menu/menu_message_settings/messagesettings_bg",
+              "type": "icon",
+              "visible": false,
+              "rect": { "x": 683, "y": -189, "w": 1058, "h": 573 }
+            },
+            {
+              "name": "messagesettings_label",
+              "path": "menu/menu_message_settings/messagesettings_label",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 191, "y": 112, "w": 240, "h": 21 },
+              "text": "Message Settings"
+            },
+            {
+              "name": "messagesettings_label_01",
+              "path": "menu/menu_message_settings/messagesettings_label_01",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": -146, "y": 140, "w": 95, "h": 21 },
+              "text": "All"
+            },
+            {
+              "name": "messagesettings_label_02",
+              "path": "menu/menu_message_settings/messagesettings_label_02",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": -56, "y": 140, "w": 95, "h": 21 },
+              "text": "Dynasty"
+            },
+            {
+              "name": "messagesettings_label_03",
+              "path": "menu/menu_message_settings/messagesettings_label_03",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 39, "y": 140, "w": 95, "h": 21 },
+              "text": "Diplom."
+            },
+            {
+              "name": "messagesettings_label_04",
+              "path": "menu/menu_message_settings/messagesettings_label_04",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 133, "y": 140, "w": 95, "h": 21 },
+              "text": "Trade"
+            },
+            {
+              "name": "messagesettings_label_05",
+              "path": "menu/menu_message_settings/messagesettings_label_05",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 226, "y": 140, "w": 95, "h": 21 },
+              "text": "Religion"
+            },
+            {
+              "name": "messagesettings_label_06",
+              "path": "menu/menu_message_settings/messagesettings_label_06",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 321, "y": 140, "w": 95, "h": 21 },
+              "text": "Events"
+            },
+            {
+              "name": "messagesettings_label_07",
+              "path": "menu/menu_message_settings/messagesettings_label_07",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 414, "y": 140, "w": 95, "h": 21 },
+              "text": "Governm."
+            },
+            {
+              "name": "messagesettings_label_08",
+              "path": "menu/menu_message_settings/messagesettings_label_08",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 509, "y": 140, "w": 95, "h": 21 },
+              "text": "Military"
+            },
+            {
+              "name": "messagesettings_label_09",
+              "path": "menu/menu_message_settings/messagesettings_label_09",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 603, "y": 140, "w": 95, "h": 21 },
+              "text": "Combat"
+            },
+            {
+              "name": "messagesettings_label_10",
+              "path": "menu/menu_message_settings/messagesettings_label_10",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 695, "y": 140, "w": 95, "h": 21 },
+              "text": "Other"
+            },
+            {
+              "name": "header_search",
+              "path": "menu/menu_message_settings/header_search",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 41, "y": 171, "w": 72, "h": 24 },
+              "text": "Search"
+            },
+            {
+              "name": "messagesettings_filter_button_label_01",
+              "path": "menu/menu_message_settings/messagesettings_filter_button_label_01",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": -111, "y": 205, "w": 95, "h": 21 },
+              "text": "To me"
+            },
+            {
+              "name": "messagesettings_filter_button_label_02",
+              "path": "menu/menu_message_settings/messagesettings_filter_button_label_02",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": -111, "y": 241, "w": 95, "h": 21 },
+              "text": "From me"
+            },
+            {
+              "name": "messagesettings_filter_button_label_03",
+              "path": "menu/menu_message_settings/messagesettings_filter_button_label_03",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": -111, "y": 277, "w": 95, "h": 21 },
+              "text": "Interesting"
+            },
+            {
+              "name": "messagesettings_filter_button_label_04",
+              "path": "menu/menu_message_settings/messagesettings_filter_button_label_04",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": -111, "y": 313, "w": 95, "h": 21 },
+              "text": "Others"
+            },
+            {
+              "name": "reset_label",
+              "path": "menu/menu_message_settings/reset_label",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": -111, "y": 439, "w": 95, "h": 21 },
+              "text": "Reset"
+            },
+            {
+              "name": "close_label",
+              "path": "menu/menu_message_settings/close_label",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": -111, "y": 475, "w": 95, "h": 21 },
+              "text": "Close"
+            },
+            {
+              "name": "settings",
+              "path": "menu/menu_message_settings/settings",
+              "type": "listbox",
+              "visible": false,
+              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "children": [
+                {
+                  "name": "standardlistbox_slider",
+                  "path": "menu/menu_message_settings/settings/standardlistbox_slider",
+                  "type": "other",
+                  "visible": false,
+                  "rect": { "x": 683, "y": 365, "w": 19, "h": 269 },
+                  "children": [
+                    {
+                      "name": "listboxSliderButton",
+                      "path": "menu/menu_message_settings/settings/standardlistbox_slider/listboxSliderButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 683, "y": 365, "w": 19, "h": 19 }
+                    },
+                    {
+                      "name": "listboxTrackButton",
+                      "path": "menu/menu_message_settings/settings/standardlistbox_slider/listboxTrackButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 683, "y": 384, "w": 15, "h": 250 }
+                    },
+                    {
+                      "name": "downButton",
+                      "path": "menu/menu_message_settings/settings/standardlistbox_slider/downButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 683, "y": 365, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "upButton",
+                      "path": "menu/menu_message_settings/settings/standardlistbox_slider/upButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 683, "y": 365, "w": 19, "h": 19 },
+                      "enabled": true
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "search_edit",
+              "path": "menu/menu_message_settings/search_edit",
+              "type": "editbox",
+              "visible": false,
+              "rect": { "x": 683, "y": 348, "w": 288, "h": 41 },
+              "text": ""
+            },
+            {
+              "name": "all",
+              "path": "menu/menu_message_settings/all",
+              "type": "checkbox",
+              "visible": false,
+              "rect": { "x": 683, "y": 347, "w": 105, "h": 37 },
+              "checked": false
+            },
+            {
+              "name": "dynasty",
+              "path": "menu/menu_message_settings/dynasty",
+              "type": "checkbox",
+              "visible": false,
+              "rect": { "x": 683, "y": 347, "w": 105, "h": 37 },
+              "checked": true
+            },
+            {
+              "name": "diplomacy",
+              "path": "menu/menu_message_settings/diplomacy",
+              "type": "checkbox",
+              "visible": false,
+              "rect": { "x": 683, "y": 347, "w": 105, "h": 37 },
+              "checked": false
+            },
+            {
+              "name": "trade",
+              "path": "menu/menu_message_settings/trade",
+              "type": "checkbox",
+              "visible": false,
+              "rect": { "x": 683, "y": 347, "w": 105, "h": 37 },
+              "checked": false
+            },
+            {
+              "name": "religion",
+              "path": "menu/menu_message_settings/religion",
+              "type": "checkbox",
+              "visible": false,
+              "rect": { "x": 683, "y": 347, "w": 105, "h": 37 },
+              "checked": false
+            },
+            {
+              "name": "events",
+              "path": "menu/menu_message_settings/events",
+              "type": "checkbox",
+              "visible": false,
+              "rect": { "x": 683, "y": 347, "w": 105, "h": 37 },
+              "checked": false
+            },
+            {
+              "name": "government",
+              "path": "menu/menu_message_settings/government",
+              "type": "checkbox",
+              "visible": false,
+              "rect": { "x": 683, "y": 347, "w": 105, "h": 37 },
+              "checked": false
+            },
+            {
+              "name": "military",
+              "path": "menu/menu_message_settings/military",
+              "type": "checkbox",
+              "visible": false,
+              "rect": { "x": 683, "y": 347, "w": 105, "h": 37 },
+              "checked": false
+            },
+            {
+              "name": "combat",
+              "path": "menu/menu_message_settings/combat",
+              "type": "checkbox",
+              "visible": false,
+              "rect": { "x": 683, "y": 347, "w": 105, "h": 37 },
+              "checked": false
+            },
+            {
+              "name": "other",
+              "path": "menu/menu_message_settings/other",
+              "type": "checkbox",
+              "visible": false,
+              "rect": { "x": 683, "y": 347, "w": 105, "h": 37 },
+              "checked": false
+            },
+            {
+              "name": "filter_button_01",
+              "path": "menu/menu_message_settings/filter_button_01",
+              "type": "checkbox",
+              "visible": false,
+              "rect": { "x": 683, "y": 347, "w": 179, "h": 37 },
+              "checked": true
+            },
+            {
+              "name": "filter_button_02",
+              "path": "menu/menu_message_settings/filter_button_02",
+              "type": "checkbox",
+              "visible": false,
+              "rect": { "x": 683, "y": 347, "w": 179, "h": 37 },
+              "checked": false
+            },
+            {
+              "name": "filter_button_03",
+              "path": "menu/menu_message_settings/filter_button_03",
+              "type": "checkbox",
+              "visible": false,
+              "rect": { "x": 683, "y": 347, "w": 179, "h": 37 },
+              "checked": false
+            },
+            {
+              "name": "filter_button_04",
+              "path": "menu/menu_message_settings/filter_button_04",
+              "type": "checkbox",
+              "visible": false,
+              "rect": { "x": 683, "y": 347, "w": 179, "h": 37 },
+              "checked": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

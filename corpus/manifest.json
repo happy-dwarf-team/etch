@@ -623,7 +623,10 @@
             "menubar/WarOverviewButtonWindow/waroverview_shieldItem",
             "menubar/floating_buttons/f_button_*",
             "menubar/floating_buttons/floating_number_*",
-            "topbar/p2kuie_mana_window/p2kuie_mana_value"
+            "topbar/p2kuie_mana_window/p2kuie_mana_value",
+            "provinceview/province_window/settlement_growth_checkbox",
+            "provinceview/province_window/hre_icon",
+            "provinceview/province_window/hre_button"
           ],
           "codeMoved": [
             "provinceview/top_section_window",
@@ -638,7 +641,8 @@
             "tab": "province",
             "side": "buildings",
             "subPanel": "none",
-            "construction": "yes"
+            "construction": "yes",
+            "fort": "yes"
           },
           "data": {
             "province": 148
@@ -676,7 +680,9 @@
               "selectors": {
                 "construction": "no",
                 "buttonBar": "closed",
-                "apui": "none"
+                "apui": "none",
+                "fort": "no",
+                "hre": "yes"
               },
               "note": "The save (Verne, 11 November 1444) has no ship in construction, and three opening events cover the middle of the screen at every corpus size; one of them is taller than 1080 pixels, so its option cannot be clicked. The recipe clicks a province beside them instead, as a map point the same at every size.",
               "data": {
@@ -747,7 +753,21 @@
             "menubar/WarOverviewButtonWindow/waroverview_shieldItem",
             "menubar/floating_buttons/f_button_*",
             "menubar/floating_buttons/floating_number_*",
-            "topbar/p2kuie_mana_window/p2kuie_mana_value"
+            "topbar/p2kuie_mana_window/p2kuie_mana_value",
+            "provinceview/province_window/settlement_growth_checkbox",
+            "provinceview/province_window/hre_icon",
+            "provinceview/province_window/hre_button",
+            "provinceview/top_section_window/province_banner_foreign",
+            "provinceview/top_section_window/provincename",
+            "provinceview/top_section_window/capitalname",
+            "provinceview/province_window/foreign_province_window/shield",
+            "provinceview/province_window/foreign_province_window/government_type_icon",
+            "provinceview/province_window/foreign_province_window/foreign_attitude_icons_strip",
+            "provinceview/province_window/foreign_province_window/country_name",
+            "provinceview/province_window/foreign_province_window/opinion_box",
+            "provinceview/province_window/foreign_province_window/miltech_value",
+            "provinceview/province_window/foreign_province_window/foreignviewview_diplistitem",
+            "provinceview/province_window/PermanentClaimShieldItem"
           ],
           "codeMoved": [
             "provinceview/top_section_window",
@@ -761,7 +781,8 @@
             "owner": "no",
             "tab": "province",
             "side": "buildings",
-            "subPanel": "none"
+            "subPanel": "none",
+            "fort": "no"
           },
           "data": {
             "province": 4702
@@ -798,7 +819,9 @@
               },
               "selectors": {
                 "buttonBar": "closed",
-                "apui": "none"
+                "apui": "none",
+                "fort": "no",
+                "hre": "yes"
               },
               "data": {
                 "province": 89

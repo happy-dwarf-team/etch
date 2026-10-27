@@ -138,6 +138,8 @@
             "province.occupied",
             "province.constructing",
             "province.hasGreatProjects",
+            "province.hasFort",
+            "province.hreIndicator",
             "owner.buildsNativeBuildings"
           ]
         },
