@@ -91,6 +91,7 @@ A pnpm workspace (ADR 0001):
 | `plugin`             | the live game's Anvil plugin (C++, CMake, Anvil SDK)           |
 | `corpus`             | precision corpus manifest and capture records (no screenshots) |
 | `pins`               | pinned game-side builds: release tag, URL and SHA-256 (pins/README.md) |
+| `profiles`           | window profiles Etch ships, by source, and their JSON Schema (ADR 0006) |
 | `docs/adr`           | architecture decisions                                         |
 | `docs/spec`          | the v1 specification (frozen) and the v2 specification         |
 
