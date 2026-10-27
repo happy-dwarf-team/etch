@@ -25,6 +25,7 @@ import {
   type InstallLayout,
   type LiveGameMod,
 } from '../src/live-game/install.ts';
+import type { SaveFile } from '../src/live-game/saves.ts';
 
 const sha = (data: string | Buffer): string =>
   createHash('sha256').update(data).digest('hex').toUpperCase();
@@ -124,7 +125,7 @@ afterEach(async () => {
   await rm(temp, { recursive: true, force: true });
 });
 
-const prepare = (folder = game, into = layout, continueSave?: string) =>
+const prepare = (folder = game, into = layout, continueSave?: string | SaveFile) =>
   prepareInstall({
     layout: into,
     gameFolder: folder,
@@ -222,6 +223,24 @@ describe('prepareInstall', () => {
     // The player's profile is only read.
     expect(await snapshot(player)).toEqual(before);
     await expect(prepare(game, layout, '../x.eu4')).rejects.toBeInstanceOf(PrivateInstallError);
+  });
+
+  it("copies a player's save once the install exists, on the first start too", async () => {
+    player = join(temp, 'player');
+    await addFiles(player, { 'save games/Verne1444_11_11.eu4': 'EU4txt\n' });
+    const save = {
+      name: 'Verne1444_11_11.eu4',
+      path: join(player, 'save games', 'Verne1444_11_11.eu4'),
+      modifiedMs: 0,
+      ironman: false,
+    };
+    expect(await installExists(layout)).toBe(false);
+    const prepared = await prepare(game, layout, save);
+    expect(prepared.continueSave).toBe('Verne1444_11_11.eu4');
+    expect(prepared.arguments[0]).toBe('-continue=Verne1444_11_11.eu4');
+    expect(await readFile(join(layout.profile, 'save games', 'Verne1444_11_11.eu4'), 'utf8')).toBe(
+      'EU4txt\n',
+    );
   });
 
   it('refuses an eu4.exe other than the pinned build, before it creates anything', async () => {

@@ -28,14 +28,7 @@ import {
   readLock,
   type LockOptions,
 } from './process.ts';
-import {
-  copySave,
-  listSaves,
-  liveSettings,
-  newestSave,
-  savesFolder,
-  type SaveFile,
-} from './saves.ts';
+import { listSaves, liveSettings, newestSave, savesFolder, type SaveFile } from './saves.ts';
 import {
   CRASH_LIMIT,
   CRASH_WINDOW_MS,
@@ -174,7 +167,7 @@ const CONFIRMED_KEY = 'etch.liveGame.confirmed';
 const STOP_SAVE_MS = 60_000;
 
 /** What the player chose to start: a save of the private `save games/` by name, or the main menu. */
-type StartAt = { readonly save: string } | { readonly save: undefined };
+type StartAt = { readonly save: string | SaveFile | undefined };
 
 /**
  * The machine's one live game, owned by this VS Code window: started on request, stopped by
@@ -415,10 +408,8 @@ export class LiveGame implements vscode.Disposable {
         );
         continue;
       }
-      if (!('path' in pick)) return pick;
-      const copy = await copySave(pick, privateSaves);
-      this.output.info(`Copied your save ${pick.name} into the live game's saves as ${copy}.`);
-      return { save: copy };
+      // A player's save is copied into the private saves once the install exists.
+      return 'path' in pick ? { save: pick } : pick;
     }
   }
 
@@ -475,10 +466,16 @@ export class LiveGame implements vscode.Disposable {
         return false;
       }
       if (signal.aborted) return false;
+      const chosen = this.startAt.save;
+      this.startAt = { save: prepared.continueSave };
       this.output.info(
         `The live game takes ${prepared.settings.copied.join(' and ') || 'no settings'} from your ` +
           `profile${prepared.settings.autosaveOn ? ', with a monthly autosave' : ''}, and starts ` +
-          `${this.startAt.save === undefined ? 'in the main menu' : `from ${this.startAt.save}`}.`,
+          (prepared.continueSave === undefined
+            ? 'in the main menu.'
+            : typeof chosen === 'object'
+              ? `from your save ${chosen.name}, copied into its saves as ${prepared.continueSave}.`
+              : `from ${prepared.continueSave}.`),
       );
       const started = await LiveGameProcess.start({
         install: prepared,

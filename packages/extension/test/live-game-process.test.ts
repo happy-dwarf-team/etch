@@ -368,6 +368,7 @@ windows('LiveGameProcess', () => {
       restored: [],
       savesFolder: join(temp, 'save games'),
       settings: { copied: [], autosaveOn: false },
+      continueSave: undefined,
     };
   }
 

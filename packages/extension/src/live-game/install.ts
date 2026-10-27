@@ -23,7 +23,13 @@ import {
 } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { decodeDescriptor } from '@etch/core/playset';
-import { copySettings, savesFolder, type CopiedSettings } from './saves.ts';
+import {
+  copySave,
+  copySettings,
+  savesFolder,
+  type CopiedSettings,
+  type SaveFile,
+} from './saves.ts';
 
 /** An install's folders under the extension's global storage. */
 export interface InstallLayout {
@@ -194,8 +200,11 @@ export interface PrepareOptions {
   readonly display: LiveGameDisplay;
   /** The player's profile folder, whose settings files are copied (only read). */
   readonly playerProfile: string | undefined;
-  /** A save of the private `save games/` to continue, by file name; the main menu without one. */
-  readonly continueSave?: string | undefined;
+  /**
+   * The save to continue: a save of the private `save games/` by file name, or a player's save,
+   * which is copied there once the install exists; the main menu without one.
+   */
+  readonly continueSave?: string | SaveFile | undefined;
 }
 
 /**
@@ -225,6 +234,8 @@ export interface PreparedInstall {
   readonly restored: readonly string[];
   /** What was taken from the player's settings. */
   readonly settings: CopiedSettings;
+  /** The private save it continues, by file name; `undefined` for the main menu. */
+  readonly continueSave: string | undefined;
 }
 
 /** Whether the install exists (it may still need `prepareInstall` before a start). */
@@ -300,7 +311,10 @@ export async function prepareInstall(options: PrepareOptions): Promise<PreparedI
     options.playerProfile === undefined
       ? { copied: [], autosaveOn: false }
       : await copySettings(options.playerProfile, layout.profile);
-  const save = options.continueSave;
+  const save =
+    typeof options.continueSave === 'object'
+      ? await copySave(options.continueSave, savesFolder(layout.profile))
+      : options.continueSave;
   if (save !== undefined && !/^[^\\/:*?"<>|]+\.eu4$/i.test(save)) {
     throw new PrivateInstallError('install-failed', `"${save}" is not a save file name.`);
   }
@@ -315,6 +329,7 @@ export async function prepareInstall(options: PrepareOptions): Promise<PreparedI
     ],
     restored,
     settings,
+    continueSave: save,
   };
 }
 
