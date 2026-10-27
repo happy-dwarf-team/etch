@@ -256,6 +256,7 @@ export function saveFacts(choice: SaveChoice): Record<string, string> {
   const owner = scalarIn(province, 'owner');
   const controller = scalarIn(province, 'controller');
   const projects = valueIn(province, 'great_projects');
+  const buildings = valueIn(province, 'buildings');
   return {
     'province.owned': yesNo(owner !== undefined),
     'province.ownedByPlayer': yesNo(owner !== undefined && owner === choice.country),
@@ -267,6 +268,13 @@ export function saveFacts(choice: SaveChoice): Record<string, string> {
         valueIn(province, 'military_construction') !== undefined,
     ),
     'province.hasGreatProjects': yesNo(projects?.kind === 'block' && projects.entries.length > 0),
+    'province.hasFort': yesNo(
+      buildings?.kind === 'block' &&
+        buildings.entries.some((e) => {
+          const name = e.kind === 'property' ? e.key.text : e.kind === 'scalar' ? e.text : '';
+          return /^fort_/i.test(name);
+        }),
+    ),
   };
 }
 

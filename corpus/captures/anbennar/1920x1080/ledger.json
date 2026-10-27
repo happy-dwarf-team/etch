@@ -1,0 +1,1362 @@
+{
+  "formatVersion": 1,
+  "playset": "anbennar",
+  "resolution": { "width": 1920, "height": 1080 },
+  "view": "ledger",
+  "takenAt": "2026-10-27T07:14:38.080Z",
+  "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
+  "tongs": { "version": "0.14.1" },
+  "save": { "sha256": "57CB4550073A4142E20FBB6439E32A68E420A5DB3F680EAEF138223264704AA0" },
+  "mods": [
+    {
+      "name": "Anbennar: A Fantasy Total Conversion",
+      "sha256": "99DAB21EA321F176E23824D8EC3A8B75928A92EE68082C589557D219D654A1DD"
+    },
+    {
+      "name": "Proper 2K UI Enhanced",
+      "sha256": "B411CFAEAC291CA1DB8CE6FA4C83FC5BD6D547A503A16C29ED7783C2CBCED1F9"
+    },
+    {
+      "name": "P2KE Patch - Anbennar",
+      "sha256": "E4ABCD62FCE34798AC0CF4BBB76CA147BE105E00D8E3F04B643062EF8C25FC55"
+    }
+  ],
+  "disabledDlcs": [],
+  "recipe": {
+    "from": "save",
+    "steps": [{ "key": "l" }],
+    "verified": true,
+    "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown."
+  },
+  "window": { "width": 1920, "height": 1080, "dpi": 96 },
+  "screenshot": {
+    "sha256": "BD65C9C48FBA741C511B2475F2B20CEB825F30A42D2E01874FC56A29BFC6A879",
+    "width": 1920,
+    "height": 1080,
+    "shots": 4,
+    "unstable": {
+      "pixels": 395355,
+      "sha256": "780B8B13B81018E4F71A921E2F5950545F1D195ADC80B5FEF89252ADA939431F"
+    }
+  },
+  "widgets": [
+    {
+      "name": "ledger",
+      "path": "ledger",
+      "type": "window",
+      "visible": true,
+      "rect": { "x": 290, "y": 160, "w": 1921, "h": 80 },
+      "children": [
+        {
+          "name": "close",
+          "path": "ledger/close",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 2157, "y": 178, "w": 43, "h": 43 },
+          "enabled": true
+        },
+        {
+          "name": "prev",
+          "path": "ledger/prev",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 1705, "y": 1256, "w": 153, "h": 36 },
+          "text": "Previous",
+          "enabled": true
+        },
+        {
+          "name": "next",
+          "path": "ledger/next",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 2000, "y": 1256, "w": 153, "h": 36 },
+          "text": "Next",
+          "enabled": true
+        },
+        {
+          "name": "index",
+          "path": "ledger/index",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 371, "y": 1244, "w": 69, "h": 60 },
+          "enabled": true
+        },
+        {
+          "name": "bookmark_0",
+          "path": "ledger/bookmark_0",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 447, "y": 1244, "w": 69, "h": 60 },
+          "enabled": true
+        },
+        {
+          "name": "bookmark_1",
+          "path": "ledger/bookmark_1",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 523, "y": 1244, "w": 69, "h": 60 },
+          "enabled": true
+        },
+        {
+          "name": "bookmark_2",
+          "path": "ledger/bookmark_2",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 599, "y": 1244, "w": 69, "h": 60 },
+          "enabled": true
+        },
+        {
+          "name": "bookmark_3",
+          "path": "ledger/bookmark_3",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 675, "y": 1244, "w": 69, "h": 60 },
+          "enabled": true
+        },
+        {
+          "name": "bookmark_4",
+          "path": "ledger/bookmark_4",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 751, "y": 1244, "w": 69, "h": 60 },
+          "enabled": true
+        },
+        {
+          "name": "ledger_bg",
+          "path": "ledger/ledger_bg",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 290, "y": 160, "w": 1921, "h": 1153 }
+        },
+        {
+          "name": "ledger_linegraph_bg",
+          "path": "ledger/ledger_linegraph_bg",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 293, "y": 161, "w": 1921, "h": 1153 }
+        },
+        {
+          "name": "ledger_great_projects_bg",
+          "path": "ledger/ledger_great_projects_bg",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 293, "y": 161, "w": 1921, "h": 1089 }
+        },
+        {
+          "name": "filter_edit_box_bg",
+          "path": "ledger/filter_edit_box_bg",
+          "type": "icon",
+          "visible": false,
+          "rect": { "x": 960, "y": 507, "w": 171, "h": 33 }
+        },
+        {
+          "name": "filter_edit_box_icon",
+          "path": "ledger/filter_edit_box_icon",
+          "type": "icon",
+          "visible": false,
+          "rect": { "x": 960, "y": 513, "w": 27, "h": 27 }
+        },
+        {
+          "name": "page_number",
+          "path": "ledger/page_number",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 1848, "y": 1262, "w": 162, "h": 24 },
+          "text": "1"
+        },
+        {
+          "name": "ledger_header",
+          "path": "ledger/ledger_header",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 771, "y": 188, "w": 960, "h": 24 },
+          "text": "Ledger Index"
+        },
+        {
+          "name": "ledger_sort_buttons",
+          "path": "ledger/ledger_sort_buttons",
+          "type": "window",
+          "visible": false,
+          "rect": { "x": 0, "y": 0, "w": 1767, "h": 39 }
+        },
+        {
+          "name": "ledger_linegraphs",
+          "path": "ledger/ledger_linegraphs",
+          "type": "window",
+          "visible": false,
+          "rect": { "x": 0, "y": 0, "w": 840, "h": 648 }
+        },
+        {
+          "name": "ledger_linegraph_legend",
+          "path": "ledger/ledger_linegraph_legend",
+          "type": "window",
+          "visible": false,
+          "rect": { "x": 0, "y": 0, "w": 240, "h": 648 },
+          "children": [
+            {
+              "name": "ledger_linegraph_legend_buttons",
+              "path": "ledger/ledger_linegraph_legend/ledger_linegraph_legend_buttons",
+              "type": "window",
+              "visible": false,
+              "rect": { "x": 0, "y": 0, "w": 240, "h": 77 },
+              "children": [
+                {
+                  "name": "linegraph_neighbours",
+                  "path": "ledger/ledger_linegraph_legend/ledger_linegraph_legend_buttons/linegraph_neighbours",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 515, "w": 37, "h": 25 },
+                  "enabled": true
+                },
+                {
+                  "name": "linegraph_enemies",
+                  "path": "ledger/ledger_linegraph_legend/ledger_linegraph_legend_buttons/linegraph_enemies",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 515, "w": 37, "h": 25 },
+                  "enabled": true
+                },
+                {
+                  "name": "linegraph_friends",
+                  "path": "ledger/ledger_linegraph_legend/ledger_linegraph_legend_buttons/linegraph_friends",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 515, "w": 37, "h": 25 },
+                  "enabled": true
+                },
+                {
+                  "name": "linegraph_clear",
+                  "path": "ledger/ledger_linegraph_legend/ledger_linegraph_legend_buttons/linegraph_clear",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 515, "w": 37, "h": 25 },
+                  "enabled": true
+                }
+              ]
+            },
+            {
+              "name": "legend_list",
+              "path": "ledger/ledger_linegraph_legend/legend_list",
+              "type": "listbox",
+              "visible": false,
+              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "children": [
+                {
+                  "name": "standardlistbox_slider",
+                  "path": "ledger/ledger_linegraph_legend/legend_list/standardlistbox_slider",
+                  "type": "other",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 521, "w": 19, "h": 562 },
+                  "children": [
+                    {
+                      "name": "listboxSliderButton",
+                      "path": "ledger/ledger_linegraph_legend/legend_list/standardlistbox_slider/listboxSliderButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 960, "y": 521, "w": 19, "h": 19 }
+                    },
+                    {
+                      "name": "listboxTrackButton",
+                      "path": "ledger/ledger_linegraph_legend/legend_list/standardlistbox_slider/listboxTrackButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 960, "y": 540, "w": 15, "h": 543 }
+                    },
+                    {
+                      "name": "downButton",
+                      "path": "ledger/ledger_linegraph_legend/legend_list/standardlistbox_slider/downButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 960, "y": 521, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "upButton",
+                      "path": "ledger/ledger_linegraph_legend/legend_list/standardlistbox_slider/upButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 960, "y": 521, "w": 19, "h": 19 },
+                      "enabled": true
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "ledger_piecharts",
+          "path": "ledger/ledger_piecharts",
+          "type": "window",
+          "visible": false,
+          "rect": { "x": 0, "y": 0, "w": 1200, "h": 648 },
+          "children": [
+            {
+              "name": "ledger_piechart_bg",
+              "path": "ledger/ledger_piecharts/ledger_piechart_bg",
+              "type": "icon",
+              "visible": false,
+              "rect": { "x": 960, "y": -613, "w": 1921, "h": 1153 }
+            }
+          ]
+        },
+        {
+          "name": "ledger_index",
+          "path": "ledger/ledger_index",
+          "type": "window",
+          "visible": true,
+          "rect": { "x": 672, "y": 233, "w": 1200, "h": 1032 },
+          "children": [
+            {
+              "name": "ledger_overlay",
+              "path": "ledger/ledger_index/ledger_overlay",
+              "type": "icon",
+              "visible": true,
+              "rect": { "x": 289, "y": 161, "w": 1921, "h": 1150 }
+            },
+            {
+              "name": "page",
+              "path": "ledger/ledger_index/page",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 992, "y": 245, "w": 39, "h": 21 },
+              "text": "Pg."
+            },
+            {
+              "name": "list",
+              "path": "ledger/ledger_index/list",
+              "type": "listbox",
+              "visible": true,
+              "rect": { "x": 1022, "y": 235, "w": 153, "h": 195 },
+              "children": [
+                {
+                  "name": "ledger_index_bookmark",
+                  "path": "ledger/ledger_index/list/ledger_index_bookmark[1]",
+                  "type": "window",
+                  "visible": true,
+                  "rect": { "x": 1023, "y": 236, "w": 153, "h": 39 },
+                  "children": [
+                    {
+                      "name": "button",
+                      "path": "ledger/ledger_index/list/ledger_index_bookmark[1]/button",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1101, "y": 236, "w": 317, "h": 35 },
+                      "text": "Country",
+                      "enabled": true
+                    }
+                  ]
+                },
+                {
+                  "name": "ledger_index_bookmark",
+                  "path": "ledger/ledger_index/list/ledger_index_bookmark[2]",
+                  "type": "window",
+                  "visible": true,
+                  "rect": { "x": 1023, "y": 275, "w": 153, "h": 39 },
+                  "children": [
+                    {
+                      "name": "button",
+                      "path": "ledger/ledger_index/list/ledger_index_bookmark[2]/button",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1101, "y": 275, "w": 317, "h": 35 },
+                      "text": "Military",
+                      "enabled": true
+                    }
+                  ]
+                },
+                {
+                  "name": "ledger_index_bookmark",
+                  "path": "ledger/ledger_index/list/ledger_index_bookmark[3]",
+                  "type": "window",
+                  "visible": true,
+                  "rect": { "x": 1023, "y": 314, "w": 153, "h": 39 },
+                  "children": [
+                    {
+                      "name": "button",
+                      "path": "ledger/ledger_index/list/ledger_index_bookmark[3]/button",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1101, "y": 314, "w": 317, "h": 35 },
+                      "text": "Economy",
+                      "enabled": true
+                    }
+                  ]
+                },
+                {
+                  "name": "ledger_index_bookmark",
+                  "path": "ledger/ledger_index/list/ledger_index_bookmark[4]",
+                  "type": "window",
+                  "visible": true,
+                  "rect": { "x": 1023, "y": 353, "w": 153, "h": 39 },
+                  "children": [
+                    {
+                      "name": "button",
+                      "path": "ledger/ledger_index/list/ledger_index_bookmark[4]/button",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1101, "y": 353, "w": 317, "h": 35 },
+                      "text": "Trade",
+                      "enabled": true
+                    }
+                  ]
+                },
+                {
+                  "name": "ledger_index_bookmark",
+                  "path": "ledger/ledger_index/list/ledger_index_bookmark[5]",
+                  "type": "window",
+                  "visible": true,
+                  "rect": { "x": 1023, "y": 392, "w": 153, "h": 39 },
+                  "children": [
+                    {
+                      "name": "button",
+                      "path": "ledger/ledger_index/list/ledger_index_bookmark[5]/button",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1101, "y": 392, "w": 317, "h": 35 },
+                      "text": "Relations",
+                      "enabled": true
+                    }
+                  ]
+                },
+                {
+                  "name": "standardlistbox_slider",
+                  "path": "ledger/ledger_index/list/standardlistbox_slider",
+                  "type": "other",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 521, "w": 19, "h": 959 },
+                  "children": [
+                    {
+                      "name": "listboxSliderButton",
+                      "path": "ledger/ledger_index/list/standardlistbox_slider/listboxSliderButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 960, "y": 521, "w": 19, "h": 19 }
+                    },
+                    {
+                      "name": "listboxTrackButton",
+                      "path": "ledger/ledger_index/list/standardlistbox_slider/listboxTrackButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 960, "y": 540, "w": 15, "h": 940 }
+                    },
+                    {
+                      "name": "downButton",
+                      "path": "ledger/ledger_index/list/standardlistbox_slider/downButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 960, "y": 521, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "upButton",
+                      "path": "ledger/ledger_index/list/standardlistbox_slider/upButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 960, "y": 521, "w": 19, "h": 19 },
+                      "enabled": true
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "ledger_bg1",
+          "path": "ledger/ledger_bg1",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 290, "y": 160, "w": 1921, "h": 80 }
+        },
+        {
+          "name": "filter_list",
+          "path": "ledger/filter_list",
+          "type": "listbox",
+          "visible": false,
+          "rect": { "x": 534, "y": 236, "w": 1440, "h": 39 },
+          "children": [
+            {
+              "name": "filter_list_item",
+              "path": "ledger/filter_list/filter_list_item[1]",
+              "type": "window",
+              "visible": false,
+              "rect": { "x": 0, "y": 0, "w": 240, "h": 39 },
+              "children": [
+                {
+                  "name": "label",
+                  "path": "ledger/filter_list/filter_list_item[1]/label",
+                  "type": "text",
+                  "visible": false,
+                  "rect": { "x": -15, "y": 7, "w": 216, "h": 21 },
+                  "text": "Allies"
+                },
+                {
+                  "name": "checkbox",
+                  "path": "ledger/filter_list/filter_list_item[1]/checkbox",
+                  "type": "checkbox",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 501, "w": 38, "h": 39 },
+                  "checked": false
+                }
+              ]
+            },
+            {
+              "name": "filter_list_item",
+              "path": "ledger/filter_list/filter_list_item[2]",
+              "type": "window",
+              "visible": false,
+              "rect": { "x": 0, "y": 0, "w": 240, "h": 39 },
+              "children": [
+                {
+                  "name": "label",
+                  "path": "ledger/filter_list/filter_list_item[2]/label",
+                  "type": "text",
+                  "visible": false,
+                  "rect": { "x": -15, "y": 7, "w": 216, "h": 21 },
+                  "text": "Rivals"
+                },
+                {
+                  "name": "checkbox",
+                  "path": "ledger/filter_list/filter_list_item[2]/checkbox",
+                  "type": "checkbox",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 501, "w": 38, "h": 39 },
+                  "checked": false
+                }
+              ]
+            },
+            {
+              "name": "filter_list_item",
+              "path": "ledger/filter_list/filter_list_item[3]",
+              "type": "window",
+              "visible": false,
+              "rect": { "x": 0, "y": 0, "w": 240, "h": 39 },
+              "children": [
+                {
+                  "name": "label",
+                  "path": "ledger/filter_list/filter_list_item[3]/label",
+                  "type": "text",
+                  "visible": false,
+                  "rect": { "x": -15, "y": 7, "w": 216, "h": 21 },
+                  "text": "War Enemies"
+                },
+                {
+                  "name": "checkbox",
+                  "path": "ledger/filter_list/filter_list_item[3]/checkbox",
+                  "type": "checkbox",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 501, "w": 38, "h": 39 },
+                  "checked": false
+                }
+              ]
+            },
+            {
+              "name": "filter_list_item",
+              "path": "ledger/filter_list/filter_list_item[4]",
+              "type": "window",
+              "visible": false,
+              "rect": { "x": 0, "y": 0, "w": 240, "h": 39 },
+              "children": [
+                {
+                  "name": "label",
+                  "path": "ledger/filter_list/filter_list_item[4]/label",
+                  "type": "text",
+                  "visible": false,
+                  "rect": { "x": -15, "y": 7, "w": 216, "h": 21 },
+                  "text": "War Allies"
+                },
+                {
+                  "name": "checkbox",
+                  "path": "ledger/filter_list/filter_list_item[4]/checkbox",
+                  "type": "checkbox",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 501, "w": 38, "h": 39 },
+                  "checked": false
+                }
+              ]
+            },
+            {
+              "name": "filter_list_item",
+              "path": "ledger/filter_list/filter_list_item[5]",
+              "type": "window",
+              "visible": false,
+              "rect": { "x": 0, "y": 0, "w": 240, "h": 39 },
+              "children": [
+                {
+                  "name": "label",
+                  "path": "ledger/filter_list/filter_list_item[5]/label",
+                  "type": "text",
+                  "visible": false,
+                  "rect": { "x": -15, "y": 7, "w": 216, "h": 21 },
+                  "text": "+ve Opinion"
+                },
+                {
+                  "name": "checkbox",
+                  "path": "ledger/filter_list/filter_list_item[5]/checkbox",
+                  "type": "checkbox",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 501, "w": 38, "h": 39 },
+                  "checked": false
+                }
+              ]
+            },
+            {
+              "name": "filter_list_item",
+              "path": "ledger/filter_list/filter_list_item[6]",
+              "type": "window",
+              "visible": false,
+              "rect": { "x": 0, "y": 0, "w": 240, "h": 39 },
+              "children": [
+                {
+                  "name": "label",
+                  "path": "ledger/filter_list/filter_list_item[6]/label",
+                  "type": "text",
+                  "visible": false,
+                  "rect": { "x": -15, "y": 7, "w": 216, "h": 21 },
+                  "text": "-ve Opinion"
+                },
+                {
+                  "name": "checkbox",
+                  "path": "ledger/filter_list/filter_list_item[6]/checkbox",
+                  "type": "checkbox",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 501, "w": 38, "h": 39 },
+                  "checked": false
+                }
+              ]
+            },
+            {
+              "name": "standardlistbox_slider",
+              "path": "ledger/filter_list/standardlistbox_slider",
+              "type": "other",
+              "visible": false,
+              "rect": { "x": 960, "y": 521, "w": 19, "h": 41 },
+              "children": [
+                {
+                  "name": "listboxSliderButton",
+                  "path": "ledger/filter_list/standardlistbox_slider/listboxSliderButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 521, "w": 19, "h": 19 }
+                },
+                {
+                  "name": "listboxTrackButton",
+                  "path": "ledger/filter_list/standardlistbox_slider/listboxTrackButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 540, "w": 15, "h": 22 }
+                },
+                {
+                  "name": "downButton",
+                  "path": "ledger/filter_list/standardlistbox_slider/downButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 521, "w": 19, "h": 19 },
+                  "enabled": true
+                },
+                {
+                  "name": "upButton",
+                  "path": "ledger/filter_list/standardlistbox_slider/upButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 521, "w": 19, "h": 19 },
+                  "enabled": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "default_listbox",
+          "path": "ledger/default_listbox",
+          "type": "listbox",
+          "visible": false,
+          "rect": { "x": 313, "y": 322, "w": 0, "h": 0 },
+          "children": [
+            {
+              "name": "standardlistbox_slider",
+              "path": "ledger/default_listbox/standardlistbox_slider",
+              "type": "other",
+              "visible": false,
+              "rect": { "x": 960, "y": 521, "w": 19, "h": 902 },
+              "children": [
+                {
+                  "name": "listboxSliderButton",
+                  "path": "ledger/default_listbox/standardlistbox_slider/listboxSliderButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 521, "w": 19, "h": 19 }
+                },
+                {
+                  "name": "listboxTrackButton",
+                  "path": "ledger/default_listbox/standardlistbox_slider/listboxTrackButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 540, "w": 15, "h": 883 }
+                },
+                {
+                  "name": "downButton",
+                  "path": "ledger/default_listbox/standardlistbox_slider/downButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 521, "w": 19, "h": 19 },
+                  "enabled": true
+                },
+                {
+                  "name": "upButton",
+                  "path": "ledger/default_listbox/standardlistbox_slider/upButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 521, "w": 19, "h": 19 },
+                  "enabled": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "ledger_text_filter",
+          "path": "ledger/ledger_text_filter",
+          "type": "editbox",
+          "visible": false,
+          "rect": { "x": 1737, "y": 76, "w": 171, "h": 33 },
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "EventWindow",
+      "path": "EventWindow[1]",
+      "type": "window",
+      "visible": true,
+      "rect": { "x": 622, "y": 168, "w": 677, "h": 566 },
+      "children": [
+        {
+          "name": "event_goto_province",
+          "path": "EventWindow[1]/event_goto_province",
+          "type": "button",
+          "visible": false,
+          "rect": { "x": 960, "y": 431, "w": 66, "h": 109 },
+          "enabled": true
+        },
+        {
+          "name": "event_bg_top",
+          "path": "EventWindow[1]/event_bg_top",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 570, "y": 168, "w": 793, "h": 269 }
+        },
+        {
+          "name": "event_bg_middle",
+          "path": "EventWindow[1]/event_bg_middle[1]",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 570, "y": 437, "w": 788, "h": 69 }
+        },
+        {
+          "name": "event_bg_bottom",
+          "path": "EventWindow[1]/event_bg_bottom",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 570, "y": 575, "w": 788, "h": 159 }
+        },
+        {
+          "name": "event_picture",
+          "path": "EventWindow[1]/event_picture",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 655, "y": 262, "w": 619, "h": 159 }
+        },
+        {
+          "name": "event_bg_middle",
+          "path": "EventWindow[1]/event_bg_middle[2]",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 570, "y": 506, "w": 788, "h": 69 }
+        },
+        {
+          "name": "Title",
+          "path": "EventWindow[1]/Title",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 570, "y": 215, "w": 787, "h": 24 },
+          "text": "Losers of the Lilac Wars"
+        },
+        {
+          "name": "Description",
+          "path": "EventWindow[1]/Description",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 659, "y": 437, "w": 614, "h": 105 },
+          "text": "The Lilac Wars ended only but a year ago and our wounds are still fresh. We fought under the banner of the Moon, alongside the ancient and most-noble House of Silmuna: the Grand Dukes of Dameria. Under their rule the land would finally be at peace, but we were defeated due to the betrayal of selfish and traitorous imperial lords."
+        },
+        {
+          "name": "Background",
+          "path": "EventWindow[1]/Background",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 622, "y": 168, "w": 677, "h": 566 }
+        },
+        {
+          "name": "event_option_listbox",
+          "path": "EventWindow[1]/event_option_listbox",
+          "type": "listbox",
+          "visible": true,
+          "rect": { "x": 638, "y": 615, "w": 656, "h": 36 },
+          "children": [
+            {
+              "name": "event_option_entry",
+              "path": "EventWindow[1]/event_option_listbox/event_option_entry",
+              "type": "window",
+              "visible": true,
+              "rect": { "x": 638, "y": 615, "w": 656, "h": 36 },
+              "children": [
+                {
+                  "name": "event_option_button",
+                  "path": "EventWindow[1]/event_option_listbox/event_option_entry/event_option_button",
+                  "type": "button",
+                  "visible": true,
+                  "rect": { "x": 638, "y": 615, "w": 657, "h": 37 },
+                  "text": "We were part of the losing Moon Party.",
+                  "enabled": true
+                },
+                {
+                  "name": "event_option_goto_button",
+                  "path": "EventWindow[1]/event_option_listbox/event_option_entry/event_option_goto_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 503, "w": 75, "h": 37 },
+                  "enabled": true
+                }
+              ]
+            },
+            {
+              "name": "standardlistbox_slider",
+              "path": "EventWindow[1]/event_option_listbox/standardlistbox_slider",
+              "type": "other",
+              "visible": false,
+              "rect": { "x": 960, "y": 521, "w": 19, "h": 19 },
+              "children": [
+                {
+                  "name": "listboxSliderButton",
+                  "path": "EventWindow[1]/event_option_listbox/standardlistbox_slider/listboxSliderButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 521, "w": 19, "h": 19 }
+                },
+                {
+                  "name": "listboxTrackButton",
+                  "path": "EventWindow[1]/event_option_listbox/standardlistbox_slider/listboxTrackButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 540, "w": 15, "h": -2 }
+                },
+                {
+                  "name": "downButton",
+                  "path": "EventWindow[1]/event_option_listbox/standardlistbox_slider/downButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 521, "w": 19, "h": 19 },
+                  "enabled": true
+                },
+                {
+                  "name": "upButton",
+                  "path": "EventWindow[1]/event_option_listbox/standardlistbox_slider/upButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 521, "w": 19, "h": 19 },
+                  "enabled": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EventWindow",
+      "path": "EventWindow[2]",
+      "type": "window",
+      "visible": true,
+      "rect": { "x": 622, "y": 168, "w": 677, "h": 639 },
+      "children": [
+        {
+          "name": "event_goto_province",
+          "path": "EventWindow[2]/event_goto_province",
+          "type": "button",
+          "visible": false,
+          "rect": { "x": 960, "y": 431, "w": 66, "h": 109 },
+          "enabled": true
+        },
+        {
+          "name": "event_bg_top",
+          "path": "EventWindow[2]/event_bg_top",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 570, "y": 168, "w": 793, "h": 269 }
+        },
+        {
+          "name": "event_bg_middle",
+          "path": "EventWindow[2]/event_bg_middle",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 570, "y": 437, "w": 788, "h": 69 }
+        },
+        {
+          "name": "event_bg_bottom",
+          "path": "EventWindow[2]/event_bg_bottom",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 570, "y": 506, "w": 788, "h": 301 }
+        },
+        {
+          "name": "event_picture",
+          "path": "EventWindow[2]/event_picture",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 655, "y": 262, "w": 638, "h": 508 }
+        },
+        {
+          "name": "Title",
+          "path": "EventWindow[2]/Title",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 570, "y": 215, "w": 787, "h": 48 },
+          "text": "Welcome to:\n£settings_main_bg£"
+        },
+        {
+          "name": "Description",
+          "path": "EventWindow[2]/Description",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 659, "y": 437, "w": 614, "h": 21 },
+          "text": "                             The Inheritors of Insyaa Update             EU4 version 1.37.5"
+        },
+        {
+          "name": "Background",
+          "path": "EventWindow[2]/Background",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 622, "y": 168, "w": 677, "h": 639 }
+        },
+        {
+          "name": "event_option_listbox",
+          "path": "EventWindow[2]/event_option_listbox",
+          "type": "listbox",
+          "visible": true,
+          "rect": { "x": 638, "y": 546, "w": 656, "h": 216 },
+          "children": [
+            {
+              "name": "event_option_entry",
+              "path": "EventWindow[2]/event_option_listbox/event_option_entry[1]",
+              "type": "window",
+              "visible": true,
+              "rect": { "x": 638, "y": 546, "w": 656, "h": 36 },
+              "children": [
+                {
+                  "name": "event_option_button",
+                  "path": "EventWindow[2]/event_option_listbox/event_option_entry[1]/event_option_button",
+                  "type": "button",
+                  "visible": true,
+                  "rect": { "x": 638, "y": 546, "w": 657, "h": 37 },
+                  "text": "£settings_button_regions_menu£",
+                  "enabled": true
+                },
+                {
+                  "name": "event_option_goto_button",
+                  "path": "EventWindow[2]/event_option_listbox/event_option_entry[1]/event_option_goto_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 503, "w": 75, "h": 37 },
+                  "enabled": true
+                }
+              ]
+            },
+            {
+              "name": "event_option_entry",
+              "path": "EventWindow[2]/event_option_listbox/event_option_entry[2]",
+              "type": "window",
+              "visible": true,
+              "rect": { "x": 638, "y": 582, "w": 656, "h": 36 },
+              "children": [
+                {
+                  "name": "event_option_button",
+                  "path": "EventWindow[2]/event_option_listbox/event_option_entry[2]/event_option_button",
+                  "type": "button",
+                  "visible": true,
+                  "rect": { "x": 638, "y": 582, "w": 657, "h": 37 },
+                  "text": "£settings_button_conquerors_menu£",
+                  "enabled": true
+                },
+                {
+                  "name": "event_option_goto_button",
+                  "path": "EventWindow[2]/event_option_listbox/event_option_entry[2]/event_option_goto_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 503, "w": 75, "h": 37 },
+                  "enabled": true
+                }
+              ]
+            },
+            {
+              "name": "event_option_entry",
+              "path": "EventWindow[2]/event_option_listbox/event_option_entry[3]",
+              "type": "window",
+              "visible": true,
+              "rect": { "x": 638, "y": 618, "w": 656, "h": 36 },
+              "children": [
+                {
+                  "name": "event_option_button",
+                  "path": "EventWindow[2]/event_option_listbox/event_option_entry[3]/event_option_button",
+                  "type": "button",
+                  "visible": true,
+                  "rect": { "x": 638, "y": 618, "w": 657, "h": 37 },
+                  "text": "£settings_button_achievements_on£",
+                  "enabled": true
+                },
+                {
+                  "name": "event_option_goto_button",
+                  "path": "EventWindow[2]/event_option_listbox/event_option_entry[3]/event_option_goto_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 503, "w": 75, "h": 37 },
+                  "enabled": true
+                }
+              ]
+            },
+            {
+              "name": "event_option_entry",
+              "path": "EventWindow[2]/event_option_listbox/event_option_entry[4]",
+              "type": "window",
+              "visible": true,
+              "rect": { "x": 638, "y": 654, "w": 656, "h": 36 },
+              "children": [
+                {
+                  "name": "event_option_button",
+                  "path": "EventWindow[2]/event_option_listbox/event_option_entry[4]/event_option_button",
+                  "type": "button",
+                  "visible": true,
+                  "rect": { "x": 638, "y": 654, "w": 657, "h": 37 },
+                  "text": "£event_button_settings_empty£",
+                  "enabled": true
+                },
+                {
+                  "name": "event_option_goto_button",
+                  "path": "EventWindow[2]/event_option_listbox/event_option_entry[4]/event_option_goto_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 503, "w": 75, "h": 37 },
+                  "enabled": true
+                }
+              ]
+            },
+            {
+              "name": "event_option_entry",
+              "path": "EventWindow[2]/event_option_listbox/event_option_entry[5]",
+              "type": "window",
+              "visible": true,
+              "rect": { "x": 638, "y": 690, "w": 656, "h": 36 },
+              "children": [
+                {
+                  "name": "event_option_button",
+                  "path": "EventWindow[2]/event_option_listbox/event_option_entry[5]/event_option_button",
+                  "type": "button",
+                  "visible": true,
+                  "rect": { "x": 638, "y": 690, "w": 657, "h": 37 },
+                  "text": "£event_button_settings_empty£",
+                  "enabled": true
+                },
+                {
+                  "name": "event_option_goto_button",
+                  "path": "EventWindow[2]/event_option_listbox/event_option_entry[5]/event_option_goto_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 503, "w": 75, "h": 37 },
+                  "enabled": true
+                }
+              ]
+            },
+            {
+              "name": "event_option_entry",
+              "path": "EventWindow[2]/event_option_listbox/event_option_entry[6]",
+              "type": "window",
+              "visible": true,
+              "rect": { "x": 638, "y": 726, "w": 656, "h": 36 },
+              "children": [
+                {
+                  "name": "event_option_button",
+                  "path": "EventWindow[2]/event_option_listbox/event_option_entry[6]/event_option_button",
+                  "type": "button",
+                  "visible": true,
+                  "rect": { "x": 638, "y": 726, "w": 657, "h": 37 },
+                  "text": "£settings_button_start_game£",
+                  "enabled": true
+                },
+                {
+                  "name": "event_option_goto_button",
+                  "path": "EventWindow[2]/event_option_listbox/event_option_entry[6]/event_option_goto_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 503, "w": 75, "h": 37 },
+                  "enabled": true
+                }
+              ]
+            },
+            {
+              "name": "standardlistbox_slider",
+              "path": "EventWindow[2]/event_option_listbox/standardlistbox_slider",
+              "type": "other",
+              "visible": false,
+              "rect": { "x": 960, "y": 521, "w": 19, "h": 197 },
+              "children": [
+                {
+                  "name": "listboxSliderButton",
+                  "path": "EventWindow[2]/event_option_listbox/standardlistbox_slider/listboxSliderButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 521, "w": 19, "h": 19 }
+                },
+                {
+                  "name": "listboxTrackButton",
+                  "path": "EventWindow[2]/event_option_listbox/standardlistbox_slider/listboxTrackButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 540, "w": 15, "h": 178 }
+                },
+                {
+                  "name": "downButton",
+                  "path": "EventWindow[2]/event_option_listbox/standardlistbox_slider/downButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 521, "w": 19, "h": 19 },
+                  "enabled": true
+                },
+                {
+                  "name": "upButton",
+                  "path": "EventWindow[2]/event_option_listbox/standardlistbox_slider/upButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 521, "w": 19, "h": 19 },
+                  "enabled": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EventWindow",
+      "path": "EventWindow[3]",
+      "type": "window",
+      "visible": true,
+      "rect": { "x": 622, "y": 168, "w": 677, "h": 1187 },
+      "children": [
+        {
+          "name": "event_goto_province",
+          "path": "EventWindow[3]/event_goto_province",
+          "type": "button",
+          "visible": false,
+          "rect": { "x": 960, "y": 431, "w": 66, "h": 109 },
+          "enabled": true
+        },
+        {
+          "name": "event_bg_top",
+          "path": "EventWindow[3]/event_bg_top",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 570, "y": 168, "w": 793, "h": 269 }
+        },
+        {
+          "name": "event_bg_middle",
+          "path": "EventWindow[3]/event_bg_middle[1]",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 570, "y": 437, "w": 788, "h": 69 }
+        },
+        {
+          "name": "event_bg_bottom",
+          "path": "EventWindow[3]/event_bg_bottom",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 570, "y": 1196, "w": 788, "h": 159 }
+        },
+        {
+          "name": "event_picture",
+          "path": "EventWindow[3]/event_picture",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 655, "y": 262, "w": 619, "h": 159 }
+        },
+        {
+          "name": "event_bg_middle",
+          "path": "EventWindow[3]/event_bg_middle[2]",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 570, "y": 506, "w": 788, "h": 69 }
+        },
+        {
+          "name": "event_bg_middle",
+          "path": "EventWindow[3]/event_bg_middle[3]",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 570, "y": 575, "w": 788, "h": 69 }
+        },
+        {
+          "name": "event_bg_middle",
+          "path": "EventWindow[3]/event_bg_middle[4]",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 570, "y": 644, "w": 788, "h": 69 }
+        },
+        {
+          "name": "event_bg_middle",
+          "path": "EventWindow[3]/event_bg_middle[5]",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 570, "y": 713, "w": 788, "h": 69 }
+        },
+        {
+          "name": "event_bg_middle",
+          "path": "EventWindow[3]/event_bg_middle[6]",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 570, "y": 782, "w": 788, "h": 69 }
+        },
+        {
+          "name": "event_bg_middle",
+          "path": "EventWindow[3]/event_bg_middle[7]",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 570, "y": 851, "w": 788, "h": 69 }
+        },
+        {
+          "name": "event_bg_middle",
+          "path": "EventWindow[3]/event_bg_middle[8]",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 570, "y": 920, "w": 788, "h": 69 }
+        },
+        {
+          "name": "event_bg_middle",
+          "path": "EventWindow[3]/event_bg_middle[9]",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 570, "y": 989, "w": 788, "h": 69 }
+        },
+        {
+          "name": "event_bg_middle",
+          "path": "EventWindow[3]/event_bg_middle[10]",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 570, "y": 1058, "w": 788, "h": 69 }
+        },
+        {
+          "name": "event_bg_middle",
+          "path": "EventWindow[3]/event_bg_middle[11]",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 570, "y": 1127, "w": 788, "h": 69 }
+        },
+        {
+          "name": "Title",
+          "path": "EventWindow[3]/Title",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 570, "y": 215, "w": 787, "h": 24 },
+          "text": "Land of Prowess, Home of Adventurers"
+        },
+        {
+          "name": "Description",
+          "path": "EventWindow[3]/Description",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 659, "y": 437, "w": 614, "h": 693 },
+          "text": "In a bustling barrack in Arca Lar, a new recruit peers into the regiment commanders’ tent. Inside, three commanders – each sporting a completely bespoke uniform of gaudy reds, golds, purples, and greens – argue at the top of their lungs in peculiarly provincial accents. They refuse to listen to one another, shouting that their own extensive experience means they obviously know better than all the others.\nThe recruit scurries along before he’s spotted, and soon heads to a group of seasoned soldiers. Worried by the argument, and the boorish behaviour of his new commanders, he asks the soldiers: “Brothers, why are our commanders... um... these people?”\n\nIn response, several voices pipe up excitedly:\n“Have you seen Darkheart’s helmet? I’m told he slew a demon and now wears its horns!”\n“Ha! Gnollsbane routed two bands of gnolls by herself, she even made a necklace out of their fangs!”\n“Well, Fisherman is said to have stolen a ship from the Pearlsedge lobsters!”\nA burst of laughter comes over the crowd before settling down.\n\nImpressed by the achievements, the recruit is reassured. They then ask, with a gleam in their eyes: “What about us? Do you think we will ever become commanders?”\n\nThe answer to this question is ingrained in any Vernman. Several soldiers reply in unison: “Glory is for those who act first, so charge forth and show you are no mere soldier. Earn proof of great deeds and rise above the rest! Then, you shall be a proud Vernman !”\nAnd a great reckless smile carves itself across the soldier’s eyes as they all flash trinkets and baubles, each gathered from enemies they defeated.\n\nSuch is the way of the Vernman, vainglorious adventurers fighting under the Wyvern banner. For their glory and fame! Those distinguished by their deeds are elevated, and those that do nothing, forgotten."
+        },
+        {
+          "name": "Background",
+          "path": "EventWindow[3]/Background",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 622, "y": 168, "w": 677, "h": 1187 }
+        },
+        {
+          "name": "event_option_listbox",
+          "path": "EventWindow[3]/event_option_listbox",
+          "type": "listbox",
+          "visible": true,
+          "rect": { "x": 638, "y": 1236, "w": 656, "h": 36 },
+          "children": [
+            {
+              "name": "event_option_entry",
+              "path": "EventWindow[3]/event_option_listbox/event_option_entry",
+              "type": "window",
+              "visible": true,
+              "rect": { "x": 638, "y": 1236, "w": 656, "h": 36 },
+              "children": [
+                {
+                  "name": "event_option_button",
+                  "path": "EventWindow[3]/event_option_listbox/event_option_entry/event_option_button",
+                  "type": "button",
+                  "visible": true,
+                  "rect": { "x": 638, "y": 1236, "w": 657, "h": 37 },
+                  "text": "Verne stands proud!",
+                  "enabled": true
+                },
+                {
+                  "name": "event_option_goto_button",
+                  "path": "EventWindow[3]/event_option_listbox/event_option_entry/event_option_goto_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 503, "w": 75, "h": 37 },
+                  "enabled": true
+                }
+              ]
+            },
+            {
+              "name": "standardlistbox_slider",
+              "path": "EventWindow[3]/event_option_listbox/standardlistbox_slider",
+              "type": "other",
+              "visible": false,
+              "rect": { "x": 960, "y": 521, "w": 19, "h": 19 },
+              "children": [
+                {
+                  "name": "listboxSliderButton",
+                  "path": "EventWindow[3]/event_option_listbox/standardlistbox_slider/listboxSliderButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 521, "w": 19, "h": 19 }
+                },
+                {
+                  "name": "listboxTrackButton",
+                  "path": "EventWindow[3]/event_option_listbox/standardlistbox_slider/listboxTrackButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 540, "w": 15, "h": -2 }
+                },
+                {
+                  "name": "downButton",
+                  "path": "EventWindow[3]/event_option_listbox/standardlistbox_slider/downButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 521, "w": 19, "h": 19 },
+                  "enabled": true
+                },
+                {
+                  "name": "upButton",
+                  "path": "EventWindow[3]/event_option_listbox/standardlistbox_slider/upButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 521, "w": 19, "h": 19 },
+                  "enabled": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

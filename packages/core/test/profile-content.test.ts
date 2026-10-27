@@ -130,6 +130,7 @@ provinces={
 		owner="DAN"
 		controller="DAN"
 		great_projects={ "kalmar_castle" }
+		buildings={ fort_15th=yes }
 	}
 -3={
 		name="Uncharted"
@@ -380,11 +381,13 @@ describe('sampleData', () => {
       'province.occupied': 'yes',
       'province.constructing': 'yes',
       'province.hasGreatProjects': 'no',
+      'province.hasFort': 'no',
     });
     expect(saveFacts(new SaveChoice(s, 'SWE', 2))).toMatchObject({
       'province.ownedByPlayer': 'no',
       'province.occupied': 'no',
       'province.hasGreatProjects': 'yes',
+      'province.hasFort': 'yes',
     });
     expect(saveFacts(new SaveChoice(s, 'SWE', 3))).toMatchObject({ 'province.owned': 'no' });
     expect(saveFacts(new SaveChoice(s, 'SWE', undefined))).toEqual({});

@@ -79,6 +79,21 @@
       "values": { "yes": "Native", "no": "Normal" },
       "default": "no",
     },
+    "hre": {
+      "kind": "data",
+      "label": "Empire indicator",
+      "fact": "province.hreIndicator",
+      "values": { "yes": "Shown", "no": "None" },
+      "default": "no",
+      "note": "The game shows it where the empire exists and the province can be part of it: the button in an own province, the icon in a foreign one.",
+    },
+    "fort": {
+      "kind": "data",
+      "label": "Fort",
+      "fact": "province.hasFort",
+      "values": { "yes": "Fort", "no": "No fort" },
+      "default": "yes",
+    },
     "colonised": {
       "kind": "data",
       "label": "Colonised",
@@ -159,6 +174,7 @@
     "provinceview/province_window/tradepower_value": {
       "save": "provinces.{province}.trade_power",
       "format": "number",
+      "decimals": 1,
     },
     "provinceview/province_window/tradevalue_value": { "engine": true, "generated": "number" },
     "provinceview/province_window/goodsproduced_value": { "engine": true, "generated": "number" },
@@ -337,8 +353,9 @@
       ],
     },
     "no-construction": {
+      "note": "Its parts: the Anbennar playset leaves the empty window itself shown.",
       "when": { "construction": "no" },
-      "hide": ["provinceview/province_window/progress_bar_window"],
+      "hide": ["provinceview/province_window/progress_bar_window/*"],
     },
     "not-occupied": {
       "when": { "occupied": "no" },
@@ -369,6 +386,24 @@
         "provinceview/province_window/tradepost_allready_present",
         "provinceview/province_window/trading_city_button",
       ],
+    },
+    "no-fort": {
+      "note": "The no-fort icon shows where the province's buildings hold no fort (Siroz in the corpus).",
+      "when": { "fort": "no" },
+      "show": ["provinceview/province_window/no_building_fort"],
+    },
+    "hre-own": {
+      "when": { "hre": "yes", "owner": "yes" },
+      "show": ["provinceview/province_window/hre_button"],
+    },
+    "hre-foreign": {
+      "when": { "hre": "yes", "owner": "no" },
+      "show": ["provinceview/province_window/hre_icon"],
+    },
+    "foreign-claim": {
+      "note": "A foreign province offers to fabricate a claim (the corpus's Siroz).",
+      "when": { "owner": "no" },
+      "show": ["provinceview/province_window/claim_province_button"],
     },
     "hidden-progress_bar_window": {
       "note": "Hidden in the corpus captures while a ship is built: the mutual construction parts.",

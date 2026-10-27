@@ -103,6 +103,8 @@ release.
 | `province.occupied` | `yes`, `no` | Its controller is not its owner. |
 | `province.constructing` | `yes`, `no` | It builds something. |
 | `province.hasGreatProjects` | `yes`, `no` | It lists great projects. |
+| `province.hasFort` | `yes`, `no` | Its buildings hold a fort (`fort_…`). |
+| `province.hreIndicator` | `yes`, `no` | The game shows its Holy Roman Empire indicator (the empire exists and the province can be part of it). The map decides that, not the save; it stays at the default until you set it. |
 | `owner.buildsNativeBuildings` | `yes`, `no` | The owner builds native buildings. A save does not say; it stays at the default until you set it. |
 
 ### Exclusive groups
