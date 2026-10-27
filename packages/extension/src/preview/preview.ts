@@ -6,8 +6,8 @@
 // the live game with the preview's playset (spec section 2). A window with a window profile is
 // drawn in one view, chosen in `View ▾` and the Widget Outline (spec section 4).
 
-import { mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { dirname } from 'node:path';
 import * as vscode from 'vscode';
 import {
   DEFAULT_LANGUAGE,
@@ -50,6 +50,7 @@ import {
 } from '@etch/core/profile';
 import { readGameText, saveEncodingOf } from '../game-text.ts';
 import type { LiveGame } from '../live-game/index.ts';
+import { listSaves, savesFolder } from '../live-game/saves.ts';
 import type { OutlineToggle, WidgetNavigation } from '../navigation.ts';
 import { PreviewData } from './data.ts';
 import { previewHtml } from './html.ts';
@@ -1206,20 +1207,36 @@ export class Preview implements PreviewApi, vscode.Disposable {
   }
 
   /**
-   * Asks for a save: those of the player's `save games/` (read only), newest first, or any file
-   * (spec section 5). The live game's private saves join the list once it offers them (M8).
+   * Asks for a save: those of the player's `save games/` (read only) and the live game's private
+   * saves, newest first, or any file (spec section 5). An ironman save is listed as not readable.
    */
   private async pickSave(session: PreviewSession | undefined): Promise<string | undefined> {
     const folder = session?.playset.profileFolder;
-    const saves = folder === undefined ? [] : await listSaves(join(folder, 'save games'));
-    const items: (vscode.QuickPickItem & { path?: string })[] = [
-      ...saves.map((save) => ({
-        label: save.name,
-        description: new Date(save.modified).toLocaleString(),
-        path: save.path,
-      })),
-      { label: '$(folder-opened) Choose a save file…' },
+    const sources = [
+      {
+        label: "The player's saves",
+        folder: folder === undefined ? undefined : savesFolder(folder),
+      },
+      { label: "The live game's saves", folder: this.liveGame?.savesFolder },
     ];
+    const items: (vscode.QuickPickItem & { path?: string })[] = [];
+    for (const source of sources) {
+      if (source.folder === undefined) continue;
+      const saves = await listSaves(source.folder);
+      if (saves.length === 0) continue;
+      items.push({ label: source.label, kind: vscode.QuickPickItemKind.Separator });
+      for (const save of [...saves].sort((a, b) => b.modifiedMs - a.modifiedMs)) {
+        items.push({
+          label: save.name,
+          description: [
+            new Date(save.modifiedMs).toLocaleString(),
+            ...(save.ironman ? ['ironman, not readable'] : []),
+          ].join(' · '),
+          path: save.path,
+        });
+      }
+    }
+    items.push({ label: '$(folder-opened) Choose a save file…' });
     const picked = await vscode.window.showQuickPick(items, {
       title: 'Save for sample data',
       placeHolder: 'A text save; an ironman save cannot be read',
@@ -1229,7 +1246,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
     const chosen = await vscode.window.showOpenDialog({
       canSelectMany: false,
       filters: { 'EU4 saves': ['eu4'] },
-      ...(folder === undefined ? {} : { defaultUri: vscode.Uri.file(join(folder, 'save games')) }),
+      ...(folder === undefined ? {} : { defaultUri: vscode.Uri.file(savesFolder(folder)) }),
       openLabel: 'Use for sample data',
     });
     return chosen?.[0]?.fsPath;
@@ -1636,21 +1653,4 @@ function toDiagnostic(found: ModelDiagnostic, source: SourceText): vscode.Diagno
 
 function severityLog(notice: Notice): 'error' | 'warn' | 'info' {
   return notice.severity === 'error' ? 'error' : notice.severity === 'warning' ? 'warn' : 'info';
-}
-
-/** The `.eu4` files of a folder, newest first; none when it cannot be read. */
-async function listSaves(
-  folder: string,
-): Promise<{ readonly name: string; readonly path: string; readonly modified: number }[]> {
-  const names = await readdir(folder).catch(() => [] as string[]);
-  const saves = await Promise.all(
-    names
-      .filter((name) => name.toLowerCase().endsWith('.eu4'))
-      .map(async (name) => {
-        const path = join(folder, name);
-        const info = await stat(path).catch(() => undefined);
-        return info?.isFile() === true ? { name, path, modified: info.mtimeMs } : undefined;
-      }),
-  );
-  return saves.filter((save) => save !== undefined).sort((a, b) => b.modified - a.modified);
 }
