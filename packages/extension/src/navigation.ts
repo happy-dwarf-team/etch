@@ -259,6 +259,7 @@ class OutlineTree implements vscode.TreeDataProvider<OutlineNode> {
       if (!created) notes.push('not created');
       else if (!state.shown) notes.push('hidden');
       if (state.byHand) notes.push('by hand');
+      else if (state.fromGame === true) notes.push('from the game');
       if (member !== undefined) {
         const chosen = member.node.state.chosen === member.value;
         item.iconPath = new vscode.ThemeIcon(
