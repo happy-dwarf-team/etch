@@ -76,9 +76,6 @@ target).
   posted messages a window procedure subclass sees, with the `MK_*` bits
   cleared and the key-state imports replaced (M9).
 - **The hotkey with the province view on screen:** holds (M9).
-- **Lines in pick mode:** the pinned Tongs 0.17.0 has no `definition_line`; the
-  M9 checks used a lab build of Tongs' `main`. Until a Tongs release with it is
-  pinned, a pick opens the file without the line.
 
 ## Large mods
 
@@ -115,5 +112,3 @@ description of the live game (`etch-website`), freezing this specification and
    past the rects Tongs reads: acceptable?
 4. etch#210 (the province view over the top bar in the foreign view at small
    sizes): fix before 2.0.0, or release with those captures failing?
-5. A Tongs release with `definition_line` and its pin in Etch before 2.0.0, so
-   that a pick opens the line?
