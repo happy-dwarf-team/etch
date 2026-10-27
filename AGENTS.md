@@ -3,8 +3,9 @@
 - VS Code extension with a fast, game-faithful preview of EU4 interface mods: an offline
   renderer and a game host (the Anvil plugin in `plugin/`). What Etch does is in the
   [v1 specification](docs/spec/v1.md) and the decisions in [docs/adr/](docs/adr/); read the
-  section a change touches first. The v1 specification is frozen at 1.0.0: open points and
-  later work go to [docs/spec/after-v1.md](docs/spec/after-v1.md). Terms in
+  section a change touches first. The v1 specification is frozen at 1.0.0 and describes 1.x;
+  `main` is built to the [v2 specification](docs/spec/v2.md), living until 2.0.0. Open points
+  of the offline renderer stay in [docs/spec/after-v1.md](docs/spec/after-v1.md). Terms in
   [GLOSSARY.md](GLOSSARY.md), budgets in [docs/budgets.md](docs/budgets.md).
 - [CONTRIBUTING.md](CONTRIBUTING.md) holds the titles and scopes, the `research/*` and
   `prototype/*` branches (pushed, never merged), releases, the repository layout, and the

@@ -85,7 +85,7 @@ A pnpm workspace (ADR 0001):
 | `corpus`             | precision corpus manifest and capture records (no screenshots) |
 | `pins`               | pinned game-side builds: release tag, URL and SHA-256 (pins/README.md) |
 | `docs/adr`           | architecture decisions                                         |
-| `docs/spec`          | the v1 specification                                           |
+| `docs/spec`          | the v1 specification (frozen) and the v2 specification         |
 
 Workspace packages are TypeScript sources that esbuild bundles into the
 extension and the webview script. The VSIX has no runtime dependencies besides

@@ -4,21 +4,23 @@ Etch 1.0.0 is the scope of the [v1 specification](v1.md), frozen at that
 release. This file is the living list of what it left: the work v1 put out of
 scope, what the v1 milestones found but did not plan, the open issues and the
 open points. When implementation learns something that changes an entry, a pull
-request changes it here. The next version's specification takes its scope from
-this list and gets its own file.
+request changes it here. The [v2 specification](v2.md) took its scope from this
+list; entries it settles say so, and the rest stay here until 2.0.0, when
+`after-v2.md` takes over.
 
 ## Not in v1
 
 From section 14 of the v1 specification:
 
 - **Sample data** for code-filled windows: format, who writes it, and how it
-  stays honest against the game.
+  stays honest against the game. *Taken by v2 (v2.md sections 4 and 5).*
 - **Editing in the preview** (drag, an attribute panel writing back to `.gui`).
 - **Headless mode for CI:** diagnostics and precision checks without VS Code.
   `core` stays free of `vscode` so the mode remains possible.
 - **Live game windows in the game host:** the game's own window instances with
   code-filled content, which need a recipe per window and a way to refill
-  content after a reload.
+  content after a reload. *Taken by v2 as the live game, without the game
+  host (ADR 0005, v2.md section 6).*
 - **Faithful offline rendering:** sprite, frame, font and colour per widget
   from the game (about 1–2 weeks of reverse engineering), only if pixel diffs
   prove too weak to diagnose corpus failures.
@@ -30,14 +32,15 @@ From section 14 of the v1 specification:
   playsets' save, so the Anbennar report has no `province` and
   `diplomacy-dialog` captures: Verne in 1444 has neither the outliner entry nor
   the diplomacy row they click. The manifest has no recipe per playset
-  (etch#55, docs/game-host.md).
+  (etch#55, docs/game-host.md). *Taken by v2 (v2.md section 11).*
 - **Game host job time.** The 150 ms target of v1 section 7 is met for small
   windows, not for full-screen crops, nor for the Anbennar playset's
   `countrydiplomacyview` (215–224 ms); a root's job right after another window
   of the same file took 321–582 ms, not looked into (etch#53, etch#57,
-  docs/budgets.md).
+  docs/budgets.md). *Superseded by v2: the game host leaves (ADR 0005).*
 - **Game host start with Anbennar:** about 40 s to ready and 36 s to restart,
-  twice vanilla's (etch#57).
+  twice vanilla's (etch#57). *Superseded by v2: the game host leaves
+  (ADR 0005); the live game's restarts have no time target.*
 
 ## Open issues
 
@@ -88,28 +91,29 @@ until 1.0.0):
   vanilla paths) is unchecked. Also assumed: the last of a repeated key in one
   block counts, and `if_resolution` properties apply where the block stands
   in the file (etch#33).
-- The source of the FPS counter in the top-right corner (etch#22).
+- The source of the FPS counter in the top-right corner (etch#22). *Superseded by v2: the game host leaves (ADR 0005).*
 - Which monitor the game takes its native resolution from when there are
   several: the preview's "native" is the monitor that shows VS Code (etch#38).
 - Windows with an `orientation` other than upper left inside the backdrop
   wrapper (etch#22); a `CENTER` dialog drew where its original does
-  (etch#118).
+  (etch#118). *Superseded by v2: the game host leaves (ADR 0005).*
 - What a dialog's `shieldtype` draws outside the main menu, where the game
   host leaves it out (etch#118), and whether any other behaviour of the
   dialog class (its `LeftStar` and `RightStar` handling on show) differs from
-  a `windowType` in a mod's dialog.
+  a `windowType` in a mod's dialog. *Superseded by v2: the game host leaves (ADR 0005).*
 - Nested windows that the game's own code hides in game, such as
   `vassal_select_window` in `countrydiplomacyview` or the court view's advisor
   selection, show in the main menu copy over the window they belong to, and
   buttons show the frames the main menu gives them (etch#126, etch#53); whether
   the preview should hide them is open. Against the corpus captures 2 of 26
-  views pass in the game host, all 26 in the offline renderer.
+  views pass in the game host, all 26 in the offline renderer. *Settled by
+  v2: the preview shows the view a window profile names (v2.md section 4).*
 - A top-level `parent` on the previewed window names a sibling once the
   wrapper nests it; no file of the corpora has one, and the preview copy
-  warns (etch#47).
+  warns (etch#47). *Superseded by v2: the game host leaves (ADR 0005).*
 - Why `ages_view` draws up to 126 pixels 1 apart between two opens, and why
   a closed `goto_box` still shows in the next capture and leaves its caret
-  blinking (etch#119).
+  blinking (etch#119). *Superseded by v2: the game host leaves (ADR 0005).*
 - Which of `-userdir` and `userdir.txt` wins when both are set; two game
   instances at once (etch#21).
 - The one-off 164 hidden `hints_test` windows after the first `reload` in the
