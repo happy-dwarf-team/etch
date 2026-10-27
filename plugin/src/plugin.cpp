@@ -143,6 +143,33 @@ HWND GameWindow() {
     return window;
 }
 
+// Posts a key to the game's window when the first widget `selector` names is
+// visible: the key down now and up a frame later, as a key the player presses
+// (the game takes key messages through SDL's event queue).
+etch::PressResult Press(const std::string& selector, etch::Key key) {
+    etch::PressResult out;
+    const HWND window = GameWindow();
+    if (g_ui == nullptr || window == nullptr) return out;
+    g_ui->find(
+        selector.c_str(), 0,
+        [](void* context, const TongsUiWidget* widget) -> int {
+            if ((widget->flags & TONGS_UI_MATCH) == 0 || (widget->flags & TONGS_UI_VISIBLE) == 0) return 1;
+            static_cast<etch::PressResult*>(context)->found = true;
+            return 0;
+        },
+        &out, nullptr);
+    if (!out.found) return out;
+    const WPARAM vk = key == etch::Key::Enter ? VK_RETURN : VK_ESCAPE;
+    const LPARAM scan = static_cast<LPARAM>(MapVirtualKeyW(static_cast<UINT>(vk), MAPVK_VK_TO_VSC)) << 16;
+    out.pressed = PostMessageW(window, WM_KEYDOWN, vk, scan | 1) != 0;
+    if (!out.pressed) return out;
+    const LPARAM up = scan | 1 | (static_cast<LPARAM>(0xC0000000u));
+    if (!RunOnMain([window, vk, up] { PostMessageW(window, WM_KEYUP, vk, up); })) {
+        PostMessageW(window, WM_KEYUP, vk, up);
+    }
+    return out;
+}
+
 // Never destroyed, like the host: jobs end on pool threads.
 etch::LiveJobs& Jobs() {
     static etch::LiveJobs& jobs = *new etch::LiveJobs({
@@ -152,6 +179,7 @@ etch::LiveJobs& Jobs() {
         .run_on_main = RunOnMain,
         .run_later = RunLater,
         .now_ms = NowMs,
+        .press = Press,
     });
     return jobs;
 }

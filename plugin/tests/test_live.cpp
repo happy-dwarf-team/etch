@@ -48,7 +48,7 @@ struct FakeGame {
                         return r;
                     }
                     r.success = true;
-                    r.text = tokens[0] == "savegame" ? "Saved" : "reloaded!";
+                    r.text = tokens[0] == "autosave" ? "Autosave command started!" : "reloaded!";
                     if (effect) effect(tokens, *this);
                     return r;
                 },
@@ -95,16 +95,6 @@ void TestAllowedLines() {
           "window close provinceview", "savegame x", "debug_crash", "", "reload caf\xc3\xa9.gui"}) {
         assert(etch::AllowedLine(refused, tokens).has_value());
     }
-}
-
-void TestSaveNames() {
-    assert(etch::IsSaveName("etch-restart"));
-    assert(etch::IsSaveName("Etch_Restart_2"));
-    assert(!etch::IsSaveName(""));
-    assert(!etch::IsSaveName("../x"));
-    assert(!etch::IsSaveName("a b"));
-    assert(!etch::IsSaveName("x.eu4"));
-    assert(!etch::IsSaveName(std::string(65, 'a')));
 }
 
 void TestReadRequest() {
@@ -203,6 +193,50 @@ void TestReloadClosesTheViewItOpened() {
     assert(a.Find("visible")->AsArray()->empty());
 }
 
+void TestReloadClosesByClicks() {
+    FakeGame game;
+    game.roots = {MakeRoot(1, "provinceview", "interface/provinceview.gui", false),
+                  MakeRoot(3, "DeclareWarDialog", "interface/countrydiplomacyview.gui", true)};
+    game.effect = RebuildProvinceView;
+    std::vector<std::string> clicks;
+    LiveJobs::Env env = game.Env();
+    env.press = [&](const std::string& selector, etch::Key key) {
+        assert(key == etch::Key::Escape);
+        clicks.push_back(selector);
+        return etch::PressResult{true, true};
+    };
+    LiveJobs jobs(env);
+    std::optional<ReloadResult> got;
+    assert(!jobs.Reload({{"reload countrydiplomacyview.gui"},
+                         {"interface/countrydiplomacyview.gui"},
+                         {"DeclareWarDialog"},
+                         {"provinceview"}},
+                        [&](const ReloadResult& r) { got = r; }));
+    // The dialog's close is a key that lands a few frames later: the lines wait for it.
+    for (int frame = 0; frame < etch::kKeyFrames; ++frame) {
+        game.Frame();
+        assert(!got.has_value() && game.calls.empty());
+    }
+    assert((clicks == std::vector<std::string>{"DeclareWarDialog"}));
+    game.Frame();
+    assert(got.has_value() && !jobs.Busy());
+    assert((game.calls == std::vector<std::string>{"reload countrydiplomacyview.gui"}));
+    assert((got->closed == std::vector<std::string>{"DeclareWarDialog"}));
+    assert(got->hidden_again.empty());
+
+    // A rebuild that shows the hidden province view: it is closed again by its own button.
+    clicks.clear();
+    got.reset();
+    assert(!jobs.Reload({{"reload provinceview.gui"}, {"interface/provinceview.gui"}, {}, {"provinceview"}},
+                        [&](const ReloadResult& r) { got = r; }));
+    game.Frame();
+    assert(got.has_value());
+    assert((clicks == std::vector<std::string>{"provinceview"}));
+    assert((got->hidden_again == std::vector<std::string>{"provinceview"}));
+    // It closes in the next frame, so it is not listed as visible.
+    for (const Root& root : got->visible) assert(root.name != "provinceview");
+}
+
 void TestReloadKeepsAShownView() {
     FakeGame game;
     game.roots = {MakeRoot(1, "provinceview", "interface/provinceview.gui", true)};
@@ -243,7 +277,7 @@ void TestRefusedInIronmanAndMultiplayer() {
     assert(refused && refused->code == "not_available");
     assert(refused->message == "reload is not available in multiplayer");
     game.session = GameSession{true, false, 2};
-    refused = jobs.Save("etch-restart", [](const etch::SaveResult&) {});
+    refused = jobs.Save([](const etch::SaveResult&) {});
     assert(refused && refused->code == "not_available");
     // A session that turns multiplayer while the job waits is refused on the main thread.
     game.session = std::nullopt;
@@ -276,14 +310,41 @@ void TestSave() {
     game.session = GameSession{false, false, 1};
     LiveJobs jobs(game.Env());
     std::optional<etch::SaveResult> got;
-    assert(!jobs.Save("etch-restart", [&](const etch::SaveResult& r) { got = r; }));
+    assert(!jobs.Save([&](const etch::SaveResult& r) { got = r; }));
     assert(jobs.Busy());
     game.Frame();
     assert(!jobs.Busy());
-    assert((game.calls == std::vector<std::string>{"savegame etch-restart"}));
+    assert((game.calls == std::vector<std::string>{"autosave"}));
     const Value a = *Parse(etch::SaveAnswer(4, *got)).value;
     assert(a.Find("ok")->AsBool() == true && a.Find("success")->AsBool() == true);
-    assert(a.Find("text")->AsString() == "Saved");
+    assert(a.Find("text")->AsString() == "Autosave command started!");
+}
+
+void TestConfirm() {
+    assert(etch::IsConfirmPath("DefaultConfirm/AgreeButton"));
+    assert(!etch::IsConfirmPath("DefaultConfirm/CancelButton"));
+    assert(!etch::IsConfirmPath("//AgreeButton"));
+    FakeGame game;
+    std::vector<std::string> clicked;
+    LiveJobs::Env env = game.Env();
+    env.press = [&](const std::string& selector, etch::Key key) {
+        assert(key == etch::Key::Enter);
+        clicked.push_back(selector);
+        return etch::PressResult{true, true};
+    };
+    LiveJobs jobs(env);
+    std::optional<etch::ConfirmResult> got;
+    assert(!jobs.Confirm("DefaultConfirm/AgreeButton", [&](const etch::ConfirmResult& r) { got = r; }));
+    assert(jobs.Busy());
+    game.Frame();
+    assert((clicked == std::vector<std::string>{"DefaultConfirm/AgreeButton"}));
+    const Value a = *Parse(etch::ConfirmAnswer(5, *got)).value;
+    assert(a.Find("found")->AsBool() == true && a.Find("pressed")->AsBool() == true);
+    // Without tongs.ui there is nothing to find.
+    LiveJobs blind(game.Env());
+    assert(!blind.Confirm("DefaultConfirm/AgreeButton", [&](const etch::ConfirmResult& r) { got = r; }));
+    game.Frame();
+    assert(got->error == "no_tree");
 }
 
 void TestNoMainThread() {
@@ -300,15 +361,16 @@ void TestNoMainThread() {
 
 int main() {
     TestAllowedLines();
-    TestSaveNames();
     TestReadRequest();
     TestCompareRoots();
     TestReloadClosesTheViewItOpened();
+    TestReloadClosesByClicks();
     TestReloadKeepsAShownView();
     TestReloadWithoutTheTree();
     TestRefusedInIronmanAndMultiplayer();
     TestFaultStopsTheConsole();
     TestSave();
+    TestConfirm();
     TestNoMainThread();
     std::puts("live: ok");
     return 0;

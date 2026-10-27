@@ -188,6 +188,8 @@ export interface LiveGameMod {
   readonly descriptorPath?: string | undefined;
   /** Folders whose files from the layers before this mod are hidden: `replace_path`. */
   readonly replacePaths?: readonly string[];
+  /** The Steam Workshop item id, such as Anbennar's `1385440355`. */
+  readonly workshopId?: string | undefined;
 }
 
 export interface PrepareOptions {

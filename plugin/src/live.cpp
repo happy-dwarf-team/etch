@@ -1,5 +1,6 @@
 #include "live.hpp"
 
+#include <algorithm>
 #include <memory>
 #include <set>
 #include <utility>
@@ -7,9 +8,8 @@
 namespace etch {
 namespace {
 
-constexpr std::size_t kMaxItems = 64;     // lines, files or windows in one request
-constexpr std::size_t kMaxToken = 260;    // a file name or a texture path
-constexpr std::size_t kMaxSaveName = 64;  // without `.eu4`
+constexpr std::size_t kMaxItems = 64;   // lines, files or windows in one request
+constexpr std::size_t kMaxToken = 260;  // a file name or a texture path
 
 char Lower(char c) { return c >= 'A' && c <= 'Z' ? static_cast<char>(c - 'A' + 'a') : c; }
 
@@ -154,15 +154,7 @@ std::optional<std::string> AllowedLine(std::string_view line, std::vector<std::s
     return "the live game runs reload <file>.gui, reloadloc and reloadtexture <texture> only";
 }
 
-bool IsSaveName(std::string_view name) {
-    if (name.empty() || name.size() > kMaxSaveName) return false;
-    for (const char c : name) {
-        if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_' || c == '-')) {
-            return false;
-        }
-    }
-    return true;
-}
+bool IsConfirmPath(std::string_view path) { return path == "DefaultConfirm/AgreeButton"; }
 
 std::optional<std::string> ReadReloadRequest(const json::Value& request, ReloadRequest& out) {
     out = {};
@@ -241,6 +233,13 @@ std::string SaveAnswer(std::uint64_t id, const SaveResult& result) {
         .Finish();
 }
 
+std::string ConfirmAnswer(std::uint64_t id, const ConfirmResult& result) {
+    if (!result.error.empty()) return Error(id, result.error, result.message);
+    json::Writer w = Ok(id);
+    w.Bool("found", result.press.found).Bool("pressed", result.press.pressed);
+    return w.Fixed("queued_ms", result.queued_ms).Finish();
+}
+
 std::optional<Refusal> LiveJobs::Begin() {
     if (faulted_.load()) {
         return Refusal{"console_broken", "a console call faulted earlier; the live game needs a restart"};
@@ -276,65 +275,142 @@ bool LiveJobs::Run(const std::vector<std::string>& tokens, LineResult& record, s
     return true;
 }
 
-void LiveJobs::RunReload(const ReloadRequest& request, ReloadResult& result) {
-    const std::optional<std::vector<Root>> before = env_.roots();
+// One reload through its two steps: the windows closed first, then (a frame
+// later when a close was a posted click, which the game takes in its next
+// frame) the lines, the windows closed again and the stale check.
+struct LiveJobs::ReloadState {
+    ReloadRequest request;
+    ReloadResult result;
+    std::optional<std::vector<Root>> before;
+    std::function<void(const ReloadResult&)> done;
+    double started = 0;
+};
+
+bool LiveJobs::CloseWindow(const std::string& name, ReloadResult& result, bool& pressed) {
+    pressed = false;
+    if (env_.press) {
+        // The console's `window close` closes only windows `window open` opened (live): Escape
+        // closes the topmost panel, as the player's would.
+        pressed = env_.press(name, Key::Escape).pressed;
+        return pressed;
+    }
+    result.lines.emplace_back();
+    return Run({"window", "close", name}, result.lines.back(), result.error, result.message);
+}
+
+void LiveJobs::ReloadFirst(const std::shared_ptr<ReloadState>& state) {
+    ReloadResult& result = state->result;
+    state->before = env_.roots();
+    const std::optional<std::vector<Root>>& before = state->before;
     result.tree = before.has_value();
     if (before) result.roots_before = before->size();
-    auto line = [&](std::vector<std::string> tokens) {
-        result.lines.emplace_back();
-        return Run(tokens, result.lines.back(), result.error, result.message);
-    };
-    for (const std::string& name : request.close) {
+    bool waits = false;
+    for (const std::string& name : state->request.close) {
         // Without the tree a close is sent anyway: closing a window that is not open does nothing.
         const Root* root = before ? FindRoot(*before, name) : nullptr;
         if (before && (root == nullptr || !root->visible)) continue;
-        if (!line({"window", "close", name})) return;
-        result.closed.push_back(name);
+        bool pressed = false;
+        const bool closed = CloseWindow(name, result, pressed);
+        if (!result.error.empty()) return Finish(state);
+        if (closed) result.closed.push_back(name);
+        waits = waits || pressed;
     }
+    if (!waits) return ReloadRest(state);
+    if (!AfterFrames(kKeyFrames, [this, state] { ReloadRest(state); })) {
+        result.error = "no_main_thread";
+        result.message = "the game's main thread does not take work";
+        Finish(state);
+    }
+}
+
+void LiveJobs::ReloadRest(const std::shared_ptr<ReloadState>& state) {
+    ReloadResult& result = state->result;
+    const std::optional<std::vector<Root>>& before = state->before;
     std::vector<std::string> tokens;
-    for (const std::string& text : request.lines) {
+    for (const std::string& text : state->request.lines) {
         AllowedLine(text, tokens);
-        if (!line(tokens)) return;
+        result.lines.emplace_back();
+        if (!Run(tokens, result.lines.back(), result.error, result.message)) return Finish(state);
     }
     std::optional<std::vector<Root>> after = env_.roots();
     if (before && after) {
-        for (const std::string& name : request.keep_hidden) {
+        bool reread = false;
+        for (const std::string& name : state->request.keep_hidden) {
             const Root* was = FindRoot(*before, name);
             const Root* now = FindRoot(*after, name);
             if ((was != nullptr && was->visible) || now == nullptr || !now->visible) continue;
-            if (!line({"window", "close", name})) return;
-            result.hidden_again.push_back(name);
+            bool pressed = false;
+            const bool closed = CloseWindow(name, result, pressed);
+            if (!result.error.empty()) return Finish(state);
+            if (closed) result.hidden_again.push_back(name);
+            reread = reread || (closed && !pressed);
         }
-        if (!result.hidden_again.empty()) after = env_.roots();
+        if (reread) after = env_.roots();
     }
     result.tree = before.has_value() && after.has_value();
     if (result.tree) {
-        result.stale = CompareRoots(*before, *after, request.check);
+        result.stale = CompareRoots(*before, *after, state->request.check);
         result.roots_after = after->size();
         for (const Root& root : *after) {
-            if (root.visible && !root.file.empty()) result.visible.push_back(root);
+            // A window closed again by a key closes in a later frame.
+            const bool closing = std::find(result.hidden_again.begin(), result.hidden_again.end(), root.name) !=
+                                 result.hidden_again.end();
+            if (root.visible && !root.file.empty() && !closing) result.visible.push_back(root);
         }
     }
+    Finish(state);
+}
+
+bool LiveJobs::AfterFrames(int frames, std::function<void()> work) {
+    if (frames <= 0) {
+        work();
+        return true;
+    }
+    return env_.run_on_main([this, frames, work = std::move(work)]() mutable {
+        if (!AfterFrames(frames - 1, std::move(work))) work();
+    });
+}
+
+void LiveJobs::Finish(const std::shared_ptr<ReloadState>& state) {
+    state->result.run_ms = env_.now_ms() - state->started;
+    busy_.store(false);
+    env_.run_later([state] { state->done(state->result); });
 }
 
 std::optional<Refusal> LiveJobs::Reload(ReloadRequest request, std::function<void(const ReloadResult&)> done) {
     if (auto refused = Begin()) return refused;
     const double asked = env_.now_ms();
-    auto job = std::make_shared<ReloadRequest>(std::move(request));
-    const bool queued = env_.run_on_main([this, job, asked, done = std::move(done)] {
-        auto result = std::make_shared<ReloadResult>();
-        const double started = env_.now_ms();
-        result->queued_ms = started - asked;
+    auto state = std::make_shared<ReloadState>();
+    state->request = std::move(request);
+    state->done = std::move(done);
+    const bool queued = env_.run_on_main([this, state, asked] {
+        state->started = env_.now_ms();
+        state->result.queued_ms = state->started - asked;
         // The session may have changed while the job waited.
         const std::optional<GameSession> session = env_.session ? env_.session() : std::nullopt;
         if (session && (session->multiplayer || session->ironman)) {
-            result->error = "not_available";
-            result->message =
+            state->result.error = "not_available";
+            state->result.message =
                 session->multiplayer ? "reload is not available in multiplayer" : "reload does not work in ironman";
-        } else {
-            RunReload(*job, *result);
+            return Finish(state);
         }
-        result->run_ms = env_.now_ms() - started;
+        ReloadFirst(state);
+    });
+    if (!queued) {
+        busy_.store(false);
+        return Refusal{"no_main_thread", "the game's main thread does not take work"};
+    }
+    return std::nullopt;
+}
+
+std::optional<Refusal> LiveJobs::Save(std::function<void(const SaveResult&)> done) {
+    if (auto refused = Begin()) return refused;
+    const double asked = env_.now_ms();
+    const bool queued = env_.run_on_main([this, asked, done = std::move(done)] {
+        auto result = std::make_shared<SaveResult>();
+        result->queued_ms = env_.now_ms() - asked;
+        // `savegame` answers but writes nothing; `autosave` writes save games/autosave.eu4 (live).
+        Run({"autosave"}, result->line, result->error, result->message);
         busy_.store(false);
         env_.run_later([result, done] { done(*result); });
     });
@@ -345,13 +421,19 @@ std::optional<Refusal> LiveJobs::Reload(ReloadRequest request, std::function<voi
     return std::nullopt;
 }
 
-std::optional<Refusal> LiveJobs::Save(std::string name, std::function<void(const SaveResult&)> done) {
-    if (auto refused = Begin()) return refused;
+std::optional<Refusal> LiveJobs::Confirm(std::string path, std::function<void(const ConfirmResult&)> done) {
+    bool idle = false;
+    if (!busy_.compare_exchange_strong(idle, true)) return Refusal{"busy", "another job of the live game runs"};
     const double asked = env_.now_ms();
-    const bool queued = env_.run_on_main([this, name = std::move(name), asked, done = std::move(done)] {
-        auto result = std::make_shared<SaveResult>();
+    const bool queued = env_.run_on_main([this, path = std::move(path), asked, done = std::move(done)] {
+        auto result = std::make_shared<ConfirmResult>();
         result->queued_ms = env_.now_ms() - asked;
-        Run({"savegame", name}, result->line, result->error, result->message);
+        if (env_.press) {
+            result->press = env_.press(path, Key::Enter);
+        } else {
+            result->error = "no_tree";
+            result->message = "tongs.ui is missing, so the button cannot be found";
+        }
         busy_.store(false);
         env_.run_later([result, done] { done(*result); });
     });

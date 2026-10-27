@@ -78,6 +78,23 @@ then deleted), from the save to ready and to the next image.
 
 ## Results
 
+### 2026-10-27, M8 (the live game, reported, not gated)
+
+The live game's reloads with Etch's own plugin (spec section 9, reported),
+from the extension's modules driven outside VS Code, so without VS Code's save
+event and watcher; how they were run is in
+[live-game.md](live-game.md#live-runs). Median / p95 from the request to the
+next two frames, planning included:
+
+| File | Reloads | Measured | Target |
+| --- | --- | --- | --- |
+| `provinceview.gui`, vanilla, view open | 20 | 168 / 181 ms | 150 ms (missed: the stale check's reads take 30–50 ms) |
+| `provinceview.gui`, Anbennar playset, view open | 10 | 92 / 126 ms | 150 ms |
+| `topbar.gui`, vanilla | 10 | about 195 ms | 250 ms |
+
+A planned restart to the loaded game took 25.0 s in vanilla and 48.4 s in the
+Anbennar playset, its achievements prompt answered by the plugin.
+
 ### 2026-10-26, etch#57 (the Anbennar budgets)
 
 Machine as in etch#39 (Intel Core i9-13900KF, 64 GB, NVIDIA GeForce RTX 4090,

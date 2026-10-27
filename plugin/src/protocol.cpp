@@ -41,7 +41,8 @@ Reply Connection::Handle(std::string_view line) {
     if (!greeted_) return {Error(id, "handshake_required", "send hello first")};
     if (*type == "ping") return Ping(*id);
     if (*type == "reload") return Reload(*id, request);
-    if (*type == "save") return Save(*id, request);
+    if (*type == "save") return Save(*id);
+    if (*type == "confirm") return Confirm(*id, request);
     return {Error(id, "unknown_type", "unknown request type")};
 }
 
@@ -111,19 +112,29 @@ Reply Connection::Reload(std::uint64_t id, const json::Value& request) {
     return {};  // answered when the main thread ran it
 }
 
-Reply Connection::Save(std::uint64_t id, const json::Value& request) {
-    const json::Value* name_member = request.Find("name");
-    const std::optional<std::string_view> name = name_member ? name_member->AsString() : std::nullopt;
-    if (!name || !IsSaveName(*name)) {
-        return {Error(id, "bad_request", "\"name\" must be 1 to 64 letters, digits, _ or -")};
-    }
+Reply Connection::Save(std::uint64_t id) {
     if (host_.jobs == nullptr || !host_.ready()) return {Error(id, "not_ready", "the live game is not ready")};
     if (!host_.game_session || !host_.game_session()) {
         return {Error(id, "not_in_game", "the live game has no game loaded to save")};
     }
     const Send send = send_;
-    const std::optional<Refusal> refused = host_.jobs->Save(std::string(*name), [send, id](const SaveResult& r) {
+    const std::optional<Refusal> refused = host_.jobs->Save([send, id](const SaveResult& r) {
         if (send) send(SaveAnswer(id, r));
+    });
+    if (refused) return {Error(id, refused->code, refused->message)};
+    return {};
+}
+
+Reply Connection::Confirm(std::uint64_t id, const json::Value& request) {
+    const json::Value* path_member = request.Find("path");
+    const std::optional<std::string_view> path = path_member ? path_member->AsString() : std::nullopt;
+    if (!path || !IsConfirmPath(*path)) {
+        return {Error(id, "bad_request", "\"path\" must be a prompt button the live game answers")};
+    }
+    if (host_.jobs == nullptr || !host_.ready()) return {Error(id, "not_ready", "the live game is not ready")};
+    const Send send = send_;
+    const std::optional<Refusal> refused = host_.jobs->Confirm(std::string(*path), [send, id](const ConfirmResult& r) {
+        if (send) send(ConfirmAnswer(id, r));
     });
     if (refused) return {Error(id, refused->code, refused->message)};
     return {};

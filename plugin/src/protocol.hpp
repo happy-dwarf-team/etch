@@ -68,7 +68,8 @@ private:
     Reply Hello(std::uint64_t id, const json::Value& request);
     Reply Ping(std::uint64_t id) const;
     Reply Reload(std::uint64_t id, const json::Value& request);
-    Reply Save(std::uint64_t id, const json::Value& request);
+    Reply Save(std::uint64_t id);
+    Reply Confirm(std::uint64_t id, const json::Value& request);
 
     const Host& host_;
     Send send_;

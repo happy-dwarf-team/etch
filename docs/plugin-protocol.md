@@ -9,8 +9,8 @@ would misread it. The extension and the plugin ship together in one VSIX
 (ADR 0004), so a peer of another version is refused, not negotiated with.
 
 Protocol version: **2**, the live game's (v2 specification section 6): the
-handshake, the ping, and the two jobs the plugin runs on the game's main
-thread, `reload` and `save`. Protocol 1 was Etch 1.x's game host: its preview
+handshake, the ping, and the jobs the plugin runs on the game's main thread:
+`reload`, `save` and `confirm`. Protocol 1 was Etch 1.x's game host: its preview
 job (`job`, etch#50) and frame capture are gone (ADR 0005), and a `job` now
 gets `unknown_type`; their description is in this page's history on
 `release/1.x`.
@@ -141,12 +141,23 @@ game's console manager does not exist yet.
 | ------------- | ---------------------------------------------------------------------------------------------------- |
 | `lines`       | 1–64 console lines, each `reload <name>.gui`, `reloadloc` or `reloadtexture <texture>`; anything else, among them `reload guianim`, `reload texture` and `reload assets` (H10), is `bad_request` |
 | `check`       | game paths of the saved files; the top-level windows built from them are checked for stale ones     |
-| `close`       | top-level windows closed through the game (`window close`) before the lines, when visible (an on-demand window such as `DeclareWarDialog`) |
-| `keep_hidden` | top-level windows closed again after the lines when they were hidden before and are visible now (a rebuild opens the province view, H2) |
+| `close`       | top-level windows closed with a posted Escape before the lines, when visible (an on-demand window such as `DeclareWarDialog`); the lines then wait a few frames for the key |
+| `keep_hidden` | top-level windows closed again with a posted Escape after the lines, when they were hidden before and are visible now (a rebuild opens the province view, H2); the extension sends none for now (see below) |
 
 In one job the plugin reads the top-level windows through `tongs.ui` (hidden
-and stale ones too), closes the `close` windows, runs the lines, closes the
-`keep_hidden` windows the lines showed, and reads the windows again. A window
+and stale ones too), closes the `close` windows, runs the lines (4 frames later
+when it pressed a key, so that the game takes it first), closes the
+`keep_hidden` windows the lines showed, and reads the windows again.
+
+The game's console cannot close these windows: `window close` closes only
+windows `window open` opened, and answered an empty failure for the province
+view (live). Mouse clicks do not work either: the game's interface takes the
+pointer from the real cursor (`GetCursorPos`, pick mode checks), which Etch
+never moves. So the plugin posts Escape, down and up a frame apart, which closes
+the topmost panel as the player's key would. In the live runs it closed nothing
+while Tongs' lab input was on and event windows were open, while Tongs' own
+Escape closed the province view; it is checked again before the extension
+relies on it. A window
 built from a `check` file before the lines whose widget id is still there
 after them was not rebuilt: it is **stale** (H3). The check compares ids only;
 it never trusts a liveness read of the definitions, whose memory the game
@@ -168,24 +179,32 @@ reuses.
 | `roots`             | the number of top-level windows before and after: what rebuilds leak              |
 | `queued_ms`, `run_ms` | from the request to the main thread, and on it                                  |
 
-Without `tongs.ui` every `close` window gets a `window close` (closing a
-window that is not open does nothing) and nothing is closed again.
+Without `tongs.ui` every `close` window gets a console `window close` and
+nothing is closed again.
 
 ### `save`
 
 ```json
-{"id":4,"type":"save","name":"etch-restart"}
+{"id":4,"type":"save"}
 ```
 
 ```json
-{"id":4,"ok":true,"success":true,"text":"...","ms":812.5,"queued_ms":16.1}
+{"id":4,"ok":true,"success":true,"text":"Autosave command started!","ms":0.01,"queued_ms":2.6}
 ```
 
-Saves the loaded game through the game's console, `savegame <name>`, into the
-profile's `save games/`. `name` is 1–64 letters, digits, `_` or `-`, without
-`.eu4`; anything else is `bad_request`. Outside a game session it is
-`not_in_game`. `success` and `text` are the console's; `ms` is the save on the
-main thread.
+Saves the loaded game through the game's console command `autosave`, which
+writes `save games/autosave.eu4` (and moves the earlier ones to
+`old_autosave.eu4` and `older_autosave.eu4`) after the answer, also while the
+game is paused: 0.6 s for the vanilla corpus save (62 MB of text), 0.9 s for
+the Anbennar save (111 MB), live. The extension waits until the file has
+changed and settled. `savegame`, which the console describes as "Creates an
+savefile.", answers success and writes nothing (live). Outside a game session
+it is `not_in_game`. `success` and `text` are the console's.
+
+In one live run a game with stale windows on screen (left by a reload of
+`core.gui` and `mapicons.gui`) deadlocked in `autosave`: the main thread waited
+while the window kept taking messages, and no file was written. The extension
+gives a save 30 s before it closes the game anyway.
 
 ## Writing from another thread
 
@@ -193,6 +212,27 @@ The pipe is opened for overlapped I/O, so that an answer can be written from
 another thread while the pipe thread waits for the next request: the answers
 to `reload` and `save` are written that way, and pick mode's pushes will be
 (v2 specification section 7).
+
+### `confirm`
+
+```json
+{"id":5,"type":"confirm","path":"DefaultConfirm/AgreeButton"}
+```
+
+```json
+{"id":5,"ok":true,"found":true,"pressed":true,"queued_ms":16.4}
+```
+
+Answers a prompt with Enter when its button is on screen, for a start from a
+save without the player: Anbennar's achievements prompt shows before a save
+loads (live check H7). `path` is `DefaultConfirm/AgreeButton`, the only button
+it answers; anything else is `bad_request`. On the main thread the plugin finds
+a visible widget of that path through `tongs.ui` and posts Enter (down, and up
+a frame later) to the game's window, which takes the dialog's default button:
+the prompt closed after the first Enter in every live start. A posted mouse
+click did not work (the game reads the real cursor). `found` is false while the prompt is not shown; without `tongs.ui` the
+job answers `no_tree`. Unlike `reload` and `save` it is not refused in ironman
+or multiplayer: the prompt comes before the game session.
 
 ## Error codes
 
@@ -205,5 +245,5 @@ to `reload` and `save` are written that way, and pick mode's pushes will be
 | `protocol_mismatch`  | `hello` with another protocol version                         | yes         |
 | `unknown_type`       | a `type` this version does not know                           | no          |
 | `not_ready`, `busy`, `not_available`, `console_broken`, `no_main_thread`, `not_in_game` | a job refused (above) | no |
-| `console_fault`, `no_console` | a job that ran and failed (above)                    | no          |
+| `console_fault`, `no_console`, `no_tree` | a job that ran and failed (above)         | no          |
 | `line_too_long`      | a line over 65,536 bytes                                      | yes         |
