@@ -321,10 +321,13 @@ describe('the JSON Schema', () => {
     expect(Object.keys(schema.properties).sort()).toEqual([
       '$schema',
       'checkedWith',
+      'content',
       'defaultView',
       'formatVersion',
       'groups',
+      'links',
       'mod',
+      'repeaters',
       'rules',
       'selectors',
       'views',
@@ -344,5 +347,10 @@ describe('the JSON Schema', () => {
       'when',
     ]);
     expect(keys('view')).toEqual(['label', 'set', 'toggles']);
+    const source = ['decimals', 'engine', 'format', 'generated', 'loc', 'save', 'transform'];
+    expect(keys('source')).toEqual(source);
+    expect(keys('content')).toEqual([...source, 'note'].sort());
+    expect(keys('repeater')).toEqual(['count', 'fields', 'from', 'note', 'template']);
+    expect(keys('link')).toEqual(['label', 'when', 'window']);
   });
 });
