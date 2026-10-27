@@ -54,6 +54,8 @@ interface OfflineResult {
   textureProblems?: string[];
   skipped?: number;
   ms?: number;
+  /** The view drawn, when the window has a profile (spec v2 section 14, Large mods). */
+  profile?: { readonly layers: number; readonly selectors: number };
   error?: string;
 }
 
@@ -215,6 +217,14 @@ export async function testPlaysetWindows(api: EtchApi, gamePath: string): Promis
             textureProblems: paint.problems.map((p) => JSON.stringify(p)),
             skipped: paint.skipped.length,
             ms: paint.at - render.requestedAt,
+            ...(render.view === undefined
+              ? {}
+              : {
+                  profile: {
+                    layers: render.view.profile.profile.layers.length,
+                    selectors: render.view.view.selectors.length,
+                  },
+                }),
             ...(paint.error === undefined ? {} : { error: paint.error }),
           };
           break;
@@ -263,6 +273,7 @@ function summary(playset: string, files: readonly FileResult[]): string {
     `${String(files.length)} .gui files, ${String(windows.length)} top-level definitions.`,
     '',
     `- Offline renderer: ${String(offlineDrawn.length)} drawn, ${String(windows.length - offlineDrawn.length)} not.`,
+    `- With a window profile: ${String(windows.filter((w) => w.window.offline?.profile !== undefined).length)} drawn in a view (${[...new Set(windows.filter((w) => w.window.offline?.profile !== undefined).map((w) => w.window.name))].join(', ')}).`,
     `- Problems panel: ${JSON.stringify(problems)}.`,
     '',
     '| File | Window | Kind | Offline |',
