@@ -24,7 +24,10 @@ rule, change a view of Etch's, or drop a rule that does not fit your mod.
 
 Etch ships profiles (`profiles/<source>/` in the repository) for `provinceview` and for the
 windows of the precision corpus, in vanilla and for Anbennar. A window without a profile is drawn
-with every widget, as Etch 1.x drew it.
+with every widget, as Etch 1.x drew it. The vanilla `provinceview` profile also names the source
+of each code-filled text (the province's name, development, culture, religion, autonomy,
+garrison, trade goods; the engine's income, supply and modifiers), the great projects list and the
+link to `colonisationpanel`; the Anbennar playsets use it as it is.
 
 ## A small example
 

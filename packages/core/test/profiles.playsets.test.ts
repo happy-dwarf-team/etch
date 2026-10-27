@@ -83,6 +83,8 @@ describe.skipIf(gamePath === undefined)("Etch's profiles in the corpus playsets"
             gui.file.definitions.some(
               (d) => d.kind === 'positionType' && d.name?.toLowerCase() === type.toLowerCase(),
             ),
+          template: (template) => ui.index.guiType(template)?.item,
+          windowExists: (other) => ui.index.guiType(other) !== undefined,
         });
         problems.push(...result.diagnostics.map((d) => `${d.file}: ${d.message}`));
         checked.set(name.toLowerCase(), { profile: result.profile, window });
