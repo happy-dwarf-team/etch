@@ -2,8 +2,9 @@
  * Layout of one window into the draw list (spec section 3, ADR 0001): every widget's rect from
  * its `orientation`, `position` and size, with `if_resolution` evaluated against the preview
  * screen, and the sprite, frame, shader and text each widget draws in the state the `.gui`
- * defines. Code-filled content stays as the file defines it: lists, grids and overlapping-element
- * boxes are empty, progress bars are empty, shields show no flag.
+ * defines. Code-filled content stays as the file defines it, unless sample data fills its texts
+ * and list boxes (spec section 5): lists, grids and overlapping-element boxes are empty, progress
+ * bars are empty, shields show no flag.
  *
  * Rules marked verified matched the game in etch#3 (live widget reads) or etch#9 (pixel for pixel
  * on the main menu); the rest are hypotheses for the precision corpus (ADR 0002).
@@ -27,7 +28,7 @@ import { diagnostic, type ModelDiagnostic } from '../model/diagnostics.ts';
 import type { FontDefinition, Sprite } from '../model/gfx.ts';
 import { widgetProperties, type GuiFile, type Screen, type Widget } from '../model/gui.ts';
 import type { InterfaceIndex } from '../model/interface-index.ts';
-import type { Properties, Size } from '../model/properties.ts';
+import type { Constants, Properties, Size } from '../model/properties.ts';
 import { resolveFontFiles, resolveTexture, type FileExists } from '../model/references.ts';
 import type { SourceRange } from '../script/tree.ts';
 import type { BmFont } from '../text/bmfont.ts';
@@ -67,6 +68,22 @@ export interface LayoutInput {
   readonly localise?: (text: string) => string;
   /** The view a window profile chooses (spec section 3); without one every widget is drawn. */
   readonly view?: LayoutView;
+  /** Sample data in code-filled widgets (spec section 5); without it they stay as written. */
+  readonly content?: LayoutContent;
+}
+
+/**
+ * What sample data changes in layout: the text a code-filled widget shows instead of its `.gui`
+ * text (already as the game would show it, not localised again), and the entries a list box
+ * shows, each a template laid out below the last.
+ */
+export interface LayoutContent {
+  /** A widget's text; `row` is the entry of a list box the widget is part of. */
+  text(widget: Widget, row: number | undefined): string | undefined;
+  /** The entries of a list box: a top-level definition, from its file, `count` times. */
+  rows(
+    list: Widget,
+  ): { readonly template: Widget; readonly file: GuiFile; readonly count: number } | undefined;
 }
 
 /**
@@ -90,6 +107,8 @@ export interface LaidOutWidget extends DrawRect {
   /** The widget's own draws: `drawList.draws` from `drawStart` up to, not including, `drawEnd`. */
   readonly drawStart: number;
   readonly drawEnd: number;
+  /** The entry of a list box this widget is part of, from 0, when sample data fills the list. */
+  readonly row?: number;
 }
 
 export interface WindowLayout {
@@ -163,10 +182,17 @@ class Layout {
   private readonly widgets: LaidOutWidget[] = [];
   private readonly diagnostics = new Map<string, ModelDiagnostic>();
   private readonly unloaded = new Set<string>();
+  /** The `@name` constants in scope: the window's file's, or a list entry template's file's. */
+  private constants: Constants;
+  /** The list box entry being laid out, if any. */
+  private row: number | undefined;
+  /** The widget being drawn, for its sample text. */
+  private current: Widget | undefined;
 
   constructor(input: LayoutInput) {
     this.input = input;
     this.localise = input.localise ?? ((text) => text);
+    this.constants = input.file.constants;
   }
 
   result(): WindowLayout {
@@ -191,8 +217,9 @@ class Layout {
   place(widget: Widget, parent: Rect, parentIndex: number, fill: Extent | undefined): void {
     const view = this.input.view;
     if (view !== undefined && !view.shows(widget)) return;
-    const props = widgetProperties(widget, this.input.file.constants, this.input.screen);
+    const props = widgetProperties(widget, this.constants, this.input.screen);
     this.checkNotApplied(props);
+    this.current = widget;
     const anchor = this.anchor(props, parent);
     // Hypothesis: the preview shows a window where it ends up once opened, at `show_position`.
     const offset = this.movedPosition(widget) ??
@@ -248,14 +275,63 @@ class Layout {
       ...rect,
       drawStart,
       drawEnd: this.draws.length,
+      ...(this.row === undefined ? {} : { row: this.row }),
     });
 
+    if (LISTS.has(kind)) this.placeRows(widget, props, rect, index);
     // A `scrollbarType` has no render node of its own; lists create it when their rows overflow
-    // (etch#3), and the preview's lists are empty.
+    // (etch#3), and the preview does not scroll.
     if (kind === 'scrollbarType') return;
     for (const child of this.paintOrder(widget, props)) {
       this.place(child.widget, rect, index, child.background ? rect : undefined);
     }
+  }
+
+  /**
+   * The entries sample data puts in a list box (spec section 5): its template laid out once per
+   * entry, from the list's `borderSize`, each below the last (beside it with `horizontal`) with
+   * `spacing` between. Hypotheses for the precision corpus: the entries start at the border, and
+   * only those that fit whole show, as the list does not scroll in the preview.
+   */
+  private placeRows(list: Widget, props: Properties, rect: Rect, index: number): void {
+    const rows = this.input.content?.rows(list);
+    if (rows === undefined || rows.count === 0) return;
+    const border = props.point('bordersize') ?? { x: 0, y: 0 };
+    const spacing = props.number('spacing') ?? 0;
+    const horizontal = props.flag('horizontal') === true;
+    const room = horizontal ? rect.width - 2 * border.x : rect.height - 2 * border.y;
+    const outer = { constants: this.constants, row: this.row };
+    this.constants = rows.file.constants;
+    let offset = 0;
+    for (let row = 0; row < rows.count; row++) {
+      this.row = row;
+      const box: Rect = horizontal
+        ? {
+            x: rect.x + border.x + offset,
+            y: rect.y + border.y,
+            width: room - offset,
+            height: rect.height - 2 * border.y,
+          }
+        : {
+            x: rect.x + border.x,
+            y: rect.y + border.y + offset,
+            width: rect.width - 2 * border.x,
+            height: room - offset,
+          };
+      const widgets = this.widgets.length;
+      const draws = this.draws.length;
+      this.place(rows.template, box, index, undefined);
+      const placed = this.widgets[widgets];
+      const extent = placed === undefined ? 0 : horizontal ? placed.width : placed.height;
+      if (row > 0 && offset + extent > room) {
+        this.widgets.length = widgets;
+        this.draws.length = draws;
+        break;
+      }
+      offset += extent + spacing;
+    }
+    this.constants = outer.constants;
+    this.row = outer.row;
   }
 
   /**
@@ -716,7 +792,9 @@ class Layout {
       colourCode?: string;
     },
   ): number | undefined {
-    const written = props.text(textKey);
+    const sample =
+      this.current === undefined ? undefined : this.input.content?.text(this.current, this.row);
+    const written = sample ?? props.text(textKey);
     const fontName = props.text(fontKey);
     if (written === undefined || written === '' || fontName === undefined) return undefined;
     const definition = this.input.index.font(fontName)?.item;
@@ -739,7 +817,7 @@ class Layout {
       return undefined;
     }
 
-    const text = this.localise(written);
+    const text = sample ?? this.localise(written);
     const icons = new Map<string, { sprite: Sprite; index: number; size: Extent }>();
     const laid = layoutText(font, text, box, {
       colours: {

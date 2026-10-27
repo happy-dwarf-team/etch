@@ -70,6 +70,9 @@ properties complete and wrong ones are underlined.
 | `groups` | Exclusive groups, keyed by id. |
 | `rules` | What shows and what hides in which case, keyed by id. |
 | `views` | Named views, keyed by id. |
+| `content` | The source of each code-filled widget's text, keyed by widget path. |
+| `repeaters` | List boxes the game's code fills, keyed by the list box's path. |
+| `links` | Windows the game opens instead of this one, keyed by id. |
 | `defaultView` | The view the preview opens on; the first view when no layer names one. |
 
 Etch's own mod profiles also have `mod` (`remoteFileId`, `name`), which matches them with the
@@ -139,6 +142,99 @@ A view has a `label`, the selector values it `set`s and optional hand `toggles` 
 `true` for shown, `false` for hidden). A view does not set a `resolution` selector: the preview's
 screen does.
 
+### Content
+
+The game's code fills many texts of a window (a province's name, its tax, its culture); their
+`.gui` text is a placeholder. `content` gives each one a source, and the preview shows **sample
+data** there (spec section 5). Each entry has one source:
+
+| Source | Example | The text |
+| --- | --- | --- |
+| `save` | `{ "save": "provinces.{province}.base_tax", "format": "number" }` | the value in the save chosen in `Data ▾` |
+| `loc` | `{ "loc": "PROVINCE_VIEW_TITLE" }` | the playset's localisation of the key |
+| `engine` | `{ "engine": true, "generated": "number" }` | only a live snapshot knows it (income, unrest, supply) |
+| `generated` | `{ "generated": "percent" }` | generated text only |
+
+Every entry also falls through to the **generated** layer when its source has no value: text,
+a number, a percentage or a date (`generated`; by default `text`, or the save value's
+format) at the length chosen in `Data ▾`. A save source takes:
+
+- `format`: `text` (as the save writes it, the default), `number` (at most two decimals,
+  trailing zeros dropped, or `decimals` from 0 to 4) or `percent` (the number and `%`; the
+  save's `local_autonomy=12.500` shows `12.5%`).
+- `transform`: `sum` adds up several save paths (`"save": [ … ]`, a number), `localise`
+  shows the localisation of the value (`culture=swedish` shows "Swedish", `owner="SWE"` shows
+  "Sweden"). These are the only transforms: Etch never works a value out as the engine would.
+
+The save paths Etch reads:
+
+| Path | Of |
+| --- | --- |
+| `provinces.{province}.<key>` | the province chosen in `Data ▾` |
+| `countries.{country}.<key>` | the country chosen in `Data ▾`, the save's player by default |
+| `countries.{owner}.<key>` | the chosen province's owner |
+| `meta.date`, `meta.player`, `meta.displayed_country_name` | the save's meta |
+
+A province's keys: `name`, `owner`, `controller`, `previous_controller`, `trade`,
+`original_culture`, `native_culture`, `culture`, `religion`, `original_religion`, `capital`,
+`is_city`, `garrison`, `base_tax`, `original_tax`, `base_production`, `base_manpower`,
+`likely_rebels`, `trade_goods`, `local_autonomy`, `devastation`, `center_of_trade`, `trade_power`,
+`hre`, `unrest`, `nationalism`, `colonysize`, `native_size`, `native_ferocity`,
+`native_hostileness`, `original_coloniser`, `missionary_progress`, `active_trade_company`, `winter`.
+A country's keys: `government_rank`, `government_name`, `capital`, `original_capital`, `trade_port`,
+`treasury`, `estimated_monthly_income`, `inflation`, `corruption`, `prestige`, `stability`,
+`legitimacy`, `devotion`, `republican_tradition`, `meritocracy`, `horde_unity`, `army_tradition`,
+`navy_tradition`, `army_professionalism`, `mercantilism`, `splendor`, `absolutism`,
+`war_exhaustion`, `papal_influence`, `piety`, `innovativeness`, `great_power_score`, `manpower`,
+`max_manpower`, `sailors`, `max_sailors`, `religion`, `dominant_religion`, `religious_unity`,
+`primary_culture`, `dominant_culture`, `technology_group`, `unit_type`, `national_focus`,
+`base_tax`, `development`, `raw_development`, `realm_development`, `num_of_cities`,
+`average_unrest`, `average_autonomy`. Collections
+for repeaters: a province's `buildings`, `building_builders`, `cores`, `claims`, `great_projects`,
+`institutions`, `discovered_by`, `modifier`; a country's `active_idea_groups`, `owned_provinces`,
+`core_provinces`, `allies`, `subjects`, `active_policy`.
+Any other path is an error when the profile loads; a new one needs an Etch release
+(`packages/core/src/profile/save-paths.ts`).
+
+### Repeaters
+
+A repeater fills a list box with entries of a `template` (a top-level definition of the
+playset, such as a `windowType`): one per child of the save collection `from`, or, without a
+save, `count` generated entries (3 by default). `fields` gives each text of an entry a source,
+keyed by its path in the template, the template's name first. In a field, `entry` is the child:
+`entry.key` its key, `entry.value` its value, `entry.<key>` a key of its block, and `entry`
+alone its value, or its key when the value is `yes` (`temple=yes` gives `temple`).
+
+```jsonc
+"provinceview/**/building_list": {
+  "template": "building_entry",
+  "from": "provinces.{province}.buildings",
+  "fields": {
+    "building_entry/name": { "save": "entry", "transform": "localise" },
+  },
+},
+```
+
+The entries start at the list's `borderSize`, each below the last (beside it with
+`horizontal`) with `spacing` between; only those that fit whole show, as the preview does not
+scroll.
+
+### Links
+
+A link names a `window` the game opens instead of this one when every condition of `when`
+holds, and an optional `label`. While it holds, the preview shows the label with a button that
+pins the linked window:
+
+```jsonc
+"links": {
+  "uncolonised": {
+    "when": { "owned": "no" },
+    "window": "colonisationpanel",
+    "label": "An uncolonised province opens the colonisation panel.",
+  },
+},
+```
+
 ### Paths
 
 Widgets are named by their path of names from the top-level window, joined by `/`, never by
@@ -162,7 +258,9 @@ height, so a profile need not write them:
 ## Checks
 
 Each layer is checked when it loads, against the schema and the playset's files: a path that names
-no widget of the window, an unknown selector, value, fact, view or `positionType` is an error.
+no widget of the window, an unknown selector, value, fact, view, `positionType`, save path or
+template, a repeater on a widget that is not a list box, or a link to a window the playset lacks
+is an error.
 The faulty entry is skipped and the rest of the profile applies.
 
 - Your project's file: the errors are in the Problems panel, on their lines.

@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://github.com/happy-dwarf-team/etch/blob/main/profiles/window-profile.schema.json",
   "title": "Etch window profile",
-  "description": "What Etch knows about one top-level window of Europa Universalis IV beyond its interface files: its selectors, exclusive groups, rules and views (ADR 0006, docs/window-profiles.md).",
+  "description": "What Etch knows about one top-level window of Europa Universalis IV beyond its interface files: its selectors, exclusive groups, rules, views, links and the sources of its code-filled content (ADR 0006, docs/window-profiles.md).",
   "type": "object",
   "required": ["formatVersion", "window"],
   "additionalProperties": false,
@@ -59,6 +59,27 @@
       "additionalProperties": {
         "oneOf": [{ "$ref": "#/definitions/view" }, { "type": "null" }]
       }
+    },
+    "content": {
+      "description": "The source of each code-filled widget's text, keyed by widget path: a save path, a localisation key, the engine (only a live snapshot knows it) or generated text. null removes a lower layer's entry.",
+      "type": "object",
+      "propertyNames": { "$ref": "#/definitions/path" },
+      "additionalProperties": {
+        "oneOf": [{ "$ref": "#/definitions/content" }, { "type": "null" }]
+      }
+    },
+    "repeaters": {
+      "description": "List boxes the game's code fills, keyed by the list box's path: a template laid out once per child of a save collection, or count times without a save. null removes a lower layer's repeater.",
+      "type": "object",
+      "propertyNames": { "$ref": "#/definitions/path" },
+      "additionalProperties": {
+        "oneOf": [{ "$ref": "#/definitions/repeater" }, { "type": "null" }]
+      }
+    },
+    "links": {
+      "description": "Windows the game opens instead of this one, keyed by id: when the conditions hold, the preview offers to pin the linked window. null removes a lower layer's link.",
+      "type": "object",
+      "additionalProperties": { "oneOf": [{ "$ref": "#/definitions/link" }, { "type": "null" }] }
     },
     "defaultView": {
       "description": "The view the preview opens on; the first view when no layer names one.",
@@ -199,6 +220,150 @@
           "description": "Hand toggles, keyed by path: true shows the widget, false hides it.",
           "type": "object",
           "additionalProperties": { "type": "boolean" }
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "anyOf": [
+        { "required": ["save"] },
+        { "required": ["loc"] },
+        { "required": ["engine"] },
+        { "required": ["generated"] }
+      ],
+      "properties": {
+        "save": {
+          "description": "A save path, such as provinces.{province}.base_tax (docs/window-profiles.md lists those Etch reads), or several to add up with transform sum.",
+          "oneOf": [
+            { "$ref": "#/definitions/text" },
+            { "type": "array", "minItems": 2, "items": { "$ref": "#/definitions/text" } }
+          ]
+        },
+        "loc": {
+          "description": "A localisation key of the playset.",
+          "$ref": "#/definitions/text"
+        },
+        "engine": {
+          "description": "The engine works the value out (income, unrest, supply): only a live snapshot fills it.",
+          "const": true
+        },
+        "generated": {
+          "description": "What the generated layer fills the text with; by default text, or the save value's format.",
+          "enum": ["text", "number", "percent", "date"]
+        },
+        "transform": {
+          "description": "sum adds up several save paths; localise shows the localisation of the save value (a culture, a religion, a tag).",
+          "enum": ["sum", "localise"]
+        },
+        "format": {
+          "description": "How a save value is written: as it is (text), as a number, or as a number with %.",
+          "enum": ["text", "number", "percent"]
+        },
+        "decimals": {
+          "description": "Decimals of a number or percentage; at most two, trailing zeros dropped, when not given.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4
+        }
+      }
+    },
+    "content": {
+      "type": "object",
+      "additionalProperties": false,
+      "anyOf": [
+        { "required": ["save"] },
+        { "required": ["loc"] },
+        { "required": ["engine"] },
+        { "required": ["generated"] }
+      ],
+      "properties": {
+        "save": {
+          "description": "A save path, such as provinces.{province}.base_tax (docs/window-profiles.md lists those Etch reads), or several to add up with transform sum.",
+          "oneOf": [
+            { "$ref": "#/definitions/text" },
+            { "type": "array", "minItems": 2, "items": { "$ref": "#/definitions/text" } }
+          ]
+        },
+        "loc": {
+          "description": "A localisation key of the playset.",
+          "$ref": "#/definitions/text"
+        },
+        "engine": {
+          "description": "The engine works the value out (income, unrest, supply): only a live snapshot fills it.",
+          "const": true
+        },
+        "generated": {
+          "description": "What the generated layer fills the text with; by default text, or the save value's format.",
+          "enum": ["text", "number", "percent", "date"]
+        },
+        "transform": {
+          "description": "sum adds up several save paths; localise shows the localisation of the save value (a culture, a religion, a tag).",
+          "enum": ["sum", "localise"]
+        },
+        "format": {
+          "description": "How a save value is written: as it is (text), as a number, or as a number with %.",
+          "enum": ["text", "number", "percent"]
+        },
+        "decimals": {
+          "description": "Decimals of a number or percentage; at most two, trailing zeros dropped, when not given.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4
+        },
+        "note": { "$ref": "#/definitions/text" }
+      }
+    },
+    "repeater": {
+      "type": "object",
+      "required": ["template"],
+      "additionalProperties": false,
+      "properties": {
+        "template": {
+          "description": "The top-level definition of the playset each entry is made from.",
+          "$ref": "#/definitions/text"
+        },
+        "from": {
+          "description": "The save collection the entries come from, such as provinces.{province}.buildings; a field reads one entry as entry, entry.key, entry.value or entry.<key>.",
+          "$ref": "#/definitions/text"
+        },
+        "count": {
+          "description": "How many generated entries show without a save; 3 by default.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "fields": {
+          "description": "The source of each text of an entry, keyed by its path in the template, the template's name first.",
+          "type": "object",
+          "propertyNames": { "$ref": "#/definitions/path" },
+          "additionalProperties": { "$ref": "#/definitions/source" }
+        },
+        "note": { "$ref": "#/definitions/text" }
+      }
+    },
+    "link": {
+      "type": "object",
+      "required": ["when", "window"],
+      "additionalProperties": false,
+      "properties": {
+        "when": {
+          "description": "The conditions, keyed by selector: one value, or any of several.",
+          "type": "object",
+          "additionalProperties": {
+            "oneOf": [
+              { "$ref": "#/definitions/text" },
+              { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/text" } }
+            ]
+          }
+        },
+        "window": {
+          "description": "The top-level window the game opens instead.",
+          "$ref": "#/definitions/text"
+        },
+        "label": {
+          "description": "The note the preview shows while the link holds.",
+          "$ref": "#/definitions/text"
         }
       }
     }
