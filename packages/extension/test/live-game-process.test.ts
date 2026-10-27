@@ -6,10 +6,10 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import type { PreparedInstall } from '../src/game-host/install.ts';
-import { HostPipe, PipeError, newSessionId, pipePath } from '../src/game-host/pipe.ts';
+import type { PreparedInstall } from '../src/live-game/install.ts';
+import { HostPipe, PipeError, newSessionId, pipePath } from '../src/live-game/pipe.ts';
 import {
-  GameHostProcess,
+  LiveGameProcess,
   HostBusyError,
   HostCrashedError,
   acquireLock,
@@ -18,14 +18,14 @@ import {
   readLock,
   releaseLock,
   type LockOptions,
-} from '../src/game-host/process.ts';
+} from '../src/live-game/process.ts';
 import {
   closeWindowsHelper,
   creationUnixMs,
   processIdentity,
   type ProcessIdentity,
-} from '../src/game-host/windows.ts';
-import { watch } from '../src/game-host/watchdog.ts';
+} from '../src/live-game/windows.ts';
+import { watch } from '../src/live-game/watchdog.ts';
 
 // The Win32 helper runs in Windows PowerShell, about a second per call.
 const windows = process.platform === 'win32' ? describe : describe.skip;
@@ -276,13 +276,12 @@ describe('the session pipe', () => {
   });
 });
 
-windows('GameHostProcess', () => {
+windows('LiveGameProcess', () => {
   function install(args: string[]): PreparedInstall {
     return {
       exe: process.execPath,
       gameFolder: temp,
       profileFolder: temp,
-      overlayFolder: temp,
       arguments: [FAKE_GAME, ...args],
       restored: [],
     };
@@ -292,7 +291,7 @@ windows('GameHostProcess', () => {
     'starts, waits until ready, checks the handshake and stops the verified process',
     async () => {
       const lock: LockOptions = { path: join(temp, 'game-host.lock'), owner: await self() };
-      const host = await GameHostProcess.start({
+      const host = await LiveGameProcess.start({
         install: install([lock.path, '500']),
         originalGameFolder: temp,
         lock,
@@ -315,7 +314,7 @@ windows('GameHostProcess', () => {
     async () => {
       const lock: LockOptions = { path: join(temp, 'game-host.lock'), owner: await self() };
       await expect(
-        GameHostProcess.start({
+        LiveGameProcess.start({
           install: install([lock.path, '60000', 'exit']),
           originalGameFolder: temp,
           lock,
@@ -335,7 +334,7 @@ windows('GameHostProcess', () => {
       `finds a hang: ${mode}`,
       async () => {
         const lock: LockOptions = { path: join(temp, 'game-host.lock'), owner: await self() };
-        const host = await GameHostProcess.start({
+        const host = await LiveGameProcess.start({
           install: install([lock.path, '200', mode]),
           originalGameFolder: temp,
           lock,

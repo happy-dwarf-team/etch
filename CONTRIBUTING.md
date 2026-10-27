@@ -4,7 +4,7 @@
 
 Every change goes to `main` through a pull request; nobody pushes to `main`
 directly. A pull request needs the `windows` check (typecheck, lint, format,
-tests, the game host plugin, VSIX package) and the `conventional-title` check
+tests, the plugin, VSIX package) and the `conventional-title` check
 to pass, and is **squash-merged**: the pull request title becomes the single
 commit on `main` and, through it, the changelog entry. Keep one topic per pull
 request; split unrelated changes.
@@ -70,6 +70,13 @@ two `package.json` versions differ, and the plugin's build when
 request publishes to both stores at once, so it is merged only on the
 maintainer's go-ahead.
 
+Until 2.0.0 no store release comes from `main` (ADR 0005, v2 specification
+section 13): the release pull request waits, and 2.0.0 is released with
+`Release-As: 2.0.0`. Fixes for 1.0.x (bugs only) go by pull request to
+`release/1.x`, cut at `v1.0.1`, which releases them with its own release-please
+pull request until 2.0.0 and gets none after; a fix that `main` needs too goes
+to both. [docs/release.md](docs/release.md) has the steps.
+
 ## Repository layout
 
 A pnpm workspace (ADR 0001):
@@ -81,7 +88,7 @@ A pnpm workspace (ADR 0001):
 | `packages/extension` | VS Code glue and the VSIX manifest                             |
 | `packages/compare`   | the precision corpus's headless comparison; never shipped      |
 | `packages/media`     | the Etch site's media: demo mod, scenes (docs/media.md); never shipped |
-| `plugin`             | the game host's Anvil plugin (C++, CMake, Anvil SDK)           |
+| `plugin`             | the live game's Anvil plugin (C++, CMake, Anvil SDK)           |
 | `corpus`             | precision corpus manifest and capture records (no screenshots) |
 | `pins`               | pinned game-side builds: release tag, URL and SHA-256 (pins/README.md) |
 | `docs/adr`           | architecture decisions                                         |
@@ -115,7 +122,7 @@ pnpm package         # packages/extension/dist/etch-win32-x64-<version>.vsix (ru
 `pnpm format` rewrites files with Prettier. Markdown is not formatted; keep its
 line breaks and tables as they are.
 
-### The game host plugin
+### The plugin
 
 `plugin/` is a CMake project of its own, built with Visual Studio 2022 (or its
 Build Tools) and CMake 3.28 or later against the Anvil SDK that
@@ -133,7 +140,7 @@ pipx run --spec clang-format==21.1.8 clang-format -i (git ls-files 'plugin/*.cpp
 The build leaves the plugin folder in `plugin/build/plugin/etch/` (`etch.dll`,
 `plugin.toml`, `symbols.toml`). `pnpm package` needs it installed, with
 `LICENSE`, in `plugin/dist/etch/`, which it stages for
-`<game host install>/anvil/plugins/etch` (pins/README.md):
+`<private install>/anvil/plugins/etch` (pins/README.md):
 
 ```powershell
 cmake --install plugin/build --config Release --component plugin --prefix plugin/dist
@@ -155,7 +162,7 @@ pull request what was measured: [docs/budgets.md](docs/budgets.md) says how,
 and a new result goes there. Every run of the game follows the EU4 engine
 lab's procedure: `eu4.exe`, saves and mods are never changed, and a process is
 closed only after its PID, path and creation time are checked. Only one game
-or heavy run (a corpus capture, a game host check, `compare --gpu`) runs on the
+or heavy run (a corpus capture, a live game check, `compare --gpu`) runs on the
 machine at a time, under the lab's game lock for its whole length: a second one
 skews the first one's timings.
 
@@ -165,6 +172,5 @@ only the lines that end it or need action:
 | Run                                                  | Ends with                                     | Needs action                                                          |
 | ---------------------------------------------------- | --------------------------------------------- | --------------------------------------------------------------------- |
 | corpus driver (`packages/core/src/corpus/driver`)    | `run <id>: … captured, … failed` and `report:` | `<view>: FAILED:`, `session failed:`, `crashed`, `game lock is held by` |
-| game host checks (`ETCH_GAME_HOST_CHECK`, extension) | `Exit code:` from the VS Code test runner      | `Error`, `AssertionError`, `"outcome":"timeout"`                      |
 
 Screenshots and other game assets never enter Git.

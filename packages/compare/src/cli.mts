@@ -8,14 +8,10 @@
 // Filters take several values separated by commas. Results go to the local corpus folder:
 // renders/, diffs/ and reports/ (reports/README.md is the summary). The exit code is 1 when a
 // gating capture of the run fails or cannot be compared.
-//
-// With --game-host it compares the game host's images instead of renders (etch#53), which the
-// extension's corpus check writes to game-host/images/; results go to game-host/diffs/ and
-// game-host/reports/ (docs/game-host.md).
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { localCorpusFolder } from '@etch/core/corpus';
-import { RESULT_FOLDERS, resultFolder, runCorpus } from './run.ts';
+import { RESULT_FOLDERS, runCorpus } from './run.ts';
 
 const repository = join(import.meta.dirname, '..', '..', '..');
 const { values } = parseArgs({
@@ -24,7 +20,6 @@ const { values } = parseArgs({
     view: { type: 'string', multiple: true },
     resolution: { type: 'string', multiple: true },
     gpu: { type: 'boolean', default: false },
-    'game-host': { type: 'boolean', default: false },
   },
 });
 const list = (items: string[] | undefined): string[] =>
@@ -47,7 +42,6 @@ const result = await runCorpus({
   views: list(values.view),
   resolutions: list(values.resolution),
   gpu: values.gpu,
-  gameHost: values['game-host'],
   log: (line) => {
     console.log(line);
   },
@@ -59,7 +53,5 @@ console.log(
     `captures pass; ${String(result.outcomes.length - compared.length)} not compared.` +
     (result.gpu === undefined ? '' : ` Rendered with ${result.gpu}.`),
 );
-console.log(
-  `Reports: ${join(localFolder, resultFolder({ gameHost: values['game-host'] }, RESULT_FOLDERS.reports), 'README.md')}`,
-);
+console.log(`Reports: ${join(localFolder, RESULT_FOLDERS.reports, 'README.md')}`);
 process.exit(result.passed ? 0 : 1);

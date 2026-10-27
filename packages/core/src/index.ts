@@ -17,4 +17,4 @@ export * from './draw-list.ts';
 export * from './model/index.ts';
 export * from './layout/index.ts';
 export * from './resolution.ts';
-export * from './game-host/index.ts';
+export * from './live-game/index.ts';

@@ -2,8 +2,7 @@
 // not the game, one `.gfx`, one `.gui`, a TGA texture, a BMFont and English localisation) with its
 // own profile (`userdir.txt`, a player's `settings.txt`), opened through the command, drawn by the
 // webview, followed through unsaved edits and through textures and fonts changed on disk, laid out
-// at each preview resolution, shown as the diff view (diff-view.ts), and restored as after a window
-// reload.
+// at each preview resolution, and restored as after a window reload.
 import * as assert from 'node:assert/strict';
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -11,7 +10,6 @@ import * as path from 'node:path';
 import * as vscode from 'vscode';
 import type { SpriteDraw, TextDraw } from '@etch/core';
 import type { EtchApi } from '../src/extension.ts';
-import { testDiffView } from './diff-view.ts';
 import {
   CHOOSE_RESOLUTION,
   RESOLUTION_SETTING,
@@ -347,7 +345,6 @@ export async function testPreview(api: EtchApi): Promise<void> {
     assert.equal(moved.render.window.name, 'etch_first');
 
     await testResolution(preview);
-    await testDiffView(api);
 
     // The cursor picks the window; the model's diagnostics reach the Problems panel.
     const second = await nextPaint(

@@ -2,65 +2,15 @@ import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import type { Ping } from '../src/game-host/pipe.ts';
+import type { Ping } from '../src/live-game/pipe.ts';
 import {
   CrashLimit,
   HangCheck,
   RestartQueue,
   errorLogPath,
   logTail,
-  needsRestart,
-  requestChange,
   watch,
-  type HostStartRequest,
-} from '../src/game-host/watchdog.ts';
-
-describe('needsRestart', () => {
-  it('names the files the game reads only when it starts', () => {
-    expect(needsRestart('C:/mod/interface/core.gfx')).toBe(true);
-    expect(needsRestart('C:/mod/gfx/fonts/vic_18.FNT')).toBe(true);
-    expect(needsRestart('C:/mod/interface/topbar.gui')).toBe(false);
-    expect(needsRestart('C:/mod/gfx/interface/bg.dds')).toBe(false);
-    expect(needsRestart('C:/mod/localisation/x_l_english.yml')).toBe(false);
-  });
-});
-
-describe('requestChange', () => {
-  const request: HostStartRequest = {
-    gameFolder: 'C:\\Games\\EU4',
-    mods: [{ name: 'A', root: 'C:\\mods\\a', descriptorPath: 'C:\\mods\\a.mod' }],
-    display: { width: 3440, height: 1440, language: 'english' },
-  };
-
-  it('sees no change in the same request, written another way', () => {
-    expect(
-      requestChange(request, {
-        ...request,
-        gameFolder: 'c:/games/eu4/',
-        mods: [{ name: 'A (renamed)', root: 'C:/Mods/A', descriptorPath: 'C:\\mods\\a.mod' }],
-      }),
-    ).toBeUndefined();
-  });
-
-  it('names a new resolution, language, game folder or playset', () => {
-    expect(
-      requestChange(request, { ...request, display: { ...request.display, height: 1080 } }),
-    ).toBe('the resolution changed to 3440×1080');
-    expect(
-      requestChange(request, { ...request, display: { ...request.display, language: 'german' } }),
-    ).toBe('the language changed to german');
-    expect(requestChange(request, { ...request, gameFolder: 'D:\\EU4' })).toBe(
-      'the game folder changed',
-    );
-    expect(requestChange(request, { ...request, mods: [] })).toBe('the playset changed');
-    expect(
-      requestChange(request, {
-        ...request,
-        mods: [...request.mods, { name: 'B', root: 'C:\\mods\\b' }],
-      }),
-    ).toBe('the playset changed');
-  });
-});
+} from '../src/live-game/watchdog.ts';
 
 describe('HangCheck', () => {
   it('is fine while pings are answered and frames move', () => {
@@ -169,7 +119,7 @@ describe('RestartQueue', () => {
     expect(queue.busy).toBe(false);
   });
 
-  it('drops the restarts asked for when the game host stays down', async () => {
+  it('drops the restarts asked for when the live game stays down', async () => {
     const cycles: (readonly string[])[] = [];
     const started = gate();
     const queue = new RestartQueue(async (take) => {

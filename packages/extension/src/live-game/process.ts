@@ -1,7 +1,8 @@
-// The game host process (spec section 4, ADR 0003, etch#49): one per machine through a lock file,
-// started from the game host install with a fresh session id, ready once `anvil-game.ready` is
-// reported over a pipe whose handshake names that process, kept behind VS Code, and closed only
-// after its PID, path and creation time match what Etch started. Node only, no vscode.
+// The live game process (spec section 6, ADR 0005, etch#49, kept from 1.x's game host): one per
+// machine through a lock file, started from the private install with a fresh session id, ready
+// once `anvil-game.ready` is reported over a pipe whose handshake names that process, kept behind
+// VS Code (until the live game runs in the foreground, M8), and closed only after its PID, path
+// and creation time match what Etch started. Node only, no vscode.
 import { spawn, type ChildProcess } from 'node:child_process';
 import { readFile, realpath, stat, unlink, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
@@ -27,10 +28,10 @@ export const CRASH_REPORTER = 'CrashReporter.exe';
 /** Steam's ids, without which `eu4.exe` started outside Steam would hand itself to Steam. */
 const STEAM_ENVIRONMENT = { SteamAppId: '236850', SteamGameId: '236850' };
 
-/** The lock file: who owns the machine's one game host, and which game process it started. */
+/** The lock file: who owns the machine's one live game, and which game process it started. */
 export interface HostLock {
   readonly formatVersion: 1;
-  /** The extension host that owns the game host. */
+  /** The extension host that owns the live game. */
   readonly owner: ProcessIdentity;
   readonly session: string;
   /** The game process, once it is started. */
@@ -39,6 +40,7 @@ export interface HostLock {
   readonly gameFolder?: string;
 }
 
+/** 1.x's lock file name, kept so that a 1.x game host and the live game never run together. */
 export function lockPath(storageFolder: string): string {
   return join(storageFolder, 'game-host.lock');
 }
@@ -54,10 +56,10 @@ export class HostCrashedError extends Error {
   }
 }
 
-/** Another VS Code window owns the game host. */
+/** Another VS Code window owns the live game. */
 export class HostBusyError extends Error {
   constructor() {
-    super('Another VS Code window runs the game host; Etch runs one game host per machine.');
+    super('Another VS Code window runs the live game; Etch runs one live game per machine.');
     this.name = 'HostBusyError';
   }
 }
@@ -69,7 +71,7 @@ export interface LockOptions {
 }
 
 /**
- * Takes the lock for a new session. A lock whose owner still runs is another window's game host:
+ * Takes the lock for a new session. A lock whose owner still runs is another window's live game:
  * `HostBusyError`. A lock whose owner is gone (VS Code crashed) names an orphan, which is closed
  * after its identity is checked, together with its crash reporter, before the lock is taken.
  */
@@ -84,11 +86,11 @@ export async function acquireLock(options: LockOptions, session: string): Promis
     }
     if ((await clearLock(options)) === 'busy') throw new HostBusyError();
   }
-  throw new Error(`The game host lock ${options.path} could not be taken.`);
+  throw new Error(`The live game lock ${options.path} could not be taken.`);
 }
 
 /**
- * Closes the game host a VS Code window that is gone left running, if the lock names one, and
+ * Closes the live game a VS Code window that is gone left running, if the lock names one, and
  * removes its lock. True when it found one.
  */
 export async function closeOrphan(options: LockOptions): Promise<boolean> {
@@ -123,12 +125,12 @@ async function clearLock(options: LockOptions): Promise<'busy' | 'cleared'> {
     if (held.game !== undefined) {
       if (!own) {
         options.log?.(
-          `Closing the game host of a VS Code window that is gone (PID ${String(held.game.pid)}).`,
+          `Closing the live game of a VS Code window that is gone (PID ${String(held.game.pid)}).`,
         );
       }
       const outcome = await closeGame(held.game, held.gameFolder, options.log);
       if (outcome !== 'terminated' && outcome !== 'already-exited') {
-        throw new Error(`The orphaned game host could not be closed: ${outcome}.`);
+        throw new Error(`The orphaned live game could not be closed: ${outcome}.`);
       }
     }
   }
@@ -169,7 +171,7 @@ export async function releaseLock(options: LockOptions): Promise<void> {
 }
 
 /**
- * Closes a game host process after checking its identity, then any crash reporter it started,
+ * Closes a live game process after checking its identity, then any crash reporter it started,
  * each after the same check; no report is sent.
  */
 export async function closeGame(
@@ -178,7 +180,7 @@ export async function closeGame(
   log?: (message: string) => void,
 ): Promise<StopOutcome> {
   const outcome = await stopVerified(game);
-  log?.(`Game host PID ${String(game.pid)}: ${outcome}.`);
+  log?.(`Live game PID ${String(game.pid)}: ${outcome}.`);
   await closeCrashReporters(game, gameFolder, log);
   return outcome;
 }
@@ -231,8 +233,8 @@ const NO_WINDOW: GameWindow = {
   height: 0,
 };
 
-/** A started and ready game host. */
-export class GameHostProcess {
+/** A started and ready live game. */
+export class LiveGameProcess {
   readonly identity: ProcessIdentity;
   readonly session: string;
   readonly hello: Hello;
@@ -271,12 +273,12 @@ export class GameHostProcess {
   }
 
   /**
-   * Starts the game host and waits until it is ready: takes the lock, starts `eu4.exe` from the
+   * Starts the live game and waits until it is ready: takes the lock, starts `eu4.exe` from the
    * install with `ETCH_HOST_SESSION`, records its identity in the lock, greets the plugin (whose
    * `pid` and `process_start_ms` must be the process Etch started), waits for `ready` and sends
    * the window behind VS Code. On any failure the game is closed and the lock released.
    */
-  static async start(options: StartOptions): Promise<GameHostProcess> {
+  static async start(options: StartOptions): Promise<LiveGameProcess> {
     const log = options.log ?? (() => undefined);
     const session = newSessionId();
     await acquireLock(options.lock, session);
@@ -302,13 +304,13 @@ export class GameHostProcess {
         started.once('spawn', resolve);
         started.once('error', reject);
       });
-      if (started.pid === undefined) throw new Error('The game host did not start.');
+      if (started.pid === undefined) throw new Error('The live game did not start.');
       identity = await processIdentity(started.pid);
-      if (identity === undefined) throw new Error('The game host exited at once.');
+      if (identity === undefined) throw new Error('The live game exited at once.');
       // Windows reports the image's final path, after any junction or link on the way.
       const expected = await realpath(install.exe);
       if (normalizePath(identity.imagePath) !== normalizePath(expected)) {
-        throw new Error(`PID ${String(started.pid)} is ${identity.imagePath}, not the game host.`);
+        throw new Error(`PID ${String(started.pid)} is ${identity.imagePath}, not the live game.`);
       }
       await writeFile(
         options.lock.path,
@@ -324,7 +326,7 @@ export class GameHostProcess {
           2,
         )}\n`,
       );
-      log(`Game host started: PID ${String(identity.pid)}, session ${session}.`);
+      log(`Live game started: PID ${String(identity.pid)}, session ${session}.`);
 
       const created = creationUnixMs(identity);
       const deadline = Date.now() + (options.readyTimeoutMs ?? 120_000);
@@ -333,10 +335,10 @@ export class GameHostProcess {
         alive = false;
       });
       const check = (): void => {
-        if (!alive) throw new HostCrashedError('The game host exited while it started.');
-        if (options.signal?.aborted === true) throw new Error('The game host start was cancelled.');
+        if (!alive) throw new HostCrashedError('The live game exited while it started.');
+        if (options.signal?.aborted === true) throw new Error('The live game start was cancelled.');
         if (Date.now() > deadline) {
-          throw new HostCrashedError('The game host did not get ready in time.');
+          throw new HostCrashedError('The live game did not get ready in time.');
         }
       };
       let pipeMs: number | undefined;
@@ -355,10 +357,10 @@ export class GameHostProcess {
       if (hello.pid !== identity.pid || Math.abs(hello.process_start_ms - created) > 1) {
         throw new Error(
           `The pipe answered for PID ${String(hello.pid)} started at ${String(hello.process_start_ms)}, ` +
-            `not the game host (PID ${String(identity.pid)} at ${String(created)}).`,
+            `not the live game (PID ${String(identity.pid)} at ${String(created)}).`,
         );
       }
-      log(`Game host pipe up after ${String(pipeMs)} ms: plugin ${hello.plugin}.`);
+      log(`Live game pipe up after ${String(pipeMs)} ms: plugin ${hello.plugin}.`);
       // The game's window takes the foreground when it appears and may take it again while the
       // game loads: it goes behind VS Code each time, and is never left minimised.
       const game = identity;
@@ -389,11 +391,11 @@ export class GameHostProcess {
       const readyMs = Date.now() - created;
       const window = (await behind()) ?? NO_WINDOW;
       log(
-        `Game host ready after ${String(readyMs)} ms; window ${String(window.width)}×${String(window.height)} ` +
+        `Live game ready after ${String(readyMs)} ms; window ${String(window.width)}×${String(window.height)} ` +
           `from ${String(windowMs)} ms, sent behind VS Code ${String(sentBehind)} times` +
           `${window.iconic ? ', restored' : ''}.`,
       );
-      return new GameHostProcess({
+      return new LiveGameProcess({
         identity,
         session,
         hello,

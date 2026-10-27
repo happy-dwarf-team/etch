@@ -37,8 +37,8 @@ body:
       label: Preview backend
       options:
         - Offline renderer
-        - Game host
-        - Both
+        - Live game
+        - Game host (Etch 1.x)
         - Not applicable
     validations:
       required: true

@@ -1,7 +1,8 @@
 # Etch: repository rules
 
 - VS Code extension with a fast, game-faithful preview of EU4 interface mods: an offline
-  renderer and a game host (the Anvil plugin in `plugin/`). What Etch does is in the
+  renderer and a live game (the Anvil plugin in `plugin/`); 1.x's game host is gone on `main`
+  (ADR 0005). What Etch does is in the
   [v1 specification](docs/spec/v1.md) and the decisions in [docs/adr/](docs/adr/); read the
   section a change touches first. The v1 specification is frozen at 1.0.0 and describes 1.x;
   `main` is built to the [v2 specification](docs/spec/v2.md), living until 2.0.0. Open points
@@ -9,7 +10,7 @@
   [GLOSSARY.md](GLOSSARY.md), budgets in [docs/budgets.md](docs/budgets.md).
 - [CONTRIBUTING.md](CONTRIBUTING.md) holds the titles and scopes, the `research/*` and
   `prototype/*` branches (pushed, never merged), releases, the repository layout, and the
-  build and tests, including the game host plugin. Run its checks before finishing a change;
+  build and tests, including the plugin. Run its checks before finishing a change;
   the `windows` CI job runs all of them.
 - No EU4 or Paradox assets in the repository, and do not imply affiliation with Paradox
   Interactive. English in code and docs.

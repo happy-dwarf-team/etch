@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { SUPPORTED_GAME_VERSION } from '@etch/core';
-import { registerGameHost, type GameHost } from './game-host/index.ts';
-import { closeWindowsHelper } from './game-host/windows.ts';
+import { registerLiveGame, type LiveGame } from './live-game/index.ts';
+import { closeWindowsHelper } from './live-game/windows.ts';
 import { registerGameText } from './game-text.ts';
 import { WidgetNavigation } from './navigation.ts';
 import { registerPreview, type PreviewApi } from './preview/index.ts';
@@ -10,10 +10,10 @@ import { registerPreview, type PreviewApi } from './preview/index.ts';
 export interface EtchApi {
   readonly navigation: WidgetNavigation;
   readonly preview: PreviewApi;
-  readonly gameHost: GameHost;
+  readonly liveGame: LiveGame;
 }
 
-let gameHost: GameHost | undefined;
+let liveGame: LiveGame | undefined;
 
 export function activate(context: vscode.ExtensionContext): EtchApi {
   const { version } = context.extension.packageJSON as { version: string };
@@ -23,17 +23,17 @@ export function activate(context: vscode.ExtensionContext): EtchApi {
   context.subscriptions.push(registerGameText());
   const navigation = new WidgetNavigation();
   context.subscriptions.push(navigation);
-  gameHost = registerGameHost(context, output);
+  liveGame = registerLiveGame(context, output);
   return {
     navigation,
-    preview: registerPreview(context, output, navigation, gameHost),
-    gameHost,
+    preview: registerPreview(context, output, navigation, liveGame),
+    liveGame,
   };
 }
 
-/** The game host stops when the window closes (spec section 4); VS Code waits for it. */
+/** The live game stops when the window closes (spec section 6); VS Code waits for it. */
 export async function deactivate(): Promise<void> {
-  await gameHost?.stop();
+  await liveGame?.stop();
   closeWindowsHelper();
   // Everything else Etch creates is disposed through context.subscriptions.
 }

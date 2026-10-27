@@ -2,7 +2,7 @@ import { appendFile, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { ErrorLogTail } from '../src/game-host/error-log.ts';
+import { ErrorLogTail } from '../src/live-game/error-log.ts';
 
 let folder: string;
 beforeEach(async () => {

@@ -1,9 +1,9 @@
 # Pinned builds
 
 `game-builds.json` pins the game-side builds every Etch release carries into
-the game host install (ADR 0003, ADR 0004): Anvil with `anvil-game`, and
+the private install (ADR 0004, ADR 0005): Anvil with `anvil-game`, and
 Bellows, each one release asset of the team's GitHub releases, identified by
-its SHA-256. It also pins the game build the game host starts. Etch's own
+its SHA-256. It also pins the game build the live game starts. Etch's own
 game plugin is not pinned: it is built from `plugin/` in the same commit
 (etch#45).
 
@@ -14,7 +14,7 @@ JSON; unknown fields are errors. Hashes are uppercase hexadecimal SHA-256.
 | Field | What it holds |
 | --- | --- |
 | `formatVersion` | `1` |
-| `game` | `version` and `exeSha256` of the only `eu4.exe` the game host starts: 1.37.5 (Steam, win64), the build of the precision corpus |
+| `game` | `version` and `exeSha256` of the only `eu4.exe` the live game starts: 1.37.5 (Steam, win64), the build of the precision corpus |
 | `builds` | one entry per pinned build, below |
 
 | Build field | What it holds |
@@ -28,7 +28,7 @@ JSON; unknown fields are errors. Hashes are uppercase hexadecimal SHA-256.
 | `files` | the archive paths taken; a path ending in `/` takes every file under it. Each file is copied byte for byte |
 | `licenses` | `component`, `spdx` and `file` (an archive path among the files taken) of the build itself, first, and of each component compiled into it |
 
-Only what the game host loads is taken, with its licence texts: from Anvil
+Only what the live game loads is taken, with its licence texts: from Anvil
 `version.dll`, `anvil/anvil.toml` and `anvil-game`, but not `anvil-overlay`
 (its notices would be drawn into the captures), `AnvilManager.exe` or the
 example plugins, and so not the licences of Dear ImGui and miniz, which only
@@ -52,10 +52,10 @@ of the `windows` job:
    `plugin/dist/etch/` (its `plugin.toml`, entry DLL and the rest of the
    Anvil plugin folder) and takes it whole for `anvil/plugins/etch/`.
 5. It fails when two builds would write one path, and stages everything in
-   `packages/extension/game/` in the game host install's layout, with
+   `packages/extension/game/` in the private install's layout, with
    `game/manifest.json`: the `game` pin and every file's `path` (relative to
    the game folder), `sha256` and `build`. etch#48 installs from it and checks
-   the installed files against it before every game host start.
+   the installed files against it before every live game start.
 6. It writes `THIRD-PARTY-NOTICES.md` at the VSIX root: Etch, each pinned
    build with its release and hash, and each component compiled into it, with
    the path of its licence text in the VSIX.

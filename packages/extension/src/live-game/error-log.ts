@@ -1,5 +1,5 @@
-// The game host's `error.log` (spec section 10, etch#52): the game writes it into the private
-// profile's `logs` folder, a line at a time, and the extension reads what each preview job added.
+// The live game's `error.log` (spec section 6, etch#52): the game writes it into the private
+// profile's `logs` folder, a line at a time, and the extension reads what each reload added.
 // Node only, no vscode.
 import { open } from 'node:fs/promises';
 import { decodeGameText } from '@etch/core';

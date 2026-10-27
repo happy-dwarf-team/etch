@@ -1,5 +1,5 @@
 // The pin and notices checks (ADR 0004, etch#46): downloads every pinned build, checks its
-// SHA-256 and licences, and stages the files the VSIX carries under game/ (the game host install's
+// SHA-256 and licences, and stages the files the VSIX carries under game/ (the private install's
 // layout, with game/manifest.json) together with the game plugin's build, then writes
 // THIRD-PARTY-NOTICES.md. package.mts packages what this leaves behind.
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';

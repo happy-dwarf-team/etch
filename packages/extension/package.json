@@ -74,24 +74,18 @@
         "icon": "$(screen-full)"
       },
       {
-        "command": "etch.toggleDiffView",
-        "title": "Toggle the Diff View",
-        "category": "Etch",
-        "icon": "$(diff)"
-      },
-      {
-        "command": "etch.startGameHost",
-        "title": "Start the Game Host",
+        "command": "etch.startLiveGame",
+        "title": "Start the Live Game",
         "category": "Etch"
       },
       {
-        "command": "etch.stopGameHost",
-        "title": "Stop the Game Host",
+        "command": "etch.stopLiveGame",
+        "title": "Stop the Live Game",
         "category": "Etch"
       },
       {
-        "command": "etch.removeGameHostInstall",
-        "title": "Remove the Game Host Install",
+        "command": "etch.removePrivateInstall",
+        "title": "Remove the Private Install",
         "category": "Etch"
       }
     ],
@@ -106,10 +100,6 @@
       "commandPalette": [
         {
           "command": "etch.togglePreviewPin",
-          "when": "etch.previewOpen"
-        },
-        {
-          "command": "etch.toggleDiffView",
           "when": "etch.previewOpen"
         }
       ]

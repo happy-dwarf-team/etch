@@ -2,29 +2,20 @@
 // and ETCH_CORPUS_PATH: every window the playset's mods override opens in the preview (spec
 // section 8, etch#55). Every top-level definition of every `.gui` file a mod of the playset wins
 // over the game is previewed as a mod author would, cursor on it:
-// - in the offline renderer: whether the webview drew it, its draws, texture problems and time,
-//   and the file's diagnostics in the Problems panel;
-// - with ETCH_GAME_HOST_PATH also set, in the game host, after the offline pass: each `windowType`
-//   and `eu3dialogtype` (the kinds `window open` shows) gives an image, a failed job or a notice,
-//   with the lines the game wrote to `error.log`, the pixels the image draws, and any restart.
+// in the offline renderer: whether the webview drew it, its draws, texture problems and time, and
+// the file's diagnostics in the Problems panel. (Etch 1.x also showed each window in the game host;
+// that half went with it, ADR 0005.)
 // The mods are the manifest's Workshop items, checked against its pins and read in place; their
 // files are copied unchanged into a test mod after the playset, so that previewing them never
-// changes the playset (which would restart the game host). ETCH_PLAYSET_FILES (paths separated by
-// `,`) limits the check to some files. The report goes to
-// `<corpus>/playset-windows/<playset>.json` and `.md`; the game's images stay in the game host's
-// captures folder. Nothing is written to the game folder, the player's profile or the mods.
+// changes the playset. ETCH_PLAYSET_FILES (paths separated by `,`) limits the check to some files.
+// The report goes to `<corpus>/playset-windows/<playset>.json` and `.md`. Nothing is written to
+// the game folder, the player's profile or the mods.
 import * as assert from 'node:assert/strict';
 import { copyFile, mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
-import {
-  BACKDROP_WRAPPER_SUFFIX,
-  PREVIEW_COPY_PREFIXES,
-  parseScript,
-  readGuiFile,
-  type Widget,
-} from '@etch/core';
+import { parseScript, readGuiFile, type Widget } from '@etch/core';
 import { hashModFolder, readCorpusManifest } from '@etch/core/corpus';
 import {
   PlaysetInterface,
@@ -33,21 +24,10 @@ import {
   workshopFolderFor,
 } from '@etch/core/playset';
 import type { EtchApi } from '../src/extension.ts';
-import type { GameHostState } from '../src/game-host/index.ts';
-import type { JobOutcome } from '../src/game-host/jobs.ts';
-import type { HostImagePaint, PreviewPaint, PreviewRender } from '../src/preview/preview.ts';
-import { prepareInstall } from '../src/game-host/install.ts';
-import { processIdentity } from '../src/game-host/windows.ts';
-import { waitFor } from './game-host.ts';
+import type { PreviewPaint, PreviewRender } from '../src/preview/preview.ts';
 
 /** How long one window may take in the offline renderer. */
 const OFFLINE_TIMEOUT_MS = 30_000;
-/** How long one window may take in the game host, a restart included. */
-const HOST_TIMEOUT_MS = 120_000;
-/** How long the game host may stay ready and idle without an image of the window. */
-const NO_JOB_MS = 20_000;
-/** The kinds `window open` shows; the preview refuses the others with a notice (etch#16). */
-const HOST_KINDS = new Set(['windowType', 'eu3dialogtype']);
 
 interface FileResult {
   path: string;
@@ -64,7 +44,6 @@ interface WindowResult {
   kind: string;
   line: number;
   offline?: OfflineResult;
-  host?: HostResult;
 }
 
 interface OfflineResult {
@@ -78,43 +57,13 @@ interface OfflineResult {
   error?: string;
 }
 
-interface HostResult {
-  /** `image`: the job's image was drawn; `failed`: the job failed; `notice`: no job was sent. */
-  outcome: 'image' | 'failed' | 'notice' | 'timeout';
-  message?: string;
-  /** Pixels of the image with alpha above 0, and how many of them are opaque. */
-  drawn?: number;
-  opaque?: number;
-  jobMs?: number;
-  errorLog?: string[];
-  /** Game host states other than ready seen while the window was shown. */
-  states?: string[];
-}
-
 function count(codes: Iterable<string>): Record<string, number> {
   const out: Record<string, number> = {};
   for (const code of codes) out[code] = (out[code] ?? 0) + 1;
   return out;
 }
 
-/** Pixels with alpha above 0, and opaque ones, of a TGA of straight RGBA (B, G, R, A). */
-async function drawnPixels(file: string): Promise<{ drawn: number; opaque: number }> {
-  const bytes = await readFile(file);
-  let drawn = 0;
-  let opaque = 0;
-  for (let i = 18 + 3; i < bytes.length; i += 4) {
-    const alpha = bytes[i] ?? 0;
-    if (alpha > 0) drawn++;
-    if (alpha === 255) opaque++;
-  }
-  return { drawn, opaque };
-}
-
-export async function testPlaysetWindows(
-  api: EtchApi,
-  gamePath: string,
-  gameHostPath: string | undefined,
-): Promise<void> {
+export async function testPlaysetWindows(api: EtchApi, gamePath: string): Promise<void> {
   const extension = vscode.extensions.getExtension<EtchApi>('happy-dwarf-team.etch');
   assert.ok(extension);
   const local = process.env['ETCH_CORPUS_PATH'];
@@ -180,7 +129,7 @@ export async function testPlaysetWindows(
   const settings = vscode.workspace.getConfiguration('etch');
   await settings.update('gamePath', gamePath, vscode.ConfigurationTarget.Global);
   await settings.update('playset', [...modFolders, mod], vscode.ConfigurationTarget.Global);
-  const { preview, gameHost } = api;
+  const { preview } = api;
 
   // Every render and paint, by render id.
   const renders = new Map<number, PreviewRender>();
@@ -292,145 +241,6 @@ export async function testPlaysetWindows(
       `[etch] playset ${playset.id}: offline ${String(offlineWindows.filter((w) => w.offline?.painted === true).length)} of ${String(offlineWindows.length)} windows drawn in ${String(Date.now() - offlineStart)} ms`,
     );
     await report();
-
-    if (gameHostPath !== undefined) {
-      await prepareInstall({
-        layout: gameHost.install.layout,
-        gameFolder: gameHostPath,
-        buildsFolder: path.join(extension.extensionPath, 'game'),
-        mods: [],
-        display: { width: 1920, height: 1080, language: 'english' },
-      });
-      const states: string[] = [];
-      const stateListener = gameHost.onDidChangeState((s: GameHostState) => {
-        if (s.status !== 'ready')
-          states.push(s.status === 'restarting' ? `restarting: ${s.reason}` : s.status);
-      });
-      const images: HostImagePaint[] = [];
-      const failures: JobOutcome[] = [];
-      listeners.push(
-        stateListener,
-        preview.onDidPaintHostImage((p) => images.push(p)),
-        gameHost.onDidFinishJob((o) => {
-          if (!o.ok) failures.push(o);
-        }),
-      );
-      preview.setBackend('game-host');
-      const ready = await waitFor(api, 'ready', 240_000);
-      assert.ok(ready.status === 'ready');
-      console.log(
-        `[etch] playset ${playset.id}: game host ready ${String(ready.readyMs)} ms after creation`,
-      );
-      await gameHost.jobsIdle();
-      const hostStart = Date.now();
-      for (const result of files) {
-        // Opening the file previews its first window before the cursor moves to it: an image or
-        // a failure counts from the file's opening on.
-        const imagesBefore = images.length;
-        const failuresBefore = failures.length;
-        await eachWindow(result, async (definition, index, _uri, line) => {
-          const window = entry(result, definition, line);
-          if (!HOST_KINDS.has(definition.kind) || definition.name === undefined) return;
-          const opens =
-            `window open ${PREVIEW_COPY_PREFIXES.black}${definition.name}${BACKDROP_WRAPPER_SUFFIX}`.toLowerCase();
-          states.length = 0;
-          const started = Date.now();
-          let host: HostResult | undefined;
-          while (host === undefined && Date.now() - started < HOST_TIMEOUT_MS) {
-            await settle();
-            await gameHost.jobsIdle();
-            const image = images
-              .slice(imagesBefore)
-              .findLast((p) => p.outcome.commands.some((c) => c.line.toLowerCase() === opens));
-            if (image !== undefined) {
-              const pixels = await drawnPixels(image.outcome.image.path).catch(() => undefined);
-              host = {
-                outcome: 'image',
-                ...(pixels ?? {}),
-                jobMs: Math.round(image.outcome.ms.job),
-                errorLog: [...image.outcome.errorLog],
-              };
-              break;
-            }
-            const failed = failures
-              .slice(failuresBefore)
-              .findLast(
-                (o) =>
-                  o.commands.length === 0 || o.commands.some((c) => c.line.toLowerCase() === opens),
-              );
-            if (failed !== undefined && !failed.ok) {
-              host = {
-                outcome: 'failed',
-                message: `${failed.code}: ${failed.message}`,
-                errorLog: [...failed.errorLog],
-              };
-              break;
-            }
-            const current = preview.current;
-            if (
-              gameHost.state.status === 'ready' &&
-              current !== undefined &&
-              current.file.definitions.indexOf(current.window) === index &&
-              preview.notices.some((n) => n.severity !== 'information') &&
-              Date.now() - started > 3_000
-            ) {
-              host = {
-                outcome: 'notice',
-                message: preview.notices.map((n) => n.message).join(' | '),
-              };
-              break;
-            }
-            // Ready all along, idle, and still nothing: the preview sent no job for the window.
-            if (
-              gameHost.state.status === 'ready' &&
-              states.length === 0 &&
-              Date.now() - started > NO_JOB_MS
-            ) {
-              host = {
-                outcome: 'timeout',
-                message: `no job in ${String(NO_JOB_MS)} ms; notices ${JSON.stringify(preview.notices)}`,
-              };
-              break;
-            }
-            if (gameHost.state.status === 'failed' || gameHost.state.status === 'stopped') {
-              // Stopped after three crashes in five minutes: note it and start again.
-              states.push(`${gameHost.state.status}: ${JSON.stringify(gameHost.state)}`);
-              preview.setBackend('offline');
-              preview.setBackend('game-host');
-              await waitFor(api, 'ready', 240_000).catch(() => undefined);
-            }
-          }
-          window.host = {
-            ...(host ?? { outcome: 'timeout' }),
-            ...(states.length > 0 ? { states: [...states] } : {}),
-          };
-          if (window.host.outcome !== 'image') {
-            console.log(
-              `[etch] playset ${result.path} ${window.name}: ${JSON.stringify(window.host)}`,
-            );
-          }
-        });
-        await report();
-      }
-      const hostWindows = files.flatMap((f) => f.windows).filter((w) => w.host !== undefined);
-      console.log(
-        `[etch] playset ${playset.id}: game host ${String(hostWindows.filter((w) => w.host?.outcome === 'image').length)} of ${String(hostWindows.length)} windows drawn in ${String(Date.now() - hostStart)} ms`,
-      );
-
-      const last = gameHost.running;
-      gameHost.setIdleTime(2_000);
-      preview.setBackend('offline');
-      await waitFor(api, 'stopped', 60_000);
-      if (last !== undefined) {
-        assert.equal(
-          await processIdentity(last.identity.pid),
-          undefined,
-          'the game process is gone',
-        );
-      }
-      await vscode.commands.executeCommand('etch.removeGameHostInstall');
-    }
-    await report();
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
   } finally {
     for (const listener of listeners) listener.dispose();
@@ -443,8 +253,6 @@ export async function testPlaysetWindows(
 function summary(playset: string, files: readonly FileResult[]): string {
   const windows = files.flatMap((f) => f.windows.map((w) => ({ file: f, window: w })));
   const offlineDrawn = windows.filter((w) => w.window.offline?.painted === true);
-  const host = windows.filter((w) => w.window.host !== undefined);
-  const hostBy = count(host.map((w) => w.window.host?.outcome ?? ''));
   const problems: Record<string, number> = {};
   for (const f of files) {
     for (const [code, n] of Object.entries(f.problems)) problems[code] = (problems[code] ?? 0) + n;
@@ -455,20 +263,14 @@ function summary(playset: string, files: readonly FileResult[]): string {
     `${String(files.length)} .gui files, ${String(windows.length)} top-level definitions.`,
     '',
     `- Offline renderer: ${String(offlineDrawn.length)} drawn, ${String(windows.length - offlineDrawn.length)} not.`,
-    `- Game host: ${String(host.length)} windows shown: ${JSON.stringify(hostBy)}.`,
     `- Problems panel: ${JSON.stringify(problems)}.`,
     '',
-    '| File | Window | Kind | Offline | Game host |',
-    '| --- | --- | --- | --- | --- |',
+    '| File | Window | Kind | Offline |',
+    '| --- | --- | --- | --- |',
   ];
   for (const { file, window } of windows) {
     const offline = window.offline;
-    const hostResult = window.host;
-    const plain =
-      offline?.painted === true &&
-      (offline.textureProblems?.length ?? 0) === 0 &&
-      (hostResult === undefined ||
-        (hostResult.outcome === 'image' && (hostResult.errorLog?.length ?? 0) === 0));
+    const plain = offline?.painted === true && (offline.textureProblems?.length ?? 0) === 0;
     if (plain) continue;
     const offlineText =
       offline === undefined
@@ -476,12 +278,8 @@ function summary(playset: string, files: readonly FileResult[]): string {
         : offline.painted
           ? `drawn, ${String(offline.textureProblems?.length ?? 0)} texture problems`
           : `not drawn: ${offline.error ?? ''}`;
-    const hostText =
-      hostResult === undefined
-        ? ''
-        : `${hostResult.outcome}${hostResult.message === undefined ? '' : `: ${hostResult.message}`}${(hostResult.errorLog?.length ?? 0) > 0 ? `; error.log: ${(hostResult.errorLog ?? []).join(' / ')}` : ''}`;
     lines.push(
-      `| ${file.path} | ${window.name} | ${window.kind} | ${offlineText.replaceAll('|', '\\|')} | ${hostText.replaceAll('|', '\\|')} |`,
+      `| ${file.path} | ${window.name} | ${window.kind} | ${offlineText.replaceAll('|', '\\|')} |`,
     );
   }
   return `${lines.join('\n')}\n`;
