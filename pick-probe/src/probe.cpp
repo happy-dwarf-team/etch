@@ -57,6 +57,9 @@ std::wstring g_settings_path;
 FILETIME g_settings_time{};
 std::atomic<bool> g_swallow_mouse{true};
 std::atomic<bool> g_swallow_key{true};
+std::atomic<bool> g_strip_mk{true};
+std::atomic<std::uint64_t> g_mk_stripped{0};
+std::atomic<std::uint64_t> g_mouse_polls_blocked{0};
 
 std::wstring Widen(const std::string& s) {
     if (s.empty()) return {};
@@ -97,6 +100,7 @@ void ReloadSettingsIfChanged() {
         else if (k == "allow_foreground") s.allow_foreground = v == "1";
         else if (k == "swallow_mouse") s.swallow_mouse = v == "1";
         else if (k == "swallow_key") s.swallow_key = v == "1";
+        else if (k == "strip_mk") g_strip_mk.store(v == "1");
     }
     fclose(f);
     g_swallow_mouse.store(s.swallow_mouse);
@@ -373,8 +377,19 @@ LRESULT CALLBACK WindowProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
                 g_click_y.store(static_cast<short>(HIWORD(lparam)));
                 g_click_at.store(NowMs());
             }
-            Log("swallow", std::string("\"msg\":\"") + name + "\"");
+            Log("swallow", std::string("\"msg\":\"") + name + "\",\"mk_stripped\":" + std::to_string(g_mk_stripped.load()) +
+                               ",\"mouse_polls_blocked\":" + std::to_string(g_mouse_polls_blocked.load()));
             return 0;
+        }
+        // SDL 2.0.4 compares the MK_* bits of every mouse message's wParam with its own
+        // button state and makes the missing presses and releases from them
+        // (WIN_CheckWParamMouseButtons), so a move with a button held would click.
+        if (message == WM_MOUSEMOVE && g_strip_mk.load()) {
+            const WPARAM stripped = wparam & ~static_cast<WPARAM>(MK_LBUTTON | MK_RBUTTON | MK_MBUTTON | MK_XBUTTON1 | MK_XBUTTON2);
+            if (stripped != wparam) {
+                g_mk_stripped.fetch_add(1);
+                wparam = stripped;
+            }
         }
         if (message == WM_INPUT) {
             RAWINPUTHEADER header{};
@@ -393,7 +408,6 @@ LRESULT CALLBACK WindowProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
 using KeyStateFn = SHORT(WINAPI)(int);
 anvil::FunctionHook<KeyStateFn> g_async_key_state;
 anvil::FunctionHook<KeyStateFn> g_key_state;
-std::atomic<std::uint64_t> g_mouse_polls_blocked{0};
 
 bool BlockedKey(int vk) {
     const bool button = vk == VK_LBUTTON || vk == VK_RBUTTON || vk == VK_MBUTTON || vk == VK_XBUTTON1 || vk == VK_XBUTTON2;
