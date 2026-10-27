@@ -675,6 +675,20 @@ function* visibleWidgets(widgets: readonly CapturedWidget[]): Generator<Captured
 export function stepCommand(step: RecipeStep, window: Screen): string {
   if ('key' in step) return `key ${step.key}`;
   if ('click' in step) return `ui click ${step.click} timeout=10`;
+  if ('text' in step) return `text ${step.text}`;
+  if ('map' in step || 'wheel' in step) {
+    const point = 'map' in step ? step.map : step.wheel;
+    const x = Math.round((window.width - 1) / 2 + point.x * window.height);
+    const y = Math.round((window.height - 1) / 2 + point.y * window.height);
+    if (x < 0 || y < 0 || x >= window.width || y >= window.height) {
+      throw new ViewFailure(
+        `The map point ${String(point.x)},${String(point.y)} is outside the client area.`,
+      );
+    }
+    return 'map' in step
+      ? `click ${String(x)} ${String(y)}`
+      : `scroll ${String(step.wheel.steps)} ${String(x)} ${String(y)}`;
+  }
   const x = Math.round(step.point.x * (window.width - 1));
   const y = Math.round(step.point.y * (window.height - 1));
   return `click ${String(x)} ${String(y)}`;

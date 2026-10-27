@@ -115,7 +115,43 @@ export interface CorpusView {
    * it, where the game shows it, and compares it there.
    */
   readonly codeMoved?: readonly string[];
+  /**
+   * The values of the window profiles' selectors this view is captured with, by selector id, where
+   * a profile has a choice the screen does not make (`resolution` selectors come from the capture's
+   * size). The visibility gate evaluates each profiled root's profile with them (ADR 0006).
+   */
+  readonly selectors?: Readonly<Record<string, string>>;
+  /** What differs in one playset, by playset id: its own recipe, selector values or note. */
+  readonly byPlayset?: Readonly<Record<string, PlaysetView>>;
   readonly note?: string;
+}
+
+/**
+ * A view's own recipe and selectors in one playset (spec v2 section 11): the Anbennar playset's
+ * save has no ship in construction, so its province views open another way.
+ */
+export interface PlaysetView {
+  /** Replaces the view's recipe in this playset. */
+  readonly recipe?: Recipe;
+  /** Replaces the values of these selectors in this playset; the others stay the view's. */
+  readonly selectors?: Readonly<Record<string, string>>;
+  readonly note?: string;
+}
+
+/**
+ * A view as one playset captures it: the view with its recipe and selectors of that playset
+ * (`byPlayset`) in place of the defaults.
+ */
+export function viewInPlayset(view: CorpusView, playset: string): CorpusView {
+  const own = view.byPlayset?.[playset];
+  if (own === undefined) return view;
+  return {
+    ...view,
+    recipe: own.recipe ?? view.recipe,
+    ...(view.selectors !== undefined || own.selectors !== undefined
+      ? { selectors: { ...view.selectors, ...own.selectors } }
+      : {}),
+  };
 }
 
 /** The start state of a recipe: the main menu of a fresh start, or the playset's save loaded and paused. */
@@ -134,12 +170,25 @@ export interface Recipe {
 /**
  * `key NAME`, `ui click SELECTOR`, or `click X Y` at a point of the client area given as fractions
  * of its width and height (`{ "x": 0.5, "y": 0.5 }` is the centre), for what has no widget, such as
- * a province on the map.
+ * a province on the map. `map` and `wheel` name a point of the map instead: its distance from the
+ * client area's centre in client heights. The map's scale follows the client height, so such a
+ * point is the same place of the map at every resolution, beside a window that covers the centre.
+ * `wheel` turns the mouse wheel there (positive steps zoom in towards the point). `text` types into
+ * the focused text field, such as the Goto box's (`f`), which finds a province by its name.
  */
 export type RecipeStep =
   | { readonly key: TongsKey }
   | { readonly click: string }
-  | { readonly point: { readonly x: number; readonly y: number } };
+  | { readonly point: { readonly x: number; readonly y: number } }
+  | { readonly text: string }
+  | { readonly map: MapPoint }
+  | { readonly wheel: MapPoint & { readonly steps: number } };
+
+/** A point of the map: its distance from the client area's centre, in client heights. */
+export interface MapPoint {
+  readonly x: number;
+  readonly y: number;
+}
 
 /** The key names Tongs' `key` command accepts (tongs README). */
 export const TONGS_KEYS = [
@@ -349,6 +398,9 @@ export function parseCorpusManifest(value: unknown): ManifestResult {
     'playset id',
   );
   const playsetIds = ids(playsets.map((p) => p.id));
+  for (const own of views.flatMap((v) => v.playsets)) {
+    if (!playsetIds.has(own.id)) c.fail(own.at, `The manifest has no playset "${own.id}".`);
+  }
 
   const deviations =
     c.array(root['knownDeviations'], 'knownDeviations', (v, at) =>
@@ -464,7 +516,12 @@ function checkWindow(
   c: Checker,
   value: unknown,
   at: string,
-): { id: string | undefined; views: { id: string | undefined }[] } | undefined {
+):
+  | {
+      id: string | undefined;
+      views: { id: string | undefined; playsets: { id: string; at: string }[] }[];
+    }
+  | undefined {
   const json = c.object(value, at, ['id', 'title', 'files', 'why', 'views']);
   if (json === undefined) return undefined;
   const id = c.string(json['id'], field(at, 'id'), ID, 'an id in lowercase words joined by -');
@@ -482,12 +539,16 @@ function checkWindow(
   return { id, views };
 }
 
-function checkView(c: Checker, value: unknown, at: string): { id: string | undefined } | undefined {
+function checkView(
+  c: Checker,
+  value: unknown,
+  at: string,
+): { id: string | undefined; playsets: { id: string; at: string }[] } | undefined {
   const json = c.object(
     value,
     at,
     ['id', 'title', 'recipe', 'roots', 'codeFilled'],
-    ['codeMoved', 'note'],
+    ['codeMoved', 'selectors', 'byPlayset', 'note'],
   );
   if (json === undefined) return undefined;
   const id = c.string(json['id'], field(at, 'id'), ID, 'an id in lowercase words joined by -');
@@ -503,7 +564,31 @@ function checkView(c: Checker, value: unknown, at: string): { id: string | undef
   if (json['codeMoved'] !== undefined) {
     c.array(json['codeMoved'], field(at, 'codeMoved'), (v, pathAt) => pattern(c, v, pathAt));
   }
-  return { id };
+  if ('selectors' in json) checkSelectors(c, json['selectors'], field(at, 'selectors'));
+  const playsets: { id: string; at: string }[] = [];
+  if ('byPlayset' in json) {
+    const byAt = field(at, 'byPlayset');
+    const by = c.map(json['byPlayset'], byAt);
+    for (const [playset, own] of Object.entries(by ?? {})) {
+      const ownAt = field(byAt, playset);
+      playsets.push({ id: playset, at: ownAt });
+      const entry = c.object(own, ownAt, [], ['recipe', 'selectors', 'note']);
+      if (entry === undefined) continue;
+      optionalString(c, entry, ownAt, 'note');
+      if ('recipe' in entry) checkRecipe(c, entry['recipe'], field(ownAt, 'recipe'));
+      if ('selectors' in entry) checkSelectors(c, entry['selectors'], field(ownAt, 'selectors'));
+    }
+  }
+  return { id, playsets };
+}
+
+/** Selector values by selector id: ids and values as window profiles write them. */
+function checkSelectors(c: Checker, value: unknown, at: string): void {
+  const json = c.map(value, at);
+  for (const [selector, selected] of Object.entries(json ?? {})) {
+    if (!/^[A-Za-z][\w-]*$/.test(selector)) c.fail(field(at, selector), 'Not a selector id.');
+    c.string(selected, field(at, selector), /^[\w-]+$/, 'a selector value');
+  }
 }
 
 /** Checks a recipe, in the manifest or copied into a capture record. */
@@ -517,11 +602,41 @@ export function checkRecipe(
   c.oneOf(json['from'], field(at, 'from'), ['main-menu', 'save'] as const);
   c.string(json['evidence'], field(at, 'evidence'));
   c.array(json['steps'], field(at, 'steps'), (v, stepAt) => {
-    const step = c.object(v, stepAt, [], ['key', 'click', 'point']);
+    const step = c.object(v, stepAt, [], ['key', 'click', 'point', 'text', 'map', 'wheel']);
     if (step === undefined) return undefined;
     if (Object.keys(step).length !== 1) {
-      c.fail(stepAt, 'Give one of "key", "click" or "point".');
+      c.fail(stepAt, 'Give one of "key", "click", "point", "text", "map" or "wheel".');
       return undefined;
+    }
+    if ('text' in step) {
+      // Tongs' `text` types U+0020-U+007E and U+00A0-U+00FF.
+      return c.string(
+        step['text'],
+        field(stepAt, 'text'),
+        /^[\x20-\x7e\xa0-\xff]+$/,
+        'Latin-1 text',
+      );
+    }
+    if ('map' in step || 'wheel' in step) {
+      const wheel = 'wheel' in step;
+      const pointAt = field(stepAt, wheel ? 'wheel' : 'map');
+      const point = c.object(
+        step[wheel ? 'wheel' : 'map'],
+        pointAt,
+        wheel ? ['x', 'y', 'steps'] : ['x', 'y'],
+      );
+      if (point === undefined) return undefined;
+      for (const axis of ['x', 'y']) {
+        const value = point[axis];
+        if (typeof value !== 'number' || !(Math.abs(value) <= 2)) {
+          c.fail(field(pointAt, axis), 'Expected client heights from the centre, from -2 to 2.');
+        }
+      }
+      if (wheel) {
+        const steps = c.integer(point['steps'], field(pointAt, 'steps'));
+        if (steps === 0) c.fail(field(pointAt, 'steps'), 'Turn the wheel at least one step.');
+      }
+      return true;
     }
     if ('key' in step) return c.oneOf(step['key'], field(stepAt, 'key'), TONGS_KEYS);
     if ('point' in step) {

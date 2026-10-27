@@ -227,7 +227,10 @@
             "country_selection_panel/mainmenu/mainmenu_panel_bottom/continue_container/ironman_icon",
             "country_selection_panel/mainmenu/mainmenu_panel_bottom/continue_container/continue_game_shield",
             "country_selection_panel/mainmenu/mainmenu_panel_bottom/continue_container/text"
-          ]
+          ],
+          "selectors": {
+            "page": "main-menu"
+          }
         },
         {
           "id": "lobby",
@@ -256,7 +259,10 @@
             "shield_thin_glow",
             "country_selection_panel/lobby/left/datewidget/daymonth",
             "country_selection_panel/lobby/left/datewidget/year"
-          ]
+          ],
+          "selectors": {
+            "page": "lobby"
+          }
         }
       ]
     },
@@ -333,7 +339,10 @@
             "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown."
           },
           "roots": ["menu"],
-          "codeFilled": []
+          "codeFilled": [],
+          "selectors": {
+            "page": "esc-menu"
+          }
         },
         {
           "id": "message-settings",
@@ -355,7 +364,10 @@
           "codeFilled": [
             "menu/menu_message_settings/messageicon_*",
             "menu/menu_message_settings/search_edit"
-          ]
+          ],
+          "selectors": {
+            "page": "message-settings"
+          }
         }
       ]
     },
@@ -516,7 +528,30 @@
             "topbar/powerprojection_topbar/text_powerprojection",
             "topbar/p2kuie_mana_window/p2kuie_mana_value"
           ],
-          "codeMoved": ["DeclareWarDialog"]
+          "codeMoved": ["DeclareWarDialog"],
+          "byPlayset": {
+            "anbennar": {
+              "recipe": {
+                "from": "save",
+                "steps": [
+                  {
+                    "key": "f1"
+                  },
+                  {
+                    "key": "3"
+                  },
+                  {
+                    "click": "countrydiplomacyview/countrydiplomacyview_shielditem_rival[1]"
+                  },
+                  {
+                    "click": "countrydiplomacyview/diploaction_list/diploactionentry/button_diploaction"
+                  }
+                ],
+                "verified": false,
+                "evidence": "Not run yet by the capture driver at the six corpus resolutions (M10). Tried by hand at 1280x720 on 2026-10-27: Verne’s diplomacy lists one relation; the first of its rivals shows Declare War first (Anbennar groups the other actions in categories), which opens DeclareWarDialog and declares nothing."
+              }
+            }
+          }
         }
       ]
     },
@@ -597,7 +632,167 @@
             "menubar/WarOverviewButtonWindow",
             "menubar/message_window_container",
             "menubar/floating_buttons"
-          ]
+          ],
+          "selectors": {
+            "owner": "yes",
+            "tab": "province",
+            "side": "buildings",
+            "subPanel": "none",
+            "construction": "yes"
+          },
+          "byPlayset": {
+            "anbennar": {
+              "recipe": {
+                "from": "save",
+                "steps": [
+                  {
+                    "key": "f"
+                  },
+                  {
+                    "click": "goto_box/goto_edit"
+                  },
+                  {
+                    "text": "Gemisle"
+                  },
+                  {
+                    "click": "goto_box/provinces/province_finder_entry[1]/title"
+                  },
+                  {
+                    "key": "return"
+                  },
+                  {
+                    "map": {
+                      "x": -0.655,
+                      "y": -0.1
+                    }
+                  }
+                ],
+                "verified": false,
+                "evidence": "Not run yet by the capture driver at the six corpus resolutions (M10). Tried by hand at 1280x720 on 2026-10-27: the Goto box (f) centres the map on Gemisle, and Verne’s own Heroes’ Rest lies 0.655 client heights left of the centre, beside the opening events that cover the middle of the screen in this save."
+              },
+              "selectors": {
+                "construction": "no",
+                "buttonBar": "closed",
+                "apui": "none"
+              },
+              "note": "The save (Verne, 11 November 1444) has no ship in construction, and three opening events cover the middle of the screen at every corpus size; one of them is taller than 1080 pixels, so its option cannot be clicked. The recipe clicks a province beside them instead, as a map point the same at every size."
+            }
+          }
+        },
+        {
+          "id": "province-foreign",
+          "title": "Foreign province",
+          "recipe": {
+            "from": "save",
+            "steps": [
+              {
+                "click": "outliner//outliner_buildnavy_entry[1]/outliner_standard"
+              },
+              {
+                "map": {
+                  "x": -0.02,
+                  "y": -0.055
+                }
+              }
+            ],
+            "verified": false,
+            "evidence": "Not run yet by the capture driver at the six corpus resolutions (M10). Tried by hand at 1280x720 on 2026-10-27: the outliner’s first ship in construction centres the map on Macedonia, and Siroz (the Commonwealth’s) lies just above it."
+          },
+          "roots": ["provinceview", "topbar", "menubar"],
+          "codeFilled": [
+            "provinceview/province_modifier_item",
+            "provinceview/province_terrain",
+            "provinceview/province_window/CoreShieldItem",
+            "provinceview/province_window/*_value",
+            "provinceview/province_window/culture",
+            "provinceview/province_window/religion",
+            "provinceview/province_window/fort_number",
+            "provinceview/province_window/building_fort",
+            "provinceview/province_window/resource_icon",
+            "provinceview/province_window/trade_pie",
+            "provinceview/province_window/trade_pie_overlay",
+            "provinceview/province_window/trade_shield",
+            "provinceview/province_window/likely_rebel_shield",
+            "provinceview/province_window/tradenode_button",
+            "provinceview/province_window/queue_window/*_amount",
+            "provinceview/province_window/hidden_latent_resource_icon",
+            "provinceview/province_window/loot_*",
+            "provinceview/province_window/progress_bar_window",
+            "provinceview/top_section_window/province_tab_button",
+            "provinceview/top_section_window/states_tab_button",
+            "provinceview/top_section_window/province_banner",
+            "provinceview/buildings_window/natives_buildings_window*",
+            "provinceview/buildings_window/select_building*",
+            "provinceview/province_window/fort_maintenance_checkbox",
+            "provinceview/buildings_window/province_values_window/*_value",
+            "provinceview/buildings_window/province_values_window/*_modifier",
+            "provinceview/buildings_window/general_buildings_window",
+            "topbar/player_shield",
+            "topbar/player_shield_glow",
+            "topbar/text_*",
+            "topbar/age_title",
+            "topbar/age_icon",
+            "topbar/government_reforms_button",
+            "topbar/great_power_button",
+            "topbar/great_power_button_base",
+            "topbar/open_build_interface_button",
+            "topbar/PlayerNationText",
+            "topbar/powerprojection_topbar/text_powerprojection",
+            "menubar/WarOverviewButtonWindow/waroverview_shieldItem",
+            "menubar/floating_buttons/f_button_*",
+            "menubar/floating_buttons/floating_number_*",
+            "topbar/p2kuie_mana_window/p2kuie_mana_value"
+          ],
+          "codeMoved": [
+            "provinceview/top_section_window",
+            "provinceview/top_section_window/history",
+            "provinceview/top_section_window/river_indicator_2",
+            "menubar/WarOverviewButtonWindow",
+            "menubar/message_window_container",
+            "menubar/floating_buttons"
+          ],
+          "selectors": {
+            "owner": "no",
+            "tab": "province",
+            "side": "buildings",
+            "subPanel": "none"
+          },
+          "byPlayset": {
+            "anbennar": {
+              "recipe": {
+                "from": "save",
+                "steps": [
+                  {
+                    "key": "f"
+                  },
+                  {
+                    "click": "goto_box/goto_edit"
+                  },
+                  {
+                    "text": "Verne"
+                  },
+                  {
+                    "click": "goto_box/provinces/province_finder_entry[1]/title"
+                  },
+                  {
+                    "key": "return"
+                  },
+                  {
+                    "map": {
+                      "x": -0.75,
+                      "y": -0.035
+                    }
+                  }
+                ],
+                "verified": false,
+                "evidence": "Not run yet by the capture driver at the six corpus resolutions (M10). Tried by hand at 1280x720 on 2026-10-27: the Goto box centres the map on the province Verne, and Ebenuel (not Verne’s) lies 0.75 client heights left of the centre."
+              },
+              "selectors": {
+                "buttonBar": "closed",
+                "apui": "none"
+              }
+            }
+          }
         }
       ]
     },

@@ -16,6 +16,7 @@ import {
   type WindowProfile,
 } from '../src/profile/index.ts';
 import { InterfaceIndex } from '../src/model/interface-index.ts';
+import { profileVisibility, type CapturedWidget } from '../src/corpus/index.ts';
 
 const FILE = readGuiFile(
   parseScript(`guiTypes = {
@@ -236,5 +237,55 @@ describe('Save as view', () => {
     expect(() =>
       withView('{ "formatVersion": 1 "window": 2 }', 'provinceview', 'x', view),
     ).toThrow();
+  });
+});
+
+describe('profileVisibility', () => {
+  const captured = (
+    path: string,
+    visible: boolean,
+    children: CapturedWidget[] = [],
+  ): CapturedWidget => ({
+    path,
+    name: path.split('/').pop() ?? '',
+    type: 'window',
+    visible,
+    rect: { x: 0, y: 0, w: 1, h: 1 },
+    children,
+  });
+
+  it('compares the paths the profile names with what the game showed', () => {
+    const root = captured('provinceview', true, [
+      captured('provinceview/province_window', true, [
+        captured('provinceview/province_window/queue_window', true),
+        captured('provinceview/province_window/foreign_province_window', true),
+        captured('provinceview/province_window/build_army_view', false),
+      ]),
+      captured('provinceview/state_window', false),
+    ]);
+    const own = profileVisibility(
+      PROFILE,
+      WINDOW,
+      LARGE,
+      { owner: 'yes', tab: 'province', sub: 'none', other: 'x' },
+      root,
+    );
+    expect(own.window).toBe('provinceview');
+    expect(own.mismatches).toEqual([
+      { path: 'provinceview/province_window/foreign_province_window', game: true },
+    ]);
+    // Named and captured: province_window, state_window, queue_window, foreign_province_window
+    // and build_army_view; build_navy_view is named but the game did not build it.
+    expect(own.compared).toBe(5);
+    const foreign = profileVisibility(
+      PROFILE,
+      WINDOW,
+      LARGE,
+      { owner: 'no', tab: 'province', sub: 'none' },
+      root,
+    );
+    expect(foreign.mismatches.map((m) => m.path)).toEqual([
+      'provinceview/province_window/queue_window',
+    ]);
   });
 });

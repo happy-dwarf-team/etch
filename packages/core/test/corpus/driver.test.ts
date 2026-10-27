@@ -161,7 +161,7 @@ describe('planCaptures', () => {
     // The Anbennar playset has its save and pins (etch#55): every view of its windows is planned.
     expect(all.skipped).toEqual([]);
     expect(all.sessions.map(describeSession)).toContain(
-      'anbennar 3440x1440 from save: hud, esc-menu, message-settings, court, diplomacy, diplomacy-dialog, province, ledger, settings, macro-builder, estates',
+      'anbennar 3440x1440 from save: hud, esc-menu, message-settings, court, diplomacy, diplomacy-dialog, province, province-foreign, ledger, settings, macro-builder, estates',
     );
   });
 });

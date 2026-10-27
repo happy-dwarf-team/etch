@@ -292,5 +292,6 @@ the pull request. Scripted groups (a mod's `custom_window` blocks) are written b
 not derive them from `potential` triggers.
 
 Etch's own profiles of the corpus windows hide what the corpus captures show hidden (drafted from
-the captures); a local test checks that the visibility each profile predicts for the paths it
-names matches every capture of the corpus playsets.
+the captures). The precision corpus gates them: each corpus view records the selector values it is
+captured with, and the visibility each profile predicts at those values, for the paths it names,
+must match every capture of the corpus playsets (`corpus/README.md`, the visibility gate).

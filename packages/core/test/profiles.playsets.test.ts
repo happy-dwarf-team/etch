@@ -11,14 +11,18 @@ import type { Widget } from '../src/index.ts';
 import { GameFiles, PlaysetInterface } from '../src/playset/index.ts';
 import {
   checkProfile,
-  evaluateView,
   layerProfiles,
   readProfile,
-  widgetsAt,
-  windowPaths,
   type ProfileFile,
   type WindowProfile,
 } from '../src/profile/index.ts';
+import {
+  findView,
+  parseCorpusManifest,
+  profileVisibility,
+  viewInPlayset,
+  type CapturedWidget,
+} from '../src/corpus/index.ts';
 
 const gamePath = process.env['ETCH_GAME_PATH'];
 const workshop =
@@ -31,16 +35,6 @@ const PLAYSETS: Record<string, { mods: string[]; sources: string[] }> = {
   anbennar: { mods: ['1385440355', '3290499798', '3777997797'], sources: ['vanilla', 'anbennar'] },
 };
 
-/** The selectors each corpus view was captured with, where a profile has a choice. */
-const CAPTURED: Record<string, Record<string, string>> = {
-  'main-menu': { page: 'main-menu' },
-  lobby: { page: 'lobby' },
-  'esc-menu': { page: 'esc-menu' },
-  'message-settings': { page: 'message-settings' },
-  // Macedonia, the player's own, with a ship in construction (the recipe's).
-  province: { owner: 'yes', tab: 'province', side: 'buildings', construction: 'yes' },
-};
-
 const profiles = new URL('../../../profiles/', import.meta.url);
 
 function shipped(source: string): ProfileFile[] {
@@ -51,11 +45,9 @@ function shipped(source: string): ProfileFile[] {
   });
 }
 
-interface Captured {
-  readonly path: string;
-  readonly visible: boolean;
-  readonly children?: readonly Captured[];
-}
+const manifest = parseCorpusManifest(
+  JSON.parse(readFileSync(new URL('../../../corpus/manifest.json', import.meta.url), 'utf8')),
+).manifest;
 
 describe.skipIf(gamePath === undefined)("Etch's profiles in the corpus playsets", () => {
   for (const [id, playset] of Object.entries(PLAYSETS)) {
@@ -99,45 +91,25 @@ describe.skipIf(gamePath === undefined)("Etch's profiles in the corpus playsets"
         for (const name of readdirSync(new URL(`${resolution}/`, folder))) {
           const capture = JSON.parse(
             readFileSync(new URL(`${resolution}/${name}`, folder), 'utf8'),
-          ) as { view: string; widgets: Captured[] };
+          ) as { view: string; widgets: CapturedWidget[] };
+          const found = manifest === undefined ? undefined : findView(manifest, capture.view);
+          const selectors =
+            found === undefined ? {} : (viewInPlayset(found.view, id).selectors ?? {});
           for (const root of capture.widgets) {
-            const found = checked.get(root.path.toLowerCase());
-            if (found === undefined) continue;
-            const shown = new Map<string, boolean>();
-            const walk = (w: Captured, parent: boolean): void => {
-              const visible = parent && w.visible;
-              shown.set(w.path.toLowerCase(), visible);
-              for (const child of w.children ?? []) walk(child, visible);
-            };
-            walk(root, true);
-            const view = evaluateView(
-              found.profile,
-              found.window,
+            const profiled = checked.get(root.path.toLowerCase());
+            if (profiled === undefined) continue;
+            const result = profileVisibility(
+              profiled.profile,
+              profiled.window,
               { width: width ?? 0, height: height ?? 0 },
-              { set: CAPTURED[capture.view] ?? {} },
+              selectors,
+              root,
             );
-            const named = new Set<Widget>();
-            const { profile } = found;
-            for (const rule of profile.rules) {
-              for (const ref of [...rule.show, ...rule.hide, ...rule.notCreated]) {
-                for (const w of widgetsAt(found.window, ref.path)) named.add(w);
-              }
-            }
-            for (const group of profile.groups) {
-              for (const member of group.members) {
-                for (const w of widgetsAt(found.window, member.path)) named.add(w);
-              }
-            }
-            for (const entry of windowPaths(found.window)) {
-              if (!named.has(entry.widget)) continue;
-              const game = shown.get(entry.path.toLowerCase());
-              if (game === undefined) continue;
-              compared++;
-              if (view.drawn(entry.widget) !== game) {
-                mismatches.push(
-                  `${resolution} ${capture.view} ${entry.path}: game ${game ? 'shows' : 'hides'} it`,
-                );
-              }
+            compared += result.compared;
+            for (const m of result.mismatches) {
+              mismatches.push(
+                `${resolution} ${capture.view} ${m.path}: game ${m.game ? 'shows' : 'hides'} it`,
+              );
             }
           }
         }

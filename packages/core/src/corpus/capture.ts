@@ -11,6 +11,7 @@ import {
   checkRecipe,
   findView,
   resolutionKey,
+  viewInPlayset,
   type CaptureKey,
   type CorpusManifest,
   type Recipe,
@@ -229,7 +230,9 @@ export function captureProblems(manifest: CorpusManifest, record: CaptureRecord)
   }
 
   if (playset !== undefined) {
-    const wantsSave = found?.view.recipe.from === 'save';
+    const wantsSave =
+      (found === undefined ? undefined : viewInPlayset(found.view, record.playset))?.recipe.from ===
+      'save';
     if (wantsSave && playset.save === undefined) {
       fail('save', `The playset "${playset.id}" pins no save for a view opened from one.`);
     } else if (wantsSave && record.save?.sha256 !== playset.save?.sha256) {
@@ -254,7 +257,10 @@ export function captureProblems(manifest: CorpusManifest, record: CaptureRecord)
     }
   }
 
-  if (found !== undefined && !sameRecipe(found.view.recipe, record.recipe)) {
+  if (
+    found !== undefined &&
+    !sameRecipe(viewInPlayset(found.view, record.playset).recipe, record.recipe)
+  ) {
     fail('recipe', 'The recipe differs from the manifest.');
   }
   if (

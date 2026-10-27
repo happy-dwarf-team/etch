@@ -14,10 +14,12 @@ import {
   corpusSummary,
   decodePng,
   differenceImage,
+  findView,
   encodePng,
   gates,
   hashFile,
   planCapture,
+  profileVisibility,
   readCaptureRecord,
   readCorpusManifest,
   requiredCaptures,
@@ -25,12 +27,15 @@ import {
   screenshotFile,
   unstableMaskFile,
   splitWidgetPath,
+  viewInPlayset,
   windowReport,
   type CaptureKey,
   type CaptureOutcome,
   type CaptureRecord,
   type CorpusManifest,
+  type CorpusWindow,
   type PlanWindow,
+  type VisibilityResult,
 } from '@etch/core/corpus';
 import type { DiscoveryEnvironment } from '@etch/core/playset';
 import { HeadlessRenderer } from './headless.ts';
@@ -47,6 +52,8 @@ export interface RunOptions {
   readonly playsets?: readonly string[];
   readonly views?: readonly string[];
   readonly resolutions?: readonly string[];
+  /** Etch's window profiles, `profiles/` beside `corpus/` when left out. */
+  readonly profilesFolder?: string;
   /** Render on the GPU instead of SwiftShader. */
   readonly gpu?: boolean;
   readonly environment?: DiscoveryEnvironment;
@@ -129,17 +136,18 @@ export async function runCorpus(options: RunOptions): Promise<RunResult> {
         const game = decodePng(await readFile(screenshot));
         const mask = unstable === undefined ? undefined : decodePng(await readFile(unstable));
         const { comparison, map } = compareCapture(manifest, plan, painted.image, game, mask);
-        const result =
-          painted.problems.length === 0
-            ? comparison
-            : {
-                ...comparison,
-                passed: false,
-                problems: [
-                  ...comparison.problems,
-                  ...painted.problems.map((p) => `A texture could not be drawn: ${p}`),
-                ],
-              };
+        const visibility = await profileGate(manifest, options, files, key, record, corpusWindow);
+        const problems = [
+          ...comparison.problems,
+          ...painted.problems.map((p) => `A texture could not be drawn: ${p}`),
+          ...visibility.problems,
+        ];
+        const result = {
+          ...comparison,
+          passed: comparison.passed && problems.length === comparison.problems.length,
+          problems,
+          ...(visibility.results.length === 0 ? {} : { visibility: visibility.results }),
+        };
         await write(
           options.localFolder,
           RESULT_FOLDERS.renders,
@@ -191,6 +199,49 @@ export async function runCorpus(options: RunOptions): Promise<RunResult> {
     passed: gating.every((o) => o.kind === 'compared' && o.comparison.passed),
     gpu: renderer?.gpu,
   };
+}
+
+/**
+ * The visibility gate of the capture's profiled root windows (ADR 0006, spec v2 section 14): each
+ * root that Etch's profiles describe is evaluated at the view's selector values in this playset
+ * and the capture's size, and every path the profile names must show as the game showed it. A
+ * profile that does not load cleanly fails the capture too.
+ */
+async function profileGate(
+  manifest: CorpusManifest,
+  options: RunOptions,
+  files: CorpusPlaysetFiles,
+  key: CaptureKey,
+  record: CaptureRecord,
+  corpusWindow: CorpusWindow | undefined,
+): Promise<{ results: VisibilityResult[]; problems: string[] }> {
+  const found = findView(manifest, key.view);
+  const selectors =
+    found === undefined ? {} : (viewInPlayset(found.view, key.playset).selectors ?? {});
+  const profilesFolder = options.profilesFolder ?? join(options.corpusFolder, '..', 'profiles');
+  const results: VisibilityResult[] = [];
+  const problems: string[] = [];
+  for (const root of record.widgets) {
+    if (splitWidgetPath(root.path)?.length !== 1) continue;
+    const loaded = await files.profile(profilesFolder, root.path, corpusWindow?.files);
+    if (loaded === undefined) continue;
+    problems.push(...loaded.problems.map((p) => `Profile of ${root.path}: ${p}`));
+    const result = profileVisibility(
+      loaded.profile,
+      loaded.window,
+      record.resolution,
+      selectors,
+      root,
+    );
+    results.push(result);
+    problems.push(
+      ...result.mismatches.map(
+        (m) =>
+          `Profile of ${root.path} predicts ${m.path} ${m.game ? 'hidden' : 'shown'}; the game ${m.game ? 'shows' : 'hides'} it.`,
+      ),
+    );
+  }
+  return { results, problems };
 }
 
 /**

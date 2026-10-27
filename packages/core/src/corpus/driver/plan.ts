@@ -7,6 +7,7 @@ import {
   findView,
   requiredCaptures,
   resolutionKey,
+  viewInPlayset,
   type CorpusManifest,
   type CorpusPlayset,
   type CorpusResolution,
@@ -69,7 +70,7 @@ export function planCaptures(manifest: CorpusManifest, filter: PlanFilter = {}):
     const playset = manifest.playsets.find((p) => p.id === key.playset);
     const size = manifest.resolutions.find((r) => resolutionKey(r) === resolution);
     if (found === undefined || playset === undefined || size === undefined) continue;
-    const { view } = found;
+    const view = viewInPlayset(found.view, playset.id);
     const skip = (reason: string): void => {
       skipped.push({ playset: playset.id, resolution, view: view.id, reason });
     };
