@@ -214,6 +214,8 @@ export function captureProblems(manifest: CorpusManifest, record: CaptureRecord)
   if (found === undefined) fail('view', `The manifest has no view "${record.view}".`);
   if (!manifest.resolutions.some((r) => resolutionKey(r) === key)) {
     fail('resolution', `The manifest has no resolution ${key}.`);
+  } else if (playset?.resolutions !== undefined && !playset.resolutions.includes(key)) {
+    fail('resolution', `The playset "${playset.id}" is not captured at ${key}.`);
   }
   if (playset !== undefined && found !== undefined && !playset.windows.includes(found.window.id)) {
     fail('view', `The playset "${playset.id}" does not capture the window "${found.window.id}".`);

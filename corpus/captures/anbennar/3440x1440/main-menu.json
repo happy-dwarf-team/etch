@@ -3,7 +3,7 @@
   "playset": "anbennar",
   "resolution": { "width": 3440, "height": 1440 },
   "view": "main-menu",
-  "takenAt": "2026-10-25T23:55:21.449Z",
+  "takenAt": "2026-10-27T22:09:35.776Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
   "tongs": { "version": "0.14.1" },
   "mods": [
@@ -29,13 +29,13 @@
   },
   "window": { "width": 3440, "height": 1440, "dpi": 96 },
   "screenshot": {
-    "sha256": "F81F7327F2CBB7B7E159231BFBE2DEE1BB4B38D4E912F5F43A2F84D0ABE9783C",
+    "sha256": "A1D61ECD75F4F5407525C2D97B607669E353A2772C74210D4527ABA3609F4411",
     "width": 3440,
     "height": 1440,
     "shots": 4,
     "unstable": {
-      "pixels": 4261972,
-      "sha256": "B7F6A4D74283003E5633B2E3E457B1516716BA631ADE407C4C29658196B42B68"
+      "pixels": 4261444,
+      "sha256": "F4D5CE4BC8C99AABB634BF254E232DCFB4639FB0031CD2871DE9060ABEC9EE0E"
     }
   },
   "widgets": [
@@ -436,7 +436,7 @@
                   "type": "checkbox",
                   "visible": true,
                   "rect": { "x": 2396, "y": 1377, "w": 61, "h": 57 },
-                  "checked": true
+                  "checked": false
                 },
                 {
                   "name": "epic_button",

@@ -1,0 +1,1752 @@
+{
+  "formatVersion": 1,
+  "playset": "anbennar-alone",
+  "resolution": { "width": 1600, "height": 900 },
+  "view": "settings",
+  "takenAt": "2026-10-27T22:29:52.850Z",
+  "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
+  "tongs": { "version": "0.14.1" },
+  "save": { "sha256": "AACEDFE6FD0294B80961679AB9618BC48195A9E9A239BE41292CEFFE156FDD3D" },
+  "mods": [
+    {
+      "name": "Anbennar: A Fantasy Total Conversion",
+      "sha256": "99DAB21EA321F176E23824D8EC3A8B75928A92EE68082C589557D219D654A1DD"
+    }
+  ],
+  "disabledDlcs": [],
+  "recipe": {
+    "from": "save",
+    "steps": [{ "key": "escape" }, { "click": "menu//menu_options_button" }],
+    "verified": true,
+    "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown."
+  },
+  "window": { "width": 1600, "height": 900, "dpi": 96 },
+  "screenshot": {
+    "sha256": "7D95E0E5A6D96E9DF47F0F0A7A7C227145D780C84A2856D7437B03ADCE143F98",
+    "width": 1600,
+    "height": 900,
+    "shots": 4,
+    "unstable": {
+      "pixels": 998866,
+      "sha256": "258C007FF6440C8F81EF61AA4EB13618CD384E947E9B252A0525B9FA1784C2F1"
+    }
+  },
+  "widgets": [
+    {
+      "name": "menu_settings_ingame",
+      "path": "menu_settings_ingame",
+      "type": "window",
+      "visible": true,
+      "rect": { "x": 687, "y": 250, "w": 240, "h": 500 },
+      "children": [
+        {
+          "name": "ApplyButton",
+          "path": "menu_settings_ingame/ApplyButton",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 800, "y": 600, "w": 105, "h": 31 },
+          "text": "Apply",
+          "enabled": true
+        },
+        {
+          "name": "BackButton",
+          "path": "menu_settings_ingame/BackButton",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 699, "y": 600, "w": 105, "h": 31 },
+          "text": "Back",
+          "enabled": true
+        },
+        {
+          "name": "settings_tab_1",
+          "path": "menu_settings_ingame/settings_tab_1",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 550, "y": 308, "w": 70, "h": 35 },
+          "enabled": true
+        },
+        {
+          "name": "settings_tab_2",
+          "path": "menu_settings_ingame/settings_tab_2",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 615, "y": 308, "w": 70, "h": 35 },
+          "enabled": true
+        },
+        {
+          "name": "settings_tab_3",
+          "path": "menu_settings_ingame/settings_tab_3",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 680, "y": 308, "w": 70, "h": 35 },
+          "enabled": true
+        },
+        {
+          "name": "settings_tab_4",
+          "path": "menu_settings_ingame/settings_tab_4",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 745, "y": 308, "w": 101, "h": 38 },
+          "enabled": true
+        },
+        {
+          "name": "settings_tab_5",
+          "path": "menu_settings_ingame/settings_tab_5",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 842, "y": 303, "w": 222, "h": 47 },
+          "enabled": true
+        },
+        {
+          "name": "settings_label",
+          "path": "menu_settings_ingame/settings_label",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 717, "y": 280, "w": 172, "h": 22 },
+          "text": "Settings"
+        },
+        {
+          "name": "gamesettings_label",
+          "path": "menu_settings_ingame/gamesettings_label",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 553, "y": 317, "w": 64, "h": 18 },
+          "text": "Game"
+        },
+        {
+          "name": "videosettings_label",
+          "path": "menu_settings_ingame/videosettings_label",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 617, "y": 317, "w": 64, "h": 18 },
+          "text": "Video"
+        },
+        {
+          "name": "audiosettings_label",
+          "path": "menu_settings_ingame/audiosettings_label",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 683, "y": 317, "w": 64, "h": 18 },
+          "text": "Audio"
+        },
+        {
+          "name": "controlssettings_label",
+          "path": "menu_settings_ingame/controlssettings_label",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 762, "y": 317, "w": 64, "h": 18 },
+          "text": "Controls"
+        },
+        {
+          "name": "accessibilityssettings_label",
+          "path": "menu_settings_ingame/accessibilityssettings_label",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 897, "y": 317, "w": 94, "h": 18 },
+          "text": "Accessibility"
+        },
+        {
+          "name": "menu_settings_AUDIO",
+          "path": "menu_settings_ingame/menu_settings_AUDIO",
+          "type": "window",
+          "visible": false,
+          "rect": { "x": 0, "y": 0, "w": 240, "h": 500 },
+          "children": [
+            {
+              "name": "menu",
+              "path": "menu_settings_ingame/menu_settings_AUDIO/menu",
+              "type": "icon",
+              "visible": false,
+              "rect": { "x": 800, "y": -78, "w": 722, "h": 528 }
+            },
+            {
+              "name": "mastervolume_label",
+              "path": "menu_settings_ingame/menu_settings_AUDIO/mastervolume_label",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": -80, "y": 136, "w": 172, "h": 18 },
+              "text": "Master Volume"
+            },
+            {
+              "name": "effectvolume_label",
+              "path": "menu_settings_ingame/menu_settings_AUDIO/effectvolume_label",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": -80, "y": 191, "w": 172, "h": 18 },
+              "text": "Effect Volume"
+            },
+            {
+              "name": "musicvolume_label",
+              "path": "menu_settings_ingame/menu_settings_AUDIO/musicvolume_label",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": -80, "y": 243, "w": 172, "h": 18 },
+              "text": "Music Volume"
+            },
+            {
+              "name": "ambient_label",
+              "path": "menu_settings_ingame/menu_settings_AUDIO/ambient_label",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": -80, "y": 297, "w": 172, "h": 18 },
+              "text": "Ambient"
+            },
+            {
+              "name": "mastervolume_slider",
+              "path": "menu_settings_ingame/menu_settings_AUDIO/mastervolume_slider",
+              "type": "other",
+              "visible": false,
+              "rect": { "x": 800, "y": 420, "w": 182, "h": 46 },
+              "children": [
+                {
+                  "name": "landslider_SliderButton",
+                  "path": "menu_settings_ingame/menu_settings_AUDIO/mastervolume_slider/landslider_SliderButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 427, "w": 16, "h": 23 }
+                },
+                {
+                  "name": "landslider_TrackButton",
+                  "path": "menu_settings_ingame/menu_settings_AUDIO/mastervolume_slider/landslider_TrackButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 450, "w": 182, "h": 16 }
+                },
+                {
+                  "name": "landslider_upButton",
+                  "path": "menu_settings_ingame/menu_settings_AUDIO/mastervolume_slider/landslider_upButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                  "enabled": true
+                },
+                {
+                  "name": "landslider_downButton",
+                  "path": "menu_settings_ingame/menu_settings_AUDIO/mastervolume_slider/landslider_downButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                  "enabled": true
+                }
+              ]
+            },
+            {
+              "name": "effectvolume_slider",
+              "path": "menu_settings_ingame/menu_settings_AUDIO/effectvolume_slider",
+              "type": "other",
+              "visible": false,
+              "rect": { "x": 800, "y": 420, "w": 182, "h": 46 },
+              "children": [
+                {
+                  "name": "landslider_SliderButton",
+                  "path": "menu_settings_ingame/menu_settings_AUDIO/effectvolume_slider/landslider_SliderButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 427, "w": 16, "h": 23 }
+                },
+                {
+                  "name": "landslider_TrackButton",
+                  "path": "menu_settings_ingame/menu_settings_AUDIO/effectvolume_slider/landslider_TrackButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 450, "w": 182, "h": 16 }
+                },
+                {
+                  "name": "landslider_upButton",
+                  "path": "menu_settings_ingame/menu_settings_AUDIO/effectvolume_slider/landslider_upButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                  "enabled": true
+                },
+                {
+                  "name": "landslider_downButton",
+                  "path": "menu_settings_ingame/menu_settings_AUDIO/effectvolume_slider/landslider_downButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                  "enabled": true
+                }
+              ]
+            },
+            {
+              "name": "musicvolume_slider",
+              "path": "menu_settings_ingame/menu_settings_AUDIO/musicvolume_slider",
+              "type": "other",
+              "visible": false,
+              "rect": { "x": 800, "y": 420, "w": 182, "h": 46 },
+              "children": [
+                {
+                  "name": "landslider_SliderButton",
+                  "path": "menu_settings_ingame/menu_settings_AUDIO/musicvolume_slider/landslider_SliderButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 427, "w": 16, "h": 23 }
+                },
+                {
+                  "name": "landslider_TrackButton",
+                  "path": "menu_settings_ingame/menu_settings_AUDIO/musicvolume_slider/landslider_TrackButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 450, "w": 182, "h": 16 }
+                },
+                {
+                  "name": "landslider_upButton",
+                  "path": "menu_settings_ingame/menu_settings_AUDIO/musicvolume_slider/landslider_upButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                  "enabled": true
+                },
+                {
+                  "name": "landslider_downButton",
+                  "path": "menu_settings_ingame/menu_settings_AUDIO/musicvolume_slider/landslider_downButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                  "enabled": true
+                }
+              ]
+            },
+            {
+              "name": "ambient_slider",
+              "path": "menu_settings_ingame/menu_settings_AUDIO/ambient_slider",
+              "type": "other",
+              "visible": false,
+              "rect": { "x": 800, "y": 420, "w": 182, "h": 46 },
+              "children": [
+                {
+                  "name": "landslider_SliderButton",
+                  "path": "menu_settings_ingame/menu_settings_AUDIO/ambient_slider/landslider_SliderButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 427, "w": 16, "h": 23 }
+                },
+                {
+                  "name": "landslider_TrackButton",
+                  "path": "menu_settings_ingame/menu_settings_AUDIO/ambient_slider/landslider_TrackButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 450, "w": 182, "h": 16 }
+                },
+                {
+                  "name": "landslider_upButton",
+                  "path": "menu_settings_ingame/menu_settings_AUDIO/ambient_slider/landslider_upButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                  "enabled": true
+                },
+                {
+                  "name": "landslider_downButton",
+                  "path": "menu_settings_ingame/menu_settings_AUDIO/ambient_slider/landslider_downButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                  "enabled": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "menu_settings_CONTROLS",
+          "path": "menu_settings_ingame/menu_settings_CONTROLS",
+          "type": "window",
+          "visible": false,
+          "rect": { "x": 0, "y": 0, "w": 240, "h": 500 },
+          "children": [
+            {
+              "name": "reset_shortcuts_btn",
+              "path": "menu_settings_ingame/menu_settings_CONTROLS/reset_shortcuts_btn",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 800, "y": 419, "w": 105, "h": 31 },
+              "text": "RESET",
+              "enabled": true
+            },
+            {
+              "name": "menu",
+              "path": "menu_settings_ingame/menu_settings_CONTROLS/menu",
+              "type": "icon",
+              "visible": false,
+              "rect": { "x": 800, "y": -78, "w": 722, "h": 528 }
+            },
+            {
+              "name": "scrollspeed_label",
+              "path": "menu_settings_ingame/menu_settings_CONTROLS/scrollspeed_label",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": -80, "y": 244, "w": 172, "h": 18 },
+              "text": "Scroll Speed"
+            },
+            {
+              "name": "zoomspeed_label",
+              "path": "menu_settings_ingame/menu_settings_CONTROLS/zoomspeed_label",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": -80, "y": 189, "w": 172, "h": 18 },
+              "text": "Zoom Speed"
+            },
+            {
+              "name": "reset_shortcuts_label",
+              "path": "menu_settings_ingame/menu_settings_CONTROLS/reset_shortcuts_label",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 60, "y": 120, "w": 200, "h": 18 },
+              "text": "Reset Keyboard Shortcuts"
+            },
+            {
+              "name": "scrollspeed_slider",
+              "path": "menu_settings_ingame/menu_settings_CONTROLS/scrollspeed_slider",
+              "type": "other",
+              "visible": false,
+              "rect": { "x": 800, "y": 420, "w": 182, "h": 46 },
+              "children": [
+                {
+                  "name": "landslider_SliderButton",
+                  "path": "menu_settings_ingame/menu_settings_CONTROLS/scrollspeed_slider/landslider_SliderButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 427, "w": 16, "h": 23 }
+                },
+                {
+                  "name": "landslider_TrackButton",
+                  "path": "menu_settings_ingame/menu_settings_CONTROLS/scrollspeed_slider/landslider_TrackButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 450, "w": 182, "h": 16 }
+                },
+                {
+                  "name": "landslider_upButton",
+                  "path": "menu_settings_ingame/menu_settings_CONTROLS/scrollspeed_slider/landslider_upButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                  "enabled": true
+                },
+                {
+                  "name": "landslider_downButton",
+                  "path": "menu_settings_ingame/menu_settings_CONTROLS/scrollspeed_slider/landslider_downButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                  "enabled": true
+                }
+              ]
+            },
+            {
+              "name": "zoomspeed_slider",
+              "path": "menu_settings_ingame/menu_settings_CONTROLS/zoomspeed_slider",
+              "type": "other",
+              "visible": false,
+              "rect": { "x": 800, "y": 420, "w": 182, "h": 46 },
+              "children": [
+                {
+                  "name": "landslider_SliderButton",
+                  "path": "menu_settings_ingame/menu_settings_CONTROLS/zoomspeed_slider/landslider_SliderButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 427, "w": 16, "h": 23 }
+                },
+                {
+                  "name": "landslider_TrackButton",
+                  "path": "menu_settings_ingame/menu_settings_CONTROLS/zoomspeed_slider/landslider_TrackButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 450, "w": 182, "h": 16 }
+                },
+                {
+                  "name": "landslider_upButton",
+                  "path": "menu_settings_ingame/menu_settings_CONTROLS/zoomspeed_slider/landslider_upButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                  "enabled": true
+                },
+                {
+                  "name": "landslider_downButton",
+                  "path": "menu_settings_ingame/menu_settings_CONTROLS/zoomspeed_slider/landslider_downButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                  "enabled": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "menu_settings_VIDEO",
+          "path": "menu_settings_ingame/menu_settings_VIDEO",
+          "type": "window",
+          "visible": false,
+          "rect": { "x": 0, "y": 0, "w": 240, "h": 500 },
+          "children": [
+            {
+              "name": "decrease_display_mode_button",
+              "path": "menu_settings_ingame/menu_settings_VIDEO/decrease_display_mode_button",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+              "enabled": true
+            },
+            {
+              "name": "increase_display_mode_button",
+              "path": "menu_settings_ingame/menu_settings_VIDEO/increase_display_mode_button",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+              "enabled": true
+            },
+            {
+              "name": "decrease_resolution_button",
+              "path": "menu_settings_ingame/menu_settings_VIDEO/decrease_resolution_button",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+              "enabled": true
+            },
+            {
+              "name": "increase_resolution_button",
+              "path": "menu_settings_ingame/menu_settings_VIDEO/increase_resolution_button",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+              "enabled": true
+            },
+            {
+              "name": "decrease_refreshrate_button",
+              "path": "menu_settings_ingame/menu_settings_VIDEO/decrease_refreshrate_button",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+              "enabled": true
+            },
+            {
+              "name": "increase_refreshrate_button",
+              "path": "menu_settings_ingame/menu_settings_VIDEO/increase_refreshrate_button",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+              "enabled": true
+            },
+            {
+              "name": "decrease_multisample_button",
+              "path": "menu_settings_ingame/menu_settings_VIDEO/decrease_multisample_button",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+              "enabled": true
+            },
+            {
+              "name": "increase_multisample_button",
+              "path": "menu_settings_ingame/menu_settings_VIDEO/increase_multisample_button",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+              "enabled": true
+            },
+            {
+              "name": "menu",
+              "path": "menu_settings_ingame/menu_settings_VIDEO/menu",
+              "type": "icon",
+              "visible": false,
+              "rect": { "x": 800, "y": -78, "w": 722, "h": 528 }
+            },
+            {
+              "name": "display_mode_label",
+              "path": "menu_settings_ingame/menu_settings_VIDEO/display_mode_label",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 73, "y": 14, "w": 172, "h": 18 },
+              "text": "Display Mode"
+            },
+            {
+              "name": "display_mode_value",
+              "path": "menu_settings_ingame/menu_settings_VIDEO/display_mode_value",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 75, "y": 37, "w": 172, "h": 18 },
+              "text": "Windowed"
+            },
+            {
+              "name": "resolution_label",
+              "path": "menu_settings_ingame/menu_settings_VIDEO/resolution_label",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 75, "y": 60, "w": 172, "h": 18 },
+              "text": "Resolution"
+            },
+            {
+              "name": "resolution_value",
+              "path": "menu_settings_ingame/menu_settings_VIDEO/resolution_value",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 75, "y": 82, "w": 172, "h": 16 },
+              "text": "1600x900"
+            },
+            {
+              "name": "refreshrate_label",
+              "path": "menu_settings_ingame/menu_settings_VIDEO/refreshrate_label",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 75, "y": 105, "w": 172, "h": 18 },
+              "text": "Refresh Rate"
+            },
+            {
+              "name": "refreshrate_value",
+              "path": "menu_settings_ingame/menu_settings_VIDEO/refreshrate_value",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 75, "y": 127, "w": 172, "h": 16 },
+              "text": "144 Hz"
+            },
+            {
+              "name": "multisample_label",
+              "path": "menu_settings_ingame/menu_settings_VIDEO/multisample_label",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 75, "y": 150, "w": 172, "h": 18 },
+              "text": "Multisample Level"
+            },
+            {
+              "name": "multisample_value",
+              "path": "menu_settings_ingame/menu_settings_VIDEO/multisample_value",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 75, "y": 172, "w": 172, "h": 18 },
+              "text": "8"
+            },
+            {
+              "name": "gamma_label",
+              "path": "menu_settings_ingame/menu_settings_VIDEO/gamma_label",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 75, "y": 195, "w": 172, "h": 18 },
+              "text": "Gamma"
+            },
+            {
+              "name": "gamma_slider",
+              "path": "menu_settings_ingame/menu_settings_VIDEO/gamma_slider",
+              "type": "other",
+              "visible": false,
+              "rect": { "x": 800, "y": 420, "w": 154, "h": 43 },
+              "children": [
+                {
+                  "name": "landslider_SliderButton",
+                  "path": "menu_settings_ingame/menu_settings_VIDEO/gamma_slider/landslider_SliderButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 427, "w": 16, "h": 23 }
+                },
+                {
+                  "name": "landslider_TrackButton",
+                  "path": "menu_settings_ingame/menu_settings_VIDEO/gamma_slider/landslider_TrackButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 450, "w": 154, "h": 13 }
+                },
+                {
+                  "name": "landslider_upButton",
+                  "path": "menu_settings_ingame/menu_settings_VIDEO/gamma_slider/landslider_upButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                  "enabled": false
+                },
+                {
+                  "name": "landslider_downButton",
+                  "path": "menu_settings_ingame/menu_settings_VIDEO/gamma_slider/landslider_downButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                  "enabled": false
+                }
+              ]
+            },
+            {
+              "name": "settings_listbox",
+              "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox",
+              "type": "listbox",
+              "visible": false,
+              "rect": { "x": 0, "y": 0, "w": 250, "h": 720 },
+              "children": [
+                {
+                  "name": "settings_item",
+                  "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[1]",
+                  "type": "window",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 250, "h": 45 },
+                  "children": [
+                    {
+                      "name": "decrease_settings_item_button",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[1]/decrease_settings_item_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "increase_settings_item_button",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[1]/increase_settings_item_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "settings_item_label",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[1]/settings_item_label",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 10, "y": 0, "w": 120, "h": 18 },
+                      "text": "GUI Scale (TEST)"
+                    },
+                    {
+                      "name": "settings_item_value",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[1]/settings_item_value",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 150, "y": 10, "w": 60, "h": 18 },
+                      "text": "1.0"
+                    }
+                  ]
+                },
+                {
+                  "name": "settings_item",
+                  "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[2]",
+                  "type": "window",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 250, "h": 45 },
+                  "children": [
+                    {
+                      "name": "decrease_settings_item_button",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[2]/decrease_settings_item_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "increase_settings_item_button",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[2]/increase_settings_item_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "settings_item_label",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[2]/settings_item_label",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 10, "y": 0, "w": 120, "h": 18 },
+                      "text": "Trees"
+                    },
+                    {
+                      "name": "settings_item_value",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[2]/settings_item_value",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 150, "y": 10, "w": 60, "h": 18 },
+                      "text": "YES"
+                    }
+                  ]
+                },
+                {
+                  "name": "settings_item",
+                  "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[3]",
+                  "type": "window",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 250, "h": 45 },
+                  "children": [
+                    {
+                      "name": "decrease_settings_item_button",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[3]/decrease_settings_item_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "increase_settings_item_button",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[3]/increase_settings_item_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "settings_item_label",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[3]/settings_item_label",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 10, "y": 0, "w": 120, "h": 18 },
+                      "text": "Shadows"
+                    },
+                    {
+                      "name": "settings_item_value",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[3]/settings_item_value",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 150, "y": 10, "w": 60, "h": 18 },
+                      "text": "YES"
+                    }
+                  ]
+                },
+                {
+                  "name": "settings_item",
+                  "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[4]",
+                  "type": "window",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 250, "h": 45 },
+                  "children": [
+                    {
+                      "name": "decrease_settings_item_button",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[4]/decrease_settings_item_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "increase_settings_item_button",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[4]/increase_settings_item_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "settings_item_label",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[4]/settings_item_label",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 10, "y": 0, "w": 120, "h": 18 },
+                      "text": "Reflections"
+                    },
+                    {
+                      "name": "settings_item_value",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[4]/settings_item_value",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 150, "y": 10, "w": 60, "h": 18 },
+                      "text": "YES"
+                    }
+                  ]
+                },
+                {
+                  "name": "settings_item",
+                  "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[5]",
+                  "type": "window",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 250, "h": 45 },
+                  "children": [
+                    {
+                      "name": "decrease_settings_item_button",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[5]/decrease_settings_item_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "increase_settings_item_button",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[5]/increase_settings_item_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "settings_item_label",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[5]/settings_item_label",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 10, "y": 0, "w": 120, "h": 18 },
+                      "text": "Particles"
+                    },
+                    {
+                      "name": "settings_item_value",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[5]/settings_item_value",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 150, "y": 10, "w": 60, "h": 18 },
+                      "text": "YES"
+                    }
+                  ]
+                },
+                {
+                  "name": "settings_item",
+                  "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[6]",
+                  "type": "window",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 250, "h": 45 },
+                  "children": [
+                    {
+                      "name": "decrease_settings_item_button",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[6]/decrease_settings_item_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "increase_settings_item_button",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[6]/increase_settings_item_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "settings_item_label",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[6]/settings_item_label",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 10, "y": 0, "w": 120, "h": 18 },
+                      "text": "Borders"
+                    },
+                    {
+                      "name": "settings_item_value",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[6]/settings_item_value",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 150, "y": 10, "w": 60, "h": 18 },
+                      "text": "YES"
+                    }
+                  ]
+                },
+                {
+                  "name": "settings_item",
+                  "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[7]",
+                  "type": "window",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 250, "h": 45 },
+                  "children": [
+                    {
+                      "name": "decrease_settings_item_button",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[7]/decrease_settings_item_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "increase_settings_item_button",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[7]/increase_settings_item_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "settings_item_label",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[7]/settings_item_label",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 10, "y": 0, "w": 120, "h": 18 },
+                      "text": "Rivers"
+                    },
+                    {
+                      "name": "settings_item_value",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[7]/settings_item_value",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 150, "y": 10, "w": 60, "h": 18 },
+                      "text": "YES"
+                    }
+                  ]
+                },
+                {
+                  "name": "settings_item",
+                  "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[8]",
+                  "type": "window",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 250, "h": 45 },
+                  "children": [
+                    {
+                      "name": "decrease_settings_item_button",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[8]/decrease_settings_item_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "increase_settings_item_button",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[8]/increase_settings_item_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "settings_item_label",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[8]/settings_item_label",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 10, "y": 0, "w": 120, "h": 18 },
+                      "text": "Post Effects"
+                    },
+                    {
+                      "name": "settings_item_value",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[8]/settings_item_value",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 150, "y": 10, "w": 60, "h": 18 },
+                      "text": "YES"
+                    }
+                  ]
+                },
+                {
+                  "name": "settings_item",
+                  "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[9]",
+                  "type": "window",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 250, "h": 45 },
+                  "children": [
+                    {
+                      "name": "decrease_settings_item_button",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[9]/decrease_settings_item_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "increase_settings_item_button",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[9]/increase_settings_item_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "settings_item_label",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[9]/settings_item_label",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 10, "y": 0, "w": 120, "h": 18 },
+                      "text": "Bloom"
+                    },
+                    {
+                      "name": "settings_item_value",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[9]/settings_item_value",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 150, "y": 10, "w": 60, "h": 18 },
+                      "text": "YES"
+                    }
+                  ]
+                },
+                {
+                  "name": "settings_item",
+                  "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[10]",
+                  "type": "window",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 250, "h": 45 },
+                  "children": [
+                    {
+                      "name": "decrease_settings_item_button",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[10]/decrease_settings_item_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "increase_settings_item_button",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[10]/increase_settings_item_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "settings_item_label",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[10]/settings_item_label",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 10, "y": 0, "w": 120, "h": 18 },
+                      "text": "City Sprawl"
+                    },
+                    {
+                      "name": "settings_item_value",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[10]/settings_item_value",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 150, "y": 10, "w": 60, "h": 18 },
+                      "text": "YES"
+                    }
+                  ]
+                },
+                {
+                  "name": "settings_item",
+                  "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[11]",
+                  "type": "window",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 250, "h": 45 },
+                  "children": [
+                    {
+                      "name": "decrease_settings_item_button",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[11]/decrease_settings_item_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "increase_settings_item_button",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[11]/increase_settings_item_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "settings_item_label",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[11]/settings_item_label",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 10, "y": 0, "w": 120, "h": 18 },
+                      "text": "Ambient Objects"
+                    },
+                    {
+                      "name": "settings_item_value",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[11]/settings_item_value",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 150, "y": 10, "w": 60, "h": 18 },
+                      "text": "YES"
+                    }
+                  ]
+                },
+                {
+                  "name": "settings_item",
+                  "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[12]",
+                  "type": "window",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 250, "h": 45 },
+                  "children": [
+                    {
+                      "name": "decrease_settings_item_button",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[12]/decrease_settings_item_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "increase_settings_item_button",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[12]/increase_settings_item_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "settings_item_label",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[12]/settings_item_label",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 10, "y": 0, "w": 120, "h": 18 },
+                      "text": "Moving Units"
+                    },
+                    {
+                      "name": "settings_item_value",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[12]/settings_item_value",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 150, "y": 10, "w": 60, "h": 18 },
+                      "text": "NO"
+                    }
+                  ]
+                },
+                {
+                  "name": "settings_item",
+                  "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[13]",
+                  "type": "window",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 250, "h": 45 },
+                  "children": [
+                    {
+                      "name": "decrease_settings_item_button",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[13]/decrease_settings_item_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "increase_settings_item_button",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[13]/increase_settings_item_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "settings_item_label",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[13]/settings_item_label",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 10, "y": 0, "w": 120, "h": 18 },
+                      "text": "Units on Minimap"
+                    },
+                    {
+                      "name": "settings_item_value",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[13]/settings_item_value",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 150, "y": 10, "w": 60, "h": 18 },
+                      "text": "YES"
+                    }
+                  ]
+                },
+                {
+                  "name": "settings_item",
+                  "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[14]",
+                  "type": "window",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 250, "h": 45 },
+                  "children": [
+                    {
+                      "name": "decrease_settings_item_button",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[14]/decrease_settings_item_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "increase_settings_item_button",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[14]/increase_settings_item_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "settings_item_label",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[14]/settings_item_label",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 10, "y": 0, "w": 120, "h": 36 },
+                      "text": "Terrain in Uncolonized"
+                    },
+                    {
+                      "name": "settings_item_value",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[14]/settings_item_value",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 150, "y": 10, "w": 60, "h": 18 },
+                      "text": "YES"
+                    }
+                  ]
+                },
+                {
+                  "name": "settings_item",
+                  "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[15]",
+                  "type": "window",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 250, "h": 45 },
+                  "children": [
+                    {
+                      "name": "decrease_settings_item_button",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[15]/decrease_settings_item_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "increase_settings_item_button",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[15]/increase_settings_item_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "settings_item_label",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[15]/settings_item_label",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 10, "y": 0, "w": 120, "h": 18 },
+                      "text": "State Borders"
+                    },
+                    {
+                      "name": "settings_item_value",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[15]/settings_item_value",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 150, "y": 10, "w": 60, "h": 18 },
+                      "text": "YES"
+                    }
+                  ]
+                },
+                {
+                  "name": "settings_item",
+                  "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[16]",
+                  "type": "window",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 250, "h": 45 },
+                  "children": [
+                    {
+                      "name": "decrease_settings_item_button",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[16]/decrease_settings_item_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "increase_settings_item_button",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[16]/increase_settings_item_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "settings_item_label",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[16]/settings_item_label",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 10, "y": 0, "w": 120, "h": 36 },
+                      "text": "Compact Battle Result"
+                    },
+                    {
+                      "name": "settings_item_value",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/settings_item[16]/settings_item_value",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 150, "y": 10, "w": 60, "h": 18 },
+                      "text": "NO"
+                    }
+                  ]
+                },
+                {
+                  "name": "standardlistbox_slider",
+                  "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/standardlistbox_slider",
+                  "type": "other",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 434, "w": 16, "h": 209 },
+                  "children": [
+                    {
+                      "name": "listboxSliderButton",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/standardlistbox_slider/listboxSliderButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 434, "w": 16, "h": 16 }
+                    },
+                    {
+                      "name": "listboxTrackButton",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/standardlistbox_slider/listboxTrackButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 450, "w": 12, "h": 193 }
+                    },
+                    {
+                      "name": "downButton",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/standardlistbox_slider/downButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 434, "w": 16, "h": 16 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "upButton",
+                      "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/standardlistbox_slider/upButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 800, "y": 434, "w": 16, "h": 16 },
+                      "enabled": true
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "menu_settings_GAME",
+          "path": "menu_settings_ingame/menu_settings_GAME",
+          "type": "window",
+          "visible": true,
+          "rect": { "x": 687, "y": 300, "w": 240, "h": 500 },
+          "children": [
+            {
+              "name": "decrease_autosave_button",
+              "path": "menu_settings_ingame/menu_settings_GAME/decrease_autosave_button",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 598, "y": 395, "w": 30, "h": 30 },
+              "enabled": true
+            },
+            {
+              "name": "increase_autosave_button",
+              "path": "menu_settings_ingame/menu_settings_GAME/increase_autosave_button",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 716, "y": 395, "w": 30, "h": 30 },
+              "enabled": true
+            },
+            {
+              "name": "autosave_tocloud",
+              "path": "menu_settings_ingame/menu_settings_GAME/autosave_tocloud",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 597, "y": 430, "w": 32, "h": 32 },
+              "enabled": true
+            },
+            {
+              "name": "compress_autosaves_checkbox",
+              "path": "menu_settings_ingame/menu_settings_GAME/compress_autosaves_checkbox",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 597, "y": 467, "w": 32, "h": 32 },
+              "enabled": true
+            },
+            {
+              "name": "rich_presence_checkbox",
+              "path": "menu_settings_ingame/menu_settings_GAME/rich_presence_checkbox",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 597, "y": 505, "w": 32, "h": 32 },
+              "enabled": true
+            },
+            {
+              "name": "hints_active",
+              "path": "menu_settings_ingame/menu_settings_GAME/hints_active",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 792, "y": 394, "w": 32, "h": 32 },
+              "enabled": true
+            },
+            {
+              "name": "hide_chat",
+              "path": "menu_settings_ingame/menu_settings_GAME/hide_chat",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 792, "y": 430, "w": 32, "h": 32 },
+              "enabled": true
+            },
+            {
+              "name": "allow_hotjoin",
+              "path": "menu_settings_ingame/menu_settings_GAME/allow_hotjoin",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 792, "y": 467, "w": 32, "h": 32 },
+              "enabled": false
+            },
+            {
+              "name": "allow_coop",
+              "path": "menu_settings_ingame/menu_settings_GAME/allow_coop",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 792, "y": 505, "w": 32, "h": 32 },
+              "enabled": false
+            },
+            {
+              "name": "autopause_on_events_button",
+              "path": "menu_settings_ingame/menu_settings_GAME/autopause_on_events_button",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 792, "y": 543, "w": 32, "h": 32 },
+              "enabled": true
+            },
+            {
+              "name": "menu",
+              "path": "menu_settings_ingame/menu_settings_GAME/menu",
+              "type": "icon",
+              "visible": true,
+              "rect": { "x": 440, "y": 181, "w": 722, "h": 528 }
+            },
+            {
+              "name": "autosave_label",
+              "path": "menu_settings_ingame/menu_settings_GAME/autosave_label",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 587, "y": 370, "w": 172, "h": 18 },
+              "text": "Autosave Interval"
+            },
+            {
+              "name": "autosave_value",
+              "path": "menu_settings_ingame/menu_settings_GAME/autosave_value",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 588, "y": 403, "w": 172, "h": 18 },
+              "text": "Yearly"
+            },
+            {
+              "name": "autosave_tocloud_title",
+              "path": "menu_settings_ingame/menu_settings_GAME/autosave_tocloud_title",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 631, "y": 436, "w": 256, "h": 18 },
+              "text": "Autosave to cloud"
+            },
+            {
+              "name": "compress_autosaves_checkbox_label",
+              "path": "menu_settings_ingame/menu_settings_GAME/compress_autosaves_checkbox_label",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 631, "y": 474, "w": 256, "h": 18 },
+              "text": "Compress Autosaves"
+            },
+            {
+              "name": "rich_presence_label",
+              "path": "menu_settings_ingame/menu_settings_GAME/rich_presence_label",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 631, "y": 512, "w": 256, "h": 18 },
+              "text": "Rich presence"
+            },
+            {
+              "name": "hints_active_title",
+              "path": "menu_settings_ingame/menu_settings_GAME/hints_active_title",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 827, "y": 402, "w": 256, "h": 18 },
+              "text": "Hints Active"
+            },
+            {
+              "name": "hide_chat_title",
+              "path": "menu_settings_ingame/menu_settings_GAME/hide_chat_title",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 827, "y": 435, "w": 256, "h": 18 },
+              "text": "Floating chat text"
+            },
+            {
+              "name": "allow_hotjoin_title",
+              "path": "menu_settings_ingame/menu_settings_GAME/allow_hotjoin_title",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 827, "y": 473, "w": 256, "h": 18 },
+              "text": "Allow players to hotjoin"
+            },
+            {
+              "name": "allow_coop_title",
+              "path": "menu_settings_ingame/menu_settings_GAME/allow_coop_title",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 827, "y": 512, "w": 180, "h": 36 },
+              "text": "Allow players to play the same country"
+            },
+            {
+              "name": "autopause_on_events_label",
+              "path": "menu_settings_ingame/menu_settings_GAME/autopause_on_events_label",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 827, "y": 548, "w": 256, "h": 18 },
+              "text": "Pause on events"
+            }
+          ]
+        },
+        {
+          "name": "menu_settings_ACCESSIBILITY",
+          "path": "menu_settings_ingame/menu_settings_ACCESSIBILITY",
+          "type": "window",
+          "visible": false,
+          "rect": { "x": 0, "y": 0, "w": 240, "h": 500 },
+          "children": [
+            {
+              "name": "next_visual_alerts_value",
+              "path": "menu_settings_ingame/menu_settings_ACCESSIBILITY/next_visual_alerts_value",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+              "enabled": true
+            },
+            {
+              "name": "prev_visual_alerts_value",
+              "path": "menu_settings_ingame/menu_settings_ACCESSIBILITY/prev_visual_alerts_value",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+              "enabled": true
+            },
+            {
+              "name": "next_large_fonts_value",
+              "path": "menu_settings_ingame/menu_settings_ACCESSIBILITY/next_large_fonts_value",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+              "enabled": true
+            },
+            {
+              "name": "prev_large_fonts_value",
+              "path": "menu_settings_ingame/menu_settings_ACCESSIBILITY/prev_large_fonts_value",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+              "enabled": true
+            },
+            {
+              "name": "next_text_to_speech_value",
+              "path": "menu_settings_ingame/menu_settings_ACCESSIBILITY/next_text_to_speech_value",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+              "enabled": true
+            },
+            {
+              "name": "prev_text_to_speech_value",
+              "path": "menu_settings_ingame/menu_settings_ACCESSIBILITY/prev_text_to_speech_value",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+              "enabled": true
+            },
+            {
+              "name": "next_speech_to_text_value",
+              "path": "menu_settings_ingame/menu_settings_ACCESSIBILITY/next_speech_to_text_value",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+              "enabled": true
+            },
+            {
+              "name": "prev_speech_to_text_value",
+              "path": "menu_settings_ingame/menu_settings_ACCESSIBILITY/prev_speech_to_text_value",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+              "enabled": true
+            },
+            {
+              "name": "next_speech_to_text_shortcat_state_value",
+              "path": "menu_settings_ingame/menu_settings_ACCESSIBILITY/next_speech_to_text_shortcat_state_value",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+              "enabled": true
+            },
+            {
+              "name": "prev_speech_to_text_shortcat_state_value",
+              "path": "menu_settings_ingame/menu_settings_ACCESSIBILITY/prev_speech_to_text_shortcat_state_value",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 800, "y": 420, "w": 30, "h": 30 },
+              "enabled": true
+            },
+            {
+              "name": "menu",
+              "path": "menu_settings_ingame/menu_settings_ACCESSIBILITY/menu",
+              "type": "icon",
+              "visible": false,
+              "rect": { "x": 800, "y": -78, "w": 722, "h": 528 }
+            },
+            {
+              "name": "speech_to_text_shortcut_edit_bkg",
+              "path": "menu_settings_ingame/menu_settings_ACCESSIBILITY/speech_to_text_shortcut_edit_bkg",
+              "type": "icon",
+              "visible": false,
+              "rect": { "x": 800, "y": 421, "w": 97, "h": 29 }
+            },
+            {
+              "name": "visual_alerts_label",
+              "path": "menu_settings_ingame/menu_settings_ACCESSIBILITY/visual_alerts_label",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": -68, "y": 125, "w": 256, "h": 18 },
+              "text": "Multiplayer Chat Visual Alerts"
+            },
+            {
+              "name": "large_fonts_label",
+              "path": "menu_settings_ingame/menu_settings_ACCESSIBILITY/large_fonts_label",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": -68, "y": 162, "w": 256, "h": 18 },
+              "text": "Multiplayer Chat Large Fonts"
+            },
+            {
+              "name": "text_to_speech_label",
+              "path": "menu_settings_ingame/menu_settings_ACCESSIBILITY/text_to_speech_label",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": -68, "y": 199, "w": 256, "h": 18 },
+              "text": "Multiplayer Chat Text To Speech"
+            },
+            {
+              "name": "speech_to_text_label",
+              "path": "menu_settings_ingame/menu_settings_ACCESSIBILITY/speech_to_text_label",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": -68, "y": 239, "w": 256, "h": 18 },
+              "text": "Multiplayer Chat Speech To Text"
+            },
+            {
+              "name": "speech_to_text_shortcut_state_label",
+              "path": "menu_settings_ingame/menu_settings_ACCESSIBILITY/speech_to_text_shortcut_state_label",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": -68, "y": 276, "w": 256, "h": 18 },
+              "text": "Speech To Text Toggle Shortcut"
+            },
+            {
+              "name": "speech_to_text_shortcut_label",
+              "path": "menu_settings_ingame/menu_settings_ACCESSIBILITY/speech_to_text_shortcut_label",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": -68, "y": 312, "w": 256, "h": 18 },
+              "text": "Multiplayer Chat Speech To Text Shortcut"
+            },
+            {
+              "name": "visual_alerts_value",
+              "path": "menu_settings_ingame/menu_settings_ACCESSIBILITY/visual_alerts_value",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 206, "y": 125, "w": 172, "h": 18 },
+              "text": "NO"
+            },
+            {
+              "name": "large_fonts_value",
+              "path": "menu_settings_ingame/menu_settings_ACCESSIBILITY/large_fonts_value",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 206, "y": 162, "w": 172, "h": 18 },
+              "text": "NO"
+            },
+            {
+              "name": "text_to_speech_value",
+              "path": "menu_settings_ingame/menu_settings_ACCESSIBILITY/text_to_speech_value",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 206, "y": 199, "w": 172, "h": 18 },
+              "text": "NO"
+            },
+            {
+              "name": "speech_to_text_value",
+              "path": "menu_settings_ingame/menu_settings_ACCESSIBILITY/speech_to_text_value",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 206, "y": 239, "w": 172, "h": 18 },
+              "text": "NO"
+            },
+            {
+              "name": "speech_to_text_shortcat_state_value",
+              "path": "menu_settings_ingame/menu_settings_ACCESSIBILITY/speech_to_text_shortcat_state_value",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 206, "y": 276, "w": 172, "h": 18 },
+              "text": "NO"
+            },
+            {
+              "name": "speech_to_text_shortcut_edit",
+              "path": "menu_settings_ingame/menu_settings_ACCESSIBILITY/speech_to_text_shortcut_edit",
+              "type": "editbox",
+              "visible": false,
+              "rect": { "x": 251, "y": 312, "w": 80, "h": 18 },
+              "text": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -62,16 +62,11 @@ export interface CorpusPlayset {
   /** The ids of the corpus windows captured with this playset. */
   readonly windows: readonly string[];
   /**
-   * Patterns of top-level windows the game shows over every view opened from the save, such as
-   * the events the save opens with, which no recipe can close: each such view reads them as roots
-   * too, and the comparison masks them as code-filled.
+   * The resolutions this playset is captured at, as `3440x1440`; every corpus resolution when left
+   * out. Proper 2K UI Enhanced is made for screens of at least 2560Ă—1440, so its playsets are
+   * captured there and above only.
    */
-  readonly covers?: readonly string[];
-  /**
-   * Pixels around each cover's rect masked with it: what its sprites draw past the rect Tongs reads
-   * from the `.gui` (the frame of an event window).
-   */
-  readonly coverMargin?: number;
+  readonly resolutions?: readonly string[];
   readonly note?: string;
 }
 
@@ -164,26 +159,17 @@ export interface PlaysetView {
 
 /**
  * A view as one playset captures it: the view with its recipe, selectors and data of that playset
- * (`byPlayset`) in place of the defaults, and, opened from the save, the playset's `covers` among
- * its roots and code-filled patterns.
+ * (`byPlayset`) in place of the defaults.
  */
-export function viewInPlayset(
-  view: CorpusView,
-  playset: Pick<CorpusPlayset, 'id' | 'covers'>,
-): CorpusView {
+export function viewInPlayset(view: CorpusView, playset: Pick<CorpusPlayset, 'id'>): CorpusView {
   const own = view.byPlayset?.[playset.id];
-  const recipe = own?.recipe ?? view.recipe;
-  const covers = recipe.from === 'save' ? (playset.covers ?? []) : [];
-  if (own === undefined && covers.length === 0) return view;
+  if (own === undefined) return view;
   return {
     ...view,
-    recipe,
-    ...(covers.length === 0
-      ? {}
-      : { roots: [...view.roots, ...covers], codeFilled: [...view.codeFilled, ...covers] }),
-    ...(own?.data !== undefined ? { data: own.data } : {}),
-    ...(view.selectors !== undefined || own?.selectors !== undefined
-      ? { selectors: { ...view.selectors, ...own?.selectors } }
+    recipe: own.recipe ?? view.recipe,
+    ...(own.data !== undefined ? { data: own.data } : {}),
+    ...(view.selectors !== undefined || own.selectors !== undefined
+      ? { selectors: { ...view.selectors, ...own.selectors } }
       : {}),
   };
 }
@@ -325,6 +311,12 @@ export function requiredCaptures(
     if (options.gating === true && playset.gate !== 'release') continue;
     for (const resolution of manifest.resolutions) {
       if (options.gating === true && !resolution.confirmed) continue;
+      if (
+        playset.resolutions !== undefined &&
+        !playset.resolutions.includes(resolutionKey(resolution))
+      ) {
+        continue;
+      }
       for (const window of manifest.windows) {
         if (!playset.windows.includes(window.id)) continue;
         for (const view of window.views) {
@@ -425,7 +417,12 @@ export function parseCorpusManifest(value: unknown): ManifestResult {
   const viewIds = ids(views.map((v) => v.id));
 
   const playsets =
-    c.array(root['playsets'], 'playsets', (v, at) => checkPlayset(c, v, at, windowIds), true) ?? [];
+    c.array(
+      root['playsets'],
+      'playsets',
+      (v, at) => checkPlayset(c, v, at, windowIds, resolutionKeys),
+      true,
+    ) ?? [];
   c.unique(
     playsets.map((p) => p.id),
     (i) => `playsets[${String(i)}].id`,
@@ -485,12 +482,13 @@ function checkPlayset(
   value: unknown,
   at: string,
   windowIds: ReadonlySet<string>,
+  resolutionKeys: ReadonlySet<string>,
 ): { id: string | undefined } | undefined {
   const json = c.object(
     value,
     at,
     ['id', 'title', 'gate', 'mods', 'disabledDlcs', 'windows'],
-    ['save', 'covers', 'coverMargin', 'note'],
+    ['save', 'resolutions', 'note'],
   );
   if (json === undefined) return undefined;
   const id = c.string(json['id'], field(at, 'id'), ID, 'an id in lowercase words joined by -');
@@ -528,10 +526,22 @@ function checkPlayset(
     return true;
   });
   c.array(json['disabledDlcs'], field(at, 'disabledDlcs'), (v, dlcAt) => c.string(v, dlcAt));
-  if ('covers' in json) {
-    c.array(json['covers'], field(at, 'covers'), (v, coverAt) => pattern(c, v, coverAt), true);
+  if ('resolutions' in json) {
+    const keys =
+      c.array(
+        json['resolutions'],
+        field(at, 'resolutions'),
+        (v, keyAt) => {
+          const key = c.string(v, keyAt);
+          if (key !== undefined && !resolutionKeys.has(key)) {
+            c.fail(keyAt, `The manifest has no resolution "${key}".`);
+          }
+          return key;
+        },
+        true,
+      ) ?? [];
+    c.unique(keys, () => field(at, 'resolutions'), 'resolution');
   }
-  if ('coverMargin' in json) c.integer(json['coverMargin'], field(at, 'coverMargin'), 0);
 
   const windows =
     c.array(

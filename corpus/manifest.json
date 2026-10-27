@@ -40,10 +40,22 @@
       "evidence": "A windowed client area on the lab's 3440x1440 monitor, set in the profile's pdx_settings.txt (etch#18): exact client size, the if_resolution band of its height, two identical screenshots equal to the back buffer, unchanged widgets pixel-identical to 3440x1440."
     },
     {
+      "width": 2560,
+      "height": 1440,
+      "confirmed": true,
+      "evidence": "Added in M10 for the playsets with Proper 2K UI Enhanced, made for screens of at least 2560×1440 (etch#163): a windowed client area on the lab’s 3440×1440 monitor, as etch#18 confirmed the smaller sizes; every capture of the four playsets there had its client area exactly 2560×1440 at DPI 96 (2026-10-27)."
+    },
+    {
       "width": 3440,
       "height": 1440,
       "confirmed": true,
       "evidence": "The lab's monitor at its native size, borderless (etch#5); captured and compared in etch#9, and the reference of etch#18."
+    },
+    {
+      "width": 3840,
+      "height": 2160,
+      "confirmed": false,
+      "evidence": "Not capturable in the lab (checked in M10): its monitors are 3440×1440 and 2560×1440 side by side, a 6000×1440 desktop, and Windows caps a window at 6020×1460 (MaxWindowTrackSize), so no 2160-pixel client area fits. It stays unconfirmed and gates nothing until a machine with a 4K screen captures it (etch#163)."
     }
   ],
   "codeFilledKinds": [
@@ -154,16 +166,17 @@
         "macro-builder",
         "estates"
       ],
-      "note": "The event window is out of the 0.2.0 gate until a recipe opens an event (https://github.com/happy-dwarf-team/etch/issues/97, maintainer's consent in https://github.com/happy-dwarf-team/etch/issues/44#issuecomment-6388493594)."
+      "resolutions": ["2560x1440", "3440x1440", "3840x2160"],
+      "note": "The event window is out of the 0.2.0 gate until a recipe opens an event (https://github.com/happy-dwarf-team/etch/issues/97, maintainer's consent in https://github.com/happy-dwarf-team/etch/issues/44#issuecomment-6388493594). Captured at 2560×1440 and above since M10: the mod is made for screens of at least 2560×1440."
     },
     {
       "id": "anbennar",
       "title": "Anbennar + Proper 2K UI Enhanced + P2KE Patch - Anbennar",
       "gate": "release",
       "save": {
-        "file": "Verne1444_11_11_test.eu4",
-        "sha256": "57CB4550073A4142E20FBB6439E32A68E420A5DB3F680EAEF138223264704AA0",
-        "description": "Verne, 11 November 1444: a new game the maintainer saved with exactly this playset on 2026-10-26.",
+        "file": "Verne1444_11_11_corpus.eu4",
+        "sha256": "AACEDFE6FD0294B80961679AB9618BC48195A9E9A239BE41292CEFFE156FDD3D",
+        "description": "Verne, 11 November 1444: the maintainer’s save of 2026-10-26 with its three opening events answered in the lab’s private copy (verne.100 and lilac_wars.1 with their one option, anb_settings.1 with Start game) and saved again (M10), so that no event covers the views at any size. The maintainer’s file is unchanged.",
         "confirm": "DefaultConfirm/AgreeButton"
       },
       "mods": [
@@ -199,9 +212,42 @@
         "macro-builder",
         "estates"
       ],
-      "covers": ["EventWindow"],
-      "coverMargin": 32,
-      "note": "Gates 2.0.0 since M10 (spec v2 section 10), at the six corpus resolutions. Proper 2K UI Enhanced overrides every vanilla .gui file, so every corpus window is one the playset's mods override; the event window waits for a recipe (https://github.com/happy-dwarf-team/etch/issues/97). The save opens with three events over the middle of the screen, which every view opened from it reads and masks (covers)."
+      "resolutions": ["2560x1440", "3440x1440", "3840x2160"],
+      "note": "Gates 2.0.0 since M10 (spec v2 section 10) at 2560×1440 and above, as Proper 2K UI Enhanced asks; below that the corpus takes Anbennar alone. Proper 2K UI Enhanced overrides every vanilla .gui file, so every corpus window is one the playset’s mods override; the event window waits for a recipe (https://github.com/happy-dwarf-team/etch/issues/97)."
+    },
+    {
+      "id": "anbennar-alone",
+      "title": "Anbennar alone",
+      "gate": "release",
+      "save": {
+        "file": "Verne1444_11_11_corpus.eu4",
+        "sha256": "AACEDFE6FD0294B80961679AB9618BC48195A9E9A239BE41292CEFFE156FDD3D",
+        "description": "Verne, 11 November 1444: the maintainer’s save of 2026-10-26 with its three opening events answered in the lab’s private copy (verne.100 and lilac_wars.1 with their one option, anb_settings.1 with Start game) and saved again (M10), so that no event covers the views at any size. The maintainer’s file is unchanged.",
+        "confirm": "DefaultConfirm/AgreeButton"
+      },
+      "mods": [
+        {
+          "name": "Anbennar: A Fantasy Total Conversion",
+          "workshopId": "1385440355",
+          "sha256": "99DAB21EA321F176E23824D8EC3A8B75928A92EE68082C589557D219D654A1DD",
+          "note": "Hashed from the Workshop item on 2026-10-26. The patch below overrides every .gui file it has."
+        }
+      ],
+      "disabledDlcs": [],
+      "windows": [
+        "frontend",
+        "hud",
+        "esc-menu",
+        "court",
+        "diplomacy",
+        "province",
+        "ledger",
+        "settings",
+        "macro-builder",
+        "estates"
+      ],
+      "resolutions": ["1280x720", "1366x768", "1600x900", "1680x1050", "1920x1080"],
+      "note": "Anbennar without Proper 2K UI Enhanced, at the sizes below 2560×1440, which the Anbennar playset with Proper 2K UI Enhanced is not captured at (M10). The same save as the Anbennar playset."
     }
   ],
   "windows": [
@@ -551,7 +597,28 @@
                   }
                 ],
                 "verified": true,
-                "evidence": "Run by the capture driver at the six corpus resolutions in the Anbennar playset on 2026-10-27 (M10): the steps opened the view and its roots were read and shown. Verne’s diplomacy lists one relation; its shield selects that country, whose actions show Declare War first (Anbennar groups the others in categories), which opens DeclareWarDialog and declares nothing."
+                "evidence": "Run by the capture driver in the Anbennar playset at 2560×1440 and 3440×1440 and in Anbennar alone at 1280×720 to 1920×1080 on 2026-10-27 (M10), from the corpus save with its events answered: the steps opened the view and its roots were read and shown. Verne’s diplomacy lists one relation; its shield selects that country, whose actions show Declare War first (Anbennar groups the others in categories), which opens DeclareWarDialog and declares nothing."
+              }
+            },
+            "anbennar-alone": {
+              "recipe": {
+                "from": "save",
+                "steps": [
+                  {
+                    "key": "f1"
+                  },
+                  {
+                    "key": "3"
+                  },
+                  {
+                    "click": "countrydiplomacyview/diplomatic_listbox/countrydiplomacyview_diplistitem/countrydiplomacyview_shielditem"
+                  },
+                  {
+                    "click": "countrydiplomacyview/diploaction_list/diploactionentry/button_diploaction"
+                  }
+                ],
+                "verified": true,
+                "evidence": "Run by the capture driver in the Anbennar playset at 2560×1440 and 3440×1440 and in Anbennar alone at 1280×720 to 1920×1080 on 2026-10-27 (M10), from the corpus save with its events answered: the steps opened the view and its roots were read and shown. Verne’s diplomacy lists one relation; its shield selects that country, whose actions show Declare War first (Anbennar groups the others in categories), which opens DeclareWarDialog and declares nothing."
               }
             }
           }
@@ -678,7 +745,7 @@
                   }
                 ],
                 "verified": true,
-                "evidence": "Run by the capture driver at the six corpus resolutions in the Anbennar playset on 2026-10-27 (M10): the steps opened the view and its roots were read and shown. The Goto box (f) centres the map on Gemisle, and Verne’s own Heroes’ Rest (province 286) lies 0.655 client heights left of the centre, beside the opening events that cover the middle of the screen in this save; every capture shows Heroes’ Rest."
+                "evidence": "Run by the capture driver in the Anbennar playset at 2560×1440 and 3440×1440 and in Anbennar alone at 1280×720 to 1920×1080 on 2026-10-27 (M10), from the corpus save with its events answered: the steps opened the view and its roots were read and shown. The Goto box (f) centres the map on Gemisle, and Verne’s own Heroes’ Rest (province 286) lies 0.655 client heights left of the centre; every capture shows Heroes’ Rest."
               },
               "selectors": {
                 "construction": "no",
@@ -687,7 +754,48 @@
                 "fort": "no",
                 "hre": "yes"
               },
-              "note": "The save (Verne, 11 November 1444) has no ship in construction, and three opening events cover the middle of the screen at every corpus size; one of them is taller than 1080 pixels, so its option cannot be clicked. The recipe clicks a province beside them instead, as a map point the same at every size.",
+              "note": "The save (Verne, 11 November 1444) has no ship in construction: the province opens through the Goto box and a map point the same at every size.",
+              "data": {
+                "province": 286
+              }
+            },
+            "anbennar-alone": {
+              "recipe": {
+                "from": "save",
+                "steps": [
+                  {
+                    "key": "f"
+                  },
+                  {
+                    "click": "goto_box/goto_edit"
+                  },
+                  {
+                    "text": "Gemisle"
+                  },
+                  {
+                    "click": "goto_box/provinces/province_finder_entry[1]/title"
+                  },
+                  {
+                    "key": "return"
+                  },
+                  {
+                    "map": {
+                      "x": -0.655,
+                      "y": -0.1
+                    }
+                  }
+                ],
+                "verified": true,
+                "evidence": "Run by the capture driver in the Anbennar playset at 2560×1440 and 3440×1440 and in Anbennar alone at 1280×720 to 1920×1080 on 2026-10-27 (M10), from the corpus save with its events answered: the steps opened the view and its roots were read and shown. The Goto box (f) centres the map on Gemisle, and Verne’s own Heroes’ Rest (province 286) lies 0.655 client heights left of the centre; every capture shows Heroes’ Rest."
+              },
+              "selectors": {
+                "construction": "no",
+                "buttonBar": "closed",
+                "apui": "none",
+                "fort": "no",
+                "hre": "yes"
+              },
+              "note": "The save (Verne, 11 November 1444) has no ship in construction: the province opens through the Goto box and a map point the same at every size.",
               "data": {
                 "province": 286
               }
@@ -819,7 +927,46 @@
                   }
                 ],
                 "verified": true,
-                "evidence": "Run by the capture driver at the six corpus resolutions in the Anbennar playset on 2026-10-27 (M10): the steps opened the view and its roots were read and shown. The Goto box centres the map on the province Verne, and Ebenuel (province 89, Sorncóst’s) lies 0.75 client heights left of the centre; every capture shows Ebenuel."
+                "evidence": "Run by the capture driver in the Anbennar playset at 2560×1440 and 3440×1440 and in Anbennar alone at 1280×720 to 1920×1080 on 2026-10-27 (M10), from the corpus save with its events answered: the steps opened the view and its roots were read and shown. The Goto box centres the map on the province Verne, and Ebenuel (province 89, Sorncóst’s) lies 0.75 client heights left of the centre; every capture shows Ebenuel."
+              },
+              "selectors": {
+                "buttonBar": "closed",
+                "apui": "none",
+                "fort": "no",
+                "hre": "yes"
+              },
+              "data": {
+                "province": 89
+              }
+            },
+            "anbennar-alone": {
+              "recipe": {
+                "from": "save",
+                "steps": [
+                  {
+                    "key": "f"
+                  },
+                  {
+                    "click": "goto_box/goto_edit"
+                  },
+                  {
+                    "text": "Verne"
+                  },
+                  {
+                    "click": "goto_box/provinces/province_finder_entry[1]/title"
+                  },
+                  {
+                    "key": "return"
+                  },
+                  {
+                    "map": {
+                      "x": -0.75,
+                      "y": -0.035
+                    }
+                  }
+                ],
+                "verified": true,
+                "evidence": "Run by the capture driver in the Anbennar playset at 2560×1440 and 3440×1440 and in Anbennar alone at 1280×720 to 1920×1080 on 2026-10-27 (M10), from the corpus save with its events answered: the steps opened the view and its roots were read and shown. The Goto box centres the map on the province Verne, and Ebenuel (province 89, Sorncóst’s) lies 0.75 client heights left of the centre; every capture shows Ebenuel."
               },
               "selectors": {
                 "buttonBar": "closed",

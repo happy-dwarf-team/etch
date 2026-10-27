@@ -7,15 +7,26 @@
 
 import type { Screen } from './model/gui.ts';
 
-/** The resolutions of the precision corpus (ADR 0002, etch#10), smallest first. */
+/**
+ * The resolutions of the precision corpus (ADR 0002, etch#10, etch#163), smallest first; the
+ * preview offers each of them.
+ */
 export const CORPUS_RESOLUTIONS: readonly Screen[] = [
   { width: 1280, height: 720 },
   { width: 1366, height: 768 },
   { width: 1600, height: 900 },
   { width: 1680, height: 1050 },
   { width: 1920, height: 1080 },
+  { width: 2560, height: 1440 },
   { width: 3440, height: 1440 },
+  { width: 3840, height: 2160 },
 ];
+
+/**
+ * Corpus resolutions no capture has checked yet: 3840×2160 does not fit the lab's monitors
+ * (etch#163), so the preview at it is not measured against the game.
+ */
+export const UNCHECKED_RESOLUTIONS: readonly Screen[] = [{ width: 3840, height: 2160 }];
 
 /** The screen while neither the player's settings nor the monitor say another. */
 export const FALLBACK_SCREEN: Screen = { width: 1920, height: 1080 };

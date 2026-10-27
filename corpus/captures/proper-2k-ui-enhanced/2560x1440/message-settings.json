@@ -1,0 +1,2092 @@
+{
+  "formatVersion": 1,
+  "playset": "proper-2k-ui-enhanced",
+  "resolution": { "width": 2560, "height": 1440 },
+  "view": "message-settings",
+  "takenAt": "2026-10-27T21:59:51.204Z",
+  "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
+  "tongs": { "version": "0.14.1" },
+  "save": { "sha256": "2A4CAF306CCDDB2DAFC7EE015C4ECFFB260654A1D10D86F5F4F768D3C3F56F6A" },
+  "mods": [
+    {
+      "name": "Proper 2K UI Enhanced",
+      "sha256": "B411CFAEAC291CA1DB8CE6FA4C83FC5BD6D547A503A16C29ED7783C2CBCED1F9"
+    }
+  ],
+  "disabledDlcs": [],
+  "recipe": {
+    "from": "save",
+    "steps": [{ "key": "escape" }, { "click": "menu//menu_message_button" }],
+    "verified": true,
+    "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown."
+  },
+  "window": { "width": 2560, "height": 1440, "dpi": 96 },
+  "screenshot": {
+    "sha256": "4A58015BC49B636A302194A8944F35927BB1FF663D381634D350D60D8E084E8E",
+    "width": 2560,
+    "height": 1440,
+    "shots": 4,
+    "unstable": {
+      "pixels": 56949,
+      "sha256": "48821384958645E0A83BD46DA8B9F3F07230DF5F8538EDEF2CBE55A0AFBC8897"
+    }
+  },
+  "widgets": [
+    {
+      "name": "menu",
+      "path": "menu",
+      "type": "window",
+      "visible": true,
+      "rect": { "x": 1006, "y": 405, "w": 567, "h": 629 },
+      "children": [
+        {
+          "name": "menu",
+          "path": "menu/menu",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 994, "y": 398, "w": 568, "h": 629 }
+        },
+        {
+          "name": "menu_panel",
+          "path": "menu/menu_panel",
+          "type": "window",
+          "visible": false,
+          "rect": { "x": 1061, "y": 434, "w": 504, "h": 600 },
+          "children": [
+            {
+              "name": "menu_load_button",
+              "path": "menu/menu_panel/menu_load_button",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 1164, "y": 530, "w": 227, "h": 37 },
+              "text": "Load Game",
+              "enabled": true
+            },
+            {
+              "name": "menu_save_button",
+              "path": "menu/menu_panel/menu_save_button",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 1164, "y": 572, "w": 227, "h": 37 },
+              "text": "Save Game",
+              "enabled": true
+            },
+            {
+              "name": "menu_options_button",
+              "path": "menu/menu_panel/menu_options_button",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 1164, "y": 614, "w": 227, "h": 37 },
+              "text": "Game Options",
+              "enabled": true
+            },
+            {
+              "name": "menu_message_button",
+              "path": "menu/menu_panel/menu_message_button",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 1164, "y": 656, "w": 227, "h": 37 },
+              "text": "Message Settings",
+              "enabled": true
+            },
+            {
+              "name": "menu_ai_prefs_button",
+              "path": "menu/menu_panel/menu_ai_prefs_button",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 1164, "y": 698, "w": 227, "h": 37 },
+              "text": "AI Settings",
+              "enabled": false
+            },
+            {
+              "name": "menu_stats_button",
+              "path": "menu/menu_panel/menu_stats_button",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 1164, "y": 740, "w": 227, "h": 37 },
+              "text": "Statistics",
+              "enabled": true
+            },
+            {
+              "name": "privacy_policy_button",
+              "path": "menu/menu_panel/privacy_policy_button",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 1164, "y": 782, "w": 227, "h": 37 },
+              "text": "Privacy Policy",
+              "enabled": true
+            },
+            {
+              "name": "menu_resign_button",
+              "path": "menu/menu_panel/menu_resign_button",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 1164, "y": 824, "w": 227, "h": 37 },
+              "text": "Exit to Menu",
+              "enabled": true
+            },
+            {
+              "name": "menu_quit_button",
+              "path": "menu/menu_panel/menu_quit_button",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 1164, "y": 866, "w": 227, "h": 37 },
+              "text": "Exit Game",
+              "enabled": true
+            },
+            {
+              "name": "menu_close_button",
+              "path": "menu/menu_panel/menu_close_button",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 1232, "y": 908, "w": 95, "h": 37 },
+              "text": "Close",
+              "enabled": true
+            }
+          ]
+        },
+        {
+          "name": "menu_unsync",
+          "path": "menu/menu_unsync",
+          "type": "window",
+          "visible": false,
+          "rect": { "x": 0, "y": 0, "w": 567, "h": 629 },
+          "children": [
+            {
+              "name": "cancel",
+              "path": "menu/menu_unsync/cancel",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 1280, "y": 683, "w": 179, "h": 37 },
+              "text": "Cancel",
+              "enabled": true
+            },
+            {
+              "name": "exit",
+              "path": "menu/menu_unsync/exit",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 1280, "y": 683, "w": 179, "h": 37 },
+              "text": "Exit to Menu",
+              "enabled": true
+            },
+            {
+              "name": "disk_space_needed",
+              "path": "menu/menu_unsync/disk_space_needed",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 126, "y": 78, "w": 300, "h": 21 },
+              "text": " needed to save the game."
+            },
+            {
+              "name": "cloudsave_unsync_label",
+              "path": "menu/menu_unsync/cloudsave_unsync_label",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 102, "y": 102, "w": 360, "h": 63 },
+              "text": "Select game(s) to remove from cloud.\nFile(s) will not be removed from local computer."
+            },
+            {
+              "name": "games",
+              "path": "menu/menu_unsync/games",
+              "type": "listbox",
+              "visible": false,
+              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "children": [
+                {
+                  "name": "standardlistbox_slider",
+                  "path": "menu/menu_unsync/games/standardlistbox_slider",
+                  "type": "other",
+                  "visible": false,
+                  "rect": { "x": 1280, "y": 701, "w": 19, "h": 341 },
+                  "children": [
+                    {
+                      "name": "listboxSliderButton",
+                      "path": "menu/menu_unsync/games/standardlistbox_slider/listboxSliderButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 }
+                    },
+                    {
+                      "name": "listboxTrackButton",
+                      "path": "menu/menu_unsync/games/standardlistbox_slider/listboxTrackButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 720, "w": 15, "h": 322 }
+                    },
+                    {
+                      "name": "downButton",
+                      "path": "menu/menu_unsync/games/standardlistbox_slider/downButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "upButton",
+                      "path": "menu/menu_unsync/games/standardlistbox_slider/upButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "menu_message_settings",
+          "path": "menu/menu_message_settings",
+          "type": "window",
+          "visible": true,
+          "rect": { "x": 965, "y": 411, "w": 504, "h": 600 },
+          "children": [
+            {
+              "name": "messagesettings_filter",
+              "path": "menu/menu_message_settings/messagesettings_filter",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 120323, "y": 495, "w": 179, "h": 37 },
+              "text": "Filter",
+              "enabled": true
+            },
+            {
+              "name": "button_search",
+              "path": "menu/menu_message_settings/button_search",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 1357, "y": 575, "w": 95, "h": 37 },
+              "text": "Search",
+              "enabled": true
+            },
+            {
+              "name": "button_clear",
+              "path": "menu/menu_message_settings/button_clear",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 1446, "y": 575, "w": 95, "h": 37 },
+              "text": "Clear",
+              "enabled": true
+            },
+            {
+              "name": "messageicon_pause_all",
+              "path": "menu/menu_message_settings/messageicon_pause_all",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 1618, "y": 586, "w": 19, "h": 19 },
+              "enabled": true
+            },
+            {
+              "name": "messageicon_dialog_all",
+              "path": "menu/menu_message_settings/messageicon_dialog_all",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 1642, "y": 586, "w": 19, "h": 19 },
+              "enabled": true
+            },
+            {
+              "name": "messageicon_icon_all",
+              "path": "menu/menu_message_settings/messageicon_icon_all",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 1666, "y": 584, "w": 19, "h": 19 },
+              "enabled": true
+            },
+            {
+              "name": "messageicon_log_all",
+              "path": "menu/menu_message_settings/messageicon_log_all",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 1690, "y": 585, "w": 19, "h": 19 },
+              "enabled": true
+            },
+            {
+              "name": "messageicon_map_all",
+              "path": "menu/menu_message_settings/messageicon_map_all",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 1714, "y": 585, "w": 19, "h": 19 },
+              "enabled": true
+            },
+            {
+              "name": "reset",
+              "path": "menu/menu_message_settings/reset",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 812, "y": 843, "w": 179, "h": 37 },
+              "enabled": true
+            },
+            {
+              "name": "close",
+              "path": "menu/menu_message_settings/close",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 812, "y": 879, "w": 179, "h": 37 },
+              "enabled": true
+            },
+            {
+              "name": "disable_all_messages",
+              "path": "menu/menu_message_settings/disable_all_messages",
+              "type": "button",
+              "visible": true,
+              "rect": { "x": 120305, "y": 873, "w": 179, "h": 37 },
+              "text": "Disable all",
+              "enabled": true
+            },
+            {
+              "name": "messagesettings_bg",
+              "path": "menu/menu_message_settings/messagesettings_bg",
+              "type": "icon",
+              "visible": true,
+              "rect": { "x": 761, "y": 474, "w": 1058, "h": 573 }
+            },
+            {
+              "name": "messagesettings_label",
+              "path": "menu/menu_message_settings/messagesettings_label",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 1156, "y": 523, "w": 240, "h": 21 },
+              "text": "Message Settings"
+            },
+            {
+              "name": "messagesettings_label_01",
+              "path": "menu/menu_message_settings/messagesettings_label_01",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 819, "y": 551, "w": 95, "h": 21 },
+              "text": "All"
+            },
+            {
+              "name": "messagesettings_label_02",
+              "path": "menu/menu_message_settings/messagesettings_label_02",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 909, "y": 551, "w": 95, "h": 21 },
+              "text": "Dynasty"
+            },
+            {
+              "name": "messagesettings_label_03",
+              "path": "menu/menu_message_settings/messagesettings_label_03",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 1004, "y": 551, "w": 95, "h": 21 },
+              "text": "Diplom."
+            },
+            {
+              "name": "messagesettings_label_04",
+              "path": "menu/menu_message_settings/messagesettings_label_04",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 1098, "y": 551, "w": 95, "h": 21 },
+              "text": "Trade"
+            },
+            {
+              "name": "messagesettings_label_05",
+              "path": "menu/menu_message_settings/messagesettings_label_05",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 1191, "y": 551, "w": 95, "h": 21 },
+              "text": "Religion"
+            },
+            {
+              "name": "messagesettings_label_06",
+              "path": "menu/menu_message_settings/messagesettings_label_06",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 1286, "y": 551, "w": 95, "h": 21 },
+              "text": "Events"
+            },
+            {
+              "name": "messagesettings_label_07",
+              "path": "menu/menu_message_settings/messagesettings_label_07",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 1379, "y": 551, "w": 95, "h": 21 },
+              "text": "Governm."
+            },
+            {
+              "name": "messagesettings_label_08",
+              "path": "menu/menu_message_settings/messagesettings_label_08",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 1474, "y": 551, "w": 95, "h": 21 },
+              "text": "Military"
+            },
+            {
+              "name": "messagesettings_label_09",
+              "path": "menu/menu_message_settings/messagesettings_label_09",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 1568, "y": 551, "w": 95, "h": 21 },
+              "text": "Combat"
+            },
+            {
+              "name": "messagesettings_label_10",
+              "path": "menu/menu_message_settings/messagesettings_label_10",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 1660, "y": 551, "w": 95, "h": 21 },
+              "text": "Other"
+            },
+            {
+              "name": "header_search",
+              "path": "menu/menu_message_settings/header_search",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 1006, "y": 582, "w": 72, "h": 24 },
+              "text": "Search"
+            },
+            {
+              "name": "messagesettings_filter_button_label_01",
+              "path": "menu/menu_message_settings/messagesettings_filter_button_label_01",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 854, "y": 616, "w": 95, "h": 21 },
+              "text": "To me"
+            },
+            {
+              "name": "messagesettings_filter_button_label_02",
+              "path": "menu/menu_message_settings/messagesettings_filter_button_label_02",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 854, "y": 652, "w": 95, "h": 21 },
+              "text": "From me"
+            },
+            {
+              "name": "messagesettings_filter_button_label_03",
+              "path": "menu/menu_message_settings/messagesettings_filter_button_label_03",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 854, "y": 688, "w": 95, "h": 21 },
+              "text": "Interesting"
+            },
+            {
+              "name": "messagesettings_filter_button_label_04",
+              "path": "menu/menu_message_settings/messagesettings_filter_button_label_04",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 854, "y": 724, "w": 95, "h": 21 },
+              "text": "Others"
+            },
+            {
+              "name": "reset_label",
+              "path": "menu/menu_message_settings/reset_label",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 854, "y": 850, "w": 95, "h": 21 },
+              "text": "Reset"
+            },
+            {
+              "name": "close_label",
+              "path": "menu/menu_message_settings/close_label",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 854, "y": 886, "w": 95, "h": 21 },
+              "text": "Close"
+            },
+            {
+              "name": "settings",
+              "path": "menu/menu_message_settings/settings",
+              "type": "listbox",
+              "visible": true,
+              "rect": { "x": 994, "y": 621, "w": 153, "h": 528 },
+              "children": [
+                {
+                  "name": "message_entry",
+                  "path": "menu/menu_message_settings/settings/message_entry[1]",
+                  "type": "window",
+                  "visible": true,
+                  "rect": { "x": 1018, "y": 645, "w": 153, "h": 24 },
+                  "children": [
+                    {
+                      "name": "message",
+                      "path": "menu/menu_message_settings/settings/message_entry[1]/message",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1015, "y": 621, "w": 720, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_pause",
+                      "path": "menu/menu_message_settings/settings/message_entry[1]/messageicon_pause",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1618, "y": 623, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_dialog",
+                      "path": "menu/menu_message_settings/settings/message_entry[1]/messageicon_dialog",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1641, "y": 623, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_icon",
+                      "path": "menu/menu_message_settings/settings/message_entry[1]/messageicon_icon",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1666, "y": 621, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_log",
+                      "path": "menu/menu_message_settings/settings/message_entry[1]/messageicon_log",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1690, "y": 622, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_map",
+                      "path": "menu/menu_message_settings/settings/message_entry[1]/messageicon_map",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1714, "y": 622, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "text",
+                      "path": "menu/menu_message_settings/settings/message_entry[1]/text",
+                      "type": "text",
+                      "visible": true,
+                      "rect": { "x": 1018, "y": 620, "w": 600, "h": 21 },
+                      "text": "When a monarch gains a personality trait."
+                    }
+                  ]
+                },
+                {
+                  "name": "message_entry",
+                  "path": "menu/menu_message_settings/settings/message_entry[2]",
+                  "type": "window",
+                  "visible": true,
+                  "rect": { "x": 1018, "y": 669, "w": 153, "h": 24 },
+                  "children": [
+                    {
+                      "name": "message",
+                      "path": "menu/menu_message_settings/settings/message_entry[2]/message",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1015, "y": 645, "w": 720, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_pause",
+                      "path": "menu/menu_message_settings/settings/message_entry[2]/messageicon_pause",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1618, "y": 647, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_dialog",
+                      "path": "menu/menu_message_settings/settings/message_entry[2]/messageicon_dialog",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1641, "y": 647, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_icon",
+                      "path": "menu/menu_message_settings/settings/message_entry[2]/messageicon_icon",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1666, "y": 645, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_log",
+                      "path": "menu/menu_message_settings/settings/message_entry[2]/messageicon_log",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1690, "y": 646, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_map",
+                      "path": "menu/menu_message_settings/settings/message_entry[2]/messageicon_map",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1714, "y": 646, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "text",
+                      "path": "menu/menu_message_settings/settings/message_entry[2]/text",
+                      "type": "text",
+                      "visible": true,
+                      "rect": { "x": 1018, "y": 644, "w": 600, "h": 21 },
+                      "text": "When an heir gains a personality trait."
+                    }
+                  ]
+                },
+                {
+                  "name": "message_entry",
+                  "path": "menu/menu_message_settings/settings/message_entry[3]",
+                  "type": "window",
+                  "visible": true,
+                  "rect": { "x": 1018, "y": 693, "w": 153, "h": 24 },
+                  "children": [
+                    {
+                      "name": "message",
+                      "path": "menu/menu_message_settings/settings/message_entry[3]/message",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1015, "y": 669, "w": 720, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_pause",
+                      "path": "menu/menu_message_settings/settings/message_entry[3]/messageicon_pause",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1618, "y": 671, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_dialog",
+                      "path": "menu/menu_message_settings/settings/message_entry[3]/messageicon_dialog",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1641, "y": 671, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_icon",
+                      "path": "menu/menu_message_settings/settings/message_entry[3]/messageicon_icon",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1666, "y": 669, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_log",
+                      "path": "menu/menu_message_settings/settings/message_entry[3]/messageicon_log",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1690, "y": 670, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_map",
+                      "path": "menu/menu_message_settings/settings/message_entry[3]/messageicon_map",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1714, "y": 670, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "text",
+                      "path": "menu/menu_message_settings/settings/message_entry[3]/text",
+                      "type": "text",
+                      "visible": true,
+                      "rect": { "x": 1018, "y": 668, "w": 600, "h": 21 },
+                      "text": "When a consort gains a personality trait."
+                    }
+                  ]
+                },
+                {
+                  "name": "message_entry",
+                  "path": "menu/menu_message_settings/settings/message_entry[4]",
+                  "type": "window",
+                  "visible": true,
+                  "rect": { "x": 1018, "y": 717, "w": 153, "h": 24 },
+                  "children": [
+                    {
+                      "name": "message",
+                      "path": "menu/menu_message_settings/settings/message_entry[4]/message",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1015, "y": 693, "w": 720, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_pause",
+                      "path": "menu/menu_message_settings/settings/message_entry[4]/messageicon_pause",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1618, "y": 695, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_dialog",
+                      "path": "menu/menu_message_settings/settings/message_entry[4]/messageicon_dialog",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1641, "y": 695, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_icon",
+                      "path": "menu/menu_message_settings/settings/message_entry[4]/messageicon_icon",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1666, "y": 693, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_log",
+                      "path": "menu/menu_message_settings/settings/message_entry[4]/messageicon_log",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1690, "y": 694, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_map",
+                      "path": "menu/menu_message_settings/settings/message_entry[4]/messageicon_map",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1714, "y": 694, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "text",
+                      "path": "menu/menu_message_settings/settings/message_entry[4]/text",
+                      "type": "text",
+                      "visible": true,
+                      "rect": { "x": 1018, "y": 692, "w": 600, "h": 21 },
+                      "text": "When you get a new Monarch."
+                    }
+                  ]
+                },
+                {
+                  "name": "message_entry",
+                  "path": "menu/menu_message_settings/settings/message_entry[5]",
+                  "type": "window",
+                  "visible": true,
+                  "rect": { "x": 1018, "y": 741, "w": 153, "h": 24 },
+                  "children": [
+                    {
+                      "name": "message",
+                      "path": "menu/menu_message_settings/settings/message_entry[5]/message",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1015, "y": 717, "w": 720, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_pause",
+                      "path": "menu/menu_message_settings/settings/message_entry[5]/messageicon_pause",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1618, "y": 719, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_dialog",
+                      "path": "menu/menu_message_settings/settings/message_entry[5]/messageicon_dialog",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1641, "y": 719, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_icon",
+                      "path": "menu/menu_message_settings/settings/message_entry[5]/messageicon_icon",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1666, "y": 717, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_log",
+                      "path": "menu/menu_message_settings/settings/message_entry[5]/messageicon_log",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1690, "y": 718, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_map",
+                      "path": "menu/menu_message_settings/settings/message_entry[5]/messageicon_map",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1714, "y": 718, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "text",
+                      "path": "menu/menu_message_settings/settings/message_entry[5]/text",
+                      "type": "text",
+                      "visible": true,
+                      "rect": { "x": 1018, "y": 716, "w": 600, "h": 21 },
+                      "text": "When you get a new legal Heir."
+                    }
+                  ]
+                },
+                {
+                  "name": "message_entry",
+                  "path": "menu/menu_message_settings/settings/message_entry[6]",
+                  "type": "window",
+                  "visible": true,
+                  "rect": { "x": 1018, "y": 765, "w": 153, "h": 24 },
+                  "children": [
+                    {
+                      "name": "message",
+                      "path": "menu/menu_message_settings/settings/message_entry[6]/message",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1015, "y": 741, "w": 720, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_pause",
+                      "path": "menu/menu_message_settings/settings/message_entry[6]/messageicon_pause",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1618, "y": 743, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_dialog",
+                      "path": "menu/menu_message_settings/settings/message_entry[6]/messageicon_dialog",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1641, "y": 743, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_icon",
+                      "path": "menu/menu_message_settings/settings/message_entry[6]/messageicon_icon",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1666, "y": 741, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_log",
+                      "path": "menu/menu_message_settings/settings/message_entry[6]/messageicon_log",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1690, "y": 742, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_map",
+                      "path": "menu/menu_message_settings/settings/message_entry[6]/messageicon_map",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1714, "y": 742, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "text",
+                      "path": "menu/menu_message_settings/settings/message_entry[6]/text",
+                      "type": "text",
+                      "visible": true,
+                      "rect": { "x": 1018, "y": 740, "w": 600, "h": 21 },
+                      "text": "When you get a new Consort."
+                    }
+                  ]
+                },
+                {
+                  "name": "message_entry",
+                  "path": "menu/menu_message_settings/settings/message_entry[7]",
+                  "type": "window",
+                  "visible": true,
+                  "rect": { "x": 1018, "y": 789, "w": 153, "h": 24 },
+                  "children": [
+                    {
+                      "name": "message",
+                      "path": "menu/menu_message_settings/settings/message_entry[7]/message",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1015, "y": 765, "w": 720, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_pause",
+                      "path": "menu/menu_message_settings/settings/message_entry[7]/messageicon_pause",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1618, "y": 767, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_dialog",
+                      "path": "menu/menu_message_settings/settings/message_entry[7]/messageicon_dialog",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1641, "y": 767, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_icon",
+                      "path": "menu/menu_message_settings/settings/message_entry[7]/messageicon_icon",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1666, "y": 765, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_log",
+                      "path": "menu/menu_message_settings/settings/message_entry[7]/messageicon_log",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1690, "y": 766, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_map",
+                      "path": "menu/menu_message_settings/settings/message_entry[7]/messageicon_map",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1714, "y": 766, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "text",
+                      "path": "menu/menu_message_settings/settings/message_entry[7]/text",
+                      "type": "text",
+                      "visible": true,
+                      "rect": { "x": 1018, "y": 764, "w": 600, "h": 21 },
+                      "text": "When our Consort dies."
+                    }
+                  ]
+                },
+                {
+                  "name": "message_entry",
+                  "path": "menu/menu_message_settings/settings/message_entry[8]",
+                  "type": "window",
+                  "visible": true,
+                  "rect": { "x": 1018, "y": 813, "w": 153, "h": 24 },
+                  "children": [
+                    {
+                      "name": "message",
+                      "path": "menu/menu_message_settings/settings/message_entry[8]/message",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1015, "y": 789, "w": 720, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_pause",
+                      "path": "menu/menu_message_settings/settings/message_entry[8]/messageicon_pause",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1618, "y": 791, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_dialog",
+                      "path": "menu/menu_message_settings/settings/message_entry[8]/messageicon_dialog",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1641, "y": 791, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_icon",
+                      "path": "menu/menu_message_settings/settings/message_entry[8]/messageicon_icon",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1666, "y": 789, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_log",
+                      "path": "menu/menu_message_settings/settings/message_entry[8]/messageicon_log",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1690, "y": 790, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_map",
+                      "path": "menu/menu_message_settings/settings/message_entry[8]/messageicon_map",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1714, "y": 790, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "text",
+                      "path": "menu/menu_message_settings/settings/message_entry[8]/text",
+                      "type": "text",
+                      "visible": true,
+                      "rect": { "x": 1018, "y": 788, "w": 600, "h": 21 },
+                      "text": "When another country elects a ruler of our dynasty."
+                    }
+                  ]
+                },
+                {
+                  "name": "message_entry",
+                  "path": "menu/menu_message_settings/settings/message_entry[9]",
+                  "type": "window",
+                  "visible": true,
+                  "rect": { "x": 1018, "y": 837, "w": 153, "h": 24 },
+                  "children": [
+                    {
+                      "name": "message",
+                      "path": "menu/menu_message_settings/settings/message_entry[9]/message",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1015, "y": 813, "w": 720, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_pause",
+                      "path": "menu/menu_message_settings/settings/message_entry[9]/messageicon_pause",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1618, "y": 815, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_dialog",
+                      "path": "menu/menu_message_settings/settings/message_entry[9]/messageicon_dialog",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1641, "y": 815, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_icon",
+                      "path": "menu/menu_message_settings/settings/message_entry[9]/messageicon_icon",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1666, "y": 813, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_log",
+                      "path": "menu/menu_message_settings/settings/message_entry[9]/messageicon_log",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1690, "y": 814, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_map",
+                      "path": "menu/menu_message_settings/settings/message_entry[9]/messageicon_map",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1714, "y": 814, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "text",
+                      "path": "menu/menu_message_settings/settings/message_entry[9]/text",
+                      "type": "text",
+                      "visible": true,
+                      "rect": { "x": 1018, "y": 812, "w": 600, "h": 21 },
+                      "text": "When your Consort Regent assumes power."
+                    }
+                  ]
+                },
+                {
+                  "name": "message_entry",
+                  "path": "menu/menu_message_settings/settings/message_entry[10]",
+                  "type": "window",
+                  "visible": true,
+                  "rect": { "x": 1018, "y": 861, "w": 153, "h": 24 },
+                  "children": [
+                    {
+                      "name": "message",
+                      "path": "menu/menu_message_settings/settings/message_entry[10]/message",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1015, "y": 837, "w": 720, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_pause",
+                      "path": "menu/menu_message_settings/settings/message_entry[10]/messageicon_pause",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1618, "y": 839, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_dialog",
+                      "path": "menu/menu_message_settings/settings/message_entry[10]/messageicon_dialog",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1641, "y": 839, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_icon",
+                      "path": "menu/menu_message_settings/settings/message_entry[10]/messageicon_icon",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1666, "y": 837, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_log",
+                      "path": "menu/menu_message_settings/settings/message_entry[10]/messageicon_log",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1690, "y": 838, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_map",
+                      "path": "menu/menu_message_settings/settings/message_entry[10]/messageicon_map",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1714, "y": 838, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "text",
+                      "path": "menu/menu_message_settings/settings/message_entry[10]/text",
+                      "type": "text",
+                      "visible": true,
+                      "rect": { "x": 1018, "y": 836, "w": 600, "h": 21 },
+                      "text": "When our legal Heir has been disinherited."
+                    }
+                  ]
+                },
+                {
+                  "name": "message_entry",
+                  "path": "menu/menu_message_settings/settings/message_entry[11]",
+                  "type": "window",
+                  "visible": true,
+                  "rect": { "x": 1018, "y": 885, "w": 153, "h": 24 },
+                  "children": [
+                    {
+                      "name": "message",
+                      "path": "menu/menu_message_settings/settings/message_entry[11]/message",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1015, "y": 861, "w": 720, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_pause",
+                      "path": "menu/menu_message_settings/settings/message_entry[11]/messageicon_pause",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1618, "y": 863, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_dialog",
+                      "path": "menu/menu_message_settings/settings/message_entry[11]/messageicon_dialog",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1641, "y": 863, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_icon",
+                      "path": "menu/menu_message_settings/settings/message_entry[11]/messageicon_icon",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1666, "y": 861, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_log",
+                      "path": "menu/menu_message_settings/settings/message_entry[11]/messageicon_log",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1690, "y": 862, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_map",
+                      "path": "menu/menu_message_settings/settings/message_entry[11]/messageicon_map",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1714, "y": 862, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "text",
+                      "path": "menu/menu_message_settings/settings/message_entry[11]/text",
+                      "type": "text",
+                      "visible": true,
+                      "rect": { "x": 1018, "y": 860, "w": 600, "h": 21 },
+                      "text": "When our legal Heir dies."
+                    }
+                  ]
+                },
+                {
+                  "name": "message_entry",
+                  "path": "menu/menu_message_settings/settings/message_entry[12]",
+                  "type": "window",
+                  "visible": true,
+                  "rect": { "x": 1018, "y": 909, "w": 153, "h": 24 },
+                  "children": [
+                    {
+                      "name": "message",
+                      "path": "menu/menu_message_settings/settings/message_entry[12]/message",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1015, "y": 885, "w": 720, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_pause",
+                      "path": "menu/menu_message_settings/settings/message_entry[12]/messageicon_pause",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1618, "y": 887, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_dialog",
+                      "path": "menu/menu_message_settings/settings/message_entry[12]/messageicon_dialog",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1641, "y": 887, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_icon",
+                      "path": "menu/menu_message_settings/settings/message_entry[12]/messageicon_icon",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1666, "y": 885, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_log",
+                      "path": "menu/menu_message_settings/settings/message_entry[12]/messageicon_log",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1690, "y": 886, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_map",
+                      "path": "menu/menu_message_settings/settings/message_entry[12]/messageicon_map",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1714, "y": 886, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "text",
+                      "path": "menu/menu_message_settings/settings/message_entry[12]/text",
+                      "type": "text",
+                      "visible": true,
+                      "rect": { "x": 1018, "y": 884, "w": 600, "h": 21 },
+                      "text": "When a new emperor has been elected."
+                    }
+                  ]
+                },
+                {
+                  "name": "message_entry",
+                  "path": "menu/menu_message_settings/settings/message_entry[13]",
+                  "type": "window",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 153, "h": 24 },
+                  "children": [
+                    {
+                      "name": "message",
+                      "path": "menu/menu_message_settings/settings/message_entry[13]/message",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 720, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_pause",
+                      "path": "menu/menu_message_settings/settings/message_entry[13]/messageicon_pause",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_dialog",
+                      "path": "menu/menu_message_settings/settings/message_entry[13]/messageicon_dialog",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_icon",
+                      "path": "menu/menu_message_settings/settings/message_entry[13]/messageicon_icon",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_log",
+                      "path": "menu/menu_message_settings/settings/message_entry[13]/messageicon_log",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_map",
+                      "path": "menu/menu_message_settings/settings/message_entry[13]/messageicon_map",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "text",
+                      "path": "menu/menu_message_settings/settings/message_entry[13]/text",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 0, "y": -25, "w": 600, "h": 21 },
+                      "text": "When a nation accepts your Royal Marriage proposal."
+                    }
+                  ]
+                },
+                {
+                  "name": "message_entry",
+                  "path": "menu/menu_message_settings/settings/message_entry[14]",
+                  "type": "window",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 153, "h": 24 },
+                  "children": [
+                    {
+                      "name": "message",
+                      "path": "menu/menu_message_settings/settings/message_entry[14]/message",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 720, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_pause",
+                      "path": "menu/menu_message_settings/settings/message_entry[14]/messageicon_pause",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_dialog",
+                      "path": "menu/menu_message_settings/settings/message_entry[14]/messageicon_dialog",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_icon",
+                      "path": "menu/menu_message_settings/settings/message_entry[14]/messageicon_icon",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_log",
+                      "path": "menu/menu_message_settings/settings/message_entry[14]/messageicon_log",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_map",
+                      "path": "menu/menu_message_settings/settings/message_entry[14]/messageicon_map",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "text",
+                      "path": "menu/menu_message_settings/settings/message_entry[14]/text",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 0, "y": -25, "w": 600, "h": 21 },
+                      "text": "When a nation rejects your Royal Marriage proposal."
+                    }
+                  ]
+                },
+                {
+                  "name": "message_entry",
+                  "path": "menu/menu_message_settings/settings/message_entry[15]",
+                  "type": "window",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 153, "h": 24 },
+                  "children": [
+                    {
+                      "name": "message",
+                      "path": "menu/menu_message_settings/settings/message_entry[15]/message",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 720, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_pause",
+                      "path": "menu/menu_message_settings/settings/message_entry[15]/messageicon_pause",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_dialog",
+                      "path": "menu/menu_message_settings/settings/message_entry[15]/messageicon_dialog",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_icon",
+                      "path": "menu/menu_message_settings/settings/message_entry[15]/messageicon_icon",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_log",
+                      "path": "menu/menu_message_settings/settings/message_entry[15]/messageicon_log",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_map",
+                      "path": "menu/menu_message_settings/settings/message_entry[15]/messageicon_map",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "text",
+                      "path": "menu/menu_message_settings/settings/message_entry[15]/text",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 0, "y": -25, "w": 600, "h": 21 },
+                      "text": "When a nation breaks a Royal Marriage they had with us."
+                    }
+                  ]
+                },
+                {
+                  "name": "message_entry",
+                  "path": "menu/menu_message_settings/settings/message_entry[16]",
+                  "type": "window",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 153, "h": 24 },
+                  "children": [
+                    {
+                      "name": "message",
+                      "path": "menu/menu_message_settings/settings/message_entry[16]/message",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 720, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_pause",
+                      "path": "menu/menu_message_settings/settings/message_entry[16]/messageicon_pause",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_dialog",
+                      "path": "menu/menu_message_settings/settings/message_entry[16]/messageicon_dialog",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_icon",
+                      "path": "menu/menu_message_settings/settings/message_entry[16]/messageicon_icon",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_log",
+                      "path": "menu/menu_message_settings/settings/message_entry[16]/messageicon_log",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_map",
+                      "path": "menu/menu_message_settings/settings/message_entry[16]/messageicon_map",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "text",
+                      "path": "menu/menu_message_settings/settings/message_entry[16]/text",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 0, "y": -25, "w": 600, "h": 21 },
+                      "text": "When another country Claims our Throne."
+                    }
+                  ]
+                },
+                {
+                  "name": "message_entry",
+                  "path": "menu/menu_message_settings/settings/message_entry[17]",
+                  "type": "window",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 153, "h": 24 },
+                  "children": [
+                    {
+                      "name": "message",
+                      "path": "menu/menu_message_settings/settings/message_entry[17]/message",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 720, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_pause",
+                      "path": "menu/menu_message_settings/settings/message_entry[17]/messageicon_pause",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_dialog",
+                      "path": "menu/menu_message_settings/settings/message_entry[17]/messageicon_dialog",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_icon",
+                      "path": "menu/menu_message_settings/settings/message_entry[17]/messageicon_icon",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_log",
+                      "path": "menu/menu_message_settings/settings/message_entry[17]/messageicon_log",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_map",
+                      "path": "menu/menu_message_settings/settings/message_entry[17]/messageicon_map",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "text",
+                      "path": "menu/menu_message_settings/settings/message_entry[17]/text",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 0, "y": -25, "w": 600, "h": 21 },
+                      "text": "When another country loses their claim to our throne."
+                    }
+                  ]
+                },
+                {
+                  "name": "message_entry",
+                  "path": "menu/menu_message_settings/settings/message_entry[18]",
+                  "type": "window",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 153, "h": 24 },
+                  "children": [
+                    {
+                      "name": "message",
+                      "path": "menu/menu_message_settings/settings/message_entry[18]/message",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 720, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_pause",
+                      "path": "menu/menu_message_settings/settings/message_entry[18]/messageicon_pause",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_dialog",
+                      "path": "menu/menu_message_settings/settings/message_entry[18]/messageicon_dialog",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_icon",
+                      "path": "menu/menu_message_settings/settings/message_entry[18]/messageicon_icon",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_log",
+                      "path": "menu/menu_message_settings/settings/message_entry[18]/messageicon_log",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_map",
+                      "path": "menu/menu_message_settings/settings/message_entry[18]/messageicon_map",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "text",
+                      "path": "menu/menu_message_settings/settings/message_entry[18]/text",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 0, "y": -25, "w": 600, "h": 21 },
+                      "text": "When we inherit another country."
+                    }
+                  ]
+                },
+                {
+                  "name": "message_entry",
+                  "path": "menu/menu_message_settings/settings/message_entry[19]",
+                  "type": "window",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 153, "h": 24 },
+                  "children": [
+                    {
+                      "name": "message",
+                      "path": "menu/menu_message_settings/settings/message_entry[19]/message",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 720, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_pause",
+                      "path": "menu/menu_message_settings/settings/message_entry[19]/messageicon_pause",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_dialog",
+                      "path": "menu/menu_message_settings/settings/message_entry[19]/messageicon_dialog",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_icon",
+                      "path": "menu/menu_message_settings/settings/message_entry[19]/messageicon_icon",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_log",
+                      "path": "menu/menu_message_settings/settings/message_entry[19]/messageicon_log",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_map",
+                      "path": "menu/menu_message_settings/settings/message_entry[19]/messageicon_map",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "text",
+                      "path": "menu/menu_message_settings/settings/message_entry[19]/text",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 0, "y": -25, "w": 600, "h": 21 },
+                      "text": "When a monarch we have a royal marriage with dies."
+                    }
+                  ]
+                },
+                {
+                  "name": "message_entry",
+                  "path": "menu/menu_message_settings/settings/message_entry[20]",
+                  "type": "window",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 153, "h": 24 },
+                  "children": [
+                    {
+                      "name": "message",
+                      "path": "menu/menu_message_settings/settings/message_entry[20]/message",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 720, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_pause",
+                      "path": "menu/menu_message_settings/settings/message_entry[20]/messageicon_pause",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_dialog",
+                      "path": "menu/menu_message_settings/settings/message_entry[20]/messageicon_dialog",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_icon",
+                      "path": "menu/menu_message_settings/settings/message_entry[20]/messageicon_icon",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_log",
+                      "path": "menu/menu_message_settings/settings/message_entry[20]/messageicon_log",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_map",
+                      "path": "menu/menu_message_settings/settings/message_entry[20]/messageicon_map",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "text",
+                      "path": "menu/menu_message_settings/settings/message_entry[20]/text",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 0, "y": -25, "w": 600, "h": 21 },
+                      "text": "When a monarch we have a Personal Union with dies."
+                    }
+                  ]
+                },
+                {
+                  "name": "message_entry",
+                  "path": "menu/menu_message_settings/settings/message_entry[21]",
+                  "type": "window",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 153, "h": 24 },
+                  "children": [
+                    {
+                      "name": "message",
+                      "path": "menu/menu_message_settings/settings/message_entry[21]/message",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 720, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_pause",
+                      "path": "menu/menu_message_settings/settings/message_entry[21]/messageicon_pause",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_dialog",
+                      "path": "menu/menu_message_settings/settings/message_entry[21]/messageicon_dialog",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_icon",
+                      "path": "menu/menu_message_settings/settings/message_entry[21]/messageicon_icon",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_log",
+                      "path": "menu/menu_message_settings/settings/message_entry[21]/messageicon_log",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_map",
+                      "path": "menu/menu_message_settings/settings/message_entry[21]/messageicon_map",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "text",
+                      "path": "menu/menu_message_settings/settings/message_entry[21]/text",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 0, "y": -25, "w": 600, "h": 21 },
+                      "text": "When a Personal Union is broken through war."
+                    }
+                  ]
+                },
+                {
+                  "name": "message_entry",
+                  "path": "menu/menu_message_settings/settings/message_entry[22]",
+                  "type": "window",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 153, "h": 24 },
+                  "children": [
+                    {
+                      "name": "message",
+                      "path": "menu/menu_message_settings/settings/message_entry[22]/message",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 720, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_pause",
+                      "path": "menu/menu_message_settings/settings/message_entry[22]/messageicon_pause",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_dialog",
+                      "path": "menu/menu_message_settings/settings/message_entry[22]/messageicon_dialog",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_icon",
+                      "path": "menu/menu_message_settings/settings/message_entry[22]/messageicon_icon",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_log",
+                      "path": "menu/menu_message_settings/settings/message_entry[22]/messageicon_log",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "messageicon_map",
+                      "path": "menu/menu_message_settings/settings/message_entry[22]/messageicon_map",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "text",
+                      "path": "menu/menu_message_settings/settings/message_entry[22]/text",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 0, "y": -25, "w": 600, "h": 21 },
+                      "text": "When a country ends a Personal Union with us."
+                    }
+                  ]
+                },
+                {
+                  "name": "standardlistbox_slider",
+                  "path": "menu/menu_message_settings/settings/standardlistbox_slider",
+                  "type": "other",
+                  "visible": true,
+                  "rect": { "x": 1745, "y": 621, "w": 19, "h": 288 },
+                  "children": [
+                    {
+                      "name": "listboxSliderButton",
+                      "path": "menu/menu_message_settings/settings/standardlistbox_slider/listboxSliderButton",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1745, "y": 640, "w": 19, "h": 19 }
+                    },
+                    {
+                      "name": "listboxTrackButton",
+                      "path": "menu/menu_message_settings/settings/standardlistbox_slider/listboxTrackButton",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1747, "y": 640, "w": 15, "h": 250 }
+                    },
+                    {
+                      "name": "downButton",
+                      "path": "menu/menu_message_settings/settings/standardlistbox_slider/downButton",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1745, "y": 890, "w": 19, "h": 19 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "upButton",
+                      "path": "menu/menu_message_settings/settings/standardlistbox_slider/upButton",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1745, "y": 621, "w": 19, "h": 19 },
+                      "enabled": true
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "search_edit",
+              "path": "menu/menu_message_settings/search_edit",
+              "type": "editbox",
+              "visible": true,
+              "rect": { "x": 1078, "y": 577, "w": 288, "h": 41 },
+              "text": ""
+            },
+            {
+              "name": "all",
+              "path": "menu/menu_message_settings/all",
+              "type": "checkbox",
+              "visible": true,
+              "rect": { "x": 806, "y": 543, "w": 105, "h": 37 },
+              "checked": false
+            },
+            {
+              "name": "dynasty",
+              "path": "menu/menu_message_settings/dynasty",
+              "type": "checkbox",
+              "visible": true,
+              "rect": { "x": 900, "y": 543, "w": 105, "h": 37 },
+              "checked": true
+            },
+            {
+              "name": "diplomacy",
+              "path": "menu/menu_message_settings/diplomacy",
+              "type": "checkbox",
+              "visible": true,
+              "rect": { "x": 994, "y": 543, "w": 105, "h": 37 },
+              "checked": false
+            },
+            {
+              "name": "trade",
+              "path": "menu/menu_message_settings/trade",
+              "type": "checkbox",
+              "visible": true,
+              "rect": { "x": 1088, "y": 543, "w": 105, "h": 37 },
+              "checked": false
+            },
+            {
+              "name": "religion",
+              "path": "menu/menu_message_settings/religion",
+              "type": "checkbox",
+              "visible": true,
+              "rect": { "x": 1182, "y": 543, "w": 105, "h": 37 },
+              "checked": false
+            },
+            {
+              "name": "events",
+              "path": "menu/menu_message_settings/events",
+              "type": "checkbox",
+              "visible": true,
+              "rect": { "x": 1276, "y": 543, "w": 105, "h": 37 },
+              "checked": false
+            },
+            {
+              "name": "government",
+              "path": "menu/menu_message_settings/government",
+              "type": "checkbox",
+              "visible": true,
+              "rect": { "x": 1370, "y": 543, "w": 105, "h": 37 },
+              "checked": false
+            },
+            {
+              "name": "military",
+              "path": "menu/menu_message_settings/military",
+              "type": "checkbox",
+              "visible": true,
+              "rect": { "x": 1464, "y": 543, "w": 105, "h": 37 },
+              "checked": false
+            },
+            {
+              "name": "combat",
+              "path": "menu/menu_message_settings/combat",
+              "type": "checkbox",
+              "visible": true,
+              "rect": { "x": 1558, "y": 543, "w": 105, "h": 37 },
+              "checked": false
+            },
+            {
+              "name": "other",
+              "path": "menu/menu_message_settings/other",
+              "type": "checkbox",
+              "visible": true,
+              "rect": { "x": 1663, "y": 543, "w": 105, "h": 37 },
+              "checked": false
+            },
+            {
+              "name": "filter_button_01",
+              "path": "menu/menu_message_settings/filter_button_01",
+              "type": "checkbox",
+              "visible": true,
+              "rect": { "x": 812, "y": 609, "w": 179, "h": 37 },
+              "checked": true
+            },
+            {
+              "name": "filter_button_02",
+              "path": "menu/menu_message_settings/filter_button_02",
+              "type": "checkbox",
+              "visible": true,
+              "rect": { "x": 812, "y": 645, "w": 179, "h": 37 },
+              "checked": false
+            },
+            {
+              "name": "filter_button_03",
+              "path": "menu/menu_message_settings/filter_button_03",
+              "type": "checkbox",
+              "visible": true,
+              "rect": { "x": 812, "y": 681, "w": 179, "h": 37 },
+              "checked": false
+            },
+            {
+              "name": "filter_button_04",
+              "path": "menu/menu_message_settings/filter_button_04",
+              "type": "checkbox",
+              "visible": true,
+              "rect": { "x": 812, "y": 717, "w": 179, "h": 37 },
+              "checked": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

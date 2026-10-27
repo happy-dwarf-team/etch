@@ -126,8 +126,21 @@ describe('planCaptures', () => {
   it('starts the game twice per playset and resolution: main menu, then the save', async () => {
     const manifest = await corpusManifest();
     const plan = planCaptures(manifest);
-    const release = manifest.playsets.filter((p) => p.gate === 'release').length;
-    expect(plan.sessions).toHaveLength(release * manifest.resolutions.length * 2);
+    // Each release playset at its own confirmed resolutions (Proper 2K UI Enhanced from 2560×1440).
+    const confirmed = manifest.resolutions.filter((r) => r.confirmed);
+    const pairs = manifest.playsets
+      .filter((p) => p.gate === 'release')
+      .reduce(
+        (n, p) =>
+          n +
+          confirmed.filter(
+            (r) =>
+              p.resolutions === undefined ||
+              p.resolutions.includes(`${String(r.width)}x${String(r.height)}`),
+          ).length,
+        0,
+      );
+    expect(plan.sessions).toHaveLength(pairs * 2);
     expect(describeSession(plan.sessions[0] as CaptureSession)).toBe(
       'vanilla 1280x720 from main-menu: main-menu, lobby',
     );

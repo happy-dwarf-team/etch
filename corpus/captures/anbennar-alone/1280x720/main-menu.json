@@ -1,0 +1,2716 @@
+{
+  "formatVersion": 1,
+  "playset": "anbennar-alone",
+  "resolution": { "width": 1280, "height": 720 },
+  "view": "main-menu",
+  "takenAt": "2026-10-27T22:15:40.321Z",
+  "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
+  "tongs": { "version": "0.14.1" },
+  "mods": [
+    {
+      "name": "Anbennar: A Fantasy Total Conversion",
+      "sha256": "99DAB21EA321F176E23824D8EC3A8B75928A92EE68082C589557D219D654A1DD"
+    }
+  ],
+  "disabledDlcs": [],
+  "recipe": {
+    "from": "main-menu",
+    "steps": [],
+    "verified": true,
+    "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown. etch#9 first captured the main menu with Tongs."
+  },
+  "window": { "width": 1280, "height": 720, "dpi": 96 },
+  "screenshot": {
+    "sha256": "3DA382F3B7E33AF3D26AE19C872224DFDEC87B940F90B9DBE497BCE6ECE56068",
+    "width": 1280,
+    "height": 720,
+    "shots": 4,
+    "unstable": {
+      "pixels": 539034,
+      "sha256": "66382C5D952B25CFC7A52CB4E1A99CCFC8693148F0E34FBE37F21834E321F440"
+    }
+  },
+  "widgets": [
+    {
+      "name": "country_selection_panel",
+      "path": "country_selection_panel",
+      "type": "window",
+      "visible": true,
+      "rect": { "x": 0, "y": 0, "w": 1280, "h": 720 },
+      "children": [
+        {
+          "name": "multiplayer_menu",
+          "path": "country_selection_panel/multiplayer_menu",
+          "type": "window",
+          "visible": false,
+          "rect": { "x": 0, "y": 0, "w": 1280, "h": 720 },
+          "children": [
+            {
+              "name": "join_direct",
+              "path": "country_selection_panel/multiplayer_menu/join_direct",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 640, "y": 329, "w": 149, "h": 31 },
+              "text": "Connect to ID",
+              "enabled": true
+            },
+            {
+              "name": "version_label",
+              "path": "country_selection_panel/multiplayer_menu/version_label",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 52, "y": 20, "w": 150, "h": 18 },
+              "text": "EU4 v0.00 (TODO)"
+            },
+            {
+              "name": "playername",
+              "path": "country_selection_panel/multiplayer_menu/playername",
+              "type": "editbox",
+              "visible": false,
+              "rect": { "x": 25, "y": 80, "w": 190, "h": 24 },
+              "text": "Player"
+            }
+          ]
+        },
+        {
+          "name": "multiplayer_connect_menu",
+          "path": "country_selection_panel/multiplayer_connect_menu",
+          "type": "window",
+          "visible": false,
+          "rect": { "x": 0, "y": 0, "w": 420, "h": 500 },
+          "children": [
+            {
+              "name": "back",
+              "path": "country_selection_panel/multiplayer_connect_menu/back",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 640, "y": 329, "w": 149, "h": 31 },
+              "text": "Back",
+              "enabled": true
+            },
+            {
+              "name": "frontend_paper_bg",
+              "path": "country_selection_panel/multiplayer_connect_menu/frontend_paper_bg",
+              "type": "icon",
+              "visible": false,
+              "rect": { "x": 640, "y": 65, "w": 515, "h": 295 }
+            },
+            {
+              "name": "info_desc",
+              "path": "country_selection_panel/multiplayer_connect_menu/info_desc",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 65, "y": 78, "w": 325, "h": 18 },
+              "text": ""
+            },
+            {
+              "name": "standardtext_slider",
+              "path": "country_selection_panel/multiplayer_connect_menu/standardtext_slider",
+              "type": "other",
+              "visible": false,
+              "rect": { "x": 640, "y": 344, "w": 16, "h": 152 },
+              "children": [
+                {
+                  "name": "listboxSliderButton",
+                  "path": "country_selection_panel/multiplayer_connect_menu/standardtext_slider/listboxSliderButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 344, "w": 16, "h": 16 }
+                },
+                {
+                  "name": "listboxTrackButton",
+                  "path": "country_selection_panel/multiplayer_connect_menu/standardtext_slider/listboxTrackButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 360, "w": 12, "h": 136 }
+                },
+                {
+                  "name": "downButton",
+                  "path": "country_selection_panel/multiplayer_connect_menu/standardtext_slider/downButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 344, "w": 16, "h": 16 },
+                  "enabled": true
+                },
+                {
+                  "name": "upButton",
+                  "path": "country_selection_panel/multiplayer_connect_menu/standardtext_slider/upButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 344, "w": 16, "h": 16 },
+                  "enabled": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "mainmenu",
+          "path": "country_selection_panel/mainmenu",
+          "type": "window",
+          "visible": true,
+          "rect": { "x": 0, "y": 0, "w": 1280, "h": 720 },
+          "children": [
+            {
+              "name": "mainmenu_panel_upperleft",
+              "path": "country_selection_panel/mainmenu/mainmenu_panel_upperleft",
+              "type": "window",
+              "visible": true,
+              "rect": { "x": 0, "y": -1, "w": 1280, "h": 720 },
+              "children": [
+                {
+                  "name": "frontend_game_logo",
+                  "path": "country_selection_panel/mainmenu/mainmenu_panel_upperleft/frontend_game_logo",
+                  "type": "icon",
+                  "visible": true,
+                  "rect": { "x": 0, "y": 19, "w": 508, "h": 950 }
+                }
+              ]
+            },
+            {
+              "name": "mainmenu_panel_upperright",
+              "path": "country_selection_panel/mainmenu/mainmenu_panel_upperright",
+              "type": "window",
+              "visible": true,
+              "rect": { "x": 0, "y": -1, "w": 1280, "h": 720 },
+              "children": [
+                {
+                  "name": "frontend_dev_logo",
+                  "path": "country_selection_panel/mainmenu/mainmenu_panel_upperright/frontend_dev_logo",
+                  "type": "icon",
+                  "visible": true,
+                  "rect": { "x": 1070, "y": 14, "w": 192, "h": 192 }
+                }
+              ]
+            },
+            {
+              "name": "new_content",
+              "path": "country_selection_panel/mainmenu/new_content",
+              "type": "window",
+              "visible": false,
+              "rect": { "x": 0, "y": 0, "w": 300, "h": 20 },
+              "children": [
+                {
+                  "name": "content_button",
+                  "path": "country_selection_panel/mainmenu/new_content/content_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 308, "w": 392, "h": 52 },
+                  "enabled": true
+                },
+                {
+                  "name": "buy_dlc_button",
+                  "path": "country_selection_panel/mainmenu/new_content/buy_dlc_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 308, "w": 192, "h": 52 },
+                  "text": "Open Store",
+                  "enabled": true
+                },
+                {
+                  "name": "dlc_alert_frame",
+                  "path": "country_selection_panel/mainmenu/new_content/dlc_alert_frame",
+                  "type": "icon",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 82, "w": 280, "h": 278 }
+                },
+                {
+                  "name": "content_new_dlc",
+                  "path": "country_selection_panel/mainmenu/new_content/content_new_dlc",
+                  "type": "text",
+                  "visible": false,
+                  "rect": { "x": 117, "y": -745, "w": 179, "h": 36 },
+                  "text": "New content is now available for purchase"
+                },
+                {
+                  "name": "content_name",
+                  "path": "country_selection_panel/mainmenu/new_content/content_name",
+                  "type": "text",
+                  "visible": false,
+                  "rect": { "x": 90, "y": -597, "w": 216, "h": 22 },
+                  "text": ""
+                }
+              ]
+            },
+            {
+              "name": "mainmenu_panel_bottom",
+              "path": "country_selection_panel/mainmenu/mainmenu_panel_bottom",
+              "type": "window",
+              "visible": true,
+              "rect": { "x": 88, "y": 636, "w": 1280, "h": 720 },
+              "children": [
+                {
+                  "name": "single_player_button",
+                  "path": "country_selection_panel/mainmenu/mainmenu_panel_bottom/single_player_button",
+                  "type": "button",
+                  "visible": true,
+                  "rect": { "x": 437, "y": 601, "w": 204, "h": 60 },
+                  "enabled": true
+                },
+                {
+                  "name": "multi_player_button",
+                  "path": "country_selection_panel/mainmenu/mainmenu_panel_bottom/multi_player_button",
+                  "type": "button",
+                  "visible": true,
+                  "rect": { "x": 641, "y": 601, "w": 204, "h": 60 },
+                  "enabled": true
+                },
+                {
+                  "name": "nudge_button",
+                  "path": "country_selection_panel/mainmenu/mainmenu_panel_bottom/nudge_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 329, "w": 149, "h": 31 },
+                  "text": "Nudge!",
+                  "enabled": true
+                },
+                {
+                  "name": "tutorial_button",
+                  "path": "country_selection_panel/mainmenu/mainmenu_panel_bottom/tutorial_button",
+                  "type": "button",
+                  "visible": true,
+                  "rect": { "x": 355, "y": 663, "w": 148, "h": 52 },
+                  "enabled": true
+                },
+                {
+                  "name": "credits_button",
+                  "path": "country_selection_panel/mainmenu/mainmenu_panel_bottom/credits_button",
+                  "type": "button",
+                  "visible": true,
+                  "rect": { "x": 501, "y": 663, "w": 140, "h": 52 },
+                  "text": "Credits",
+                  "enabled": true
+                },
+                {
+                  "name": "settings_button",
+                  "path": "country_selection_panel/mainmenu/mainmenu_panel_bottom/settings_button",
+                  "type": "button",
+                  "visible": true,
+                  "rect": { "x": 641, "y": 663, "w": 140, "h": 52 },
+                  "text": "Options",
+                  "enabled": true
+                },
+                {
+                  "name": "exit_button",
+                  "path": "country_selection_panel/mainmenu/mainmenu_panel_bottom/exit_button",
+                  "type": "button",
+                  "visible": true,
+                  "rect": { "x": 780, "y": 663, "w": 148, "h": 52 },
+                  "enabled": true
+                },
+                {
+                  "name": "frontend_bottom_bg",
+                  "path": "country_selection_panel/mainmenu/mainmenu_panel_bottom/frontend_bottom_bg",
+                  "type": "icon",
+                  "visible": true,
+                  "rect": { "x": 301, "y": 580, "w": 683, "h": 140 }
+                },
+                {
+                  "name": "version_background",
+                  "path": "country_selection_panel/mainmenu/mainmenu_panel_bottom/version_background",
+                  "type": "icon",
+                  "visible": true,
+                  "rect": { "x": 56, "y": 656, "w": 253, "h": 65 }
+                },
+                {
+                  "name": "single_player_button_text",
+                  "path": "country_selection_panel/mainmenu/mainmenu_panel_bottom/single_player_button_text",
+                  "type": "text",
+                  "visible": true,
+                  "rect": { "x": 468, "y": 620, "w": 160, "h": 22 },
+                  "text": "Single Player"
+                },
+                {
+                  "name": "multi_player_button_text",
+                  "path": "country_selection_panel/mainmenu/mainmenu_panel_bottom/multi_player_button_text",
+                  "type": "text",
+                  "visible": true,
+                  "rect": { "x": 651, "y": 620, "w": 160, "h": 22 },
+                  "text": "Multiplayer"
+                },
+                {
+                  "name": "version_label",
+                  "path": "country_selection_panel/mainmenu/mainmenu_panel_bottom/version_label",
+                  "type": "text",
+                  "visible": true,
+                  "rect": { "x": 111, "y": 674, "w": 147, "h": 36 },
+                  "text": "EU4 v1.37.5.0 Inca (1824)"
+                },
+                {
+                  "name": "tutorial_button_text",
+                  "path": "country_selection_panel/mainmenu/mainmenu_panel_bottom/tutorial_button_text",
+                  "type": "text",
+                  "visible": true,
+                  "rect": { "x": 378, "y": 678, "w": 125, "h": 22 },
+                  "text": "Tutorial"
+                },
+                {
+                  "name": "exit_button_text",
+                  "path": "country_selection_panel/mainmenu/mainmenu_panel_bottom/exit_button_text",
+                  "type": "text",
+                  "visible": true,
+                  "rect": { "x": 780, "y": 678, "w": 125, "h": 22 },
+                  "text": "Exit"
+                },
+                {
+                  "name": "continue_container",
+                  "path": "country_selection_panel/mainmenu/mainmenu_panel_bottom/continue_container",
+                  "type": "window",
+                  "visible": true,
+                  "rect": { "x": 472, "y": 542, "w": 0, "h": 0 },
+                  "children": [
+                    {
+                      "name": "continue_game_button",
+                      "path": "country_selection_panel/mainmenu/mainmenu_panel_bottom/continue_container/continue_game_button",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 472, "y": 542, "w": 336, "h": 58 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "continue_game_shield",
+                      "path": "country_selection_panel/mainmenu/mainmenu_panel_bottom/continue_container/continue_game_shield",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 438, "y": 516, "w": 0, "h": 92 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "frontend_continue_bg",
+                      "path": "country_selection_panel/mainmenu/mainmenu_panel_bottom/continue_container/frontend_continue_bg",
+                      "type": "icon",
+                      "visible": true,
+                      "rect": { "x": 434, "y": 518, "w": 414, "h": 88 }
+                    },
+                    {
+                      "name": "ironman_icon",
+                      "path": "country_selection_panel/mainmenu/mainmenu_panel_bottom/continue_container/ironman_icon",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 324, "w": 25, "h": 36 }
+                    },
+                    {
+                      "name": "text",
+                      "path": "country_selection_panel/mainmenu/mainmenu_panel_bottom/continue_container/text",
+                      "type": "text",
+                      "visible": true,
+                      "rect": { "x": 522, "y": 549, "w": 260, "h": 44 },
+                      "text": "Continue Game\nVerne - 11 Nerament(11) 1444"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "PersistentSocialButtons",
+              "path": "country_selection_panel/mainmenu/PersistentSocialButtons",
+              "type": "window",
+              "visible": true,
+              "rect": { "x": 1076, "y": 660, "w": 288, "h": 96 },
+              "children": [
+                {
+                  "name": "homepage_button",
+                  "path": "country_selection_panel/mainmenu/PersistentSocialButtons/homepage_button",
+                  "type": "button",
+                  "visible": true,
+                  "rect": { "x": 978, "y": 674, "w": 36, "h": 36 },
+                  "enabled": true
+                },
+                {
+                  "name": "forum_button",
+                  "path": "country_selection_panel/mainmenu/PersistentSocialButtons/forum_button",
+                  "type": "button",
+                  "visible": true,
+                  "rect": { "x": 1016, "y": 674, "w": 36, "h": 36 },
+                  "enabled": true
+                },
+                {
+                  "name": "facebook_button",
+                  "path": "country_selection_panel/mainmenu/PersistentSocialButtons/facebook_button",
+                  "type": "button",
+                  "visible": true,
+                  "rect": { "x": 1052, "y": 674, "w": 36, "h": 36 },
+                  "enabled": true
+                },
+                {
+                  "name": "twitter_button",
+                  "path": "country_selection_panel/mainmenu/PersistentSocialButtons/twitter_button",
+                  "type": "button",
+                  "visible": true,
+                  "rect": { "x": 1088, "y": 674, "w": 36, "h": 36 },
+                  "enabled": true
+                },
+                {
+                  "name": "background",
+                  "path": "country_selection_panel/mainmenu/PersistentSocialButtons/background",
+                  "type": "icon",
+                  "visible": true,
+                  "rect": { "x": 906, "y": 655, "w": 392, "h": 66 }
+                },
+                {
+                  "name": "frontend_small_frame",
+                  "path": "country_selection_panel/mainmenu/PersistentSocialButtons/frontend_small_frame",
+                  "type": "icon",
+                  "visible": true,
+                  "rect": { "x": 976, "y": 672, "w": 150, "h": 40 }
+                },
+                {
+                  "name": "login_logout_button",
+                  "path": "country_selection_panel/mainmenu/PersistentSocialButtons/login_logout_button",
+                  "type": "checkbox",
+                  "visible": true,
+                  "rect": { "x": 1144, "y": 668, "w": 51, "h": 48 },
+                  "checked": true
+                },
+                {
+                  "name": "epic_button",
+                  "path": "country_selection_panel/mainmenu/PersistentSocialButtons/epic_button",
+                  "type": "checkbox",
+                  "visible": true,
+                  "rect": { "x": 1193, "y": 668, "w": 51, "h": 48 },
+                  "checked": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "mainmenu_panel_top",
+          "path": "country_selection_panel/mainmenu_panel_top",
+          "type": "window",
+          "visible": false,
+          "rect": { "x": 0, "y": 0, "w": 1280, "h": 720 },
+          "children": [
+            {
+              "name": "single_player_button",
+              "path": "country_selection_panel/mainmenu_panel_top/single_player_button",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 640, "y": 300, "w": 204, "h": 60 },
+              "enabled": true
+            },
+            {
+              "name": "multi_player_button",
+              "path": "country_selection_panel/mainmenu_panel_top/multi_player_button",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 640, "y": 300, "w": 204, "h": 60 },
+              "enabled": true
+            },
+            {
+              "name": "frontend_game_logo",
+              "path": "country_selection_panel/mainmenu_panel_top/frontend_game_logo",
+              "type": "icon",
+              "visible": false,
+              "rect": { "x": 640, "y": -590, "w": 508, "h": 950 }
+            },
+            {
+              "name": "frontend_dev_logo",
+              "path": "country_selection_panel/mainmenu_panel_top/frontend_dev_logo",
+              "type": "icon",
+              "visible": false,
+              "rect": { "x": 640, "y": 168, "w": 192, "h": 192 }
+            },
+            {
+              "name": "single_player_button_text",
+              "path": "country_selection_panel/mainmenu_panel_top/single_player_button_text",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 81, "y": 24, "w": 220, "h": 22 },
+              "text": "Single Player"
+            },
+            {
+              "name": "multi_player_button_text",
+              "path": "country_selection_panel/mainmenu_panel_top/multi_player_button_text",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 316, "y": 24, "w": 220, "h": 22 },
+              "text": "Multiplayer"
+            }
+          ]
+        },
+        {
+          "name": "tutorial_panel",
+          "path": "country_selection_panel/tutorial_panel",
+          "type": "window",
+          "visible": false,
+          "rect": { "x": 0, "y": 0, "w": 420, "h": 500 },
+          "children": [
+            {
+              "name": "tutorial_select_tab1",
+              "path": "country_selection_panel/tutorial_panel/tutorial_select_tab1",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 640, "y": 256, "w": 230, "h": 104 },
+              "enabled": true
+            },
+            {
+              "name": "tutorial_select_tab2",
+              "path": "country_selection_panel/tutorial_panel/tutorial_select_tab2",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 640, "y": 256, "w": 230, "h": 104 },
+              "enabled": true
+            },
+            {
+              "name": "tutorial_select_tab3",
+              "path": "country_selection_panel/tutorial_panel/tutorial_select_tab3",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 640, "y": 256, "w": 230, "h": 104 },
+              "enabled": true
+            },
+            {
+              "name": "back_button",
+              "path": "country_selection_panel/tutorial_panel/back_button",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 640, "y": 329, "w": 149, "h": 31 },
+              "text": "Back",
+              "enabled": true
+            },
+            {
+              "name": "play_button",
+              "path": "country_selection_panel/tutorial_panel/play_button",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 640, "y": 329, "w": 149, "h": 31 },
+              "text": "PLAY",
+              "enabled": true
+            },
+            {
+              "name": "tutorial_list_bg",
+              "path": "country_selection_panel/tutorial_panel/tutorial_list_bg",
+              "type": "icon",
+              "visible": false,
+              "rect": { "x": 640, "y": -89, "w": 750, "h": 449 }
+            },
+            {
+              "name": "tutorial_part_bas_pic",
+              "path": "country_selection_panel/tutorial_panel/tutorial_part_bas_pic",
+              "type": "icon",
+              "visible": false,
+              "rect": { "x": 640, "y": 280, "w": 80, "h": 80 }
+            },
+            {
+              "name": "tutorial_part_adv_pic",
+              "path": "country_selection_panel/tutorial_panel/tutorial_part_adv_pic",
+              "type": "icon",
+              "visible": false,
+              "rect": { "x": 640, "y": 280, "w": 80, "h": 80 }
+            },
+            {
+              "name": "tutorial_part_cam_pic",
+              "path": "country_selection_panel/tutorial_panel/tutorial_part_cam_pic",
+              "type": "icon",
+              "visible": false,
+              "rect": { "x": 640, "y": 280, "w": 80, "h": 80 }
+            },
+            {
+              "name": "tutorial_part_bas_title",
+              "path": "country_selection_panel/tutorial_panel/tutorial_part_bas_title",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": -50, "y": 350, "w": 140, "h": 54 },
+              "text": "Basic Tutorial\nBasic Controls\nBasic Gameplay"
+            },
+            {
+              "name": "tutorial_part_adv_title",
+              "path": "country_selection_panel/tutorial_panel/tutorial_part_adv_title",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": -50, "y": 464, "w": 140, "h": 36 },
+              "text": "Advanced Tutorial\nAdvanced Gameplay"
+            },
+            {
+              "name": "tutorial_part_cam_title",
+              "path": "country_selection_panel/tutorial_panel/tutorial_part_cam_title",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": -50, "y": 565, "w": 140, "h": 36 },
+              "text": "Spanish Empire\nBeginner Campaign"
+            },
+            {
+              "name": "tutorial_label",
+              "path": "country_selection_panel/tutorial_panel/tutorial_label",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 100, "y": 297, "w": 200, "h": 0 },
+              "text": "Tutorial"
+            },
+            {
+              "name": "tutorial_title",
+              "path": "country_selection_panel/tutorial_panel/tutorial_title",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 230, "y": 330, "w": 200, "h": 34 },
+              "text": "Basic Tutorial"
+            },
+            {
+              "name": "tutorial_desc",
+              "path": "country_selection_panel/tutorial_panel/tutorial_desc",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 350, "y": 480, "w": 220, "h": 90 },
+              "text": "In this chapter you will learn about the very basics of how to play the game. This includes how you control the camera and the game speed.\n"
+            },
+            {
+              "name": "tutorial_part_desc",
+              "path": "country_selection_panel/tutorial_panel/tutorial_part_desc",
+              "type": "text",
+              "visible": false,
+              "rect": { "x": 125, "y": 380, "w": 440, "h": 36 },
+              "text": "This part of the tutorial will go through the basics of how to control the camera, game speed, controlling units, production and basic diplomacy."
+            },
+            {
+              "name": "tutorial_list",
+              "path": "country_selection_panel/tutorial_panel/tutorial_list",
+              "type": "listbox",
+              "visible": false,
+              "rect": { "x": 0, "y": 0, "w": 150, "h": 30 },
+              "children": [
+                {
+                  "name": "tutorial_entry",
+                  "path": "country_selection_panel/tutorial_panel/tutorial_list/tutorial_entry",
+                  "type": "window",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 150, "h": 30 },
+                  "children": [
+                    {
+                      "name": "chapter_button",
+                      "path": "country_selection_panel/tutorial_panel/tutorial_list/tutorial_entry/chapter_button",
+                      "type": "checkbox",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 328, "w": 224, "h": 32 },
+                      "checked": true
+                    }
+                  ]
+                },
+                {
+                  "name": "standardlistbox_slider",
+                  "path": "country_selection_panel/tutorial_panel/tutorial_list/standardlistbox_slider",
+                  "type": "other",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 344, "w": 16, "h": 284 },
+                  "children": [
+                    {
+                      "name": "listboxSliderButton",
+                      "path": "country_selection_panel/tutorial_panel/tutorial_list/standardlistbox_slider/listboxSliderButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 344, "w": 16, "h": 16 }
+                    },
+                    {
+                      "name": "listboxTrackButton",
+                      "path": "country_selection_panel/tutorial_panel/tutorial_list/standardlistbox_slider/listboxTrackButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 360, "w": 12, "h": 268 }
+                    },
+                    {
+                      "name": "downButton",
+                      "path": "country_selection_panel/tutorial_panel/tutorial_list/standardlistbox_slider/downButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 344, "w": 16, "h": 16 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "upButton",
+                      "path": "country_selection_panel/tutorial_panel/tutorial_list/standardlistbox_slider/upButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 344, "w": 16, "h": 16 },
+                      "enabled": true
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "settings",
+          "path": "country_selection_panel/settings",
+          "type": "window",
+          "visible": false,
+          "rect": { "x": 0, "y": 0, "w": 420, "h": 500 },
+          "children": [
+            {
+              "name": "back_button",
+              "path": "country_selection_panel/settings/back_button",
+              "type": "button",
+              "visible": false,
+              "rect": { "x": 640, "y": 329, "w": 79, "h": 31 },
+              "text": "Back",
+              "enabled": true
+            }
+          ]
+        },
+        {
+          "name": "lobby",
+          "path": "country_selection_panel/lobby",
+          "type": "window",
+          "visible": false,
+          "rect": { "x": 0, "y": 0, "w": 1280, "h": 720 },
+          "children": [
+            {
+              "name": "bottom",
+              "path": "country_selection_panel/lobby/bottom",
+              "type": "window",
+              "visible": false,
+              "rect": { "x": 0, "y": 0, "w": 810, "h": 246 },
+              "children": [
+                {
+                  "name": "speech_enabled_lobby_chat_button",
+                  "path": "country_selection_panel/lobby/bottom/speech_enabled_lobby_chat_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 329, "w": 105, "h": 31 },
+                  "text": "Send",
+                  "enabled": false
+                },
+                {
+                  "name": "mic_button",
+                  "path": "country_selection_panel/lobby/bottom/mic_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 329, "w": 105, "h": 31 },
+                  "text": "Mic",
+                  "enabled": false
+                },
+                {
+                  "name": "lobby_chat_button",
+                  "path": "country_selection_panel/lobby/bottom/lobby_chat_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 328, "w": 224, "h": 32 },
+                  "text": "Send",
+                  "enabled": true
+                },
+                {
+                  "name": "chatpanel",
+                  "path": "country_selection_panel/lobby/bottom/chatpanel",
+                  "type": "icon",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 170, "w": 810, "h": 190 }
+                },
+                {
+                  "name": "scenario_description",
+                  "path": "country_selection_panel/lobby/bottom/scenario_description",
+                  "type": "text",
+                  "visible": false,
+                  "rect": { "x": 17, "y": -1, "w": 767, "h": 26 },
+                  "text": ""
+                },
+                {
+                  "name": "chatlog",
+                  "path": "country_selection_panel/lobby/bottom/chatlog",
+                  "type": "listbox",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "children": [
+                    {
+                      "name": "standardlistbox_slider",
+                      "path": "country_selection_panel/lobby/bottom/chatlog/standardlistbox_slider",
+                      "type": "other",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 344, "w": 16, "h": 79 },
+                      "children": [
+                        {
+                          "name": "listboxSliderButton",
+                          "path": "country_selection_panel/lobby/bottom/chatlog/standardlistbox_slider/listboxSliderButton",
+                          "type": "button",
+                          "visible": false,
+                          "rect": { "x": 640, "y": 344, "w": 16, "h": 16 }
+                        },
+                        {
+                          "name": "listboxTrackButton",
+                          "path": "country_selection_panel/lobby/bottom/chatlog/standardlistbox_slider/listboxTrackButton",
+                          "type": "button",
+                          "visible": false,
+                          "rect": { "x": 640, "y": 360, "w": 12, "h": 63 }
+                        },
+                        {
+                          "name": "downButton",
+                          "path": "country_selection_panel/lobby/bottom/chatlog/standardlistbox_slider/downButton",
+                          "type": "button",
+                          "visible": false,
+                          "rect": { "x": 640, "y": 344, "w": 16, "h": 16 },
+                          "enabled": true
+                        },
+                        {
+                          "name": "upButton",
+                          "path": "country_selection_panel/lobby/bottom/chatlog/standardlistbox_slider/upButton",
+                          "type": "button",
+                          "visible": false,
+                          "rect": { "x": 640, "y": 344, "w": 16, "h": 16 },
+                          "enabled": true
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "lobby_chat_edit",
+                  "path": "country_selection_panel/lobby/bottom/lobby_chat_edit",
+                  "type": "editbox",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 332, "w": 520, "h": 32 },
+                  "text": ""
+                },
+                {
+                  "name": "largefonts_lobby_chat_edit",
+                  "path": "country_selection_panel/lobby/bottom/largefonts_lobby_chat_edit",
+                  "type": "editbox",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 332, "w": 520, "h": 32 },
+                  "text": ""
+                },
+                {
+                  "name": "speech_enabled_lobby_chat_edit",
+                  "path": "country_selection_panel/lobby/bottom/speech_enabled_lobby_chat_edit",
+                  "type": "editbox",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 332, "w": 520, "h": 32 },
+                  "text": ""
+                },
+                {
+                  "name": "speech_enabled_largefonts_lobby_chat_edit",
+                  "path": "country_selection_panel/lobby/bottom/speech_enabled_largefonts_lobby_chat_edit",
+                  "type": "editbox",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 332, "w": 520, "h": 32 },
+                  "text": ""
+                }
+              ]
+            },
+            {
+              "name": "nation_designer_bottom_panel",
+              "path": "country_selection_panel/lobby/nation_designer_bottom_panel",
+              "type": "window",
+              "visible": false,
+              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "children": [
+                {
+                  "name": "nation_designer_close_button",
+                  "path": "country_selection_panel/lobby/nation_designer_bottom_panel/nation_designer_close_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 308, "w": 157, "h": 52 },
+                  "enabled": true
+                },
+                {
+                  "name": "nation_designer_accept_button",
+                  "path": "country_selection_panel/lobby/nation_designer_bottom_panel/nation_designer_accept_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 308, "w": 157, "h": 52 },
+                  "enabled": true
+                },
+                {
+                  "name": "nation_designer_save_button",
+                  "path": "country_selection_panel/lobby/nation_designer_bottom_panel/nation_designer_save_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 329, "w": 119, "h": 31 },
+                  "enabled": true
+                },
+                {
+                  "name": "nation_designer_load_button",
+                  "path": "country_selection_panel/lobby/nation_designer_bottom_panel/nation_designer_load_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 329, "w": 119, "h": 31 },
+                  "enabled": true
+                },
+                {
+                  "name": "nation_designer_bottom_bg",
+                  "path": "country_selection_panel/lobby/nation_designer_bottom_panel/nation_designer_bottom_bg",
+                  "type": "icon",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 240, "w": 396, "h": 120 }
+                },
+                {
+                  "name": "nation_designer_save_button_text",
+                  "path": "country_selection_panel/lobby/nation_designer_bottom_panel/nation_designer_save_button_text",
+                  "type": "text",
+                  "visible": false,
+                  "rect": { "x": 274, "y": 83, "w": 100, "h": 18 },
+                  "text": "Save"
+                },
+                {
+                  "name": "nation_designer_load_button_text",
+                  "path": "country_selection_panel/lobby/nation_designer_bottom_panel/nation_designer_load_button_text",
+                  "type": "text",
+                  "visible": false,
+                  "rect": { "x": 382, "y": 83, "w": 100, "h": 18 },
+                  "text": "Load"
+                },
+                {
+                  "name": "nation_designer_close_button_text",
+                  "path": "country_selection_panel/lobby/nation_designer_bottom_panel/nation_designer_close_button_text",
+                  "type": "text",
+                  "visible": false,
+                  "rect": { "x": 295, "y": 128, "w": 100, "h": 22 },
+                  "text": "Delete"
+                },
+                {
+                  "name": "nation_designer_accept_button_text",
+                  "path": "country_selection_panel/lobby/nation_designer_bottom_panel/nation_designer_accept_button_text",
+                  "type": "text",
+                  "visible": false,
+                  "rect": { "x": 438, "y": 128, "w": 100, "h": 22 },
+                  "text": "Done"
+                }
+              ]
+            },
+            {
+              "name": "random_new_world_loading_window",
+              "path": "country_selection_panel/lobby/random_new_world_loading_window",
+              "type": "window",
+              "visible": false,
+              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "children": [
+                {
+                  "name": "background",
+                  "path": "country_selection_panel/lobby/random_new_world_loading_window/background",
+                  "type": "icon",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 254, "w": 292, "h": 106 }
+                },
+                {
+                  "name": "text",
+                  "path": "country_selection_panel/lobby/random_new_world_loading_window/text",
+                  "type": "text",
+                  "visible": false,
+                  "rect": { "x": 30, "y": 36, "w": 231, "h": 18 },
+                  "text": "Starts"
+                }
+              ]
+            },
+            {
+              "name": "left",
+              "path": "country_selection_panel/lobby/left",
+              "type": "window",
+              "visible": false,
+              "rect": { "x": 0, "y": 0, "w": 1280, "h": 720 },
+              "children": [
+                {
+                  "name": "observe_mode_button",
+                  "path": "country_selection_panel/lobby/left/observe_mode_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 328, "w": 32, "h": 32 },
+                  "enabled": true
+                },
+                {
+                  "name": "gameoptions_button",
+                  "path": "country_selection_panel/lobby/left/gameoptions_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 328, "w": 224, "h": 32 },
+                  "text": "Game Options",
+                  "enabled": true
+                },
+                {
+                  "name": "find_button",
+                  "path": "country_selection_panel/lobby/left/find_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 328, "w": 224, "h": 32 },
+                  "text": "Find",
+                  "enabled": true
+                },
+                {
+                  "name": "option_button",
+                  "path": "country_selection_panel/lobby/left/option_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 328, "w": 324, "h": 32 },
+                  "text": "Options",
+                  "enabled": true
+                },
+                {
+                  "name": "back_button",
+                  "path": "country_selection_panel/lobby/left/back_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 328, "w": 224, "h": 32 },
+                  "text": "Back",
+                  "enabled": true
+                },
+                {
+                  "name": "left_sidepanel",
+                  "path": "country_selection_panel/lobby/left/left_sidepanel",
+                  "type": "icon",
+                  "visible": false,
+                  "rect": { "x": 640, "y": -210, "w": 292, "h": 570 }
+                },
+                {
+                  "name": "observe_mode_title",
+                  "path": "country_selection_panel/lobby/left/observe_mode_title",
+                  "type": "text",
+                  "visible": false,
+                  "rect": { "x": 55, "y": 575, "w": 200, "h": 22 },
+                  "text": "Observe mode"
+                },
+                {
+                  "name": "start_type_options",
+                  "path": "country_selection_panel/lobby/left/start_type_options",
+                  "type": "other",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 250, "h": 50 }
+                },
+                {
+                  "name": "save_games",
+                  "path": "country_selection_panel/lobby/left/save_games",
+                  "type": "window",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 110, "h": 768 },
+                  "children": [
+                    {
+                      "name": "location_button",
+                      "path": "country_selection_panel/lobby/left/save_games/location_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 329, "w": 149, "h": 31 },
+                      "text": "Cloud",
+                      "enabled": true
+                    },
+                    {
+                      "name": "delete_all_button",
+                      "path": "country_selection_panel/lobby/left/save_games/delete_all_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 329, "w": 149, "h": 31 },
+                      "text": "Delete All",
+                      "enabled": true
+                    },
+                    {
+                      "name": "show_unsafe_text",
+                      "path": "country_selection_panel/lobby/left/save_games/show_unsafe_text",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 62, "y": 83, "w": 200, "h": 18 },
+                      "text": "Show incompatible saved games"
+                    },
+                    {
+                      "name": "save_games_list",
+                      "path": "country_selection_panel/lobby/left/save_games/save_games_list",
+                      "type": "listbox",
+                      "visible": false,
+                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "children": [
+                        {
+                          "name": "standardlistbox_slider",
+                          "path": "country_selection_panel/lobby/left/save_games/save_games_list/standardlistbox_slider",
+                          "type": "other",
+                          "visible": false,
+                          "rect": { "x": 640, "y": 344, "w": 16, "h": 314 },
+                          "children": [
+                            {
+                              "name": "listboxSliderButton",
+                              "path": "country_selection_panel/lobby/left/save_games/save_games_list/standardlistbox_slider/listboxSliderButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 344, "w": 16, "h": 16 }
+                            },
+                            {
+                              "name": "listboxTrackButton",
+                              "path": "country_selection_panel/lobby/left/save_games/save_games_list/standardlistbox_slider/listboxTrackButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 360, "w": 12, "h": 298 }
+                            },
+                            {
+                              "name": "downButton",
+                              "path": "country_selection_panel/lobby/left/save_games/save_games_list/standardlistbox_slider/downButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 344, "w": 16, "h": 16 },
+                              "enabled": true
+                            },
+                            {
+                              "name": "upButton",
+                              "path": "country_selection_panel/lobby/left/save_games/save_games_list/standardlistbox_slider/upButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 344, "w": 16, "h": 16 },
+                              "enabled": true
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "show_unsafe_checkbox",
+                      "path": "country_selection_panel/lobby/left/save_games/show_unsafe_checkbox",
+                      "type": "checkbox",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 328, "w": 32, "h": 32 },
+                      "checked": false
+                    }
+                  ]
+                },
+                {
+                  "name": "bookmarks",
+                  "path": "country_selection_panel/lobby/left/bookmarks",
+                  "type": "window",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 110, "h": 768 },
+                  "children": [
+                    {
+                      "name": "bookmarks_list",
+                      "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list",
+                      "type": "listbox",
+                      "visible": false,
+                      "rect": { "x": 0, "y": 0, "w": 320, "h": 1694 },
+                      "children": [
+                        {
+                          "name": "bookmark_entry",
+                          "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[1]",
+                          "type": "window",
+                          "visible": false,
+                          "rect": { "x": 0, "y": 0, "w": 320, "h": 121 },
+                          "children": [
+                            {
+                              "name": "bookmark",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[1]/bookmark",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 240, "w": 240, "h": 120 },
+                              "enabled": true
+                            },
+                            {
+                              "name": "title",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[1]/title",
+                              "type": "text",
+                              "visible": false,
+                              "rect": { "x": 14, "y": 46, "w": 225, "h": 36 },
+                              "text": "£bookmark_cannor£"
+                            },
+                            {
+                              "name": "date",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[1]/date",
+                              "type": "text",
+                              "visible": false,
+                              "rect": { "x": -300, "y": 22, "w": 225, "h": 14 },
+                              "text": "11 Nerament(11) 1444"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "bookmark_entry",
+                          "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[2]",
+                          "type": "window",
+                          "visible": false,
+                          "rect": { "x": 0, "y": 0, "w": 320, "h": 121 },
+                          "children": [
+                            {
+                              "name": "bookmark",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[2]/bookmark",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 240, "w": 240, "h": 120 },
+                              "enabled": true
+                            },
+                            {
+                              "name": "title",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[2]/title",
+                              "type": "text",
+                              "visible": false,
+                              "rect": { "x": 14, "y": 46, "w": 225, "h": 36 },
+                              "text": "£bookmark_escann£"
+                            },
+                            {
+                              "name": "date",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[2]/date",
+                              "type": "text",
+                              "visible": false,
+                              "rect": { "x": -300, "y": 22, "w": 225, "h": 14 },
+                              "text": "11 Nerament(11) 1444"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "bookmark_entry",
+                          "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[3]",
+                          "type": "window",
+                          "visible": false,
+                          "rect": { "x": 0, "y": 0, "w": 320, "h": 121 },
+                          "children": [
+                            {
+                              "name": "bookmark",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[3]/bookmark",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 240, "w": 240, "h": 120 },
+                              "enabled": true
+                            },
+                            {
+                              "name": "title",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[3]/title",
+                              "type": "text",
+                              "visible": false,
+                              "rect": { "x": 14, "y": 46, "w": 225, "h": 36 },
+                              "text": "£bookmark_serpentspine£"
+                            },
+                            {
+                              "name": "date",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[3]/date",
+                              "type": "text",
+                              "visible": false,
+                              "rect": { "x": -300, "y": 22, "w": 225, "h": 14 },
+                              "text": "11 Nerament(11) 1444"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "bookmark_entry",
+                          "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[4]",
+                          "type": "window",
+                          "visible": false,
+                          "rect": { "x": 0, "y": 0, "w": 320, "h": 121 },
+                          "children": [
+                            {
+                              "name": "bookmark",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[4]/bookmark",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 240, "w": 240, "h": 120 },
+                              "enabled": true
+                            },
+                            {
+                              "name": "title",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[4]/title",
+                              "type": "text",
+                              "visible": false,
+                              "rect": { "x": 14, "y": 46, "w": 225, "h": 36 },
+                              "text": "£bookmark_bulwar£"
+                            },
+                            {
+                              "name": "date",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[4]/date",
+                              "type": "text",
+                              "visible": false,
+                              "rect": { "x": -300, "y": 22, "w": 225, "h": 14 },
+                              "text": "11 Nerament(11) 1444"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "bookmark_entry",
+                          "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[5]",
+                          "type": "window",
+                          "visible": false,
+                          "rect": { "x": 0, "y": 0, "w": 320, "h": 121 },
+                          "children": [
+                            {
+                              "name": "bookmark",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[5]/bookmark",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 240, "w": 240, "h": 120 },
+                              "enabled": true
+                            },
+                            {
+                              "name": "title",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[5]/title",
+                              "type": "text",
+                              "visible": false,
+                              "rect": { "x": 14, "y": 46, "w": 225, "h": 36 },
+                              "text": "£bookmark_rahen£"
+                            },
+                            {
+                              "name": "date",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[5]/date",
+                              "type": "text",
+                              "visible": false,
+                              "rect": { "x": -300, "y": 22, "w": 225, "h": 14 },
+                              "text": "11 Nerament(11) 1444"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "bookmark_entry",
+                          "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[6]",
+                          "type": "window",
+                          "visible": false,
+                          "rect": { "x": 0, "y": 0, "w": 320, "h": 121 },
+                          "children": [
+                            {
+                              "name": "bookmark",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[6]/bookmark",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 240, "w": 240, "h": 120 },
+                              "enabled": true
+                            },
+                            {
+                              "name": "title",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[6]/title",
+                              "type": "text",
+                              "visible": false,
+                              "rect": { "x": 14, "y": 46, "w": 225, "h": 36 },
+                              "text": "£bookmark_haless£"
+                            },
+                            {
+                              "name": "date",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[6]/date",
+                              "type": "text",
+                              "visible": false,
+                              "rect": { "x": -300, "y": 22, "w": 225, "h": 14 },
+                              "text": "11 Nerament(11) 1444"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "bookmark_entry",
+                          "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[7]",
+                          "type": "window",
+                          "visible": false,
+                          "rect": { "x": 0, "y": 0, "w": 320, "h": 121 },
+                          "children": [
+                            {
+                              "name": "bookmark",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[7]/bookmark",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 240, "w": 240, "h": 120 },
+                              "enabled": true
+                            },
+                            {
+                              "name": "title",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[7]/title",
+                              "type": "text",
+                              "visible": false,
+                              "rect": { "x": 14, "y": 46, "w": 225, "h": 36 },
+                              "text": "£bookmark_forbidden_plains£"
+                            },
+                            {
+                              "name": "date",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[7]/date",
+                              "type": "text",
+                              "visible": false,
+                              "rect": { "x": -300, "y": 22, "w": 225, "h": 14 },
+                              "text": "11 Nerament(11) 1444"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "bookmark_entry",
+                          "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[8]",
+                          "type": "window",
+                          "visible": false,
+                          "rect": { "x": 0, "y": 0, "w": 320, "h": 121 },
+                          "children": [
+                            {
+                              "name": "bookmark",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[8]/bookmark",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 240, "w": 240, "h": 120 },
+                              "enabled": true
+                            },
+                            {
+                              "name": "title",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[8]/title",
+                              "type": "text",
+                              "visible": false,
+                              "rect": { "x": 14, "y": 46, "w": 225, "h": 36 },
+                              "text": "£bookmark_north_aelantir£"
+                            },
+                            {
+                              "name": "date",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[8]/date",
+                              "type": "text",
+                              "visible": false,
+                              "rect": { "x": -300, "y": 22, "w": 225, "h": 14 },
+                              "text": "11 Nerament(11) 1444"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "bookmark_entry",
+                          "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[9]",
+                          "type": "window",
+                          "visible": false,
+                          "rect": { "x": 0, "y": 0, "w": 320, "h": 121 },
+                          "children": [
+                            {
+                              "name": "bookmark",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[9]/bookmark",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 240, "w": 240, "h": 120 },
+                              "enabled": true
+                            },
+                            {
+                              "name": "title",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[9]/title",
+                              "type": "text",
+                              "visible": false,
+                              "rect": { "x": 14, "y": 46, "w": 225, "h": 36 },
+                              "text": "£bookmark_south_aelantir£"
+                            },
+                            {
+                              "name": "date",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[9]/date",
+                              "type": "text",
+                              "visible": false,
+                              "rect": { "x": -300, "y": 22, "w": 225, "h": 14 },
+                              "text": "11 Nerament(11) 1444"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "bookmark_entry",
+                          "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[10]",
+                          "type": "window",
+                          "visible": false,
+                          "rect": { "x": 0, "y": 0, "w": 320, "h": 121 },
+                          "children": [
+                            {
+                              "name": "bookmark",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[10]/bookmark",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 240, "w": 240, "h": 120 },
+                              "enabled": true
+                            },
+                            {
+                              "name": "title",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[10]/title",
+                              "type": "text",
+                              "visible": false,
+                              "rect": { "x": 14, "y": 46, "w": 225, "h": 36 },
+                              "text": "£bookmark_west_sarhal£"
+                            },
+                            {
+                              "name": "date",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[10]/date",
+                              "type": "text",
+                              "visible": false,
+                              "rect": { "x": -300, "y": 22, "w": 225, "h": 14 },
+                              "text": "11 Nerament(11) 1444"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "bookmark_entry",
+                          "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[11]",
+                          "type": "window",
+                          "visible": false,
+                          "rect": { "x": 0, "y": 0, "w": 320, "h": 121 },
+                          "children": [
+                            {
+                              "name": "bookmark",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[11]/bookmark",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 240, "w": 240, "h": 120 },
+                              "enabled": true
+                            },
+                            {
+                              "name": "title",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[11]/title",
+                              "type": "text",
+                              "visible": false,
+                              "rect": { "x": 14, "y": 46, "w": 225, "h": 36 },
+                              "text": "£bookmark_east_sarhal£"
+                            },
+                            {
+                              "name": "date",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[11]/date",
+                              "type": "text",
+                              "visible": false,
+                              "rect": { "x": -300, "y": 22, "w": 225, "h": 14 },
+                              "text": "11 Nerament(11) 1444"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "bookmark_entry",
+                          "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[12]",
+                          "type": "window",
+                          "visible": false,
+                          "rect": { "x": 0, "y": 0, "w": 320, "h": 121 },
+                          "children": [
+                            {
+                              "name": "bookmark",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[12]/bookmark",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 240, "w": 240, "h": 120 },
+                              "enabled": true
+                            },
+                            {
+                              "name": "title",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[12]/title",
+                              "type": "text",
+                              "visible": false,
+                              "rect": { "x": 14, "y": 46, "w": 225, "h": 36 },
+                              "text": "£bookmark_kanolowele£"
+                            },
+                            {
+                              "name": "date",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[12]/date",
+                              "type": "text",
+                              "visible": false,
+                              "rect": { "x": -300, "y": 22, "w": 225, "h": 14 },
+                              "text": "11 Nerament(11) 1444"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "bookmark_entry",
+                          "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[13]",
+                          "type": "window",
+                          "visible": false,
+                          "rect": { "x": 0, "y": 0, "w": 320, "h": 121 },
+                          "children": [
+                            {
+                              "name": "bookmark",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[13]/bookmark",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 240, "w": 240, "h": 120 },
+                              "enabled": true
+                            },
+                            {
+                              "name": "title",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[13]/title",
+                              "type": "text",
+                              "visible": false,
+                              "rect": { "x": 14, "y": 46, "w": 225, "h": 36 },
+                              "text": "£bookmark_mainland_insyaa£"
+                            },
+                            {
+                              "name": "date",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[13]/date",
+                              "type": "text",
+                              "visible": false,
+                              "rect": { "x": -300, "y": 22, "w": 225, "h": 14 },
+                              "text": "11 Nerament(11) 1444"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "bookmark_entry",
+                          "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[14]",
+                          "type": "window",
+                          "visible": false,
+                          "rect": { "x": 0, "y": 0, "w": 320, "h": 121 },
+                          "children": [
+                            {
+                              "name": "bookmark",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[14]/bookmark",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 240, "w": 240, "h": 120 },
+                              "enabled": true
+                            },
+                            {
+                              "name": "title",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[14]/title",
+                              "type": "text",
+                              "visible": false,
+                              "rect": { "x": 14, "y": 46, "w": 225, "h": 36 },
+                              "text": "£bookmark_spawnables£"
+                            },
+                            {
+                              "name": "date",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[14]/date",
+                              "type": "text",
+                              "visible": false,
+                              "rect": { "x": -300, "y": 22, "w": 225, "h": 14 },
+                              "text": "11 Nerament(11) 1444"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "standardlistbox_slider",
+                          "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/standardlistbox_slider",
+                          "type": "other",
+                          "visible": false,
+                          "rect": { "x": 640, "y": 344, "w": 16, "h": 469 },
+                          "children": [
+                            {
+                              "name": "listboxSliderButton",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/standardlistbox_slider/listboxSliderButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 344, "w": 16, "h": 16 }
+                            },
+                            {
+                              "name": "listboxTrackButton",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/standardlistbox_slider/listboxTrackButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 360, "w": 12, "h": 453 }
+                            },
+                            {
+                              "name": "downButton",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/standardlistbox_slider/downButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 344, "w": 16, "h": 16 },
+                              "enabled": true
+                            },
+                            {
+                              "name": "upButton",
+                              "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/standardlistbox_slider/upButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 344, "w": 16, "h": 16 },
+                              "enabled": true
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "datewidget",
+                  "path": "country_selection_panel/lobby/left/datewidget",
+                  "type": "window",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 200, "h": 200 },
+                  "children": [
+                    {
+                      "name": "year_up1",
+                      "path": "country_selection_panel/lobby/left/datewidget/year_up1",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 340, "w": 20, "h": 20 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "year_down1",
+                      "path": "country_selection_panel/lobby/left/datewidget/year_down1",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 340, "w": 20, "h": 20 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "year_up2",
+                      "path": "country_selection_panel/lobby/left/datewidget/year_up2",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 340, "w": 20, "h": 20 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "year_down2",
+                      "path": "country_selection_panel/lobby/left/datewidget/year_down2",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 340, "w": 20, "h": 20 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "year_up3",
+                      "path": "country_selection_panel/lobby/left/datewidget/year_up3",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 340, "w": 20, "h": 20 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "year_down3",
+                      "path": "country_selection_panel/lobby/left/datewidget/year_down3",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 340, "w": 20, "h": 20 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "month_down",
+                      "path": "country_selection_panel/lobby/left/datewidget/month_down",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 336, "w": 24, "h": 24 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "day_down",
+                      "path": "country_selection_panel/lobby/left/datewidget/day_down",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 336, "w": 24, "h": 24 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "month_up",
+                      "path": "country_selection_panel/lobby/left/datewidget/month_up",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 336, "w": 24, "h": 24 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "day_up",
+                      "path": "country_selection_panel/lobby/left/datewidget/day_up",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 336, "w": 24, "h": 24 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "selectdate_bg",
+                      "path": "country_selection_panel/lobby/left/datewidget/selectdate_bg",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 208, "w": 280, "h": 152 }
+                    },
+                    {
+                      "name": "startdatelabel",
+                      "path": "country_selection_panel/lobby/left/datewidget/startdatelabel",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 6, "y": 9, "w": 260, "h": 18 },
+                      "text": "Starting Date"
+                    },
+                    {
+                      "name": "daymonth",
+                      "path": "country_selection_panel/lobby/left/datewidget/daymonth",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 82, "y": 113, "w": 110, "h": 18 },
+                      "text": ""
+                    },
+                    {
+                      "name": "year",
+                      "path": "country_selection_panel/lobby/left/datewidget/year",
+                      "type": "editbox",
+                      "visible": false,
+                      "rect": { "x": 120, "y": 57, "w": 80, "h": 30 },
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "name": "lessons",
+                  "path": "country_selection_panel/lobby/left/lessons",
+                  "type": "window",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 292, "h": 450 },
+                  "children": [
+                    {
+                      "name": "open_music_player",
+                      "path": "country_selection_panel/lobby/left/lessons/open_music_player",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 328, "w": 224, "h": 32 },
+                      "text": "Open Music Player",
+                      "enabled": true
+                    },
+                    {
+                      "name": "lessons_list_box",
+                      "path": "country_selection_panel/lobby/left/lessons/lessons_list_box",
+                      "type": "listbox",
+                      "visible": false,
+                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "children": [
+                        {
+                          "name": "standardlistbox_slider",
+                          "path": "country_selection_panel/lobby/left/lessons/lessons_list_box/standardlistbox_slider",
+                          "type": "other",
+                          "visible": false,
+                          "rect": { "x": 640, "y": 344, "w": 16, "h": 394 },
+                          "children": [
+                            {
+                              "name": "listboxSliderButton",
+                              "path": "country_selection_panel/lobby/left/lessons/lessons_list_box/standardlistbox_slider/listboxSliderButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 344, "w": 16, "h": 16 }
+                            },
+                            {
+                              "name": "listboxTrackButton",
+                              "path": "country_selection_panel/lobby/left/lessons/lessons_list_box/standardlistbox_slider/listboxTrackButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 360, "w": 12, "h": 378 }
+                            },
+                            {
+                              "name": "downButton",
+                              "path": "country_selection_panel/lobby/left/lessons/lessons_list_box/standardlistbox_slider/downButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 344, "w": 16, "h": 16 },
+                              "enabled": true
+                            },
+                            {
+                              "name": "upButton",
+                              "path": "country_selection_panel/lobby/left/lessons/lessons_list_box/standardlistbox_slider/upButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 344, "w": 16, "h": 16 },
+                              "enabled": true
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "enabled_dlc_list",
+                  "path": "country_selection_panel/lobby/left/enabled_dlc_list",
+                  "type": "listbox",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "children": [
+                    {
+                      "name": "standardlistbox_slider",
+                      "path": "country_selection_panel/lobby/left/enabled_dlc_list/standardlistbox_slider",
+                      "type": "other",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 344, "w": 16, "h": 484 },
+                      "children": [
+                        {
+                          "name": "listboxSliderButton",
+                          "path": "country_selection_panel/lobby/left/enabled_dlc_list/standardlistbox_slider/listboxSliderButton",
+                          "type": "button",
+                          "visible": false,
+                          "rect": { "x": 640, "y": 344, "w": 16, "h": 16 }
+                        },
+                        {
+                          "name": "listboxTrackButton",
+                          "path": "country_selection_panel/lobby/left/enabled_dlc_list/standardlistbox_slider/listboxTrackButton",
+                          "type": "button",
+                          "visible": false,
+                          "rect": { "x": 640, "y": 360, "w": 12, "h": 468 }
+                        },
+                        {
+                          "name": "downButton",
+                          "path": "country_selection_panel/lobby/left/enabled_dlc_list/standardlistbox_slider/downButton",
+                          "type": "button",
+                          "visible": false,
+                          "rect": { "x": 640, "y": 344, "w": 16, "h": 16 },
+                          "enabled": true
+                        },
+                        {
+                          "name": "upButton",
+                          "path": "country_selection_panel/lobby/left/enabled_dlc_list/standardlistbox_slider/upButton",
+                          "type": "button",
+                          "visible": false,
+                          "rect": { "x": 640, "y": 344, "w": 16, "h": 16 },
+                          "enabled": true
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "top",
+              "path": "country_selection_panel/lobby/top",
+              "type": "window",
+              "visible": false,
+              "rect": { "x": 0, "y": 0, "w": 420, "h": 500 },
+              "children": [
+                {
+                  "name": "mapmode_terrain",
+                  "path": "country_selection_panel/lobby/top/mapmode_terrain",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 329, "w": 41, "h": 31 },
+                  "enabled": true
+                },
+                {
+                  "name": "mapmode_political",
+                  "path": "country_selection_panel/lobby/top/mapmode_political",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 329, "w": 41, "h": 31 },
+                  "enabled": true
+                },
+                {
+                  "name": "mapmode_trade",
+                  "path": "country_selection_panel/lobby/top/mapmode_trade",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 329, "w": 41, "h": 31 },
+                  "enabled": true
+                },
+                {
+                  "name": "mapmode_empire",
+                  "path": "country_selection_panel/lobby/top/mapmode_empire",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 329, "w": 41, "h": 31 },
+                  "enabled": true
+                },
+                {
+                  "name": "mapmode_religion",
+                  "path": "country_selection_panel/lobby/top/mapmode_religion",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 329, "w": 41, "h": 31 },
+                  "enabled": true
+                },
+                {
+                  "name": "mapmode_diplomacy",
+                  "path": "country_selection_panel/lobby/top/mapmode_diplomacy",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 329, "w": 41, "h": 31 },
+                  "enabled": true
+                },
+                {
+                  "name": "mapmode_economy",
+                  "path": "country_selection_panel/lobby/top/mapmode_economy",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 329, "w": 41, "h": 31 },
+                  "enabled": true
+                },
+                {
+                  "name": "mapmode_region",
+                  "path": "country_selection_panel/lobby/top/mapmode_region",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 329, "w": 41, "h": 31 },
+                  "enabled": true
+                },
+                {
+                  "name": "mapmode_culture",
+                  "path": "country_selection_panel/lobby/top/mapmode_culture",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 329, "w": 41, "h": 31 },
+                  "enabled": true
+                },
+                {
+                  "name": "mapmode_players",
+                  "path": "country_selection_panel/lobby/top/mapmode_players",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 329, "w": 41, "h": 31 },
+                  "enabled": true
+                },
+                {
+                  "name": "mapmode_expansion",
+                  "path": "country_selection_panel/lobby/top/mapmode_expansion",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 329, "w": 41, "h": 31 },
+                  "enabled": true
+                },
+                {
+                  "name": "mapmode_content",
+                  "path": "country_selection_panel/lobby/top/mapmode_content",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 329, "w": 41, "h": 31 },
+                  "enabled": true
+                },
+                {
+                  "name": "mapmode_unit",
+                  "path": "country_selection_panel/lobby/top/mapmode_unit",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 329, "w": 41, "h": 31 },
+                  "enabled": true
+                },
+                {
+                  "name": "mapmode_music",
+                  "path": "country_selection_panel/lobby/top/mapmode_music",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 329, "w": 41, "h": 31 },
+                  "enabled": true
+                },
+                {
+                  "name": "frontend_banner2",
+                  "path": "country_selection_panel/lobby/top/frontend_banner2",
+                  "type": "icon",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 272, "w": 470, "h": 88 }
+                },
+                {
+                  "name": "nation_designer_hint_bg",
+                  "path": "country_selection_panel/lobby/top/nation_designer_hint_bg",
+                  "type": "icon",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 284, "w": 404, "h": 76 }
+                },
+                {
+                  "name": "year_label",
+                  "path": "country_selection_panel/lobby/top/year_label",
+                  "type": "text",
+                  "visible": false,
+                  "rect": { "x": -150, "y": 18, "w": 300, "h": 30 },
+                  "text": "The world 1453 AA"
+                },
+                {
+                  "name": "select_label",
+                  "path": "country_selection_panel/lobby/top/select_label",
+                  "type": "text",
+                  "visible": false,
+                  "rect": { "x": -165, "y": 92, "w": 300, "h": 26 },
+                  "text": "Click on the map to select a nation..."
+                },
+                {
+                  "name": "nation_designer_hint",
+                  "path": "country_selection_panel/lobby/top/nation_designer_hint",
+                  "type": "text",
+                  "visible": false,
+                  "rect": { "x": -143, "y": 110, "w": 320, "h": 18 },
+                  "text": "NATION_DESIGNER_HINT"
+                }
+              ]
+            },
+            {
+              "name": "right",
+              "path": "country_selection_panel/lobby/right",
+              "type": "window",
+              "visible": false,
+              "rect": { "x": 0, "y": 0, "w": 1280, "h": 720 },
+              "children": [
+                {
+                  "name": "observe_mode_button",
+                  "path": "country_selection_panel/lobby/right/observe_mode_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 328, "w": 32, "h": 32 },
+                  "enabled": true
+                },
+                {
+                  "name": "random_new_world_button",
+                  "path": "country_selection_panel/lobby/right/random_new_world_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 329, "w": 222, "h": 31 },
+                  "text": "Random New World",
+                  "enabled": true
+                },
+                {
+                  "name": "enable_custom_nation_button",
+                  "path": "country_selection_panel/lobby/right/enable_custom_nation_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 328, "w": 32, "h": 32 },
+                  "enabled": true
+                },
+                {
+                  "name": "nation_designer_button",
+                  "path": "country_selection_panel/lobby/right/nation_designer_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 329, "w": 222, "h": 31 },
+                  "text": "Custom Nation",
+                  "enabled": true
+                },
+                {
+                  "name": "random_country_button",
+                  "path": "country_selection_panel/lobby/right/random_country_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 329, "w": 222, "h": 31 },
+                  "text": "Random Nation",
+                  "enabled": true
+                },
+                {
+                  "name": "play_button",
+                  "path": "country_selection_panel/lobby/right/play_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 308, "w": 232, "h": 52 },
+                  "text": "PLAY",
+                  "enabled": true
+                },
+                {
+                  "name": "right_sidepanel",
+                  "path": "country_selection_panel/lobby/right/right_sidepanel",
+                  "type": "icon",
+                  "visible": false,
+                  "rect": { "x": 640, "y": -324, "w": 272, "h": 684 }
+                },
+                {
+                  "name": "ironman_icon",
+                  "path": "country_selection_panel/lobby/right/ironman_icon",
+                  "type": "icon",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 324, "w": 25, "h": 36 }
+                },
+                {
+                  "name": "ironman_label",
+                  "path": "country_selection_panel/lobby/right/ironman_label",
+                  "type": "text",
+                  "visible": false,
+                  "rect": { "x": 1110, "y": 42, "w": 160, "h": 22 },
+                  "text": "Ironman mode"
+                },
+                {
+                  "name": "country_tab_title",
+                  "path": "country_selection_panel/lobby/right/country_tab_title",
+                  "type": "text",
+                  "visible": false,
+                  "rect": { "x": 1030, "y": 38, "w": 112, "h": 30 },
+                  "text": "Country"
+                },
+                {
+                  "name": "players_tab_title",
+                  "path": "country_selection_panel/lobby/right/players_tab_title",
+                  "type": "text",
+                  "visible": false,
+                  "rect": { "x": 1148, "y": 38, "w": 112, "h": 30 },
+                  "text": "Human Players"
+                },
+                {
+                  "name": "observe_mode_title",
+                  "path": "country_selection_panel/lobby/right/observe_mode_title",
+                  "type": "text",
+                  "visible": false,
+                  "rect": { "x": 99955, "y": 567, "w": 200, "h": 22 },
+                  "text": "Observe mode"
+                },
+                {
+                  "name": "multiplayer",
+                  "path": "country_selection_panel/lobby/right/multiplayer",
+                  "type": "window",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 200, "h": 340 },
+                  "children": [
+                    {
+                      "name": "checksum_click_button",
+                      "path": "country_selection_panel/lobby/right/multiplayer/checksum_click_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 360, "w": 260, "h": 24 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "create_team_button",
+                      "path": "country_selection_panel/lobby/right/multiplayer/create_team_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 332, "w": 179, "h": 28 },
+                      "text": "Create Team",
+                      "enabled": true
+                    },
+                    {
+                      "name": "leave_team_button",
+                      "path": "country_selection_panel/lobby/right/multiplayer/leave_team_button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 332, "w": 179, "h": 28 },
+                      "text": "Leave Team",
+                      "enabled": true
+                    },
+                    {
+                      "name": "right_sidepanel",
+                      "path": "country_selection_panel/lobby/right/multiplayer/right_sidepanel",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 640, "y": -196, "w": 252, "h": 556 }
+                    },
+                    {
+                      "name": "checksum",
+                      "path": "country_selection_panel/lobby/right/multiplayer/checksum",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": -20, "y": 32, "w": 260, "h": 26 },
+                      "text": ""
+                    },
+                    {
+                      "name": "num_players",
+                      "path": "country_selection_panel/lobby/right/multiplayer/num_players",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 20, "y": 52, "w": 180, "h": 26 },
+                      "text": "Number of Players: 0"
+                    },
+                    {
+                      "name": "multiplayer_list",
+                      "path": "country_selection_panel/lobby/right/multiplayer/multiplayer_list",
+                      "type": "listbox",
+                      "visible": false,
+                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "children": [
+                        {
+                          "name": "standardlistbox_slider",
+                          "path": "country_selection_panel/lobby/right/multiplayer/multiplayer_list/standardlistbox_slider",
+                          "type": "other",
+                          "visible": false,
+                          "rect": { "x": 640, "y": 344, "w": 16, "h": 413 },
+                          "children": [
+                            {
+                              "name": "listboxSliderButton",
+                              "path": "country_selection_panel/lobby/right/multiplayer/multiplayer_list/standardlistbox_slider/listboxSliderButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 344, "w": 16, "h": 16 }
+                            },
+                            {
+                              "name": "listboxTrackButton",
+                              "path": "country_selection_panel/lobby/right/multiplayer/multiplayer_list/standardlistbox_slider/listboxTrackButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 360, "w": 12, "h": 397 }
+                            },
+                            {
+                              "name": "downButton",
+                              "path": "country_selection_panel/lobby/right/multiplayer/multiplayer_list/standardlistbox_slider/downButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 344, "w": 16, "h": 16 },
+                              "enabled": true
+                            },
+                            {
+                              "name": "upButton",
+                              "path": "country_selection_panel/lobby/right/multiplayer/multiplayer_list/standardlistbox_slider/upButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 344, "w": 16, "h": 16 },
+                              "enabled": true
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "no_player",
+                  "path": "country_selection_panel/lobby/right/no_player",
+                  "type": "window",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 200, "h": 340 },
+                  "children": [
+                    {
+                      "name": "selected_nation_label",
+                      "path": "country_selection_panel/lobby/right/no_player/selected_nation_label",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 24, "y": 130, "w": 160, "h": 22 },
+                      "text": "No country selected"
+                    }
+                  ]
+                },
+                {
+                  "name": "singleplayer",
+                  "path": "country_selection_panel/lobby/right/singleplayer",
+                  "type": "window",
+                  "visible": false,
+                  "rect": { "x": 0, "y": 0, "w": 200, "h": 340 },
+                  "children": [
+                    {
+                      "name": "player_shield",
+                      "path": "country_selection_panel/lobby/right/singleplayer/player_shield",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 268, "w": 0, "h": 92 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "techgroup_icon",
+                      "path": "country_selection_panel/lobby/right/singleplayer/techgroup_icon",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 322, "w": 38, "h": 38 }
+                    },
+                    {
+                      "name": "government_rank",
+                      "path": "country_selection_panel/lobby/right/singleplayer/government_rank",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 320, "w": 40, "h": 40 }
+                    },
+                    {
+                      "name": "religion_icon",
+                      "path": "country_selection_panel/lobby/right/singleplayer/religion_icon",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 296, "w": 64, "h": 64 }
+                    },
+                    {
+                      "name": "secondary_religion_icon",
+                      "path": "country_selection_panel/lobby/right/singleplayer/secondary_religion_icon",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 319, "w": 41, "h": 41 }
+                    },
+                    {
+                      "name": "ruler_adm_icon",
+                      "path": "country_selection_panel/lobby/right/singleplayer/ruler_adm_icon",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 332, "w": 28, "h": 28 }
+                    },
+                    {
+                      "name": "ruler_dip_icon",
+                      "path": "country_selection_panel/lobby/right/singleplayer/ruler_dip_icon",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 332, "w": 28, "h": 28 }
+                    },
+                    {
+                      "name": "ruler_mil_icon",
+                      "path": "country_selection_panel/lobby/right/singleplayer/ruler_mil_icon",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 332, "w": 28, "h": 28 }
+                    },
+                    {
+                      "name": "admtech_icon",
+                      "path": "country_selection_panel/lobby/right/singleplayer/admtech_icon",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 332, "w": 28, "h": 28 }
+                    },
+                    {
+                      "name": "diptech_icon",
+                      "path": "country_selection_panel/lobby/right/singleplayer/diptech_icon",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 332, "w": 28, "h": 28 }
+                    },
+                    {
+                      "name": "miltech_icon",
+                      "path": "country_selection_panel/lobby/right/singleplayer/miltech_icon",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 332, "w": 28, "h": 28 }
+                    },
+                    {
+                      "name": "ideas_icon",
+                      "path": "country_selection_panel/lobby/right/singleplayer/ideas_icon",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 335, "w": 25, "h": 25 }
+                    },
+                    {
+                      "name": "national_idea1",
+                      "path": "country_selection_panel/lobby/right/singleplayer/national_idea1",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 328, "w": 32, "h": 32 }
+                    },
+                    {
+                      "name": "national_idea2",
+                      "path": "country_selection_panel/lobby/right/singleplayer/national_idea2",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 328, "w": 32, "h": 32 }
+                    },
+                    {
+                      "name": "national_idea3",
+                      "path": "country_selection_panel/lobby/right/singleplayer/national_idea3",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 328, "w": 32, "h": 32 }
+                    },
+                    {
+                      "name": "national_idea4",
+                      "path": "country_selection_panel/lobby/right/singleplayer/national_idea4",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 328, "w": 32, "h": 32 }
+                    },
+                    {
+                      "name": "national_idea5",
+                      "path": "country_selection_panel/lobby/right/singleplayer/national_idea5",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 328, "w": 32, "h": 32 }
+                    },
+                    {
+                      "name": "national_idea6",
+                      "path": "country_selection_panel/lobby/right/singleplayer/national_idea6",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 328, "w": 32, "h": 32 }
+                    },
+                    {
+                      "name": "national_idea7",
+                      "path": "country_selection_panel/lobby/right/singleplayer/national_idea7",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 328, "w": 32, "h": 32 }
+                    },
+                    {
+                      "name": "provinces_icon",
+                      "path": "country_selection_panel/lobby/right/singleplayer/provinces_icon",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 329, "w": 33, "h": 31 }
+                    },
+                    {
+                      "name": "economy_icon",
+                      "path": "country_selection_panel/lobby/right/singleplayer/economy_icon",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 332, "w": 31, "h": 28 }
+                    },
+                    {
+                      "name": "fort_icon",
+                      "path": "country_selection_panel/lobby/right/singleplayer/fort_icon",
+                      "type": "icon",
+                      "visible": false,
+                      "rect": { "x": 640, "y": 332, "w": 28, "h": 28 }
+                    },
+                    {
+                      "name": "selected_nation_label",
+                      "path": "country_selection_panel/lobby/right/singleplayer/selected_nation_label",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 24, "y": 130, "w": 160, "h": 22 },
+                      "text": ""
+                    },
+                    {
+                      "name": "selected_fog",
+                      "path": "country_selection_panel/lobby/right/singleplayer/selected_fog",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 20, "y": 160, "w": 175, "h": 18 },
+                      "text": ""
+                    },
+                    {
+                      "name": "selected_nation_status_label",
+                      "path": "country_selection_panel/lobby/right/singleplayer/selected_nation_status_label",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 20, "y": 174, "w": 175, "h": 18 },
+                      "text": ""
+                    },
+                    {
+                      "name": "selected_ruler",
+                      "path": "country_selection_panel/lobby/right/singleplayer/selected_ruler",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 20, "y": 196, "w": 175, "h": 18 },
+                      "text": ""
+                    },
+                    {
+                      "name": "ruler_adm_value",
+                      "path": "country_selection_panel/lobby/right/singleplayer/ruler_adm_value",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 40, "y": 215, "w": 32, "h": 26 },
+                      "text": "?"
+                    },
+                    {
+                      "name": "ruler_dip_value",
+                      "path": "country_selection_panel/lobby/right/singleplayer/ruler_dip_value",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 94, "y": 215, "w": 32, "h": 26 },
+                      "text": "?"
+                    },
+                    {
+                      "name": "ruler_mil_value",
+                      "path": "country_selection_panel/lobby/right/singleplayer/ruler_mil_value",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 143, "y": 215, "w": 32, "h": 26 },
+                      "text": "?"
+                    },
+                    {
+                      "name": "admtech_value",
+                      "path": "country_selection_panel/lobby/right/singleplayer/admtech_value",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 5, "y": 331, "w": 64, "h": 26 },
+                      "text": "?"
+                    },
+                    {
+                      "name": "diptech_value",
+                      "path": "country_selection_panel/lobby/right/singleplayer/diptech_value",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 60, "y": 331, "w": 64, "h": 26 },
+                      "text": "?"
+                    },
+                    {
+                      "name": "miltech_value",
+                      "path": "country_selection_panel/lobby/right/singleplayer/miltech_value",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 120, "y": 331, "w": 64, "h": 26 },
+                      "text": "?"
+                    },
+                    {
+                      "name": "national_ideagroup_name",
+                      "path": "country_selection_panel/lobby/right/singleplayer/national_ideagroup_name",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": -5, "y": 369, "w": 175, "h": 26 },
+                      "text": "Enlish Ideas"
+                    },
+                    {
+                      "name": "ideas_value",
+                      "path": "country_selection_panel/lobby/right/singleplayer/ideas_value",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 143, "y": 371, "w": 64, "h": 26 },
+                      "text": "?"
+                    },
+                    {
+                      "name": "provinces_value",
+                      "path": "country_selection_panel/lobby/right/singleplayer/provinces_value",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": -9, "y": 455, "w": 100, "h": 18 },
+                      "text": "37"
+                    },
+                    {
+                      "name": "economy_value",
+                      "path": "country_selection_panel/lobby/right/singleplayer/economy_value",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 66, "y": 455, "w": 100, "h": 18 },
+                      "text": "1115"
+                    },
+                    {
+                      "name": "fort_value",
+                      "path": "country_selection_panel/lobby/right/singleplayer/fort_value",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": 142, "y": 455, "w": 100, "h": 18 },
+                      "text": "15"
+                    },
+                    {
+                      "name": "diplomacy_banner_label",
+                      "path": "country_selection_panel/lobby/right/singleplayer/diplomacy_banner_label",
+                      "type": "text",
+                      "visible": false,
+                      "rect": { "x": -5, "y": 485, "w": 160, "h": 26 },
+                      "text": "Diplomacy"
+                    },
+                    {
+                      "name": "diplomatic_listbox",
+                      "path": "country_selection_panel/lobby/right/singleplayer/diplomatic_listbox",
+                      "type": "listbox",
+                      "visible": false,
+                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "children": [
+                        {
+                          "name": "standardlistbox_slider",
+                          "path": "country_selection_panel/lobby/right/singleplayer/diplomatic_listbox/standardlistbox_slider",
+                          "type": "other",
+                          "visible": false,
+                          "rect": { "x": 640, "y": 344, "w": 16, "h": 104 },
+                          "children": [
+                            {
+                              "name": "listboxSliderButton",
+                              "path": "country_selection_panel/lobby/right/singleplayer/diplomatic_listbox/standardlistbox_slider/listboxSliderButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 344, "w": 16, "h": 16 }
+                            },
+                            {
+                              "name": "listboxTrackButton",
+                              "path": "country_selection_panel/lobby/right/singleplayer/diplomatic_listbox/standardlistbox_slider/listboxTrackButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 360, "w": 12, "h": 88 }
+                            },
+                            {
+                              "name": "downButton",
+                              "path": "country_selection_panel/lobby/right/singleplayer/diplomatic_listbox/standardlistbox_slider/downButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 344, "w": 16, "h": 16 },
+                              "enabled": true
+                            },
+                            {
+                              "name": "upButton",
+                              "path": "country_selection_panel/lobby/right/singleplayer/diplomatic_listbox/standardlistbox_slider/upButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 344, "w": 16, "h": 16 },
+                              "enabled": true
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "suggested_dlc_list",
+                      "path": "country_selection_panel/lobby/right/singleplayer/suggested_dlc_list",
+                      "type": "listbox",
+                      "visible": false,
+                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "children": [
+                        {
+                          "name": "standardlistbox_slider",
+                          "path": "country_selection_panel/lobby/right/singleplayer/suggested_dlc_list/standardlistbox_slider",
+                          "type": "other",
+                          "visible": false,
+                          "rect": { "x": 640, "y": 344, "w": 16, "h": 484 },
+                          "children": [
+                            {
+                              "name": "listboxSliderButton",
+                              "path": "country_selection_panel/lobby/right/singleplayer/suggested_dlc_list/standardlistbox_slider/listboxSliderButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 344, "w": 16, "h": 16 }
+                            },
+                            {
+                              "name": "listboxTrackButton",
+                              "path": "country_selection_panel/lobby/right/singleplayer/suggested_dlc_list/standardlistbox_slider/listboxTrackButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 360, "w": 12, "h": 468 }
+                            },
+                            {
+                              "name": "downButton",
+                              "path": "country_selection_panel/lobby/right/singleplayer/suggested_dlc_list/standardlistbox_slider/downButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 344, "w": 16, "h": 16 },
+                              "enabled": true
+                            },
+                            {
+                              "name": "upButton",
+                              "path": "country_selection_panel/lobby/right/singleplayer/suggested_dlc_list/standardlistbox_slider/upButton",
+                              "type": "button",
+                              "visible": false,
+                              "rect": { "x": 640, "y": 344, "w": 16, "h": 16 },
+                              "enabled": true
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "country_tab",
+                  "path": "country_selection_panel/lobby/right/country_tab",
+                  "type": "checkbox",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 311, "w": 119, "h": 49 },
+                  "checked": false
+                },
+                {
+                  "name": "players_tab",
+                  "path": "country_selection_panel/lobby/right/players_tab",
+                  "type": "checkbox",
+                  "visible": false,
+                  "rect": { "x": 640, "y": 311, "w": 119, "h": 49 },
+                  "checked": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Background",
+          "path": "country_selection_panel/Background",
+          "type": "button",
+          "visible": false,
+          "rect": { "x": 0, "y": 0, "w": 1280, "h": 720 }
+        }
+      ]
+    }
+  ]
+}

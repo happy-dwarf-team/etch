@@ -1,0 +1,714 @@
+{
+  "formatVersion": 1,
+  "playset": "anbennar-alone",
+  "resolution": { "width": 1920, "height": 1080 },
+  "view": "ledger",
+  "takenAt": "2026-10-27T22:40:41.875Z",
+  "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
+  "tongs": { "version": "0.14.1" },
+  "save": { "sha256": "AACEDFE6FD0294B80961679AB9618BC48195A9E9A239BE41292CEFFE156FDD3D" },
+  "mods": [
+    {
+      "name": "Anbennar: A Fantasy Total Conversion",
+      "sha256": "99DAB21EA321F176E23824D8EC3A8B75928A92EE68082C589557D219D654A1DD"
+    }
+  ],
+  "disabledDlcs": [],
+  "recipe": {
+    "from": "save",
+    "steps": [{ "key": "l" }],
+    "verified": true,
+    "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown."
+  },
+  "window": { "width": 1920, "height": 1080, "dpi": 96 },
+  "screenshot": {
+    "sha256": "2B272EFD0EC1AEA5620190825FB9E7245963E932B77D1CB6E837C98E26CDEFBC",
+    "width": 1920,
+    "height": 1080,
+    "shots": 4,
+    "unstable": {
+      "pixels": 1245165,
+      "sha256": "ABDB7802F22ADF25B62DAA55F8D8E8892A26588E2A26F6F450E8B7ABC59F8578"
+    }
+  },
+  "widgets": [
+    {
+      "name": "ledger",
+      "path": "ledger",
+      "type": "window",
+      "visible": true,
+      "rect": { "x": 401, "y": 140, "w": 1120, "h": 768 },
+      "children": [
+        {
+          "name": "close",
+          "path": "ledger/close",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 1422, "y": 254, "w": 36, "h": 36 },
+          "enabled": true
+        },
+        {
+          "name": "prev",
+          "path": "ledger/prev",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 1047, "y": 831, "w": 127, "h": 30 },
+          "text": "Previous",
+          "enabled": true
+        },
+        {
+          "name": "next",
+          "path": "ledger/next",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 1290, "y": 831, "w": 127, "h": 30 },
+          "text": "Next",
+          "enabled": true
+        },
+        {
+          "name": "index",
+          "path": "ledger/index",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 516, "y": 821, "w": 57, "h": 50 },
+          "enabled": true
+        },
+        {
+          "name": "bookmark_0",
+          "path": "ledger/bookmark_0",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 579, "y": 821, "w": 57, "h": 50 },
+          "enabled": true
+        },
+        {
+          "name": "bookmark_1",
+          "path": "ledger/bookmark_1",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 642, "y": 821, "w": 57, "h": 50 },
+          "enabled": true
+        },
+        {
+          "name": "bookmark_2",
+          "path": "ledger/bookmark_2",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 705, "y": 821, "w": 57, "h": 50 },
+          "enabled": true
+        },
+        {
+          "name": "bookmark_3",
+          "path": "ledger/bookmark_3",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 768, "y": 821, "w": 57, "h": 50 },
+          "enabled": true
+        },
+        {
+          "name": "bookmark_4",
+          "path": "ledger/bookmark_4",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 831, "y": 821, "w": 57, "h": 50 },
+          "enabled": true
+        },
+        {
+          "name": "ledger_bg",
+          "path": "ledger/ledger_bg",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 450, "y": 240, "w": 1020, "h": 640 }
+        },
+        {
+          "name": "ledger_linegraph_bg",
+          "path": "ledger/ledger_linegraph_bg",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 450, "y": 240, "w": 1020, "h": 640 }
+        },
+        {
+          "name": "ledger_great_projects_bg",
+          "path": "ledger/ledger_great_projects_bg",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 450, "y": 240, "w": 1020, "h": 640 }
+        },
+        {
+          "name": "filter_edit_box_bg",
+          "path": "ledger/filter_edit_box_bg",
+          "type": "icon",
+          "visible": false,
+          "rect": { "x": 960, "y": 512, "w": 143, "h": 28 }
+        },
+        {
+          "name": "filter_edit_box_icon",
+          "path": "ledger/filter_edit_box_icon",
+          "type": "icon",
+          "visible": false,
+          "rect": { "x": 960, "y": 518, "w": 23, "h": 22 }
+        },
+        {
+          "name": "page_number",
+          "path": "ledger/page_number",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 1164, "y": 837, "w": 135, "h": 22 },
+          "text": "1"
+        },
+        {
+          "name": "ledger_header",
+          "path": "ledger/ledger_header",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 563, "y": 262, "w": 800, "h": 29 },
+          "text": "Ledger Index"
+        },
+        {
+          "name": "ledger_sort_buttons",
+          "path": "ledger/ledger_sort_buttons",
+          "type": "window",
+          "visible": false,
+          "rect": { "x": 0, "y": 0, "w": 972, "h": 32 }
+        },
+        {
+          "name": "ledger_linegraphs",
+          "path": "ledger/ledger_linegraphs",
+          "type": "window",
+          "visible": false,
+          "rect": { "x": 0, "y": 0, "w": 700, "h": 540 }
+        },
+        {
+          "name": "ledger_linegraph_legend",
+          "path": "ledger/ledger_linegraph_legend",
+          "type": "window",
+          "visible": false,
+          "rect": { "x": 0, "y": 0, "w": 200, "h": 540 },
+          "children": [
+            {
+              "name": "ledger_linegraph_legend_buttons",
+              "path": "ledger/ledger_linegraph_legend/ledger_linegraph_legend_buttons",
+              "type": "window",
+              "visible": false,
+              "rect": { "x": 0, "y": 0, "w": 200, "h": 64 },
+              "children": [
+                {
+                  "name": "linegraph_neighbours",
+                  "path": "ledger/ledger_linegraph_legend/ledger_linegraph_legend_buttons/linegraph_neighbours",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 519, "w": 31, "h": 21 },
+                  "enabled": true
+                },
+                {
+                  "name": "linegraph_enemies",
+                  "path": "ledger/ledger_linegraph_legend/ledger_linegraph_legend_buttons/linegraph_enemies",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 519, "w": 31, "h": 21 },
+                  "enabled": true
+                },
+                {
+                  "name": "linegraph_friends",
+                  "path": "ledger/ledger_linegraph_legend/ledger_linegraph_legend_buttons/linegraph_friends",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 519, "w": 31, "h": 21 },
+                  "enabled": true
+                },
+                {
+                  "name": "linegraph_clear",
+                  "path": "ledger/ledger_linegraph_legend/ledger_linegraph_legend_buttons/linegraph_clear",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 519, "w": 31, "h": 21 },
+                  "enabled": true
+                }
+              ]
+            },
+            {
+              "name": "legend_list",
+              "path": "ledger/ledger_linegraph_legend/legend_list",
+              "type": "listbox",
+              "visible": false,
+              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "children": [
+                {
+                  "name": "standardlistbox_slider",
+                  "path": "ledger/ledger_linegraph_legend/legend_list/standardlistbox_slider",
+                  "type": "other",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 524, "w": 16, "h": 468 },
+                  "children": [
+                    {
+                      "name": "listboxSliderButton",
+                      "path": "ledger/ledger_linegraph_legend/legend_list/standardlistbox_slider/listboxSliderButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 960, "y": 524, "w": 16, "h": 16 }
+                    },
+                    {
+                      "name": "listboxTrackButton",
+                      "path": "ledger/ledger_linegraph_legend/legend_list/standardlistbox_slider/listboxTrackButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 960, "y": 540, "w": 12, "h": 452 }
+                    },
+                    {
+                      "name": "downButton",
+                      "path": "ledger/ledger_linegraph_legend/legend_list/standardlistbox_slider/downButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "upButton",
+                      "path": "ledger/ledger_linegraph_legend/legend_list/standardlistbox_slider/upButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
+                      "enabled": true
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "ledger_piecharts",
+          "path": "ledger/ledger_piecharts",
+          "type": "window",
+          "visible": false,
+          "rect": { "x": 0, "y": 0, "w": 1000, "h": 540 },
+          "children": [
+            {
+              "name": "ledger_piechart_bg",
+              "path": "ledger/ledger_piecharts/ledger_piechart_bg",
+              "type": "icon",
+              "visible": false,
+              "rect": { "x": 960, "y": -100, "w": 1020, "h": 640 }
+            }
+          ]
+        },
+        {
+          "name": "ledger_index",
+          "path": "ledger/ledger_index",
+          "type": "window",
+          "visible": true,
+          "rect": { "x": 766, "y": 300, "w": 1000, "h": 540 },
+          "children": [
+            {
+              "name": "ledger_overlay",
+              "path": "ledger/ledger_index/ledger_overlay",
+              "type": "icon",
+              "visible": true,
+              "rect": { "x": 450, "y": 240, "w": 1020, "h": 640 }
+            },
+            {
+              "name": "page",
+              "path": "ledger/ledger_index/page",
+              "type": "text",
+              "visible": true,
+              "rect": { "x": 737, "y": 308, "w": 32, "h": 22 },
+              "text": "Page"
+            },
+            {
+              "name": "list",
+              "path": "ledger/ledger_index/list",
+              "type": "listbox",
+              "visible": true,
+              "rect": { "x": 766, "y": 303, "w": 128, "h": 160 },
+              "children": [
+                {
+                  "name": "ledger_index_bookmark",
+                  "path": "ledger/ledger_index/list/ledger_index_bookmark[1]",
+                  "type": "window",
+                  "visible": true,
+                  "rect": { "x": 767, "y": 304, "w": 128, "h": 32 },
+                  "children": [
+                    {
+                      "name": "button",
+                      "path": "ledger/ledger_index/list/ledger_index_bookmark[1]/button",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 832, "y": 304, "w": 264, "h": 29 },
+                      "text": "Country",
+                      "enabled": true
+                    }
+                  ]
+                },
+                {
+                  "name": "ledger_index_bookmark",
+                  "path": "ledger/ledger_index/list/ledger_index_bookmark[2]",
+                  "type": "window",
+                  "visible": true,
+                  "rect": { "x": 767, "y": 336, "w": 128, "h": 32 },
+                  "children": [
+                    {
+                      "name": "button",
+                      "path": "ledger/ledger_index/list/ledger_index_bookmark[2]/button",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 832, "y": 336, "w": 264, "h": 29 },
+                      "text": "Military",
+                      "enabled": true
+                    }
+                  ]
+                },
+                {
+                  "name": "ledger_index_bookmark",
+                  "path": "ledger/ledger_index/list/ledger_index_bookmark[3]",
+                  "type": "window",
+                  "visible": true,
+                  "rect": { "x": 767, "y": 368, "w": 128, "h": 32 },
+                  "children": [
+                    {
+                      "name": "button",
+                      "path": "ledger/ledger_index/list/ledger_index_bookmark[3]/button",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 832, "y": 368, "w": 264, "h": 29 },
+                      "text": "Economy",
+                      "enabled": true
+                    }
+                  ]
+                },
+                {
+                  "name": "ledger_index_bookmark",
+                  "path": "ledger/ledger_index/list/ledger_index_bookmark[4]",
+                  "type": "window",
+                  "visible": true,
+                  "rect": { "x": 767, "y": 400, "w": 128, "h": 32 },
+                  "children": [
+                    {
+                      "name": "button",
+                      "path": "ledger/ledger_index/list/ledger_index_bookmark[4]/button",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 832, "y": 400, "w": 264, "h": 29 },
+                      "text": "Trade",
+                      "enabled": true
+                    }
+                  ]
+                },
+                {
+                  "name": "ledger_index_bookmark",
+                  "path": "ledger/ledger_index/list/ledger_index_bookmark[5]",
+                  "type": "window",
+                  "visible": true,
+                  "rect": { "x": 767, "y": 432, "w": 128, "h": 32 },
+                  "children": [
+                    {
+                      "name": "button",
+                      "path": "ledger/ledger_index/list/ledger_index_bookmark[5]/button",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 832, "y": 432, "w": 264, "h": 29 },
+                      "text": "Relations",
+                      "enabled": true
+                    }
+                  ]
+                },
+                {
+                  "name": "standardlistbox_slider",
+                  "path": "ledger/ledger_index/list/standardlistbox_slider",
+                  "type": "other",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 524, "w": 16, "h": 496 },
+                  "children": [
+                    {
+                      "name": "listboxSliderButton",
+                      "path": "ledger/ledger_index/list/standardlistbox_slider/listboxSliderButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 960, "y": 524, "w": 16, "h": 16 }
+                    },
+                    {
+                      "name": "listboxTrackButton",
+                      "path": "ledger/ledger_index/list/standardlistbox_slider/listboxTrackButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 960, "y": 540, "w": 12, "h": 480 }
+                    },
+                    {
+                      "name": "downButton",
+                      "path": "ledger/ledger_index/list/standardlistbox_slider/downButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "upButton",
+                      "path": "ledger/ledger_index/list/standardlistbox_slider/upButton",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
+                      "enabled": true
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "filter_list",
+          "path": "ledger/filter_list",
+          "type": "listbox",
+          "visible": false,
+          "rect": { "x": 461, "y": 302, "w": 702, "h": 32 },
+          "children": [
+            {
+              "name": "filter_list_item",
+              "path": "ledger/filter_list/filter_list_item[1]",
+              "type": "window",
+              "visible": false,
+              "rect": { "x": 0, "y": 0, "w": 117, "h": 32 },
+              "children": [
+                {
+                  "name": "label",
+                  "path": "ledger/filter_list/filter_list_item[1]/label",
+                  "type": "text",
+                  "visible": false,
+                  "rect": { "x": 34, "y": 7, "w": 80, "h": 18 },
+                  "text": "Allies"
+                },
+                {
+                  "name": "checkbox",
+                  "path": "ledger/filter_list/filter_list_item[1]/checkbox",
+                  "type": "checkbox",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 508, "w": 32, "h": 32 },
+                  "checked": false
+                }
+              ]
+            },
+            {
+              "name": "filter_list_item",
+              "path": "ledger/filter_list/filter_list_item[2]",
+              "type": "window",
+              "visible": false,
+              "rect": { "x": 0, "y": 0, "w": 117, "h": 32 },
+              "children": [
+                {
+                  "name": "label",
+                  "path": "ledger/filter_list/filter_list_item[2]/label",
+                  "type": "text",
+                  "visible": false,
+                  "rect": { "x": 34, "y": 7, "w": 80, "h": 18 },
+                  "text": "Rivals"
+                },
+                {
+                  "name": "checkbox",
+                  "path": "ledger/filter_list/filter_list_item[2]/checkbox",
+                  "type": "checkbox",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 508, "w": 32, "h": 32 },
+                  "checked": false
+                }
+              ]
+            },
+            {
+              "name": "filter_list_item",
+              "path": "ledger/filter_list/filter_list_item[3]",
+              "type": "window",
+              "visible": false,
+              "rect": { "x": 0, "y": 0, "w": 117, "h": 32 },
+              "children": [
+                {
+                  "name": "label",
+                  "path": "ledger/filter_list/filter_list_item[3]/label",
+                  "type": "text",
+                  "visible": false,
+                  "rect": { "x": 34, "y": 7, "w": 80, "h": 18 },
+                  "text": "War Enemies"
+                },
+                {
+                  "name": "checkbox",
+                  "path": "ledger/filter_list/filter_list_item[3]/checkbox",
+                  "type": "checkbox",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 508, "w": 32, "h": 32 },
+                  "checked": false
+                }
+              ]
+            },
+            {
+              "name": "filter_list_item",
+              "path": "ledger/filter_list/filter_list_item[4]",
+              "type": "window",
+              "visible": false,
+              "rect": { "x": 0, "y": 0, "w": 117, "h": 32 },
+              "children": [
+                {
+                  "name": "label",
+                  "path": "ledger/filter_list/filter_list_item[4]/label",
+                  "type": "text",
+                  "visible": false,
+                  "rect": { "x": 34, "y": 7, "w": 80, "h": 18 },
+                  "text": "War Allies"
+                },
+                {
+                  "name": "checkbox",
+                  "path": "ledger/filter_list/filter_list_item[4]/checkbox",
+                  "type": "checkbox",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 508, "w": 32, "h": 32 },
+                  "checked": false
+                }
+              ]
+            },
+            {
+              "name": "filter_list_item",
+              "path": "ledger/filter_list/filter_list_item[5]",
+              "type": "window",
+              "visible": false,
+              "rect": { "x": 0, "y": 0, "w": 117, "h": 32 },
+              "children": [
+                {
+                  "name": "label",
+                  "path": "ledger/filter_list/filter_list_item[5]/label",
+                  "type": "text",
+                  "visible": false,
+                  "rect": { "x": 34, "y": 7, "w": 80, "h": 18 },
+                  "text": "+ve Opinion"
+                },
+                {
+                  "name": "checkbox",
+                  "path": "ledger/filter_list/filter_list_item[5]/checkbox",
+                  "type": "checkbox",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 508, "w": 32, "h": 32 },
+                  "checked": false
+                }
+              ]
+            },
+            {
+              "name": "filter_list_item",
+              "path": "ledger/filter_list/filter_list_item[6]",
+              "type": "window",
+              "visible": false,
+              "rect": { "x": 0, "y": 0, "w": 117, "h": 32 },
+              "children": [
+                {
+                  "name": "label",
+                  "path": "ledger/filter_list/filter_list_item[6]/label",
+                  "type": "text",
+                  "visible": false,
+                  "rect": { "x": 34, "y": 7, "w": 80, "h": 18 },
+                  "text": "-ve Opinion"
+                },
+                {
+                  "name": "checkbox",
+                  "path": "ledger/filter_list/filter_list_item[6]/checkbox",
+                  "type": "checkbox",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 508, "w": 32, "h": 32 },
+                  "checked": false
+                }
+              ]
+            },
+            {
+              "name": "standardlistbox_slider",
+              "path": "ledger/filter_list/standardlistbox_slider",
+              "type": "other",
+              "visible": false,
+              "rect": { "x": 960, "y": 524, "w": 16, "h": 184 },
+              "children": [
+                {
+                  "name": "listboxSliderButton",
+                  "path": "ledger/filter_list/standardlistbox_slider/listboxSliderButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 524, "w": 16, "h": 16 }
+                },
+                {
+                  "name": "listboxTrackButton",
+                  "path": "ledger/filter_list/standardlistbox_slider/listboxTrackButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 540, "w": 12, "h": 168 }
+                },
+                {
+                  "name": "downButton",
+                  "path": "ledger/filter_list/standardlistbox_slider/downButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
+                  "enabled": true
+                },
+                {
+                  "name": "upButton",
+                  "path": "ledger/filter_list/standardlistbox_slider/upButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
+                  "enabled": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "default_listbox",
+          "path": "ledger/default_listbox",
+          "type": "listbox",
+          "visible": false,
+          "rect": { "x": 467, "y": 374, "w": 0, "h": 0 },
+          "children": [
+            {
+              "name": "standardlistbox_slider",
+              "path": "ledger/default_listbox/standardlistbox_slider",
+              "type": "other",
+              "visible": false,
+              "rect": { "x": 960, "y": 524, "w": 16, "h": 434 },
+              "children": [
+                {
+                  "name": "listboxSliderButton",
+                  "path": "ledger/default_listbox/standardlistbox_slider/listboxSliderButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 524, "w": 16, "h": 16 }
+                },
+                {
+                  "name": "listboxTrackButton",
+                  "path": "ledger/default_listbox/standardlistbox_slider/listboxTrackButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 540, "w": 12, "h": 418 }
+                },
+                {
+                  "name": "downButton",
+                  "path": "ledger/default_listbox/standardlistbox_slider/downButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
+                  "enabled": true
+                },
+                {
+                  "name": "upButton",
+                  "path": "ledger/default_listbox/standardlistbox_slider/upButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
+                  "enabled": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "ledger_text_filter",
+          "path": "ledger/ledger_text_filter",
+          "type": "editbox",
+          "visible": false,
+          "rect": { "x": 914, "y": 162, "w": 142, "h": 28 },
+          "text": ""
+        }
+      ]
+    }
+  ]
+}
