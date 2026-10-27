@@ -366,6 +366,8 @@ windows('LiveGameProcess', () => {
       profileFolder: temp,
       arguments: [FAKE_GAME, ...args],
       restored: [],
+      savesFolder: join(temp, 'save games'),
+      settings: { copied: [], autosaveOn: false },
     };
   }
 

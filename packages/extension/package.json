@@ -105,6 +105,11 @@
         "command": "etch.removePrivateInstall",
         "title": "Remove the Private Install",
         "category": "Etch"
+      },
+      {
+        "command": "etch.openLiveGameSaves",
+        "title": "Open the Live Game's Saves Folder",
+        "category": "Etch"
       }
     ],
     "menus": {

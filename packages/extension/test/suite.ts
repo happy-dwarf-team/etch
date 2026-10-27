@@ -42,7 +42,12 @@ export async function run(): Promise<void> {
   if (gamePath !== undefined && gamePath !== '') await testPreviewBudget(api, gamePath);
 
   const commands = await vscode.commands.getCommands(true);
-  for (const command of ['etch.startLiveGame', 'etch.stopLiveGame', 'etch.removePrivateInstall']) {
+  for (const command of [
+    'etch.startLiveGame',
+    'etch.stopLiveGame',
+    'etch.removePrivateInstall',
+    'etch.openLiveGameSaves',
+  ]) {
     assert.ok(commands.includes(command), `${command} is registered`);
   }
   // Etch 1.x's game host commands and the diff view are gone (ADR 0005).

@@ -23,6 +23,7 @@ import {
 } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { decodeDescriptor } from '@etch/core/playset';
+import { copySettings, savesFolder, type CopiedSettings } from './saves.ts';
 
 /** An install's folders under the extension's global storage. */
 export interface InstallLayout {
@@ -189,10 +190,18 @@ export interface PrepareOptions {
   readonly buildsFolder: string;
   /** The playset in load order. */
   readonly mods: readonly LiveGameMod[];
+  /** The display for a player who has no `settings.txt` yet. */
   readonly display: LiveGameDisplay;
+  /** The player's profile folder, whose settings files are copied (only read). */
+  readonly playerProfile: string | undefined;
+  /** A save of the private `save games/` to continue, by file name; the main menu without one. */
+  readonly continueSave?: string | undefined;
 }
 
-/** How the live game shows itself: borderless at this size, UI scale 1.0, as 1.x's game host. */
+/**
+ * The display for a player who has no `settings.txt` yet (the game was never started): borderless
+ * at the monitor's size, UI scale 1.0, in the preview's language.
+ */
 export interface LiveGameDisplay {
   /** The monitor's native resolution, in device pixels. */
   readonly width: number;
@@ -208,10 +217,14 @@ export interface PreparedInstall {
   /** The install's game folder, the process's working directory. */
   readonly gameFolder: string;
   readonly profileFolder: string;
-  /** `-userdir=<profile>/`. */
+  /** The private `save games/`. */
+  readonly savesFolder: string;
+  /** `-continue=<save>` when a save is continued, and `-userdir=<profile>/`. */
   readonly arguments: readonly string[];
   /** Pinned files that were missing or changed and were installed again from the VSIX. */
   readonly restored: readonly string[];
+  /** What was taken from the player's settings. */
+  readonly settings: CopiedSettings;
 }
 
 /** Whether the install exists (it may still need `prepareInstall` before a start). */
@@ -234,8 +247,8 @@ export async function copySize(gameFolder: string): Promise<number> {
  * an `eu4.exe` other than the pinned build; links every folder of the game and copies its top-level
  * files; checks every pinned file's hash, installs it again from the VSIX when it differs and
  * removes any other file from the plugins folder; removes Tongs' settings, so that it opens no
- * pipe; and writes the private profile's descriptors and
- * `dlc_load.json` (all owned DLC on). Never writes outside the install.
+ * pipe; writes the private profile's descriptors and `dlc_load.json` (all owned DLC on); and copies
+ * the player's settings files (spec section 6). Never writes outside the install.
  */
 export async function prepareInstall(options: PrepareOptions): Promise<PreparedInstall> {
   const { layout, buildsFolder } = options;
@@ -281,13 +294,27 @@ export async function prepareInstall(options: PrepareOptions): Promise<PreparedI
     );
   }
   await writeProfile(layout, options.mods);
+  // The display first, for a player without settings; their own files replace it.
   await writeDisplay(layout, options.display);
+  const settings =
+    options.playerProfile === undefined
+      ? { copied: [], autosaveOn: false }
+      : await copySettings(options.playerProfile, layout.profile);
+  const save = options.continueSave;
+  if (save !== undefined && !/^[^\\/:*?"<>|]+\.eu4$/i.test(save)) {
+    throw new PrivateInstallError('install-failed', `"${save}" is not a save file name.`);
+  }
   return {
     exe,
     gameFolder: layout.game,
     profileFolder: layout.profile,
-    arguments: [`-userdir=${slashed(layout.profile)}/`],
+    savesFolder: savesFolder(layout.profile),
+    arguments: [
+      ...(save === undefined ? [] : [`-continue=${save}`]),
+      `-userdir=${slashed(layout.profile)}/`,
+    ],
     restored,
+    settings,
   };
 }
 
@@ -493,10 +520,9 @@ async function writeProfile(layout: InstallLayout, mods: readonly LiveGameMod[])
 }
 
 /**
- * The private profile's settings, written whole before every start. After its first start the
- * game takes the display mode and size from `pdx_settings.txt` instead of `settings.txt` (etch#18),
- * so both say borderless at the native resolution. The rest is the lab's verified configuration,
- * silent.
+ * The private profile's settings for a player who has none, written whole before every start. After
+ * its first start the game takes the display mode and size from `pdx_settings.txt` instead of
+ * `settings.txt` (etch#18), so both say borderless at the native resolution.
  */
 async function writeDisplay(layout: InstallLayout, display: LiveGameDisplay): Promise<void> {
   const width = Math.round(display.width);
@@ -518,10 +544,6 @@ async function writeDisplay(layout: InstallLayout, display: LiveGameDisplay): Pr
     '\tmulti_sampling=8',
     '\tvsync=yes',
     '}',
-    'master_volume=0.000000',
-    'music_volume=0.000000',
-    'sound_fx_volume=0.000000',
-    'ambient_volume=0.000000',
     '',
   ];
   await writeFile(join(layout.profile, 'settings.txt'), settings.join('\n'));
