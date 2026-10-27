@@ -159,7 +159,7 @@
     {
       "id": "anbennar",
       "title": "Anbennar + Proper 2K UI Enhanced + P2KE Patch - Anbennar",
-      "gate": "report",
+      "gate": "release",
       "save": {
         "file": "Verne1444_11_11_test.eu4",
         "sha256": "57CB4550073A4142E20FBB6439E32A68E420A5DB3F680EAEF138223264704AA0",
@@ -199,7 +199,9 @@
         "macro-builder",
         "estates"
       ],
-      "note": "Reported in M4 (spec section 11), gating nothing (etch#55). Proper 2K UI Enhanced overrides every vanilla .gui file, so every corpus window is one the playset's mods override; the event window waits for a recipe (https://github.com/happy-dwarf-team/etch/issues/97)."
+      "covers": ["EventWindow"],
+      "coverMargin": 32,
+      "note": "Gates 2.0.0 since M10 (spec v2 section 10), at the six corpus resolutions. Proper 2K UI Enhanced overrides every vanilla .gui file, so every corpus window is one the playset's mods override; the event window waits for a recipe (https://github.com/happy-dwarf-team/etch/issues/97). The save opens with three events over the middle of the screen, which every view opened from it reads and masks (covers)."
     }
   ],
   "windows": [
@@ -407,6 +409,7 @@
             "countrycourtview/heir_gender",
             "countrycourtview/monarch_*_age",
             "countrycourtview/monarch_heir_age",
+            "countrycourtview/monarch_heir_claim",
             "topbar/player_shield",
             "topbar/player_shield_glow",
             "topbar/text_*",
@@ -547,8 +550,8 @@
                     "click": "countrydiplomacyview/diploaction_list/diploactionentry/button_diploaction"
                   }
                 ],
-                "verified": false,
-                "evidence": "Not run yet by the capture driver at the six corpus resolutions (M10). Tried by hand at 1280x720 on 2026-10-27: Verne’s diplomacy lists one relation; its shield selects that country, whose actions show Declare War first (Anbennar groups the others in categories), which opens DeclareWarDialog and declares nothing. Verne’s own rivals offer no Declare War here."
+                "verified": true,
+                "evidence": "Run by the capture driver at the six corpus resolutions in the Anbennar playset on 2026-10-27 (M10): the steps opened the view and its roots were read and shown. Verne’s diplomacy lists one relation; its shield selects that country, whose actions show Declare War first (Anbennar groups the others in categories), which opens DeclareWarDialog and declares nothing."
               }
             }
           }
@@ -674,8 +677,8 @@
                     }
                   }
                 ],
-                "verified": false,
-                "evidence": "Not run yet by the capture driver at the six corpus resolutions (M10). Tried by hand at 1280x720 on 2026-10-27: the Goto box (f) centres the map on Gemisle, and Verne’s own Heroes’ Rest lies 0.655 client heights left of the centre, beside the opening events that cover the middle of the screen in this save."
+                "verified": true,
+                "evidence": "Run by the capture driver at the six corpus resolutions in the Anbennar playset on 2026-10-27 (M10): the steps opened the view and its roots were read and shown. The Goto box (f) centres the map on Gemisle, and Verne’s own Heroes’ Rest (province 286) lies 0.655 client heights left of the centre, beside the opening events that cover the middle of the screen in this save; every capture shows Heroes’ Rest."
               },
               "selectors": {
                 "construction": "no",
@@ -707,8 +710,8 @@
                 }
               }
             ],
-            "verified": false,
-            "evidence": "Not run yet by the capture driver at the six corpus resolutions (M10). Tried by hand at 1280x720 on 2026-10-27: the outliner’s first ship in construction centres the map on Macedonia, and Siroz (the Commonwealth’s) lies just above it."
+            "verified": true,
+            "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-27 (M10): the steps opened the view and its roots were read and shown. The outliner’s first ship in construction centres the map on Macedonia, and Siroz (province 4702, the Commonwealth’s) lies just above it; every capture shows Siroz."
           },
           "roots": ["provinceview", "topbar", "menubar"],
           "codeFilled": [
@@ -814,8 +817,8 @@
                     }
                   }
                 ],
-                "verified": false,
-                "evidence": "Not run yet by the capture driver at the six corpus resolutions (M10). Tried by hand at 1280x720 on 2026-10-27: the Goto box centres the map on the province Verne, and Ebenuel (not Verne’s) lies 0.75 client heights left of the centre."
+                "verified": true,
+                "evidence": "Run by the capture driver at the six corpus resolutions in the Anbennar playset on 2026-10-27 (M10): the steps opened the view and its roots were read and shown. The Goto box centres the map on the province Verne, and Ebenuel (province 89, Sorncóst’s) lies 0.75 client heights left of the centre; every capture shows Ebenuel."
               },
               "selectors": {
                 "buttonBar": "closed",

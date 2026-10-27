@@ -49,6 +49,7 @@ joined by `-`, because they become file names.
 | `mods` | load order, a later mod winning: `name` (the descriptor's), `workshopId`, `sha256`, `note` |
 | `disabledDlcs` | `dlc_load.json`'s `disabled_dlcs` while capturing; empty means every owned DLC |
 | `covers` | optional widget patterns of top-level windows the game shows over every view opened from the save, which no recipe can close: the Anbennar playset's save opens with three events, one taller than 1080 pixels (M10). Each view opened from the save reads them as roots too, and the comparison masks them as code-filled, so the widgets under them are compared only where nothing covers them |
+| `coverMargin` | optional pixels around each cover's rect masked with it (0 when left out): what its sprites draw past the rect Tongs reads from the `.gui`. An event window's frame reaches up to about 30 pixels past it; the Anbennar playset masks 32 |
 | `windows` | ids of the corpus windows captured with this playset |
 | `note` | |
 

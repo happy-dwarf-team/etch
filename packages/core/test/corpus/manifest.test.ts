@@ -128,11 +128,12 @@ describe('the committed corpus', () => {
     expect(manifest.resolutions.every((r) => r.confirmed)).toBe(true);
   });
 
-  it('has the 11 vanilla corpus windows of etch#10 in both release playsets', async () => {
+  it('has the 11 vanilla corpus windows of etch#10 in the three release playsets', async () => {
     const manifest = await committedManifest();
     expect(manifest.windows).toHaveLength(11);
     const release = manifest.playsets.filter((p) => p.gate === 'release');
-    expect(release.map((p) => p.id)).toEqual(['vanilla', 'proper-2k-ui-enhanced']);
+    // The Anbennar playset gates 2.0.0 since M10 (spec v2 section 10).
+    expect(release.map((p) => p.id)).toEqual(['vanilla', 'proper-2k-ui-enhanced', 'anbennar']);
     for (const playset of release) {
       // The event window waits for a recipe (etch#97) and gates nothing until then.
       expect(playset.windows).toEqual(

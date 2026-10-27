@@ -3,7 +3,7 @@
   "playset": "anbennar",
   "resolution": { "width": 1680, "height": 1050 },
   "view": "settings",
-  "takenAt": "2026-10-27T06:28:45.442Z",
+  "takenAt": "2026-10-27T07:10:57.987Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
   "tongs": { "version": "0.14.1" },
   "save": { "sha256": "57CB4550073A4142E20FBB6439E32A68E420A5DB3F680EAEF138223264704AA0" },
@@ -30,13 +30,13 @@
   },
   "window": { "width": 1680, "height": 1050, "dpi": 96 },
   "screenshot": {
-    "sha256": "0007ADE7FF5149F50F357666B585D81A9A82B5217BDE8CCCDA428C9E9002CCED",
+    "sha256": "03FCAA53C6AED282B4DD9AF1924D2D79033EA11D01C4FF3DF02D48BC4A48041C",
     "width": 1680,
     "height": 1050,
     "shots": 4,
     "unstable": {
-      "pixels": 840904,
-      "sha256": "0E4F4E3117DB1F42002E665669370813D03CCC5D10D90CE959DCCA5F595083DB"
+      "pixels": 842744,
+      "sha256": "B0745F9B3AD8B25781220AF60EAD65456989061117D84918F21A185D74723CAA"
     }
   },
   "widgets": [
@@ -1751,6 +1751,639 @@
               "visible": false,
               "rect": { "x": 301, "y": 376, "w": 96, "h": 21 },
               "text": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EventWindow",
+      "path": "EventWindow[1]",
+      "type": "window",
+      "visible": true,
+      "rect": { "x": 502, "y": 153, "w": 677, "h": 566 },
+      "children": [
+        {
+          "name": "event_goto_province",
+          "path": "EventWindow[1]/event_goto_province",
+          "type": "button",
+          "visible": false,
+          "rect": { "x": 840, "y": 416, "w": 66, "h": 109 },
+          "enabled": true
+        },
+        {
+          "name": "event_bg_top",
+          "path": "EventWindow[1]/event_bg_top",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 450, "y": 153, "w": 793, "h": 269 }
+        },
+        {
+          "name": "event_bg_middle",
+          "path": "EventWindow[1]/event_bg_middle[1]",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 450, "y": 422, "w": 788, "h": 69 }
+        },
+        {
+          "name": "event_bg_bottom",
+          "path": "EventWindow[1]/event_bg_bottom",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 450, "y": 560, "w": 788, "h": 159 }
+        },
+        {
+          "name": "event_picture",
+          "path": "EventWindow[1]/event_picture",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 535, "y": 247, "w": 619, "h": 159 }
+        },
+        {
+          "name": "event_bg_middle",
+          "path": "EventWindow[1]/event_bg_middle[2]",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 450, "y": 491, "w": 788, "h": 69 }
+        },
+        {
+          "name": "Title",
+          "path": "EventWindow[1]/Title",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 450, "y": 200, "w": 787, "h": 24 },
+          "text": "Losers of the Lilac Wars"
+        },
+        {
+          "name": "Description",
+          "path": "EventWindow[1]/Description",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 539, "y": 422, "w": 614, "h": 105 },
+          "text": "The Lilac Wars ended only but a year ago and our wounds are still fresh. We fought under the banner of the Moon, alongside the ancient and most-noble House of Silmuna: the Grand Dukes of Dameria. Under their rule the land would finally be at peace, but we were defeated due to the betrayal of selfish and traitorous imperial lords."
+        },
+        {
+          "name": "Background",
+          "path": "EventWindow[1]/Background",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 502, "y": 153, "w": 677, "h": 566 }
+        },
+        {
+          "name": "event_option_listbox",
+          "path": "EventWindow[1]/event_option_listbox",
+          "type": "listbox",
+          "visible": true,
+          "rect": { "x": 518, "y": 600, "w": 656, "h": 36 },
+          "children": [
+            {
+              "name": "event_option_entry",
+              "path": "EventWindow[1]/event_option_listbox/event_option_entry",
+              "type": "window",
+              "visible": true,
+              "rect": { "x": 518, "y": 600, "w": 656, "h": 36 },
+              "children": [
+                {
+                  "name": "event_option_button",
+                  "path": "EventWindow[1]/event_option_listbox/event_option_entry/event_option_button",
+                  "type": "button",
+                  "visible": true,
+                  "rect": { "x": 518, "y": 600, "w": 657, "h": 37 },
+                  "text": "We were part of the losing Moon Party.",
+                  "enabled": true
+                },
+                {
+                  "name": "event_option_goto_button",
+                  "path": "EventWindow[1]/event_option_listbox/event_option_entry/event_option_goto_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 840, "y": 488, "w": 75, "h": 37 },
+                  "enabled": true
+                }
+              ]
+            },
+            {
+              "name": "standardlistbox_slider",
+              "path": "EventWindow[1]/event_option_listbox/standardlistbox_slider",
+              "type": "other",
+              "visible": false,
+              "rect": { "x": 840, "y": 506, "w": 19, "h": 19 },
+              "children": [
+                {
+                  "name": "listboxSliderButton",
+                  "path": "EventWindow[1]/event_option_listbox/standardlistbox_slider/listboxSliderButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 840, "y": 506, "w": 19, "h": 19 }
+                },
+                {
+                  "name": "listboxTrackButton",
+                  "path": "EventWindow[1]/event_option_listbox/standardlistbox_slider/listboxTrackButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 840, "y": 525, "w": 15, "h": -2 }
+                },
+                {
+                  "name": "downButton",
+                  "path": "EventWindow[1]/event_option_listbox/standardlistbox_slider/downButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 840, "y": 506, "w": 19, "h": 19 },
+                  "enabled": true
+                },
+                {
+                  "name": "upButton",
+                  "path": "EventWindow[1]/event_option_listbox/standardlistbox_slider/upButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 840, "y": 506, "w": 19, "h": 19 },
+                  "enabled": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EventWindow",
+      "path": "EventWindow[2]",
+      "type": "window",
+      "visible": true,
+      "rect": { "x": 502, "y": 153, "w": 677, "h": 639 },
+      "children": [
+        {
+          "name": "event_goto_province",
+          "path": "EventWindow[2]/event_goto_province",
+          "type": "button",
+          "visible": false,
+          "rect": { "x": 840, "y": 416, "w": 66, "h": 109 },
+          "enabled": true
+        },
+        {
+          "name": "event_bg_top",
+          "path": "EventWindow[2]/event_bg_top",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 450, "y": 153, "w": 793, "h": 269 }
+        },
+        {
+          "name": "event_bg_middle",
+          "path": "EventWindow[2]/event_bg_middle",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 450, "y": 422, "w": 788, "h": 69 }
+        },
+        {
+          "name": "event_bg_bottom",
+          "path": "EventWindow[2]/event_bg_bottom",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 450, "y": 491, "w": 788, "h": 301 }
+        },
+        {
+          "name": "event_picture",
+          "path": "EventWindow[2]/event_picture",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 535, "y": 247, "w": 638, "h": 508 }
+        },
+        {
+          "name": "Title",
+          "path": "EventWindow[2]/Title",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 450, "y": 200, "w": 787, "h": 48 },
+          "text": "Welcome to:\n£settings_main_bg£"
+        },
+        {
+          "name": "Description",
+          "path": "EventWindow[2]/Description",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 539, "y": 422, "w": 614, "h": 21 },
+          "text": "                             The Inheritors of Insyaa Update             EU4 version 1.37.5"
+        },
+        {
+          "name": "Background",
+          "path": "EventWindow[2]/Background",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 502, "y": 153, "w": 677, "h": 639 }
+        },
+        {
+          "name": "event_option_listbox",
+          "path": "EventWindow[2]/event_option_listbox",
+          "type": "listbox",
+          "visible": true,
+          "rect": { "x": 518, "y": 531, "w": 656, "h": 216 },
+          "children": [
+            {
+              "name": "event_option_entry",
+              "path": "EventWindow[2]/event_option_listbox/event_option_entry[1]",
+              "type": "window",
+              "visible": true,
+              "rect": { "x": 518, "y": 531, "w": 656, "h": 36 },
+              "children": [
+                {
+                  "name": "event_option_button",
+                  "path": "EventWindow[2]/event_option_listbox/event_option_entry[1]/event_option_button",
+                  "type": "button",
+                  "visible": true,
+                  "rect": { "x": 518, "y": 531, "w": 657, "h": 37 },
+                  "text": "£settings_button_regions_menu£",
+                  "enabled": true
+                },
+                {
+                  "name": "event_option_goto_button",
+                  "path": "EventWindow[2]/event_option_listbox/event_option_entry[1]/event_option_goto_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 840, "y": 488, "w": 75, "h": 37 },
+                  "enabled": true
+                }
+              ]
+            },
+            {
+              "name": "event_option_entry",
+              "path": "EventWindow[2]/event_option_listbox/event_option_entry[2]",
+              "type": "window",
+              "visible": true,
+              "rect": { "x": 518, "y": 567, "w": 656, "h": 36 },
+              "children": [
+                {
+                  "name": "event_option_button",
+                  "path": "EventWindow[2]/event_option_listbox/event_option_entry[2]/event_option_button",
+                  "type": "button",
+                  "visible": true,
+                  "rect": { "x": 518, "y": 567, "w": 657, "h": 37 },
+                  "text": "£settings_button_conquerors_menu£",
+                  "enabled": true
+                },
+                {
+                  "name": "event_option_goto_button",
+                  "path": "EventWindow[2]/event_option_listbox/event_option_entry[2]/event_option_goto_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 840, "y": 488, "w": 75, "h": 37 },
+                  "enabled": true
+                }
+              ]
+            },
+            {
+              "name": "event_option_entry",
+              "path": "EventWindow[2]/event_option_listbox/event_option_entry[3]",
+              "type": "window",
+              "visible": true,
+              "rect": { "x": 518, "y": 603, "w": 656, "h": 36 },
+              "children": [
+                {
+                  "name": "event_option_button",
+                  "path": "EventWindow[2]/event_option_listbox/event_option_entry[3]/event_option_button",
+                  "type": "button",
+                  "visible": true,
+                  "rect": { "x": 518, "y": 603, "w": 657, "h": 37 },
+                  "text": "£settings_button_achievements_on£",
+                  "enabled": true
+                },
+                {
+                  "name": "event_option_goto_button",
+                  "path": "EventWindow[2]/event_option_listbox/event_option_entry[3]/event_option_goto_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 840, "y": 488, "w": 75, "h": 37 },
+                  "enabled": true
+                }
+              ]
+            },
+            {
+              "name": "event_option_entry",
+              "path": "EventWindow[2]/event_option_listbox/event_option_entry[4]",
+              "type": "window",
+              "visible": true,
+              "rect": { "x": 518, "y": 639, "w": 656, "h": 36 },
+              "children": [
+                {
+                  "name": "event_option_button",
+                  "path": "EventWindow[2]/event_option_listbox/event_option_entry[4]/event_option_button",
+                  "type": "button",
+                  "visible": true,
+                  "rect": { "x": 518, "y": 639, "w": 657, "h": 37 },
+                  "text": "£event_button_settings_empty£",
+                  "enabled": true
+                },
+                {
+                  "name": "event_option_goto_button",
+                  "path": "EventWindow[2]/event_option_listbox/event_option_entry[4]/event_option_goto_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 840, "y": 488, "w": 75, "h": 37 },
+                  "enabled": true
+                }
+              ]
+            },
+            {
+              "name": "event_option_entry",
+              "path": "EventWindow[2]/event_option_listbox/event_option_entry[5]",
+              "type": "window",
+              "visible": true,
+              "rect": { "x": 518, "y": 675, "w": 656, "h": 36 },
+              "children": [
+                {
+                  "name": "event_option_button",
+                  "path": "EventWindow[2]/event_option_listbox/event_option_entry[5]/event_option_button",
+                  "type": "button",
+                  "visible": true,
+                  "rect": { "x": 518, "y": 675, "w": 657, "h": 37 },
+                  "text": "£event_button_settings_empty£",
+                  "enabled": true
+                },
+                {
+                  "name": "event_option_goto_button",
+                  "path": "EventWindow[2]/event_option_listbox/event_option_entry[5]/event_option_goto_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 840, "y": 488, "w": 75, "h": 37 },
+                  "enabled": true
+                }
+              ]
+            },
+            {
+              "name": "event_option_entry",
+              "path": "EventWindow[2]/event_option_listbox/event_option_entry[6]",
+              "type": "window",
+              "visible": true,
+              "rect": { "x": 518, "y": 711, "w": 656, "h": 36 },
+              "children": [
+                {
+                  "name": "event_option_button",
+                  "path": "EventWindow[2]/event_option_listbox/event_option_entry[6]/event_option_button",
+                  "type": "button",
+                  "visible": true,
+                  "rect": { "x": 518, "y": 711, "w": 657, "h": 37 },
+                  "text": "£settings_button_start_game£",
+                  "enabled": true
+                },
+                {
+                  "name": "event_option_goto_button",
+                  "path": "EventWindow[2]/event_option_listbox/event_option_entry[6]/event_option_goto_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 840, "y": 488, "w": 75, "h": 37 },
+                  "enabled": true
+                }
+              ]
+            },
+            {
+              "name": "standardlistbox_slider",
+              "path": "EventWindow[2]/event_option_listbox/standardlistbox_slider",
+              "type": "other",
+              "visible": false,
+              "rect": { "x": 840, "y": 506, "w": 19, "h": 197 },
+              "children": [
+                {
+                  "name": "listboxSliderButton",
+                  "path": "EventWindow[2]/event_option_listbox/standardlistbox_slider/listboxSliderButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 840, "y": 506, "w": 19, "h": 19 }
+                },
+                {
+                  "name": "listboxTrackButton",
+                  "path": "EventWindow[2]/event_option_listbox/standardlistbox_slider/listboxTrackButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 840, "y": 525, "w": 15, "h": 178 }
+                },
+                {
+                  "name": "downButton",
+                  "path": "EventWindow[2]/event_option_listbox/standardlistbox_slider/downButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 840, "y": 506, "w": 19, "h": 19 },
+                  "enabled": true
+                },
+                {
+                  "name": "upButton",
+                  "path": "EventWindow[2]/event_option_listbox/standardlistbox_slider/upButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 840, "y": 506, "w": 19, "h": 19 },
+                  "enabled": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EventWindow",
+      "path": "EventWindow[3]",
+      "type": "window",
+      "visible": true,
+      "rect": { "x": 502, "y": 153, "w": 677, "h": 1187 },
+      "children": [
+        {
+          "name": "event_goto_province",
+          "path": "EventWindow[3]/event_goto_province",
+          "type": "button",
+          "visible": false,
+          "rect": { "x": 840, "y": 416, "w": 66, "h": 109 },
+          "enabled": true
+        },
+        {
+          "name": "event_bg_top",
+          "path": "EventWindow[3]/event_bg_top",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 450, "y": 153, "w": 793, "h": 269 }
+        },
+        {
+          "name": "event_bg_middle",
+          "path": "EventWindow[3]/event_bg_middle[1]",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 450, "y": 422, "w": 788, "h": 69 }
+        },
+        {
+          "name": "event_bg_bottom",
+          "path": "EventWindow[3]/event_bg_bottom",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 450, "y": 1181, "w": 788, "h": 159 }
+        },
+        {
+          "name": "event_picture",
+          "path": "EventWindow[3]/event_picture",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 535, "y": 247, "w": 619, "h": 159 }
+        },
+        {
+          "name": "event_bg_middle",
+          "path": "EventWindow[3]/event_bg_middle[2]",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 450, "y": 491, "w": 788, "h": 69 }
+        },
+        {
+          "name": "event_bg_middle",
+          "path": "EventWindow[3]/event_bg_middle[3]",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 450, "y": 560, "w": 788, "h": 69 }
+        },
+        {
+          "name": "event_bg_middle",
+          "path": "EventWindow[3]/event_bg_middle[4]",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 450, "y": 629, "w": 788, "h": 69 }
+        },
+        {
+          "name": "event_bg_middle",
+          "path": "EventWindow[3]/event_bg_middle[5]",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 450, "y": 698, "w": 788, "h": 69 }
+        },
+        {
+          "name": "event_bg_middle",
+          "path": "EventWindow[3]/event_bg_middle[6]",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 450, "y": 767, "w": 788, "h": 69 }
+        },
+        {
+          "name": "event_bg_middle",
+          "path": "EventWindow[3]/event_bg_middle[7]",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 450, "y": 836, "w": 788, "h": 69 }
+        },
+        {
+          "name": "event_bg_middle",
+          "path": "EventWindow[3]/event_bg_middle[8]",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 450, "y": 905, "w": 788, "h": 69 }
+        },
+        {
+          "name": "event_bg_middle",
+          "path": "EventWindow[3]/event_bg_middle[9]",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 450, "y": 974, "w": 788, "h": 69 }
+        },
+        {
+          "name": "event_bg_middle",
+          "path": "EventWindow[3]/event_bg_middle[10]",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 450, "y": 1043, "w": 788, "h": 69 }
+        },
+        {
+          "name": "event_bg_middle",
+          "path": "EventWindow[3]/event_bg_middle[11]",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 450, "y": 1112, "w": 788, "h": 69 }
+        },
+        {
+          "name": "Title",
+          "path": "EventWindow[3]/Title",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 450, "y": 200, "w": 787, "h": 24 },
+          "text": "Land of Prowess, Home of Adventurers"
+        },
+        {
+          "name": "Description",
+          "path": "EventWindow[3]/Description",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 539, "y": 422, "w": 614, "h": 693 },
+          "text": "In a bustling barrack in Arca Lar, a new recruit peers into the regiment commanders’ tent. Inside, three commanders – each sporting a completely bespoke uniform of gaudy reds, golds, purples, and greens – argue at the top of their lungs in peculiarly provincial accents. They refuse to listen to one another, shouting that their own extensive experience means they obviously know better than all the others.\nThe recruit scurries along before he’s spotted, and soon heads to a group of seasoned soldiers. Worried by the argument, and the boorish behaviour of his new commanders, he asks the soldiers: “Brothers, why are our commanders... um... these people?”\n\nIn response, several voices pipe up excitedly:\n“Have you seen Darkheart’s helmet? I’m told he slew a demon and now wears its horns!”\n“Ha! Gnollsbane routed two bands of gnolls by herself, she even made a necklace out of their fangs!”\n“Well, Fisherman is said to have stolen a ship from the Pearlsedge lobsters!”\nA burst of laughter comes over the crowd before settling down.\n\nImpressed by the achievements, the recruit is reassured. They then ask, with a gleam in their eyes: “What about us? Do you think we will ever become commanders?”\n\nThe answer to this question is ingrained in any Vernman. Several soldiers reply in unison: “Glory is for those who act first, so charge forth and show you are no mere soldier. Earn proof of great deeds and rise above the rest! Then, you shall be a proud Vernman !”\nAnd a great reckless smile carves itself across the soldier’s eyes as they all flash trinkets and baubles, each gathered from enemies they defeated.\n\nSuch is the way of the Vernman, vainglorious adventurers fighting under the Wyvern banner. For their glory and fame! Those distinguished by their deeds are elevated, and those that do nothing, forgotten."
+        },
+        {
+          "name": "Background",
+          "path": "EventWindow[3]/Background",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 502, "y": 153, "w": 677, "h": 1187 }
+        },
+        {
+          "name": "event_option_listbox",
+          "path": "EventWindow[3]/event_option_listbox",
+          "type": "listbox",
+          "visible": true,
+          "rect": { "x": 518, "y": 1221, "w": 656, "h": 36 },
+          "children": [
+            {
+              "name": "event_option_entry",
+              "path": "EventWindow[3]/event_option_listbox/event_option_entry",
+              "type": "window",
+              "visible": true,
+              "rect": { "x": 518, "y": 1221, "w": 656, "h": 36 },
+              "children": [
+                {
+                  "name": "event_option_button",
+                  "path": "EventWindow[3]/event_option_listbox/event_option_entry/event_option_button",
+                  "type": "button",
+                  "visible": true,
+                  "rect": { "x": 518, "y": 1221, "w": 657, "h": 37 },
+                  "text": "Verne stands proud!",
+                  "enabled": true
+                },
+                {
+                  "name": "event_option_goto_button",
+                  "path": "EventWindow[3]/event_option_listbox/event_option_entry/event_option_goto_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 840, "y": 488, "w": 75, "h": 37 },
+                  "enabled": true
+                }
+              ]
+            },
+            {
+              "name": "standardlistbox_slider",
+              "path": "EventWindow[3]/event_option_listbox/standardlistbox_slider",
+              "type": "other",
+              "visible": false,
+              "rect": { "x": 840, "y": 506, "w": 19, "h": 19 },
+              "children": [
+                {
+                  "name": "listboxSliderButton",
+                  "path": "EventWindow[3]/event_option_listbox/standardlistbox_slider/listboxSliderButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 840, "y": 506, "w": 19, "h": 19 }
+                },
+                {
+                  "name": "listboxTrackButton",
+                  "path": "EventWindow[3]/event_option_listbox/standardlistbox_slider/listboxTrackButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 840, "y": 525, "w": 15, "h": -2 }
+                },
+                {
+                  "name": "downButton",
+                  "path": "EventWindow[3]/event_option_listbox/standardlistbox_slider/downButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 840, "y": 506, "w": 19, "h": 19 },
+                  "enabled": true
+                },
+                {
+                  "name": "upButton",
+                  "path": "EventWindow[3]/event_option_listbox/standardlistbox_slider/upButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 840, "y": 506, "w": 19, "h": 19 },
+                  "enabled": true
+                }
+              ]
             }
           ]
         }
