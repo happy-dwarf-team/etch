@@ -207,6 +207,9 @@ export class CorpusPlaysetFiles {
     };
   }
 
+  /** The playset's English localisation of a key; `undefined` when it has none. */
+  readonly localise = (key: string): string | undefined => this.localisation?.get(key);
+
   /** The file on disk of a game-relative path a loaded file names, such as a texture. */
   readonly fileOf = (path: string): string | undefined => this.ui.gameFile(path)?.absolutePath;
 }

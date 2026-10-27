@@ -27,6 +27,7 @@ export {
   type NotCovered,
   type PlaysetGate,
   type PlaysetView,
+  type ViewData,
   type Recipe,
   type RecipeStart,
   type RecipeStep,
@@ -91,4 +92,11 @@ export {
   windowReport,
   type CaptureOutcome,
 } from './report.ts';
-export { profileVisibility, type VisibilityMismatch, type VisibilityResult } from './visibility.ts';
+export {
+  profileSaveTexts,
+  profileVisibility,
+  type SaveTextDifference,
+  type SaveTextReport,
+  type VisibilityMismatch,
+  type VisibilityResult,
+} from './visibility.ts';

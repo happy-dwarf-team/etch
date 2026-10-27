@@ -121,9 +121,20 @@ export interface CorpusView {
    * size). The visibility gate evaluates each profiled root's profile with them (ADR 0006).
    */
   readonly selectors?: Readonly<Record<string, string>>;
+  /**
+   * What of the playset's save the view shows, for the report of the profiles' `save` texts
+   * against the capture's: the province by id, and the country by tag (the save's player when
+   * left out).
+   */
+  readonly data?: ViewData;
   /** What differs in one playset, by playset id: its own recipe, selector values or note. */
   readonly byPlayset?: Readonly<Record<string, PlaysetView>>;
   readonly note?: string;
+}
+
+export interface ViewData {
+  readonly province?: number;
+  readonly country?: string;
 }
 
 /**
@@ -135,6 +146,8 @@ export interface PlaysetView {
   readonly recipe?: Recipe;
   /** Replaces the values of these selectors in this playset; the others stay the view's. */
   readonly selectors?: Readonly<Record<string, string>>;
+  /** Replaces the view's `data` in this playset. */
+  readonly data?: ViewData;
   readonly note?: string;
 }
 
@@ -148,6 +161,7 @@ export function viewInPlayset(view: CorpusView, playset: string): CorpusView {
   return {
     ...view,
     recipe: own.recipe ?? view.recipe,
+    ...(own.data !== undefined ? { data: own.data } : {}),
     ...(view.selectors !== undefined || own.selectors !== undefined
       ? { selectors: { ...view.selectors, ...own.selectors } }
       : {}),
@@ -548,7 +562,7 @@ function checkView(
     value,
     at,
     ['id', 'title', 'recipe', 'roots', 'codeFilled'],
-    ['codeMoved', 'selectors', 'byPlayset', 'note'],
+    ['codeMoved', 'selectors', 'data', 'byPlayset', 'note'],
   );
   if (json === undefined) return undefined;
   const id = c.string(json['id'], field(at, 'id'), ID, 'an id in lowercase words joined by -');
@@ -565,6 +579,7 @@ function checkView(
     c.array(json['codeMoved'], field(at, 'codeMoved'), (v, pathAt) => pattern(c, v, pathAt));
   }
   if ('selectors' in json) checkSelectors(c, json['selectors'], field(at, 'selectors'));
+  if ('data' in json) checkData(c, json['data'], field(at, 'data'));
   const playsets: { id: string; at: string }[] = [];
   if ('byPlayset' in json) {
     const byAt = field(at, 'byPlayset');
@@ -572,14 +587,25 @@ function checkView(
     for (const [playset, own] of Object.entries(by ?? {})) {
       const ownAt = field(byAt, playset);
       playsets.push({ id: playset, at: ownAt });
-      const entry = c.object(own, ownAt, [], ['recipe', 'selectors', 'note']);
+      const entry = c.object(own, ownAt, [], ['recipe', 'selectors', 'data', 'note']);
       if (entry === undefined) continue;
       optionalString(c, entry, ownAt, 'note');
       if ('recipe' in entry) checkRecipe(c, entry['recipe'], field(ownAt, 'recipe'));
       if ('selectors' in entry) checkSelectors(c, entry['selectors'], field(ownAt, 'selectors'));
+      if ('data' in entry) checkData(c, entry['data'], field(ownAt, 'data'));
     }
   }
   return { id, playsets };
+}
+
+/** The save's province by id and country by tag that a view shows. */
+function checkData(c: Checker, value: unknown, at: string): void {
+  const json = c.object(value, at, [], ['province', 'country']);
+  if (json === undefined) return;
+  if ('province' in json) c.integer(json['province'], field(at, 'province'), 1);
+  if ('country' in json) {
+    c.string(json['country'], field(at, 'country'), /^[A-Z0-9]{3}$/, 'a country tag');
+  }
 }
 
 /** Selector values by selector id: ids and values as window profiles write them. */

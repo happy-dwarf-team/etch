@@ -42,7 +42,7 @@ import {
 } from './manifest.ts';
 import { matchesWidgetPattern, splitWidgetPath } from './widget-path.ts';
 import type { RgbaImage } from './png.ts';
-import type { VisibilityResult } from './visibility.ts';
+import type { SaveTextReport, VisibilityResult } from './visibility.ts';
 
 /** How far a channel may differ and still count as equal (ADR 0002). */
 export const CHANNEL_TOLERANCE = 2;
@@ -437,6 +437,8 @@ export interface CaptureComparison {
    * profiled root; a mismatch fails the capture.
    */
   readonly visibility?: readonly VisibilityResult[];
+  /** The profiles' `save` texts against the capture's, reported only (spec v2 section 14). */
+  readonly saveTexts?: readonly SaveTextReport[];
 }
 
 /**

@@ -19,6 +19,7 @@ import {
   gates,
   hashFile,
   planCapture,
+  profileSaveTexts,
   profileVisibility,
   readCaptureRecord,
   readCorpusManifest,
@@ -35,8 +36,11 @@ import {
   type CorpusManifest,
   type CorpusWindow,
   type PlanWindow,
+  type SaveTextReport,
   type VisibilityResult,
 } from '@etch/core/corpus';
+import { SaveChoice } from '@etch/core/profile';
+import { readSave, type Save } from '@etch/core/save';
 import type { DiscoveryEnvironment } from '@etch/core/playset';
 import { HeadlessRenderer } from './headless.ts';
 import { CorpusPlaysetFiles } from './playset.ts';
@@ -54,6 +58,11 @@ export interface RunOptions {
   readonly resolutions?: readonly string[];
   /** Etch's window profiles, `profiles/` beside `corpus/` when left out. */
   readonly profilesFolder?: string;
+  /**
+   * Where the playsets' saves are, for the report of the profiles' `save` texts; the report is
+   * left out without it, or when a save is not the one its playset pins.
+   */
+  readonly savesFolder?: string;
   /** Render on the GPU instead of SwiftShader. */
   readonly gpu?: boolean;
   readonly environment?: DiscoveryEnvironment;
@@ -108,6 +117,7 @@ export async function runCorpus(options: RunOptions): Promise<RunResult> {
 
   let renderer: HeadlessRenderer | undefined;
   const playsets = new Map<string, Promise<CorpusPlaysetFiles>>();
+  const saves = new Map<string, Promise<Save | undefined>>();
   try {
     for (const { key, record, screenshot, unstable } of ready) {
       const name = capturePath(key);
@@ -136,7 +146,15 @@ export async function runCorpus(options: RunOptions): Promise<RunResult> {
         const game = decodePng(await readFile(screenshot));
         const mask = unstable === undefined ? undefined : decodePng(await readFile(unstable));
         const { comparison, map } = compareCapture(manifest, plan, painted.image, game, mask);
-        const visibility = await profileGate(manifest, options, files, key, record, corpusWindow);
+        const visibility = await profileGate(
+          manifest,
+          options,
+          files,
+          key,
+          record,
+          corpusWindow,
+          await saveOf(manifest, options, key.playset, saves, log),
+        );
         const problems = [
           ...comparison.problems,
           ...painted.problems.map((p) => `A texture could not be drawn: ${p}`),
@@ -147,6 +165,7 @@ export async function runCorpus(options: RunOptions): Promise<RunResult> {
           passed: comparison.passed && problems.length === comparison.problems.length,
           problems,
           ...(visibility.results.length === 0 ? {} : { visibility: visibility.results }),
+          ...(visibility.texts.length === 0 ? {} : { saveTexts: visibility.texts }),
         };
         await write(
           options.localFolder,
@@ -214,10 +233,17 @@ async function profileGate(
   key: CaptureKey,
   record: CaptureRecord,
   corpusWindow: CorpusWindow | undefined,
-): Promise<{ results: VisibilityResult[]; problems: string[] }> {
+  save: Save | undefined,
+): Promise<{ results: VisibilityResult[]; problems: string[]; texts: SaveTextReport[] }> {
   const found = findView(manifest, key.view);
-  const selectors =
-    found === undefined ? {} : (viewInPlayset(found.view, key.playset).selectors ?? {});
+  const view = found === undefined ? undefined : viewInPlayset(found.view, key.playset);
+  const selectors = view?.selectors ?? {};
+  const data = view?.data;
+  const choice =
+    save === undefined || data?.province === undefined
+      ? undefined
+      : new SaveChoice(save, data.country ?? save.meta.player, data.province);
+  const texts: SaveTextReport[] = [];
   const profilesFolder = options.profilesFolder ?? join(options.corpusFolder, '..', 'profiles');
   const results: VisibilityResult[] = [];
   const problems: string[] = [];
@@ -234,6 +260,19 @@ async function profileGate(
       root,
     );
     results.push(result);
+    if (choice !== undefined) {
+      texts.push(
+        profileSaveTexts(
+          loaded.profile,
+          loaded.window,
+          record.resolution,
+          selectors,
+          choice,
+          files.localise,
+          root,
+        ),
+      );
+    }
     problems.push(
       ...result.mismatches.map(
         (m) =>
@@ -241,7 +280,40 @@ async function profileGate(
       ),
     );
   }
-  return { results, problems };
+  return { results, problems, texts };
+}
+
+/**
+ * The playset's pinned save from `savesFolder`, read once per playset; `undefined` without the
+ * folder, the file, or when the file is not the one the playset pins.
+ */
+function saveOf(
+  manifest: CorpusManifest,
+  options: RunOptions,
+  playsetId: string,
+  saves: Map<string, Promise<Save | undefined>>,
+  log: (line: string) => void,
+): Promise<Save | undefined> {
+  let reading = saves.get(playsetId);
+  if (reading === undefined) {
+    reading = (async () => {
+      const pinned = manifest.playsets.find((p) => p.id === playsetId)?.save;
+      if (options.savesFolder === undefined || pinned === undefined) return undefined;
+      const file = join(options.savesFolder, pinned.file);
+      try {
+        if ((await hashFile(file)) !== pinned.sha256) {
+          log(`${file}: not the save the playset pins; its save texts are not reported`);
+          return undefined;
+        }
+        return await readSave(await readFile(file));
+      } catch (error) {
+        log(`${file}: ${messageOf(error)}; its save texts are not reported`);
+        return undefined;
+      }
+    })();
+    saves.set(playsetId, reading);
+  }
+  return reading;
 }
 
 /**

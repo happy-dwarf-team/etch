@@ -74,7 +74,8 @@ opens and one capture records, such as the main menu and the lobby of
 | `codeFilled` | widget patterns of what the game's code fills or hides in this view. The comparison masks these widgets, and every pixel under their game rect, as ADR 0002 says. The lists were completed from the captures of etch#44 |
 | `codeMoved` | optional widget patterns of what the game's code moves away from where its `.gui` puts it: a dialog the game opens beside the panel that asked for it, a section the game moves on a taller screen. The comparison draws each such widget and everything inside it where the game shows it, and compares it there (etch#44) |
 | `selectors` | optional values of the window profiles' selectors the view is captured with, by selector id (`"owner": "yes"`), where a profile has a choice the screen does not make; `resolution` selectors come from the capture's size. Each profiled root's profile is evaluated with them for the visibility gate (below, ADR 0006). An id a root's profile does not have is left out for that root |
-| `byPlayset` | optional, by playset id: what differs in that playset, its own `recipe`, `selectors` (replacing the view's values of those ids) and `note`. The Anbennar playset's save has no ship in construction and opens with events over the middle of the screen, so its province views open another way (spec v2 section 11) |
+| `data` | optional: what of the playset's save the view shows, `province` by id and `country` by tag (the save's player when left out), for the report of the profiles' `save` texts against the capture's (below) |
+| `byPlayset` | optional, by playset id: what differs in that playset, its own `recipe`, `selectors` (replacing the view's values of those ids), `data` and `note`. The Anbennar playset's save has no ship in construction and opens with events over the middle of the screen, so its province views open another way (spec v2 section 11) |
 
 A **recipe** is the Tongs input that opens a view from a known start state:
 
@@ -383,6 +384,7 @@ $env:ETCH_CORPUS_PATH = 'D:\etch-corpus'                    # the local corpus f
 $env:ETCH_GAME_PATH = '...\Europa Universalis IV'           # optional; else found through Steam
 pnpm --filter @etch/compare compare                         # every capture
 pnpm --filter @etch/compare compare --playset vanilla --view main-menu --resolution 1920x1080
+pnpm --filter @etch/compare compare --gpu --saves 'D:\etch-saves'   # with the save texts' report
 ```
 
 Filters take several values separated by commas. `--gpu` draws with ANGLE on
@@ -454,6 +456,11 @@ How a view is compared (`planCapture` and `compareCapture` in
   visible). A mismatch, or a profile that does not load cleanly, is a problem
   of the capture and fails it; the report lists them, and `visibility` in the
   capture's report has each root's count.
+- **Save texts** (reported, not gated, spec v2 section 14). With `--saves
+  <folder>` naming a folder that holds the playsets' pinned saves (checked by
+  hash), a view with `data` also has the texts its profiled roots fill from
+  `save` sources, for that province and country, compared with the texts the
+  capture shows (`saveTexts` in the capture's report, and the window report).
 - **A capture passes** when no widget fails, every root was found and the
   visibility gate holds. Totals (share within ±2, mean difference) cover the
   widgets that gate and gate nothing themselves.

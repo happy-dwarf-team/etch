@@ -640,6 +640,9 @@
             "subPanel": "none",
             "construction": "yes"
           },
+          "data": {
+            "province": 148
+          },
           "byPlayset": {
             "anbennar": {
               "recipe": {
@@ -675,7 +678,10 @@
                 "buttonBar": "closed",
                 "apui": "none"
               },
-              "note": "The save (Verne, 11 November 1444) has no ship in construction, and three opening events cover the middle of the screen at every corpus size; one of them is taller than 1080 pixels, so its option cannot be clicked. The recipe clicks a province beside them instead, as a map point the same at every size."
+              "note": "The save (Verne, 11 November 1444) has no ship in construction, and three opening events cover the middle of the screen at every corpus size; one of them is taller than 1080 pixels, so its option cannot be clicked. The recipe clicks a province beside them instead, as a map point the same at every size.",
+              "data": {
+                "province": 286
+              }
             }
           }
         },
@@ -757,6 +763,9 @@
             "side": "buildings",
             "subPanel": "none"
           },
+          "data": {
+            "province": 4702
+          },
           "byPlayset": {
             "anbennar": {
               "recipe": {
@@ -790,6 +799,9 @@
               "selectors": {
                 "buttonBar": "closed",
                 "apui": "none"
+              },
+              "data": {
+                "province": 89
               }
             }
           }
