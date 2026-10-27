@@ -38,6 +38,8 @@ public:
     std::optional<bool> AsBool() const;
     // The items of an array, or nullptr for any other kind.
     const std::vector<Value>* AsArray() const;
+    // The members of an object, or nullptr for any other kind.
+    const std::map<std::string, Value, std::less<>>* AsObject() const;
 
 private:
     Kind kind_ = Kind::Null;
