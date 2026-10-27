@@ -17,7 +17,7 @@ export interface SourceRange {
 /** A word (`guiTypes`, `-12`, `@offset`) or a quoted string. */
 export interface ScalarNode extends SourceRange {
   readonly kind: 'scalar';
-  /** The text as written, without the quotes of a quoted string; no escapes are processed. */
+  /** The text as written, without the quotes of a quoted string; escapes only in a save's. */
   readonly text: string;
   /** Whether the scalar was written in quotes; its range then includes them. */
   readonly quoted: boolean;
