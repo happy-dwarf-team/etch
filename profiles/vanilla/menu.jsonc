@@ -1,0 +1,52 @@
+// The menu window of the base game (spec v2 section 11, docs/window-profiles.md).
+// Its rules hide what the precision corpus captures show hidden; they were drafted from the
+// captures and are checked by them (ADR 0006).
+{
+  "formatVersion": 1,
+  "window": "menu",
+  "checkedWith": "1.37.5",
+  "selectors": {
+    "page": {
+      "kind": "ui",
+      "label": "Page",
+      "values": {
+        "esc-menu": "Menu",
+        "message-settings": "Message settings",
+      },
+    },
+  },
+  "rules": {
+    "hidden": {
+      "note": "Hidden in the corpus capture of \"esc-menu\" and \"message-settings\" in vanilla (Russia, 17 March 1719): the game decides these from its data or a click; show one by hand.",
+      "hide": ["menu/menu_unsync"],
+    },
+    "hidden-on-esc-menu": {
+      "note": "Hidden in the corpus capture of \"esc-menu\" and \"message-settings\" in vanilla (Russia, 17 March 1719): the game decides these from its data or a click; show one by hand.",
+      "when": {
+        "page": "esc-menu",
+      },
+      "hide": ["menu/menu_message_settings"],
+    },
+    "hidden-on-message-settings": {
+      "note": "Hidden in the corpus capture of \"esc-menu\" and \"message-settings\" in vanilla (Russia, 17 March 1719): the game decides these from its data or a click; show one by hand.",
+      "when": {
+        "page": "message-settings",
+      },
+      "hide": ["menu/menu_panel"],
+    },
+  },
+  "views": {
+    "esc-menu": {
+      "label": "Menu",
+      "set": {
+        "page": "esc-menu",
+      },
+    },
+    "message-settings": {
+      "label": "Message settings",
+      "set": {
+        "page": "message-settings",
+      },
+    },
+  },
+}

@@ -1,0 +1,24 @@
+// The ledger window of the base game (spec v2 section 11, docs/window-profiles.md).
+// Its rules hide what the precision corpus captures show hidden; they were drafted from the
+// captures and are checked by them (ADR 0006).
+{
+  "formatVersion": 1,
+  "window": "ledger",
+  "checkedWith": "1.37.5",
+  "rules": {
+    "hidden": {
+      "note": "Hidden in the corpus capture of \"ledger\" in vanilla (Russia, 17 March 1719): the game decides these from its data or a click; show one by hand.",
+      "hide": [
+        "ledger/default_listbox",
+        "ledger/filter_edit_box_bg",
+        "ledger/filter_edit_box_icon",
+        "ledger/filter_list",
+        "ledger/ledger_linegraph_legend",
+        "ledger/ledger_linegraphs",
+        "ledger/ledger_piecharts",
+        "ledger/ledger_sort_buttons",
+        "ledger/ledger_text_filter",
+      ],
+    },
+  },
+}

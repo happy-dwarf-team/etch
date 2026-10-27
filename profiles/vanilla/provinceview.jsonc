@@ -1,0 +1,295 @@
+// The province view of the base game (spec v2 section 11, docs/window-profiles.md), from the
+// province view research (etch#155) and the corpus captures. Etch derives the _large pairs and the
+// positionType moves of the screen height itself (spec section 3), so they are not written here.
+{
+  "formatVersion": 1,
+  "window": "provinceview",
+  "checkedWith": "1.37.5",
+  "selectors": {
+    "screen": {
+      "kind": "resolution",
+      "label": "Screen height",
+      "values": {
+        "small": { "label": "813 px or less", "maxHeight": 813 },
+        "large": { "label": "814 px or more", "minHeight": 814 },
+      },
+    },
+    "owner": {
+      "kind": "data",
+      "label": "Province owner",
+      "fact": "province.ownedByPlayer",
+      "values": { "yes": "Own", "no": "Foreign" },
+    },
+    "tab": {
+      "kind": "ui",
+      "label": "Tab",
+      "values": { "province": "Province", "state": "State" },
+      "note": "The game remembers the tab between provinces.",
+    },
+    "side": {
+      "kind": "ui",
+      "label": "Side panel",
+      "values": {
+        "buildings": "Buildings",
+        "institutions": "Institutions",
+        "history": "History",
+        "none": "None",
+      },
+    },
+    "subPanel": {
+      "kind": "ui",
+      "label": "Sub-panel",
+      "values": {
+        "none": "None",
+        "change_culture_view": "Change culture",
+        "build_army_view": "Build army",
+        "build_navy_view": "Build navy",
+        "client_state_selection": "Client state",
+        "transfer_occupation_window": "Transfer occupation",
+        "tradegoods_province_window": "Trade goods",
+        "allied_objectives_list": "Allied objectives",
+      },
+      "note": "Each opens on its button: change_culture_button, build_landunit_button, build_navy_button, client_state_button, transfer_occupation_button, resource_icon, select_allied_objective.",
+    },
+    "construction": {
+      "kind": "data",
+      "label": "Construction",
+      "fact": "province.constructing",
+      "values": { "yes": "Building", "no": "Nothing" },
+      "default": "no",
+    },
+    "occupied": {
+      "kind": "data",
+      "label": "Occupation",
+      "fact": "province.occupied",
+      "values": { "yes": "Occupied", "no": "Not occupied" },
+      "default": "no",
+    },
+    "greatProjects": {
+      "kind": "data",
+      "label": "Great projects",
+      "fact": "province.hasGreatProjects",
+      "values": { "yes": "Some", "no": "None" },
+      "default": "no",
+    },
+    "natives": {
+      "kind": "data",
+      "label": "Buildings",
+      "fact": "owner.buildsNativeBuildings",
+      "values": { "yes": "Native", "no": "Normal" },
+      "default": "no",
+    },
+  },
+  "groups": {
+    "tab": {
+      "label": "Tab",
+      "selector": "tab",
+      "members": {
+        "province": "provinceview/province_window",
+        "state": "provinceview/state_window",
+      },
+    },
+    "side": {
+      "label": "Side panel",
+      "selector": "side",
+      "none": true,
+      "members": {
+        "buildings": "provinceview/buildings_window",
+        "institutions": "provinceview/institutions_window",
+        "history": "provinceview/history_window",
+      },
+    },
+    "subPanel": {
+      "label": "Sub-panel",
+      "selector": "subPanel",
+      "none": true,
+      "members": {
+        "change_culture_view": "provinceview/province_window/change_culture_view",
+        "build_army_view": "provinceview/province_window/build_army_view",
+        "build_navy_view": "provinceview/province_window/build_navy_view",
+        "client_state_selection": "provinceview/province_window/client_state_selection",
+        "transfer_occupation_window": "provinceview/province_window/transfer_occupation_window",
+        "tradegoods_province_window": "provinceview/province_window/tradegoods_province_window",
+        "allied_objectives_list": "provinceview/province_window/allied_objectives_list",
+      },
+    },
+  },
+  "rules": {
+    "state-tab": {
+      "note": "The state tab closes the side panels.",
+      "when": { "tab": "state" },
+      "hide": [
+        "provinceview/buildings_window",
+        "provinceview/institutions_window",
+        "provinceview/history_window",
+      ],
+    },
+    "own-province": {
+      "when": { "owner": "yes" },
+      "hide": [
+        "provinceview/provinceview_foreign_bg",
+        "provinceview/provinceview_foreign_bg_large",
+        "provinceview/top_section_window/province_banner_foreign",
+        "provinceview/province_window/foreign_province_window",
+      ],
+    },
+    "foreign-province": {
+      "when": { "owner": "no" },
+      "hide": [
+        "provinceview/provinceview_bg",
+        "provinceview/provinceview_bg_large",
+        "provinceview/top_section_window/province_banner",
+        "provinceview/province_window/queue_window",
+      ],
+    },
+    "build-views": {
+      "note": "A build view shows the queue and not the foreign province's panel.",
+      "when": { "subPanel": ["build_army_view", "build_navy_view"] },
+      "show": ["provinceview/province_window/queue_window"],
+      "hide": ["provinceview/province_window/foreign_province_window"],
+    },
+    "small-screen": {
+      "when": { "screen": "small" },
+      "hide": ["provinceview/province_terrain"],
+    },
+    "no-great-projects": {
+      "when": { "greatProjects": "no" },
+      "hide": ["provinceview/buildings_window/great_projects_window"],
+    },
+    "normal-buildings": {
+      "when": { "natives": "no" },
+      "hide": [
+        "provinceview/buildings_window/natives_buildings_window",
+        "provinceview/buildings_window/natives_buildings_window_large",
+      ],
+    },
+    "native-buildings": {
+      "when": { "natives": "yes" },
+      "hide": [
+        "provinceview/buildings_window/general_buildings_window",
+        "provinceview/buildings_window/province_values_window",
+      ],
+    },
+    "building-picker": {
+      "note": "Opens on a click on a building slot.",
+      "hide": [
+        "provinceview/buildings_window/select_building",
+        "provinceview/buildings_window/select_building_large",
+      ],
+    },
+    "no-construction": {
+      "when": { "construction": "no" },
+      "hide": ["provinceview/province_window/progress_bar_window"],
+    },
+    "not-occupied": {
+      "when": { "occupied": "no" },
+      "hide": [
+        "provinceview/province_window/occupied_by",
+        "provinceview/province_window/occupied_by_shield",
+        "provinceview/province_window/transfer_occupation_button",
+      ],
+    },
+    "hidden-province_window": {
+      "note": "Hidden in the corpus captures of an own province (Macedonia, Russia 1719): the game decides these from data every frame; show one by hand.",
+      "hide": [
+        "provinceview/province_window/abandon_core_button",
+        "provinceview/province_window/bad_religion_icon",
+        "provinceview/province_window/claim_province_button",
+        "provinceview/province_window/hre_button",
+        "provinceview/province_window/hre_icon",
+        "provinceview/province_window/latent_resource_icon",
+        "provinceview/province_window/mp_base_icon",
+        "provinceview/province_window/no_building_fort",
+        "provinceview/province_window/prod_base_icon",
+        "provinceview/province_window/province_religious_conversion_progress",
+        "provinceview/province_window/raze_button",
+        "provinceview/province_window/settle_tribe_button",
+        "provinceview/province_window/tax_base_icon",
+        "provinceview/province_window/trade_company_button",
+        "provinceview/province_window/trade_company_icon",
+        "provinceview/province_window/tradepost_allready_present",
+        "provinceview/province_window/trading_city_button",
+      ],
+    },
+    "hidden-progress_bar_window": {
+      "note": "Hidden in the corpus captures while a ship is built: the mutual construction parts.",
+      "hide": [
+        "provinceview/province_window/progress_bar_window/mutually_cancel",
+        "provinceview/province_window/progress_bar_window/mutually_progress",
+        "provinceview/province_window/progress_bar_window/mutually_progress_frame",
+        "provinceview/province_window/progress_bar_window/mutually_progress_icon",
+      ],
+    },
+    "hidden-top_section_window": {
+      "note": "Capital, trade port and parliament marks, strait and river: shown by the game from data (etch#155).",
+      "hide": [
+        "provinceview/top_section_window/add_parliament",
+        "provinceview/top_section_window/have_capital",
+        "provinceview/top_section_window/have_parliament",
+        "provinceview/top_section_window/have_trade_port",
+        "provinceview/top_section_window/river_indicator",
+        "provinceview/top_section_window/strait_indicator",
+      ],
+    },
+    "hidden-province_values_window": {
+      "note": "The revolution's parts, shown in a centre of revolution.",
+      "hide": [
+        "provinceview/buildings_window/province_values_window/center_of_revolution",
+        "provinceview/buildings_window/province_values_window/center_of_revolution_label",
+        "provinceview/buildings_window/province_values_window/revolution_progress",
+        "provinceview/buildings_window/province_values_window/revolution_progress_frame",
+        "provinceview/buildings_window/province_values_window/revolution_progress_label",
+        "provinceview/buildings_window/province_values_window/revolution_spread",
+        "provinceview/buildings_window/province_values_window/spreaded_revolution_label",
+        "provinceview/buildings_window/province_values_window/spreading_revolution_label",
+        "provinceview/buildings_window/province_values_window/spreading_to_provinces_label",
+      ],
+    },
+    "hidden-general_buildings_window": {
+      "note": "Shown in a centre of trade.",
+      "hide": ["provinceview/buildings_window/general_buildings_window/center_of_trade_button"],
+    },
+  },
+  "views": {
+    "own": {
+      "label": "Own province",
+      "set": { "owner": "yes", "tab": "province", "side": "buildings", "subPanel": "none" },
+    },
+    "foreign": {
+      "label": "Foreign province",
+      "set": { "owner": "no", "tab": "province", "side": "buildings", "subPanel": "none" },
+    },
+    "state": {
+      "label": "State tab",
+      "set": { "owner": "yes", "tab": "state", "side": "none", "subPanel": "none" },
+    },
+    "build-army": {
+      "label": "Build army",
+      "set": {
+        "owner": "yes",
+        "tab": "province",
+        "side": "buildings",
+        "subPanel": "build_army_view",
+      },
+    },
+    "build-navy": {
+      "label": "Build navy",
+      "set": {
+        "owner": "yes",
+        "tab": "province",
+        "side": "buildings",
+        "subPanel": "build_navy_view",
+      },
+    },
+    "change-culture": {
+      "label": "Change culture",
+      "set": {
+        "owner": "yes",
+        "tab": "province",
+        "side": "buildings",
+        "subPanel": "change_culture_view",
+      },
+    },
+  },
+  "defaultView": "own",
+}

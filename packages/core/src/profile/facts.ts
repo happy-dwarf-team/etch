@@ -37,6 +37,13 @@ export const FACTS: readonly Fact[] = [
     inSave: true,
   },
   {
+    name: 'province.constructing',
+    values: ['yes', 'no'],
+    description:
+      'Whether the province builds something: a `military_construction` or a building in construction.',
+    inSave: true,
+  },
+  {
     name: 'province.hasGreatProjects',
     values: ['yes', 'no'],
     description: 'Whether the province lists `great_projects` (etch#155).',
