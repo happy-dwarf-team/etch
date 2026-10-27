@@ -64,6 +64,8 @@ export interface DataMenu {
     readonly mismatch?: string;
   };
   readonly length: TextLengthName;
+  /** The live game runs: **Refresh from live game** takes a snapshot of the previewed window. */
+  readonly canRefresh: boolean;
 }
 
 /** What a click in `Data ▾` asks for. */
@@ -74,7 +76,9 @@ export type DataAction =
   | { readonly kind: 'chooseCountry' }
   | { readonly kind: 'chooseProvince' }
   | { readonly kind: 'length'; readonly length: TextLengthName }
-  | { readonly kind: 'live'; readonly on: boolean };
+  | { readonly kind: 'live'; readonly on: boolean }
+  /** Take a live snapshot of the previewed window (spec section 7). */
+  | { readonly kind: 'refreshLive' };
 
 /** Where a selector's value came from (core's `SelectorSource`). */
 export type SelectorSourceName = 'auto' | 'save' | 'live' | 'you' | 'default';
@@ -100,6 +104,10 @@ export interface ViewMenu {
     readonly note?: string;
   }[];
   readonly handToggles: number;
+  /** Paths where the profile differs from the live snapshot: toggles from the game (spec section 7). */
+  readonly gameToggles: number;
+  /** Selectors none of whose values predicts what the live snapshot shows. */
+  readonly liveUnknown: readonly string[];
   /** Whether Save as view can write: the preview has a mod project. */
   readonly canSave: boolean;
 }

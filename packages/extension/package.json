@@ -120,6 +120,11 @@
         "command": "etch.overrideInMyMod",
         "title": "Override in My Mod",
         "category": "Etch"
+      },
+      {
+        "command": "etch.snapshotFromLiveGame",
+        "title": "Snapshot from the Live Game",
+        "category": "Etch"
       }
     ],
     "menus": {

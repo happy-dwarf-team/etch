@@ -42,6 +42,14 @@ const LAYER_LABELS: Readonly<Record<DataLayer, string>> = {
   generated: 'Generated',
 };
 
+/** What `Data ▾` says of the live snapshot of the previewed window. */
+export interface LiveLayer {
+  /** Its time, save, "older" and how many values no longer match; `undefined` without one. */
+  readonly detail: string | undefined;
+  /** Whether the live game runs, so that **Refresh from live game** can take one. */
+  readonly canRefresh: boolean;
+}
+
 export class PreviewData {
   /** The generated text's length; `typical` by default. */
   length: TextLength = 'typical';
@@ -179,6 +187,7 @@ export class PreviewData {
     sample: SampleData | undefined,
     playsetMods: readonly string[],
     localise: (key: string) => string | undefined,
+    live: LiveLayer = { detail: undefined, canRefresh: false },
   ): DataMenu {
     const counts = sample?.counts ?? { live: 0, save: 0, files: 0, generated: 0 };
     const c = this.current;
@@ -191,7 +200,9 @@ export class PreviewData {
             ? { state: 'failed', name: fileName(c.path), problem: c.problem }
             : readySave(c.save, c.choice, c.path, playsetMods, localise);
     const detail: Readonly<Record<DataLayer, string>> = {
-      live: 'no snapshot yet',
+      live:
+        live.detail ??
+        (live.canRefresh ? 'no snapshot yet' : 'no snapshot yet; it comes from the live game'),
       save:
         save.state === 'ready'
           ? [save.name, save.country, save.province].filter((x) => x !== undefined).join(' · ')
@@ -221,6 +232,7 @@ export class PreviewData {
       })),
       save,
       length: this.length,
+      canRefresh: live.canRefresh,
     };
   }
 }

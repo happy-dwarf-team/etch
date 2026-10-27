@@ -28,7 +28,7 @@ export function activate(context: vscode.ExtensionContext): EtchApi {
   liveGame = live.game;
   return {
     navigation,
-    preview: registerPreview(context, output, navigation, live.game),
+    preview: registerPreview(context, output, navigation, live.game, live.pick),
     liveGame: live.game,
     pickMode: live.pick,
   };
