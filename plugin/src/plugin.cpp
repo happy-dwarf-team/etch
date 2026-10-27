@@ -349,17 +349,23 @@ bool BringEditorForward() {
 }
 
 // The game's window to the front, for Etch: Toggle Pick Mode from VS Code. VS
-// Code is in front then, so Windows' foreground lock may refuse the game; a
-// key event of the game's own process lifts it, as the last input.
+// Code is in front then, so Windows' foreground lock may refuse the game; for
+// the call the game's thread shares the input state of the foreground window's
+// thread, which the lock lets through. No key is sent: an Alt would reach VS
+// Code's menu.
 bool BringGameForward() {
     const HWND window = GameWindow();
     if (window == nullptr) return false;
     if (GetForegroundWindow() == window) return true;
     if (IsIconic(window)) ShowWindow(window, SW_RESTORE);
     if (SetForegroundWindow(window)) return true;
-    keybd_event(VK_MENU, 0, KEYEVENTF_EXTENDEDKEY, 0);
-    keybd_event(VK_MENU, 0, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0);
-    return SetForegroundWindow(window) != 0;
+    const DWORD self = GetCurrentThreadId();
+    const DWORD front = GetWindowThreadProcessId(GetForegroundWindow(), nullptr);
+    const bool attached = front != 0 && front != self && AttachThreadInput(self, front, TRUE) != 0;
+    BringWindowToTop(window);
+    const bool ok = SetForegroundWindow(window) != 0;
+    if (attached) AttachThreadInput(self, front, FALSE);
+    return ok;
 }
 
 double Percentile(std::vector<double> samples, double q) {

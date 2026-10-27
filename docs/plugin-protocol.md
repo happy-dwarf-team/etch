@@ -262,7 +262,7 @@ Every member is optional, so one request can set the key alone.
 | `key`     | the hotkey: Ctrl or Alt with a letter, a digit or F1–F24 (`Ctrl+Shift+E`, `Alt+F9`). It replaces the plugin's setting `pick_mode_key` until the game ends; anything else is `bad_request` |
 | `sources` | the playset's interface files that a mod supplies, by game path, with the mod's name: what the label names (`<mod> › interface/<file>.gui:<line>`); a path not listed is the game's (`EU4`). It replaces the earlier list |
 | `editor`  | VS Code's window, which the game brings forward after a pick: the process (`pid`, VS Code's main process, which owns its windows) and a fragment of its title (the workspace's name) |
-| `front`   | bring the game's window to the front (**Etch: Toggle Pick Mode**). VS Code is the foreground process then, so the plugin's `SetForegroundWindow` may be refused under Windows' foreground lock; it then sends an Alt key from its own process and tries again. The answer's `front` says whether the game came to the front |
+| `front`   | bring the game's window to the front (**Etch: Toggle Pick Mode**). VS Code is the foreground process then, so the plugin's `SetForegroundWindow` may be refused under Windows' foreground lock; it then attaches its thread's input to the foreground window's thread (`AttachThreadInput`) for the call and tries again. It sends no key: an Alt would reach VS Code's menu. The answer's `front` says whether the game came to the front |
 
 The answer gives the state after the request: `on` and `key`.
 
