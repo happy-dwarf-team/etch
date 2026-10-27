@@ -4,7 +4,7 @@
 // window the playset no longer defines is dropped by the preview. Node only, no vscode.
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { liveWidgetsOf, readLiveSnapshot, type LiveSnapshot } from '@etch/core/profile';
 import type { SnapshotAnswer } from '../live-game/pipe.ts';
 
@@ -31,10 +31,10 @@ export function snapshotOf(answer: SnapshotAnswer, meta: SnapshotMeta): LiveSnap
   };
 }
 
-/** A key of a playset: its game folder and mods in load order. */
+/** A key of a playset: its game folder (however it is spelled) and mods in load order. */
 export function playsetKey(gameFolder: string | undefined, mods: readonly string[]): string {
   return createHash('sha256')
-    .update([gameFolder ?? '', ...mods].join('\n').toLowerCase())
+    .update([gameFolder === undefined ? '' : resolve(gameFolder), ...mods].join('\n').toLowerCase())
     .digest('hex')
     .slice(0, 16);
 }
