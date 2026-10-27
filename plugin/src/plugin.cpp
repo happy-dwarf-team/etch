@@ -32,6 +32,7 @@
 #include <algorithm>
 #include <atomic>
 #include <cstdlib>
+#include <cstring>
 #include <cwctype>
 #include <memory>
 #include <mutex>
@@ -111,15 +112,22 @@ std::optional<etch::GameSession> CurrentSession() {
     return etch::GameSession{g_ironman.load(), g_multiplayer.load(), g_session_number.load()};
 }
 
+HWND GameWindow();
+
 // The top-level windows, hidden and stale ones too, through tongs.ui on the
 // main thread.
 std::optional<std::vector<etch::Root>> ReadRoots() {
     if (g_ui == nullptr) return std::nullopt;
-    std::vector<etch::Root> roots;
+    struct Visit {
+        std::vector<etch::Root> roots;
+        RECT client{};
+    } visit;
+    if (const HWND window = GameWindow(); window != nullptr) GetClientRect(window, &visit.client);
     const AnvilResult result = g_ui->find(
         "*", TONGS_UI_HIDDEN | TONGS_UI_STALE,
         [](void* context, const TongsUiWidget* widget) -> int {
             if (widget->parent != -1) return 1;
+            auto& visit = *static_cast<Visit*>(context);
             etch::Root root;
             root.id = widget->id;
             root.name = widget->name != nullptr ? widget->name : "";
@@ -128,12 +136,17 @@ std::optional<std::vector<etch::Root>> ReadRoots() {
                 root.file = widget->definition_file;
             }
             root.visible = (widget->flags & TONGS_UI_VISIBLE) != 0;
-            static_cast<std::vector<etch::Root>*>(context)->push_back(std::move(root));
+            // Without the window's size every root counts as on screen.
+            if (visit.client.right > 0 && visit.client.bottom > 0) {
+                root.on_screen = widget->x < visit.client.right && widget->y < visit.client.bottom &&
+                                 widget->x + widget->width > 0 && widget->y + widget->height > 0;
+            }
+            visit.roots.push_back(std::move(root));
             return 1;
         },
-        &roots, nullptr);
+        &visit, nullptr);
     if (result != ANVIL_OK) return std::nullopt;
-    return roots;
+    return std::move(visit.roots);
 }
 
 // The game's main window: the visible top-level window of the main thread.
@@ -155,9 +168,41 @@ HWND GameWindow() {
     return window;
 }
 
-// Posts a key to the game's window when the first widget `selector` names is
-// visible: the key down now and up a frame later, as a key the player presses
-// (the game takes key messages through SDL's event queue).
+// SDL 2.0.4's keyboard event (SDL_events.h), 56 bytes: type +0x00, timestamp +0x04 (set by
+// SDL_PushEvent), state +0x0C, the keysym's scancode +0x10 and sym +0x14.
+struct alignas(8) SdlEvent {
+    unsigned char bytes[56];
+};
+
+std::uintptr_t g_image_base = 0;
+
+// Queues a key down and up in the game's SDL event queue, as the player's keyboard would: the
+// game takes Escape from there and not from a posted key message (H2; Tongs' input does the
+// same). False when SDL has not started or its dynamic API points elsewhere.
+bool PushSdlKey(std::uint32_t sym, std::uint32_t scancode) {
+    if (g_image_base == 0) return false;
+    const std::uintptr_t expected = g_image_base + static_cast<std::uintptr_t>(sym::sdl_dynapi_init.push_event);
+    std::uintptr_t slot = 0;
+    std::memcpy(
+        &slot,
+        reinterpret_cast<const void*>(g_image_base + static_cast<std::uintptr_t>(sym::sdl_dynapi_init.push_event_slot)),
+        sizeof slot);
+    if (slot != expected) return false;
+    const auto push = reinterpret_cast<int (*)(SdlEvent*)>(expected);
+    for (const std::uint32_t type : {0x300u, 0x301u}) {  // SDL_KEYDOWN, SDL_KEYUP
+        SdlEvent event{};
+        std::memcpy(event.bytes, &type, sizeof type);
+        event.bytes[0x0C] = type == 0x300u ? 1 : 0;  // SDL_PRESSED, SDL_RELEASED
+        std::memcpy(event.bytes + 0x10, &scancode, sizeof scancode);
+        std::memcpy(event.bytes + 0x14, &sym, sizeof sym);
+        if (push(&event) != 1) return false;
+    }
+    return true;
+}
+
+// Presses a key in the game when the first widget `selector` names is visible:
+// through the game's SDL event queue, or, before SDL has started, as key
+// messages posted to its window, down now and up a frame later.
 etch::PressResult Press(const std::string& selector, etch::Key key) {
     etch::PressResult out;
     const HWND window = GameWindow();
@@ -171,6 +216,11 @@ etch::PressResult Press(const std::string& selector, etch::Key key) {
         },
         &out, nullptr);
     if (!out.found) return out;
+    // SDLK_RETURN with SDL_SCANCODE_RETURN, SDLK_ESCAPE with SDL_SCANCODE_ESCAPE.
+    if (key == etch::Key::Enter ? PushSdlKey('\r', 40) : PushSdlKey(27, 41)) {
+        out.pressed = true;
+        return out;
+    }
     const WPARAM vk = key == etch::Key::Enter ? VK_RETURN : VK_ESCAPE;
     const LPARAM scan = static_cast<LPARAM>(MapVirtualKeyW(static_cast<UINT>(vk), MAPVK_VK_TO_VSC)) << 16;
     out.pressed = PostMessageW(window, WM_KEYDOWN, vk, scan | 1) != 0;
@@ -752,6 +802,7 @@ struct EtchPlugin : anvil::Plugin {
                       TONGS_UI_SERVICE_VERSION);
         }
         QueryPerformanceFrequency(&g_frequency);
+        g_image_base = host.game().image_base;
         g_console.manager = reinterpret_cast<void* const*>(
             host.game().image_base + static_cast<std::uintptr_t>(sym::console_manager_get.manager));
         g_console.dispatch = host.address(sym::console_dispatch);

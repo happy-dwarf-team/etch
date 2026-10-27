@@ -29,3 +29,16 @@ bytes = "40 53 48 83 EC 20 48 8B 51 18 48 8B D9 48 83 FA 10 72 2C 48 8B 09"
 memory = "code"
 signature = "void (void* text)"
 note = "the game's std::string destructor, to free the console's result text"
+
+# --- Keys the live game presses for the player (H2, H7): SDL 2.0.4 is linked
+# into eu4.exe with its dynamic API, every SDL_* call jumping through a table SDL
+# fills when it starts. The same symbol as Tongs' input: the game takes Escape
+# only from its SDL event queue, not from a posted key message.
+
+[symbol.sdl_dynapi_init]
+rva = 0x17325DD
+bytes = "48 8D 0D AC 45 01 00 48 89 0D D5 DC 87 00"
+memory = "code"
+values.push_event = { at = 3, rip_relative = 7 }
+values.push_event_slot = { at = 10, rip_relative = 14 }
+note = "SDL 2.0.4 dynapi init: slot 88 = SDL_PushEvent"

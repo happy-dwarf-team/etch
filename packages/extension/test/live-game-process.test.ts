@@ -351,6 +351,7 @@ describe('the session pipe', () => {
       lines: [{ line: 'reload provinceview.gui', success: true, text: 'reloaded!', ms: 59 }],
       closed: [],
       hiddenAgain: ['provinceview'],
+      menuUndone: false,
       check: {
         checked: 2,
         stale: [{ name: 'culture_item', visible: false }],

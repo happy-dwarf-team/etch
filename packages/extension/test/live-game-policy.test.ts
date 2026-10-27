@@ -77,7 +77,7 @@ afterEach(async () => {
 const mine = (path: string) => join(temp, 'mine', ...path.split('/'));
 
 describe('planReload', () => {
-  it('reloads the province view, which stays open when the rebuild shows it (H2)', async () => {
+  it('reloads the province view and closes it again when the rebuild shows it (H2)', async () => {
     expect(await plan(mine('interface/provinceview.gui'))).toEqual({
       kind: 'reload',
       path: 'interface/provinceview.gui',
@@ -85,7 +85,7 @@ describe('planReload', () => {
         lines: ['reload provinceview.gui'],
         check: ['interface/provinceview.gui'],
         close: [],
-        keepHidden: [],
+        keepHidden: ['provinceview'],
       },
       rebuild: 'panel',
       thenVisible: false,
@@ -174,7 +174,7 @@ describe('planReload', () => {
         'interface/countrydiplomacyview.gui',
         'interface/topbar.gui',
       ],
-      keepHidden: [],
+      keepHidden: ['provinceview'],
     });
     expect(visibleReloads(['interface/mapicons.gui', 'interface/core.gui'])).toBeUndefined();
     expect(visibleReloads([])).toBeUndefined();

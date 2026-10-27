@@ -144,22 +144,26 @@ game's console manager does not exist yet.
 | `lines`       | 1–64 console lines, each `reload <name>.gui`, `reloadloc` or `reloadtexture <texture>`; anything else, among them `reload guianim`, `reload texture` and `reload assets` (H10), is `bad_request` |
 | `check`       | game paths of the saved files; the top-level windows built from them are checked for stale ones     |
 | `close`       | top-level windows closed with a posted Escape before the lines, when visible (an on-demand window such as `DeclareWarDialog`); the lines then wait a few frames for the key |
-| `keep_hidden` | top-level windows closed again with a posted Escape after the lines, when they were hidden before and are visible now (a rebuild opens the province view, H2); the extension sends none for now (see below) |
+| `keep_hidden` | top-level windows closed again with an Escape after the lines, when they were hidden before and are visible and on screen now (a rebuild opens the province view, H2); the extension sends `provinceview` with a reload of `provinceview.gui` |
 
 In one job the plugin reads the top-level windows through `tongs.ui` (hidden
 and stale ones too), closes the `close` windows, runs the lines (4 frames later
 when it pressed a key, so that the game takes it first), closes the
-`keep_hidden` windows the lines showed, and reads the windows again.
+`keep_hidden` windows the lines showed, and reads the windows again (4 frames
+later when it pressed a key: when that Escape opened the game's menu `menu`,
+because the rebuilt window was in no panel stack, it presses Escape again to
+close the menu and reports `menu_undone`).
 
 The game's console cannot close these windows: `window close` closes only
 windows `window open` opened, and answered an empty failure for the province
 view (live). Mouse clicks do not work either: the game's interface takes the
 pointer from the real cursor (`GetCursorPos`, pick mode checks), which Etch
-never moves. So the plugin posts Escape, down and up a frame apart, which closes
-the topmost panel as the player's key would. In the live runs it closed nothing
-while Tongs' lab input was on and event windows were open, while Tongs' own
-Escape closed the province view; it is checked again before the extension
-relies on it. A window
+never moves. So the plugin presses Escape, which closes the topmost panel as
+the player's key would, through the game's SDL event queue (`SDL_PushEvent`
+found through the `sdl_dynapi_init` symbol, as Tongs' input does): a key posted
+to the game's window closed nothing in the M8 and M9 runs, while Tongs' Escape,
+through the queue, did. Before SDL has started the plugin posts the key
+messages instead. Enter, for Anbennar's prompt, goes the same way. A window
 built from a `check` file before the lines whose widget id is still there
 after them was not rebuilt: it is **stale** (H3). The check compares ids only;
 it never trusts a liveness read of the definitions, whose memory the game
@@ -174,6 +178,7 @@ reuses.
 | `lines`             | each line run: the line, the console's success byte, its answer text, its time    |
 | `closed`            | the `close` windows that were visible and were closed                             |
 | `hidden_again`      | the `keep_hidden` windows closed again                                            |
+| `menu_undone`       | an Escape for `keep_hidden` opened the game's menu, which was closed again; the window is not in `hidden_again` |
 | `tree`              | the windows were read; without `tongs.ui` it is false and the next three are left out |
 | `checked`           | top-level windows built from the `check` files before the lines                   |
 | `stale`             | those not rebuilt, with their name and whether they are visible now               |
