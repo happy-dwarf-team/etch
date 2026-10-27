@@ -1315,21 +1315,19 @@ export class Preview implements PreviewApi, vscode.Disposable {
    */
   private async picked(opened: PickOpened): Promise<void> {
     const top = opened.pick.chain.at(-1);
-    if (top?.file === undefined || !this.panel) return;
-    const session = this.session;
-    const winner = await session?.playset.files.find(top.file);
-    const file = winner === undefined ? undefined : session?.guiFile(winner.path);
-    const window = file === undefined ? undefined : named(file, opened.pick.window);
-    if (winner === undefined || file === undefined || window === undefined) return;
+    const winner = top?.file === undefined ? undefined : await this.liveGame?.files?.find(top.file);
+    if (winner === undefined || opened.pick.window === '') return;
+    // The window by its name; the session finds it in the file when it lays it out.
     this.pin = {
       uri: vscode.Uri.file(winner.absolutePath).toString(),
-      name: window.name,
-      index: file.definitions.indexOf(window),
+      name: opened.pick.window,
+      index: 0,
     };
     // The game decides now: no view, no selector set by hand, no hand toggles.
-    this.choices.set((window.name ?? '').toLowerCase(), { view: undefined, set: {}, toggles: {} });
+    this.choices.set(opened.pick.window.toLowerCase(), { view: undefined, set: {}, toggles: {} });
     this.data.live = true;
-    this.request();
+    if (this.panel) this.request();
+    else this.open();
   }
 
   /** The live game process, which tells a snapshot of this game from an older one. */
