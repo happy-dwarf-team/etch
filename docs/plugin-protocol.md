@@ -293,8 +293,8 @@ The answer gives the state after the request: `on` and `key`.
   visible tree once: the hovered widget, then every other visible widget whose
   rectangle holds the pointer, smallest first, without top-level windows that
   cover the screen (`menubar`, `floating_buttons`, H5).
-- **A click:** on the next frame the plugin reads the whole tree with hidden
-  and stale widgets (paths, files, lines), takes the widget the stack points
+- **A click:** on the next frame the plugin reads the visible tree with stale
+  widgets (paths, files, lines), takes the widget the stack points
   at, calls `AllowSetForegroundWindow(ASFW_ANY)`, brings VS Code's window
   forward (`editor`; the game is the foreground process at the click), and
   pushes `pick`, then `snapshot` of the widget's top-level window. A click with
@@ -315,7 +315,8 @@ The answer gives the state after the request: `on` and `key`.
 
 The live snapshot of a top-level window (etch#170): every widget of the
 visible top-level window of that name, hidden ones too, in one `tongs.ui` read
-on the main thread.
+on the main thread. The read is of that window's subtree only (`<window>//*` with hidden
+and stale widgets): the whole tree with hidden widgets took 150–215 ms in a vanilla game.
 
 | Member      | Meaning |
 | ----------- | ------- |
@@ -340,7 +341,7 @@ The plugin writes these lines to the greeted client on its own; they have no
 | `event`     | When, and its members |
 | ----------- | --------------------- |
 | `pick`      | a click in pick mode: `seq` (from 1 in the process), `window` (the top-level window), `screen`, `chain` (the picked widget, then its parents up to its top-level window, each with `name`, `type`, `path`, `file` (`null` when stale or unknown), `line` (the 1-based line of the `{` that opens it, H2; 0 when unknown, as with a Tongs without `definition_line`), `rect`, `visible` and `stale`), `stack` (the picked widget's place among those under the pointer), `front` (VS Code's window was brought forward) and `timing` (the click by the system clock in Unix ms, which the extension compares with its own to time a pick, and the times in the game) |
-| `snapshot`  | right after a `pick`, with its `seq`: the members of a `snapshot` answer, or `"error":"stale"` when the window is stale |
+| `snapshot`  | right after a `pick`, with its `seq`: the members of a `snapshot` answer (read apart from the pick, after it is pushed), or `"error":"stale"` when the window is stale |
 | `pick_mode` | pick mode turned on or off, by the hotkey or by a `pick_mode` request: `on` |
 
 ## Error codes

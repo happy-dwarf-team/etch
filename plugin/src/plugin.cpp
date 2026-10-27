@@ -278,13 +278,20 @@ int CopyInto(void* context, const TongsUiWidget* widget) {
     return 1;
 }
 
-// Every widget, each after its parent, with paths: the whole tree (10-19 ms).
-std::optional<std::vector<etch::UiWidget>> ReadTree(std::uint32_t flags) {
+// The widgets `selector` names and their ancestors, each after its parent, with
+// paths. `//*` is the whole tree: 10-19 ms visible only, far more with hidden
+// widgets, so a snapshot reads only its window (`<window>//*`).
+std::optional<std::vector<etch::UiWidget>> ReadTree(const std::string& selector, std::uint32_t flags) {
     if (g_ui == nullptr) return std::nullopt;
     std::vector<etch::UiWidget> widgets;
-    widgets.reserve(20000);
-    if (g_ui->find("//*", flags, CopyInto, &widgets, nullptr) != ANVIL_OK) return std::nullopt;
+    widgets.reserve(4096);
+    if (g_ui->find(selector.c_str(), flags, CopyInto, &widgets, nullptr) != ANVIL_OK) return std::nullopt;
     return widgets;
+}
+
+// A window's whole subtree, hidden and stale widgets too: what a snapshot holds.
+std::optional<std::vector<etch::UiWidget>> ReadWindow(const std::string& name) {
+    return ReadTree(name + "//*", TONGS_UI_HIDDEN | TONGS_UI_STALE);
 }
 
 // The hovered widget, then its parents, without paths: cheap enough for every frame.
@@ -506,11 +513,11 @@ void LogPickStats(PickState& p) {
 }
 
 // The click, read on the next frame (H7): the widget the stack points at and
-// its parents with paths, files and lines, pushed to Etch with VS Code brought
-// forward, then the snapshot of its window.
+// its parents with paths, files and lines (the visible tree), pushed to Etch
+// with VS Code brought forward; then the snapshot of its window, read apart.
 void PickNow(PickState& p, int width, int height) {
     const double start = NowMs();
-    std::optional<std::vector<etch::UiWidget>> read = ReadTree(TONGS_UI_HIDDEN | TONGS_UI_STALE);
+    std::optional<std::vector<etch::UiWidget>> read = ReadTree("//*", TONGS_UI_STALE);
     const double read_ms = NowMs() - start;
     if (!read) {
         anvil::Host{}.warn("pick: tongs.ui could not read the widget tree");
@@ -529,7 +536,7 @@ void PickNow(PickState& p, int width, int height) {
     }
     const std::vector<std::size_t> chain = etch::ChainOf(*read, stack[index]);
     const etch::UiWidget& picked = (*read)[chain.front()];
-    const std::size_t root = chain.back();
+    const etch::UiWidget root = (*read)[chain.back()];
     AllowSetForegroundWindow(ASFW_ANY);
     const bool front = BringEditorForward();
     const std::uint64_t seq = ++p.seq;
@@ -539,17 +546,31 @@ void PickNow(PickState& p, int width, int height) {
     anvil::Host{}.info("pick {}: {} {}:{} ({} of {} under the pointer), read {:.1f} ms, editor {}", seq, picked.name,
                        picked.file.empty() ? "?" : picked.file, picked.line, index + 1, stack.size(), read_ms,
                        front ? "in front" : "not brought forward");
-    RunLater([line, widgets = std::move(*read), root, width, height, read_ms, seq] {
-        Push(line);
-        etch::json::Writer w;
-        w.Str("event", "snapshot").Uint("seq", seq);
-        if (widgets[root].Stale()) {
-            Push(w.Str("error", "stale").Finish());
-            return;
+    RunLater([line] { Push(line); });
+
+    etch::json::Writer w;
+    w.Str("event", "snapshot").Uint("seq", seq);
+    if (root.Stale()) {
+        RunLater([event = w.Str("error", "stale").Finish()] { Push(event); });
+        return;
+    }
+    const double snap_start = NowMs();
+    std::optional<std::vector<etch::UiWidget>> window = ReadWindow(root.name);
+    const double snap_ms = NowMs() - snap_start;
+    std::optional<std::size_t> at;
+    if (window) {
+        for (std::size_t i = 0; i < window->size(); ++i) {
+            if ((*window)[i].id == root.id) at = i;
         }
-        std::string event = w.Finish();
-        event.pop_back();
-        Push(event + "," + etch::SnapshotOf(widgets, root, width, height, read_ms).members + "}");
+    }
+    if (!at) {
+        RunLater([event = w.Str("error", "not_open").Finish()] { Push(event); });
+        return;
+    }
+    std::string head = w.Finish();
+    head.pop_back();
+    RunLater([head, widgets = std::move(*window), root_at = *at, width, height, snap_ms] {
+        Push(head + "," + etch::SnapshotOf(widgets, root_at, width, height, snap_ms).members + "}");
     });
 }
 
@@ -592,7 +613,7 @@ void OnFrame() {
     const int wheel = std::exchange(p.wheel, 0);
     if (wheel != 0 && hovered != 0) {
         if (p.stack.empty()) {
-            if (std::optional<std::vector<etch::UiWidget>> read = ReadTree(0)) {
+            if (std::optional<std::vector<etch::UiWidget>> read = ReadTree("//*", 0)) {
                 p.stack_read = std::move(*read);
                 p.stack = etch::StackAt(p.stack_read, cursor.x, cursor.y, width, height, hovered);
                 p.stack_at = cursor;
@@ -645,7 +666,7 @@ void SnapshotNow(const std::string& window, const std::function<void(const etch:
     RECT client{};
     if (game != nullptr) GetClientRect(game, &client);
     const double start = NowMs();
-    std::optional<std::vector<etch::UiWidget>> read = ReadTree(TONGS_UI_HIDDEN | TONGS_UI_STALE);
+    std::optional<std::vector<etch::UiWidget>> read = ReadWindow(window);
     const double read_ms = NowMs() - start;
     bool stale = false;
     const std::optional<std::size_t> root = read ? etch::FindRoot(*read, window, stale) : std::nullopt;
