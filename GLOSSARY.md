@@ -105,9 +105,9 @@ game runs; never the player's own installation or profile.
 _Avoid_: game host install, game copy, sandbox
 
 **Pinned build**:
-One release of a game-side tool (Anvil, Bellows), identified by its hash, that
-an Etch release carries and puts into the private install; never a newer or
-locally built copy.
+One release of a game-side tool (Anvil, Bellows, Tongs), identified by its
+hash, that an Etch release carries and puts into the private install; never a
+newer or locally built copy.
 _Avoid_: vendored copy, bundled dependency, latest build
 
 ## Measuring precision
