@@ -17,6 +17,7 @@ import {
   allWidgets,
   choosePreviewResolution,
   formatResolution,
+  DRAW_LIST_VERSION,
   isSide,
   parseResolution,
   gameTextKind,
@@ -687,7 +688,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
       this.post({
         type: 'draw',
         id: ++this.renderCount,
-        list: { version: 1, ...this.resolution.screen, textures: [], draws: [] },
+        list: { version: DRAW_LIST_VERSION, ...this.resolution.screen, textures: [], draws: [] },
       });
       return;
     }
@@ -1603,7 +1604,9 @@ export class Preview implements PreviewApi, vscode.Disposable {
           draw.kind === 'progress'
             ? ('texture' in draw.first && draw.first.texture === texture) ||
               ('texture' in draw.second && draw.second.texture === texture)
-            : draw.texture === texture || (draw.kind === 'masked' && draw.mask === texture);
+            : draw.texture === texture ||
+              (draw.kind === 'masked' && draw.mask === texture) ||
+              (draw.kind === 'sprite' && draw.text?.texture === texture);
         if (uses) sources.add(draw.source);
       }
       for (const source of sources) {

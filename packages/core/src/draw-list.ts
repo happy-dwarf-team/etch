@@ -19,7 +19,7 @@
 import type { PlacedGlyph } from './text/layout.ts';
 
 /** Changes whenever a draw list of the old shape would be drawn wrongly. */
-export const DRAW_LIST_VERSION = 1;
+export const DRAW_LIST_VERSION = 2;
 
 export interface DrawList {
   readonly version: typeof DRAW_LIST_VERSION;
@@ -100,7 +100,19 @@ export interface SpriteDraw extends DrawBase, DrawRect, SourceRect {
    * instead of stretching it over the rect: the middle of a cornered tile.
    */
   readonly repeat?: boolean;
+  /**
+   * Text the game bakes into the sprite before drawing it: a button's text
+   * on a `textSpriteType` (verified in `eu4.exe`, etch#96). The renderer
+   * copies the source rect into a target of its size, draws the glyphs into
+   * it with `text.shader` and `src_alpha`/`inv_src_alpha` on colour and alpha
+   * alike, and draws that target as the sprite. Glyph positions are screen
+   * pixels like a text draw's; the target clips them to the sprite.
+   */
+  readonly text?: BakedText;
 }
+
+/** The glyphs of a {@link SpriteDraw.text}: a text draw without its own kind and source. */
+export type BakedText = Omit<TextDraw, 'kind' | 'source'>;
 
 /**
  * A `maskedShieldType` sprite: the colours of `texture` (the flag) with the

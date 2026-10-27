@@ -1,6 +1,7 @@
 import {
   DRAW_LIST_VERSION,
   GLYPH_STRIDE,
+  type BakedText,
   type Draw,
   type DrawList,
   type MaskedDraw,
@@ -122,15 +123,32 @@ export class Painter {
       canvas.width = list.width;
       canvas.height = list.height;
     }
+    const all = [...textures];
+    const draws = list.draws.map((draw) => this.baked(draw, all));
+
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.viewport(0, 0, list.width, list.height);
     gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT);
+    try {
+      return this.drawAll(list, draws, all);
+    } finally {
+      for (const texture of all.slice(textures.length)) {
+        if (texture !== undefined) gl.deleteTexture(texture.texture);
+      }
+    }
+  }
 
+  private drawAll(
+    list: DrawList,
+    draws: readonly Draw[],
+    textures: readonly (GpuTexture | undefined)[],
+  ): number[] {
+    const gl = this.gl;
     const skipped: number[] = [];
     const quads: number[] = [];
     let total = 0;
-    list.draws.forEach((draw, index) => {
+    draws.forEach((draw, index) => {
       const count = usable(draw, textures) ? quadCount(draw) : -1;
       if (count < 0) skipped.push(index);
       quads.push(count);
@@ -149,27 +167,10 @@ export class Painter {
       u2: Rect | undefined,
       colour: Rgba,
     ): void => {
-      const corners: readonly [number, number][] = [
-        [0, 0],
-        [1, 0],
-        [0, 1],
-        [1, 1],
-      ];
-      for (const [cx, cy] of corners) {
-        vertices[offset++] = x + cx * w;
-        vertices[offset++] = y + cy * h;
-        vertices[offset++] = u.x + cx * u.w;
-        vertices[offset++] = u.y + cy * u.h;
-        vertices[offset++] = u2 === undefined ? 0 : u2.x + cx * u2.w;
-        vertices[offset++] = u2 === undefined ? 0 : u2.y + cy * u2.h;
-        vertices[offset++] = colour[0];
-        vertices[offset++] = colour[1];
-        vertices[offset++] = colour[2];
-        vertices[offset++] = colour[3];
-      }
+      offset = putQuad(vertices, offset, x, y, w, h, u, u2, colour);
     };
     const white = unpackColour(WHITE);
-    list.draws.forEach((draw, index) => {
+    draws.forEach((draw, index) => {
       if ((quads[index] ?? -1) < 0) return;
       switch (draw.kind) {
         case 'sprite': {
@@ -197,16 +198,9 @@ export class Painter {
         case 'progress':
           quad(draw.x, draw.y, draw.width, draw.height, UNIT, undefined, white);
           break;
-        case 'text': {
-          const g = draw.glyphs;
-          for (let i = 0; i + GLYPH_STRIDE <= g.length; i += GLYPH_STRIDE) {
-            const w = g[i + 2] ?? 0;
-            const h = g[i + 3] ?? 0;
-            const atlas = { x: g[i + 4] ?? 0, y: g[i + 5] ?? 0, w, h };
-            quad(g[i] ?? 0, g[i + 1] ?? 0, w, h, atlas, undefined, unpackColour(g[i + 6] ?? 0));
-          }
+        case 'text':
+          offset = putGlyphs(vertices, offset, draw.glyphs, 0, 0, 1, 1);
           break;
-        }
       }
     });
 
@@ -218,11 +212,13 @@ export class Painter {
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
     gl.uniform2f(this.at('screen'), list.width, list.height);
+    gl.uniform1f(this.at('flipY'), 1);
+    gl.uniform1i(this.at('straight'), 0);
     gl.uniform1i(this.at('image0'), 0);
     gl.uniform1i(this.at('image1'), 1);
 
     let first = 0;
-    list.draws.forEach((draw, index) => {
+    draws.forEach((draw, index) => {
       const count = quads[index] ?? -1;
       if (count <= 0) return;
       this.setDraw(draw, textures);
@@ -235,6 +231,116 @@ export class Painter {
     gl.bindSampler(1, null);
     gl.disable(gl.BLEND);
     return skipped;
+  }
+
+  /**
+   * A sprite draw with its text baked into a new texture, which it then draws instead of its
+   * source rect; the texture is added to `textures`. Any other draw is returned as it is, and a
+   * sprite whose text cannot be drawn without the text.
+   */
+  private baked(draw: Draw, textures: (GpuTexture | undefined)[]): Draw {
+    if (draw.kind !== 'sprite' || draw.text === undefined) return draw;
+    const { text, ...sprite } = draw;
+    if (textures[sprite.texture] === undefined || textures[text.texture] === undefined) {
+      return sprite;
+    }
+    const texture = this.bake(sprite, text, textures);
+    textures.push(texture);
+    return {
+      ...sprite,
+      texture: textures.length - 1,
+      sx: 0,
+      sy: 0,
+      sw: texture.width,
+      sh: texture.height,
+    };
+  }
+
+  /**
+   * What the game's `textSpriteType` node renders (etch#96): a target the size of the source
+   * rect, cleared transparent, the source rect copied in without blending, then the glyphs drawn
+   * with `text.shader` and `src_alpha`/`inv_src_alpha` on colour and alpha alike, because Direct3D
+   * 9 blends alpha with the colour factors when a blend state names no alpha factors. A glyph
+   * edge of coverage `a` leaves the target's alpha at `a·a + 1 − a` over an opaque button, so the
+   * window behind shows through it.
+   */
+  private bake(
+    sprite: SpriteDraw,
+    text: BakedText,
+    textures: readonly (GpuTexture | undefined)[],
+  ): GpuTexture {
+    const gl = this.gl;
+    const width = Math.max(1, Math.round(sprite.sw));
+    const height = Math.max(1, Math.round(sprite.sh));
+    const texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, width, height);
+    const framebuffer = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+    gl.viewport(0, 0, width, height);
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    const glyphs = Math.floor(text.glyphs.length / GLYPH_STRIDE);
+    const vertices = new Float32Array((1 + glyphs) * 4 * FLOATS);
+    const source = { x: sprite.sx, y: sprite.sy, w: sprite.sw, h: sprite.sh };
+    let offset = putQuad(vertices, 0, 0, 0, width, height, source, undefined, WHITE_RGBA);
+    const kx = width / sprite.width;
+    const ky = height / sprite.height;
+    offset = putGlyphs(vertices, offset, text.glyphs, sprite.x, sprite.y, kx, ky);
+
+    gl.useProgram(this.program);
+    gl.bindVertexArray(this.vao);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, vertices.subarray(0, offset), gl.STREAM_DRAW);
+    this.ensureIndices(1 + glyphs);
+    gl.uniform2f(this.at('screen'), width, height);
+    gl.uniform1f(this.at('flipY'), -1);
+    gl.uniform1i(this.at('straight'), 1);
+    gl.uniform1i(this.at('image0'), 0);
+    gl.uniform1i(this.at('image1'), 1);
+
+    // The copy, point sampled at 1:1 as `text.shader`'s sampler samples it there.
+    const copy: SpriteDraw = {
+      kind: 'sprite',
+      source: sprite.source,
+      texture: sprite.texture,
+      x: 0,
+      y: 0,
+      width,
+      height,
+      sx: sprite.sx,
+      sy: sprite.sy,
+      sw: sprite.sw,
+      sh: sprite.sh,
+      shader: 'buttonstate',
+    };
+    gl.disable(gl.BLEND);
+    this.setDraw(copy, textures);
+    gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, 0);
+    if (glyphs > 0) {
+      gl.enable(gl.BLEND);
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+      this.setDraw({ kind: 'text', source: sprite.source, ...text }, textures);
+      gl.drawElements(gl.TRIANGLES, glyphs * 6, gl.UNSIGNED_INT, 6 * 4);
+    }
+
+    gl.disable(gl.BLEND);
+    gl.bindVertexArray(null);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.deleteFramebuffer(framebuffer);
+    return {
+      texture,
+      width,
+      height,
+      storedWidth: width,
+      storedHeight: height,
+      uvScale: [1, 1],
+      layout: 'rgba',
+      path: 'pixels',
+      bytes: width * height * 4,
+    };
   }
 
   private setDraw(draw: Draw, textures: readonly (GpuTexture | undefined)[]): void {
@@ -345,6 +451,66 @@ interface Rect {
 }
 
 const UNIT: Rect = { x: 0, y: 0, w: 1, h: 1 };
+const WHITE_RGBA = unpackColour(WHITE);
+
+/** Writes one quad's four vertices at `offset`; returns the offset after them. */
+function putQuad(
+  out: Float32Array,
+  offset: number,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  u: Rect,
+  u2: Rect | undefined,
+  colour: Rgba,
+): number {
+  const corners: readonly [number, number][] = [
+    [0, 0],
+    [1, 0],
+    [0, 1],
+    [1, 1],
+  ];
+  let at = offset;
+  for (const [cx, cy] of corners) {
+    out[at++] = x + cx * w;
+    out[at++] = y + cy * h;
+    out[at++] = u.x + cx * u.w;
+    out[at++] = u.y + cy * u.h;
+    out[at++] = u2 === undefined ? 0 : u2.x + cx * u2.w;
+    out[at++] = u2 === undefined ? 0 : u2.y + cy * u2.h;
+    out[at++] = colour[0];
+    out[at++] = colour[1];
+    out[at++] = colour[2];
+    out[at++] = colour[3];
+  }
+  return at;
+}
+
+/**
+ * Writes a quad per glyph of a text draw's `glyphs`, its screen rect moved by (−`ox`, −`oy`) and
+ * scaled by `kx` and `ky`; returns the offset after them.
+ */
+function putGlyphs(
+  out: Float32Array,
+  offset: number,
+  g: readonly number[],
+  ox: number,
+  oy: number,
+  kx: number,
+  ky: number,
+): number {
+  let at = offset;
+  for (let i = 0; i + GLYPH_STRIDE <= g.length; i += GLYPH_STRIDE) {
+    const w = g[i + 2] ?? 0;
+    const h = g[i + 3] ?? 0;
+    const atlas = { x: g[i + 4] ?? 0, y: g[i + 5] ?? 0, w, h };
+    const x = ((g[i] ?? 0) - ox) * kx;
+    const y = ((g[i + 1] ?? 0) - oy) * ky;
+    at = putQuad(out, at, x, y, w * kx, h * ky, atlas, undefined, unpackColour(g[i + 6] ?? 0));
+  }
+  return at;
+}
 
 const EFFECTS: Readonly<Record<string, Readonly<Record<string, EffectPass>> | undefined>> =
   SHADER_EFFECTS;

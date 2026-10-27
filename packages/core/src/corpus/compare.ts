@@ -20,7 +20,7 @@
  * Aggregate figures (share within ±2, mean difference) are reported for trends but gate nothing.
  */
 import type { Draw, DrawList } from '../draw-list.ts';
-import { GLYPH_STRIDE, effectName } from '../draw-list.ts';
+import { DRAW_LIST_VERSION, GLYPH_STRIDE, effectName } from '../draw-list.ts';
 import type { LaidOutWidget, WindowLayout } from '../layout/window.ts';
 import type { Screen, Widget, WidgetKind } from '../model/gui.ts';
 import type { Constants } from '../model/properties.ts';
@@ -315,7 +315,7 @@ export function planCapture(input: CapturePlanInput): CapturePlan {
     key: captureKeyOf(record),
     widgets,
     drawList: {
-      version: 1,
+      version: DRAW_LIST_VERSION,
       width: record.resolution.width,
       height: record.resolution.height,
       textures,
@@ -776,19 +776,32 @@ function findRoot(
 
 /** A draw moved by an offset: its rect, or each glyph of a text. */
 function moveDraw(draw: Draw, by: { x: number; y: number }): Draw {
-  if (draw.kind !== 'text') return { ...draw, x: draw.x + by.x, y: draw.y + by.y };
-  const glyphs = [...draw.glyphs];
-  for (let i = 0; i + 1 < glyphs.length; i += GLYPH_STRIDE) {
-    glyphs[i] = (glyphs[i] ?? 0) + by.x;
-    glyphs[i + 1] = (glyphs[i + 1] ?? 0) + by.y;
+  if (draw.kind === 'text') return { ...draw, glyphs: moveGlyphs(draw.glyphs, by) };
+  const moved = { ...draw, x: draw.x + by.x, y: draw.y + by.y };
+  if (moved.kind !== 'sprite' || moved.text === undefined) return moved;
+  return { ...moved, text: { ...moved.text, glyphs: moveGlyphs(moved.text.glyphs, by) } };
+}
+
+function moveGlyphs(glyphs: readonly number[], by: { x: number; y: number }): number[] {
+  const moved = [...glyphs];
+  for (let i = 0; i + 1 < moved.length; i += GLYPH_STRIDE) {
+    moved[i] = (moved[i] ?? 0) + by.x;
+    moved[i + 1] = (moved[i + 1] ?? 0) + by.y;
   }
-  return { ...draw, glyphs };
+  return moved;
 }
 
 function remapTextures(draw: Draw, remap: readonly number[]): Draw {
   const t = (index: number): number => remap[index] ?? index;
   switch (draw.kind) {
     case 'sprite':
+      return draw.text === undefined
+        ? { ...draw, texture: t(draw.texture) }
+        : {
+            ...draw,
+            texture: t(draw.texture),
+            text: { ...draw.text, texture: t(draw.text.texture) },
+          };
     case 'text':
       return { ...draw, texture: t(draw.texture) };
     case 'masked':

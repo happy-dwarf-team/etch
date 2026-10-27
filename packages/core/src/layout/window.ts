@@ -248,7 +248,11 @@ class Layout {
       if (drawn !== undefined) rect = { x, y, ...drawn };
       // Verified in the corpus (etch#44): the game draws no `buttonText` on a check box; the
       // message settings lay a text box over each of theirs instead.
-      if (BUTTONS.has(kind) && kind !== 'checkboxType') this.drawButtonText(props, rect, source);
+      if (BUTTONS.has(kind) && kind !== 'checkboxType') {
+        const textStart = this.draws.length;
+        this.drawButtonText(props, rect, source);
+        this.bakeButtonText(props, drawStart, textStart);
+      }
     } else if (kind === 'shieldtype') {
       const drawn = this.drawSpriteOf(props, x, y, source, undefined, undefined, frame);
       if (drawn !== undefined) rect = { x, y, ...drawn };
@@ -825,6 +829,31 @@ class Layout {
       align: format === undefined ? 'centre' : textAlign(format),
       verticalAlign: verticalAlign(props.text('vertical_alignment')) ?? 'centre',
     });
+  }
+
+  /**
+   * Moves a button's text draw into its sprite draw when the sprite is a `textSpriteType`: the
+   * game bakes such a button's text into a copy of its texture and draws that copy (etch#96,
+   * verified in `eu4.exe` 1.37.5: the button's constructor `0x15AC670` gives a `textSpriteType`
+   * no text node of its own, and the sprite's node `0x1550E90` renders texture and text into a
+   * target through `0x1596660`). Inline icons stay draws of their own (hypothesis).
+   */
+  private bakeButtonText(props: Properties, spriteAt: number, textStart: number): void {
+    const name = props.text(props.has('spritetype') ? 'spritetype' : 'quadtexturesprite');
+    if (name === undefined || this.input.index.sprite(name)?.item.kind !== 'textSpriteType') {
+      return;
+    }
+    const sprite = this.draws[spriteAt];
+    const textAt = this.draws.findIndex((draw, i) => i >= textStart && draw.kind === 'text');
+    const text = this.draws[textAt];
+    if (sprite?.kind !== 'sprite' || text?.kind !== 'text') return;
+    this.draws.splice(textAt, 1);
+    const baked = {
+      texture: text.texture,
+      glyphs: text.glyphs,
+      ...(text.border === undefined ? {} : { border: text.border }),
+    };
+    this.draws[spriteAt] = { ...sprite, text: baked };
   }
 
   /** Lays out and draws a widget's text; returns the text's height, if any was laid out. */

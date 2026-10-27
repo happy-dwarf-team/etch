@@ -9,7 +9,8 @@ export const OP = { plain: 0, brighten: 1, darken: 2, grey: 3 } as const;
 /**
  * Screen pixels to clip space, top left origin. No half-pixel shift: the game
  * compensates Direct3D 9's offset, so quads land where layout puts them
- * (etch#9).
+ * (etch#9). `flipY` of -1 puts the top row first in a texture target, the way
+ * images are uploaded.
  */
 export const VERTEX_SHADER = `#version 300 es
 in vec2 position;
@@ -17,11 +18,17 @@ in vec2 uv;
 in vec2 uv2;
 in vec4 colour;
 uniform vec2 screen;
+uniform float flipY;
 out vec2 vUv;
 out vec2 vUv2;
 out vec4 vColour;
 void main() {
-  gl_Position = vec4(position.x / screen.x * 2.0 - 1.0, 1.0 - position.y / screen.y * 2.0, 0.0, 1.0);
+  gl_Position = vec4(
+    position.x / screen.x * 2.0 - 1.0,
+    flipY * (1.0 - position.y / screen.y * 2.0),
+    0.0,
+    1.0
+  );
   vUv = uv;
   vUv2 = uv2;
   vColour = colour;
@@ -47,7 +54,8 @@ void main() {
  * which is how glyphs are drawn; every shader but `text` uses the same filter
  * both ways. Output is clamped as a UNORM target clamps and premultiplied, so
  * that `ONE, ONE_MINUS_SRC_ALPHA` blending equals the game's
- * `src_alpha, inv_src_alpha` over any background.
+ * `src_alpha, inv_src_alpha` over any background. With `straight` it stays
+ * straight, for a target that blends as the game's does (a baked text).
  */
 export const FRAGMENT_SHADER = `#version 300 es
 precision highp float;
@@ -70,6 +78,7 @@ uniform bvec2 fillIsColour;
 uniform vec4 fillColour0;
 uniform vec4 fillColour1;
 uniform vec4 border;
+uniform bool straight;
 in vec2 vUv;
 in vec2 vUv2;
 in vec4 vColour;
@@ -119,6 +128,6 @@ void main() {
     c = vec4(applyOp(t.rgb), t.a) * vColour;
   }
   c = clamp(c, 0.0, 1.0);
-  fragColour = vec4(c.rgb * c.a, c.a);
+  fragColour = straight ? c : vec4(c.rgb * c.a, c.a);
 }
 `;

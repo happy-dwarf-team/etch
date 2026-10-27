@@ -45,8 +45,10 @@ From section 14 of the v1 specification:
 ## Open issues
 
 - [etch#96](https://github.com/happy-dwarf-team/etch/issues/96): draw
-  `buttonText` glyph edges as faint as the game does. Until then they are the
-  corpus's known deviations, with the maintainer's consent (etch#44).
+  `buttonText` glyph edges as faint as the game does. *Fixed in v2: the game
+  bakes the text of a button on a `textSpriteType` into a copy of its texture,
+  blending alpha with the colour factors, and the renderer does the same; the
+  corpus has no known deviation left.*
 - [etch#97](https://github.com/happy-dwarf-team/etch/issues/97): a recipe that
   opens an event for the corpus. The event window gates no release until it
   has one.

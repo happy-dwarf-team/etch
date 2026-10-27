@@ -156,16 +156,8 @@ describe('the committed corpus', () => {
     }
   });
 
-  it('records each known deviation with its issue and the consent of etch#44', async () => {
-    const deviations = (await committedManifest()).knownDeviations;
-    expect(deviations.length).toBeGreaterThan(0);
-    for (const deviation of deviations) {
-      expect(deviation.id).toMatch(/^button-text-edges-/);
-      expect(deviation.issue).toBe('https://github.com/happy-dwarf-team/etch/issues/96');
-      expect(deviation.consent).toBe(
-        'https://github.com/happy-dwarf-team/etch/issues/44#issuecomment-6388493594',
-      );
-    }
+  it('records no known deviation since the button text edges were fixed (etch#96)', async () => {
+    expect((await committedManifest()).knownDeviations).toEqual([]);
   });
 
   it('has capture records that match the manifest', async () => {

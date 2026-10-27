@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url';
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import type { Draw, DrawList } from '@etch/core/draw-list';
+import { DRAW_LIST_VERSION, type Draw, type DrawList } from '@etch/core/draw-list';
 import type * as Renderer from '../src/index.ts';
 import { BGRA_MASKS, dds } from './fixtures.ts';
 
@@ -37,6 +37,7 @@ const BLUE: Rgba = [0, 0, 255, 255];
 const WHITE: Rgba = [255, 255, 255, 255];
 const BLACK: Rgba = [0, 0, 0, 255];
 const CLEAR: Rgba = [0, 0, 0, 0];
+const WHITE_ARGB = 0xffffffff;
 
 /** Opens a page that serves `files` and draws with one painter on one canvas. */
 async function open(page: Page, files: Record<string, Uint8Array>): Promise<void> {
@@ -67,7 +68,7 @@ async function open(page: Page, files: Record<string, Uint8Array>): Promise<void
 
 function list(width: number, height: number, textures: string[], draws: Draw[]): DrawList {
   return {
-    version: 1,
+    version: DRAW_LIST_VERSION,
     width,
     height,
     textures: textures.map((name) => `${ORIGIN}/${name}`),
@@ -333,6 +334,50 @@ test('draws glyph runs tinted, with a border and linear magnification', async ({
     row(painted, 2).map((p) => p[3] ?? 0),
     [0, 128, 255, 0, 0, 0],
   );
+});
+
+test('bakes a text into its sprite as the game does, letting glyph edges show through', async ({
+  page,
+}) => {
+  await open(page, {
+    'blue.dds': image(1, [BLUE]),
+    'button.dds': image(2, [BLACK, BLACK, BLACK, BLACK]),
+    'font.dds': image(4, [
+      [255, 255, 255, 0],
+      [255, 255, 255, 255],
+      [255, 255, 255, 255],
+      [255, 255, 255, 128],
+    ]),
+  });
+  const painted = await paint(
+    page,
+    list(
+      3,
+      2,
+      ['blue.dds', 'button.dds', 'font.dds'],
+      [
+        sprite(0, 0, 0, 3, 2, [0, 0, 1, 1]),
+        sprite(1, 0, 0, 2, 2, [0, 0, 2, 2], {
+          shader: 'buttonstate',
+          // A half-covered texel, a full one, and one past the sprite, which the target clips.
+          text: {
+            texture: 2,
+            glyphs: [0, 0, 1, 1, 3, 0, WHITE_ARGB, 1, 0, 1, 1, 1, 0, WHITE_ARGB],
+          },
+        }),
+        sprite(1, 2, 1, 1, 1, [0, 0, 1, 1], {
+          shader: 'buttonstate',
+          text: { texture: 2, glyphs: [3, 1, 1, 1, 1, 0, WHITE_ARGB] },
+        }),
+      ],
+    ),
+  );
+  // a = 128/255: the target holds a white-over-black 128 with alpha a·a + 1 − a = 191/255, which
+  // lets the blue behind through: 128 · 191/255 = 96, plus 255 · 64/255 in blue.
+  expectNear(pixel(painted, 0, 0), [96, 96, 160, 255]);
+  expect(pixel(painted, 1, 0)).toEqual(WHITE);
+  expect(pixel(painted, 0, 1)).toEqual(BLACK);
+  expect(pixel(painted, 2, 1)).toEqual(BLACK);
 });
 
 test('blends later draws over earlier ones with src_alpha', async ({ page }) => {

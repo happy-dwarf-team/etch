@@ -146,7 +146,7 @@ describe('layoutWindow: placement', () => {
     expect(rectOf(l, 'cd')).toEqual([700, 100, 20, 10]);
     expect(rectOf(l, 'inner')).toEqual([600, 60, 100, 100]);
     expect(rectOf(l, 'inner_icon')).toEqual([680, 60, 20, 10]);
-    expect(l.drawList).toMatchObject({ version: 1, width: 800, height: 600 });
+    expect(l.drawList).toMatchObject({ version: 2, width: 800, height: 600 });
     expect(l.diagnostics).toEqual([]);
   });
 
@@ -452,21 +452,33 @@ describe('layoutWindow: text', () => {
     expect(text.glyphs.slice(GLYPH_STRIDE)).toEqual([31, 24, 6, 8, 7, 0, 0xff00ff00]);
   });
 
-  it('centres button text in the button on whole pixels', () => {
+  it('centres button text in the button on whole pixels, baked into a textSpriteType', () => {
     const { layout } = setUp(`guiTypes = { windowType = { name = "w"
       guiButtonType = { name = "b" quadTextureSprite = "GFX_button" buttonText = "a" buttonFont = "tiny" position = { x = 1 y = 1 } }
       guiButtonType = { name = "c" quadTextureSprite = "GFX_button" buttonText = "a" buttonFont = "tiny" format = left }
     } }`);
     const l = layout();
-    const [sprite, text] = drawsOf(l, 'b');
-    expect(sprite).toMatchObject({ kind: 'sprite', width: 30, height: 12 });
-    if (text?.kind !== 'text') throw new Error('expected text');
+    const [sprite, ...rest] = drawsOf(l, 'b');
+    expect(rest).toEqual([]);
+    if (sprite?.kind !== 'sprite' || sprite.text === undefined) throw new Error('expected text');
+    expect(sprite).toMatchObject({ width: 30, height: 12 });
+    expect(l.drawList.textures[sprite.text.texture]).toBe('gfx/fonts/tiny.dds');
     // "a" advances 5: x = 1 + 30 / 2 − floor(5 / 2); one 10 px line in 12 px: top = 1 + 1, glyph
     // yoffset 3 (etch#44).
-    expect(text.glyphs.slice(0, 2)).toEqual([14, 5]);
-    const left = drawsOf(l, 'c')[1];
-    if (left?.kind !== 'text') throw new Error('expected text');
-    expect(left.glyphs[0]).toBe(0);
+    expect(sprite.text.glyphs.slice(0, 2)).toEqual([14, 5]);
+    const left = drawsOf(l, 'c')[0];
+    if (left?.kind !== 'sprite') throw new Error('expected a sprite');
+    expect(left.text?.glyphs[0]).toBe(0);
+  });
+
+  it('draws the text of a button on a spriteType on its own (etch#96)', () => {
+    const { layout } = setUp(`guiTypes = { windowType = { name = "w"
+      guiButtonType = { name = "b" quadTextureSprite = "GFX_plain" buttonText = "a" buttonFont = "tiny" }
+    } }`);
+    const [sprite, text] = drawsOf(layout(), 'b');
+    expect(sprite).toMatchObject({ kind: 'sprite' });
+    expect(sprite).not.toHaveProperty('text');
+    expect(text?.kind).toBe('text');
   });
 
   it('draws no buttonText on a check box, as the game does not (etch#44)', () => {
