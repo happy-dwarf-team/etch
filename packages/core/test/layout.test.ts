@@ -14,6 +14,7 @@ import {
   type GuiFile,
   type LayoutInput,
   type TextureSize,
+  type Widget,
   type WindowLayout,
 } from '../src/index.ts';
 
@@ -588,5 +589,55 @@ describe('readTextureSize', () => {
     const empty = new Uint8Array(20);
     empty[2] = 2;
     expect(readTextureSize(empty)).toHaveProperty('problem');
+  });
+});
+
+describe('layoutWindow: sample data', () => {
+  const GUI = `guiTypes = {
+    windowType = { name = "w" size = { x = 200 y = 100 }
+      instantTextBoxType = { name = "t" font = "tiny" text = "KEY" maxWidth = 100 maxHeight = 20 }
+      listboxType = { name = "list" position = { x = 10 y = 30 } size = { x = 80 y = 50 } borderSize = { x = 2 y = 3 } spacing = 4 }
+    }
+    windowType = { name = "entry" size = { x = 60 y = 20 }
+      instantTextBoxType = { name = "label" font = "tiny" text = "ENTRY" maxWidth = 60 maxHeight = 10 }
+    }
+  }`;
+
+  it('draws the sample text, not localised again, in place of the .gui text', () => {
+    const { file, input } = setUp(GUI, { localise: (text) => (text === 'KEY' ? 'A' : text) });
+    const window = file.definitions[0] as Widget;
+    const l = layoutWindow(window, {
+      ...input,
+      content: { text: (w) => (w.name === 't' ? 'AVab' : undefined), rows: () => undefined },
+    });
+    const text = only(drawsOf(l, 't'));
+    if (text.kind !== 'text') throw new Error('expected text');
+    expect(text.glyphs).toHaveLength(4 * GLYPH_STRIDE);
+  });
+
+  it('lays out a list box entry per row from its border, with spacing, while whole entries fit', () => {
+    const { file, input } = setUp(GUI);
+    const window = file.definitions[0] as Widget;
+    const entry = file.definitions[1] as Widget;
+    const l = layoutWindow(window, {
+      ...input,
+      content: {
+        text: (w, row) =>
+          w.name === 'label' && row !== undefined ? 'ab'.repeat(row + 1) : undefined,
+        rows: (list) => (list.name === 'list' ? { template: entry, file, count: 5 } : undefined),
+      },
+    });
+    const rows = l.widgets.filter((w) => w.widget === entry);
+    // 50 px less a 3 px border above and below: two 20 px entries with 4 px between fit, a third not.
+    expect(rows.map((r) => [r.x, r.y, r.row])).toEqual([
+      [12, 33, 0],
+      [12, 57, 1],
+    ]);
+    const labels = l.widgets.filter((w) => w.widget.name === 'label');
+    expect(labels.map((w) => w.row)).toEqual([0, 1]);
+    const second = l.drawList.draws.slice(labels[1]?.drawStart, labels[1]?.drawEnd);
+    expect(only(second)).toMatchObject({ kind: 'text' });
+    const glyphs = (only(second) as { glyphs: readonly number[] }).glyphs;
+    expect(glyphs).toHaveLength(4 * GLYPH_STRIDE);
   });
 });

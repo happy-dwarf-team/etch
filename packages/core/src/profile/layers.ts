@@ -23,6 +23,9 @@ export function layerProfiles(window: string, files: readonly ProfileFile[]): Wi
     groups: new Map<string, SectionEntries['groups']>(),
     rules: new Map<string, SectionEntries['rules']>(),
     views: new Map<string, SectionEntries['views']>(),
+    content: new Map<string, SectionEntries['content']>(),
+    repeaters: new Map<string, SectionEntries['repeaters']>(),
+    links: new Map<string, SectionEntries['links']>(),
   };
   let defaultView: string | undefined;
   let defaultViewAt: Written | undefined;
@@ -46,6 +49,9 @@ export function layerProfiles(window: string, files: readonly ProfileFile[]): Wi
     groups: [...sections.groups.values()],
     rules: [...sections.rules.values()],
     views,
+    content: [...sections.content.values()],
+    repeaters: [...sections.repeaters.values()],
+    links: [...sections.links.values()],
     defaultView: defaultView ?? views[0]?.id,
     ...(defaultViewAt === undefined ? {} : { defaultViewAt }),
     layers: files.map((file) => file.origin),

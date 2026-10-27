@@ -6,6 +6,7 @@ import {
   type AssetProblem,
   type LayoutAssets,
   type LayoutInput,
+  type LayoutContent,
   type LayoutView,
   type TextureSize,
   type WindowLayout,
@@ -81,6 +82,7 @@ export async function layOutPreview(
     readonly screen: Screen;
     readonly localise?: (text: string) => string;
     readonly view?: LayoutView;
+    readonly content?: LayoutContent;
   },
 ): Promise<WindowLayout> {
   const input: LayoutInput = {

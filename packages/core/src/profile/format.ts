@@ -124,14 +124,103 @@ export interface ProfileMod {
   readonly name?: string;
 }
 
-/** The sections whose entries are keyed by id and layered (ADR 0006). */
-export type ProfileSection = 'selectors' | 'groups' | 'rules' | 'views';
+/**
+ * Where a code-filled widget's text comes from (spec section 5): a path of the chosen save, a
+ * localisation key of the playset, the engine (only a live snapshot knows it), or nothing but
+ * generated text. Whatever the source, a value it lacks falls through to the generated layer.
+ */
+export type ContentSourceKind = 'save' | 'loc' | 'engine' | 'generated';
+
+/** What the generated layer writes: a text, a number, a percentage or a date. */
+export type GeneratedKind = 'text' | 'number' | 'percent' | 'date';
+
+export const GENERATED_KINDS: readonly GeneratedKind[] = ['text', 'number', 'percent', 'date'];
+
+/** How a save value is written: as it is, as a number, or as a number with `%`. */
+export type ValueFormat = 'text' | 'number' | 'percent';
+
+export const VALUE_FORMATS: readonly ValueFormat[] = ['text', 'number', 'percent'];
+
+/**
+ * The only transforms (ADR 0006): `sum` adds the values of several save paths, `localise` shows
+ * the playset's localisation of the value (a culture, a religion, a tag).
+ */
+export type ContentTransform = 'sum' | 'localise';
+
+/** A save path as written, such as `provinces.{province}.base_tax`. */
+export interface SavePathRef {
+  readonly path: string;
+  readonly range: SourceRange;
+}
+
+/** The source of one text: a content entry's, or a field's of a repeater's entries. */
+export interface ContentSource {
+  readonly source: ContentSourceKind;
+  /** For a `save` source: its paths, several only with `sum`. */
+  readonly save: readonly SavePathRef[];
+  readonly transform?: ContentTransform;
+  readonly format: ValueFormat;
+  /** Decimals of a number or percentage; at most two, trailing zeros dropped, when not given. */
+  readonly decimals?: number;
+  /** For a `loc` source: the localisation key. */
+  readonly loc?: string;
+  /** What the generated layer fills the text with. */
+  readonly generated: GeneratedKind;
+}
+
+/** A code-filled widget and the source of its text, keyed by its path. */
+export interface Content extends Written, ContentSource {
+  readonly id: string;
+  readonly path: PathRef;
+}
+
+/** A field of a repeater's entry: a path inside the template and its source. */
+export interface RepeaterField extends ContentSource {
+  readonly path: PathRef;
+}
+
+/**
+ * A list box the game's code fills with entries of a template (spec section 5): one entry per
+ * child of a save collection, or, without a save, `count` generated entries. Keyed by the list
+ * box's path.
+ */
+export interface Repeater extends Written {
+  readonly id: string;
+  readonly path: PathRef;
+  /** The top-level definition each entry is made from, such as a `windowType` of the playset. */
+  readonly template: string;
+  readonly templateRange: SourceRange;
+  /** The save collection the entries come from, such as `provinces.{province}.buildings`. */
+  readonly from?: SavePathRef;
+  /** How many entries show without a save. */
+  readonly count: number;
+  readonly fields: readonly RepeaterField[];
+}
+
+/**
+ * A window the game opens instead of this one in some case, such as `colonisationpanel` for an
+ * uncolonised province: the preview offers to pin it when the link holds (spec section 2).
+ */
+export interface Link extends Written {
+  readonly id: string;
+  readonly when: readonly Condition[];
+  readonly window: string;
+  readonly windowRange: SourceRange;
+  readonly label?: string;
+}
+
+/** The sections whose entries are keyed by id (or path) and layered (ADR 0006). */
+export type ProfileSection =
+  'selectors' | 'groups' | 'rules' | 'views' | 'content' | 'repeaters' | 'links';
 
 export const PROFILE_SECTIONS: readonly ProfileSection[] = [
   'selectors',
   'groups',
   'rules',
   'views',
+  'content',
+  'repeaters',
+  'links',
 ];
 
 export interface SectionEntries {
@@ -139,6 +228,9 @@ export interface SectionEntries {
   readonly groups: Group;
   readonly rules: Rule;
   readonly views: View;
+  readonly content: Content;
+  readonly repeaters: Repeater;
+  readonly links: Link;
 }
 
 /**
@@ -158,6 +250,9 @@ export interface ProfileFile {
   readonly groups: readonly Layered<Group>[];
   readonly rules: readonly Layered<Rule>[];
   readonly views: readonly Layered<View>[];
+  readonly content: readonly Layered<Content>[];
+  readonly repeaters: readonly Layered<Repeater>[];
+  readonly links: readonly Layered<Link>[];
   readonly defaultView?: { readonly id: string; readonly range: SourceRange };
 }
 
@@ -168,6 +263,9 @@ export interface WindowProfile {
   readonly groups: readonly Group[];
   readonly rules: readonly Rule[];
   readonly views: readonly View[];
+  readonly content: readonly Content[];
+  readonly repeaters: readonly Repeater[];
+  readonly links: readonly Link[];
   /** The view the preview opens on; the first view when no layer names one. */
   readonly defaultView: string | undefined;
   /** Where the layer that named the default view named it. */
@@ -189,6 +287,8 @@ export type ProfileDiagnosticCode =
   | 'profile-unknown-value'
   /** A fact Etch does not implement, or values that are not the fact's. */
   | 'profile-unknown-fact'
+  /** A save path outside those Etch knows, or a repeater's template the playset lacks. */
+  | 'profile-unknown-source'
   /** The file was checked with another version of its game or mod; it still applies. */
   | 'profile-other-version';
 

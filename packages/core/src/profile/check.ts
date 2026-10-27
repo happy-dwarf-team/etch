@@ -1,17 +1,21 @@
 /**
  * The load checks of a window profile (ADR 0006, spec section 4) against the window it describes:
- * a path that names no widget of the window, an unknown selector, value, fact, view or
- * `positionType` is an error on the entry, which is then skipped, and the rest applies. Checks run
- * on the layered profile, so an entry may use what a lower layer defines; each error goes to the
- * file that wrote the entry.
+ * a path that names no widget of the window, an unknown selector, value, fact, view, save path,
+ * template or `positionType` is an error on the entry, which is then skipped, and the rest
+ * applies. Checks run on the layered profile, so an entry may use what a lower layer defines; each
+ * error goes to the file that wrote the entry.
  */
 import type { Widget } from '../model/gui.ts';
 import type { SourceRange } from '../script/tree.ts';
 import { factNamed } from './facts.ts';
 import type {
+  Content,
+  ContentSource,
+  Link,
   PathRef,
   ProfileDiagnostic,
   ProfileFile,
+  Repeater,
   Rule,
   Selector,
   View,
@@ -19,12 +23,20 @@ import type {
   Written,
 } from './format.ts';
 import { profilePattern, widgetsAt } from './paths.ts';
+import { readSavePath } from './save-paths.ts';
+
+/** The widget kinds a repeater fills. */
+const LIST_KINDS = new Set(['listboxType', 'smoothListboxType']);
 
 export interface ProfileCheckInput {
   /** The top-level window, as the playset's winning `.gui` file defines it. */
   readonly window: Widget;
   /** Whether the window's file defines a `positionType` of this name (ignoring case). */
   readonly positionType: (name: string) => boolean;
+  /** The playset's top-level definition of a name, for a repeater's template; unchecked without. */
+  readonly template?: (name: string) => Widget | undefined;
+  /** Whether the playset defines a top-level window of a name, for links; unchecked without. */
+  readonly windowExists?: (name: string) => boolean;
 }
 
 export interface CheckedProfile {
@@ -184,6 +196,92 @@ export function checkProfile(profile: WindowProfile, input: ProfileCheckInput): 
     return ok;
   });
 
+  const saveFails = (
+    entry: Written,
+    source: ContentSource,
+    options: { entry?: boolean } = {},
+  ): boolean => {
+    let failed = false;
+    for (const ref of source.save) {
+      const path = readSavePath(ref.path, options);
+      if ('problem' in path) {
+        error(entry, 'profile-unknown-source', ref.range, path.problem);
+        failed = true;
+      }
+    }
+    return failed;
+  };
+
+  const content = profile.content.filter((entry: Content) => {
+    const pathOk = !pathFails(entry, entry.path);
+    return !saveFails(entry, entry) && pathOk;
+  });
+
+  const repeaters = profile.repeaters.filter((repeater: Repeater) => {
+    let ok = !pathFails(repeater, repeater.path);
+    for (const list of widgetsAt(input.window, repeater.path.path)) {
+      if (!LIST_KINDS.has(list.kind)) {
+        error(
+          repeater,
+          'profile-unknown-path',
+          repeater.path.range,
+          `A repeater fills a list box; "${repeater.path.path}" is a ${list.kind}.`,
+        );
+        ok = false;
+        break;
+      }
+    }
+    if (repeater.from !== undefined) {
+      const from = readSavePath(repeater.from.path, { collection: true });
+      if ('problem' in from) {
+        error(repeater, 'profile-unknown-source', repeater.from.range, from.problem);
+        ok = false;
+      }
+    }
+    const template = input.template?.(repeater.template);
+    if (input.template !== undefined && template === undefined) {
+      error(
+        repeater,
+        'profile-unknown-source',
+        repeater.templateRange,
+        `The playset defines no top-level "${repeater.template}" for the entries.`,
+      );
+      ok = false;
+    }
+    for (const field of repeater.fields) {
+      if (template !== undefined && widgetsAt(template, field.path.path).length === 0) {
+        error(
+          repeater,
+          'profile-unknown-path',
+          field.path.range,
+          `No widget of ${repeater.template} has the path "${field.path.path}"; a field's path starts with the template's name.`,
+        );
+        ok = false;
+      }
+      ok = !saveFails(repeater, field, { entry: repeater.from !== undefined }) && ok;
+    }
+    return ok;
+  });
+
+  const links = profile.links.filter((link: Link) => {
+    let ok = true;
+    for (const condition of link.when) {
+      for (const value of condition.values) {
+        ok = hasValue(link, condition.selector, value, condition.range) && ok;
+      }
+    }
+    if (input.windowExists !== undefined && !input.windowExists(link.window)) {
+      error(
+        link,
+        'profile-unknown-name',
+        link.windowRange,
+        `The playset defines no window "${link.window}".`,
+      );
+      ok = false;
+    }
+    return ok;
+  });
+
   let defaultView = profile.defaultView;
   if (defaultView !== undefined && !views.some((v) => v.id === defaultView)) {
     const named = profile.views.find((v) => v.id === defaultView);
@@ -202,6 +300,9 @@ export function checkProfile(profile: WindowProfile, input: ProfileCheckInput): 
       groups,
       rules,
       views,
+      content,
+      repeaters,
+      links,
       defaultView,
     },
     diagnostics,

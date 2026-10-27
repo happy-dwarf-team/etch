@@ -6,5 +6,7 @@ export * from './jsonc.ts';
 export * from './layers.ts';
 export * from './paths.ts';
 export * from './read.ts';
+export * from './sample.ts';
+export * from './save-paths.ts';
 export * from './view.ts';
 export * from './edit.ts';

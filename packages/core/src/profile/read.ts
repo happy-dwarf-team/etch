@@ -8,10 +8,22 @@
 import type { SourceRange } from '../script/tree.ts';
 import { factNamed } from './facts.ts';
 import {
+  GENERATED_KINDS,
   PROFILE_FORMAT_VERSION,
   SELECTOR_KINDS,
+  VALUE_FORMATS,
   type Condition,
+  type Content,
+  type ContentSource,
+  type ContentSourceKind,
+  type ContentTransform,
+  type GeneratedKind,
   type Group,
+  type Link,
+  type Repeater,
+  type RepeaterField,
+  type SavePathRef,
+  type ValueFormat,
   type Layered,
   type PathRef,
   type ProfileDiagnostic,
@@ -52,6 +64,9 @@ const TOP_LEVEL = new Set([
   'groups',
   'rules',
   'views',
+  'content',
+  'repeaters',
+  'links',
   'defaultView',
 ]);
 
@@ -152,25 +167,34 @@ export function readProfile(text: string, origin: ProfileOrigin): ReadProfile {
     fault(error);
   }
 
+  /** A section keyed by id, or by widget path (`byPath`), whose keys compare without case. */
   const section = <T>(
     name: string,
-    read: (id: string, node: JsonNode, written: { origin: ProfileOrigin; range: SourceRange }) => T,
+    read: (
+      id: string,
+      node: JsonNode,
+      written: { origin: ProfileOrigin; range: SourceRange },
+      key: JsonMember,
+    ) => T,
+    byPath = false,
   ): Layered<T>[] => {
     const node = member(root, name);
     if (node === undefined) return [];
     if (node.value.kind !== 'object') {
-      report('error', 'profile-format', node.value, `"${name}" is an object keyed by id.`);
+      const keyed = byPath ? 'widget path' : 'id';
+      report('error', 'profile-format', node.value, `"${name}" is an object keyed by ${keyed}.`);
       return [];
     }
     const entries: Layered<T>[] = [];
     for (const entry of node.value.members) {
       const written = { origin, range: { start: entry.start, end: entry.end } };
+      const id = byPath ? pathId(entry.key) : entry.key;
       if (entry.value.kind === 'null') {
-        entries.push({ removed: true, id: entry.key, ...written });
+        entries.push({ removed: true, id, ...written });
         continue;
       }
       try {
-        entries.push(read(entry.key, entry.value, written));
+        entries.push(read(id, entry.value, written, entry));
       } catch (error) {
         fault(error);
       }
@@ -187,9 +211,248 @@ export function readProfile(text: string, origin: ProfileOrigin): ReadProfile {
     groups: section('groups', readGroup),
     rules: section('rules', readRule),
     views: section('views', readView),
+    content: section('content', readContent, true),
+    repeaters: section('repeaters', readRepeater, true),
+    links: section('links', readLink),
     ...(defaultView === undefined ? {} : { defaultView }),
   };
   return { file, diagnostics };
+}
+
+/** The key of an entry keyed by widget path: names compare without case, as the game's do. */
+export function pathId(path: string): string {
+  return path.trim().toLowerCase();
+}
+
+const SOURCE_KEYS = ['save', 'loc', 'engine', 'generated', 'transform', 'format', 'decimals'];
+
+/** The source of a text, from the properties of a content entry or a repeater's field. */
+function readSource(node: JsonNode, props: Map<string, JsonNode>, what: string): ContentSource {
+  const saveNode = props.get('save');
+  const locNode = props.get('loc');
+  const engineNode = props.get('engine');
+  const sources = [saveNode, locNode, engineNode].filter((n) => n !== undefined);
+  if (sources.length > 1) {
+    throw new Faulty(`${capitalise(what)} has one source: "save", "loc" or "engine".`, node);
+  }
+  const generatedNode = props.get('generated');
+  let generated: GeneratedKind | undefined;
+  if (generatedNode !== undefined) {
+    const kind = text$(generatedNode, '"generated"');
+    if (!(GENERATED_KINDS as readonly string[]).includes(kind)) {
+      throw new Faulty(
+        `"generated" is one of ${GENERATED_KINDS.join(', ')}, not "${kind}".`,
+        generatedNode,
+      );
+    }
+    generated = kind as GeneratedKind;
+  }
+  if (sources.length === 0 && generated === undefined) {
+    throw new Faulty(
+      `${capitalise(what)} has a source: "save", "loc", "engine" or "generated".`,
+      node,
+    );
+  }
+
+  const transformNode = props.get('transform');
+  const formatNode = props.get('format');
+  const decimalsNode = props.get('decimals');
+  if (saveNode === undefined) {
+    const only = transformNode ?? formatNode ?? decimalsNode;
+    if (only !== undefined) {
+      throw new Faulty('"transform", "format" and "decimals" go with a "save" source.', only);
+    }
+  }
+
+  let save: SavePathRef[] = [];
+  if (saveNode !== undefined) {
+    save =
+      saveNode.kind === 'array'
+        ? saveNode.items.map((item) => ({ path: text$(item, 'a save path'), range: item }))
+        : [{ path: text$(saveNode, 'a save path'), range: saveNode }];
+    if (save.length === 0) throw new Faulty('"save" names at least one save path.', saveNode);
+  }
+  let transform: ContentTransform | undefined;
+  if (transformNode !== undefined) {
+    const name = text$(transformNode, '"transform"');
+    if (name !== 'sum' && name !== 'localise') {
+      throw new Faulty(`"transform" is "sum" or "localise", not "${name}".`, transformNode);
+    }
+    transform = name;
+  }
+  if (save.length > 1 && transform !== 'sum') {
+    throw new Faulty('Several save paths are added up: give "transform": "sum".', saveNode ?? node);
+  }
+  if (transform === 'sum' && save.length < 2) {
+    throw new Faulty(
+      '"sum" adds up several save paths: give "save" an array.',
+      transformNode ?? node,
+    );
+  }
+  let format: ValueFormat = transform === 'sum' ? 'number' : 'text';
+  if (formatNode !== undefined) {
+    const name = text$(formatNode, '"format"');
+    if (!(VALUE_FORMATS as readonly string[]).includes(name)) {
+      throw new Faulty(
+        `"format" is one of ${VALUE_FORMATS.join(', ')}, not "${name}".`,
+        formatNode,
+      );
+    }
+    format = name as ValueFormat;
+    if (transform === 'localise' && format !== 'text') {
+      throw new Faulty('A localised value is a text.', formatNode);
+    }
+    if (transform === 'sum' && format === 'text') {
+      throw new Faulty('A sum is a number or a percentage.', formatNode);
+    }
+  }
+  let decimals: number | undefined;
+  if (decimalsNode !== undefined) {
+    if (
+      decimalsNode.kind !== 'number' ||
+      !Number.isInteger(decimalsNode.value) ||
+      decimalsNode.value < 0 ||
+      decimalsNode.value > 4
+    ) {
+      throw new Faulty('"decimals" is a whole number from 0 to 4.', decimalsNode);
+    }
+    if (format === 'text')
+      throw new Faulty('"decimals" goes with a number or a percentage.', decimalsNode);
+    decimals = decimalsNode.value;
+  }
+  let loc: string | undefined;
+  if (locNode !== undefined) loc = text$(locNode, '"loc"');
+  if (engineNode !== undefined && (engineNode.kind !== 'boolean' || !engineNode.value)) {
+    throw new Faulty('"engine" is true: only a live snapshot knows the value.', engineNode);
+  }
+
+  const source: ContentSourceKind =
+    saveNode !== undefined
+      ? 'save'
+      : locNode !== undefined
+        ? 'loc'
+        : engineNode !== undefined
+          ? 'engine'
+          : 'generated';
+  return {
+    source,
+    save,
+    ...(transform === undefined ? {} : { transform }),
+    format,
+    ...(decimals === undefined ? {} : { decimals }),
+    ...(loc === undefined ? {} : { loc }),
+    generated: generated ?? (format === 'text' ? 'text' : format),
+  };
+}
+
+function readContent(
+  id: string,
+  node: JsonNode,
+  written: { origin: ProfileOrigin; range: SourceRange },
+  key: JsonMember,
+): Content {
+  const props = object(node, `the content of "${key.key}"`, [...SOURCE_KEYS, 'note']);
+  optionalText(props.get('note'), 'note');
+  return {
+    id,
+    path: pathKey(key),
+    ...readSource(node, props, `the content of "${key.key}"`),
+    ...written,
+  };
+}
+
+function readRepeater(
+  id: string,
+  node: JsonNode,
+  written: { origin: ProfileOrigin; range: SourceRange },
+  key: JsonMember,
+): Repeater {
+  const what = `the repeater of "${key.key}"`;
+  const props = object(node, what, ['template', 'from', 'count', 'fields', 'note']);
+  optionalText(props.get('note'), 'note');
+  const templateNode = props.get('template');
+  if (templateNode === undefined) {
+    throw new Faulty(`${capitalise(what)} names the "template" of its entries.`, node);
+  }
+  const fromNode = props.get('from');
+  const countNode = props.get('count');
+  let count = 3;
+  if (countNode !== undefined) {
+    if (
+      countNode.kind !== 'number' ||
+      !Number.isInteger(countNode.value) ||
+      countNode.value < 0 ||
+      countNode.value > 100
+    ) {
+      throw new Faulty('"count" is a whole number of entries from 0 to 100.', countNode);
+    }
+    count = countNode.value;
+  }
+  const fields: RepeaterField[] = [];
+  const fieldsNode = props.get('fields');
+  if (fieldsNode !== undefined) {
+    if (fieldsNode.kind !== 'object') {
+      throw new Faulty(
+        '"fields" is an object of sources keyed by a path in the template.',
+        fieldsNode,
+      );
+    }
+    for (const entry of fieldsNode.members) {
+      const field = `field "${entry.key}"`;
+      const fieldProps = object(entry.value, field, SOURCE_KEYS);
+      fields.push({ path: pathKey(entry), ...readSource(entry.value, fieldProps, field) });
+    }
+  }
+  return {
+    id,
+    path: pathKey(key),
+    template: text$(templateNode, '"template"'),
+    templateRange: templateNode,
+    ...(fromNode === undefined
+      ? {}
+      : { from: { path: text$(fromNode, '"from"'), range: fromNode } }),
+    count,
+    fields,
+    ...written,
+  };
+}
+
+function readLink(
+  id: string,
+  node: JsonNode,
+  written: { origin: ProfileOrigin; range: SourceRange },
+): Link {
+  const props = object(node, `link "${id}"`, ['when', 'window', 'label']);
+  const windowNode = props.get('window');
+  if (windowNode === undefined) throw new Faulty(`Link "${id}" names the "window" it opens.`, node);
+  const whenNode = props.get('when');
+  if (whenNode === undefined) throw new Faulty(`Link "${id}" says "when" it holds.`, node);
+  const label = optionalText(props.get('label'), 'label');
+  return {
+    id,
+    when: readWhen(whenNode),
+    window: text$(windowNode, '"window"'),
+    windowRange: windowNode,
+    ...(label === undefined ? {} : { label }),
+    ...written,
+  };
+}
+
+/** Conditions keyed by selector: one value, or any of several. */
+function readWhen(whenNode: JsonNode): Condition[] {
+  if (whenNode.kind !== 'object') {
+    throw new Faulty('"when" is an object of selector values keyed by selector.', whenNode);
+  }
+  const when: Condition[] = [];
+  for (const entry of whenNode.members) {
+    const values =
+      entry.value.kind === 'array'
+        ? entry.value.items.map((item) => text$(item, `"${entry.key}"`))
+        : [text$(entry.value, `"${entry.key}"`)];
+    if (values.length === 0) throw new Faulty('A condition names at least one value.', entry.value);
+    when.push({ selector: entry.key, values, range: entry });
+  }
+  return when;
 }
 
 function readMod(node: JsonNode): ProfileMod {
@@ -335,22 +598,8 @@ function readRule(
     'note',
   ]);
   optionalText(props.get('note'), 'note');
-  const when: Condition[] = [];
   const whenNode = props.get('when');
-  if (whenNode !== undefined) {
-    if (whenNode.kind !== 'object') {
-      throw new Faulty('"when" is an object of selector values keyed by selector.', whenNode);
-    }
-    for (const entry of whenNode.members) {
-      const values =
-        entry.value.kind === 'array'
-          ? entry.value.items.map((item) => text$(item, `"${entry.key}"`))
-          : [text$(entry.value, `"${entry.key}"`)];
-      if (values.length === 0)
-        throw new Faulty('A condition names at least one value.', entry.value);
-      when.push({ selector: entry.key, values, range: entry });
-    }
-  }
+  const when = whenNode === undefined ? [] : readWhen(whenNode);
   const paths = (key: string): PathRef[] => {
     const n = props.get(key);
     if (n === undefined) return [];
