@@ -1,68 +1,21 @@
-// The game host's watchdog (spec section 4, etch#51): what restarts it and how often it may crash.
-// A start-up-only file, a new resolution, playset or language, a dead process, a hang (no answer
-// to a ping, or a frame counter that stops) and a console fault restart it; restarts asked for
-// while one runs coalesce into one more; after 3 crashes in 5 minutes it stops and waits for a
-// manual start. Node only, no vscode.
+// The live game's watchdog (spec section 6, etch#51, kept from 1.x's game host): how a hang is told
+// and how often the game may crash. A dead process and a hang (no answer to a ping, or a frame
+// counter that stops) restart it; restarts asked for while one runs coalesce into one more; after
+// 3 crashes in 5 minutes it stops and waits for a manual start. Node only, no vscode.
 import { open } from 'node:fs/promises';
 import { join } from 'node:path';
-import type { GameHostMod, HostDisplay } from './install.ts';
 import type { Ping } from './pipe.ts';
 
-/** How often a ready game host is pinged. */
+/** How often a ready live game is pinged. */
 export const PING_INTERVAL_MS = 1_000;
 /** How long a ping may go unanswered, or the frame counter stand still, before it is a hang. */
 export const HANG_MS = 10_000;
-/** Crashes within `CRASH_WINDOW_MS` that stop the game host until a manual start. */
+/** Crashes within `CRASH_WINDOW_MS` that stop the live game until a manual start. */
 export const CRASH_LIMIT = 3;
 export const CRASH_WINDOW_MS = 5 * 60_000;
 
 /**
- * Whether a file the playset reads needs a restart when it changes on disk: the game reads
- * sprite types (`.gfx`) and fonts (`.fnt`) only when it starts, and has no command to read them
- * again.
- */
-export function needsRestart(path: string): boolean {
-  return /\.(?:gfx|fnt)$/i.test(path);
-}
-
-/** What a start of the game host is made from; a change of it restarts the game host. */
-export interface HostStartRequest {
-  readonly gameFolder: string;
-  readonly mods: readonly GameHostMod[];
-  readonly display: HostDisplay;
-}
-
-/** Why the game host running for `running` must restart for `next`, or `undefined`. */
-export function requestChange(
-  running: HostStartRequest,
-  next: HostStartRequest,
-): string | undefined {
-  if (running.display.width !== next.display.width) return resolutionChange(next.display);
-  if (running.display.height !== next.display.height) return resolutionChange(next.display);
-  if (running.display.language !== next.display.language) {
-    return `the language changed to ${next.display.language}`;
-  }
-  if (folderKey(running.gameFolder) !== folderKey(next.gameFolder)) {
-    return 'the game folder changed';
-  }
-  const mods = (request: HostStartRequest): string =>
-    JSON.stringify(request.mods.map((mod) => [folderKey(mod.root), mod.descriptorPath ?? '']));
-  return mods(running) === mods(next) ? undefined : 'the playset changed';
-}
-
-function resolutionChange(display: HostDisplay): string {
-  return `the resolution changed to ${String(display.width)}×${String(display.height)}`;
-}
-
-function folderKey(folder: string): string {
-  return folder
-    .replace(/[\\/]+$/, '')
-    .replaceAll('/', '\\')
-    .toLowerCase();
-}
-
-/**
- * Watches a ready game host's pings: a hang is a ping left unanswered, or a frame counter that
+ * Watches a ready live game's pings: a hang is a ping left unanswered, or a frame counter that
  * did not move, for `hangMs`. The pipe thread answers pings while the game's main thread is stuck,
  * so the frame counter tells a hung game from a dead plugin.
  */
@@ -87,7 +40,7 @@ export class HangCheck {
     }
   }
 
-  /** Why the game host hangs at `now`, or `undefined`. */
+  /** Why the live game hangs at `now`, or `undefined`. */
   hang(now: number): string | undefined {
     const seconds = (ms: number): string => `${(ms / 1000).toFixed(0)} s`;
     if (now - this.answered >= this.hangMs) {
@@ -108,7 +61,7 @@ export interface WatchOptions {
 }
 
 /**
- * Pings a ready game host until it hangs, and resolves with why. One ping is in flight at a time,
+ * Pings a ready live game until it hangs, and resolves with why. One ping is in flight at a time,
  * so a stuck pipe does not pile them up.
  */
 export async function watch(
@@ -147,7 +100,7 @@ function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/** Counts crashes: the `CRASH_LIMIT`th within `CRASH_WINDOW_MS` stops the game host. */
+/** Counts crashes: the `CRASH_LIMIT`th within `CRASH_WINDOW_MS` stops the live game. */
 export class CrashLimit {
   private readonly limit: number;
   private readonly windowMs: number;
@@ -173,8 +126,8 @@ export class CrashLimit {
 /**
  * At most one restart at a time. A restart asked for while one runs, before the new process is
  * started (`take`), joins it; one asked for later makes one more, which every later one joins.
- * `cycle` stops the running game host, calls `take` right before it starts the new one and
- * resolves false when the game host should stay down, which drops the restarts still asked for.
+ * `cycle` stops the running live game, calls `take` right before it starts the new one and
+ * resolves false when the live game should stay down, which drops the restarts still asked for.
  */
 export class RestartQueue {
   private readonly cycle: (take: () => readonly string[]) => Promise<boolean>;

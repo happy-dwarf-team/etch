@@ -1,4 +1,4 @@
-// What the game host needs from Windows that Node does not offer (spec sections 1 and 4): a
+// What the live game needs from Windows that Node does not offer (spec sections 1 and 6): a
 // process's identity (PID, image path, creation time), closing a process only after that identity
 // is checked again through the same handle, finding the game's CrashReporter.exe, and keeping the
 // game's window behind VS Code without minimising it. Node has no Win32 bindings and Etch ships no
@@ -148,7 +148,7 @@ class WindowsHelper {
   }
 
   private async send<T>(request: object): Promise<T> {
-    if (process.platform !== 'win32') throw new Error('The game host runs on Windows only.');
+    if (process.platform !== 'win32') throw new Error('The live game runs on Windows only.');
     if (this.idle !== undefined) clearTimeout(this.idle);
     const child = this.child ?? (await this.start());
     child.stdin?.write(`${JSON.stringify(request)}\n`);

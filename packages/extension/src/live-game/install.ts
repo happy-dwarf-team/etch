@@ -1,8 +1,9 @@
-// The game host install (spec section 4, ADR 0003, etch#48): Etch's private copy of the game in the
-// extension's global storage, with the pinned builds the VSIX carries under game/ and a profile and
-// overlay mod of its own. Every folder of the game is a junction to the player's game folder and
-// every top-level file a copy, so that Anvil's version.dll sits next to an eu4.exe of Etch's own.
-// Node only, no vscode: the extension asks before creating it (index.ts).
+// The private install (spec section 6, ADR 0005, etch#48): Etch's private copy of the game in the
+// extension's global storage, with the pinned builds the VSIX carries under game/ and a profile of
+// its own, which the live game runs from. Every folder of the game is a junction to the player's
+// game folder and every top-level file a copy, so that Anvil's version.dll sits next to an eu4.exe
+// of Etch's own. It was 1.x's game host install, which 2.0.0 removes (`gameHostLayout`).
+// Node only, no vscode: the extension asks before creating it (live-game.ts).
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
 import {
@@ -21,29 +22,39 @@ import {
   writeFile,
 } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
-import { backdropFiles, isPreviewCopyFile } from '@etch/core';
 import { decodeDescriptor } from '@etch/core/playset';
 
-/** The game host install's folders under the extension's global storage. */
-export interface GameHostLayout {
+/** An install's folders under the extension's global storage. */
+export interface InstallLayout {
   readonly root: string;
-  /** The junction copy of the game, the game host's working directory. */
+  /** The junction copy of the game, the live game's working directory. */
   readonly game: string;
   /** The private profile, passed as `-userdir=<profile>/`. */
   readonly profile: string;
-  /** Etch's overlay mod, loaded after the playset. */
-  readonly overlay: string;
-  /** Marks the folder as a game host install Etch made, and names the game folder it copies. */
+  /** Marks the folder as an install Etch made, and names the game folder it copies. */
   readonly record: string;
 }
 
-export function gameHostLayout(storageFolder: string): GameHostLayout {
+export function privateInstallLayout(storageFolder: string): InstallLayout {
+  const root = join(storageFolder, 'private-install');
+  return {
+    root,
+    game: join(root, 'game'),
+    profile: join(root, 'profile'),
+    record: join(root, 'etch-private-install.json'),
+  };
+}
+
+/**
+ * Etch 1.x's game host install, which 2.0.0 removes on its first activation through
+ * `removeInstall` (ADR 0005). Its `overlay/` folder goes with the rest.
+ */
+export function gameHostLayout(storageFolder: string): InstallLayout {
   const root = join(storageFolder, 'game-host');
   return {
     root,
     game: join(root, 'game'),
     profile: join(root, 'profile'),
-    overlay: join(root, 'overlay'),
     record: join(root, 'etch-game-host.json'),
   };
 }
@@ -76,14 +87,14 @@ const LEFT_OUT = [/^launcher-installer/i, /^userdir\.txt$/i, /^console_history\.
 
 const SHA256 = /^[0-9A-F]{64}$/;
 
-export type GameHostInstallErrorCode =
+export type PrivateInstallErrorCode =
   'unsupported-game' | 'damaged-builds' | 'not-an-install' | 'install-failed';
 
-export class GameHostInstallError extends Error {
-  readonly code: GameHostInstallErrorCode;
-  constructor(code: GameHostInstallErrorCode, message: string) {
+export class PrivateInstallError extends Error {
+  readonly code: PrivateInstallErrorCode;
+  constructor(code: PrivateInstallErrorCode, message: string) {
     super(message);
-    this.name = 'GameHostInstallError';
+    this.name = 'PrivateInstallError';
     this.code = code;
   }
 }
@@ -91,7 +102,7 @@ export class GameHostInstallError extends Error {
 /** Reads and checks game/manifest.json; throws `damaged-builds` when it is not one. */
 export function parseGameManifest(value: unknown): GameManifest {
   const fail = (why: string): never => {
-    throw new GameHostInstallError('damaged-builds', `game/manifest.json: ${why}`);
+    throw new PrivateInstallError('damaged-builds', `game/manifest.json: ${why}`);
   };
   if (!isRecord(value) || value['formatVersion'] !== 1) fail('not format version 1');
   const root = value as Record<string, unknown>;
@@ -145,7 +156,7 @@ export async function readGameManifest(buildsFolder: string): Promise<GameManife
   try {
     text = await readFile(join(buildsFolder, 'manifest.json'), 'utf8');
   } catch {
-    throw new GameHostInstallError(
+    throw new PrivateInstallError(
       'damaged-builds',
       `Etch's pinned game-side builds are missing (${join(buildsFolder, 'manifest.json')}).`,
     );
@@ -153,8 +164,8 @@ export async function readGameManifest(buildsFolder: string): Promise<GameManife
   return parseGameManifest(JSON.parse(text) as unknown);
 }
 
-/** A mod of the playset as the game host loads it. */
-export interface GameHostMod {
+/** A mod of the playset as the live game loads it. */
+export interface LiveGameMod {
   readonly name: string;
   /** Absolute folder of the mod's files. */
   readonly root: string;
@@ -163,18 +174,18 @@ export interface GameHostMod {
 }
 
 export interface PrepareOptions {
-  readonly layout: GameHostLayout;
+  readonly layout: InstallLayout;
   /** The player's game folder, only read. */
   readonly gameFolder: string;
   /** The VSIX's game/ folder: manifest.json and the pinned files. */
   readonly buildsFolder: string;
-  /** The playset in load order; the overlay mod is added after it. */
-  readonly mods: readonly GameHostMod[];
-  readonly display: HostDisplay;
+  /** The playset in load order. */
+  readonly mods: readonly LiveGameMod[];
+  readonly display: LiveGameDisplay;
 }
 
-/** How the game host shows itself (spec section 6): borderless at this size, UI scale 1.0. */
-export interface HostDisplay {
+/** How the live game shows itself: borderless at this size, UI scale 1.0, as 1.x's game host. */
+export interface LiveGameDisplay {
   /** The monitor's native resolution, in device pixels. */
   readonly width: number;
   readonly height: number;
@@ -182,22 +193,21 @@ export interface HostDisplay {
   readonly language: string;
 }
 
-/** What a start of the game host needs. */
+/** What a start of the live game needs. */
 export interface PreparedInstall {
   /** `eu4.exe` of the install. */
   readonly exe: string;
   /** The install's game folder, the process's working directory. */
   readonly gameFolder: string;
   readonly profileFolder: string;
-  readonly overlayFolder: string;
   /** `-userdir=<profile>/`. */
   readonly arguments: readonly string[];
   /** Pinned files that were missing or changed and were installed again from the VSIX. */
   readonly restored: readonly string[];
 }
 
-/** Whether the game host install exists (it may still need `prepareInstall` before a start). */
-export async function installExists(layout: GameHostLayout): Promise<boolean> {
+/** Whether the install exists (it may still need `prepareInstall` before a start). */
+export async function installExists(layout: InstallLayout): Promise<boolean> {
   return isFile(layout.record);
 }
 
@@ -212,40 +222,39 @@ export async function copySize(gameFolder: string): Promise<number> {
 }
 
 /**
- * Creates the game host install if it is missing and brings it up to date before a start: refuses
+ * Creates the private install if it is missing and brings it up to date before a start: refuses
  * an `eu4.exe` other than the pinned build; links every folder of the game and copies its top-level
  * files; checks every pinned file's hash, installs it again from the VSIX when it differs and
- * removes any other file from the plugins folder; writes the private profile's descriptors and
- * `dlc_load.json` (all owned DLC on, the overlay mod last); and clears the overlay mod's preview
- * copies. Never writes outside the install.
+ * removes any other file from the plugins folder; and writes the private profile's descriptors and
+ * `dlc_load.json` (all owned DLC on). Never writes outside the install.
  */
 export async function prepareInstall(options: PrepareOptions): Promise<PreparedInstall> {
   const { layout, buildsFolder } = options;
   const gameFolder = resolve(options.gameFolder);
   if (isInside(gameFolder, layout.root) || isInside(layout.root, gameFolder)) {
-    throw new GameHostInstallError(
+    throw new PrivateInstallError(
       'install-failed',
-      'The game folder and the game host install must not hold each other.',
+      'The game folder and the private install must not hold each other.',
     );
   }
   const manifest = await readGameManifest(buildsFolder);
   const original = join(gameFolder, 'eu4.exe');
   const originalSha = await sha256File(original).catch(() => undefined);
   if (originalSha !== manifest.game.exeSha256) {
-    throw new GameHostInstallError(
+    throw new PrivateInstallError(
       'unsupported-game',
       originalSha === undefined
         ? `${original} cannot be read.`
-        : `${original} is not EU4 ${manifest.game.version}, the only build the game host starts (SHA-256 ${originalSha}).`,
+        : `${original} is not EU4 ${manifest.game.version}, the only build the live game starts (SHA-256 ${originalSha}).`,
     );
   }
 
   await mkdir(layout.root, { recursive: true });
   const record = await readRecord(layout);
   if (record === undefined && (await readdir(layout.root)).length > 0) {
-    throw new GameHostInstallError(
+    throw new PrivateInstallError(
       'not-an-install',
-      `${layout.root} holds files that are not a game host install; Etch leaves it alone.`,
+      `${layout.root} holds files that are not an install Etch made; Etch leaves it alone.`,
     );
   }
   // The record comes first, so that a folder Etch began to fill can always be removed again.
@@ -256,34 +265,32 @@ export async function prepareInstall(options: PrepareOptions): Promise<PreparedI
   const restored = await installPinned(layout, buildsFolder, manifest);
   const exe = join(layout.game, 'eu4.exe');
   if ((await sha256File(exe)) !== manifest.game.exeSha256) {
-    throw new GameHostInstallError(
+    throw new PrivateInstallError(
       'install-failed',
       `${exe} is not the pinned build after it was copied.`,
     );
   }
-  await writeOverlay(layout);
   await writeProfile(layout, options.mods);
   await writeDisplay(layout, options.display);
   return {
     exe,
     gameFolder: layout.game,
     profileFolder: layout.profile,
-    overlayFolder: layout.overlay,
     arguments: [`-userdir=${slashed(layout.profile)}/`],
     restored,
   };
 }
 
 /**
- * Removes the game host install, junctions as links only: nothing of the game folder they point
+ * Removes an install, junctions as links only: nothing of the game folder they point
  * at is touched. False when there is none; throws `not-an-install` for a folder Etch did not make.
  */
-export async function removeInstall(layout: GameHostLayout): Promise<boolean> {
+export async function removeInstall(layout: InstallLayout): Promise<boolean> {
   if (!(await exists(layout.root))) return false;
   if (!(await isFile(layout.record))) {
-    throw new GameHostInstallError(
+    throw new PrivateInstallError(
       'not-an-install',
-      `${layout.root} is not a game host install Etch made; Etch leaves it alone.`,
+      `${layout.root} is not an install Etch made; Etch leaves it alone.`,
     );
   }
   // Everything else first and the record last, so that an interrupted removal can be repeated.
@@ -306,7 +313,7 @@ function isPinnedName(name: string): boolean {
   return PINNED_TOP_LEVEL.some((pinned) => pinned === name.toLowerCase());
 }
 
-async function linkGame(layout: GameHostLayout, gameFolder: string): Promise<void> {
+async function linkGame(layout: InstallLayout, gameFolder: string): Promise<void> {
   const folders = new Set<string>();
   for (const entry of await readdir(gameFolder, { withFileTypes: true })) {
     if (isPinnedName(entry.name)) continue;
@@ -374,7 +381,7 @@ async function copyThrough(source: string, path: string): Promise<void> {
 // ---- Pinned builds ---------------------------------------------------------------------------
 
 async function installPinned(
-  layout: GameHostLayout,
+  layout: InstallLayout,
   buildsFolder: string,
   manifest: GameManifest,
 ): Promise<string[]> {
@@ -389,18 +396,18 @@ async function installPinned(
     const source = join(buildsFolder, ...file.path.split('/'));
     const sourceSha = await sha256File(source).catch(() => undefined);
     if (sourceSha !== file.sha256) {
-      throw new GameHostInstallError(
+      throw new PrivateInstallError(
         'damaged-builds',
         `Etch's pinned ${file.build} build is damaged: ${file.path} does not match game/manifest.json. Reinstall Etch.`,
       );
     }
     await copyThrough(source, target);
     if ((await sha256File(target)) !== file.sha256) {
-      throw new GameHostInstallError('install-failed', `${target} changed while it was installed.`);
+      throw new PrivateInstallError('install-failed', `${target} changed while it was installed.`);
     }
     restored.push(file.path);
   }
-  // A plugin the manifest does not list would load into the game host: nothing else stays there.
+  // A plugin the manifest does not list would load into the live game: nothing else stays there.
   const plugins = join(layout.game, ...PLUGINS_FOLDER.split('/'));
   for (const path of await listTree(plugins)) {
     const relative = `${PLUGINS_FOLDER}${path}`;
@@ -416,7 +423,7 @@ async function realFolders(folder: string, base: string): Promise<void> {
   for (let at = folder; isInside(at, base); at = dirname(at)) {
     const info = await lstat(at);
     if (info.isSymbolicLink() || !info.isDirectory()) {
-      throw new GameHostInstallError('install-failed', `${at} is not a folder of the install.`);
+      throw new PrivateInstallError('install-failed', `${at} is not a folder of the install.`);
     }
   }
 }
@@ -447,31 +454,9 @@ async function removeEmptyFolders(folder: string, root: string): Promise<void> {
   }
 }
 
-// ---- Overlay mod and private profile ---------------------------------------------------------
+// ---- Private profile -------------------------------------------------------------------------
 
-const OVERLAY_NAME = 'Etch overlay';
-
-async function writeOverlay(layout: GameHostLayout): Promise<void> {
-  await mkdir(join(layout.overlay, 'interface'), { recursive: true });
-  await writeIfChanged(
-    join(layout.overlay, 'descriptor.mod'),
-    `name="${OVERLAY_NAME}"\nsupported_version="v1.37.*.*"\ntags={\n\t"Utilities"\n}\n`,
-  );
-  for (const file of backdropFiles()) {
-    const target = join(layout.overlay, ...file.path.split('/'));
-    await mkdir(dirname(target), { recursive: true });
-    await writeIfChanged(target, file.bytes);
-  }
-  // Preview copies are written while the game host runs; it starts without any.
-  const interfaceFolder = join(layout.overlay, 'interface');
-  for (const entry of await readdir(interfaceFolder, { withFileTypes: true })) {
-    if (entry.isFile() && isPreviewCopyFile(entry.name)) {
-      await unlink(join(interfaceFolder, entry.name));
-    }
-  }
-}
-
-async function writeProfile(layout: GameHostLayout, mods: readonly GameHostMod[]): Promise<void> {
+async function writeProfile(layout: InstallLayout, mods: readonly LiveGameMod[]): Promise<void> {
   const modFolder = join(layout.profile, 'mod');
   await mkdir(modFolder, { recursive: true });
   for (const entry of await readdir(modFolder, { withFileTypes: true })) {
@@ -479,7 +464,7 @@ async function writeProfile(layout: GameHostLayout, mods: readonly GameHostMod[]
       await unlink(join(modFolder, entry.name));
     }
   }
-  // Named so that their order by name is the load order too, the overlay mod last.
+  // Named so that their order by name is the load order too.
   const enabled: string[] = [];
   for (const [index, mod] of mods.entries()) {
     const name = `mod-${String(index + 1).padStart(3, '0')}.mod`;
@@ -490,11 +475,6 @@ async function writeProfile(layout: GameHostLayout, mods: readonly GameHostMod[]
     await writeFile(join(modFolder, name), privateDescriptor(mod, text));
     enabled.push(`mod/${name}`);
   }
-  await writeFile(
-    join(modFolder, 'overlay.mod'),
-    privateDescriptor({ name: OVERLAY_NAME, root: layout.overlay }, undefined),
-  );
-  enabled.push('mod/overlay.mod');
   // No DLC disabled: the game enables every DLC the player owns.
   await writeFile(
     join(layout.profile, 'dlc_load.json'),
@@ -508,11 +488,11 @@ async function writeProfile(layout: GameHostLayout, mods: readonly GameHostMod[]
  * so both say borderless at the native resolution. The rest is the lab's verified configuration,
  * silent.
  */
-async function writeDisplay(layout: GameHostLayout, display: HostDisplay): Promise<void> {
+async function writeDisplay(layout: InstallLayout, display: LiveGameDisplay): Promise<void> {
   const width = Math.round(display.width);
   const height = Math.round(display.height);
   if (!(width > 0 && height > 0) || !/^[a-z_]+$/.test(display.language)) {
-    throw new GameHostInstallError('install-failed', 'The game host display is not valid.');
+    throw new PrivateInstallError('install-failed', 'The live game display is not valid.');
   }
   const settings = [
     `language="l_${display.language}"`,
@@ -558,7 +538,7 @@ async function writeDisplay(layout: GameHostLayout, display: HostDisplay): Promi
  * `dependencies` and `replace_path` stay, with `path` and `archive` replaced by the mod's absolute
  * folder; a mod without one gets its name and folder.
  */
-export function privateDescriptor(mod: GameHostMod, descriptorText: string | undefined): string {
+export function privateDescriptor(mod: LiveGameMod, descriptorText: string | undefined): string {
   const path = `path="${slashed(mod.root)}"`;
   if (descriptorText === undefined) {
     return `name="${mod.name.replaceAll('"', "'")}"\n${path}\n`;
@@ -584,12 +564,6 @@ async function removeTree(path: string, root: string): Promise<void> {
   await rmdir(path);
 }
 
-async function writeIfChanged(path: string, data: string | Uint8Array): Promise<void> {
-  const bytes = typeof data === 'string' ? Buffer.from(data) : data;
-  const current = await readFile(path).catch(() => undefined);
-  if (current?.equals(bytes) !== true) await writeFile(path, bytes);
-}
-
 export function sha256File(path: string): Promise<string> {
   return new Promise((done, fail) => {
     const hash = createHash('sha256');
@@ -602,7 +576,7 @@ export function sha256File(path: string): Promise<string> {
   });
 }
 
-async function readRecord(layout: GameHostLayout): Promise<{ gameFolder: string } | undefined> {
+async function readRecord(layout: InstallLayout): Promise<{ gameFolder: string } | undefined> {
   try {
     const value = JSON.parse(await readFile(layout.record, 'utf8')) as unknown;
     return isRecord(value) && typeof value['gameFolder'] === 'string'

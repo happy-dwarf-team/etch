@@ -442,25 +442,3 @@ Results go to the local corpus folder:
   reports/<window>.md                           one page per corpus window
   reports/README.md                             the summary and whether the layout preview meets its target
 ```
-
-### The game host's images
-
-`--game-host` compares the game host's images instead of renders (etch#53).
-The extension's corpus check writes them: one game host run per playset, the
-preview showing each root window of every view captured at the game host's
-resolution, the roots' images laid over each other into one straight RGBA
-image of the screen (docs/game-host.md, "The corpus windows"):
-
-```powershell
-$env:ETCH_GAME_HOST_PATH = '...\Europa Universalis IV'
-$env:ETCH_GAME_HOST_CHECK = 'corpus'
-$env:ETCH_CORPUS_PLAYSET = 'vanilla'                           # or proper-2k-ui-enhanced
-pnpm --filter etch test                                        # starts the game host
-pnpm --filter @etch/compare compare --game-host --resolution 3440x1440
-```
-
-The images, diffs and reports go to `game-host/` of the local corpus folder:
-`game-host/images/captures/...`, `game-host/diffs/captures/...` and
-`game-host/reports/`. The game host shows a window as its `.gui` file draws it
-in the main menu, without the game's code, so this comparison measures how far
-that is from the window in a game; it gates nothing.

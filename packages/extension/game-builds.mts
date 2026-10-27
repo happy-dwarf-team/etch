@@ -20,7 +20,7 @@ export type AllowedLicense = (typeof ALLOWED_LICENSES)[number];
 
 export interface GameBuildPins {
   readonly formatVersion: typeof PINS_FORMAT_VERSION;
-  /** The only game build the game host starts (ADR 0003). */
+  /** The only game build the live game starts (ADR 0005). */
   readonly game: { readonly version: string; readonly exeSha256: string };
   readonly builds: readonly PinnedBuild[];
 }
@@ -252,7 +252,7 @@ export function readZip(zip: Buffer): Map<string, Buffer> {
   return files;
 }
 
-/** One file of the game host install as the VSIX carries it under game/. */
+/** One file of the private install as the VSIX carries it under game/. */
 export interface GameFile {
   /** Path relative to the game folder. */
   readonly path: string;
@@ -324,7 +324,7 @@ export function detectLicense(text: string): AllowedLicense | undefined {
   return undefined;
 }
 
-/** Install paths that two files share, case-insensitively (the game host install is on NTFS). */
+/** Install paths that two files share, case-insensitively (the private install is on NTFS). */
 export function clashingPaths(files: readonly GameFile[]): string[] {
   const seen = new Map<string, string>();
   const clashes: string[] = [];
@@ -337,7 +337,7 @@ export function clashingPaths(files: readonly GameFile[]): string[] {
   return clashes;
 }
 
-/** game/manifest.json: what the game host install gets and must keep (etch#48). */
+/** game/manifest.json: what the private install gets and must keep (etch#48). */
 export interface GameManifest {
   readonly formatVersion: typeof PINS_FORMAT_VERSION;
   readonly game: GameBuildPins['game'];
@@ -358,7 +358,7 @@ export function gameManifest(pins: GameBuildPins, files: readonly GameFile[]): G
   };
 }
 
-/** The game plugin's folder in the game host install. */
+/** The game plugin's folder in the private install. */
 export const PLUGIN_FOLDER = 'anvil/plugins/etch/';
 
 /** THIRD-PARTY-NOTICES.md at the VSIX root: every component inside the VSIX and its licence. */

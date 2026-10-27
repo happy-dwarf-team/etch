@@ -1,8 +1,8 @@
 # Security policy
 
 Etch is a Visual Studio Code extension that reads the game folder, mods and
-profile of Europa Universalis IV, and that will start its own copy of the game
-as the game host. Please report security problems privately, not in public
+profile of Europa Universalis IV, and that starts its own copy of the game as
+the live game (the game host in Etch 1.x). Please report security problems privately, not in public
 issues.
 
 ## Reporting a vulnerability
@@ -24,10 +24,10 @@ releases are not supported.
 ## In scope
 
 - Files written outside Etch's own storage: Etch only reads the player's game
-  folder, mods and profile, and the game host writes only into its own game
-  host install.
+  folder, mods and profile, and the live game writes only into its own private
+  install.
 - Data sent anywhere: Etch has no telemetry and sends nothing.
-- Processes closed that Etch did not start, or a game host started with files
+- Processes closed that Etch did not start, or a live game started with files
   whose hashes do not match the release.
 - Code run from a workspace's files beyond what VS Code's workspace trust
   allows.

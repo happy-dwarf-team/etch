@@ -66,8 +66,9 @@ pnpm --filter etch test
   open and 40 warm reloads each, the preview closed between runs. The test
   fails when a warm reload p95 is over 50 ms or a cold open over 2 s.
 
-The game host's times on the playset are reported, not gated, from
-`packages/extension/test/game-host-budget.ts`, with `ETCH_GAME_HOST_PATH` and
+In Etch 1.x the game host's times on the playset were reported, not gated, from
+`packages/extension/test/game-host-budget.ts` (removed with the game host, ADR
+0005; it is on `release/1.x`), with `ETCH_GAME_HOST_PATH` and
 `ETCH_GAME_HOST_CHECK=budget` (the pinned builds staged by `pnpm pins`): the
 same mods and a test mod with copies of the patch's `topbar.gui` and
 `countrydiplomacyview.gui`. It times the start to ready and to the first image,

@@ -14,16 +14,17 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
-  GameHostInstallError,
+  PrivateInstallError,
   gameHostLayout,
   installExists,
   parseGameManifest,
   prepareInstall,
   privateDescriptor,
+  privateInstallLayout,
   removeInstall,
-  type GameHostLayout,
-  type GameHostMod,
-} from '../src/game-host/install.ts';
+  type InstallLayout,
+  type LiveGameMod,
+} from '../src/live-game/install.ts';
 
 const sha = (data: string | Buffer): string =>
   createHash('sha256').update(data).digest('hex').toUpperCase();
@@ -81,14 +82,14 @@ function manifest(exe = EXE, files = PINNED): object {
 let temp: string;
 let game: string;
 let builds: string;
-let layout: GameHostLayout;
-let mods: GameHostMod[];
+let layout: InstallLayout;
+let mods: LiveGameMod[];
 
 beforeEach(async () => {
   temp = await mkdtemp(join(tmpdir(), 'etch-host-'));
   game = join(temp, 'steam', 'Europa Universalis IV');
   builds = join(temp, 'vsix', 'game');
-  layout = gameHostLayout(join(temp, 'storage'));
+  layout = privateInstallLayout(join(temp, 'storage'));
   await addFiles(game, {
     'eu4.exe': EXE,
     'steam_api64.dll': 'steam',
@@ -121,9 +122,9 @@ afterEach(async () => {
   await rm(temp, { recursive: true, force: true });
 });
 
-const prepare = (folder = game) =>
+const prepare = (folder = game, into = layout) =>
   prepareInstall({
-    layout,
+    layout: into,
     gameFolder: folder,
     buildsFolder: builds,
     mods,
@@ -158,14 +159,14 @@ describe('prepareInstall', () => {
     expect(await snapshot(game)).toEqual(before);
   });
 
-  it('writes the private profile with the playset and the overlay mod last', async () => {
+  it('writes the private profile with the playset', async () => {
     await prepare();
     const dlcLoad = JSON.parse(await readFile(join(layout.profile, 'dlc_load.json'), 'utf8')) as {
       enabled_mods: string[];
       disabled_dlcs: string[];
     };
     expect(dlcLoad).toEqual({
-      enabled_mods: ['mod/mod-001.mod', 'mod/mod-002.mod', 'mod/overlay.mod'],
+      enabled_mods: ['mod/mod-001.mod', 'mod/mod-002.mod'],
       disabled_dlcs: [],
     });
     const slash = (p: string) => p.replaceAll('\\', '/');
@@ -175,9 +176,6 @@ describe('prepareInstall', () => {
     expect(await readFile(join(layout.profile, 'mod', 'mod-002.mod'), 'utf8')).toBe(
       'name="Proper 2K UI Enhanced"\nreplace_path="interface/x"\ndependencies={\n\t"Base"\n}\n' +
         `path="${slash(join(temp, 'workshop', '3290499798'))}"\n`,
-    );
-    expect(await readFile(join(layout.profile, 'mod', 'overlay.mod'), 'utf8')).toBe(
-      `name="Etch overlay"\npath="${slash(layout.overlay)}"\n`,
     );
     const settings = await readFile(join(layout.profile, 'settings.txt'), 'utf8');
     expect(settings).toContain(
@@ -191,23 +189,8 @@ describe('prepareInstall', () => {
     // A later start with a smaller playset leaves no descriptor of the earlier one behind.
     mods = [];
     await prepare();
-    expect((await readdir(join(layout.profile, 'mod'))).sort()).toEqual(['overlay.mod']);
-  });
-
-  it('ships the backdrop in the overlay mod and clears the preview copies before a start', async () => {
-    await prepare();
-    const ui = join(layout.overlay, 'interface');
-    expect(await readdir(ui)).toEqual(['etch_backdrop.gfx']);
-    expect((await readdir(join(layout.overlay, 'gfx', 'interface'))).sort()).toEqual([
-      'etch_backdrop_black.tga',
-      'etch_backdrop_white.tga',
-    ]);
-    await addFiles(layout.overlay, {
-      'interface/etch_topbar.gui': 'black copy',
-      'interface/etchw_topbar.gui': 'white copy',
-    });
-    await prepare();
-    expect(await readdir(ui)).toEqual(['etch_backdrop.gfx']);
+    expect(await readdir(join(layout.profile, 'mod'))).toEqual([]);
+    expect(await readdir(layout.root)).not.toContain('overlay');
   });
 
   it('refuses an eu4.exe other than the pinned build, before it creates anything', async () => {
@@ -220,7 +203,7 @@ describe('prepareInstall', () => {
   it('refuses to start once the game folder changes to another build', async () => {
     await prepare();
     await writeFile(join(game, 'eu4.exe'), 'MZ eu4 1.38');
-    await expect(prepare()).rejects.toBeInstanceOf(GameHostInstallError);
+    await expect(prepare()).rejects.toBeInstanceOf(PrivateInstallError);
   });
 
   it('installs a changed or missing pinned file again and removes any other plugin', async () => {
@@ -260,12 +243,12 @@ describe('prepareInstall', () => {
 
   it('copies a top-level file again when the game updates it, and keeps run-time files', async () => {
     await prepare();
-    await writeFile(join(layout.game, 'console_history.txt'), 'game host history');
+    await writeFile(join(layout.game, 'console_history.txt'), 'live game history');
     await writeFile(join(game, 'steam_api64.dll'), 'steam, updated');
     await prepare();
     expect(await readFile(join(layout.game, 'steam_api64.dll'), 'utf8')).toBe('steam, updated');
     expect(await readFile(join(layout.game, 'console_history.txt'), 'utf8')).toBe(
-      'game host history',
+      'live game history',
     );
   });
 
@@ -309,6 +292,20 @@ describe('removeInstall', () => {
     expect(await removeInstall(layout)).toBe(false);
   });
 
+  it("removes 1.x's game host install with its overlay mod, beside the private install", async () => {
+    const storage = join(temp, 'storage');
+    const old = gameHostLayout(storage);
+    expect(old.root).not.toBe(layout.root);
+    await prepare(game, old);
+    await addFiles(old.root, { 'overlay/interface/etch_topbar.gui': 'black copy' });
+    await prepare();
+    const before = await snapshot(game);
+    expect(await removeInstall(old)).toBe(true);
+    expect(await readdir(storage)).toEqual(['private-install']);
+    expect(await installExists(layout)).toBe(true);
+    expect(await snapshot(game)).toEqual(before);
+  });
+
   it('refuses a folder without the install record', async () => {
     await addFiles(layout.root, { 'game/eu4.exe': EXE });
     await expect(removeInstall(layout)).rejects.toMatchObject({ code: 'not-an-install' });
@@ -330,7 +327,7 @@ describe('parseGameManifest', () => {
     ['an absolute path', 'C:/anvil/anvil.toml'],
     ['a folder named version.dll', 'version.dll/x'],
   ])('refuses a file path into %s', (_, path) => {
-    expect(() => parseGameManifest(manifest(EXE, { [path]: 'x' }))).toThrow(GameHostInstallError);
+    expect(() => parseGameManifest(manifest(EXE, { [path]: 'x' }))).toThrow(PrivateInstallError);
   });
 
   it('refuses a manifest without the pinned game', () => {

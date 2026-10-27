@@ -45,26 +45,10 @@ export type ModelDiagnosticCode =
   | 'unknown-colour'
   /** Layout: a `£key£` text icon whose `GFX_text_key` sprite the playset lacks. */
   | 'missing-icon'
-  /** Game host: a top-level kind other than `windowType` and `eu3dialogtype`, which `window open` cannot show (etch#16). */
-  | 'game-host-window-kind'
-  /** Game host: no preview copy, because the file or window cannot be copied (not an interface `.gui`, no such window, unclosed block). */
-  | 'not-previewable'
-  /** Game host: a name the preview copy defines is already defined, by the file itself or by the playset. */
-  | 'copy-name-taken'
-  /** Game host: what the preview copy leaves out of the original (a second definition of a name, `default_*sound`). */
-  | 'copy-leaves-out'
-  /** Game host: a previewed window with `parent`, which inside the backdrop wrapper names a sibling instead. */
-  | 'wrapped-parent'
-  /** Game host: a dialog's `shieldtype`, which the preview copy leaves out when it wraps the dialog as a `windowType` (etch#118). */
-  | 'wrapped-shield'
-  /** Game host: a line the game wrote to `error.log` during a preview job (etch#52). */
+  /** Live game: a line the game wrote to `error.log` about the file (etch#52). */
   | 'game-error-log'
-  /** Game host: a console command of a preview job that the game refused (etch#52). */
-  | 'game-console-answer'
-  /** Game host: the game's own window of that name may not be the edited text (H6 of etch#16). */
-  | 'game-original-differs'
-  /** Game host: the crop reaches the corner where the game draws its FPS counter (etch#22). */
-  | 'fps-counter-corner';
+  /** Live game: the game's own window of that name may not be the edited text (H6 of etch#16). */
+  | 'game-original-differs';
 
 /** A problem the extension's model finds in one `.gui` or `.gfx` file; the range is in that file's game text. */
 export interface ModelDiagnostic extends SourceRange {

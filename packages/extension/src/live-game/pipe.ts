@@ -1,4 +1,4 @@
-// The extension's end of the game host's session pipe (docs/plugin-protocol.md, protocol 1): JSON
+// The extension's end of the live game's session pipe (docs/plugin-protocol.md, protocol 1): JSON
 // lines, every request answered once by its id. Node only, no vscode.
 import { randomBytes } from 'node:crypto';
 import { connect, type Socket } from 'node:net';
@@ -79,7 +79,7 @@ export class HostPipe {
         reject(
           new PipeError(
             'no_pipe',
-            `The game host's pipe is not up (${error.code ?? error.message}).`,
+            `The live game's pipe is not up (${error.code ?? error.message}).`,
           ),
         );
       });
@@ -114,17 +114,17 @@ export class HostPipe {
       }
     });
     socket.on('error', (error) => {
-      failAll(new PipeError('pipe_broken', `The game host's pipe broke: ${error.message}`));
+      failAll(new PipeError('pipe_broken', `The live game's pipe broke: ${error.message}`));
     });
     socket.on('close', () => {
-      failAll(new PipeError('pipe_closed', "The game host's pipe closed."));
+      failAll(new PipeError('pipe_closed', "The live game's pipe closed."));
     });
     const request = HostPipe.requester(socket, waiting);
     try {
       const answer = await request(1, { type: 'hello', protocol: PROTOCOL_VERSION }, timeoutMs);
       const hello = answer as unknown as Hello;
       if (hello.protocol !== PROTOCOL_VERSION || typeof hello.pid !== 'number') {
-        throw new PipeError('protocol_mismatch', 'The game host answered with another protocol.');
+        throw new PipeError('protocol_mismatch', 'The live game answered with another protocol.');
       }
       if (hello.session !== session) {
         throw new PipeError('wrong_session', 'The pipe answered for another session.');
@@ -159,12 +159,12 @@ export class HostPipe {
     ): Promise<Record<string, unknown>> =>
       new Promise((resolve, reject) => {
         if (socket.destroyed) {
-          reject(new PipeError('pipe_closed', "The game host's pipe closed."));
+          reject(new PipeError('pipe_closed', "The live game's pipe closed."));
           return;
         }
         const timer = setTimeout(() => {
           waiting.delete(id);
-          reject(new PipeError('timeout', `The game host did not answer ${body.type} in time.`));
+          reject(new PipeError('timeout', `The live game did not answer ${body.type} in time.`));
         }, timeoutMs);
         waiting.set(id, {
           resolve: (answer) => {

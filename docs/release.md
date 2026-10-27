@@ -124,6 +124,22 @@ on the extension afterwards.
 After a release that changes what any media scene shows, do a media refresh
 ([docs/media.md](media.md#media-refresh-checklist)); release-please triggers none.
 
+## 1.0.x releases until 2.0.0
+
+`main` builds 2.0.0 and makes no store release before it (ADR 0005): its
+release pull request stays open. 1.x fixes (bugs only) are pull requests to
+`release/1.x`, cut at `v1.0.1`; its `release.yml` runs release-please against
+that branch, so merging its own `chore(release/1.x): release 1.0.x` pull
+request publishes 1.0.x as above. After 2.0.0 the branch gets nothing more.
+
+Before the first 1.0.x release:
+
+1. Add `release/1.x` to the deployment branches of the `vscode-marketplace`
+   environment, which allows only `main`; without it the `marketplace` job
+   cannot deploy and the VSIX goes to the Marketplace by hand.
+2. Check that the Open VSX trusted publisher (when registered) is not limited
+   to `main`.
+
 ## After the first release
 
 1. Once the Open VSX namespace is owned, register a trusted publisher for

@@ -1,4 +1,4 @@
-// A stand-in for eu4.exe with Etch's plugin in the game host tests: serves the session pipe of
+// A stand-in for eu4.exe with Etch's plugin in the live game tests: serves the session pipe of
 // docs/plugin-protocol.md with the session id from ETCH_HOST_SESSION. Its creation time comes from
 // the lock file the extension writes once it has the process's identity (argv[2]); it is ready
 // after argv[3] milliseconds. With argv[4] = "exit" it ends before it is ready; with "freeze" its

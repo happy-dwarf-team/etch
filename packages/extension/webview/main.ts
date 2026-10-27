@@ -1,28 +1,17 @@
 // The preview webview's script (bundled to dist/webview.js): draws each draw list the extension
 // host posts with `@etch/renderer`, fetching textures through webview URIs (ADR 0001), marks each
-// paint on the canvas for Etch's own tools (paint-marker.ts), shows the diff view (diff.ts), and shows
-// the toolbar and notices the host describes.
+// paint on the canvas for Etch's own tools (paint-marker.ts), and shows the toolbar and notices the
+// host describes.
 
 import { Painter, createContext, readPixels } from '@etch/renderer';
 import type { DrawRect } from '@etch/core/draw-list';
 import type {
-  DiffState,
-  DiffSummary,
   HostMessage,
   Point,
-  PreviewBackend,
   PreviewMemento,
   ViewState,
   WebviewMessage,
 } from '../src/preview/protocol.ts';
-import {
-  DIFF_COLOURS,
-  DIFF_TOLERANCE,
-  diffCounts,
-  diffImages,
-  readHostImage,
-  type DiffPicture,
-} from './diff.ts';
 import { markPaint, paintResult } from './paint-marker.ts';
 
 declare function acquireVsCodeApi(): {
@@ -47,10 +36,7 @@ const file = element('file', HTMLSpanElement);
 const notices = element('notices', HTMLUListElement);
 const pin = element('pin', HTMLButtonElement);
 const resolution = element('resolution', HTMLButtonElement);
-const backend = element('backend', HTMLSelectElement);
-const diffToggle = element('diff', HTMLButtonElement);
-const diffCanvas = element('diffview', HTMLCanvasElement);
-const legend = element('legend', HTMLDivElement);
+const liveGame = element('live-game', HTMLButtonElement);
 const hoverBox = element('hover', HTMLDivElement);
 const selectedBox = element('selected', HTMLDivElement);
 const tip = element('tip', HTMLDivElement);
@@ -67,11 +53,6 @@ let overlay: Extract<HostMessage, { type: 'overlay' }> | undefined;
 /** The pointer over the canvas, in the page's pixels. */
 let pointer: { x: number; y: number } | undefined;
 let pointerFrame = 0;
-/** The diff view shown, for the counts under the pointer; `undefined` when it is not shown. */
-let picture: DiffPicture | undefined;
-/** The id of the latest draw or diff, so that an older one's late result is not shown. */
-let latest = 0;
-
 window.addEventListener('message', (event: MessageEvent<HostMessage>) => {
   void receive(event.data);
 });
@@ -84,12 +65,8 @@ resolution.addEventListener('click', () => {
   post({ type: 'resolution' });
 });
 
-backend.addEventListener('change', () => {
-  post({ type: 'backend', backend: backend.value as PreviewBackend });
-});
-
-diffToggle.addEventListener('click', () => {
-  post({ type: 'diff', on: state?.diff.on !== true });
+liveGame.addEventListener('click', () => {
+  post({ type: 'startLiveGame' });
 });
 
 canvas.addEventListener('mousemove', (event) => {
@@ -134,9 +111,6 @@ async function receive(message: HostMessage): Promise<void> {
     case 'draw':
       await draw(message);
       break;
-    case 'diff':
-      await diff(message);
-      break;
     case 'state':
       show(message.state);
       break;
@@ -154,7 +128,6 @@ async function receive(message: HostMessage): Promise<void> {
 }
 
 async function draw(message: Extract<HostMessage, { type: 'draw' }>): Promise<void> {
-  latest = message.id;
   if (painter === undefined) {
     markPaint(canvas, message.id, 'failed');
     post({ type: 'failed', id: message.id, message: failure ?? 'no WebGL2 context' });
@@ -166,7 +139,6 @@ async function draw(message: Extract<HostMessage, { type: 'draw' }>): Promise<vo
     const gl = painter.gl;
     if (result.painted) {
       canvas.hidden = false;
-      showDiff(undefined);
       showOverlay();
       if (message.probes !== undefined) {
         const rgba = readPixels(gl);
@@ -197,136 +169,6 @@ async function draw(message: Extract<HostMessage, { type: 'draw' }>): Promise<vo
     markPaint(canvas, message.id, 'failed');
     post({ type: 'failed', id: message.id, message: messageOf(error) });
   }
-}
-
-/**
- * Shows the diff view: paints the offline renderer's window, reads its straight RGBA, reads the
- * game host's image and shows their difference over the screen (spec section 5).
- */
-async function diff(message: Extract<HostMessage, { type: 'diff' }>): Promise<void> {
-  latest = message.id;
-  const fail = (text: string): void => {
-    markPaint(canvas, message.id, 'failed');
-    post({ type: 'failed', id: message.id, message: text });
-  };
-  const blank = (): void => {
-    markPaint(canvas, message.id, 'blank');
-    post({ type: 'painted', id: message.id, painted: false, problems: [], skipped: [], at: now() });
-  };
-  if (painter === undefined) {
-    fail(failure ?? 'no WebGL2 context');
-    return;
-  }
-  try {
-    const result = await painter.paint(message.list);
-    if (!result.painted || latest !== message.id) {
-      blank();
-      return;
-    }
-    const gl = painter.gl;
-    const width = gl.drawingBufferWidth;
-    const height = gl.drawingBufferHeight;
-    const rendered = { width, height, data: readPixels(gl) };
-    const response = await fetch(message.image.url);
-    if (!response.ok) {
-      fail(`the game host's image cannot be read: HTTP ${String(response.status)}`);
-      return;
-    }
-    const host = readHostImage(new Uint8Array(await response.arrayBuffer()));
-    if (latest !== message.id) {
-      blank();
-      return;
-    }
-    const shown = diffImages(rendered, host, message.image.crop);
-    diffCanvas.width = width;
-    diffCanvas.height = height;
-    const context = diffCanvas.getContext('2d');
-    if (context === null) {
-      fail('the diff view has no 2D canvas');
-      return;
-    }
-    context.putImageData(new ImageData(shown.image, width, height), 0, 0);
-    canvas.hidden = false;
-    showDiff(shown);
-    showOverlay();
-    const pixels = message.probes?.map(({ x, y }) => {
-      const i = (Math.floor(y) * width + Math.floor(x)) * 4;
-      return Array.from(shown.image.subarray(i, i + 4));
-    });
-    markPaint(canvas, message.id, paintResult(true, result.problems.length));
-    post({
-      type: 'painted',
-      id: message.id,
-      painted: true,
-      problems: result.problems.map(({ url, code, message: text }) => ({
-        url,
-        code,
-        message: text,
-      })),
-      skipped: result.skipped,
-      ...(pixels === undefined ? {} : { pixels }),
-      diff: shown.summary,
-      at: now(),
-    });
-  } catch (error) {
-    fail(messageOf(error));
-  }
-}
-
-/** Shows a diff view's picture and legend over the screen, or hides them. */
-function showDiff(shown: DiffPicture | undefined): void {
-  picture = shown;
-  diffCanvas.hidden = shown === undefined;
-  legend.hidden = shown === undefined;
-  if (shown === undefined) {
-    legend.replaceChildren();
-    return;
-  }
-  legend.replaceChildren(
-    span(summaryText(shown.summary)),
-    swatch(DIFF_COLOURS.different, 'both draw, differently'),
-    swatch(DIFF_COLOURS.offlineOnly, 'only the offline renderer'),
-    swatch(DIFF_COLOURS.hostOnly, 'only the game host'),
-    swatch([96, 96, 96], `the same, ±${String(DIFF_TOLERANCE)}`),
-  );
-}
-
-function summaryText(summary: DiffSummary): string {
-  const differing = summary.different + summary.offlineOnly + summary.hostOnly;
-  if (differing === 0) {
-    return `Diff: all ${count(summary.compared)} pixels of the game host's image are the same.`;
-  }
-  return (
-    `Diff: ${count(differing)} of ${count(summary.compared)} pixels differ ` +
-    `(${percent(differing, summary.compared)}), by up to ${String(summary.largest)}.`
-  );
-}
-
-function swatch(rgb: readonly number[], label: string): HTMLElement {
-  const item = document.createElement('span');
-  const colour = document.createElement('span');
-  colour.className = 'swatch';
-  colour.style.background = `rgb(${rgb.join(',')})`;
-  item.append(colour, label);
-  return item;
-}
-
-function span(content: string): HTMLElement {
-  const item = document.createElement('span');
-  item.textContent = content;
-  return item;
-}
-
-function count(n: number): string {
-  return n.toLocaleString('en');
-}
-
-function percent(part: number, whole: number): string {
-  return `${whole === 0 ? '0' : ((100 * part) / whole).toFixed(1)} %`;
-}
-
-function now(): number {
-  return performance.timeOrigin + performance.now();
 }
 
 /** A point of the page as pixels of the preview screen the canvas shows scaled. */
@@ -364,19 +206,9 @@ function showOverlay(): void {
     return;
   }
   tip.hidden = false;
-  tip.textContent =
-    picture === undefined ? hovered.text : `${hovered.text}\n${diffLine(picture, hovered.rect)}`;
+  tip.textContent = hovered.text;
   tip.style.left = `${String(pointer.x - parent.left + 12)}px`;
   tip.style.top = `${String(pointer.y - parent.top + 12)}px`;
-}
-
-/** What the diff view found in a widget's rect, for the hover tip. */
-function diffLine(shown: DiffPicture, rect: DrawRect): string {
-  const { compared, differing } = diffCounts(shown, rect);
-  if (compared === 0) return "Diff: outside the game host's image";
-  return differing === 0
-    ? `Diff: all ${count(compared)} pixels the same`
-    : `Diff: ${count(differing)} of ${count(compared)} pixels differ (${percent(differing, compared)})`;
 }
 
 function show(next: ViewState): void {
@@ -390,10 +222,6 @@ function show(next: ViewState): void {
   pin.title = next.pinned
     ? 'The preview stays on this window. Click to follow the cursor again.'
     : 'Keep the preview on this window while other files are edited.';
-  backend.value = next.backend;
-  canvas.classList.toggle('stale', next.stale);
-  diffCanvas.classList.toggle('stale', next.stale);
-  showToggle(next.diff);
   resolution.textContent = next.resolution.text;
   resolution.title =
     `Preview resolution ${next.resolution.text}, ${SOURCES[next.resolution.source]}. ` +
@@ -407,17 +235,6 @@ function show(next: ViewState): void {
       return item;
     }),
   );
-}
-
-function showToggle(diffState: DiffState): void {
-  const shown = diffState.on && diffState.blocked === undefined;
-  diffToggle.disabled = diffState.blocked !== undefined;
-  diffToggle.setAttribute('aria-pressed', String(shown));
-  diffToggle.title =
-    diffState.blocked ??
-    (shown
-      ? 'The preview shows the difference between both backends. Click to show the game host.'
-      : 'Show the per-pixel difference between the offline renderer and the game host.');
 }
 
 const SOURCES: Readonly<Record<ViewState['resolution']['source'], string>> = {

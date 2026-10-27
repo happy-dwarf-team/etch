@@ -2,8 +2,8 @@
 // follows the unsaved buffer of every game text file of the playset on each change, and publishes
 // the model's diagnostics in the Problems panel. The extension host parses, models and lays out;
 // the webview draws the draw list with WebGL2 (ADR 0001). Textures and fonts changed on disk are
-// read again, and the preview reopens on the same window after a window reload. With the game host,
-// the diff view shows its image's difference from the offline renderer's (spec section 5).
+// read again, and the preview reopens on the same window after a window reload. Its button starts
+// the live game with the preview's playset (spec section 2).
 
 import { dirname } from 'node:path';
 import * as vscode from 'vscode';
@@ -12,29 +12,22 @@ import {
   allWidgets,
   choosePreviewResolution,
   formatResolution,
-  fpsCounterDiagnostics,
-  gameHostDiagnostics,
   isSide,
   parseResolution,
   gameTextKind,
   guiDiagnostics,
   laidOutIndexOf,
   mapGameText,
-  originalWindowDiagnostics,
   parseScript,
-  previewCrop,
   readGuiFile,
-  textureReloadNames,
   widgetAt,
   widgetHoverText,
   widgetPathAt,
-  writePreviewCopy,
   type DrawList,
   type DrawRect,
   type GameTextOffsets,
   type GuiFile,
   type ModelDiagnostic,
-  type PreviewCopyFile,
   type PreviewResolution,
   type ResolutionContext,
   type Screen,
@@ -43,28 +36,20 @@ import {
 } from '@etch/core';
 import { layOutPreview } from '@etch/core/playset';
 import { readGameText, saveEncodingOf } from '../game-text.ts';
-import {
-  needsRestart,
-  type GameHost,
-  type GameHostState,
-  type JobOutcome,
-} from '../game-host/index.ts';
+import type { LiveGame } from '../live-game/index.ts';
 import type { WidgetNavigation } from '../navigation.ts';
 import { previewHtml } from './html.ts';
 import type {
-  DiffState,
-  DiffSummary,
   HostMessage,
   Notice,
   Point,
-  PreviewBackend,
   PreviewMemento,
   TextureFailure,
   ViewState,
   WebviewMessage,
 } from './protocol.ts';
 import { RenderLoop } from './render-loop.ts';
-import { PreviewSession, type PlaysetPlace, type SessionSettings } from './session.ts';
+import { PreviewSession, type SessionSettings } from './session.ts';
 
 /** The setting of the preview resolution (spec section 6), in the `etch` section. */
 export const RESOLUTION_SETTING = 'previewResolution';
@@ -99,16 +84,6 @@ export interface PreviewRender {
   readonly requestedAt: number;
 }
 
-/** A game host image the webview drew (spec sections 4 and 7). */
-export interface HostImagePaint {
-  /** The job that captured it, with the plugin's times. */
-  readonly outcome: Extract<JobOutcome, { ok: true }>;
-  /** When the webview drew it, in ms since the Unix epoch. */
-  readonly at: number;
-  /** From the first change the job answered to the drawn image, in milliseconds. */
-  readonly fromChangeMs: number;
-}
-
 /** The webview's answer to a render. */
 export interface PreviewPaint {
   readonly id: number;
@@ -116,8 +91,6 @@ export interface PreviewPaint {
   readonly problems: readonly TextureFailure[];
   readonly skipped: readonly number[];
   readonly pixels?: readonly (readonly number[])[];
-  /** What the diff view found, when the paint showed it. */
-  readonly diff?: DiffSummary;
   /** When the pixels were drawn, in ms since the Unix epoch; for budgets (spec section 7). */
   readonly at: number;
   /** Why nothing was drawn, such as a webview without WebGL2. */
@@ -133,8 +106,6 @@ export interface PreviewApi {
   readonly onDidRender: vscode.Event<PreviewRender>;
   /** Fires when the webview has drawn (or failed to draw) a render. */
   readonly onDidPaint: vscode.Event<PreviewPaint>;
-  /** Fires when the webview has drawn an image from the game host. */
-  readonly onDidPaintHostImage: vscode.Event<HostImagePaint>;
   /** The latest render, `undefined` before the first one or after the preview closes. */
   readonly current: PreviewRender | undefined;
   /**
@@ -146,8 +117,6 @@ export interface PreviewApi {
   readonly resolutionContext: ResolutionContext;
   /** The notices the preview shows above the window, such as a game that was not found. */
   readonly notices: readonly Notice[];
-  /** Whether the preview shows the game host's last image as stale, while it restarts. */
-  readonly staleImage: boolean;
   /** Opens the preview beside the editor, or reveals it. */
   open(): void;
   /**
@@ -159,20 +128,11 @@ export interface PreviewApi {
   readonly reloadState: PreviewMemento | undefined;
   /** Pins the previewed window, or unpins it. */
   togglePin(): void;
-  /** The preview backend the switch shows. */
-  readonly backend: PreviewBackend;
   /**
-   * Switches the preview backend. The game host starts at the first switch to it (spec section 4),
-   * and a start that failed is tried again.
+   * Starts the live game with the preview's playset (spec section 2), once the preview has one
+   * with a game folder.
    */
-  setBackend(backend: PreviewBackend): void;
-  /** The diff view's toggle, and why it cannot show now (spec section 5). */
-  readonly diff: DiffState;
-  /**
-   * Turns the diff view on or off. It shows over the game host's image while both backends use
-   * the same resolution and playset.
-   */
-  setDiffView(on: boolean): void;
+  startLiveGame(): void;
   /** Draws the current render again and reads the straight RGBA of points of the screen. */
   probe(points: readonly Point[]): Promise<PreviewPaint>;
   /** Resolves when no render runs or waits. */
@@ -199,44 +159,6 @@ export interface SourceText {
   readonly offsets: GameTextOffsets;
 }
 
-/** What a game host job was made from, to put the game's report of it on the original's text. */
-interface HostJobContext {
-  readonly uri: string;
-  /** The game text the copies were written from. */
-  readonly text: string;
-  readonly path: string;
-  readonly window: Widget;
-  /** The file's top-level names, which the copies prefix. */
-  readonly names: readonly string[];
-  readonly copies: readonly PreviewCopyFile[];
-  /** The model's diagnostics of that text, set when the render publishes them. */
-  offline: readonly ModelDiagnostic[];
-  /** The offline renderer's draw list of the same render, which the diff view compares with. */
-  readonly drawList: DrawList;
-  /** The playset the job ran with (`playsetKey`). */
-  readonly playset: string;
-}
-
-/** The game's report of the last job (spec section 10), for the text it was made from. */
-interface GameReport {
-  readonly uri: string;
-  readonly text: string;
-  readonly diagnostics: readonly ModelDiagnostic[];
-}
-
-/** The game host's image the preview shows, as posted to the webview. */
-interface HostImage {
-  readonly draw: Extract<HostMessage, { type: 'draw' }>;
-  /** Its diff view, with the offline renderer's draw list of the render the job answered. */
-  readonly diff: Extract<HostMessage, { type: 'diff' }> | undefined;
-  /** The playset it was drawn with (`playsetKey`). */
-  readonly playset: string;
-  readonly url: string;
-  readonly screen: Screen;
-  /** The game process that drew it; after a restart it is stale until the new one draws. */
-  readonly pid: number | undefined;
-}
-
 interface Pin {
   readonly uri: string;
   /** The window's name, compared without regard to case; else its index among the definitions. */
@@ -253,21 +175,13 @@ export class Preview implements PreviewApi, vscode.Disposable {
   private readonly diagnostics = vscode.languages.createDiagnosticCollection('etch-preview');
   private readonly renderEmitter = new vscode.EventEmitter<PreviewRender>();
   private readonly paintEmitter = new vscode.EventEmitter<PreviewPaint>();
-  private readonly hostPaintEmitter = new vscode.EventEmitter<HostImagePaint>();
   private readonly subscriptions: vscode.Disposable[];
 
-  private readonly gameHost: GameHost | undefined;
+  private readonly liveGame: LiveGame | undefined;
   private panel: vscode.WebviewPanel | undefined;
   private roots: string | undefined;
-  private backendValue: PreviewBackend = 'offline';
-  /** The diff view's toggle; it shows only while it is not blocked (`diffBlocker`). */
-  private diffOn = false;
-  /** The preview switched to the game host and has not handed it a playset yet. */
-  private hostStartPending = false;
-  /** What the last `show` was given, to show again when the game host's state changes. */
-  private lastShown:
-    | Omit<ViewState, 'pinned' | 'pinnable' | 'backend' | 'resolution' | 'stale' | 'diff'>
-    | undefined;
+  /** The live game was asked to start and waits for the preview's playset. */
+  private liveGameStartPending = false;
   private ready = false;
   /** A render was skipped while the panel was hidden. */
   private stale = false;
@@ -303,37 +217,19 @@ export class Preview implements PreviewApi, vscode.Disposable {
   private readonly changedAssets = new Map<string, vscode.Uri>();
   /** A texture or font was created or deleted: the session's folder listings are out of date. */
   private listingsChanged = false;
-  /** `texturefile` values of textures saved since the last game host job, for `reloadtexture`. */
-  private readonly hostTextures = new Set<string>();
-  /** A localisation file was saved since the last game host job: it adds `reloadloc`. */
-  private hostLocalisation = false;
-  /** What the last game host job was made from, to skip a job that would show the same. */
-  private hostJobKey: string | undefined;
-  /** The preview copy's diagnostics for the last job. */
-  private hostCopyDiagnostics: readonly ModelDiagnostic[] = [];
-  /** Why the game host cannot show the window, or why its last job failed. */
-  private hostProblem: Notice | undefined;
-  private hostImage: HostImage | undefined;
-  /** The game host jobs submitted and not answered yet, by their render's id. */
-  private readonly hostJobContexts = new Map<number, HostJobContext>();
-  /** What the game said about the last job. */
-  private gameReport: GameReport | undefined;
-  /** Game host images posted and not drawn yet, by draw id. */
-  private readonly hostDraws = new Map<number, Extract<JobOutcome, { ok: true }>>();
 
   readonly onDidRender = this.renderEmitter.event;
   readonly onDidPaint = this.paintEmitter.event;
-  readonly onDidPaintHostImage = this.hostPaintEmitter.event;
 
   constructor(
     extensionUri: vscode.Uri,
     output: vscode.LogOutputChannel,
     navigation: WidgetNavigation,
     memento: vscode.Memento,
-    gameHost?: GameHost,
+    liveGame?: LiveGame,
   ) {
     this.extensionUri = extensionUri;
-    this.gameHost = gameHost;
+    this.liveGame = liveGame;
     this.output = output;
     this.navigation = navigation;
     this.memento = memento;
@@ -345,24 +241,6 @@ export class Preview implements PreviewApi, vscode.Disposable {
       },
     );
     this.subscriptions = [
-      ...(gameHost === undefined
-        ? []
-        : [
-            gameHost.onDidChangeState((state) => {
-              if (state.status !== 'ready') this.hostJobKey = undefined;
-              // A game host that starts reads every texture and localisation file anew.
-              if (state.status === 'starting' || state.status === 'restarting') {
-                this.hostTextures.clear();
-                this.hostLocalisation = false;
-              }
-              if (this.lastShown !== undefined) this.show(this.lastShown);
-              // A game host that got ready lays the window out at its screen and runs a job.
-              if (this.panel && this.backendValue === 'game-host') this.request();
-            }),
-            gameHost.onDidFinishJob((outcome) => {
-              this.hostJobDone(outcome);
-            }),
-          ]),
       navigation.onDidHighlight(() => {
         this.updateOverlay();
       }),
@@ -380,13 +258,6 @@ export class Preview implements PreviewApi, vscode.Disposable {
       vscode.workspace.onDidChangeConfiguration((event) => {
         // The session is loaded again when the settings it was loaded with changed.
         if (this.panel && event.affectsConfiguration('etch')) this.request();
-      }),
-      vscode.workspace.onDidSaveTextDocument((document) => {
-        // The game host reads localisation from disk: a save reloads it (spec section 4).
-        if (this.panel && this.backendValue === 'game-host' && /\.yml$/i.test(document.uri.path)) {
-          this.hostLocalisation = true;
-          this.request();
-        }
       }),
       vscode.workspace.onDidCloseTextDocument((document) => {
         const key = document.uri.toString();
@@ -417,10 +288,6 @@ export class Preview implements PreviewApi, vscode.Disposable {
 
   get notices(): readonly Notice[] {
     return this.lastState?.notices ?? [];
-  }
-
-  get staleImage(): boolean {
-    return this.lastState?.stale ?? false;
   }
 
   get reloadState(): PreviewMemento | undefined {
@@ -476,50 +343,35 @@ export class Preview implements PreviewApi, vscode.Disposable {
     this.request();
   }
 
-  get backend(): PreviewBackend {
-    return this.backendValue;
+  startLiveGame(): void {
+    if (this.liveGame === undefined) return;
+    this.liveGameStartPending = true;
+    if (this.session !== undefined) {
+      this.startPendingLiveGame(this.session);
+    } else {
+      void vscode.window.showInformationMessage(
+        'The live game starts with the playset of the previewed .gui file: open one.',
+      );
+    }
   }
 
-  setBackend(backend: PreviewBackend): void {
-    this.backendValue = backend;
-    this.hostStartPending = backend === 'game-host';
-    if (backend === 'game-host') this.useGameHost();
-    else this.gameHost?.use(undefined);
-    if (this.lastShown !== undefined) this.show(this.lastShown);
-  }
-
-  get diff(): DiffState {
-    const blocked = this.diffBlocker();
-    return { on: this.diffOn, ...(blocked === undefined ? {} : { blocked }) };
-  }
-
-  setDiffView(on: boolean): void {
-    this.diffOn = on;
-    if (this.lastShown !== undefined) this.show(this.lastShown);
-  }
-
-  /**
-   * Hands the game host the preview's playset and display after a switch to it, which starts it
-   * (again after a failed start or a stop), once the preview has a playset with a game folder.
-   * Later the game host gets them again, and restarts when they changed (spec section 6).
-   */
-  private useGameHost(): void {
-    const host = this.gameHost;
-    const session = this.session;
-    if (host === undefined || this.backendValue !== 'game-host' || this.panel === undefined) return;
-    const gameFolder = session?.playset.gameFolder;
-    if (session === undefined || gameFolder === undefined) return;
-    const request = {
+  /** Starts the live game with the session's playset, if a start waits for one (spec section 6). */
+  private startPendingLiveGame(session: PreviewSession): void {
+    const game = this.liveGame;
+    if (game === undefined || !this.liveGameStartPending) return;
+    this.liveGameStartPending = false;
+    const gameFolder = session.playset.gameFolder;
+    if (gameFolder === undefined) {
+      void vscode.window.showErrorMessage(
+        'The live game needs the game folder: set etch.gamePath, or install EU4 through Steam.',
+      );
+      return;
+    }
+    void game.start({
       gameFolder,
       mods: session.playset.mods,
       display: { ...(this.native ?? this.resolution.screen), language: session.settings.language },
-    };
-    if (this.hostStartPending) {
-      this.hostStartPending = false;
-      host.use(request);
-    } else {
-      host.update(request);
-    }
+    });
   }
 
   togglePin(): void {
@@ -538,7 +390,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
 
   probe(points: readonly Point[]): Promise<PreviewPaint> {
     const message = this.lastDraw;
-    if (!this.panel || (message?.type !== 'draw' && message?.type !== 'diff')) {
+    if (!this.panel || message?.type !== 'draw') {
       return Promise.reject(new Error('the preview has drawn nothing yet'));
     }
     const id = ++this.renderCount;
@@ -605,7 +457,6 @@ export class Preview implements PreviewApi, vscode.Disposable {
     this.diagnostics.dispose();
     this.renderEmitter.dispose();
     this.paintEmitter.dispose();
-    this.hostPaintEmitter.dispose();
   }
 
   private get distUri(): vscode.Uri {
@@ -653,6 +504,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
 
     const session = await this.sessionFor(uri);
     if (panel !== this.panel) return;
+    this.startPendingLiveGame(session);
     this.allowRoots(panel, session.roots);
     const { touched, changed } = await this.applyPending(session);
     const assetsChanged = await this.applyAssetChanges(session, panel);
@@ -694,10 +546,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
     }
 
     // Several events can answer one change (an edit also moves the selection).
-    const host = this.readyHost();
-    // The game host draws at its own screen (spec section 6), so the window is laid out there; also
-    // while it restarts, when the preview keeps its last image.
-    const screen = host?.screen ?? this.restartingHostScreen() ?? this.resolution.screen;
+    const screen = this.resolution.screen;
     const key = [
       uri.toString(),
       source.version ?? 'disk',
@@ -706,11 +555,8 @@ export class Preview implements PreviewApi, vscode.Disposable {
       screen.width,
       screen.height,
       session.serial,
-      this.backendValue,
-      host?.pid ?? '',
     ].join('|');
-    const hostWork = host !== undefined && (this.hostTextures.size > 0 || this.hostLocalisation);
-    if (!changed && !assetsChanged && !hostWork && key === this.renderKey) {
+    if (!changed && !assetsChanged && key === this.renderKey) {
       // The same screen can come from another source (the setting, settings.txt, the monitor).
       if (this.lastState) {
         this.show({ title: this.lastState.title, file: shownPath, notices: session.notices });
@@ -734,25 +580,8 @@ export class Preview implements PreviewApi, vscode.Disposable {
     const pinned = this.pin !== undefined;
     this.render = { id, uri, file, window, layout, drawList, source, pinned, requestedAt };
     this.last = { uri: uri.toString(), name: window.name };
-    // The draw goes first: diagnostics are not on the warm reload's path to pixels. The game host's
-    // last image stays until its next one comes.
-    const hostImage = this.shownHostImage(screen);
-    if (hostImage === undefined) this.post({ type: 'draw', id, list: drawList });
-    else this.showHostImage(hostImage);
-    const copyDiagnostics =
-      host === undefined
-        ? []
-        : this.submitHostJob(host.screen, {
-            session,
-            uri,
-            place,
-            source,
-            file,
-            window,
-            layout,
-            drawList,
-            id,
-          });
+    // The draw goes first: diagnostics are not on the warm reload's path to pixels.
+    this.post({ type: 'draw', id, list: drawList });
     this.remember({
       uri: uri.toString(),
       window: window.name,
@@ -781,11 +610,8 @@ export class Preview implements PreviewApi, vscode.Disposable {
         ? session.ui.diagnostics(place.path)
         : guiDiagnostics(file, session.ui.index, session.ui.exists)),
       ...layout.diagnostics,
-      ...copyDiagnostics,
     ];
-    const context = this.hostJobContexts.get(id);
-    if (context !== undefined) context.offline = model;
-    this.publish(uri, [...model, ...this.gameDiagnostics(uri, source)], source);
+    this.publish(uri, model, source);
     for (const other of touched) {
       if (other.uri.toString() === uri.toString()) continue;
       this.publish(other.uri, session.ui.diagnostics(other.path), other.source);
@@ -880,16 +706,12 @@ export class Preview implements PreviewApi, vscode.Disposable {
   /**
    * Watches the session's folders for textures and fonts that change on disk. A changed file is
    * read again by the next render; a created or deleted one loads the session again, since the
-   * playset keeps its folder listings. A `.gfx` or `.fnt` file restarts the game host.
+   * playset keeps its folder listings.
    */
   private watch(session: PreviewSession): void {
     this.watchers?.dispose();
     const changed = (uri: vscode.Uri, listing: boolean): void => {
-      if (session !== this.session || !this.panel) return;
-      if (uri.scheme === 'file' && needsRestart(uri.path)) {
-        void this.restartHostFor(session, uri, listing);
-      }
-      if (!isAsset(uri)) return;
+      if (session !== this.session || !this.panel || !isAsset(uri)) return;
       if (listing) this.listingsChanged = true;
       this.changedAssets.set(uri.toString(), uri);
       this.request();
@@ -914,23 +736,6 @@ export class Preview implements PreviewApi, vscode.Disposable {
   }
 
   /**
-   * Restarts the game host for a file it reads only when it starts (spec section 4), when the
-   * playset reads it, or it was created or deleted. The editor buffer reaches the offline renderer
-   * at once; the game host reads the file once it is saved.
-   */
-  private async restartHostFor(
-    session: PreviewSession,
-    uri: vscode.Uri,
-    listing: boolean,
-  ): Promise<void> {
-    const host = this.gameHost;
-    if (host === undefined || this.backendValue !== 'game-host') return;
-    const place = await session.place(uri.fsPath);
-    if (place === undefined || !(place.wins || listing)) return;
-    host.restart(`${place.path} changed`, vscode.workspace.asRelativePath(uri));
-  }
-
-  /**
    * Makes the session and the webview read the textures and fonts changed on disk again. Returns
    * whether the playset reads any of them.
    */
@@ -951,12 +756,6 @@ export class Preview implements PreviewApi, vscode.Disposable {
       const winner = session.ui.gameFile(place.path);
       if (winner !== undefined) urls.add(webviewUrl(panel, winner.absolutePath));
       read ||= place.wins;
-      // The game host reads the saved texture again only when told (spec section 4).
-      if (place.wins && this.backendValue === 'game-host' && /\.(?:dds|tga)$/i.test(place.path)) {
-        for (const name of textureReloadNames(session.ui.index, place.path)) {
-          this.hostTextures.add(name);
-        }
-      }
     }
     if (urls.size > 0) this.post({ type: 'invalidate', urls: [...urls] });
     return read;
@@ -967,12 +766,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
    * page is set only once they are known, and the last draw is posted again when it is ready.
    */
   private allowRoots(panel: vscode.WebviewPanel, folders: readonly string[]): void {
-    const roots = [
-      this.distUri,
-      ...folders.map((folder) => vscode.Uri.file(folder)),
-      // The game host's images, which the webview draws like textures.
-      ...(this.gameHost === undefined ? [] : [vscode.Uri.file(this.gameHost.capturesFolder)]),
-    ];
+    const roots = [this.distUri, ...folders.map((folder) => vscode.Uri.file(folder))];
     const key = roots.map((root) => root.toString()).join('\n');
     if (key === this.roots) return;
     const first = this.roots === undefined;
@@ -982,18 +776,10 @@ export class Preview implements PreviewApi, vscode.Disposable {
     if (first) panel.webview.html = previewHtml(panel.webview, this.extensionUri);
   }
 
-  private show(
-    state: Omit<ViewState, 'pinned' | 'pinnable' | 'backend' | 'resolution' | 'stale' | 'diff'>,
-  ): void {
-    this.lastShown = state;
-    this.useGameHost();
-    // Whether the diff view can show depends on what the state shows.
-    if (this.hostImage !== undefined && this.showsHostImage(this.hostImage)) {
-      this.showHostImage(this.hostImage);
-    }
+  private show(state: Omit<ViewState, 'pinned' | 'pinnable' | 'resolution'>): void {
     const { screen, source } = this.resolution;
     const value = resolutionValue();
-    let full: ViewState = {
+    const full: ViewState = {
       ...state,
       notices:
         parseResolution(value) === undefined
@@ -1009,22 +795,8 @@ export class Preview implements PreviewApi, vscode.Disposable {
           : state.notices,
       pinned: this.pin !== undefined,
       pinnable: this.pin !== undefined || this.render !== undefined,
-      backend: this.backendValue,
       resolution: { text: formatResolution(screen), source },
-      stale: this.hostImageStale(),
-      diff: this.diff,
     };
-    if (this.backendValue === 'game-host' && this.gameHost !== undefined) {
-      full = {
-        ...full,
-        notices: [
-          gameHostNotice(this.gameHost.state, this.session),
-          ...this.hostNotices(),
-          ...this.diffNotices(),
-          ...full.notices,
-        ],
-      };
-    }
     if (JSON.stringify(full) === JSON.stringify(this.lastState)) return;
     this.lastState = full;
     if (this.ready) void this.panel?.webview.postMessage({ type: 'state', state: full });
@@ -1037,7 +809,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
   }
 
   private post(message: HostMessage): void {
-    if (message.type === 'draw' || message.type === 'diff') this.lastDraw = message;
+    if (message.type === 'draw') this.lastDraw = message;
     if (this.ready) void this.panel?.webview.postMessage(message);
   }
 
@@ -1074,7 +846,6 @@ export class Preview implements PreviewApi, vscode.Disposable {
           skipped: message.skipped,
           at: message.at,
           ...(message.pixels === undefined ? {} : { pixels: message.pixels }),
-          ...(message.diff === undefined ? {} : { diff: message.diff }),
         });
         break;
       case 'failed':
@@ -1093,13 +864,8 @@ export class Preview implements PreviewApi, vscode.Disposable {
       case 'pin':
         if (message.pinned !== (this.pin !== undefined)) this.togglePin();
         break;
-      case 'backend':
-        this.setBackend(message.backend);
-        if (this.lastState)
-          void this.panel?.webview.postMessage({ type: 'state', state: this.lastState });
-        break;
-      case 'diff':
-        this.setDiffView(message.on);
+      case 'startLiveGame':
+        this.startLiveGame();
         break;
     }
   }
@@ -1115,17 +881,6 @@ export class Preview implements PreviewApi, vscode.Disposable {
   }
 
   private painted(paint: PreviewPaint): void {
-    const outcome = this.hostDraws.get(paint.id);
-    if (outcome !== undefined) {
-      this.hostDraws.delete(paint.id);
-      if (paint.painted) {
-        const fromChangeMs = paint.at - outcome.requestedAt;
-        this.output.info(
-          `Game host image of job ${String(outcome.job)} drawn ${fromChangeMs.toFixed(0)} ms after the change.`,
-        );
-        this.hostPaintEmitter.fire({ outcome, at: paint.at, fromChangeMs });
-      }
-    }
     const probe = this.probes.get(paint.id);
     if (probe) {
       this.probes.delete(paint.id);
@@ -1197,44 +952,6 @@ export class Preview implements PreviewApi, vscode.Disposable {
     this.diagnostics.delete(uri);
   }
 
-  /** The game's report of the last job, while the preview shows the game host and the same text. */
-  private gameDiagnostics(uri: vscode.Uri, source: SourceText): readonly ModelDiagnostic[] {
-    const report = this.gameReport;
-    return this.backendValue === 'game-host' &&
-      report !== undefined &&
-      report.uri === uri.toString() &&
-      report.text === source.text
-      ? report.diagnostics
-      : [];
-  }
-
-  /**
-   * Keeps what the game said about a job, on the original's lines, and shows it in the Problems
-   * panel while the previewed text is the one the job was made from (spec section 10).
-   */
-  private reportGame(outcome: JobOutcome): void {
-    const context = this.hostJobContexts.get(outcome.tag);
-    for (const tag of this.hostJobContexts.keys()) {
-      if (tag <= outcome.tag) this.hostJobContexts.delete(tag);
-    }
-    if (context === undefined) return;
-    const diagnostics = gameHostDiagnostics({
-      text: context.text,
-      path: context.path,
-      window: context.window,
-      names: context.names,
-      copies: context.copies,
-      errorLog: outcome.errorLog,
-      commands: outcome.commands,
-      offline: context.offline,
-    });
-    this.gameReport = { uri: context.uri, text: context.text, diagnostics };
-    const render = this.render;
-    if (render?.uri.toString() === context.uri && render.source.text === context.text) {
-      this.republish(render.uri, [...context.offline, ...diagnostics], render.source);
-    }
-  }
-
   private fail(error: unknown): void {
     const message = error instanceof Error ? error.message : String(error);
     if (this.panel && this.roots === undefined) this.allowRoots(this.panel, []);
@@ -1248,320 +965,9 @@ export class Preview implements PreviewApi, vscode.Disposable {
     });
   }
 
-  /** The game host while the preview shows it and it is ready, with its screen. */
-  private readyHost(): { screen: Screen; pid: number } | undefined {
-    const host = this.gameHost;
-    if (host === undefined || this.backendValue !== 'game-host') return undefined;
-    const { state, screen } = host;
-    return state.status === 'ready' && screen !== undefined
-      ? { screen, pid: state.pid }
-      : undefined;
-  }
-
-  /** The screen of the game host while the preview shows it and it restarts. */
-  private restartingHostScreen(): Screen | undefined {
-    const host = this.gameHost;
-    if (host === undefined || this.backendValue !== 'game-host') return undefined;
-    return host.state.status === 'restarting' ? host.screen : undefined;
-  }
-
-  /**
-   * Whether the preview shows a game host image that the running game host did not draw: from
-   * before a restart, or while it is not running (spec section 4).
-   */
-  private hostImageStale(): boolean {
-    const image = this.hostImage;
-    const state = this.gameHost?.state;
-    if (image === undefined || this.backendValue !== 'game-host' || !this.showsHostImage(image)) {
-      return false;
-    }
-    return state?.status !== 'ready' || state.pid !== image.pid;
-  }
-
-  /** Whether the webview was last given this game host image, or its diff view. */
-  private showsHostImage(image: HostImage): boolean {
-    return (
-      this.lastDraw === image.draw || (image.diff !== undefined && this.lastDraw === image.diff)
-    );
-  }
-
-  /** Shows a game host image, as its diff view while that can show (spec section 5). */
-  private showHostImage(image: HostImage): void {
-    const message =
-      this.diffOn && image.diff !== undefined && this.diffBlocker() === undefined
-        ? image.diff
-        : image.draw;
-    if (this.lastDraw !== message) this.post(message);
-  }
-
-  /**
-   * Why the diff view cannot show: it compares the game host's image with the offline renderer's
-   * of the same resolution and playset (spec sections 5 and 6).
-   */
-  private diffBlocker(): string | undefined {
-    const host = this.gameHost;
-    if (host === undefined || this.backendValue !== 'game-host') {
-      return 'The diff view compares the offline renderer with the game host: switch the backend to the game host.';
-    }
-    const chosen = this.resolution.screen;
-    const image = this.hostImage;
-    const screen = host.screen ?? image?.screen;
-    if (
-      screen !== undefined &&
-      (screen.width !== chosen.width || screen.height !== chosen.height)
-    ) {
-      return (
-        `The diff view is off: it needs the preview resolution to be the game host's, ` +
-        `${formatResolution(screen)}, not ${formatResolution(chosen)}.`
-      );
-    }
-    const session = this.session;
-    if (image !== undefined && session !== undefined && image.playset !== playsetKey(session)) {
-      return (
-        "The diff view is off: the game host's image is of another playset or language. It " +
-        'shows again once the game host has drawn the window with this one.'
-      );
-    }
-    return undefined;
-  }
-
-  /** What the preview says about the diff view while it shows the game host. */
-  private diffNotices(): Notice[] {
-    if (!this.diffOn) return [];
-    const blocked = this.diffBlocker();
-    if (blocked !== undefined) return [{ severity: 'information', message: blocked }];
-    const image = this.hostImage;
-    if (image?.diff === undefined || this.lastDraw !== image.diff) {
-      return [
-        {
-          severity: 'information',
-          message: 'The diff view shows once the game host has drawn the window.',
-        },
-      ];
-    }
-    return [{ severity: 'information', message: DIFF_NOTE }];
-  }
-
-  /** The game host's image, while the preview shows the game host at that image's screen. */
-  private shownHostImage(screen: Screen): HostImage | undefined {
-    const image = this.hostImage;
-    if (this.backendValue !== 'game-host' || image === undefined) return undefined;
-    return image.screen.width === screen.width && image.screen.height === screen.height
-      ? image
-      : undefined;
-  }
-
-  /**
-   * Writes the preview copy of the previewed window and hands the game host a job for it (spec
-   * section 4), unless the last job showed the same. Returns the copy's diagnostics.
-   */
-  private submitHostJob(
-    screen: Screen,
-    render: {
-      session: PreviewSession;
-      uri: vscode.Uri;
-      place: PlaysetPlace | undefined;
-      source: SourceText;
-      file: GuiFile;
-      window: Widget;
-      layout: WindowLayout;
-      drawList: DrawList;
-      id: number;
-    },
-  ): readonly ModelDiagnostic[] {
-    const host = this.gameHost;
-    const { session, uri, place, source, file, window, layout, drawList, id } = render;
-    if (host === undefined) return [];
-    const jobKey = [
-      uri.toString(),
-      source.version ?? 'disk',
-      file.definitions.indexOf(window),
-      screen.width,
-      screen.height,
-      session.serial,
-      host.state.status === 'ready' ? host.state.pid : '',
-    ].join('|');
-    const extra = this.hostTextures.size > 0 || this.hostLocalisation;
-    if (jobKey === this.hostJobKey && !extra) return this.hostCopyDiagnostics;
-    this.hostJobKey = jobKey;
-    this.hostCopyDiagnostics = [];
-    if (place === undefined || !/^interface[\\/]/i.test(place.path) || window.name === undefined) {
-      this.setHostProblem({
-        severity: 'warning',
-        message:
-          'The game host previews named windows of .gui files in the interface folder of the game ' +
-          'or of a mod of the playset.',
-      });
-      return [];
-    }
-    const copy = writePreviewCopy({
-      path: place.path,
-      text: source.text,
-      bom: source.bom,
-      window: window.name,
-      screen,
-      // The playset's own definitions; the overlay mod is not part of it.
-      isTopLevelName: (name) => session.ui.index.guiType(name) !== undefined,
-    });
-    if (copy.files === undefined) {
-      this.hostCopyDiagnostics = copy.diagnostics;
-      const why = copy.diagnostics.find((d) => d.severity === 'error') ?? copy.diagnostics[0];
-      this.setHostProblem({
-        severity: 'warning',
-        message: `The game host cannot show this window${why === undefined ? '.' : `: ${why.message}`}`,
-      });
-      return copy.diagnostics;
-    }
-    const diagnostics = [
-      ...copy.diagnostics,
-      ...originalWindowDiagnostics({
-        path: place.path,
-        wins: place.wins,
-        window,
-        index: session.ui.index,
-      }),
-    ];
-    this.hostCopyDiagnostics = diagnostics;
-    const crop = previewCrop(layout.widgets, screen);
-    if (crop === undefined) {
-      this.setHostProblem({
-        severity: 'warning',
-        message: "No part of this window is on the game host's screen.",
-      });
-      return diagnostics;
-    }
-    diagnostics.push(...fpsCounterDiagnostics(window, crop, screen));
-    if (this.hostProblem?.severity === 'warning') this.setHostProblem(undefined);
-    const submitted = host.submit(
-      {
-        copies: copy.files,
-        crop,
-        textures: [...this.hostTextures],
-        localisation: this.hostLocalisation,
-        requestedAt: this.render?.requestedAt ?? Date.now(),
-        tag: id,
-      },
-      vscode.workspace.asRelativePath(uri),
-    );
-    if (submitted) {
-      this.hostTextures.clear();
-      this.hostLocalisation = false;
-      this.hostJobContexts.set(id, {
-        uri: uri.toString(),
-        text: source.text,
-        path: place.path,
-        window,
-        names: file.definitions.flatMap((d) => (d.name === undefined ? [] : [d.name])),
-        copies: copy.files,
-        offline: [],
-        drawList,
-        playset: playsetKey(session),
-      });
-    } else {
-      this.output.warn('The game host took no job: it is not ready.');
-      this.hostJobKey = undefined;
-    }
-    return diagnostics;
-  }
-
-  /** Keeps why the game host cannot show the window, and logs it when it changes. */
-  private setHostProblem(problem: Notice | undefined): void {
-    if (problem !== undefined && problem.message !== this.hostProblem?.message) {
-      this.output[severityLog(problem)](problem.message);
-    }
-    this.hostProblem = problem;
-  }
-
-  /** Shows a finished job's image, or why there is none. */
-  private hostJobDone(outcome: JobOutcome): void {
-    const panel = this.panel;
-    const screen = this.gameHost?.screen;
-    if (panel === undefined || this.backendValue !== 'game-host' || screen === undefined) return;
-    const context = this.hostJobContexts.get(outcome.tag);
-    this.reportGame(outcome);
-    if (!outcome.ok) {
-      this.setHostProblem({
-        severity: 'error',
-        message: `The game host could not draw the window (${outcome.code}): ${outcome.message}`,
-      });
-    } else {
-      // A failed job is over once one succeeds.
-      if (this.hostProblem?.severity === 'error') this.setHostProblem(undefined);
-      const { crop, path } = outcome.image;
-      const url = webviewUrl(panel, path);
-      const draw: Extract<HostMessage, { type: 'draw' }> = {
-        type: 'draw',
-        id: ++this.renderCount,
-        list: {
-          version: 1,
-          ...screen,
-          textures: [url],
-          draws: [
-            {
-              kind: 'sprite',
-              texture: 0,
-              shader: 'default',
-              source: this.render?.window.node.start ?? 0,
-              ...crop,
-              sx: 0,
-              sy: 0,
-              sw: crop.width,
-              sh: crop.height,
-            },
-          ],
-        },
-      };
-      const previous = this.hostImage?.url;
-      const state = this.gameHost?.state;
-      this.hostImage = {
-        draw,
-        // The same id: either is the drawn image of the job.
-        diff:
-          context === undefined
-            ? undefined
-            : { type: 'diff', id: draw.id, list: context.drawList, image: { url, crop } },
-        playset: context?.playset ?? '',
-        url,
-        screen,
-        pid: state?.status === 'ready' ? state.pid : undefined,
-      };
-      this.hostDraws.set(draw.id, outcome);
-      this.showHostImage(this.hostImage);
-      // Each image has a file of its own; the last one's texture is no longer needed.
-      if (previous !== undefined && previous !== url) {
-        this.post({ type: 'invalidate', urls: [previous] });
-      }
-    }
-    if (this.lastShown !== undefined) this.show(this.lastShown);
-  }
-
-  /** What the preview says about the game host's work beside its state. */
-  private hostNotices(): Notice[] {
-    const notices: Notice[] = [];
-    if (this.hostProblem !== undefined) notices.push(this.hostProblem);
-    const host = this.readyHost();
-    const chosen = this.resolution.screen;
-    if (
-      host !== undefined &&
-      (host.screen.width !== chosen.width || host.screen.height !== chosen.height)
-    ) {
-      notices.push({
-        severity: 'information',
-        message:
-          `The game host runs at ${formatResolution(host.screen)}, so the preview shows that ` +
-          `resolution instead of ${formatResolution(chosen)}.`,
-      });
-    }
-    return notices;
-  }
-
   private closed(): void {
     this.panel = undefined;
-    this.backendValue = 'offline';
-    this.diffOn = false;
-    this.hostStartPending = false;
-    this.lastShown = undefined;
-    this.gameHost?.use(undefined);
+    this.liveGameStartPending = false;
     this.ready = false;
     this.roots = undefined;
     this.session = undefined;
@@ -1569,13 +975,6 @@ export class Preview implements PreviewApi, vscode.Disposable {
     this.watchers = undefined;
     this.changedAssets.clear();
     this.listingsChanged = false;
-    this.hostTextures.clear();
-    this.hostLocalisation = false;
-    this.hostJobKey = undefined;
-    this.hostCopyDiagnostics = [];
-    this.hostProblem = undefined;
-    this.hostImage = undefined;
-    this.hostDraws.clear();
     this.lastMemento = undefined;
     this.render = undefined;
     this.renderKey = undefined;
@@ -1733,59 +1132,4 @@ function toDiagnostic(found: ModelDiagnostic, source: SourceText): vscode.Diagno
 
 function severityLog(notice: Notice): 'error' | 'warn' | 'info' {
   return notice.severity === 'error' ? 'error' : notice.severity === 'warning' ? 'warn' : 'info';
-}
-
-/**
- * What the diff view's differences mean: neither backend runs the game's code, but the game host
- * draws each widget as the game leaves it without that code (etch#53).
- */
-const DIFF_NOTE =
-  "The diff view shows where the game host's image differs from the offline renderer's. The game " +
-  'host draws the window as the game leaves it without its code, so widgets that code fills in, ' +
-  'hides, moves or chooses a frame for differ by design; hover a widget for its share.';
-
-/** The playset a game host image is drawn with, to tell whether the diff view can compare it. */
-function playsetKey(session: PreviewSession): string {
-  return JSON.stringify([
-    session.playset.gameFolder ?? '',
-    session.playset.mods.map((mod) => [mod.root, mod.descriptorPath ?? '']),
-    session.settings.language,
-  ]);
-}
-
-/** What the preview says about the game host while it shows it. */
-function gameHostNotice(state: GameHostState, session: PreviewSession | undefined): Notice {
-  if (session !== undefined && session.playset.gameFolder === undefined) {
-    return { severity: 'error', message: 'The game host needs the game folder (etch.gamePath).' };
-  }
-  switch (state.status) {
-    case 'stopped':
-      return { severity: 'information', message: 'The game host is stopped.' };
-    case 'starting':
-      return {
-        severity: 'information',
-        message: 'The game host is starting; this takes about 15 seconds.',
-      };
-    case 'ready':
-      return {
-        severity: 'information',
-        message: `The game host draws the preview (ready after ${(state.readyMs / 1000).toFixed(1)} s).`,
-      };
-    case 'restarting':
-      return {
-        severity: 'information',
-        message:
-          `The game host restarts (${state.reason}); this takes about 15 seconds, and the ` +
-          'preview keeps its last image, marked as stale.',
-      };
-    case 'stopping':
-      return { severity: 'information', message: 'The game host is stopping.' };
-    case 'busy':
-      return {
-        severity: 'warning',
-        message: 'Another VS Code window runs the game host; Etch runs one per machine.',
-      };
-    case 'failed':
-      return { severity: 'error', message: `The game host is not running: ${state.message}` };
-  }
 }

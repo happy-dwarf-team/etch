@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { START_GAME_HOST, type GameHost } from '../game-host/index.ts';
+import { START_LIVE_GAME, type LiveGame } from '../live-game/index.ts';
 import type { WidgetNavigation } from '../navigation.ts';
 import { CHOOSE_RESOLUTION, PREVIEW_VIEW_TYPE, Preview, type PreviewApi } from './preview.ts';
 import { chooseResolution } from './resolution.ts';
@@ -18,8 +18,6 @@ export { writeResolution } from './resolution.ts';
 export const OPEN_PREVIEW = 'etch.openPreview';
 /** Pins the previewed window, so that the preview stays on it while other files are edited. */
 export const TOGGLE_PREVIEW_PIN = 'etch.togglePreviewPin';
-/** Turns the diff view on or off (spec section 5). */
-export const TOGGLE_DIFF_VIEW = 'etch.toggleDiffView';
 
 /**
  * Starts the preview and its commands. The preview decides the previewed window of the widget
@@ -29,14 +27,14 @@ export function registerPreview(
   context: vscode.ExtensionContext,
   output: vscode.LogOutputChannel,
   navigation: WidgetNavigation,
-  gameHost?: GameHost,
+  liveGame?: LiveGame,
 ): PreviewApi {
   const preview = new Preview(
     context.extensionUri,
     output,
     navigation,
     context.globalState,
-    gameHost,
+    liveGame,
   );
   context.subscriptions.push(
     preview,
@@ -46,16 +44,10 @@ export function registerPreview(
     vscode.commands.registerCommand(TOGGLE_PREVIEW_PIN, () => {
       preview.togglePin();
     }),
-    // A diff view that cannot show stays off, and the command says why, as the disabled toggle does.
-    vscode.commands.registerCommand(TOGGLE_DIFF_VIEW, () => {
-      const { on, blocked } = preview.diff;
-      if (!on && blocked !== undefined) void vscode.window.showInformationMessage(blocked);
-      else preview.setDiffView(!on);
-    }),
-    // The game host starts at a switch of the preview to it (spec section 4).
-    vscode.commands.registerCommand(START_GAME_HOST, () => {
+    // The live game starts with the previewed file's playset (spec section 2).
+    vscode.commands.registerCommand(START_LIVE_GAME, () => {
       preview.open();
-      preview.setBackend('game-host');
+      preview.startLiveGame();
     }),
     vscode.commands.registerCommand(CHOOSE_RESOLUTION, () => chooseResolution(preview)),
     // Reopens the preview after a window reload (`onWebviewPanel:etch.preview` activates Etch).

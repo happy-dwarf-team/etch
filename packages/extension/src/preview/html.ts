@@ -2,16 +2,15 @@ import { randomBytes } from 'node:crypto';
 import * as vscode from 'vscode';
 
 /**
- * The neutral background the transparent render is composited over, the same for both backends
- * (spec section 2): mid grey, independent of the colour theme.
+ * The neutral background the transparent render is composited over (spec section 2): mid grey,
+ * independent of the colour theme.
  */
 export const BACKDROP = '#808080';
 
 /**
- * The preview's page: a toolbar (previewed window, backend switch, diff view, resolution, pin),
+ * The preview's page: a toolbar (previewed window, the live game's start, resolution, pin),
  * notices, the canvas the webview script (`dist/webview.js`, from `webview/main.ts`) draws into,
- * the diff view's canvas and legend (spec section 5), and the outlines of the hovered and the
- * highlighted widget over them. Textures are fetched from the game and mod folders
+ * and the outlines of the hovered and the highlighted widget over it. Textures are fetched from the game and mod folders
  * through webview URIs, so `connect-src` allows them.
  */
 export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): string {
@@ -43,7 +42,7 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
   #title { font-weight: 600; }
   #file { min-width: 0; opacity: 0.7; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .spacer { flex: 1; }
-  select, button {
+  button {
     font: inherit; color: var(--vscode-foreground);
     background: var(--vscode-dropdown-background); border: 1px solid var(--vscode-dropdown-border, transparent);
     padding: 1px 6px;
@@ -56,22 +55,13 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
   }
   #notices li.warning { border-color: var(--vscode-notificationsWarningIcon-foreground); }
   #notices li.error { border-color: var(--vscode-notificationsErrorIcon-foreground); }
-  label { white-space: nowrap; }
   main { flex: 1; min-height: 0; position: relative; }
-  /* Scaled down to fit, keeping its aspect ratio, and centred; the diff view lies on the screen. */
+  /* Scaled down to fit, keeping its aspect ratio, and centred. */
   canvas {
     position: absolute; inset: 8px; margin: auto; max-width: calc(100% - 16px); max-height: calc(100% - 16px);
     background: ${BACKDROP};
   }
-  /* The game host's last image while it restarts (spec section 4). */
-  canvas.stale { opacity: 0.5; filter: grayscale(1); }
-  #diffview { pointer-events: none; }
-  canvas[hidden], .box[hidden], #tip[hidden], #legend[hidden] { display: none; }
-  #legend { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding: 4px 8px; }
-  #legend .swatch {
-    display: inline-block; width: 10px; height: 10px; margin-right: 4px; vertical-align: -1px;
-    border: 1px solid var(--vscode-panel-border, transparent);
-  }
+  canvas[hidden], .box[hidden], #tip[hidden] { display: none; }
   .box { position: absolute; pointer-events: none; box-sizing: border-box; }
   #hover { border: 1px dashed var(--vscode-editorCursor-foreground, #fff); }
   #selected { border: 2px solid var(--vscode-focusBorder, #0af); }
@@ -88,21 +78,13 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
   <span id="title">Etch preview</span>
   <span id="file"></span>
   <span class="spacer"></span>
-  <label>Backend
-    <select id="backend">
-      <option value="offline">Offline renderer</option>
-      <option value="game-host">Game host</option>
-    </select>
-  </label>
-  <button id="diff" type="button" aria-pressed="false" disabled>Diff</button>
+  <button id="live-game" type="button" title="Start the live game with this playset (Etch: Start the Live Game).">Live game</button>
   <button id="resolution" type="button">1920×1080</button>
   <button id="pin" type="button" aria-pressed="false" disabled>Pin</button>
 </header>
 <ul id="notices"></ul>
-<div id="legend" hidden></div>
 <main>
   <canvas id="screen" hidden></canvas>
-  <canvas id="diffview" hidden></canvas>
   <div id="selected" class="box" hidden></div>
   <div id="hover" class="box" hidden></div>
   <div id="tip" hidden></div>

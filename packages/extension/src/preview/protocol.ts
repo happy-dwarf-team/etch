@@ -5,9 +5,6 @@
 import type { ResolutionSource } from '@etch/core';
 import type { DrawList, DrawRect } from '@etch/core/draw-list';
 
-/** The preview backends of spec section 2. Only the offline renderer exists before M3. */
-export type PreviewBackend = 'offline' | 'game-host';
-
 /** A notice shown above the preview, such as a game that was not found. */
 export interface Notice {
   readonly severity: 'error' | 'warning' | 'information';
@@ -23,35 +20,9 @@ export interface ViewState {
   readonly pinned: boolean;
   /** Whether there is a window that could be pinned. */
   readonly pinnable: boolean;
-  readonly backend: PreviewBackend;
   /** The preview resolution as `1920×1080`, and where it came from (spec section 6). */
   readonly resolution: { readonly text: string; readonly source: ResolutionSource };
   readonly notices: readonly Notice[];
-  /** The image is the game host's last one, from before a restart: it is shown as stale. */
-  readonly stale: boolean;
-  /** The diff view's toggle (spec section 5). */
-  readonly diff: DiffState;
-}
-
-/** The diff view's toggle: whether it is on, and why it cannot show now. */
-export interface DiffState {
-  readonly on: boolean;
-  /** Why the diff view is off, such as resolutions that differ; the toggle is disabled. */
-  readonly blocked?: string;
-}
-
-/** What the diff view of one pair of images found, counted in pixels of the game host's crop. */
-export interface DiffSummary {
-  /** The pixels of the game host's image. */
-  readonly compared: number;
-  /** Both backends draw them, and they differ. */
-  readonly different: number;
-  /** Only the offline renderer draws them. */
-  readonly offlineOnly: number;
-  /** Only the game host draws them. */
-  readonly hostOnly: number;
-  /** The largest difference of a channel, premultiplied, 0 to 255. */
-  readonly largest: number;
 }
 
 /**
@@ -83,18 +54,6 @@ export type HostMessage =
       readonly type: 'draw';
       readonly id: number;
       readonly list: DrawList;
-      readonly probes?: readonly Point[];
-    }
-  /**
-   * Show the diff view (spec section 5): draw `list`, the offline renderer's window, read its
-   * straight RGBA and show its difference from the game host's image at `image.url`, the straight
-   * RGBA of `image.crop` of the same screen. `probes` reads the diff view's pixels.
-   */
-  | {
-      readonly type: 'diff';
-      readonly id: number;
-      readonly list: DrawList;
-      readonly image: { readonly url: string; readonly crop: DrawRect };
       readonly probes?: readonly Point[];
     }
   | { readonly type: 'state'; readonly state: ViewState }
@@ -132,8 +91,6 @@ export type WebviewMessage =
       readonly skipped: readonly number[];
       /** The RGBA of each requested probe, in the order asked. */
       readonly pixels?: readonly (readonly number[])[];
-      /** What a diff view found. */
-      readonly diff?: DiffSummary;
       /** When the pixels were drawn, in milliseconds since the Unix epoch. */
       readonly at: number;
     }
@@ -150,6 +107,5 @@ export type WebviewMessage =
     }
   /** The resolution button was clicked: choose the preview resolution. */
   | { readonly type: 'resolution' }
-  | { readonly type: 'backend'; readonly backend: PreviewBackend }
-  /** The diff view's toggle was clicked. */
-  | { readonly type: 'diff'; readonly on: boolean };
+  /** The live game's button was clicked: start it with the preview's playset. */
+  | { readonly type: 'startLiveGame' };

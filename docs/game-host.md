@@ -1,6 +1,14 @@
-# The game host
+# The game host (Etch 1.x)
 
-The game host (spec section 4, ADR 0003) is a disposable game process that the
+This is the record of Etch 1.x's game host. 2.0.0 removes it: the live game
+replaces it (ADR 0005), and fixes for 1.x come from the `release/1.x` branch.
+The code this page names is on that branch; on `main` the install, the process,
+the watchdog and the `error.log` reading moved to
+`packages/extension/src/live-game/`, the install renamed the **private
+install**. [Section 6 of the v2 specification](spec/v2.md#6-live-game) names
+the sections below that still hold for the live game.
+
+The game host (spec section 4, ADR 0003) was a disposable game process that the
 extension starts, owns and stops. It runs from Etch's private copy of the game,
 the **game host install**, never from the player's own game folder or profile.
 The extension creates the install on first use, after one confirmation, and
