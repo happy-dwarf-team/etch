@@ -74,6 +74,7 @@ describe('LiveSnapshots', () => {
     const vanilla = playsetKey('C:/Game', []);
     const anbennar = playsetKey('C:/Game', ['Anbennar']);
     expect(vanilla).not.toBe(anbennar);
+    expect(playsetKey('c:\\game\\', [])).toBe(playsetKey('C:/Game', []));
 
     const store = new LiveSnapshots(temp);
     await store.put(vanilla, snapshot);
