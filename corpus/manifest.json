@@ -541,14 +541,14 @@
                     "key": "3"
                   },
                   {
-                    "click": "countrydiplomacyview/countrydiplomacyview_shielditem_rival[1]"
+                    "click": "countrydiplomacyview/diplomatic_listbox/countrydiplomacyview_diplistitem/countrydiplomacyview_shielditem"
                   },
                   {
                     "click": "countrydiplomacyview/diploaction_list/diploactionentry/button_diploaction"
                   }
                 ],
                 "verified": false,
-                "evidence": "Not run yet by the capture driver at the six corpus resolutions (M10). Tried by hand at 1280x720 on 2026-10-27: Verne’s diplomacy lists one relation; the first of its rivals shows Declare War first (Anbennar groups the other actions in categories), which opens DeclareWarDialog and declares nothing."
+                "evidence": "Not run yet by the capture driver at the six corpus resolutions (M10). Tried by hand at 1280x720 on 2026-10-27: Verne’s diplomacy lists one relation; its shield selects that country, whose actions show Declare War first (Anbennar groups the others in categories), which opens DeclareWarDialog and declares nothing. Verne’s own rivals offer no Declare War here."
               }
             }
           }
