@@ -37,6 +37,7 @@ import {
   deviationCovers,
   findView,
   resolutionKey,
+  viewInPlayset,
   type CorpusManifest,
   type PlaysetGate,
 } from './manifest.ts';
@@ -123,7 +124,9 @@ export interface CapturePlan {
  */
 export function planCapture(input: CapturePlanInput): CapturePlan {
   const { manifest, record } = input;
-  const view = findView(manifest, record.view)?.view;
+  const found = findView(manifest, record.view)?.view;
+  const playset = manifest.playsets.find((p) => p.id === record.playset);
+  const view = found === undefined || playset === undefined ? found : viewInPlayset(found, playset);
   const widgets: PlannedWidget[] = [];
   const problems: string[] = [];
   /** Planned index of each laid-out widget, per window. */
