@@ -268,9 +268,13 @@ section 14 asks of the plugin.
 - **Build and procedure** as above: `eu4.exe` 1.37.5 `9AD3EFE1…DC4D771A` and the
   Process Lasso rule `eu4.exe,0,1-7` checked before the batch and after it,
   under the EU4 engine lab's game lock; every game closed by the extension's
-  verified stop. Anvil 1.5.2, Bellows 0.10.0, and a lab build of Tongs 0.17.0
-  with `definition_line` (tongs#86, happy-dwarf-team/tongs#92); Tongs' pipe and
-  input were switched on in the lab's copy for the lab's own steps (opening a
+  verified stop. Anvil 1.5.2, Bellows 0.10.0, and a lab-only build of Tongs
+  with `definition_line` (tongs#86): built from commit `46d483c` of
+  happy-dwarf-team/tongs#92, whose sources are those of Tongs' `main` at
+  `0379d5c` (the squash merge; only `docs/design.md` differs), unreleased and
+  still versioned 0.17.0, `tongs.dll` SHA-256 `7742CB95…CDE3E330`. Etch's pin
+  stays on the released Tongs 0.17.0, which has no line. Tongs' pipe and input
+  were switched on in the lab's copy for the lab's own steps (opening a
   province, reading widget rectangles), never for pick mode.
 - **VS Code:** a separate VS Code 1.143.1 (`@vscode/test-electron`) with the
   extension and a lab script that drove the extension's own objects over a
