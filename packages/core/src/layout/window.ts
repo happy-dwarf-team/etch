@@ -182,6 +182,8 @@ class Layout {
   private readonly widgets: LaidOutWidget[] = [];
   private readonly diagnostics = new Map<string, ModelDiagnostic>();
   private readonly unloaded = new Set<string>();
+  /** The window file's size steps, read once; `null` until read. */
+  private steps: { large?: number; huge?: number } | undefined | null = null;
   /** The `@name` constants in scope: the window's file's, or a list entry template's file's. */
   private constants: Constants;
   /** The list box entry being laid out, if any. */
@@ -435,15 +437,36 @@ class Layout {
   }
 
   /**
-   * The sprite the game draws for a widget's sprite at this screen size. Verified in the corpus
-   * (etch#44) on the diplomacy and estates backgrounds of both release playsets: the game draws the
-   * largest of the sprite's `_huge` and `_large` variants (a `_standard` suffix replaced) whose
-   * texture, measured from the top of the widget's window, ends on the screen, else the sprite
-   * itself (Proper 2K UI Enhanced's estates background, 892 high in a window at 168, is not
-   * drawn at 1050 although it would end at 1048 from its own top at 156).
+   * The sprite the game draws for a widget's sprite at this screen size, of the sprite's `_huge`
+   * and `_large` variants (a `_standard` suffix replaced) or the sprite itself.
+   *
+   * When the window's file has the country views' size steps (`positionType`s named
+   * `…_scaling_large_min_inc` and `…_scaling_huge_min_inc`, whose `x` is the least screen height of
+   * each step), the game draws the largest variant whose step the screen height reaches. Verified
+   * on the estates backgrounds of the three corpus playsets at the six resolutions (M10): vanilla
+   * steps at 900 and 1080, Proper 2K UI Enhanced at 1080 and 1296, and P2KE Patch - Anbennar at 1089
+   * and 1307, which keeps the standard background at 1080.
+   *
+   * Otherwise (etch#44, the diplomacy and estates backgrounds of the release playsets) the largest
+   * variant whose texture, measured from the top of the widget's window, ends on the screen (Proper
+   * 2K UI Enhanced's estates background, 892 high in a window at 168, is not drawn at 1050
+   * although it would end at 1048 from its own top at 156).
    */
   private sizedSprite(name: string, top: number): string {
     const base = name.replace(/_standard$/i, '');
+    const steps = this.sizeSteps();
+    if (steps !== undefined) {
+      const height = this.input.screen.height;
+      for (const [suffix, from] of [
+        ['_huge', steps.huge],
+        ['_large', steps.large],
+      ] as const) {
+        if (from !== undefined && height >= from && this.input.index.sprite(base + suffix)) {
+          return base + suffix;
+        }
+      }
+      return name;
+    }
     for (const suffix of ['_huge', '_large']) {
       const sprite = this.input.index.sprite(base + suffix)?.item;
       const written = sprite?.textures.find((t) => t.key === 'texturefile');
@@ -460,6 +483,31 @@ class Layout {
       }
     }
     return name;
+  }
+
+  /**
+   * The least screen heights of the window file's `_large` and `_huge` steps, from its
+   * `…_scaling_large_min_inc` and `…_scaling_huge_min_inc` positionTypes; `undefined` without them.
+   */
+  private sizeSteps(): { large?: number; huge?: number } | undefined {
+    if (this.steps !== null) return this.steps;
+    let large: number | undefined;
+    let huge: number | undefined;
+    for (const d of this.input.file.definitions) {
+      if (d.kind !== 'positionType' || d.name === undefined) continue;
+      const step = /_scaling_(large|huge)_min_inc$/i.exec(d.name)?.[1]?.toLowerCase();
+      if (step === undefined) continue;
+      const x = widgetProperties(d, this.input.file.constants, this.input.screen).point(
+        'position',
+      )?.x;
+      if (step === 'large') large ??= x;
+      else huge ??= x;
+    }
+    this.steps =
+      large === undefined && huge === undefined
+        ? undefined
+        : { ...(large === undefined ? {} : { large }), ...(huge === undefined ? {} : { huge }) };
+    return this.steps;
   }
 
   /**
