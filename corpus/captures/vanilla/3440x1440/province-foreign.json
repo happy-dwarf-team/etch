@@ -3,7 +3,7 @@
   "playset": "vanilla",
   "resolution": { "width": 3440, "height": 1440 },
   "view": "province-foreign",
-  "takenAt": "2026-10-27T05:57:54.264Z",
+  "takenAt": "2026-10-27T07:49:53.248Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
   "tongs": { "version": "0.14.1" },
   "save": { "sha256": "2A4CAF306CCDDB2DAFC7EE015C4ECFFB260654A1D10D86F5F4F768D3C3F56F6A" },
@@ -16,17 +16,17 @@
       { "map": { "x": -0.02, "y": -0.055 } }
     ],
     "verified": true,
-    "evidence": "Run by the capture driver (etch#42) at 3440x1440: the steps opened the view and its roots were read."
+    "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-27 (M10): the steps opened the view and its roots were read and shown. The outliner’s first ship in construction centres the map on Macedonia, and Siroz (province 4702, the Commonwealth’s) lies just above it; every capture shows Siroz."
   },
   "window": { "width": 3440, "height": 1440, "dpi": 96 },
   "screenshot": {
-    "sha256": "D99AA9F65C80F1211D2C7902386ECC5B95E5D0EA7A7D86904E685F6930DF7695",
+    "sha256": "39935EEF8103DF209105FAF6AFD6E7F158C3B73F66F76FB47A380C622EA3A6D4",
     "width": 3440,
     "height": 1440,
     "shots": 4,
     "unstable": {
-      "pixels": 3112843,
-      "sha256": "D4666ACD01ACB9599A47208387A2A68DF8C0727560E87EDF02500E349FBA00AC"
+      "pixels": 3108119,
+      "sha256": "3E0119C7D7DA5C037D189BB1FB314B58743DF6F9D13A413B0214296253297763"
     }
   },
   "widgets": [
@@ -5555,6 +5555,117 @@
           "type": "listbox",
           "visible": true,
           "rect": { "x": 5, "y": 785, "w": 0, "h": 0 }
+        }
+      ]
+    },
+    {
+      "name": "speed_controls",
+      "path": "speed_controls",
+      "type": "window",
+      "visible": true,
+      "rect": { "x": 3440, "y": 0, "w": 0, "h": 0 },
+      "children": [
+        {
+          "name": "button_pause",
+          "path": "speed_controls/button_pause",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 3218, "y": 15, "w": 130, "h": 22 },
+          "enabled": true
+        },
+        {
+          "name": "speed_indicator",
+          "path": "speed_controls/speed_indicator",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 3373, "y": 10, "w": 63, "h": 63 },
+          "enabled": true
+        },
+        {
+          "name": "button_speedup",
+          "path": "speed_controls/button_speedup",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 3351, "y": 15, "w": 25, "h": 25 },
+          "enabled": true
+        },
+        {
+          "name": "button_speeddown",
+          "path": "speed_controls/button_speeddown",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 3362, "y": 41, "w": 25, "h": 25 },
+          "enabled": true
+        },
+        {
+          "name": "button_nextsong",
+          "path": "speed_controls/button_nextsong",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 3193, "y": 42, "w": 25, "h": 25 },
+          "enabled": true
+        },
+        {
+          "name": "button_timeline",
+          "path": "speed_controls/button_timeline",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 3188, "y": 18, "w": 25, "h": 25 },
+          "enabled": true
+        },
+        {
+          "name": "button_achievements",
+          "path": "speed_controls/button_achievements",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 3379, "y": 57, "w": 35, "h": 35 },
+          "enabled": false
+        },
+        {
+          "name": "button_outliner",
+          "path": "speed_controls/button_outliner",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 3409, "y": 64, "w": 33, "h": 33 },
+          "enabled": true
+        },
+        {
+          "name": "icon_date_bg",
+          "path": "speed_controls/icon_date_bg",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 3186, "y": -1, "w": 257, "h": 170 }
+        },
+        {
+          "name": "icon_score",
+          "path": "speed_controls/icon_score",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 3274, "y": 43, "w": 25, "h": 26 }
+        },
+        {
+          "name": "text_score",
+          "path": "speed_controls/text_score",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 3222, "y": 42, "w": 50, "h": 30 },
+          "text": "16343"
+        },
+        {
+          "name": "text_score_rank",
+          "path": "speed_controls/text_score_rank",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 3294, "y": 42, "w": 60, "h": 30 },
+          "text": "1st "
+        },
+        {
+          "name": "DateText",
+          "path": "speed_controls/DateText",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 3213, "y": 13, "w": 140, "h": 26 },
+          "text": "17 March 1719"
         }
       ]
     }

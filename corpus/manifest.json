@@ -713,7 +713,7 @@
             "verified": true,
             "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-27 (M10): the steps opened the view and its roots were read and shown. The outliner’s first ship in construction centres the map on Macedonia, and Siroz (province 4702, the Commonwealth’s) lies just above it; every capture shows Siroz."
           },
-          "roots": ["provinceview", "topbar", "menubar"],
+          "roots": ["provinceview", "topbar", "menubar", "speed_controls"],
           "codeFilled": [
             "provinceview/province_modifier_item",
             "provinceview/province_terrain",
@@ -770,7 +770,8 @@
             "provinceview/province_window/foreign_province_window/opinion_box",
             "provinceview/province_window/foreign_province_window/miltech_value",
             "provinceview/province_window/foreign_province_window/foreignviewview_diplistitem",
-            "provinceview/province_window/PermanentClaimShieldItem"
+            "provinceview/province_window/PermanentClaimShieldItem",
+            "speed_controls"
           ],
           "codeMoved": [
             "provinceview/top_section_window",

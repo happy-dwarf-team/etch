@@ -3,7 +3,7 @@
   "playset": "anbennar",
   "resolution": { "width": 1600, "height": 900 },
   "view": "province-foreign",
-  "takenAt": "2026-10-27T07:06:54.569Z",
+  "takenAt": "2026-10-27T08:02:00.351Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
   "tongs": { "version": "0.14.1" },
   "save": { "sha256": "57CB4550073A4142E20FBB6439E32A68E420A5DB3F680EAEF138223264704AA0" },
@@ -33,17 +33,17 @@
       { "map": { "x": -0.75, "y": -0.035 } }
     ],
     "verified": true,
-    "evidence": "Run by the capture driver (etch#42) at 1600x900: the steps opened the view and its roots were read."
+    "evidence": "Run by the capture driver at the six corpus resolutions in the Anbennar playset on 2026-10-27 (M10): the steps opened the view and its roots were read and shown. The Goto box centres the map on the province Verne, and Ebenuel (province 89, Sorncóst’s) lies 0.75 client heights left of the centre; every capture shows Ebenuel."
   },
   "window": { "width": 1600, "height": 900, "dpi": 96 },
   "screenshot": {
-    "sha256": "2E5BB2A4CE26F6FF14713C08675BD229AE32C40AE8319A571B9D245F9FD13FA7",
+    "sha256": "CE7880D345FAF5EC4C84981A5358E8C2C52A5819A160E9B643BC4D7E7709833B",
     "width": 1600,
     "height": 900,
     "shots": 4,
     "unstable": {
-      "pixels": 265394,
-      "sha256": "80F7841749A80833FB6E31F3E6EFF3445D9BD8202FFA040549C57FC6FF00F4C5"
+      "pixels": 262609,
+      "sha256": "92DC1BA6982546F8B290D79E9946AB610AC0F0334CF2E64A4C8BDE6D8B5A1ED7"
     }
   },
   "widgets": [
@@ -74,7 +74,7 @@
           "path": "provinceview/provinceview_bg_large",
           "type": "icon",
           "visible": false,
-          "rect": { "x": -1203, "y": -184, "w": 610, "h": 1087 }
+          "rect": { "x": 800, "y": -637, "w": 610, "h": 1087 }
         },
         {
           "name": "provinceview_foreign_bg",
@@ -148,7 +148,7 @@
               "path": "provinceview/top_section_window/move_capital",
               "type": "button",
               "visible": false,
-              "rect": { "x": -1143, "y": -166, "w": 42, "h": 42 },
+              "rect": { "x": 800, "y": 408, "w": 42, "h": 42 },
               "enabled": false
             },
             {
@@ -156,7 +156,7 @@
               "path": "provinceview/top_section_window/move_trade_port",
               "type": "button",
               "visible": false,
-              "rect": { "x": -1105, "y": -166, "w": 42, "h": 42 },
+              "rect": { "x": 800, "y": 408, "w": 42, "h": 42 },
               "enabled": false
             },
             {
@@ -203,7 +203,7 @@
               "path": "provinceview/top_section_window/province_banner",
               "type": "icon",
               "visible": false,
-              "rect": { "x": -1223, "y": -184, "w": 650, "h": 87 }
+              "rect": { "x": 800, "y": 363, "w": 650, "h": 87 }
             },
             {
               "name": "move_button_box",
@@ -388,8 +388,8 @@
               "path": "provinceview/province_window/hre_button",
               "type": "button",
               "visible": false,
-              "rect": { "x": 15, "y": 306, "w": 50, "h": 50 },
-              "enabled": false
+              "rect": { "x": 800, "y": 400, "w": 50, "h": 50 },
+              "enabled": true
             },
             {
               "name": "trade_company_button",
@@ -404,8 +404,8 @@
               "path": "provinceview/province_window/client_state_button",
               "type": "button",
               "visible": false,
-              "rect": { "x": 111, "y": 306, "w": 51, "h": 51 },
-              "enabled": false
+              "rect": { "x": 800, "y": 399, "w": 51, "h": 51 },
+              "enabled": true
             },
             {
               "name": "trading_city_button",
@@ -420,8 +420,8 @@
               "path": "provinceview/province_window/add_core_button",
               "type": "button",
               "visible": false,
-              "rect": { "x": 300, "y": 92, "w": 51, "h": 49 },
-              "enabled": false
+              "rect": { "x": 800, "y": 401, "w": 51, "h": 49 },
+              "enabled": true
             },
             {
               "name": "abandon_core_button",
@@ -444,8 +444,8 @@
               "path": "provinceview/province_window/return_province_button",
               "type": "button",
               "visible": false,
-              "rect": { "x": 63, "y": 306, "w": 51, "h": 51 },
-              "enabled": false
+              "rect": { "x": 800, "y": 399, "w": 51, "h": 51 },
+              "enabled": true
             },
             {
               "name": "likely_rebel_shield",
@@ -602,7 +602,7 @@
               "path": "provinceview/province_window/province_button_button",
               "type": "button",
               "visible": false,
-              "rect": { "x": 564, "y": 148, "w": 82, "h": 55 },
+              "rect": { "x": 800, "y": 395, "w": 82, "h": 55 },
               "enabled": true
             },
             {
@@ -1238,28 +1238,28 @@
               "path": "provinceview/province_window/queue_window",
               "type": "window",
               "visible": false,
-              "rect": { "x": 279, "y": 38, "w": 269, "h": 175 },
+              "rect": { "x": 0, "y": 0, "w": 269, "h": 175 },
               "children": [
                 {
                   "name": "land_amount_icon",
                   "path": "provinceview/province_window/queue_window/land_amount_icon",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 365, "y": 94, "w": 48, "h": 48 }
+                  "rect": { "x": 800, "y": 402, "w": 48, "h": 48 }
                 },
                 {
                   "name": "naval_amount_icon",
                   "path": "provinceview/province_window/queue_window/naval_amount_icon",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 466, "y": 94, "w": 48, "h": 48 }
+                  "rect": { "x": 800, "y": 402, "w": 48, "h": 48 }
                 },
                 {
                   "name": "queue_header",
                   "path": "provinceview/province_window/queue_window/queue_header",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": 324, "y": 41, "w": 269, "h": 27 },
+                  "rect": { "x": 45, "y": 3, "w": 269, "h": 27 },
                   "text": "Queue"
                 },
                 {
@@ -1267,7 +1267,7 @@
                   "path": "provinceview/province_window/queue_window/demographics_header",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": 121, "y": 41, "w": 269, "h": 27 },
+                  "rect": { "x": -158, "y": 3, "w": 269, "h": 27 },
                   "text": "Demographics"
                 },
                 {
@@ -1275,7 +1275,7 @@
                   "path": "provinceview/province_window/queue_window/military_header",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": 63, "y": 367, "w": 269, "h": 27 },
+                  "rect": { "x": -216, "y": 329, "w": 269, "h": 27 },
                   "text": "Military"
                 },
                 {
@@ -1283,7 +1283,7 @@
                   "path": "provinceview/province_window/queue_window/trade_header",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": 63, "y": 487, "w": 269, "h": 27 },
+                  "rect": { "x": -216, "y": 449, "w": 269, "h": 27 },
                   "text": "Trade"
                 },
                 {
@@ -1291,7 +1291,7 @@
                   "path": "provinceview/province_window/queue_window/land_amount",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": 409, "y": 104, "w": 39, "h": 27 },
+                  "rect": { "x": 130, "y": 66, "w": 39, "h": 27 },
                   "text": "0"
                 },
                 {
@@ -1299,7 +1299,7 @@
                   "path": "provinceview/province_window/queue_window/naval_amount",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": 510, "y": 104, "w": 39, "h": 27 },
+                  "rect": { "x": 231, "y": 66, "w": 39, "h": 27 },
                   "text": "0"
                 }
               ]
@@ -1309,7 +1309,7 @@
               "path": "provinceview/province_window/progress_bar_window",
               "type": "window",
               "visible": false,
-              "rect": { "x": 279, "y": 38, "w": 120, "h": 120 },
+              "rect": { "x": 0, "y": 0, "w": 120, "h": 120 },
               "children": [
                 {
                   "name": "unit_cancel",
@@ -3333,7 +3333,7 @@
               "path": "provinceview/province_window/settlement_growth_checkbox",
               "type": "checkbox",
               "visible": false,
-              "rect": { "x": 398, "y": -11, "w": 37, "h": 37 },
+              "rect": { "x": 800, "y": 413, "w": 37, "h": 37 },
               "checked": false
             },
             {
@@ -17569,6 +17569,117 @@
           "type": "listbox",
           "visible": true,
           "rect": { "x": 6, "y": 114, "w": 0, "h": 0 }
+        }
+      ]
+    },
+    {
+      "name": "speed_controls",
+      "path": "speed_controls",
+      "type": "window",
+      "visible": true,
+      "rect": { "x": 1600, "y": 0, "w": 0, "h": 0 },
+      "children": [
+        {
+          "name": "button_pause",
+          "path": "speed_controls/button_pause",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 1246, "y": 15, "w": 246, "h": 67 },
+          "enabled": true
+        },
+        {
+          "name": "speed_indicator",
+          "path": "speed_controls/speed_indicator",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 1519, "y": 12, "w": 75, "h": 75 },
+          "enabled": true
+        },
+        {
+          "name": "button_speedup",
+          "path": "speed_controls/button_speedup",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 1495, "y": 18, "w": 30, "h": 30 },
+          "enabled": true
+        },
+        {
+          "name": "button_speeddown",
+          "path": "speed_controls/button_speeddown",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 1507, "y": 49, "w": 30, "h": 30 },
+          "enabled": true
+        },
+        {
+          "name": "button_nextsong",
+          "path": "speed_controls/button_nextsong",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 1219, "y": 16, "w": 30, "h": 30 },
+          "enabled": true
+        },
+        {
+          "name": "button_timeline",
+          "path": "speed_controls/button_timeline",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 1219, "y": 50, "w": 30, "h": 30 },
+          "enabled": true
+        },
+        {
+          "name": "button_achievements",
+          "path": "speed_controls/button_achievements",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 1527, "y": 69, "w": 42, "h": 42 },
+          "enabled": false
+        },
+        {
+          "name": "button_outliner",
+          "path": "speed_controls/button_outliner",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 1563, "y": 77, "w": 40, "h": 40 },
+          "enabled": true
+        },
+        {
+          "name": "icon_date_bg",
+          "path": "speed_controls/icon_date_bg",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 1205, "y": -1, "w": 396, "h": 204 }
+        },
+        {
+          "name": "icon_score",
+          "path": "speed_controls/icon_score",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 1388, "y": 87, "w": 30, "h": 31 }
+        },
+        {
+          "name": "text_score",
+          "path": "speed_controls/text_score",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 1278, "y": 85, "w": 100, "h": 34 },
+          "text": "0"
+        },
+        {
+          "name": "text_score_rank",
+          "path": "speed_controls/text_score_rank",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 1435, "y": 85, "w": 72, "h": 34 },
+          "text": ""
+        },
+        {
+          "name": "DateText",
+          "path": "speed_controls/DateText",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 1250, "y": 16, "w": 238, "h": 66 },
+          "text": "11 Nerament(11) 1444"
         }
       ]
     },

@@ -396,7 +396,11 @@ The exit code is 1 when a capture of a release playset at a confirmed
 resolution fails or cannot be compared.
 
 The release gate is the run with `--gpu`, the webview's renderer: with it
-both release playsets pass (etch#44). SwiftShader rounds the linear
+both release playsets of v1 passed (etch#44). In M10, with the province views
+and the Anbennar playset gating, 233 of the 252 gating captures pass (vanilla
+and Proper 2K UI Enhanced 78 of 84 each, the Anbennar playset 77 of 84); what
+fails is listed in [docs/release-2.0.0.md](../docs/release-2.0.0.md).
+SwiftShader rounds the linear
 filtering of scaled sprites differently: with it a few scaled icons of the
 diplomacy view, the declare war dialog and the province view fall to 94–99 %
 (130 of the 156 gating captures pass).
