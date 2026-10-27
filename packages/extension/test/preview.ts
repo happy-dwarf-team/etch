@@ -456,7 +456,9 @@ export async function testPreview(api: EtchApi): Promise<void> {
     );
 
     // After a window reload VS Code activates Etch for the panel and gives its serializer the
-    // panel and the webview's state; restoring it here goes through the same path.
+    // panel and the webview's state; restoring it here goes through the same path. The state
+    // holds the zoom the webview keeps for the panel too (etch#162), which the host leaves alone.
+    const kept = { ...(memento as object), zoom: { fit: false, scale: 2, center: { x: 9, y: 9 } } };
     const extension = vscode.extensions.getExtension('happy-dwarf-team.etch');
     const { activationEvents } = extension?.packageJSON as { activationEvents: string[] };
     assert.ok(activationEvents.includes(`onWebviewPanel:${PREVIEW_VIEW_TYPE}`));
@@ -470,7 +472,7 @@ export async function testPreview(api: EtchApi): Promise<void> {
           { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true },
           { enableScripts: true, retainContextWhenHidden: true },
         );
-        preview.restore(panel, memento);
+        preview.restore(panel, kept);
         return undefined;
       },
       COLD_TIMEOUT_MS,

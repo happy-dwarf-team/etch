@@ -34,6 +34,16 @@ fonts and textures, duplicate names and more) appear in the Problems panel.
   in the preview, picks the monitor's, one of the corpus resolutions (1280×720
   to 3840×2160; 3840×2160 is not yet measured against the game) or any width × height (`etch.previewResolution`).
   `if_resolution` blocks follow it. UI scale is always 1.0.
+- **Zoom** changes only how big the preview is shown, never the resolution the
+  window is laid out at. The preview opens fitted into the panel (never above
+  100 %); **Ctrl+mouse wheel**, **Ctrl+=** and **Ctrl+-**, or the **−** and
+  **+** buttons, zoom around the cursor, **Ctrl+0** goes to 100 % and
+  **Ctrl+Shift+0** back to fit, as does a click on the zoom level. 100 % is
+  one pixel of the screen per pixel of the monitor, as the game shows it, and
+  above it only whole steps (200 % to 800 %) are offered, so pixels stay sharp.
+  The mouse wheel or a drag pans a zoomed screen; picking, hover and the Widget
+  Outline's highlight follow the zoom, and a highlighted widget outside the
+  panel is brought into view. The preview keeps its zoom across a window reload.
 - The game is found through Steam, or set `etch.gamePath`. The playset is the
   edited mod and the `dependencies` of its descriptor, or `etch.playset`.
   `etch.language` picks the localisation language.

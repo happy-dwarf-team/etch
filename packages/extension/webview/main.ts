@@ -1,7 +1,8 @@
 // The preview webview's script (bundled to dist/webview.js): draws each draw list the extension
 // host posts with `@etch/renderer`, fetching textures through webview URIs (ADR 0001), marks each
-// paint on the canvas for Etch's own tools (paint-marker.ts), and shows the toolbar, its menus
-// (`View ▾`, spec section 4; `Data ▾`, section 5) and the notices and links the host describes.
+// paint on the canvas for Etch's own tools (paint-marker.ts), shows the painted screen at the
+// zoom the user chose (zoom.ts, etch#162), and shows the toolbar, its menus (`View ▾`, spec
+// section 4; `Data ▾`, section 5) and the notices and links the host describes.
 
 import { Painter, createContext, readPixels } from '@etch/renderer';
 import type { DrawRect } from '@etch/core/draw-list';
@@ -10,18 +11,37 @@ import type {
   DataMenu,
   HostMessage,
   Point,
-  PreviewMemento,
   TextLengthName,
   ViewAction,
   ViewMenu,
   ViewState,
   WebviewMessage,
+  WebviewState,
+  Zoom,
 } from '../src/preview/protocol.ts';
 import { markPaint, paintResult } from './paint-marker.ts';
+import {
+  FIT,
+  type Panel,
+  type Placement,
+  pan,
+  pannable,
+  panelRect,
+  place,
+  reveal,
+  screenPoint,
+  step,
+  wheelDelta,
+  wheelPixels,
+  zoomAround,
+  zoomLabel,
+  zoomOf,
+} from './zoom.ts';
 
 declare function acquireVsCodeApi(): {
   postMessage(message: WebviewMessage): void;
-  setState(state: PreviewMemento): void;
+  getState(): unknown;
+  setState(state: WebviewState): void;
 };
 
 const vscode = acquireVsCodeApi();
@@ -36,6 +56,10 @@ function element<T extends HTMLElement>(id: string, type: new () => T): T {
 }
 
 const canvas = element('screen', HTMLCanvasElement);
+const stage = element('stage', HTMLElement);
+const zoomOut = element('zoom-out', HTMLButtonElement);
+const zoomLevel = element('zoom-level', HTMLButtonElement);
+const zoomIn = element('zoom-in', HTMLButtonElement);
 const title = element('title', HTMLSpanElement);
 const file = element('file', HTMLSpanElement);
 const notices = element('notices', HTMLUListElement);
@@ -62,6 +86,11 @@ let overlay: Extract<HostMessage, { type: 'overlay' }> | undefined;
 /** The pointer over the canvas, in the page's pixels. */
 let pointer: { x: number; y: number } | undefined;
 let pointerFrame = 0;
+/** The panel's state as VS Code keeps it: the host's memento and the zoom. */
+let kept: WebviewState = keptState(vscode.getState());
+let zoom: Zoom = kept.zoom ?? FIT;
+/** Where the canvas is shown, once something is painted. */
+let placement: Placement | undefined;
 window.addEventListener('message', (event: MessageEvent<HostMessage>) => {
   void receive(event.data);
 });
@@ -387,12 +416,174 @@ canvas.addEventListener('mouseleave', () => {
 });
 
 canvas.addEventListener('click', (event) => {
+  // The click that ends a drag panned the screen; it picks nothing.
+  if (dragged) {
+    dragged = false;
+    return;
+  }
   const point = toScreen(event.clientX, event.clientY);
   if (point !== undefined) post({ type: 'click', point });
 });
 
-window.addEventListener('resize', () => {
+// Zoom (etch#162): Ctrl+wheel and Ctrl+= / Ctrl+- around the cursor, Ctrl+0 back to 100 %,
+// Ctrl+Shift+0 to fit the panel; the wheel and a drag pan a screen larger than the panel. The
+// keys are kept from VS Code, whose own zoom would otherwise take them.
+zoomIn.addEventListener('click', () => {
+  zoomBy(1);
+});
+zoomOut.addEventListener('click', () => {
+  zoomBy(-1);
+});
+zoomLevel.addEventListener('click', () => {
+  if (zoom.fit) zoomTo(1);
+  else setZoom(FIT);
+});
+
+window.addEventListener(
+  'keydown',
+  (event) => {
+    if (!event.ctrlKey || event.altKey) return;
+    if (event.code === 'Equal' || event.code === 'NumpadAdd') zoomBy(1, pointer);
+    else if (event.code === 'Minus' || event.code === 'NumpadSubtract') zoomBy(-1, pointer);
+    else if ((event.code === 'Digit0' || event.code === 'Numpad0') && event.shiftKey) setZoom(FIT);
+    else if (event.code === 'Digit0' || event.code === 'Numpad0') zoomTo(1, pointer);
+    else return;
+    event.preventDefault();
+    event.stopPropagation();
+  },
+  { capture: true },
+);
+
+/** Ctrl+wheel distance not yet turned into a zoom step, in pixels. */
+let wheel = 0;
+stage.addEventListener(
+  'wheel',
+  (event) => {
+    if (placement === undefined) return;
+    if (event.ctrlKey) {
+      const turned = wheelDelta(wheel, wheelPixels(event.deltaY, event.deltaMode));
+      wheel = turned.left;
+      const at = { x: event.clientX, y: event.clientY };
+      for (let i = 0; i < Math.abs(turned.steps); i++) zoomBy(turned.steps > 0 ? 1 : -1, at);
+    } else {
+      if (zoom.fit || !pannable(placement, panel())) return;
+      const sideways = event.shiftKey && event.deltaX === 0;
+      const dx = wheelPixels(sideways ? event.deltaY : event.deltaX, event.deltaMode);
+      const dy = sideways ? 0 : wheelPixels(event.deltaY, event.deltaMode);
+      setZoom(pan(zoom, placement, -dx, -dy, window.devicePixelRatio));
+    }
+    event.preventDefault();
+    event.stopPropagation();
+  },
+  { passive: false },
+);
+
+/** A press that may pan: where the pointer last was, and whether it moved far enough to pan. */
+let drag: { x: number; y: number; moved: boolean } | undefined;
+/** The press that just ended panned, so its click picks nothing. */
+let dragged = false;
+/** How far the pointer moves before a press pans, in CSS pixels. */
+const DRAG_SLOP = 4;
+stage.addEventListener('mousedown', (event) => {
+  dragged = false;
+  if (event.button !== 0 && event.button !== 1) return;
+  if (placement === undefined || zoom.fit || !pannable(placement, panel())) return;
+  // The middle button would start the page's autoscroll.
+  if (event.button === 1) event.preventDefault();
+  drag = { x: event.clientX, y: event.clientY, moved: false };
+});
+window.addEventListener('mousemove', (event) => {
+  if (drag === undefined || placement === undefined) return;
+  const dx = event.clientX - drag.x;
+  const dy = event.clientY - drag.y;
+  if (!drag.moved && Math.hypot(dx, dy) < DRAG_SLOP) return;
+  drag = { x: event.clientX, y: event.clientY, moved: true };
+  stage.classList.add('panning');
+  setZoom(pan(zoom, placement, dx, dy, window.devicePixelRatio));
+});
+window.addEventListener('mouseup', () => {
+  if (drag === undefined) return;
+  dragged = drag.moved;
+  drag = undefined;
+  stage.classList.remove('panning');
+});
+
+/** The panel the canvas is shown in. */
+function panel(): Panel {
+  const box = stage.getBoundingClientRect();
+  return { left: box.left, top: box.top, width: stage.clientWidth, height: stage.clientHeight };
+}
+
+/** Steps the zoom in or out around a point of the page, else around the panel's middle. */
+function zoomBy(direction: 1 | -1, at?: { x: number; y: number }): void {
+  if (placement === undefined) return;
+  zoomTo(step(placement.scale, direction), at);
+}
+
+/** Zooms to a scale around a point of the page, else around the panel's middle. */
+function zoomTo(scale: number, at?: { x: number; y: number }): void {
+  if (placement === undefined) return;
+  const area = panel();
+  const anchor =
+    at === undefined
+      ? { x: area.width / 2, y: area.height / 2 }
+      : { x: at.x - area.left, y: at.y - area.top };
+  setZoom(zoomAround(placement, scale, anchor, area, window.devicePixelRatio));
+}
+
+function setZoom(next: Zoom): void {
+  zoom = next;
+  layout();
+}
+
+/** Places the canvas in the panel at the zoom, and the outlines over it; keeps the zoom. */
+function layout(): void {
+  if (canvas.hidden || canvas.width === 0 || canvas.height === 0) {
+    placement = undefined;
+  } else {
+    const area = panel();
+    placement = place(zoom, canvas, area, window.devicePixelRatio);
+    // Panning held at an edge stays there.
+    if (!zoom.fit) zoom = { fit: false, scale: zoom.scale, center: placement.center };
+    canvas.style.left = `${String(placement.left)}px`;
+    canvas.style.top = `${String(placement.top)}px`;
+    canvas.style.width = `${String(placement.width)}px`;
+    canvas.style.height = `${String(placement.height)}px`;
+    canvas.classList.toggle('sharp', placement.scale > 1);
+    stage.classList.toggle('pannable', !zoom.fit && pannable(placement, area));
+  }
+  zoomLevel.textContent = zoomLabel(zoom, placement?.scale);
+  zoomLevel.title = zoom.fit
+    ? 'The screen fitted into the panel, never above 100 %. Click for 100 % (Ctrl+0).'
+    : 'Monitor pixels per pixel of the screen. Click to fit the panel (Ctrl+Shift+0).';
+  zoomOut.disabled = placement === undefined;
+  zoomIn.disabled = placement === undefined;
   showOverlay();
+  keep({ ...kept, zoom });
+}
+
+/** Keeps the panel's state, when it changed. */
+function keep(next: WebviewState): void {
+  if (JSON.stringify(next) === JSON.stringify(kept)) return;
+  kept = next;
+  vscode.setState(kept);
+}
+
+/** The state VS Code kept for the panel, its zoom checked. */
+function keptState(restored: unknown): WebviewState {
+  if (typeof restored !== 'object' || restored === null) return {};
+  const { zoom: remembered, ...memento } = restored as WebviewState;
+  const checked = zoomOf(remembered);
+  return checked === undefined ? memento : { ...memento, zoom: checked };
+}
+
+new ResizeObserver(() => {
+  layout();
+}).observe(stage);
+
+window.addEventListener('resize', () => {
+  // The device pixel ratio changes with VS Code's own zoom.
+  layout();
   reportMonitor();
 });
 
@@ -415,15 +606,26 @@ async function receive(message: HostMessage): Promise<void> {
     case 'state':
       show(message.state);
       break;
-    case 'overlay':
+    case 'overlay': {
+      const before = overlay?.selected;
       overlay = message;
-      showOverlay();
+      // A widget highlighted from the source or the outline outside the panel comes into view.
+      const selected = message.selected;
+      const shown =
+        selected !== undefined &&
+        placement !== undefined &&
+        JSON.stringify(selected) !== JSON.stringify(before)
+          ? reveal(zoom, placement, selected, panel(), window.devicePixelRatio)
+          : undefined;
+      if (shown === undefined) showOverlay();
+      else setZoom(shown);
       break;
+    }
     case 'invalidate':
       for (const url of message.urls) painter?.textures.invalidate(url);
       break;
     case 'remember':
-      vscode.setState(message.memento);
+      keep({ ...message.memento, zoom });
       break;
   }
 }
@@ -440,7 +642,7 @@ async function draw(message: Extract<HostMessage, { type: 'draw' }>): Promise<vo
     const gl = painter.gl;
     if (result.painted) {
       canvas.hidden = false;
-      showOverlay();
+      layout();
       if (message.probes !== undefined) {
         const rgba = readPixels(gl);
         pixels = message.probes.map(({ x, y }) => {
@@ -472,37 +674,38 @@ async function draw(message: Extract<HostMessage, { type: 'draw' }>): Promise<vo
   }
 }
 
-/** A point of the page as pixels of the preview screen the canvas shows scaled. */
+/** A point of the page as pixels of the preview screen the canvas shows at the zoom. */
 function toScreen(clientX: number, clientY: number): Point | undefined {
-  const box = canvas.getBoundingClientRect();
-  if (canvas.hidden || box.width === 0 || box.height === 0) return undefined;
-  const x = ((clientX - box.left) * canvas.width) / box.width;
-  const y = ((clientY - box.top) * canvas.height) / box.height;
+  if (placement === undefined) return undefined;
+  const area = panel();
+  const { x, y } = screenPoint(
+    placement,
+    { x: clientX - area.left, y: clientY - area.top },
+    window.devicePixelRatio,
+  );
   return x < 0 || y < 0 || x >= canvas.width || y >= canvas.height ? undefined : { x, y };
 }
 
-/** Places an outline over a rect of the preview screen, or hides it. */
+/** Places an outline over a rect of the preview screen, at the zoom, or hides it. */
 function outline(box: HTMLElement, rect: DrawRect | undefined): void {
-  const area = canvas.getBoundingClientRect();
-  const parent = canvas.parentElement?.getBoundingClientRect();
-  if (rect === undefined || canvas.hidden || parent === undefined || canvas.width === 0) {
+  if (rect === undefined || placement === undefined) {
     box.hidden = true;
     return;
   }
-  const scale = area.width / canvas.width;
+  const shown = panelRect(placement, rect, window.devicePixelRatio);
   box.hidden = false;
-  box.style.left = `${String(area.left - parent.left + rect.x * scale)}px`;
-  box.style.top = `${String(area.top - parent.top + rect.y * scale)}px`;
-  box.style.width = `${String(Math.max(1, rect.width * scale))}px`;
-  box.style.height = `${String(Math.max(1, rect.height * scale))}px`;
+  box.style.left = `${String(shown.x)}px`;
+  box.style.top = `${String(shown.y)}px`;
+  box.style.width = `${String(Math.max(1, shown.width))}px`;
+  box.style.height = `${String(Math.max(1, shown.height))}px`;
 }
 
 function showOverlay(): void {
   outline(hoverBox, overlay?.hover?.rect);
   outline(selectedBox, overlay?.selected);
   const hovered = overlay?.hover;
-  const parent = canvas.parentElement?.getBoundingClientRect();
-  if (hovered === undefined || pointer === undefined || parent === undefined) {
+  const parent = stage.getBoundingClientRect();
+  if (hovered === undefined || pointer === undefined) {
     tip.hidden = true;
     return;
   }
