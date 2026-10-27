@@ -230,6 +230,13 @@ std::string LabelText(const std::vector<const UiWidget*>& chain, const Sources& 
     return out;
 }
 
+std::uint64_t UnixMs() {
+    FILETIME now;
+    GetSystemTimePreciseAsFileTime(&now);
+    const std::uint64_t ticks = (static_cast<std::uint64_t>(now.dwHighDateTime) << 32) | now.dwLowDateTime;
+    return (ticks - 116444736000000000ull) / 10000ull;
+}
+
 std::string BadgeText(const HotKey& key) { return "Etch pick \xE2\x80\x94 " + FormatKey(key) + " to leave"; }
 
 std::string PickEvent(std::uint64_t seq, const std::vector<UiWidget>& widgets, const std::vector<std::size_t>& chain,
@@ -260,8 +267,10 @@ std::string PickEvent(std::uint64_t seq, const std::vector<UiWidget>& widgets, c
         .Raw("chain", items)
         .Raw("stack", stack.Uint("index", stack_index).Uint("size", stack_size).Finish())
         .Bool("front", front)
-        .Raw("timing",
-             timing.Fixed("click_to_frame_ms", times.click_to_frame_ms).Fixed("read_ms", times.read_ms).Finish())
+        .Raw("timing", timing.Uint("click_unix_ms", times.click_unix_ms)
+                           .Fixed("click_to_frame_ms", times.click_to_frame_ms)
+                           .Fixed("read_ms", times.read_ms)
+                           .Finish())
         .Finish();
 }
 

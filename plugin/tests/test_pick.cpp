@@ -128,7 +128,8 @@ void TestPickEvent() {
     tree[3].file = "interface/provinceview.gui";
     tree[3].line = 596;
     tree[3].path = "provinceview/province_window/tax_button";
-    const std::string line = etch::PickEvent(7, tree, etch::ChainOf(tree, 3), 0, 3, 1920, 1080, true, {12.5, 14.25});
+    const std::string line =
+        etch::PickEvent(7, tree, etch::ChainOf(tree, 3), 0, 3, 1920, 1080, true, {12.5, 1761400000123, 14.25});
     const Value e = Json(line);
     assert(e.Find("event")->AsString() == "pick");
     assert(e.Find("seq")->AsUint() == 7u);
@@ -145,6 +146,8 @@ void TestPickEvent() {
     assert(chain[1].Find("file")->kind() == Value::Kind::Null);
     assert(chain[2].Find("name")->AsString() == "provinceview");
     assert(e.Find("stack")->Find("size")->AsUint() == 3u);
+    assert(e.Find("timing")->Find("click_unix_ms")->AsUint() == 1761400000123u);
+    assert(etch::UnixMs() > 1761400000000u);
 }
 
 void TestSnapshot() {

@@ -214,6 +214,7 @@ struct PickState {
     bool click = false;
     POINT click_at{};
     double click_ms = 0;
+    std::uint64_t click_unix_ms = 0;
     int wheel = 0;
     // The frame handler's own.
     std::uint64_t hovered = 0;
@@ -434,6 +435,7 @@ LRESULT CALLBACK PickProc(HWND window, UINT message, WPARAM wparam, LPARAM lpara
                     p.click = true;
                     p.click_at = {GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam)};
                     p.click_ms = NowMs();
+                    p.click_unix_ms = etch::UnixMs();
                 }
                 return 0;
             case etch::MouseAction::Drop:
@@ -513,8 +515,8 @@ void PickNow(PickState& p, int width, int height) {
     AllowSetForegroundWindow(ASFW_ANY);
     const bool front = BringEditorForward();
     const std::uint64_t seq = ++p.seq;
-    const std::string line =
-        etch::PickEvent(seq, *read, chain, index, stack.size(), width, height, front, {start - p.click_ms, read_ms});
+    const std::string line = etch::PickEvent(seq, *read, chain, index, stack.size(), width, height, front,
+                                             {start - p.click_ms, p.click_unix_ms, read_ms});
     ++p.picks;
     anvil::Host{}.info("pick {}: {} {}:{} ({} of {} under the pointer), read {:.1f} ms, editor {}", seq, picked.name,
                        picked.file.empty() ? "?" : picked.file, picked.line, index + 1, stack.size(), read_ms,

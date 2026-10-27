@@ -331,12 +331,12 @@ The plugin writes these lines to the greeted client on its own; they have no
 `id`, and an `event` member instead. A client that has not greeted gets none.
 
 ```json
-{"event":"pick","seq":3,"window":"provinceview","screen":{"width":3440,"height":1440},"chain":[{"name":"tax_base_increase_button","type":"button","path":"provinceview/province_window/tax_base_increase_button","file":"interface/provinceview.gui","line":596,"rect":[1290,610,30,30],"visible":true,"stale":false}],"stack":{"index":0,"size":3},"front":true,"timing":{"click_to_frame_ms":9.4,"read_ms":15.2}}
+{"event":"pick","seq":3,"window":"provinceview","screen":{"width":3440,"height":1440},"chain":[{"name":"tax_base_increase_button","type":"button","path":"provinceview/province_window/tax_base_increase_button","file":"interface/provinceview.gui","line":596,"rect":[1290,610,30,30],"visible":true,"stale":false}],"stack":{"index":0,"size":3},"front":true,"timing":{"click_unix_ms":1761542400123,"click_to_frame_ms":9.4,"read_ms":15.2}}
 ```
 
 | `event`     | When, and its members |
 | ----------- | --------------------- |
-| `pick`      | a click in pick mode: `seq` (from 1 in the process), `window` (the top-level window), `screen`, `chain` (the picked widget, then its parents up to its top-level window, each with `name`, `type`, `path`, `file` (`null` when stale or unknown), `line` (the 1-based line of the `{` that opens it, H2; 0 when unknown, as with a Tongs without `definition_line`), `rect`, `visible` and `stale`), `stack` (the picked widget's place among those under the pointer), `front` (VS Code's window was brought forward) and `timing` |
+| `pick`      | a click in pick mode: `seq` (from 1 in the process), `window` (the top-level window), `screen`, `chain` (the picked widget, then its parents up to its top-level window, each with `name`, `type`, `path`, `file` (`null` when stale or unknown), `line` (the 1-based line of the `{` that opens it, H2; 0 when unknown, as with a Tongs without `definition_line`), `rect`, `visible` and `stale`), `stack` (the picked widget's place among those under the pointer), `front` (VS Code's window was brought forward) and `timing` (the click by the system clock in Unix ms, which the extension compares with its own to time a pick, and the times in the game) |
 | `snapshot`  | right after a `pick`, with its `seq`: the members of a `snapshot` answer, or `"error":"stale"` when the window is stale |
 | `pick_mode` | pick mode turned on or off, by the hotkey or by a `pick_mode` request: `on` |
 

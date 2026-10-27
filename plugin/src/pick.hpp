@@ -119,9 +119,13 @@ std::string BadgeText(const HotKey& key);
 
 // The `pick` push (docs/plugin-protocol.md): the picked widget and its parents
 // with paths, files and lines, the game window's size, and the times.
+// The system clock in Unix milliseconds.
+std::uint64_t UnixMs();
+
 struct PickTimes {
-    double click_to_frame_ms = 0;  // from the click in the window procedure to the read
-    double read_ms = 0;            // the whole-tree read on the main thread
+    double click_to_frame_ms = 0;     // from the click in the window procedure to the read
+    std::uint64_t click_unix_ms = 0;  // the click by the system clock, which Etch compares with its own
+    double read_ms = 0;               // the whole-tree read on the main thread
 };
 std::string PickEvent(std::uint64_t seq, const std::vector<UiWidget>& widgets, const std::vector<std::size_t>& chain,
                       std::size_t stack_index, std::size_t stack_size, int screen_width, int screen_height, bool front,
