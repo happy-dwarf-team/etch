@@ -13,6 +13,7 @@ export {
   parseCorpusManifest,
   requiredCaptures,
   resolutionKey,
+  viewInPlayset,
   type CaptureKey,
   type CorpusManifest,
   type CorpusMod,
@@ -25,6 +26,8 @@ export {
   type ManifestResult,
   type NotCovered,
   type PlaysetGate,
+  type PlaysetView,
+  type ViewData,
   type Recipe,
   type RecipeStart,
   type RecipeStep,
@@ -89,3 +92,11 @@ export {
   windowReport,
   type CaptureOutcome,
 } from './report.ts';
+export {
+  profileSaveTexts,
+  profileVisibility,
+  type SaveTextDifference,
+  type SaveTextReport,
+  type VisibilityMismatch,
+  type VisibilityResult,
+} from './visibility.ts';

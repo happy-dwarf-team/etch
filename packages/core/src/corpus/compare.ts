@@ -42,6 +42,7 @@ import {
 } from './manifest.ts';
 import { matchesWidgetPattern, splitWidgetPath } from './widget-path.ts';
 import type { RgbaImage } from './png.ts';
+import type { SaveTextReport, VisibilityResult } from './visibility.ts';
 
 /** How far a channel may differ and still count as equal (ADR 0002). */
 export const CHANNEL_TOLERANCE = 2;
@@ -431,6 +432,13 @@ export interface CaptureComparison {
     /** Pixels of the widgets that gate (pass, fail, deviation). */
     readonly pixels: PixelCounts;
   };
+  /**
+   * The visibility gate of Etch's profiles of the view's root windows (ADR 0006): one result per
+   * profiled root; a mismatch fails the capture.
+   */
+  readonly visibility?: readonly VisibilityResult[];
+  /** The profiles' `save` texts against the capture's, reported only (spec v2 section 14). */
+  readonly saveTexts?: readonly SaveTextReport[];
 }
 
 /**

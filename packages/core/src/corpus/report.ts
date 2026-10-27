@@ -91,6 +91,24 @@ export function windowReport(
     if (comparison.problems.length > 0) {
       lines.push(...comparison.problems.map((p) => `- ${p}`), '');
     }
+    for (const v of comparison.visibility ?? []) {
+      lines.push(
+        `Profile of \`${v.window}\`: ${String(v.compared)} named paths, ` +
+          `${String(v.mismatches.length)} not as the game shows them.`,
+      );
+    }
+    for (const t of comparison.saveTexts ?? []) {
+      lines.push(
+        `Save texts of \`${t.window}\` (reported): ${String(t.matched)} of ${String(t.compared)} ` +
+          `as the game shows them.`,
+        ...t.differences.map(
+          (d) => `- \`${d.path}\` (${d.from}): "${d.sample}", the game "${d.game}".`,
+        ),
+      );
+    }
+    if ((comparison.visibility?.length ?? 0) + (comparison.saveTexts?.length ?? 0) > 0) {
+      lines.push('');
+    }
     const notable = comparison.widgets
       .filter((w) => w.status === 'fail' || w.status === 'deviation' || w.problems.length > 0)
       .sort((a, b) => order(a) - order(b));

@@ -22,6 +22,7 @@ import {
   type WindowProfile,
 } from '../src/profile/index.ts';
 import { readSave, type Save } from '../src/save/index.ts';
+import { profileSaveTexts, type CapturedWidget } from '../src/corpus/index.ts';
 
 const GUI: GuiFile = readGuiFile(
   parseScript(`guiTypes = {
@@ -415,5 +416,56 @@ describe('the documentation of save paths', () => {
       for (const key of [...scope.scalars, ...scope.collections])
         expect(doc).toMatch(new RegExp(`[\`.]${key}\``));
     }
+  });
+});
+
+describe('profileSaveTexts', () => {
+  it("reports the save's texts against a capture's, in the view it shows", async () => {
+    const { profile } = profileOf(PROFILE);
+    const text = (name: string, value: string, visible = true): CapturedWidget => ({
+      path: `provinceview/${name}`,
+      name,
+      type: 'text',
+      visible,
+      rect: { x: 0, y: 0, w: 10, h: 10 },
+      text: value,
+    });
+    const root: CapturedWidget = {
+      path: 'provinceview',
+      name: 'provinceview',
+      type: 'window',
+      visible: true,
+      rect: { x: 0, y: 0, w: 100, h: 100 },
+      children: [
+        text('provincename', ' Stockholm '),
+        text('tax_value', '5.0'),
+        text('development_value', '12.5'),
+        text('culture', 'Swedish', false),
+        text('title', 'Province'),
+      ],
+    };
+    const report = profileSaveTexts(
+      profile,
+      WINDOW,
+      { width: 1920, height: 1080 },
+      { owner: 'yes' },
+      new SaveChoice(await save(), 'SWE', 1),
+      (key) => LOC[key],
+      root,
+    );
+    // The hidden culture and the loc title are left out; white space does not count.
+    expect(report).toEqual({
+      window: 'provinceview',
+      compared: 3,
+      matched: 2,
+      differences: [
+        {
+          path: 'provinceview/tax_value',
+          sample: '5',
+          game: '5.0',
+          from: 'provinces.{province}.base_tax',
+        },
+      ],
+    });
   });
 });

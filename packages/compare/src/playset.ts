@@ -24,8 +24,17 @@ import {
   workshopFolderFor,
   type DiscoveryEnvironment,
 } from '@etch/core/playset';
-import type { Localisation } from '@etch/core';
-import { stat } from 'node:fs/promises';
+import type { Localisation, Widget } from '@etch/core';
+import {
+  checkProfile,
+  layerProfiles,
+  profileModMatches,
+  readProfile,
+  type PlaysetModKey,
+  type ProfileFile,
+  type WindowProfile,
+} from '@etch/core/profile';
+import { readFile, readdir, stat } from 'node:fs/promises';
 
 /** The language captures are taken in; the manifest has no other. */
 const LANGUAGE = 'english';
@@ -41,12 +50,20 @@ export class CorpusPlaysetFiles {
   private readonly ui: PlaysetInterface;
   private readonly assets: PlaysetAssets;
   private readonly localisation: Localisation | undefined;
+  private readonly mods: readonly PlaysetModKey[];
+  private shipped: Promise<ProfileFile[]> | undefined;
 
-  private constructor(id: string, ui: PlaysetInterface, localisation: Localisation | undefined) {
+  private constructor(
+    id: string,
+    ui: PlaysetInterface,
+    localisation: Localisation | undefined,
+    mods: readonly PlaysetModKey[],
+  ) {
     this.id = id;
     this.ui = ui;
     this.assets = new PlaysetAssets(ui);
     this.localisation = localisation;
+    this.mods = mods;
   }
 
   /**
@@ -106,7 +123,15 @@ export class CorpusPlaysetFiles {
       PlaysetInterface.load(found.files),
       loadPlaysetLocalisation(found.files, LANGUAGE).catch(() => undefined),
     ]);
-    return new CorpusPlaysetFiles(playset.id, ui, localisation);
+    return new CorpusPlaysetFiles(
+      playset.id,
+      ui,
+      localisation,
+      playset.mods.map((m) => ({
+        name: m.name,
+        ...(m.workshopId === undefined ? {} : { workshopId: m.workshopId }),
+      })),
+    );
   }
 
   /**
@@ -133,8 +158,88 @@ export class CorpusPlaysetFiles {
     return { layout, shaderOf: (widget) => spriteShaderOf(widget, context) };
   }
 
+  /**
+   * Etch's own profile of a top-level window in this playset (ADR 0006): the vanilla layer, then
+   * each mod's by Workshop id or name, from the repository's `profiles/` folder, checked against
+   * the window as the extension checks it; `undefined` when no layer describes the window. The
+   * check's problems come back too: a profile the corpus gates must load cleanly.
+   */
+  async profile(
+    profilesFolder: string,
+    name: string,
+    files: readonly string[] = [],
+  ): Promise<{ profile: WindowProfile; window: Widget; problems: string[] } | undefined> {
+    const definitions = this.ui.index.guiTypeDefinitions(name);
+    const preferred = new Set(files.map((f) => f.toLowerCase()));
+    const definition =
+      definitions.find((d) => preferred.has(d.path.toLowerCase())) ?? definitions[0];
+    const file = this.ui.index.guiFiles.find((f) => f.path === definition?.path)?.file;
+    if (definition === undefined || file === undefined) return undefined;
+    this.shipped ??= readShipped(profilesFolder);
+    const key = name.toLowerCase();
+    const shipped = (await this.shipped).filter((f) => f.window.toLowerCase() === key);
+    const layers = [
+      ...shipped.filter((f) => f.mod === undefined),
+      ...this.mods.flatMap((mod) =>
+        shipped.filter((f) => f.mod !== undefined && profileModMatches(f.mod, mod)),
+      ),
+    ];
+    if (layers.length === 0) return undefined;
+    const checked = checkProfile(
+      layerProfiles(
+        name,
+        layers.map((f, layer) => ({ ...f, origin: { ...f.origin, layer } })),
+      ),
+      {
+        window: definition.item,
+        positionType: (type) =>
+          file.definitions.some(
+            (d) => d.kind === 'positionType' && d.name?.toLowerCase() === type.toLowerCase(),
+          ),
+        template: (template) => this.ui.index.guiType(template)?.item,
+        windowExists: (other) => this.ui.index.guiType(other) !== undefined,
+      },
+    );
+    return {
+      profile: checked.profile,
+      window: definition.item,
+      problems: checked.diagnostics.map((d) => `${d.file}: ${d.message}`),
+    };
+  }
+
+  /** The playset's English localisation of a key; `undefined` when it has none. */
+  readonly localise = (key: string): string | undefined => this.localisation?.get(key);
+
   /** The file on disk of a game-relative path a loaded file names, such as a texture. */
   readonly fileOf = (path: string): string | undefined => this.ui.gameFile(path)?.absolutePath;
+}
+
+/**
+ * The profiles of `profiles/<source>/*.jsonc`, as read; a file that cannot be read is left out,
+ * and a missing folder has none.
+ */
+async function readShipped(folder: string): Promise<ProfileFile[]> {
+  const files: ProfileFile[] = [];
+  let sources;
+  try {
+    sources = await readdir(folder, { withFileTypes: true });
+  } catch {
+    return files;
+  }
+  for (const source of sources) {
+    if (!source.isDirectory()) continue;
+    for (const name of await readdir(join(folder, source.name))) {
+      if (!name.endsWith('.jsonc')) continue;
+      const text = await readFile(join(folder, source.name, name), 'utf8');
+      const read = readProfile(text, {
+        layer: 0,
+        source: source.name,
+        file: `${source.name}/${name}`,
+      });
+      if (read.file !== undefined) files.push(read.file);
+    }
+  }
+  return files;
 }
 
 async function isDirectory(path: string): Promise<boolean> {

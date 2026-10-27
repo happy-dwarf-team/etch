@@ -148,6 +148,19 @@ describe('stepCommand', () => {
     );
     expect(stepCommand({ key: 'f1' }, SIZE)).toBe('key f1');
     expect(stepCommand({ click: 'menu//a' }, SIZE)).toBe('ui click menu//a timeout=10');
+    expect(stepCommand({ text: 'Verne' }, SIZE)).toBe('text Verne');
+  });
+
+  it('places map points by client heights from the centre, the same place at every size', () => {
+    const step = { map: { x: -0.5, y: 0.25 } };
+    expect(stepCommand(step, { width: 1281, height: 720 })).toBe('click 280 540');
+    expect(stepCommand(step, { width: 3441, height: 1440 })).toBe('click 1000 1080');
+    expect(stepCommand({ wheel: { x: 0.5, y: 0, steps: 3 } }, { width: 1281, height: 720 })).toBe(
+      'scroll 3 1000 360',
+    );
+    expect(() => stepCommand({ map: { x: -1, y: 0 } }, { width: 1280, height: 720 })).toThrow(
+      /outside the client area/,
+    );
   });
 });
 

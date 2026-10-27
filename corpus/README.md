@@ -73,6 +73,9 @@ opens and one capture records, such as the main menu and the lobby of
 | `roots` | Tongs selectors of the widgets whose trees the capture reads, `ui tree ROOT all` |
 | `codeFilled` | widget patterns of what the game's code fills or hides in this view. The comparison masks these widgets, and every pixel under their game rect, as ADR 0002 says. The lists were completed from the captures of etch#44 |
 | `codeMoved` | optional widget patterns of what the game's code moves away from where its `.gui` puts it: a dialog the game opens beside the panel that asked for it, a section the game moves on a taller screen. The comparison draws each such widget and everything inside it where the game shows it, and compares it there (etch#44) |
+| `selectors` | optional values of the window profiles' selectors the view is captured with, by selector id (`"owner": "yes"`), where a profile has a choice the screen does not make; `resolution` selectors come from the capture's size. Each profiled root's profile is evaluated with them for the visibility gate (below, ADR 0006). An id a root's profile does not have is left out for that root |
+| `data` | optional: what of the playset's save the view shows, `province` by id and `country` by tag (the save's player when left out), for the report of the profiles' `save` texts against the capture's (below) |
+| `byPlayset` | optional, by playset id: what differs in that playset, its own `recipe`, `selectors` (replacing the view's values of those ids), `data` and `note`. The Anbennar playset's save has no ship in construction and opens with events over the middle of the screen, so its province views open another way (spec v2 section 11) |
 
 A **recipe** is the Tongs input that opens a view from a known start state:
 
@@ -80,9 +83,14 @@ A **recipe** is the Tongs input that opens a view from a known start state:
   `save` (the playset's save loaded and paused);
 - `steps`: in order, `{ "key": "f1" }` (Tongs `key`, its key names),
   `{ "click": "menu//menu_options_button" }` (Tongs `ui click`, a widget
-  pattern) or `{ "point": { "x": 0.5, "y": 0.5 } }` (Tongs `click` at a point
-  of the client area, as fractions of its width and height, for what has no
-  widget, such as a province on the map);
+  pattern), `{ "text": "Verne" }` (Tongs `text` into the focused field, such
+  as the Goto box's that `f` opens), `{ "point": { "x": 0.5, "y": 0.5 } }`
+  (Tongs `click` at a point of the client area, as fractions of its width and
+  height, for what has no widget, such as a province on the map),
+  `{ "map": { "x": -0.65, "y": -0.1 } }` (a click at a point of the map, given
+  as its distance from the client area's centre in client heights) or
+  `{ "wheel": { "x": 0.5, "y": 0, "steps": 3 } }` (the mouse wheel at such a
+  point; positive steps zoom in);
 - `verified`: whether the steps and roots were seen to work in the game;
 - `evidence`: where, or what is still unknown.
 
@@ -90,6 +98,16 @@ A verified recipe names its roots. Unverified recipes may leave steps or roots
 empty: the driver (etch#42) verifies each one live, fills in what is missing
 and sets `verified`. The province view
 opens with a `point` step on the map.
+
+A `map` point is the same place of the map at every corpus resolution: the map's
+camera keeps its height in view, so a distance in client heights from the
+centre (where the Goto box or an outliner entry puts the camera) lands on the
+same province at 1280×720 and at 3440×1440 (checked by hand in M10: the same
+provinces under the same points at both sizes). A `point` scales with the
+width instead, so at another aspect ratio it lands elsewhere. The Anbennar
+playset's province views use `map` points because three events cover the
+middle of the screen in its save, one taller than 1080 pixels, whose option no
+click can reach.
 
 Each resolution is a fresh start of the game, with the size in the
 capturing profile's `pdx_settings.txt` (etch#18). After its first start in a
@@ -366,6 +384,7 @@ $env:ETCH_CORPUS_PATH = 'D:\etch-corpus'                    # the local corpus f
 $env:ETCH_GAME_PATH = '...\Europa Universalis IV'           # optional; else found through Steam
 pnpm --filter @etch/compare compare                         # every capture
 pnpm --filter @etch/compare compare --playset vanilla --view main-menu --resolution 1920x1080
+pnpm --filter @etch/compare compare --gpu --saves 'D:\etch-saves'   # with the save texts' report
 ```
 
 Filters take several values separated by commas. `--gpu` draws with ANGLE on
@@ -428,9 +447,23 @@ How a view is compared (`planCapture` and `compareCapture` in
   shader: compared, gates nothing); `absent` (a widget only one side has that
   draws nothing: a layout widget without draws, or a game widget of zero
   or negative size). A widget only the game shows, or only the render draws, fails.
-- **A capture passes** when no widget fails and every root was found. Totals
-  (share within ±2, mean difference) cover the widgets that gate and gate
-  nothing themselves.
+- **The visibility gate** (ADR 0006, spec v2 section 14). For each root
+  that Etch's own window profiles (`profiles/`, vanilla then the playset's
+  mods) describe, the profile is checked as the extension checks it and
+  evaluated at the view's `selectors` in the playset and the capture's size.
+  Every path the profile names (in its rules and its groups) that the capture
+  has must be drawn exactly when the game showed it (itself and its parents
+  visible). A mismatch, or a profile that does not load cleanly, is a problem
+  of the capture and fails it; the report lists them, and `visibility` in the
+  capture's report has each root's count.
+- **Save texts** (reported, not gated, spec v2 section 14). With `--saves
+  <folder>` naming a folder that holds the playsets' pinned saves (checked by
+  hash), a view with `data` also has the texts its profiled roots fill from
+  `save` sources, for that province and country, compared with the texts the
+  capture shows (`saveTexts` in the capture's report, and the window report).
+- **A capture passes** when no widget fails, every root was found and the
+  visibility gate holds. Totals (share within ±2, mean difference) cover the
+  widgets that gate and gate nothing themselves.
 
 Results go to the local corpus folder:
 

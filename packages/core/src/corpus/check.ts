@@ -47,6 +47,15 @@ export class Checker {
     return json;
   }
 
+  /** An object used as a map: any keys, each value checked by the caller. */
+  map(value: unknown, at: string): Json | undefined {
+    if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+      this.fail(at, 'Expected an object.');
+      return undefined;
+    }
+    return value as Json;
+  }
+
   // The checks below say nothing about a missing value: `object` has reported it.
 
   /** An array, each item checked by `item`; `nonEmpty` asks for at least one. */

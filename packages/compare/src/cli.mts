@@ -4,7 +4,10 @@
 //   $env:ETCH_CORPUS_PATH = 'D:\etch-corpus'     # the local corpus folder (screenshots)
 //   $env:ETCH_GAME_PATH = '...\Europa Universalis IV'   # optional; else found through Steam
 //   pnpm --filter @etch/compare compare [--playset ID] [--view ID] [--resolution WxH] [--gpu]
+//     [--saves FOLDER]
 //
+// --saves names a folder with the playsets' pinned saves, for the report of the profiles' save
+// texts against the captures'; without it that report is left out.
 // Filters take several values separated by commas. Results go to the local corpus folder:
 // renders/, diffs/ and reports/ (reports/README.md is the summary). The exit code is 1 when a
 // gating capture of the run fails or cannot be compared.
@@ -20,6 +23,7 @@ const { values } = parseArgs({
     view: { type: 'string', multiple: true },
     resolution: { type: 'string', multiple: true },
     gpu: { type: 'boolean', default: false },
+    saves: { type: 'string' },
   },
 });
 const list = (items: string[] | undefined): string[] =>
@@ -42,6 +46,7 @@ const result = await runCorpus({
   views: list(values.view),
   resolutions: list(values.resolution),
   gpu: values.gpu,
+  ...(values.saves === undefined ? {} : { savesFolder: values.saves }),
   log: (line) => {
     console.log(line);
   },

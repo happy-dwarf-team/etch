@@ -12,6 +12,7 @@ import {
   readCaptureRecord,
   readCorpusManifest,
   requiredCaptures,
+  viewInPlayset,
   type CorpusManifest,
   type KnownDeviation,
 } from '../../src/corpus/index.ts';
@@ -238,12 +239,44 @@ describe('parseCorpusManifest', () => {
       }),
     ).toEqual([
       expect.stringMatching(/^windows\[1\]\.views\[0\]\.recipe\.steps\[0\]\.key: Expected one of /),
-      'windows[1].views[0].recipe.steps[1]: Give one of "key", "click" or "point".',
+      'windows[1].views[0].recipe.steps[1]: Give one of "key", "click", "point", "text", "map" or "wheel".',
       'windows[1].views[0].recipe.steps[2].click: "a///b" has more than two slashes in a row.',
       'windows[1].views[0].recipe.steps[3].point.y: Expected a fraction from 0 to 1.',
       'windows[1].views[0].roots: A verified recipe names the roots it reads.',
       'windows[1].views[0].codeFilled[0]: "[x]" in "a/[x]" is not a name with an optional [n].',
       'windows[1].views[0].codeMoved[1]: "[y]" in "c/[y]" is not a name with an optional [n].',
+    ]);
+  });
+
+  it('checks text and map steps, selector values and recipes by playset', () => {
+    expect(
+      problemsOf((m) => {
+        set(m, 'windows.1.views.0.recipe.steps', [
+          { text: 'Verne' },
+          { text: 'snow ☃' },
+          { map: { x: -0.65, y: 0.1 } },
+          { map: { x: -3, y: 0 } },
+          { wheel: { x: 0.5, y: 0, steps: 0 } },
+          { wheel: { x: 0.5, y: 0, steps: -3 } },
+        ]);
+        set(m, 'windows.1.views.0.selectors', { owner: 'yes', 'bad id!': 'x', tab: 3 });
+        set(m, 'windows.1.views.0.byPlayset', {
+          'big-mod': {
+            recipe: { from: 'save', steps: [{ key: 'f2' }], verified: false, evidence: 'not yet' },
+            selectors: { owner: 'no' },
+            note: 'its own save',
+          },
+          nowhere: { colour: 'red' },
+        });
+      }),
+    ).toEqual([
+      'windows[1].views[0].recipe.steps[1].text: "snow ☃" is not Latin-1 text.',
+      'windows[1].views[0].recipe.steps[3].map.x: Expected client heights from the centre, from -2 to 2.',
+      'windows[1].views[0].recipe.steps[4].wheel.steps: Turn the wheel at least one step.',
+      'windows[1].views[0].selectors.bad id!: Not a selector id.',
+      'windows[1].views[0].selectors.tab: Expected a non-empty string.',
+      'windows[1].views[0].byPlayset.nowhere.colour: Unknown field "colour".',
+      'windows[1].views[0].byPlayset.nowhere: The manifest has no playset "nowhere".',
     ]);
   });
 
@@ -324,6 +357,24 @@ describe('the corpus helpers', () => {
       { playset: 'vanilla', resolution: { width: 3440, height: 1440 }, view: 'court' },
     ]);
     expect(requiredCaptures(manifest)).toHaveLength(6);
+  });
+
+  it("gives a view its playset's own recipe and selectors", () => {
+    const m = sample();
+    set(m, 'windows.1.views.0.selectors', { owner: 'yes', tab: 'province' });
+    set(m, 'windows.1.views.0.byPlayset', {
+      'big-mod': {
+        recipe: { from: 'save', steps: [{ key: 'f2' }], verified: false, evidence: 'not yet' },
+        selectors: { owner: 'no' },
+      },
+    });
+    const parsed = parseCorpusManifest(m).manifest as CorpusManifest;
+    const view = findView(parsed, 'court')?.view;
+    if (view === undefined) throw new Error('no view');
+    expect(viewInPlayset(view, 'vanilla')).toBe(view);
+    const own = viewInPlayset(view, 'big-mod');
+    expect(own.recipe.steps).toEqual([{ key: 'f2' }]);
+    expect(own.selectors).toEqual({ owner: 'no', tab: 'province' });
   });
 
   it('names capture files by playset, resolution and view', () => {
