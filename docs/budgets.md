@@ -40,6 +40,12 @@ disabled):
   empty it without administrator rights.
 - The test fails when a warm reload p95 is over 50 ms or a cold open over 1 s.
   `ETCH_BUDGET_RUNS` changes the number of runs.
+- Since M10 (v2 spec section 9) the same runs follow with a copy of vanilla
+  `interface/provinceview.gui`, with the cursor in `provinceview`, which opens
+  in its window profile's default view (Own province) with the files layer of
+  sample data; the edit toggles the `x` of its `hide_position`.
+  `countrydiplomacyview` has a profile too since M6, so it is drawn in its view
+  (fewer draws than before).
 
 The suite is run three times, so the table has three first cold opens.
 
@@ -57,7 +63,9 @@ pnpm --filter etch test
 
 - The mods are the corpus manifest's Workshop items of the playset (Anbennar,
   Proper 2K UI Enhanced, P2KE Patch - Anbennar), each checked against its pin
-  and read in place. The edited file is a copy of the patch's
+  and read in place. Since M10 a copy of the patch's `interface/provinceview.gui`
+  follows the top bar's runs, in its profile's default view (vanilla's and
+  Anbennar's layers). The edited file is a copy of the patch's
   `interface/topbar.gui` (347 KB) in a temporary mod that the playset
   override lists after them, with the cursor in the `topbar` window (1,331
   draws, 209 textures, 1,309 widgets). The edit toggles the `x` of its
@@ -108,6 +116,34 @@ pnpm --filter etch test
   fails when the p95 is over 100 ms.
 
 ## Results
+
+### 2026-10-27, M10 (the preview with `provinceview` in its view)
+
+Machine as in etch#39; VS Code 1.143.1 from `.vscode-test`. EU4 1.37.5,
+`eu4.exe` SHA-256 `9AD3EFE1…DC4D771A`, read in place; the Anbennar playset at
+the corpus manifest's pins, which the test checks. No game ran (the lab's game
+lock was held for the whole batch). The suite was run three times with both
+playsets and once with the Anbennar playset alone, so that its first cold open
+was its process's first. Each cell is the process's three runs; warm reloads
+are from the edit to the paint, 120 per resolution and process.
+
+| Playset, window | Resolution | Cold opens (ms) | Warm reload median / p95 / max (ms) |
+| --- | --- | --- | --- |
+| Vanilla, `countrydiplomacyview` (77 draws in its view) | 1920×1080 | 686, 284, 293 · 497, 293, 286 · 549, 291, 378 | 8.9 / 11.6 / 52.8 · 8.8 / 13.1 / 22.0 · 9.0 / 14.2 / 40.4 |
+| | 3440×1440 | 284, 294, 279 · 274, 280, 276 · 286, 310, 284 | 8.4 / 10.7 / 13.4 · 8.5 / 10.3 / 12.6 · 9.1 / 11.4 / 15.4 |
+| Vanilla, `provinceview` (Own province: 129 draws, 68 textures, 138 widgets) | 1920×1080 | 362, 293, 290 · 355, 286, 293 · 467, 300, 288 | 22.7 / 25.3 / 50.6 · 22.8 / 25.9 / 33.0 · 22.7 / 25.7 / 68.0 |
+| | 3440×1440 | 281, 283, 295 · 282, 287, 295 · 283, 283, 283 | 22.7 / 25.9 / 28.3 · 22.4 / 26.3 / 35.3 · 22.7 / 25.8 / 35.1 |
+| Anbennar, `topbar` (43 draws in its view) | 1920×1080 | 841, 576, 580 · 655, 614, 598 · 891, 608, 584 · alone 845, 618, 615 | 17.0 / 19.4 / 27.9 · 17.0 / 23.6 / 36.0 · 17.4 / 23.1 / 47.8 · alone 18.6 / 20.8 / 22.8 |
+| | 3440×1440 | 660, 595, 625 · 566, 580, 593 · 601, 595, 622 · alone 616, 638, 645 | 16.7 / 18.5 / 19.8 · 16.7 / 18.7 / 34.0 · 17.2 / 18.8 / 28.3 · alone 18.8 / 22.5 / 26.6 |
+| Anbennar, `provinceview` (Own province: 156 draws, 80 textures, 158 widgets) | 1920×1080 | 813, 662, 652 · 840, 671, 626 · 1197, 681, 664 · alone 887, 696, 627 | 43.4 / 45.5 / 47.2 · 44.4 / 46.8 / 47.8 · 44.3 / 46.6 / 96.4 · alone 44.2 / 47.8 / 101.3 |
+| | 3440×1440 | 663, 622, 724 · 677, 618, 723 · 657, 708, 657 · alone 737, 672, 639 | 43.6 / 46.3 / 51.4 · 43.9 / 46.6 / 51.1 · 44.2 / 46.3 / 47.3 · alone 43.3 / 45.9 / 47.5 |
+
+All within the gated budgets of v2 spec section 9 (cold opens 1 s and 2 s,
+warm reload p95 50 ms); the save budgets are M7's below. The Anbennar
+province view is the closest: its p95 of 45.5–47.8 ms leaves about 2 ms, since
+a reload lays out the view, fills it from the files layer (sample data) and
+paints 156 draws. The first cold open of a process is the slowest (the JIT and
+the `eu4.exe` hash cold).
 
 ### 2026-10-27, the save budgets (M7)
 

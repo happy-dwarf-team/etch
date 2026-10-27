@@ -2,8 +2,9 @@
 //   $env:ETCH_GAME_PATH = 'C:\Program Files (x86)\Steam\steamapps\common\Europa Universalis IV'
 //   pnpm --filter etch test
 // The game is read in place. Each playset's edited file is a copy of one of its `.gui` files in a
-// temp mod, edited in its unsaved buffer: vanilla's countrydiplomacyview.gui, and for Anbennar the
-// patch's topbar.gui, with the manifest's pinned Workshop items read in place before the temp mod.
+// temp mod, edited in its unsaved buffer: vanilla's countrydiplomacyview.gui and provinceview.gui,
+// and for Anbennar the patch's topbar.gui and provinceview.gui, with the manifest's pinned Workshop
+// items read in place before the temp mod. provinceview opens in its profile's default view.
 // At each resolution, each run is a cold open of the preview (the playset, its sprite index, and
 // the window's textures and fonts) and warm reloads of one edit each; the preview is closed between
 // runs, so each cold open loads the playset again. ETCH_BUDGET_PLAYSETS (ids separated by `,`,
@@ -45,12 +46,30 @@ const CASES: readonly BudgetCase[] = [
     warmReloadMs: 50,
     coldOpenMs: 1000,
   },
+  // The province view in its profile's default view (Own province), spec v2 section 9.
+  {
+    playset: 'vanilla',
+    file: 'interface/provinceview.gui',
+    window: 'provinceview',
+    needle: 'hide_position = { x=-1000 y =-593 }',
+    warmReloadMs: 50,
+    coldOpenMs: 1000,
+  },
   {
     playset: 'anbennar',
     file: 'interface/topbar.gui',
     fromMod: '3777997797',
     window: 'topbar',
     needle: 'show_position = { x = 0 y = -1 }',
+    warmReloadMs: 50,
+    coldOpenMs: 2000,
+  },
+  {
+    playset: 'anbennar',
+    file: 'interface/provinceview.gui',
+    fromMod: '3777997797',
+    window: 'provinceview',
+    needle: 'hide_position = { x=-1200 y =-987 }',
     warmReloadMs: 50,
     coldOpenMs: 2000,
   },
@@ -189,11 +208,14 @@ async function measure(
         vscode.commands.executeCommand('etch.openPreview'),
       );
       assert.equal(first.window.name, budget.window);
+      if (budget.window === 'provinceview') {
+        assert.equal(first.view?.profile.profile.window, 'provinceview', 'with its profile');
+      }
       assert.equal(`${String(first.drawList.width)}x${String(first.drawList.height)}`, resolution);
       colds.push(cold.at - opened);
       if (run === 0) {
         console.log(
-          `[etch] budget ${budget.playset} window: ${String(first.drawList.draws.length)} draws, ` +
+          `[etch] budget ${budget.playset} ${budget.window}: ${String(first.drawList.draws.length)} draws, ` +
             `${String(first.drawList.textures.length)} textures, ${String(first.layout.widgets.length)} widgets`,
         );
       }
@@ -215,7 +237,7 @@ async function measure(
 
     const cold = summary(colds);
     const warm = summary(fromEdit);
-    const label = `[etch] budget ${budget.playset} ${resolution}`;
+    const label = `[etch] budget ${budget.playset} ${budget.window} ${resolution}`;
     console.log(
       `${label} cold open over ${String(RUNS)} runs: ` +
         `${colds.map((ms) => ms.toFixed(0)).join(', ')} ms`,
@@ -233,20 +255,20 @@ async function measure(
     );
     if (warm.p95 > budget.warmReloadMs) {
       misses.push(
-        `${budget.playset} ${resolution} warm reload p95 ${warm.p95.toFixed(1)} ms > ` +
+        `${budget.playset} ${budget.window} ${resolution} warm reload p95 ${warm.p95.toFixed(1)} ms > ` +
           `${String(budget.warmReloadMs)} ms`,
       );
     }
     if (cold.max > budget.coldOpenMs) {
       misses.push(
-        `${budget.playset} ${resolution} cold open ${cold.max.toFixed(0)} ms > ` +
+        `${budget.playset} ${budget.window} ${resolution} cold open ${cold.max.toFixed(0)} ms > ` +
           `${String(budget.coldOpenMs)} ms`,
       );
     }
   }
   console.log(
     [
-      `[etch] budget table, ${budget.playset} (warm reload from the edit, ms; cold opens, ms):`,
+      `[etch] budget table, ${budget.playset} ${budget.window} (warm reload from the edit, ms; cold opens, ms):`,
       '| Resolution | Median | p95 | Max | Cold opens |',
       '| --- | --- | --- | --- | --- |',
       ...rows,
@@ -267,9 +289,9 @@ export async function testPreviewBudget(api: EtchApi, gamePath: string): Promise
   const misses: string[] = [];
   try {
     for (const id of ids) {
-      const budget = CASES.find((c) => c.playset === id);
-      assert.ok(budget, `spec section 7 has budgets for ${id}`);
-      await measure(api, gamePath, budget, misses);
+      const budgets = CASES.filter((c) => c.playset === id);
+      assert.ok(budgets.length > 0, `spec section 7 has budgets for ${id}`);
+      for (const budget of budgets) await measure(api, gamePath, budget, misses);
     }
   } finally {
     await settings.update('gamePath', undefined, vscode.ConfigurationTarget.Global);
