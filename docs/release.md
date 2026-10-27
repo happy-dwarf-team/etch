@@ -132,13 +132,13 @@ release pull request stays open. 1.x fixes (bugs only) are pull requests to
 that branch, so merging its own `chore(release/1.x): release 1.0.x` pull
 request publishes 1.0.x as above. After 2.0.0 the branch gets nothing more.
 
-Before the first 1.0.x release:
-
-1. Add `release/1.x` to the deployment branches of the `vscode-marketplace`
-   environment, which allows only `main`; without it the `marketplace` job
-   cannot deploy and the VSIX goes to the Marketplace by hand.
-2. Check that the Open VSX trusted publisher (when registered) is not limited
-   to `main`.
+`release/1.x` is protected by the `main` ruleset, which targets it beside the
+default branch: changes come by pull request only, squash-merged, with the
+`windows` and `conventional-title` checks green, linear history, and no
+deletion or force push. The `vscode-marketplace` environment allows deployments
+from `main` and `release/1.x`, so the `marketplace` job publishes a 1.0.x
+release after the same approval. Before the first one, check that the Open VSX
+trusted publisher (when registered) is not limited to `main`.
 
 ## After the first release
 
