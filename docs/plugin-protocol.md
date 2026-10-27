@@ -290,9 +290,13 @@ The answer gives the state after the request: `on` and `key`.
   kind, size, `<mod> › <file>:<line>`, the path shortened, the place in the
   stack) and the badge "Etch pick — <key> to leave".
 - **The stack:** on the first wheel turn over a widget the plugin reads the
-  visible tree once: the hovered widget, then every other visible widget whose
-  rectangle holds the pointer, smallest first, without top-level windows that
-  cover the screen (`menubar`, `floating_buttons`, H5).
+  visible tree once: the hovered widget, then the visible widgets inside it
+  whose rectangle holds the pointer (a button's own text), smallest first, then
+  its parents, nearest first, then any other visible widget there, smallest
+  first (a map icon under the window: `tongs.ui` gives no order between
+  top-level windows), without top-level windows that cover the screen
+  (`menubar`, `floating_buttons`, H5). The wheel turned towards the player
+  steps down the stack.
 - **A click:** on the next frame the plugin reads the visible tree with stale
   widgets (paths, files, lines), takes the widget the stack points
   at, calls `AllowSetForegroundWindow(ASFW_ANY)`, brings VS Code's window

@@ -146,24 +146,41 @@ MouseFilter FilterMouse(std::uint32_t message, std::uint64_t wparam) {
 
 std::vector<std::size_t> StackAt(const std::vector<UiWidget>& widgets, int x, int y, int screen_width,
                                  int screen_height, std::uint64_t hovered) {
-    std::vector<std::size_t> out;
     std::optional<std::size_t> top;
+    for (std::size_t i = 0; i < widgets.size() && !top; ++i) {
+        if (hovered != 0 && widgets[i].id == hovered) top = i;
+    }
+    // Where each widget stands to the hovered one: 0 inside it, 1 its parent, 2 anything else.
+    std::vector<int> family(widgets.size(), 2);
+    std::vector<int> depth(widgets.size(), 0);
+    if (top) {
+        int d = 0;
+        for (const std::size_t i : ChainOf(widgets, *top)) {
+            family[i] = 1;
+            depth[i] = d++;
+        }
+        for (std::size_t i = *top + 1; i < widgets.size(); ++i) {
+            const int parent = widgets[i].parent;
+            if (parent >= 0 &&
+                (static_cast<std::size_t>(parent) == *top || family[static_cast<std::size_t>(parent)] == 0)) {
+                family[i] = 0;
+            }
+        }
+    }
+    std::vector<std::size_t> out;
     for (std::size_t i = 0; i < widgets.size(); ++i) {
         const UiWidget& w = widgets[i];
-        if (!w.Visible() || !w.Holds(x, y)) continue;
+        if ((top && i == *top) || !w.Visible() || !w.Holds(x, y)) continue;
         const bool whole_screen =
             w.parent == -1 && w.x <= 0 && w.y <= 0 && w.x + w.width >= screen_width && w.y + w.height >= screen_height;
-        if (whole_screen) continue;
-        if (hovered != 0 && w.id == hovered && !top) {
-            top = i;
-            continue;
-        }
-        out.push_back(i);
+        if (!whole_screen) out.push_back(i);
     }
+    const auto area = [&](std::size_t i) {
+        return static_cast<std::int64_t>(widgets[i].width) * static_cast<std::int64_t>(widgets[i].height);
+    };
     std::stable_sort(out.begin(), out.end(), [&](std::size_t a, std::size_t b) {
-        const auto area = [&](std::size_t i) {
-            return static_cast<std::int64_t>(widgets[i].width) * static_cast<std::int64_t>(widgets[i].height);
-        };
+        if (family[a] != family[b]) return family[a] < family[b];
+        if (family[a] == 1) return depth[a] < depth[b];
         return area(a) < area(b);
     });
     if (top) out.insert(out.begin(), *top);

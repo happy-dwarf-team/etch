@@ -92,8 +92,14 @@ std::vector<UiWidget> Tree() {
 void TestStack() {
     const auto tree = Tree();
     const auto stack = etch::StackAt(tree, 130, 210, 1920, 1080, 4);
-    // The hovered button first, then smallest first; menubar and the hidden icon left out (H5).
+    // The hovered button first, then its text, then its parents; menubar and the hidden icon left out (H5).
     assert((stack == std::vector<std::size_t>{3, 4, 2, 1}));
+    // A map icon under the window, smaller than all of them, comes after the hovered widget's own.
+    auto with_icon = tree;
+    with_icon.push_back(W(9, "fort_mapicon", -1, 128, 208, 6, 6));
+    assert((etch::StackAt(with_icon, 130, 210, 1920, 1080, 4) == std::vector<std::size_t>{3, 4, 2, 1, 6}));
+    // Nothing hovered: smallest first.
+    assert((etch::StackAt(with_icon, 130, 210, 1920, 1080, 0) == std::vector<std::size_t>{6, 4, 3, 2, 1}));
     assert(etch::StackAt(tree, 5, 5, 1920, 1080, 0).empty());
     assert((etch::ChainOf(tree, 4) == std::vector<std::size_t>{4, 3, 2, 1}));
 }

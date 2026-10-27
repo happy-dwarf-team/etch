@@ -83,9 +83,11 @@ MouseFilter FilterMouse(std::uint32_t message, std::uint64_t wparam);
 bool IsMouseMessage(std::uint32_t message);
 
 // The visible widgets under a point, the one to pick first: the hovered widget,
-// then the others whose rectangle holds the point, smallest first (a button's
-// own text before the window that holds it). Top-level windows that cover the
-// whole screen (`menubar`, `floating_buttons`, H5) and everything that is
+// then those inside it (a button's own text), smallest first, then its parents,
+// nearest first, then any other widget whose rectangle holds the point,
+// smallest first (a map icon under the window, last: the game keeps no order
+// between top-level windows that tongs.ui gives). Top-level windows that cover
+// the whole screen (`menubar`, `floating_buttons`, H5) and everything that is
 // hidden are left out. Indices into `widgets`.
 std::vector<std::size_t> StackAt(const std::vector<UiWidget>& widgets, int x, int y, int screen_width,
                                  int screen_height, std::uint64_t hovered);
