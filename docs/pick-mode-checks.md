@@ -255,3 +255,83 @@ own path, from the click to the editor showing the line.
   `+0xA0`.
 - The window procedure has to clear the `MK_*` bits (H6); the rest of the
   input handling is as the research recommends.
+
+## Checks with Etch's own plugin (M9)
+
+Run on 2026-10-27 for M9 (spec section 13 item 5), with Etch's plugin and
+extension as built for M9 (the plugin with pick mode, the extension with picks
+and live snapshots), the checks the probe left open and the ones spec
+section 14 asks of the plugin.
+
+### How it was run
+
+- **Build and procedure** as above: `eu4.exe` 1.37.5 `9AD3EFE1…DC4D771A` and the
+  Process Lasso rule `eu4.exe,0,1-7` checked before the batch and after it,
+  under the EU4 engine lab's game lock; every game closed by the extension's
+  verified stop. Anvil 1.5.2, Bellows 0.10.0, and a lab build of Tongs 0.17.0
+  with `definition_line` (tongs#86, happy-dwarf-team/tongs#92); Tongs' pipe and
+  input were switched on in the lab's copy for the lab's own steps (opening a
+  province, reading widget rectangles), never for pick mode.
+- **VS Code:** a separate VS Code 1.143.1 (`@vscode/test-electron`) with the
+  extension and a lab script that drove the extension's own objects over a
+  control pipe: the start skipped the first start's confirmation and quick pick
+  (no hand in the lab), and the private profile took a lab copy of the
+  player's settings (3440×1440 borderless, UI scale 1). Everything else, from
+  the plugin's pushes to the editor, was the extension's own path.
+- **Playsets and saves:** vanilla with a lab mod holding a copy of
+  `provinceview.gui` (Russia, 17 March 1719, the corpus save); the Anbennar
+  playset with Proper 2K UI Enhanced, P2KE Patch - Anbennar and a lab mod
+  holding a copy of P2KE's `provinceview.gui` (Verne, 11 November 1444). The
+  lab mod was the edited mod.
+- **Input:** posted window messages again (`post.ps1` of the probe: the real
+  cursor moved with `SetCursorPos`, keys and buttons posted to the game window).
+  `SendInput`, which comes closest to a real hand, was refused to the agent in
+  this session, and nobody was at the machine. The default foreground lock
+  applied this time: the machine's `ForegroundLockTimeout` was 200 000 ms,
+  Windows' default.
+
+### Results
+
+| Check | Result |
+| --- | --- |
+| `Ctrl+Shift+E` with the province view on screen | Holds: pick mode turned on with the province view open in both playsets, the view stayed open and the map mode did not change. As with the probe, the plugin matched the modifiers from the key messages it saw (posted messages leave `GetKeyState` as it was); with a real keyboard `GetKeyState` should do, still not checked |
+| The click swallowed (H6) | Holds: in pick mode a posted click on `speed_controls/button_speedup` left the speed at 2; the same click with pick mode off raised it to 3. A left drag, a right click and three wheel steps over the map changed nothing, and the click over the map opened nothing ("no widget under the pointer"). The game polled no mouse button through its key-state imports while pick mode was on |
+| VS Code in front under the default foreground lock (H8) | Holds: after each of 21 picks VS Code's window had the focus 31–68 ms after the click (the game, the foreground process at the click, called `AllowSetForegroundWindow` and brought VS Code's window forward itself) |
+| The game in front from VS Code | **Etch: Toggle Pick Mode** with VS Code in front brought the game forward (the plugin's `SetForegroundWindow`, its thread attached to the foreground window's input for the call); VS Code lost the focus and the game had it |
+| The line (H2) with `definition_line` | Holds for all 23 picks: the line of the widget's opening `{` in the file the game read, also where the keyword is on the line before (P2KE's `provinceview.gui`: 651, 6590, 7595, 2772, 1933, 425, 327, 3371, 1968; Proper 2K's `menubar.gui` 2135; vanilla `provinceview.gui` 596, 1117, 1505, 386; `outliner.gui` 451, 622); the extension found each widget by that line (`line` match) |
+| A file the mod overrides after the start | **Override in my mod** on vanilla `speed_controls.gui` (opened read-only by a pick) copied it byte for byte into the lab mod and opened the copy at the same line. With three lines added and saved, the live game reloaded it (with `topbar.gui`), and the next pick of the speed-up button reported `speed_controls.gui:89` instead of 86 and opened the mod's copy there |
+| Templates (H3) | `minimap_pic` (Proper 2K's `menubar.gui:2135`) inside `minimap_panel` (`minimappanel.gui:3`) opened `minimap_panel` first, read-only ("Proper 2K UI Enhanced"), with **Go to template** at `menubar.gui:2135`. List rows built by name from the same file (`CoreShieldItem`, `building_progress_entry`, outliner rows) opened at their own definitions |
+| Sprites | Every icon and button offered **Go to sprite** with its sprite (`GFX_development_button_tax`, `GFX_fort0`, `GFX_minimap`, …) |
+| The wheel's stack (H5) | First run: one step down from the province tab button picked a map icon (`fort_mapicon`, `mapicons.gui`) under the province view, the smallest widget whose rectangle held the point. Fixed: the stack now goes through the hovered widget's own widgets and its parents before any other; after the fix the steps went to `provinceview` and then to `buildings_window` (the tab's own window does not hold the point) |
+| The live snapshot | Taken with every pick and by **Refresh from live game**: vanilla `provinceview` 604 widgets, Anbennar's 847, none stale. The first build read the whole tree with hidden widgets for it, 150–215 ms on the main thread in vanilla; it now reads the window's subtree (`provinceview//*`), 13–16 ms for the province view. `View ▾` took every selector as `live` (also Anbennar's `buttonBar` and `apui`), none unknown; the profile differed in 13 paths in vanilla and 33 in the Anbennar playset, all widgets that depend on the province (a fort, a building in progress, Anbennar's dig site), shown as toggles from the game. 35 texts came from the snapshot; the copies the game's code builds under a widget of the file (the build views' unit entries) first counted as 62 values that no longer match, which was fixed. After the game stopped the snapshot showed as "older" |
+| A window not on screen | **Snapshot from the Live Game** of `countryview` answered "not on screen" |
+| Esc in pick mode | Not established: a posted Escape closed nothing, with pick mode on or off (as in the M8 runs); the plugin passes every key but the hotkey |
+| Real mouse and keyboard | Not checked: no hand at the machine, and `SendInput` was refused in the session. The workaround on record: posted messages, the path a window procedure subclass sees, with the real cursor moved; the plugin also clears the `MK_*` bits and replaces the key-state imports, which a real mouse would add to |
+
+### Timing
+
+From the click (the plugin's system clock in the window procedure) to the line
+shown in VS Code's editor (the extension's clock, the same machine), through
+the pipe:
+
+| Playset | Picks | Click to line in the editor | Click to VS Code focused | Click to the next frame | Read of the chain |
+| --- | --- | --- | --- | --- | --- |
+| Vanilla | 9 | 58–133 ms, median 84 ms | 52–68 ms | 14–20 ms | 21–37 ms (the visible tree) |
+| Anbennar playset | 12 | 32–119 ms, median 36 ms | 31–53 ms | 7–20 ms | 11–14 ms |
+
+The probe's `code -g` took 493–656 ms; the pipe and the game bringing VS Code
+forward itself cut it to about a tenth. The hovered read every frame in pick
+mode took a median of 0.28 and 0.30 ms (p90 0.30 and 0.34 ms) in two vanilla
+sessions of 5 173 and 3 304 frames, and 0.43 ms (p90 0.47 ms) in the Anbennar
+playset over 10 890 frames.
+
+### What changed in the design
+
+- The plugin reads a pick's chain from the visible tree and the snapshot from
+  the window's subtree, pushed after the pick (docs/plugin-protocol.md).
+- The wheel's stack goes through the hovered widget's family first.
+- A click that activates the game's window is not a pick: the game reads the
+  pointer only while it is in front, so the hovered widget would be the one
+  of before (not checked live: the lab's clicks went to the game in front).
+- The snapshot's "values that no longer match" leave out copies the game's
+  code builds.
