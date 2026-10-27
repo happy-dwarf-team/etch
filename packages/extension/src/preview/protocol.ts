@@ -23,7 +23,48 @@ export interface ViewState {
   /** The preview resolution as `1920×1080`, and where it came from (spec section 6). */
   readonly resolution: { readonly text: string; readonly source: ResolutionSource };
   readonly notices: readonly Notice[];
+  /** `View ▾`: the previewed window's views and selectors; none without a window profile. */
+  readonly menu?: ViewMenu;
 }
+
+/** Where a selector's value came from (core's `SelectorSource`). */
+export type SelectorSourceName = 'auto' | 'save' | 'live' | 'you' | 'default';
+
+/** `View ▾` (spec section 4, etch#159 variant D). */
+export interface ViewMenu {
+  /** The toolbar's label: the view, and how many hand toggles apply ("Own province · 1 by hand"). */
+  readonly label: string;
+  readonly views: readonly {
+    readonly id: string;
+    readonly label: string;
+    /** A view of the mod project's file, such as one Save as view wrote. */
+    readonly mine: boolean;
+    readonly current: boolean;
+  }[];
+  readonly selectors: readonly {
+    readonly id: string;
+    readonly label: string;
+    readonly kind: 'resolution' | 'data' | 'ui' | 'scripted';
+    readonly value: string;
+    readonly source: SelectorSourceName;
+    readonly values: readonly { readonly id: string; readonly label: string }[];
+    readonly note?: string;
+  }[];
+  readonly handToggles: number;
+  /** Whether Save as view can write: the preview has a mod project. */
+  readonly canSave: boolean;
+}
+
+/** What a click in `View ▾` asks for. */
+export type ViewAction =
+  | { readonly kind: 'chooseView'; readonly id: string }
+  | { readonly kind: 'select'; readonly selector: string; readonly value: string }
+  /** A data selector follows the save again; another goes back to its default. */
+  | { readonly kind: 'release'; readonly selector: string }
+  | { readonly kind: 'resetToggles' }
+  /** Save as view; the name is asked for when the action does not give it. */
+  | { readonly kind: 'saveView'; readonly label?: string }
+  | { readonly kind: 'openProfile' };
 
 /**
  * What the preview keeps across a window reload (the webview's state, which VS Code gives the
@@ -108,4 +149,6 @@ export type WebviewMessage =
   /** The resolution button was clicked: choose the preview resolution. */
   | { readonly type: 'resolution' }
   /** The live game's button was clicked: start it with the preview's playset. */
-  | { readonly type: 'startLiveGame' };
+  | { readonly type: 'startLiveGame' }
+  /** A click in `View ▾`. */
+  | { readonly type: 'view'; readonly action: ViewAction };

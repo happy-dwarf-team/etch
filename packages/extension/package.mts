@@ -1,7 +1,7 @@
 // Packages the win32-x64 VSIX into dist/ (ADR 0004). The extension is bundled
 // by build.mts and the game-side builds are staged under game/ by stage-game.mts,
 // so vsce does not look at dependencies.
-import { copyFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync } from 'node:fs';
 import { createVSIX, listFiles, PackageManager } from '@vscode/vsce';
 
 const readVersion = (file: string) =>
@@ -28,9 +28,18 @@ if (hasChangelog) {
 const game = JSON.parse(readFileSync('game/manifest.json', 'utf8')) as {
   files: { path: string }[];
 };
+// The window profiles Etch ships, as build.mts copied them (ADR 0006).
+const profiles = readdirSync('dist/profiles', { recursive: true, withFileTypes: true })
+  .filter((entry) => entry.isFile())
+  .map((entry) =>
+    `${entry.parentPath}/${entry.name}`
+      .replace(/\\/g, '/')
+      .replace(/^.*?dist\/profiles/, 'dist/profiles'),
+  );
 const expected = [
   'dist/extension.js',
   'dist/webview.js',
+  ...profiles,
   'media/icon.png',
   'package.json',
   'README.md',

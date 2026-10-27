@@ -70,7 +70,7 @@ export interface WindowView {
   readonly groups: readonly GroupState[];
   /** The state of every widget of the window. */
   readonly widgets: ReadonlyMap<Widget, WidgetState>;
-  /** How many hand toggles apply. */
+  /** How many hand toggles apply; the toggles of one exclusive group (a radio) count once. */
   readonly handToggles: number;
   /** Whether a widget is drawn: created, shown, and so are all its parents. */
   drawn(widget: Widget): boolean;
@@ -136,11 +136,12 @@ export function evaluateView(
     }
   }
 
+  const members = new Set(groups.flatMap((g) => g.members.flatMap((m) => m.widgets)));
   let handToggles = 0;
   for (const [path, shown] of Object.entries(choice.toggles ?? {})) {
     const widgets = widgetsAt(window, path);
     if (widgets.length === 0) continue;
-    handToggles++;
+    if (!widgets.every((w) => members.has(w))) handToggles++;
     for (const widget of widgets) {
       const state = states.get(widget) ?? DEFAULT_STATE;
       if (!state.created) continue;
@@ -169,6 +170,8 @@ export function evaluateView(
       members,
     };
   });
+
+  handToggles += groupStates.filter((g) => g.byHand).length;
 
   const all = new Map<Widget, WidgetState>();
   for (const entry of windowPaths(window)) all.set(entry.widget, stateOf(entry.widget));

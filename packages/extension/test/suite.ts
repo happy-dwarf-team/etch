@@ -8,6 +8,7 @@ import { testNavigation } from './navigation.ts';
 import { testPreviewBudget } from './preview-budget.ts';
 import { testPreview } from './preview.ts';
 import { testPlaysetWindows } from './playset-windows.ts';
+import { testViews } from './views.ts';
 
 export async function run(): Promise<void> {
   const extension = vscode.extensions.getExtension<EtchApi>('happy-dwarf-team.etch');
@@ -52,4 +53,5 @@ export async function run(): Promise<void> {
   await testGameText();
   await testNavigation(api);
   await testPreview(api);
+  await testViews(api);
 }
