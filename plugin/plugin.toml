@@ -2,16 +2,15 @@ id = "etch"
 name = "Etch"
 version = "1.0.1"          # release-please sets it with package.json in each release pull request
 authors = ["Happy Dwarf Team"]
-description = "The game host of Etch, the VS Code previewer for interface mods: answers Etch over a private pipe. Idle unless Etch started the game."
+description = "The live game of Etch, the VS Code previewer for interface mods: answers Etch over a private pipe. Idle unless Etch started the game."
 api = 2
 anvil = ">=1.3.0"
 entry = "etch.dll"
-# Early: the capture of preview jobs hooks Direct3DCreate9(Ex) before the game
-# creates its device, and the pipe is up a fraction of a second after start.
+# Early: the pipe is up a fraction of a second after start.
 phase = "early"
 symbols = "symbols.toml"   # the game build comes from here
-# Etch drives interface windows in the main menu of its own game host install;
-# nothing it does reaches the simulation.
+# Etch reloads interface files in its own private install; nothing it does
+# reaches the simulation.
 affects_gameplay = false
 issues = "https://github.com/happy-dwarf-team/etch/issues"
 repository = "https://github.com/happy-dwarf-team/etch"

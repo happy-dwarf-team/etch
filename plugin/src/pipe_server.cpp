@@ -48,7 +48,7 @@ PSECURITY_DESCRIPTOR BuildSecurity() {
 
 // Waits for an overlapped operation that ReadFile, WriteFile or
 // ConnectNamedPipe started; false when it failed. The pipe is overlapped so
-// that a job's answer can be written from another thread while the pipe
+// that a later answer can be written from another thread while the pipe
 // thread waits in ReadFile: on a synchronous handle the write would wait for
 // the read.
 bool Complete(HANDLE pipe, OVERLAPPED& overlapped, BOOL started, DWORD& bytes) {
@@ -56,7 +56,7 @@ bool Complete(HANDLE pipe, OVERLAPPED& overlapped, BOOL started, DWORD& bytes) {
     return GetOverlappedResult(pipe, &overlapped, &bytes, TRUE) != 0;
 }
 
-// One connected client's end: writes from the pipe thread and from job
+// One connected client's end: writes from the pipe thread and from other
 // threads take turns, and stop once the client is gone.
 struct Link {
     std::mutex mutex;

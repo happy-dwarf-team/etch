@@ -5,7 +5,6 @@
 // answered by id. This part knows nothing of pipes or of the game, so the tests
 // drive it directly.
 
-#include "job.hpp"
 #include "json.hpp"
 
 #include <cstddef>
@@ -33,9 +32,6 @@ struct Host {
     std::uint64_t process_start_ms = 0;
     std::string session;  // the session id the pipe is named after
     std::string plugin_version;
-    // Starts a preview job, or says why not; `done` gets its result later, on
-    // another thread. Unset: the plugin takes no jobs (not_ready).
-    std::function<std::optional<Refusal>(JobRequest request, std::function<void(const JobResult&)> done)> start_job;
 };
 
 // Writes one answer line (without "\n") to the connection it belongs to, from
@@ -51,7 +47,9 @@ struct Reply {
 // the handshake.
 class Connection {
 public:
-    // `send` carries the answers that come later, such as a job's.
+    // `send` carries what is written later, from another thread; nothing uses
+    // it since Etch 1.x's preview job, and the live game's pushes will (v2
+    // specification section 6).
     explicit Connection(const Host& host, Send send = {}) : host_(host), send_(std::move(send)) {}
 
     Reply Handle(std::string_view line);
@@ -62,7 +60,6 @@ public:
 private:
     Reply Hello(std::uint64_t id, const json::Value& request);
     Reply Ping(std::uint64_t id) const;
-    Reply Job(std::uint64_t id, const json::Value& request);
 
     const Host& host_;
     Send send_;
