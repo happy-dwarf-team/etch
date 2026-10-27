@@ -69,10 +69,23 @@ export function profilePattern(path: string): { pattern: string } | { problem: s
 }
 
 /** The widgets of a window a profile path names, in tree order; none for a path with a problem. */
-export function widgetsAt(window: Widget, path: string): Widget[] {
+export function widgetsAt(window: Widget, path: string): readonly Widget[] {
+  let known = matches.get(window);
+  if (known === undefined) {
+    known = new Map();
+    matches.set(window, known);
+  }
+  const found = known.get(path);
+  if (found !== undefined) return found;
   const compiled = profilePattern(path);
-  if ('problem' in compiled) return [];
-  return windowPaths(window)
-    .filter((entry) => matchesWidgetPattern(compiled.pattern, entry.path))
-    .map((entry) => entry.widget);
+  const widgets =
+    'problem' in compiled
+      ? []
+      : windowPaths(window)
+          .filter((entry) => matchesWidgetPattern(compiled.pattern, entry.path))
+          .map((entry) => entry.widget);
+  known.set(path, widgets);
+  return widgets;
 }
+
+const matches = new WeakMap<Widget, Map<string, readonly Widget[]>>();

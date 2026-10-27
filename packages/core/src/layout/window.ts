@@ -65,6 +65,21 @@ export interface LayoutInput {
   readonly screen: Screen;
   /** A `.gui` text as the game shows it: its localised value, or the text itself. Default: as written. */
   readonly localise?: (text: string) => string;
+  /** The view a window profile chooses (spec section 3); without one every widget is drawn. */
+  readonly view?: LayoutView;
+}
+
+/**
+ * What a view changes in layout: a widget it hides or the game does not create is neither laid
+ * out nor drawn, nor its children; a moved widget takes the `position` of a `positionType` of the
+ * window's file; a frame set by code replaces the `.gui` one.
+ */
+export interface LayoutView {
+  shows(widget: Widget): boolean;
+  /** The name of the `positionType` the game's code moves the widget to. */
+  movedTo(widget: Widget): string | undefined;
+  /** The sprite frame, from 1, the game's code sets. */
+  frame(widget: Widget): number | undefined;
 }
 
 /** One laid-out widget, in paint order: a parent comes before its children. */
@@ -174,11 +189,16 @@ class Layout {
    * container whose background the widget is.
    */
   place(widget: Widget, parent: Rect, parentIndex: number, fill: Extent | undefined): void {
+    const view = this.input.view;
+    if (view !== undefined && !view.shows(widget)) return;
     const props = widgetProperties(widget, this.input.file.constants, this.input.screen);
     this.checkNotApplied(props);
     const anchor = this.anchor(props, parent);
     // Hypothesis: the preview shows a window where it ends up once opened, at `show_position`.
-    const offset = props.point('show_position') ?? props.point('position') ?? { x: 0, y: 0 };
+    const offset = this.movedPosition(widget) ??
+      props.point('show_position') ??
+      props.point('position') ?? { x: 0, y: 0 };
+    const frame = view?.frame(widget);
     const x = anchor.x + offset.x;
     const y = anchor.y + offset.y;
     const drawStart = this.draws.length;
@@ -195,13 +215,13 @@ class Layout {
       // Verified in the corpus (etch#44): a widget whose `.gui` picks its sprite by
       // `if_resolution` (the declare war dialog's background) gets no screen-sized variant.
       const variantTop = widget.resolutionBlocks.length === 0 ? parent.y : undefined;
-      const drawn = this.drawSpriteOf(props, x, y, source, fill, variantTop);
+      const drawn = this.drawSpriteOf(props, x, y, source, fill, variantTop, frame);
       if (drawn !== undefined) rect = { x, y, ...drawn };
       // Verified in the corpus (etch#44): the game draws no `buttonText` on a check box; the
       // message settings lay a text box over each of theirs instead.
       if (BUTTONS.has(kind) && kind !== 'checkboxType') this.drawButtonText(props, rect, source);
     } else if (kind === 'shieldtype') {
-      const drawn = this.drawSpriteOf(props, x, y, source, undefined, undefined);
+      const drawn = this.drawSpriteOf(props, x, y, source, undefined, undefined, frame);
       if (drawn !== undefined) rect = { x, y, ...drawn };
     } else if (TEXT_BOXES.has(kind)) {
       rect = this.drawTextBox(kind, props, x, y, source);
@@ -236,6 +256,20 @@ class Layout {
     for (const child of this.paintOrder(widget, props)) {
       this.place(child.widget, rect, index, child.background ? rect : undefined);
     }
+  }
+
+  /**
+   * The `position` of the `positionType` the view moves a widget to, from the top-level
+   * definitions of the window's file; `undefined` when it is not moved or the file lacks it.
+   */
+  private movedPosition(widget: Widget): { x: number; y: number } | undefined {
+    const name = this.input.view?.movedTo(widget)?.toLowerCase();
+    if (name === undefined) return undefined;
+    const target = this.input.file.definitions.find(
+      (d) => d.kind === 'positionType' && d.name?.toLowerCase() === name,
+    );
+    if (target === undefined) return undefined;
+    return widgetProperties(target, this.input.file.constants, this.input.screen).point('position');
   }
 
   /**
@@ -315,12 +349,13 @@ class Layout {
     source: number,
     fill: Extent | undefined,
     variantTop: number | undefined,
+    frame: number | undefined,
   ): Extent | undefined {
     const key = props.has('spritetype') ? 'spritetype' : 'quadtexturesprite';
     const name = props.text(key);
     if (name === undefined || name === '') return undefined;
     const sprite = variantTop === undefined ? name : this.sizedSprite(name, variantTop);
-    return this.drawSprite(sprite, props.scalar(key), props, x, y, source, fill);
+    return this.drawSprite(sprite, props.scalar(key), props, x, y, source, fill, frame);
   }
 
   /**
@@ -363,6 +398,7 @@ class Layout {
     y: number,
     source: number,
     fill: Extent | undefined,
+    frame?: number,
   ): Extent | undefined {
     const sprite = this.input.index.sprite(name)?.item;
     if (sprite === undefined) return undefined;
@@ -370,7 +406,7 @@ class Layout {
       case 'spriteType':
       case 'textSpriteType':
       case 'frameAnimatedSpriteType':
-        return this.drawFrame(sprite, reference, props, x, y, source);
+        return this.drawFrame(sprite, reference, props, x, y, source, frame);
       case 'corneredTileSpriteType':
         return this.drawCorneredTile(sprite, reference, props, x, y, source, fill);
       case 'progressbartype':
@@ -398,13 +434,14 @@ class Layout {
     x: number,
     y: number,
     source: number,
+    frameSet?: number,
   ): Extent | undefined {
     const texture = this.texture(sprite, 'texturefile', reference);
     if (texture === undefined) return undefined;
     const cell = texture.size.width / sprite.frames;
     const frame = Math.min(
       sprite.frames - 1,
-      Math.max(0, Math.floor(props.number('frame') ?? 1) - 1),
+      Math.max(0, Math.floor(frameSet ?? props.number('frame') ?? 1) - 1),
     );
     // Verified in the corpus (etch#44) on five scaled icons: the game draws the scaled size
     // exactly, its bottom edge on whole pixels, and the widget is that size rounded down.
