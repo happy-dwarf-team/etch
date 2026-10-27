@@ -4,8 +4,11 @@
 // the webview draws the draw list with WebGL2 (ADR 0001). Textures and fonts changed on disk are
 // read again, and the preview reopens on the same window after a window reload. Its button starts
 // the live game with the preview's playset (spec section 2). A window with a window profile is
-// drawn in one view, chosen in `View ▾` and the Widget Outline (spec section 4).
+// drawn in one view, chosen in `View ▾` and the Widget Outline (spec section 4). A pick in the live
+// game pins the preview on the picked window, and live snapshots give its selectors, texts and the
+// toggles where the profile differs from the game (spec section 7).
 
+import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import * as vscode from 'vscode';
@@ -42,17 +45,28 @@ import {
   evaluateView,
   layoutContentOf,
   layoutViewOf,
+  liveDifferences,
+  liveMatch,
+  liveSelectors,
   sampleData,
   withView,
+  type LiveSnapshot,
   type ProfileDiagnostic,
   type SampleData,
   type WindowView,
 } from '@etch/core/profile';
 import { readGameText, saveEncodingOf } from '../game-text.ts';
-import { pickKeySetting, type LiveGame } from '../live-game/index.ts';
+import {
+  pickKeySetting,
+  type LiveGame,
+  type PickMode,
+  type PickOpened,
+} from '../live-game/index.ts';
+import { PipeError, type SnapshotAnswer } from '../live-game/pipe.ts';
 import { listSaves, savesFolder } from '../live-game/saves.ts';
 import type { OutlineToggle, WidgetNavigation } from '../navigation.ts';
-import { PreviewData } from './data.ts';
+import { PreviewData, type LiveLayer } from './data.ts';
+import { LiveSnapshots, playsetKey, snapshotOf } from './live-snapshots.ts';
 import { previewHtml } from './html.ts';
 import { ProfileStore, type LoadedProfile, type ProjectProblems } from './profiles.ts';
 import type {
@@ -197,6 +211,11 @@ export interface PreviewApi {
   dataChoices(): DataChoices;
   /** Pins the window the game opens instead of the previewed one, through a link. */
   openLink(window: string): Promise<boolean>;
+  /**
+   * Takes a live snapshot of the previewed window from the live game (spec section 7); false when
+   * the game does not show it (said to the user) or does not run.
+   */
+  takeSnapshot(): Promise<boolean>;
 }
 
 /** The countries and provinces of the chosen save, and the chosen ones. */
@@ -249,6 +268,8 @@ export class Preview implements PreviewApi, vscode.Disposable {
   private readonly subscriptions: vscode.Disposable[];
 
   private readonly liveGame: LiveGame | undefined;
+  /** The live snapshots, the latest per window and playset (spec section 7). */
+  private readonly snapshots: LiveSnapshots;
   private panel: vscode.WebviewPanel | undefined;
   private roots: string | undefined;
   /** The live game was asked to start and waits for the preview's playset. */
@@ -298,9 +319,12 @@ export class Preview implements PreviewApi, vscode.Disposable {
     navigation: WidgetNavigation,
     memento: vscode.Memento,
     liveGame?: LiveGame,
+    pickMode?: PickMode,
+    storageFolder?: string,
   ) {
     this.extensionUri = extensionUri;
     this.liveGame = liveGame;
+    this.snapshots = new LiveSnapshots(storageFolder);
     this.output = output;
     this.navigation = navigation;
     this.memento = memento;
@@ -363,6 +387,23 @@ export class Preview implements PreviewApi, vscode.Disposable {
           this.request();
         }
       }),
+      ...(pickMode === undefined
+        ? []
+        : [
+            pickMode.onDidPick((opened) => {
+              void this.picked(opened);
+            }),
+          ]),
+      ...(liveGame === undefined
+        ? []
+        : [
+            liveGame.onDidPush((event) => {
+              if (event.kind !== 'snapshot') return;
+              if (event.snapshot !== undefined) void this.keepSnapshot(event.snapshot);
+              else
+                this.output.info(`No snapshot of pick ${String(event.seq)}: ${event.error ?? ''}.`);
+            }),
+          ]),
     ];
   }
 
@@ -667,6 +708,12 @@ export class Preview implements PreviewApi, vscode.Disposable {
       ...session.notices,
       ...found.notices.map((message) => ({ severity: 'warning' as const, message })),
     ];
+    const snapshot =
+      loaded === undefined || window.name === undefined
+        ? undefined
+        : await this.snapshots.get(sessionPlaysetKey(session), window.name);
+    if (panel !== this.panel) return;
+    const live = snapshot !== undefined && this.data.live ? snapshot : undefined;
 
     // Several events can answer one change (an edit also moves the selection).
     const key = [
@@ -680,6 +727,8 @@ export class Preview implements PreviewApi, vscode.Disposable {
       loaded?.key ?? '',
       JSON.stringify(choice ?? null),
       loaded === undefined ? '' : this.data.key,
+      snapshot?.takenAt ?? '',
+      this.liveIdentity(),
     ].join('|');
     if (!changed && !assetsChanged && key === this.renderKey) {
       // The same screen can come from another source (the setting, settings.txt, the monitor).
@@ -697,13 +746,31 @@ export class Preview implements PreviewApi, vscode.Disposable {
     }
     this.renderKey = key;
 
+    const facts = this.data.facts();
+    const liveValues =
+      loaded === undefined || live === undefined
+        ? undefined
+        : liveSelectors(loaded.profile, window, live, facts);
+    const gameToggles =
+      loaded === undefined || live === undefined || choice === undefined || liveValues === undefined
+        ? undefined
+        : liveDifferences(
+            loaded.profile,
+            window,
+            screen,
+            { ...viewChoiceOf(choice), facts, live: liveValues.values },
+            live,
+          );
     const view =
       loaded === undefined || choice === undefined
         ? undefined
         : evaluateView(loaded.profile, window, screen, {
             ...viewChoiceOf(choice),
-            facts: this.data.facts(),
+            facts,
+            ...(liveValues === undefined ? {} : { live: liveValues.values }),
+            ...(gameToggles === undefined ? {} : { gameToggles }),
           });
+    const matched = live === undefined ? undefined : liveMatch(live, window);
     const localiseKey = (key: string): string | undefined => session.localisation?.get(key);
     const choiceOfSave = this.data.choice;
     const sample =
@@ -713,6 +780,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
             ...(choiceOfSave === undefined ? {} : { save: choiceOfSave }),
             localise: localiseKey,
             length: this.data.length,
+            ...(matched === undefined ? {} : { live: matched.texts }),
             template: (name) => {
               const found = session.ui.index.guiType(name);
               const owner = found === undefined ? undefined : session.guiFile(found.path);
@@ -765,7 +833,15 @@ export class Preview implements PreviewApi, vscode.Disposable {
       notices,
       ...(loaded === undefined || view === undefined || choice === undefined
         ? {}
-        : { menu: viewMenu(loaded.profile, view, choice, loaded.projectFile !== undefined) }),
+        : {
+            menu: viewMenu(
+              loaded.profile,
+              view,
+              choice,
+              loaded.projectFile !== undefined,
+              liveValues?.unknown ?? [],
+            ),
+          }),
       ...(loaded === undefined
         ? {}
         : {
@@ -773,6 +849,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
               sample,
               session.playset.mods.map((m) => m.name),
               localiseKey,
+              this.liveLayer(snapshot, matched?.unmatched ?? 0),
             ),
           }),
       ...(loaded === undefined || view === undefined
@@ -1162,7 +1239,130 @@ export class Preview implements PreviewApi, vscode.Disposable {
         this.data.live = action.on;
         this.request();
         return;
+      case 'refreshLive':
+        await this.takeSnapshot();
+        return;
     }
+  }
+
+  // ---- The live game (spec section 7) ----------------------------------------------------------
+
+  async takeSnapshot(): Promise<boolean> {
+    const game = this.liveGame;
+    const name = this.render?.window.name;
+    if (game === undefined || name === undefined) return false;
+    try {
+      const answer = await game.snapshot(name);
+      if (answer === undefined) {
+        void vscode.window.showInformationMessage(
+          'A live snapshot comes from the live game: start it first (Etch: Start the Live Game).',
+        );
+        return false;
+      }
+      await this.keepSnapshot(answer);
+      await this.idle();
+      return true;
+    } catch (error) {
+      const code = error instanceof PipeError ? error.code : undefined;
+      void vscode.window.showInformationMessage(
+        code === 'not_open'
+          ? `The live game does not show ${name}: open it in the game, then take the snapshot.`
+          : code === 'stale'
+            ? `${name} is stale in the live game (a reload freed its definition): restart the live game first.`
+            : `No live snapshot: ${String(error)}`,
+      );
+      return false;
+    }
+  }
+
+  /** Keeps a snapshot from the live game as its window's latest, and draws it. */
+  private async keepSnapshot(answer: SnapshotAnswer): Promise<void> {
+    const game = this.liveGame;
+    const request = game?.request;
+    if (game === undefined || request === undefined) return;
+    const files = game.files;
+    const winner = answer.file === undefined ? undefined : await files?.find(answer.file);
+    const fileHash =
+      winner === undefined
+        ? undefined
+        : await readFile(winner.absolutePath).then(
+            (bytes) => createHash('sha256').update(bytes).digest('hex'),
+            () => undefined,
+          );
+    const snapshot = snapshotOf(answer, {
+      takenAt: new Date(),
+      save: game.saveName,
+      fileHash,
+      game: game.identity,
+    });
+    const key = playsetKey(
+      request.gameFolder,
+      request.mods.map((m) => m.name),
+    );
+    await this.snapshots.put(key, snapshot);
+    this.output.info(
+      `Live snapshot of ${snapshot.window}: ${String(snapshot.widgets.length)} widgets, ` +
+        `${String(snapshot.stale)} stale left out, read in ${answer.readMs.toFixed(1)} ms.`,
+    );
+    this.request();
+  }
+
+  /**
+   * A pick pins the preview on the picked widget's top-level window, its view from the live
+   * snapshot that follows: the selectors the profile recognises set to `live` and what it does not
+   * know as toggles from the game (spec section 7). A pick is a moment: the preview does not follow
+   * the game afterwards.
+   */
+  private async picked(opened: PickOpened): Promise<void> {
+    const top = opened.pick.chain.at(-1);
+    if (top?.file === undefined || !this.panel) return;
+    const session = this.session;
+    const winner = await session?.playset.files.find(top.file);
+    const file = winner === undefined ? undefined : session?.guiFile(winner.path);
+    const window = file === undefined ? undefined : named(file, opened.pick.window);
+    if (winner === undefined || file === undefined || window === undefined) return;
+    this.pin = {
+      uri: vscode.Uri.file(winner.absolutePath).toString(),
+      name: window.name,
+      index: file.definitions.indexOf(window),
+    };
+    // The game decides now: no view, no selector set by hand, no hand toggles.
+    this.choices.set((window.name ?? '').toLowerCase(), { view: undefined, set: {}, toggles: {} });
+    this.data.live = true;
+    this.request();
+  }
+
+  /** The live game process, which tells a snapshot of this game from an older one. */
+  private liveIdentity(): string {
+    const id = this.liveGame?.identity;
+    return id === undefined ? '' : `${String(id.pid)}:${String(id.startMs)}`;
+  }
+
+  /** What `Data ▾` says of the live snapshot. */
+  private liveLayer(snapshot: LiveSnapshot | undefined, unmatched: number): LiveLayer {
+    const game = this.liveGame;
+    const running = game?.state.status === 'ready' || game?.state.status === 'stale';
+    if (snapshot === undefined) return { detail: undefined, canRefresh: running };
+    const at = new Date(snapshot.takenAt);
+    const id = game?.identity;
+    const older =
+      (snapshot.game !== undefined &&
+        (id === undefined ||
+          id.pid !== snapshot.game.pid ||
+          id.startMs !== snapshot.game.startMs)) ||
+      (snapshot.save !== undefined &&
+        game?.saveName !== undefined &&
+        snapshot.save !== game.saveName);
+    const parts = [
+      `as of ${at.toLocaleTimeString()}${snapshot.save === undefined ? '' : `, ${snapshot.save}`}`,
+      ...(older ? ['older'] : []),
+      ...(unmatched > 0
+        ? [
+            `${String(unmatched)} ${unmatched === 1 ? 'value no longer matches' : 'values no longer match'}`,
+          ]
+        : []),
+    ];
+    return { detail: parts.join(' · '), canRefresh: running };
   }
 
   async chooseSave(path: string): Promise<void> {
@@ -1655,4 +1855,12 @@ function toDiagnostic(found: ModelDiagnostic, source: SourceText): vscode.Diagno
 
 function severityLog(notice: Notice): 'error' | 'warn' | 'info' {
   return notice.severity === 'error' ? 'error' : notice.severity === 'warning' ? 'warn' : 'info';
+}
+
+/** The playset key of a session's snapshots: its game folder and mods by name, in load order. */
+function sessionPlaysetKey(session: PreviewSession): string {
+  return playsetKey(
+    session.playset.gameFolder,
+    session.playset.mods.map((m) => m.name),
+  );
 }

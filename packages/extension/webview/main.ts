@@ -167,6 +167,20 @@ function showDataMenu(menu: DataMenu | undefined): void {
     count.textContent = `${String(layer.count)} ${layer.count === 1 ? 'text' : 'texts'}`;
     row.append(box, label, count);
     children.push(row, line('detail', layer.detail));
+    if (layer.id === 'live' && menu.canRefresh) {
+      const actions = document.createElement('div');
+      actions.className = 'actions';
+      actions.append(
+        button(
+          'Refresh from live game',
+          () => {
+            dataAction({ kind: 'refreshLive' });
+          },
+          'Take a live snapshot of this window, which the live game must show',
+        ),
+      );
+      children.push(actions);
+    }
     if (layer.id === 'save') {
       const actions = document.createElement('div');
       actions.className = 'actions';
@@ -278,6 +292,20 @@ function showViewMenu(menu: ViewMenu | undefined): void {
     }
   }
   children.push(document.createElement('hr'));
+  if (menu.gameToggles > 0) {
+    const note = document.createElement('div');
+    note.className = 'note';
+    note.textContent = `Profile differs in ${String(menu.gameToggles)} ${
+      menu.gameToggles === 1 ? 'path' : 'paths'
+    } from the live game: shown as toggles from the game.`;
+    children.push(note);
+  }
+  if (menu.liveUnknown.length > 0) {
+    const note = document.createElement('div');
+    note.className = 'note';
+    note.textContent = `Live: no value of ${menu.liveUnknown.join(', ')} predicts what the game showed.`;
+    children.push(note);
+  }
   const save = item('Save as view…', () => {
     viewAction({ kind: 'saveView' });
   });

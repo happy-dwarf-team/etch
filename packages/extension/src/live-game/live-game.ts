@@ -408,6 +408,25 @@ export class LiveGame implements vscode.Disposable {
     return this.wanted === undefined ? undefined : playsetFiles(this.wanted);
   }
 
+  /** What the live game was last started with. */
+  get request(): LiveGameRequest | undefined {
+    return this.wanted;
+  }
+
+  /** The save the live game was started from, by file name; `undefined` for the main menu. */
+  get saveName(): string | undefined {
+    const save = this.startAt.save;
+    return typeof save === 'object' ? save.name : save;
+  }
+
+  /** The running game process: its PID and creation time, as its plugin reported them. */
+  get identity(): { pid: number; startMs: number } | undefined {
+    const running = this.process;
+    return running === undefined
+      ? undefined
+      : { pid: running.hello.pid, startMs: running.hello.process_start_ms };
+  }
+
   /** The edited mod's folder of the running playset. */
   get editedRoot(): string | undefined {
     return this.wanted?.editedRoot;

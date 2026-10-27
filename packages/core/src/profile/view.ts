@@ -5,8 +5,8 @@
  * says and the Widget Outline shows it.
  *
  * In order, later winning: the `_large` pairs and moves Etch derives (`engine.ts`), the exclusive
- * groups, the rules in layer order, then the hand toggles. A widget the game does not create stays
- * so; a hand toggle cannot create it.
+ * groups, the rules in layer order, the toggles from a live snapshot, then the hand toggles. A
+ * widget the game does not create stays so; a toggle cannot create it.
  */
 import type { LayoutView } from '../layout/window.ts';
 import type { Screen, Widget } from '../model/gui.ts';
@@ -28,8 +28,13 @@ export interface ViewChoice {
   readonly toggles?: Readonly<Record<string, boolean>>;
   /** Fact values from the chosen save, by fact name (M7). */
   readonly facts?: Readonly<Record<string, string>>;
-  /** Selector values from a live snapshot, by selector id (M9). */
+  /** Selector values from a live snapshot, by selector id, the resolution's included (M9). */
   readonly live?: Readonly<Record<string, string>>;
+  /**
+   * What a live snapshot showed where the profile predicts otherwise, by path: toggles marked "from
+   * the game" (spec section 7), applied before the hand toggles.
+   */
+  readonly gameToggles?: Readonly<Record<string, boolean>>;
 }
 
 export interface SelectorState {
@@ -47,6 +52,8 @@ export interface WidgetState {
   readonly profileShown: boolean;
   /** Whether a hand toggle set `shown`. */
   readonly byHand: boolean;
+  /** Whether a live snapshot's toggle set `shown` (and no hand toggle after it). */
+  readonly fromGame?: boolean;
   /** Why it is so, for the Widget Outline. */
   readonly why: string;
   /** The `positionType` the game's code moves it to. */
@@ -72,6 +79,8 @@ export interface WindowView {
   readonly widgets: ReadonlyMap<Widget, WidgetState>;
   /** How many hand toggles apply; the toggles of one exclusive group (a radio) count once. */
   readonly handToggles: number;
+  /** How many toggles from a live snapshot apply: where the profile differs from the game. */
+  readonly gameToggles: number;
   /** Whether a widget is drawn: created, shown, and so are all its parents. */
   drawn(widget: Widget): boolean;
 }
@@ -137,6 +146,22 @@ export function evaluateView(
   }
 
   const members = new Set(groups.flatMap((g) => g.members.flatMap((m) => m.widgets)));
+  let gameToggles = 0;
+  for (const [path, shown] of Object.entries(choice.gameToggles ?? {})) {
+    const widgets = widgetsAt(window, path);
+    if (widgets.length === 0) continue;
+    gameToggles++;
+    for (const widget of widgets) {
+      const state = states.get(widget) ?? DEFAULT_STATE;
+      if (!state.created) continue;
+      states.set(widget, {
+        ...state,
+        shown,
+        fromGame: true,
+        why: `from the game (profile: ${state.profileShown ? 'shown' : 'hidden'})`,
+      });
+    }
+  }
   let handToggles = 0;
   for (const [path, shown] of Object.entries(choice.toggles ?? {})) {
     const widgets = widgetsAt(window, path);
@@ -149,6 +174,7 @@ export function evaluateView(
         ...state,
         shown,
         byHand: true,
+        fromGame: false,
         why: `by hand (profile: ${state.profileShown ? 'shown' : 'hidden'})`,
       });
     }
@@ -189,14 +215,20 @@ export function evaluateView(
     return result;
   };
 
-  return { selectors, groups: groupStates, widgets: all, handToggles, drawn };
+  return { selectors, groups: groupStates, widgets: all, handToggles, gameToggles, drawn };
 }
 
-/** A selector's value: by hand, else live, else from the save, else the screen, else the default. */
+/**
+ * A selector's value: by hand, else live, else from the save, else the default; a resolution
+ * selector's live, else from the screen.
+ */
 function selectorState(selector: Selector, screen: Screen, choice: ViewChoice): SelectorState {
   const has = (id: string | undefined): id is string =>
     id !== undefined && selector.values.some((v) => v.id === id);
   if (selector.kind === 'resolution') {
+    // A pick carries the game window's size (spec section 8).
+    const live = choice.live?.[selector.id];
+    if (has(live)) return { selector, value: live, source: 'live' };
     const fits = selector.values.find((v) => fitsScreen(v, screen));
     return fits === undefined
       ? { selector, value: selector.default, source: 'default' }
@@ -213,7 +245,7 @@ function selectorState(selector: Selector, screen: Screen, choice: ViewChoice): 
   return { selector, value: selector.default, source: 'default' };
 }
 
-function fitsScreen(value: SelectorValue, screen: Screen): boolean {
+export function fitsScreen(value: SelectorValue, screen: Screen): boolean {
   return (
     (value.minWidth === undefined || screen.width >= value.minWidth) &&
     (value.maxWidth === undefined || screen.width <= value.maxWidth) &&
