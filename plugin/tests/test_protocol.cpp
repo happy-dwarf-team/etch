@@ -130,10 +130,11 @@ void TestJobsRefused() {
     AssertError(c.Handle(R"({"id":4,"type":"reload","lines":["debug_crash"]})"), "bad_request", true, 4);
     AssertError(c.Handle(R"({"id":5,"type":"reload","lines":[]})"), "bad_request", true, 5);
     AssertError(c.Handle(R"({"id":6,"type":"reload","lines":["reloadloc"],"close":[1]})"), "bad_request", true, 6);
-    AssertError(c.Handle(R"({"id":7,"type":"save","name":"../x"})"), "bad_request", true, 7);
+    AssertError(c.Handle(R"({"id":10,"type":"confirm","path":"DefaultConfirm/CancelButton"})"), "bad_request", true,
+                10);
     // A host without jobs refuses them.
     AssertError(c.Handle(R"({"id":8,"type":"reload","lines":["reload provinceview.gui"]})"), "not_ready", true, 8);
-    AssertError(c.Handle(R"({"id":9,"type":"save","name":"etch-restart"})"), "not_ready", true, 9);
+    AssertError(c.Handle(R"({"id":9,"type":"save"})"), "not_ready", true, 9);
 }
 
 void TestBadRequests() {

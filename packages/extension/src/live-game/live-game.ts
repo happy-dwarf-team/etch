@@ -34,6 +34,7 @@ import {
   HostBusyError,
   HostCrashedError,
   LiveGameProcess,
+  NotTheLiveGameError,
   closeOrphan,
   lockHeldElsewhere,
   lockPath,
@@ -186,18 +187,32 @@ export interface LiveGameRequest {
 
 /** The restart reason of a start that is not a restart. */
 const START = 'start';
-/** The save the live game makes before it stops (spec section 6). */
-export const STOP_SAVE = 'etch-stop';
-/** The save a planned restart makes and continues (spec section 6). */
-export const RESTART_SAVE = 'etch-restart';
+/**
+ * The save the live game makes before a stop or a planned restart: the game's autosave, which the
+ * next start continues as the newest private save (spec section 6; the console's `savegame`
+ * writes nothing, live).
+ */
+export const AUTOSAVE = 'autosave.eu4';
 /** How long after a reload's answer `error.log` is read: the game writes the lines of a few frames. */
 const ERROR_LOG_SETTLE_MS = 250;
+/** Anbennar's Workshop item: its achievements prompt shows before a save loads (H7). */
+const ANBENNAR_WORKSHOP_ID = '1385440355';
+/** The prompt's button the live game clicks after a start from a save in Anbennar's playset. */
+const ACHIEVEMENTS_PROMPT = 'DefaultConfirm/AgreeButton';
+/** How long a start from a save may take to load it, the prompt included (about 100 s, H7). */
+const LOAD_TIMEOUT_MS = 300_000;
+/** The views a restart closes and the player may want back: the province view and the country view. */
+const REOPENED_VIEWS = /^(?:provinceview|countryview)$/i;
 /** Diagnostic source of the live game's Problems. */
 const SOURCE = 'Etch live game';
 /** The memento key that records the first start's confirmation. */
 const CONFIRMED_KEY = 'etch.liveGame.confirmed';
-/** How long a save before a stop may take. */
-const STOP_SAVE_MS = 60_000;
+/**
+ * How long a save before a stop or a planned restart may take; a game that does not write it (live:
+ * one with stale windows on screen deadlocked in `autosave`) is closed anyway and the next start
+ * continues the newest save there is.
+ */
+const STOP_SAVE_MS = 30_000;
 
 /** What the player chose to start: a save of the private `save games/` by name, or the main menu. */
 type StartAt = { readonly save: string | SaveFile | undefined };
@@ -243,6 +258,10 @@ export class LiveGame implements vscode.Disposable {
   private index: Promise<InterfaceIndex> | undefined;
   /** The live game's Problems: `error.log` lines and the game's answers, on the saved files. */
   readonly diagnostics = vscode.languages.createDiagnosticCollection('etch-live-game');
+  /** The views on screen at the last reload, said after a restart that cannot reopen them (H8). */
+  private lastViews: readonly string[] = [];
+  /** The next ready process comes from a restart, not a start. */
+  private restarting = false;
   /** Said once per game session: reloads do not run in ironman or multiplayer. */
   private notAvailableSaid = 0;
 
@@ -391,7 +410,7 @@ export class LiveGame implements vscode.Disposable {
       async (progress) => {
         if (running !== undefined) {
           progress.report({ message: 'saving' });
-          await this.saveFor(running, RESTART_SAVE, 'the planned restart');
+          await this.saveFor(running, 'the planned restart');
         }
         progress.report({ message: 'starting' });
         this.restarts.request(`planned restart: ${reasons.join('; ')}`);
@@ -459,6 +478,11 @@ export class LiveGame implements vscode.Disposable {
     }
     this.count(plan.rebuild);
     await this.report(uri, plan, [answer, ...(last === answer ? [] : [last])]);
+    if (last.check !== undefined) {
+      this.lastViews = last.check.visible
+        .map((w) => w.name)
+        .filter((name) => REOPENED_VIEWS.test(name));
+    }
     const stale = last.check?.stale.filter((w) => w.visible) ?? [];
     if (stale.length > 0) {
       this.restartNeeded(
@@ -735,6 +759,7 @@ export class LiveGame implements vscode.Disposable {
       const request = this.wanted;
       if (abort.signal.aborted || request === undefined) return false;
       const reasons = take().filter((reason) => reason !== START);
+      this.restarting = reasons.length > 0;
       if (reasons.length > 0) {
         // A restart begins at the newest private save: an autosave, a manual save or the save
         // made before a stop (spec section 6).
@@ -815,6 +840,39 @@ export class LiveGame implements vscode.Disposable {
     this.output.info(`The live game's error.log had ${String(startLines)} lines at ready.`);
     this.watch(started);
     this.set({ status: 'ready', pid: started.identity.pid, readyMs: started.times.ready });
+    if (this.restarting && this.lastViews.length > 0) {
+      // The game's own province selection is not called yet (H8): the player reopens the view.
+      void vscode.window.showInformationMessage(
+        `The live game restarted on the map: open ${this.lastViews.join(' and ')} again; Etch ` +
+          'cannot reopen it yet.',
+      );
+    }
+    this.restarting = false;
+    this.lastViews = [];
+    const anbennar = this.wanted?.mods.some((m) => m.workshopId === ANBENNAR_WORKSHOP_ID) === true;
+    if (this.startAt.save !== undefined && anbennar) void this.answerPrompt(started);
+  }
+
+  /**
+   * Answers Anbennar's achievements prompt, which shows before a save loads, so that a restart
+   * reaches the loaded game without the player (spec section 6, H7). The save's own events are
+   * left to the player. Tries until the save is loaded or `LOAD_TIMEOUT_MS` passes.
+   */
+  private async answerPrompt(started: LiveGameProcess): Promise<void> {
+    const deadline = performance.now() + LOAD_TIMEOUT_MS;
+    let answered = 0;
+    while (this.process === started && performance.now() < deadline) {
+      const ping = await started.ping().catch(() => undefined);
+      if (ping?.gameSession !== undefined) return;
+      // Enter until the prompt is gone: one may come before the game takes keys.
+      const answer = await started.confirm(ACHIEVEMENTS_PROMPT).catch(() => undefined);
+      if (answer?.pressed === true) answered++;
+      else if (answered > 0 && answer?.found === false) {
+        this.output.info("Answered Anbennar's achievements prompt.");
+        return;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 1_500));
+    }
   }
 
   /**
@@ -866,8 +924,19 @@ export class LiveGame implements vscode.Disposable {
           );
           await this.serve(adopted);
         } catch (error) {
-          await this.crashed(
-            `the game restarted itself and the new process failed: ${error instanceof Error ? error.message : String(error)}`,
+          const why = error instanceof Error ? error.message : String(error);
+          if (!(error instanceof NotTheLiveGameError)) {
+            await this.crashed(`the game restarted itself and the new process failed: ${why}`);
+            return;
+          }
+          // Not a crash and not a second game (spec section 6): it was closed after its checks.
+          this.output.info(
+            `The game restarted itself after Exit to Main Menu and was closed: ${why}`,
+          );
+          this.set({ status: 'stopped' });
+          void vscode.window.showInformationMessage(
+            'The live game was exited to the main menu, and the game it started again runs without ' +
+              "Etch's plugin, so Etch closed it. Start the live game again to continue.",
           );
         }
         return;
@@ -920,39 +989,40 @@ export class LiveGame implements vscode.Disposable {
    * Nothing to save in the main menu; the console refuses ironman and multiplayer games.
    */
   private async saveBeforeStop(running: LiveGameProcess): Promise<void> {
-    await this.saveFor(running, STOP_SAVE, 'the stop');
+    await this.saveFor(running, 'the stop');
   }
 
   /**
-   * Saves a loaded game as `<name>.eu4` through the plugin and waits until the file is written, so
-   * that the next start can continue it. Nothing to save in the main menu; the console refuses
-   * ironman and multiplayer games.
+   * Saves a loaded game as `autosave.eu4` through the plugin and waits until the game has written
+   * it (a newer file whose size stays the same for a moment), so that the next start can continue
+   * it. Nothing to save in the main menu; the console refuses ironman and multiplayer games.
    */
-  private async saveFor(running: LiveGameProcess, name: string, what: string): Promise<void> {
+  private async saveFor(running: LiveGameProcess, what: string): Promise<void> {
     try {
       const ping = await running.ping();
       const session = ping.gameSession;
       if (session === undefined || session.ironman || session.multiplayer) return;
-      const path = join(this.savesFolder, `${name}.eu4`);
-      const before = await stat(path).then(
-        (s) => s.mtimeMs,
-        () => 0,
-      );
+      const path = join(this.savesFolder, AUTOSAVE);
+      const read = () =>
+        stat(path).then(
+          (s) => `${String(s.mtimeMs)}/${String(s.size)}`,
+          () => '',
+        );
+      const before = await read();
       const started = performance.now();
-      const saved = await running.save(name, STOP_SAVE_MS);
-      // The game may write the file after the console's answer.
-      while (
-        (await stat(path).then(
-          (s) => s.mtimeMs,
-          () => 0,
-        )) <= before
-      ) {
+      const saved = await running.save(STOP_SAVE_MS);
+      // The game writes the file after the console's answer: wait until it changed and settled.
+      let last = before;
+      for (;;) {
+        await new Promise((resolve) => setTimeout(resolve, 250));
+        const now = await read();
+        if (now !== before && now !== '' && now === last) break;
+        last = now;
         if (performance.now() - started > STOP_SAVE_MS)
-          throw new Error(`${name}.eu4 was not written`);
-        await new Promise((resolve) => setTimeout(resolve, 100));
+          throw new Error(`${AUTOSAVE} was not written`);
       }
       this.output.info(
-        `Saved the live game as ${name}.eu4 for ${what} in ${(performance.now() - started).toFixed(0)} ms` +
+        `Saved the live game as ${AUTOSAVE} for ${what} in ${(performance.now() - started).toFixed(0)} ms` +
           `${saved.success ? '' : `; the game answered: ${saved.text}`}.`,
       );
     } catch (error) {

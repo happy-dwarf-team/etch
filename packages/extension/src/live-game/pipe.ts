@@ -255,9 +255,21 @@ export class HostPipe {
     };
   }
 
-  /** Saves the loaded game as `save games/<name>.eu4` through the game's console (`savegame`). */
-  async save(name: string, timeoutMs = 120_000): Promise<SaveAnswer> {
-    const answer = await this.request({ type: 'save', name }, timeoutMs);
+  /**
+   * Answers a prompt with Enter when its button is on screen (`DefaultConfirm/AgreeButton`,
+   * Anbennar's achievements prompt, H7): whether it was found and the key posted.
+   */
+  async confirm(path: string, timeoutMs = 10_000): Promise<{ found: boolean; pressed: boolean }> {
+    const answer = await this.request({ type: 'confirm', path }, timeoutMs);
+    return { found: answer['found'] === true, pressed: answer['pressed'] === true };
+  }
+
+  /**
+   * Saves the loaded game through the game's `autosave`, which writes `save games/autosave.eu4`
+   * after the answer (the console's `savegame` writes nothing, live).
+   */
+  async save(timeoutMs = 120_000): Promise<SaveAnswer> {
+    const answer = await this.request({ type: 'save' }, timeoutMs);
     return {
       success: answer['success'] === true,
       text: typeof answer['text'] === 'string' ? answer['text'] : '',

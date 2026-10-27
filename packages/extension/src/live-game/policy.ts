@@ -42,12 +42,38 @@ export const ON_DEMAND_WINDOWS: ReadonlyMap<string, readonly string[]> = new Map
 ]);
 
 /**
- * Windows a rebuild shows even when they were closed (H2): closed again when they were hidden
- * before the reload.
+ * Windows a rebuild shows even when they were closed (H2), to be closed again when they were
+ * hidden before the reload. Empty for now: the console's `window close` does not close the
+ * province view, a posted Escape did not in the live runs, and an Escape could open the game's
+ * menu when the rebuild leaves the view off screen (before any province was shown), so the
+ * rebuilt view stays open (docs/live-game.md, open points).
  */
-export const SHOWN_BY_REBUILD: ReadonlyMap<string, readonly string[]> = new Map([
-  ['provinceview.gui', ['provinceview']],
+export const SHOWN_BY_REBUILD: ReadonlyMap<string, readonly string[]> = new Map();
+
+/**
+ * Panels whose own listener rebuilds them on a reload of their file (research of etch#152 and
+ * etch#2): the reloads after a localisation change are limited to these and one HUD file, since a
+ * reload of a file whose windows nothing rebuilds leaves them stale on screen (live: `mapicons.gui`
+ * and `core.gui` left the map's unit icons stale and visible). The country view's tabs match
+ * `COUNTRY_TAB`.
+ */
+const LISTENED_PANELS: ReadonlySet<string> = new Set([
+  'provinceview.gui',
+  'ledger.gui',
+  'settings.gui',
+  'eventwindow.gui',
+  'small_provinceview.gui',
+  'topright_panel.gui',
+  'tablet_outliner.gui',
+  'hints.gui',
+  'msg_filters.gui',
+  'navalmissions.gui',
+  'nudge.gui',
 ]);
+const COUNTRY_TAB = /^country\w+view\.gui$/;
+
+/** The HUD file a localisation change reloads: any of them rebuilds the whole HUD. */
+const HUD_RELOAD = 'topbar.gui';
 
 /** HUD rebuilds after which a planned restart is asked for: the tested range (spec section 6). */
 export const HUD_LIMIT = 10;
@@ -184,6 +210,14 @@ export async function planReload(input: PlanInput): Promise<ReloadPlan> {
     if (name === 'countryview.gui') {
       return restart(path, 'nothing in a loaded game rebuilds the country view (H6)');
     }
+    if (name === 'core.gui') {
+      // In the idler's list, but its templates build windows nothing rebuilds (live: the map's unit
+      // icons went stale on screen).
+      return restart(
+        path,
+        'core.gui holds templates that windows no reload rebuilds were built from',
+      );
+    }
     // Only a .gui name directly in the console's `reload`; the game finds it under interface/.
     const file = basename(path);
     if (name === 'speed_controls.gui') {
@@ -216,20 +250,20 @@ export async function planReload(input: PlanInput): Promise<ReloadPlan> {
 
 /**
  * After `reloadloc`, the reloads of the listened `.gui` files whose windows are on screen, so that
- * their static texts change too (spec section 6). Files without a listener are left out: a reload
- * would leave their windows stale.
+ * their static texts change too (spec section 6): the listened panels, and one HUD file for the
+ * whole HUD. Any other file is left out: a reload would leave its windows stale.
  */
 export function visibleReloads(visibleFiles: readonly string[]): ReloadRequest | undefined {
-  const files = [
-    ...new Set(
-      visibleFiles
-        .map((f) => f.replace(/\\/g, '/'))
-        .filter((f) => /^interface\/[^/]+\.gui$/i.test(f))
-        .filter(
-          (f) => !['countryview.gui', 'speed_controls.gui'].includes(basename(f).toLowerCase()),
-        ),
-    ),
-  ];
+  const paths = [...new Set(visibleFiles.map((f) => f.replace(/\\/g, '/')))].filter((f) =>
+    /^interface\/[^/]+\.gui$/i.test(f),
+  );
+  const name = (f: string) => basename(f).toLowerCase();
+  const panels = paths.filter(
+    (f) =>
+      LISTENED_PANELS.has(name(f)) || (COUNTRY_TAB.test(name(f)) && name(f) !== 'countryview.gui'),
+  );
+  const hud = paths.some((f) => HUD_FILES.has(name(f)) && name(f) !== 'core.gui');
+  const files = [...panels, ...(hud ? [`interface/${HUD_RELOAD}`] : [])];
   if (files.length === 0) return undefined;
   return {
     lines: files.map((f) => `reload ${basename(f)}`),

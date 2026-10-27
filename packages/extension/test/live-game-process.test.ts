@@ -318,13 +318,13 @@ describe('the session pipe', () => {
       queuedMs: 12.5,
       runMs: 71,
     });
-    expect(await pipe.save('etch-restart')).toEqual({
+    expect(await pipe.save()).toEqual({
       success: true,
       text: 'Saved',
       ms: 812.5,
       queuedMs: 16,
     });
-    expect(seen[2]).toMatchObject({ type: 'save', name: 'etch-restart' });
+    expect(seen[2]).toMatchObject({ type: 'save' });
     pipe.close();
   });
 

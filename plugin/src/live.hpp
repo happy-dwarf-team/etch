@@ -19,6 +19,7 @@
 #include <atomic>
 #include <cstdint>
 #include <functional>
+#include <memory>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -57,9 +58,6 @@ std::optional<std::string> ReadReloadRequest(const json::Value& request, ReloadR
 // refused with the reason, among them `reload guianim` (it crashed the game),
 // `reload texture` (a 1.3 s freeze) and `reload assets` (not checked), H10.
 std::optional<std::string> AllowedLine(std::string_view line, std::vector<std::string>& tokens);
-
-// A save's file name without `.eu4`: letters, digits, `_` and `-`, at most 64.
-bool IsSaveName(std::string_view name);
 
 struct StaleCheck {
     std::size_t checked = 0;  // top-level windows built from the files before the lines
@@ -105,6 +103,35 @@ struct SaveResult {
 
 std::string SaveAnswer(std::uint64_t id, const SaveResult& result);
 
+// The only buttons `confirm` clicks: Anbennar's achievements prompt, which
+// shows before a save loads (live check H7).
+bool IsConfirmPath(std::string_view path);
+
+// Frames a posted key takes to land: it goes up a frame after it went down,
+// and the game takes it in its next frame.
+inline constexpr int kKeyFrames = 4;
+
+// The keys the live game presses for the player: Enter, which answers a
+// prompt with its default button, and Escape, which closes the topmost panel.
+// Keys, not clicks: the game's interface takes the pointer from the real
+// cursor (GetCursorPos, pick mode checks), which Etch never moves.
+enum class Key { Enter, Escape };
+
+// A key posted to the game's window while a widget was on screen.
+struct PressResult {
+    bool found = false;    // the widget is there and visible
+    bool pressed = false;  // the key was posted
+};
+
+struct ConfirmResult {
+    std::string error;
+    std::string message;
+    PressResult press;
+    double queued_ms = 0;
+};
+
+std::string ConfirmAnswer(std::uint64_t id, const ConfirmResult& result);
+
 struct Refusal {
     std::string code;
     std::string message;
@@ -124,6 +151,8 @@ public:
         // Runs work on a worker thread.
         std::function<void(std::function<void()> work)> run_later;
         std::function<double()> now_ms;
+        // Posts `key` to the game's window when a visible widget matches `selector`; main thread.
+        std::function<PressResult(const std::string& selector, Key key)> press;
     };
 
     explicit LiveJobs(Env env) : env_(std::move(env)) {}
@@ -133,15 +162,28 @@ public:
     // and Etch never goes around it), `console_broken` after a console call
     // faulted. `done` is called once, on a worker thread.
     std::optional<Refusal> Reload(ReloadRequest request, std::function<void(const ReloadResult&)> done);
-    std::optional<Refusal> Save(std::string name, std::function<void(const SaveResult&)> done);
+    // Saves the loaded game through the game's `autosave`, which writes
+    // `save games/autosave.eu4` after the console answers.
+    std::optional<Refusal> Save(std::function<void(const SaveResult&)> done);
+    // Answers the prompt whose button is `path` (IsConfirmPath) with Enter when
+    // it is on screen; `busy` while another job runs.
+    std::optional<Refusal> Confirm(std::string path, std::function<void(const ConfirmResult&)> done);
 
     // Whether a job waits for or runs on the main thread: the game does not
     // draw while it saves, so a ping says so.
     bool Busy() const { return busy_.load(); }
 
 private:
+    struct ReloadState;
     std::optional<Refusal> Begin();
-    void RunReload(const ReloadRequest& request, ReloadResult& result);
+    void ReloadFirst(const std::shared_ptr<ReloadState>& state);
+    void ReloadRest(const std::shared_ptr<ReloadState>& state);
+    void Finish(const std::shared_ptr<ReloadState>& state);
+    // Runs `work` on the main thread `frames` frames from now; false when it cannot be queued.
+    bool AfterFrames(int frames, std::function<void()> work);
+    // Closes a top-level window through the game; false when it was not closed (or a console
+    // call failed: result.error says so). `pressed`: the close is a key a later frame takes.
+    bool CloseWindow(const std::string& name, ReloadResult& result, bool& pressed);
     // Runs one line on the main thread and records it; false when it faulted.
     bool Run(const std::vector<std::string>& tokens, LineResult& record, std::string& error, std::string& message);
 

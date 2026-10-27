@@ -222,6 +222,8 @@ export interface StartOptions {
   readonly lock: LockOptions;
   /** How long the game may take to report `anvil-game.ready`. */
   readonly readyTimeoutMs?: number;
+  /** How long the plugin's pipe may take to come up; `readyTimeoutMs` when not given. */
+  readonly pipeTimeoutMs?: number;
   readonly log?: (message: string) => void;
   /** Cancels the start: the game is closed and the lock released. */
   readonly signal?: AbortSignal;
@@ -231,6 +233,20 @@ export interface StartOptions {
 export interface StartTimes {
   readonly pipe: number;
   readonly ready: number;
+}
+
+/**
+ * The game a live game starts of itself on Exit to Main Menu may run without Anvil (live: it wrote
+ * no Anvil log), so its plugin's pipe never comes up: it is not the live game after this long.
+ */
+const ADOPT_PIPE_TIMEOUT_MS = 15_000;
+
+/** A process the live game started of itself serves no session pipe: it is not the live game. */
+export class NotTheLiveGameError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'NotTheLiveGameError';
+  }
 }
 
 /** How often an adopted process, which is not Node's child, is checked for its exit. */
@@ -342,7 +358,13 @@ export class LiveGameProcess {
       }
       await writeLock(options, session, identity);
       log(`Live game restarted itself: PID ${String(identity.pid)}, session ${session}.`);
-      return await LiveGameProcess.greet(options, session, identity, waitForExit(identity), log);
+      return await LiveGameProcess.greet(
+        { ...options, pipeTimeoutMs: ADOPT_PIPE_TIMEOUT_MS },
+        session,
+        identity,
+        waitForExit(identity),
+        log,
+      );
     } catch (error) {
       await closeGame(identity, options.originalGameFolder, log);
       await releaseLock(options.lock);
@@ -372,10 +394,16 @@ export class LiveGameProcess {
       }
     };
     let pipe: HostPipe | undefined;
+    const pipeDeadline = Date.now() + (options.pipeTimeoutMs ?? Number.POSITIVE_INFINITY);
     try {
       let pipeMs: number | undefined;
       for (;;) {
         check();
+        if (Date.now() > pipeDeadline) {
+          throw new NotTheLiveGameError(
+            `PID ${String(identity.pid)} serves no session pipe after ${String(options.pipeTimeoutMs)} ms: it runs without Etch's plugin.`,
+          );
+        }
         try {
           pipe = await HostPipe.connect(session);
           pipeMs = Date.now() - created;
@@ -443,8 +471,12 @@ export class LiveGameProcess {
     return this.pipe.reload(request, timeoutMs);
   }
 
-  save(name: string, timeoutMs?: number) {
-    return this.pipe.save(name, timeoutMs);
+  save(timeoutMs?: number) {
+    return this.pipe.save(timeoutMs);
+  }
+
+  confirm(path: string, timeoutMs?: number) {
+    return this.pipe.confirm(path, timeoutMs);
   }
 
   /** Sends one request over the session pipe (docs/plugin-protocol.md). */

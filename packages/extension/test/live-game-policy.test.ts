@@ -48,6 +48,7 @@ beforeEach(async () => {
     'interface/topbar.gui': window('topbar'),
     'interface/speed_controls.gui': window('speed_controls'),
     'interface/countryview.gui': window('countryview'),
+    'interface/core.gui': window('core'),
     'interface/ledger.gui': window('ledger'),
     'interface/twice.gui':
       'guiTypes = { windowType = { name = "reform" } windowType = { name = "Reform" } }\n',
@@ -76,7 +77,7 @@ afterEach(async () => {
 const mine = (path: string) => join(temp, 'mine', ...path.split('/'));
 
 describe('planReload', () => {
-  it('reloads the province view and keeps it closed when it was', async () => {
+  it('reloads the province view, which stays open when the rebuild shows it (H2)', async () => {
     expect(await plan(mine('interface/provinceview.gui'))).toEqual({
       kind: 'reload',
       path: 'interface/provinceview.gui',
@@ -84,7 +85,7 @@ describe('planReload', () => {
         lines: ['reload provinceview.gui'],
         check: ['interface/provinceview.gui'],
         close: [],
-        keepHidden: ['provinceview'],
+        keepHidden: [],
       },
       rebuild: 'panel',
       thenVisible: false,
@@ -117,6 +118,7 @@ describe('planReload', () => {
   it('asks for a planned restart where a reload cannot show the change', async () => {
     for (const path of [
       'interface/countryview.gui',
+      'interface/core.gui',
       'interface/twice.gui',
       'interface/mine.gfx',
       'gfx/fonts/vic_18.fnt',
@@ -155,18 +157,26 @@ describe('planReload', () => {
     });
     expect(
       visibleReloads([
-        'interface/topbar.gui',
+        'interface/outliner.gui',
         'interface\\provinceview.gui',
-        'interface/topbar.gui',
+        'interface/menubar.gui',
         'interface/countryview.gui',
+        'interface/countrydiplomacyview.gui',
         'interface/speed_controls.gui',
+        'interface/core.gui',
+        'interface/mapicons.gui',
         'gfx/not-a-gui.gfx',
       ]),
     ).toEqual({
-      lines: ['reload topbar.gui', 'reload provinceview.gui'],
-      check: ['interface/topbar.gui', 'interface/provinceview.gui'],
-      keepHidden: ['provinceview'],
+      lines: ['reload provinceview.gui', 'reload countrydiplomacyview.gui', 'reload topbar.gui'],
+      check: [
+        'interface/provinceview.gui',
+        'interface/countrydiplomacyview.gui',
+        'interface/topbar.gui',
+      ],
+      keepHidden: [],
     });
+    expect(visibleReloads(['interface/mapicons.gui', 'interface/core.gui'])).toBeUndefined();
     expect(visibleReloads([])).toBeUndefined();
   });
 
