@@ -2,10 +2,12 @@ import { mkdir } from 'node:fs/promises';
 import * as vscode from 'vscode';
 import { LiveGame, type LiveGameState } from './live-game.ts';
 import { PrivateInstallError } from './install.ts';
+import { PickMode } from './pick-mode.ts';
 
 export type { LiveGameDisplay, LiveGameMod, PreparedInstall } from './install.ts';
 export { PrivateInstallError } from './install.ts';
 export { LiveGame, PrivateInstall, type LiveGameRequest, type LiveGameState } from './live-game.ts';
+export { PickMode, pickKeySetting, type PickOpened } from './pick-mode.ts';
 
 /** Starts the live game with the preview's playset (spec section 2). */
 export const START_LIVE_GAME = 'etch.startLiveGame';
@@ -30,17 +32,19 @@ const TEXTURE_SETTLE_MS = 300;
 export function registerLiveGame(
   context: vscode.ExtensionContext,
   output: vscode.LogOutputChannel,
-): LiveGame {
+): { game: LiveGame; pick: PickMode } {
   const game = new LiveGame(
     context.globalStorageUri.fsPath,
     vscode.Uri.joinPath(context.extensionUri, 'game').fsPath,
     output,
     context.globalState,
   );
+  const pick = new PickMode(game, output);
   const status = vscode.window.createStatusBarItem('etch.liveGame', vscode.StatusBarAlignment.Left);
   status.name = 'Etch Live Game';
   context.subscriptions.push(
     game,
+    pick,
     status,
     game.onDidChangeState((state) => {
       showState(state);
@@ -80,7 +84,7 @@ export function registerLiveGame(
     }),
   );
   void game.closeOrphan().then(() => removeGameHostInstall(game, output));
-  return game;
+  return { game, pick };
 }
 
 /** Textures written into the workspace, each reloaded once it stays unchanged for a moment. */

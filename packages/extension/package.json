@@ -110,6 +110,16 @@
         "command": "etch.openLiveGameSaves",
         "title": "Open the Live Game's Saves Folder",
         "category": "Etch"
+      },
+      {
+        "command": "etch.togglePickMode",
+        "title": "Toggle Pick Mode",
+        "category": "Etch"
+      },
+      {
+        "command": "etch.overrideInMyMod",
+        "title": "Override in My Mod",
+        "category": "Etch"
       }
     ],
     "menus": {
@@ -153,6 +163,10 @@
         {
           "command": "etch.outline.choose",
           "when": "false"
+        },
+        {
+          "command": "etch.overrideInMyMod",
+          "when": "resourceScheme == file && resourcePath =~ /[\\\\/]interface[\\\\/][^\\\\/]+\\.(gui|gfx)$/i"
         }
       ]
     },
@@ -209,6 +223,14 @@
           ],
           "scope": "window",
           "markdownDescription": "The screen size the preview lays windows out on and evaluates `if_resolution` blocks against: `default` (the resolution in the game's `settings.txt`, else the monitor's), `native` (the monitor's resolution), or a width × height such as `1920x1080`. UI scale is always 1.0. The command **Etch: Choose the Preview Resolution** also offers the corpus resolutions."
+        },
+        "etch.liveGame.pickModeKey": {
+          "type": "string",
+          "default": "Ctrl+Shift+E",
+          "pattern": "^\\s*(?:(?:[Cc][Tt][Rr][Ll]|[Ss][Hh][Ii][Ff][Tt]|[Aa][Ll][Tt])\\s*\\+\\s*)+(?:[A-Za-z0-9]|[Ff](?:[1-9]|1[0-9]|2[0-4]))\\s*$",
+          "patternErrorMessage": "Write Ctrl or Alt (with Shift if you like) and a letter, a digit or F1-F24, such as Ctrl+Shift+E.",
+          "scope": "machine",
+          "markdownDescription": "The key that turns pick mode on and off in the live game: Ctrl or Alt, with Shift if you like, and a letter, a digit or F1-F24. The game binds nothing to the default `Ctrl+Shift+E`; Esc is never taken. A change applies to a running live game at once."
         }
       }
     }

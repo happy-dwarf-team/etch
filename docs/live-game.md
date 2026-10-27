@@ -19,6 +19,8 @@ requirement. This page says how it is built. The code is in
 | `policy.ts` | the reload policy: what a saved file makes the game do |
 | `error-log.ts` | `error.log`: new lines, collapsed repeats, textures drawn missing |
 | `live-game.ts` | `LiveGame`, the owner: start, stop, reloads, planned restarts, crashes |
+| `pick.ts` | what a pick opens: the winning file, the line, templates and sprites; **Override in my mod** |
+| `pick-mode.ts` | pick mode in VS Code: the toggle, the key setting, opening a pick, read-only files |
 | `index.ts` | the commands, the status bar item, the save and texture watchers |
 | `windows.ts` | the Win32 helper: identities, verified stops, child processes, `eu4.exe` processes |
 
@@ -195,6 +197,53 @@ in-game idler's `+0x1220`) and a province by id, neither of which the plugin
 can reach yet. When the province view or the country view was on screen at the
 last reload, Etch says after the restart that it was not reopened. This is the
 recorded workaround of H8 until the plugin has it.
+
+## Pick mode
+
+Pick mode (spec section 7, etch#158) points at a widget in the live game and
+opens the definition the game built it from. The plugin's half (the hotkey,
+the swallowed click, the outline and label, the stack under the pointer) is
+in [plugin-protocol.md](plugin-protocol.md), "Pick mode"; the checks it rests
+on are in [pick-mode-checks.md](pick-mode-checks.md).
+
+- **On and off.** The hotkey in the game (`etch.liveGame.pickModeKey`,
+  default `Ctrl+Shift+E`), or **Etch: Toggle Pick Mode**, which also asks the
+  plugin to bring the game forward. The key is written to the plugin's Anvil
+  setting (`anvil/data/etch/settings.toml`) before every start and sent over
+  the pipe when the setting changes while the game runs. When the game is
+  ready the extension sends the key, the mod that supplies each of the
+  playset's interface files (for the label) and VS Code's window: the
+  extension host's parent process, VS Code's main process, which owns the
+  windows, and the workspace's name, which its title holds.
+- **What a pick opens** (`pick.ts`): the picked widget's game path resolved to
+  the playset's winning file. In that file, as the editor has it (its buffer
+  when it is open), the widget whose opening `{` is on the reported line and
+  whose name matches (H2: the keyword may be on the line before); else, when
+  the file changed since the game read it, the widget found by the names of
+  its chain from the outermost parent in the same file; else the first widget
+  of its name; else the file at the reported line. A stale widget has no file:
+  it opens by its names in the nearest file of its chain.
+- **Templates.** Where the chain's file changes above the picked widget (a
+  list row built by name, a `core.gui` scroll bar part, an icon template from
+  another file, H3), the widget that references the template opens first, and
+  **Go to template** opens the picked widget's own definition.
+- **Sprites.** An icon or button that names a sprite (`spriteType`,
+  `quadTextureSprite`) offers **Go to sprite**, through Etch's `.gfx` index:
+  the game keeps no file or line for sprites (H9).
+- **Read-only.** A file outside the edited mod (vanilla, another mod) opens
+  read-only for the session, with "Defined in <mod>, read-only" and
+  **Override in my mod**.
+- **Override in my mod** (also **Etch: Override in My Mod** on any interface
+  file of the playset): copies the winning file byte for byte to the same game
+  path in the edited mod's folder and opens the copy at the same line. It
+  warns, and still copies, when a later mod of the playset has the same file;
+  if the mod has the file already nothing is copied. A `.gui` file created
+  after the start reloads like any other (H9 of the reload checks).
+- **VS Code in front.** The game is the foreground process at the click, so
+  the plugin calls `AllowSetForegroundWindow` and brings VS Code's window
+  forward itself; the extension then shows the file at the line. Pick mode
+  stays on. The log line of each pick gives the time from the click (the
+  plugin's system clock) to the line shown in the editor.
 
 ## Live runs
 
