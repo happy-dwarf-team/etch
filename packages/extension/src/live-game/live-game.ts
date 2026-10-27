@@ -1,5 +1,6 @@
-import { rm } from 'node:fs/promises';
+import { readFile, rm } from 'node:fs/promises';
 import { join } from 'node:path';
+import { findProfileFolder, systemEnvironment } from '@etch/core/playset';
 import * as vscode from 'vscode';
 import { ErrorLogTail } from './error-log.ts';
 import {
@@ -12,18 +13,22 @@ import {
   type InstallLayout,
   type LiveGameDisplay,
   type LiveGameMod,
+  type PrepareOptions,
   type PreparedInstall,
 } from './install.ts';
 import {
+  CRASH_REPORTER,
   HostBusyError,
   HostCrashedError,
   LiveGameProcess,
   closeOrphan,
   lockHeldElsewhere,
   lockPath,
+  playerGameRunning,
   readLock,
   type LockOptions,
 } from './process.ts';
+import { listSaves, liveSettings, newestSave, savesFolder, type SaveFile } from './saves.ts';
 import {
   CRASH_LIMIT,
   CRASH_WINDOW_MS,
@@ -33,7 +38,7 @@ import {
   logTail,
   watch as watchHang,
 } from './watchdog.ts';
-import { processIdentity, type ProcessIdentity } from './windows.ts';
+import { childProcesses, processIdentity, type ProcessIdentity } from './windows.ts';
 
 /**
  * The private install in the extension's global storage: created on first use after one
@@ -60,21 +65,17 @@ export class PrivateInstall {
    * than the pinned build.
    */
   prepare(
-    gameFolder: string,
-    mods: readonly LiveGameMod[],
-    display: LiveGameDisplay,
+    options: Omit<PrepareOptions, 'layout' | 'buildsFolder'>,
   ): Promise<PreparedInstall | undefined> {
     return this.serial(async () => {
-      if (!(await installExists(this.layout)) && !(await this.confirmCreate(gameFolder))) {
+      if (!(await installExists(this.layout)) && !(await this.confirmCreate(options.gameFolder))) {
         return undefined;
       }
       const started = performance.now();
       const prepared = await prepareInstall({
+        ...options,
         layout: this.layout,
-        gameFolder,
         buildsFolder: this.buildsFolder,
-        mods,
-        display,
       });
       if (prepared.restored.length > 0) {
         this.output.warn(`Private install: installed again ${prepared.restored.join(', ')}`);
@@ -148,7 +149,7 @@ export type LiveGameState =
 
 /**
  * What a start of the live game needs: the player's game folder, which the install links to, the
- * playset in load order and the display.
+ * playset in load order and the display for a player without settings.
  */
 export interface LiveGameRequest {
   readonly gameFolder: string;
@@ -158,17 +159,29 @@ export interface LiveGameRequest {
 
 /** The restart reason of a start that is not a restart. */
 const START = 'start';
+/** The save the live game makes before it stops (spec section 6). */
+export const STOP_SAVE = 'etch-stop';
+/** The memento key that records the first start's confirmation. */
+const CONFIRMED_KEY = 'etch.liveGame.confirmed';
+/** How long a save before a stop may take. */
+const STOP_SAVE_MS = 60_000;
+
+/** What the player chose to start: a save of the private `save games/` by name, or the main menu. */
+type StartAt = { readonly save: string | SaveFile | undefined };
 
 /**
  * The machine's one live game, owned by this VS Code window: started on request, stopped by
- * command or when the window closes (`stop` from `deactivate`). Its watchdog (etch#51) restarts it
- * after a dead process or a hang, and stops it after `CRASH_LIMIT` crashes in `CRASH_WINDOW_MS`
- * until a manual start. A start, a restart, a stop and a removal of the install never overlap.
- * Saves, the player's settings and the reload policy come with M8 (spec section 13).
+ * command or when the window closes (`stop` from `deactivate`), both saving first. Its watchdog
+ * (etch#51) restarts it at the newest private save after a dead process or a hang, and stops it
+ * after `CRASH_LIMIT` crashes in `CRASH_WINDOW_MS` until a manual start; a quit from the game is a
+ * stop, and the process the game starts of itself on Exit to Main Menu is adopted (H6). A start, a
+ * restart, a stop and a removal of the install never overlap. The reload policy comes with the
+ * next part of M8 (spec section 13).
  */
 export class LiveGame implements vscode.Disposable {
   readonly install: PrivateInstall;
   private readonly output: vscode.LogOutputChannel;
+  private readonly memento: vscode.Memento;
   private readonly lockFile: string;
   private readonly emitter = new vscode.EventEmitter<LiveGameState>();
   private readonly restarts = new RestartQueue((take) => this.cycle(take));
@@ -177,6 +190,8 @@ export class LiveGame implements vscode.Disposable {
   private process: LiveGameProcess | undefined;
   /** What the live game starts with: the latest start's request. */
   private wanted: LiveGameRequest | undefined;
+  /** Where the next start or restart begins. */
+  private startAt: StartAt = { save: undefined };
   /** Cancels the start or restart that runs. */
   private abort: AbortController | undefined;
   /** Ends the hang watch of the running process. */
@@ -185,9 +200,15 @@ export class LiveGame implements vscode.Disposable {
 
   readonly onDidChangeState = this.emitter.event;
 
-  constructor(storageFolder: string, buildsFolder: string, output: vscode.LogOutputChannel) {
+  constructor(
+    storageFolder: string,
+    buildsFolder: string,
+    output: vscode.LogOutputChannel,
+    memento: vscode.Memento,
+  ) {
     this.install = new PrivateInstall(storageFolder, buildsFolder, output);
     this.output = output;
+    this.memento = memento;
     this.lockFile = lockPath(storageFolder);
   }
 
@@ -200,24 +221,48 @@ export class LiveGame implements vscode.Disposable {
     return this.process;
   }
 
+  /** The private profile's saves folder. */
+  get savesFolder(): string {
+    return savesFolder(this.install.layout.profile);
+  }
+
   /** Whether the live game runs, starts or restarts. */
-  private get active(): boolean {
+  private isActive(): boolean {
     return this.process !== undefined || this.restarts.busy;
   }
 
   /**
-   * Starts the live game (a manual start, which forgets earlier crashes) and waits until it is
-   * ready or the start failed (see `state`). A live game that runs already keeps running.
+   * Starts the live game on the player's request (a manual start, which forgets earlier crashes):
+   * refuses while the player's own game runs, asks for the first start's confirmation, and lets the
+   * player choose where it starts (spec section 6). Waits until it is ready or the start failed
+   * (see `state`). A live game that runs already keeps running.
    */
-  start(request: LiveGameRequest): Promise<void> {
-    if (this.active) return this.restarts.idle();
+  async start(request: LiveGameRequest): Promise<void> {
+    if (this.isActive()) return this.restarts.idle();
+    const playerGame = await playerGameRunning(request.gameFolder).catch(() => undefined);
+    if (playerGame !== undefined) {
+      void vscode.window.showWarningMessage(
+        `Your own EU4 runs (PID ${String(playerGame.pid)}). The live game counts as your EU4 ` +
+          'session for Steam, so it starts only when your game is closed.',
+      );
+      return;
+    }
+    const playerProfile = await this.playerProfile(request.gameFolder);
+    if (!(await this.confirmFirstStart(playerProfile))) return;
+    const startAt = await this.chooseStart(playerProfile);
+    // Another start may have begun while the player chose.
+    if (startAt === undefined || this.isActive()) return;
     this.wanted = request;
+    this.startAt = startAt;
     this.crashes.reset();
     this.restarts.request(START);
     return this.restarts.idle();
   }
 
-  /** Stops the live game (also one still starting or restarting); false when there was none. */
+  /**
+   * Stops the live game (also one still starting or restarting), saving a loaded game first;
+   * false when there was none.
+   */
   async stop(): Promise<boolean> {
     const wasStarting = this.restarts.busy;
     this.restarts.clear();
@@ -230,6 +275,7 @@ export class LiveGame implements vscode.Disposable {
     }
     this.release();
     this.set({ status: 'stopping' });
+    await this.saveBeforeStop(running);
     const outcome = await running.stop();
     if (outcome === 'terminated' || outcome === 'already-exited') {
       this.output.info('The live game stopped.');
@@ -272,6 +318,103 @@ export class LiveGame implements vscode.Disposable {
     this.emitter.dispose();
   }
 
+  // ---- Starting --------------------------------------------------------------------------------
+
+  private async playerProfile(gameFolder: string): Promise<string | undefined> {
+    return findProfileFolder(gameFolder, systemEnvironment()).catch(() => undefined);
+  }
+
+  /**
+   * The first start's confirmation (spec section 6), once per machine: the game runs in the
+   * foreground, takes the player's settings, copies their saves and counts as their Steam session.
+   */
+  private async confirmFirstStart(playerProfile: string | undefined): Promise<boolean> {
+    if (this.memento.get<boolean>(CONFIRMED_KEY) === true) return true;
+    const settings =
+      playerProfile === undefined
+        ? undefined
+        : await readFile(join(playerProfile, 'settings.txt'), 'latin1').catch(() => undefined);
+    const autosaveOff = settings !== undefined && liveSettings(settings).autosaveOn;
+    const start = 'Start';
+    const answer = await vscode.window.showInformationMessage(
+      'Start the live game?',
+      {
+        modal: true,
+        detail:
+          'The live game is EU4 itself, with your playset: it runs in the foreground, takes your ' +
+          'settings (resolution, graphics, sound, UI scale, language) at every start, and plays ' +
+          'copies of your saves in a profile of its own. Changes to its settings do not last, and ' +
+          'nothing is written back to your profile or saves. While it runs it counts as your EU4 ' +
+          'session for Steam: Steam will not start your own game beside it, and shows you playing.' +
+          (autosaveOff
+            ? ' Your autosave is off; the live game autosaves monthly, so that a crash loses little.'
+            : ''),
+      },
+      start,
+    );
+    if (answer !== start) return false;
+    await this.memento.update(CONFIRMED_KEY, true);
+    return true;
+  }
+
+  /**
+   * Where the live game starts (spec section 6): **Continue** (the newest private save), **Main
+   * menu**, then the player's saves, newest first; a chosen player save is copied into the private
+   * saves. Ironman saves show but cannot be chosen. `undefined` when the player cancelled.
+   */
+  private async chooseStart(playerProfile: string | undefined): Promise<StartAt | undefined> {
+    const privateSaves = this.savesFolder;
+    const [newest, playerSaves] = await Promise.all([
+      newestSave(privateSaves),
+      playerProfile === undefined ? Promise.resolve([]) : listSaves(savesFolder(playerProfile)),
+    ]);
+    type Item = vscode.QuickPickItem & { readonly pick?: StartAt | SaveFile };
+    const items: Item[] = [];
+    if (newest !== undefined) {
+      items.push({
+        label: '$(debug-continue) Continue',
+        description: newest.name,
+        detail: `The live game's newest save, ${age(newest.modifiedMs)}`,
+        pick: { save: newest.name },
+      });
+    }
+    items.push({ label: '$(home) Main menu', pick: { save: undefined } });
+    if (playerSaves.length > 0) {
+      items.push({ label: 'Your saves', kind: vscode.QuickPickItemKind.Separator });
+      for (const save of playerSaves) {
+        items.push(
+          save.ironman
+            ? {
+                label: `$(lock) ${save.name}`,
+                description: 'reload does not work in ironman',
+                detail: age(save.modifiedMs),
+              }
+            : { label: save.name, detail: `${age(save.modifiedMs)}, played as a copy`, pick: save },
+        );
+      }
+    }
+    for (;;) {
+      const chosen = await vscode.window.showQuickPick(items, {
+        title: 'Start the live game',
+        placeHolder: 'Where should the live game start?',
+        matchOnDescription: true,
+      });
+      if (chosen === undefined) return undefined;
+      const pick = chosen.pick;
+      if (pick === undefined) {
+        void vscode.window.showInformationMessage(
+          `${chosen.label.replace(/^\$\([^)]*\) /, '')} is an ironman save: the live game cannot ` +
+            'reload in ironman, so it is not copied.',
+        );
+        continue;
+      }
+      // A player's save is copied into the private saves once the install exists.
+      return 'path' in pick ? { save: pick } : pick;
+    }
+  }
+
+  // ---- Running ---------------------------------------------------------------------------------
+
   /**
    * One start or restart: closes the running process, takes the restarts asked for so far and
    * starts the live game with the latest request. False when it should stay down.
@@ -292,6 +435,12 @@ export class LiveGame implements vscode.Disposable {
       const request = this.wanted;
       if (abort.signal.aborted || request === undefined) return false;
       const reasons = take().filter((reason) => reason !== START);
+      if (reasons.length > 0) {
+        // A restart begins at the newest private save: an autosave, a manual save or the save
+        // made before a stop (spec section 6).
+        const newest = await newestSave(this.savesFolder);
+        this.startAt = { save: newest?.name };
+      }
       this.set(
         reasons.length > 0
           ? { status: 'restarting', reason: reasons.join('; ') }
@@ -305,16 +454,29 @@ export class LiveGame implements vscode.Disposable {
 
   private async startProcess(request: LiveGameRequest, signal: AbortSignal): Promise<boolean> {
     try {
-      const prepared = await this.install.prepare(
-        request.gameFolder,
-        request.mods,
-        request.display,
-      );
+      const prepared = await this.install.prepare({
+        gameFolder: request.gameFolder,
+        mods: request.mods,
+        display: request.display,
+        playerProfile: await this.playerProfile(request.gameFolder),
+        continueSave: this.startAt.save,
+      });
       if (prepared === undefined) {
         this.set({ status: 'failed', message: 'The private install was not created.' });
         return false;
       }
       if (signal.aborted) return false;
+      const chosen = this.startAt.save;
+      this.startAt = { save: prepared.continueSave };
+      this.output.info(
+        `The live game takes ${prepared.settings.copied.join(' and ') || 'no settings'} from your ` +
+          `profile${prepared.settings.autosaveOn ? ', with a monthly autosave' : ''}, and starts ` +
+          (prepared.continueSave === undefined
+            ? 'in the main menu.'
+            : typeof chosen === 'object'
+              ? `from your save ${chosen.name}, copied into its saves as ${prepared.continueSave}.`
+              : `from ${prepared.continueSave}.`),
+      );
       const started = await LiveGameProcess.start({
         install: prepared,
         originalGameFolder: request.gameFolder,
@@ -324,11 +486,7 @@ export class LiveGame implements vscode.Disposable {
         },
         signal,
       });
-      this.process = started;
-      const startLines = await new ErrorLogTail(errorLogPath(prepared.profileFolder)).skip();
-      this.output.info(`The live game's error.log had ${String(startLines)} lines at ready.`);
-      this.watch(started);
-      this.set({ status: 'ready', pid: started.identity.pid, readyMs: started.times.ready });
+      await this.serve(started);
       return true;
     } catch (error) {
       if (signal.aborted) return false;
@@ -345,9 +503,19 @@ export class LiveGame implements vscode.Disposable {
     }
   }
 
+  /** Makes a ready process the live game and watches it. */
+  private async serve(started: LiveGameProcess): Promise<void> {
+    this.process = started;
+    const startLines = await new ErrorLogTail(errorLogPath(this.install.layout.profile)).skip();
+    this.output.info(`The live game's error.log had ${String(startLines)} lines at ready.`);
+    this.watch(started);
+    this.set({ status: 'ready', pid: started.identity.pid, readyMs: started.times.ready });
+  }
+
   /**
-   * Watches the started process: an exit Etch did not ask for, and a hang, are crashes. Once a
-   * restart is asked for, the process is about to be closed anyway: nothing more counts.
+   * Watches the started process: a hang, and an exit Etch did not ask for, are crashes, except an
+   * exit the player chose in the game. Once a restart is asked for, the process is about to be
+   * closed anyway: nothing more counts.
    */
   private watch(started: LiveGameProcess): void {
     const watching = new AbortController();
@@ -355,12 +523,55 @@ export class LiveGame implements vscode.Disposable {
     void started.onExit.then(async (code) => {
       if (!this.serving(started)) return;
       this.release();
-      await this.crashed(`the game exited (exit code ${String(code)})`);
+      await this.exited(started, code);
     });
     void watchHang(started, { signal: watching.signal }).then(async (hang) => {
       if (!this.serving(started)) return;
       await this.crashed(`the game hangs: ${hang}`);
     });
+  }
+
+  /**
+   * The game ended by itself. Exit to Main Menu ends in a process the game starts of itself (H6),
+   * which is adopted after its identity checks. Otherwise exit code 0, or an unknown code without a
+   * crash reporter, is the player quitting: a stop. Anything else is a crash.
+   */
+  private async exited(old: LiveGameProcess, code: number | null): Promise<void> {
+    const reporter =
+      code === null
+        ? (await childProcesses(old.identity, CRASH_REPORTER).catch(() => [])).length > 0
+        : false;
+    if (code === 0 || (code === null && !reporter)) {
+      const child = await old.restartedAs();
+      await old.cleanedUp();
+      if (child !== undefined) {
+        this.set({ status: 'starting' });
+        try {
+          const adopted = await LiveGameProcess.adopt(
+            {
+              install: old.startOptions.install,
+              originalGameFolder: old.startOptions.originalGameFolder,
+              lock: await this.lockOptions(),
+              log: (message) => {
+                this.output.info(message);
+              },
+            },
+            old.session,
+            child,
+          );
+          await this.serve(adopted);
+        } catch (error) {
+          await this.crashed(
+            `the game restarted itself and the new process failed: ${error instanceof Error ? error.message : String(error)}`,
+          );
+        }
+        return;
+      }
+      this.output.info('The live game was quit in the game.');
+      this.set({ status: 'stopped' });
+      return;
+    }
+    await this.crashed(`the game exited (exit code ${String(code)})`);
   }
 
   /** Whether `process` is the ready live game, with no restart asked for. */
@@ -396,6 +607,25 @@ export class LiveGame implements vscode.Disposable {
     return false;
   }
 
+  /**
+   * Saves a loaded game before a stop (spec section 6), so that the next start can continue it.
+   * Nothing to save in the main menu; the console refuses ironman and multiplayer games.
+   */
+  private async saveBeforeStop(running: LiveGameProcess): Promise<void> {
+    try {
+      const ping = await running.ping();
+      const session = ping.gameSession;
+      if (session === undefined || session.ironman || session.multiplayer) return;
+      const saved = await running.save(STOP_SAVE, STOP_SAVE_MS);
+      this.output.info(
+        `Saved the live game as ${STOP_SAVE}.eu4 before the stop in ${saved.ms.toFixed(0)} ms` +
+          `${saved.success ? '' : `; the game answered: ${saved.text}`}.`,
+      );
+    } catch (error) {
+      this.output.warn(`The live game was not saved before the stop: ${String(error)}`);
+    }
+  }
+
   /** Lets go of the running process: its hang watch ends. */
   private release(): void {
     this.process = undefined;
@@ -422,4 +652,14 @@ export class LiveGame implements vscode.Disposable {
     this.current = state;
     this.emitter.fire(state);
   }
+}
+
+/** How long ago a time was, for the quick pick. */
+function age(ms: number): string {
+  const minutes = Math.max(0, Math.round((Date.now() - ms) / 60_000));
+  if (minutes < 1) return 'just now';
+  if (minutes < 60) return `${String(minutes)} min ago`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 48) return `${String(hours)} h ago`;
+  return new Date(ms).toLocaleDateString();
 }

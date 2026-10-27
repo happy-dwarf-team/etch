@@ -1,23 +1,21 @@
 // The live game process (spec section 6, ADR 0005, etch#49, kept from 1.x's game host): one per
 // machine through a lock file, started from the private install with a fresh session id, ready
-// once `anvil-game.ready` is reported over a pipe whose handshake names that process, kept behind
-// VS Code (until the live game runs in the foreground, M8), and closed only after its PID, path
-// and creation time match what Etch started. Node only, no vscode.
+// once `anvil-game.ready` is reported over a pipe whose handshake names that process, run in the
+// foreground as the player's game, and closed only after its PID, path and creation time match
+// what Etch started. Node only, no vscode.
 import { spawn, type ChildProcess } from 'node:child_process';
 import { readFile, realpath, stat, unlink, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import type { PreparedInstall } from './install.ts';
-import { HostPipe, PipeError, newSessionId, type Hello } from './pipe.ts';
+import { HostPipe, PipeError, newSessionId, type Hello, type ReloadRequest } from './pipe.ts';
 import {
   childProcesses,
   creationUnixMs,
-  foregroundWindow,
-  keepBehind,
   normalizePath,
   processIdentity,
+  processesNamed,
   sameIdentity,
   stopVerified,
-  type GameWindow,
   type ProcessIdentity,
   type StopOutcome,
 } from './windows.ts';
@@ -233,19 +231,10 @@ export interface StartOptions {
 export interface StartTimes {
   readonly pipe: number;
   readonly ready: number;
-  /** When the game's window was first found; `undefined` when it never was. */
-  readonly window: number | undefined;
-  /** How often the window had taken the foreground and was sent behind VS Code. */
-  readonly sentBehind: number;
 }
 
-const NO_WINDOW: GameWindow = {
-  found: false,
-  iconic: false,
-  wasForeground: false,
-  width: 0,
-  height: 0,
-};
+/** How often an adopted process, which is not Node's child, is checked for its exit. */
+const ADOPTED_POLL_MS = 1_000;
 
 /** A started and ready live game. */
 export class LiveGameProcess {
@@ -253,21 +242,19 @@ export class LiveGameProcess {
   readonly session: string;
   readonly hello: Hello;
   readonly times: StartTimes;
-  readonly window: GameWindow;
   private readonly pipe: HostPipe;
-  private readonly child: ChildProcess;
   private readonly options: StartOptions;
   private readonly exited: Promise<number | null>;
+  private ended = false;
   private stopping: Promise<StopOutcome> | undefined;
+  private cleaning: Promise<void> | undefined;
 
   private constructor(fields: {
     identity: ProcessIdentity;
     session: string;
     hello: Hello;
     times: StartTimes;
-    window: GameWindow;
     pipe: HostPipe;
-    child: ChildProcess;
     options: StartOptions;
     exited: Promise<number | null>;
   }) {
@@ -275,22 +262,22 @@ export class LiveGameProcess {
     this.session = fields.session;
     this.hello = fields.hello;
     this.times = fields.times;
-    this.window = fields.window;
     this.pipe = fields.pipe;
-    this.child = fields.child;
     this.options = fields.options;
     this.exited = fields.exited;
-    // A game that ends by itself (a crash) leaves no reporter and no lock behind.
-    void this.exited.then(async () => {
-      if (this.stopping === undefined) await this.cleanUp();
+    void this.exited.then(() => {
+      this.ended = true;
+      // A game that ends by itself (a crash, a quit) leaves no reporter and no lock behind.
+      if (this.stopping === undefined) this.cleaning ??= this.cleanUp();
     });
   }
 
   /**
    * Starts the live game and waits until it is ready: takes the lock, starts `eu4.exe` from the
    * install with `ETCH_HOST_SESSION`, records its identity in the lock, greets the plugin (whose
-   * `pid` and `process_start_ms` must be the process Etch started), waits for `ready` and sends
-   * the window behind VS Code. On any failure the game is closed and the lock released.
+   * `pid` and `process_start_ms` must be the process Etch started) and waits for `ready`. The game
+   * runs in the foreground, as the player's game. On any failure the game is closed and the lock
+   * released.
    */
   static async start(options: StartOptions): Promise<LiveGameProcess> {
     const log = options.log ?? (() => undefined);
@@ -298,9 +285,7 @@ export class LiveGameProcess {
     await acquireLock(options.lock, session);
     let child: ChildProcess | undefined;
     let identity: ProcessIdentity | undefined;
-    let pipe: HostPipe | undefined;
     try {
-      const foreground = await foregroundWindow().catch(() => undefined);
       const { install } = options;
       child = spawn(install.exe, [...install.arguments], {
         cwd: install.gameFolder,
@@ -326,35 +311,68 @@ export class LiveGameProcess {
       if (normalizePath(identity.imagePath) !== normalizePath(expected)) {
         throw new Error(`PID ${String(started.pid)} is ${identity.imagePath}, not the live game.`);
       }
-      await writeFile(
-        options.lock.path,
-        `${JSON.stringify(
-          {
-            formatVersion: 1,
-            owner: options.lock.owner,
-            session,
-            game: identity,
-            gameFolder: options.originalGameFolder,
-          } satisfies HostLock,
-          null,
-          2,
-        )}\n`,
-      );
+      await writeLock(options, session, identity);
       log(`Live game started: PID ${String(identity.pid)}, session ${session}.`);
+      return await LiveGameProcess.greet(options, session, identity, exited, log);
+    } catch (error) {
+      if (identity !== undefined) await closeGame(identity, options.originalGameFolder, log);
+      else if (child?.exitCode === null) child.kill();
+      await releaseLock(options.lock);
+      throw error;
+    }
+  }
 
-      const created = creationUnixMs(identity);
-      const deadline = Date.now() + (options.readyTimeoutMs ?? 120_000);
-      let alive = true;
-      void exited.then(() => {
-        alive = false;
-      });
-      const check = (): void => {
-        if (!alive) throw new HostCrashedError('The live game exited while it started.');
-        if (options.signal?.aborted === true) throw new Error('The live game start was cancelled.');
-        if (Date.now() > deadline) {
-          throw new HostCrashedError('The live game did not get ready in time.');
-        }
-      };
+  /**
+   * Takes over the process a live game started of itself when it ended through Exit to Main Menu
+   * (H6): the same command line and environment, so its plugin serves the same session's pipe. Its
+   * image must be the live game's and its plugin must answer for it; then it is recorded in the
+   * lock and waited for until ready, like a start. On any failure it is closed and the lock
+   * released.
+   */
+  static async adopt(
+    options: StartOptions,
+    session: string,
+    identity: ProcessIdentity,
+  ): Promise<LiveGameProcess> {
+    const log = options.log ?? (() => undefined);
+    try {
+      const expected = await realpath(options.install.exe);
+      if (normalizePath(identity.imagePath) !== normalizePath(expected)) {
+        throw new Error(`PID ${String(identity.pid)} is ${identity.imagePath}, not the live game.`);
+      }
+      await writeLock(options, session, identity);
+      log(`Live game restarted itself: PID ${String(identity.pid)}, session ${session}.`);
+      return await LiveGameProcess.greet(options, session, identity, waitForExit(identity), log);
+    } catch (error) {
+      await closeGame(identity, options.originalGameFolder, log);
+      await releaseLock(options.lock);
+      throw error;
+    }
+  }
+
+  /** Greets the plugin of a started or adopted process and waits until the game is ready. */
+  private static async greet(
+    options: StartOptions,
+    session: string,
+    identity: ProcessIdentity,
+    exited: Promise<number | null>,
+    log: (message: string) => void,
+  ): Promise<LiveGameProcess> {
+    const created = creationUnixMs(identity);
+    const deadline = Date.now() + (options.readyTimeoutMs ?? 120_000);
+    let alive = true;
+    void exited.then(() => {
+      alive = false;
+    });
+    const check = (): void => {
+      if (!alive) throw new HostCrashedError('The live game exited while it started.');
+      if (options.signal?.aborted === true) throw new Error('The live game start was cancelled.');
+      if (Date.now() > deadline) {
+        throw new HostCrashedError('The live game did not get ready in time.');
+      }
+    };
+    let pipe: HostPipe | undefined;
+    try {
       let pipeMs: number | undefined;
       for (;;) {
         check();
@@ -375,23 +393,12 @@ export class LiveGameProcess {
         );
       }
       log(`Live game pipe up after ${String(pipeMs)} ms: plugin ${hello.plugin}.`);
-      // The game's window takes the foreground when it appears and may take it again while the
-      // game loads: it goes behind VS Code each time, and is never left minimised.
-      const game = identity;
-      let windowMs: number | undefined;
-      let sentBehind = 0;
-      const behind = async (): Promise<GameWindow | undefined> => {
-        const found = await keepBehind(game, foreground).catch(() => undefined);
-        if (found?.found === true) {
-          windowMs ??= Date.now() - created;
-          if (found.wasForeground) sentBehind++;
-        }
-        return found;
-      };
+      if (!hello.tree)
+        log("Tongs' tongs.ui is missing: reloads run without the stale-window check.");
       let ready = hello.ready;
       while (!ready) {
         check();
-        await Promise.all([delay(250), behind()]);
+        await delay(250);
         const answered = pipe.ping();
         try {
           ready = (await answered).ready;
@@ -403,43 +410,41 @@ export class LiveGameProcess {
         }
       }
       const readyMs = Date.now() - created;
-      const window = (await behind()) ?? NO_WINDOW;
-      log(
-        `Live game ready after ${String(readyMs)} ms; window ${String(window.width)}×${String(window.height)} ` +
-          `from ${String(windowMs)} ms, sent behind VS Code ${String(sentBehind)} times` +
-          `${window.iconic ? ', restored' : ''}.`,
-      );
+      log(`Live game ready after ${String(readyMs)} ms.`);
       return new LiveGameProcess({
         identity,
         session,
         hello,
-        times: { pipe: pipeMs, ready: readyMs, window: windowMs, sentBehind },
-        window,
+        times: { pipe: pipeMs, ready: readyMs },
         pipe,
-        child,
         options,
         exited,
       });
     } catch (error) {
       pipe?.close();
-      if (identity !== undefined) await closeGame(identity, options.originalGameFolder, log);
-      else if (child?.exitCode === null) child.kill();
-      await releaseLock(options.lock);
       throw error;
     }
   }
 
-  /** Resolves with the exit code when the game process ends, however it ends. */
+  /** Resolves with the exit code when the game process ends, however it ends (`null` when unknown). */
   get onExit(): Promise<number | null> {
     return this.exited;
   }
 
   get alive(): boolean {
-    return this.child.exitCode === null && this.child.signalCode === null;
+    return !this.ended;
   }
 
   ping(timeoutMs?: number) {
     return this.pipe.ping(timeoutMs);
+  }
+
+  reload(request: ReloadRequest, timeoutMs?: number) {
+    return this.pipe.reload(request, timeoutMs);
+  }
+
+  save(name: string, timeoutMs?: number) {
+    return this.pipe.save(name, timeoutMs);
   }
 
   /** Sends one request over the session pipe (docs/plugin-protocol.md). */
@@ -447,9 +452,25 @@ export class LiveGameProcess {
     return this.pipe.request(body, timeoutMs);
   }
 
-  /** Sends the game's window behind VS Code again and restores it if it was minimised. */
-  keepBehind(foreground?: string): Promise<GameWindow> {
-    return keepBehind(this.identity, foreground);
+  /**
+   * The process the game started of itself as it ended (Exit to Main Menu, H6): an `eu4.exe` child
+   * of this process with the same image, looked for until `withinMs` passes. `undefined` when none
+   * came: the game quit.
+   */
+  async restartedAs(withinMs = 10_000): Promise<ProcessIdentity | undefined> {
+    const deadline = Date.now() + withinMs;
+    const image = normalizePath(this.identity.imagePath);
+    for (;;) {
+      const children = await childProcesses(this.identity, GAME_EXE).catch(() => []);
+      const child = children.find((c) => normalizePath(c.imagePath) === image);
+      if (child !== undefined || Date.now() > deadline) return child;
+      await delay(500);
+    }
+  }
+
+  /** The options the process was started with, to adopt the process it starts of itself. */
+  get startOptions(): StartOptions {
+    return this.options;
   }
 
   /** Closes the game after checking its identity, and its crash reporter; releases the lock. */
@@ -467,6 +488,12 @@ export class LiveGameProcess {
     return this.stopping;
   }
 
+  /** Resolves once a process that ended by itself has released the lock and its reporter. */
+  async cleanedUp(): Promise<void> {
+    await this.exited;
+    await (this.stopping ?? this.cleaning);
+  }
+
   private async cleanUp(): Promise<void> {
     this.pipe.close();
     await closeCrashReporters(
@@ -477,6 +504,51 @@ export class LiveGameProcess {
       this.options.log?.(`Crash reporters not checked: ${String(error)}`);
     });
     await releaseLock(this.options.lock);
+  }
+}
+
+/** The game's executable name, of the live game and of the player's game. */
+export const GAME_EXE = 'eu4.exe';
+
+/**
+ * The player's own game, if it runs: an `eu4.exe` from their game folder. The live game is not
+ * started beside it (spec section 6).
+ */
+export async function playerGameRunning(gameFolder: string): Promise<ProcessIdentity | undefined> {
+  const exe = normalizePath(
+    await realpath(join(gameFolder, GAME_EXE)).catch(() => join(gameFolder, GAME_EXE)),
+  );
+  const running = await processesNamed(GAME_EXE);
+  return running.find((p) => normalizePath(p.imagePath) === exe);
+}
+
+async function writeLock(
+  options: StartOptions,
+  session: string,
+  identity: ProcessIdentity,
+): Promise<void> {
+  await writeFile(
+    options.lock.path,
+    `${JSON.stringify(
+      {
+        formatVersion: 1,
+        owner: options.lock.owner,
+        session,
+        game: identity,
+        gameFolder: options.originalGameFolder,
+      } satisfies HostLock,
+      null,
+      2,
+    )}\n`,
+  );
+}
+
+/** Resolves when a process that is not Node's child ends; its exit code is not known. */
+async function waitForExit(identity: ProcessIdentity): Promise<number | null> {
+  for (;;) {
+    await delay(ADOPTED_POLL_MS);
+    const now = await processIdentity(identity.pid).catch(() => identity);
+    if (now === undefined || !sameIdentity(now, identity)) return null;
   }
 }
 

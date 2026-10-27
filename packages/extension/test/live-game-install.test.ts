@@ -25,6 +25,7 @@ import {
   type InstallLayout,
   type LiveGameMod,
 } from '../src/live-game/install.ts';
+import type { SaveFile } from '../src/live-game/saves.ts';
 
 const sha = (data: string | Buffer): string =>
   createHash('sha256').update(data).digest('hex').toUpperCase();
@@ -84,6 +85,7 @@ let game: string;
 let builds: string;
 let layout: InstallLayout;
 let mods: LiveGameMod[];
+let player: string | undefined;
 
 beforeEach(async () => {
   temp = await mkdtemp(join(tmpdir(), 'etch-host-'));
@@ -108,6 +110,7 @@ beforeEach(async () => {
     'descriptor.mod':
       '\uFEFFname="Proper 2K UI Enhanced"\r\npath="mod/old"\r\nreplace_path="interface/x"\r\ndependencies={\r\n\t"Base"\r\n}\r\n',
   });
+  player = undefined;
   mods = [
     { name: 'Base', root: join(temp, 'base') },
     {
@@ -122,13 +125,15 @@ afterEach(async () => {
   await rm(temp, { recursive: true, force: true });
 });
 
-const prepare = (folder = game, into = layout) =>
+const prepare = (folder = game, into = layout, continueSave?: string | SaveFile) =>
   prepareInstall({
     layout: into,
     gameFolder: folder,
     buildsFolder: builds,
     mods,
     display: { width: 3440, height: 1440, language: 'english' },
+    playerProfile: player,
+    continueSave,
   });
 
 describe('prepareInstall', () => {
@@ -182,7 +187,7 @@ describe('prepareInstall', () => {
       'language="l_english"\ngraphics={\n\tsize={\n\t\tx=3440\n\t\ty=1440\n',
     );
     expect(settings).toContain('\tfullScreen=no\n\tborderless=yes\n');
-    expect(settings).toContain('master_volume=0.000000');
+    expect(settings).not.toContain('volume');
     const pdx = await readFile(join(layout.profile, 'pdx_settings.txt'), 'utf8');
     expect(pdx).toContain('"windowed_resolution"={\n\t\tvalue="3440x1440"');
     expect(pdx).toContain('"display_mode"={\n\t\tvalue="borderless_fullscreen"');
@@ -191,6 +196,51 @@ describe('prepareInstall', () => {
     await prepare();
     expect(await readdir(join(layout.profile, 'mod'))).toEqual([]);
     expect(await readdir(layout.root)).not.toContain('overlay');
+  });
+
+  it("takes the player's settings, with a monthly autosave when theirs is off", async () => {
+    player = join(temp, 'Documents', 'Paradox Interactive', 'Europa Universalis IV');
+    const settings =
+      'language="l_german"\r\nautosave="NEVER"\r\ngraphics={\r\n\tgame_ui_scale=1.250\r\n}\r\n';
+    await addFiles(player, { 'settings.txt': settings, 'pdx_settings.txt': '"Graphics"={}\n' });
+    const before = await snapshot(player);
+    const prepared = await prepare(game, layout, 'Verne1444_11_11.eu4');
+    expect(prepared.settings).toEqual({
+      copied: ['settings.txt', 'pdx_settings.txt'],
+      autosaveOn: true,
+    });
+    expect(await readFile(join(layout.profile, 'settings.txt'), 'utf8')).toBe(
+      settings.replace('autosave="NEVER"', 'autosave="MONTHLY"'),
+    );
+    expect(await readFile(join(layout.profile, 'pdx_settings.txt'), 'utf8')).toBe(
+      '"Graphics"={}\n',
+    );
+    expect(prepared.arguments).toEqual([
+      '-continue=Verne1444_11_11.eu4',
+      `-userdir=${layout.profile.replaceAll('\\', '/')}/`,
+    ]);
+    expect(prepared.savesFolder).toBe(join(layout.profile, 'save games'));
+    // The player's profile is only read.
+    expect(await snapshot(player)).toEqual(before);
+    await expect(prepare(game, layout, '../x.eu4')).rejects.toBeInstanceOf(PrivateInstallError);
+  });
+
+  it("copies a player's save once the install exists, on the first start too", async () => {
+    player = join(temp, 'player');
+    await addFiles(player, { 'save games/Verne1444_11_11.eu4': 'EU4txt\n' });
+    const save = {
+      name: 'Verne1444_11_11.eu4',
+      path: join(player, 'save games', 'Verne1444_11_11.eu4'),
+      modifiedMs: 0,
+      ironman: false,
+    };
+    expect(await installExists(layout)).toBe(false);
+    const prepared = await prepare(game, layout, save);
+    expect(prepared.continueSave).toBe('Verne1444_11_11.eu4');
+    expect(prepared.arguments[0]).toBe('-continue=Verne1444_11_11.eu4');
+    expect(await readFile(join(layout.profile, 'save games', 'Verne1444_11_11.eu4'), 'utf8')).toBe(
+      'EU4txt\n',
+    );
   });
 
   it('refuses an eu4.exe other than the pinned build, before it creates anything', async () => {

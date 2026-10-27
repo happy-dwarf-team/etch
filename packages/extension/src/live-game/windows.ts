@@ -1,7 +1,7 @@
 // What the live game needs from Windows that Node does not offer (spec sections 1 and 6): a
 // process's identity (PID, image path, creation time), closing a process only after that identity
-// is checked again through the same handle, finding the game's CrashReporter.exe, and keeping the
-// game's window behind VS Code without minimising it. Node has no Win32 bindings and Etch ships no
+// is checked again through the same handle, finding the game's CrashReporter.exe and the process
+// a game starts of itself, and finding the player's own game. Node has no Win32 bindings and Etch ships no
 // native code besides the game plugin, so one Windows PowerShell 5.1 process per call compiles a
 // small C# class and answers in JSON on stdout. The rules are the EU4 engine lab's verified
 // sessions (scripts/lib/LabProcess.psm1).
@@ -23,17 +23,6 @@ export type StopOutcome =
   | 'identity-mismatch-not-closed'
   | 'terminate-failed'
   | 'still-alive';
-
-/** The game's top-level window, as `keepBehind` found and left it. */
-export interface GameWindow {
-  readonly found: boolean;
-  readonly iconic: boolean;
-  /** The game's window was the foreground window and was sent behind. */
-  readonly wasForeground: boolean;
-  /** Client size in pixels. */
-  readonly width: number;
-  readonly height: number;
-}
 
 /** The creation time in Unix milliseconds, as the plugin's `process_start_ms` reports it. */
 export function creationUnixMs(identity: ProcessIdentity): number {
@@ -94,28 +83,10 @@ export async function childProcesses(
   return answer.children;
 }
 
-/**
- * Keeps the game's window behind the other windows without minimising it: restores it without
- * activating it when it is minimised, and sends it to the bottom of the Z order, giving the
- * foreground back to `foreground` (VS Code's window) when the game took it. Checks the game's
- * identity first and does nothing to another process.
- */
-export async function keepBehind(
-  game: ProcessIdentity,
-  foreground: string | undefined,
-): Promise<GameWindow> {
-  const answer = await helper<{ window: GameWindow }>({
-    op: 'behind',
-    expected: game,
-    foreground: foreground ?? '0',
-  });
-  return answer.window;
-}
-
-/** The current foreground window's handle in decimal, to give the foreground back to it later. */
-export async function foregroundWindow(): Promise<string | undefined> {
-  const answer = await helper<{ hwnd: string }>({ op: 'foreground' });
-  return answer.hwnd === '0' ? undefined : answer.hwnd;
+/** Every live process whose image is named `imageName` (such as `eu4.exe`). */
+export async function processesNamed(imageName: string): Promise<ProcessIdentity[]> {
+  const answer = await helper<{ processes: ProcessIdentity[] }>({ op: 'named', imageName });
+  return answer.processes;
 }
 
 // ---- The helper process ----------------------------------------------------------------------
@@ -290,18 +261,6 @@ public static class EtchHost {
   [DllImport("kernel32.dll", SetLastError = true)] static extern IntPtr CreateToolhelp32Snapshot(uint flags, uint pid);
   [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)] static extern bool Process32FirstW(IntPtr s, ref Entry e);
   [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)] static extern bool Process32NextW(IntPtr s, ref Entry e);
-  [DllImport("user32.dll")] static extern bool EnumWindows(EnumProc proc, IntPtr param);
-  [DllImport("user32.dll")] static extern uint GetWindowThreadProcessId(IntPtr hwnd, out int pid);
-  [DllImport("user32.dll")] static extern bool IsWindowVisible(IntPtr hwnd);
-  [DllImport("user32.dll")] static extern IntPtr GetWindow(IntPtr hwnd, uint cmd);
-  [DllImport("user32.dll")] static extern bool IsIconic(IntPtr hwnd);
-  [DllImport("user32.dll")] static extern bool ShowWindow(IntPtr hwnd, int cmd);
-  [DllImport("user32.dll")] static extern bool SetWindowPos(IntPtr hwnd, IntPtr after, int x, int y, int cx, int cy, uint flags);
-  [DllImport("user32.dll")] static extern IntPtr GetForegroundWindow();
-  [DllImport("user32.dll")] static extern bool SetForegroundWindow(IntPtr hwnd);
-  [DllImport("user32.dll")] static extern bool GetClientRect(IntPtr hwnd, out Rect rect);
-  delegate bool EnumProc(IntPtr hwnd, IntPtr param);
-  [StructLayout(LayoutKind.Sequential)] public struct Rect { public int Left, Top, Right, Bottom; }
   [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
   struct Entry {
     public uint Size, Usage, Pid; public IntPtr HeapId; public uint ModuleId, Threads, ParentPid; public int Priority; public uint Flags;
@@ -339,6 +298,7 @@ public static class EtchHost {
     finally { CloseHandle(h); }
   }
 
+  // The processes named image, with the parent pid given unless it is -1.
   public static List<int> Children(int parent, string image) {
     var found = new List<int>();
     IntPtr s = CreateToolhelp32Snapshot(2, 0);
@@ -346,48 +306,18 @@ public static class EtchHost {
     try {
       var e = new Entry(); e.Size = (uint)Marshal.SizeOf(typeof(Entry));
       for (bool ok = Process32FirstW(s, ref e); ok; ok = Process32NextW(s, ref e))
-        if (e.ParentPid == (uint)parent && string.Equals(e.ExeFile, image, StringComparison.OrdinalIgnoreCase)) found.Add((int)e.Pid);
+        if ((parent < 0 || e.ParentPid == (uint)parent) && string.Equals(e.ExeFile, image, StringComparison.OrdinalIgnoreCase)) found.Add((int)e.Pid);
     }
     finally { CloseHandle(s); }
     return found;
   }
 
-  public static IntPtr MainWindow(int pid) {
-    IntPtr found = IntPtr.Zero;
-    EnumWindows((hwnd, p) => {
-      int owner; GetWindowThreadProcessId(hwnd, out owner);
-      if (owner == pid && IsWindowVisible(hwnd) && GetWindow(hwnd, 4) == IntPtr.Zero) { found = hwnd; return false; }
-      return true;
-    }, IntPtr.Zero);
-    return found;
-  }
-
-  // "found|iconic|wasForeground|width|height" after sending the window to the bottom.
-  public static string Behind(int pid, long foreground) {
-    IntPtr hwnd = MainWindow(pid);
-    if (hwnd == IntPtr.Zero) return "0|0|0|0|0";
-    bool iconic = IsIconic(hwnd);
-    if (iconic) ShowWindow(hwnd, 4);
-    bool wasForeground = GetForegroundWindow() == hwnd;
-    // SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE, to HWND_BOTTOM.
-    SetWindowPos(hwnd, new IntPtr(1), 0, 0, 0, 0, 0x0001 | 0x0002 | 0x0010);
-    if (wasForeground && foreground != 0) SetForegroundWindow(new IntPtr(foreground));
-    Rect r; GetClientRect(hwnd, out r);
-    return "1|" + (iconic ? 1 : 0) + "|" + (wasForeground ? 1 : 0) + "|" + (r.Right - r.Left) + "|" + (r.Bottom - r.Top);
-  }
-
-  public static long Foreground() { return GetForegroundWindow().ToInt64(); }
 }
 '@
 function Identity([string]$text) {
   if (-not $text) { return $null }
   $p = $text.Split('|')
   return [ordered]@{ pid = [int]$p[0]; imagePath = $p[1]; creationFileTime = $p[2] }
-}
-function Matches($expected) {
-  $id = Identity ([EtchHost]::Of([int]$expected.pid))
-  return $null -ne $id -and $id.creationFileTime -eq [string]$expected.creationFileTime -and
-    [StringComparer]::OrdinalIgnoreCase.Equals($id.imagePath, [string]$expected.imagePath)
 }
 function Answer($request) {
 switch ($request.op) {
@@ -406,13 +336,14 @@ switch ($request.op) {
     }
     $answer = @{ children = $children }
   }
-  'behind' {
-    if (-not (Matches $request.expected)) { $window = '0|0|0|0|0' }
-    else { $window = [EtchHost]::Behind([int]$request.expected.pid, [int64]$request.foreground) }
-    $w = $window.Split('|')
-    $answer = @{ window = [ordered]@{ found = $w[0] -eq '1'; iconic = $w[1] -eq '1'; wasForeground = $w[2] -eq '1'; width = [int]$w[3]; height = [int]$w[4] } }
+  'named' {
+    $processes = @()
+    foreach ($namedPid in [EtchHost]::Children(-1, [string]$request.imageName)) {
+      $id = Identity ([EtchHost]::Of($namedPid))
+      if ($null -ne $id) { $processes += $id }
+    }
+    $answer = @{ processes = $processes }
   }
-  'foreground' { $answer = @{ hwnd = [string][EtchHost]::Foreground() } }
   default { $answer = @{ error = "unknown request $($request.op)" } }
 }
 return $answer
