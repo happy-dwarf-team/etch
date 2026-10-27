@@ -33,6 +33,7 @@ struct Root {
     std::string name;
     std::string file;  // the game path of its definition's file; empty when stale or unknown
     bool visible = false;
+    bool on_screen = true;  // its rect meets the game window's client area
 };
 
 // The game session, as anvil-game last reported it.

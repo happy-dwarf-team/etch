@@ -338,7 +338,9 @@ void LiveJobs::ReloadRest(const std::shared_ptr<ReloadState>& state) {
         for (const std::string& name : state->request.keep_hidden) {
             const Root* was = FindRoot(*before, name);
             const Root* now = FindRoot(*after, name);
-            if ((was != nullptr && was->visible) || now == nullptr || !now->visible) continue;
+            // A rebuild that leaves the window off screen (no province shown yet) needs no
+            // Escape, which would open the game's menu instead.
+            if ((was != nullptr && was->visible) || now == nullptr || !now->visible || !now->on_screen) continue;
             bool pressed = false;
             const bool closed = CloseWindow(name, result, pressed);
             if (!result.error.empty()) return Finish(state);

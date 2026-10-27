@@ -252,6 +252,29 @@ void TestReloadKeepsAShownView() {
     assert((game.calls == std::vector<std::string>{"reload provinceview.gui"}));
 }
 
+void TestReloadLeavesAnOffScreenView() {
+    // Before any province was shown, the rebuild leaves the view visible but off screen: an Escape
+    // would open the game's menu, so nothing is pressed.
+    FakeGame game;
+    game.roots = {MakeRoot(1, "provinceview", "interface/provinceview.gui", false)};
+    game.effect = [](const std::vector<std::string>& tokens, FakeGame& g) {
+        RebuildProvinceView(tokens, g);
+        for (Root& root : g.roots) root.on_screen = false;
+    };
+    std::vector<std::string> presses;
+    LiveJobs::Env env = game.Env();
+    env.press = [&](const std::string& selector, etch::Key) {
+        presses.push_back(selector);
+        return etch::PressResult{true, true};
+    };
+    LiveJobs jobs(env);
+    std::optional<ReloadResult> got;
+    assert(!jobs.Reload({{"reload provinceview.gui"}, {"interface/provinceview.gui"}, {}, {"provinceview"}},
+                        [&](const ReloadResult& r) { got = r; }));
+    game.Frame();
+    assert(got.has_value() && got->hidden_again.empty() && presses.empty());
+}
+
 void TestReloadWithoutTheTree() {
     FakeGame game;
     game.tree = false;
@@ -366,6 +389,7 @@ int main() {
     TestReloadClosesTheViewItOpened();
     TestReloadClosesByClicks();
     TestReloadKeepsAShownView();
+    TestReloadLeavesAnOffScreenView();
     TestReloadWithoutTheTree();
     TestRefusedInIronmanAndMultiplayer();
     TestFaultStopsTheConsole();
