@@ -116,7 +116,16 @@ describe('liveWidgetsOf', () => {
 describe('liveMatch', () => {
   it('gives the texts by path, rows by position, and counts those the window lacks', () => {
     const match = liveMatch(
-      snapshot([...FOREIGN, w('provinceview/gone', true, { type: 'text', text: 'old' })]),
+      snapshot([
+        ...FOREIGN,
+        w('provinceview/gone', true, { type: 'text', text: 'old' }),
+        // Copies the game's code builds under a widget of the file do not count.
+        w('provinceview/province_window/unit[2]', false),
+        w('provinceview/province_window/unit[2]/unit_name', false, {
+          type: 'text',
+          text: 'Unit Type',
+        }),
+      ]),
       WINDOW,
     );
     expect(match.texts.text('ProvinceView/province_window/culture')).toBe('Svea');

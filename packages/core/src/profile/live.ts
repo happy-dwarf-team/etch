@@ -128,9 +128,25 @@ export function liveMatch(snapshot: LiveSnapshot, window: Widget): LiveMatch {
     // A row's widgets come from its template: the list box must still be there.
     const row = /^(.*?)\/row\[\d+\](?:\/|$)/.exec(path);
     if (known.has(row === null ? path : (row[1] ?? ''))) texts.set(path, w.text);
-    else unmatched++;
+    else if (!builtByCode(path, known)) unmatched++;
   }
   return { texts: { text: (path) => texts.get(path.toLowerCase()) }, unmatched };
+}
+
+/**
+ * Whether a path the window does not have lies in a widget the game's code builds: the first
+ * step the window lacks is a numbered copy (`unit[2]`) under a parent the window has, such as
+ * the unit entries of the build views. Those never were in the file, so they do not count as
+ * values that no longer match.
+ */
+function builtByCode(path: string, known: ReadonlySet<string>): boolean {
+  const steps = path.split('/');
+  for (let i = 1; i < steps.length; i++) {
+    const prefix = steps.slice(0, i + 1).join('/');
+    if (known.has(prefix)) continue;
+    return /\[\d+\]$/.test(steps[i] ?? '') && known.has(steps.slice(0, i).join('/'));
+  }
+  return false;
 }
 
 /** Visibility by path, rows left out: what the profile's rules can be compared with. */
