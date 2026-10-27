@@ -214,10 +214,19 @@ export class CorpusPlaysetFiles {
   readonly fileOf = (path: string): string | undefined => this.ui.gameFile(path)?.absolutePath;
 }
 
-/** The profiles of `profiles/<source>/*.jsonc`, as read; a file that cannot be read is left out. */
+/**
+ * The profiles of `profiles/<source>/*.jsonc`, as read; a file that cannot be read is left out,
+ * and a missing folder has none.
+ */
 async function readShipped(folder: string): Promise<ProfileFile[]> {
   const files: ProfileFile[] = [];
-  for (const source of await readdir(folder, { withFileTypes: true })) {
+  let sources;
+  try {
+    sources = await readdir(folder, { withFileTypes: true });
+  } catch {
+    return files;
+  }
+  for (const source of sources) {
     if (!source.isDirectory()) continue;
     for (const name of await readdir(join(folder, source.name))) {
       if (!name.endsWith('.jsonc')) continue;
