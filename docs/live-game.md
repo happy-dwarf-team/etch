@@ -116,7 +116,7 @@ workspace and they stay unchanged for 300 ms.
 | another mod's copy wins in the playset | nothing; a `game-original-differs` warning names the mod |
 | a `.gui` file with a listener (the province view, the country view's tabs, the ledger, settings, the event window, any other) | `reload <file>`, stale check; counted as a panel rebuild |
 | one of the in-game idler's 13 files (`main`, `topbar`, `menubar`, `macrobuildinterface`, `macrobuildinterface_override`, `papacy`, `great_powers`, `parliament`, `mapmode_more`, `more_interface`, `unitpanel`, `outliner`, `core`) | `reload <file>`, stale check; counted as a HUD rebuild |
-| `provinceview.gui` | as a panel; a rebuild shows the view when it was closed (H2), and it stays open for now (Open points) |
+| `provinceview.gui` | as a panel; when the rebuild shows the view it was closed, the plugin closes it again with Escape (H2) |
 | `speed_controls.gui` | `reload`, then `reload topbar.gui`, which rebuilds it; a HUD rebuild (H6) |
 | `countrydiplomacyview.gui` | an open `DeclareWarDialog` is closed through the game first; Etch asks the player to open it again |
 | `countryview.gui`, `core.gui`, `.gfx`, fonts, `common/custom_gui`, `common/scripted_guis`, a `.gui` with a top-level name written twice, any other file the game reads only at start | planned restart, with the reason (`core.gui` is in the idler's list, but its templates build windows nothing rebuilds: a reload left the map's unit icons stale on screen, live) |
@@ -370,12 +370,27 @@ notices, the status bar, the watchers and their latency), textures,
 `DeclareWarDialog`, ironman and multiplayer, a hang timed by the watchdog,
 reopening the view (H8).
 
+## The province view after a rebuild (H2)
+
+Run on 2026-10-27 for M10 with Etch's plugin from this change (Escape through
+the game's SDL queue), in vanilla (Russia, 17 March 1719) and the Anbennar
+playset (Verne, 11 November 1444, its three opening events on screen), through
+the lab's script of the M8 runs, under the lab's game lock with the procedure
+above; Tongs' input on in the lab's copy for opening and closing a province.
+
+| Before the reload of `provinceview.gui` | Vanilla | Anbennar playset |
+| --- | --- | --- |
+| No province shown yet | the rebuild set the view visible; the Escape opened the game's menu, which the plugin closed again (`menu_undone`) — twice; without that undo (the first build) the menu stayed open | the same, once |
+| A province shown, the view closed (by its close button, or Escape) | the view stayed closed: three reloads, one of them of an edited file | the rebuild set the view visible, the Escape opened the menu, undone; the view hidden after |
+| The view open | it stayed open | it stayed open |
+
+The Anbennar prompt was answered by the first Enter through the SDL queue
+(4.8 s after ready). No crash. The reopening on the province the M8 check saw
+(H2) did not come back in these runs; when the rebuild leaves the view open
+on screen the same Escape closes it, as Tongs' did.
+
 ## Open points
 
-- **The province view after a rebuild (H2).** Closing it again needs a way the
-  game takes: a posted Escape is to be checked without Tongs' input and
-  without event windows, and must not open the game's menu when the rebuild
-  left the view off screen. Until then the extension does not ask for it.
 - **The province view's reload budget:** the stale check's two reads make the
   vanilla reload miss 150 ms at p95; reading only the windows built from the
   file, or the windows before the job from the last job's read, would cut it.

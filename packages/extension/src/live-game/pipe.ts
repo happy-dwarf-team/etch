@@ -73,6 +73,8 @@ export interface ReloadAnswer {
   readonly lines: readonly ConsoleLine[];
   readonly closed: readonly string[];
   readonly hiddenAgain: readonly string[];
+  /** The Escape of `keepHidden` opened the game's menu (no panel to close), which was closed again. */
+  readonly menuUndone: boolean;
   /**
    * The stale-window check, `undefined` without `tongs.ui`: how many top-level windows were built
    * from the checked files, which of them were not rebuilt, and the top-level windows in all.
@@ -441,6 +443,7 @@ export class HostPipe {
       lines: (answer['lines'] as ConsoleLine[] | undefined) ?? [],
       closed: (answer['closed'] as string[] | undefined) ?? [],
       hiddenAgain: (answer['hidden_again'] as string[] | undefined) ?? [],
+      menuUndone: answer['menu_undone'] === true,
       check:
         answer['tree'] === true && roots !== undefined
           ? {
