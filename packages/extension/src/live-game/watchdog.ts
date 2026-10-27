@@ -1,6 +1,6 @@
 // The live game's watchdog (spec section 6, etch#51, kept from 1.x's game host): how a hang is told
 // and how often the game may crash. A dead process and a hang (no answer to a ping, or a frame
-// counter that stops) restart it; restarts asked for while one runs coalesce into one more; after
+// counter that stops while the window stops responding) restart it; restarts asked for while one runs coalesce into one more; after
 // 3 crashes in 5 minutes it stops and waits for a manual start. Node only, no vscode.
 import { open } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -10,23 +10,34 @@ import type { Ping } from './pipe.ts';
 export const PING_INTERVAL_MS = 1_000;
 /** How long a ping may go unanswered, or the frame counter stand still, before it is a hang. */
 export const HANG_MS = 10_000;
+/**
+ * How long the frame counter may stand still while the game's window still takes messages, as it
+ * does while a save loads (the whole load is one frame of the main loop), before it is a hang.
+ */
+export const LOAD_MS = 5 * 60_000;
 /** Crashes within `CRASH_WINDOW_MS` that stop the live game until a manual start. */
 export const CRASH_LIMIT = 3;
 export const CRASH_WINDOW_MS = 5 * 60_000;
 
 /**
- * Watches a ready live game's pings: a hang is a ping left unanswered, or a frame counter that
- * did not move, for `hangMs`. The pipe thread answers pings while the game's main thread is stuck,
- * so the frame counter tells a hung game from a dead plugin.
+ * Watches a ready live game's pings: a hang is a ping left unanswered for `hangMs`, or a frame
+ * counter that did not move for `hangMs` while the game's window stopped taking messages too. The
+ * pipe thread answers pings while the game's main thread is stuck, so the frame counter tells a
+ * hung game from a dead plugin. A save or a load is not a hang (spec section 6): the counter
+ * stands still while the plugin saves (`busy`), and while a save loads, when the window still
+ * takes messages, for up to `loadMs`.
  */
 export class HangCheck {
   private readonly hangMs: number;
+  private readonly loadMs: number;
   private answered: number;
   private moved: number;
   private frame: number | undefined;
+  private responding = true;
 
-  constructor(now: number, hangMs = HANG_MS) {
+  constructor(now: number, hangMs = HANG_MS, loadMs = LOAD_MS) {
     this.hangMs = hangMs;
+    this.loadMs = loadMs;
     this.answered = now;
     this.moved = now;
   }
@@ -34,7 +45,8 @@ export class HangCheck {
   /** A ping's answer. */
   answer(ping: Ping, now: number): void {
     this.answered = now;
-    if (ping.frame !== this.frame) {
+    this.responding = ping.responding;
+    if (ping.frame !== this.frame || ping.busy) {
       this.frame = ping.frame;
       this.moved = now;
     }
@@ -46,8 +58,12 @@ export class HangCheck {
     if (now - this.answered >= this.hangMs) {
       return `no answer to a ping for ${seconds(now - this.answered)}`;
     }
-    if (now - this.moved >= this.hangMs) {
-      return `the frame counter stayed at ${String(this.frame)} for ${seconds(now - this.moved)}`;
+    const still = now - this.moved;
+    if (still >= this.hangMs && !this.responding) {
+      return `the frame counter stayed at ${String(this.frame)} for ${seconds(still)} and the window stopped responding`;
+    }
+    if (still >= this.loadMs) {
+      return `the frame counter stayed at ${String(this.frame)} for ${seconds(still)}`;
     }
     return undefined;
   }
@@ -56,6 +72,7 @@ export class HangCheck {
 export interface WatchOptions {
   readonly intervalMs?: number;
   readonly hangMs?: number;
+  readonly loadMs?: number;
   /** Ends the watch; the promise then never resolves. */
   readonly signal: AbortSignal;
 }
@@ -70,7 +87,7 @@ export async function watch(
 ): Promise<string> {
   const intervalMs = options.intervalMs ?? PING_INTERVAL_MS;
   const hangMs = options.hangMs ?? HANG_MS;
-  const check = new HangCheck(performance.now(), hangMs);
+  const check = new HangCheck(performance.now(), hangMs, options.loadMs ?? LOAD_MS);
   for (;;) {
     await abortable(delay(intervalMs), options.signal);
     const answer = await abortable(

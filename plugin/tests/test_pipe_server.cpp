@@ -89,7 +89,7 @@ void TestOneServerPerName(const etch::Host& host) {
 
 void TestHandshakeAndPing() {
     Client c;
-    etch::json::Value a = c.Request(R"({"id":1,"type":"hello","protocol":1})");
+    etch::json::Value a = c.Request(R"({"id":1,"type":"hello","protocol":2})");
     assert(a.Find("ok")->AsBool() == true);
     assert(a.Find("pid")->AsUint() == GetCurrentProcessId());
     g_frame = 77;
@@ -108,7 +108,7 @@ void TestHandshakeAndPing() {
 
 void TestOneClientAtATime() {
     Client first;
-    assert(first.Request(R"({"id":1,"type":"hello","protocol":1})").Find("ok")->AsBool() == true);
+    assert(first.Request(R"({"id":1,"type":"hello","protocol":2})").Find("ok")->AsBool() == true);
     HANDLE second = CreateFileW(g_name.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr);
     assert(second == INVALID_HANDLE_VALUE && GetLastError() == ERROR_PIPE_BUSY);
     first.Close();

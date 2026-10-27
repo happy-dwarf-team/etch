@@ -6,6 +6,7 @@
 // drive it directly.
 
 #include "json.hpp"
+#include "live.hpp"
 
 #include <cstddef>
 #include <cstdint>
@@ -19,7 +20,7 @@ namespace etch {
 // Bumped whenever a request or an answer changes in a way an older Etch would
 // misread; the extension and the plugin ship together, so there is no
 // negotiation beyond refusing a different number.
-inline constexpr std::uint64_t kProtocolVersion = 1;
+inline constexpr std::uint64_t kProtocolVersion = 2;
 
 // The longest request line, without its "\n".
 inline constexpr std::size_t kMaxLine = 64 * 1024;
@@ -32,6 +33,13 @@ struct Host {
     std::uint64_t process_start_ms = 0;
     std::string session;  // the session id the pipe is named after
     std::string plugin_version;
+    // The game's window takes messages (not hung): it does while the game
+    // loads a save and draws its loading screen. Any thread.
+    std::function<bool()> responding;
+    // The running game session; nullopt in the main menu. Any thread.
+    std::function<std::optional<GameSession>()> game_session;
+    bool tree = false;         // tongs.ui was found: reloads check the stale windows
+    LiveJobs* jobs = nullptr;  // the reloads and saves; null leaves them refused
 };
 
 // Writes one answer line (without "\n") to the connection it belongs to, from
@@ -47,9 +55,8 @@ struct Reply {
 // the handshake.
 class Connection {
 public:
-    // `send` carries what is written later, from another thread; nothing uses
-    // it since Etch 1.x's preview job, and the live game's pushes will (v2
-    // specification section 6).
+    // `send` carries what is written later, from another thread: the answers
+    // to reloads and saves, which come when the main thread ran them.
     explicit Connection(const Host& host, Send send = {}) : host_(host), send_(std::move(send)) {}
 
     Reply Handle(std::string_view line);
@@ -60,6 +67,8 @@ public:
 private:
     Reply Hello(std::uint64_t id, const json::Value& request);
     Reply Ping(std::uint64_t id) const;
+    Reply Reload(std::uint64_t id, const json::Value& request);
+    Reply Save(std::uint64_t id, const json::Value& request);
 
     const Host& host_;
     Send send_;
