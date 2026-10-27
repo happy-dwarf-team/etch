@@ -2,7 +2,7 @@ name: build
 
 on:
   push:
-    branches: [main]
+    branches: [release/1.x]
   pull_request:
   # Called by release.yml to build the VSIX of a new release.
   workflow_call:
