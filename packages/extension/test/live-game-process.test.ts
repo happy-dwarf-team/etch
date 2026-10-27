@@ -231,24 +231,98 @@ describe('the session pipe', () => {
 
   const hello = (session: string) => ({
     ok: true,
-    protocol: 1,
+    protocol: 2,
     plugin: '0.3.0',
     session,
     pid: 42,
     process_start_ms: 1,
     ready: false,
     frame: 0,
+    tree: true,
   });
 
   it('greets the plugin and pings it', async () => {
     const session = newSessionId();
     expect(session).toMatch(/^[0-9a-f]{32}$/);
     await plugin(session, (r) =>
-      r.type === 'hello' ? hello(session) : { ok: true, ready: true, frame: 7 },
+      r.type === 'hello'
+        ? hello(session)
+        : {
+            ok: true,
+            ready: true,
+            frame: 7,
+            responding: false,
+            busy: true,
+            game_session: { ironman: false, multiplayer: true, number: 2 },
+          },
     );
     const pipe = await HostPipe.connect(session);
     expect(pipe.hello.pid).toBe(42);
-    expect(await pipe.ping()).toEqual({ ready: true, frame: 7 });
+    expect(pipe.hello.tree).toBe(true);
+    expect(await pipe.ping()).toEqual({
+      ready: true,
+      frame: 7,
+      responding: false,
+      busy: true,
+      gameSession: { ironman: false, multiplayer: true, number: 2 },
+    });
+    pipe.close();
+  });
+
+  it('runs a reload and a save, and reads their answers', async () => {
+    const session = newSessionId();
+    const seen: Record<string, unknown>[] = [];
+    await plugin(session, (r) => {
+      seen.push(r);
+      if (r.type === 'hello') return hello(session);
+      if (r.type === 'save') {
+        return { ok: true, success: true, text: 'Saved', ms: 812.5, queued_ms: 16 };
+      }
+      return {
+        ok: true,
+        lines: [{ line: 'reload provinceview.gui', success: true, text: 'reloaded!', ms: 59 }],
+        closed: [],
+        hidden_again: ['provinceview'],
+        tree: true,
+        checked: 2,
+        stale: [{ name: 'culture_item', visible: false }],
+        roots: { before: 3158, after: 3159 },
+        queued_ms: 12.5,
+        run_ms: 71,
+      };
+    });
+    const pipe = await HostPipe.connect(session);
+    const reload = await pipe.reload({
+      lines: ['reload provinceview.gui'],
+      check: ['interface/provinceview.gui'],
+      keepHidden: ['provinceview'],
+    });
+    expect(seen[1]).toMatchObject({
+      type: 'reload',
+      lines: ['reload provinceview.gui'],
+      check: ['interface/provinceview.gui'],
+      close: [],
+      keep_hidden: ['provinceview'],
+    });
+    expect(reload).toEqual({
+      lines: [{ line: 'reload provinceview.gui', success: true, text: 'reloaded!', ms: 59 }],
+      closed: [],
+      hiddenAgain: ['provinceview'],
+      check: {
+        checked: 2,
+        stale: [{ name: 'culture_item', visible: false }],
+        roots: { before: 3158, after: 3159 },
+      },
+      queuedMs: 12.5,
+      runMs: 71,
+    });
+    expect(await pipe.save('etch-restart')).toEqual({
+      success: true,
+      text: 'Saved',
+      ms: 812.5,
+      queuedMs: 16,
+    });
+    expect(seen[2]).toMatchObject({ type: 'save', name: 'etch-restart' });
     pipe.close();
   });
 
@@ -267,12 +341,19 @@ describe('the session pipe', () => {
     await plugin(session, (r) =>
       r.type === 'hello'
         ? hello(session)
-        : { ok: false, error: 'unknown_type', message: 'Unknown request type.' },
+        : {
+            ok: false,
+            error: 'not_available',
+            message: 'reload is not available in multiplayer',
+          },
     );
     const pipe = await HostPipe.connect(session);
-    const failure = pipe.request({ type: 'jobs' });
+    const failure = pipe.reload({ lines: ['reloadloc'] });
     await expect(failure).rejects.toBeInstanceOf(PipeError);
-    await expect(failure).rejects.toMatchObject({ code: 'unknown_type' });
+    await expect(failure).rejects.toMatchObject({
+      code: 'not_available',
+      message: 'reload is not available in multiplayer',
+    });
     pipe.close();
   });
 });

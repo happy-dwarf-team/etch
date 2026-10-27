@@ -1,4 +1,4 @@
-# Etch's Anvil plugin: the game host's end of the session pipe (docs/plugin-protocol.md).
+# Etch's Anvil plugin: the live game's end of the session pipe (docs/plugin-protocol.md).
 #
 #   cmake -S plugin -B plugin/build -G "Visual Studio 17 2022" -A x64
 #   cmake --build plugin/build --config Release
@@ -45,7 +45,7 @@ else()
 endif()
 
 # The parts that do not need the game, also linked into the tests.
-add_library(etch_core STATIC src/json.cpp src/protocol.cpp src/session.cpp src/pipe_server.cpp src/console.cpp)
+add_library(etch_core STATIC src/json.cpp src/protocol.cpp src/session.cpp src/pipe_server.cpp src/console.cpp src/live.cpp)
 target_include_directories(etch_core PUBLIC src)
 target_compile_definitions(etch_core PUBLIC WIN32_LEAN_AND_MEAN NOMINMAX ETCH_PLUGIN_VERSION="${ETCH_VERSION}")
 target_link_libraries(etch_core PUBLIC advapi32)
@@ -53,6 +53,9 @@ target_link_libraries(etch_core PUBLIC advapi32)
 # etch.dll and its folder <build>/plugin/etch/ (plugin.toml, symbols.toml, the DLL).
 anvil_add_plugin(etch SOURCES src/plugin.cpp)
 target_link_libraries(etch PRIVATE etch_core)
+# Tongs' tongs.ui header (MIT), vendored as its contract asks: the pinned
+# Tongs release provides the service (pins/game-builds.json).
+target_include_directories(etch PRIVATE vendor)
 
 if(MSVC)
     foreach(target etch_core etch)
@@ -67,7 +70,7 @@ file(GENERATE OUTPUT ${CMAKE_BINARY_DIR}/anvil-tool.txt CONTENT "${ETCH_ANVIL_TO
 
 if(ETCH_BUILD_TESTS)
     enable_testing()
-    foreach(test json protocol session pipe_server console)
+    foreach(test json protocol session pipe_server console live)
         add_executable(test_${test} tests/test_${test}.cpp)
         target_link_libraries(test_${test} PRIVATE etch_core)
         if(MSVC)

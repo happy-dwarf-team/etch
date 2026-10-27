@@ -40,6 +40,8 @@ Reply Connection::Handle(std::string_view line) {
     if (*type == "hello") return Hello(*id, request);
     if (!greeted_) return {Error(id, "handshake_required", "send hello first")};
     if (*type == "ping") return Ping(*id);
+    if (*type == "reload") return Reload(*id, request);
+    if (*type == "save") return Save(*id, request);
     return {Error(id, "unknown_type", "unknown request type")};
 }
 
@@ -72,11 +74,59 @@ Reply Connection::Hello(std::uint64_t id, const json::Value& request) {
                 .Uint("process_start_ms", host_.process_start_ms)
                 .Bool("ready", host_.ready())
                 .Uint("frame", host_.frame())
+                .Bool("tree", host_.tree)
                 .Finish()};
 }
 
 Reply Connection::Ping(std::uint64_t id) const {
-    return {Ok(id).Bool("ready", host_.ready()).Uint("frame", host_.frame()).Finish()};
+    json::Writer w = Ok(id);
+    w.Bool("ready", host_.ready())
+        .Uint("frame", host_.frame())
+        .Bool("responding", !host_.responding || host_.responding())
+        .Bool("busy", host_.jobs != nullptr && host_.jobs->Busy());
+    const std::optional<GameSession> session = host_.game_session ? host_.game_session() : std::nullopt;
+    if (session) {
+        json::Writer s;
+        w.Raw("game_session", s.Bool("ironman", session->ironman)
+                                  .Bool("multiplayer", session->multiplayer)
+                                  .Uint("number", session->number)
+                                  .Finish());
+    } else {
+        w.Null("game_session");
+    }
+    return {w.Finish()};
+}
+
+Reply Connection::Reload(std::uint64_t id, const json::Value& request) {
+    ReloadRequest reload;
+    if (const std::optional<std::string> error = ReadReloadRequest(request, reload)) {
+        return {Error(id, "bad_request", *error)};
+    }
+    if (host_.jobs == nullptr || !host_.ready()) return {Error(id, "not_ready", "the live game is not ready")};
+    const Send send = send_;
+    const std::optional<Refusal> refused = host_.jobs->Reload(std::move(reload), [send, id](const ReloadResult& r) {
+        if (send) send(ReloadAnswer(id, r));
+    });
+    if (refused) return {Error(id, refused->code, refused->message)};
+    return {};  // answered when the main thread ran it
+}
+
+Reply Connection::Save(std::uint64_t id, const json::Value& request) {
+    const json::Value* name_member = request.Find("name");
+    const std::optional<std::string_view> name = name_member ? name_member->AsString() : std::nullopt;
+    if (!name || !IsSaveName(*name)) {
+        return {Error(id, "bad_request", "\"name\" must be 1 to 64 letters, digits, _ or -")};
+    }
+    if (host_.jobs == nullptr || !host_.ready()) return {Error(id, "not_ready", "the live game is not ready")};
+    if (!host_.game_session || !host_.game_session()) {
+        return {Error(id, "not_in_game", "the live game has no game loaded to save")};
+    }
+    const Send send = send_;
+    const std::optional<Refusal> refused = host_.jobs->Save(std::string(*name), [send, id](const SaveResult& r) {
+        if (send) send(SaveAnswer(id, r));
+    });
+    if (refused) return {Error(id, refused->code, refused->message)};
+    return {};
 }
 
 }  // namespace etch

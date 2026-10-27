@@ -47,7 +47,7 @@ createServer((socket) => {
         request.type === 'hello'
           ? {
               ok: true,
-              protocol: 1,
+              protocol: 2,
               plugin: '0.0.0-test',
               session,
               pid: process.pid,
@@ -56,7 +56,14 @@ createServer((socket) => {
               frame,
             }
           : request.type === 'ping'
-            ? { ok: true, ready: ready(), frame }
+            ? {
+                ok: true,
+                ready: ready(),
+                frame,
+                responding: mode !== 'freeze',
+                busy: false,
+                game_session: null,
+              }
             : { ok: false, error: 'unknown_type', message: 'unknown' };
       socket.write(`${JSON.stringify({ id: request.id, ...answer })}\n`);
     }
