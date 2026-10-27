@@ -76,7 +76,64 @@ same mods and a test mod with copies of the patch's `topbar.gui` and
 job alone, and two restarts that a `.gfx` file in the test mod causes (saved,
 then deleted), from the save to ready and to the next image.
 
+## Method: saves
+
+The save budgets of [v2 spec section 9](spec/v2.md#9-budgets) are measured by
+[`packages/extension/test/save-budget.ts`](../packages/extension/test/save-budget.ts),
+which runs after the preview budgets when `ETCH_BUDGET_SAVES` names a copy of a
+save per playset (never the player's own file, and no save in Git):
+
+```powershell
+$env:ETCH_GAME_PATH = 'C:\Program Files (x86)\Steam\steamapps\common\Europa Universalis IV'
+$env:ETCH_BUDGET_SAVES = 'vanilla=C:\copies\mp_Russia1719_03_17.eu4;anbennar=C:\copies\Arg-Ordstun1582_09_23.eu4'
+$env:ETCH_BUDGET_PLAYSETS = ' '   # optional: only the save budgets
+pnpm --filter etch test
+```
+
+- The saves are the vanilla corpus save (Russia, 17 March 1719, 61.8 MB of
+  gamestate text) and the largest Anbennar save of etch#154 (1582, 111.7 MB).
+- For each playset the edited file is a copy of its winning
+  `interface/provinceview.gui` (vanilla's; for Anbennar, P2KE Patch -
+  Anbennar's) in a temporary mod, with the cursor in `provinceview`, at
+  1920×1080, in its profile's default view (Own province).
+- **Choosing a save:** each of three runs drops the save, then chooses it, and
+  times from the choice to the first paint that fills a text from the save:
+  reading the file (from the operating system's file cache after the first
+  run), inflating, indexing, the view's blocks, the layout with the facts and
+  sample data, and the paint. The test fails when a run is over 1 s
+  (vanilla) or 2 s (Anbennar).
+- **Choosing another province or country:** after each save, 40 choices: the
+  chosen country's provinces in turn, and every tenth choice another country,
+  each timed from the choice to its paint, 150 ms after the last. The test
+  fails when the p95 is over 100 ms.
+
 ## Results
+
+### 2026-10-27, the save budgets (M7)
+
+Machine as in etch#39 (Intel Core i9-13900KF, 64 GB, NVIDIA GeForce RTX 4090,
+NVMe SSD, Windows 11 Pro 26200); VS Code 1.143.1 from `.vscode-test`. EU4
+1.37.5, `eu4.exe` SHA-256 `9AD3EFE1…DC4D771A`, read in place; no game ran
+(the lab's game lock was held for the whole batch). The Anbennar playset at
+the corpus manifest's pins, which the test checks. Saves: copies of the vanilla
+corpus save (`2A4CAF30…3F56F6A`, 61.8 MB of gamestate) and of the Anbennar save
+of 1582 (111.7 MB of gamestate; made with a larger playset than the corpus's,
+so `Data ▾` warns of the mods and the values still apply). `provinceview` at
+1920×1080 in Own province, the save filling 12 texts and the generated layer
+26. Three processes, three runs each; no run timed out and no sample was lost.
+
+| Playset | Choosing the save, to the paint (ms, three runs per process) | Another province or country, to the paint (120 per process): median / p95 / max (ms) |
+| --- | --- | --- |
+| Vanilla | 302, 317, 266 · 306, 257, 263 · 322, 250, 250 | 5.0 / 8.6 / 27.4 · 4.9 / 8.0 / 31.4 · 4.7 / 6.5 / 34.7 |
+| Anbennar | 422, 405, 410 · 424, 509, 520 · 420, 500, 425 | 5.7 / 6.7 / 8.5 · 5.8 / 6.9 / 7.6 · 5.6 / 7.4 / 8.8 |
+
+All within the budgets (1 s and 2 s for the save, 100 ms p95 for a choice).
+Before the gamestate was inflated into one buffer of the zip directory's size,
+the Anbennar save took 0.55 s in most runs and 1.5–4.1 s in about one run in
+four, the time spent in inflating: `inflateRaw` joins its chunks at the end, so
+the 112 MB gamestate was held twice, which set off collections of the extension
+host's heap (about 330 MB with the Anbennar playset). Measured the same way
+before that change, one process failed the 2 s budget (4,131 ms).
 
 ### 2026-10-27, M8 (the live game, reported, not gated)
 

@@ -7,6 +7,7 @@ import { testData } from './data.ts';
 import { testGameText } from './game-text.ts';
 import { testNavigation } from './navigation.ts';
 import { testPreviewBudget } from './preview-budget.ts';
+import { testSaveBudget } from './save-budget.ts';
 import { testPreview } from './preview.ts';
 import { testPlaysetWindows } from './playset-windows.ts';
 import { testViews } from './views.ts';
@@ -40,6 +41,16 @@ export async function run(): Promise<void> {
   // Local only: the vanilla budgets, read from an installed game in place. They run first, so that
   // the first cold open is the first preview of this VS Code process.
   if (gamePath !== undefined && gamePath !== '') await testPreviewBudget(api, gamePath);
+  // Local only: the save budgets (spec section 9), from copies of saves.
+  const budgetSaves = process.env['ETCH_BUDGET_SAVES'];
+  if (
+    gamePath !== undefined &&
+    gamePath !== '' &&
+    budgetSaves !== undefined &&
+    budgetSaves !== ''
+  ) {
+    await testSaveBudget(api, gamePath, budgetSaves);
+  }
 
   const commands = await vscode.commands.getCommands(true);
   for (const command of [

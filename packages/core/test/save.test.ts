@@ -79,7 +79,9 @@ countries={
 `;
 
 /** A zip of the entries, stored or deflated as given. */
-function zip(entries: readonly { name: string; text: string; stored?: boolean }[]): Uint8Array {
+function zip(
+  entries: readonly { name: string; text: string; stored?: boolean; size?: number }[],
+): Uint8Array {
   const parts: Buffer[] = [];
   const directory: Buffer[] = [];
   let offset = 0;
@@ -97,7 +99,8 @@ function zip(entries: readonly { name: string; text: string; stored?: boolean }[
     central.writeUInt32LE(0x02014b50, 0);
     central.writeUInt16LE(entry.stored === true ? 0 : 8, 10);
     central.writeUInt32LE(data.length, 20);
-    central.writeUInt32LE(raw.length, 24);
+    // A wrong size in the directory, when a test asks for one.
+    central.writeUInt32LE(entry.size ?? raw.length, 24);
     central.writeUInt16LE(name.length, 28);
     central.writeUInt32LE(offset, 42);
     parts.push(local, name, data);
@@ -168,6 +171,25 @@ describe('readSave', () => {
     expect(save.meta.version).toBe('1.37.5.0');
     expect(save.meta.mods).toHaveLength(2);
     checkContent(save);
+  });
+
+  it('reads a gamestate whose size the directory gives wrong', async () => {
+    for (const size of [10, 10_000_000]) {
+      const bytes = zip([
+        {
+          name: 'meta',
+          text: `EU4txt
+${META}`,
+        },
+        {
+          name: 'gamestate',
+          text: `EU4txt
+${GAMESTATE}`,
+          size,
+        },
+      ]);
+      checkContent(await readSave(bytes));
+    }
   });
 
   it('gives the same index however often it yields to the event loop', async () => {

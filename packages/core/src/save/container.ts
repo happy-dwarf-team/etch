@@ -9,7 +9,7 @@
  * extension host's event loop stays free while a save of 100 MB inflates.
  */
 import { promisify } from 'node:util';
-import { inflateRaw } from 'node:zlib';
+import { createInflateRaw, inflateRaw } from 'node:zlib';
 
 const inflate = promisify(inflateRaw);
 
@@ -67,6 +67,8 @@ export async function readSaveTexts(bytes: Uint8Array): Promise<SaveTexts> {
 
 interface ZipEntry {
   readonly method: number;
+  /** The inflated size, as the central directory gives it. */
+  readonly size: number;
   readonly data: Uint8Array;
 }
 
@@ -106,6 +108,8 @@ async function entryBytes(entry: ZipEntry, name: string): Promise<Uint8Array> {
     );
   }
   try {
+    const sized = await inflateInto(entry.data, entry.size);
+    if (sized !== undefined) return sized;
     const inflated = await inflate(entry.data);
     return new Uint8Array(inflated.buffer, inflated.byteOffset, inflated.byteLength);
   } catch (error) {
@@ -114,6 +118,38 @@ async function entryBytes(entry: ZipEntry, name: string): Promise<Uint8Array> {
       `The save's ${name} does not inflate: ${(error as Error).message}.`,
     );
   }
+}
+
+/** The chunk of inflated bytes a stream hands over at a time. */
+const INFLATE_CHUNK = 1 << 20;
+
+/**
+ * Inflates into one buffer of the size the zip's directory gives, chunk by chunk, so that a
+ * 110 MB gamestate is never held twice while chunks are joined: in the extension host, whose heap
+ * holds a playset, the doubled peak set off collections that stalled a save by seconds. `undefined`
+ * when the inflated data is not that size, for the caller to inflate it as it comes.
+ */
+function inflateInto(data: Uint8Array, size: number): Promise<Uint8Array | undefined> {
+  return new Promise((resolve, reject) => {
+    const out = Buffer.allocUnsafe(size);
+    let at = 0;
+    let over = false;
+    const stream = createInflateRaw({ chunkSize: INFLATE_CHUNK });
+    stream.on('data', (chunk: Buffer) => {
+      if (over) return;
+      if (at + chunk.length > size) {
+        over = true;
+        return;
+      }
+      out.set(chunk, at);
+      at += chunk.length;
+    });
+    stream.on('end', () => {
+      resolve(over || at !== size ? undefined : new Uint8Array(out.buffer, out.byteOffset, size));
+    });
+    stream.on('error', reject);
+    stream.end(data);
+  });
 }
 
 const END_OF_DIRECTORY = 0x06054b50;
@@ -140,6 +176,7 @@ function zipEntries(bytes: Uint8Array): Map<string, ZipEntry> {
     }
     const method = view.getUint16(at + 10, true);
     const compressed = view.getUint32(at + 20, true);
+    const size = view.getUint32(at + 24, true);
     const nameLength = view.getUint16(at + 28, true);
     const extraLength = view.getUint16(at + 30, true);
     const commentLength = view.getUint16(at + 32, true);
@@ -150,7 +187,7 @@ function zipEntries(bytes: Uint8Array): Map<string, ZipEntry> {
     }
     const start = local + 30 + view.getUint16(local + 26, true) + view.getUint16(local + 28, true);
     if (start + compressed > bytes.length) damaged(`the entry ${name} ends early`);
-    entries.set(name, { method, data: bytes.subarray(start, start + compressed) });
+    entries.set(name, { method, size, data: bytes.subarray(start, start + compressed) });
     at += 46 + nameLength + extraLength + commentLength;
   }
   return entries;
