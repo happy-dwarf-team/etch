@@ -278,7 +278,10 @@ The answer gives the state after the request: `on` and `key`.
 - **Mouse:** in pick mode every button message (down, up, double click, all
   five buttons) and both wheels are dropped, and every other mouse message is
   passed on with the `MK_*` button bits of its `wParam` cleared (H6). A left
-  button down is the pick; the wheel steps through the stack. `eu4.exe`'s
+  button down is the pick, except the click that activates the game's window
+  (`WM_ACTIVATE` with `WA_CLICKACTIVE`): the game reads the pointer only while
+  it is in front, so that click only brings it forward. The wheel steps
+  through the stack. `eu4.exe`'s
   imports of `GetAsyncKeyState` and `GetKeyState` read the mouse buttons as up.
 - **Every frame**, on the main thread, the plugin reads the hovered widget and
   its parents (`tongs.ui` `hovered` without paths) and hands the outline and

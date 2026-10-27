@@ -216,6 +216,10 @@ struct PickState {
     double click_ms = 0;
     std::uint64_t click_unix_ms = 0;
     int wheel = 0;
+    // The window was activated by a click: that click brings the game forward and is no pick
+    // (the hovered widget is not read while the game is in the background).
+    bool activation_click = false;
+    std::uint32_t activation_clicks = 0;
     // The frame handler's own.
     std::uint64_t hovered = 0;
     std::vector<etch::UiWidget> stack_read;  // the visible tree the stack was taken from
@@ -430,6 +434,9 @@ LRESULT CALLBACK PickProc(HWND window, UINT message, WPARAM wparam, LPARAM lpara
         case WM_KILLFOCUS:
             p.ctrl = p.shift = p.alt = false;
             break;
+        case WM_ACTIVATE:
+            p.activation_click = LOWORD(wparam) == WA_CLICKACTIVE;
+            break;
         default:
             break;
     }
@@ -437,6 +444,10 @@ LRESULT CALLBACK PickProc(HWND window, UINT message, WPARAM wparam, LPARAM lpara
         const etch::MouseFilter filter = etch::FilterMouse(message, wparam);
         switch (filter.action) {
             case etch::MouseAction::Pick:
+                if (std::exchange(p.activation_click, false)) {
+                    ++p.activation_clicks;
+                    return 0;
+                }
                 if (!p.click) {
                     p.click = true;
                     p.click_at = {GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam)};
@@ -445,6 +456,7 @@ LRESULT CALLBACK PickProc(HWND window, UINT message, WPARAM wparam, LPARAM lpara
                 }
                 return 0;
             case etch::MouseAction::Drop:
+                if (message != WM_LBUTTONUP) p.activation_click = false;
                 return 0;
             case etch::MouseAction::Wheel:
                 p.wheel += filter.wheel;
@@ -487,9 +499,9 @@ SHORT WINAPI OnKeyState(int vk) noexcept { return BlockedButton(vk) ? 0 : g_key_
 void LogPickStats(PickState& p) {
     anvil::Host{}.info(
         "pick mode left: {} picks; hovered read median {:.3f} ms, p90 {:.3f} ms, max {:.3f} ms over {} frames; "
-        "hotkey by GetKeyState {}, by key messages {}; mouse buttons polled {} times",
+        "hotkey by GetKeyState {}, by key messages {}; mouse buttons polled {} times; activation clicks {}",
         p.picks, Percentile(p.hover_ms, 0.5), Percentile(p.hover_ms, 0.9), Percentile(p.hover_ms, 1.0),
-        p.hover_ms.size(), p.by_key_state, p.by_messages, p.button_polls.load());
+        p.hover_ms.size(), p.by_key_state, p.by_messages, p.button_polls.load(), p.activation_clicks);
     p.hover_ms.clear();
 }
 
