@@ -25,6 +25,7 @@ describe.skipIf(folder === undefined)('the save reader on real saves', () => {
     }
     expect(read.meta.version).toMatch(/^1\.37\./);
     expect(read.index.top.has('players_countries')).toBe(false);
+    expect(read.index.top.has('used_client_names')).toBe(false);
     expect(read.countries.length).toBeGreaterThan(100);
     expect(read.provinces.length).toBeGreaterThan(1000);
     const player = read.index.countries.get(read.meta.player ?? '');

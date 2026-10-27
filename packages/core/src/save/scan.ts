@@ -7,8 +7,8 @@
  * The pass yields to the event loop every two megabytes, so that indexing a 110 MB gamestate
  * (0.6 s on the maintainer's machine, etch#154) does not hold the extension host still.
  *
- * `players_countries`, which holds the player's profile name, is left out of the index, so
- * nothing Etch reads from a save can carry it (etch#154).
+ * `players_countries` and `used_client_names`, which hold the players' profile names, are left out
+ * of the index, so nothing Etch reads from a save can carry them (etch#154).
  */
 import { setImmediate } from 'node:timers/promises';
 
@@ -34,8 +34,11 @@ export interface IndexOptions {
   readonly step?: number;
 }
 
-/** Top-level entries the index never records: `players_countries` holds the profile name. */
-const LEFT_OUT = new Set(['players_countries']);
+/**
+ * Top-level entries the index never records: `players_countries` holds the player's profile name,
+ * `used_client_names` those of a multiplayer game's players.
+ */
+const LEFT_OUT = new Set(['players_countries', 'used_client_names']);
 
 const TAB_OR_SPACE_MAX = 32;
 const LF = 10;

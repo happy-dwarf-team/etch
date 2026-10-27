@@ -4,8 +4,8 @@
  * into Etch's ordinary syntax tree. The whole save is never parsed as a tree (3.3–3.6 s and
  * 2.2 GB for an Anbennar save), and nothing is computed from it the way the engine would.
  *
- * The player's profile name, in the gamestate's `players_countries`, is never indexed, decoded or
- * kept (etch#154).
+ * The players' profile names, in the gamestate's `players_countries` and `used_client_names`, are
+ * never indexed, decoded or kept (etch#154).
  */
 import { parseScript } from '../script/parse.ts';
 import type {
@@ -48,7 +48,7 @@ export interface Save {
   country(tag: string): BlockNode | undefined;
   /** A province's block, `undefined` when the save has no such province. */
   province(id: number): BlockNode | undefined;
-  /** The value of the first top-level entry of a key; `players_countries` is never there. */
+  /** The value of the first top-level entry of a key; profile names are never there. */
   top(key: string): ValueNode | undefined;
   /** Decodes and parses one range of the gamestate, as the index gives it. */
   parse(range: ByteRange): ParsedScript;

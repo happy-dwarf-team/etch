@@ -43,6 +43,9 @@ players_countries={
 	"Some Profile Name"
 	"A33"
 }
+used_client_names={
+	"Other Player Name"
+}
 flags={
 	countries={ not_this={ a=1 } }
 }
@@ -172,11 +175,13 @@ describe('readSave', () => {
     checkContent(save);
   });
 
-  it('never reads players_countries, which holds the player’s profile name', async () => {
+  it('never reads players_countries or used_client_names, which hold profile names', async () => {
     for (const bytes of [zipped(), plain()]) {
       const save = await readSave(bytes);
-      expect(save.index.top.has('players_countries')).toBe(false);
-      expect(save.top('players_countries')).toBeUndefined();
+      for (const key of ['players_countries', 'used_client_names']) {
+        expect(save.index.top.has(key)).toBe(false);
+        expect(save.top(key)).toBeUndefined();
+      }
       const kept = JSON.stringify({
         meta: save.meta,
         top: [...save.index.top.keys()].map((key) => save.top(key)),
@@ -184,6 +189,7 @@ describe('readSave', () => {
         provinces: save.provinces.map((id) => save.province(id)),
       });
       expect(kept).not.toContain('Some Profile Name');
+      expect(kept).not.toContain('Other Player Name');
     }
   });
 
