@@ -10,19 +10,45 @@ merged with `Release-As: 2.0.0`).
 
 ## Precision
 
-The gate of ADR 0002 for the three playsets at the six corpus resolutions,
-the province views included (`compare --gpu`, ANGLE on Direct3D 11): **233 of
-252 gating captures pass**. Vanilla and Proper 2K UI Enhanced pass 78 of 84
-each, the Anbennar playset 77 of 84. What fails:
+The gate of ADR 0002 for the playsets of spec section 10, each at its
+confirmed corpus resolutions, the province views included (`compare --gpu`,
+ANGLE on Direct3D 11, 2026-10-27): **208 of 224 gating captures pass**.
 
-| Captures | What differs | Waits on |
-| --- | --- | --- |
-| `province-foreign` in vanilla at all six sizes, in Proper 2K UI Enhanced and the Anbennar playset at 1680×1050 to 3440×1440 | `foreign_province_window/button_diploaction` ("Diplomacy"): 92–95 % of its pixels within ±2, the anti-aliased edges of a button's text fainter in the game, as in etch#96 | the maintainer: a new known deviation like the `button-text-edges-*` ones needs consent |
-| `province-foreign` in Proper 2K UI Enhanced and the Anbennar playset at 1280×720 to 1600×900, and two top bar backgrounds up to 1920×1080 | the game draws the foreign province's view over the top bar where they overlap, the own province's under it ([etch#210](https://github.com/happy-dwarf-team/etch/issues/210)) | etch#210 |
-| `diplomacy-dialog` in the Anbennar playset at 1366×768 | `DeclareWarDialog/enemies_total_amount_icon`: 5 of its 464 pixels (98.9 %), the tip of the scaled icon at the screen's bottom edge; stable over two captures | the maintainer: a known deviation, or a fix |
+Since the maintainer's answers in M10 the matrix is: vanilla at every
+corpus resolution; Proper 2K UI Enhanced alone, and the Anbennar playset with
+it and the P2KE patch, at 2560×1440 and above (the mod is made for screens of
+at least 2560×1440); Anbennar alone below 2560×1440. 2560×1440 is a new
+confirmed resolution; 3840×2160 is in the corpus but unconfirmed, because no
+window of the lab holds a 2160-pixel client area (two monitors, a 6000×1440
+desktop), so it gates nothing (etch#163).
+
+| Playset | 1280×720 | 1366×768 | 1600×900 | 1680×1050 | 1920×1080 | 2560×1440 | 3440×1440 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Vanilla | 13/14 | 13/14 | 13/14 | 13/14 | 13/14 | 13/14 | 13/14 |
+| Proper 2K UI Enhanced | – | – | – | – | – | 13/14 | 13/14 |
+| Anbennar + Proper 2K UI Enhanced + P2KE Patch - Anbennar | – | – | – | – | – | 13/14 | 13/14 |
+| Anbennar alone | 13/14 | 13/14 | 13/14 | 13/14 | 13/14 | – | – |
+
+The one view that fails everywhere is `province-foreign`, and only in
+`provinceview/province_window/foreign_province_window/button_diploaction`
+("Diplomacy"): 92–95 % of its pixels within ±2, the anti-aliased edges of a
+button's text fainter in the game than in the offline renderer, as in etch#96,
+which is being worked on.
+
+- The Anbennar save's opening events no longer cover any view: the corpus uses
+  a copy of the maintainer's save made in the lab after answering them, and
+  nothing is masked for them (the mask and its 32-pixel margin are gone).
+- The foreign province view drawn over the top bar
+  ([etch#210](https://github.com/happy-dwarf-team/etch/issues/210)) happened
+  only with Proper 2K UI Enhanced below 2560×1440, which the corpus no longer
+  takes: closed.
+- `DeclareWarDialog/enemies_total_amount_icon`, 5 pixels off in the Anbennar
+  playset at 1366×768, no longer occurs: P2KE's dialog is captured at
+  2560×1440 and above, where it passes, and Anbennar alone passes at every
+  size.
 
 No view is left out of the Anbennar gate: every corpus window has a working
-recipe in it (the event window gates in no playset, etch#97).
+recipe in both Anbennar playsets (the event window gates in no playset, etch#97).
 
 ## Profiles
 
@@ -102,13 +128,12 @@ The README and the store README describe the live game and say how to stay on
 description of the live game (`etch-website`), freezing this specification and
 `after-v2.md`.
 
-## Questions for the maintainer
+## Answered by the maintainer (M10)
 
-1. Consent to a known deviation for `provinceview/province_window/foreign_province_window/button_diploaction`
-   (button text edges, etch#96) in the three playsets?
-2. Consent to a known deviation for `DeclareWarDialog/enemies_total_amount_icon`
-   in the Anbennar playset at 1366×768 (5 pixels), or wait for a fix?
-3. `coverMargin: 32` masks 32 pixels around the Anbennar save's event windows,
-   past the rects Tongs reads: acceptable?
-4. etch#210 (the province view over the top bar in the foreign view at small
-   sizes): fix before 2.0.0, or release with those captures failing?
+- Test the playsets with Proper 2K UI Enhanced at 2560×1440 and above, and
+  vanilla and Anbennar alone below: done (the matrix above).
+- Fix rather than mask the Anbennar save's events, and drop the 32-pixel
+  margin: done, through the answered copy of the save.
+- The 5 pixels of the declare war dialog's icon: gone in the new matrix.
+- The button text edges (etch#96): with a separate session.
+- Tongs with `definition_line`: released as 0.18.0 and pinned (#214).

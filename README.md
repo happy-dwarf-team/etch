@@ -39,7 +39,8 @@ the wayfinder map in this repository's issues (label `wayfinder:map`).
 - The live game is the game itself, with Etch's Anvil plugin: reloads, pick
   mode and live snapshots.
 - Precision is measured against the game, not claimed: the precision corpus
-  of three playsets, the Anbennar playset among them, at six resolutions.
+  of vanilla, Proper 2K UI Enhanced and Anbennar, at seven resolutions from
+  1280×720 to 3440×1440.
 - Target: EU4 1.37.5 (Steam, win64) on Windows.
 
 See [GLOSSARY.md](GLOSSARY.md) for the terms used in the issues.

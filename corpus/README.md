@@ -32,7 +32,7 @@ joined by `-`, because they become file names.
 | `game` | `version` and `exeSha256` (uppercase) of the build every capture comes from: 1.37.5 |
 | `tongs` | `version` of the Tongs release every capture is taken with. 0.14.1 is the first release that reads no false stale widgets on a fresh start (tongs#61, tongs#63) |
 | `uiScale` | `1`: no other `game_ui_scale` is checked |
-| `resolutions` | `width`, `height`, `confirmed` and `evidence` per size. Only confirmed sizes gate a release. [etch#18](https://github.com/happy-dwarf-team/etch/issues/18) confirmed all six: 3440×1440 is the lab's monitor, borderless; the smaller sizes are windowed client areas (below) |
+| `resolutions` | `width`, `height`, `confirmed` and `evidence` per size. Only confirmed sizes gate a release. [etch#18](https://github.com/happy-dwarf-team/etch/issues/18) confirmed the six of v1: 3440×1440 is the lab's monitor, borderless; the smaller sizes are windowed client areas (below). M10 added 2560×1440 (a windowed client area too, confirmed by its captures) and 3840×2160, which no window of the lab can hold (its desktop is 6000×1440, a window at most 6020×1460): it stays unconfirmed (etch#163) |
 | `codeFilledKinds` | `.gui` widget kinds whose content the game always fills (lists, grids, overlapping elements), masked in every view |
 | `notCovered` | widget kinds (`widgetKind`) and shaders (`shader`) that the offline renderer draws but the corpus does not measure, each with a `reason`. Parts of a not-covered kind (`background`, `slider`, …) are listed too |
 | `playsets` | below |
@@ -48,8 +48,7 @@ joined by `-`, because they become file names.
 | `save` | `file` (in the profile's `save games`), `sha256`, `description`, and `confirm`, a widget pattern the driver clicks when it shows while the save loads: Anbennar asks to confirm an achievements warning first (`DefaultConfirm/AgreeButton`, etch#55). Required for a release playset |
 | `mods` | load order, a later mod winning: `name` (the descriptor's), `workshopId`, `sha256`, `note` |
 | `disabledDlcs` | `dlc_load.json`'s `disabled_dlcs` while capturing; empty means every owned DLC |
-| `covers` | optional widget patterns of top-level windows the game shows over every view opened from the save, which no recipe can close: the Anbennar playset's save opens with three events, one taller than 1080 pixels (M10). Each view opened from the save reads them as roots too, and the comparison masks them as code-filled, so the widgets under them are compared only where nothing covers them |
-| `coverMargin` | optional pixels around each cover's rect masked with it (0 when left out): what its sprites draw past the rect Tongs reads from the `.gui`. An event window's frame reaches up to about 30 pixels past it; the Anbennar playset masks 32 |
+| `resolutions` | optional: the resolutions this playset is captured at (`2560x1440`); every corpus resolution when left out. Proper 2K UI Enhanced is made for screens of at least 2560×1440, so its playsets are captured there and above, and below 2560×1440 the corpus takes vanilla and Anbennar alone (M10) |
 | `windows` | ids of the corpus windows captured with this playset |
 | `note` | |
 
@@ -77,7 +76,7 @@ opens and one capture records, such as the main menu and the lobby of
 | `codeMoved` | optional widget patterns of what the game's code moves away from where its `.gui` puts it: a dialog the game opens beside the panel that asked for it, a section the game moves on a taller screen. The comparison draws each such widget and everything inside it where the game shows it, and compares it there (etch#44) |
 | `selectors` | optional values of the window profiles' selectors the view is captured with, by selector id (`"owner": "yes"`), where a profile has a choice the screen does not make; `resolution` selectors come from the capture's size. Each profiled root's profile is evaluated with them for the visibility gate (below, ADR 0006). An id a root's profile does not have is left out for that root |
 | `data` | optional: what of the playset's save the view shows, `province` by id and `country` by tag (the save's player when left out), for the report of the profiles' `save` texts against the capture's (below) |
-| `byPlayset` | optional, by playset id: what differs in that playset, its own `recipe`, `selectors` (replacing the view's values of those ids), `data` and `note`. The Anbennar playset's save has no ship in construction and opens with events over the middle of the screen, so its province views open another way (spec v2 section 11) |
+| `byPlayset` | optional, by playset id: what differs in that playset, its own `recipe`, `selectors` (replacing the view's values of those ids), `data` and `note`. The Anbennar playsets' save has no ship in construction, so their province views open another way (spec v2 section 11) |
 
 A **recipe** is the Tongs input that opens a view from a known start state:
 
@@ -107,9 +106,16 @@ centre (where the Goto box or an outliner entry puts the camera) lands on the
 same province at 1280×720 and at 3440×1440 (checked by hand in M10: the same
 provinces under the same points at both sizes). A `point` scales with the
 width instead, so at another aspect ratio it lands elsewhere. The Anbennar
-playset's province views use `map` points because three events cover the
-middle of the screen in its save, one taller than 1080 pixels, whose option no
-click can reach.
+playsets' province views use `map` points.
+
+The maintainer's Anbennar save opens with three events over the middle of the
+screen; below 1440 pixels the tallest one's option lies under the client area,
+where no click reaches it. The corpus therefore uses a copy of that save made
+in the lab's private copy (M10): loaded at 2560×1440, its events answered as a
+player would (`verne.100` and `lilac_wars.1` with their one option,
+`anb_settings.1` with Start game) and saved again through the Esc menu as
+`Verne1444_11_11_corpus.eu4`, pinned by its hash. The maintainer's file is not
+changed, no event covers a view, and nothing is masked for one.
 
 Each resolution is a fresh start of the game, with the size in the
 capturing profile's `pdx_settings.txt` (etch#18). After its first start in a
@@ -396,10 +402,10 @@ The exit code is 1 when a capture of a release playset at a confirmed
 resolution fails or cannot be compared.
 
 The release gate is the run with `--gpu`, the webview's renderer: with it
-both release playsets of v1 passed (etch#44). In M10, with the province views
-and the Anbennar playset gating, 233 of the 252 gating captures pass (vanilla
-and Proper 2K UI Enhanced 78 of 84 each, the Anbennar playset 77 of 84); what
-fails is listed in [docs/release-2.0.0.md](../docs/release-2.0.0.md).
+both release playsets of v1 passed (etch#44). In M10, with the province views,
+the Anbennar playsets gating and the matrix of 2560×1440 and above for Proper
+2K UI Enhanced, 208 of the 224 gating captures pass; what fails is listed in
+[docs/release-2.0.0.md](../docs/release-2.0.0.md).
 SwiftShader rounds the linear
 filtering of scaled sprites differently: with it a few scaled icons of the
 diplomacy view, the declare war dialog and the province view fall to 94–99 %

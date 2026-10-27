@@ -51,14 +51,16 @@ describe('parseResolution', () => {
     expect(resolutionSetting({ kind: 'default' })).toBe('default');
   });
 
-  it('lists the six corpus resolutions', () => {
+  it('lists the eight corpus resolutions', () => {
     expect(CORPUS_RESOLUTIONS.map(formatResolution)).toEqual([
       '1280×720',
       '1366×768',
       '1600×900',
       '1680×1050',
       '1920×1080',
+      '2560×1440',
       '3440×1440',
+      '3840×2160',
     ]);
   });
 });

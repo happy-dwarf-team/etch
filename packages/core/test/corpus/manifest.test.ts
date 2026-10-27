@@ -1,7 +1,11 @@
 /// <reference types="node" />
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { CORPUS_RESOLUTIONS, SUPPORTED_GAME_VERSION } from '../../src/index.ts';
+import {
+  CORPUS_RESOLUTIONS,
+  SUPPORTED_GAME_VERSION,
+  UNCHECKED_RESOLUTIONS,
+} from '../../src/index.ts';
 import {
   captureProblems,
   capturePath,
@@ -120,20 +124,30 @@ describe('the committed corpus', () => {
     expect(manifest.uiScale).toBe(1);
   });
 
-  it('lists the corpus resolutions, all confirmed by etch#18', async () => {
+  it('lists the corpus resolutions, all but the unchecked ones confirmed', async () => {
     const manifest = await committedManifest();
     expect(manifest.resolutions.map((r) => ({ width: r.width, height: r.height }))).toEqual(
       CORPUS_RESOLUTIONS,
     );
-    expect(manifest.resolutions.every((r) => r.confirmed)).toBe(true);
+    const unchecked = UNCHECKED_RESOLUTIONS.map((r) => `${String(r.width)}x${String(r.height)}`);
+    for (const r of manifest.resolutions) {
+      expect(r.confirmed, `${String(r.width)}x${String(r.height)}`).toBe(
+        !unchecked.includes(`${String(r.width)}x${String(r.height)}`),
+      );
+    }
   });
 
-  it('has the 11 vanilla corpus windows of etch#10 in the three release playsets', async () => {
+  it('has the 11 vanilla corpus windows of etch#10 in the four release playsets', async () => {
     const manifest = await committedManifest();
     expect(manifest.windows).toHaveLength(11);
     const release = manifest.playsets.filter((p) => p.gate === 'release');
     // The Anbennar playset gates 2.0.0 since M10 (spec v2 section 10).
-    expect(release.map((p) => p.id)).toEqual(['vanilla', 'proper-2k-ui-enhanced', 'anbennar']);
+    expect(release.map((p) => p.id)).toEqual([
+      'vanilla',
+      'proper-2k-ui-enhanced',
+      'anbennar',
+      'anbennar-alone',
+    ]);
     for (const playset of release) {
       // The event window waits for a recipe (etch#97) and gates nothing until then.
       expect(playset.windows).toEqual(
@@ -281,17 +295,20 @@ describe('parseCorpusManifest', () => {
     ]);
   });
 
-  it("checks a playset's covers", () => {
+  it("checks a playset's resolutions", () => {
     expect(
       problemsOf((m) => {
-        set(m, 'playsets.1.covers', ['EventWindow']);
+        set(m, 'playsets.0.resolutions', ['3440x1440']);
       }),
     ).toEqual([]);
     expect(
       problemsOf((m) => {
-        set(m, 'playsets.1.covers', ['a///b']);
+        set(m, 'playsets.0.resolutions', ['2560x1440', '3440x1440', '3440x1440']);
       }),
-    ).toEqual(['playsets[1].covers[0]: "a///b" has more than two slashes in a row.']);
+    ).toEqual([
+      'playsets[0].resolutions[0]: The manifest has no resolution "2560x1440".',
+      'playsets[0].resolutions: The resolution "3440x1440" occurs more than once.',
+    ]);
   });
 
   it('lets an unverified recipe leave its steps and roots empty', () => {
@@ -365,6 +382,15 @@ describe('parseCorpusManifest', () => {
 describe('the corpus helpers', () => {
   const manifest = parseCorpusManifest(sample()).manifest as CorpusManifest;
 
+  it("lists a playset's captures at its own resolutions only", () => {
+    const m = sample();
+    set(m, 'playsets.1.resolutions', ['3440x1440']);
+    const parsed = parseCorpusManifest(m).manifest as CorpusManifest;
+    expect(requiredCaptures(parsed).filter((k) => k.playset === 'big-mod')).toEqual([
+      { playset: 'big-mod', resolution: { width: 3440, height: 1440 }, view: 'court' },
+    ]);
+  });
+
   it('lists the captures a release needs, and all of them', () => {
     expect(requiredCaptures(manifest, { gating: true })).toEqual([
       { playset: 'vanilla', resolution: { width: 3440, height: 1440 }, view: 'main-menu' },
@@ -389,13 +415,6 @@ describe('the corpus helpers', () => {
     const own = viewInPlayset(view, { id: 'big-mod' });
     expect(own.recipe.steps).toEqual([{ key: 'f2' }]);
     expect(own.selectors).toEqual({ owner: 'no', tab: 'province' });
-    // The playset's covers join the roots and code-filled patterns of a view opened from the save.
-    const covered = viewInPlayset(view, { id: 'big-mod', covers: ['EventWindow'] });
-    expect(covered.roots).toEqual(['countrycourtview', 'EventWindow']);
-    expect(covered.codeFilled).toEqual(['EventWindow']);
-    const menu = findView(parsed, 'main-menu')?.view;
-    if (menu === undefined) throw new Error('no view');
-    expect(viewInPlayset(menu, { id: 'big-mod', covers: ['EventWindow'] })).toBe(menu);
   });
 
   it('names capture files by playset, resolution and view', () => {

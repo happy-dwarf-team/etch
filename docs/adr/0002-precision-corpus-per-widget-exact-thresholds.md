@@ -78,3 +78,14 @@ leaves unstable pixels out, like masked ones, and a widget is an unstable
 capture, not a pass, only when more than 5 % of its pixels changed between
 the shots. The maintainer agreed to this change in
 [etch#44](https://github.com/happy-dwarf-team/etch/issues/44#issuecomment-6388493594).
+
+## Update (27 October 2026, M10)
+
+The corpus matrix changed with the maintainer in M10. Proper 2K UI Enhanced is
+made for screens of at least 2560×1440 and does not look right below it, so the
+playsets with it (Proper 2K UI Enhanced alone, and Anbennar with the P2KE patch)
+gate at 2560×1440 and above; below 2560×1440 the corpus takes vanilla and
+Anbennar alone. 2560×1440 joins the corpus resolutions as a windowed client
+area, like the smaller sizes. 3840×2160 joins them unconfirmed: the lab's two
+monitors make a 6000×1440 desktop, where no window holds a 2160-pixel client
+area, so it gates nothing until a machine with a 4K screen captures it.

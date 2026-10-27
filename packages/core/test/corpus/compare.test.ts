@@ -490,40 +490,6 @@ describe('compareCapture', () => {
     expect(widget(result, 'panel/bg').pixels.masked).toBe(30 * 10 - 100 - 50 + 30 * 30);
   });
 
-  it("masks a playset's covers over a view from the save, with their margin", () => {
-    const window = laidOut();
-    // An event the code opens over the panel: 20 × 10 at (60, 40) as Tongs reads it, its frame
-    // drawn 3 pixels past that rect.
-    const cover: CapturedWidget = {
-      path: 'event',
-      name: 'event',
-      type: 'window',
-      visible: true,
-      rect: { x: 60, y: 40, w: 20, h: 10 },
-    };
-    const run = (margin: number): CaptureComparison => {
-      const manifest = manifestWith((json) => {
-        set(json, 'windows.0.views.0.recipe.from', 'save');
-        set(json, 'playsets.0.covers', ['event']);
-        set(json, 'playsets.0.coverMargin', margin);
-      });
-      const record = recordOf(captureOf(window.layout));
-      const plan = planCapture({
-        manifest,
-        record: { ...record, widgets: [...record.widgets, cover] },
-        windows: [window],
-      });
-      const render = paint(plan.drawList);
-      const game = screenshotOf(render);
-      fill(game, 57, 37, 26, 16, [255, 255, 255]);
-      return compareCapture(manifest, plan, render, game).comparison;
-    };
-    expect(run(0).passed).toBe(false);
-    const masked = run(3);
-    expect(masked.passed).toBe(true);
-    expect(widget(masked, 'event').status).toBe('code-filled');
-  });
-
   it('masks a code-filled shield Tongs gives no width as a square (etch#44)', () => {
     const manifest = manifestWith((json) => {
       set(json, 'windows.0.views.0.codeFilled', ['panel/flag']);

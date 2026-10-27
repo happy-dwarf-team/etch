@@ -5,6 +5,7 @@
 import * as vscode from 'vscode';
 import {
   CORPUS_RESOLUTIONS,
+  UNCHECKED_RESOLUTIONS,
   MAX_RESOLUTION_SIDE,
   MIN_RESOLUTION_SIDE,
   formatResolution,
@@ -40,7 +41,14 @@ export async function chooseResolution(preview: PreviewApi): Promise<string | un
     { label: 'Corpus resolutions', kind: vscode.QuickPickItemKind.Separator },
     ...CORPUS_RESOLUTIONS.map((screen) => {
       const value = resolutionSetting({ kind: 'size', screen });
-      return { label: formatResolution(screen), value };
+      const unchecked = UNCHECKED_RESOLUTIONS.some(
+        (r) => r.width === screen.width && r.height === screen.height,
+      );
+      return {
+        label: formatResolution(screen),
+        value,
+        ...(unchecked ? { description: 'not yet measured against the game' } : {}),
+      };
     }),
   ];
   for (const item of items)
