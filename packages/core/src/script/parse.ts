@@ -23,6 +23,7 @@ const LF = 10;
 const CR = 13;
 const BANG = 33; // !
 const QUOTE = 34; // "
+const BACKSLASH = 92; // \
 const HASH = 35; // #
 const LT = 60; // <
 const EQ = 61; // =
@@ -73,7 +74,17 @@ function diagnostic(
   return { code, message, start, end };
 }
 
-function tokenize(text: string, diagnostics: SyntaxDiagnostic[]): Tokens {
+/** How a text is read. */
+export interface ParseOptions {
+  /**
+   * Read the text as a save's (spec section 5): a quoted string may span lines and holds `\"`
+   * and `\\` escapes, which a scalar's `text` gives unescaped. Interface files have neither
+   * (etch#15).
+   */
+  readonly save?: boolean;
+}
+
+function tokenize(text: string, diagnostics: SyntaxDiagnostic[], save: boolean): Tokens {
   const n = text.length;
   // Vanilla interface files average about one token per 7 characters.
   const tokens = new Tokens(Math.max(16, n >> 3));
@@ -97,6 +108,22 @@ function tokenize(text: string, diagnostics: SyntaxDiagnostic[]): Tokens {
       const end = text.charCodeAt(i + 1) === EQ ? i + 2 : i + 1;
       tokens.push(OPERATOR, i, end);
       i = end;
+    } else if (c === QUOTE && save) {
+      // A save escapes `"` and `\` in a string, and a typed name may break the line (etch#154).
+      let j = i + 1;
+      for (; j < n; j++) {
+        const d = text.charCodeAt(j);
+        if (d === QUOTE) break;
+        if (d === BACKSLASH) j++;
+      }
+      if (j < n) {
+        tokens.push(STRING, i, j + 1);
+        i = j + 1;
+      } else {
+        diagnostics.push(diagnostic('unterminated-string', i, n, 'This string is never closed.'));
+        tokens.push(STRING, i, n);
+        i = n;
+      }
     } else if (c === QUOTE) {
       // No escapes: vanilla writes paths as "gfx\interface\x.dds" and "gfx\\interface\\x.dds",
       // and no interface file has \". No string spans lines, so one that does not close on its
@@ -154,9 +181,10 @@ interface Frame {
  * throws: a syntax error becomes a diagnostic, and the parse recovers as the
  * diagnostic's code describes.
  */
-export function parseScript(text: string): ParsedScript {
+export function parseScript(text: string, options: ParseOptions = {}): ParsedScript {
+  const save = options.save === true;
   const diagnostics: SyntaxDiagnostic[] = [];
-  const tokens = tokenize(text, diagnostics);
+  const tokens = tokenize(text, diagnostics, save);
   const { count, kinds, starts, ends } = tokens;
 
   const scalar = (t: number): ScalarNode => {
@@ -166,9 +194,10 @@ export function parseScript(text: string): ParsedScript {
       return { kind: 'scalar', text: text.slice(start, end), quoted: false, start, end };
     }
     const closed = end - start >= 2 && text.charCodeAt(end - 1) === QUOTE;
+    const inner = text.slice(start + 1, closed ? end - 1 : end);
     return {
       kind: 'scalar',
-      text: text.slice(start + 1, closed ? end - 1 : end),
+      text: save && inner.includes('\\') ? inner.replace(/\\(["\\])/g, '$1') : inner,
       quoted: true,
       start,
       end,
