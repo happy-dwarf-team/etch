@@ -78,6 +78,8 @@ export interface ReloadAnswer {
     | {
         readonly checked: number;
         readonly stale: readonly { readonly name: string; readonly visible: boolean }[];
+        /** The visible top-level windows after the job, with the game path of their file. */
+        readonly visible: readonly { readonly name: string; readonly file: string }[];
         readonly roots: { readonly before: number; readonly after: number };
       }
     | undefined;
@@ -244,6 +246,7 @@ export class HostPipe {
           ? {
               checked: Number(answer['checked']),
               stale: (answer['stale'] as { name: string; visible: boolean }[] | undefined) ?? [],
+              visible: (answer['visible'] as { name: string; file: string }[] | undefined) ?? [],
               roots,
             }
           : undefined,

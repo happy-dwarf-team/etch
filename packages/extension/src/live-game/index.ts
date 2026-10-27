@@ -15,6 +15,10 @@ export const STOP_LIVE_GAME = 'etch.stopLiveGame';
 export const REMOVE_PRIVATE_INSTALL = 'etch.removePrivateInstall';
 /** Opens the live game's saves folder (spec section 6). */
 export const OPEN_LIVE_GAME_SAVES = 'etch.openLiveGameSaves';
+/** Restarts the live game for the planned restart it needs: the status bar's and the notice's. */
+export const RESTART_LIVE_GAME = 'etch.restartLiveGame';
+/** How long a texture file must stay unchanged before it is reloaded: editors write in steps. */
+const TEXTURE_SETTLE_MS = 300;
 
 /**
  * Creates the live game's owner and registers the commands that stop it, open its saves and remove
@@ -42,6 +46,13 @@ export function registerLiveGame(
       showState(state);
       showStatus(status, state);
     }),
+    vscode.commands.registerCommand(RESTART_LIVE_GAME, () => game.restartNow()),
+    // Each saved file of the playset goes to the reload policy (spec section 6): text files as
+    // VS Code saves them, textures as an image editor writes them into the workspace.
+    vscode.workspace.onDidSaveTextDocument((document) => {
+      if (document.uri.scheme === 'file') void game.fileSaved(document.uri.fsPath);
+    }),
+    ...watchTextures(game),
     vscode.commands.registerCommand(OPEN_LIVE_GAME_SAVES, async () => {
       await mkdir(game.savesFolder, { recursive: true });
       await vscode.env.openExternal(vscode.Uri.file(game.savesFolder));
@@ -72,11 +83,45 @@ export function registerLiveGame(
   return game;
 }
 
-/** The status bar item: while the live game runs or starts, a click stops it. */
+/** Textures written into the workspace, each reloaded once it stays unchanged for a moment. */
+function watchTextures(game: LiveGame): vscode.Disposable[] {
+  const watcher = vscode.workspace.createFileSystemWatcher('**/*.{dds,tga,png,DDS,TGA,PNG}');
+  const waiting = new Map<string, NodeJS.Timeout>();
+  const changed = (uri: vscode.Uri): void => {
+    if (game.state.status !== 'ready' && game.state.status !== 'stale') return;
+    const key = uri.fsPath.toLowerCase();
+    clearTimeout(waiting.get(key));
+    waiting.set(
+      key,
+      setTimeout(() => {
+        waiting.delete(key);
+        void game.fileSaved(uri.fsPath);
+      }, TEXTURE_SETTLE_MS),
+    );
+  };
+  return [
+    watcher,
+    watcher.onDidChange(changed),
+    watcher.onDidCreate(changed),
+    {
+      dispose: () => {
+        waiting.forEach((timer) => {
+          clearTimeout(timer);
+        });
+      },
+    },
+  ];
+}
+
+/**
+ * The status bar item: while the live game runs or starts, a click stops it; while it needs a
+ * planned restart, a click restarts it.
+ */
 function showStatus(status: vscode.StatusBarItem, state: LiveGameState): void {
   const text: Partial<Record<LiveGameState['status'], string>> = {
     starting: '$(loading~spin) Live game starting',
     ready: '$(debug-stop) Live game',
+    stale: '$(warning) Live game: restart needed',
     restarting: '$(loading~spin) Live game restarting',
     stopping: '$(loading~spin) Live game stopping',
   };
@@ -89,8 +134,15 @@ function showStatus(status: vscode.StatusBarItem, state: LiveGameState): void {
   status.tooltip =
     state.status === 'stopping'
       ? 'Etch saves the live game and closes it.'
-      : 'Etch: Stop the Live Game: saves it and closes it, so that you can play your own game.';
-  status.command = state.status === 'stopping' ? undefined : STOP_LIVE_GAME;
+      : state.status === 'stale'
+        ? `Restart needed: ${state.reasons.join('; ')}. Click to restart it now; reloads wait until then.`
+        : 'Etch: Stop the Live Game: saves it and closes it, so that you can play your own game.';
+  status.command =
+    state.status === 'stopping'
+      ? undefined
+      : state.status === 'stale'
+        ? RESTART_LIVE_GAME
+        : STOP_LIVE_GAME;
   status.show();
 }
 

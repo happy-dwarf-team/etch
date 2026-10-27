@@ -186,6 +186,8 @@ export interface LiveGameMod {
   readonly root: string;
   /** The descriptor it was found by, copied into the private profile with `path` replaced. */
   readonly descriptorPath?: string | undefined;
+  /** Folders whose files from the layers before this mod are hidden: `replace_path`. */
+  readonly replacePaths?: readonly string[];
 }
 
 export interface PrepareOptions {

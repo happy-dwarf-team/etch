@@ -215,9 +215,17 @@ std::string ReloadAnswer(std::uint64_t id, const ReloadResult& result) {
             stale += s.Str("name", root.name).Bool("visible", root.visible).Finish();
         }
         stale += "]";
+        std::string visible = "[";
+        for (const Root& root : result.visible) {
+            if (visible.size() > 1) visible += ',';
+            json::Writer v;
+            visible += v.Str("name", root.name).Str("file", root.file).Finish();
+        }
+        visible += "]";
         json::Writer roots;
         w.Uint("checked", result.stale.checked)
             .Raw("stale", stale)
+            .Raw("visible", visible)
             .Raw("roots", roots.Uint("before", result.roots_before).Uint("after", result.roots_after).Finish());
     }
     return w.Fixed("queued_ms", result.queued_ms).Fixed("run_ms", result.run_ms).Finish();
@@ -303,6 +311,9 @@ void LiveJobs::RunReload(const ReloadRequest& request, ReloadResult& result) {
     if (result.tree) {
         result.stale = CompareRoots(*before, *after, request.check);
         result.roots_after = after->size();
+        for (const Root& root : *after) {
+            if (root.visible && !root.file.empty()) result.visible.push_back(root);
+        }
     }
 }
 

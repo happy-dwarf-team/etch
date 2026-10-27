@@ -1,8 +1,21 @@
-import { readFile, rm } from 'node:fs/promises';
+import { readFile, rm, stat } from 'node:fs/promises';
 import { join } from 'node:path';
-import { findProfileFolder, systemEnvironment } from '@etch/core/playset';
+import {
+  decodeGameText,
+  errorLogDiagnostics,
+  parseScript,
+  readGuiFile,
+  type InterfaceIndex,
+  type ModelDiagnostic,
+} from '@etch/core';
+import {
+  GameFiles,
+  PlaysetInterface,
+  findProfileFolder,
+  systemEnvironment,
+} from '@etch/core/playset';
 import * as vscode from 'vscode';
-import { ErrorLogTail } from './error-log.ts';
+import { ErrorLogTail, collapseErrorLog, textureDrawnMissing } from './error-log.ts';
 import {
   copySize,
   gameHostLayout,
@@ -28,6 +41,15 @@ import {
   readLock,
   type LockOptions,
 } from './process.ts';
+import { PipeError, type ReloadAnswer, type ReloadRequest } from './pipe.ts';
+import {
+  HUD_FILES,
+  HUD_LIMIT,
+  PANEL_TESTED,
+  planReload,
+  visibleReloads,
+  type ReloadPlan,
+} from './policy.ts';
 import { listSaves, liveSettings, newestSave, savesFolder, type SaveFile } from './saves.ts';
 import {
   CRASH_LIMIT,
@@ -140,7 +162,12 @@ export type LiveGameState =
   | { readonly status: 'stopped' }
   | { readonly status: 'starting' }
   | { readonly status: 'ready'; readonly pid: number; readonly readyMs: number }
-  /** It restarts after a crash (spec section 6). */
+  /**
+   * It runs, but needs a planned restart, for these reasons; reloads wait until the player restarts
+   * it (spec section 6).
+   */
+  | { readonly status: 'stale'; readonly pid: number; readonly reasons: readonly string[] }
+  /** It restarts after a crash or for a planned restart (spec section 6). */
   | { readonly status: 'restarting'; readonly reason: string }
   | { readonly status: 'stopping' }
   /** Another VS Code window runs the machine's live game. */
@@ -161,6 +188,12 @@ export interface LiveGameRequest {
 const START = 'start';
 /** The save the live game makes before it stops (spec section 6). */
 export const STOP_SAVE = 'etch-stop';
+/** The save a planned restart makes and continues (spec section 6). */
+export const RESTART_SAVE = 'etch-restart';
+/** How long after a reload's answer `error.log` is read: the game writes the lines of a few frames. */
+const ERROR_LOG_SETTLE_MS = 250;
+/** Diagnostic source of the live game's Problems. */
+const SOURCE = 'Etch live game';
 /** The memento key that records the first start's confirmation. */
 const CONFIRMED_KEY = 'etch.liveGame.confirmed';
 /** How long a save before a stop may take. */
@@ -197,6 +230,21 @@ export class LiveGame implements vscode.Disposable {
   /** Ends the hang watch of the running process. */
   private watching: AbortController | undefined;
   private owner: Promise<ProcessIdentity> | undefined;
+  /** Reloads run one after another, in the order the files were saved. */
+  private reloads: Promise<unknown> = Promise.resolve();
+  /** The running process's `error.log`, read from where the last reload left it. */
+  private errorLog: ErrorLogTail | undefined;
+  /** Rebuilds since the process started: HUD rebuilds leak (spec section 6). */
+  private hudRebuilds = 0;
+  private panelRebuilds = 0;
+  /** When the running process got ready, to tell textures created after it (H9). */
+  private readyAt = 0;
+  /** The playset's interface index, built on the first texture saved, for its spellings. */
+  private index: Promise<InterfaceIndex> | undefined;
+  /** The live game's Problems: `error.log` lines and the game's answers, on the saved files. */
+  readonly diagnostics = vscode.languages.createDiagnosticCollection('etch-live-game');
+  /** Said once per game session: reloads do not run in ironman or multiplayer. */
+  private notAvailableSaid = 0;
 
   readonly onDidChangeState = this.emitter.event;
 
@@ -316,6 +364,258 @@ export class LiveGame implements vscode.Disposable {
   dispose(): void {
     void this.stop();
     this.emitter.dispose();
+    this.diagnostics.dispose();
+  }
+
+  // ---- Reloads ---------------------------------------------------------------------------------
+
+  /**
+   * A file of the playset was saved: reloads it into the running game, or asks for a planned
+   * restart, or says why nothing happens (spec section 6). Reloads run one at a time; while a
+   * restart is needed they wait for it.
+   */
+  fileSaved(file: string): Promise<void> {
+    const next = this.reloads.then(() => this.reload(file));
+    this.reloads = next.catch(() => undefined);
+    return next;
+  }
+
+  /** Restarts the live game now for the planned restart it needs (spec section 6). */
+  async restartNow(): Promise<void> {
+    const state = this.current;
+    if (state.status !== 'stale' && state.status !== 'ready') return;
+    const reasons = state.status === 'stale' ? state.reasons : ['asked for'];
+    const running = this.process;
+    await vscode.window.withProgress(
+      { location: vscode.ProgressLocation.Notification, title: 'Restarting the live game' },
+      async (progress) => {
+        if (running !== undefined) {
+          progress.report({ message: 'saving' });
+          await this.saveFor(running, RESTART_SAVE, 'the planned restart');
+        }
+        progress.report({ message: 'starting' });
+        this.restarts.request(`planned restart: ${reasons.join('; ')}`);
+        await this.restarts.idle();
+      },
+    );
+  }
+
+  private async reload(file: string): Promise<void> {
+    const running = this.process;
+    const request = this.wanted;
+    if (running === undefined || request === undefined) return;
+    const files = playsetFiles(request);
+    const plan = await planReload({
+      file,
+      files,
+      index: () => (this.index ??= PlaysetInterface.load(files).then((p) => p.index)),
+      drawnMissing: async (path) => {
+        // Only a texture created after the start can have been drawn missing.
+        const created = await stat(file).then(
+          (s) => s.birthtimeMs,
+          () => 0,
+        );
+        return created > this.readyAt && textureDrawnMissing(this.errorLogPath, path);
+      },
+    });
+    const uri = vscode.Uri.file(file);
+    switch (plan.kind) {
+      case 'none':
+        if (plan.why === 'overridden') {
+          this.output.info(`Not reloaded: ${plan.path ?? file}: ${plan.reason}.`);
+          this.diagnostics.set(uri, [
+            problem(
+              vscode.DiagnosticSeverity.Warning,
+              'game-original-differs',
+              `Saving this file changes nothing in the live game: ${plan.reason}.`,
+            ),
+          ]);
+        }
+        return;
+      case 'restart':
+        this.restartNeeded(`${plan.path}: ${plan.reason}`);
+        return;
+      case 'reload':
+        break;
+    }
+    if (this.current.status === 'stale') {
+      this.output.info(`${plan.path} waits for the planned restart.`);
+      return;
+    }
+    if (this.current.status !== 'ready') return;
+    const answer = await this.run(running, plan.request, plan.path);
+    if (answer === undefined) return;
+    let last = answer;
+    if (plan.thenVisible && answer.check !== undefined) {
+      const visible = visibleReloads(answer.check.visible.map((w) => w.file));
+      if (visible !== undefined) {
+        const more = await this.run(running, visible, plan.path);
+        if (more === undefined) return;
+        last = more;
+        for (const line of visible.lines) {
+          this.count(HUD_FILES.has(line.slice('reload '.length).toLowerCase()) ? 'hud' : 'panel');
+        }
+      }
+    }
+    this.count(plan.rebuild);
+    await this.report(uri, plan, [answer, ...(last === answer ? [] : [last])]);
+    const stale = last.check?.stale.filter((w) => w.visible) ?? [];
+    if (stale.length > 0) {
+      this.restartNeeded(
+        `${stale.map((w) => w.name).join(', ')} went stale on screen after ${plan.path} was reloaded (H3)`,
+      );
+    } else if (this.hudRebuilds >= HUD_LIMIT) {
+      this.restartNeeded(
+        `${String(this.hudRebuilds)} HUD rebuilds, the tested range of the HUD's leaks`,
+      );
+    }
+    const closed = answer.closed;
+    if (closed.length > 0) {
+      void vscode.window.showInformationMessage(
+        `The live game closed ${closed.join(', ')} to reload ${plan.path}: open it again to see the change.`,
+      );
+    }
+  }
+
+  /** Runs one reload job; `undefined` when it did not run (said in the log or to the player). */
+  private async run(
+    running: LiveGameProcess,
+    request: ReloadRequest,
+    path: string,
+  ): Promise<ReloadAnswer | undefined> {
+    // Lines written before the job are not the job's.
+    await this.errorLog?.read();
+    const started = performance.now();
+    try {
+      const answer = await running.reload(request);
+      this.output.info(
+        `Reloaded ${path} in ${(performance.now() - started).toFixed(0)} ms ` +
+          `(main thread ${answer.runMs.toFixed(0)} ms, waited ${answer.queuedMs.toFixed(0)} ms): ` +
+          answer.lines.map((l) => `${l.line} → ${l.success ? 'ok' : 'refused'}`).join(', ') +
+          (answer.check === undefined
+            ? ''
+            : `; ${String(answer.check.checked)} windows checked, ` +
+              `${String(answer.check.stale.length)} stale, ` +
+              `${String(answer.check.roots.after - answer.check.roots.before)} more top-level windows`),
+      );
+      return answer;
+    } catch (error) {
+      if (error instanceof PipeError && error.code === 'not_available') {
+        const session = (await running.ping().catch(() => undefined))?.gameSession?.number ?? 0;
+        if (this.notAvailableSaid !== session) {
+          this.notAvailableSaid = session;
+          void vscode.window.showWarningMessage(
+            `The live game did not reload ${path}: ${error.message}.`,
+          );
+        }
+        return undefined;
+      }
+      if (
+        error instanceof PipeError &&
+        (error.code === 'console_fault' || error.code === 'console_broken')
+      ) {
+        if (this.serving(running)) {
+          this.release();
+          await running.stop();
+          await this.crashed(`the game's console faulted while it reloaded ${path}`);
+        }
+        return undefined;
+      }
+      this.output.warn(`${path} was not reloaded: ${String(error)}`);
+      return undefined;
+    }
+  }
+
+  /** Counts a rebuild of the HUD or of a panel. */
+  private count(rebuild: 'hud' | 'panel' | undefined): void {
+    if (rebuild === 'hud') this.hudRebuilds++;
+    if (rebuild === 'panel') {
+      this.panelRebuilds++;
+      if (this.panelRebuilds === PANEL_TESTED + 1) {
+        this.output.info(
+          `${String(this.panelRebuilds)} panel rebuilds: past the tested range of their leaks.`,
+        );
+      }
+    }
+  }
+
+  /**
+   * The saved file's Problems from the live game: the console's refusals and the new `error.log`
+   * lines, repeats collapsed and the game's own binding lines left out (spec section 6).
+   */
+  private async report(
+    uri: vscode.Uri,
+    plan: ReloadPlan & { kind: 'reload' },
+    answers: readonly ReloadAnswer[],
+  ): Promise<void> {
+    await new Promise((resolve) => setTimeout(resolve, ERROR_LOG_SETTLE_MS));
+    const lines = collapseErrorLog((await this.errorLog?.read()) ?? []).map((l) =>
+      l.count > 1 ? `${l.line} (×${String(l.count)})` : l.line,
+    );
+    const problems: vscode.Diagnostic[] = [];
+    for (const answer of answers) {
+      for (const line of answer.lines) {
+        // "Reload failed" for a texture no window holds is not an error (spec section 6).
+        if (line.success || plan.texture) continue;
+        problems.push(
+          problem(
+            vscode.DiagnosticSeverity.Error,
+            'game-console-answer',
+            `The live game refused \`${line.line}\`: ${line.text.trim() || 'no answer'}`,
+          ),
+        );
+      }
+    }
+    if (lines.length > 0) {
+      const text = await readFile(uri.fsPath).then(
+        (bytes) => decodeGameText(bytes, 'interface').text,
+        () => undefined,
+      );
+      const window =
+        text !== undefined && plan.path.toLowerCase().endsWith('.gui')
+          ? readGuiFile(parseScript(text)).definitions[0]
+          : undefined;
+      if (text !== undefined && window !== undefined) {
+        const document = await vscode.workspace.openTextDocument(uri).then(
+          (d) => d,
+          () => undefined,
+        );
+        for (const d of errorLogDiagnostics({
+          text,
+          path: plan.path,
+          window,
+          errorLog: lines,
+          offline: [],
+        })) {
+          problems.push(fromModel(d, document));
+        }
+      } else {
+        for (const line of lines) {
+          problems.push(
+            problem(vscode.DiagnosticSeverity.Warning, 'game-error-log', `error.log: ${line}`),
+          );
+        }
+      }
+    }
+    this.diagnostics.set(uri, problems);
+  }
+
+  /** Asks for a planned restart with its reason; reloads wait until the player restarts (spec section 6). */
+  private restartNeeded(reason: string): void {
+    const state = this.current;
+    if (state.status !== 'ready' && state.status !== 'stale') return;
+    const reasons = state.status === 'stale' ? state.reasons : [];
+    if (reasons.includes(reason)) return;
+    this.output.warn(`Restart needed: ${reason}.`);
+    this.set({ status: 'stale', pid: state.pid, reasons: [...reasons, reason] });
+    const now = 'Restart now';
+    void vscode.window
+      .showWarningMessage(`Restart needed: ${reason}.`, now, 'Later')
+      .then((answer) => (answer === now ? this.restartNow() : undefined));
+  }
+
+  private get errorLogPath(): string {
+    return errorLogPath(this.install.layout.profile);
   }
 
   // ---- Starting --------------------------------------------------------------------------------
@@ -506,7 +806,12 @@ export class LiveGame implements vscode.Disposable {
   /** Makes a ready process the live game and watches it. */
   private async serve(started: LiveGameProcess): Promise<void> {
     this.process = started;
-    const startLines = await new ErrorLogTail(errorLogPath(this.install.layout.profile)).skip();
+    this.hudRebuilds = 0;
+    this.panelRebuilds = 0;
+    this.readyAt = Date.now();
+    this.index = undefined;
+    this.errorLog = new ErrorLogTail(this.errorLogPath);
+    const startLines = await this.errorLog.skip();
     this.output.info(`The live game's error.log had ${String(startLines)} lines at ready.`);
     this.watch(started);
     this.set({ status: 'ready', pid: started.identity.pid, readyMs: started.times.ready });
@@ -576,7 +881,10 @@ export class LiveGame implements vscode.Disposable {
 
   /** Whether `process` is the ready live game, with no restart asked for. */
   private serving(process: LiveGameProcess): boolean {
-    return this.process === process && this.current.status === 'ready';
+    return (
+      this.process === process &&
+      (this.current.status === 'ready' || this.current.status === 'stale')
+    );
   }
 
   /**
@@ -612,17 +920,43 @@ export class LiveGame implements vscode.Disposable {
    * Nothing to save in the main menu; the console refuses ironman and multiplayer games.
    */
   private async saveBeforeStop(running: LiveGameProcess): Promise<void> {
+    await this.saveFor(running, STOP_SAVE, 'the stop');
+  }
+
+  /**
+   * Saves a loaded game as `<name>.eu4` through the plugin and waits until the file is written, so
+   * that the next start can continue it. Nothing to save in the main menu; the console refuses
+   * ironman and multiplayer games.
+   */
+  private async saveFor(running: LiveGameProcess, name: string, what: string): Promise<void> {
     try {
       const ping = await running.ping();
       const session = ping.gameSession;
       if (session === undefined || session.ironman || session.multiplayer) return;
-      const saved = await running.save(STOP_SAVE, STOP_SAVE_MS);
+      const path = join(this.savesFolder, `${name}.eu4`);
+      const before = await stat(path).then(
+        (s) => s.mtimeMs,
+        () => 0,
+      );
+      const started = performance.now();
+      const saved = await running.save(name, STOP_SAVE_MS);
+      // The game may write the file after the console's answer.
+      while (
+        (await stat(path).then(
+          (s) => s.mtimeMs,
+          () => 0,
+        )) <= before
+      ) {
+        if (performance.now() - started > STOP_SAVE_MS)
+          throw new Error(`${name}.eu4 was not written`);
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
       this.output.info(
-        `Saved the live game as ${STOP_SAVE}.eu4 before the stop in ${saved.ms.toFixed(0)} ms` +
+        `Saved the live game as ${name}.eu4 for ${what} in ${(performance.now() - started).toFixed(0)} ms` +
           `${saved.success ? '' : `; the game answered: ${saved.text}`}.`,
       );
     } catch (error) {
-      this.output.warn(`The live game was not saved before the stop: ${String(error)}`);
+      this.output.warn(`The live game was not saved for ${what}: ${String(error)}`);
     }
   }
 
@@ -652,6 +986,51 @@ export class LiveGame implements vscode.Disposable {
     this.current = state;
     this.emitter.fire(state);
   }
+}
+
+/** The playset's files as the live game reads them: the game folder, then the mods in load order. */
+function playsetFiles(request: LiveGameRequest): GameFiles {
+  return new GameFiles([
+    { name: 'game', root: request.gameFolder, replacePaths: [] },
+    ...request.mods.map((mod) => ({
+      name: mod.name,
+      root: mod.root,
+      replacePaths: mod.replacePaths ?? [],
+    })),
+  ]);
+}
+
+function problem(
+  severity: vscode.DiagnosticSeverity,
+  code: string,
+  message: string,
+  range = new vscode.Range(0, 0, 0, 0),
+): vscode.Diagnostic {
+  const d = new vscode.Diagnostic(range, message, severity);
+  d.source = SOURCE;
+  d.code = code;
+  return d;
+}
+
+/** A diagnostic of the extension's model, by offsets, on the saved document's lines. */
+function fromModel(
+  d: ModelDiagnostic,
+  document: vscode.TextDocument | undefined,
+): vscode.Diagnostic {
+  const range =
+    document === undefined
+      ? new vscode.Range(0, 0, 0, 0)
+      : new vscode.Range(document.positionAt(d.start), document.positionAt(d.end));
+  return problem(
+    d.severity === 'error'
+      ? vscode.DiagnosticSeverity.Error
+      : d.severity === 'warning'
+        ? vscode.DiagnosticSeverity.Warning
+        : vscode.DiagnosticSeverity.Information,
+    d.code,
+    d.message,
+    range,
+  );
 }
 
 /** How long ago a time was, for the quick pick. */

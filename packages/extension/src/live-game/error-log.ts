@@ -61,3 +61,70 @@ export class ErrorLogTail {
     }
   }
 }
+
+/**
+ * Lines the game writes on every reload of the vanilla province view, also of the unchanged file:
+ * its rebuild binds widgets the file does not have (H1). They are not the user's.
+ */
+const GAME_BINDING_LINES = [
+  /Missing Button 'close_button' in window 'provinceview'/i,
+  /Missing Icon 'remove_parliament'/i,
+];
+
+/** A line of `error.log` and how often it came, in the order of its first coming. */
+export interface CollapsedLine {
+  readonly line: string;
+  readonly count: number;
+}
+
+/**
+ * New `error.log` lines as Problems take them (spec section 6): the game's own binding lines left
+ * out, and repeats collapsed into one with a count (a texture drawn missing writes about 220 lines
+ * a second, H9). Lines compare without their time stamp.
+ */
+export function collapseErrorLog(lines: readonly string[]): CollapsedLine[] {
+  const counts = new Map<string, { line: string; count: number }>();
+  for (const line of lines) {
+    if (GAME_BINDING_LINES.some((pattern) => pattern.test(line))) continue;
+    const key = line.replace(/^\[\d{1,2}:\d{2}:\d{2}\]\s*/, '');
+    const seen = counts.get(key);
+    if (seen === undefined) counts.set(key, { line, count: 1 });
+    else seen.count++;
+  }
+  return [...counts.values()];
+}
+
+/**
+ * Whether `error.log` says the game drew a texture while it was missing (H9): an `Error
+ * initialising texture` line, or another texture line, naming its file. Read from the end, up to
+ * `maxBytes`.
+ */
+export async function textureDrawnMissing(
+  path: string,
+  texture: string,
+  maxBytes = 4 << 20,
+): Promise<boolean> {
+  let handle;
+  try {
+    handle = await open(path, 'r');
+  } catch {
+    return false;
+  }
+  try {
+    const { size } = await handle.stat();
+    const length = Math.min(size, maxBytes);
+    const bytes = Buffer.alloc(length);
+    await handle.read(bytes, 0, length, size - length);
+    const name = texture.replace(/\\/g, '/').split('/').pop()?.toLowerCase() ?? '';
+    const stem = name.replace(/\.(dds|tga|png)$/, '');
+    if (stem === '') return false;
+    return bytes
+      .toString('latin1')
+      .split(/\r?\n/)
+      .some(
+        (line) => /texture/i.test(line) && line.replace(/\\/g, '/').toLowerCase().includes(stem),
+      );
+  } finally {
+    await handle.close();
+  }
+}

@@ -153,7 +153,7 @@ it never trusts a liveness read of the definitions, whose memory the game
 reuses.
 
 ```json
-{"id":3,"ok":true,"lines":[{"line":"reload provinceview.gui","success":true,"text":"...","ms":58.9}],"closed":[],"hidden_again":["provinceview"],"tree":true,"checked":2835,"stale":[{"name":"culture_item","visible":false}],"roots":{"before":3158,"after":3159},"queued_ms":12.4,"run_ms":71.2}
+{"id":3,"ok":true,"lines":[{"line":"reload provinceview.gui","success":true,"text":"...","ms":58.9}],"closed":[],"hidden_again":["provinceview"],"tree":true,"checked":2835,"stale":[{"name":"culture_item","visible":false}],"visible":[{"name":"provinceview","file":"interface/provinceview.gui"}],"roots":{"before":3158,"after":3159},"queued_ms":12.4,"run_ms":71.2}
 ```
 
 | Member              | Meaning                                                                           |
@@ -164,6 +164,7 @@ reuses.
 | `tree`              | the windows were read; without `tongs.ui` it is false and the next three are left out |
 | `checked`           | top-level windows built from the `check` files before the lines                   |
 | `stale`             | those not rebuilt, with their name and whether they are visible now               |
+| `visible`           | the visible top-level windows after the job, with `name` and `file` (the game path of their definition's file): which listened files a localisation change should reload |
 | `roots`             | the number of top-level windows before and after: what rebuilds leak              |
 | `queued_ms`, `run_ms` | from the request to the main thread, and on it                                  |
 
