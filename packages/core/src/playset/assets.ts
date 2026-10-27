@@ -6,6 +6,7 @@ import {
   type AssetProblem,
   type LayoutAssets,
   type LayoutInput,
+  type LayoutView,
   type TextureSize,
   type WindowLayout,
 } from '../layout/index.ts';
@@ -76,7 +77,11 @@ export async function layOutPreview(
   assets: PlaysetAssets,
   file: GuiFile,
   window: Widget,
-  options: { readonly screen: Screen; readonly localise?: (text: string) => string },
+  options: {
+    readonly screen: Screen;
+    readonly localise?: (text: string) => string;
+    readonly view?: LayoutView;
+  },
 ): Promise<WindowLayout> {
   const input: LayoutInput = {
     file,
