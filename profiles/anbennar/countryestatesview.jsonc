@@ -1,0 +1,29 @@
+// The countryestatesview window in the Anbennar playset (Anbennar, Proper 2K UI Enhanced, P2KE Patch -
+// Anbennar), over the vanilla profile: rules replaced or removed (null) where the playset
+// differs. Drafted from the playset's corpus captures (ADR 0006); Anbennar's descriptor gives
+// version "1" for every release, so checkedWith says little.
+{
+  "formatVersion": 1,
+  "window": "countryestatesview",
+  "checkedWith": "1",
+  "mod": {
+    "remoteFileId": "1385440355",
+    "name": "Anbennar: A Fantasy Total Conversion",
+  },
+  "rules": {
+    "hidden": {
+      "note": "Hidden in the corpus capture of \"estates\" in the Anbennar playset (Verne, 11 November 1444): the game decides these from its data or a click; show one by hand.",
+      "hide": [
+        "countryestatesview/agenda_icon",
+        "countryestatesview/agenda_state",
+        "countryestatesview/crown_land_modifier_desc_2",
+        "countryestatesview/crown_land_modifier_desc_3",
+        "countryestatesview/crown_land_modifier_desc_4",
+        "countryestatesview/crown_land_modifier_icon_1",
+        "countryestatesview/crown_land_modifier_icon_2",
+        "countryestatesview/crown_land_modifier_icon_3",
+        "countryestatesview/crown_land_modifier_icon_4",
+      ],
+    },
+  },
+}

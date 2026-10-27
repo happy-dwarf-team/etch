@@ -115,6 +115,7 @@
             "province.ownedByPlayer",
             "province.owned",
             "province.occupied",
+            "province.constructing",
             "province.hasGreatProjects",
             "owner.buildsNativeBuildings"
           ]

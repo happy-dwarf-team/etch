@@ -1,0 +1,14 @@
+// The countryestatesview window of the base game (spec v2 section 11, docs/window-profiles.md).
+// Its rules hide what the precision corpus captures show hidden; they were drafted from the
+// captures and are checked by them (ADR 0006).
+{
+  "formatVersion": 1,
+  "window": "countryestatesview",
+  "checkedWith": "1.37.5",
+  "rules": {
+    "hidden": {
+      "note": "Hidden in the corpus capture of \"estates\" in vanilla (Russia, 17 March 1719): the game decides these from its data or a click; show one by hand.",
+      "hide": ["countryestatesview/agenda_icon", "countryestatesview/agenda_state"],
+    },
+  },
+}

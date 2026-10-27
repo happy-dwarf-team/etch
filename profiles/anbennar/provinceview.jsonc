@@ -1,0 +1,96 @@
+// The province view in the Anbennar playset (Anbennar, Proper 2K UI Enhanced, P2KE Patch -
+// Anbennar), over the vanilla profile (spec v2 section 11). Anbennar adds its views through
+// scripted GUI: the province button bar and the aPUI windows, whose potential triggers Etch shows
+// and never evaluates; they are set by hand (etch#155, ADR 0006). Anbennar's descriptor gives
+// version "1" for every release, so checkedWith says little.
+{
+  "formatVersion": 1,
+  "window": "provinceview",
+  "checkedWith": "1",
+  "mod": {
+    "remoteFileId": "1385440355",
+    "name": "Anbennar: A Fantasy Total Conversion",
+  },
+  "selectors": {
+    "buttonBar": {
+      "kind": "scripted",
+      "label": "Province button bar",
+      "values": { "closed": "Closed", "open": "Open" },
+      "note": "custom_gui/provinceview.txt: the owner is FROM or its subject, and FROM has the country flag province_button_UI_opened (set by province_button_button).",
+    },
+    "apui": {
+      "kind": "scripted",
+      "label": "aPUI window",
+      "values": {
+        "none": "None",
+        "transmutative_path": "Transmutative path",
+        "gor_vazumbrog_vault": "Gor Vazumbrog vault",
+        "zena_medakas_majestic_menagerie": "Zena Medaka's menagerie",
+        "mangrove_bio_infra": "Mangrove bio-infrastructure",
+        "kobold_citadel": "Kobold citadel",
+        "gene_pillar_interaction": "Gene pillars",
+      },
+      "note": "has_open_aPUI_in_province = { name = <window> }: FROM has the flag aPUI_<window>_flag, owns the province and it is eligible. Opening one clears the others' flags.",
+    },
+  },
+  "groups": {
+    "apui": {
+      "label": "aPUI window",
+      "selector": "apui",
+      "none": true,
+      "members": {
+        "transmutative_path": "provinceview/buildings_window/aPUI_parent_container/aPUI_transmutative_path_window",
+        "gor_vazumbrog_vault": "provinceview/buildings_window/aPUI_parent_container/aPUI_gor_vazumbrog_vault_window",
+        "zena_medakas_majestic_menagerie": "provinceview/buildings_window/aPUI_parent_container/aPUI_zena_medakas_majestic_menagerie_window",
+        "mangrove_bio_infra": "provinceview/buildings_window/aPUI_parent_container/aPUI_mangrove_bio_infra_window",
+        "kobold_citadel": "provinceview/buildings_window/aPUI_parent_container/aPUI_kobold_citadel_window",
+        "gene_pillar_interaction": "provinceview/buildings_window/aPUI_parent_container/aPUI_gene_pillar_interaction_window",
+      },
+    },
+  },
+  "rules": {
+    "button-bar-closed": {
+      "when": { "buttonBar": "closed" },
+      "hide": ["provinceview/province_window/province_button_window_closed"],
+    },
+    "apui-template": {
+      "note": "Shown only in Anbennar's debug mode.",
+      "hide": ["provinceview/buildings_window/aPUI_parent_container/aPUI_template_window"],
+    },
+  },
+  "views": {
+    "button-bar": {
+      "label": "Province button bar",
+      "set": {
+        "owner": "yes",
+        "tab": "province",
+        "side": "buildings",
+        "subPanel": "none",
+        "buttonBar": "open",
+        "apui": "none",
+      },
+    },
+    "kobold-citadel": {
+      "label": "Kobold citadel",
+      "set": {
+        "owner": "yes",
+        "tab": "province",
+        "side": "buildings",
+        "subPanel": "none",
+        "buttonBar": "open",
+        "apui": "kobold_citadel",
+      },
+    },
+    "gene-pillars": {
+      "label": "Gene pillars",
+      "set": {
+        "owner": "yes",
+        "tab": "province",
+        "side": "buildings",
+        "subPanel": "none",
+        "buttonBar": "open",
+        "apui": "gene_pillar_interaction",
+      },
+    },
+  },
+}

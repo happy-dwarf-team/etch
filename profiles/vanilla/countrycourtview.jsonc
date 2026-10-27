@@ -1,0 +1,30 @@
+// The countrycourtview window of the base game (spec v2 section 11, docs/window-profiles.md).
+// Its rules hide what the precision corpus captures show hidden; they were drafted from the
+// captures and are checked by them (ADR 0006).
+{
+  "formatVersion": 1,
+  "window": "countrycourtview",
+  "checkedWith": "1.37.5",
+  "rules": {
+    "hidden": {
+      "note": "Hidden in the corpus capture of \"court\" in vanilla (Russia, 17 March 1719): the game decides these from its data or a click; show one by hand.",
+      "hide": [
+        "countrycourtview/assign_heir_button",
+        "countrycourtview/court_select",
+        "countrycourtview/election_info",
+        "countrycourtview/monarch_heir_claim",
+        "countrycourtview/monarch_heir_crown_icon",
+        "countrycourtview/monarch_queen_adm_icon",
+        "countrycourtview/monarch_queen_adm_value",
+        "countrycourtview/monarch_queen_age",
+        "countrycourtview/monarch_queen_crown_icon",
+        "countrycourtview/monarch_queen_dip_icon",
+        "countrycourtview/monarch_queen_dip_value",
+        "countrycourtview/monarch_queen_mil_icon",
+        "countrycourtview/monarch_queen_mil_value",
+        "countrycourtview/queen_gender",
+        "countrycourtview/support_heir_button",
+      ],
+    },
+  },
+}

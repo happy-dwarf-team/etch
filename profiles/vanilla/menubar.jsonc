@@ -1,0 +1,46 @@
+// The menubar window of the base game (spec v2 section 11, docs/window-profiles.md).
+// Its rules hide what the precision corpus captures show hidden; they were drafted from the
+// captures and are checked by them (ADR 0006).
+{
+  "formatVersion": 1,
+  "window": "menubar",
+  "checkedWith": "1.37.5",
+  "rules": {
+    "hidden": {
+      "note": "Hidden in the corpus capture of \"hud\" and \"macro-builder\" and \"province\" in vanilla (Russia, 17 March 1719): the game decides these from its data or a click; show one by hand.",
+      "hide": [
+        "menubar/chat_window",
+        "menubar/messagelog_window",
+        "menubar/observer_bg",
+        "menubar/observer_select_country",
+        "menubar/observer_unselect",
+      ],
+    },
+    "hidden-floating_buttons": {
+      "note": "Hidden in the corpus capture of \"hud\" and \"macro-builder\" and \"province\" in vanilla (Russia, 17 March 1719): the game decides these from its data or a click; show one by hand.",
+      "hide": [
+        "menubar/floating_buttons/f_button_4",
+        "menubar/floating_buttons/f_button_5",
+        "menubar/floating_buttons/f_button_6",
+        "menubar/floating_buttons/f_button_7",
+        "menubar/floating_buttons/f_button_8",
+        "menubar/floating_buttons/floating_number_4",
+        "menubar/floating_buttons/floating_number_5",
+        "menubar/floating_buttons/floating_number_6",
+        "menubar/floating_buttons/floating_number_7",
+        "menubar/floating_buttons/floating_number_8",
+        "menubar/floating_buttons/hre_strip_glow",
+        "menubar/floating_buttons/menubar_floating_bg_4",
+        "menubar/floating_buttons/menubar_floating_bg_5",
+        "menubar/floating_buttons/menubar_floating_bg_6",
+        "menubar/floating_buttons/menubar_floating_bg_7",
+        "menubar/floating_buttons/menubar_floating_bg_8",
+        "menubar/floating_buttons/revolution_flag",
+      ],
+    },
+    "hidden-message_window_container": {
+      "note": "Hidden in the corpus capture of \"hud\" and \"macro-builder\" and \"province\" in vanilla (Russia, 17 March 1719): the game decides these from its data or a click; show one by hand.",
+      "hide": ["menubar/message_window_container/message_window"],
+    },
+  },
+}

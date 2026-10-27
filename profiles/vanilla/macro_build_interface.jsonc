@@ -1,0 +1,34 @@
+// The macro_build_interface window of the base game (spec v2 section 11, docs/window-profiles.md).
+// Its rules hide what the precision corpus captures show hidden; they were drafted from the
+// captures and are checked by them (ADR 0006).
+{
+  "formatVersion": 1,
+  "window": "macro_build_interface",
+  "checkedWith": "1.37.5",
+  "rules": {
+    "hidden": {
+      "note": "Hidden in the corpus capture of \"macro-builder\" in vanilla (Russia, 17 March 1719): the game decides these from its data or a click; show one by hand.",
+      "hide": [
+        "macro_build_interface/autonomy_header",
+        "macro_build_interface/building_province_list_header",
+        "macro_build_interface/core_header",
+        "macro_build_interface/culture_header",
+        "macro_build_interface/development_header",
+        "macro_build_interface/diplomacy_header",
+        "macro_build_interface/diplomacy_target_list_window",
+        "macro_build_interface/exploit_header",
+        "macro_build_interface/hire_mercenary_company_window",
+        "macro_build_interface/improve_relations_window",
+        "macro_build_interface/land_template_header",
+        "macro_build_interface/missionary_header",
+        "macro_build_interface/navy_template_header",
+        "macro_build_interface/select_culture_window",
+        "macro_build_interface/select_diplo_action_type_window",
+        "macro_build_interface/states_header",
+        "macro_build_interface/states_tab_edicts",
+        "macro_build_interface/states_tab_states",
+        "macro_build_interface/states_tab_trade_companies",
+      ],
+    },
+  },
+}

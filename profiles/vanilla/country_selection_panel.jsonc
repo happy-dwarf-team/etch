@@ -1,0 +1,148 @@
+// The country_selection_panel window of the base game (spec v2 section 11, docs/window-profiles.md).
+// Its rules hide what the precision corpus captures show hidden; they were drafted from the
+// captures and are checked by them (ADR 0006).
+{
+  "formatVersion": 1,
+  "window": "country_selection_panel",
+  "checkedWith": "1.37.5",
+  "selectors": {
+    "page": {
+      "kind": "ui",
+      "label": "Page",
+      "values": {
+        "main-menu": "Main menu",
+        "lobby": "Single-player lobby",
+      },
+    },
+  },
+  "rules": {
+    "hidden": {
+      "note": "Hidden in the corpus capture of \"lobby\" and \"main-menu\" in vanilla (Russia, 17 March 1719): the game decides these from its data or a click; show one by hand.",
+      "hide": [
+        "country_selection_panel/Background",
+        "country_selection_panel/mainmenu_panel_top",
+        "country_selection_panel/multiplayer_connect_menu",
+        "country_selection_panel/multiplayer_menu",
+        "country_selection_panel/settings",
+        "country_selection_panel/tutorial_panel",
+      ],
+    },
+    "hidden-mainmenu": {
+      "note": "Hidden in the corpus capture of \"lobby\" and \"main-menu\" in vanilla (Russia, 17 March 1719): the game decides these from its data or a click; show one by hand.",
+      "hide": ["country_selection_panel/mainmenu/new_content"],
+    },
+    "hidden-lobby-bottom-on-lobby": {
+      "note": "Hidden in the corpus capture of \"lobby\" and \"main-menu\" in vanilla (Russia, 17 March 1719): the game decides these from its data or a click; show one by hand.",
+      "when": {
+        "page": "lobby",
+      },
+      "hide": [
+        "country_selection_panel/lobby/bottom/chatlog",
+        "country_selection_panel/lobby/bottom/largefonts_lobby_chat_edit",
+        "country_selection_panel/lobby/bottom/lobby_chat_button",
+        "country_selection_panel/lobby/bottom/lobby_chat_edit",
+        "country_selection_panel/lobby/bottom/mic_button",
+        "country_selection_panel/lobby/bottom/speech_enabled_largefonts_lobby_chat_edit",
+        "country_selection_panel/lobby/bottom/speech_enabled_lobby_chat_button",
+        "country_selection_panel/lobby/bottom/speech_enabled_lobby_chat_edit",
+      ],
+    },
+    "hidden-lobby-left-on-lobby": {
+      "note": "Hidden in the corpus capture of \"lobby\" and \"main-menu\" in vanilla (Russia, 17 March 1719): the game decides these from its data or a click; show one by hand.",
+      "when": {
+        "page": "lobby",
+      },
+      "hide": [
+        "country_selection_panel/lobby/left/lessons",
+        "country_selection_panel/lobby/left/observe_mode_button",
+        "country_selection_panel/lobby/left/observe_mode_title",
+        "country_selection_panel/lobby/left/save_games",
+      ],
+    },
+    "hidden-lobby-on-lobby": {
+      "note": "Hidden in the corpus capture of \"lobby\" and \"main-menu\" in vanilla (Russia, 17 March 1719): the game decides these from its data or a click; show one by hand.",
+      "when": {
+        "page": "lobby",
+      },
+      "hide": [
+        "country_selection_panel/lobby/nation_designer_bottom_panel",
+        "country_selection_panel/lobby/random_new_world_loading_window",
+      ],
+    },
+    "hidden-lobby-right-on-lobby": {
+      "note": "Hidden in the corpus capture of \"lobby\" and \"main-menu\" in vanilla (Russia, 17 March 1719): the game decides these from its data or a click; show one by hand.",
+      "when": {
+        "page": "lobby",
+      },
+      "hide": [
+        "country_selection_panel/lobby/right/country_tab",
+        "country_selection_panel/lobby/right/country_tab_title",
+        "country_selection_panel/lobby/right/enable_custom_nation_button",
+        "country_selection_panel/lobby/right/ironman_icon",
+        "country_selection_panel/lobby/right/ironman_label",
+        "country_selection_panel/lobby/right/multiplayer",
+        "country_selection_panel/lobby/right/players_tab",
+        "country_selection_panel/lobby/right/players_tab_title",
+        "country_selection_panel/lobby/right/singleplayer",
+      ],
+    },
+    "hidden-lobby-top-on-lobby": {
+      "note": "Hidden in the corpus capture of \"lobby\" and \"main-menu\" in vanilla (Russia, 17 March 1719): the game decides these from its data or a click; show one by hand.",
+      "when": {
+        "page": "lobby",
+      },
+      "hide": [
+        "country_selection_panel/lobby/top/mapmode_content",
+        "country_selection_panel/lobby/top/mapmode_expansion",
+        "country_selection_panel/lobby/top/mapmode_music",
+        "country_selection_panel/lobby/top/mapmode_players",
+        "country_selection_panel/lobby/top/mapmode_unit",
+        "country_selection_panel/lobby/top/nation_designer_hint",
+        "country_selection_panel/lobby/top/nation_designer_hint_bg",
+      ],
+    },
+    "hidden-mainmenu-on-lobby": {
+      "note": "Hidden in the corpus capture of \"lobby\" and \"main-menu\" in vanilla (Russia, 17 March 1719): the game decides these from its data or a click; show one by hand.",
+      "when": {
+        "page": "lobby",
+      },
+      "hide": [
+        "country_selection_panel/mainmenu/PersistentSocialButtons",
+        "country_selection_panel/mainmenu/mainmenu_panel_bottom",
+        "country_selection_panel/mainmenu/mainmenu_panel_upperleft",
+        "country_selection_panel/mainmenu/mainmenu_panel_upperright",
+      ],
+    },
+    "hidden-on-main-menu": {
+      "note": "Hidden in the corpus capture of \"lobby\" and \"main-menu\" in vanilla (Russia, 17 March 1719): the game decides these from its data or a click; show one by hand.",
+      "when": {
+        "page": "main-menu",
+      },
+      "hide": ["country_selection_panel/lobby"],
+    },
+    "hidden-mainmenu-mainmenu_panel_bottom-on-main-menu": {
+      "note": "Hidden in the corpus capture of \"lobby\" and \"main-menu\" in vanilla (Russia, 17 March 1719): the game decides these from its data or a click; show one by hand.",
+      "when": {
+        "page": "main-menu",
+      },
+      "hide": [
+        "country_selection_panel/mainmenu/mainmenu_panel_bottom/continue_container",
+        "country_selection_panel/mainmenu/mainmenu_panel_bottom/nudge_button",
+      ],
+    },
+  },
+  "views": {
+    "main-menu": {
+      "label": "Main menu",
+      "set": {
+        "page": "main-menu",
+      },
+    },
+    "lobby": {
+      "label": "Single-player lobby",
+      "set": {
+        "page": "lobby",
+      },
+    },
+  },
+}
