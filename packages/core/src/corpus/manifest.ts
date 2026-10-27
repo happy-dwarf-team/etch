@@ -61,6 +61,12 @@ export interface CorpusPlayset {
   readonly disabledDlcs: readonly string[];
   /** The ids of the corpus windows captured with this playset. */
   readonly windows: readonly string[];
+  /**
+   * Patterns of top-level windows the game shows over every view opened from the save, such as
+   * the events the save opens with, which no recipe can close: each such view reads them as roots
+   * too, and the comparison masks them as code-filled.
+   */
+  readonly covers?: readonly string[];
   readonly note?: string;
 }
 
@@ -152,18 +158,27 @@ export interface PlaysetView {
 }
 
 /**
- * A view as one playset captures it: the view with its recipe and selectors of that playset
- * (`byPlayset`) in place of the defaults.
+ * A view as one playset captures it: the view with its recipe, selectors and data of that playset
+ * (`byPlayset`) in place of the defaults, and, opened from the save, the playset's `covers` among
+ * its roots and code-filled patterns.
  */
-export function viewInPlayset(view: CorpusView, playset: string): CorpusView {
-  const own = view.byPlayset?.[playset];
-  if (own === undefined) return view;
+export function viewInPlayset(
+  view: CorpusView,
+  playset: Pick<CorpusPlayset, 'id' | 'covers'>,
+): CorpusView {
+  const own = view.byPlayset?.[playset.id];
+  const recipe = own?.recipe ?? view.recipe;
+  const covers = recipe.from === 'save' ? (playset.covers ?? []) : [];
+  if (own === undefined && covers.length === 0) return view;
   return {
     ...view,
-    recipe: own.recipe ?? view.recipe,
-    ...(own.data !== undefined ? { data: own.data } : {}),
-    ...(view.selectors !== undefined || own.selectors !== undefined
-      ? { selectors: { ...view.selectors, ...own.selectors } }
+    recipe,
+    ...(covers.length === 0
+      ? {}
+      : { roots: [...view.roots, ...covers], codeFilled: [...view.codeFilled, ...covers] }),
+    ...(own?.data !== undefined ? { data: own.data } : {}),
+    ...(view.selectors !== undefined || own?.selectors !== undefined
+      ? { selectors: { ...view.selectors, ...own?.selectors } }
       : {}),
   };
 }
@@ -470,7 +485,7 @@ function checkPlayset(
     value,
     at,
     ['id', 'title', 'gate', 'mods', 'disabledDlcs', 'windows'],
-    ['save', 'note'],
+    ['save', 'covers', 'note'],
   );
   if (json === undefined) return undefined;
   const id = c.string(json['id'], field(at, 'id'), ID, 'an id in lowercase words joined by -');
@@ -508,6 +523,9 @@ function checkPlayset(
     return true;
   });
   c.array(json['disabledDlcs'], field(at, 'disabledDlcs'), (v, dlcAt) => c.string(v, dlcAt));
+  if ('covers' in json) {
+    c.array(json['covers'], field(at, 'covers'), (v, coverAt) => pattern(c, v, coverAt), true);
+  }
 
   const windows =
     c.array(
