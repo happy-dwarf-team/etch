@@ -86,6 +86,13 @@ under the cursor is outlined and named, and a click opens its definition and
 pins the preview on its window instead of acting in the game.
 _Avoid_: inspect mode, debug view, guibounds
 
+**Live snapshot**:
+What the live game showed in one top-level window at one moment, taken by a
+pick or on request: the texts, visibility and states of its widgets and list
+entries. It is the top layer of sample data and is kept per window and
+playset until a newer one replaces it.
+_Avoid_: capture (a screenshot in the corpus), dump, live data
+
 **Planned restart**:
 A restart of the live game that Etch asks the player for, from a save the live
 game makes just before it, so that no play is lost; unlike the restart after a
