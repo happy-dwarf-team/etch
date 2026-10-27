@@ -231,7 +231,7 @@ export function captureProblems(manifest: CorpusManifest, record: CaptureRecord)
 
   if (playset !== undefined) {
     const wantsSave =
-      (found === undefined ? undefined : viewInPlayset(found.view, record.playset))?.recipe.from ===
+      (found === undefined ? undefined : viewInPlayset(found.view, playset))?.recipe.from ===
       'save';
     if (wantsSave && playset.save === undefined) {
       fail('save', `The playset "${playset.id}" pins no save for a view opened from one.`);
@@ -257,10 +257,13 @@ export function captureProblems(manifest: CorpusManifest, record: CaptureRecord)
     }
   }
 
-  if (
-    found !== undefined &&
-    !sameRecipe(viewInPlayset(found.view, record.playset).recipe, record.recipe)
-  ) {
+  const view =
+    found === undefined
+      ? undefined
+      : playset === undefined
+        ? found.view
+        : viewInPlayset(found.view, playset);
+  if (view !== undefined && !sameRecipe(view.recipe, record.recipe)) {
     fail('recipe', 'The recipe differs from the manifest.');
   }
   if (
@@ -277,8 +280,8 @@ export function captureProblems(manifest: CorpusManifest, record: CaptureRecord)
     fail('screenshot', `The screenshot is not ${key}.`);
   }
 
-  if (found !== undefined) {
-    const roots = found.view.roots;
+  if (view !== undefined) {
+    const roots = view.roots;
     record.widgets.forEach((widget, i) => {
       if (!roots.some((root) => matchesWidgetPattern(root, widget.path))) {
         fail(`widgets[${String(i)}]`, `"${widget.path}" is not one of the view's roots.`);

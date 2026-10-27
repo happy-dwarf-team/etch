@@ -280,6 +280,19 @@ describe('parseCorpusManifest', () => {
     ]);
   });
 
+  it("checks a playset's covers", () => {
+    expect(
+      problemsOf((m) => {
+        set(m, 'playsets.1.covers', ['EventWindow']);
+      }),
+    ).toEqual([]);
+    expect(
+      problemsOf((m) => {
+        set(m, 'playsets.1.covers', ['a///b']);
+      }),
+    ).toEqual(['playsets[1].covers[0]: "a///b" has more than two slashes in a row.']);
+  });
+
   it('lets an unverified recipe leave its steps and roots empty', () => {
     expect(
       problemsOf((m) => {
@@ -371,10 +384,17 @@ describe('the corpus helpers', () => {
     const parsed = parseCorpusManifest(m).manifest as CorpusManifest;
     const view = findView(parsed, 'court')?.view;
     if (view === undefined) throw new Error('no view');
-    expect(viewInPlayset(view, 'vanilla')).toBe(view);
-    const own = viewInPlayset(view, 'big-mod');
+    expect(viewInPlayset(view, { id: 'vanilla' })).toBe(view);
+    const own = viewInPlayset(view, { id: 'big-mod' });
     expect(own.recipe.steps).toEqual([{ key: 'f2' }]);
     expect(own.selectors).toEqual({ owner: 'no', tab: 'province' });
+    // The playset's covers join the roots and code-filled patterns of a view opened from the save.
+    const covered = viewInPlayset(view, { id: 'big-mod', covers: ['EventWindow'] });
+    expect(covered.roots).toEqual(['countrycourtview', 'EventWindow']);
+    expect(covered.codeFilled).toEqual(['EventWindow']);
+    const menu = findView(parsed, 'main-menu')?.view;
+    if (menu === undefined) throw new Error('no view');
+    expect(viewInPlayset(menu, { id: 'big-mod', covers: ['EventWindow'] })).toBe(menu);
   });
 
   it('names capture files by playset, resolution and view', () => {

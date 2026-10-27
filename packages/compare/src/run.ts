@@ -236,7 +236,9 @@ async function profileGate(
   save: Save | undefined,
 ): Promise<{ results: VisibilityResult[]; problems: string[]; texts: SaveTextReport[] }> {
   const found = findView(manifest, key.view);
-  const view = found === undefined ? undefined : viewInPlayset(found.view, key.playset);
+  const playset = manifest.playsets.find((p) => p.id === key.playset);
+  const view =
+    found === undefined || playset === undefined ? undefined : viewInPlayset(found.view, playset);
   const selectors = view?.selectors ?? {};
   const data = view?.data;
   const choice =

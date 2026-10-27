@@ -2,7 +2,7 @@ id = "etch"
 name = "Etch"
 version = "1.0.1"          # release-please sets it with package.json in each release pull request
 authors = ["Happy Dwarf Team"]
-description = "The live game of Etch, the VS Code previewer for interface mods: reloads saved interface files into the game's own windows on Etch's request over a private pipe. Idle unless Etch started the game."
+description = "The live game of Etch, the VS Code previewer for interface mods: reloads saved interface files into the game's own windows on Etch's request over a private pipe, and picks a widget to open its definition (Ctrl+Shift+E). Idle unless Etch started the game."
 api = 2
 anvil = ">=1.5.2"
 entry = "etch.dll"
@@ -10,6 +10,7 @@ entry = "etch.dll"
 # and an early plugin cannot depend on one. The pipe is up within a second.
 phase = "main"
 symbols = "symbols.toml"   # the game build comes from here
+settings = "settings.toml" # the pick mode key
 # Etch reloads interface files in its own private install; nothing it does
 # reaches the simulation.
 affects_gameplay = false
@@ -22,7 +23,8 @@ repository = "https://github.com/happy-dwarf-team/etch"
 id = "anvil-game"
 version = "^1"
 
-# tongs.ui version 1, the widget tree: the stale-window check after a reload.
+# tongs.ui version 1, the widget tree: the stale-window check after a reload,
+# pick mode and live snapshots.
 # The private install pins Tongs and keeps it at enabled = false (no pipe).
 [[dependencies]]
 id = "tongs"

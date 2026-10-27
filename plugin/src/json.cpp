@@ -67,6 +67,10 @@ std::optional<bool> Value::AsBool() const {
 
 const std::vector<Value>* Value::AsArray() const { return kind_ == Kind::Array ? array_.get() : nullptr; }
 
+const std::map<std::string, Value, std::less<>>* Value::AsObject() const {
+    return kind_ == Kind::Object ? object_.get() : nullptr;
+}
+
 namespace {
 
 constexpr int kMaxDepth = 32;

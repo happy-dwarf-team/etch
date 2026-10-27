@@ -94,7 +94,7 @@ describe.skipIf(gamePath === undefined)("Etch's profiles in the corpus playsets"
           ) as { view: string; widgets: CapturedWidget[] };
           const found = manifest === undefined ? undefined : findView(manifest, capture.view);
           const selectors =
-            found === undefined ? {} : (viewInPlayset(found.view, id).selectors ?? {});
+            found === undefined ? {} : (viewInPlayset(found.view, { id }).selectors ?? {});
           for (const root of capture.widgets) {
             const profiled = checked.get(root.path.toLowerCase());
             if (profiled === undefined) continue;

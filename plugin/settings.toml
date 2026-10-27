@@ -1,0 +1,10 @@
+# Etch's plugin settings. Etch writes the player's value into the private
+# install's anvil/data/etch/settings.toml from etch.liveGame.pickModeKey before
+# every start, and sends a change while the game runs over its pipe.
+
+[setting.pick_mode_key]
+type = "key"
+default = "Ctrl+Shift+E"
+label = "Pick mode key"
+description = "Turns Etch's pick mode on and off in the live game (v2 specification section 7)."
+restart = false
