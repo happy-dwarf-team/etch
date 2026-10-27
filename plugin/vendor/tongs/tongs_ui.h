@@ -105,6 +105,8 @@ typedef struct TongsUiWidget {
     const char *definition_file; /* the game path of the defining .gui file (e.g. "interface/topbar.gui", the
                                   * name `reload` matches, not the mod folder that supplied it); NULL for a stale
                                   * widget and when the definition is not live */
+    uint32_t definition_line;    /* the 1-based line of the `{` that opens the widget's block in that file (Etch's
+                                  * pick mode checks, H2); 0 under the same rule as definition_file */
 } TongsUiWidget;
 
 /* Nonzero when `widget` (a const TongsUiWidget*) carries `field`. */

@@ -24,6 +24,34 @@ json::Writer Ok(std::uint64_t id) {
 
 }  // namespace
 
+void Pushes::Attach(const void* owner, Send send) {
+    const std::lock_guard lock(mutex_);
+    owner_ = owner;
+    send_ = std::move(send);
+}
+
+void Pushes::Detach(const void* owner) {
+    const std::lock_guard lock(mutex_);
+    if (owner_ != owner) return;
+    owner_ = nullptr;
+    send_ = {};
+}
+
+bool Pushes::Push(const std::string& line) {
+    Send send;
+    {
+        const std::lock_guard lock(mutex_);
+        send = send_;
+    }
+    if (!send) return false;
+    send(line);
+    return true;
+}
+
+Connection::~Connection() {
+    if (host_.pushes != nullptr) host_.pushes->Detach(this);
+}
+
 Reply Connection::Handle(std::string_view line) {
     if (!line.empty() && line.back() == '\r') line.remove_suffix(1);
     const json::ParseResult parsed = json::Parse(line);
@@ -43,6 +71,8 @@ Reply Connection::Handle(std::string_view line) {
     if (*type == "reload") return Reload(*id, request);
     if (*type == "save") return Save(*id);
     if (*type == "confirm") return Confirm(*id, request);
+    if (*type == "pick_mode") return PickMode(*id, request);
+    if (*type == "snapshot") return Snapshot(*id, request);
     return {Error(id, "unknown_type", "unknown request type")};
 }
 
@@ -67,6 +97,7 @@ Reply Connection::Hello(std::uint64_t id, const json::Value& request) {
         return {line, true};
     }
     greeted_ = true;
+    if (host_.pushes != nullptr && send_) host_.pushes->Attach(this, send_);
     return {Ok(id)
                 .Uint("protocol", kProtocolVersion)
                 .Str("plugin", host_.plugin_version)
@@ -84,7 +115,8 @@ Reply Connection::Ping(std::uint64_t id) const {
     w.Bool("ready", host_.ready())
         .Uint("frame", host_.frame())
         .Bool("responding", !host_.responding || host_.responding())
-        .Bool("busy", host_.jobs != nullptr && host_.jobs->Busy());
+        .Bool("busy", host_.jobs != nullptr && host_.jobs->Busy())
+        .Bool("pick", host_.pick != nullptr && host_.pick->on && host_.pick->on());
     const std::optional<GameSession> session = host_.game_session ? host_.game_session() : std::nullopt;
     if (session) {
         json::Writer s;
@@ -137,6 +169,47 @@ Reply Connection::Confirm(std::uint64_t id, const json::Value& request) {
         if (send) send(ConfirmAnswer(id, r));
     });
     if (refused) return {Error(id, refused->code, refused->message)};
+    return {};
+}
+
+Reply Connection::PickMode(std::uint64_t id, const json::Value& request) {
+    PickModeRequest pick;
+    if (const std::optional<std::string> error = ReadPickModeRequest(request, pick)) {
+        return {Error(id, "bad_request", *error)};
+    }
+    if (host_.pick == nullptr || !host_.pick->mode) {
+        return {Error(id, "no_tree", "pick mode needs tongs.ui, which is missing")};
+    }
+    if (pick.on.value_or(false) && !host_.ready()) return {Error(id, "not_ready", "the live game is not ready")};
+    const PickModeAnswer answer = host_.pick->mode(pick);
+    json::Writer w = Ok(id);
+    w.Bool("on", answer.on).Str("key", FormatKey(answer.key));
+    if (pick.front) w.Bool("front", answer.front);
+    return {w.Finish()};
+}
+
+Reply Connection::Snapshot(std::uint64_t id, const json::Value& request) {
+    const json::Value* window_member = request.Find("window");
+    const std::optional<std::string_view> window = window_member ? window_member->AsString() : std::nullopt;
+    if (!window || window->empty()) return {Error(id, "bad_request", "\"window\" must be a window's name")};
+    if (host_.pick == nullptr || !host_.pick->snapshot) {
+        return {Error(id, "no_tree", "a snapshot needs tongs.ui, which is missing")};
+    }
+    if (!host_.ready()) return {Error(id, "not_ready", "the live game is not ready")};
+    const Send send = send_;
+    const std::optional<std::string> refused =
+        host_.pick->snapshot(std::string(*window), [send, id](const SnapshotResult& r) {
+            if (!send) return;
+            if (!r.error.empty()) {
+                send(Error(id, r.error, r.message));
+                return;
+            }
+            json::Writer w = Ok(id);
+            std::string line = w.Fixed("queued_ms", r.queued_ms).Finish();
+            line.pop_back();
+            send(line + "," + r.members + "}");
+        });
+    if (refused) return {Error(id, *refused, "the snapshot cannot be taken")};
     return {};
 }
 
