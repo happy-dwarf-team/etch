@@ -1,7 +1,7 @@
 // The preview webview's script (bundled to dist/webview.js): draws each draw list the extension
 // host posts with `@etch/renderer`, fetching textures through webview URIs (ADR 0001), marks each
-// paint on the canvas for Etch's own tools (paint-marker.ts), and shows the toolbar and notices the
-// host describes.
+// paint on the canvas for Etch's own tools (paint-marker.ts), and shows the toolbar, its menus
+// (`View ▾`, spec section 4) and the notices the host describes.
 
 import { Painter, createContext, readPixels } from '@etch/renderer';
 import type { DrawRect } from '@etch/core/draw-list';
@@ -9,6 +9,8 @@ import type {
   HostMessage,
   Point,
   PreviewMemento,
+  ViewAction,
+  ViewMenu,
   ViewState,
   WebviewMessage,
 } from '../src/preview/protocol.ts';
@@ -37,6 +39,8 @@ const notices = element('notices', HTMLUListElement);
 const pin = element('pin', HTMLButtonElement);
 const resolution = element('resolution', HTMLButtonElement);
 const liveGame = element('live-game', HTMLButtonElement);
+const viewButton = element('view-menu', HTMLButtonElement);
+const viewPopup = element('view-popup', HTMLDivElement);
 const hoverBox = element('hover', HTMLDivElement);
 const selectedBox = element('selected', HTMLDivElement);
 const tip = element('tip', HTMLDivElement);
@@ -68,6 +72,141 @@ resolution.addEventListener('click', () => {
 liveGame.addEventListener('click', () => {
   post({ type: 'startLiveGame' });
 });
+
+// `View ▾` stays open while the user clicks in it; a click elsewhere or Escape closes it.
+viewButton.addEventListener('click', () => {
+  openViewMenu(viewPopup.hidden === true);
+});
+document.addEventListener('mousedown', (event) => {
+  const target = event.target;
+  if (target instanceof Node && (viewPopup.contains(target) || viewButton.contains(target))) return;
+  openViewMenu(false);
+});
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') openViewMenu(false);
+});
+
+function openViewMenu(open: boolean): void {
+  viewPopup.hidden = !open || state?.menu === undefined;
+  viewButton.setAttribute('aria-expanded', String(!viewPopup.hidden));
+}
+
+const viewAction = (action: ViewAction): void => {
+  post({ type: 'view', action });
+};
+
+/** Where a selector's value came from, as `View ▾` names it. */
+const SELECTOR_SOURCES: Readonly<Record<ViewMenu['selectors'][number]['source'], string>> = {
+  auto: 'auto',
+  save: 'save',
+  live: 'live',
+  you: 'you',
+  default: 'default',
+};
+
+/** Fills `View ▾`: the views, the actions, then every selector with its value's source. */
+function showViewMenu(menu: ViewMenu | undefined): void {
+  viewButton.hidden = menu === undefined;
+  if (menu === undefined) {
+    viewPopup.hidden = true;
+    viewPopup.replaceChildren();
+    return;
+  }
+  viewButton.textContent = `View: ${menu.label} ▾`;
+  viewButton.title = 'Views of this window and the selectors that choose them (View ▾).';
+  const item = (text: string, onClick: () => void, title?: string): HTMLButtonElement => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'item';
+    button.setAttribute('role', 'menuitem');
+    button.textContent = text;
+    if (title !== undefined) button.title = title;
+    button.addEventListener('click', onClick);
+    return button;
+  };
+  const heading = (text: string): HTMLElement => {
+    const h = document.createElement('h4');
+    h.textContent = text;
+    return h;
+  };
+  const children: HTMLElement[] = [];
+  if (menu.views.length > 0) {
+    children.push(heading('Views'));
+    for (const view of menu.views) {
+      const button = item(
+        `${view.current ? '●' : '○'} ${view.label}${view.mine ? ' (yours)' : ''}`,
+        () => {
+          viewAction({ kind: 'chooseView', id: view.id });
+        },
+      );
+      button.setAttribute('aria-checked', String(view.current));
+      children.push(button);
+    }
+  }
+  children.push(document.createElement('hr'));
+  const save = item('Save as view…', () => {
+    viewAction({ kind: 'saveView' });
+  });
+  save.disabled = !menu.canSave;
+  save.title = menu.canSave
+    ? "Write these selectors and hand toggles as a view into the mod project's .etch/profiles."
+    : 'Save as view writes into a mod project; open a file of a mod.';
+  children.push(save);
+  if (menu.handToggles > 0) {
+    children.push(
+      item(`Reset hand toggles (${String(menu.handToggles)})`, () => {
+        viewAction({ kind: 'resetToggles' });
+      }),
+    );
+  }
+  children.push(
+    item('Open profile', () => {
+      viewAction({ kind: 'openProfile' });
+    }),
+  );
+  if (menu.selectors.length > 0) {
+    children.push(document.createElement('hr'), heading('Selectors'));
+    for (const selector of menu.selectors) {
+      const row = document.createElement('div');
+      row.className = 'row';
+      const label = document.createElement('span');
+      label.textContent = selector.label;
+      if (selector.note !== undefined) label.title = selector.note;
+      const select = document.createElement('select');
+      select.title = `${selector.label} (${selector.kind})`;
+      for (const value of selector.values) {
+        const option = document.createElement('option');
+        option.value = value.id;
+        option.textContent = value.label;
+        option.selected = value.id === selector.value;
+        select.append(option);
+      }
+      // The resolution follows the preview's screen.
+      select.disabled = selector.kind === 'resolution';
+      select.addEventListener('change', () => {
+        viewAction({ kind: 'select', selector: selector.id, value: select.value });
+      });
+      const source = document.createElement('span');
+      source.className = 'source';
+      source.textContent = SELECTOR_SOURCES[selector.source];
+      if (selector.source === 'you') {
+        const release = document.createElement('button');
+        release.type = 'button';
+        release.className = 'release';
+        release.textContent = selector.kind === 'data' ? 'follow save' : '×';
+        release.title =
+          selector.kind === 'data' ? 'Follow the save again' : 'Back to the profile default';
+        release.addEventListener('click', () => {
+          viewAction({ kind: 'release', selector: selector.id });
+        });
+        source.append(' ', release);
+      }
+      row.append(label, select, source);
+      children.push(row);
+    }
+  }
+  viewPopup.replaceChildren(...children);
+}
 
 canvas.addEventListener('mousemove', (event) => {
   pointer = { x: event.clientX, y: event.clientY };
@@ -222,6 +361,7 @@ function show(next: ViewState): void {
   pin.title = next.pinned
     ? 'The preview stays on this window. Click to follow the cursor again.'
     : 'Keep the preview on this window while other files are edited.';
+  showViewMenu(next.menu);
   resolution.textContent = next.resolution.text;
   resolution.title =
     `Preview resolution ${next.resolution.text}, ${SOURCES[next.resolution.source]}. ` +

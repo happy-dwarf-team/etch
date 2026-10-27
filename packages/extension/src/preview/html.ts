@@ -8,7 +8,8 @@ import * as vscode from 'vscode';
 export const BACKDROP = '#808080';
 
 /**
- * The preview's page: a toolbar (previewed window, the live game's start, resolution, pin),
+ * The preview's page: a toolbar (previewed window, the menus, the live game's start, resolution,
+ * pin),
  * notices, the canvas the webview script (`dist/webview.js`, from `webview/main.ts`) draws into,
  * and the outlines of the hovered and the highlighted widget over it. Textures are fetched from the game and mod folders
  * through webview URIs, so `connect-src` allows them.
@@ -48,6 +49,29 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
     padding: 1px 6px;
   }
   button[aria-pressed="true"] { background: var(--vscode-button-background); color: var(--vscode-button-foreground); }
+  /* The menus of the toolbar: View ▾ (spec section 4), and Data ▾ beside it (section 5). */
+  #menus { display: flex; gap: 4px; position: relative; }
+  .popup {
+    position: absolute; z-index: 10; top: calc(100% + 2px); left: 0; min-width: 280px; max-width: 420px;
+    max-height: 70vh; overflow: auto; padding: 4px 0;
+    background: var(--vscode-menu-background, var(--vscode-dropdown-background));
+    color: var(--vscode-menu-foreground, var(--vscode-foreground));
+    border: 1px solid var(--vscode-menu-border, var(--vscode-dropdown-border, transparent));
+    box-shadow: 0 2px 8px var(--vscode-widget-shadow, rgba(0, 0, 0, 0.36));
+  }
+  .popup[hidden] { display: none; }
+  .popup h4 { margin: 6px 10px 2px; font-size: 0.85em; text-transform: uppercase; opacity: 0.7; }
+  .popup .item {
+    display: flex; align-items: center; gap: 6px; width: 100%; box-sizing: border-box;
+    padding: 2px 10px; border: 0; background: none; text-align: left; cursor: pointer;
+  }
+  .popup .item:hover:not(:disabled) { background: var(--vscode-menu-selectionBackground, var(--vscode-list-hoverBackground)); }
+  .popup .item:disabled { opacity: 0.5; cursor: default; }
+  .popup .row { display: grid; grid-template-columns: 1fr auto auto; gap: 6px; align-items: center; padding: 2px 10px; }
+  .popup select { font: inherit; max-width: 170px; }
+  .popup .source { font-size: 0.85em; opacity: 0.75; }
+  .popup .release { padding: 0 4px; }
+  .popup hr { border: 0; border-top: 1px solid var(--vscode-menu-separatorBackground, var(--vscode-panel-border, #555)); margin: 4px 0; }
   #notices { margin: 0; padding: 0; list-style: none; }
   #notices li {
     padding: 4px 8px; border-left: 3px solid var(--vscode-notificationsInfoIcon-foreground);
@@ -77,6 +101,10 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
 <header>
   <span id="title">Etch preview</span>
   <span id="file"></span>
+  <span id="menus">
+    <button id="view-menu" type="button" aria-haspopup="true" aria-expanded="false" hidden>View ▾</button>
+    <div id="view-popup" class="popup" role="menu" hidden></div>
+  </span>
   <span class="spacer"></span>
   <button id="live-game" type="button" title="Start the live game with this playset (Etch: Start the Live Game).">Live game</button>
   <button id="resolution" type="button">1920×1080</button>

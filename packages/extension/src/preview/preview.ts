@@ -3,8 +3,10 @@
 // the model's diagnostics in the Problems panel. The extension host parses, models and lays out;
 // the webview draws the draw list with WebGL2 (ADR 0001). Textures and fonts changed on disk are
 // read again, and the preview reopens on the same window after a window reload. Its button starts
-// the live game with the preview's playset (spec section 2).
+// the live game with the preview's playset (spec section 2). A window with a window profile is
+// drawn in one view, chosen in `View ▾` and the Widget Outline (spec section 4).
 
+import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import * as vscode from 'vscode';
 import {
@@ -35,21 +37,41 @@ import {
   type WindowLayout,
 } from '@etch/core';
 import { layOutPreview } from '@etch/core/playset';
+import {
+  evaluateView,
+  layoutViewOf,
+  withView,
+  type ProfileDiagnostic,
+  type WindowView,
+} from '@etch/core/profile';
 import { readGameText, saveEncodingOf } from '../game-text.ts';
 import type { LiveGame } from '../live-game/index.ts';
-import type { WidgetNavigation } from '../navigation.ts';
+import type { OutlineToggle, WidgetNavigation } from '../navigation.ts';
 import { previewHtml } from './html.ts';
+import { ProfileStore, type LoadedProfile, type ProjectProblems } from './profiles.ts';
 import type {
   HostMessage,
   Notice,
   Point,
   PreviewMemento,
   TextureFailure,
+  ViewAction,
   ViewState,
   WebviewMessage,
 } from './protocol.ts';
 import { RenderLoop } from './render-loop.ts';
 import { PreviewSession, type SessionSettings } from './session.ts';
+import {
+  applyViewAction,
+  chooseMember,
+  initialChoice,
+  savedView,
+  toggleWidget,
+  viewChoiceOf,
+  viewId,
+  viewMenu,
+  type ChoiceState,
+} from './views.ts';
 
 /** The setting of the preview resolution (spec section 6), in the `etch` section. */
 export const RESOLUTION_SETTING = 'previewResolution';
@@ -82,6 +104,8 @@ export interface PreviewRender {
   readonly pinned: boolean;
   /** When the first change or request this render answers came in, in ms since the Unix epoch. */
   readonly requestedAt: number;
+  /** The view drawn, when the window has a window profile (spec section 4). */
+  readonly view?: { readonly profile: LoadedProfile; readonly view: WindowView };
 }
 
 /** The webview's answer to a render. */
@@ -144,6 +168,8 @@ export interface PreviewApi {
   hover(point: Point | undefined): string | undefined;
   /** What a click on the preview does: reveals the widget's source (etch#37). */
   click(point: Point): Promise<boolean>;
+  /** What a click in `View ▾` does (spec section 4); Save as view asks for a name. */
+  viewAction(action: ViewAction): Promise<void>;
 }
 
 /** The game text of a file, from its editor buffer or from disk (etch#15). */
@@ -173,6 +199,12 @@ export class Preview implements PreviewApi, vscode.Disposable {
   private readonly memento: vscode.Memento;
   private readonly loop: RenderLoop;
   private readonly diagnostics = vscode.languages.createDiagnosticCollection('etch-preview');
+  /** Problems of the mod project's window profiles (spec section 12). */
+  private readonly profileDiagnostics =
+    vscode.languages.createDiagnosticCollection('etch-profiles');
+  private readonly profiles: ProfileStore;
+  /** The view chosen for each window while the preview is open, by window name. */
+  private readonly choices = new Map<string, ChoiceState>();
   private readonly renderEmitter = new vscode.EventEmitter<PreviewRender>();
   private readonly paintEmitter = new vscode.EventEmitter<PreviewPaint>();
   private readonly subscriptions: vscode.Disposable[];
@@ -233,6 +265,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
     this.output = output;
     this.navigation = navigation;
     this.memento = memento;
+    this.profiles = new ProfileStore(extensionUri, output);
     this.native = validScreen(memento.get(NATIVE_SCREEN_KEY));
     this.loop = new RenderLoop(
       () => this.renderNow(),
@@ -240,11 +273,23 @@ export class Preview implements PreviewApi, vscode.Disposable {
         this.fail(error);
       },
     );
+    const profileWatcher = vscode.workspace.createFileSystemWatcher('**/.etch/profiles/*.jsonc');
+    const profileChanged = (uri: vscode.Uri): void => {
+      if (this.panel && isProfile(uri)) this.request();
+    };
     this.subscriptions = [
       navigation.onDidHighlight(() => {
         this.updateOverlay();
       }),
+      navigation.onDidToggle((toggle) => {
+        this.toggle(toggle);
+      }),
+      profileWatcher,
+      profileWatcher.onDidChange(profileChanged),
+      profileWatcher.onDidCreate(profileChanged),
+      profileWatcher.onDidDelete(profileChanged),
       vscode.workspace.onDidChangeTextDocument(({ document }) => {
+        if (this.panel && isProfile(document.uri)) this.request();
         if (!this.panel || gameTextKind(document.uri.path) === undefined) return;
         this.pending.set(document.uri.toString(), document.uri);
         this.request();
@@ -455,6 +500,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
     this.panel?.dispose();
     vscode.Disposable.from(...this.subscriptions).dispose();
     this.diagnostics.dispose();
+    this.profileDiagnostics.dispose();
     this.renderEmitter.dispose();
     this.paintEmitter.dispose();
   }
@@ -545,8 +591,24 @@ export class Preview implements PreviewApi, vscode.Disposable {
       return;
     }
 
-    // Several events can answer one change (an edit also moves the selection).
+    // The window's profile, and the view the user chose of it.
     const screen = this.resolution.screen;
+    const found = await this.profiles.load(session.playset, file, window);
+    if (panel !== this.panel) return;
+    this.publishProfileProblems(found.project);
+    const loaded = found.loaded;
+    const choiceKey = (window.name ?? '').toLowerCase();
+    let choice: ChoiceState | undefined;
+    if (loaded !== undefined) {
+      choice = this.choices.get(choiceKey) ?? initialChoice(loaded.profile);
+      this.choices.set(choiceKey, choice);
+    }
+    const notices: Notice[] = [
+      ...session.notices,
+      ...found.notices.map((message) => ({ severity: 'warning' as const, message })),
+    ];
+
+    // Several events can answer one change (an edit also moves the selection).
     const key = [
       uri.toString(),
       source.version ?? 'disk',
@@ -555,19 +617,31 @@ export class Preview implements PreviewApi, vscode.Disposable {
       screen.width,
       screen.height,
       session.serial,
+      loaded?.key ?? '',
+      JSON.stringify(choice ?? null),
     ].join('|');
     if (!changed && !assetsChanged && key === this.renderKey) {
       // The same screen can come from another source (the setting, settings.txt, the monitor).
       if (this.lastState) {
-        this.show({ title: this.lastState.title, file: shownPath, notices: session.notices });
+        this.show({
+          title: this.lastState.title,
+          file: shownPath,
+          notices,
+          ...(this.lastState.menu === undefined ? {} : { menu: this.lastState.menu }),
+        });
       }
       return;
     }
     this.renderKey = key;
 
+    const view =
+      loaded === undefined || choice === undefined
+        ? undefined
+        : evaluateView(loaded.profile, window, screen, viewChoiceOf(choice));
     const layout = await layOutPreview(session.ui, session.assets, file, window, {
       screen,
       localise: session.localise,
+      ...(view === undefined ? {} : { view: layoutViewOf(view) }),
     });
     if (panel !== this.panel) return;
     const drawList: DrawList = {
@@ -578,7 +652,18 @@ export class Preview implements PreviewApi, vscode.Disposable {
     };
     const id = ++this.renderCount;
     const pinned = this.pin !== undefined;
-    this.render = { id, uri, file, window, layout, drawList, source, pinned, requestedAt };
+    this.render = {
+      id,
+      uri,
+      file,
+      window,
+      layout,
+      drawList,
+      source,
+      pinned,
+      requestedAt,
+      ...(loaded === undefined || view === undefined ? {} : { view: { profile: loaded, view } }),
+    };
     this.last = { uri: uri.toString(), name: window.name };
     // The draw goes first: diagnostics are not on the warm reload's path to pixels.
     this.post({ type: 'draw', id, list: drawList });
@@ -589,7 +674,14 @@ export class Preview implements PreviewApi, vscode.Disposable {
       pinned,
     });
     panel.title = `Preview ${window.name ?? window.kind}`;
-    this.show({ title: window.name ?? window.kind, file: shownPath, notices: session.notices });
+    this.show({
+      title: window.name ?? window.kind,
+      file: shownPath,
+      notices,
+      ...(loaded === undefined || view === undefined || choice === undefined
+        ? {}
+        : { menu: viewMenu(loaded.profile, view, choice, loaded.projectFile !== undefined) }),
+    });
     this.navigation.setPreviewed(
       document && source.version !== undefined
         ? {
@@ -599,6 +691,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
             window,
             offsets: source.offsets,
             layout: layout.widgets,
+            ...(view === undefined ? {} : { view }),
           }
         : undefined,
     );
@@ -867,7 +960,136 @@ export class Preview implements PreviewApi, vscode.Disposable {
       case 'startLiveGame':
         this.startLiveGame();
         break;
+      case 'view':
+        void this.viewAction(message.action);
+        break;
     }
+  }
+
+  async viewAction(action: ViewAction): Promise<void> {
+    const render = this.render;
+    const viewed = render?.view;
+    if (render === undefined || viewed === undefined) return;
+    const key = (render.window.name ?? '').toLowerCase();
+    const choice = this.choices.get(key) ?? initialChoice(viewed.profile.profile);
+    if (action.kind === 'saveView') {
+      await this.saveView(
+        render.window.name ?? '',
+        viewed.profile,
+        viewed.view,
+        choice,
+        action.label,
+      );
+      return;
+    }
+    if (action.kind === 'openProfile') {
+      const projectExists =
+        viewed.profile.projectFile !== undefined &&
+        viewed.profile.profile.layers.at(-1)?.source === 'mod project';
+      const target = projectExists ? viewed.profile.projectFile : viewed.profile.topFile;
+      if (target !== undefined) {
+        await vscode.window.showTextDocument(target, { viewColumn: vscode.ViewColumn.One });
+      }
+      return;
+    }
+    this.choices.set(key, applyViewAction(viewed.profile.profile, choice, action));
+    this.request();
+  }
+
+  /** An eye or a radio of the Widget Outline: a hand toggle of the previewed window. */
+  private toggle(toggle: OutlineToggle): void {
+    const render = this.render;
+    const viewed = render?.view;
+    if (render === undefined || viewed === undefined) return;
+    const key = (render.window.name ?? '').toLowerCase();
+    const choice = this.choices.get(key) ?? initialChoice(viewed.profile.profile);
+    this.choices.set(
+      key,
+      toggle.kind === 'widget'
+        ? toggleWidget(choice, viewed.view, render.window, toggle.widget, toggle.shown)
+        : chooseMember(choice, viewed.view, render.window, toggle.group, toggle.value),
+    );
+    this.request();
+  }
+
+  /**
+   * **Save as view**: the selectors and hand toggles under a name, as a view of the mod
+   * project's own profile file, which it creates when needed (spec section 4).
+   */
+  private async saveView(
+    window: string,
+    loaded: LoadedProfile,
+    view: WindowView,
+    choice: ChoiceState,
+    named: string | undefined,
+  ): Promise<void> {
+    const file = loaded.projectFile;
+    if (file === undefined) {
+      void vscode.window.showInformationMessage(
+        'Save as view writes into the mod project, beside its descriptor.mod: open a file of a mod.',
+      );
+      return;
+    }
+    const label =
+      named ??
+      (await vscode.window.showInputBox({
+        title: 'Save as View',
+        prompt: `A name for this view of ${window}, saved in ${vscode.workspace.asRelativePath(file)}`,
+        validateInput: (text) => (text.trim() === '' ? 'Give the view a name.' : undefined),
+      }));
+    if (label === undefined) return;
+    const mine = loaded.profile.views
+      .filter((v) => v.origin.source === 'mod project')
+      .map((v) => v.id);
+    const id = viewId(label.trim(), loaded.profile, mine);
+    const document = vscode.workspace.textDocuments.find(
+      (d) => d.uri.toString() === file.toString(),
+    );
+    try {
+      const before = document?.getText() ?? (await readText(file));
+      const after = withView(before, window, id, savedView(label.trim(), view, choice));
+      if (document !== undefined) {
+        const edit = new vscode.WorkspaceEdit();
+        edit.replace(file, new vscode.Range(0, 0, document.lineCount, 0), after);
+        await vscode.workspace.applyEdit(edit);
+        await document.save();
+      } else {
+        await mkdir(dirname(file.fsPath), { recursive: true });
+        await writeFile(file.fsPath, after, 'utf8');
+      }
+    } catch (error) {
+      void vscode.window.showErrorMessage(
+        `Save as view could not write ${vscode.workspace.asRelativePath(file)}: ${messageOf(error)}`,
+      );
+      return;
+    }
+    this.choices.set(window.toLowerCase(), { ...choice, view: id });
+    this.request();
+  }
+
+  /** Publishes the problems of the mod project's profile file, with their lines. */
+  private publishProfileProblems(project: ProjectProblems | undefined): void {
+    this.profileDiagnostics.clear();
+    if (project === undefined) return;
+    const lines = lineStarts(project.text);
+    const position = (offset: number): vscode.Position => {
+      let line = 0;
+      while (line + 1 < lines.length && (lines[line + 1] ?? Infinity) <= offset) line++;
+      return new vscode.Position(line, offset - (lines[line] ?? 0));
+    };
+    this.profileDiagnostics.set(
+      project.uri,
+      project.diagnostics.map((found: ProfileDiagnostic) => {
+        const diagnostic = new vscode.Diagnostic(
+          new vscode.Range(position(found.start), position(found.end)),
+          found.message,
+          SEVERITY[found.severity],
+        );
+        diagnostic.source = 'Etch';
+        diagnostic.code = found.code;
+        return diagnostic;
+      }),
+    );
   }
 
   /** Keeps the monitor's resolution, and lays out again when the preview uses it. */
@@ -988,6 +1210,8 @@ export class Preview implements PreviewApi, vscode.Disposable {
     this.fromBuffer.clear();
     this.published.clear();
     this.diagnostics.clear();
+    this.profileDiagnostics.clear();
+    this.choices.clear();
     for (const resolve of this.probes.values()) {
       resolve({
         id: -1,
@@ -1024,6 +1248,29 @@ function validScreen(value: unknown): Screen | undefined {
   return typeof width === 'number' && typeof height === 'number' && isSide(width) && isSide(height)
     ? { width, height }
     : undefined;
+}
+
+/** Whether a file is a mod project's window profile, `.etch/profiles/<window>.jsonc`. */
+function isProfile(uri: vscode.Uri): boolean {
+  return uri.scheme === 'file' && /\/\.etch\/profiles\/[^/]+\.jsonc$/i.test(uri.path);
+}
+
+async function readText(uri: vscode.Uri): Promise<string | undefined> {
+  try {
+    return new TextDecoder().decode(await vscode.workspace.fs.readFile(uri));
+  } catch {
+    return undefined;
+  }
+}
+
+function lineStarts(text: string): number[] {
+  const starts = [0];
+  for (let i = text.indexOf('\n'); i !== -1; i = text.indexOf('\n', i + 1)) starts.push(i + 1);
+  return starts;
+}
+
+function messageOf(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }
 
 function isGui(uri: vscode.Uri): boolean {

@@ -74,6 +74,24 @@
         "icon": "$(screen-full)"
       },
       {
+        "command": "etch.outline.hide",
+        "title": "Hide by Hand",
+        "category": "Etch",
+        "icon": "$(eye)"
+      },
+      {
+        "command": "etch.outline.show",
+        "title": "Show by Hand",
+        "category": "Etch",
+        "icon": "$(eye-closed)"
+      },
+      {
+        "command": "etch.outline.choose",
+        "title": "Choose by Hand",
+        "category": "Etch",
+        "icon": "$(circle-large-outline)"
+      },
+      {
         "command": "etch.startLiveGame",
         "title": "Start the Live Game",
         "category": "Etch"
@@ -97,13 +115,48 @@
           "group": "navigation"
         }
       ],
+      "view/item/context": [
+        {
+          "command": "etch.outline.hide",
+          "when": "view == etch.widgetOutline && viewItem == etch.shown",
+          "group": "inline"
+        },
+        {
+          "command": "etch.outline.show",
+          "when": "view == etch.widgetOutline && viewItem == etch.hidden",
+          "group": "inline"
+        },
+        {
+          "command": "etch.outline.choose",
+          "when": "view == etch.widgetOutline && viewItem == etch.member",
+          "group": "inline"
+        }
+      ],
       "commandPalette": [
         {
           "command": "etch.togglePreviewPin",
           "when": "etch.previewOpen"
+        },
+        {
+          "command": "etch.outline.hide",
+          "when": "false"
+        },
+        {
+          "command": "etch.outline.show",
+          "when": "false"
+        },
+        {
+          "command": "etch.outline.choose",
+          "when": "false"
         }
       ]
     },
+    "jsonValidation": [
+      {
+        "fileMatch": "**/.etch/profiles/*.jsonc",
+        "url": "./dist/profiles/window-profile.schema.json"
+      }
+    ],
     "configuration": {
       "title": "Etch",
       "properties": {

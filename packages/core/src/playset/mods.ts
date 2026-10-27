@@ -19,6 +19,8 @@ export interface Mod {
   dependencies: readonly string[];
   replacePaths: readonly string[];
   supportedVersion?: string;
+  /** The descriptor's `version`, which a window profile records it was checked with. */
+  version?: string;
   /** The Steam Workshop item id: `remote_file_id`, or the Workshop folder's name. */
   workshopId?: string;
 }
@@ -144,6 +146,7 @@ function modFrom(
     replacePaths: descriptor.replacePaths,
   };
   if (descriptor.supportedVersion !== undefined) mod.supportedVersion = descriptor.supportedVersion;
+  if (descriptor.version !== undefined) mod.version = descriptor.version;
   const workshopId =
     descriptor.remoteFileId ?? (source === 'workshop' ? basename(root) : undefined);
   if (workshopId !== undefined) mod.workshopId = workshopId;

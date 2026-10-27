@@ -7,3 +7,4 @@ export * from './layers.ts';
 export * from './paths.ts';
 export * from './read.ts';
 export * from './view.ts';
+export * from './edit.ts';

@@ -11,6 +11,7 @@ import {
   layerProfiles,
   layoutViewOf,
   readProfile,
+  withView,
   widgetsAt,
   type WindowProfile,
 } from '../src/profile/index.ts';
@@ -188,5 +189,52 @@ describe('layout of a view', () => {
       x: -25,
       y: 40,
     });
+  });
+});
+
+describe('Save as view', () => {
+  const view = { label: 'Mine', set: { tab: 'state' }, toggles: { 'provinceview/bg': false } };
+
+  it('writes a new file with the view', () => {
+    const text = withView(undefined, 'provinceview', 'mine', view);
+    const { file, diagnostics } = readProfile(text, { layer: 2, source: 'mod project', file: 'p' });
+    expect(diagnostics).toEqual([]);
+    expect(file?.views[0]).toMatchObject({
+      id: 'mine',
+      label: 'Mine',
+      set: [{ selector: 'tab', value: 'state' }],
+    });
+  });
+
+  it('adds a view to a file, keeping its comments, and replaces one of the same id', () => {
+    const before = `{
+  // Mine.
+  "formatVersion": 1,
+  "window": "provinceview",
+  "views": {
+    "a": { "label": "A" } // the first
+  }
+}`;
+    const added = withView(before, 'provinceview', 'mine', view);
+    expect(added).toContain('// the first');
+    const read = (text: string) =>
+      readProfile(text, { layer: 2, source: 'mod project', file: 'p' });
+    expect(read(added).diagnostics).toEqual([]);
+    expect(read(added).file?.views.map((v) => v.id)).toEqual(['a', 'mine']);
+    const replaced = withView(added, 'provinceview', 'a', { ...view, label: 'New A' });
+    expect(read(replaced).file?.views.map((v) => ('label' in v ? v.label : ''))).toEqual([
+      'New A',
+      'Mine',
+    ]);
+    const noViews = withView(
+      '{ "formatVersion": 1, "window": "provinceview", }',
+      'provinceview',
+      'mine',
+      view,
+    );
+    expect(read(noViews).file?.views.map((v) => v.id)).toEqual(['mine']);
+    expect(() =>
+      withView('{ "formatVersion": 1 "window": 2 }', 'provinceview', 'x', view),
+    ).toThrow();
   });
 });

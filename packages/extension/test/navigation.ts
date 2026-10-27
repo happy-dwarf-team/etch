@@ -68,7 +68,10 @@ export async function testNavigation(api: EtchApi): Promise<void> {
       assert.ok(found, `widget ${name}`);
       return found.widget;
     };
-    const selectedName = () => navigation.outline.selection[0]?.name;
+    const selectedName = () => {
+      const node = navigation.outline.selection[0];
+      return node !== undefined && 'name' in node ? node.name : undefined;
+    };
     const moveTo = (text: string): void => {
       const position = document.positionAt(document.getText().indexOf(text));
       editor.selection = new vscode.Selection(position, position);

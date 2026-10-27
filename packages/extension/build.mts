@@ -1,5 +1,7 @@
-// Bundles the extension, the preview's webview script and the VS Code test suite. Workspace
-// packages are bundled in, so the VSIX has no node_modules and no runtime dependencies.
+// Bundles the extension, the preview's webview script and the VS Code test suite, and copies the
+// window profiles Etch ships and their JSON Schema (ADR 0006). Workspace packages are bundled in,
+// so the VSIX has no node_modules and no runtime dependencies.
+import { cpSync, rmSync } from 'node:fs';
 import * as esbuild from 'esbuild';
 
 const common = {
@@ -26,3 +28,6 @@ await Promise.all([
   }),
   esbuild.build({ ...common, entryPoints: ['test/suite.ts'], outfile: 'dist-test/suite.js' }),
 ]);
+
+rmSync('dist/profiles', { recursive: true, force: true });
+cpSync('../../profiles', 'dist/profiles', { recursive: true });
