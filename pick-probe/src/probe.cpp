@@ -273,13 +273,76 @@ const char* MouseName(UINT m) {
     }
 }
 
-bool Held(int vk) { return (GetKeyState(vk) & 0x8000) != 0; }
+void LogRawDevices(const char* when) {
+    RAWINPUTDEVICE devices[16];
+    UINT count = 16;
+    const UINT got = GetRegisteredRawInputDevices(devices, &count, sizeof(RAWINPUTDEVICE));
+    std::string raw = "[";
+    for (UINT i = 0; got != static_cast<UINT>(-1) && i < got; ++i) {
+        char buf[96];
+        std::snprintf(buf, sizeof(buf), "%s{\"page\":%u,\"usage\":%u,\"flags\":\"0x%lX\"}", i ? "," : "", devices[i].usUsagePage,
+                      devices[i].usUsage, devices[i].dwFlags);
+        raw += buf;
+    }
+    raw += "]";
+    Log("raw_input_devices", std::string("\"when\":\"") + when + "\",\"devices\":" + raw);
+}
+
+// Modifiers as the key messages this window procedure saw left them: posted
+// messages do not change GetKeyState, real input changes both.
+std::atomic<bool> g_msg_ctrl{false}, g_msg_shift{false}, g_msg_alt{false};
+
+bool Held(int vk) {
+    const bool by_message = vk == VK_CONTROL ? g_msg_ctrl.load() : vk == VK_SHIFT ? g_msg_shift.load() : g_msg_alt.load();
+    return by_message || (GetKeyState(vk) & 0x8000) != 0;
+}
+
+// The first few messages of each kind the game window gets, whatever the mode.
+std::atomic<int> g_seen_counts[8];
+void Diagnose(UINT message, WPARAM wparam, LPARAM lparam) {
+    int kind = -1;
+    std::string extra;
+    switch (message) {
+    case WM_KEYDOWN: kind = 0; break;
+    case WM_SYSKEYDOWN: kind = 1; break;
+    case WM_CHAR: kind = 2; break;
+    case WM_LBUTTONDOWN: kind = 3; break;
+    case WM_MOUSEMOVE: kind = 4; break;
+    case WM_MOUSEWHEEL: kind = 5; break;
+    case WM_INPUT: {
+        RAWINPUTHEADER header{};
+        UINT size = sizeof(header);
+        if (GetRawInputData(reinterpret_cast<HRAWINPUT>(lparam), RID_HEADER, &header, &size, sizeof(header)) == sizeof(header)) {
+            kind = header.dwType == RIM_TYPEMOUSE ? 6 : 7;
+        }
+        break;
+    }
+    default: return;
+    }
+    if (kind < 0 || g_seen_counts[kind].fetch_add(1) >= 3) return;
+    char buf[160];
+    std::snprintf(buf, sizeof(buf), "\"msg\":\"0x%X\",\"kind\":%d,\"wparam\":\"0x%llX\",\"lparam\":\"0x%llX\"", message, kind,
+                  static_cast<unsigned long long>(wparam), static_cast<unsigned long long>(lparam));
+    Log("seen", buf);
+}
 
 LRESULT CALLBACK WindowProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) {
     const auto tid = GetCurrentThreadId();
     if (g_wndproc_thread.exchange(tid) != tid) {
         Log("wndproc_thread", "\"thread\":" + std::to_string(tid) + ",\"main\":" +
                                   std::to_string(g_game != nullptr ? g_game->main_thread_id() : 0));
+    }
+    Diagnose(message, wparam, lparam);
+    if (message == WM_KEYDOWN || message == WM_SYSKEYDOWN || message == WM_KEYUP || message == WM_SYSKEYUP) {
+        const bool down = message == WM_KEYDOWN || message == WM_SYSKEYDOWN;
+        if (wparam == VK_CONTROL) g_msg_ctrl.store(down);
+        if (wparam == VK_SHIFT) g_msg_shift.store(down);
+        if (wparam == VK_MENU) g_msg_alt.store(down);
+    }
+    if (message == WM_KILLFOCUS) {
+        g_msg_ctrl.store(false);
+        g_msg_shift.store(false);
+        g_msg_alt.store(false);
     }
     if (message == WM_KEYDOWN || message == WM_SYSKEYDOWN) {
         const bool repeat = (lparam & (1 << 30)) != 0;
@@ -288,6 +351,7 @@ LRESULT CALLBACK WindowProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
                 const bool on = !g_pick.load();
                 g_pick.store(on);
                 g_last_hovered = 1;
+                LogRawDevices("pick");
                 Log("pick", std::string("\"on\":") + (on ? "true" : "false") + ",\"swallowed\":" +
                                 (g_swallow_key.load() ? "true" : "false"));
             }
@@ -372,6 +436,7 @@ void SubclassGameWindow() {
     }
     list += "]";
     if (chosen == nullptr) return;  // not created yet: the next frame tries again
+    LogRawDevices("subclass");
     g_original = reinterpret_cast<WNDPROC>(SetWindowLongPtrW(chosen, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&WindowProc)));
     g_window = chosen;
     DWORD pid = 0;
