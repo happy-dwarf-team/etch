@@ -198,6 +198,9 @@ void TestReloadClosesTheViewItOpened() {
     assert(stale->size() == 1 && (*stale)[0].Find("name")->AsString() == "culture_item");
     assert((*a.Find("lines")->AsArray())[1].Find("text")->AsString() == "reloaded!");
     assert(a.Find("roots")->Find("after")->AsUint() == 3u);
+    // Nothing is left visible: the dialog and the province view were closed.
+    assert(got->visible.empty());
+    assert(a.Find("visible")->AsArray()->empty());
 }
 
 void TestReloadKeepsAShownView() {
@@ -211,6 +214,7 @@ void TestReloadKeepsAShownView() {
     game.Frame();
     assert(got->hidden_again.empty());
     assert(got->stale.stale.empty() && got->stale.checked == 1);
+    assert(got->visible.size() == 1 && got->visible[0].file == "interface/provinceview.gui");
     assert((game.calls == std::vector<std::string>{"reload provinceview.gui"}));
 }
 

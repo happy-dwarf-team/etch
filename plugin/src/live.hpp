@@ -87,6 +87,7 @@ struct ReloadResult {
     std::vector<std::string> hidden_again;  // windows of `keep_hidden` closed again
     bool tree = false;                      // tongs.ui read the windows; without it no stale check
     StaleCheck stale;
+    std::vector<Root> visible;  // the visible top-level windows after the job that have a file
     std::size_t roots_before = 0;
     std::size_t roots_after = 0;
     double queued_ms = 0;  // from the request to the main thread

@@ -286,6 +286,7 @@ describe('the session pipe', () => {
         tree: true,
         checked: 2,
         stale: [{ name: 'culture_item', visible: false }],
+        visible: [{ name: 'provinceview', file: 'interface/provinceview.gui' }],
         roots: { before: 3158, after: 3159 },
         queued_ms: 12.5,
         run_ms: 71,
@@ -311,6 +312,7 @@ describe('the session pipe', () => {
       check: {
         checked: 2,
         stale: [{ name: 'culture_item', visible: false }],
+        visible: [{ name: 'provinceview', file: 'interface/provinceview.gui' }],
         roots: { before: 3158, after: 3159 },
       },
       queuedMs: 12.5,
