@@ -200,9 +200,22 @@
           "$ref": "#/definitions/paths"
         },
         "position": {
-          "description": "Widgets the game's code moves, keyed by path: the positionType of the window's file it moves them to.",
+          "description": "Widgets the game's code moves, keyed by path: the positionType of the window's file it moves them to, or { positionType, axis } when they take only its x or its y.",
           "type": "object",
-          "additionalProperties": { "$ref": "#/definitions/text" }
+          "additionalProperties": {
+            "oneOf": [
+              { "$ref": "#/definitions/text" },
+              {
+                "type": "object",
+                "required": ["positionType"],
+                "additionalProperties": false,
+                "properties": {
+                  "positionType": { "$ref": "#/definitions/text" },
+                  "axis": { "enum": ["x", "y"] }
+                }
+              }
+            ]
+          }
         },
         "frame": {
           "description": "Sprite frames the game's code sets, keyed by path, counted from 1.",

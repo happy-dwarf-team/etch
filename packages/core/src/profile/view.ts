@@ -58,6 +58,8 @@ export interface WidgetState {
   readonly why: string;
   /** The `positionType` the game's code moves it to. */
   readonly positionType?: string;
+  /** The one coordinate of the `positionType` it takes, when not both. */
+  readonly positionAxis?: 'x' | 'y' | undefined;
   /** The sprite frame the game's code sets, from 1. */
   readonly frame?: number;
 }
@@ -138,7 +140,9 @@ export function evaluateView(
         update(w, { created: false, why: `not created (${why})` });
     }
     for (const ref of rule.position) {
-      for (const w of widgetsAt(window, ref.path)) update(w, { positionType: ref.positionType });
+      for (const w of widgetsAt(window, ref.path)) {
+        update(w, { positionType: ref.positionType, positionAxis: ref.axis });
+      }
     }
     for (const ref of rule.frame) {
       for (const w of widgetsAt(window, ref.path)) update(w, { frame: ref.frame });
@@ -277,7 +281,7 @@ function deriveFromScreen(
   const moves = ENGINE_MOVES.get(window.name?.toLowerCase() ?? '');
   for (const move of (large ? moves?.large : moves?.small) ?? []) {
     for (const widget of widgetsAt(window, move.path))
-      update(widget, { positionType: move.positionType });
+      update(widget, { positionType: move.positionType, positionAxis: undefined });
   }
 }
 
@@ -293,6 +297,7 @@ export function layoutViewOf(view: WindowView): LayoutView {
       return state === undefined || (state.created && state.shown);
     },
     movedTo: (widget) => view.widgets.get(widget)?.positionType,
+    movedAxis: (widget) => view.widgets.get(widget)?.positionAxis,
     frame: (widget) => view.widgets.get(widget)?.frame,
   };
 }

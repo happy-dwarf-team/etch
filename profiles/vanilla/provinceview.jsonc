@@ -464,6 +464,23 @@
       "show": ["provinceview/province_window/queue_window"],
       "hide": ["provinceview/province_window/foreign_province_window"],
     },
+    "base-values": {
+      "note": "The game's code sets the y of the base tax, production and manpower values to development_value_vertical_position_exploitable (62 px in vanilla, 75 px in Proper 2K UI Enhanced) and keeps their x; the .gui writes y = 0 (every corpus capture, own and foreign). development_value_vertical_position_not_exploitable presumably applies where the exploit buttons are hidden.",
+      "position": {
+        "provinceview/province_window/tax_base_value": {
+          "positionType": "development_value_vertical_position_exploitable",
+          "axis": "y",
+        },
+        "provinceview/province_window/prod_base_value": {
+          "positionType": "development_value_vertical_position_exploitable",
+          "axis": "y",
+        },
+        "provinceview/province_window/mp_base_value": {
+          "positionType": "development_value_vertical_position_exploitable",
+          "axis": "y",
+        },
+      },
+    },
     "small-screen": {
       "when": { "screen": "small" },
       "hide": ["provinceview/province_terrain"],

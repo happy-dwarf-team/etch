@@ -669,7 +669,21 @@ function readRule(
     show: paths('show'),
     hide: paths('hide'),
     notCreated: paths('notCreated'),
-    position: keyed('position', (value) => ({ positionType: text$(value, 'a positionType') })),
+    position: keyed('position', (value) => {
+      if (value.kind !== 'object') return { positionType: text$(value, 'a positionType') };
+      const move = object(value, 'a move', ['positionType', 'axis']);
+      const typeNode = move.get('positionType');
+      if (typeNode === undefined) throw new Faulty('A move names its "positionType".', value);
+      const axisNode = move.get('axis');
+      const axis = axisNode === undefined ? undefined : text$(axisNode, '"axis"');
+      if (axis !== undefined && axis !== 'x' && axis !== 'y') {
+        throw new Faulty('"axis" is "x" or "y": the coordinate the move takes.', axisNode ?? value);
+      }
+      return {
+        positionType: text$(typeNode, 'a positionType'),
+        ...(axis === undefined ? {} : { axis }),
+      };
+    }),
     frame: keyed('frame', (value) => {
       if (value.kind !== 'number' || !Number.isInteger(value.value) || value.value < 1) {
         throw new Faulty('A frame is a whole number from 1.', value);

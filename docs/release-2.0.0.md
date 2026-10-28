@@ -157,6 +157,19 @@ against the corpus captures:
   Enhanced 5,264, Anbennar playset 24,058, Anbennar alone 60,740 widgets), and
   `profiles.trial.test.ts` holds each trial case in CI.
 
+**Base development out of place.** The base tax, production and manpower
+values were drawn 62 px (vanilla, Anbennar alone) or 75 px (Proper 2K UI
+Enhanced, P2KE Patch - Anbennar) above where the game draws them: their `.gui`
+writes `y = 0`, and the game's code gives them the `y` of
+`development_value_vertical_position_exploitable`, keeping their `x` (every
+province capture of the corpus). A rule's move can now take one coordinate of
+a `positionType` (`"axis": "y"`), and the vanilla profile's `base-values` rule
+does so. The sweep found nothing else: laid out offline, every widget of
+`provinceview` the game shows in the province captures of the four corpus
+playsets is where the game draws it, within 1 px, and every text filled from
+the corpus saves is the one the game shows in that widget, but the known trade
+power rounding (`profiles.positions.test.ts`, local).
+
 **Sample data and selectors (#219).**
 
 - *No way to type a text by hand.* A new top layer of sample data, **By

@@ -40,6 +40,10 @@ const GUI = readGuiFile(
       iconType = { name = "loot_progress_frame" }
       iconType = { name = "devastation_icon" }
       instantTextBoxType = { name = "devastation_value" }
+      instantTextBoxType = { name = "tax_base_value" }
+      instantTextBoxType = { name = "prod_base_value" }
+      instantTextBoxType = { name = "mp_base_value" }
+      instantTextBoxType = { name = "development_value" }
       iconType = { name = "building_fort" }
       iconType = { name = "no_building_fort" }
       instantTextBoxType = { name = "fort_number" }
@@ -184,6 +188,31 @@ describe('the province view as the 2.0.0 trial found it', () => {
     const dig = drawn(ANBENNAR, { buttonBar: 'open', slot2: 'dig_deeper_capital' });
     expect(dig('dig_deeper_capital')).toBe(true);
     expect(dig('ebonsteel_expand_infra_button')).toBe(false);
+  });
+
+  it('fills each base value from its own save key and moves it to the y the game does', () => {
+    const sources = new Map(VANILLA.content.map((c) => [c.path.path, c]));
+    const keys = (path: string): string[] =>
+      (sources.get(`provinceview/province_window/${path}`)?.save ?? []).map((s) => s.path);
+    expect(keys('tax_base_value')).toEqual(['provinces.{province}.base_tax']);
+    expect(keys('prod_base_value')).toEqual(['provinces.{province}.base_production']);
+    expect(keys('mp_base_value')).toEqual(['provinces.{province}.base_manpower']);
+    expect(keys('development_value')).toEqual([
+      'provinces.{province}.base_tax',
+      'provinces.{province}.base_production',
+      'provinces.{province}.base_manpower',
+    ]);
+    const view = evaluateView(VANILLA, WINDOW, SCREEN, {});
+    for (const name of ['tax_base_value', 'prod_base_value', 'mp_base_value']) {
+      const widget = widgetsAt(WINDOW, `provinceview/**/${name}`)[0] as Widget;
+      expect(view.widgets.get(widget)).toMatchObject({
+        positionType: 'development_value_vertical_position_exploitable',
+        positionAxis: 'y',
+      });
+    }
+    // development_value stays where the .gui writes it, as in every capture.
+    const total = widgetsAt(WINDOW, 'provinceview/**/development_value')[0] as Widget;
+    expect(view.widgets.get(total)?.positionType).toBeUndefined();
   });
 
   it('swaps the fort for the no-fort icon and hides its level (0x13728C0)', () => {

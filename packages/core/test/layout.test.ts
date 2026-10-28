@@ -150,6 +150,31 @@ describe('layoutWindow: placement', () => {
     expect(l.diagnostics).toEqual([]);
   });
 
+  it('moves a widget to a positionType, or to one coordinate of it, as the view says', () => {
+    const { file, input } = setUp(`guiTypes = {
+      positionType = { name = "row" position = { x = 0 y = 62 } }
+      windowType = { name = "w" size = { x = 400 y = 100 }
+        iconType = { name = "both" spriteType = "GFX_plain" position = { x = 80 y = 0 } }
+        iconType = { name = "y_only" spriteType = "GFX_plain" position = { x = 80 y = 0 } }
+        iconType = { name = "x_only" spriteType = "GFX_plain" position = { x = 80 y = 5 } }
+      }
+    }`);
+    const window = file.definitions.find((d) => d.name === 'w') as Widget;
+    const l = layoutWindow(window, {
+      ...input,
+      view: {
+        shows: () => true,
+        movedTo: (w) => (w === window ? undefined : 'row'),
+        movedAxis: (w) => (w.name === 'y_only' ? 'y' : w.name === 'x_only' ? 'x' : undefined),
+        frame: () => undefined,
+      },
+    });
+    expect(rectOf(l, 'both')).toEqual([0, 62, 20, 10]);
+    // The province view's base values: the y of the positionType, their own x (2.0.0 trial).
+    expect(rectOf(l, 'y_only')).toEqual([80, 62, 20, 10]);
+    expect(rectOf(l, 'x_only')).toEqual([0, 5, 20, 10]);
+  });
+
   it('gives a full-screen window the screen size and uses show_position', () => {
     const { layout } = setUp(`guiTypes = { windowType = {
       name = "full" fullScreen = yes size = { x = 10 y = 10 }

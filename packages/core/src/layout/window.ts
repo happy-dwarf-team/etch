@@ -107,6 +107,8 @@ export interface LayoutView {
   shows(widget: Widget): boolean;
   /** The name of the `positionType` the game's code moves the widget to. */
   movedTo(widget: Widget): string | undefined;
+  /** The one coordinate of that `positionType` the widget takes; both when `undefined`. */
+  movedAxis?(widget: Widget): 'x' | 'y' | undefined;
   /** The sprite frame, from 1, the game's code sets. */
   frame(widget: Widget): number | undefined;
 }
@@ -236,9 +238,17 @@ class Layout {
     this.current = widget;
     const anchor = this.anchor(props, parent);
     // Hypothesis: the preview shows a window where it ends up once opened, at `show_position`.
-    const offset = this.movedPosition(widget) ??
-      props.point('show_position') ??
-      props.point('position') ?? { x: 0, y: 0 };
+    const written = props.point('show_position') ?? props.point('position') ?? { x: 0, y: 0 };
+    const moved = this.movedPosition(widget);
+    const axis = view?.movedAxis?.(widget);
+    const offset =
+      moved === undefined
+        ? written
+        : axis === 'x'
+          ? { x: moved.x, y: written.y }
+          : axis === 'y'
+            ? { x: written.x, y: moved.y }
+            : moved;
     const frame = view?.frame(widget);
     const x = anchor.x + offset.x;
     const y = anchor.y + offset.y;
