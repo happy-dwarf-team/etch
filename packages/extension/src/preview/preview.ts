@@ -50,6 +50,7 @@ import {
   liveMatch,
   liveSelectors,
   sampleData,
+  windowPaths,
   withView,
   type LiveSnapshot,
   type ProfileDiagnostic,
@@ -65,7 +66,7 @@ import {
 } from '../live-game/index.ts';
 import { PipeError, type SnapshotAnswer } from '../live-game/pipe.ts';
 import { listSaves, savesFolder } from '../live-game/saves.ts';
-import type { OutlineToggle, WidgetNavigation } from '../navigation.ts';
+import type { OutlineTextEdit, OutlineToggle, WidgetNavigation } from '../navigation.ts';
 import { PreviewData, type LiveLayer } from './data.ts';
 import { LiveSnapshots, playsetKey, snapshotOf } from './live-snapshots.ts';
 import { previewHtml } from './html.ts';
@@ -107,6 +108,18 @@ const NATIVE_SCREEN_KEY = 'etch.nativeScreen';
 /** The save the preview last used, by workspace folder, read again when the preview opens. */
 const SAMPLE_SAVE_KEY = 'etch.sampleSave';
 
+/** The texts typed by hand, by window and widget path (spec section 5). */
+const HAND_TEXTS_KEY = 'etch.handTexts';
+
+/** The widgets whose text sample data fills: text boxes and buttons (`buttonText`). */
+const TEXT_KINDS = new Set([
+  'instantTextBoxType',
+  'textBoxType',
+  'editBoxType',
+  'guiButtonType',
+  'buttonType',
+]);
+
 /** The context key that is true while the preview is open. */
 export const PREVIEW_OPEN_CONTEXT = 'etch.previewOpen';
 
@@ -133,6 +146,11 @@ export interface PreviewRender {
   readonly view?: { readonly profile: LoadedProfile; readonly view: WindowView };
   /** The sample data drawn, when the window has a window profile (spec section 5). */
   readonly sample?: SampleData;
+  /**
+   * The window drawn instead, through a link that holds (an uncolonised province's
+   * `colonisationpanel`, spec section 2): `layout` is that window's, and a click pins it.
+   */
+  readonly linked?: string;
 }
 
 /** The webview's answer to a render. */
@@ -340,6 +358,12 @@ export class Preview implements PreviewApi, vscode.Disposable {
         },
       },
       (path) => readFile(path),
+      {
+        get: () => memento.get(HAND_TEXTS_KEY),
+        set: (texts) => {
+          void memento.update(HAND_TEXTS_KEY, texts);
+        },
+      },
     );
     this.native = validScreen(memento.get(NATIVE_SCREEN_KEY));
     this.loop = new RenderLoop(
@@ -358,6 +382,9 @@ export class Preview implements PreviewApi, vscode.Disposable {
       }),
       navigation.onDidToggle((toggle) => {
         this.toggle(toggle);
+      }),
+      navigation.onDidEditText((edit) => {
+        void this.editText(edit);
       }),
       profileWatcher,
       profileWatcher.onDidChange(profileChanged),
@@ -559,6 +586,9 @@ export class Preview implements PreviewApi, vscode.Disposable {
     const index = this.widgetIndexAt(point);
     const entry = this.render?.layout.widgets[index];
     if (entry === undefined || this.render?.source.document === undefined) return false;
+    // The window a link draws instead is in another file: a click pins it to edit it.
+    const linked = this.render.linked;
+    if (linked !== undefined) return this.openLink(linked);
     return this.navigation.revealSource(entry.widget.node.start);
   }
 
@@ -575,6 +605,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
     const highlight = this.navigation.highlighted;
     const selected =
       render &&
+      render.linked === undefined &&
       highlight?.source !== undefined &&
       highlight.uri.toString() === render.uri.toString()
         ? laidOutIndexOf(widgets, highlight.source)
@@ -782,6 +813,8 @@ export class Preview implements PreviewApi, vscode.Disposable {
             localise: localiseKey,
             length: this.data.length,
             ...(matched === undefined ? {} : { live: matched.texts }),
+            hand: this.data.handTexts(window.name ?? ''),
+            count: this.data.entryCounts(window.name ?? ''),
             template: (name) => {
               const found = session.ui.index.guiType(name);
               const owner = found === undefined ? undefined : session.guiFile(found.path);
@@ -790,12 +823,29 @@ export class Preview implements PreviewApi, vscode.Disposable {
                 : { widget: found.item, file: owner };
             },
           });
-    const layout = await layOutPreview(session.ui, session.assets, file, window, {
-      screen,
-      localise: session.localise,
-      ...(view === undefined ? {} : { view: layoutViewOf(view) }),
-      ...(sample === undefined ? {} : { content: layoutContentOf(sample) }),
-    });
+    // A link that holds: the game opens another window instead, which the preview draws, keeping
+    // this window's View ▾ so its selectors can switch back (spec section 2).
+    const links =
+      loaded === undefined || view === undefined ? [] : activeLinks(loaded.profile, view);
+    const linkedType =
+      links[0] === undefined ? undefined : session.ui.index.guiType(links[0].window);
+    const linkedFile = linkedType === undefined ? undefined : session.guiFile(linkedType.path);
+    const linked =
+      linkedType === undefined || linkedFile === undefined || links[0] === undefined
+        ? undefined
+        : { name: links[0].window, file: linkedFile, window: linkedType.item };
+    const layout =
+      linked === undefined
+        ? await layOutPreview(session.ui, session.assets, file, window, {
+            screen,
+            localise: session.localise,
+            ...(view === undefined ? {} : { view: layoutViewOf(view) }),
+            ...(sample === undefined ? {} : { content: layoutContentOf(sample) }),
+          })
+        : await layOutPreview(session.ui, session.assets, linked.file, linked.window, {
+            screen,
+            localise: session.localise,
+          });
     if (panel !== this.panel) return;
     const drawList: DrawList = {
       ...layout.drawList,
@@ -817,6 +867,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
       requestedAt,
       ...(loaded === undefined || view === undefined ? {} : { view: { profile: loaded, view } }),
       ...(sample === undefined ? {} : { sample }),
+      ...(linked === undefined ? {} : { linked: linked.name }),
     };
     this.last = { uri: uri.toString(), name: window.name };
     // The draw goes first: diagnostics are not on the warm reload's path to pixels.
@@ -856,9 +907,13 @@ export class Preview implements PreviewApi, vscode.Disposable {
       ...(loaded === undefined || view === undefined
         ? {}
         : {
-            links: activeLinks(loaded.profile, view).map((link) => ({
+            links: links.map((link) => ({
               window: link.window,
-              label: link.label ?? `The game opens ${link.window} instead.`,
+              label:
+                (link.label ?? `The game opens ${link.window} instead.`) +
+                (link === links[0] && linked !== undefined
+                  ? ` The preview draws ${link.window}; pin it to edit it.`
+                  : ''),
             })),
           }),
     });
@@ -870,7 +925,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
             file,
             window,
             offsets: source.offsets,
-            layout: layout.widgets,
+            ...(linked === undefined ? { layout: layout.widgets } : {}),
             ...(view === undefined ? {} : { view }),
             ...(sample === undefined ? {} : { sample }),
           }
@@ -1243,7 +1298,118 @@ export class Preview implements PreviewApi, vscode.Disposable {
       case 'refreshLive':
         await this.takeSnapshot();
         return;
+      case 'typeText':
+        await this.typeText();
+        return;
+      case 'clearHand': {
+        const name = this.render?.window.name;
+        if (name !== undefined) this.data.clearHand(name);
+        return;
+      }
+      case 'entries': {
+        const name = this.render?.window.name;
+        if (name !== undefined) this.data.setEntries(name, action.list, action.count);
+        return;
+      }
     }
+  }
+
+  /**
+   * The texts of the previewed window the view draws, as sample data addresses them: a widget's
+   * path in the window, a list entry's as `<list>/row[n]/<path in the entry>` (spec section 5).
+   */
+  private textTargets(): { path: string; label: string; text: string; widget: Widget }[] {
+    const render = this.render;
+    if (render === undefined) return [];
+    const paths = new Map(windowPaths(render.window).map((e) => [e.widget, e.path]));
+    const laid = render.layout.widgets;
+    const targets: { path: string; label: string; text: string; widget: Widget }[] = [];
+    laid.forEach((placed, index) => {
+      if (!TEXT_KINDS.has(placed.widget.kind)) return;
+      let path = paths.get(placed.widget);
+      if (placed.row !== undefined) {
+        // The entry's root is the first ancestor whose parent is not part of the entry.
+        let root = index;
+        while ((laid[laid[root]?.parent ?? -1]?.row ?? undefined) !== undefined) {
+          root = laid[root]?.parent ?? -1;
+        }
+        const list = laid[laid[root]?.parent ?? -1]?.widget;
+        const entry = laid[root]?.widget;
+        const listPath = list === undefined ? undefined : paths.get(list);
+        if (entry === undefined || listPath === undefined) return;
+        const inEntry = windowPaths(entry).find((e) => e.widget === placed.widget)?.path;
+        if (inEntry === undefined) return;
+        const relative = inEntry.split('/').slice(1).join('/');
+        path = `${listPath}/row[${String(placed.row + 1)}]${relative === '' ? '' : `/${relative}`}`;
+      }
+      if (path === undefined) return;
+      const text = render.sample?.text(placed.widget, placed.row)?.text ?? '';
+      targets.push({
+        path,
+        label: path.split('/').slice(-2).join('/'),
+        text,
+        widget: placed.widget,
+      });
+    });
+    return targets;
+  }
+
+  /**
+   * Types the sample text of a text of the previewed window by hand (spec section 5): the widget
+   * given, else one the user picks among the texts the view draws.
+   */
+  private async typeText(widget?: Widget): Promise<void> {
+    const render = this.render;
+    const name = render?.window.name;
+    if (render === undefined || name === undefined) return;
+    const targets = this.textTargets();
+    let target =
+      widget === undefined
+        ? undefined
+        : targets.find((t) => t.widget === widget && !/\/row\[/.test(t.path));
+    if (widget !== undefined && target === undefined) {
+      const path = windowPaths(render.window).find((e) => e.widget === widget)?.path;
+      if (path === undefined) return;
+      target = { path, label: path, text: render.sample?.text(widget)?.text ?? '', widget };
+    }
+    if (target === undefined) {
+      const picked = await vscode.window.showQuickPick(
+        targets.map((t) => ({
+          label: t.label,
+          description: t.text === '' ? '(empty)' : `"${t.text}"`,
+          detail: t.path,
+          target: t,
+        })),
+        {
+          title: `Type a text of ${name}`,
+          placeHolder: 'The text whose sample you type; it wins over every other layer',
+          matchOnDescription: true,
+          matchOnDetail: true,
+        },
+      );
+      target = picked?.target;
+    }
+    if (target === undefined) return;
+    const typed = await vscode.window.showInputBox({
+      title: `Sample text of ${target.label}`,
+      prompt: `${target.path}: shown in the preview over the save, the live snapshot and generated text. Clear it from Data ▾ or the Widget Outline.`,
+      value: this.data.handText(name, target.path) ?? target.text,
+    });
+    if (typed === undefined) return;
+    this.data.setHandText(name, target.path, typed);
+  }
+
+  /** A text typed or taken back from the Widget Outline. */
+  private async editText(edit: OutlineTextEdit): Promise<void> {
+    const render = this.render;
+    const name = render?.window.name;
+    if (render === undefined || name === undefined) return;
+    if (!edit.clear) {
+      await this.typeText(edit.widget);
+      return;
+    }
+    const path = windowPaths(render.window).find((e) => e.widget === edit.widget)?.path;
+    if (path !== undefined) this.data.setHandText(name, path, undefined);
   }
 
   // ---- The live game (spec section 7) ----------------------------------------------------------

@@ -5,7 +5,12 @@
  * case, as the game compares them. Paths are written as Tongs and the corpus write them
  * (`corpus/widget-path.ts`), whose patterns write any depth as `//`.
  */
-import { matchesWidgetPattern, widgetPatternProblem } from '../corpus/widget-path.ts';
+import {
+  matchesSplitWidgetPath,
+  splitWidgetPath,
+  widgetPatternProblem,
+  type PathStep,
+} from '../corpus/widget-path.ts';
 import type { Widget } from '../model/gui.ts';
 
 /** A widget of a window and its path. */
@@ -78,14 +83,25 @@ export function widgetsAt(window: Widget, path: string): readonly Widget[] {
   const found = known.get(path);
   if (found !== undefined) return found;
   const compiled = profilePattern(path);
+  let split = steps.get(window);
+  if (split === undefined) {
+    split = windowPaths(window).map((entry) => splitWidgetPath(entry.path));
+    steps.set(window, split);
+  }
+  const parts = split;
   const widgets =
     'problem' in compiled
       ? []
       : windowPaths(window)
-          .filter((entry) => matchesWidgetPattern(compiled.pattern, entry.path))
+          .filter((_, i) => {
+            const at = parts[i];
+            return at !== undefined && matchesSplitWidgetPath(compiled.pattern, at);
+          })
           .map((entry) => entry.widget);
   known.set(path, widgets);
   return widgets;
 }
 
 const matches = new WeakMap<Widget, Map<string, readonly Widget[]>>();
+/** Each window path split into its steps once, in `windowPaths` order. */
+const steps = new WeakMap<Widget, readonly (readonly PathStep[] | undefined)[]>();

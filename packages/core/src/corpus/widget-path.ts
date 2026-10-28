@@ -15,11 +15,14 @@ interface PatternStep {
   /** Whether the step may match any number of levels below the previous one (`//`). */
   readonly deep: boolean;
   readonly name: RegExp;
+  /** The name in lower case when it has no wildcard, compared without the expression. */
+  readonly literal: string | undefined;
   /** The `[n]` the step asks for, or `undefined` for any. */
   readonly index: number | undefined;
 }
 
-interface PathStep {
+/** A step of a widget path: its name and `[n]`. */
+export interface PathStep {
   readonly name: string;
   readonly index: number | undefined;
 }
@@ -30,6 +33,20 @@ const STEP = /^([^[\]/]*)(?:\[([1-9]\d*)\])?$/;
 export function widgetPatternProblem(pattern: string): string | undefined {
   const steps = compile(pattern);
   return typeof steps === 'string' ? steps : undefined;
+}
+
+/**
+ * Whether a widget path, split by `splitWidgetPath` once, matches a pattern; for matching many
+ * paths of a window against many patterns (a window profile). A pattern ends at the path's last
+ * step, so that step is compared first.
+ */
+export function matchesSplitWidgetPath(pattern: string, parts: readonly PathStep[]): boolean {
+  const steps = compile(pattern);
+  if (typeof steps === 'string') return false;
+  const last = steps[steps.length - 1];
+  const end = parts[parts.length - 1];
+  if (last === undefined || end === undefined || !stepMatches(last, end)) return false;
+  return matchFrom(steps, 0, parts, 0);
 }
 
 /** Whether a widget path matches a pattern; `false` for a pattern that cannot be used. */
@@ -97,6 +114,7 @@ function compileUncached(pattern: string): PatternStep[] | string {
     steps.push({
       deep,
       name: wildcard(name),
+      literal: name === '' || /[*?]/.test(name) ? undefined : name.toLowerCase(),
       index: match[2] === undefined ? undefined : Number(match[2]),
     });
     deep = false;
@@ -135,5 +153,7 @@ function matchFrom(
 
 function stepMatches(step: PatternStep, part: PathStep): boolean {
   if (step.index !== undefined && step.index !== part.index) return false;
-  return step.name.test(part.name);
+  return step.literal === undefined
+    ? step.name.test(part.name)
+    : step.literal.length === part.name.length && step.literal === part.name.toLowerCase();
 }

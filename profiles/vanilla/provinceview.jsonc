@@ -268,7 +268,117 @@
       "generated": "percent",
     },
   },
+  // Lists the game's code fills (spec section 5): each with sample entries whose number Data ▾
+  // changes. Entries the code puts in a window go where the window's file says: the game reads
+  // the positionTypes named in "place" (building_start and its kin), so each playset has its own.
   "repeaters": {
+    "provinceview/buildings_window/general_buildings_window": {
+      "note": "The building slots, filled and free (building_progress_entry, eu4.exe 0x13899F0): from building_start, building_offset apart, building_max_per_row to a row (the corpus captures).",
+      "template": "building_progress_entry",
+      "count": 8,
+      "place": {
+        "start": "building_start",
+        "step": "building_offset",
+        "columns": "building_max_per_row",
+      },
+    },
+    "provinceview/province_window/build_army_view": {
+      "note": "The land units the province can recruit (unit, eu4.exe 0xE217B0): from build_unit, build_unit_offset apart.",
+      "template": "unit",
+      "count": 4,
+      "place": { "start": "build_unit", "step": "build_unit_offset" },
+      "fields": {
+        "unit/unit_name": { "generated": "text" },
+        "unit/unit_cost": { "engine": true, "generated": "number" },
+        "unit/unit_buildtime": { "engine": true, "generated": "date" },
+      },
+    },
+    "provinceview/province_window/build_navy_view": {
+      "note": "The ships the province can build (naval_unit, eu4.exe 0xE1D5D0): from build_unit, build_unit_offset apart.",
+      "template": "naval_unit",
+      "count": 3,
+      "place": { "start": "build_unit", "step": "build_unit_offset" },
+      "fields": {
+        "naval_unit/unit_name": { "generated": "text" },
+        "naval_unit/unit_cost": { "engine": true, "generated": "number" },
+        "naval_unit/unit_buildtime": { "engine": true, "generated": "date" },
+      },
+    },
+    "provinceview/province_window/build_army_view/buildqueue": {
+      "note": "The units in construction (queue_entry).",
+      "template": "queue_entry",
+      "count": 2,
+      "fields": {
+        "queue_entry/unit_name": { "generated": "text" },
+        "queue_entry/subunit_date": { "engine": true, "generated": "date" },
+      },
+    },
+    "provinceview/province_window/build_navy_view/buildqueue": {
+      "note": "The ships in construction (queue_entry).",
+      "template": "queue_entry",
+      "count": 2,
+      "fields": {
+        "queue_entry/unit_name": { "generated": "text" },
+        "queue_entry/subunit_date": { "engine": true, "generated": "date" },
+      },
+    },
+    "provinceview/province_window/change_culture_view/cultures": {
+      "note": "The cultures the province can change to (culture_item, eu4.exe 0xE2ABF0).",
+      "template": "culture_item",
+      "count": 4,
+    },
+    "provinceview/province_window/cores_box": {
+      "note": "One shield per core (CoreShieldItem, eu4.exe 0x136F3C0); claims and territorial cores use their own templates.",
+      "template": "CoreShieldItem",
+      "from": "provinces.{province}.cores",
+      "count": 2,
+    },
+    "provinceview/province_window/foreign_province_window/diplostatus_box": {
+      "note": "The owner's relations with the player (foreignviewview_diplistitem, eu4.exe 0x10CC2F0).",
+      "template": "foreignviewview_diplistitem",
+      "count": 2,
+    },
+    "provinceview/province_window/transfer_occupation_window/eligitable_allies": {
+      "note": "The allies the occupation can go to (allies_selection_entry).",
+      "template": "allies_selection_entry",
+      "count": 3,
+      "fields": { "allies_selection_entry/name": { "generated": "text" } },
+    },
+    "provinceview/province_window/allied_objectives_list/list": {
+      "note": "The allies an objective can be set for (allied_objective_country).",
+      "template": "allied_objective_country",
+      "count": 3,
+    },
+    "provinceview/state_window/provinces_listbox": {
+      "note": "The provinces of the state (state_province_entry).",
+      "template": "state_province_entry",
+      "count": 4,
+      "fields": {
+        "state_province_entry/name": { "generated": "text" },
+        "state_province_entry/development": { "generated": "number" },
+        "state_province_entry/culture": { "generated": "text" },
+      },
+    },
+    "provinceview/buildings_window/select_building*/list1": {
+      "note": "The buildings a slot can take, which opens on a click on the slot (possible_building_entry).",
+      "template": "possible_building_entry",
+      "count": 4,
+    },
+    "provinceview/buildings_window/natives_buildings_window*/buildings": {
+      "note": "The native buildings (native_building_entry).",
+      "template": "native_building_entry",
+      "count": 3,
+    },
+    "provinceview/institutions_window/institutions": {
+      "note": "The institutions and their presence in the province (province_institution_entry, eu4.exe 0x1382CA0).",
+      "template": "province_institution_entry",
+      "from": "provinces.{province}.institutions",
+      "count": 5,
+      "fields": {
+        "province_institution_entry/progress_label": { "generated": "percent" },
+        "province_institution_entry/growth_per_month": { "engine": true, "generated": "number" },
+      },
+    },
     "provinceview/buildings_window/great_projects_window/great_projects_list": {
       "note": "Entries of great_project_entry (0x1398C30, etch#155), one per great project of the province.",
       "template": "great_project_entry",

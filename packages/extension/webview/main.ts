@@ -149,7 +149,8 @@ const LENGTHS: readonly TextLengthName[] = ['short', 'typical', 'long', 'overflo
 
 /**
  * Fills `Data ▾` (spec section 5): the layers, upper ones winning, each with how many texts it
- * fills; the save's choices under its layer, and the generated text's length under its own.
+ * fills; typing a text under the hand layer, the save's choices under its layer, the generated
+ * text's length under its own; then the lists the game fills, each with its number of entries.
  */
 function showDataMenu(menu: DataMenu | undefined): void {
   dataButton.hidden = menu === undefined;
@@ -196,6 +197,31 @@ function showDataMenu(menu: DataMenu | undefined): void {
     count.textContent = `${String(layer.count)} ${layer.count === 1 ? 'text' : 'texts'}`;
     row.append(box, label, count);
     children.push(row, line('detail', layer.detail));
+    if (layer.id === 'hand') {
+      const actions = document.createElement('div');
+      actions.className = 'actions';
+      actions.append(
+        button(
+          'Type a text…',
+          () => {
+            dataAction({ kind: 'typeText' });
+          },
+          'Choose a text of the window and type what it shows',
+        ),
+      );
+      if (layer.count > 0) {
+        actions.append(
+          button(
+            'Clear',
+            () => {
+              dataAction({ kind: 'clearHand' });
+            },
+            'Take back every text typed for this window',
+          ),
+        );
+      }
+      children.push(actions);
+    }
     if (layer.id === 'live' && menu.canRefresh) {
       const actions = document.createElement('div');
       actions.className = 'actions';
@@ -263,6 +289,51 @@ function showDataMenu(menu: DataMenu | undefined): void {
         actions.append(b);
       }
       children.push(actions);
+    }
+  }
+  if (menu.lists.length > 0) {
+    const lists = document.createElement('h4');
+    lists.textContent = 'Lists the game fills';
+    children.push(lists);
+    for (const list of menu.lists) {
+      const row = document.createElement('div');
+      row.className = 'layer list';
+      const label = document.createElement('span');
+      label.textContent = list.label;
+      const count = document.createElement('span');
+      count.className = 'count';
+      count.textContent = `${String(list.count)} ${list.count === 1 ? 'entry' : 'entries'}`;
+      const less = button(
+        '−',
+        () => {
+          dataAction({ kind: 'entries', list: list.id, count: list.count - 1 });
+        },
+        'One entry fewer',
+      );
+      less.disabled = list.count === 0;
+      const more = button(
+        '+',
+        () => {
+          dataAction({ kind: 'entries', list: list.id, count: list.count + 1 });
+        },
+        'One entry more',
+      );
+      row.append(label, less, count, more);
+      children.push(row);
+      const detail = line('detail', list.detail);
+      if (list.bySet) {
+        detail.append(
+          ' ',
+          button(
+            'Reset',
+            () => {
+              dataAction({ kind: 'entries', list: list.id });
+            },
+            "Back to the save's or the profile's number",
+          ),
+        );
+      }
+      children.push(detail);
     }
   }
   dataPopup.replaceChildren(...children);

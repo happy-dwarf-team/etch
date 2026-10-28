@@ -2,6 +2,7 @@
  * Sample data (spec section 5, etch#159): the text each code-filled widget of a profiled window
  * shows, from the layers of `Data ▾`, upper ones winning:
  *
+ * 0. **hand**: a text the user typed for a widget, by its path, any text of the window;
  * 1. **live**: a live snapshot (M9), by widget path, when it is on;
  * 2. **save**: the chosen save, country and province, through the profile's `save` sources;
  * 3. **files**: the playset's localisation, for `loc` sources and the `localise` transform;
@@ -9,19 +10,20 @@
  *
  * A value a layer lacks falls through to the next; Etch never computes one the way the engine
  * would (spec section 1). Repeaters fill list boxes with entries of a template: one per child of
- * a save collection, or `count` generated entries without a save.
+ * a save collection, or `count` generated entries without a save; the user can set the number of
+ * entries of each, the save's first.
  */
 import type { LayoutContent } from '../layout/window.ts';
 import type { GuiFile, Widget } from '../model/gui.ts';
 import { scalarIn, valueIn } from '../save/save.ts';
-import type { ContentSource, GeneratedKind, Link, WindowProfile } from './format.ts';
+import type { ContentSource, GeneratedKind, Link, Placement, WindowProfile } from './format.ts';
 import { widgetsAt, windowPaths } from './paths.ts';
 import { readSavePath, type RepeaterEntry, type SaveChoice } from './save-paths.ts';
 import type { WindowView } from './view.ts';
 
-export type DataLayer = 'live' | 'save' | 'files' | 'generated';
+export type DataLayer = 'hand' | 'live' | 'save' | 'files' | 'generated';
 
-export const DATA_LAYERS: readonly DataLayer[] = ['live', 'save', 'files', 'generated'];
+export const DATA_LAYERS: readonly DataLayer[] = ['hand', 'live', 'save', 'files', 'generated'];
 
 /** The generated layer's lengths: `typical` by default, `overflow` to test what does not fit. */
 export type TextLength = 'short' | 'typical' | 'long' | 'overflow';
@@ -75,6 +77,10 @@ export interface SampleInput {
   readonly live?: LiveTexts;
   /** The playset's top-level definition of a name, for repeaters. */
   readonly template?: (name: string) => Template | undefined;
+  /** Texts the user typed, by widget path as live texts are (a list's row included). */
+  readonly hand?: LiveTexts;
+  /** The number of entries the user set for a repeater, by its id; the save's or the profile's otherwise. */
+  readonly count?: (repeater: string) => number | undefined;
 }
 
 /** A widget's sample text and the layer it comes from. */
@@ -92,6 +98,23 @@ export interface SampleRows {
   readonly count: number;
   /** Where the entries come from: the save collection, or `generated`. */
   readonly layer: DataLayer;
+  /** Where the game's code puts them in a window that is not a list box. */
+  readonly place?: Placement;
+}
+
+/** A repeater of the window, for `Data ▾`'s lists. */
+export interface SampleList {
+  /** The repeater's id: the list's path as the profile writes it. */
+  readonly id: string;
+  /** The list's name and the template's, for a label. */
+  readonly list: string;
+  readonly template: string;
+  readonly count: number;
+  /** Whether the user set the number; otherwise it is the save's or the profile's. */
+  readonly bySet: boolean;
+  readonly layer: DataLayer;
+  /** Whether the view draws the list. */
+  readonly drawn: boolean;
 }
 
 export interface SampleData {
@@ -101,6 +124,8 @@ export interface SampleData {
   rows(list: Widget): SampleRows | undefined;
   /** How many texts each layer fills, of the widgets the view draws. */
   readonly counts: Readonly<Record<DataLayer, number>>;
+  /** The window's repeaters whose template the playset defines. */
+  readonly lists: readonly SampleList[];
 }
 
 /** The sample data of a window in a view. */
@@ -110,7 +135,7 @@ export function sampleData(
   view: WindowView | undefined,
   input: SampleInput,
 ): SampleData {
-  const counts: Record<DataLayer, number> = { live: 0, save: 0, files: 0, generated: 0 };
+  const counts: Record<DataLayer, number> = { hand: 0, live: 0, save: 0, files: 0, generated: 0 };
   const drawn = (widget: Widget): boolean => view?.drawn(widget) ?? true;
   const pathOf = new Map(windowPaths(window).map((entry) => [entry.widget, entry.path]));
 
@@ -121,10 +146,17 @@ export function sampleData(
       texts.set(widget, text);
     }
   }
+  if (input.hand !== undefined) {
+    for (const [widget, path] of pathOf) {
+      const text = input.hand.text(path);
+      if (text !== undefined) texts.set(widget, { text, layer: 'hand', detail: path });
+    }
+  }
   for (const [widget, text] of texts) if (drawn(widget)) counts[text.layer]++;
 
   const rows = new Map<Widget, SampleRows>();
   const rowTexts = new Map<Widget, Map<Widget, SampleText>[]>();
+  const lists: SampleList[] = [];
   for (const repeater of profile.repeaters) {
     const template = input.template?.(repeater.template);
     if (template === undefined) continue;
@@ -136,11 +168,32 @@ export function sampleData(
       input.save !== undefined && from !== undefined && !('problem' in from)
         ? input.save.entries(from)
         : undefined;
-    const count = entries?.length ?? repeater.count;
+    const set = input.count?.(repeater.id);
+    const count = set ?? entries?.length ?? repeater.count;
     const layer: DataLayer = entries === undefined ? 'generated' : 'save';
     const templatePaths = windowPaths(template.widget);
-    for (const list of widgetsAt(window, repeater.path.path)) {
-      rows.set(list, { template: template.widget, file: template.file, count, layer });
+    const rowPath = (listPath: string, row: number, inEntry: string): string => {
+      const relative = inEntry.split('/').slice(1).join('/');
+      return `${listPath}/row[${String(row + 1)}]${relative === '' ? '' : `/${relative}`}`;
+    };
+    const found = widgetsAt(window, repeater.path.path);
+    lists.push({
+      id: repeater.id,
+      list: found[0]?.name ?? repeater.path.path,
+      template: repeater.template,
+      count,
+      bySet: set !== undefined,
+      layer,
+      drawn: found.some(drawn),
+    });
+    for (const list of found) {
+      rows.set(list, {
+        template: template.widget,
+        file: template.file,
+        count,
+        layer,
+        ...(repeater.place === undefined ? {} : { place: repeater.place }),
+      });
       const listPath = pathOf.get(list) ?? repeater.path.path;
       const perRow: Map<Widget, SampleText>[] = [];
       for (let row = 0; row < count; row++) {
@@ -148,13 +201,20 @@ export function sampleData(
         for (const field of repeater.fields) {
           for (const widget of widgetsAt(template.widget, field.path.path)) {
             const inEntry = templatePaths.find((p) => p.widget === widget)?.path ?? field.path.path;
-            const relative = inEntry.split('/').slice(1).join('/');
-            const livePath = `${listPath}/row[${String(row + 1)}]${relative === '' ? '' : `/${relative}`}`;
-            const text = resolve(field, livePath, entries?.[row], input);
-            filled.set(widget, text);
-            if (drawn(list)) counts[text.layer]++;
+            filled.set(
+              widget,
+              resolve(field, rowPath(listPath, row, inEntry), entries?.[row], input),
+            );
           }
         }
+        if (input.hand !== undefined) {
+          for (const entry of templatePaths) {
+            const path = rowPath(listPath, row, entry.path);
+            const text = input.hand.text(path);
+            if (text !== undefined) filled.set(entry.widget, { text, layer: 'hand', detail: path });
+          }
+        }
+        if (drawn(list)) for (const text of filled.values()) counts[text.layer]++;
         perRow.push(filled);
       }
       rowTexts.set(list, perRow);
@@ -162,11 +222,11 @@ export function sampleData(
   }
 
   // A row's widget is shared by every row: look it up in each list's rows.
-  const lists = [...rowTexts.values()];
+  const perList = [...rowTexts.values()];
   return {
     text: (widget, row) => {
       if (row === undefined) return texts.get(widget);
-      for (const perRow of lists) {
+      for (const perRow of perList) {
         const found = perRow[row]?.get(widget);
         if (found !== undefined) return found;
       }
@@ -174,16 +234,19 @@ export function sampleData(
     },
     rows: (list) => rows.get(list),
     counts,
+    lists,
   };
 }
 
-/** One text through the layers: live, then its source, then generated. */
+/** One text through the layers: by hand, live, then its source, then generated. */
 function resolve(
   source: ContentSource,
   path: string,
   entry: RepeaterEntry | undefined,
   input: SampleInput,
 ): SampleText {
+  const hand = input.hand?.text(path);
+  if (hand !== undefined) return { text: hand, layer: 'hand', detail: path };
   const live = input.live?.text(path);
   if (live !== undefined) return { text: live, layer: 'live', detail: path };
   if (source.source === 'save' && input.save !== undefined) {

@@ -80,10 +80,22 @@ export interface LayoutInput {
 export interface LayoutContent {
   /** A widget's text; `row` is the entry of a list box the widget is part of. */
   text(widget: Widget, row: number | undefined): string | undefined;
-  /** The entries of a list box: a top-level definition, from its file, `count` times. */
-  rows(
-    list: Widget,
-  ): { readonly template: Widget; readonly file: GuiFile; readonly count: number } | undefined;
+  /**
+   * The entries of a list box: a top-level definition, from its file, `count` times; with `place`,
+   * the entries the game's code puts in a window, from `x`, `y`, `columns` to a row, `step` apart.
+   */
+  rows(list: Widget):
+    | {
+        readonly template: Widget;
+        readonly file: GuiFile;
+        readonly count: number;
+        readonly place?: {
+          readonly start: { readonly x: number; readonly y: number } | string;
+          readonly step?: { readonly x: number; readonly y: number } | string;
+          readonly columns?: number | string;
+        };
+      }
+    | undefined;
 }
 
 /**
@@ -285,12 +297,97 @@ class Layout {
     });
 
     if (LISTS.has(kind)) this.placeRows(widget, props, rect, index);
+    if (kind === 'OverlappingElementsBoxType') this.placeOverlapping(widget, props, rect, index);
     // A `scrollbarType` has no render node of its own; lists create it when their rows overflow
     // (etch#3), and the preview does not scroll.
     if (kind === 'scrollbarType') return;
     for (const child of this.paintOrder(widget, props)) {
       this.place(child.widget, rect, index, child.background ? rect : undefined);
     }
+    if (CONTAINERS.has(kind)) this.placeEntries(widget, rect, index);
+  }
+
+  /**
+   * The entries the game's code puts in a window that is not a list box (spec section 5, a
+   * repeater's `place`), after the window's own children, so on top of them: the first at `start`
+   * of the window, each next `step` further (the template's size by default), or with `columns` a
+   * new row after that many, `step.y` lower. A place named by a `positionType` takes its position
+   * from the window's file, as the game's code reads it: `building_start`, `building_offset` and
+   * `building_max_per_row` give the building slots of `general_buildings_window` (corpus: 64 px
+   * apart in rows of four in vanilla, 77 px in Proper 2K UI Enhanced). Nothing is clipped.
+   */
+  private placeEntries(window: Widget, rect: Rect, index: number): void {
+    const rows = this.input.content?.rows(window);
+    const place = rows?.place;
+    if (rows === undefined || place === undefined || rows.count === 0) return;
+    const point = (
+      value: { readonly x: number; readonly y: number } | string | undefined,
+    ): { x: number; y: number } | undefined => {
+      if (typeof value !== 'string') return value;
+      const target = this.input.file.definitions.find(
+        (d) => d.kind === 'positionType' && d.name?.toLowerCase() === value.toLowerCase(),
+      );
+      return target === undefined
+        ? undefined
+        : widgetProperties(target, this.input.file.constants, this.input.screen).point('position');
+    };
+    const start = point(place.start) ?? { x: 0, y: 0 };
+    const size = sizeIn(
+      widgetProperties(rows.template, rows.file.constants, this.input.screen).size('size'),
+      rect,
+    );
+    const step = point(place.step) ?? { x: size.width, y: size.height };
+    const columns =
+      typeof place.columns === 'string' ? point(place.columns)?.x : (place.columns ?? undefined);
+    const outer = { constants: this.constants, row: this.row };
+    this.constants = rows.file.constants;
+    for (let row = 0; row < rows.count; row++) {
+      this.row = row;
+      const across = columns === undefined || columns < 1 ? row : row % columns;
+      const down = columns === undefined || columns < 1 ? row : Math.floor(row / columns);
+      const box: Rect = {
+        x: rect.x + start.x + across * step.x,
+        y: rect.y + start.y + down * step.y,
+        width: size.width,
+        height: size.height,
+      };
+      this.place(rows.template, box, index, undefined);
+    }
+    this.constants = outer.constants;
+    this.row = outer.row;
+  }
+
+  /**
+   * The entries sample data puts in an `OverlappingElementsBoxType` (the core shields of
+   * `cores_box`): side by side from its left, `spacing` apart, and moved closer, overlapping, when
+   * they do not fit its width. Seen in the corpus: two 32 px shields of `cores_box` (spacing 1)
+   * 33 px apart; the overlap is a hypothesis from the name.
+   */
+  private placeOverlapping(box: Widget, props: Properties, rect: Rect, index: number): void {
+    const rows = this.input.content?.rows(box);
+    if (rows === undefined || rows.count === 0) return;
+    const size = sizeIn(
+      widgetProperties(rows.template, rows.file.constants, this.input.screen).size('size'),
+      rect,
+    );
+    const spacing = props.number('spacing') ?? 0;
+    const fits = rows.count * size.width + (rows.count - 1) * spacing <= rect.width;
+    const step =
+      fits || rows.count < 2 ? size.width + spacing : (rect.width - size.width) / (rows.count - 1);
+    const outer = { constants: this.constants, row: this.row };
+    this.constants = rows.file.constants;
+    for (let row = 0; row < rows.count; row++) {
+      this.row = row;
+      const box: Rect = {
+        x: rect.x + Math.round(row * step),
+        y: rect.y,
+        width: size.width,
+        height: size.height,
+      };
+      this.place(rows.template, box, index, undefined);
+    }
+    this.constants = outer.constants;
+    this.row = outer.row;
   }
 
   /**

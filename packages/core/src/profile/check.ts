@@ -26,7 +26,8 @@ import { profilePattern, widgetsAt } from './paths.ts';
 import { readSavePath } from './save-paths.ts';
 
 /** The widget kinds a repeater fills. */
-const LIST_KINDS = new Set(['listboxType', 'smoothListboxType']);
+const LIST_KINDS = new Set(['listboxType', 'smoothListboxType', 'OverlappingElementsBoxType']);
+const WINDOW_KINDS = new Set(['windowType', 'containerWindowType']);
 
 export interface ProfileCheckInput {
   /** The top-level window, as the playset's winning `.gui` file defines it. */
@@ -220,15 +221,34 @@ export function checkProfile(profile: WindowProfile, input: ProfileCheckInput): 
   const repeaters = profile.repeaters.filter((repeater: Repeater) => {
     let ok = !pathFails(repeater, repeater.path);
     for (const list of widgetsAt(input.window, repeater.path.path)) {
-      if (!LIST_KINDS.has(list.kind)) {
+      if (
+        repeater.place === undefined ? !LIST_KINDS.has(list.kind) : !WINDOW_KINDS.has(list.kind)
+      ) {
         error(
           repeater,
           'profile-unknown-path',
           repeater.path.range,
-          `A repeater fills a list box; "${repeater.path.path}" is a ${list.kind}.`,
+          repeater.place === undefined
+            ? `A repeater fills a list box; "${repeater.path.path}" is a ${list.kind}.`
+            : `A repeater with "place" fills a window; "${repeater.path.path}" is a ${list.kind}.`,
         );
         ok = false;
         break;
+      }
+    }
+    const place = repeater.place;
+    const named = [place?.start, place?.step, place?.columns].filter(
+      (v): v is string => typeof v === 'string',
+    );
+    for (const name of named) {
+      if (!input.positionType(name)) {
+        error(
+          repeater,
+          'profile-unknown-name',
+          repeater.path.range,
+          `The file of ${profile.window} defines no positionType "${name}" for the entries' place.`,
+        );
+        ok = false;
       }
     }
     if (repeater.from !== undefined) {

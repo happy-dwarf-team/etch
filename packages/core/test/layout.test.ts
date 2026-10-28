@@ -672,4 +672,32 @@ describe('layoutWindow: sample data', () => {
     const glyphs = (only(second) as { glyphs: readonly number[] }).glyphs;
     expect(glyphs).toHaveLength(4 * GLYPH_STRIDE);
   });
+
+  it("puts the entries the game's code places in a window in rows, a template's size apart", () => {
+    const { file, input } = setUp(GUI);
+    const window = file.definitions[0] as Widget;
+    const entry = file.definitions[1] as Widget;
+    const l = layoutWindow(window, {
+      ...input,
+      content: {
+        text: () => undefined,
+        rows: (w) =>
+          w === window
+            ? { template: entry, file, count: 5, place: { start: { x: 4, y: 6 }, columns: 2 } }
+            : undefined,
+      },
+    });
+    const rows = l.widgets.filter((w) => w.widget === entry);
+    // From (4, 6) of the window at the screen's origin, two to a row of 60×20 entries.
+    expect(rows.map((r) => [r.x, r.y, r.row])).toEqual([
+      [4, 6, 0],
+      [64, 6, 1],
+      [4, 26, 2],
+      [64, 26, 3],
+      [4, 46, 4],
+    ]);
+    // After the window's own children: drawn over them.
+    const list = l.widgets.findIndex((w) => w.widget.name === 'list');
+    expect(l.widgets.findIndex((w) => w.widget === entry)).toBeGreaterThan(list);
+  });
 });

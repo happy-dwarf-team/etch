@@ -32,7 +32,7 @@ export interface ViewState {
 }
 
 /** A layer of sample data (core's `DataLayer`). */
-export type DataLayerName = 'live' | 'save' | 'files' | 'generated';
+export type DataLayerName = 'hand' | 'live' | 'save' | 'files' | 'generated';
 
 /** A length of generated text (core's `TextLength`). */
 export type TextLengthName = 'short' | 'typical' | 'long' | 'overflow';
@@ -41,7 +41,7 @@ export type TextLengthName = 'short' | 'typical' | 'long' | 'overflow';
 export interface DataMenu {
   /** The toolbar's label: the save and its province, or the generated text's length. */
   readonly label: string;
-  /** Each layer, live snapshot first, with how many texts it fills. */
+  /** Each layer, the texts typed by hand first, with how many texts it fills. */
   readonly layers: readonly {
     readonly id: DataLayerName;
     readonly label: string;
@@ -50,6 +50,16 @@ export interface DataMenu {
     readonly on: boolean;
     /** Whether the user can turn it on or off: only the live snapshot. */
     readonly canToggle: boolean;
+  }[];
+  /** The lists the game's code fills that the view draws, with their number of entries. */
+  readonly lists: readonly {
+    /** The repeater's id. */
+    readonly id: string;
+    readonly label: string;
+    readonly count: number;
+    /** Whether the user set the number. */
+    readonly bySet: boolean;
+    readonly detail: string;
   }[];
   readonly save: {
     readonly state: 'none' | 'loading' | 'ready' | 'failed';
@@ -77,6 +87,12 @@ export type DataAction =
   | { readonly kind: 'chooseProvince' }
   | { readonly kind: 'length'; readonly length: TextLengthName }
   | { readonly kind: 'live'; readonly on: boolean }
+  /** Type a text by hand: the host asks for the widget and the text. */
+  | { readonly kind: 'typeText' }
+  /** Take back every text typed by hand for the previewed window. */
+  | { readonly kind: 'clearHand' }
+  /** Set the number of entries of a list; none goes back to the save's or the profile's. */
+  | { readonly kind: 'entries'; readonly list: string; readonly count?: number }
   /** Take a live snapshot of the previewed window (spec section 7). */
   | { readonly kind: 'refreshLive' };
 

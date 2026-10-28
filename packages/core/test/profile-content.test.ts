@@ -314,7 +314,7 @@ describe('sampleData', () => {
     // Own province: the foreign window is hidden, so its text is not counted.
     expect(text('country_name')?.text).toBe('monarchy');
     // Three buildings: a localised name from the save and a generated builder each.
-    expect(sample.counts).toEqual({ live: 0, save: 6 + 3, files: 1, generated: 1 + 3 });
+    expect(sample.counts).toEqual({ hand: 0, live: 0, save: 6 + 3, files: 1, generated: 1 + 3 });
   });
 
   it('lets a value the save lacks fall through to the generated layer', async () => {
@@ -350,6 +350,59 @@ describe('sampleData', () => {
       text: 'Marketplace (live)',
       layer: 'live',
     });
+  });
+
+  it('takes a text typed by hand over every layer, any text of the window or a list row', async () => {
+    const { profile } = profileOf(PROFILE);
+    const typed = new Map([
+      ['provinceview/tax_value', 'Typed tax'],
+      ['provinceview/title', 'Typed title'],
+      ['provinceview/building_list/row[1]/builder', 'Typed builder'],
+    ]);
+    const live = new Map([['provinceview/tax_value', '4.20']]);
+    const sample = sampleData(
+      profile,
+      WINDOW,
+      undefined,
+      input({
+        save: new SaveChoice(await save(), 'SWE', 1),
+        live: { text: (path) => live.get(path) },
+        hand: { text: (path) => typed.get(path) },
+      }),
+    );
+    expect(sample.text(named('tax_value'))).toMatchObject({ text: 'Typed tax', layer: 'hand' });
+    expect(sample.text(named('title'))).toMatchObject({ text: 'Typed title', layer: 'hand' });
+    expect(sample.text(named('builder'), 0)).toMatchObject({
+      text: 'Typed builder',
+      layer: 'hand',
+    });
+    expect(sample.text(named('builder'), 1)?.layer).toBe('generated');
+    expect(sample.counts.hand).toBe(3);
+  });
+
+  it("sets the number of a list's entries, the save's first and generated ones after", async () => {
+    const { profile } = profileOf(PROFILE);
+    const list = named('building_list');
+    const sample = sampleData(
+      profile,
+      WINDOW,
+      undefined,
+      input({ save: new SaveChoice(await save(), 'SWE', 1), count: () => 5 }),
+    );
+    expect(sample.rows(list)).toMatchObject({ count: 5, layer: 'save' });
+    expect(sample.text(named('building_name'), 2)?.text).toBe('Workshop');
+    expect(sample.text(named('building_name'), 3)).toMatchObject({ layer: 'generated' });
+    expect(sample.lists).toEqual([
+      {
+        id: 'provinceview/building_list',
+        list: 'building_list',
+        template: 'building_entry',
+        count: 5,
+        bySet: true,
+        layer: 'save',
+        drawn: true,
+      },
+    ]);
   });
 
   it('fills a list box: one entry per child of the save collection, else count generated ones', async () => {

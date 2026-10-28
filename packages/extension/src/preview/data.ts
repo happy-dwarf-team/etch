@@ -1,7 +1,8 @@
 // The sample data the preview shows (spec section 5, etch#159): the chosen save, read off the
-// cold-open path, its country and province, the generated text's length and whether a live
-// snapshot is on, kept for the whole preview; and `Data ▾`, drawn from them. Plain data and core
-// calls; no vscode.
+// cold-open path, its country and province, the generated text's length, whether a live
+// snapshot is on, the texts typed by hand and the number of entries set for each list, kept for
+// the whole preview (the typed texts across sessions, by window); and `Data ▾`, drawn from them.
+// Plain data and core calls; no vscode.
 
 import {
   DATA_LAYERS,
@@ -9,6 +10,7 @@ import {
   defaultSaveChoice,
   saveFacts,
   type DataLayer,
+  type LiveTexts,
   type SampleData,
   type TextLength,
 } from '@etch/core/profile';
@@ -35,12 +37,22 @@ export interface DataEvents {
   read?(path: string, ms: number): void;
 }
 
+/** The most entries a list can be set to: the profile's limit for a repeater's count. */
+export const MAX_ENTRIES = 100;
+
 const LAYER_LABELS: Readonly<Record<DataLayer, string>> = {
+  hand: 'By hand',
   live: 'Live snapshot',
   save: 'Save',
   files: 'Game and mod files',
   generated: 'Generated',
 };
+
+/** Where the texts typed by hand are kept between sessions: by window, then by widget path. */
+export interface HandStore {
+  get(): Readonly<Record<string, Readonly<Record<string, string>>>> | undefined;
+  set(texts: Readonly<Record<string, Readonly<Record<string, string>>>>): void;
+}
 
 /** What `Data ▾` says of the live snapshot of the previewed window. */
 export interface LiveLayer {
@@ -59,10 +71,91 @@ export class PreviewData {
   private serial = 0;
   private readonly events: DataEvents;
   private readonly read: (path: string) => Promise<Uint8Array>;
+  private readonly store: HandStore | undefined;
+  /** Texts typed by hand, by window name (lower case), then by widget path (lower case). */
+  private readonly hand = new Map<string, Map<string, { path: string; text: string }>>();
+  /** The number of entries set for a list, by window name (lower case), then by repeater id. */
+  private readonly entries = new Map<string, Map<string, number>>();
 
-  constructor(events: DataEvents, read: (path: string) => Promise<Uint8Array>) {
+  constructor(events: DataEvents, read: (path: string) => Promise<Uint8Array>, store?: HandStore) {
     this.events = events;
     this.read = read;
+    this.store = store;
+    const kept = store?.get();
+    if (kept !== undefined && typeof kept === 'object') {
+      for (const [window, texts] of Object.entries(kept)) {
+        for (const [path, text] of Object.entries(texts)) {
+          if (typeof text === 'string') this.typed(window).set(path.toLowerCase(), { path, text });
+        }
+      }
+    }
+  }
+
+  private typed(window: string): Map<string, { path: string; text: string }> {
+    const key = window.toLowerCase();
+    let texts = this.hand.get(key);
+    if (texts === undefined) {
+      texts = new Map();
+      this.hand.set(key, texts);
+    }
+    return texts;
+  }
+
+  /** The texts typed by hand for a window, as sample data takes them. */
+  handTexts(window: string): LiveTexts {
+    const texts = this.hand.get(window.toLowerCase());
+    return { text: (path) => texts?.get(path.toLowerCase())?.text };
+  }
+
+  /** The text typed for a widget path of a window, `undefined` when none. */
+  handText(window: string, path: string): string | undefined {
+    return this.handTexts(window).text(path);
+  }
+
+  /** Types a text for a widget of a window by its path; `undefined` takes it back. */
+  setHandText(window: string, path: string, text: string | undefined): void {
+    const texts = this.typed(window);
+    if (text === undefined) texts.delete(path.toLowerCase());
+    else texts.set(path.toLowerCase(), { path, text });
+    this.keepHand();
+  }
+
+  /** Takes back every text typed for a window. */
+  clearHand(window: string): void {
+    this.hand.delete(window.toLowerCase());
+    this.keepHand();
+  }
+
+  /** The number of entries set for each list of a window, by repeater id. */
+  entryCounts(window: string): (repeater: string) => number | undefined {
+    const set = this.entries.get(window.toLowerCase());
+    return (repeater) => set?.get(repeater);
+  }
+
+  /** Sets the number of entries of a list; `undefined` goes back to the save's or the profile's. */
+  setEntries(window: string, repeater: string, count: number | undefined): void {
+    const key = window.toLowerCase();
+    const set = this.entries.get(key) ?? new Map<string, number>();
+    if (count === undefined) set.delete(repeater);
+    else set.set(repeater, Math.max(0, Math.min(MAX_ENTRIES, Math.round(count))));
+    this.entries.set(key, set);
+    this.serial++;
+    this.events.changed();
+  }
+
+  private keepHand(): void {
+    this.store?.set(
+      Object.fromEntries(
+        [...this.hand]
+          .filter(([, texts]) => texts.size > 0)
+          .map(([window, texts]) => [
+            window,
+            Object.fromEntries([...texts.values()].map((t) => [t.path, t.text])),
+          ]),
+      ),
+    );
+    this.serial++;
+    this.events.changed();
   }
 
   /** The save's path, while one is chosen. */
@@ -189,7 +282,7 @@ export class PreviewData {
     localise: (key: string) => string | undefined,
     live: LiveLayer = { detail: undefined, canRefresh: false },
   ): DataMenu {
-    const counts = sample?.counts ?? { live: 0, save: 0, files: 0, generated: 0 };
+    const counts = sample?.counts ?? { hand: 0, live: 0, save: 0, files: 0, generated: 0 };
     const c = this.current;
     const save: DataMenu['save'] =
       c === undefined
@@ -200,6 +293,10 @@ export class PreviewData {
             ? { state: 'failed', name: fileName(c.path), problem: c.problem }
             : readySave(c.save, c.choice, c.path, playsetMods, localise);
     const detail: Readonly<Record<DataLayer, string>> = {
+      hand:
+        counts.hand > 0
+          ? 'texts you typed, over every other layer'
+          : 'type a text here or from the Widget Outline',
       live:
         live.detail ??
         (live.canRefresh ? 'no snapshot yet' : 'no snapshot yet; it comes from the live game'),
@@ -230,6 +327,15 @@ export class PreviewData {
         on: id === 'live' ? this.live : id === 'save' ? save.state === 'ready' : true,
         canToggle: id === 'live',
       })),
+      lists: (sample?.lists ?? [])
+        .filter((list) => list.drawn)
+        .map((list) => ({
+          id: list.id,
+          label: `${list.list} (${list.template})`,
+          count: list.count,
+          bySet: list.bySet,
+          detail: list.bySet ? 'set by you' : list.layer === 'save' ? 'from the save' : 'generated',
+        })),
       save,
       length: this.length,
       canRefresh: live.canRefresh,

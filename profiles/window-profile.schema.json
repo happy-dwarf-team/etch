@@ -345,8 +345,35 @@
           "propertyNames": { "$ref": "#/definitions/path" },
           "additionalProperties": { "$ref": "#/definitions/source" }
         },
+        "place": {
+          "description": "For a window the game's code puts entries in (not a list box): the first entry's start, the step to the next (the template's size by default) and, with columns, how many to a row; each a positionType of the window's file, which the game reads, or pixels.",
+          "type": "object",
+          "required": ["start"],
+          "additionalProperties": false,
+          "properties": {
+            "start": { "$ref": "#/definitions/placePoint" },
+            "step": { "$ref": "#/definitions/placePoint" },
+            "columns": {
+              "oneOf": [
+                { "type": "integer", "minimum": 1 },
+                { "description": "A positionType whose x is the number.", "type": "string" }
+              ]
+            }
+          }
+        },
         "note": { "$ref": "#/definitions/text" }
       }
+    },
+    "placePoint": {
+      "oneOf": [
+        { "description": "A positionType of the window's file.", "type": "string" },
+        {
+          "type": "object",
+          "required": ["x", "y"],
+          "additionalProperties": false,
+          "properties": { "x": { "type": "integer" }, "y": { "type": "integer" } }
+        }
+      ]
     },
     "link": {
       "type": "object",
