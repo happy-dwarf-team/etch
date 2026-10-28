@@ -27,12 +27,23 @@ import {
   type ProcessIdentity,
   type StopOutcome,
 } from './windows.ts';
+import { PING_TIMEOUT_MS, SILENT_MS } from './watchdog.ts';
 
 /** The game's crash reporter, closed without sending a report (spec section 1). */
 export const CRASH_REPORTER = 'CrashReporter.exe';
 
 /** Steam's ids, without which `eu4.exe` started outside Steam would hand itself to Steam. */
 const STEAM_ENVIRONMENT = { SteamAppId: '236850', SteamGameId: '236850' };
+
+/**
+ * How long the plugin's pipe may take to come up: Anvil loads it in its main phase, a few hundred
+ * milliseconds after the process starts (live), long before the game's own loading.
+ */
+export const PIPE_TIMEOUT_MS = 120_000;
+/** How long a start may take before the player is offered to stop it; it is not ended. */
+export const SLOW_START_MS = 120_000;
+/** How often a start that is not ready yet is logged. */
+const START_PROGRESS_MS = 30_000;
 
 /**
  * The live game's environment: this process's, with Steam's ids and the session id, and without
@@ -66,7 +77,7 @@ export function lockPath(storageFolder: string): string {
 }
 
 /**
- * The game ended, or did not get ready in time, while it started: a crash for the watchdog
+ * The game ended while it started, or its plugin stopped answering: a crash for the watchdog
  * (etch#51), unlike a start Etch refused or cancelled.
  */
 export class HostCrashedError extends Error {
@@ -228,10 +239,15 @@ export interface StartOptions {
   /** The folder the game install's junctions point into, where its crash reporter may run from. */
   readonly originalGameFolder: string;
   readonly lock: LockOptions;
-  /** How long the game may take to report `anvil-game.ready`. */
-  readonly readyTimeoutMs?: number;
-  /** How long the plugin's pipe may take to come up; `readyTimeoutMs` when not given. */
+  /**
+   * How long the plugin's pipe may take to come up (`PIPE_TIMEOUT_MS` when not given). Once it is
+   * up there is no limit to the start: a game that loads for minutes keeps loading (spec section 6).
+   */
   readonly pipeTimeoutMs?: number;
+  /** How long pings may go unanswered while the game starts (`SILENT_MS` when not given). */
+  readonly silentMs?: number;
+  /** Called once when the start takes `SLOW_START_MS`, so that the player can stop it. */
+  readonly onSlow?: () => void;
   readonly log?: (message: string) => void;
   /** Cancels the start: the game is closed and the lock released. */
   readonly signal?: AbortSignal;
@@ -380,7 +396,12 @@ export class LiveGameProcess {
     }
   }
 
-  /** Greets the plugin of a started or adopted process and waits until the game is ready. */
+  /**
+   * Greets the plugin of a started or adopted process and waits until the game is ready, for as
+   * long as the process lives and its plugin answers: a cold start of a big playset takes minutes
+   * (the 2.0.0 trial: over two in Anbennar's playset). Logs its progress every
+   * `START_PROGRESS_MS`.
+   */
   private static async greet(
     options: StartOptions,
     session: string,
@@ -389,7 +410,6 @@ export class LiveGameProcess {
     log: (message: string) => void,
   ): Promise<LiveGameProcess> {
     const created = creationUnixMs(identity);
-    const deadline = Date.now() + (options.readyTimeoutMs ?? 120_000);
     let alive = true;
     void exited.then(() => {
       alive = false;
@@ -397,19 +417,16 @@ export class LiveGameProcess {
     const check = (): void => {
       if (!alive) throw new HostCrashedError('The live game exited while it started.');
       if (options.signal?.aborted === true) throw new Error('The live game start was cancelled.');
-      if (Date.now() > deadline) {
-        throw new HostCrashedError('The live game did not get ready in time.');
-      }
     };
     let pipe: HostPipe | undefined;
-    const pipeDeadline = Date.now() + (options.pipeTimeoutMs ?? Number.POSITIVE_INFINITY);
+    const pipeDeadline = Date.now() + (options.pipeTimeoutMs ?? PIPE_TIMEOUT_MS);
     try {
       let pipeMs: number | undefined;
       for (;;) {
         check();
         if (Date.now() > pipeDeadline) {
           throw new NotTheLiveGameError(
-            `PID ${String(identity.pid)} serves no session pipe after ${String(options.pipeTimeoutMs)} ms: it runs without Etch's plugin.`,
+            `PID ${String(identity.pid)} serves no session pipe after ${String(options.pipeTimeoutMs ?? PIPE_TIMEOUT_MS)} ms: it runs without Etch's plugin.`,
           );
         }
         try {
@@ -432,17 +449,41 @@ export class LiveGameProcess {
       if (!hello.tree)
         log("Tongs' tongs.ui is missing: reloads run without the stale-window check.");
       let ready = hello.ready;
+      const silentMs = options.silentMs ?? SILENT_MS;
+      let answered = Date.now();
+      let told = Date.now();
+      let slow = false;
       while (!ready) {
         check();
         await delay(250);
-        const answered = pipe.ping();
         try {
-          ready = (await answered).ready;
+          const ping = await pipe.ping(Math.min(silentMs, PING_TIMEOUT_MS));
+          ready = ping.ready;
+          answered = Date.now();
+          if (Date.now() - told >= START_PROGRESS_MS) {
+            told = Date.now();
+            log(
+              `The live game is still starting after ${seconds(Date.now() - created)}: frame ` +
+                `${String(ping.frame)}, its window ${ping.responding ? 'responds' : 'does not respond'}.`,
+            );
+          }
         } catch (error) {
           // A pipe that breaks is most often a game that ends; say so when it does.
-          await Promise.race([exited, delay(1_000)]);
-          check();
-          throw error;
+          if (!(error instanceof PipeError) || error.code !== 'timeout') {
+            await Promise.race([exited, delay(1_000)]);
+            check();
+            throw error;
+          }
+          if (Date.now() - answered >= silentMs) {
+            check();
+            throw new HostCrashedError(
+              `Etch's plugin gave no answer to a ping for ${seconds(Date.now() - answered)} while the game started.`,
+            );
+          }
+        }
+        if (!slow && Date.now() - created >= SLOW_START_MS) {
+          slow = true;
+          options.onSlow?.();
         }
       }
       const readyMs = Date.now() - created;
@@ -603,6 +644,10 @@ async function waitForExit(identity: ProcessIdentity): Promise<number | null> {
     const now = await processIdentity(identity.pid).catch(() => identity);
     if (now === undefined || !sameIdentity(now, identity)) return null;
   }
+}
+
+function seconds(ms: number): string {
+  return `${(ms / 1000).toFixed(0)} s`;
 }
 
 function delay(ms: number): Promise<void> {
