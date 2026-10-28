@@ -188,7 +188,10 @@ the building slots and the units to recruit follow `building_*` and
 `provinceview` the game shows in the province captures of the four corpus
 playsets is where the game draws it, within 1 px, and every text filled from
 the corpus saves is the one the game shows in that widget, but the known trade
-power rounding (`profiles.positions.test.ts`, local).
+power rounding (`profiles.positions.test.ts`, local). Every corpus save has
+Cradle of Civilization active; the `_not_exploitable` variant is read from the
+code only, as no capture without the DLC could be taken yet (the lab's game lock
+was held by other batches).
 
 **Sample data and selectors (#219).**
 
