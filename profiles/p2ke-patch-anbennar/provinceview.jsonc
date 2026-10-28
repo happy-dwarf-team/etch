@@ -1,0 +1,16 @@
+// The province view in P2KE Patch - Anbennar, over the vanilla and Anbennar profiles (spec v2
+// section 11). The patch moves Anbennar's province button bar into province_window and drops the
+// two bars of the buildings panel, so the Anbennar profile's rules for those bars go.
+{
+  "formatVersion": 1,
+  "window": "provinceview",
+  "checkedWith": "1",
+  "mod": {
+    "remoteFileId": "3777997797",
+    "name": "P2KE Patch - Anbennar",
+  },
+  "rules": {
+    "button-bars-foreign": null,
+    "apui-debug": null,
+  },
+}

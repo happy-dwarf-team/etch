@@ -257,7 +257,24 @@ export function saveFacts(choice: SaveChoice): Record<string, string> {
   const controller = scalarIn(province, 'controller');
   const projects = valueIn(province, 'great_projects');
   const buildings = valueIn(province, 'buildings');
+  const ownerBlock = choice.block('owner');
+  const id = String(choice.province);
+  const ownerFacts: Record<string, string> =
+    ownerBlock === undefined
+      ? {}
+      : {
+          'province.isCapital': yesNo(scalarIn(ownerBlock, 'capital') === id),
+          'province.isTradePort': yesNo(scalarIn(ownerBlock, 'trade_port') === id),
+          'province.parliamentSeat':
+            valueIn(ownerBlock, 'parliament') === undefined
+              ? 'none'
+              : valueIn(province, 'seat_in_parliament') === undefined
+                ? 'noSeat'
+                : 'seat',
+        };
   return {
+    ...ownerFacts,
+    'province.centerOfTrade': yesNo(Number(scalarIn(province, 'center_of_trade') ?? 0) > 0),
     'province.owned': yesNo(owner !== undefined),
     'province.ownedByPlayer': yesNo(owner !== undefined && owner === choice.country),
     'province.occupied': yesNo(

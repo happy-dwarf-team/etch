@@ -47,7 +47,8 @@ the mod and its team.
   the rest of the profile applies.
 - Etch's own profiles are gated by the precision corpus: each capture of a
   profiled window records its view's selector values, and the visibility the
-  profile predicts for every path it names must match the capture's; texts
+  profile predicts for every widget of the window must match the capture's
+  (until the 2.0.0 trial, only for the paths it names); texts
   from `save` sources are compared with the capture's texts as a report.
 - A profile records the mod version it was checked with; another version
   gives a notice and the profile still applies.

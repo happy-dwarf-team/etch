@@ -139,6 +139,10 @@
             "province.constructing",
             "province.hasGreatProjects",
             "province.hasFort",
+            "province.isCapital",
+            "province.isTradePort",
+            "province.parliamentSeat",
+            "province.centerOfTrade",
             "province.hreIndicator",
             "owner.buildsNativeBuildings"
           ]

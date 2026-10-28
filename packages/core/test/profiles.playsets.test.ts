@@ -2,7 +2,7 @@
 // Local only: Etch's window profiles against the corpus playsets, read in place from an installed
 // game and its Workshop items (ETCH_GAME_PATH; the Workshop folder beside it, or
 // ETCH_WORKSHOP_PATH). Each profiled window's layers pass the load checks in each playset, and for
-// every corpus capture the visibility the profile predicts for each path it names matches the
+// every corpus capture the visibility the profile predicts for every widget matches the
 // capture's, as the 2.0.0 gate will ask (spec section 14). Skipped in CI, which has no game.
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -32,7 +32,10 @@ const workshop =
 const PLAYSETS: Record<string, { mods: string[]; sources: string[] }> = {
   vanilla: { mods: [], sources: ['vanilla'] },
   'proper-2k-ui-enhanced': { mods: ['3290499798'], sources: ['vanilla'] },
-  anbennar: { mods: ['1385440355', '3290499798', '3777997797'], sources: ['vanilla', 'anbennar'] },
+  anbennar: {
+    mods: ['1385440355', '3290499798', '3777997797'],
+    sources: ['vanilla', 'anbennar', 'p2ke-patch-anbennar'],
+  },
   'anbennar-alone': { mods: ['1385440355'], sources: ['vanilla', 'anbennar'] },
 };
 

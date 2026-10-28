@@ -57,6 +57,34 @@ export const FACTS: readonly Fact[] = [
     inSave: true,
   },
   {
+    name: 'province.isCapital',
+    values: ['yes', 'no'],
+    description:
+      "Whether the province is its owner's capital: the owner's `capital` is the province. The game then shows `have_capital` instead of `move_capital`.",
+    inSave: true,
+  },
+  {
+    name: 'province.isTradePort',
+    values: ['yes', 'no'],
+    description:
+      "Whether the province is its owner's trade port: the owner's `trade_port` is the province. The game then shows `have_trade_port` instead of `move_trade_port`.",
+    inSave: true,
+  },
+  {
+    name: 'province.parliamentSeat',
+    values: ['seat', 'noSeat', 'none'],
+    description:
+      "The province in its owner's parliament: `seat` when it has a `seat_in_parliament`, `noSeat` when the owner has a `parliament` and the province no seat, `none` when the owner has no parliament.",
+    inSave: true,
+  },
+  {
+    name: 'province.centerOfTrade',
+    values: ['yes', 'no'],
+    description:
+      'Whether the province is a centre of trade: its `center_of_trade` level is above 0.',
+    inSave: true,
+  },
+  {
     name: 'province.hreIndicator',
     values: ['yes', 'no'],
     description:
