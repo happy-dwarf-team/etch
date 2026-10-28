@@ -231,7 +231,8 @@ type StartAt = { readonly save: string | SaveFile | undefined };
 /**
  * The machine's one live game, owned by this VS Code window: started on request, stopped by
  * command or when the window closes (`stop` from `deactivate`), both saving first. Its watchdog
- * (etch#51) restarts it at the newest private save after a dead process or a hang, and stops it
+ * (etch#51) restarts it at the newest private save after a dead process or a silent plugin (a
+ * game that only draws no frame is asked about, never closed by itself), and stops it
  * after `CRASH_LIMIT` crashes in `CRASH_WINDOW_MS` until a manual start; a quit from the game is a
  * stop, and the process the game starts of itself on Exit to Main Menu is adopted (H6). A start, a
  * restart, a stop and a removal of the install never overlap. The reload policy comes with the
