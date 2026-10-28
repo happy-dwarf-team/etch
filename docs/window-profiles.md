@@ -139,7 +139,7 @@ values); without `when` it always applies. Its effects:
 | --- | --- |
 | `show`, `hide` | lists of paths shown or hidden |
 | `notCreated` | paths the game does not create at all in this case |
-| `position` | paths the game's code moves, each to a `positionType` of the window's file |
+| `position` | paths the game's code moves, each to a `positionType` of the window's file; `{ "positionType": …, "axis": "y" }` takes only its `y` (or `x`) |
 | `frame` | paths whose sprite frame (from 1) the game's code sets |
 
 A rule may have a `note`. Groups apply first, then the rules in layer order (a later rule wins),

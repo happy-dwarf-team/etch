@@ -250,6 +250,22 @@ describe('load checks', () => {
     expect(profile.defaultView).toBe('own');
   });
 
+  it('reads a move that takes one coordinate of its positionType, and refuses another axis', () => {
+    const rule = (axis: string): string => `{ "formatVersion": 1, "window": "provinceview",
+      "rules": { "move": { "position": {
+        "provinceview/bg[1]": { "positionType": "big_pos", "axis": "${axis}" } } } } }`;
+    const { profile, diagnostics } = check(BASE, rule('y'));
+    expect(diagnostics).toEqual([]);
+    expect(profile.rules.find((r) => r.id === 'move')?.position).toMatchObject([
+      { path: 'provinceview/bg[1]', positionType: 'big_pos', axis: 'y' },
+    ]);
+    const wrong = readProfile(rule('z'), PROJECT);
+    expect(wrong.file?.rules.some((r) => r.id === 'move')).toBe(false);
+    expect(wrong.diagnostics.map((d) => d.message)).toEqual([
+      '"axis" is "x" or "y": the coordinate the move takes.',
+    ]);
+  });
+
   it('skips entries with a missing path, an unknown selector or value, in the file that wrote them', () => {
     const project = `{ "formatVersion": 1, "window": "provinceview",
       "rules": {

@@ -96,8 +96,14 @@ export interface Rule extends Written {
   readonly hide: readonly PathRef[];
   /** Widgets the game does not create at all in this case, such as the other of a `_large` pair. */
   readonly notCreated: readonly PathRef[];
-  /** Widgets the game's code moves to a `positionType` of the window's file. */
-  readonly position: readonly (PathRef & { readonly positionType: string })[];
+  /**
+   * Widgets the game's code moves to a `positionType` of the window's file; with `axis`, only
+   * that coordinate of it (the province view's base values take its `y` and keep their `x`).
+   */
+  readonly position: readonly (PathRef & {
+    readonly positionType: string;
+    readonly axis?: 'x' | 'y';
+  })[];
   /** Sprite frames (from 1) the game's code sets. */
   readonly frame: readonly (PathRef & { readonly frame: number })[];
 }
