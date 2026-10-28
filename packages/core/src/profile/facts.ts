@@ -85,6 +85,13 @@ export const FACTS: readonly Fact[] = [
     inSave: true,
   },
   {
+    name: 'game.cradleOfCivilization',
+    values: ['yes', 'no'],
+    description:
+      "Whether the DLC Cradle of Civilization is active: the save's `dlc_enabled` lists it. `eu4.exe` shows the exploit development buttons, and places the province view's base values, by its flag (`0x233FF24`, the DLC table at `0x1FD4CE0`).",
+    inSave: true,
+  },
+  {
     name: 'province.hreIndicator',
     values: ['yes', 'no'],
     description:

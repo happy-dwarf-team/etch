@@ -40,6 +40,9 @@ const GUI = readGuiFile(
       iconType = { name = "loot_progress_frame" }
       iconType = { name = "devastation_icon" }
       instantTextBoxType = { name = "devastation_value" }
+      guiButtonType = { name = "tax_base_exploit_button" }
+      guiButtonType = { name = "prod_base_exploit_button" }
+      guiButtonType = { name = "mp_base_exploit_button" }
       instantTextBoxType = { name = "tax_base_value" }
       instantTextBoxType = { name = "prod_base_value" }
       instantTextBoxType = { name = "mp_base_value" }
@@ -65,7 +68,10 @@ const GUI = readGuiFile(
       }
     }
     windowType = { name = "state_window" }
-    windowType = { name = "buildings_window" }
+    windowType = {
+      name = "buildings_window"
+      guiButtonType = { name = "building_close_button" }
+    }
   }
 }`),
 );
@@ -202,17 +208,34 @@ describe('the province view as the 2.0.0 trial found it', () => {
       'provinces.{province}.base_production',
       'provinces.{province}.base_manpower',
     ]);
-    const view = evaluateView(VANILLA, WINDOW, SCREEN, {});
-    for (const name of ['tax_base_value', 'prod_base_value', 'mp_base_value']) {
-      const widget = widgetsAt(WINDOW, `provinceview/**/${name}`)[0] as Widget;
-      expect(view.widgets.get(widget)).toMatchObject({
-        positionType: 'development_value_vertical_position_exploitable',
-        positionAxis: 'y',
-      });
+    // eu4.exe 0x1373FD0: the y of one positionType or the other by Cradle of Civilization's flag.
+    for (const [exploit, positionType] of [
+      ['yes', 'development_value_vertical_position_exploitable'],
+      ['no', 'development_value_vertical_position_not_exploitable'],
+    ] as const) {
+      const view = evaluateView(VANILLA, WINDOW, SCREEN, { set: { exploit } });
+      for (const name of ['tax_base_value', 'prod_base_value', 'mp_base_value']) {
+        const widget = widgetsAt(WINDOW, `provinceview/**/${name}`)[0] as Widget;
+        expect(view.widgets.get(widget)).toMatchObject({ positionType, positionAxis: 'y' });
+      }
+      const shown = drawn(VANILLA, { exploit });
+      expect(shown('tax_base_exploit_button')).toBe(exploit === 'yes');
     }
+    const view = evaluateView(VANILLA, WINDOW, SCREEN, {});
     // development_value stays where the .gui writes it, as in every capture.
     const total = widgetsAt(WINDOW, 'provinceview/**/development_value')[0] as Widget;
     expect(view.widgets.get(total)?.positionType).toBeUndefined();
+  });
+
+  it("moves the buildings' close button for native buildings by the screen height (0x1390880)", () => {
+    const close = widgetsAt(WINDOW, 'provinceview/**/building_close_button')[0] as Widget;
+    const at = (natives: string, height: number): string | undefined =>
+      evaluateView(VANILLA, WINDOW, { width: 1920, height }, { set: { natives } }).widgets.get(
+        close,
+      )?.positionType;
+    expect(at('no', 1080)).toBeUndefined();
+    expect(at('yes', 768)).toBe('building_close_button_natives');
+    expect(at('yes', 1080)).toBe('building_close_button_natives_large');
   });
 
   it('swaps the fort for the no-fort icon and hides its level (0x13728C0)', () => {

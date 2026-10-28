@@ -42,10 +42,16 @@ export const ENGINE_MOVES: ReadonlyMap<
           evidence: 'setup 0x1344680 (etch#155); not seen in the corpus',
         },
         {
-          // etch#155 read `top_section_lowres_river_icon_pos` here; the captures show the strait's.
+          path: 'provinceview/top_section_window/river_indicator',
+          positionType: 'top_section_lowres_river_icon_pos',
+          evidence:
+            'setup 0x1344680 (the lab, docs/etch-province-positions.md); hidden in the corpus',
+        },
+        {
           path: 'provinceview/top_section_window/river_indicator_2',
           positionType: 'top_section_lowres_strait_pos',
-          evidence: 'the corpus at 1280×720 and 1366×768',
+          evidence:
+            'setup 0x1344680 moves it with strait_indicator; the corpus at 1280×720 and 1366×768',
         },
         {
           path: 'provinceview/state_window',

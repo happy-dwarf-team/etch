@@ -143,6 +143,7 @@
             "province.isTradePort",
             "province.parliamentSeat",
             "province.centerOfTrade",
+            "game.cradleOfCivilization",
             "province.hreIndicator",
             "owner.buildsNativeBuildings"
           ]

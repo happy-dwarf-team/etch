@@ -108,6 +108,7 @@ release.
 | `province.isTradePort` | `yes`, `no` | It is its owner's trade port (the owner's `trade_port`). |
 | `province.parliamentSeat` | `seat`, `noSeat`, `none` | It has a seat in its owner's parliament (`seat_in_parliament`), has none, or the owner has no `parliament`. |
 | `province.centerOfTrade` | `yes`, `no` | It is a centre of trade (`center_of_trade` above 0). |
+| `game.cradleOfCivilization` | `yes`, `no` | The DLC Cradle of Civilization is active (the save's `dlc_enabled`); the game gates development exploitation on it. |
 | `province.hreIndicator` | `yes`, `no` | The game shows its Holy Roman Empire indicator (the empire exists and the province can be part of it). The map decides that, not the save; it stays at the default until you set it. |
 | `owner.buildsNativeBuildings` | `yes`, `no` | The owner builds native buildings. A save does not say; it stays at the default until you set it. |
 
