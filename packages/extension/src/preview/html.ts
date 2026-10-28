@@ -8,8 +8,8 @@ import * as vscode from 'vscode';
 export const BACKDROP = '#808080';
 
 /**
- * The preview's page: a toolbar (previewed window, the menus, the live game's start, resolution,
- * pin),
+ * The preview's page: a toolbar (previewed window, the menus, the zoom, the live game's start,
+ * resolution, pin),
  * notices, the canvas the webview script (`dist/webview.js`, from `webview/main.ts`) draws into,
  * and the outlines of the hovered and the highlighted widget over it. Textures are fetched from the game and mod folders
  * through webview URIs, so `connect-src` allows them.
@@ -43,6 +43,7 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
   #title { font-weight: 600; }
   #file { min-width: 0; opacity: 0.7; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .spacer { flex: 1; }
+  header > button, #zoom > button { flex-shrink: 0; white-space: nowrap; }
   button {
     font: inherit; color: var(--vscode-foreground);
     background: var(--vscode-dropdown-background); border: 1px solid var(--vscode-dropdown-border, transparent);
@@ -86,12 +87,14 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
   .popup .actions { display: flex; flex-wrap: wrap; gap: 4px; padding: 2px 10px 4px 30px; }
   .popup .warning { color: var(--vscode-notificationsWarningIcon-foreground); }
   .popup .note { padding: 2px 10px; font-size: 0.85em; opacity: 0.85; }
-  main { flex: 1; min-height: 0; position: relative; }
-  /* Scaled down to fit, keeping its aspect ratio, and centred. */
-  canvas {
-    position: absolute; inset: 8px; margin: auto; max-width: calc(100% - 16px); max-height: calc(100% - 16px);
-    background: ${BACKDROP};
-  }
+  main { flex: 1; min-height: 0; position: relative; overflow: hidden; }
+  main.pannable { cursor: grab; }
+  main.panning { cursor: grabbing; }
+  /* Placed and sized by the webview script from the zoom (etch#162); sharp pixels above 100 %. */
+  canvas { position: absolute; left: 0; top: 0; background: ${BACKDROP}; }
+  canvas.sharp { image-rendering: pixelated; }
+  #zoom { display: flex; gap: 2px; }
+  #zoom-level { min-width: 72px; }
   canvas[hidden], .box[hidden], #tip[hidden] { display: none; }
   .box { position: absolute; pointer-events: none; box-sizing: border-box; }
   #hover { border: 1px dashed var(--vscode-editorCursor-foreground, #fff); }
@@ -115,12 +118,17 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
     <div id="data-popup" class="popup" role="menu" hidden></div>
   </span>
   <span class="spacer"></span>
+  <span id="zoom" role="group" aria-label="Zoom">
+    <button id="zoom-out" type="button" title="Zoom out (Ctrl+-, Ctrl+wheel)">−</button>
+    <button id="zoom-level" type="button">Fit</button>
+    <button id="zoom-in" type="button" title="Zoom in (Ctrl+=, Ctrl+wheel)">+</button>
+  </span>
   <button id="live-game" type="button" title="Start the live game with this playset (Etch: Start the Live Game).">Live game</button>
   <button id="resolution" type="button">1920×1080</button>
   <button id="pin" type="button" aria-pressed="false" disabled>Pin</button>
 </header>
 <ul id="notices"></ul>
-<main>
+<main id="stage">
   <canvas id="screen" hidden></canvas>
   <div id="selected" class="box" hidden></div>
   <div id="hover" class="box" hidden></div>

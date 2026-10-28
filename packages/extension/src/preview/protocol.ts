@@ -136,6 +136,23 @@ export interface PreviewMemento {
   readonly pinned: boolean;
 }
 
+/**
+ * How the preview shows its screen (etch#162): fitted into the panel, or at a chosen scale with
+ * the screen's point `center` in the middle of the panel. A scale is monitor pixels per pixel of
+ * the screen, so 100 % draws the window as the game would at that resolution. Zoom never changes
+ * the resolution the window is laid out at.
+ */
+export type Zoom =
+  { readonly fit: true } | { readonly fit: false; readonly scale: number; readonly center: Point };
+
+/**
+ * The webview's state as VS Code keeps it for the panel: the host's memento, and the zoom, which
+ * the webview keeps itself and the host never reads.
+ */
+export interface WebviewState extends Partial<PreviewMemento> {
+  readonly zoom?: Zoom;
+}
+
 /** A point of the preview screen, in pixels. */
 export interface Point {
   readonly x: number;
