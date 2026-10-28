@@ -117,6 +117,27 @@ pnpm --filter etch test
 
 ## Results
 
+### 2026-10-28, the 2.0.0 trial's fixes (#219)
+
+As M10, one process with both playsets, under the lab's game lock (no game
+ran during it), on `fix/provinceview-trial-data` with the profiles of #218 and
+#219: the province view in its default view draws more of what the game fills
+(building slots, core shields). A first run without the last fix failed the
+Anbennar playset's `provinceview` (warm reload p95 68.6 ms at both sizes): the
+profile check matched every path pattern against every widget path anew on each
+reload, 68 ms of it. With each window's paths split once (5 ms):
+
+| Playset, window | Resolution | Cold opens (ms) | Warm reload median / p95 / max (ms) |
+| --- | --- | --- | --- |
+| Vanilla, `countrydiplomacyview` (75 draws) | 1920×1080 | 552, 275, 276 | 7.4 / 11.6 / 34.6 |
+| | 3440×1440 | 279, 274, 282 | 7.6 / 12.0 / 16.2 |
+| Vanilla, `provinceview` (Own province: 184 draws, 72 textures, 205 widgets) | 1920×1080 | 344, 277, 290 | 10.4 / 12.4 / 20.5 |
+| | 3440×1440 | 314, 282, 288 | 10.6 / 12.5 / 18.0 |
+| Anbennar, `topbar` (43 draws) | 1920×1080 | 807, 563, 595 | 10.4 / 12.2 / 15.3 |
+| | 3440×1440 | 640, 574, 646 | 10.5 / 12.2 / 14.2 |
+| Anbennar, `provinceview` (Own province: 188 draws, 75 textures, 209 widgets) | 1920×1080 | 811, 659, 602 | 12.8 / 15.9 / 23.1 |
+| | 3440×1440 | 617, 636, 589 | 13.1 / 15.6 / 23.3 |
+
 ### 2026-10-27, M10 (the preview with `provinceview` in its view)
 
 Machine as in etch#39; VS Code 1.143.1 from `.vscode-test`. EU4 1.37.5,
