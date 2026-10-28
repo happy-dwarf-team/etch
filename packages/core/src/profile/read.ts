@@ -20,6 +20,8 @@ import {
   type GeneratedKind,
   type Group,
   type Link,
+  type PlacePoint,
+  type Placement,
   type Repeater,
   type RepeaterField,
   type SavePathRef,
@@ -368,7 +370,7 @@ function readRepeater(
   key: JsonMember,
 ): Repeater {
   const what = `the repeater of "${key.key}"`;
-  const props = object(node, what, ['template', 'from', 'count', 'fields', 'note']);
+  const props = object(node, what, ['template', 'from', 'count', 'fields', 'place', 'note']);
   optionalText(props.get('note'), 'note');
   const templateNode = props.get('template');
   if (templateNode === undefined) {
@@ -403,17 +405,66 @@ function readRepeater(
       fields.push({ path: pathKey(entry), ...readSource(entry.value, fieldProps, field) });
     }
   }
+  const placeNode = props.get('place');
+  const place = placeNode === undefined ? undefined : readPlacement(placeNode);
   return {
     id,
     path: pathKey(key),
     template: text$(templateNode, '"template"'),
     templateRange: templateNode,
+    ...(place === undefined ? {} : { place }),
     ...(fromNode === undefined
       ? {}
       : { from: { path: text$(fromNode, '"from"'), range: fromNode } }),
     count,
     fields,
     ...written,
+  };
+}
+
+/** A repeater's `place`: points and columns as pixels or `positionType` names. */
+function readPlacement(node: JsonNode): Placement {
+  const props = object(node, '"place"', ['start', 'step', 'columns']);
+  const point = (value: JsonNode, what: string): PlacePoint => {
+    if (value.kind === 'string') return value.value;
+    const xy = object(value, `"${what}" of "place"`, ['x', 'y']);
+    const whole = (n: JsonNode | undefined): number => {
+      if (n?.kind !== 'number' || !Number.isInteger(n.value)) {
+        throw new Faulty(
+          `"${what}" of "place" is a positionType's name or whole pixels { "x", "y" }.`,
+          n ?? value,
+        );
+      }
+      return n.value;
+    };
+    return { x: whole(xy.get('x')), y: whole(xy.get('y')) };
+  };
+  const startNode = props.get('start');
+  if (startNode === undefined) {
+    throw new Faulty('"place" names the "start" of the first entry.', node);
+  }
+  const stepNode = props.get('step');
+  const columnsNode = props.get('columns');
+  let columns: number | string | undefined;
+  if (columnsNode !== undefined) {
+    if (columnsNode.kind === 'string') columns = columnsNode.value;
+    else if (
+      columnsNode.kind === 'number' &&
+      Number.isInteger(columnsNode.value) &&
+      columnsNode.value >= 1
+    ) {
+      columns = columnsNode.value;
+    } else {
+      throw new Faulty(
+        '"columns" of "place" is a whole number from 1 or a positionType\'s name.',
+        columnsNode,
+      );
+    }
+  }
+  return {
+    start: point(startNode, 'start'),
+    ...(stepNode === undefined ? {} : { step: point(stepNode, 'step') }),
+    ...(columns === undefined ? {} : { columns }),
   };
 }
 

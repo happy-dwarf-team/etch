@@ -226,13 +226,32 @@ alone its value, or its key when the value is `yes` (`temple=yes` gives `temple`
 
 The entries start at the list's `borderSize`, each below the last (beside it with
 `horizontal`) with `spacing` between; only those that fit whole show, as the preview does not
-scroll.
+scroll. In an `OverlappingElementsBoxType` (the core shields of `cores_box`) they go side by side,
+`spacing` apart, closer when they do not fit.
+
+The game's code puts some entries straight into a window rather than a list box: the building
+slots of `general_buildings_window`, the units of `build_army_view`. A repeater on such a window
+says where with `place`: the first entry at `start`, each next `step` further (the template's size
+by default) and, with `columns`, a new row after that many. Each is a `positionType` of the
+window's file, which the game itself reads, so every playset's file gives its own, or pixels:
+
+```jsonc
+"provinceview/buildings_window/general_buildings_window": {
+  "template": "building_progress_entry",
+  "count": 8,
+  "place": { "start": "building_start", "step": "building_offset", "columns": "building_max_per_row" },
+},
+```
+
+`Data ▾` lists the repeaters the view draws with their number of entries, which **−** and **+**
+change (the save's entries first, generated ones after) and **Reset** gives back.
 
 ### Links
 
 A link names a `window` the game opens instead of this one when every condition of `when`
-holds, and an optional `label`. While it holds, the preview shows the label with a button that
-pins the linked window:
+holds, and an optional `label`. While it holds, the preview draws the linked window, as the game
+shows it, with the label and a button that pins the linked window to edit it; `View ▾` stays this
+window's, so its selectors switch back:
 
 ```jsonc
 "links": {
@@ -285,6 +304,12 @@ The faulty entry is skipped and the rest of the profile applies.
   header and an eye on every other widget. A radio or an eye set by hand is a **hand toggle**: it
   is marked "by hand" and counted in the view's label ("Own province · 1 by hand"). A widget the
   game does not create at the preview's height is struck through.
+- **`Data ▾`** has the layers of sample data, upper ones winning: **By hand** (**Type a text…**
+  picks any text the view draws, a list entry's too, and asks for what it shows; **Clear** takes
+  them all back), the live snapshot, the save, the game and mod files, and generated text; then the
+  lists the game fills, each with its number of entries. In the Widget Outline, **Type Sample
+  Text…** (the pencil on a text or button) and **Clear Sample Text** do the same for one widget.
+  Typed texts are kept by window across sessions.
 - **Save as view…** writes the current selectors and hand toggles under a name into your
   project's `.etch/profiles/<window>.jsonc`, creating the file if needed and keeping the rest of
   it, comments included. The view is an ordinary view of the top layer.

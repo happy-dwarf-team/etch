@@ -350,7 +350,7 @@ describe('the JSON Schema', () => {
     const source = ['decimals', 'engine', 'format', 'generated', 'loc', 'save', 'transform'];
     expect(keys('source')).toEqual(source);
     expect(keys('content')).toEqual([...source, 'note'].sort());
-    expect(keys('repeater')).toEqual(['count', 'fields', 'from', 'note', 'template']);
+    expect(keys('repeater')).toEqual(['count', 'fields', 'from', 'note', 'place', 'template']);
     expect(keys('link')).toEqual(['label', 'when', 'window']);
   });
 });

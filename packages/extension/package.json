@@ -92,6 +92,17 @@
         "icon": "$(circle-large-outline)"
       },
       {
+        "command": "etch.outline.typeText",
+        "title": "Type Sample Text…",
+        "category": "Etch",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "etch.outline.clearText",
+        "title": "Clear Sample Text",
+        "category": "Etch"
+      },
+      {
         "command": "etch.startLiveGame",
         "title": "Start the Live Game",
         "category": "Etch"
@@ -138,18 +149,33 @@
       "view/item/context": [
         {
           "command": "etch.outline.hide",
-          "when": "view == etch.widgetOutline && viewItem == etch.shown",
+          "when": "view == etch.widgetOutline && viewItem =~ /^etch\\.shown(\\.text)?$/",
           "group": "inline"
         },
         {
           "command": "etch.outline.show",
-          "when": "view == etch.widgetOutline && viewItem == etch.hidden",
+          "when": "view == etch.widgetOutline && viewItem =~ /^etch\\.hidden(\\.text)?$/",
           "group": "inline"
         },
         {
           "command": "etch.outline.choose",
           "when": "view == etch.widgetOutline && viewItem == etch.member",
           "group": "inline"
+        },
+        {
+          "command": "etch.outline.typeText",
+          "when": "view == etch.widgetOutline && viewItem =~ /\\.text$/",
+          "group": "inline"
+        },
+        {
+          "command": "etch.outline.typeText",
+          "when": "view == etch.widgetOutline && viewItem =~ /\\.text$/",
+          "group": "1_text@1"
+        },
+        {
+          "command": "etch.outline.clearText",
+          "when": "view == etch.widgetOutline && viewItem =~ /\\.text$/",
+          "group": "1_text@2"
         }
       ],
       "commandPalette": [
@@ -167,6 +193,14 @@
         },
         {
           "command": "etch.outline.choose",
+          "when": "false"
+        },
+        {
+          "command": "etch.outline.typeText",
+          "when": "false"
+        },
+        {
+          "command": "etch.outline.clearText",
           "when": "false"
         },
         {

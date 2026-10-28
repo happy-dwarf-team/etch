@@ -1,7 +1,8 @@
 // Sample data end to end (spec sections 2 and 5): a fixture mod project whose window profile
 // fills texts and a list box; a text save chosen for the preview, its province changed in
-// `Data ▾` (the data selector follows it), a link that holds for an uncolonised province and pins
-// the linked window, and a binary save named as not readable.
+// `Data ▾` (the data selector follows it), the number of a list's entries set there, a link that
+// holds for an uncolonised province, drawn instead of the window and pinned from its note, and a
+// binary save named as not readable.
 import * as assert from 'node:assert/strict';
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -214,10 +215,34 @@ export async function testData(api: EtchApi): Promise<void> {
     );
     assert.ok(named(foreign, 'foreign'), 'a foreign province shows the foreign window');
 
+    // The number of a list's entries, set in Data ▾ over the save's.
+    const more = await rendered(
+      preview,
+      (r) => {
+        const list = named(r, 'cores');
+        return list !== undefined && r.sample?.rows(list)?.count === 4;
+      },
+      async () => {
+        await preview.dataAction({ kind: 'entries', list: 'etch_data/cores', count: 4 });
+      },
+    );
+    assert.equal(more.layout.widgets.filter((w) => w.widget.name === 'etch_core_entry').length, 4);
+    await preview.idle();
+    assert.deepEqual(stateOf(preview)?.data?.lists, [
+      {
+        id: 'etch_data/cores',
+        label: 'cores (etch_core_entry)',
+        count: 4,
+        bySet: true,
+        detail: 'set by you',
+      },
+    ]);
+    await preview.dataAction({ kind: 'entries', list: 'etch_data/cores' });
+
     // An uncolonised province: the link holds, and its button pins the linked window.
     const uncolonised = await rendered(
       preview,
-      (r) => textOf(r, 'province_name')?.text === 'Uncharted',
+      (r) => r.linked === 'etch_other',
       () => {
         preview.chooseData({ province: 3 });
         return undefined;
@@ -229,8 +254,16 @@ export async function testData(api: EtchApi): Promise<void> {
       activeLinks(viewed.profile.profile, viewed.view).map((l) => l.window),
       ['etch_other'],
     );
+    // The game shows the linked window instead, and so does the preview, with the note.
+    assert.equal(uncolonised.linked, 'etch_other');
+    assert.equal(uncolonised.layout.widgets[0]?.widget.name, 'etch_other');
     await preview.idle();
-    assert.deepEqual(stateOf(preview)?.links, [{ window: 'etch_other', label: 'Uncolonised' }]);
+    assert.deepEqual(stateOf(preview)?.links, [
+      {
+        window: 'etch_other',
+        label: 'Uncolonised The preview draws etch_other; pin it to edit it.',
+      },
+    ]);
     let opened: boolean | undefined;
     const other = await rendered(
       preview,

@@ -26,7 +26,8 @@
 // With a window profile the outline draws the view in (spec section 2, etch#159): the members
 // of an exclusive group are radios under a "(one of)" header, every other widget has an eye, a
 // hand toggle is marked, and a widget the game does not create at this screen height is struck
-// through. Its eyes and radios fire `onDidToggle` for the preview.
+// through. Its eyes and radios fire `onDidToggle` for the preview; typing a text's sample by hand
+// fires `onDidEditText`.
 
 import * as vscode from 'vscode';
 import {
@@ -58,6 +59,18 @@ export const SHOW_WIDGET = 'etch.outline.show';
 export const HIDE_WIDGET = 'etch.outline.hide';
 /** Chooses a member of an exclusive group by hand: `(widget)`, or a "(none)" entry. */
 export const CHOOSE_MEMBER = 'etch.outline.choose';
+/** Types the sample text of a text or button by hand, or takes it back: `(widget)`. */
+export const TYPE_TEXT = 'etch.outline.typeText';
+export const CLEAR_TEXT = 'etch.outline.clearText';
+
+/** The widgets whose text sample data can fill: text boxes and buttons (`buttonText`). */
+const TEXT_KINDS: ReadonlySet<WidgetKind> = new Set<WidgetKind>([
+  'instantTextBoxType',
+  'textBoxType',
+  'editBoxType',
+  'guiButtonType',
+  'buttonType',
+]);
 
 /** Set while Etch runs; the outline view shows only then. */
 const OUTLINE_CONTEXT = 'etch.widgetOutline.available';
@@ -83,6 +96,12 @@ export interface PreviewedWindow {
   readonly view?: WindowView;
   /** The sample data drawn, when the window has a window profile (spec section 5). */
   readonly sample?: SampleData;
+}
+
+/** A text typed by hand from the outline, or taken back. */
+export interface OutlineTextEdit {
+  readonly widget: Widget;
+  readonly clear: boolean;
 }
 
 /** A hand toggle from the outline: an eye, or a radio of an exclusive group (`undefined`: none). */
@@ -273,6 +292,8 @@ class OutlineTree implements vscode.TreeDataProvider<OutlineNode> {
           : state.shown
             ? 'etch.shown'
             : 'etch.hidden';
+        // A text's sample can be typed by hand (spec section 5).
+        if (created && TEXT_KINDS.has(widget.kind)) item.contextValue += '.text';
       }
     } else {
       item.iconPath = new vscode.ThemeIcon(ICONS[widget.kind] ?? 'symbol-field');
@@ -352,6 +373,9 @@ export class WidgetNavigation implements vscode.Disposable {
   private readonly toggleEvents = new vscode.EventEmitter<OutlineToggle>();
   /** Fires when an eye or a radio of the outline is clicked. */
   readonly onDidToggle = this.toggleEvents.event;
+  private readonly textEvents = new vscode.EventEmitter<OutlineTextEdit>();
+  /** Fires when a text's sample is typed by hand, or taken back, from the outline. */
+  readonly onDidEditText = this.textEvents.event;
   private readonly subscriptions: vscode.Disposable[];
 
   private current: PreviewedWindow | undefined;
@@ -383,6 +407,12 @@ export class WidgetNavigation implements vscode.Disposable {
       }),
       vscode.commands.registerCommand(HIDE_WIDGET, (node: OutlineNode) => {
         this.toggle(node, false);
+      }),
+      vscode.commands.registerCommand(TYPE_TEXT, (node: OutlineNode) => {
+        if (!isGroupNode(node)) this.textEvents.fire({ widget: node, clear: false });
+      }),
+      vscode.commands.registerCommand(CLEAR_TEXT, (node: OutlineNode) => {
+        if (!isGroupNode(node)) this.textEvents.fire({ widget: node, clear: true });
       }),
       vscode.commands.registerCommand(CHOOSE_MEMBER, (node: OutlineNode) => {
         const choice = this.tree.choice(node);
@@ -608,6 +638,7 @@ export class WidgetNavigation implements vscode.Disposable {
     vscode.Disposable.from(...this.subscriptions).dispose();
     this.highlightEvents.dispose();
     this.toggleEvents.dispose();
+    this.textEvents.dispose();
     this.tree.dispose();
   }
 }

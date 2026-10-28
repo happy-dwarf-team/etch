@@ -83,6 +83,8 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
   #notices li.link { display: flex; align-items: center; gap: 8px; }
   .popup .layer { display: grid; grid-template-columns: auto 1fr auto; gap: 6px; align-items: baseline; padding: 2px 10px; }
   .popup .layer .count { font-size: 0.85em; opacity: 0.75; }
+  .popup .layer.list { grid-template-columns: 1fr auto auto auto; }
+  .popup .layer.list button { min-width: 1.8em; }
   .popup .detail { padding: 0 10px 2px 30px; font-size: 0.85em; opacity: 0.8; }
   .popup .actions { display: flex; flex-wrap: wrap; gap: 4px; padding: 2px 10px 4px 30px; }
   .popup .warning { color: var(--vscode-notificationsWarningIcon-foreground); }

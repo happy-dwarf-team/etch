@@ -58,6 +58,7 @@ describe('PreviewData', () => {
     expect(menu.label).toBe('Data: generated, typical');
     expect(menu.save).toEqual({ state: 'none' });
     expect(menu.layers.map((l) => [l.id, l.on, l.canToggle])).toEqual([
+      ['hand', true, false],
       ['live', true, true],
       ['save', false, false],
       ['files', true, false],
@@ -138,9 +139,72 @@ describe('PreviewData', () => {
     const sample = {
       text: () => undefined,
       rows: () => undefined,
-      counts: { live: 0, save: 0, files: 2, generated: 5 },
+      counts: { hand: 1, live: 0, save: 0, files: 2, generated: 5 },
+      lists: [
+        {
+          id: 'provinceview/**/units',
+          list: 'units',
+          template: 'unit',
+          count: 4,
+          bySet: false,
+          layer: 'generated' as const,
+          drawn: true,
+        },
+        {
+          id: 'provinceview/**/hidden',
+          list: 'hidden',
+          template: 'entry',
+          count: 2,
+          bySet: true,
+          layer: 'save' as const,
+          drawn: false,
+        },
+      ],
     };
-    expect(d.menu(sample, [], localise).layers.map((l) => l.count)).toEqual([0, 0, 2, 5]);
+    const menu = d.menu(sample, [], localise);
+    expect(menu.layers.map((l) => l.count)).toEqual([1, 0, 0, 2, 5]);
+    expect(menu.layers[0]).toMatchObject({ id: 'hand', label: 'By hand', on: true });
+    // Only the lists the view draws, with where their number comes from.
+    expect(menu.lists).toEqual([
+      {
+        id: 'provinceview/**/units',
+        label: 'units (unit)',
+        count: 4,
+        bySet: false,
+        detail: 'generated',
+      },
+    ]);
+  });
+
+  it('keeps the texts typed by hand by window, and sets the number of entries of a list', () => {
+    let kept: unknown;
+    const changed = vi.fn();
+    const store = {
+      get: () => ({ provinceview: { 'provinceview/a': 'Kept' } }),
+      set: (texts: unknown) => {
+        kept = texts;
+      },
+    };
+    const d = new PreviewData({ changed }, () => Promise.reject(new Error('none')), store);
+    expect(d.handTexts('ProvinceView').text('PROVINCEVIEW/A')).toBe('Kept');
+    d.setHandText('provinceview', 'provinceview/b', 'Typed');
+    expect(kept).toEqual({
+      provinceview: { 'provinceview/a': 'Kept', 'provinceview/b': 'Typed' },
+    });
+    d.setHandText('provinceview', 'provinceview/A', undefined);
+    expect(d.handText('provinceview', 'provinceview/a')).toBeUndefined();
+    d.clearHand('provinceview');
+    expect(kept).toEqual({});
+    expect(d.handTexts('topbar').text('topbar/x')).toBeUndefined();
+
+    expect(d.entryCounts('provinceview')('list')).toBeUndefined();
+    d.setEntries('provinceview', 'list', 7);
+    expect(d.entryCounts('PROVINCEVIEW')('list')).toBe(7);
+    d.setEntries('provinceview', 'list', 1000);
+    expect(d.entryCounts('provinceview')('list')).toBe(100);
+    d.setEntries('provinceview', 'list', undefined);
+    expect(d.entryCounts('provinceview')('list')).toBeUndefined();
+    expect(changed).toHaveBeenCalledTimes(6);
   });
 });
 

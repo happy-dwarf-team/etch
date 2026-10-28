@@ -180,9 +180,28 @@ export interface RepeaterField extends ContentSource {
 }
 
 /**
+ * A point of a repeater's `place`: pixels, or the name of a `positionType` of the window's file,
+ * which the game's code reads (`building_start`), so each playset's file gives its own.
+ */
+export type PlacePoint = { readonly x: number; readonly y: number } | string;
+
+/**
+ * Where the game's code puts the entries of a repeater in a window that is not a list box (the
+ * building slots of `general_buildings_window`, the units of `build_army_view`): the first at
+ * `start`, each next one `step` further (the template's size by default); with `columns`, a new
+ * row after that many, a `step.y` lower. `columns` is a number or a `positionType` whose `x` it is
+ * (`building_max_per_row`).
+ */
+export interface Placement {
+  readonly start: PlacePoint;
+  readonly step?: PlacePoint;
+  readonly columns?: number | string;
+}
+
+/**
  * A list box the game's code fills with entries of a template (spec section 5): one entry per
  * child of a save collection, or, without a save, `count` generated entries. Keyed by the list
- * box's path.
+ * box's path. With `place`, the entries go into a window at the places the game's code puts them.
  */
 export interface Repeater extends Written {
   readonly id: string;
@@ -195,6 +214,8 @@ export interface Repeater extends Written {
   /** How many entries show without a save. */
   readonly count: number;
   readonly fields: readonly RepeaterField[];
+  /** Where the entries go in a window that is not a list box. */
+  readonly place?: Placement;
 }
 
 /**
