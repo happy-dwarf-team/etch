@@ -108,6 +108,7 @@ function profileOf(text: string): { profile: WindowProfile; diagnostics: Profile
 const SAVE_TEXT = `EU4txt
 date=1444.11.11
 player="SWE"
+dlc_enabled={ "Wealth of Nations" }
 provinces={
 -1={
 		name="Stockholm"
@@ -441,6 +442,7 @@ describe('sampleData', () => {
       'province.isTradePort': 'no',
       'province.parliamentSeat': 'seat',
       'province.centerOfTrade': 'yes',
+      'game.cradleOfCivilization': 'no',
     });
     expect(saveFacts(new SaveChoice(s, 'SWE', 2))).toMatchObject({
       'province.ownedByPlayer': 'no',
@@ -460,6 +462,7 @@ describe('sampleData', () => {
       'province.hasGreatProjects': 'no',
       'province.hasFort': 'no',
       'province.centerOfTrade': 'no',
+      'game.cradleOfCivilization': 'no',
     });
     expect(saveFacts(new SaveChoice(s, 'SWE', undefined))).toEqual({});
   });

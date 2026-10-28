@@ -24,6 +24,10 @@ savegame_version={
 	forth=0
 	name="Inca"
 }
+dlc_enabled={
+	"Conquest of Paradise"
+	"Cradle of Civilization"
+}
 mods_enabled_names={
 	{
 		filename="mod/ugc_1385440355.mod"
@@ -159,6 +163,7 @@ describe('readSave', () => {
       version: '1.37.5.0',
       multiplayer: false,
       mods: ['Anbennar: A Fantasy Total Conversion', 'Proper 2K UI Enhanced'],
+      dlcs: ['Conquest of Paradise', 'Cradle of Civilization'],
     });
     checkContent(save);
     expect(save.top('date')).toMatchObject({ kind: 'scalar', text: '1444.11.11' });

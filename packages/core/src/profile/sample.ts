@@ -335,8 +335,12 @@ export function saveFacts(choice: SaveChoice): Record<string, string> {
                 ? 'noSeat'
                 : 'seat',
         };
+  const dlcs = choice.save.meta.dlcs;
   return {
     ...ownerFacts,
+    ...(dlcs === undefined
+      ? {}
+      : { 'game.cradleOfCivilization': yesNo(dlcs.includes('Cradle of Civilization')) }),
     'province.centerOfTrade': yesNo(Number(scalarIn(province, 'center_of_trade') ?? 0) > 0),
     'province.owned': yesNo(owner !== undefined),
     'province.ownedByPlayer': yesNo(owner !== undefined && owner === choice.country),

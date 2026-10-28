@@ -167,18 +167,31 @@ against the corpus captures:
   Enhanced 5,264, Anbennar playset 24,058, Anbennar alone 60,740 widgets), and
   `profiles.trial.test.ts` holds each trial case in CI.
 
-**Base development out of place.** The base tax, production and manpower
-values were drawn 62 px (vanilla, Anbennar alone) or 75 px (Proper 2K UI
-Enhanced, P2KE Patch - Anbennar) above where the game draws them: their `.gui`
-writes `y = 0`, and the game's code gives them the `y` of
-`development_value_vertical_position_exploitable`, keeping their `x` (every
-province capture of the corpus). A rule's move can now take one coordinate of
-a `positionType` (`"axis": "y"`), and the vanilla profile's `base-values` rule
-does so. The sweep found nothing else: laid out offline, every widget of
+**Base development out of place (#223, then from the game's code).** The base
+tax, production and manpower values were drawn 62 px (vanilla, Anbennar alone)
+or 75 px (Proper 2K UI Enhanced, P2KE Patch - Anbennar) above where the game
+draws them. The rule, read in `eu4.exe` (the lab's
+`docs/etch-province-positions.md`): every frame `0x1373FD0` gives the three
+values the `y` of `development_value_vertical_position_exploitable` and keeps
+their `x` when the DLC Cradle of Civilization is active (its flag `0x233FF24`,
+by the DLC table at `0x1FD4CE0`), and otherwise hides the three exploit buttons
+and gives them the `y` of `…_not_exploitable`. A rule's move can take one
+coordinate of a `positionType` (`"axis": "y"`); the new fact
+`game.cradleOfCivilization` reads the save's `dlc_enabled`, and the vanilla
+profile's `exploit` selector picks the variant. The same reading of the code
+gave the province view's other `positionType`s: `building_close_button` moves
+to `building_close_button_natives` (below 814 px) or `…_natives_large` while the
+owner builds native buildings (`0x138DC80`, `0x1390880`), and below 814 px
+`river_indicator` takes `top_section_lowres_river_icon_pos` (`0x1344680`);
+the building slots and the units to recruit follow `building_*` and
+`build_unit*` as #219 placed them. Laid out offline, every widget of
 `provinceview` the game shows in the province captures of the four corpus
 playsets is where the game draws it, within 1 px, and every text filled from
 the corpus saves is the one the game shows in that widget, but the known trade
-power rounding (`profiles.positions.test.ts`, local).
+power rounding (`profiles.positions.test.ts`, local). Every corpus save has
+Cradle of Civilization active; the `_not_exploitable` variant is read from the
+code only, as no capture without the DLC could be taken yet (the lab's game lock
+was held by other batches).
 
 **Sample data and selectors (#219).**
 

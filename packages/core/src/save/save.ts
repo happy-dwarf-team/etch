@@ -32,6 +32,8 @@ export interface SaveMeta {
   readonly multiplayer: boolean;
   /** The display names of the playset's mods, in load order (`mods_enabled_names`). */
   readonly mods: readonly string[];
+  /** The names of the DLCs active in the game (`dlc_enabled`); `undefined` when the meta lists none. */
+  readonly dlcs?: readonly string[];
 }
 
 export interface Save {
@@ -124,6 +126,11 @@ function metaOf(value: (key: string) => ValueNode | undefined): SaveMeta {
       if (name !== undefined) mods.push(name);
     }
   }
+  const dlcsNode = value('dlc_enabled');
+  const dlcs =
+    dlcsNode?.kind === 'block'
+      ? dlcsNode.entries.flatMap((entry) => (entry.kind === 'scalar' ? [entry.text] : []))
+      : undefined;
   return {
     ...(date === undefined ? {} : { date }),
     ...(player === undefined ? {} : { player }),
@@ -131,6 +138,7 @@ function metaOf(value: (key: string) => ValueNode | undefined): SaveMeta {
     ...(version === undefined ? {} : { version }),
     multiplayer: text('multi_player') === 'yes',
     mods,
+    ...(dlcs === undefined ? {} : { dlcs }),
   };
 }
 

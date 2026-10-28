@@ -125,6 +125,14 @@
       "values": { "yes": "Centre of trade", "no": "None" },
       "default": "no",
     },
+    "exploit": {
+      "kind": "data",
+      "label": "Exploit development",
+      "fact": "game.cradleOfCivilization",
+      "values": { "yes": "Cradle of Civilization", "no": "Without it" },
+      "default": "yes",
+      "note": "eu4.exe 0x1373FD0 shows the three exploit buttons and places the base values by the flag of the DLC Cradle of Civilization (0x233FF24); a save's dlc_enabled says whether it was active.",
+    },
     "colonised": {
       "kind": "data",
       "label": "Colonised",
@@ -465,7 +473,8 @@
       "hide": ["provinceview/province_window/foreign_province_window"],
     },
     "base-values": {
-      "note": "The game's code sets the y of the base tax, production and manpower values to development_value_vertical_position_exploitable (62 px in vanilla, 75 px in Proper 2K UI Enhanced) and keeps their x; the .gui writes y = 0 (every corpus capture, own and foreign). development_value_vertical_position_not_exploitable presumably applies where the exploit buttons are hidden.",
+      "note": "eu4.exe 0x1373FD0, every frame: with Cradle of Civilization active the base tax, production and manpower values take the y of development_value_vertical_position_exploitable and keep their x (the .gui writes y = 0); the corpus captures agree to the pixel.",
+      "when": { "exploit": "yes" },
       "position": {
         "provinceview/province_window/tax_base_value": {
           "positionType": "development_value_vertical_position_exploitable",
@@ -479,6 +488,42 @@
           "positionType": "development_value_vertical_position_exploitable",
           "axis": "y",
         },
+      },
+    },
+    "base-values-not-exploitable": {
+      "note": "eu4.exe 0x1373FD0: without Cradle of Civilization the game hides the exploit buttons and gives the base values the y of development_value_vertical_position_not_exploitable, keeping their x.",
+      "when": { "exploit": "no" },
+      "hide": [
+        "provinceview/province_window/tax_base_exploit_button",
+        "provinceview/province_window/prod_base_exploit_button",
+        "provinceview/province_window/mp_base_exploit_button",
+      ],
+      "position": {
+        "provinceview/province_window/tax_base_value": {
+          "positionType": "development_value_vertical_position_not_exploitable",
+          "axis": "y",
+        },
+        "provinceview/province_window/prod_base_value": {
+          "positionType": "development_value_vertical_position_not_exploitable",
+          "axis": "y",
+        },
+        "provinceview/province_window/mp_base_value": {
+          "positionType": "development_value_vertical_position_not_exploitable",
+          "axis": "y",
+        },
+      },
+    },
+    "native-close-button": {
+      "note": "eu4.exe 0x138DC80 picks building_close_button_natives below 814 px of height and building_close_button_natives_large from it; 0x1390880 moves building_close_button there while the owner builds native buildings and back to its .gui place otherwise.",
+      "when": { "natives": "yes", "screen": "small" },
+      "position": {
+        "provinceview/buildings_window/building_close_button": "building_close_button_natives",
+      },
+    },
+    "native-close-button-large": {
+      "when": { "natives": "yes", "screen": "large" },
+      "position": {
+        "provinceview/buildings_window/building_close_button": "building_close_button_natives_large",
       },
     },
     "small-screen": {
