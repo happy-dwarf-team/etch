@@ -147,9 +147,9 @@ export function sampleData(
     }
   }
   if (input.hand !== undefined) {
-    for (const entry of windowPaths(window)) {
-      const text = input.hand.text(entry.path);
-      if (text !== undefined) texts.set(entry.widget, { text, layer: 'hand', detail: entry.path });
+    for (const [widget, path] of pathOf) {
+      const text = input.hand.text(path);
+      if (text !== undefined) texts.set(widget, { text, layer: 'hand', detail: path });
     }
   }
   for (const [widget, text] of texts) if (drawn(widget)) counts[text.layer]++;
