@@ -11,9 +11,14 @@ const sources = readdirSync(root, { withFileTypes: true })
   .filter((entry) => entry.isDirectory())
   .map((entry) => entry.name);
 
+const MODS: Record<string, string> = {
+  anbennar: '1385440355',
+  'p2ke-patch-anbennar': '3777997797',
+};
+
 describe("Etch's window profiles", () => {
-  it('ship vanilla and Anbennar', () => {
-    expect(sources.sort()).toEqual(['anbennar', 'vanilla']);
+  it('ship vanilla, Anbennar and P2KE Patch - Anbennar', () => {
+    expect(sources.sort()).toEqual(['anbennar', 'p2ke-patch-anbennar', 'vanilla']);
   });
 
   for (const source of sources) {
@@ -27,7 +32,7 @@ describe("Etch's window profiles", () => {
           expect(file?.mod).toBeUndefined();
           expect(file?.checkedWith).toBe('1.37.5');
         } else {
-          expect(file?.mod?.remoteFileId).toBe('1385440355');
+          expect(file?.mod?.remoteFileId).toBe(MODS[source]);
         }
       });
     }

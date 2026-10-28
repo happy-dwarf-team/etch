@@ -463,9 +463,10 @@ How a view is compared (`planCapture` and `compareCapture` in
   that Etch's own window profiles (`profiles/`, vanilla then the playset's
   mods) describe, the profile is checked as the extension checks it and
   evaluated at the view's `selectors` in the playset and the capture's size.
-  Every path the profile names (in its rules and its groups) that the capture
-  has must be drawn exactly when the game showed it (itself and its parents
-  visible). A mismatch, or a profile that does not load cleanly, is a problem
+  Every widget of the window that the capture has must be drawn exactly when
+  the game showed it (itself and its parents visible), whether the profile
+  names it or not; a text the game showed empty is left out, as it draws
+  nothing either way. A mismatch, or a profile that does not load cleanly, is a problem
   of the capture and fails it; the report lists them, and `visibility` in the
   capture's report has each root's count.
 - **Save texts** (reported, not gated, spec v2 section 14). With `--saves

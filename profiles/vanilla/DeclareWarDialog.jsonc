@@ -5,7 +5,19 @@
   "formatVersion": 1,
   "window": "DeclareWarDialog",
   "checkedWith": "1.37.5",
+  "selectors": {
+    "aggressiveExpansion": {
+      "kind": "ui",
+      "label": "Aggressive expansion",
+      "values": { "shown": "Shown", "none": "None" },
+      "note": "Decided by the war the player declares and its casus belli: shown in the vanilla corpus capture, hidden in the Anbennar playsets' captures.",
+    },
+  },
   "rules": {
+    "no-aggressive-expansion": {
+      "when": { "aggressiveExpansion": "none" },
+      "hide": ["DeclareWarDialog/aggressive_expansion"],
+    },
     "hidden": {
       "note": "Hidden in the corpus capture of \"diplomacy-dialog\" in vanilla (Russia, 17 March 1719): the game decides these from its data or a click; show one by hand.",
       "hide": [

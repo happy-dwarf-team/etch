@@ -93,7 +93,7 @@ export function windowReport(
     }
     for (const v of comparison.visibility ?? []) {
       lines.push(
-        `Profile of \`${v.window}\`: ${String(v.compared)} named paths, ` +
+        `Profile of \`${v.window}\`: ${String(v.compared)} widgets, ` +
           `${String(v.mismatches.length)} not as the game shows them.`,
       );
     }

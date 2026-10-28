@@ -94,6 +94,37 @@
       "values": { "yes": "Fort", "no": "No fort" },
       "default": "yes",
     },
+    "capital": {
+      "kind": "data",
+      "label": "Capital",
+      "fact": "province.isCapital",
+      "values": { "yes": "Capital", "no": "Not capital" },
+      "default": "no",
+      "note": "The capital shows have_capital in the first slot of the top section, an own province move_capital (eu4.exe 0x1349580).",
+    },
+    "tradePort": {
+      "kind": "data",
+      "label": "Trade port",
+      "fact": "province.isTradePort",
+      "values": { "yes": "Trade port", "no": "Not trade port" },
+      "default": "no",
+      "note": "An own trade port shows have_trade_port in the second slot, another own province move_trade_port (0x134A530).",
+    },
+    "parliament": {
+      "kind": "data",
+      "label": "Parliament",
+      "fact": "province.parliamentSeat",
+      "values": { "seat": "Seat", "noSeat": "No seat", "none": "No parliament" },
+      "default": "none",
+      "note": "The third slot of an own province: add_parliament without a seat, remove_parliament with one; have_parliament replaces remove_parliament where seats cannot be removed (0x13497F0), shown by hand.",
+    },
+    "centerOfTrade": {
+      "kind": "data",
+      "label": "Centre of trade",
+      "fact": "province.centerOfTrade",
+      "values": { "yes": "Centre of trade", "no": "None" },
+      "default": "no",
+    },
     "colonised": {
       "kind": "data",
       "label": "Colonised",
@@ -388,9 +419,50 @@
       ],
     },
     "no-fort": {
-      "note": "The no-fort icon shows where the province's buildings hold no fort (Siroz in the corpus).",
+      "note": "Without a fort the game shows no_building_fort instead of building_fort and hides the fort's level and maintenance (eu4.exe 0x13728C0; Siroz and Heroes' Rest in the corpus).",
       "when": { "fort": "no" },
       "show": ["provinceview/province_window/no_building_fort"],
+      "hide": [
+        "provinceview/province_window/building_fort",
+        "provinceview/province_window/fort_number",
+        "provinceview/province_window/province_view_fort_nr_bg",
+        "provinceview/province_window/maintenance_icon",
+        "provinceview/province_window/maintenance_lock_icon",
+        "provinceview/province_window/fort_maintenance_checkbox",
+        "provinceview/province_window/fort_maintenance_lock_checkbox",
+      ],
+    },
+    "build-views-cover-loot": {
+      "note": "The game hides loot and devastation while change_culture_view, build_army_view or build_navy_view is open (eu4.exe 0x1373FD0); they would draw over the panel.",
+      "when": { "subPanel": ["change_culture_view", "build_army_view", "build_navy_view"] },
+      "hide": [
+        "provinceview/province_window/loot_icon",
+        "provinceview/province_window/loot_progress",
+        "provinceview/province_window/loot_progress_frame",
+        "provinceview/province_window/devastation_icon",
+        "provinceview/province_window/devastation_value",
+      ],
+    },
+    "foreign-province-actions": {
+      "note": "What only the player's own provinces offer: coring, a client state, returning the province, colony growth, and its construction (Siroz in the corpus).",
+      "when": { "owner": "no" },
+      "hide": [
+        "provinceview/province_window/add_core_button",
+        "provinceview/province_window/client_state_button",
+        "provinceview/province_window/return_province_button",
+        "provinceview/province_window/settlement_growth_checkbox",
+        "provinceview/province_window/progress_bar_window",
+      ],
+    },
+    "hidden-foreign_province_window": {
+      "note": "Shown while the player integrates or annexes the owner, its subject; show them by hand.",
+      "hide": [
+        "provinceview/province_window/foreign_province_window/annex_icon",
+        "provinceview/province_window/foreign_province_window/integrate_icon",
+        "provinceview/province_window/foreign_province_window/integrate_annex_progress",
+        "provinceview/province_window/foreign_province_window/integrate_annex_progress_frame",
+        "provinceview/province_window/foreign_province_window/cancel_integrate_annex_button",
+      ],
     },
     "hre-own": {
       "when": { "hre": "yes", "owner": "yes" },
@@ -415,7 +487,7 @@
       ],
     },
     "hidden-top_section_window": {
-      "note": "Capital, trade port and parliament marks, strait and river: shown by the game from data (etch#155).",
+      "note": "The marks of the three slots, which the rules below show by the capital, trade port and parliament selectors; strait and river, which the map decides (etch#155).",
       "hide": [
         "provinceview/top_section_window/add_parliament",
         "provinceview/top_section_window/have_capital",
@@ -423,6 +495,39 @@
         "provinceview/top_section_window/have_trade_port",
         "provinceview/top_section_window/river_indicator",
         "provinceview/top_section_window/strait_indicator",
+      ],
+    },
+    "capital": {
+      "note": "The first slot of the top section: have_capital in the owner's capital, own or foreign (0x1349580).",
+      "when": { "capital": "yes" },
+      "show": ["provinceview/top_section_window/have_capital"],
+      "hide": ["provinceview/top_section_window/move_capital"],
+    },
+    "trade-port": {
+      "note": "The second slot: have_trade_port in the player's own trade port (0x134A530).",
+      "when": { "tradePort": "yes", "owner": "yes" },
+      "show": ["provinceview/top_section_window/have_trade_port"],
+      "hide": ["provinceview/top_section_window/move_trade_port"],
+    },
+    "no-parliament": {
+      "note": "The third slot stays empty where the player's country has no parliament (0x13497F0).",
+      "when": { "parliament": "none" },
+      "hide": ["provinceview/top_section_window/remove_parliament"],
+    },
+    "no-seat": {
+      "when": { "parliament": "noSeat" },
+      "show": ["provinceview/top_section_window/add_parliament"],
+      "hide": ["provinceview/top_section_window/remove_parliament"],
+    },
+    "foreign-top-section": {
+      "note": "Moving the capital or the trade port and the parliament seat are the player's own provinces' (0x1349580, 0x134A530, 0x13497F0).",
+      "when": { "owner": "no" },
+      "hide": [
+        "provinceview/top_section_window/move_capital",
+        "provinceview/top_section_window/move_trade_port",
+        "provinceview/top_section_window/have_trade_port",
+        "provinceview/top_section_window/add_parliament",
+        "provinceview/top_section_window/remove_parliament",
       ],
     },
     "hidden-province_values_window": {
@@ -440,8 +545,12 @@
       ],
     },
     "hidden-general_buildings_window": {
-      "note": "Shown in a centre of trade.",
+      "note": "Shown where the centre of trade can be upgraded; show it by hand.",
       "hide": ["provinceview/buildings_window/general_buildings_window/center_of_trade_button"],
+    },
+    "no-center-of-trade": {
+      "when": { "centerOfTrade": "no" },
+      "hide": ["provinceview/buildings_window/general_buildings_window/center_of_trade_icon"],
     },
   },
   "views": {

@@ -124,6 +124,8 @@ provinces={
 			workshop=yes
 		}
 		building_construction={ id=1 }
+		seat_in_parliament={ }
+		center_of_trade=1
 	}
 -2={
 		name="Kalmar"
@@ -137,8 +139,8 @@ provinces={
 	}
 }
 countries={
-	SWE={ capital=1 government_name="monarchy" }
-	DAN={ capital=12 government_name="kingdom" }
+	SWE={ capital=1 trade_port=4 government_name="monarchy" parliament={ } }
+	DAN={ capital=12 trade_port=2 government_name="kingdom" }
 }
 `;
 
@@ -382,14 +384,30 @@ describe('sampleData', () => {
       'province.constructing': 'yes',
       'province.hasGreatProjects': 'no',
       'province.hasFort': 'no',
+      'province.isCapital': 'yes',
+      'province.isTradePort': 'no',
+      'province.parliamentSeat': 'seat',
+      'province.centerOfTrade': 'yes',
     });
     expect(saveFacts(new SaveChoice(s, 'SWE', 2))).toMatchObject({
       'province.ownedByPlayer': 'no',
       'province.occupied': 'no',
       'province.hasGreatProjects': 'yes',
       'province.hasFort': 'yes',
+      'province.isCapital': 'no',
+      'province.isTradePort': 'yes',
+      'province.parliamentSeat': 'none',
+      'province.centerOfTrade': 'no',
     });
-    expect(saveFacts(new SaveChoice(s, 'SWE', 3))).toMatchObject({ 'province.owned': 'no' });
+    expect(saveFacts(new SaveChoice(s, 'SWE', 3))).toEqual({
+      'province.owned': 'no',
+      'province.ownedByPlayer': 'no',
+      'province.occupied': 'no',
+      'province.constructing': 'no',
+      'province.hasGreatProjects': 'no',
+      'province.hasFort': 'no',
+      'province.centerOfTrade': 'no',
+    });
     expect(saveFacts(new SaveChoice(s, 'SWE', undefined))).toEqual({});
   });
 

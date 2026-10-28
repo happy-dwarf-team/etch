@@ -254,8 +254,13 @@ describe('profileVisibility', () => {
     children,
   });
 
-  it('compares the paths the profile names with what the game showed', () => {
+  it('compares every widget of the window with what the game showed', () => {
+    const top = (visible: boolean): CapturedWidget =>
+      captured('provinceview/top_section_window', visible, [
+        { ...captured('provinceview/top_section_window/history', true), text: '' },
+      ]);
     const root = captured('provinceview', true, [
+      top(true),
       captured('provinceview/province_window', true, [
         captured('provinceview/province_window/queue_window', true),
         captured('provinceview/province_window/foreign_province_window', true),
@@ -274,9 +279,22 @@ describe('profileVisibility', () => {
     expect(own.mismatches).toEqual([
       { path: 'provinceview/province_window/foreign_province_window', game: true },
     ]);
-    // Named and captured: province_window, state_window, queue_window, foreign_province_window
-    // and build_army_view; build_navy_view is named but the game did not build it.
-    expect(own.compared).toBe(5);
+    // Every captured widget but the empty text history, which draws nothing either way;
+    // build_navy_view is in the window but the game did not build it.
+    expect(own.compared).toBe(7);
+    // A widget the profile does not name is drawn: the game hiding it is a mismatch.
+    const hidden = profileVisibility(
+      PROFILE,
+      WINDOW,
+      LARGE,
+      { owner: 'yes', tab: 'province', sub: 'none' },
+      { ...root, children: [top(false), ...(root.children ?? []).slice(1)] },
+    );
+    expect(hidden.mismatches.map((m) => m.path)).toEqual([
+      'provinceview/top_section_window',
+      'provinceview/top_section_window/history',
+      'provinceview/province_window/foreign_province_window',
+    ]);
     const foreign = profileVisibility(
       PROFILE,
       WINDOW,

@@ -578,6 +578,9 @@
             "topbar/p2kuie_mana_window/p2kuie_mana_value"
           ],
           "codeMoved": ["DeclareWarDialog"],
+          "selectors": {
+            "aggressiveExpansion": "shown"
+          },
           "byPlayset": {
             "anbennar": {
               "recipe": {
@@ -598,6 +601,9 @@
                 ],
                 "verified": true,
                 "evidence": "Run by the capture driver in the Anbennar playset at 2560×1440 and 3440×1440 and in Anbennar alone at 1280×720 to 1920×1080 on 2026-10-27 (M10), from the corpus save with its events answered: the steps opened the view and its roots were read and shown. Verne’s diplomacy lists one relation; its shield selects that country, whose actions show Declare War first (Anbennar groups the others in categories), which opens DeclareWarDialog and declares nothing."
+              },
+              "selectors": {
+                "aggressiveExpansion": "none"
               }
             },
             "anbennar-alone": {
@@ -619,6 +625,9 @@
                 ],
                 "verified": true,
                 "evidence": "Run by the capture driver in the Anbennar playset at 2560×1440 and 3440×1440 and in Anbennar alone at 1280×720 to 1920×1080 on 2026-10-27 (M10), from the corpus save with its events answered: the steps opened the view and its roots were read and shown. Verne’s diplomacy lists one relation; its shield selects that country, whose actions show Declare War first (Anbennar groups the others in categories), which opens DeclareWarDialog and declares nothing."
+              },
+              "selectors": {
+                "aggressiveExpansion": "none"
               }
             }
           }
@@ -712,7 +721,11 @@
             "side": "buildings",
             "subPanel": "none",
             "construction": "yes",
-            "fort": "yes"
+            "fort": "yes",
+            "capital": "no",
+            "tradePort": "no",
+            "parliament": "seat",
+            "centerOfTrade": "yes"
           },
           "data": {
             "province": 148
@@ -752,7 +765,9 @@
                 "buttonBar": "closed",
                 "apui": "none",
                 "fort": "no",
-                "hre": "yes"
+                "hre": "yes",
+                "parliament": "none",
+                "centerOfTrade": "no"
               },
               "note": "The save (Verne, 11 November 1444) has no ship in construction: the province opens through the Goto box and a map point the same at every size.",
               "data": {
@@ -793,7 +808,9 @@
                 "buttonBar": "closed",
                 "apui": "none",
                 "fort": "no",
-                "hre": "yes"
+                "hre": "yes",
+                "parliament": "none",
+                "centerOfTrade": "no"
               },
               "note": "The save (Verne, 11 November 1444) has no ship in construction: the province opens through the Goto box and a map point the same at every size.",
               "data": {
@@ -894,7 +911,10 @@
             "tab": "province",
             "side": "buildings",
             "subPanel": "none",
-            "fort": "no"
+            "fort": "no",
+            "capital": "no",
+            "tradePort": "no",
+            "centerOfTrade": "no"
           },
           "data": {
             "province": 4702
