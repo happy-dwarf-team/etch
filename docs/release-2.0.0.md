@@ -96,6 +96,16 @@ target).
 - **Closing the province view after a rebuild (H2):** the plugin presses
   Escape through the game's SDL queue and undoes it when it opened the game's
   menu; checked in both playsets in M10 (#208).
+- **A busy game (the 2.0.0 trial):** the trial's live game in the Anbennar
+  playset was closed while it started (the 120 s ready limit) and while a new
+  game started (10 s without a frame with a window not responding counted as a
+  hang). Now a start has no limit while the plugin answers, a crash is a dead
+  process or a plugin silent for 60 s, and a game that draws no frame for 5
+  minutes is only asked about. Checked live at 2560×1440: a cold first start, a
+  new game from the country selection (9.7 s without a frame, the window not
+  responding), loading a save, Etch's save, the game's autosave and a manual
+  save, a planned restart; none restarted the game
+  ([live-game.md](live-game.md), "A busy game").
 - **Reopening the province after a restart (H8):** not built; the recorded
   workaround is that Etch says the view was not reopened (live-game.md).
 - **VS Code coming forward under Windows' default foreground lock:** holds

@@ -455,34 +455,101 @@ windows('LiveGameProcess', () => {
     TIMEOUT,
   );
 
-  // The watchdog (etch#51) against a game whose frame counter stops, and one that stops answering.
-  for (const [mode, hang] of [
-    ['freeze', /^the frame counter stayed at \d+ for/],
-    ['mute', /^no answer to a ping for/],
-  ] as const) {
-    it(
-      `finds a hang: ${mode}`,
-      async () => {
-        const lock: LockOptions = { path: join(temp, 'game-host.lock'), owner: await self() };
-        const host = await LiveGameProcess.start({
-          install: install([lock.path, '200', mode]),
+  it(
+    'waits for a start whose main loop stands still, as long as the plugin answers',
+    async () => {
+      const lock: LockOptions = { path: join(temp, 'game-host.lock'), owner: await self() };
+      const host = await LiveGameProcess.start({
+        install: install([lock.path, '2500', 'loading']),
+        originalGameFolder: temp,
+        lock,
+        silentMs: 1_000,
+      });
+      try {
+        expect(host.times.ready).toBeGreaterThan(2_000);
+      } finally {
+        await host.stop();
+      }
+    },
+    TIMEOUT,
+  );
+
+  it(
+    'is a crash when the plugin stops answering while the game starts',
+    async () => {
+      const lock: LockOptions = { path: join(temp, 'game-host.lock'), owner: await self() };
+      await expect(
+        LiveGameProcess.start({
+          install: install([lock.path, '200', 'mute-start']),
           originalGameFolder: temp,
           lock,
+          silentMs: 1_000,
+        }),
+      ).rejects.toThrow(/gave no answer to a ping/);
+      expect(await readFile(lock.path).catch(() => undefined)).toBeUndefined();
+    },
+    TIMEOUT,
+  );
+
+  // The watchdog (etch#51): a game whose frame counter stops only asks; one that stops answering hangs.
+  it(
+    'asks once about a frame counter that stands still, and never calls it a hang',
+    async () => {
+      const lock: LockOptions = { path: join(temp, 'game-host.lock'), owner: await self() };
+      const host = await LiveGameProcess.start({
+        install: install([lock.path, '200', 'freeze']),
+        originalGameFolder: temp,
+        lock,
+      });
+      try {
+        const abort = new AbortController();
+        const asked: string[] = [];
+        let ended = false;
+        void watch(host, {
+          intervalMs: 50,
+          silentMs: 1_000,
+          stillMs: 1_000,
+          onStill: (reason) => asked.push(reason),
+          signal: abort.signal,
+        }).then(() => {
+          ended = true;
         });
-        try {
-          const abort = new AbortController();
-          const started = performance.now();
-          const reason = await watch(host, { intervalMs: 50, hangMs: 1_000, signal: abort.signal });
-          expect(reason).toMatch(hang);
-          // Not before the game got stuck, half a second after it was ready.
-          expect(performance.now() - started).toBeGreaterThan(1_000);
-        } finally {
-          await host.stop();
-        }
-      },
-      TIMEOUT,
-    );
-  }
+        await new Promise((resolve) => setTimeout(resolve, 3_000));
+        abort.abort();
+        expect(ended).toBe(false);
+        expect(asked).toHaveLength(1);
+        expect(asked[0]).toMatch(
+          /^the game drew no frame for \d+ s \(frame \d+\) and Windows marks/,
+        );
+      } finally {
+        await host.stop();
+      }
+    },
+    TIMEOUT,
+  );
+
+  it(
+    'finds a plugin that stops answering',
+    async () => {
+      const lock: LockOptions = { path: join(temp, 'game-host.lock'), owner: await self() };
+      const host = await LiveGameProcess.start({
+        install: install([lock.path, '200', 'mute']),
+        originalGameFolder: temp,
+        lock,
+      });
+      try {
+        const abort = new AbortController();
+        const started = performance.now();
+        const reason = await watch(host, { intervalMs: 50, silentMs: 1_000, signal: abort.signal });
+        expect(reason).toMatch(/^Etch's plugin gave no answer to a ping for/);
+        // Not before the plugin went quiet, half a second after it was ready.
+        expect(performance.now() - started).toBeGreaterThan(1_000);
+      } finally {
+        await host.stop();
+      }
+    },
+    TIMEOUT,
+  );
 });
 
 describe('gameEnvironment', () => {

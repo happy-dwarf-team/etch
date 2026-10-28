@@ -3,7 +3,9 @@
 // the lock file the extension writes once it has the process's identity (argv[2]); it is ready
 // after argv[3] milliseconds. With argv[4] = "exit" it ends before it is ready; with "freeze" its
 // frame counter stops half a second after it is ready, and with "mute" it stops answering pings
-// then, as a hung game and a dead plugin would (etch#51).
+// then, as a hung game and a dead plugin would (etch#51). With "loading" its frame counter stands
+// and its window does not respond until it is ready, as a cold start of a big playset; with
+// "mute-start" it stops answering pings 200 ms after it started and is never ready.
 import { readFileSync } from 'node:fs';
 import { createServer } from 'node:net';
 
@@ -28,10 +30,11 @@ function startMs(): number {
   }
 }
 
-const ready = (): boolean => Date.now() - started >= Number(readyAfter);
+const ready = (): boolean => mode !== 'mute-start' && Date.now() - started >= Number(readyAfter);
 const stuck = (): boolean => Date.now() - started >= Number(readyAfter) + 500;
 let frame = 0;
 setInterval(() => {
+  if (mode === 'loading' && !ready()) return;
   if (mode !== 'freeze' || !stuck()) frame++;
 }, 10);
 createServer((socket) => {
@@ -43,6 +46,7 @@ createServer((socket) => {
       const request = JSON.parse(buffered.slice(0, end)) as { id: number; type: string };
       buffered = buffered.slice(end + 1);
       if (mode === 'mute' && request.type === 'ping' && stuck()) continue;
+      if (mode === 'mute-start' && request.type === 'ping' && Date.now() - started >= 200) continue;
       const answer =
         request.type === 'hello'
           ? {
@@ -60,7 +64,7 @@ createServer((socket) => {
                 ok: true,
                 ready: ready(),
                 frame,
-                responding: mode !== 'freeze',
+                responding: mode !== 'freeze' && (mode !== 'loading' || ready()),
                 busy: false,
                 game_session: null,
               }

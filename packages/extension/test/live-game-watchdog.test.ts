@@ -24,53 +24,53 @@ const ping = (frame: number, more: Partial<Ping> = {}): Ping => ({
 
 describe('HangCheck', () => {
   it('is fine while pings are answered and frames move', () => {
-    const check = new HangCheck(0, 10_000);
-    for (let t = 1_000; t <= 30_000; t += 1_000) {
+    const check = new HangCheck(0, 60_000, 300_000);
+    for (let t = 1_000; t <= 400_000; t += 1_000) {
       check.answer(ping(t), t);
       expect(check.hang(t)).toBeUndefined();
+      expect(check.still(t)).toBeUndefined();
     }
   });
 
-  it('finds a frame counter that stands still', () => {
-    const check = new HangCheck(0, 10_000);
+  it('never calls a frame counter that stands still a hang, and tells it after the still limit', () => {
+    // A load, a new game or a big event in Anbennar's playset: no frame, the window not responding.
+    const check = new HangCheck(0, 60_000, 300_000);
     check.answer(ping(7), 1_000);
-    for (let t = 2_000; t < 11_000; t += 1_000) {
+    for (let t = 2_000; t < 301_000; t += 1_000) {
       check.answer(ping(7), t);
       expect(check.hang(t)).toBeUndefined();
+      expect(check.still(t)).toBeUndefined();
     }
-    check.answer(ping(7), 11_000);
-    expect(check.hang(11_000)).toBe(
-      'the frame counter stayed at 7 for 10 s and the window stopped responding',
+    check.answer(ping(7), 301_000);
+    expect(check.hang(301_000)).toBeUndefined();
+    expect(check.still(301_000)).toBe(
+      'the game drew no frame for 300 s (frame 7) and Windows marks its window not responding',
     );
+    check.answer(ping(7, { responding: true }), 302_000);
+    expect(check.still(302_000)).toBe('the game drew no frame for 301 s (frame 7)');
+    // It moved on: a new stretch begins.
+    check.answer(ping(8), 303_000);
+    expect(check.still(303_000)).toBeUndefined();
+    expect(check.movedAt).toBe(303_000);
   });
 
-  it('waits while a save loads and the window takes messages, up to the load limit', () => {
-    const check = new HangCheck(0, 10_000, 60_000);
-    for (let t = 1_000; t < 61_000; t += 1_000) {
-      check.answer(ping(7, { responding: true }), t);
-      expect(check.hang(t)).toBeUndefined();
-    }
-    check.answer(ping(7, { responding: true }), 61_000);
-    expect(check.hang(61_000)).toBe('the frame counter stayed at 7 for 60 s');
-  });
-
-  it('waits while the plugin saves', () => {
-    const check = new HangCheck(0, 10_000, 60_000);
-    for (let t = 1_000; t <= 30_000; t += 1_000) {
+  it('counts a busy plugin as moving', () => {
+    const check = new HangCheck(0, 60_000, 60_000);
+    for (let t = 1_000; t <= 90_000; t += 1_000) {
       check.answer(ping(7, { busy: true }), t);
-      expect(check.hang(t)).toBeUndefined();
+      expect(check.still(t)).toBeUndefined();
     }
     // The save ended: the stall counts from its last busy answer.
-    check.answer(ping(7), 39_999);
-    expect(check.hang(39_999)).toBeUndefined();
-    expect(check.hang(40_000)).toMatch(/^the frame counter stayed at 7 for 10 s/);
+    check.answer(ping(7), 149_999);
+    expect(check.still(149_999)).toBeUndefined();
+    expect(check.still(150_000)).toMatch(/^the game drew no frame for 60 s/);
   });
 
   it('finds pings left unanswered', () => {
-    const check = new HangCheck(0, 10_000);
+    const check = new HangCheck(0, 60_000);
     check.answer(ping(1), 1_000);
-    expect(check.hang(10_999)).toBeUndefined();
-    expect(check.hang(11_000)).toBe('no answer to a ping for 10 s');
+    expect(check.hang(60_999)).toBeUndefined();
+    expect(check.hang(61_000)).toBe("Etch's plugin gave no answer to a ping for 60 s");
   });
 });
 
@@ -82,7 +82,7 @@ describe('watch', () => {
     };
     const abort = new AbortController();
     let ended = false;
-    void watch(moving, { intervalMs: 5, hangMs: 100, signal: abort.signal }).then(() => {
+    void watch(moving, { intervalMs: 5, silentMs: 100, signal: abort.signal }).then(() => {
       ended = true;
     });
     await new Promise((resolve) => setTimeout(resolve, 300));
@@ -92,10 +92,39 @@ describe('watch', () => {
     const failing = { ping: (): Promise<Ping> => Promise.reject(new Error('pipe closed')) };
     const reason = await watch(failing, {
       intervalMs: 5,
-      hangMs: 100,
+      silentMs: 100,
       signal: new AbortController().signal,
     });
-    expect(reason).toMatch(/^no answer to a ping/);
+    expect(reason).toMatch(/^Etch's plugin gave no answer to a ping/);
+    expect(ended).toBe(false);
+  });
+
+  it('tells each stretch of a still frame counter once, and keeps watching', async () => {
+    let frame = 0;
+    let still = true;
+    const target = {
+      ping: (): Promise<Ping> => Promise.resolve(ping(still ? frame : ++frame)),
+    };
+    const abort = new AbortController();
+    const told: string[] = [];
+    let ended = false;
+    void watch(target, {
+      intervalMs: 5,
+      silentMs: 1_000,
+      stillMs: 100,
+      onStill: (reason) => told.push(reason),
+      signal: abort.signal,
+    }).then(() => {
+      ended = true;
+    });
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    expect(told).toHaveLength(1);
+    still = false;
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    still = true;
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    abort.abort();
+    expect(told).toHaveLength(2);
     expect(ended).toBe(false);
   });
 });

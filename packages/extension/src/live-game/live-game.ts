@@ -231,7 +231,8 @@ type StartAt = { readonly save: string | SaveFile | undefined };
 /**
  * The machine's one live game, owned by this VS Code window: started on request, stopped by
  * command or when the window closes (`stop` from `deactivate`), both saving first. Its watchdog
- * (etch#51) restarts it at the newest private save after a dead process or a hang, and stops it
+ * (etch#51) restarts it at the newest private save after a dead process or a silent plugin (a
+ * game that only draws no frame is asked about, never closed by itself), and stops it
  * after `CRASH_LIMIT` crashes in `CRASH_WINDOW_MS` until a manual start; a quit from the game is a
  * stop, and the process the game starts of itself on Exit to Main Menu is adopted (H6). A start, a
  * restart, a stop and a removal of the install never overlap. The reload policy comes with the
@@ -886,6 +887,9 @@ export class LiveGame implements vscode.Disposable {
         log: (message) => {
           this.output.info(message);
         },
+        onSlow: () => {
+          this.offerStop();
+        },
         signal,
       });
       await this.serve(started);
@@ -897,12 +901,31 @@ export class LiveGame implements vscode.Disposable {
         return false;
       }
       const message = error instanceof Error ? error.message : String(error);
-      // A game that dies or hangs while it starts is a crash: it starts again, up to the limit.
+      // A game that dies, or whose plugin stops answering, while it starts is a crash: it starts
+      // again, up to the limit. A game that only takes long keeps starting (spec section 6).
       if (error instanceof HostCrashedError) return this.crashed(message);
       this.output.error(`The live game did not start: ${message}`);
       this.set({ status: 'failed', message });
       return false;
     }
+  }
+
+  /**
+   * Offers to stop a start that takes long: a cold start of a big playset takes minutes, and Etch
+   * never ends one by itself while the game lives and its plugin answers.
+   */
+  private offerStop(): void {
+    const stop = 'Stop';
+    void vscode.window
+      .showInformationMessage(
+        'The live game is still starting: a first start of a big playset can take several ' +
+          "minutes. Etch keeps waiting; its log shows the game's progress.",
+        stop,
+      )
+      .then((answer) => {
+        const state = this.current.status;
+        if (answer === stop && (state === 'starting' || state === 'restarting')) void this.stop();
+      });
   }
 
   /** Makes a ready process the live game and watches it. */
@@ -957,9 +980,10 @@ export class LiveGame implements vscode.Disposable {
   }
 
   /**
-   * Watches the started process: a hang, and an exit Etch did not ask for, are crashes, except an
-   * exit the player chose in the game. Once a restart is asked for, the process is about to be
-   * closed anyway: nothing more counts.
+   * Watches the started process: an exit Etch did not ask for, and a plugin that stops answering,
+   * are crashes, except an exit the player chose in the game. A main loop that stands still only
+   * asks the player (`stillAsked`). Once a restart is asked for, the process is about to be closed
+   * anyway: nothing more counts.
    */
   private watch(started: LiveGameProcess): void {
     const watching = new AbortController();
@@ -969,10 +993,48 @@ export class LiveGame implements vscode.Disposable {
       this.release();
       await this.exited(started, code);
     });
-    void watchHang(started, { signal: watching.signal }).then(async (hang) => {
+    void watchHang(started, {
+      signal: watching.signal,
+      onStill: (reason) => {
+        void this.stillAsked(started, reason);
+      },
+    }).then(async (hang) => {
       if (!this.serving(started)) return;
       await this.crashed(`the game hangs: ${hang}`);
     });
+  }
+
+  /**
+   * The game drew no frame for `STILL_MS`. It may only be busy: a load, a new game from the country
+   * selection, a save, an autosave or a big event freezes the main loop, and Windows then marks the
+   * window not responding (the 2.0.0 trial, Anbennar's playset). Etch never closes it on its own:
+   * it asks, and closes and restarts it only on the player's answer, if it is still stuck then.
+   */
+  private async stillAsked(started: LiveGameProcess, reason: string): Promise<void> {
+    this.output.warn(`The live game may hang: ${reason}. Etch keeps waiting.`);
+    const restart = 'Close and Restart';
+    const answer = await vscode.window.showWarningMessage(
+      `The live game may hang: ${reason}. It may only be busy (a load, a new game, a save or a ` +
+        'big event). Etch keeps waiting unless you close it.',
+      'Keep Waiting',
+      restart,
+    );
+    if (answer !== restart || !this.serving(started)) return;
+    const before = await started.ping().catch(() => undefined);
+    await new Promise((resolve) => setTimeout(resolve, 2_000));
+    const after = await started.ping().catch(() => undefined);
+    if (before !== undefined && after !== undefined && before.frame !== after.frame) {
+      this.output.info('The live game drew frames again before it was closed: it keeps running.');
+      void vscode.window.showInformationMessage(
+        'The live game moved on in the meantime: Etch left it running.',
+      );
+      return;
+    }
+    if (!this.serving(started)) return;
+    // The player's choice, not a crash: it does not count towards the crash limit.
+    this.output.warn(`Closing and restarting the live game on request: ${reason}.`);
+    this.restarts.request(`closed on request: ${reason}`);
+    this.set({ status: 'restarting', reason: `closed on request: ${reason}` });
   }
 
   /**

@@ -76,7 +76,12 @@ preview's playset. A start:
    was chosen) and `-userdir=<private profile>/`, `ETCH_HOST_SESSION`,
    `SteamAppId` and `SteamGameId`. The lock records the game's identity; the
    plugin's `hello` must name the same PID and creation time. The game is ready
-   when `anvil-game.ready` is published.
+   when `anvil-game.ready` is published. The plugin's pipe must come up within
+   120 s (it does in about 0.3 s); after that the start has no time limit:
+   Etch waits as long as the process lives and the plugin answers pings, logs
+   the progress every 30 s, and after 2 minutes offers **Stop** in a notice (the
+   status bar item stops it throughout). A cold first start of the Anbennar
+   playset took over two minutes in the 2.0.0 trial.
 6. **In Anbennar's playset** (Workshop item `1385440355`), after a start from a
    save, answers the achievements prompt with Enter while
    `DefaultConfirm/AgreeButton` is on screen (the plugin's `confirm`, H7), until
@@ -172,17 +177,26 @@ anyway, and the restart continues the newest save there is.
 ## Crashes
 
 The watchdog (1.x's, [game-host.md](game-host.md), "Restart and watchdog")
-pings the plugin every second. A crash is:
+pings the plugin every second. A crash is only what shows the game or the
+plugin is gone:
 
 - a dead process (an exit that is not a quit or Exit to Main Menu);
-- a hang: no answer to a ping for 10 s, or a frame counter that stands still
-  for 10 s **while the game's window stops taking messages** (the plugin's
-  `IsHungAppWindow`), or for 5 minutes in any case. A save loading from the
-  menu or through `-continue` is one frame of the main loop but keeps the
-  window responding, and the plugin's own save answers pings as `busy`, so
-  neither is a hang;
+- a hang: no answer to a ping for 60 s. The plugin answers on its pipe thread
+  while the game's main thread is stuck, so silence means a dead plugin;
 - a console fault in a reload;
-- a start that ends or hangs.
+- a start that ends, or whose plugin gives no answer for 60 s.
+
+A main loop that stands still is not a crash, whether the window responds or
+not. Loading a save, starting a new game from the country selection, a save or
+an autosave, and a big event each run as one frame of the main loop, and in the
+Anbennar playset Windows marks the window not responding meanwhile (the 2.0.0
+trial: 1.x's rule of 10 s without a frame and a window not responding closed
+the game three times while the player started a new game). When the frame
+counter has stood still for 5 minutes (the plugin's own save or reload counts
+as moving, `busy`), Etch logs a warning and asks **Keep Waiting** or **Close and
+Restart**. It closes the game only on that answer, and not when the game drew
+frames again in the meantime; that restart is the player's and is not counted
+as a crash.
 
 After a crash the game starts again at the newest private save (an autosave,
 the save of a stop or a planned restart, or a manual save). The third crash within 5 minutes
@@ -359,7 +373,7 @@ reported), Anbennar's and the HUD's meet theirs.
 | crash (the verified process terminated, exit code 1) | restarted at the newest save, `autosave.eu4`, loaded 24.3 s after the crash |
 | a lock whose owner is gone (the script ended with its game) | the game was gone with its owner; the lock was cleared and taken |
 | Exit to Main Menu | exit code 0; the child `eu4.exe` was found at once, wrote no Anvil log and served no pipe for 120 s, and was closed after its checks |
-| a game with stale windows on screen | `autosave` deadlocked (the main thread waiting, the window taking messages, the frame counter standing); the watchdog would have called it a hang after 5 minutes. Closed and restarted at the newest save |
+| a game with stale windows on screen | `autosave` deadlocked (the main thread waiting, the window taking messages, the frame counter standing); the watchdog of these runs would have called it a hang after 5 minutes (now it asks the player then). Closed and restarted at the newest save |
 
 The first start found a bug, fixed before these runs: a player's save was
 copied into the private profile before the install's record existed, so the
@@ -388,6 +402,40 @@ The Anbennar prompt was answered by the first Enter through the SDL queue
 (4.8 s after ready). No crash. The reopening on the province the M8 check saw
 (H2) did not come back in these runs; when the rebuild leaves the view open
 on screen the same Escape closes it, as Tongs' did.
+
+## A busy game (the 2.0.0 trial)
+
+The maintainer's trial of the candidate in the Anbennar playset (Anbennar,
+Proper 2K UI Enhanced and P2KE Patch - Anbennar, 2560×1440) found the live game
+unusable: a cold first start passed the old 120 s ready limit and was closed,
+and starting a new game from the country selection froze the main loop with a
+window Windows marked not responding, which 1.x's rule took for a hang after
+10 s; three of those in 5 minutes stopped the live game. The start and the
+watchdog changed as described above ("Start", "Crashes").
+
+Run again on 2026-10-28 with this change, through the lab's script of the M8
+runs and the procedure of "Live runs" (the lab's game lock, hashes and the
+Process Lasso rule checked before and after), in the same playset, windowed
+2560×1440 (the player's settings with `windowed_resolution` and `display_mode`
+changed in the copy), Tongs' input on in the lab's copy for the clicks. A
+sampler of the lab pinged every 0.5 s and recorded each stretch of 2 s or more
+without a frame:
+
+| Step | Result |
+| --- | --- |
+| cold first start (a new private install and profile) to the main menu | pipe up after 232 ms, ready after 39.7 s, frame 0 and the window responding until then; logged at 30 s |
+| Single Player, Verne, Play, Normal Mode | in game; one stretch of 9.7 s without a frame, the window not responding in 9 of its samples, then 3.1 s |
+| Etch's `save` | `autosave.eu4` (109 MB) written 1.0 s later, no stretch |
+| speed 5 for two months, the game's monthly autosave | no stretch |
+| stop, start to the main menu (34.5 s), Single Player, the saves tab, `autosave`, Play | in game; stretches of 3.6 s (reading the save's summary) and 3.6 s (the load), the window responding |
+| the game's menu, Save Game (compressed) | `Verne1445_03_07.eu4` written, no stretch |
+| planned restart (`-continue`) | 48.8 s: save 1.0 s, ready 34.4 s, the prompt answered by the second Enter, loaded 12.1 s after ready; stretches of 3.6–4.1 s |
+
+No step restarted or closed the game; the watchdog reported no hang and asked
+nothing (no stretch reached 5 minutes). The cold start took 40 s here, not the
+trial's two minutes and more: the lab's disk cache was warm from earlier runs.
+The new game's 9.7 s stretch with a window not responding is the case that
+closed the trial's game; on a slower machine it passes 10 s.
 
 ## Open points
 

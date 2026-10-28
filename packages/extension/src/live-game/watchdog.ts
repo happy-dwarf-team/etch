@@ -1,43 +1,52 @@
 // The live game's watchdog (spec section 6, etch#51, kept from 1.x's game host): how a hang is told
-// and how often the game may crash. A dead process and a hang (no answer to a ping, or a frame
-// counter that stops while the window stops responding) restart it; restarts asked for while one runs coalesce into one more; after
-// 3 crashes in 5 minutes it stops and waits for a manual start. Node only, no vscode.
+// and how often the game may crash. A dead process, or a plugin that stops answering pings for a
+// minute, restarts it. A main loop that stands still does not: a load, a new game, a save or a big
+// event can freeze it for minutes while Windows marks the window not responding (the 2.0.0 trial,
+// Anbennar's playset), so the watchdog only asks the player after `STILL_MS`. Restarts asked for
+// while one runs coalesce into one more; after 3 crashes in 5 minutes it stops and waits for a
+// manual start. Node only, no vscode.
 import { open } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { Ping } from './pipe.ts';
 
 /** How often a ready live game is pinged. */
 export const PING_INTERVAL_MS = 1_000;
-/** How long a ping may go unanswered, or the frame counter stand still, before it is a hang. */
-export const HANG_MS = 10_000;
+/** How long one ping may take. */
+export const PING_TIMEOUT_MS = 10_000;
 /**
- * How long the frame counter may stand still while the game's window still takes messages, as it
- * does while a save loads (the whole load is one frame of the main loop), before it is a hang.
+ * How long pings may go unanswered before the plugin counts as gone: its pipe thread answers while
+ * the game's main thread is stuck, so a minute of silence is a dead plugin or a dead process.
  */
-export const LOAD_MS = 5 * 60_000;
+export const SILENT_MS = 60_000;
+/**
+ * How long the frame counter may stand still before Etch asks the player whether the game hangs.
+ * It stands still for the whole of a load, a new game from the country selection, a save or a big
+ * event (each one frame of the main loop), and Windows marks the window not responding meanwhile.
+ */
+export const STILL_MS = 5 * 60_000;
 /** Crashes within `CRASH_WINDOW_MS` that stop the live game until a manual start. */
 export const CRASH_LIMIT = 3;
 export const CRASH_WINDOW_MS = 5 * 60_000;
 
+const seconds = (ms: number): string => `${(ms / 1000).toFixed(0)} s`;
+
 /**
- * Watches a ready live game's pings: a hang is a ping left unanswered for `hangMs`, or a frame
- * counter that did not move for `hangMs` while the game's window stopped taking messages too. The
- * pipe thread answers pings while the game's main thread is stuck, so the frame counter tells a
- * hung game from a dead plugin. A save or a load is not a hang (spec section 6): the counter
- * stands still while the plugin saves (`busy`), and while a save loads, when the window still
- * takes messages, for up to `loadMs`.
+ * Watches a ready live game's pings. A hang is pings left unanswered for `silentMs`: only that
+ * restarts the game. A frame counter that did not move for `stillMs` (a `busy` answer, the plugin
+ * saving or reloading, counts as a move) is `still`: the game may only be busy, so the player is
+ * asked and nothing is closed.
  */
 export class HangCheck {
-  private readonly hangMs: number;
-  private readonly loadMs: number;
+  private readonly silentMs: number;
+  private readonly stillMs: number;
   private answered: number;
   private moved: number;
   private frame: number | undefined;
   private responding = true;
 
-  constructor(now: number, hangMs = HANG_MS, loadMs = LOAD_MS) {
-    this.hangMs = hangMs;
-    this.loadMs = loadMs;
+  constructor(now: number, silentMs = SILENT_MS, stillMs = STILL_MS) {
+    this.silentMs = silentMs;
+    this.stillMs = stillMs;
     this.answered = now;
     this.moved = now;
   }
@@ -54,25 +63,32 @@ export class HangCheck {
 
   /** Why the live game hangs at `now`, or `undefined`. */
   hang(now: number): string | undefined {
-    const seconds = (ms: number): string => `${(ms / 1000).toFixed(0)} s`;
-    if (now - this.answered >= this.hangMs) {
-      return `no answer to a ping for ${seconds(now - this.answered)}`;
-    }
+    if (now - this.answered < this.silentMs) return undefined;
+    return `Etch's plugin gave no answer to a ping for ${seconds(now - this.answered)}`;
+  }
+
+  /** When the frame counter last moved: a new value starts a new stretch of standing still. */
+  get movedAt(): number {
+    return this.moved;
+  }
+
+  /** How the frame counter has stood still for `stillMs` or more at `now`, or `undefined`. */
+  still(now: number): string | undefined {
     const still = now - this.moved;
-    if (still >= this.hangMs && !this.responding) {
-      return `the frame counter stayed at ${String(this.frame)} for ${seconds(still)} and the window stopped responding`;
-    }
-    if (still >= this.loadMs) {
-      return `the frame counter stayed at ${String(this.frame)} for ${seconds(still)}`;
-    }
-    return undefined;
+    if (still < this.stillMs) return undefined;
+    return (
+      `the game drew no frame for ${seconds(still)} (frame ${String(this.frame)})` +
+      (this.responding ? '' : ' and Windows marks its window not responding')
+    );
   }
 }
 
 export interface WatchOptions {
   readonly intervalMs?: number;
-  readonly hangMs?: number;
-  readonly loadMs?: number;
+  readonly silentMs?: number;
+  readonly stillMs?: number;
+  /** Called once each time the frame counter has stood still for `stillMs`. */
+  readonly onStill?: (reason: string) => void;
   /** Ends the watch; the promise then never resolves. */
   readonly signal: AbortSignal;
 }
@@ -86,20 +102,27 @@ export async function watch(
   options: WatchOptions,
 ): Promise<string> {
   const intervalMs = options.intervalMs ?? PING_INTERVAL_MS;
-  const hangMs = options.hangMs ?? HANG_MS;
-  const check = new HangCheck(performance.now(), hangMs, options.loadMs ?? LOAD_MS);
+  const silentMs = options.silentMs ?? SILENT_MS;
+  const check = new HangCheck(performance.now(), silentMs, options.stillMs ?? STILL_MS);
+  let told: number | undefined;
   for (;;) {
     await abortable(delay(intervalMs), options.signal);
     const answer = await abortable(
-      target.ping(hangMs).then(
+      target.ping(Math.min(silentMs, PING_TIMEOUT_MS)).then(
         (ping) => ping,
         () => undefined,
       ),
       options.signal,
     );
-    if (answer !== undefined) check.answer(answer, performance.now());
-    const hang = check.hang(performance.now());
+    const now = performance.now();
+    if (answer !== undefined) check.answer(answer, now);
+    const hang = check.hang(now);
     if (hang !== undefined) return hang;
+    const still = check.still(now);
+    if (still !== undefined && told !== check.movedAt) {
+      told = check.movedAt;
+      options.onStill?.(still);
+    }
   }
 }
 
