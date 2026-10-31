@@ -338,6 +338,7 @@ playset over 10 890 frames.
 - A click that activates the game's window is not a pick: the game reads the
   pointer only while it is in front, so the hovered widget would be the one
   of before (not checked live: the lab's clicks went to the game in front).
+  Reversed after the 2.0.0 trial: see "The activation click" below.
 - The snapshot's "values that no longer match" leave out copies the game's
   code builds.
 
@@ -361,3 +362,38 @@ The game logged `tongs 0.18.0: loaded`.
   2 423 of them hidden stale rows, none visible), the Anbennar playset 102 ms
   (none stale); no planned restart was asked for, and the next pick of the tax
   button landed by its line again.
+
+### The activation click (2.0.0 trial)
+
+**Found:** in the maintainer's trial of 2026-10-31 (the Anbennar playset with
+Proper 2K UI Enhanced and P2KE Patch - Anbennar), pick mode "worked only on the
+second click". Every pick reached VS Code (20 picks, each line shown 22–104 ms
+after the click, VS Code brought forward), but the game's log ended with
+`pick mode left: 20 picks; … activation clicks 21`: after each pick VS Code was
+in front, so the next click in the game activated its window and the plugin
+dropped it, as the design above said.
+
+**Changed:** the activation click is a pick (docs/plugin-protocol.md, Mouse).
+The plugin posts a move without buttons at the click and picks on the first
+frame, at least two frames on, whose hovered widget holds the click, else after
+500 ms.
+
+**Checked live** on 2026-10-31 in the same playset at 2560×1440 windowed
+(`eu4.exe` SHA-256 `9AD3EFE1…DC4D771A`, the plugin built from this change, a
+cold start on a Verne save, the game paused). The lab's harness ran the
+extension's live game modules, without VS Code. Notepad stood in for VS Code:
+it was the `editor` window, beside the game, with no overlap. The clicks were
+real input: `SetCursorPos` and then `SendInput` button down and up, 150 ms
+after the move.
+
+| Check | Result |
+| --- | --- |
+| Clicks with Notepad in front | 8 of 8 picked the clicked widget with one click: `PlayerNationText` (twice), `pause_banner_text`, the event window's `Title` (three times, twice in a row), `button_pause`, `text_sailors`. Each was picked 12–15 ms and 2 frames after the click, and Notepad came back to the front each time |
+| The wait running out | 0 times: the hovered widget held the click by the second frame each time |
+| A click with the game in front | **Etch: Toggle Pick Mode**'s `front` brought the game forward, and the next click picked `text_sailors` at once, without the wait |
+| The click reaching the game | No: the game stayed paused on the same date after the click on `button_pause` |
+| Stats line | `9 picks; … activation clicks 8 (hover not at the click after 500 ms: 0)` |
+
+**Not checked:** a hand on a real mouse, and the real VS Code window in place
+of Notepad. With the slow, continuous moves of a real hand, the game also gets
+moves before the click.
