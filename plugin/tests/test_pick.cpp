@@ -178,7 +178,8 @@ void TestSnapshot() {
     assert(widgets.size() == 5);  // provinceview and its four, not menubar, the stale row or `other`
     assert(widgets[3].Find("text")->AsString() == "12.5");
     assert(widgets[3].Find("markup")->AsString() == "\xC2\xA7G12.5\xC2\xA7!");
-    assert(widgets[1].Find("text")->AsString() == "plain" && widgets[1].Find("markup") == nullptr);  // no codes, no markup
+    // No codes, no markup.
+    assert(widgets[1].Find("text")->AsString() == "plain" && widgets[1].Find("markup") == nullptr);
     assert(widgets[2].Find("text")->kind() == Value::Kind::Null);
     assert(widgets[4].Find("visible")->AsBool() == false && widgets[4].Find("checked")->AsBool() == true);
     assert(widgets[0].Find("rect")->AsArray()->size() == 4);
