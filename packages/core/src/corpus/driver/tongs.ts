@@ -19,6 +19,13 @@ export interface Tongs {
 
 export const TONGS_PIPE = '\\\\.\\pipe\\tongs';
 
+/** Whether a Tongs `version` (as `ping` answers it) is 0.`minor`.0 or later. */
+export function tongsAtLeast(version: string, minor: number): boolean {
+  const match = /^(\d+)\.(\d+)\./.exec(version);
+  if (match === null) return false;
+  return Number(match[1]) > 0 || Number(match[2]) >= minor;
+}
+
 /** Connects to the Tongs pipe; rejects when no game with Tongs is listening. */
 export async function connectTongs(pipe = TONGS_PIPE): Promise<Tongs> {
   const socket = await new Promise<Socket>((resolve, reject) => {

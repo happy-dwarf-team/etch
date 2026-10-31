@@ -34,6 +34,10 @@ export class FakeGame implements Tongs {
   escapeOpens: string | undefined;
   /** How many more `ui click` commands are refused as `covered`. */
   covered = 0;
+  /** The window `province open ID` shows for each selectable province (Tongs 0.21). */
+  readonly provinceViews = new Map<number, string>();
+  /** What `province open` answers as `covered_by`. */
+  provinceCover: string | null = null;
   private shots = 0;
 
   readonly windows: readonly FakeWindow[];
@@ -174,6 +178,20 @@ export class FakeGame implements Tongs {
       if (opened === undefined) return { ok: false, error: 'not_found' };
       this.open.push(opened.name);
       return ok({ clicked: opened.name, ...this.state() });
+    }
+    if (verb === 'province' && rest[0] === 'open') {
+      const province = Number(rest[1]);
+      const shown = this.provinceViews.get(province);
+      if (shown === undefined) return { ok: false, error: 'not_selectable' };
+      if (!this.open.includes(shown)) this.open.push(shown);
+      return ok({
+        command: 'province open',
+        province,
+        view: shown,
+        covered_by: this.provinceCover,
+        camera: { settled: false, target: { x: 1, z: 1 } },
+        ...this.state(),
+      });
     }
     if (verb === 'screenshot') {
       this.shots++;

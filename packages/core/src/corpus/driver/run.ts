@@ -43,7 +43,7 @@ import {
   unexpectedChanges,
   variantName,
 } from './settings.ts';
-import type { Tongs, TongsAnswer } from './tongs.ts';
+import { tongsAtLeast, type Tongs, type TongsAnswer } from './tongs.ts';
 import {
   DEFAULT_AWAY,
   MouseReleased,
@@ -723,10 +723,7 @@ class NotReady extends Error {}
 
 /** Whether a Tongs `version` has `session` and the ready wait: 0.19.0 and later. */
 export function hasSessions(version: string): boolean {
-  const match = /^(\d+)\.(\d+)\./.exec(version);
-  if (match === null) return false;
-  const major = Number(match[1]);
-  return major > 0 || Number(match[2]) >= 19;
+  return tongsAtLeast(version, 19);
 }
 
 async function runningApplication(systemLog: string, sinceMs: number): Promise<boolean> {

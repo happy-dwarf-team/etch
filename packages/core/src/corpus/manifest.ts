@@ -195,6 +195,8 @@ export interface Recipe {
  * point is the same place of the map at every resolution, beside a window that covers the centre.
  * `wheel` turns the mouse wheel there (positive steps zoom in towards the point). `text` types into
  * the focused text field, such as the Goto box's (`f`), which finds a province by its name.
+ * `province` opens a province's view by its id, as the game's province links do (Tongs 0.21's
+ * `province open ID`): no point of the map, so no camera position or resolution to depend on.
  */
 export type RecipeStep =
   | { readonly key: TongsKey }
@@ -202,7 +204,8 @@ export type RecipeStep =
   | { readonly point: { readonly x: number; readonly y: number } }
   | { readonly text: string }
   | { readonly map: MapPoint }
-  | { readonly wheel: MapPoint & { readonly steps: number } };
+  | { readonly wheel: MapPoint & { readonly steps: number } }
+  | { readonly province: number };
 
 /** A point of the map: its distance from the client area's centre, in client heights. */
 export interface MapPoint {
@@ -662,12 +665,18 @@ export function checkRecipe(
   c.oneOf(json['from'], field(at, 'from'), ['main-menu', 'save'] as const);
   c.string(json['evidence'], field(at, 'evidence'));
   c.array(json['steps'], field(at, 'steps'), (v, stepAt) => {
-    const step = c.object(v, stepAt, [], ['key', 'click', 'point', 'text', 'map', 'wheel']);
+    const step = c.object(
+      v,
+      stepAt,
+      [],
+      ['key', 'click', 'point', 'text', 'map', 'wheel', 'province'],
+    );
     if (step === undefined) return undefined;
     if (Object.keys(step).length !== 1) {
-      c.fail(stepAt, 'Give one of "key", "click", "point", "text", "map" or "wheel".');
+      c.fail(stepAt, 'Give one of "key", "click", "point", "text", "map", "wheel" or "province".');
       return undefined;
     }
+    if ('province' in step) return c.integer(step['province'], field(stepAt, 'province'), 1);
     if ('text' in step) {
       // Tongs' `text` types U+0020-U+007E and U+00A0-U+00FF.
       return c.string(
