@@ -11,7 +11,12 @@ import {
 } from '../../src/corpus/index.ts';
 import { planCaptures } from '../../src/corpus/driver/plan.ts';
 import { playsetProfile } from '../../src/corpus/driver/profile.ts';
-import { runCaptures, type GameLauncher, type RunOptions } from '../../src/corpus/driver/run.ts';
+import {
+  hasSessions,
+  runCaptures,
+  type GameLauncher,
+  type RunOptions,
+} from '../../src/corpus/driver/run.ts';
 import {
   captureView,
   pinCursor,
@@ -733,5 +738,96 @@ describe('runCaptures', () => {
     expect(stopped.sessions[0]?.error).toBeUndefined();
     expect(early.games[0]?.calls).not.toContain('key l');
     expect(stopped.stopped).toBe('The mouse was released and the run was not resumed.');
+  });
+});
+
+describe('the ready wait', () => {
+  /** A run in which every game answers as `tongs` and the sleeps are recorded. */
+  async function readyRun(
+    tongs: { version: string; session?: number },
+    onGame?: (game: FakeGame) => void,
+  ): Promise<{
+    report: Awaited<ReturnType<typeof runCaptures>>;
+    games: FakeGame[];
+    sleeps: number[];
+  }> {
+    const { games, options } = await runFixture();
+    const sleeps: number[] = [];
+    let now = Date.parse('2026-10-31T10:00:00Z');
+    const report = await runCaptures({
+      ...options,
+      maxStarts: 1,
+      readyTimeoutMs: 60_000,
+      launcher: {
+        ...options.launcher,
+        async start(profile, save) {
+          const record = await options.launcher.start(profile, save);
+          const game = games.at(-1);
+          if (game !== undefined) {
+            game.version = tongs.version;
+            game.session = tongs.session;
+            onGame?.(game);
+          }
+          return record;
+        },
+      },
+      now: () => new Date(now),
+      sleep: (ms) => {
+        sleeps.push(ms);
+        now += ms;
+        return Promise.resolve();
+      },
+    });
+    return { report, games, sleeps };
+  }
+
+  it("follows Tongs' ready wait from 0.19: no fixed wait after the save's load", async () => {
+    const { report, games, sleeps } = await readyRun({ version: '0.19.0', session: 1 });
+    // Every view gets to the corpus's check, which refuses this Tongs: the manifest pins 0.14.1.
+    expect(report.sessions.map((s) => [s.error, s.views.length])).toEqual([
+      [undefined, 2],
+      [undefined, 1],
+    ]);
+    // The menu's animation is still waited for; the save's 5 s are gone.
+    expect(sleeps).toContain(3000);
+    expect(sleeps).not.toContain(5000);
+    expect(games[1]?.calls.slice(0, 3)).toEqual(['ping', 'state', 'frames timeout=30']);
+  });
+
+  it('waits the fixed 5 s after the load with a Tongs before 0.19', async () => {
+    const { report, sleeps } = await readyRun({ version: '0.18.0' });
+    expect(report.sessions.every((s) => s.error === undefined)).toBe(true);
+    expect(sleeps).toContain(3000);
+    expect(sleeps).toContain(5000);
+  });
+
+  it('fails at once in a later session or in a game with no session', async () => {
+    const later = await readyRun({ version: '0.19.0', session: 2 });
+    expect(later.report.sessions.map((s) => s.error)).toEqual([
+      undefined,
+      'The game is in session 2, not 1.',
+    ]);
+    expect(later.games[1]?.calls).not.toContain('frames timeout=30');
+
+    const none = await readyRun({ version: '0.19.0' });
+    expect(none.report.sessions[1]?.error).toBe('Tongs 0.19.0 answers in a game with no session.');
+
+    // The frame's own state counts: here the game left the save before its frame.
+    const left = await readyRun({ version: '0.19.0', session: 1 }, (game) => {
+      game.onCall = (command) => {
+        if (command.startsWith('frames') && game.session === 1 && game.inGame) game.inGame = false;
+      };
+    });
+    expect(left.report.sessions[1]?.error).toBe('The game left the save before it was ready.');
+  });
+
+  it('knows which Tongs releases have sessions', () => {
+    expect(['0.18.0', '0.19.0', '0.20.1', '1.0.0', 'unknown'].map(hasSessions)).toEqual([
+      false,
+      true,
+      true,
+      true,
+      false,
+    ]);
   });
 });

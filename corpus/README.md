@@ -317,7 +317,13 @@ What a run does:
   of both `eu4.exe` and of the host install, and no game running. The copy
   starts suspended with the mask 1–7 and is ready when Tongs answers from that
   process, `system.log` says `Running application`, the save is loaded and
-  paused, and a frame has passed. A save that has not loaded 2 minutes after
+  paused, and a frame has passed. From Tongs 0.19 this is Tongs' ready wait
+  (its `docs/commands.md`, "Sessions and the ready wait"): the game must be in
+  session 1 and a `frames` answer must show it paused, and a later session or
+  a game that leaves the save fails the session at once. An older Tongs
+  still gets a fixed 5 s after the load, for the input the game ignores
+  meanwhile; the main menu's 3 s for its opening animation stay with both. A save
+  that has not loaded 2 minutes after
   `Running application` fails the session; the save's `confirm` button is
   clicked as soon as it shows, and the 2 minutes count from that click.
 - **Settings**: the size goes into named variants of the profile's named
