@@ -257,7 +257,7 @@ province, Cannleigh with a fort):
   without `effectFile`) and a ticked check box draws its second frame (#228).
 - *Text colours.* Tongs' text drops the game's `§` colour codes, so values
   drew in the font's colour; `tongs.ui`'s new `markup` keeps them and the
-  snapshot carries it (#229, with a Tongs that has it).
+  snapshot carries it (#229; Tongs 0.22.0, which has it, is pinned).
 - *The base values* stood where the game draws them (Verne 5, 5, 4), as #223
   placed them.
 - *Left open:* code-set sprites and frames (the terrain picture, shield flags,
