@@ -89,9 +89,11 @@ A **recipe** is the Tongs input that opens a view from a known start state:
   (Tongs `click` at a point of the client area, as fractions of its width and
   height, for what has no widget, such as a province on the map),
   `{ "map": { "x": -0.65, "y": -0.1 } }` (a click at a point of the map, given
-  as its distance from the client area's centre in client heights) or
+  as its distance from the client area's centre in client heights),
   `{ "wheel": { "x": 0.5, "y": 0, "steps": 3 } }` (the mouse wheel at such a
-  point; positive steps zoom in);
+  point; positive steps zoom in) or `{ "province": 286 }` (Tongs
+  `province open 286`, from Tongs 0.21: the province's view as the game's
+  province links open it, below);
 - `verified`: whether the steps and roots were seen to work in the game;
 - `evidence`: where, or what is still unknown.
 
@@ -107,6 +109,21 @@ same province at 1280×720 and at 3440×1440 (checked by hand in M10: the same
 provinces under the same points at both sizes). A `point` scales with the
 width instead, so at another aspect ratio it lands elsewhere. The Anbennar
 playsets' province views use `map` points.
+
+A `province` step needs no point at all: Tongs' `province open ID` (its
+`docs/commands.md`, "Navigation") closes the open views, moves the camera to
+the province and selects it, and answers `ok` only once the next frame shows
+the province's view. The driver also requires the window that answer names
+(`view`) to be one of the view's roots, and nothing over it (`covered_by` is
+`null`): an uncolonised province shows `colonisationpanel` instead of
+`provinceview`, and an open Esc menu covers the view. A camera that has not
+settled yet (`settled: false`, while the real mouse is at a screen edge) is
+not a failure. The step needs `input = true` and is a client call
+([tongs ADR 0003](https://github.com/happy-dwarf-team/tongs/blob/main/docs/adr/0003-client-calls.md)),
+not a game call; with a Tongs older than 0.21 the view fails at that step,
+before Tongs is asked. The manifest's province views still use `point` and `map` steps: the
+corpus pins Tongs 0.14.1, and moving its recipes to `province` steps goes with
+the recapture that a newer Tongs pin needs.
 
 The maintainer's Anbennar save opens with three events over the middle of the
 screen; below 1440 pixels the tallest one's option lies under the client area,

@@ -24,7 +24,8 @@ import {
 } from '../manifest.ts';
 import { decodePng, encodeGreyPng, type RgbaImage } from '../png.ts';
 import { compareShots, unstableIn, type ShotComparison } from '../shots.ts';
-import type { Tongs, TongsAnswer } from './tongs.ts';
+import { matchesWidgetPattern } from '../widget-path.ts';
+import { tongsAtLeast, type Tongs, type TongsAnswer } from './tongs.ts';
 
 /** Waits and repetitions; the defaults are those of the live runs (etch#18, etch#42). */
 export interface CaptureTiming {
@@ -241,12 +242,18 @@ async function capture(ctx: ViewContext, view: CorpusView): Promise<ViewCapture>
   const pinned = await holdCursor(ctx, window);
   const cursor = await checkCursor(ctx, undefined);
   for (const step of view.recipe.steps) {
+    if ('province' in step && !tongsAtLeast(ctx.tongsVersion, 21)) {
+      throw new ViewFailure(
+        `A province step needs Tongs 0.21 or later (province open); the game runs Tongs ${ctx.tongsVersion}.`,
+      );
+    }
     const answer = await runStep(ctx, stepCommand(step, window), timing);
     ctx.log({ view: view.id, step, answer: brief(answer) });
     // Tongs answers `clicked` with the path of the widget it clicked.
     if ('click' in step && (answer['clicked'] === undefined || answer['clicked'] === false)) {
       throw new ViewFailure(`"${stepCommand(step, window)}" did not click.`);
     }
+    if ('province' in step) opened(step.province, answer, view);
     await frame(ctx);
     await ctx.sleep(timing.stepSettleMs);
   }
@@ -367,6 +374,28 @@ async function capture(ctx: ViewContext, view: CorpusView): Promise<ViewCapture>
     unstableInWidgets,
     verifiedNow,
   };
+}
+
+/**
+ * What `province open` promises with `ok` (tongs `docs/commands.md`, "Navigation"): the province
+ * is selected and the window that shows it is visible. It must also be one of the view's roots
+ * (an uncolonised province shows `colonisationpanel`, not `provinceview`) and not be covered.
+ * A camera that has not settled (`settled: false`, the real mouse at a screen edge) is not checked:
+ * the pinned cursor keeps off the edges, and a moving map shows in the shots as unstable pixels.
+ */
+function opened(province: number, answer: TongsAnswer, view: CorpusView): void {
+  const command = `province open ${String(province)}`;
+  if (answer['province'] !== province) {
+    throw new ViewFailure(`${command} answered for province ${String(answer['province'])}.`);
+  }
+  const shown = answer['view'];
+  if (typeof shown !== 'string' || !view.roots.some((r) => matchesWidgetPattern(r, shown))) {
+    throw new ViewFailure(`${command} showed ${String(shown)}, which is not a root of the view.`);
+  }
+  const by = answer['covered_by'];
+  if (by !== null && by !== undefined) {
+    throw new ViewFailure(`${command}: ${shown} is covered by ${JSON.stringify(by)}.`);
+  }
 }
 
 /**
@@ -676,6 +705,7 @@ export function stepCommand(step: RecipeStep, window: Screen): string {
   if ('key' in step) return `key ${step.key}`;
   if ('click' in step) return `ui click ${step.click} timeout=10`;
   if ('text' in step) return `text ${step.text}`;
+  if ('province' in step) return `province open ${String(step.province)}`;
   if ('map' in step || 'wheel' in step) {
     const point = 'map' in step ? step.map : step.wheel;
     const x = Math.round((window.width - 1) / 2 + point.x * window.height);
@@ -707,8 +737,8 @@ function refused(command: string, answer: TongsAnswer): ViewFailure {
 }
 
 function brief(answer: TongsAnswer): Record<string, unknown> {
-  const { ok, command, clicked, point, presses, waited_ms } = answer;
-  return { ok, command, clicked, point, presses, waited_ms };
+  const { ok, command, clicked, point, presses, waited_ms, view, covered_by, camera } = answer;
+  return { ok, command, clicked, point, presses, waited_ms, view, covered_by, camera };
 }
 
 function sha256(bytes: Uint8Array): string {

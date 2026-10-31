@@ -45,11 +45,19 @@ const view = (
   codeFilled: [],
 });
 
-function testManifest(saveSha: string): CorpusManifest {
+/** The test corpus; `province` adds a province view opened by `province open`, and its Tongs. */
+function testManifest(saveSha: string, province?: { tongs: string }): CorpusManifest {
+  const provinceWindow = {
+    id: 'province',
+    title: 'Province',
+    files: ['interface/provinceview.gui'],
+    why: 'test',
+    views: [view('province', 'save', [{ province: 286 }], ['provinceview'], true)],
+  };
   const { manifest, problems } = parseCorpusManifest({
     formatVersion: 1,
     game: { version: '1.37.5', exeSha256: EXE },
-    tongs: { version: '0.14.1' },
+    tongs: { version: province?.tongs ?? '0.14.1' },
     uiScale: 1,
     resolutions: [{ width: 640, height: 360, confirmed: true, evidence: 'a small monitor' }],
     codeFilledKinds: [],
@@ -62,7 +70,7 @@ function testManifest(saveSha: string): CorpusManifest {
         save: { file: 'a.eu4', sha256: saveSha, description: 'a save' },
         mods: [],
         disabledDlcs: [],
-        windows: ['frontend', 'ledger'],
+        windows: ['frontend', 'ledger', ...(province !== undefined ? ['province'] : [])],
       },
     ],
     windows: [
@@ -88,6 +96,7 @@ function testManifest(saveSha: string): CorpusManifest {
         why: 'test',
         views: [view('ledger', 'save', [{ key: 'l' }], ['ledger'])],
       },
+      ...(province !== undefined ? [provinceWindow] : []),
     ],
     knownDeviations: [],
   });
@@ -100,6 +109,8 @@ const WINDOWS: FakeWindow[] = [
   { name: 'lobby', openedBy: { click: 'country_selection_panel//single_player_button' } },
   { name: 'topbar' },
   { name: 'ledger', openedBy: { key: 'l' }, children: ['close'] },
+  { name: 'provinceview' },
+  { name: 'colonisationpanel' },
 ];
 
 const trees: string[] = [];
@@ -154,6 +165,7 @@ describe('stepCommand', () => {
     expect(stepCommand({ key: 'f1' }, SIZE)).toBe('key f1');
     expect(stepCommand({ click: 'menu//a' }, SIZE)).toBe('ui click menu//a timeout=10');
     expect(stepCommand({ text: 'Verne' }, SIZE)).toBe('text Verne');
+    expect(stepCommand({ province: 286 }, SIZE)).toBe('province open 286');
   });
 
   it('places map points by client heights from the centre, the same place at every size', () => {
@@ -407,6 +419,56 @@ describe('captureView', () => {
     expect(await captureView(ctx, viewOf(manifest, 'ledger'))).toMatchObject({
       ok: false,
       reason: 'The save is not loaded and paused.',
+    });
+  });
+
+  it('opens a province view with province open, without a point of the map', async () => {
+    const folder = await makeTree({});
+    trees.push(folder);
+    const manifest = testManifest(await sha(SAVE_TEXT), { tongs: '0.22.0' });
+    const game = new FakeGame(WINDOWS, ['topbar'], folder, SIZE, true);
+    game.version = '0.22.0';
+    game.provinceViews.set(286, 'provinceview');
+    const ctx = { ...context(game, manifest, 'save', ['topbar']), tongsVersion: '0.22.0' };
+    // A camera that has not settled is no failure.
+    const outcome = await captureView(ctx, viewOf(manifest, 'province'));
+    if (!outcome.ok) throw new Error(outcome.reason);
+    expect(outcome.capture.record.recipe.steps).toEqual([{ province: 286 }]);
+    expect(game.calls).toContain('province open 286');
+    expect(game.calls.some((c) => c.startsWith('click '))).toBe(false);
+  });
+
+  it('fails a province step that Tongs cannot run or that shows something else', async () => {
+    const folder = await makeTree({});
+    trees.push(folder);
+    const manifest = testManifest(await sha(SAVE_TEXT), { tongs: '0.22.0' });
+    const game = new FakeGame(WINDOWS, ['topbar'], folder, SIZE, true);
+    const province = viewOf(manifest, 'province');
+    const old = context(game, manifest, 'save', ['topbar']);
+    expect(await captureView(old, province)).toMatchObject({
+      ok: false,
+      lost: false,
+      reason:
+        'A province step needs Tongs 0.21 or later (province open); the game runs Tongs 0.14.1.',
+    });
+    expect(game.calls.some((c) => c.startsWith('province'))).toBe(false);
+
+    const ctx = { ...old, tongsVersion: '0.22.0' };
+    expect(await captureView(ctx, province)).toMatchObject({
+      ok: false,
+      reason: 'province open 286: not_selectable',
+    });
+    // An uncolonised province shows the colonisation panel, which is not this view's root.
+    game.provinceViews.set(286, 'colonisationpanel');
+    expect(await captureView(ctx, province)).toMatchObject({
+      ok: false,
+      reason: 'province open 286 showed colonisationpanel, which is not a root of the view.',
+    });
+    game.provinceViews.set(286, 'provinceview');
+    game.provinceCover = 'menu/menu';
+    expect(await captureView(ctx, province)).toMatchObject({
+      ok: false,
+      reason: 'province open 286: provinceview is covered by "menu/menu".',
     });
   });
 });
