@@ -154,7 +154,10 @@ sends nothing anywhere: it has no telemetry.
 ## Feedback
 
 Report problems and ideas in the
-[issue tracker](https://github.com/happy-dwarf-team/etch/issues). The
+[issue tracker](https://github.com/happy-dwarf-team/etch/issues). The first line of the
+**Etch** output names the version and the build (`Etch 2.0.0 (abc1234) for EU4 1.37.5`); put
+it in the report. When an installed VSIX replaces the extension's files without a reload,
+Etch warns that the window still runs the old build and offers **Reload Window**. The
 [changelog](https://github.com/happy-dwarf-team/etch/blob/main/CHANGELOG.md) lists what each release changed.
 
 ## License

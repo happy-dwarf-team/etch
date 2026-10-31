@@ -1,5 +1,7 @@
 import * as vscode from 'vscode';
 import { SUPPORTED_GAME_VERSION } from '@etch/core';
+import { BuildCheck } from './build-check.ts';
+import { RUNNING_BUILD } from './build-stamp.ts';
 import { registerLiveGame, type LiveGame, type PickMode } from './live-game/index.ts';
 import { closeWindowsHelper } from './live-game/windows.ts';
 import { registerGameText } from './game-text.ts';
@@ -20,12 +22,24 @@ export function activate(context: vscode.ExtensionContext): EtchApi {
   const { version } = context.extension.packageJSON as { version: string };
   const output = vscode.window.createOutputChannel('Etch', { log: true });
   context.subscriptions.push(output);
-  output.info(`Etch ${version} for EU4 ${SUPPORTED_GAME_VERSION}`);
+  // The commit names the build: a VSIX of the same version can replace the files of this one.
+  output.info(
+    `Etch ${version} (${RUNNING_BUILD?.commit ?? 'dev'}) for EU4 ${SUPPORTED_GAME_VERSION}`,
+  );
   context.subscriptions.push(registerGameText());
   const navigation = new WidgetNavigation();
   context.subscriptions.push(navigation);
   const live = registerLiveGame(context, output);
   liveGame = live.game;
+  if (RUNNING_BUILD !== undefined) {
+    const build = new BuildCheck(RUNNING_BUILD, context.extensionUri, output);
+    context.subscriptions.push(
+      build,
+      live.game.onDidChangeState((state) => {
+        if (state.status === 'starting') void build.check();
+      }),
+    );
+  }
   return {
     navigation,
     preview: registerPreview(context, output, navigation, live.game, live.pick),

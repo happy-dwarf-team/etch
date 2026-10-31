@@ -3,6 +3,7 @@
 import * as assert from 'node:assert/strict';
 import * as vscode from 'vscode';
 import type { EtchApi } from '../src/extension.ts';
+import { testBuildCheck } from './build-check.ts';
 import { testData } from './data.ts';
 import { testGameText } from './game-text.ts';
 import { testNavigation } from './navigation.ts';
@@ -27,6 +28,8 @@ export async function run(): Promise<void> {
     'default',
     'etch.previewResolution is contributed',
   );
+
+  await testBuildCheck(extension.extensionUri);
 
   const gamePath = process.env['ETCH_GAME_PATH'];
 
