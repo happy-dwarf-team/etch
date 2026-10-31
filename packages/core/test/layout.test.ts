@@ -698,6 +698,42 @@ describe('layoutWindow: sample data', () => {
     expect(glyphs).toHaveLength(4 * GLYPH_STRIDE);
   });
 
+  it('draws what a live snapshot showed: hidden entry parts, disabled buttons, ticked boxes', () => {
+    const { file, input } = setUp(`guiTypes = {
+      windowType = { name = "w" size = { x = 200 y = 100 }
+        guiButtonType = { name = "off" spriteType = "GFX_plain" }
+        checkboxType = { name = "tick" spriteType = "GFX_strip" position = { x = 30 y = 0 } }
+      }
+      windowType = { name = "entry" size = { x = 40 y = 20 }
+        iconType = { name = "part" spriteType = "GFX_plain" }
+      }
+    }`);
+    const window = file.definitions[0] as Widget;
+    const entry = file.definitions[1] as Widget;
+    const l = layoutWindow(window, {
+      ...input,
+      content: {
+        text: () => undefined,
+        rows: (w) =>
+          w === window
+            ? { template: entry, file, count: 2, place: { start: { x: 0, y: 50 } } }
+            : undefined,
+        state: (w, row) =>
+          w.name === 'off'
+            ? { visible: true, enabled: false, checked: false }
+            : w.name === 'tick'
+              ? { visible: true, enabled: true, checked: true }
+              : w.name === 'part' && row === 1
+                ? { visible: false, enabled: true, checked: false }
+                : undefined,
+      },
+    });
+    // A sprite without effectFile is buttonstate (eu4.exe 0x15DA600): disabled, it greys.
+    expect(only(drawsOf(l, 'off'))).toMatchObject({ shader: 'buttonstate', effect: 'disable' });
+    expect(only(drawsOf(l, 'tick'))).toMatchObject({ sx: 16 });
+    expect(l.widgets.filter((w) => w.widget.name === 'part').map((w) => w.row)).toEqual([0]);
+  });
+
   it("puts the entries the game's code places in a window in rows, a template's size apart", () => {
     const { file, input } = setUp(GUI);
     const window = file.definitions[0] as Widget;

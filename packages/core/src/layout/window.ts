@@ -81,6 +81,15 @@ export interface LayoutContent {
   /** A widget's text; `row` is the entry of a list box the widget is part of. */
   text(widget: Widget, row: number | undefined): string | undefined;
   /**
+   * What a live snapshot showed of a widget: a list entry's part the game hid is not drawn, a
+   * disabled button draws with its shader's `disable` effect, a ticked check box its second frame.
+   */
+  state?(
+    widget: Widget,
+    row: number | undefined,
+  ):
+    { readonly visible: boolean; readonly enabled: boolean; readonly checked: boolean } | undefined;
+  /**
    * The entries of a list box: a top-level definition, from its file, `count` times; with `place`,
    * the entries the game's code puts in a window, from `x`, `y`, `columns` to a row, `step` apart.
    */
@@ -233,6 +242,9 @@ class Layout {
   place(widget: Widget, parent: Rect, parentIndex: number, fill: Extent | undefined): void {
     const view = this.input.view;
     if (view !== undefined && !view.shows(widget)) return;
+    const state = this.input.content?.state?.(widget, this.row);
+    // The view says what shows of the window; a live snapshot says it for each list entry.
+    if (this.row !== undefined && state?.visible === false) return;
     const props = widgetProperties(widget, this.constants, this.input.screen);
     this.checkNotApplied(props);
     this.current = widget;
@@ -249,7 +261,10 @@ class Layout {
           : axis === 'y'
             ? { x: written.x, y: moved.y }
             : moved;
-    const frame = view?.frame(widget);
+    // Hypothesis: a ticked check box draws its sprite's second frame, as the game's do.
+    const frame =
+      view?.frame(widget) ??
+      (widget.kind === 'checkboxType' && state?.checked === true ? 2 : undefined);
     const x = anchor.x + offset.x;
     const y = anchor.y + offset.y;
     const drawStart = this.draws.length;
@@ -270,6 +285,24 @@ class Layout {
       if (drawn !== undefined) rect = { x, y, ...drawn };
       // Verified in the corpus (etch#44): the game draws no `buttonText` on a check box; the
       // message settings lay a text box over each of theirs instead.
+      // A disabled button draws its sprite with the shader's `disable` effect. Verified in
+      // eu4.exe (0x15DA600): a sprite definition without `effectFile` loads
+      // gfx/FX/buttonstate.lua (buttonstate_linear.lua at another UI scale), so a disabled
+      // button greys out as the live game shows (2.0.0 trial).
+      if (BUTTONS.has(kind) && state?.enabled === false) {
+        for (let i = drawStart; i < this.draws.length; i++) {
+          const draw = this.draws[i];
+          if (draw?.kind === 'sprite') {
+            this.draws[i] = {
+              ...draw,
+              effect: 'disable',
+              ...(draw.shader === 'default' ? { shader: 'buttonstate' as const } : {}),
+            };
+          } else if (draw?.kind === 'masked') {
+            this.draws[i] = { ...draw, effect: 'disable' };
+          }
+        }
+      }
       if (BUTTONS.has(kind) && kind !== 'checkboxType') {
         const textStart = this.draws.length;
         this.drawButtonText(props, rect, source);

@@ -62,7 +62,9 @@ until 1.0.0):
   Windows-1252 (etch#15).
 - What the game does with a UTF-8 BOM in a `.gui` file (etch#15).
 - The default shader for sprites without `effectFile`; it starts as linear
-  (ADR 0001).
+  (ADR 0001). Read in `eu4.exe` since (2.0.0 trial): a sprite definition
+  without one loads `gfx/FX/buttonstate.lua`, `buttonstate_linear.lua` at
+  another UI scale (0x15DA600); the preview uses it for disabled buttons.
 - Layout rules not yet checked against a capture (etch#34): a window's
   `background` names the child painted behind the others; a cornered-tile
   background, and a list's `background` sprite, stretch over their container;

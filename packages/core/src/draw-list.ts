@@ -64,7 +64,9 @@ interface DrawBase {
 /**
  * The shaders a sprite draws with, named as `effectFile` names them without
  * folder and extension (see {@link effectName}). `default` stands for sprites
- * without `effectFile`, whose real shader is unknown (docs/spec/after-v1.md).
+ * without `effectFile`; `eu4.exe` loads `gfx/FX/buttonstate.lua` for them
+ * (0x15DA600, `buttonstate_linear.lua` at another UI scale), which draws `up`
+ * as the texel, so only a disabled button's draw takes `buttonstate` itself.
  */
 export const SPRITE_SHADERS = [
   'default',

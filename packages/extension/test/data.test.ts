@@ -139,6 +139,7 @@ describe('PreviewData', () => {
     const sample = {
       text: () => undefined,
       rows: () => undefined,
+      state: () => undefined,
       counts: { hand: 1, live: 0, save: 0, files: 2, generated: 5 },
       lists: [
         {

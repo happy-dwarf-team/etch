@@ -36,6 +36,7 @@ const GUI: GuiFile = readGuiFile(
     instantTextBoxType = { name = "owner_name" }
     instantTextBoxType = { name = "title" }
     instantTextBoxType = { name = "income_value" }
+    instantTextBoxType = { name = "label_without_source" }
     windowType = { name = "foreign_province_window" instantTextBoxType = { name = "country_name" } }
     listboxType = { name = "building_list" }
     iconType = { name = "flag" }
@@ -351,6 +352,39 @@ describe('sampleData', () => {
       text: 'Marketplace (live)',
       layer: 'live',
     });
+  });
+
+  it('takes every text, the rows and their states from a live snapshot', () => {
+    const { profile } = profileOf(PROFILE);
+    const texts = new Map([
+      ['provinceview/label_without_source', 'Shown in the game'],
+      ['provinceview/building_list/row[1]/builder', 'Live builder'],
+    ]);
+    const states = new Map([
+      [
+        'provinceview/building_list/row[1]/builder',
+        { visible: false, enabled: true, checked: false },
+      ],
+    ]);
+    const sample = sampleData(
+      profile,
+      WINDOW,
+      undefined,
+      input({
+        live: {
+          text: (path) => texts.get(path),
+          rows: (list) => (list === 'provinceview/building_list' ? 1 : undefined),
+          state: (path) => states.get(path),
+        },
+      }),
+    );
+    expect(sample.text(named('label_without_source'))).toMatchObject({
+      text: 'Shown in the game',
+      layer: 'live',
+    });
+    expect(sample.rows(named('building_list'))).toMatchObject({ count: 1, layer: 'live' });
+    expect(sample.text(named('builder'), 0)?.text).toBe('Live builder');
+    expect(sample.state(named('builder'), 0)?.visible).toBe(false);
   });
 
   it('takes a text typed by hand over every layer, any text of the window or a list row', async () => {

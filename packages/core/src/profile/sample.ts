@@ -53,12 +53,26 @@ export function generatedText(kind: GeneratedKind, length: TextLength): string {
   return GENERATED[kind][length];
 }
 
+/** What the game showed of a widget in a live snapshot. */
+export interface LiveState {
+  readonly visible: boolean;
+  /** Buttons: not disabled. */
+  readonly enabled: boolean;
+  /** Check boxes: ticked. */
+  readonly checked: boolean;
+}
+
 /**
  * What a live snapshot holds (M9's seam): the text a widget showed in the game, by its path in
- * the window; a row of a list box as `<list path>/row[n]/<path in the entry>`, n from 1.
+ * the window; a row of a list box as `<list path>/row[n]/<path in the entry>`, n from 1. A
+ * snapshot also gives how many rows each list showed and each widget's state.
  */
 export interface LiveTexts {
   text(path: string): string | undefined;
+  /** The number of rows a list showed in the game, by the list's path. */
+  rows?(list: string): number | undefined;
+  /** A widget's state in the game, by path. */
+  state?(path: string): LiveState | undefined;
 }
 
 /** A top-level definition of the playset and the file that holds it, for a repeater's entries. */
@@ -120,6 +134,8 @@ export interface SampleList {
 export interface SampleData {
   /** The text a widget shows, in a list box's row `row` when it is a repeater's entry. */
   text(widget: Widget, row?: number): SampleText | undefined;
+  /** What a live snapshot showed of a widget, in a row `row` when it is a repeater's entry. */
+  state(widget: Widget, row?: number): LiveState | undefined;
   /** The entries of a list box a repeater fills. */
   rows(list: Widget): SampleRows | undefined;
   /** How many texts each layer fills, of the widgets the view draws. */
@@ -146,6 +162,13 @@ export function sampleData(
       texts.set(widget, text);
     }
   }
+  // A live snapshot fills every text the game showed, not only the profile's sources.
+  if (input.live !== undefined) {
+    for (const [widget, path] of pathOf) {
+      const text = input.live.text(path);
+      if (text !== undefined) texts.set(widget, { text, layer: 'live', detail: path });
+    }
+  }
   if (input.hand !== undefined) {
     for (const [widget, path] of pathOf) {
       const text = input.hand.text(path);
@@ -156,6 +179,7 @@ export function sampleData(
 
   const rows = new Map<Widget, SampleRows>();
   const rowTexts = new Map<Widget, Map<Widget, SampleText>[]>();
+  const rowStates = new Map<Widget, Map<Widget, LiveState>[]>();
   const lists: SampleList[] = [];
   for (const repeater of profile.repeaters) {
     const template = input.template?.(repeater.template);
@@ -168,15 +192,18 @@ export function sampleData(
       input.save !== undefined && from !== undefined && !('problem' in from)
         ? input.save.entries(from)
         : undefined;
+    const found = widgetsAt(window, repeater.path.path);
     const set = input.count?.(repeater.id);
-    const count = set ?? entries?.length ?? repeater.count;
-    const layer: DataLayer = entries === undefined ? 'generated' : 'save';
+    const firstPath = found[0] === undefined ? undefined : pathOf.get(found[0]);
+    const liveRows = firstPath === undefined ? undefined : input.live?.rows?.(firstPath);
+    const count = set ?? liveRows ?? entries?.length ?? repeater.count;
+    const layer: DataLayer =
+      liveRows !== undefined ? 'live' : entries === undefined ? 'generated' : 'save';
     const templatePaths = windowPaths(template.widget);
     const rowPath = (listPath: string, row: number, inEntry: string): string => {
       const relative = inEntry.split('/').slice(1).join('/');
       return `${listPath}/row[${String(row + 1)}]${relative === '' ? '' : `/${relative}`}`;
     };
-    const found = widgetsAt(window, repeater.path.path);
     lists.push({
       id: repeater.id,
       list: found[0]?.name ?? repeater.path.path,
@@ -196,8 +223,19 @@ export function sampleData(
       });
       const listPath = pathOf.get(list) ?? repeater.path.path;
       const perRow: Map<Widget, SampleText>[] = [];
+      const perRowStates: Map<Widget, LiveState>[] = [];
       for (let row = 0; row < count; row++) {
         const filled = new Map<Widget, SampleText>();
+        const shown = new Map<Widget, LiveState>();
+        if (input.live !== undefined) {
+          for (const entry of templatePaths) {
+            const path = rowPath(listPath, row, entry.path);
+            const text = input.live.text(path);
+            if (text !== undefined) filled.set(entry.widget, { text, layer: 'live', detail: path });
+            const state = input.live.state?.(path);
+            if (state !== undefined) shown.set(entry.widget, state);
+          }
+        }
         for (const field of repeater.fields) {
           for (const widget of widgetsAt(template.widget, field.path.path)) {
             const inEntry = templatePaths.find((p) => p.widget === widget)?.path ?? field.path.path;
@@ -216,14 +254,28 @@ export function sampleData(
         }
         if (drawn(list)) for (const text of filled.values()) counts[text.layer]++;
         perRow.push(filled);
+        perRowStates.push(shown);
       }
       rowTexts.set(list, perRow);
+      rowStates.set(list, perRowStates);
     }
   }
 
   // A row's widget is shared by every row: look it up in each list's rows.
   const perList = [...rowTexts.values()];
+  const statesPerList = [...rowStates.values()];
   return {
+    state: (widget, row) => {
+      if (row === undefined) {
+        const path = pathOf.get(widget);
+        return path === undefined ? undefined : input.live?.state?.(path);
+      }
+      for (const perRow of statesPerList) {
+        const found = perRow[row]?.get(widget);
+        if (found !== undefined) return found;
+      }
+      return undefined;
+    },
     text: (widget, row) => {
       if (row === undefined) return texts.get(widget);
       for (const perRow of perList) {
@@ -392,5 +444,6 @@ export function layoutContentOf(sample: SampleData): LayoutContent {
   return {
     text: (widget, row) => sample.text(widget, row)?.text,
     rows: (list) => sample.rows(list),
+    state: (widget, row) => sample.state(widget, row),
   };
 }

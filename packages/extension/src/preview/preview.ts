@@ -802,7 +802,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
             ...(liveValues === undefined ? {} : { live: liveValues.values }),
             ...(gameToggles === undefined ? {} : { gameToggles }),
           });
-    const matched = live === undefined ? undefined : liveMatch(live, window);
+    const matched = live === undefined ? undefined : liveMatch(live, window, loaded?.profile);
     const localiseKey = (key: string): string | undefined => session.localisation?.get(key);
     const choiceOfSave = this.data.choice;
     const sample =

@@ -8,7 +8,7 @@
  */
 import type { Screen, Widget } from '../model/gui.ts';
 import type { WindowProfile } from './format.ts';
-import type { LiveTexts } from './sample.ts';
+import type { LiveState, LiveTexts } from './sample.ts';
 import { widgetsAt, windowPaths } from './paths.ts';
 import { evaluateView, fitsScreen, type ViewChoice } from './view.ts';
 
@@ -112,25 +112,82 @@ export function readLiveSnapshot(value: unknown): LiveSnapshot | undefined {
 
 /** The snapshot's texts for the sample data, and how many of them no longer match the window. */
 export interface LiveMatch {
+  /** The texts, the number of each list's rows and each widget's state, by path. */
   readonly texts: LiveTexts;
   /** Texts whose widget the window as it is now does not have: they fall through. */
   readonly unmatched: number;
 }
 
-/** Matches a snapshot with a window by path, list rows by position (spec section 7). */
-export function liveMatch(snapshot: LiveSnapshot, window: Widget): LiveMatch {
-  const known = new Set(windowPaths(window).map((e) => e.path.toLowerCase()));
+const LIST_BOXES = new Set(['listboxType', 'smoothListboxType']);
+
+/**
+ * Matches a snapshot with a window by path, list rows by position (spec section 7). With the
+ * window's profile, the entries the game's code puts in a window or a box rather than a list box
+ * (a repeater with `place`, an `OverlappingElementsBoxType`) are rows too: the game names them
+ * after their template, `general_buildings_window/building_progress_entry[2]`, and the preview
+ * as `general_buildings_window/row[2]` (a single entry has no `[n]`). The match gives every text,
+ * the number of rows of each list and each widget's visible, enabled and checked state (2.0.0
+ * trial: the building slots, the core shields and the disabled buttons the game showed).
+ */
+export function liveMatch(
+  snapshot: LiveSnapshot,
+  window: Widget,
+  profile?: WindowProfile,
+): LiveMatch {
+  const entries = windowPaths(window);
+  const known = new Set(entries.map((e) => e.path.toLowerCase()));
+  const pathOf = new Map(entries.map((e) => [e.widget, e.path.toLowerCase()]));
+  const placed: { prefix: string; list: string }[] = [];
+  for (const repeater of profile?.repeaters ?? []) {
+    for (const list of widgetsAt(window, repeater.path.path)) {
+      const listPath = pathOf.get(list);
+      if (listPath === undefined || LIST_BOXES.has(list.kind)) continue;
+      const template = repeater.template.toLowerCase();
+      placed.push({ prefix: `${listPath}/${template}`, list: listPath });
+      const parent = listPath.slice(0, listPath.lastIndexOf('/'));
+      if (list.kind === 'OverlappingElementsBoxType' && parent !== '') {
+        placed.push({ prefix: `${parent}/${template}`, list: listPath });
+      }
+    }
+  }
+  const normal = (raw: string): string => {
+    const path = raw.toLowerCase();
+    for (const { prefix, list } of placed) {
+      if (!path.startsWith(prefix)) continue;
+      const match = /^(?:\[(\d+)\])?(\/.*)?$/.exec(path.slice(prefix.length));
+      if (match !== null) return `${list}/row[${match[1] ?? '1'}]${match[2] ?? ''}`;
+    }
+    return path;
+  };
   const texts = new Map<string, string>();
+  const states = new Map<string, LiveState>();
+  const rows = new Map<string, number>();
   let unmatched = 0;
   for (const w of snapshot.widgets) {
-    if (w.text === undefined) continue;
-    const path = w.path.toLowerCase();
+    const path = normal(w.path);
+    states.set(path, { visible: w.visible, enabled: w.enabled, checked: w.checked });
     // A row's widgets come from its template: the list box must still be there.
-    const row = /^(.*?)\/row\[\d+\](?:\/|$)/.exec(path);
+    const row = /^(.*?)\/row\[(\d+)\](?:\/|$)/.exec(path);
+    if (row !== null && known.has(row[1] ?? '')) {
+      const list = row[1] ?? '';
+      rows.set(list, Math.max(rows.get(list) ?? 0, Number(row[2])));
+    }
+    if (w.text === undefined) continue;
     if (known.has(row === null ? path : (row[1] ?? ''))) texts.set(path, w.text);
     else if (!builtByCode(path, known)) unmatched++;
   }
-  return { texts: { text: (path) => texts.get(path.toLowerCase()) }, unmatched };
+  return {
+    texts: {
+      text: (path) => texts.get(path.toLowerCase()),
+      // A list the game showed has its rows, none when it showed none; a hidden one says nothing.
+      rows: (list) => {
+        const path = list.toLowerCase();
+        return states.get(path)?.visible === true ? (rows.get(path) ?? 0) : undefined;
+      },
+      state: (path) => states.get(path.toLowerCase()),
+    },
+    unmatched,
+  };
 }
 
 /**
