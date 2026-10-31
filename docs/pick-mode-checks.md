@@ -338,6 +338,7 @@ playset over 10 890 frames.
 - A click that activates the game's window is not a pick: the game reads the
   pointer only while it is in front, so the hovered widget would be the one
   of before (not checked live: the lab's clicks went to the game in front).
+  Reversed after the 2.0.0 trial: see "The activation click" below.
 - The snapshot's "values that no longer match" leave out copies the game's
   code builds.
 

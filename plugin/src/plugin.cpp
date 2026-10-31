@@ -34,6 +34,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cwctype>
+#include <format>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -252,6 +253,8 @@ constexpr std::uint32_t kOutline = 0xFF2BD9FFu;     // the widget under the poin
 constexpr std::uint32_t kWindowLine = 0xFFFFB000u;  // its top-level window, dashed
 constexpr std::uint32_t kStaleLine = 0xFFFF3B30u;   // a stale widget
 constexpr std::size_t kHoverSamples = 100000;
+// How long a click that brought the game forward waits for the hovered widget to reach it.
+constexpr double kActivationWaitMs = 500;
 
 struct PickState {
     std::atomic<bool> on{false};
@@ -266,10 +269,14 @@ struct PickState {
     double click_ms = 0;
     std::uint64_t click_unix_ms = 0;
     int wheel = 0;
-    // The window was activated by a click: that click brings the game forward and is no pick
-    // (the hovered widget is not read while the game is in the background).
+    // The window was activated by a click. That click is a pick too (after a pick VS Code is in
+    // front, so every next pick starts with one), but the hovered widget may still be the one of
+    // before the game came forward: the pick waits until it holds the click (`kActivationWait`).
     bool activation_click = false;
+    bool click_activated = false;
+    int click_frames = 0;
     std::uint32_t activation_clicks = 0;
+    std::uint32_t activation_timeouts = 0;
     // The frame handler's own.
     std::uint64_t hovered = 0;
     std::vector<etch::UiWidget> stack_read;  // the visible tree the stack was taken from
@@ -500,18 +507,24 @@ LRESULT CALLBACK PickProc(HWND window, UINT message, WPARAM wparam, LPARAM lpara
     if (p.on.load(std::memory_order_relaxed) && etch::IsMouseMessage(message)) {
         const etch::MouseFilter filter = etch::FilterMouse(message, wparam);
         switch (filter.action) {
-            case etch::MouseAction::Pick:
-                if (std::exchange(p.activation_click, false)) {
-                    ++p.activation_clicks;
-                    return 0;
-                }
+            case etch::MouseAction::Pick: {
+                const bool activated = std::exchange(p.activation_click, false);
                 if (!p.click) {
                     p.click = true;
+                    p.click_activated = activated;
+                    p.click_frames = 0;
                     p.click_at = {GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam)};
                     p.click_ms = NowMs();
                     p.click_unix_ms = etch::UnixMs();
+                    if (activated) {
+                        ++p.activation_clicks;
+                        // A move without buttons at the click, so the game reads the pointer
+                        // there now that it is in front.
+                        PostMessageW(window, WM_MOUSEMOVE, 0, lparam);
+                    }
                 }
                 return 0;
+            }
             case etch::MouseAction::Drop:
                 if (message != WM_LBUTTONUP) p.activation_click = false;
                 return 0;
@@ -556,9 +569,11 @@ SHORT WINAPI OnKeyState(int vk) noexcept { return BlockedButton(vk) ? 0 : g_key_
 void LogPickStats(PickState& p) {
     anvil::Host{}.info(
         "pick mode left: {} picks; hovered read median {:.3f} ms, p90 {:.3f} ms, max {:.3f} ms over {} frames; "
-        "hotkey by GetKeyState {}, by key messages {}; mouse buttons polled {} times; activation clicks {}",
+        "hotkey by GetKeyState {}, by key messages {}; mouse buttons polled {} times; activation clicks {} "
+        "(hover not at the click after {:.0f} ms: {})",
         p.picks, Percentile(p.hover_ms, 0.5), Percentile(p.hover_ms, 0.9), Percentile(p.hover_ms, 1.0),
-        p.hover_ms.size(), p.by_key_state, p.by_messages, p.button_polls.load(), p.activation_clicks);
+        p.hover_ms.size(), p.by_key_state, p.by_messages, p.button_polls.load(), p.activation_clicks, kActivationWaitMs,
+        p.activation_timeouts);
     p.hover_ms.clear();
 }
 
@@ -593,9 +608,13 @@ void PickNow(PickState& p, int width, int height) {
     const std::string line = etch::PickEvent(seq, *read, chain, index, stack.size(), width, height, front,
                                              {start - p.click_ms, p.click_unix_ms, read_ms});
     ++p.picks;
-    anvil::Host{}.info("pick {}: {} {}:{} ({} of {} under the pointer), read {:.1f} ms, editor {}", seq, picked.name,
+    anvil::Host{}.info("pick {}: {} {}:{} ({} of {} under the pointer), read {:.1f} ms, editor {}{}", seq, picked.name,
                        picked.file.empty() ? "?" : picked.file, picked.line, index + 1, stack.size(), read_ms,
-                       front ? "in front" : "not brought forward");
+                       front ? "in front" : "not brought forward",
+                       p.click_activated
+                           ? std::format("; the click brought the game forward, picked {:.0f} ms and {} frames on",
+                                         start - p.click_ms, p.click_frames)
+                           : std::string());
     RunLater([line] { Push(line); });
 
     etch::json::Writer w;
@@ -704,7 +723,18 @@ void OnFrame() {
     etch::overlay::Show(std::move(frame));
     p.shown = true;
 
-    if (std::exchange(p.click, false)) PickNow(p, width, height);
+    if (!p.click) return;
+    if (p.click_activated) {
+        // A click that brought the game forward: picked once the hovered widget holds it, at
+        // least two frames on, or when the wait runs out.
+        ++p.click_frames;
+        const bool reached = !chain.empty() && chain.front().Holds(p.click_at.x, p.click_at.y);
+        const bool out = NowMs() - p.click_ms >= kActivationWaitMs;
+        if (!(reached && p.click_frames >= 2) && !out) return;
+        if (!reached) ++p.activation_timeouts;
+    }
+    p.click = false;
+    PickNow(p, width, height);
 }
 
 // A snapshot asked for over the pipe, on the main thread.
