@@ -334,7 +334,13 @@ export class PreviewData {
           label: `${list.list} (${list.template})`,
           count: list.count,
           bySet: list.bySet,
-          detail: list.bySet ? 'set by you' : list.layer === 'save' ? 'from the save' : 'generated',
+          detail: list.bySet
+            ? 'set by you'
+            : list.layer === 'live'
+              ? 'from the live snapshot'
+              : list.layer === 'save'
+                ? 'from the save'
+                : 'generated',
         })),
       save,
       length: this.length,

@@ -135,6 +135,72 @@ describe('liveMatch', () => {
   });
 });
 
+describe('liveMatch with the profile', () => {
+  const FILE_PLACED = readGuiFile(
+    parseScript(`guiTypes = {
+  windowType = {
+    name = "provinceview"
+    windowType = { name = "general_buildings_window" }
+    OverlappingElementsBoxType = { name = "cores_box" }
+    listboxType = { name = "rows" }
+    listboxType = { name = "hidden_rows" }
+  }
+  windowType = { name = "slot" instantTextBoxType = { name = "label" } guiButtonType = { name = "building" } }
+  windowType = { name = "CoreShieldItem" }
+}`),
+  );
+  const window = FILE_PLACED.definitions[0] as Widget;
+  const placed = profile(`
+    "repeaters": {
+      "provinceview/general_buildings_window": { "template": "slot", "place": { "start": { "x": 0, "y": 0 } } },
+      "provinceview/cores_box": { "template": "CoreShieldItem" },
+      "provinceview/rows": { "template": "slot" },
+      "provinceview/hidden_rows": { "template": "slot" }
+    }`);
+  const match = liveMatch(
+    snapshot([
+      w('provinceview', true),
+      w('provinceview/general_buildings_window', true),
+      w('provinceview/general_buildings_window/slot[1]', true),
+      w('provinceview/general_buildings_window/slot[1]/building', true, {
+        type: 'button',
+        enabled: false,
+      }),
+      w('provinceview/general_buildings_window/slot[2]', true),
+      w('provinceview/general_buildings_window/slot[2]/label', true, { type: 'text', text: '20' }),
+      w('provinceview/general_buildings_window/slot[2]/building', false, { type: 'button' }),
+      // A single entry has no [n]; core shields sit in the box or beside it.
+      w('provinceview/cores_box', true, { type: 'other' }),
+      w('provinceview/CoreShieldItem', true),
+      w('provinceview/rows', true, { type: 'listbox' }),
+      w('provinceview/hidden_rows', false, { type: 'listbox' }),
+    ]),
+    window,
+    placed,
+  );
+
+  it("names the entries the game's code places as rows and counts them", () => {
+    expect(match.texts.rows?.('provinceview/general_buildings_window')).toBe(2);
+    expect(match.texts.text('provinceview/general_buildings_window/row[2]/label')).toBe('20');
+    expect(match.texts.rows?.('provinceview/cores_box')).toBe(1);
+    expect(match.unmatched).toBe(0);
+  });
+
+  it('gives each widget the state the game showed, and no rows for a list it hid', () => {
+    expect(match.texts.state?.('provinceview/general_buildings_window/row[1]/building')).toEqual({
+      visible: true,
+      enabled: false,
+      checked: false,
+    });
+    expect(
+      match.texts.state?.('provinceview/general_buildings_window/row[2]/building')?.visible,
+    ).toBe(false);
+    // A shown list without rows has none; a hidden one leaves the number to the sample data.
+    expect(match.texts.rows?.('provinceview/rows')).toBe(0);
+    expect(match.texts.rows?.('provinceview/hidden_rows')).toBeUndefined();
+  });
+});
+
 describe('liveSelectors', () => {
   it('takes the resolution from the game window and the values whose rules predict what it showed', () => {
     const live = liveSelectors(PROFILE, WINDOW, snapshot(FOREIGN));
