@@ -115,14 +115,23 @@ target).
   file stops matching the running code (it changes, the window gets the focus
   back, a live game starts), Etch warns once per build found and offers
   **Reload Window**.
+- **The click that brings the game forward (the 2.0.0 trial):** pick mode
+  "worked only on the second click": after each pick VS Code is in front, and
+  the plugin dropped the click that activated the game's window (the trial's
+  game log: 20 picks, 21 activation clicks). That click is now a pick, taken
+  once the game's hovered widget holds it. Checked live with real input
+  (`SendInput`) in the Anbennar playset, Notepad standing in for VS Code: 8 of
+  8 activation clicks picked the clicked widget, 12–15 ms after the click
+  ([pick-mode-checks.md](pick-mode-checks.md), "The activation click").
 - **Reopening the province after a restart (H8):** not built; the recorded
   workaround is that Etch says the view was not reopened (live-game.md).
 - **VS Code coming forward under Windows' default foreground lock:** holds
   (M9, [pick-mode-checks.md](pick-mode-checks.md)).
-- **Real mouse and keyboard in pick mode:** not checked (no hand at the
-  machine, `SendInput` refused to the agent); the recorded workaround is the
-  posted messages a window procedure subclass sees, with the `MK_*` bits
-  cleared and the key-state imports replaced (M9).
+- **Real mouse and keyboard in pick mode:** a hand at the machine not checked;
+  M9's workaround was the posted messages a window procedure subclass sees,
+  with the `MK_*` bits cleared and the key-state imports replaced. Left clicks
+  through `SendInput` were checked with the activation click (above): none
+  reached the game.
 - **The hotkey with the province view on screen:** holds (M9).
 
 ## Large mods
