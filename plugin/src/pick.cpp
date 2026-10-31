@@ -314,6 +314,7 @@ Snapshot SnapshotOf(const std::vector<UiWidget>& widgets, std::size_t root, int 
             .Bool("checked", w.Checked());
         if (w.has_text) {
             item.Str("text", w.text);
+            if (!w.markup.empty() && w.markup != w.text) item.Str("markup", w.markup);
         } else {
             item.Null("text");
         }

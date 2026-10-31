@@ -22,6 +22,8 @@ export interface LiveWidget {
   readonly enabled: boolean;
   readonly checked: boolean;
   readonly text?: string;
+  /** The text with the game's colour codes (`Â§Gâ€¦Â§!`), when it has some: what the preview draws. */
+  readonly markup?: string;
   readonly rect: readonly [number, number, number, number];
 }
 
@@ -54,6 +56,7 @@ export interface PluginWidget {
   readonly enabled: boolean;
   readonly checked: boolean;
   readonly text: string | undefined;
+  readonly markup?: string;
   readonly rect: readonly [number, number, number, number];
 }
 
@@ -95,6 +98,7 @@ export function liveWidgetsOf(widgets: readonly PluginWidget[]): LiveWidget[] {
       enabled: w.enabled,
       checked: w.checked,
       ...(w.text === undefined ? {} : { text: w.text }),
+      ...(w.markup === undefined || w.markup === w.text ? {} : { markup: w.markup }),
       rect: w.rect,
     };
   });
@@ -172,8 +176,10 @@ export function liveMatch(
       const list = row[1] ?? '';
       rows.set(list, Math.max(rows.get(list) ?? 0, Number(row[2])));
     }
-    if (w.text === undefined) continue;
-    if (known.has(row === null ? path : (row[1] ?? ''))) texts.set(path, w.text);
+    // The colours too: the game colours values with codes (Â§Gâ€¦Â§!), which Tongs' `text` drops.
+    const text = w.markup ?? w.text;
+    if (text === undefined) continue;
+    if (known.has(row === null ? path : (row[1] ?? ''))) texts.set(path, text);
     else if (!builtByCode(path, known)) unmatched++;
   }
   return {

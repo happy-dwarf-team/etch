@@ -163,6 +163,9 @@ void TestSnapshot() {
     tree[1].file = "interface/provinceview.gui";
     tree[4].has_text = true;
     tree[4].text = "12.5";
+    tree[4].markup = "\xC2\xA7G12.5\xC2\xA7!";
+    tree[2].has_text = true;
+    tree[2].text = tree[2].markup = "plain";
     tree[5].flags = kEnabled | kChecked;
     for (UiWidget& w : tree) w.path = w.name;
     const etch::Snapshot snapshot = etch::SnapshotOf(tree, 1, 1920, 1080, 6.5);
@@ -174,6 +177,8 @@ void TestSnapshot() {
     const auto& widgets = *v.Find("widgets")->AsArray();
     assert(widgets.size() == 5);  // provinceview and its four, not menubar, the stale row or `other`
     assert(widgets[3].Find("text")->AsString() == "12.5");
+    assert(widgets[3].Find("markup")->AsString() == "\xC2\xA7G12.5\xC2\xA7!");
+    assert(widgets[1].Find("text")->AsString() == "plain" && widgets[1].Find("markup") == nullptr);  // no codes, no markup
     assert(widgets[2].Find("text")->kind() == Value::Kind::Null);
     assert(widgets[4].Find("visible")->AsBool() == false && widgets[4].Find("checked")->AsBool() == true);
     assert(widgets[0].Find("rect")->AsArray()->size() == 4);

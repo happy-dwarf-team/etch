@@ -321,6 +321,8 @@ etch::UiWidget Copy(const TongsUiWidget* w) {
     if (w->path != nullptr) out.path = w->path;
     out.has_text = w->text != nullptr;
     if (out.has_text) out.text = w->text;
+    // The colour codes, from a Tongs that gives them (2.0.0 trial: the game colours values).
+    if (out.has_text && TONGS_UI_WIDGET_HAS(w, markup) && w->markup != nullptr) out.markup = w->markup;
     const bool stale = (w->flags & TONGS_UI_IS_STALE) != 0;
     // Both come from a live definition only, never from a stale widget's (H4 of the reload checks).
     if (!stale && TONGS_UI_WIDGET_HAS(w, definition_file) && w->definition_file != nullptr) {

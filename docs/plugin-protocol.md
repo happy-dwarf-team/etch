@@ -335,7 +335,7 @@ and stale widgets): the whole tree with hidden widgets took 150–215 ms in a va
 | ----------- | ------- |
 | `window`, `file` | the window's name and the game path of its definition's file |
 | `screen`    | the game window's client size, which the preview's `resolution` selector takes |
-| `widgets`   | each widget's `path` (Tongs' widget path from the window; list rows by position, `…/listbox/row[2]`), `type`, `visible`, `enabled`, `checked`, `text` (`null` for a widget without text) and `rect` (`[x, y, width, height]` in client pixels) |
+| `widgets`   | each widget's `path` (Tongs' widget path from the window; list rows by position, `…/listbox/row[2]`), `type`, `visible`, `enabled`, `checked`, `text` (`null` for a widget without text; without the game's colour codes), `markup` (the text with them, `§` as U+00A7: `§G0.45§!`; only when it has some and the game's Tongs gives them, `tongs.ui`'s `markup`) and `rect` (`[x, y, width, height]` in client pixels) |
 | `stale`     | the stale widgets inside the window, left out |
 | `read_ms`, `queued_ms` | the read on the main thread, and from the request to it |
 

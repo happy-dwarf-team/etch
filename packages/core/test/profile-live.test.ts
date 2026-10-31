@@ -133,6 +133,24 @@ describe('liveMatch', () => {
     expect(match.texts.text('provinceview/gone')).toBeUndefined();
     expect(match.unmatched).toBe(1);
   });
+
+  it('gives the text with the game’s colour codes when the snapshot has them', () => {
+    const match = liveMatch(
+      snapshot([
+        w('provinceview', true),
+        w('provinceview/province_window', true),
+        w('provinceview/province_window/culture', true, {
+          type: 'text',
+          text: '0.45',
+          markup: '§G0.45§!',
+        }),
+      ]),
+      WINDOW,
+    );
+    expect(match.texts.text('provinceview/province_window/culture')).toBe('§G0.45§!');
+    const [plain] = liveWidgetsOf([w('x', true, { text: 'Svea', markup: 'Svea' })]);
+    expect(plain).not.toHaveProperty('markup');
+  });
 });
 
 describe('liveMatch with the profile', () => {
