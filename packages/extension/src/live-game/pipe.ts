@@ -165,6 +165,8 @@ export interface SnapshotWidget {
   readonly checked: boolean;
   /** `undefined` for a widget without text. */
   readonly text: string | undefined;
+  /** The text with the game's colour codes (`Â§Gâ€¦Â§!`), when it has some. */
+  readonly markup?: string;
   readonly rect: readonly [number, number, number, number];
 }
 
@@ -267,6 +269,7 @@ export function readSnapshot(line: Record<string, unknown>): SnapshotAnswer {
       enabled: w['enabled'] !== false,
       checked: w['checked'] === true,
       text: typeof w['text'] === 'string' ? w['text'] : undefined,
+      ...(typeof w['markup'] === 'string' ? { markup: w['markup'] } : {}),
       rect: rectOf(w['rect']),
     })),
     stale: Number(line['stale'] ?? 0),

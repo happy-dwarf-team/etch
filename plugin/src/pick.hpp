@@ -29,6 +29,7 @@ struct UiWidget {
     std::string name;
     std::string path;  // empty when the read gave none
     std::string text;
+    std::string markup;  // the text with the game's colour codes; empty when Tongs gives none
     bool has_text = false;
     std::string file;        // the definition's game path; empty when stale or unknown
     std::uint32_t line = 0;  // the line of the `{` that opens the definition (H2), 0 when unknown

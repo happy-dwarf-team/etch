@@ -240,6 +240,32 @@ was held by other batches).
   `province_modifier_start` does not match the captures by a rule found, and
   the history list, whose entry template is in no `.gui` of the window.
 
+**The live snapshot against the game (#228, #229).** A second trial
+(2026-10-31) compared the live game's `provinceview` with the preview drawn
+from Etch's live snapshot of it, on `cffbf88`, in P2KE Patch - Anbennar at
+2560×1440 (Verne and Bronzewing Hall with buildings and free slots, a state's
+province, Cannleigh with a fort):
+
+- *Only the profile's texts came from the game.* The rest kept the sample
+  data's. The snapshot now fills every text the game showed (#228).
+- *Building slots and core shields were generated.* The game's code places
+  them (`building_progress_entry[n]`, `CoreShieldItem[n]`); they are now rows
+  with the number the game showed, each part shown or hidden as there, and a
+  list the game showed empty has none (#228).
+- *Disabled buttons drew enabled.* A disabled button now greys
+  (`buttonstate`'s `disable`, the default shader `0x15DA600` gives a sprite
+  without `effectFile`) and a ticked check box draws its second frame (#228).
+- *Text colours.* Tongs' text drops the game's `§` colour codes, so values
+  drew in the font's colour; `tongs.ui`'s new `markup` keeps them and the
+  snapshot carries it (#229, with a Tongs that has it).
+- *The base values* stood where the game draws them (Verne 5, 5, 4), as #223
+  placed them.
+- *Left open:* code-set sprites and frames (the terrain picture, shield flags,
+  trade goods, a building under construction, the locked slot; spec §7, "Not
+  in v2"); a long text in a `fixedsize` box, which the game cuts with "…"
+  (`East Dam...`) and the preview wraps, as no rule for it was found in
+  `eu4.exe`; and an uncolonised province, not captured.
+
 Checking a profile matched every path pattern against every widget path anew
 on each reload; with the new rules that pushed the Anbennar playset's warm
 reload of `provinceview` to a p95 of 68.6 ms. Each window's paths are now split
