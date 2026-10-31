@@ -43,7 +43,7 @@ import {
   unexpectedChanges,
   variantName,
 } from './settings.ts';
-import type { Tongs } from './tongs.ts';
+import type { Tongs, TongsAnswer } from './tongs.ts';
 import {
   DEFAULT_AWAY,
   MouseReleased,
@@ -595,8 +595,11 @@ async function restoreSettings(
 /**
  * Waits until the game is ready: Tongs answers from the started process, `system.log` says
  * `Running application` (the lab's two signs), the save is loaded and paused when the session
- * starts from it, and a frame of the main loop has passed. `loaded` runs then, before the wait
- * for the menu's animation or the load's ignored input.
+ * starts from it, and a frame of the main loop has passed. From Tongs 0.19 this is Tongs' ready
+ * wait (its `docs/commands.md`, "Sessions and the ready wait"): the game must be in session 1, a
+ * `frames` answer must show that session paused, and the input the game ignores right after a
+ * load needs no fixed wait. `loaded` runs then, before the wait for the menu's animation (and,
+ * with an older Tongs, for the load's ignored input).
  */
 async function waitReady(
   options: RunOptions,
@@ -611,8 +614,32 @@ async function waitReady(
   const systemLog = join(profile, 'logs', 'system.log');
   let tongs: Tongs | undefined;
   let version: string | undefined;
+  let sessions = false;
   let runningSince: number | undefined;
   let ready: { tongs: Tongs; state: unknown } | undefined;
+  /** The game has been in session 1 of the save (with Tongs 0.19 or later). */
+  let inSession = false;
+  /**
+   * Whether `answer`, `state` or a `frames` answer with the state, is the start's ready state.
+   * Throws `NotReady` when no later answer can be: Tongs 0.19's `unexpected_session` and
+   * `left_game`.
+   */
+  const readyState = (answer: TongsAnswer): boolean => {
+    if (session.start === 'main-menu') return answer['in_game'] === false;
+    if (answer['in_game'] !== true) {
+      if (inSession) throw new NotReady('The game left the save before it was ready.');
+      return false;
+    }
+    if (sessions) {
+      const current = answer['session'];
+      if (typeof current !== 'number') {
+        throw new NotReady(`Tongs ${String(version)} answers in a game with no session.`);
+      }
+      if (current !== 1) throw new NotReady(`The game is in session ${String(current)}, not 1.`);
+      inSession = true;
+    }
+    return answer['paused'] === true;
+  };
   while (ready === undefined) {
     if (env.now().getTime() > deadline) {
       tongs?.close();
@@ -633,6 +660,7 @@ async function waitReady(
         }
         tongs = connected;
         version = typeof ping['version'] === 'string' ? ping['version'] : 'unknown';
+        sessions = hasSessions(version);
       }
       if (await runningApplication(systemLog, game.creationUnixMs)) {
         runningSince ??= env.now().getTime();
@@ -656,17 +684,17 @@ async function waitReady(
         ) {
           throw new Error('Tongs answers from the game, but the save did not load in 2 minutes.');
         }
-        const inGame = state['in_game'] === true && state['paused'] === true;
-        if (session.start === 'main-menu' ? state['in_game'] === false : inGame) {
+        if (readyState(state)) {
           const frames = await tongs.call('frames timeout=30', 40_000);
-          if (frames.ok) {
-            ready = { tongs, state };
+          // From Tongs 0.19 the frame's own state shows that it belongs to the ready session.
+          if (frames.ok && (!sessions || readyState(frames))) {
+            ready = { tongs, state: sessions ? frames : state };
             break;
           }
         }
       }
     } catch (error) {
-      if (message(error).startsWith('Tongs answers from')) {
+      if (error instanceof NotReady || message(error).startsWith('Tongs answers from')) {
         tongs?.close();
         throw error;
       }
@@ -681,11 +709,24 @@ async function waitReady(
     ready.tongs.close();
     throw error;
   }
-  // The menu's opening animation, or the input the game ignores right after a load.
-  await env.sleep(session.start === 'save' ? 5000 : 3000);
+  // The menu's opening animation; before Tongs 0.19, also the input the game ignores right after
+  // a load, which its ready wait leaves out.
+  if (session.start === 'main-menu') await env.sleep(3000);
+  else if (!sessions) await env.sleep(5000);
   const readyMs = env.now().getTime() - game.creationUnixMs;
-  log({ ready: true, readyMs, version, state: ready.state });
+  log({ ready: true, readyMs, version, sessions, state: ready.state });
   return { tongs: ready.tongs, version: version ?? 'unknown', readyMs };
+}
+
+/** The game cannot get ready any more: a later session, or it left the save. */
+class NotReady extends Error {}
+
+/** Whether a Tongs `version` has `session` and the ready wait: 0.19.0 and later. */
+export function hasSessions(version: string): boolean {
+  const match = /^(\d+)\.(\d+)\./.exec(version);
+  if (match === null) return false;
+  const major = Number(match[1]);
+  return major > 0 || Number(match[2]) >= 19;
 }
 
 async function runningApplication(systemLog: string, sinceMs: number): Promise<boolean> {

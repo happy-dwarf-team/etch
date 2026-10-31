@@ -27,6 +27,10 @@ export class FakeGame implements Tongs {
   paused = true;
   gameCalls = 0;
   pid = 4242;
+  /** The Tongs release the game answers `ping` with. */
+  version = '0.14.1';
+  /** The session in the state of a game, from Tongs 0.19. */
+  session: number | undefined;
   escapeOpens: string | undefined;
   /** How many more `ui click` commands are refused as `covered`. */
   covered = 0;
@@ -52,7 +56,13 @@ export class FakeGame implements Tongs {
 
   private state(): Record<string, unknown> {
     return this.inGame
-      ? { in_game: true, paused: this.paused, game_calls_total: this.gameCalls, pid: this.pid }
+      ? {
+          in_game: true,
+          paused: this.paused,
+          game_calls_total: this.gameCalls,
+          pid: this.pid,
+          ...(this.session !== undefined ? { session: this.session } : {}),
+        }
       : { in_game: false, pid: this.pid };
   }
 
@@ -109,7 +119,8 @@ export class FakeGame implements Tongs {
   private answer(command: string): TongsAnswer {
     const ok = (fields: Record<string, unknown> = {}): TongsAnswer => ({ ok: true, ...fields });
     const [verb = '', ...rest] = command.split(' ');
-    if (command === 'ping') return ok({ version: '0.14.1', pid: this.pid, process_start_ms: 1000 });
+    if (command === 'ping')
+      return ok({ version: this.version, pid: this.pid, process_start_ms: 1000 });
     if (command === 'state') return ok(this.state());
     if (command === 'window') {
       return ok({ ...this.size, screen_x: 0, screen_y: 0, dpi: 96, minimized: false });
