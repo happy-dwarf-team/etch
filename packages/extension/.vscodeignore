@@ -4,6 +4,7 @@
 **
 !dist/extension.js
 !dist/webview.js
+!dist/build.json
 !dist/profiles/**
 !media/icon.png
 !package.json

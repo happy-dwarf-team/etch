@@ -37,6 +37,7 @@ const profiles = readdirSync('dist/profiles', { recursive: true, withFileTypes: 
       .replace(/^.*?dist\/profiles/, 'dist/profiles'),
   );
 const expected = [
+  'dist/build.json',
   'dist/extension.js',
   'dist/webview.js',
   ...profiles,

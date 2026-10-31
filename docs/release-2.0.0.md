@@ -106,6 +106,15 @@ target).
   responding), loading a save, Etch's save, the game's autosave and a manual
   save, a planned restart; none restarted the game
   ([live-game.md](live-game.md), "A busy game").
+- **Which build runs (the 2.0.0 trial):** a trial ran the candidate from
+  `d9241b4` although the next one had been installed: VS Code had loaded the
+  extension 26 s before the new VSIX of the same version 1.0.1 replaced its
+  files, and nothing said so. The first log line now names the commit
+  (`Etch 1.0.1 (abc1234) for EU4 1.37.5`), and `build.mts` writes the build's
+  stamp (version, commit, time) into the bundle and `dist/build.json`; when the
+  file stops matching the running code (it changes, the window gets the focus
+  back, a live game starts), Etch warns once per build found and offers
+  **Reload Window**.
 - **Reopening the province after a restart (H8):** not built; the recorded
   workaround is that Etch says the view was not reopened (live-game.md).
 - **VS Code coming forward under Windows' default foreground lock:** holds
