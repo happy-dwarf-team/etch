@@ -30,7 +30,7 @@ joined by `-`, because they become file names.
 | --- | --- |
 | `formatVersion` | `1` |
 | `game` | `version` and `exeSha256` (uppercase) of the build every capture comes from: 1.37.5 |
-| `tongs` | `version` of the Tongs release every capture is taken with. 0.14.1 is the first release that reads no false stale widgets on a fresh start (tongs#61, tongs#63) |
+| `tongs` | `version` of the Tongs release every capture is taken with: 0.23.0, for the `province` step (0.21) and the ready wait (0.19, etch#232). 0.14.1 was the first release that reads no false stale widgets on a fresh start (tongs#61, tongs#63) |
 | `uiScale` | `1`: no other `game_ui_scale` is checked |
 | `resolutions` | `width`, `height`, `confirmed` and `evidence` per size. Only confirmed sizes gate a release. [etch#18](https://github.com/happy-dwarf-team/etch/issues/18) confirmed the six of v1: 3440×1440 is the lab's monitor, borderless; the smaller sizes are windowed client areas (below). M10 added 2560×1440 (a windowed client area too, confirmed by its captures) and 3840×2160, which no window of the lab can hold (its desktop is 6000×1440, a window at most 6020×1460): it stays unconfirmed (etch#163) |
 | `codeFilledKinds` | `.gui` widget kinds whose content the game always fills (lists, grids, overlapping elements), masked in every view |
@@ -76,7 +76,7 @@ opens and one capture records, such as the main menu and the lobby of
 | `codeMoved` | optional widget patterns of what the game's code moves away from where its `.gui` puts it: a dialog the game opens beside the panel that asked for it, a section the game moves on a taller screen. The comparison draws each such widget and everything inside it where the game shows it, and compares it there (etch#44) |
 | `selectors` | optional values of the window profiles' selectors the view is captured with, by selector id (`"owner": "yes"`), where a profile has a choice the screen does not make; `resolution` selectors come from the capture's size. Each profiled root's profile is evaluated with them for the visibility gate (below, ADR 0006). An id a root's profile does not have is left out for that root |
 | `data` | optional: what of the playset's save the view shows, `province` by id and `country` by tag (the save's player when left out), for the report of the profiles' `save` texts against the capture's (below) |
-| `byPlayset` | optional, by playset id: what differs in that playset, its own `recipe`, `selectors` (replacing the view's values of those ids), `data` and `note`. The Anbennar playsets' save has no ship in construction, so their province views open another way (spec v2 section 11) |
+| `byPlayset` | optional, by playset id: what differs in that playset, its own `recipe`, `selectors` (replacing the view's values of those ids), `data` and `note`. The Anbennar playsets have their own map, so their province views open other provinces (spec v2 section 11) |
 
 A **recipe** is the Tongs input that opens a view from a known start state:
 
@@ -99,16 +99,17 @@ A **recipe** is the Tongs input that opens a view from a known start state:
 
 A verified recipe names its roots. Unverified recipes may leave steps or roots
 empty: the driver (etch#42) verifies each one live, fills in what is missing
-and sets `verified`. The province view
-opens with a `point` step on the map.
+and sets `verified`. The province views
+open with a `province` step.
 
 A `map` point is the same place of the map at every corpus resolution: the map's
 camera keeps its height in view, so a distance in client heights from the
 centre (where the Goto box or an outliner entry puts the camera) lands on the
 same province at 1280×720 and at 3440×1440 (checked by hand in M10: the same
 provinces under the same points at both sizes). A `point` scales with the
-width instead, so at another aspect ratio it lands elsewhere. The Anbennar
-playsets' province views use `map` points.
+width instead, so at another aspect ratio it lands elsewhere. Until
+etch#232 the province views opened with an outliner entry or the Goto box and
+such a point; no view uses one now.
 
 A `province` step needs no point at all: Tongs' `province open ID` (its
 `docs/commands.md`, "Navigation") closes the open views, moves the camera to
@@ -121,9 +122,7 @@ settled yet (`settled: false`, while the real mouse is at a screen edge) is
 not a failure. The step needs `input = true` and is a client call
 ([tongs ADR 0003](https://github.com/happy-dwarf-team/tongs/blob/main/docs/adr/0003-client-calls.md)),
 not a game call; with a Tongs older than 0.21 the view fails at that step,
-before Tongs is asked. The manifest's province views still use `point` and `map` steps: the
-corpus pins Tongs 0.14.1, and moving its recipes to `province` steps goes with
-the recapture that a newer Tongs pin needs.
+before Tongs is asked.
 
 The maintainer's Anbennar save opens with three events over the middle of the
 screen; below 1440 pixels the tallest one's option lies under the client area,

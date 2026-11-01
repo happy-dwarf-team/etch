@@ -5,7 +5,7 @@
     "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A"
   },
   "tongs": {
-    "version": "0.14.1"
+    "version": "0.23.0"
   },
   "uiScale": 1,
   "resolutions": [
@@ -647,17 +647,11 @@
             "from": "save",
             "steps": [
               {
-                "click": "outliner//outliner_buildnavy_entry[1]/outliner_standard"
-              },
-              {
-                "point": {
-                  "x": 0.5,
-                  "y": 0.5
-                }
+                "province": 148
               }
             ],
-            "verified": true,
-            "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown. The outliner's first ship in construction (Macedonia in this save) centres the map on its province, and a click on the middle of the client area opens it (etch#42); a map click alone depends on where the camera is."
+            "verified": false,
+            "evidence": "To be run by the capture driver with Tongs 0.23.0 (etch#232): Tongs' province open 148 opens Macedonia, the player's own province, as the game's province links do."
           },
           "roots": ["provinceview", "topbar", "menubar"],
           "codeFilled": [
@@ -736,29 +730,11 @@
                 "from": "save",
                 "steps": [
                   {
-                    "key": "f"
-                  },
-                  {
-                    "click": "goto_box/goto_edit"
-                  },
-                  {
-                    "text": "Gemisle"
-                  },
-                  {
-                    "click": "goto_box/provinces/province_finder_entry[1]/title"
-                  },
-                  {
-                    "key": "return"
-                  },
-                  {
-                    "map": {
-                      "x": -0.655,
-                      "y": -0.1
-                    }
+                    "province": 286
                   }
                 ],
-                "verified": true,
-                "evidence": "Run by the capture driver in the Anbennar playset at 2560×1440 and 3440×1440 and in Anbennar alone at 1280×720 to 1920×1080 on 2026-10-27 (M10), from the corpus save with its events answered: the steps opened the view and its roots were read and shown. The Goto box (f) centres the map on Gemisle, and Verne’s own Heroes’ Rest (province 286) lies 0.655 client heights left of the centre; every capture shows Heroes’ Rest."
+                "verified": false,
+                "evidence": "To be run by the capture driver with Tongs 0.23.0 (etch#232): Tongs' province open 286 opens Verne's own Heroes' Rest, as the game's province links do."
               },
               "selectors": {
                 "construction": "no",
@@ -769,7 +745,7 @@
                 "parliament": "none",
                 "centerOfTrade": "no"
               },
-              "note": "The save (Verne, 11 November 1444) has no ship in construction: the province opens through the Goto box and a map point the same at every size.",
+              "note": "The save (Verne, 11 November 1444) has its own map: the view opens Verne's own Heroes' Rest (province 286).",
               "data": {
                 "province": 286
               }
@@ -779,29 +755,11 @@
                 "from": "save",
                 "steps": [
                   {
-                    "key": "f"
-                  },
-                  {
-                    "click": "goto_box/goto_edit"
-                  },
-                  {
-                    "text": "Gemisle"
-                  },
-                  {
-                    "click": "goto_box/provinces/province_finder_entry[1]/title"
-                  },
-                  {
-                    "key": "return"
-                  },
-                  {
-                    "map": {
-                      "x": -0.655,
-                      "y": -0.1
-                    }
+                    "province": 286
                   }
                 ],
-                "verified": true,
-                "evidence": "Run by the capture driver in the Anbennar playset at 2560×1440 and 3440×1440 and in Anbennar alone at 1280×720 to 1920×1080 on 2026-10-27 (M10), from the corpus save with its events answered: the steps opened the view and its roots were read and shown. The Goto box (f) centres the map on Gemisle, and Verne’s own Heroes’ Rest (province 286) lies 0.655 client heights left of the centre; every capture shows Heroes’ Rest."
+                "verified": false,
+                "evidence": "To be run by the capture driver with Tongs 0.23.0 (etch#232): Tongs' province open 286 opens Verne's own Heroes' Rest, as the game's province links do."
               },
               "selectors": {
                 "construction": "no",
@@ -812,7 +770,7 @@
                 "parliament": "none",
                 "centerOfTrade": "no"
               },
-              "note": "The save (Verne, 11 November 1444) has no ship in construction: the province opens through the Goto box and a map point the same at every size.",
+              "note": "The save (Verne, 11 November 1444) has its own map: the view opens Verne's own Heroes' Rest (province 286).",
               "data": {
                 "province": 286
               }
@@ -826,17 +784,11 @@
             "from": "save",
             "steps": [
               {
-                "click": "outliner//outliner_buildnavy_entry[1]/outliner_standard"
-              },
-              {
-                "map": {
-                  "x": -0.02,
-                  "y": -0.055
-                }
+                "province": 4702
               }
             ],
-            "verified": true,
-            "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-27 (M10): the steps opened the view and its roots were read and shown. The outliner’s first ship in construction centres the map on Macedonia, and Siroz (province 4702, the Commonwealth’s) lies just above it; every capture shows Siroz."
+            "verified": false,
+            "evidence": "To be run by the capture driver with Tongs 0.23.0 (etch#232): Tongs' province open 4702 opens Siroz, the Commonwealth's, as the game's province links do."
           },
           "roots": ["provinceview", "topbar", "menubar", "speed_controls"],
           "codeFilled": [
@@ -925,29 +877,11 @@
                 "from": "save",
                 "steps": [
                   {
-                    "key": "f"
-                  },
-                  {
-                    "click": "goto_box/goto_edit"
-                  },
-                  {
-                    "text": "Verne"
-                  },
-                  {
-                    "click": "goto_box/provinces/province_finder_entry[1]/title"
-                  },
-                  {
-                    "key": "return"
-                  },
-                  {
-                    "map": {
-                      "x": -0.75,
-                      "y": -0.035
-                    }
+                    "province": 89
                   }
                 ],
-                "verified": true,
-                "evidence": "Run by the capture driver in the Anbennar playset at 2560×1440 and 3440×1440 and in Anbennar alone at 1280×720 to 1920×1080 on 2026-10-27 (M10), from the corpus save with its events answered: the steps opened the view and its roots were read and shown. The Goto box centres the map on the province Verne, and Ebenuel (province 89, Sorncóst’s) lies 0.75 client heights left of the centre; every capture shows Ebenuel."
+                "verified": false,
+                "evidence": "To be run by the capture driver with Tongs 0.23.0 (etch#232): Tongs' province open 89 opens Ebenuel, Sorncóst's, as the game's province links do."
               },
               "selectors": {
                 "buttonBar": "closed",
@@ -964,29 +898,11 @@
                 "from": "save",
                 "steps": [
                   {
-                    "key": "f"
-                  },
-                  {
-                    "click": "goto_box/goto_edit"
-                  },
-                  {
-                    "text": "Verne"
-                  },
-                  {
-                    "click": "goto_box/provinces/province_finder_entry[1]/title"
-                  },
-                  {
-                    "key": "return"
-                  },
-                  {
-                    "map": {
-                      "x": -0.75,
-                      "y": -0.035
-                    }
+                    "province": 89
                   }
                 ],
-                "verified": true,
-                "evidence": "Run by the capture driver in the Anbennar playset at 2560×1440 and 3440×1440 and in Anbennar alone at 1280×720 to 1920×1080 on 2026-10-27 (M10), from the corpus save with its events answered: the steps opened the view and its roots were read and shown. The Goto box centres the map on the province Verne, and Ebenuel (province 89, Sorncóst’s) lies 0.75 client heights left of the centre; every capture shows Ebenuel."
+                "verified": false,
+                "evidence": "To be run by the capture driver with Tongs 0.23.0 (etch#232): Tongs' province open 89 opens Ebenuel, Sorncóst's, as the game's province links do."
               },
               "selectors": {
                 "buttonBar": "closed",
