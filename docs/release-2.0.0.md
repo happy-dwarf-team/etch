@@ -260,6 +260,13 @@ province, Cannleigh with a fort):
   snapshot carries it (#229; Tongs 0.22.0, which has it, is pinned).
 - *The base values* stood where the game draws them (Verne 5, 5, 4), as #223
   placed them.
+- *Font icons and country flags* (the check of candidate `c2cf182`, with
+  Tongs 0.22.0): the state tab's income drew `@A33` and `¤` literally where
+  the game draws the country's flag and the gold icon. The game's text drawer
+  (`0x15988E0`) reads `¤` as a font icon moving the pen 16 px (`¤1` to `¤3`:
+  development, province, governing capacity) and `@TAG` as an 18 px flag; the
+  preview now draws the icons and leaves the flag's room empty, as it has no
+  country flags.
 - *Left open:* code-set sprites and frames (the terrain picture, shield flags,
   trade goods, a building under construction, the locked slot; spec §7, "Not
   in v2"); a long text in a `fixedsize` box, which the game cuts with "…"
