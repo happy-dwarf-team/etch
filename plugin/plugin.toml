@@ -24,8 +24,10 @@ id = "anvil-game"
 version = "^1"
 
 # tongs.ui version 1, the widget tree: the stale-window check after a reload,
-# pick mode and live snapshots (from 0.22, each text with its colour codes).
-# The private install pins Tongs and keeps it at enabled = false (no pipe).
+# pick mode and live snapshots (from 0.22, each text with its colour codes);
+# tongs.navigation version 1 (from 0.24): the province view selected again after
+# a restart or a reload (H8). The private install pins Tongs and keeps it at
+# enabled = false (no pipe).
 [[dependencies]]
 id = "tongs"
-version = "^0.22"
+version = "^0.24"

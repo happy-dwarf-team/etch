@@ -40,7 +40,8 @@ It holds the pinned builds of Anvil (with `anvil-game`), Bellows, Tongs and
 Etch's plugin ([pins/README.md](../pins/README.md)); their hashes are checked
 before every start, and nothing else stays in `anvil/plugins/`.
 
-- **Tongs** is loaded for its in-process service `tongs.ui` only. Before every
+- **Tongs** is loaded for its in-process services only: `tongs.ui` and, from
+  Tongs 0.24.0, `tongs.navigation` ("Reopening the view"). Before every
   start the install removes `anvil/data/tongs/settings.toml`, and the game's
   environment drops `ANVIL_TONGS_*`, so Tongs keeps its defaults: no pipe, no
   input, no game calls. Etch's plugin declares a hard dependency on it, which
@@ -204,13 +205,57 @@ stops the live game and names the last cause with the end of `error.log`.
 
 ## Reopening the view
 
-After a restart the province view is closed and the game shows the map. Etch
-does not reopen the province yet: the plugin does not call the game's own
-province selection (`0x139C830`, H8), which needs the province holder (the
-in-game idler's `+0x1220`) and a province by id, neither of which the plugin
-can reach yet. When the province view or the country view was on screen at the
-last reload, Etch says after the restart that it was not reopened. This is the
-recorded workaround of H8 until the plugin has it.
+A restart closes the province view, and a reload of `provinceview.gui` leaves
+the province's name blank in the view's header (H8). Etch brings back the
+province the player was editing in both cases, through Tongs' in-process
+service `tongs.navigation` (Tongs 0.24, Tongs' ADR 0004): the game's own
+province selection (`0x139C830`) with the checks of Tongs' `province open`,
+read in `eu4.exe` (Tongs' `research/province-navigation`, tongs#96) and
+checked live in Tongs 0.21. Etch's plugin calls no game address of its own for
+it, so `affects_gameplay = false` stays true: selecting a province changes only
+the camera, the selection and the open views, and the one case in which
+opening a view changes the game (it would post the command that makes the
+player discover the owner's capital) is refused, never made.
+
+- **What is remembered.** The plugin reads the selection every 15 frames and
+  puts the province on screen into every ping (`province_view`: the province
+  id and its window, `provinceview`, or `colonisationpanel` for a province
+  without an owner). The extension's `reopen.ts` remembers it with the game
+  session it was seen in; a ping of that session with no province on screen
+  forgets it (the player closed the view), and so does another session (the
+  player loaded another game).
+- **After a restart** (a planned restart and a crash alike), it reopens the
+  province when the save the restart continues is the game it was shown in: a
+  save written since that session began (the restart's own `autosave.eu4`, the
+  game's monthly autosave, the player's save), or the save the process started
+  from while it was in its first session. Otherwise it says why it did not.
+  Once the save is loaded (the game session is up and two frames passed) it
+  sends `reselect` with the province id. The plugin calls nothing when the
+  player came first: a province selected (even with its view closed again), a
+  province view or colonisation panel open, or a view of the session (the
+  country view, the ledger). Otherwise Tongs' `open_province` moves the camera
+  to the province and selects it, as the game's province links do; two frames
+  later the plugin checks that the view shows it. Tongs refuses a province the
+  player cannot see (terra incognita, in an older save too), a sea or a
+  wasteland, a selection the game blocks, and the discover case; Etch then says
+  why, except when the player came first.
+- **After a reload of `provinceview.gui`** with a province on screen: the game's
+  rebuild (the view's slot `0x10`, `0x1345F40`) rebuilds the window, selects the
+  view's province itself, then clears the province and capital names the view
+  caches (`+0x960`, `+0x980`); the view sets the header's `provincename` only
+  when that cache differs from the province's name (`0x13470C0`, the view's
+  slot `0x48`, run by its refresh), so until the next refresh the name is blank.
+  The policy sends `reselect: true` with the reload (`RESELECTED_BY_REBUILD`),
+  and the plugin selects the province on screen once more at the end of the
+  job, without moving the camera and without closing anything, only when the
+  view still shows that province. It never selects another province: a
+  province change would run `0x134A930`, which posts a rename when the name
+  box holds a text other than the province's name.
+- **The country view** is not reopened: after a restart Etch says to open it
+  again when it was on screen at the last reload.
+- Without `tongs.navigation` (a Tongs before 0.24) the plugin says so in the
+  log, pings carry `province_view: null`, and Etch says after a restart that it
+  did not reopen the view.
 
 ## Pick mode
 
@@ -382,7 +427,7 @@ install refused its own folder.
 **Not checked live:** the extension inside VS Code (the quick pick, the
 notices, the status bar, the watchers and their latency), textures,
 `DeclareWarDialog`, ironman and multiplayer, a hang timed by the watchdog,
-reopening the view (H8).
+reopening the view (H8, checked later: "Reopening the view: the live run").
 
 ## The province view after a rebuild (H2)
 
@@ -437,6 +482,47 @@ trial's two minutes and more: the lab's disk cache was warm from earlier runs.
 The new game's 9.7 s stretch with a window not responding is the case that
 closed the trial's game; on a slower machine it passes 10 s.
 
+## Reopening the view: the live run (H8)
+
+Run on 2026-11-01 under the EU4 engine lab's procedure (its game lock for the
+batch; `eu4.exe` 1.37.5 `9AD3EFE1…DC4D771A` and the Process Lasso rule
+`eu4.exe,0,1-7` checked before and after and left unchanged; every process
+closed after its PID, path and creation time were checked), with Etch's plugin
+and extension modules from this change and Tongs from tongs#129 (registered as
+0.24.0), driven by the lab's harness of the M8 runs with `reopen.ts`'s rule, not
+from VS Code. Tongs' pipe and input were on in the lab's copy for the player's
+steps (`province open` as the player's click, Escape, the reads of the header);
+the last series ran with Tongs as Etch installs it, without a pipe, the header
+read through the plugin's snapshot. Saves were copies: vanilla windowed
+1920×1080 on the Russia save of 1719.3.17, and Anbennar with Proper 2K UI
+Enhanced and P2KE Patch - Anbennar windowed 2560×1440 on Verne 1444.11.11.
+
+| Check | Vanilla 1920×1080 | Anbennar playset 2560×1440 |
+| --- | --- | --- |
+| `reload provinceview.gui` with the view open, without `reselect` (the trial's case) | the header's name blank (Moskva); the pipe's `province open` of the same province brought it back | blank (Verne) |
+| the same reload with `reselect` | the name stayed: Moskva, Murom, Tsargrad (a foreign province); `reselected` `opened` each time | the name stayed: Clawmarches, Watchman's Point |
+| planned restart with the view open | reopened on 151 (Tsargrad), 130 ms after the load; restart 24.2 s | reopened on 51 (Watchman's Point), 221 ms after the load; restart 48.5 s |
+| crash restart (the process terminated, exit code 1) with the view open | reopened on 295 (Moskva); 24.2 s | reopened on 292 (Verne); 49.3 s |
+| the player closed the view, then a planned restart (vanilla) or a crash (Anbennar) | nothing reopened: "no province was on screen" | the same |
+| the player had another province selected or open | `reselect` of 295 answered `moved_on` with 1754 open and with its view closed again; nothing called | `moved_on` with 289 open |
+| a province the player cannot select | 3190 (terra incognita) `terra_incognita`, 1252 (a sea) `not_selectable`; nothing shown | — |
+| the view closed before the reload (H2) | `hidden_again`, no `reselected`; the view off screen | — |
+| Tongs without a pipe (`enabled = false`, as Etch installs it) | `reselect` of 295 `opened`; the reload kept Moskva; the planned restart (23.7 s) and the crash restart (23.9 s) reopened 295 with its name | — |
+
+- With Tongs' pipe on, each selection that called the game counted in its
+  `client_calls_total`, as Tongs' ADR 0004 says.
+- The reload job's time grew from 169 to 398 ms over the vanilla series while
+  its console line stayed at 108–126 ms: the stale check's reads over the
+  top-level windows, which each province opened added to (1,341 to 5,498, H3),
+  not the selection.
+- The pipe's `selection` once said the view was visible after the H2 reload,
+  while the widget tree, the plugin's read and a screenshot showed it hidden;
+  the plugin reads the view window's own shown byte.
+- Not checked live: an older save after a crash restart (the rule refuses
+  another game; unit tests), a view of the session open at the reselect
+  (`moved_on`, unit tests), the colonisation panel, and the extension inside VS
+  Code.
+
 ## Open points
 
 - **The province view's reload budget:** the stale check's two reads make the
@@ -444,4 +530,3 @@ closed the trial's game; on a slower machine it passes 10 s.
   file, or the windows before the job from the last job's read, would cut it.
 - **Saves of other playsets.** The private profile has one `save games/` for
   every playset, so **Continue** may offer the newest save of another playset.
-- **Reopening the view (H8)**, above.

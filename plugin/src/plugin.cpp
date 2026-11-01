@@ -21,6 +21,7 @@
 
 #include <anvil/anvil.hpp>
 #include <anvil/anvil_game.h>
+#include <tongs/tongs_navigation.h>
 #include <tongs/tongs_ui.h>
 
 #include "settings.gen.hpp"
@@ -44,6 +45,11 @@ namespace {
 
 const AnvilGameService* g_game = nullptr;
 const TongsUiService* g_ui = nullptr;
+// Tongs' province selection (from 0.24): the view's province after a restart or a reload (H8).
+const TongsNavigationService* g_navigation = nullptr;
+
+static_assert(etch::kKeepViews == TONGS_NAV_KEEP_VIEWS && etch::kNoCamera == TONGS_NAV_NO_CAMERA &&
+              etch::kOpened == TONGS_NAV_OPENED && TONGS_NAV_READ_FAILED == 10);
 // The game's console, through which the live game reloads (v2 specification
 // section 6), as Etch 1.x's preview jobs did.
 etch::ConsoleAddresses g_console;
@@ -233,6 +239,54 @@ etch::PressResult Press(const std::string& selector, etch::Key key) {
     return out;
 }
 
+// The province view through tongs.navigation, on the main thread.
+std::optional<etch::ProvinceView> ReadProvinceView() {
+    if (g_navigation == nullptr) return std::nullopt;
+    TongsProvinceView raw{};
+    raw.size = sizeof raw;
+    if (g_navigation->province_view(&raw) != ANVIL_OK) return std::nullopt;
+    etch::ProvinceView view;
+    view.selected = raw.selected;
+    view.shown = raw.shown;
+    view.view_shown = (raw.flags & TONGS_NAV_VIEW_SHOWN) != 0;
+    view.colonisation_shown = (raw.flags & TONGS_NAV_COLONISATION_SHOWN) != 0;
+    view.views_open = (raw.flags & TONGS_NAV_VIEWS_OPEN) != 0;
+    return view;
+}
+
+std::optional<std::uint32_t> OpenProvince(std::int32_t province, std::uint32_t flags) {
+    if (g_navigation == nullptr) return std::nullopt;
+    std::uint32_t outcome = 0;
+    if (g_navigation->open_province(province, flags, &outcome) != ANVIL_OK) return std::nullopt;
+    return outcome;
+}
+
+// The province on screen for the ping, read every kViewFrames frames on the main thread: the
+// province (low 32 bits) and the window, 1 the province view, 2 the colonisation panel.
+constexpr std::uint64_t kViewFrames = 15;
+std::atomic<std::uint64_t> g_on_screen{0};
+
+void TrackProvinceView() {
+    if (g_game->frame_number() % kViewFrames != 0) return;
+    const std::optional<etch::ProvinceView> view = ReadProvinceView();
+    std::uint64_t packed = 0;
+    if (view && view->OnScreen() > 0) {
+        packed =
+            static_cast<std::uint32_t>(view->OnScreen()) | (static_cast<std::uint64_t>(view->view_shown ? 1 : 2) << 32);
+    }
+    g_on_screen.store(packed, std::memory_order_relaxed);
+}
+
+std::optional<etch::ProvinceView> OnScreen() {
+    if (g_navigation == nullptr) return std::nullopt;
+    const std::uint64_t packed = g_on_screen.load(std::memory_order_relaxed);
+    etch::ProvinceView view;
+    view.shown = static_cast<std::int32_t>(packed & 0xFFFFFFFFu);
+    view.view_shown = (packed >> 32) == 1;
+    view.colonisation_shown = (packed >> 32) == 2;
+    return view;
+}
+
 // Never destroyed, like the host: jobs end on pool threads.
 etch::LiveJobs& Jobs() {
     static etch::LiveJobs& jobs = *new etch::LiveJobs({
@@ -243,6 +297,8 @@ etch::LiveJobs& Jobs() {
         .run_later = RunLater,
         .now_ms = NowMs,
         .press = Press,
+        .province_view = ReadProvinceView,
+        .open_province = OpenProvince,
     });
     return jobs;
 }
@@ -833,6 +889,17 @@ struct EtchPlugin : anvil::Plugin {
             host.warn("the service {} v{} is missing: reloads run without the stale-window check", TONGS_UI_SERVICE,
                       TONGS_UI_SERVICE_VERSION);
         }
+        // Without it (a Tongs before 0.24) Etch says that it did not reopen the view.
+        g_navigation = host.service<TongsNavigationService>(TONGS_NAVIGATION_SERVICE, TONGS_NAVIGATION_SERVICE_VERSION);
+        if (g_navigation == nullptr || !TONGS_NAV_HAS(g_navigation, open_province)) {
+            g_navigation = nullptr;
+            host.warn(
+                "the service {} v{} is missing: the province view is not selected again after a restart or a "
+                "reload",
+                TONGS_NAVIGATION_SERVICE, TONGS_NAVIGATION_SERVICE_VERSION);
+        } else {
+            host.subscribe(ANVIL_GAME_EVENT_FRAME, [](const void*) { TrackProvinceView(); });
+        }
         QueryPerformanceFrequency(&g_frequency);
         g_image_base = host.game().image_base;
         g_console.manager = reinterpret_cast<void* const*>(
@@ -870,6 +937,8 @@ struct EtchPlugin : anvil::Plugin {
         };
         state.game_session = CurrentSession;
         state.tree = g_ui != nullptr;
+        state.navigation = g_navigation != nullptr;
+        state.province_view = OnScreen;
         state.jobs = &Jobs();
         state.pick = g_ui != nullptr ? &PickControl() : nullptr;
         state.pushes = new etch::Pushes;  // never destroyed, like the host

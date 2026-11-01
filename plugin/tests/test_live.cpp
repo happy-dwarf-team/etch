@@ -2,10 +2,12 @@
 #include "live.hpp"
 
 #include <cassert>
+#include <cstdint>
 #include <cstdio>
 #include <functional>
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 
 using etch::GameSession;
@@ -31,6 +33,12 @@ struct FakeGame {
     double now = 0;
     // What a console line does to the tree.
     std::function<void(const std::vector<std::string>&, FakeGame&)> effect;
+    // tongs.navigation: the province view, and the opens asked for with their flags.
+    bool navigation = true;
+    etch::ProvinceView view;
+    std::vector<std::pair<std::int32_t, std::uint32_t>> opens;
+    std::uint32_t open_outcome = etch::kOpened;
+    bool open_shows = true;  // an "opened" province shows in the province view from the next frame
 
     LiveJobs::Env Env() {
         return {
@@ -64,6 +72,20 @@ struct FakeGame {
                 },
             .run_later = [](std::function<void()> work) { work(); },
             .now_ms = [this] { return now; },
+            .press = {},
+            .province_view = [this]() -> std::optional<etch::ProvinceView> {
+                if (!navigation) return std::nullopt;
+                return view;
+            },
+            .open_province = [this](std::int32_t province, std::uint32_t flags) -> std::optional<std::uint32_t> {
+                if (!navigation) return std::nullopt;
+                opens.emplace_back(province, flags);
+                if (open_outcome == etch::kOpened && open_shows) {
+                    view.selected = view.shown = province;
+                    view.view_shown = true;
+                }
+                return open_outcome;
+            },
         };
     }
 
@@ -400,6 +422,133 @@ void TestConfirm() {
     assert(got->error == "no_tree");
 }
 
+void TestReloadReselectsTheProvince() {
+    FakeGame game;
+    game.roots = {MakeRoot(1, "provinceview", "interface/provinceview.gui", true)};
+    game.effect = RebuildProvinceView;
+    game.view = {295, 295, true, false, false};
+    LiveJobs jobs(game.Env());
+    ReloadRequest request{{"reload provinceview.gui"}, {"interface/provinceview.gui"}, {}, {"provinceview"}, true};
+    std::optional<ReloadResult> got;
+    assert(!jobs.Reload(request, [&](const ReloadResult& r) { got = r; }));
+    game.Frame();
+    // The same province, selected again in place: no camera, no view closed.
+    assert(got && got->reselected && got->reselected->province == 295 && got->reselected->outcome == "opened");
+    assert(got->reselected->window == "provinceview");
+    assert(
+        (game.opens == std::vector<std::pair<std::int32_t, std::uint32_t>>{{295, etch::kKeepViews | etch::kNoCamera}}));
+    const Value answer = AnswerOf(3, *got);
+    const Value* reselected = answer.Find("reselected");
+    assert(reselected && reselected->Find("province")->AsUint() == 295u);
+    assert(reselected->Find("outcome")->AsString() == "opened");
+
+    // Without `reselect`, or with no province on screen before, nothing is selected.
+    game.opens.clear();
+    got.reset();
+    request.reselect = false;
+    assert(!jobs.Reload(request, [&](const ReloadResult& r) { got = r; }));
+    game.Frame();
+    assert(got && !got->reselected && game.opens.empty() && !AnswerOf(4, *got).Find("reselected"));
+    request.reselect = true;
+    game.view = {295, 295, false, false, false};  // the view was closed: it stays closed
+    got.reset();
+    assert(!jobs.Reload(request, [&](const ReloadResult& r) { got = r; }));
+    game.Frame();
+    assert(got && !got->reselected && game.opens.empty());
+
+    // A colonisation panel's province is selected again too.
+    game.view = {1161, 1161, false, true, false};
+    got.reset();
+    assert(!jobs.Reload(request, [&](const ReloadResult& r) { got = r; }));
+    game.Frame();
+    assert(got->reselected && got->reselected->province == 1161 && got->reselected->outcome == "opened");
+
+    // Tongs' refusal is passed on; without the service the answer says so.
+    game.view = {295, 295, true, false, false};
+    game.open_outcome = 4;  // TONGS_NAV_TERRA_INCOGNITA
+    got.reset();
+    assert(!jobs.Reload(request, [&](const ReloadResult& r) { got = r; }));
+    game.Frame();
+    assert(got->reselected->outcome == "terra_incognita" && got->reselected->window.empty());
+    game.open_outcome = 42;
+    got.reset();
+    assert(!jobs.Reload(request, [&](const ReloadResult& r) { got = r; }));
+    game.Frame();
+    assert(got->reselected->outcome == "outcome_42");
+    game.navigation = false;
+    got.reset();
+    assert(!jobs.Reload(request, [&](const ReloadResult& r) { got = r; }));
+    game.Frame();
+    assert(!got->reselected);  // nothing read before the lines, nothing to bring back
+}
+
+void TestReloadDoesNotReselectAnotherProvince() {
+    // The view no longer shows the province after the lines: nothing is selected.
+    FakeGame game;
+    game.roots = {MakeRoot(1, "provinceview", "interface/provinceview.gui", true)};
+    game.view = {295, 295, true, false, false};
+    game.effect = [](const std::vector<std::string>&, FakeGame& g) { g.view.view_shown = false; };
+    LiveJobs jobs(game.Env());
+    std::optional<ReloadResult> got;
+    assert(!jobs.Reload({{"reload provinceview.gui"}, {}, {}, {}, true}, [&](const ReloadResult& r) { got = r; }));
+    game.Frame();
+    assert(got->reselected && got->reselected->outcome == "not_shown" && game.opens.empty());
+}
+
+etch::ReselectResult ReselectNow(FakeGame& game, LiveJobs& jobs, std::int32_t province, int frames) {
+    std::optional<etch::ReselectResult> got;
+    assert(!jobs.ReselectProvince(province, [&](const etch::ReselectResult& r) { got = r; }));
+    assert(jobs.Busy());
+    for (int i = 0; i < frames && !got; ++i) game.Frame();
+    assert(got && !jobs.Busy());
+    return *got;
+}
+
+void TestReselectAfterARestart() {
+    FakeGame game;
+    LiveJobs jobs(game.Env());
+    // Nothing selected and no view open: the province link's call, then a check two frames on.
+    etch::ReselectResult r = ReselectNow(game, jobs, 295, 1 + etch::kShowFrames);
+    assert(r.reselect.outcome == "opened" && r.reselect.window == "provinceview" && r.error.empty());
+    assert((game.opens == std::vector<std::pair<std::int32_t, std::uint32_t>>{{295, etch::kKeepViews}}));
+    const auto parsed = Parse(etch::ReselectAnswer(7, r));
+    assert(parsed.value && parsed.value->Find("outcome")->AsString() == "opened");
+    assert(parsed.value->Find("province")->AsUint() == 295u &&
+           parsed.value->Find("window")->AsString() == "provinceview");
+
+    // The player came first: any selection, a view on screen or a session view. Nothing is called.
+    for (const etch::ProvinceView moved :
+         {etch::ProvinceView{12, 0, false, false, false}, etch::ProvinceView{0, 12, false, false, false},
+          etch::ProvinceView{12, 12, true, false, false}, etch::ProvinceView{0, 0, false, false, true}}) {
+        game.view = moved;
+        game.opens.clear();
+        r = ReselectNow(game, jobs, 295, 1);
+        assert(r.reselect.outcome == "moved_on" && game.opens.empty());
+    }
+
+    // Tongs refuses (terra incognita in an older save, the discover case): passed on, no check.
+    game.view = {};
+    game.open_outcome = 6;  // TONGS_NAV_DISCOVER
+    r = ReselectNow(game, jobs, 295, 1);
+    assert(r.reselect.outcome == "discover" && r.reselect.window.empty());
+    // Called, but the view does not show it two frames later.
+    game.view = {};
+    game.open_outcome = etch::kOpened;
+    game.open_shows = false;
+    r = ReselectNow(game, jobs, 295, 1 + etch::kShowFrames);
+    assert(r.reselect.outcome == "not_shown");
+    // Without tongs.navigation.
+    game.navigation = false;
+    r = ReselectNow(game, jobs, 295, 1);
+    assert(r.reselect.outcome == "no_navigation");
+
+    // One job at a time.
+    game.navigation = true;
+    assert(!jobs.ReselectProvince(295, [](const etch::ReselectResult&) {}));
+    const auto busy = jobs.ReselectProvince(295, [](const etch::ReselectResult&) {});
+    assert(busy && busy->code == "busy");
+}
+
 void TestNoMainThread() {
     FakeGame game;
     LiveJobs::Env env = game.Env();
@@ -426,6 +575,9 @@ int main() {
     TestFaultStopsTheConsole();
     TestSave();
     TestConfirm();
+    TestReloadReselectsTheProvince();
+    TestReloadDoesNotReselectAnotherProvince();
+    TestReselectAfterARestart();
     TestNoMainThread();
     std::puts("live: ok");
     return 0;

@@ -59,7 +59,11 @@ struct Host {
     std::function<bool()> responding;
     // The running game session; nullopt in the main menu. Any thread.
     std::function<std::optional<GameSession>()> game_session;
-    bool tree = false;            // tongs.ui was found: reloads check the stale windows
+    bool tree = false;        // tongs.ui was found: reloads check the stale windows
+    bool navigation = false;  // tongs.navigation was found: the view's province can be selected again (H8)
+    // The province view as the main thread last read it (a few frames old at most); nullopt
+    // without tongs.navigation. Any thread.
+    std::function<std::optional<ProvinceView>()> province_view;
     LiveJobs* jobs = nullptr;     // the reloads and saves; null leaves them refused
     PickControl* pick = nullptr;  // pick mode and snapshots; null leaves them refused
     Pushes* pushes = nullptr;     // where the greeted client is registered for pushes
@@ -92,6 +96,7 @@ private:
     Reply Reload(std::uint64_t id, const json::Value& request);
     Reply Save(std::uint64_t id);
     Reply Confirm(std::uint64_t id, const json::Value& request);
+    Reply Reselect(std::uint64_t id, const json::Value& request);
     Reply PickMode(std::uint64_t id, const json::Value& request);
     Reply Snapshot(std::uint64_t id, const json::Value& request);
 

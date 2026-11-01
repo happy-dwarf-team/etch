@@ -10,7 +10,7 @@ would misread it. The extension and the plugin ship together in one VSIX
 
 Protocol version: **2**, the live game's (v2 specification sections 6 and 7):
 the handshake, the ping, the jobs the plugin runs on the game's main thread
-(`reload`, `save` and `confirm`), pick mode (`pick_mode`, `snapshot`) and the
+(`reload`, `save`, `confirm` and `reselect`), pick mode (`pick_mode`, `snapshot`) and the
 plugin's pushes (`pick`, `snapshot`, `pick_mode`). Protocol 1 was Etch 1.x's game host: its preview
 job (`job`, etch#50) and frame capture are gone (ADR 0005), and a `job` now
 gets `unknown_type`; their description is in this page's history on
@@ -65,7 +65,7 @@ The first request on a connection. Any other type before it gets
 ```
 
 ```json
-{"id":1,"ok":true,"protocol":2,"plugin":"2.0.0","session":"<id>","pid":12345,"process_start_ms":1761400000123,"ready":false,"frame":0,"tree":true}
+{"id":1,"ok":true,"protocol":2,"plugin":"2.0.0","session":"<id>","pid":12345,"process_start_ms":1761400000123,"ready":false,"frame":0,"tree":true,"navigation":true}
 ```
 
 | Member             | Meaning                                                                                   |
@@ -78,6 +78,7 @@ The first request on a connection. Any other type before it gets
 | `ready`            | `anvil-game.ready` was published: the main menu is up                                     |
 | `frame`            | the game's frame counter (`anvil-game`'s `frame_number`), 0 before the first frame        |
 | `tree`             | Tongs' `tongs.ui` service was found, so `reload` checks the stale windows                 |
+| `navigation`       | Tongs' `tongs.navigation` service was found (Tongs 0.24 and later), so the province view can be selected again (H8) |
 
 The extension compares `pid` and `process_start_ms` with the process it
 started before it trusts the pipe (etch#49 checks PID, path and creation time).
@@ -93,7 +94,7 @@ connection gets `already_greeted`.
 ```
 
 ```json
-{"id":2,"ok":true,"ready":true,"frame":4711,"responding":true,"busy":false,"pick":false,"game_session":{"ironman":false,"multiplayer":false,"number":1}}
+{"id":2,"ok":true,"ready":true,"frame":4711,"responding":true,"busy":false,"pick":false,"game_session":{"ironman":false,"multiplayer":false,"number":1},"province_view":{"province":295,"window":"provinceview"}}
 ```
 
 | Member         | Meaning                                                                                                     |
@@ -104,6 +105,7 @@ connection gets `already_greeted`.
 | `busy`         | a `reload` or `save` waits for or runs on the main thread                                                   |
 | `pick`         | pick mode is on                                                                                             |
 | `game_session` | the game session as `anvil-game` last published it, `null` in the main menu: `ironman`, `multiplayer`, `number` (1 for the first since the start) |
+| `province_view` | the province on screen: `province`, and `window`, `provinceview` or `colonisationpanel` (the game shows a province without an owner there); `null` when neither window shows one, or without `tongs.navigation`. The main thread reads it every 15 frames, so it may be that old |
 
 The pipe thread answers without waiting for the game's main thread, so a ping
 is answered while the game hangs. The extension's watchdog (etch#51) treats a
@@ -145,6 +147,7 @@ game's console manager does not exist yet.
 | `check`       | game paths of the saved files; the top-level windows built from them are checked for stale ones     |
 | `close`       | top-level windows closed with a posted Escape before the lines, when visible (an on-demand window such as `DeclareWarDialog`); the lines then wait a few frames for the key |
 | `keep_hidden` | top-level windows closed again with an Escape after the lines, when they were hidden before and are visible and on screen now (a rebuild opens the province view, H2); the extension sends `provinceview` with a reload of `provinceview.gui` |
+| `reselect`    | optional, `true`: when a province was on screen before the lines and the view still shows it after them, select it again (below); the extension sends it with a reload of `provinceview.gui` |
 
 In one job the plugin reads the top-level windows through `tongs.ui` (hidden
 and stale ones too), closes the `close` windows, runs the lines (4 frames later
@@ -184,10 +187,25 @@ reuses.
 | `stale`             | those not rebuilt, with their name and whether they are visible now               |
 | `visible`           | the visible top-level windows after the job, with `name` and `file` (the game path of their definition's file): which listened files a localisation change should reload |
 | `roots`             | the number of top-level windows before and after: what rebuilds leak              |
+| `reselected`        | with `reselect` and a province on screen before: `province`, `outcome` and `window`, as `reselect` answers them; `not_shown` when the view no longer showed it after the lines |
 | `queued_ms`, `run_ms` | from the request to the main thread, and on it                                  |
 
 Without `tongs.ui` every `close` window gets a console `window close` and
 nothing is closed again.
+
+### Selecting the province again after a rebuild
+
+The game's own reload of `provinceview.gui` with the view open rebuilds the
+view's window, selects the view's province itself and then clears the
+province and capital names the view caches; the header's `provincename` is
+set only when the cache differs, on the view's next refresh, so the
+province's name stays blank until then (H8, 3 of 3 provinces in the 2.0.0
+trial; `0x1345F40`, `0x13470C0`). With `reselect`, the plugin reads the
+province on screen through `tongs.navigation` before the lines and, at the
+end of the job, selects it once more when the view still shows it: Tongs'
+`open_province` with `TONGS_NAV_KEEP_VIEWS | TONGS_NAV_NO_CAMERA`, a click on
+that province, which changes no province, so the view's update runs and posts
+nothing. It never selects another province than the one on screen.
 
 ### `save`
 
@@ -212,6 +230,38 @@ In one live run a game with stale windows on screen (left by a reload of
 `core.gui` and `mapicons.gui`) deadlocked in `autosave`: the main thread waited
 while the window kept taking messages, and no file was written. The extension
 gives a save 30 s before it closes the game anyway.
+
+### `reselect`
+
+```json
+{"id":6,"type":"reselect","province":295}
+```
+
+```json
+{"id":6,"ok":true,"queued_ms":3.1,"province":295,"outcome":"opened","window":"provinceview"}
+```
+
+After a restart the extension asks for the province the player last had on
+screen (docs/live-game.md, "Reopening the view"). On the main thread the
+plugin reads the selection through `tongs.navigation`. When the player has
+selected a province (even one whose view was closed again), the province view
+or the colonisation panel shows one, or a view of the session (the country
+view, the ledger) is open, it answers `moved_on` and calls nothing: the
+player came first. Otherwise it calls Tongs' `open_province` with
+`TONGS_NAV_KEEP_VIEWS` (no view is open to close): the province links'
+camera and selection. Two frames later it checks that the view shows the
+province.
+
+| `outcome` | Meaning |
+| --- | --- |
+| `opened` | the view shows the province; `window` says which |
+| `moved_on` | the player selected a province or opened a view first; nothing called |
+| `not_shown` | called, and two frames later neither window showed the province |
+| `no_navigation` | the pinned Tongs has no `tongs.navigation` |
+| Tongs' refusals | `not_in_game`, `unknown_province`, `not_selectable` (a sea, a lake, a wasteland), `terra_incognita` (the player has not discovered it in this save), `selection_blocked`, `discover` (opening it would post the command that makes the player discover the owner's capital, a change of the game: never made), `suspended`, `tripped`, `faulted`, `read_failed`; nothing shown |
+
+It is `not_in_game` without a game session, `not_ready` before the game is
+ready, and `busy` while another job runs. `province` is a whole number from 1.
 
 ## Writing from another thread
 

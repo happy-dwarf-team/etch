@@ -54,8 +54,8 @@ target_link_libraries(etch_core PUBLIC advapi32)
 # etch.dll and its folder <build>/plugin/etch/ (plugin.toml, symbols.toml, the DLL).
 anvil_add_plugin(etch SOURCES src/plugin.cpp src/overlay.cpp)
 target_link_libraries(etch PRIVATE etch_core d3d9 gdi32)
-# Tongs' tongs.ui header (MIT), vendored as its contract asks: the pinned
-# Tongs release provides the service (pins/game-builds.json).
+# Tongs' tongs.ui and tongs.navigation headers (MIT), vendored as their contracts
+# ask: the pinned Tongs release provides the services (pins/game-builds.json).
 target_include_directories(etch PRIVATE vendor)
 
 if(MSVC)

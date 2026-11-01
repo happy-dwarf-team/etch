@@ -89,6 +89,8 @@ export interface WatchOptions {
   readonly stillMs?: number;
   /** Called once each time the frame counter has stood still for `stillMs`. */
   readonly onStill?: (reason: string) => void;
+  /** Called with every ping's answer: the province on screen (H8). */
+  readonly onPing?: (ping: Ping) => void;
   /** Ends the watch; the promise then never resolves. */
   readonly signal: AbortSignal;
 }
@@ -115,7 +117,10 @@ export async function watch(
       options.signal,
     );
     const now = performance.now();
-    if (answer !== undefined) check.answer(answer, now);
+    if (answer !== undefined) {
+      check.answer(answer, now);
+      options.onPing?.(answer);
+    }
     const hang = check.hang(now);
     if (hang !== undefined) return hang;
     const still = check.still(now);

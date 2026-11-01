@@ -53,6 +53,14 @@ export const SHOWN_BY_REBUILD: ReadonlyMap<string, readonly string[]> = new Map(
 ]);
 
 /**
+ * Files whose rebuild leaves the province view's own name blank while it stays open: the game's
+ * rebuild selects the province again before it clears the name it caches, and the view sets the
+ * name again only on its next refresh (H8, `0x1345F40`). The plugin selects the province on screen
+ * once more after the lines.
+ */
+export const RESELECTED_BY_REBUILD: ReadonlySet<string> = new Set(['provinceview.gui']);
+
+/**
  * Panels whose own listener rebuilds them on a reload of their file (research of etch#152 and
  * etch#2): the reloads after a localisation change are limited to these and one HUD file, since a
  * reload of a file whose windows nothing rebuilds leaves them stale on screen (live: `mapicons.gui`
@@ -241,6 +249,7 @@ export async function planReload(input: PlanInput): Promise<ReloadPlan> {
         check: [path],
         close: [...(ON_DEMAND_WINDOWS.get(name) ?? [])],
         keepHidden: [...(SHOWN_BY_REBUILD.get(name) ?? [])],
+        ...(RESELECTED_BY_REBUILD.has(name) ? { reselect: true } : {}),
       },
       rebuild: HUD_FILES.has(name) ? 'hud' : 'panel',
       thenVisible: false,
@@ -271,6 +280,7 @@ export function visibleReloads(visibleFiles: readonly string[]): ReloadRequest |
     lines: files.map((f) => `reload ${basename(f)}`),
     check: files,
     keepHidden: files.flatMap((f) => [...(SHOWN_BY_REBUILD.get(basename(f).toLowerCase()) ?? [])]),
+    ...(files.some((f) => RESELECTED_BY_REBUILD.has(name(f))) ? { reselect: true } : {}),
   };
 }
 

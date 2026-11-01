@@ -528,6 +528,10 @@ export class LiveGameProcess {
     return this.pipe.confirm(path, timeoutMs);
   }
 
+  reselect(province: number, timeoutMs?: number) {
+    return this.pipe.reselect(province, timeoutMs);
+  }
+
   pickMode(request: PickModeRequest, timeoutMs?: number) {
     return this.pipe.pickMode(request, timeoutMs);
   }
