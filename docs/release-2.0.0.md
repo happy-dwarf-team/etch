@@ -79,7 +79,7 @@ view included:
 
 Reported, not gated: a listened file's reload (`provinceview.gui`) 168/181 ms
 (median/p95) in vanilla, which misses its 150 ms target (the stale check's
-reads, spec section 17), 92/126 ms in the Anbennar playset; a HUD file's reload
+reads, an open point of [after-v2.md](spec/after-v2.md#open-points)), 92/126 ms in the Anbennar playset; a HUD file's reload
 about 195 ms against 250 ms (M8); a pick, from the click to the line in the
 editor, 58–133 ms in vanilla and 32–119 ms in the Anbennar playset against
 1 s (M9). Restarts take 25 s in vanilla and 48 s in the Anbennar playset (no
@@ -326,9 +326,9 @@ are green on `main`; the last M10 pull requests merged with them green.
 ## Release
 
 The README and the store README describe the live game and say how to stay on
-1.0.x (#209). Not done, as they come with the release: the Etch site's
-description of the live game (`etch-website`), freezing this specification and
-`after-v2.md`.
+1.0.x (#209). With the release: the v2 specification was frozen and
+[after-v2.md](spec/after-v2.md) took over its open points; the Etch site's
+description of the live game follows in `etch-website`.
 
 ## Answered by the maintainer (M10)
 

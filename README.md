@@ -10,24 +10,24 @@ mods: edit a `.gui` or `.gfx` file and see the window as the game would show
 it, within moments, and have each saved file reloaded into the running game.
 Website: [etch.happydwarf.dev](https://etch.happydwarf.dev/).
 
-Status: `main` is built to the [v2 specification](docs/spec/v2.md) for 2.0.0,
-not yet released; 1.0.x, the whole of the v1 specification, is the release in
-the stores. v2 replaces 1.x's game host and its diff view with the **live
-game**: Etch's private copy of the game, played beside the editor, with each
-saved file reloaded into the game's own window, **pick mode** to jump from a
-widget in the game to its definition, and **live snapshots** of a window's
-texts and states. The preview gains **views** of a window from window profiles
-and **sample data** from saves (ADR 0005). Users who want the game host stay
-on 1.0.x: the extension's [README](packages/extension/README.md#etch-1x) says
-how. Releases are on
+Status: 2.0.0, released on 1 November 2026, is the whole of the
+[v2 specification](docs/spec/v2.md), frozen with it; what comes after it is in
+[docs/spec/after-v2.md](docs/spec/after-v2.md). v2 replaced 1.x's game host and
+its diff view with the **live game**: Etch's private copy of the game, played
+beside the editor, with each saved file reloaded into the game's own window,
+**pick mode** to jump from a widget in the game to its definition, and **live
+snapshots** of a window's texts and states. The preview gained **views** of a
+window from window profiles and **sample data** from saves (ADR 0005). Users
+who want the game host stay on 1.0.x: the extension's
+[README](packages/extension/README.md#etch-1x) says how. Releases are on
 [Open VSX](https://open-vsx.org/extension/happy-dwarf-team/etch), the
 [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=happy-dwarf-team.etch)
 and the [GitHub releases](https://github.com/happy-dwarf-team/etch/releases);
 the [changelog](CHANGELOG.md) lists what each one changed, and the
 extension's [README](packages/extension/README.md) says what it does. The
 [v1 specification](docs/spec/v1.md) says what 1.0.0 contains and in what
-order it was built; the decisions behind it are in [docs/adr](docs/adr) and in
-the wayfinder map in this repository's issues (label `wayfinder:map`).
+order it was built; the decisions behind both are in [docs/adr](docs/adr) and
+in the wayfinder maps in this repository's issues (label `wayfinder:map`).
 [CONTRIBUTING.md](CONTRIBUTING.md) says how to build and test it.
 
 ## v2 in brief
