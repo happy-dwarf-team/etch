@@ -494,9 +494,13 @@ export class Workbench {
   /** Clicks a view in the open `View ▾` and waits until the preview has drawn it. */
   async chooseView(label: string): Promise<void> {
     const item = this.frame.locator('#view-popup .item', { hasText: new RegExp(`^. ${label}$`) });
-    await this.paint(() => item.click());
+    // The menu's height follows the toolbar, so the item below the click can move under the mouse:
+    // rest it at once, not after the paint.
+    await this.paint(async () => {
+      await item.click();
+      await this.restMouse();
+    });
     await this.frame.locator('#view-menu', { hasText: `View: ${label} ▾` }).waitFor();
-    await this.restMouse();
   }
 
   /**
@@ -548,8 +552,13 @@ export class Workbench {
     await this.page.keyboard.type(text);
     const rows = this.page.locator('.markers-panel .monaco-list-row');
     await rows.filter({ hasText: text }).first().waitFor();
-    // The filter applies after a debounce: wait until no other problem is listed.
-    await rows.filter({ hasText: 'Etch(' }).filter({ hasNotText: text }).first().waitFor({ state: 'detached' });
+    // The filter applies after a debounce: wait until no other problem is listed (a problem's row
+    // reads its message, then its source and code as `Etchmissing-sprite`).
+    await rows
+      .filter({ hasText: 'Etch' })
+      .filter({ hasNotText: text })
+      .first()
+      .waitFor({ state: 'detached' });
   }
 
   /** Puts Playwright's mouse over the editor, where it shows nothing (hovers are off). */
