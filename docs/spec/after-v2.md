@@ -75,7 +75,12 @@ From section 16 of the v2 specification, with v1's entries that v2 did not take:
   the religion below. The rule is read from `eu4.exe` (the font's fit
   `0x159F510`, which the text node calls only for a `fixedsize`
   `instantTextBoxType`) and the offline renderer applies it, with
-  `truncate = no` (v2 section 3).
+  `truncate = no` (v2 section 3). It matched both game screenshots it was
+  checked on and the 196 corpus captures that could be compared. Open: the
+  28 `anbennar` captures were not compared, because the Workshop item of
+  P2KE Patch - Anbennar changed after it was pinned; after
+  [etch#236](https://github.com/happy-dwarf-team/etch/pull/236) takes them
+  again and pins the new version, compare them with the cut.
 
 ## Open issues
 
