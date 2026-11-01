@@ -142,6 +142,22 @@ describe('parseMarkup', () => {
     expect(atoms.some((a) => a.kind === 'char' && a.char === '£')).toBe(true);
   });
 
+  it('reads the font icons ¤ and the country flags @TAG as the game does', () => {
+    const { atoms } = parseMarkup('2.30¤ and ¤1, (@A33) @AB', colours);
+    const special = atoms.filter((a) => a.kind !== 'char');
+    expect(special).toEqual([
+      { kind: 'fontIcon', sprite: 'GFX_icon_font_gold', start: 4, end: 5 },
+      { kind: 'fontIcon', sprite: 'GFX_icon_font_development', start: 10, end: 12 },
+      { kind: 'flag', tag: 'A33', start: 15, end: 19 },
+    ]);
+    // Three characters must follow @: the end of the text leaves it a character.
+    expect(atoms.slice(-3).map((a) => (a.kind === 'char' ? a.char : a.kind))).toEqual([
+      '@',
+      'A',
+      'B',
+    ]);
+  });
+
   it('breaks lines at a line feed and at the two characters \\n', () => {
     const { atoms } = parseMarkup('a\nb\\nc\r', colours);
     expect(atoms.map((a) => (a.kind === 'char' ? a.char : a.kind))).toEqual([
@@ -296,6 +312,30 @@ describe('layoutText', () => {
       ['not-cp1252', 2, 4],
     ]);
     expect(t.glyphs).toHaveLength(1);
+  });
+
+  it('draws a font icon moving the pen 16 px and leaves a flag’s 18 px empty', () => {
+    const icon = (sprite: string) =>
+      sprite === 'GFX_icon_font_gold' ? { width: 20, height: 9 } : undefined;
+    const gold = layoutText(font, 'a¤a', box(0), { ...options, icon });
+    expect(gold.icons).toEqual([
+      { sprite: 'GFX_icon_font_gold', x: 5, y: 0, width: 20, height: 9, source: 1 },
+    ]);
+    expect(gold.glyphs.map((g) => g.x)).toEqual([0, 21]);
+    expect(gold.width).toBe(26);
+    const flag = layoutText(font, 'a@A33a', box(0), { ...options, icon });
+    expect(flag.icons).toEqual([]);
+    expect(flag.glyphs.map((g) => g.x)).toEqual([0, 23]);
+    const missing = layoutText(font, 'a¤2a', box(0), { ...options, icon });
+    expect(missing.glyphs.map((g) => g.x)).toEqual([0, 21]);
+    expect(missing.issues).toEqual([
+      {
+        code: 'missing-icon',
+        message: 'no sprite GFX_icon_font_province for the font icon ¤',
+        start: 1,
+        end: 3,
+      },
+    ]);
   });
 
   it('draws £ icons inline and reports missing ones', () => {

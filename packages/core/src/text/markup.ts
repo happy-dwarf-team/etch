@@ -1,6 +1,7 @@
 /**
  * The text markup the game expands while drawing (etch#3, section 5):
- * `§X … §!` colours from `textcolors`, `£key£` inline icons and line breaks.
+ * `§X … §!` colours from `textcolors`, `£key£` inline icons, the font icons
+ * `¤`, country flags `@TAG` and line breaks.
  * `$…$` and `[…]` substitutions are left as they are: the game's code fills
  * them, and the offline renderer shows them literally (spec section 3).
  */
@@ -42,7 +43,38 @@ export type Atom =
       readonly start: number;
       readonly end: number;
     }
+  | {
+      readonly kind: 'fontIcon';
+      /** The sprite `¤` draws: the gold, or with `¤1` to `¤3` another of `FONT_ICONS`. */
+      readonly sprite: string;
+      readonly start: number;
+      readonly end: number;
+    }
+  | {
+      readonly kind: 'flag';
+      /** The country tag after `@`. */
+      readonly tag: string;
+      readonly start: number;
+      readonly end: number;
+    }
   | { readonly kind: 'break'; readonly start: number; readonly end: number };
+
+/**
+ * The font icons the text drawer loads (`eu4.exe` `0x1099F70`): `¤` draws the first, `¤1`, `¤2`
+ * and `¤3` the next three (`0x15988E0`). Another digit after `¤` is taken and draws the gold.
+ */
+export const FONT_ICONS = [
+  'GFX_icon_font_gold',
+  'GFX_icon_font_development',
+  'GFX_icon_font_province',
+  'GFX_icon_font_governing_capacity',
+] as const;
+
+/** How far a font icon moves the pen, whatever the sprite's width (`0x15988E0`: 16.0). */
+export const FONT_ICON_ADVANCE = 16;
+
+/** How far a country flag `@TAG` moves the pen (`eu4.exe` `0x109AFF0` returns 18). */
+export const FLAG_ADVANCE = 18;
 
 /** The sprite an inline icon `£key£` draws (the exe holds the prefix `GFX_text_`). */
 export function textIconSprite(key: string): string {
@@ -65,6 +97,9 @@ export function colourOf(colours: TextColours, letter: string): number | undefin
  *   balances.
  * - `£key£` is an icon when the key is not empty and holds no white space;
  *   otherwise `£` is an ordinary character (hypothesis: `£5` in prose).
+ * - `¤` is a font icon, and takes a digit after it (`¤1`: development).
+ * - `@` and the three characters after it are a country flag, as the game's
+ *   text drawer reads them (`0x15988E0`); a shorter rest stays characters.
  * - A line feed and the two characters `\n` (as localisation writes it) break
  *   the line. Carriage returns are dropped.
  */
@@ -114,6 +149,19 @@ export function parseMarkup(
         i = close + 1;
         continue;
       }
+    }
+    if (c === '¤') {
+      const digit = /[0-9]/.test(text[i + 1] ?? '') ? Number(text[i + 1]) : undefined;
+      const end = digit === undefined ? i + 1 : i + 2;
+      const sprite = FONT_ICONS[digit ?? 0] ?? FONT_ICONS[0];
+      atoms.push({ kind: 'fontIcon', sprite, start: i, end });
+      i = end;
+      continue;
+    }
+    if (c === '@' && i + 3 < text.length) {
+      atoms.push({ kind: 'flag', tag: text.slice(i + 1, i + 4), start: i, end: i + 4 });
+      i += 4;
+      continue;
     }
     if (c === '\n' || (c === '\\' && text[i + 1] === 'n')) {
       const end = c === '\n' ? i + 1 : i + 2;

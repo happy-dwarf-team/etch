@@ -6,7 +6,14 @@
 
 import { kerningKey, type BmFont, type BmGlyph } from './bmfont.ts';
 import { toCp1252 } from './cp1252.ts';
-import { parseMarkup, textIconSprite, type TextColours, type TextIssue } from './markup.ts';
+import {
+  FLAG_ADVANCE,
+  FONT_ICON_ADVANCE,
+  parseMarkup,
+  textIconSprite,
+  type TextColours,
+  type TextIssue,
+} from './markup.ts';
 
 export type TextAlign = 'left' | 'centre' | 'right';
 export type TextVerticalAlign = 'top' | 'centre' | 'bottom';
@@ -95,7 +102,18 @@ export function textAlign(format: string | undefined): TextAlign {
 
 type Item =
   | { kind: 'glyph'; code: number; glyph: BmGlyph; colour: number; start: number; end: number }
-  | { kind: 'icon'; sprite: string; width: number; height: number; start: number; end: number }
+  | {
+      kind: 'icon';
+      sprite: string;
+      width: number;
+      height: number;
+      /** How far it moves the pen when that is not its width (a font icon). */
+      advance?: number;
+      start: number;
+      end: number;
+    }
+  /** Room that draws nothing: a country flag, or a font icon without its sprite. */
+  | { kind: 'gap'; width: number; start: number; end: number }
   /** A character without a glyph: no advance, and it breaks kerning. */
   | { kind: 'none'; start: number; end: number };
 
@@ -118,7 +136,8 @@ function step(font: BmFont, pen: Pen, item: Item): void {
     pen.width += item.glyph.xadvance;
     pen.prev = item.code;
   } else {
-    if (item.kind === 'icon') pen.width += item.width;
+    if (item.kind === 'icon') pen.width += item.advance ?? item.width;
+    else if (item.kind === 'gap') pen.width += item.width;
     pen.prev = -1;
   }
 }
@@ -205,6 +224,30 @@ export function layoutText(
       paragraphs.push({ items: current, at });
       current = [];
       at = atom.end;
+    } else if (atom.kind === 'fontIcon') {
+      const size = options.icon?.(atom.sprite);
+      if (size) {
+        current.push({
+          kind: 'icon',
+          sprite: atom.sprite,
+          ...size,
+          advance: FONT_ICON_ADVANCE,
+          ...range(atom),
+        });
+      } else {
+        report(
+          {
+            code: 'missing-icon',
+            message: `no sprite ${atom.sprite} for the font icon ¤`,
+            ...range(atom),
+          },
+          `icon:${atom.sprite}`,
+        );
+        current.push({ kind: 'gap', width: FONT_ICON_ADVANCE, ...range(atom) });
+      }
+    } else if (atom.kind === 'flag') {
+      // The game draws the country's flag here; the preview has no country flags (spec section 3).
+      current.push({ kind: 'gap', width: FLAG_ADVANCE, ...range(atom) });
     } else if (atom.kind === 'icon') {
       const sprite = textIconSprite(atom.key);
       const size = options.icon?.(sprite);
@@ -313,8 +356,8 @@ export function layoutText(
         // Hypothesis: an icon sits at the top of its line.
         if (item.kind === 'icon') {
           icons.push({ sprite: item.sprite, x: pen, y, ...size(item), source: item.start });
-          pen += item.width;
-        }
+          pen += item.advance ?? item.width;
+        } else if (item.kind === 'gap') pen += item.width;
         prev = -1;
       }
     }
