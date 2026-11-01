@@ -3,9 +3,9 @@
   "playset": "anbennar",
   "resolution": { "width": 2560, "height": 1440 },
   "view": "hud",
-  "takenAt": "2026-10-27T22:05:38.460Z",
+  "takenAt": "2026-11-01T22:29:32.847Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
-  "tongs": { "version": "0.14.1" },
+  "tongs": { "version": "0.23.0" },
   "save": { "sha256": "AACEDFE6FD0294B80961679AB9618BC48195A9E9A239BE41292CEFFE156FDD3D" },
   "mods": [
     {
@@ -30,13 +30,13 @@
   },
   "window": { "width": 2560, "height": 1440, "dpi": 96 },
   "screenshot": {
-    "sha256": "30013C596098AE2A186EFC8C5891FAA9FAA183EA36392C6C87A1E0FAC6BAD9C2",
+    "sha256": "31F18EED6115C13E3291E7B979AD87EFDA6D0BAA3D314CC41781DA32113BF4AF",
     "width": 2560,
     "height": 1440,
     "shots": 4,
     "unstable": {
-      "pixels": 3275768,
-      "sha256": "D92EA08F78D5C5B7BC034158008D1170309059C7B9176B0C0792C07333FCE7C0"
+      "pixels": 3287408,
+      "sha256": "C88EB22BE4A8BB59B59E7FE527A07E170A6B0C0010C0ACC6669FBD79EB5A2CE8"
     }
   },
   "widgets": [
@@ -45,14 +45,14 @@
       "path": "topbar",
       "type": "window",
       "visible": true,
-      "rect": { "x": 0, "y": -1, "w": 2560, "h": 1440 },
+      "rect": { "x": 0, "y": 0, "w": 2528, "h": 1440 },
       "children": [
         {
           "name": "player_shield",
           "path": "topbar/player_shield",
           "type": "button",
           "visible": true,
-          "rect": { "x": -5, "y": 2, "w": 1, "h": 184 },
+          "rect": { "x": 0, "y": 2, "w": 179, "h": 184 },
           "enabled": true
         },
         {
@@ -146,21 +146,21 @@
           "name": "topbar_1",
           "path": "topbar/topbar_1",
           "type": "icon",
-          "visible": true,
+          "visible": false,
           "rect": { "x": 119415, "y": -2, "w": 131, "h": 37 }
         },
         {
           "name": "topbar_2",
           "path": "topbar/topbar_2",
           "type": "icon",
-          "visible": true,
+          "visible": false,
           "rect": { "x": 1189229, "y": -2, "w": 131, "h": 37 }
         },
         {
           "name": "topbar_3",
           "path": "topbar/topbar_3",
           "type": "icon",
-          "visible": true,
+          "visible": false,
           "rect": { "x": 1189839, "y": -2, "w": 131, "h": 37 }
         },
         {
@@ -168,7 +168,7 @@
           "path": "topbar/topbar_upper_left_bg",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 0, "y": -1, "w": 1173, "h": 192 }
+          "rect": { "x": 0, "y": 0, "w": 1173, "h": 191 }
         },
         {
           "name": "topbar_upper_left_bg4",
@@ -482,14 +482,14 @@
           "path": "topbar/powerprojection_topbar",
           "type": "window",
           "visible": true,
-          "rect": { "x": 241, "y": -1, "w": 120, "h": 120 },
+          "rect": { "x": 830, "y": 0, "w": 115, "h": 61 },
           "children": [
             {
               "name": "topbar_liberty_overlay",
               "path": "topbar/powerprojection_topbar/topbar_liberty_overlay",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 830, "y": -2, "w": 115, "h": 63 }
+              "rect": { "x": 830, "y": 0, "w": 115, "h": 61 }
             },
             {
               "name": "icon_powerprojection",
@@ -544,7 +544,7 @@
           "path": "topbar/p2kuie_mana_window",
           "type": "window",
           "visible": true,
-          "rect": { "x": 2120, "y": 1365, "w": 0, "h": 0 },
+          "rect": { "x": 2070, "y": 1365, "w": 116, "h": 75 },
           "children": [
             {
               "name": "p2kuie_mana_value_btn",
@@ -559,7 +559,7 @@
               "path": "topbar/p2kuie_mana_window/p2kuie_mana_value",
               "type": "text",
               "visible": true,
-              "rect": { "x": 2070, "y": 1414, "w": 109, "h": 31 },
+              "rect": { "x": 2070, "y": 1414, "w": 109, "h": 26 },
               "text": "1"
             }
           ]
@@ -699,7 +699,7 @@
               "path": "topbar/racial_pop_root_window/racial_pop_list_interface",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "rect": { "x": 0, "y": 0, "w": 545, "h": 726 },
               "children": [
                 {
                   "name": "racial_pop_management_list",
@@ -894,7 +894,7 @@
                       "path": "topbar/racial_pop_root_window/racial_pop_list_interface/racial_pop_management_list/racial_pop_header_group",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 0, "y": 0, "w": 1476, "h": 720 },
                       "children": [
                         {
                           "name": "racial_pop_list_headerbutton1",
@@ -988,7 +988,7 @@
                       "path": "topbar/racial_pop_root_window/racial_pop_list_interface/racial_pop_management_list/racial_menu_list_red_underlays",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 685, "w": 527, "h": 35 },
                       "children": [
                         {
                           "name": "racial_menu_list_button_red_underlay_1",
@@ -2373,7 +2373,7 @@
               "path": "topbar/racial_pop_root_window/racial_pop_selection_window",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "rect": { "x": 235, "y": 12, "w": 1433, "h": 708 },
               "children": [
                 {
                   "name": "racial_pop_selected_portrait",
@@ -2411,14 +2411,14 @@
               "path": "topbar/racial_pop_root_window/racial_pop_management_window",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "rect": { "x": 0, "y": 0, "w": 1899, "h": 720 },
               "children": [
                 {
                   "name": "racial_pop_help_window",
                   "path": "topbar/racial_pop_root_window/racial_pop_management_window/racial_pop_help_window",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 5, "y": 2, "w": 1894, "h": 718 },
                   "children": [
                     {
                       "name": "racial_pop_help_outline",
@@ -2480,7 +2480,7 @@
                   "path": "topbar/racial_pop_root_window/racial_pop_management_window/racial_pop_ulation_data_window",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 0, "y": 0, "w": 1522, "h": 720 },
                   "children": [
                     {
                       "name": "racial_pop_population_data_outline",
@@ -2538,7 +2538,7 @@
                       "path": "topbar/racial_pop_root_window/racial_pop_management_window/racial_pop_ulation_data_window/racial_pop_ulation_textbox_column1",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 0, "y": 0, "w": 157, "h": 96 },
                       "children": [
                         {
                           "name": "racial_pop_current_percent_owned_text",
@@ -2579,7 +2579,7 @@
                       "path": "topbar/racial_pop_root_window/racial_pop_management_window/racial_pop_ulation_data_window/racial_pop_ulation_textbox_column2",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 0, "y": 0, "w": 61, "h": 96 },
                       "children": [
                         {
                           "name": "racial_pop_current_percent_owned",
@@ -2622,14 +2622,14 @@
                   "path": "topbar/racial_pop_root_window/racial_pop_management_window/racial_pop_ulation_policy_window",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 36, "y": 0, "w": 1473, "h": 720 },
                   "children": [
                     {
                       "name": "racial_pop_policy_window",
                       "path": "topbar/racial_pop_root_window/racial_pop_management_window/racial_pop_ulation_policy_window/racial_pop_policy_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 79, "y": 1, "w": 1415, "h": 719 },
                       "children": [
                         {
                           "name": "racial_pop_policy_outline",
@@ -2675,7 +2675,7 @@
                       "path": "topbar/racial_pop_root_window/racial_pop_management_window/racial_pop_ulation_policy_window/racial_pop_enact_policy_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 36, "y": 0, "w": 1473, "h": 720 },
                       "children": [
                         {
                           "name": "racial_pop_enact_policy_outline",
@@ -2741,7 +2741,7 @@
                           "path": "topbar/racial_pop_root_window/racial_pop_management_window/racial_pop_ulation_policy_window/racial_pop_enact_policy_window/racial_pop_policy_buttons_window",
                           "type": "window",
                           "visible": false,
-                          "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                          "rect": { "x": 1280, "y": 681, "w": 105, "h": 39 },
                           "children": [
                             {
                               "name": "racial_pop_policy_purge_button_1",
@@ -2855,7 +2855,7 @@
               "path": "topbar/racial_pop_root_window/racial_military_management_window",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "rect": { "x": 2, "y": 2, "w": 1897, "h": 1050 },
               "children": [
                 {
                   "name": "racial_mil_twist_banner",
@@ -2931,7 +2931,7 @@
                   "path": "topbar/racial_pop_root_window/racial_military_management_window/racial_mil_special_military_flavour_window",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 235, "y": 12, "w": 1433, "h": 708 },
                   "children": [
                     {
                       "name": "racial_mil_special_military_portrait",
@@ -2969,7 +2969,7 @@
                   "path": "topbar/racial_pop_root_window/racial_military_management_window/racial_mil_select_special_mil_window",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 8, "y": 4, "w": 1498, "h": 716 },
                   "children": [
                     {
                       "name": "racial_mil_select_spirit_military",
@@ -3009,7 +3009,7 @@
                   "path": "topbar/racial_pop_root_window/racial_military_management_window/racial_mil_change_military_buttons",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 1280, "y": 681, "w": 105, "h": 39 },
                   "children": [
                     {
                       "name": "racial_mil_change_racial_military_1",
@@ -3203,7 +3203,7 @@
               "path": "topbar/racial_pop_root_window/racial_pop_view_bg",
               "type": "button",
               "visible": false,
-              "rect": { "x": 1280, "y": -400, "w": 1229, "h": 1120 }
+              "rect": { "x": 1280, "y": 0, "w": 1229, "h": 720 }
             }
           ]
         },
@@ -3219,7 +3219,7 @@
               "path": "topbar/achievements_root_window/achievement_window_small_bg",
               "type": "button",
               "visible": false,
-              "rect": { "x": 1280, "y": -204, "w": 741, "h": 924 },
+              "rect": { "x": 1280, "y": 0, "w": 741, "h": 720 },
               "enabled": true
             },
             {
@@ -3266,7 +3266,7 @@
                   "path": "topbar/achievements_root_window/achievement_indiv/achievement_page_text",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": -5, "y": 924, "w": 1444, "h": 34 },
+                  "rect": { "x": 0, "y": 924, "w": 1439, "h": 34 },
                   "text": ""
                 },
                 {
@@ -5029,7 +5029,7 @@
                   "path": "topbar/achievements_root_window/achievement_indiv_small/achievement_page_small_text",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": -5, "y": 39, "w": 742, "h": 34 },
+                  "rect": { "x": 0, "y": 39, "w": 737, "h": 34 },
                   "text": ""
                 },
                 {
@@ -6240,7 +6240,7 @@
               "path": "topbar/achievements_root_window/achievement_window_bg",
               "type": "button",
               "visible": false,
-              "rect": { "x": 1280, "y": -251, "w": 1443, "h": 971 }
+              "rect": { "x": 1280, "y": 0, "w": 1280, "h": 720 }
             }
           ]
         },
@@ -6265,7 +6265,7 @@
               "path": "topbar/achievements_alert_window/achievement_complete_text",
               "type": "text",
               "visible": false,
-              "rect": { "x": -5, "y": 175, "w": 669, "h": 34 },
+              "rect": { "x": 0, "y": 175, "w": 664, "h": 34 },
               "text": "Achievement Complete"
             },
             {
@@ -6273,7 +6273,7 @@
               "path": "topbar/achievements_alert_window/achievement_complete_name",
               "type": "text",
               "visible": false,
-              "rect": { "x": -5, "y": 254, "w": 669, "h": 34 },
+              "rect": { "x": 0, "y": 254, "w": 664, "h": 34 },
               "text": ""
             },
             {
@@ -6709,7 +6709,7 @@
               "path": "topbar/magic_menu_parent/magic_menu_main",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "rect": { "x": 0, "y": 0, "w": 1812, "h": 865 },
               "children": [
                 {
                   "name": "magic_menu_heading",
@@ -6804,7 +6804,7 @@
                   "path": "topbar/magic_menu_parent/magic_menu_main/magic_menu_main_magic_stats_row",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 24, "y": 35, "w": 1493, "h": 830 },
                   "children": [
                     {
                       "name": "magical_infrastructure_banner",
@@ -6825,7 +6825,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_main/magic_menu_main_magic_stats_row/magic_menu_main_magic_exp_info",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 30, "y": 35, "w": 1487, "h": 830 },
                       "children": [
                         {
                           "name": "magic_menu_advancement_outline",
@@ -6945,7 +6945,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_main/magic_menu_main_magic_stats_row/magic_menu_main_mana_info",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 24, "y": 116, "w": 1493, "h": 749 },
                       "children": [
                         {
                           "name": "magic_menu_mana_shadow",
@@ -7020,7 +7020,7 @@
                   "path": "topbar/magic_menu_parent/magic_menu_main/magic_menu_main_row_3",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 0, "y": 4, "w": 1812, "h": 833 },
                   "children": [
                     {
                       "name": "magic_menu_infamy_shadow",
@@ -7067,7 +7067,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_main/magic_menu_main_row_3/magic_menu_infamy_types",
                       "type": "text",
                       "visible": false,
-                      "rect": { "x": -48, "y": 4, "w": 242, "h": 63 },
+                      "rect": { "x": 0, "y": 4, "w": 194, "h": 63 },
                       "text": "[Root.getNameIfRulerIsMage][Root.getNameIfHeirIsMage][Root.getNameIfConsortIsMage][Root.getNameIfIfHaveMagesEstate]"
                     },
                     {
@@ -7087,7 +7087,7 @@
               "path": "topbar/magic_menu_parent/magic_menu_spellbook_window",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "rect": { "x": 24, "y": 0, "w": 1624, "h": 1277 },
               "children": [
                 {
                   "name": "magic_spellbook_heading",
@@ -7102,7 +7102,7 @@
                   "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_main_mana_info",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 24, "y": 0, "w": 1493, "h": 865 },
                   "children": [
                     {
                       "name": "magic_menu_mana_shadow",
@@ -7155,7 +7155,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_main_mana_info/magic_menu_mana_title_text",
                       "type": "text",
                       "visible": false,
-                      "rect": { "x": 24, "y": -4, "w": 182, "h": 31 },
+                      "rect": { "x": 24, "y": 0, "w": 182, "h": 27 },
                       "text": "Mana"
                     },
                     {
@@ -7181,7 +7181,7 @@
                   "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_change_spellbook_window",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 24, "y": 2, "w": 1511, "h": 718 },
                   "children": [
                     {
                       "name": "magic_menu_button_change_school_abjuration_spellbook",
@@ -7349,7 +7349,7 @@
                   "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_standard_spells_window",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 48, "y": 0, "w": 1600, "h": 1277 },
                   "children": [
                     {
                       "name": "magic_menu_cast_spells_shadow",
@@ -7559,7 +7559,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_standard_spells_window/magic_menu_spellbook_abjuration",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_cast_abjuration_spell1_button",
@@ -7616,7 +7616,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_standard_spells_window/magic_menu_spellbook_conjuration",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_cast_conjuration_spell1_button",
@@ -7673,7 +7673,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_standard_spells_window/magic_menu_spellbook_divination",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_menu_divination_spell_1_button",
@@ -7730,7 +7730,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_standard_spells_window/magic_menu_spellbook_enchantment",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_cast_enchantment_spell1_button",
@@ -7787,7 +7787,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_standard_spells_window/magic_menu_spellbook_evocation",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_cast_evocation_spell1_button",
@@ -7844,7 +7844,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_standard_spells_window/magic_menu_spellbook_illusion",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_cast_illusion_spell1_button",
@@ -7901,7 +7901,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_standard_spells_window/magic_menu_spellbook_necromancy",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_cast_necromancy_spell1_button",
@@ -7958,7 +7958,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_standard_spells_window/magic_menu_spellbook_transmutation",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_cast_transmutation_spell1_button",
@@ -8017,7 +8017,7 @@
                   "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 48, "y": 0, "w": 1600, "h": 1277 },
                   "children": [
                     {
                       "name": "magic_menu_cast_spells_shadow",
@@ -8047,14 +8047,14 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_list_template",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_list_template_default",
                           "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_list_template/magic_list_template_default",
                           "type": "window",
                           "visible": false,
-                          "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                          "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                           "children": [
                             {
                               "name": "magic_list_template_1_button_default",
@@ -8153,7 +8153,7 @@
                           "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_list_template/magic_list_template_tag_specific_example",
                           "type": "window",
                           "visible": false,
-                          "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                          "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                           "children": [
                             {
                               "name": "magic_list_template_1_button_tag_specific_example",
@@ -8212,14 +8212,14 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_list_harpy",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_list_harpy_default",
                           "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_list_harpy/magic_list_harpy_default",
                           "type": "window",
                           "visible": false,
-                          "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                          "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                           "children": [
                             {
                               "name": "magic_list_harpy_1_button_default",
@@ -8305,7 +8305,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_list_centaur_black_herd",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_list_centaur_5_button_black_herd",
@@ -8329,7 +8329,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_list_eordand_eighard",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_list_eordand_5_button_eighard",
@@ -8353,14 +8353,14 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_list_bulwar",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_list_bulwar_default",
                           "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_list_bulwar/magic_list_bulwar_default",
                           "type": "window",
                           "visible": false,
-                          "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                          "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                           "children": [
                             {
                               "name": "magic_list_bulwar_1_button_default",
@@ -8431,14 +8431,14 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_list_xhazobkult",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_list_xhazobkult_default",
                           "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_list_xhazobkult/magic_list_xhazobkult_default",
                           "type": "window",
                           "visible": false,
-                          "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                          "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                           "children": [
                             {
                               "name": "magic_list_xhazobkult_1_button_default",
@@ -8494,7 +8494,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_menu_custom_spells_textbox_container",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 127, "y": 59, "w": 263, "h": 495 },
                       "children": [
                         {
                           "name": "custom_spell_text_slot_1",
@@ -8603,7 +8603,7 @@
               "path": "topbar/magic_menu_parent/magic_menu_advancement_window",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "rect": { "x": 24, "y": 57, "w": 1935, "h": 953 },
               "children": [
                 {
                   "name": "magic_menu_advancement_header_banner",
@@ -8788,7 +8788,7 @@
                   "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_default_projects_window",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 85, "y": 57, "w": 1475, "h": 663 },
                   "children": [
                     {
                       "name": "magical_fortress_project_button",
@@ -9037,7 +9037,7 @@
                   "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 73, "y": 57, "w": 1487, "h": 663 },
                   "children": [
                     {
                       "name": "regional_projects_none",
@@ -9060,7 +9060,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/template_region_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 85, "y": 57, "w": 1475, "h": 663 },
                       "children": [
                         {
                           "name": "template_region_project_1",
@@ -9193,7 +9193,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/template_tag_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 85, "y": 57, "w": 1475, "h": 663 },
                       "children": [
                         {
                           "name": "template_tag_project_1",
@@ -9326,7 +9326,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/lencenor_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "lencenor_project_1",
@@ -9427,7 +9427,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/lorent_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "lorent_project_1",
@@ -9528,7 +9528,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/drennen_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "drennen_project_1",
@@ -9553,7 +9553,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/umbral_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "umbral_project_spire",
@@ -9610,7 +9610,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/esthil_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "esthil_necronomics",
@@ -9635,7 +9635,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/great_storm_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "great_storm_project_1",
@@ -9667,7 +9667,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/black_herd_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "black_herd_project_1",
@@ -9729,7 +9729,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/eighard_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "eighard_project_1",
@@ -9761,7 +9761,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/cangji_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "cangji_project",
@@ -9793,7 +9793,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/lelanan_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "lelanan_project_1",
@@ -9825,7 +9825,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/bongo_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "bongo_project_1",
@@ -9857,7 +9857,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/harpylen_project_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "harpylen_project",
@@ -9882,7 +9882,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/kanolowele_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "kanolowele_volcanic_armoury",
@@ -10064,7 +10064,7 @@
               "path": "topbar/magic_menu_parent/magic_menu_patron_window",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "rect": { "x": 61, "y": 0, "w": 1788, "h": 1258 },
               "children": [
                 {
                   "name": "patron_info_outline",
@@ -10203,7 +10203,7 @@
                   "path": "topbar/magic_menu_parent/magic_menu_patron_window/magic_patron_heading",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": 145, "y": -7, "w": 363, "h": 24 },
+                  "rect": { "x": 145, "y": 0, "w": 363, "h": 17 },
                   "text": "Patrons"
                 },
                 {
@@ -10300,7 +10300,7 @@
               "path": "topbar/magic_menu_parent/magic_menu_bg",
               "type": "button",
               "visible": false,
-              "rect": { "x": 1280, "y": -116, "w": 663, "h": 836 }
+              "rect": { "x": 1280, "y": 0, "w": 663, "h": 720 }
             }
           ]
         }
@@ -10311,7 +10311,7 @@
       "path": "speed_controls",
       "type": "window",
       "visible": true,
-      "rect": { "x": 2560, "y": 0, "w": 0, "h": 0 },
+      "rect": { "x": 2165, "y": 0, "w": 395, "h": 203 },
       "children": [
         {
           "name": "button_pause",
@@ -10374,7 +10374,7 @@
           "path": "speed_controls/button_outliner",
           "type": "button",
           "visible": true,
-          "rect": { "x": 2523, "y": 77, "w": 40, "h": 40 },
+          "rect": { "x": 2523, "y": 77, "w": 37, "h": 40 },
           "enabled": true
         },
         {
@@ -10382,7 +10382,7 @@
           "path": "speed_controls/icon_date_bg",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 2165, "y": -1, "w": 396, "h": 204 }
+          "rect": { "x": 2165, "y": 0, "w": 395, "h": 203 }
         },
         {
           "name": "icon_score",
@@ -10422,7 +10422,7 @@
       "path": "outliner",
       "type": "window",
       "visible": true,
-      "rect": { "x": 2215, "y": 124, "w": 360, "h": 120 },
+      "rect": { "x": 2205, "y": 114, "w": 355, "h": 184 },
       "children": [
         {
           "name": "button_outliner_options",
@@ -10437,14 +10437,14 @@
           "path": "outliner/outliner_top",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 2215, "y": 124, "w": 360, "h": 3 }
+          "rect": { "x": 2215, "y": 124, "w": 345, "h": 3 }
         },
         {
           "name": "outliner_bottom",
           "path": "outliner/outliner_bottom",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 2215, "y": 295, "w": 360, "h": 3 }
+          "rect": { "x": 2215, "y": 295, "w": 345, "h": 3 }
         },
         {
           "name": "outliner_list",
@@ -10465,7 +10465,7 @@
                   "path": "outliner/outliner_list/outliner_header_entry[1]/outliner_header",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 2215, "y": 127, "w": 360, "h": 21 }
+                  "rect": { "x": 2215, "y": 127, "w": 345, "h": 21 }
                 },
                 {
                   "name": "entry_text",
@@ -10489,7 +10489,7 @@
                   "path": "outliner/outliner_list/outliner_standard_entry[1]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 2215, "y": 148, "w": 360, "h": 21 },
+                  "rect": { "x": 2215, "y": 148, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -10522,7 +10522,7 @@
                   "path": "outliner/outliner_list/outliner_standard_entry[2]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 2215, "y": 169, "w": 360, "h": 21 },
+                  "rect": { "x": 2215, "y": 169, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -10555,7 +10555,7 @@
                   "path": "outliner/outliner_list/outliner_header_entry[2]/outliner_header",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 2215, "y": 190, "w": 360, "h": 21 }
+                  "rect": { "x": 2215, "y": 190, "w": 345, "h": 21 }
                 },
                 {
                   "name": "entry_text",
@@ -10579,7 +10579,7 @@
                   "path": "outliner/outliner_list/outliner_unit_entry[1]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 2215, "y": 211, "w": 360, "h": 21 },
+                  "rect": { "x": 2215, "y": 211, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -10619,7 +10619,7 @@
                   "path": "outliner/outliner_list/outliner_header_entry[3]/outliner_header",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 2215, "y": 232, "w": 360, "h": 21 }
+                  "rect": { "x": 2215, "y": 232, "w": 345, "h": 21 }
                 },
                 {
                   "name": "entry_text",
@@ -10643,7 +10643,7 @@
                   "path": "outliner/outliner_list/outliner_unit_entry[2]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 2215, "y": 253, "w": 360, "h": 21 },
+                  "rect": { "x": 2215, "y": 253, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -10683,7 +10683,7 @@
                   "path": "outliner/outliner_list/outliner_unit_entry[3]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 2215, "y": 274, "w": 360, "h": 21 },
+                  "rect": { "x": 2215, "y": 274, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -10781,14 +10781,14 @@
           "name": "mapmode_bg",
           "path": "menubar/mapmode_bg",
           "type": "icon",
-          "visible": true,
+          "visible": false,
           "rect": { "x": -116579, "y": 1309, "w": 264, "h": 24 }
         },
         {
           "name": "mapmode_bg_2",
           "path": "menubar/mapmode_bg_2",
           "type": "icon",
-          "visible": true,
+          "visible": false,
           "rect": { "x": -116579, "y": 1289, "w": 264, "h": 24 }
         },
         {
@@ -10808,7 +10808,7 @@
             {
               "name": "WarOverviewButtonList",
               "path": "menubar/WarOverviewButtonWindow/WarOverviewButtonList",
-              "type": "other",
+              "type": "listbox",
               "visible": true,
               "rect": { "x": 1476, "y": 1365, "w": 360, "h": 48 }
             }
@@ -10819,7 +10819,7 @@
           "path": "menubar/messagelog_window",
           "type": "window",
           "visible": false,
-          "rect": { "x": 810, "y": 1482, "w": 924, "h": 120 },
+          "rect": { "x": 810, "y": 1442, "w": 1229, "h": 161 },
           "children": [
             {
               "name": "log_bg",
@@ -10840,7 +10840,7 @@
                   "path": "menubar/messagelog_window/messagelog/logtext[1]",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 954, "y": 1496, "w": 840, "h": 21 },
+                  "rect": { "x": 966, "y": 1489, "w": 1000, "h": 19 },
                   "children": [
                     {
                       "name": "messagelogbutton",
@@ -10858,7 +10858,7 @@
                   "path": "menubar/messagelog_window/messagelog/logtext[2]",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 954, "y": 1517, "w": 840, "h": 21 },
+                  "rect": { "x": 966, "y": 1510, "w": 1000, "h": 19 },
                   "children": [
                     {
                       "name": "messagelogbutton",
@@ -10876,7 +10876,7 @@
                   "path": "menubar/messagelog_window/messagelog/logtext[3]",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 954, "y": 1538, "w": 840, "h": 21 },
+                  "rect": { "x": 966, "y": 1531, "w": 1000, "h": 19 },
                   "children": [
                     {
                       "name": "messagelogbutton",
@@ -10894,7 +10894,7 @@
                   "path": "menubar/messagelog_window/messagelog/logtext[4]",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 954, "y": 1559, "w": 840, "h": 21 },
+                  "rect": { "x": 966, "y": 1552, "w": 1000, "h": 19 },
                   "children": [
                     {
                       "name": "messagelogbutton",
@@ -11088,7 +11088,7 @@
           "path": "menubar/message_window_container",
           "type": "window",
           "visible": true,
-          "rect": { "x": 2263, "y": 895, "w": 345, "h": 223 },
+          "rect": { "x": 2496, "y": 903, "w": 39, "h": 24 },
           "children": [
             {
               "name": "message_window",
@@ -11198,7 +11198,7 @@
                   "path": "menubar/message_window_container/toggle_message_interface_window/ToggleMessageInterface",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 2531, "y": 1184, "w": 30, "h": 30 },
+                  "rect": { "x": 2531, "y": 1184, "w": 29, "h": 30 },
                   "enabled": true
                 },
                 {
@@ -11206,7 +11206,7 @@
                   "path": "menubar/message_window_container/toggle_message_interface_window/ToggleMessageBackground",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 2529, "y": 1163, "w": 35, "h": 71 }
+                  "rect": { "x": 2529, "y": 1163, "w": 31, "h": 71 }
                 }
               ]
             }
@@ -11217,7 +11217,7 @@
           "path": "menubar/floating_buttons",
           "type": "window",
           "visible": true,
-          "rect": { "x": -90, "y": 0, "w": 2560, "h": 1440 },
+          "rect": { "x": 1959, "y": 1371, "w": 114, "h": 69 },
           "children": [
             {
               "name": "f_button_1",
@@ -11288,56 +11288,56 @@
               "path": "menubar/floating_buttons/menubar_floating_bg_1",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 2015, "y": 1397, "w": 57, "h": 45 }
+              "rect": { "x": 2015, "y": 1397, "w": 57, "h": 43 }
             },
             {
               "name": "menubar_floating_bg_2",
               "path": "menubar/floating_buttons/menubar_floating_bg_2",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 1961, "y": 1397, "w": 57, "h": 45 }
+              "rect": { "x": 1961, "y": 1397, "w": 57, "h": 43 }
             },
             {
               "name": "menubar_floating_bg_3",
               "path": "menubar/floating_buttons/menubar_floating_bg_3",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1907, "y": 1397, "w": 57, "h": 45 }
+              "rect": { "x": 1907, "y": 1397, "w": 57, "h": 43 }
             },
             {
               "name": "menubar_floating_bg_4",
               "path": "menubar/floating_buttons/menubar_floating_bg_4",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1853, "y": 1397, "w": 57, "h": 45 }
+              "rect": { "x": 1853, "y": 1397, "w": 57, "h": 43 }
             },
             {
               "name": "menubar_floating_bg_5",
               "path": "menubar/floating_buttons/menubar_floating_bg_5",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1799, "y": 1397, "w": 57, "h": 45 }
+              "rect": { "x": 1799, "y": 1397, "w": 57, "h": 43 }
             },
             {
               "name": "menubar_floating_bg_6",
               "path": "menubar/floating_buttons/menubar_floating_bg_6",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1733, "y": 1397, "w": 57, "h": 45 }
+              "rect": { "x": 1733, "y": 1397, "w": 57, "h": 43 }
             },
             {
               "name": "menubar_floating_bg_7",
               "path": "menubar/floating_buttons/menubar_floating_bg_7",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1667, "y": 1397, "w": 57, "h": 45 }
+              "rect": { "x": 1667, "y": 1397, "w": 57, "h": 43 }
             },
             {
               "name": "menubar_floating_bg_8",
               "path": "menubar/floating_buttons/menubar_floating_bg_8",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1601, "y": 1397, "w": 57, "h": 45 }
+              "rect": { "x": 1601, "y": 1397, "w": 57, "h": 43 }
             },
             {
               "name": "hre_strip_glow",
@@ -11351,7 +11351,7 @@
               "path": "menubar/floating_buttons/revolution_flag",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1915, "y": 1375, "w": 0, "h": 37 }
+              "rect": { "x": 1915, "y": 1375, "w": 37, "h": 37 }
             },
             {
               "name": "floating_number_1",

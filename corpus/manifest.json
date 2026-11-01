@@ -599,8 +599,8 @@
                     "click": "countrydiplomacyview/diploaction_list/diploactionentry/button_diploaction"
                   }
                 ],
-                "verified": false,
-                "evidence": "To be run again by the capture driver with Tongs 0.23.0 (etch#232), which reads a relation's shields inside the item's box, so the click names it (`…/box/…`). Before: Run by the capture driver in the Anbennar playset at 2560×1440 and 3440×1440 and in Anbennar alone at 1280×720 to 1920×1080 on 2026-10-27 (M10), from the corpus save with its events answered: the steps opened the view and its roots were read and shown. Verne’s diplomacy lists one relation; its shield selects that country, whose actions show Declare War first (Anbennar groups the others in categories), which opens DeclareWarDialog and declares nothing."
+                "verified": true,
+                "evidence": "Run by the capture driver with Tongs 0.23.0 in the Anbennar playset at 2560×1440 and 3440×1440 on 2026-11-01 (etch#232), from the corpus save with its events answered: the steps opened the view and its roots were read and shown. Verne’s diplomacy lists one relation; its shield selects that country, whose actions show Declare War first (Anbennar groups the others in categories), which opens DeclareWarDialog and declares nothing. Tongs 0.23.0 reads a relation's shields inside the item's box, so the click names it (`…/box/…`)."
               },
               "selectors": {
                 "aggressiveExpansion": "none"
@@ -733,8 +733,8 @@
                     "province": 286
                   }
                 ],
-                "verified": false,
-                "evidence": "To be run by the capture driver with Tongs 0.23.0 (etch#232): Tongs' province open 286 opens Verne's own Heroes' Rest, as the game's province links do."
+                "verified": true,
+                "evidence": "Run by the capture driver with Tongs 0.23.0 in the Anbennar playset at 2560×1440 and 3440×1440 on 2026-11-01 (etch#232): Tongs' province open 286 answered the province view with nothing over it and no game call, and the view's roots were read and shown. Every capture shows Verne's own Heroes' Rest."
               },
               "selectors": {
                 "construction": "no",
@@ -880,8 +880,8 @@
                     "province": 89
                   }
                 ],
-                "verified": false,
-                "evidence": "To be run by the capture driver with Tongs 0.23.0 (etch#232): Tongs' province open 89 opens Ebenuel, Sorncóst's, as the game's province links do."
+                "verified": true,
+                "evidence": "Run by the capture driver with Tongs 0.23.0 in the Anbennar playset at 2560×1440 and 3440×1440 on 2026-11-01 (etch#232): Tongs' province open 89 answered the province view with nothing over it and no game call, and the view's roots were read and shown. Every capture shows Ebenuel, Sorncóst's."
               },
               "selectors": {
                 "buttonBar": "closed",
