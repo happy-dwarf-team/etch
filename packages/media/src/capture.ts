@@ -26,9 +26,10 @@ import {
   type StillId,
 } from './manifest.ts';
 import {
-  DIALOG,
   LOOP_LEAD_MS,
+  OVERRIDES,
   START_FILE,
+  WINDOW_NAME,
   scenesFor,
   type LoopMoment,
   type Scene,
@@ -46,7 +47,8 @@ export interface CaptureOptions {
   readonly ffprobe: string;
   /** A short folder for VS Code and its throwaway profiles (MAX_PATH). */
   readonly work: string;
-  readonly gamePath: string | undefined;
+  /** The game folder: `etch.gamePath`, and where the overridden base-game files come from. */
+  readonly gamePath: string;
 }
 
 /** What one scene's run left, for the capture log. */
@@ -158,6 +160,7 @@ async function runScene(
     work: options.work,
     extensionPath: extension,
     demoMod: path.join(options.repository, 'packages', 'media', 'demo-mod'),
+    overrides: OVERRIDES,
     open: START_FILE,
     gamePath: options.gamePath,
     videoDir,
@@ -167,9 +170,9 @@ async function runScene(
   try {
     // VS Code opens a folder with the Explorer shown; scenes that need it open it again.
     await wb.command('View: Close Primary Side Bar');
-    await wb.find(`"${DIALOG}"`);
+    await wb.find(`"${WINDOW_NAME}"`);
     firstPaint = (await wb.openPreview()).id;
-    await wb.expectPreviewed(DIALOG);
+    await wb.expectPreviewed(WINDOW_NAME);
     await wb.fitPreview();
     await wb.checkFrame();
     await scene.run({

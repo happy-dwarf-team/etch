@@ -5,7 +5,7 @@
 //                      [--game PATH] [--work DIR]
 //   pnpm media publish --site PATH [--etch VERSION]
 //
-// --scene takes the scene ids (hero, preview, pin, outline, problems, resolution, playset), also
+// --scene takes the scene ids (hero, preview, views, data, zoom, outline, problems), also
 // separated by commas; all scenes by default. --recorder picks how loops are recorded: FFmpeg's
 // lossless gfxcapture master (default) or Playwright's recordVideo. --ffmpeg is FFmpeg 8.1 or newer
 // (default: ffmpeg on the PATH; ffprobe beside it). --game sets etch.gamePath (default: found
@@ -22,6 +22,7 @@ import { readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import * as path from 'node:path';
 import { parseArgs } from 'node:util';
+import { findGameInSteam, systemEnvironment } from '@etch/core/playset';
 import { capture, type Recorder } from './capture.ts';
 import { MEDIA_BUCKET } from './config.ts';
 import { LOOP_IDS, STILL_IDS, type SceneId } from './manifest.ts';
@@ -111,7 +112,14 @@ const ffprobe =
   values.ffmpeg === undefined
     ? 'ffprobe'
     : path.join(path.dirname(values.ffmpeg), `ffprobe${path.extname(values.ffmpeg)}`);
-const game = values.game ?? process.env['ETCH_GAME_PATH']?.trim();
+// The scenes override base-game files, so the game folder is needed before VS Code starts.
+const game =
+  values.game ??
+  (process.env['ETCH_GAME_PATH']?.trim() || undefined) ??
+  (await findGameInSteam(systemEnvironment()));
+if (game === undefined || game === '') {
+  fail('EU4 was not found through Steam; pass --game or set ETCH_GAME_PATH.');
+}
 
 const out = await capture({
   repository,
@@ -120,6 +128,6 @@ const out = await capture({
   ffmpeg,
   ffprobe,
   work: values.work ?? path.join(tmpdir(), 'etch-media'),
-  gamePath: game === undefined || game === '' ? undefined : game,
+  gamePath: game,
 });
 console.log(`Done: ${out}. Look at every frame before anything is published.`);

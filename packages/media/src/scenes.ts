@@ -1,8 +1,9 @@
-// The scenes (etch-website docs/spec.md section 8.5): each one named shot of Etch editing the demo
-// mod. Every scene starts the same way, in a fresh VS Code with `interface/etch_demo.gui` open, the
-// cursor in the dialog and the preview open and fitted unscaled beside it; then it performs its
-// steps with the keyboard (the mouse only where a user would click the preview) and captures.
-// Every step that changes the preview waits for its settled paint.
+// The scenes (etch-website docs/spec.md section 8.5): each one named shot of Etch editing the
+// province view. Every scene starts the same way, in a fresh VS Code with the demo mod and its
+// override of the base game's `interface/provinceview.gui` open, the cursor on the window's name and
+// the preview open and fitted unscaled beside it; then it performs its steps with the keyboard (the
+// mouse only where a user would click the preview) and captures. Every step that changes the
+// preview waits for its settled paint.
 import type { SceneId } from './manifest.ts';
 import type { PaintResult } from './paint.ts';
 import type { Cursor, FrameRules, Workbench } from './workbench.ts';
@@ -31,17 +32,21 @@ export interface Scene {
   run(context: SceneContext): Promise<void>;
 }
 
-/** The demo mod file every scene opens first, and the window it previews. */
-export const START_FILE = 'interface/etch_demo.gui';
-export const DIALOG = 'etch_demo_dialog';
+/**
+ * The base-game files the workspace overrides, copied from the local game at every run (spec
+ * section 8.2): the province view, the window modders change most. No game file is kept.
+ */
+export const OVERRIDES = ['interface/provinceview.gui'] as const;
+/** The file every scene opens first, and the window it previews. */
+export const START_FILE = 'interface/provinceview.gui';
+export const WINDOW_NAME = 'provinceview';
 
-/** The hero loop's timing: the start state it opens on, the holds, the arrow keys' pace. */
+/** The hero loop's timing: the start state it opens on, the holds, the pace of the menu. */
 export const LOOP_LEAD_MS = 1500;
 /** Still frames before the first keystroke, so the cut can find it (freezedetect needs 1 s). */
 const PRE_ROLL_MS = 3000;
 const HOLD_MS = 2200;
-const ARROW_MS = 110;
-const UNDO_GAP_MS = 1000;
+const MENU_MS = 700;
 const POST_ROLL_MS = 1500;
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
@@ -53,8 +58,12 @@ async function cursorIn(wb: Workbench, text: string, offset: number): Promise<Cu
   return { line: match.line, column: match.start + offset };
 }
 
-/** The game-screen point of the second option button's middle, at 1280 × 720. */
-const OPTION_REST = { x: 160 + 40 + 150, y: 70 + 270 + 16 };
+/** The buildings side panel's position: its x, 480, becomes 580 with one keystroke. */
+const BUILDINGS_POSITION = 'x=480 y=13';
+
+/** Game-screen points at 1280 × 720, in the own province view with the buildings side panel. */
+const PROVINCE_HEADER = { x: 150, y: 120 };
+const FIRST_BUILDING = { x: 545, y: 225 };
 
 export const SCENES: readonly Scene[] = [
   {
@@ -62,30 +71,34 @@ export const SCENES: readonly Scene[] = [
     writes: ['hero', 'preview'],
     loop: true,
     async run({ wb, still, record, mark }) {
-      // Where the arrow keys will walk to: just before the option button's x, 40.
-      const button = await cursorIn(wb, 'x = 40 y = 226', 4);
-      // The start state: the first digit of the dialog's width, 380, selected.
-      await wb.walkCursorTo(await cursorIn(wb, 'x = 380', 4), 0);
+      // The start state: the first digit of the buildings panel's x selected.
+      await wb.walkCursorTo(await cursorIn(wb, BUILDINGS_POSITION, 2), 0);
       await wb.press('Shift+ArrowRight');
       await wb.selectionIs(1);
       await wb.highlightSettled();
+      await wb.parkMouse();
       // The poster: the loop's first frame, taken before recording so the master stays still.
       await still('hero');
       await record();
       await sleep(PRE_ROLL_MS);
 
-      const widen = mark('first-key');
+      // The panel moves 100 px to the right, from the unsaved buffer.
+      const move = mark('first-key');
       await wb.paint(() => wb.type('5'));
-      await until(widen + HOLD_MS);
-      await wb.walkCursorTo(button, ARROW_MS);
       await wb.highlightSettled();
-      const move = performance.now();
-      await wb.paint(() => wb.type('2'));
       await still('preview');
       await until(move + HOLD_MS);
-      const undo = performance.now();
-      await wb.paint(() => wb.press('Control+Z'));
-      await until(undo + UNDO_GAP_MS);
+      // Another view of the same window: the army builder opens beside the moved panel.
+      await wb.openMenu('view');
+      await sleep(MENU_MS);
+      const army = performance.now();
+      await wb.chooseView('Build army');
+      await until(army + HOLD_MS);
+      await wb.chooseView('Own province');
+      await sleep(MENU_MS);
+      await wb.closeMenus();
+      await wb.focusEditor();
+      await wb.highlightSettled();
       mark('last-key');
       await wb.paint(() => wb.press('Control+Z'));
       await wb.highlightSettled();
@@ -94,19 +107,33 @@ export const SCENES: readonly Scene[] = [
     },
   },
   {
-    id: 'pin',
-    writes: ['pin'],
+    id: 'views',
+    writes: ['views'],
     loop: false,
     async run({ wb, still }) {
-      // Pinning keeps the window already drawn, so it paints nothing new.
-      await wb.frame.locator('#pin').click();
-      await wb.frame.locator('#pin[aria-pressed="true"]').waitFor();
-      await wb.quickOpen('etch_demo.gfx');
-      await wb.find('300_32.dds');
-      await wb.paint(() => wb.type('300_32_glow.dds'));
-      await wb.expectPreviewed(DIALOG);
-      await wb.parkMouse();
-      await still('pin');
+      await wb.openMenu('view');
+      await wb.chooseView('Build army');
+      await still('views');
+    },
+  },
+  {
+    id: 'data',
+    writes: ['data'],
+    loop: false,
+    async run({ wb, still }) {
+      await wb.openMenu('data');
+      await wb.chooseTextLength('long');
+      await still('data');
+    },
+  },
+  {
+    id: 'zoom',
+    writes: ['zoom'],
+    loop: false,
+    async run({ wb, still }) {
+      await wb.zoomAt(PROVINCE_HEADER, '200 %');
+      await wb.restMouse();
+      await still('zoom', { zoomed: true });
     },
   },
   {
@@ -117,16 +144,10 @@ export const SCENES: readonly Scene[] = [
       await wb.command('Explorer: Focus on Widget Outline View');
       await wb.fitPreview();
       // A click in the preview, as a user would: Etch selects the widget's kind keyword.
-      await wb.frame
-        .locator('canvas#screen')
-        .click({ position: { x: OPTION_REST.x / 2, y: OPTION_REST.y / 2 } });
-      await wb.selectionIs('guiButtonType'.length);
+      await wb.clickScreen(FIRST_BUILDING);
       await wb.frame.locator('#tip:not([hidden])').waitFor();
       await wb.frame.locator('#hover:not([hidden])').waitFor();
-      await wb.page
-        .locator('.monaco-list-row.selected', { hasText: 'option_rest' })
-        .first()
-        .waitFor();
+      await wb.page.locator('.part.sidebar .monaco-list-row.selected').first().waitFor();
       await still('outline');
     },
   },
@@ -140,40 +161,11 @@ export const SCENES: readonly Scene[] = [
       await wb.page.locator('.markers-panel').waitFor();
       await wb.focusEditor();
       await wb.fitPreview();
-      await wb.find('GFX_mission_icons_frame');
-      await wb.paint(() => wb.type('GFX_mission_icons_frmae'), allow);
-      await wb.page.locator('.markers-panel .monaco-list-row', { hasText: 'frmae' }).waitFor();
-      await still('problems');
-    },
-  },
-  {
-    id: 'resolution',
-    writes: ['resolution'],
-    loop: false,
-    async run({ wb, still }) {
-      await wb.find('if_resolution');
-      await wb.command('Etch: Choose the Preview Resolution', { keepsQuickInput: true });
-      await wb.focusQuickPickItem('1280×720');
-      await still('resolution', { quickInput: true });
-      await wb.page.keyboard.press('Escape');
-    },
-  },
-  {
-    id: 'playset',
-    writes: ['playset'],
-    loop: false,
-    async run({ wb, still }) {
-      // Edits first: VS Code hides Find in an editor as narrow as the Explorer leaves it.
-      await wb.quickOpen('etch_demo_l_english.yml');
-      await wb.find('The Forge Is Lit');
-      await wb.paint(() => wb.type('The Anvil Rings'));
-      await wb.expectPreviewed(DIALOG);
-      // The Explorer reveals the opened files, so it shows interface/ and localisation/.
-      await wb.page.keyboard.press('Control+Shift+E');
-      await wb.page.locator('.explorer-folders-view').waitFor();
+      await wb.find('"GFX_provinceview_building_bg"');
+      await wb.paint(() => wb.type('"GFX_provinceview_biulding_bg"'), allow);
+      await wb.filterProblems('biulding');
       await wb.focusEditor();
-      await wb.fitPreview();
-      await still('playset');
+      await still('problems');
     },
   },
 ];

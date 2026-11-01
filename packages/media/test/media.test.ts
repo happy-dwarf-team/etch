@@ -25,7 +25,7 @@ describe('scenes', () => {
     const written = SCENES.flatMap((scene) => scene.writes);
     expect([...written].sort()).toEqual([...LOOP_IDS, ...STILL_IDS].sort());
     expect(scenesFor(['preview']).map((scene) => scene.id)).toEqual(['hero']);
-    expect(scenesFor(['pin', 'hero']).map((scene) => scene.id)).toEqual(['hero', 'pin']);
+    expect(scenesFor(['zoom', 'hero']).map((scene) => scene.id)).toEqual(['hero', 'zoom']);
     expect(SCENES.filter((scene) => scene.loop).map((scene) => scene.id)).toEqual(['hero']);
   });
 });
@@ -144,7 +144,7 @@ describe('draft manifest', () => {
     const manifest = draftManifest(
       '0.1.0',
       { hero: { width: 1920, height: 1080, duration: 10.63321, webmBytes: 1, mp4Bytes: 2 } },
-      ['playset', 'preview'],
+      ['problems', 'preview'],
     );
     expect(manifest).toEqual({
       schemaVersion: 1,
@@ -162,9 +162,9 @@ describe('draft manifest', () => {
           ],
         },
       },
-      stills: { preview: 'preview.png', playset: 'playset.png' },
+      stills: { preview: 'preview.png', problems: 'problems.png' },
     });
-    expect(Object.keys(manifest.stills)).toEqual(['preview', 'playset']);
+    expect(Object.keys(manifest.stills)).toEqual(['preview', 'problems']);
     expect(MEDIA_TYPES).toEqual({
       webm: 'video/webm; codecs="vp9"',
       mp4: 'video/mp4; codecs="avc1.640028"',
