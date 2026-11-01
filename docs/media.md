@@ -24,8 +24,9 @@ end lists every step.
 - Windows 11 with display scaling at 100 %, on a visible, unlocked desktop. The capture opens a
   VS Code window of 2560 × 1440 device pixels at the top left of the primary monitor; do not
   touch it, cover it with another always-on-top window or minimise it while a scene runs.
-- EU4 1.37.5 from Steam (Etch finds it through Steam, or pass `--game`). The game is never started:
-  Etch only reads its files. The base game is enough; no DLC or other mod is used.
+- EU4 1.37.5 from Steam (found through Steam, or pass `--game`). The game is never started: Etch
+  only reads its files, and the capture copies the base game's `interface/provinceview.gui` into
+  each run's throwaway workspace (below). The base game is enough; no DLC or other mod is used.
 - The player's `settings.txt` with `game_ui_scale=1.000`: a preview notice the scene does not
   expect fails the run.
 - FFmpeg 8.1 or newer, full build (`gfxcapture`, `libvpx-vp9`, `libx264`), on the `PATH` or
@@ -36,22 +37,24 @@ end lists every step.
 
 ```powershell
 pnpm media capture                       # every scene
-pnpm media capture --scene hero          # one scene; --scene pin,outline for several
+pnpm media capture --scene hero          # one scene; --scene views,data for several
 pnpm media capture --recorder playwright # record loops with Playwright instead of gfxcapture
 ```
 
 | Option       | Default                     | Meaning                                                   |
 | ------------ | --------------------------- | --------------------------------------------------------- |
-| `--scene`    | all                         | scene ids: `hero`, `preview`, `pin`, `outline`, `problems`, `resolution`, `playset` (`preview` is taken during the `hero` run) |
+| `--scene`    | all                         | scene ids: `hero`, `preview`, `views`, `data`, `zoom`, `outline`, `problems` (`preview` is taken during the `hero` run) |
 | `--recorder` | `gfxcapture`                | how loops are recorded: FFmpeg's lossless `gfxcapture` master, or Playwright's `recordVideo` |
 | `--ffmpeg`   | `ffmpeg` on the `PATH`      | FFmpeg; `ffprobe` is taken from beside it                  |
-| `--game`     | Steam, or `ETCH_GAME_PATH`  | the EU4 folder, as `etch.gamePath`                         |
+| `--game`     | `ETCH_GAME_PATH`, or Steam  | the EU4 folder: `etch.gamePath`, and where the overridden file is copied from |
 | `--work`     | `%TEMP%\etch-media`         | a short folder for VS Code and its throwaway profiles (VS Code fails under a path longer than MAX_PATH) |
 
 The command builds the extension, then runs each scene in a fresh VS Code 1.142.0 launched
 through Playwright's Electron driver: Etch loaded from `packages/extension`, a new profile seeded
-with the framing settings, an empty extensions folder and a copy of `packages/media/demo-mod` as
-the workspace, so no edit reaches the repository. The scene drives VS Code with the keyboard, and
+with the framing settings, an empty extensions folder and, as the workspace, a copy of
+`packages/media/demo-mod` with the base game's `interface/provinceview.gui` copied into it, as
+**Override in my mod** would, so no edit reaches the repository or the game, and no game file is
+kept after the run. The scene drives VS Code with the keyboard, and
 every step that changes the preview waits for Etch's paint marker (below). Before each capture the
 script checks the framing: the preview at 1280 × 720 shown unscaled (one game pixel, one device
 pixel), no preview notice, toast, Find widget, hover, suggestion or unexpected quick pick. Any
@@ -68,8 +71,8 @@ A run of every scene takes about three minutes. It writes into `packages/media/o
 | `masters/`                | the lossless master, the cut loop, failure screenshots                |
 
 The loop is cut from its master by its first keystroke, which `freezedetect` finds as the
-master's first change: it starts 1.5 s before it and ends at the second undo, whose result is the
-loop's first frame, so the loop closes without a cut.
+master's first change: it starts 1.5 s before it and ends at the undo, whose result is the loop's
+first frame, so the loop closes without a cut.
 
 ## Reviewing
 
@@ -83,8 +86,9 @@ Look at every frame before anything is published:
   `H264_CRF` in `packages/media/src/config.ts` only through the specification.
 
 Known artefacts of the capture setup, not of Etch: VS Code's title bar says
-`[Extension Development Host]`, and the resolution quick pick's **Native** shows the monitor's
-resolution as Chromium sees it under the forced device scale (1720 × 720 on a 3440 × 1440 monitor).
+`[Extension Development Host]`, and the status bar counts the problems Etch finds in the base
+game's `provinceview.gui` itself. At the preview's width of 640 CSS px the toolbar's **View ▾** and
+**Data ▾** wrap onto several lines; that is how Etch 2.0.0 draws a toolbar that narrow.
 
 ## Publishing
 
@@ -144,7 +148,13 @@ other.
    description names the Etch version and links the capture's Etch release.
 9. After it merges and deploys, look at the loop and the stills on etch.happydwarf.dev.
 
-## The demo mod
+## The demo mod and the province view
+
+Since 2.0.0 the scenes edit the province view, the window modders change most: the run copies
+the base game's `interface/provinceview.gui` from the local game into the workspace, beside the
+demo mod's own files, and opens it. The copy lives only in the throwaway run folder; no game file
+enters the repository or the media bucket. The preview draws it in its profile's views with
+generated sample data; no save is read.
 
 `packages/media/demo-mod` is the **Etch demo mod** (MIT, not on the Steam Workshop, not playable):
 a descriptor, `interface/etch_demo.gui` with a dialog in the style of an event and a small panel,
@@ -153,9 +163,10 @@ they name base-game EU4 1.37.5 sprites, textures and fonts, so the preview looks
 game file enters the repository. No DLC-only art, no other mod, no textures of our own, English
 only.
 
-The scenes find their edits by text (`packages/media/src/scenes.ts`): keep those texts unique in
-their file, keep the first option button's block a few lines below the dialog's `size` (the loop
-walks there with the arrow keys), and keep each loop edit one keystroke over one digit, so no
+The demo mod is the workspace (its descriptor names the mod); the 0.x scenes edited its dialog,
+which no scene uses since 2.0.0. The scenes find their edits by text in the game's file
+(`packages/media/src/scenes.ts`, e.g. the buildings panel's `x=480 y=13`), so a game patch that
+changes those texts fails the run; keep each loop edit one keystroke over one digit, so no
 intermediate value collapses the window.
 
 ## The paint marker

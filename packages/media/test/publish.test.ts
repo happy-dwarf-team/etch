@@ -144,11 +144,11 @@ describe('publishing', () => {
       },
       stills: {
         preview: 'preview.png',
-        pin: 'pin.png',
+        views: 'views.png',
+        data: 'data.png',
+        zoom: 'zoom.png',
         outline: 'outline.png',
         problems: 'problems.png',
-        resolution: 'resolution.png',
-        playset: 'playset.png',
       },
     });
     // The keys the site's schema accepts (etch-website src/lib/media-manifest.ts).
@@ -193,22 +193,24 @@ describe('publishing', () => {
 
   it('checks the capture and the site before the first upload', async () => {
     const bucket = new FakeBucket();
-    await rm(path.join(capture, 'pin.png'));
+    await rm(path.join(capture, 'zoom.png'));
     const draft = JSON.parse(await readFile(path.join(capture, 'media.draft.json'), 'utf8')) as {
       stills: Record<string, string>;
     };
-    delete draft.stills['pin'];
+    delete draft.stills['zoom'];
     await writeFile(path.join(capture, 'media.draft.json'), JSON.stringify(draft));
-    await expect(publish({ capture, site, bucket, log })).rejects.toThrow(/lacks pin.*--scene pin/);
+    await expect(publish({ capture, site, bucket, log })).rejects.toThrow(
+      /lacks zoom.*--scene zoom/,
+    );
 
     await writeFile(
       path.join(capture, 'media.draft.json'),
-      JSON.stringify({ ...draft, stills: { ...draft.stills, pin: 'pin.png' } }),
+      JSON.stringify({ ...draft, stills: { ...draft.stills, zoom: 'zoom.png' } }),
     );
-    await writeFile(path.join(capture, 'pin.png'), png(1280, 720));
-    await expect(publish({ capture, site, bucket, log })).rejects.toThrow(/pin.png is 1280 × 720/);
+    await writeFile(path.join(capture, 'zoom.png'), png(1280, 720));
+    await expect(publish({ capture, site, bucket, log })).rejects.toThrow(/zoom.png is 1280 × 720/);
 
-    await writeFile(path.join(capture, 'pin.png'), png(2560, 1440));
+    await writeFile(path.join(capture, 'zoom.png'), png(2560, 1440));
     await writeFile(path.join(capture, 'hero.webm'), 'other bytes, other size');
     await expect(publish({ capture, site, bucket, log })).rejects.toThrow(/hero.webm has 23 bytes/);
 

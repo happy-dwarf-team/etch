@@ -6,14 +6,7 @@ import { MEDIA_TYPES } from './config.ts';
 
 /** The scene ids, the same in bucket keys, file names and the manifest (spec section 8.5). */
 export const LOOP_IDS = ['hero'] as const;
-export const STILL_IDS = [
-  'preview',
-  'pin',
-  'outline',
-  'problems',
-  'resolution',
-  'playset',
-] as const;
+export const STILL_IDS = ['preview', 'views', 'data', 'zoom', 'outline', 'problems'] as const;
 export type LoopId = (typeof LOOP_IDS)[number];
 export type StillId = (typeof STILL_IDS)[number];
 export type SceneId = LoopId | StillId;
