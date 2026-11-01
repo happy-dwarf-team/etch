@@ -426,7 +426,7 @@ install refused its own folder.
 **Not checked live:** the extension inside VS Code (the quick pick, the
 notices, the status bar, the watchers and their latency), textures,
 `DeclareWarDialog`, ironman and multiplayer, a hang timed by the watchdog,
-reopening the view (H8).
+reopening the view (H8, checked later: "Reopening the view: the live run").
 
 ## The province view after a rebuild (H2)
 
@@ -481,6 +481,47 @@ trial's two minutes and more: the lab's disk cache was warm from earlier runs.
 The new game's 9.7 s stretch with a window not responding is the case that
 closed the trial's game; on a slower machine it passes 10 s.
 
+## Reopening the view: the live run (H8)
+
+Run on 2026-11-01 under the EU4 engine lab's procedure (its game lock for the
+batch; `eu4.exe` 1.37.5 `9AD3EFE1…DC4D771A` and the Process Lasso rule
+`eu4.exe,0,1-7` checked before and after and left unchanged; every process
+closed after its PID, path and creation time were checked), with Etch's plugin
+and extension modules from this change and Tongs from tongs#129 (registered as
+0.24.0), driven by the lab's harness of the M8 runs with `reopen.ts`'s rule, not
+from VS Code. Tongs' pipe and input were on in the lab's copy for the player's
+steps (`province open` as the player's click, Escape, the reads of the header);
+the last series ran with Tongs as Etch installs it, without a pipe, the header
+read through the plugin's snapshot. Saves were copies: vanilla windowed
+1920×1080 on the Russia save of 1719.3.17, and Anbennar with Proper 2K UI
+Enhanced and P2KE Patch - Anbennar windowed 2560×1440 on Verne 1444.11.11.
+
+| Check | Vanilla 1920×1080 | Anbennar playset 2560×1440 |
+| --- | --- | --- |
+| `reload provinceview.gui` with the view open, without `reselect` (the trial's case) | the header's name blank (Moskva); the pipe's `province open` of the same province brought it back | blank (Verne) |
+| the same reload with `reselect` | the name stayed: Moskva, Murom, Tsargrad (a foreign province); `reselected` `opened` each time | the name stayed: Clawmarches, Watchman's Point |
+| planned restart with the view open | reopened on 151 (Tsargrad), 130 ms after the load; restart 24.2 s | reopened on 51 (Watchman's Point), 221 ms after the load; restart 48.5 s |
+| crash restart (the process terminated, exit code 1) with the view open | reopened on 295 (Moskva); 24.2 s | reopened on 292 (Verne); 49.3 s |
+| the player closed the view, then a planned restart (vanilla) or a crash (Anbennar) | nothing reopened: "no province was on screen" | the same |
+| the player had another province selected or open | `reselect` of 295 answered `moved_on` with 1754 open and with its view closed again; nothing called | `moved_on` with 289 open |
+| a province the player cannot select | 3190 (terra incognita) `terra_incognita`, 1252 (a sea) `not_selectable`; nothing shown | — |
+| the view closed before the reload (H2) | `hidden_again`, no `reselected`; the view off screen | — |
+| Tongs without a pipe (`enabled = false`, as Etch installs it) | `reselect` of 295 `opened`; the reload kept Moskva; the planned restart (23.7 s) and the crash restart (23.9 s) reopened 295 with its name | — |
+
+- With Tongs' pipe on, each selection that called the game counted in its
+  `client_calls_total`, as Tongs' ADR 0004 says.
+- The reload job's time grew from 169 to 398 ms over the vanilla series while
+  its console line stayed at 108–126 ms: the stale check's reads over the
+  top-level windows, which each province opened added to (1,341 to 5,498, H3),
+  not the selection.
+- The pipe's `selection` once said the view was visible after the H2 reload,
+  while the widget tree, the plugin's read and a screenshot showed it hidden;
+  the plugin reads the view window's own shown byte.
+- Not checked live: an older save after a crash restart (the rule refuses
+  another game; unit tests), a view of the session open at the reselect
+  (`moved_on`, unit tests), the colonisation panel, and the extension inside VS
+  Code.
+
 ## Open points
 
 - **The province view's reload budget:** the stale check's two reads make the
@@ -488,4 +529,3 @@ closed the trial's game; on a slower machine it passes 10 s.
   file, or the windows before the job from the last job's read, would cut it.
 - **Saves of other playsets.** The private profile has one `save games/` for
   every playset, so **Continue** may offer the newest save of another playset.
-- **Reopening the view (H8)**, above.

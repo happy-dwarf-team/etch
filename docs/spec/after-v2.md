@@ -1,7 +1,8 @@
 # After v2
 
 Etch 2.0.0 is the scope of the [v2 specification](v2.md), frozen at that
-release on 1 November 2026. This file is the living list of what it left: the
+release on 1 November 2026. This file is the living list of what it left (and,
+briefly, what was settled since): the
 work v2 put out of scope (its section 16), what the 2.0.0 trial found but did
 not fix ([docs/release-2.0.0.md](../release-2.0.0.md), "The trial" and "Live
 game"), the open issues and the open points, those of v2's section 17 and those
@@ -43,16 +44,6 @@ From section 16 of the v2 specification, with v1's entries that v2 did not take:
   `tongs.ui` version 1, so the preview drawn from it differs there (v2
   section 7, "Not in v2"). Seen in both trial runs against the game, on
   `cffbf88` and `c2cf182`.
-- **Reopening or reselecting the province** after a restart or a reload (H8).
-  The plugin does not call the game's selection `0x139C830` yet; the recorded
-  workaround is that Etch says the view was not reopened (docs/live-game.md,
-  "Reopening the view"). Tongs' `province open` selects a province by id and
-  waits for its view, and the corpus driver uses it since
-  [etch#221](https://github.com/happy-dwarf-team/etch/issues/221); the plugin
-  reads Tongs only through `tongs.ui`. The trial also found that the game's own
-  `reload provinceview.gui` with the province view open clears the province's
-  name in its header until the next reload (3 of 3 provinces, Etch closing and
-  hiding nothing); reselecting the province after a reload would hide it.
 - **An uncolonised province.** That the game shows `colonisationpanel` for land
   without a city is read from `0x1347A50` (etch#155) and the profile's link
   draws it; no live capture of one was taken, so whether any of `provinceview`
@@ -81,6 +72,22 @@ From section 16 of the v2 specification, with v1's entries that v2 did not take:
   P2KE Patch - Anbennar changed after it was pinned; after
   [etch#236](https://github.com/happy-dwarf-team/etch/pull/236) takes them
   again and pins the new version, compare them with the cut.
+- **Reopening and reselecting the province (H8).** After a planned restart
+  and a crash restart the province view comes back on the province the player
+  had on screen, remembered by province id with the game session it was seen
+  in, when the restart continues that game; after a reload of
+  `provinceview.gui` the province on screen is selected again, so that its
+  name, which the game's rebuild leaves blank, comes back. Nothing is forced
+  when the player selected a province or opened a view first, and Tongs
+  refuses a province the player cannot see. Decision: Tongs offers its
+  checked navigation to other plugins as the in-process service
+  `tongs.navigation` (Tongs 0.24.0, its ADR 0004), rather than Etch's plugin
+  calling the game's selection `0x139C830` itself: one copy of the addresses
+  and rules Tongs read in `eu4.exe` and checked live, no game address in Etch's
+  plugin, and `affects_gameplay = false` stays true, since the service makes no
+  game call (opening a view that would make the player discover a capital is
+  refused). The rule for the blank name was read in `eu4.exe` (`0x1345F40`,
+  `0x13470C0`). docs/live-game.md, "Reopening the view" and its live run.
 
 ## Open issues
 

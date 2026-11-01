@@ -101,7 +101,8 @@ you **save** is reloaded into the game's own window, with its real data.
   (`countryview.gui`, `.gfx` files, fonts, `core.gui`, scripted GUIs) asks for a
   **planned restart**: Etch saves, starts the game again and continues the save,
   only after you click **Restart now**. A crash restarts the game at the newest
-  save.
+  save. After either restart the province view comes back on the province you
+  had open, unless you opened something else first.
 - New `error.log` lines go to the Problems panel on the edited file. A saved
   file whose copy in another mod of the playset wins is not reloaded, and Etch
   names that mod.
