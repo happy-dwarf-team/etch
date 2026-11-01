@@ -546,7 +546,10 @@ export class Workbench {
     const filter = this.page.locator('.markers-panel-action-filter input, .viewpane-filter input');
     await filter.first().click();
     await this.page.keyboard.type(text);
-    await this.page.locator('.markers-panel .monaco-list-row', { hasText: text }).first().waitFor();
+    const rows = this.page.locator('.markers-panel .monaco-list-row');
+    await rows.filter({ hasText: text }).first().waitFor();
+    // The filter applies after a debounce: wait until no other problem is listed.
+    await rows.filter({ hasText: 'Etch(' }).filter({ hasNotText: text }).first().waitFor({ state: 'detached' });
   }
 
   /** Puts Playwright's mouse over the editor, where it shows nothing (hovers are off). */

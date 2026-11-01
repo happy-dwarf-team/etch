@@ -99,6 +99,9 @@ export const SCENES: readonly Scene[] = [
       await wb.closeMenus();
       await wb.focusEditor();
       await wb.highlightSettled();
+      // The closed menu reaches the screen a few frames later: hold it, so the loop's last frame
+      // is the moved panel alone, not the menu.
+      await sleep(MENU_MS);
       mark('last-key');
       await wb.paint(() => wb.press('Control+Z'));
       await wb.highlightSettled();
