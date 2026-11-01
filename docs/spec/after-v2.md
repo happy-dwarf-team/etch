@@ -43,10 +43,6 @@ From section 16 of the v2 specification, with v1's entries that v2 did not take:
   `tongs.ui` version 1, so the preview drawn from it differs there (v2
   section 7, "Not in v2"). Seen in both trial runs against the game, on
   `cffbf88` and `c2cf182`.
-- **A long text in a `fixedsize` box.** The game cuts it with "…" (`East
-  Dam...` for a long province name), and the preview wraps it; no rule for the
-  cut has been found in `eu4.exe` yet. `fixedsize` and `truncate` are among the
-  layout properties the offline renderer does not apply (open points, below).
 - **Reopening or reselecting the province** after a restart or a reload (H8).
   The plugin does not call the game's selection `0x139C830` yet; the recorded
   workaround is that Etch says the view was not reopened (docs/live-game.md,
@@ -70,6 +66,21 @@ From section 16 of the v2 specification, with v1's entries that v2 did not take:
   whose placement from `province_modifier_start` matches the captures by no
   rule found, and the history list, whose entry template is in no `.gui` of the
   window.
+
+## Done since 2.0.0
+
+- **A long text in a `fixedsize` box,** left open by the trial: the game cuts
+  it with " ..." (`East Dam ...` for the culture "East Damerian" in the
+  province view of P2KE Patch - Anbennar), and the preview wrapped it over
+  the religion below. The rule is read from `eu4.exe` (the font's fit
+  `0x159F510`, which the text node calls only for a `fixedsize`
+  `instantTextBoxType`) and the offline renderer applies it, with
+  `truncate = no` (v2 section 3). It matched both game screenshots it was
+  checked on and the 196 corpus captures that could be compared. Open: the
+  28 `anbennar` captures were not compared, because the Workshop item of
+  P2KE Patch - Anbennar changed after it was pinned; after
+  [etch#236](https://github.com/happy-dwarf-team/etch/pull/236) takes them
+  again and pins the new version, compare them with the cut.
 
 ## Open issues
 
@@ -141,8 +152,8 @@ with ADR 0005), and the one the release record left of the profiles:
   cornered tiles repeat their edges and middle; `frame` counts from 1;
   `CENTER` anchors round down; a `scale`d sprite keeps fractional pixels; an
   open window stands at `show_position`; an empty progress bar shows its second
-  texture or colour; a shield without a flag shows `textureFile1`. `rotation`,
-  `origo`, `fixedsize` and `truncate` are not applied, and `left`, `right` and
+  texture or colour; a shield without a flag shows `textureFile1`. `rotation`
+  and `origo` are not applied, and `left`, `right` and
   `UPPERL_LEFT` orientations anchor upper left with a diagnostic.
 - Which way `progress.shader` runs `v`: it negates `v` and samples with
   wrapping, which keeps textures upright and fills vertical bars upwards only

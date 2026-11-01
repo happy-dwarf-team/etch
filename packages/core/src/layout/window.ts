@@ -32,6 +32,7 @@ import type { Constants, Properties, Size } from '../model/properties.ts';
 import { resolveFontFiles, resolveTexture, type FileExists } from '../model/references.ts';
 import type { SourceRange } from '../script/tree.ts';
 import type { BmFont } from '../text/bmfont.ts';
+import { fitText, type TextFit } from '../text/fit.ts';
 import {
   layoutText,
   textAlign,
@@ -39,6 +40,7 @@ import {
   type TextBox,
   type TextVerticalAlign,
 } from '../text/layout.ts';
+import { textIconSprite } from '../text/markup.ts';
 import type { TextureSize } from './texture-size.ts';
 
 /** Why a file layout asked for cannot be used. */
@@ -918,7 +920,11 @@ class Layout {
   /**
    * A text box: `maxWidth` × `maxHeight` (an edit box: `size`) with `borderSize` inside (etch#3).
    * Verified on the main menu: the text starts at `y + borderSize.y` and wraps at the inner width
-   * (etch#9); centring is in `layoutText` (etch#44). `fixedsize` and `truncate` are not applied.
+   * (etch#9); centring is in `layoutText` (etch#44).
+   *
+   * Verified in `eu4.exe` 1.37.5: an `instantTextBoxType` with `fixedsize = yes` fits its text
+   * into `maxWidth` × `maxHeight` first (`fitText`), cut with " ..." unless `truncate = no`.
+   * Without `fixedsize`, `truncate` does nothing, and a `textBoxType` never fits its text.
    *
    * Verified in the corpus (etch#44): an `instantTextBoxType` is as tall as its lines plus the
    * border above and below, whatever `maxHeight` and `fixedsize` say; empty text is one line.
@@ -929,10 +935,26 @@ class Layout {
     const height = props.number('maxheight') ?? size?.y;
     const border = props.point('bordersize') ?? { x: 0, y: 0 };
     const box: TextBox = { x, y, width, border, ...(height === undefined ? {} : { height }) };
+    const fixed = kind === 'instantTextBoxType' && props.flag('fixedsize') === true;
     const laid = this.drawText(props, 'text', 'font', box, source, {
       align: textAlign(props.text('format')),
       verticalAlign: verticalAlign(props.text('vertical_alignment')) ?? 'top',
       ...colourCode(props),
+      ...(fixed
+        ? {
+            fit: {
+              // The text node reads only `maxWidth` and `maxHeight`, and makes 0 into 200.
+              width: props.number('maxwidth') || 200,
+              height: props.number('maxheight') || 200,
+              border,
+              truncate: props.flag('truncate') !== false,
+              // Both keys set the same flag (`0x15E7770`).
+              specialChars:
+                props.flag('ignore_special_chars') !== true &&
+                props.flag('use_special_chars') !== false,
+            },
+          }
+        : {}),
     });
     if (kind === 'instantTextBoxType') {
       const lineHeight = this.lineHeightOf(props, 'font');
@@ -1007,6 +1029,8 @@ class Layout {
       align: TextAlign;
       verticalAlign: TextVerticalAlign;
       colourCode?: string;
+      /** A fixed-size text box's box, which the text is fitted into before it is laid out. */
+      fit?: Omit<TextFit, 'iconWidth'>;
     },
   ): number | undefined {
     const sample =
@@ -1036,7 +1060,19 @@ class Layout {
 
     const text = sample ?? this.localise(written);
     const icons = new Map<string, { sprite: Sprite; index: number; size: Extent }>();
-    const laid = layoutText(font, text, box, {
+    const shown =
+      options.fit === undefined
+        ? text
+        : fitText(font, text, {
+            ...options.fit,
+            // The fit measures an icon by its whole texture (`0x109B000`), whatever its frames.
+            iconWidth: (key) => {
+              const sprite = this.input.index.sprite(textIconSprite(key))?.item;
+              if (sprite === undefined) return 0;
+              return this.texture(sprite, 'texturefile', props.scalar(textKey))?.size.width ?? 0;
+            },
+          }).text;
+    const laid = layoutText(font, shown, box, {
       colours: {
         base: definition.colour ?? OPAQUE_WHITE,
         font: definition.textColours,

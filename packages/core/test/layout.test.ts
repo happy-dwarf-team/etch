@@ -562,6 +562,27 @@ describe('layoutWindow: text', () => {
     expect(rectOf(l, 'empty')).toEqual([0, 0, 50, 18]);
     expect(rectOf(l, 'edit')).toEqual([0, 0, 50, 30]);
   });
+
+  it('cuts the text of a fixedsize instant text box, and only there', () => {
+    const { layout } = setUp(`guiTypes = { windowType = { name = "w"
+      instantTextBoxType = { name = "cut" font = "tiny" text = "aaaaaA" maxWidth = 26 maxHeight = 10 fixedsize = yes }
+      instantTextBoxType = { name = "wrapped" font = "tiny" text = "aaaaaA" maxWidth = 26 maxHeight = 10 fixedsize = yes truncate = no }
+      instantTextBoxType = { name = "free" font = "tiny" text = "aaaaaA" maxWidth = 26 maxHeight = 10 truncate = yes }
+      textBoxType = { name = "edit" font = "tiny" text = "aaaaaA" maxWidth = 26 maxHeight = 10 fixedsize = yes }
+    } }`);
+    const l = layout();
+    const glyphCount = (name: string): number => {
+      const text = drawsOf(l, name).find((d) => d.kind === 'text');
+      return text?.kind === 'text' ? text.glyphs.length / GLYPH_STRIDE : 0;
+    };
+    // "a ...": the tiny font has no period, and its space draws nothing.
+    expect(glyphCount('cut')).toBe(1);
+    expect(l.diagnostics.map((d) => d.code)).toContain('missing-glyph');
+    // "aaaaa\n": the line below the box is dropped.
+    expect(glyphCount('wrapped')).toBe(5);
+    expect(glyphCount('free')).toBe(6);
+    expect(glyphCount('edit')).toBe(6);
+  });
 });
 
 describe('layoutWindow: assets', () => {
