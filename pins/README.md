@@ -34,9 +34,9 @@ Only what the live game loads is taken, with its licence texts: from Anvil
 example plugins, and so not the licences of Dear ImGui and miniz, which only
 those contain. From Bellows its whole plugin folder, which goes to
 `anvil/plugins/bellows/`. From Tongs its plugin folder without `include/`
-(the header of `tongs.ui`, which Etch's plugin vendors), to
-`anvil/plugins/tongs/`: the live game loads Tongs for that in-process service
-only, and the private install removes `anvil/data/tongs/settings.toml` and the
+(the headers of `tongs.ui` and `tongs.navigation`, which Etch's plugin
+vendors), to `anvil/plugins/tongs/`: the live game loads Tongs for those
+in-process services only, and the private install removes `anvil/data/tongs/settings.toml` and the
 `ANVIL_TONGS_*` variables before every start, so Tongs keeps its defaults
 (`enabled = false`: no pipe, input or game calls; v2 specification section 6).
 

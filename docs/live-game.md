@@ -40,7 +40,8 @@ It holds the pinned builds of Anvil (with `anvil-game`), Bellows, Tongs and
 Etch's plugin ([pins/README.md](../pins/README.md)); their hashes are checked
 before every start, and nothing else stays in `anvil/plugins/`.
 
-- **Tongs** is loaded for its in-process service `tongs.ui` only. Before every
+- **Tongs** is loaded for its in-process services only: `tongs.ui` and, from
+  Tongs 0.24.0, `tongs.navigation` ("Reopening the view"). Before every
   start the install removes `anvil/data/tongs/settings.toml`, and the game's
   environment drops `ANVIL_TONGS_*`, so Tongs keeps its defaults: no pipe, no
   input, no game calls. Etch's plugin declares a hard dependency on it, which
