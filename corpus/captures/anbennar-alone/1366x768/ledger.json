@@ -3,9 +3,9 @@
   "playset": "anbennar-alone",
   "resolution": { "width": 1366, "height": 768 },
   "view": "ledger",
-  "takenAt": "2026-10-27T22:24:19.825Z",
+  "takenAt": "2026-11-01T05:48:44.513Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
-  "tongs": { "version": "0.14.1" },
+  "tongs": { "version": "0.23.0" },
   "save": { "sha256": "AACEDFE6FD0294B80961679AB9618BC48195A9E9A239BE41292CEFFE156FDD3D" },
   "mods": [
     {
@@ -22,13 +22,13 @@
   },
   "window": { "width": 1366, "height": 768, "dpi": 96 },
   "screenshot": {
-    "sha256": "1CC6DDA9BD80D7785B9E85F69E7CEC862A323476E5C2ECDDBA2357E1C9879207",
+    "sha256": "3A1AFDF9B2938DA86B2A789050F5F89B643AD13CB7508828A7F36EBE74C04DA4",
     "width": 1366,
     "height": 768,
     "shots": 4,
     "unstable": {
-      "pixels": 261052,
-      "sha256": "B05499F4FB965BEE1A7EF92529FF53779526124391A70C12F996E5AB3AF3830B"
+      "pixels": 180551,
+      "sha256": "9754B985522A519F3E371B4DC3ADEA5C70522D9B89D8C55B0EFE51A68095052A"
     }
   },
   "widgets": [
@@ -37,7 +37,7 @@
       "path": "ledger",
       "type": "window",
       "visible": true,
-      "rect": { "x": 124, "y": -16, "w": 1120, "h": 768 },
+      "rect": { "x": 173, "y": 84, "w": 1020, "h": 640 },
       "children": [
         {
           "name": "close",
@@ -238,7 +238,7 @@
                   "path": "ledger/ledger_linegraph_legend/legend_list/standardlistbox_slider",
                   "type": "other",
                   "visible": false,
-                  "rect": { "x": 683, "y": 368, "w": 16, "h": 468 },
+                  "rect": { "x": 683, "y": 368, "w": 16, "h": 400 },
                   "children": [
                     {
                       "name": "listboxSliderButton",
@@ -252,7 +252,7 @@
                       "path": "ledger/ledger_linegraph_legend/legend_list/standardlistbox_slider/listboxTrackButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 683, "y": 384, "w": 12, "h": 452 }
+                      "rect": { "x": 683, "y": 384, "w": 12, "h": 384 }
                     },
                     {
                       "name": "downButton",
@@ -288,7 +288,7 @@
               "path": "ledger/ledger_piecharts/ledger_piechart_bg",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 683, "y": -256, "w": 1020, "h": 640 }
+              "rect": { "x": 683, "y": 0, "w": 683, "h": 384 }
             }
           ]
         },
@@ -297,7 +297,7 @@
           "path": "ledger/ledger_index",
           "type": "window",
           "visible": true,
-          "rect": { "x": 489, "y": 144, "w": 1000, "h": 540 },
+          "rect": { "x": 173, "y": 84, "w": 1020, "h": 640 },
           "children": [
             {
               "name": "ledger_overlay",
@@ -416,7 +416,7 @@
                   "path": "ledger/ledger_index/list/standardlistbox_slider",
                   "type": "other",
                   "visible": false,
-                  "rect": { "x": 683, "y": 368, "w": 16, "h": 496 },
+                  "rect": { "x": 683, "y": 368, "w": 16, "h": 400 },
                   "children": [
                     {
                       "name": "listboxSliderButton",
@@ -430,7 +430,7 @@
                       "path": "ledger/ledger_index/list/standardlistbox_slider/listboxTrackButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 683, "y": 384, "w": 12, "h": 480 }
+                      "rect": { "x": 683, "y": 384, "w": 12, "h": 384 }
                     },
                     {
                       "name": "downButton",
@@ -664,7 +664,7 @@
               "path": "ledger/default_listbox/standardlistbox_slider",
               "type": "other",
               "visible": false,
-              "rect": { "x": 683, "y": 368, "w": 16, "h": 434 },
+              "rect": { "x": 683, "y": 368, "w": 16, "h": 400 },
               "children": [
                 {
                   "name": "listboxSliderButton",
@@ -678,7 +678,7 @@
                   "path": "ledger/default_listbox/standardlistbox_slider/listboxTrackButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 683, "y": 384, "w": 12, "h": 418 }
+                  "rect": { "x": 683, "y": 384, "w": 12, "h": 384 }
                 },
                 {
                   "name": "downButton",

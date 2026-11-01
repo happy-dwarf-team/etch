@@ -3,9 +3,9 @@
   "playset": "vanilla",
   "resolution": { "width": 1600, "height": 900 },
   "view": "court",
-  "takenAt": "2026-10-24T20:50:45.015Z",
+  "takenAt": "2026-11-01T05:23:49.834Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
-  "tongs": { "version": "0.14.1" },
+  "tongs": { "version": "0.23.0" },
   "save": { "sha256": "2A4CAF306CCDDB2DAFC7EE015C4ECFFB260654A1D10D86F5F4F768D3C3F56F6A" },
   "mods": [],
   "disabledDlcs": [],
@@ -13,17 +13,17 @@
     "from": "save",
     "steps": [{ "key": "f1" }],
     "verified": true,
-    "evidence": "Run by the capture driver (etch#42) at 1280x720 and 1920x1080 on 2026-10-21: the steps opened the view and its roots were read and shown."
+    "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown."
   },
   "window": { "width": 1600, "height": 900, "dpi": 96 },
   "screenshot": {
-    "sha256": "05E8622F7931CD74A2ECDABB0D50759B502CB1BAAD12E70561881E7D6A8FF483",
+    "sha256": "5E22598132C875E90158FFABC852C5637C4A3A108DD21E30475092C7D6891EF1",
     "width": 1600,
     "height": 900,
     "shots": 4,
     "unstable": {
-      "pixels": 221986,
-      "sha256": "189FA89F3B057F5E4A51391948CD46CA6AE1B1451C418A8DB520B593214627C1"
+      "pixels": 223918,
+      "sha256": "951C0C7E714553C5C7F49E3044FB0546A4135685E3DD5469C658883C52175C35"
     }
   },
   "widgets": [
@@ -111,7 +111,7 @@
           "path": "countrycourtview/background",
           "type": "icon",
           "visible": true,
-          "rect": { "x": -7, "y": 130, "w": 576, "h": 590 }
+          "rect": { "x": 0, "y": 130, "w": 569, "h": 590 }
         },
         {
           "name": "heir_banner_green",
@@ -411,7 +411,7 @@
               "path": "countrycourtview/court_select/domesticpanel_overlay",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 800, "y": -139, "w": 573, "h": 589 }
+              "rect": { "x": 800, "y": 0, "w": 573, "h": 450 }
             },
             {
               "name": "description",
@@ -1523,14 +1523,14 @@
       "path": "topbar",
       "type": "window",
       "visible": true,
-      "rect": { "x": 0, "y": -1, "w": 1600, "h": 900 },
+      "rect": { "x": 0, "y": 0, "w": 1003, "h": 169 },
       "children": [
         {
           "name": "player_shield",
           "path": "topbar/player_shield",
           "type": "button",
           "visible": true,
-          "rect": { "x": -5, "y": 1, "w": 1, "h": 152 },
+          "rect": { "x": 0, "y": 1, "w": 147, "h": 152 },
           "enabled": true
         },
         {
@@ -1616,21 +1616,21 @@
           "name": "topbar_1",
           "path": "topbar/topbar_1",
           "type": "icon",
-          "visible": true,
+          "visible": false,
           "rect": { "x": 99512, "y": -2, "w": 109, "h": 31 }
         },
         {
           "name": "topbar_2",
           "path": "topbar/topbar_2",
           "type": "icon",
-          "visible": true,
+          "visible": false,
           "rect": { "x": 991024, "y": -2, "w": 109, "h": 31 }
         },
         {
           "name": "topbar_3",
           "path": "topbar/topbar_3",
           "type": "icon",
-          "visible": true,
+          "visible": false,
           "rect": { "x": 991532, "y": -2, "w": 109, "h": 31 }
         },
         {
@@ -1638,7 +1638,7 @@
           "path": "topbar/topbar_upper_left_bg",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 0, "y": -1, "w": 927, "h": 160 }
+          "rect": { "x": 0, "y": 0, "w": 927, "h": 159 }
         },
         {
           "name": "topbar_upper_left_bg4",
@@ -1659,7 +1659,7 @@
           "path": "topbar/player_shield_glow",
           "type": "icon",
           "visible": true,
-          "rect": { "x": -5, "y": 1, "w": 152, "h": 152 }
+          "rect": { "x": 0, "y": 1, "w": 147, "h": 152 }
         },
         {
           "name": "great_power_button_base",
@@ -1952,14 +1952,14 @@
           "path": "topbar/powerprojection_topbar",
           "type": "window",
           "visible": true,
-          "rect": { "x": 148, "y": -1, "w": 100, "h": 100 },
+          "rect": { "x": 639, "y": 0, "w": 95, "h": 49 },
           "children": [
             {
               "name": "topbar_liberty_overlay",
               "path": "topbar/powerprojection_topbar/topbar_liberty_overlay",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 639, "y": -2, "w": 95, "h": 51 }
+              "rect": { "x": 639, "y": 0, "w": 95, "h": 49 }
             },
             {
               "name": "icon_powerprojection",

@@ -3,9 +3,9 @@
   "playset": "vanilla",
   "resolution": { "width": 1280, "height": 720 },
   "view": "ledger",
-  "takenAt": "2026-10-21T22:01:41.850Z",
+  "takenAt": "2026-11-01T05:18:37.858Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
-  "tongs": { "version": "0.14.1" },
+  "tongs": { "version": "0.23.0" },
   "save": { "sha256": "2A4CAF306CCDDB2DAFC7EE015C4ECFFB260654A1D10D86F5F4F768D3C3F56F6A" },
   "mods": [],
   "disabledDlcs": [],
@@ -13,17 +13,17 @@
     "from": "save",
     "steps": [{ "key": "l" }],
     "verified": true,
-    "evidence": "Run by the capture driver (etch#42) at 1280x720 and 1920x1080 on 2026-10-21: the steps opened the view and its roots were read and shown."
+    "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown."
   },
   "window": { "width": 1280, "height": 720, "dpi": 96 },
   "screenshot": {
-    "sha256": "C01BC33A5BDD588CEDD04C4CCBD6DB4BD62F3D4DB2413267A215046901EA199D",
+    "sha256": "404ECB802AC3A9D43FA7DA1FA8B101DD0BDE59571B592463966E69B3B9785A08",
     "width": 1280,
     "height": 720,
     "shots": 4,
     "unstable": {
-      "pixels": 132739,
-      "sha256": "EACEB2EC806ED47B22182F04EC24400DB4B7679A431B1F82EBD9CEAF708DA4B2"
+      "pixels": 130286,
+      "sha256": "8335126F5D0AF2E1300141E1045727AF892672089A8F52712A6FA3508D173891"
     }
   },
   "widgets": [
@@ -32,7 +32,7 @@
       "path": "ledger",
       "type": "window",
       "visible": true,
-      "rect": { "x": 81, "y": -40, "w": 1120, "h": 768 },
+      "rect": { "x": 130, "y": 60, "w": 1020, "h": 640 },
       "children": [
         {
           "name": "close",
@@ -233,7 +233,7 @@
                   "path": "ledger/ledger_linegraph_legend/legend_list/standardlistbox_slider",
                   "type": "other",
                   "visible": false,
-                  "rect": { "x": 640, "y": 344, "w": 16, "h": 468 },
+                  "rect": { "x": 640, "y": 344, "w": 16, "h": 376 },
                   "children": [
                     {
                       "name": "listboxSliderButton",
@@ -247,7 +247,7 @@
                       "path": "ledger/ledger_linegraph_legend/legend_list/standardlistbox_slider/listboxTrackButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 640, "y": 360, "w": 12, "h": 452 }
+                      "rect": { "x": 640, "y": 360, "w": 12, "h": 360 }
                     },
                     {
                       "name": "downButton",
@@ -283,7 +283,7 @@
               "path": "ledger/ledger_piecharts/ledger_piechart_bg",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 640, "y": -280, "w": 1020, "h": 640 }
+              "rect": { "x": 640, "y": 0, "w": 640, "h": 360 }
             }
           ]
         },
@@ -292,7 +292,7 @@
           "path": "ledger/ledger_index",
           "type": "window",
           "visible": true,
-          "rect": { "x": 446, "y": 120, "w": 1000, "h": 540 },
+          "rect": { "x": 130, "y": 60, "w": 1020, "h": 640 },
           "children": [
             {
               "name": "ledger_overlay",
@@ -411,7 +411,7 @@
                   "path": "ledger/ledger_index/list/standardlistbox_slider",
                   "type": "other",
                   "visible": false,
-                  "rect": { "x": 640, "y": 344, "w": 16, "h": 496 },
+                  "rect": { "x": 640, "y": 344, "w": 16, "h": 376 },
                   "children": [
                     {
                       "name": "listboxSliderButton",
@@ -425,7 +425,7 @@
                       "path": "ledger/ledger_index/list/standardlistbox_slider/listboxTrackButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 640, "y": 360, "w": 12, "h": 480 }
+                      "rect": { "x": 640, "y": 360, "w": 12, "h": 360 }
                     },
                     {
                       "name": "downButton",
@@ -659,7 +659,7 @@
               "path": "ledger/default_listbox/standardlistbox_slider",
               "type": "other",
               "visible": false,
-              "rect": { "x": 640, "y": 344, "w": 16, "h": 434 },
+              "rect": { "x": 640, "y": 344, "w": 16, "h": 376 },
               "children": [
                 {
                   "name": "listboxSliderButton",
@@ -673,7 +673,7 @@
                   "path": "ledger/default_listbox/standardlistbox_slider/listboxTrackButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 640, "y": 360, "w": 12, "h": 418 }
+                  "rect": { "x": 640, "y": 360, "w": 12, "h": 360 }
                 },
                 {
                   "name": "downButton",
