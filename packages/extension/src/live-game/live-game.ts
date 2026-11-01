@@ -1031,7 +1031,19 @@ export class LiveGame implements vscode.Disposable {
     if (this.process !== started || loadedAt === undefined) return;
     const province = String(remembered.province);
     try {
-      const r = await started.reselect(remembered.province);
+      // The prompt's last `confirm` (Anbennar) may still run: one job at a time.
+      const attempt = () =>
+        started.reselect(remembered.province).then(
+          (answer) => ({ answer }),
+          (error: unknown) => ({ error }),
+        );
+      let tried = await attempt();
+      for (let tries = 0; 'error' in tried && isBusy(tried.error) && tries < 10; tries++) {
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        tried = await attempt();
+      }
+      if ('error' in tried) throw tried.error;
+      const r = tried.answer;
       const why = reselectedMessage(r);
       if (why === undefined) {
         this.output.info(
@@ -1342,6 +1354,11 @@ function fromModel(
     d.message,
     range,
   );
+}
+
+/** A job refused because another one runs. */
+function isBusy(error: unknown): boolean {
+  return error instanceof PipeError && error.code === 'busy';
 }
 
 /** How long ago a time was, for the quick pick. */

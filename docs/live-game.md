@@ -204,13 +204,57 @@ stops the live game and names the last cause with the end of `error.log`.
 
 ## Reopening the view
 
-After a restart the province view is closed and the game shows the map. Etch
-does not reopen the province yet: the plugin does not call the game's own
-province selection (`0x139C830`, H8), which needs the province holder (the
-in-game idler's `+0x1220`) and a province by id, neither of which the plugin
-can reach yet. When the province view or the country view was on screen at the
-last reload, Etch says after the restart that it was not reopened. This is the
-recorded workaround of H8 until the plugin has it.
+A restart closes the province view, and a reload of `provinceview.gui` leaves
+the province's name blank in the view's header (H8). Etch brings back the
+province the player was editing in both cases, through Tongs' in-process
+service `tongs.navigation` (Tongs 0.24, Tongs' ADR 0004): the game's own
+province selection (`0x139C830`) with the checks of Tongs' `province open`,
+read in `eu4.exe` (Tongs' `research/province-navigation`, tongs#96) and
+checked live in Tongs 0.21. Etch's plugin calls no game address of its own for
+it, so `affects_gameplay = false` stays true: selecting a province changes only
+the camera, the selection and the open views, and the one case in which
+opening a view changes the game (it would post the command that makes the
+player discover the owner's capital) is refused, never made.
+
+- **What is remembered.** The plugin reads the selection every 15 frames and
+  puts the province on screen into every ping (`province_view`: the province
+  id and its window, `provinceview`, or `colonisationpanel` for a province
+  without an owner). The extension's `reopen.ts` remembers it with the game
+  session it was seen in; a ping of that session with no province on screen
+  forgets it (the player closed the view), and so does another session (the
+  player loaded another game).
+- **After a restart** (a planned restart and a crash alike), it reopens the
+  province when the save the restart continues is the game it was shown in: a
+  save written since that session began (the restart's own `autosave.eu4`, the
+  game's monthly autosave, the player's save), or the save the process started
+  from while it was in its first session. Otherwise it says why it did not.
+  Once the save is loaded (the game session is up and two frames passed) it
+  sends `reselect` with the province id. The plugin calls nothing when the
+  player came first: a province selected (even with its view closed again), a
+  province view or colonisation panel open, or a view of the session (the
+  country view, the ledger). Otherwise Tongs' `open_province` moves the camera
+  to the province and selects it, as the game's province links do; two frames
+  later the plugin checks that the view shows it. Tongs refuses a province the
+  player cannot see (terra incognita, in an older save too), a sea or a
+  wasteland, a selection the game blocks, and the discover case; Etch then says
+  why, except when the player came first.
+- **After a reload of `provinceview.gui`** with a province on screen: the game's
+  rebuild (the view's slot `0x10`, `0x1345F40`) rebuilds the window, selects the
+  view's province itself, then clears the province and capital names the view
+  caches (`+0x960`, `+0x980`); the view sets the header's `provincename` only
+  when that cache differs from the province's name (`0x13470C0`, the view's
+  slot `0x48`, run by its refresh), so until the next refresh the name is blank.
+  The policy sends `reselect: true` with the reload (`RESELECTED_BY_REBUILD`),
+  and the plugin selects the province on screen once more at the end of the
+  job, without moving the camera and without closing anything, only when the
+  view still shows that province. It never selects another province: a
+  province change would run `0x134A930`, which posts a rename when the name
+  box holds a text other than the province's name.
+- **The country view** is not reopened: after a restart Etch says to open it
+  again when it was on screen at the last reload.
+- Without `tongs.navigation` (a Tongs before 0.24) the plugin says so in the
+  log, pings carry `province_view: null`, and Etch says after a restart that it
+  did not reopen the view.
 
 ## Pick mode
 
