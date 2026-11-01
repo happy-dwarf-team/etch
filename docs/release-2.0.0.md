@@ -130,8 +130,8 @@ target).
 - **Real mouse and keyboard in pick mode:** a hand at the machine not checked;
   M9's workaround was the posted messages a window procedure subclass sees,
   with the `MK_*` bits cleared and the key-state imports replaced. Left clicks
-  through `SendInput` were checked with the activation click (above): none
-  reached the game.
+  through `SendInput` were checked with the activation click (above), and in
+  the real VS Code of the trial below: none reached the game.
 - **The hotkey with the province view on screen:** holds (M9).
 
 ## Large mods
@@ -280,9 +280,43 @@ once: p95 12.4–12.5 ms in vanilla and 15.6–15.9 ms in the Anbennar playset
 (1920×1080 and 3440×1440, 120 edits; M10: 26.3 and 47.8 ms), cold opens
 277–344 ms and 589–811 ms.
 
-The new candidate is the `windows` job's artifact of the newest commit of
-`main`. The trial continues on it: the rest of `provinceview`,
-the live game (reload, pick, snapshot) and the views of P2KE Patch - Anbennar.
+**The live game in VS Code (candidate `c2cf182`, 2026-11-01).** Run for the
+maintainer, at their request, along the path of their trial: the candidate's
+VSIX in a VS Code profile of its own (first log line `Etch 1.0.1 (c2cf182)`),
+their workspace of P2KE Patch - Anbennar on a copy of the mod, the game
+borderless at 3440×1440 and VS Code beside it at 2560×1440, real input
+(`SendInput`) and a screenshot before each step, under the lab's game lock.
+
+- *Start and a new game:* the main menu was ready after 42 s; a new game
+  (Verne, 1444) from the country selection loaded with the window not
+  responding for about 9 s, and Etch neither closed it nor asked.
+- *Reload:* moving `military_icon` in `provinceview.gui` reloaded in 210 ms
+  and the game drew it moved; undoing it reloaded in 56 ms, and the file's hash
+  came back.
+- *Pick mode:* 8 clicks in the province view and the top bar gave 8 picks,
+  each at its file and line, VS Code in front; the game's log: 8 picks, 7
+  activation clicks, none waited out, 19–22 ms and 2 frames after the click.
+- *Live snapshot:* text colours, building slots, core shields, button states
+  and base values match the game; the code-set sprites above differ.
+- *Stop:* **Etch: Stop the Live Game** saved in the private install in 1.3 s
+  and closed the game.
+- *Zoom and pan (#217):* with the maintainer's own mouse, dragging, the wheel,
+  Ctrl with the wheel and the zoom buttons all worked (an event log read from
+  the preview's frame); the trial's own drags through `SendInput` reached the
+  preview with no button down, which is why they had seemed not to.
+- *The province name after a reload:* the first reload with the province view
+  open clears the province's name in its header (3 of 3 provinces), and the
+  next reload brings it back. Etch only runs the game's `reload
+  provinceview.gui` and closes or hides nothing then, so it is the game's
+  reload; reselecting the province after a reload would hide it, which is the
+  open point of reopening a province (H8).
+- *Not checked:* a hand on the mouse in pick mode.
+
+The same candidate, checked against the game in the Anbennar playset with the
+private install its VSIX stages (`tongs 0.22.0: loaded`, no local builds):
+Verne, Verne's state tab and Cannleigh with its fort match in text colours,
+building slots, core shields, button states and base values, but for the font
+icons and flags fixed in #233.
 
 ## CI
 
