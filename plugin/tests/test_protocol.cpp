@@ -116,6 +116,27 @@ void TestPingSession() {
     assert(session->Find("ironman")->AsBool() == true);
     assert(session->Find("multiplayer")->AsBool() == false);
     assert(session->Find("number")->AsUint() == 3u);
+    // Without tongs.navigation, or with no province on screen: null.
+    assert(a.Find("province_view")->kind() == Value::Kind::Null);
+}
+
+void TestPingProvinceView() {
+    etch::Host host = TestHost();
+    etch::ProvinceView view{295, 295, true, false, false};
+    host.province_view = [&view] { return std::optional<etch::ProvinceView>(view); };
+    Connection c(host);
+    assert(!c.Handle(R"({"id":0,"type":"hello","protocol":2})").close);
+    Value a = Answer(c.Handle(R"({"id":1,"type":"ping"})"));
+    const Value* shown = a.Find("province_view");
+    assert(shown != nullptr && shown->IsObject());
+    assert(shown->Find("province")->AsUint() == 295u && shown->Find("window")->AsString() == "provinceview");
+    view = {1161, 1161, false, true, false};
+    a = Answer(c.Handle(R"({"id":2,"type":"ping"})"));
+    assert(a.Find("province_view")->Find("window")->AsString() == "colonisationpanel");
+    // The view closed: the province it showed stays in the selection, but none is on screen.
+    view = {1161, 1161, false, false, false};
+    a = Answer(c.Handle(R"({"id":3,"type":"ping"})"));
+    assert(a.Find("province_view")->kind() == Value::Kind::Null);
 }
 
 void TestJobsRefused() {
@@ -135,6 +156,15 @@ void TestJobsRefused() {
     // A host without jobs refuses them.
     AssertError(c.Handle(R"({"id":8,"type":"reload","lines":["reload provinceview.gui"]})"), "not_ready", true, 8);
     AssertError(c.Handle(R"({"id":9,"type":"save"})"), "not_ready", true, 9);
+    // reselect takes a province id from 1; a reload's `reselect` is a boolean.
+    for (const char* bad :
+         {R"({"id":11,"type":"reselect"})", R"({"id":11,"type":"reselect","province":0})",
+          R"({"id":11,"type":"reselect","province":-3})", R"({"id":11,"type":"reselect","province":"295"})",
+          R"({"id":11,"type":"reselect","province":4294967296})"}) {
+        AssertError(c.Handle(bad), "bad_request", true, 11);
+    }
+    AssertError(c.Handle(R"({"id":12,"type":"reselect","province":295})"), "not_ready", true, 12);
+    AssertError(c.Handle(R"({"id":13,"type":"reload","lines":["reloadloc"],"reselect":1})"), "bad_request", true, 13);
 }
 
 void TestBadRequests() {
@@ -164,6 +194,7 @@ int main() {
     TestProtocolMismatch();
     TestPing();
     TestPingSession();
+    TestPingProvinceView();
     TestJobsRefused();
     TestBadRequests();
     std::puts("protocol: ok");

@@ -26,6 +26,28 @@ export interface Hello {
   readonly frame: number;
   /** Tongs' `tongs.ui` was found: reloads check the stale windows. */
   readonly tree: boolean;
+  /** Tongs' `tongs.navigation` was found: the view's province can be selected again (H8). */
+  readonly navigation?: boolean;
+}
+
+/** The window that shows a province: the province view, or the colonisation panel without an owner. */
+export type ProvinceWindow = 'provinceview' | 'colonisationpanel';
+
+/** The province on screen, as the plugin last read it (a few frames old at most). */
+export interface ProvinceOnScreen {
+  readonly province: number;
+  readonly window: ProvinceWindow;
+}
+
+/**
+ * Selecting a province again (H8): `opened`; one of Tongs' refusals (`terra_incognita`,
+ * `not_selectable`, `discover`, ...); `moved_on` (the player selected a province or opened a view
+ * first); `not_shown`; `no_navigation` (Tongs without `tongs.navigation`).
+ */
+export interface Reselected {
+  readonly province: number;
+  readonly outcome: string;
+  readonly window: ProvinceWindow | undefined;
 }
 
 /** The game session the plugin last saw: a loaded save or new game. */
@@ -47,6 +69,8 @@ export interface Ping {
   readonly pick: boolean;
   /** `undefined` in the main menu. */
   readonly gameSession: GameSession | undefined;
+  /** The province on screen; `undefined` when none is, or without `tongs.navigation`. */
+  readonly provinceView?: ProvinceOnScreen | undefined;
 }
 
 /** What a `reload` asks the plugin to do, in one job on the main thread. */
@@ -59,6 +83,8 @@ export interface ReloadRequest {
   readonly close?: readonly string[];
   /** Windows closed again when the lines showed them (a rebuild opens the province view, H2). */
   readonly keepHidden?: readonly string[];
+  /** Select the province on screen again after the lines, while the view still shows it (H8). */
+  readonly reselect?: boolean;
 }
 
 export interface ConsoleLine {
@@ -88,6 +114,8 @@ export interface ReloadAnswer {
         readonly roots: { readonly before: number; readonly after: number };
       }
     | undefined;
+  /** With `reselect`, when a province was on screen before the lines. */
+  readonly reselected?: Reselected | undefined;
   readonly queuedMs: number;
   readonly runMs: number;
 }
@@ -223,6 +251,29 @@ function rectOf(value: unknown): readonly [number, number, number, number] {
 function screenOf(value: unknown): { width: number; height: number } {
   const s = (value ?? {}) as Record<string, unknown>;
   return { width: Number(s['width'] ?? 0), height: Number(s['height'] ?? 0) };
+}
+
+function windowOf(value: unknown): ProvinceWindow | undefined {
+  return value === 'provinceview' || value === 'colonisationpanel' ? value : undefined;
+}
+
+/** A ping's `province_view`: `undefined` for null or anything that is not one. */
+export function onScreen(value: unknown): ProvinceOnScreen | undefined {
+  if (value === null || typeof value !== 'object') return undefined;
+  const v = value as Record<string, unknown>;
+  const province = Number(v['province']);
+  const window = windowOf(v['window']);
+  return Number.isInteger(province) && province > 0 && window !== undefined
+    ? { province, window }
+    : undefined;
+}
+
+function reselected(value: Record<string, unknown>): Reselected {
+  return {
+    province: Number(value['province']),
+    outcome: typeof value['outcome'] === 'string' ? value['outcome'] : 'unknown',
+    window: windowOf(value['window']),
+  };
 }
 
 function readPick(line: Record<string, unknown>): PickEvent {
@@ -422,7 +473,16 @@ export class HostPipe {
               multiplayer: session['multiplayer'] === true,
               number: Number(session['number']),
             },
+      provinceView: onScreen(answer['province_view']),
     };
+  }
+
+  /**
+   * After a restart, opens the view of `province` again, as the game's province links do, unless the
+   * player selected a province or opened a view first (H8, docs/plugin-protocol.md, `reselect`).
+   */
+  async reselect(province: number, timeoutMs = 10_000): Promise<Reselected> {
+    return reselected(await this.request({ type: 'reselect', province }, timeoutMs));
   }
 
   /**
@@ -438,9 +498,11 @@ export class HostPipe {
         check: request.check ?? [],
         close: request.close ?? [],
         keep_hidden: request.keepHidden ?? [],
+        ...(request.reselect === true ? { reselect: true } : {}),
       },
       timeoutMs,
     );
+    const again = answer['reselected'];
     const roots = answer['roots'] as { before: number; after: number } | undefined;
     return {
       lines: (answer['lines'] as ConsoleLine[] | undefined) ?? [],
@@ -455,6 +517,10 @@ export class HostPipe {
               visible: (answer['visible'] as { name: string; file: string }[] | undefined) ?? [],
               roots,
             }
+          : undefined,
+      reselected:
+        again !== null && typeof again === 'object'
+          ? reselected(again as Record<string, unknown>)
           : undefined,
       queuedMs: Number(answer['queued_ms']),
       runMs: Number(answer['run_ms']),
