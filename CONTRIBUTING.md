@@ -70,12 +70,11 @@ two `package.json` versions differ, and the plugin's build when
 request publishes to both stores at once, so it is merged only on the
 maintainer's go-ahead.
 
-Until 2.0.0 no store release comes from `main` (ADR 0005, v2 specification
-section 13): the release pull request waits, and 2.0.0 is released with
-`Release-As: 2.0.0`. Fixes for 1.0.x (bugs only) go by pull request to
-`release/1.x`, cut at `v1.0.1`, which releases them with its own release-please
-pull request until 2.0.0 and gets none after; a fix that `main` needs too goes
-to both. [docs/release.md](docs/release.md) has the steps.
+Until 2.0.0 no store release came from `main` (ADR 0005, v2 specification
+section 13), and 2.0.0 was released with `Release-As: 2.0.0`. Fixes for 1.0.x
+(bugs only) went by pull request to `release/1.x`, cut at `v1.0.1`, which
+released them with its own release-please pull request until 2.0.0 and gets
+none after. [docs/release.md](docs/release.md) has the steps.
 
 ## Repository layout
 
@@ -93,7 +92,7 @@ A pnpm workspace (ADR 0001):
 | `pins`               | pinned game-side builds: release tag, URL and SHA-256 (pins/README.md) |
 | `profiles`           | window profiles Etch ships, by source, and their JSON Schema (ADR 0006) |
 | `docs/adr`           | architecture decisions                                         |
-| `docs/spec`          | the v1 specification (frozen) and the v2 specification         |
+| `docs/spec`          | the v1 and v2 specifications (frozen) and after-v2.md (living) |
 
 Workspace packages are TypeScript sources that esbuild bundles into the
 extension and the webview script. The VSIX has no runtime dependencies besides

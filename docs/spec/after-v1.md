@@ -1,12 +1,14 @@
 # After v1
 
+**Status: final.** Since 2.0.0 (1 November 2026) [after-v2.md](after-v2.md) is
+the living list; it took every entry below that is still open. This file stays
+as the record of what 1.x left, as it stood at 2.0.0, and is no longer changed.
+
 Etch 1.0.0 is the scope of the [v1 specification](v1.md), frozen at that
-release. This file is the living list of what it left: the work v1 put out of
+release. This file was the living list of what it left: the work v1 put out of
 scope, what the v1 milestones found but did not plan, the open issues and the
-open points. When implementation learns something that changes an entry, a pull
-request changes it here. The [v2 specification](v2.md) took its scope from this
-list; entries it settles say so, and the rest stay here until 2.0.0, when
-`after-v2.md` takes over.
+open points. The [v2 specification](v2.md) took its scope from this list;
+entries it settles say so, and the rest moved to after-v2.md at 2.0.0.
 
 ## Not in v1
 

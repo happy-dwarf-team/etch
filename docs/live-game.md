@@ -279,8 +279,8 @@ the format and what the preview takes from it; the extension's
   game process (PID and start time), the game window's size, the widgets and
   the stale count. A list box's rows are by position, `…/listbox/row[2]/…`: a
   window under a list box is one of its rows, numbered in the order the game
-  holds them. The game date waits for `anvil-game` to offer it (spec
-  section 17).
+  holds them. The game date waits for `anvil-game` to offer it
+  ([after-v2.md](spec/after-v2.md#open-points)).
 - **Kept** in the extension's workspace storage (`live-snapshots/<playset>/
   <window>.json`), the latest per top-level window and playset; a snapshot of
   another playset drops the others. Never in the mod's project, never shared
