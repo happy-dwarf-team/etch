@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.1](https://github.com/happy-dwarf-team/etch/compare/v2.1.0...v2.1.1) (2026-11-02)
+
+
+### Bug Fixes
+
+* **extension:** suggest 2560x1440 and 3840x2160 for the preview resolution ([#246](https://github.com/happy-dwarf-team/etch/issues/246)) ([7004a17](https://github.com/happy-dwarf-team/etch/commit/7004a17f2c0bacf1e4ca9a9184e4516cfc9a0c0d)), closes [#163](https://github.com/happy-dwarf-team/etch/issues/163)
+
 ## [2.1.0](https://github.com/happy-dwarf-team/etch/compare/v2.0.0...v2.1.0) (2026-11-01)
 
 
