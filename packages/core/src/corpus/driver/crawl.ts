@@ -23,7 +23,7 @@ import { dirname, join } from 'node:path';
 import type { RecipeStart, RecipeStep } from '../manifest.ts';
 import { matchesWidgetPattern } from '../widget-path.ts';
 import type { CaptureSession } from './plan.ts';
-import { runSession, type RunOptions, type SessionReport } from './run.ts';
+import { runSession, waitResume, type RunOptions, type SessionReport } from './run.ts';
 import type { Tongs, TongsAnswer } from './tongs.ts';
 import {
   DEFAULT_TIMING,
@@ -535,7 +535,15 @@ export async function runCrawl(
     );
     if (result.fatal !== undefined) return { crawl, sessions, stopped: result.fatal };
     if (result.report.mouseReleased === true) {
-      return { crawl, sessions, stopped: 'The mouse was released.' };
+      // As a capture run: the mouse is the user's until they create `resume` in the run folder.
+      if (!(await waitResume(options, runDir, { now, sleep, print }))) {
+        return {
+          crawl,
+          sessions,
+          stopped: 'The mouse was released and the crawl was not resumed.',
+        };
+      }
+      start--;
     }
     // A session that asked for a fresh start, or whose time ran out: the next start goes on.
   }

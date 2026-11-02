@@ -479,8 +479,8 @@ async function releaseMouse(
  * After the user took the mouse back, with no game running: waits until they create `resume` in
  * the run folder (removed again), or for the timeout.
  */
-async function waitResume(
-  options: RunOptions,
+export async function waitResume(
+  options: Pick<RunOptions, 'resumeTimeoutMs'>,
   runDir: string,
   env: { now: () => Date; sleep: (ms: number) => Promise<void>; print: (line: string) => void },
 ): Promise<boolean> {
