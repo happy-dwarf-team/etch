@@ -83,6 +83,7 @@ export async function layOutPreview(
     readonly localise?: (text: string) => string;
     readonly view?: LayoutView;
     readonly content?: LayoutContent;
+    readonly windowSize?: Screen;
   },
 ): Promise<WindowLayout> {
   const input: LayoutInput = {

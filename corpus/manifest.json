@@ -132,7 +132,8 @@
         "ledger",
         "settings",
         "macro-builder",
-        "estates"
+        "estates",
+        "event"
       ],
       "note": "The event window is out of the 0.2.0 gate until a recipe opens an event (https://github.com/happy-dwarf-team/etch/issues/97, maintainer's consent in https://github.com/happy-dwarf-team/etch/issues/44#issuecomment-6388493594)."
     },
@@ -164,7 +165,8 @@
         "ledger",
         "settings",
         "macro-builder",
-        "estates"
+        "estates",
+        "event"
       ],
       "resolutions": ["2560x1440", "3440x1440", "3840x2160"],
       "note": "The event window is out of the 0.2.0 gate until a recipe opens an event (https://github.com/happy-dwarf-team/etch/issues/97, maintainer's consent in https://github.com/happy-dwarf-team/etch/issues/44#issuecomment-6388493594). Captured at 2560×1440 and above since M10: the mod is made for screens of at least 2560×1440."
@@ -210,7 +212,8 @@
         "ledger",
         "settings",
         "macro-builder",
-        "estates"
+        "estates",
+        "event"
       ],
       "resolutions": ["2560x1440", "3440x1440", "3840x2160"],
       "note": "Gates 2.0.0 since M10 (spec v2 section 10) at 2560×1440 and above, as Proper 2K UI Enhanced asks; below that the corpus takes Anbennar alone. Proper 2K UI Enhanced overrides every vanilla .gui file, so every corpus window is one the playset’s mods override; the event window waits for a recipe (https://github.com/happy-dwarf-team/etch/issues/97)."
@@ -244,7 +247,8 @@
         "ledger",
         "settings",
         "macro-builder",
-        "estates"
+        "estates",
+        "event"
       ],
       "resolutions": ["1280x720", "1366x768", "1600x900", "1680x1050", "1920x1080"],
       "note": "Anbennar without Proper 2K UI Enhanced, at the sizes below 2560×1440, which the Anbennar playset with Proper 2K UI Enhanced is not captured at (M10). The same save as the Anbennar playset."
@@ -1165,11 +1169,42 @@
           "recipe": {
             "from": "save",
             "steps": [],
-            "verified": false,
-            "evidence": "No event is open when the save loads, a recipe runs no time, and three game years run from the save with Tongs opened none (etch#44); a recipe is etch#97's."
+            "verified": true,
+            "evidence": "Run by the capture driver (etch#42) on 2026-11-02 at every gating size of the four release playsets, with Tongs 0.14.1: the view's save loads with its event open, so the recipe has no step, and EventWindow was read (etch#97)."
           },
-          "roots": [],
-          "codeFilled": []
+          "roots": ["EventWindow"],
+          "codeFilled": [
+            "EventWindow/Title",
+            "EventWindow/Description",
+            "EventWindow/event_picture"
+          ],
+          "save": {
+            "file": "Russia1719_03_17_event.eu4",
+            "sha256": "FE1EC50168BFB7F412C0957CE016940617533A9EA2DC8780FE86A9074255CEA6",
+            "description": "The playset's save, Russia on 17 March 1719, with the event flavor_rus.11 (Hundred Chapter Synod) open: loaded in the lab's private copy, the event opened once with Tongs' console (a game call, in that game only) and saved again through the Esc menu (etch#97). The save it was made from is unchanged."
+          },
+          "byPlayset": {
+            "anbennar": {
+              "save": {
+                "file": "Verne1444_11_11_event.eu4",
+                "sha256": "C2B960AED4143C311DA2CED51763AA4B72D0B5FA5BCB971B31C80C4706A30C14",
+                "description": "The maintainer's save of 2026-10-26 (Verne, 11 November 1444) with two of its three opening events answered in the lab's private copy (verne.100 with its one option, anb_settings.1 with Start game) and lilac_wars.1 left open, saved again through the Esc menu (etch#97). No game call; the maintainer's file is unchanged.",
+                "confirm": "DefaultConfirm/AgreeButton"
+              },
+              "note": "Anbennar's own event: lilac_wars.1, one option."
+            },
+            "anbennar-alone": {
+              "save": {
+                "file": "Verne1444_11_11_event.eu4",
+                "sha256": "C2B960AED4143C311DA2CED51763AA4B72D0B5FA5BCB971B31C80C4706A30C14",
+                "description": "The maintainer's save of 2026-10-26 (Verne, 11 November 1444) with two of its three opening events answered in the lab's private copy (verne.100 with its one option, anb_settings.1 with Start game) and lilac_wars.1 left open, saved again through the Esc menu (etch#97). No game call; the maintainer's file is unchanged.",
+                "confirm": "DefaultConfirm/AgreeButton"
+              },
+              "note": "Anbennar's own event: lilac_wars.1, one option."
+            }
+          },
+          "codeMoved": ["EventWindow/event_bg_bottom", "EventWindow/event_option_listbox"],
+          "codeSized": ["EventWindow"]
         }
       ]
     }

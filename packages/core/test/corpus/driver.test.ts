@@ -123,7 +123,7 @@ describe('display settings for a resolution', () => {
 });
 
 describe('planCaptures', () => {
-  it('starts the game twice per playset and resolution: main menu, then the save', async () => {
+  it("starts the game three times per playset and resolution: main menu, save, event's save", async () => {
     const manifest = await corpusManifest();
     const plan = planCaptures(manifest);
     // Each release playset at its own confirmed resolutions (Proper 2K UI Enhanced from 2560×1440).
@@ -140,13 +140,16 @@ describe('planCaptures', () => {
           ).length,
         0,
       );
-    expect(plan.sessions).toHaveLength(pairs * 2);
+    expect(plan.sessions).toHaveLength(pairs * 3);
     expect(describeSession(plan.sessions[0] as CaptureSession)).toBe(
       'vanilla 1280x720 from main-menu: main-menu, lobby',
     );
     expect(plan.sessions[1]?.start).toBe('save');
     expect(plan.sessions[1]?.views.map((v) => v.id)).toContain('diplomacy-dialog');
-    // The event view is in no release playset until it has a recipe (etch#97).
+    // The event view loads a save with an event open (etch#97).
+    expect(describeSession(plan.sessions[2] as CaptureSession)).toBe(
+      'vanilla 1280x720 from save Russia1719_03_17_event.eu4: event',
+    );
     expect(plan.skipped).toEqual([]);
   });
 

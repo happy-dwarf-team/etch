@@ -683,6 +683,82 @@ describe('runCaptures', () => {
     ]);
   });
 
+  it("starts the game once more for a view's own save and records that save", async () => {
+    const { root, started, games, options } = await runFixture();
+    const EVENT_TEXT = 'EU4txt save with an event open';
+    await writeFile(join(root, 'sources', 'saves', 'event.eu4'), EVENT_TEXT);
+    const json = JSON.parse(JSON.stringify(options.manifest)) as {
+      playsets: { windows: string[] }[];
+      windows: unknown[];
+    };
+    json.playsets[0]?.windows.push('event');
+    json.windows.push({
+      id: 'event',
+      title: 'Event',
+      files: ['interface/eventwindow.gui'],
+      why: 'test',
+      views: [
+        {
+          ...view('event', 'save', [], ['EventWindow'], true),
+          save: {
+            file: 'event.eu4',
+            sha256: await sha(EVENT_TEXT),
+            description: 'an event open',
+            confirm: 'DefaultConfirm/AgreeButton',
+          },
+        },
+      ],
+    });
+    const manifest = parseCorpusManifest(json).manifest;
+    if (manifest === undefined) throw new Error('invalid manifest');
+    const confirm: FakeWindow = { name: 'DefaultConfirm', children: ['AgreeButton'] };
+    const launcher: GameLauncher = {
+      ...options.launcher,
+      async start(profile, save) {
+        const record = await options.launcher.start(profile, save);
+        if (save === 'event.eu4') {
+          // The save opens with its event, behind the save's own confirmation.
+          const game = new FakeGame(
+            [...WINDOWS, confirm, { name: 'EventWindow' }],
+            ['topbar', 'EventWindow', 'DefaultConfirm'],
+            join(root, 'shots'),
+            SIZE,
+          );
+          game.onClick = () => {
+            game.open.splice(game.open.indexOf('DefaultConfirm'), 1);
+            game.inGame = true;
+          };
+          games.push(game);
+        }
+        return record;
+      },
+    };
+    const sessions = planCaptures(manifest).sessions;
+    const report = await runCaptures({ ...options, manifest, sessions, launcher });
+
+    expect(report.stopped).toBeUndefined();
+    expect(started).toEqual(['menu', 'a.eu4', 'event.eu4']);
+    expect(report.sessions.map((s) => s.session)).toEqual([
+      'vanilla 640x360 from main-menu: main-menu, lobby',
+      'vanilla 640x360 from save: ledger',
+      'vanilla 640x360 from save event.eu4: event',
+    ]);
+    expect(report.sessions.map((s) => s.views.map((v) => `${v.view} ${String(v.ok)}`))).toEqual([
+      ['main-menu true', 'lobby true'],
+      ['ledger true'],
+      ['event true'],
+    ]);
+    expect(games.at(-1)?.calls).toContain('ui click DefaultConfirm/AgreeButton timeout=10');
+    const records = join(root, 'records', 'captures', 'vanilla', '640x360');
+    const saveOf = async (view: string): Promise<unknown> =>
+      (JSON.parse(await readFile(join(records, `${view}.json`), 'utf8')) as { save: unknown }).save;
+    expect(await saveOf('event')).toEqual({ sha256: await sha(EVENT_TEXT) });
+    expect(await saveOf('ledger')).toEqual({ sha256: await sha(SAVE_TEXT) });
+    // Both saves are in the playset's profile, each copied from the player's saves.
+    const { profile } = playsetProfile(options.hostDir, 'vanilla');
+    expect((await readdir(join(profile, 'save games'))).sort()).toEqual(['a.eu4', 'event.eu4']);
+  });
+
   it('pauses when the user takes the mouse back, and goes on in a fresh start once resumed', async () => {
     const { root, started, stopped, games, mouse, options } = await runFixture();
     const lines: string[] = [];
