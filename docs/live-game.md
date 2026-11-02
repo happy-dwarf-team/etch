@@ -320,12 +320,15 @@ the format and what the preview takes from it; the extension's
   window when the game shows it ("not on screen" otherwise). No snapshot is
   taken of a stale window; stale widgets inside one are left out and counted.
 - **Format:** JSON, `formatVersion: 1`: the window, the time, the save the
-  live game started from, the SHA-256 of the window's winning `.gui` file, the
-  game process (PID and start time), the game window's size, the widgets and
-  the stale count. A list box's rows are by position, `…/listbox/row[2]/…`: a
-  window under a list box is one of its rows, numbered in the order the game
-  holds them. The game date waits for `anvil-game` to offer it
-  ([after-v2.md](spec/after-v2.md#open-points)).
+  live game started from, the game date (`gameDate`, `1444.11.11`), the
+  SHA-256 of the window's winning `.gui` file, the game process (PID and start
+  time), the game window's size, the widgets and the stale count. A list box's
+  rows are by position, `…/listbox/row[2]/…`: a window under a list box is one
+  of its rows, numbered in the order the game holds them. The game date comes
+  from `anvil-game`'s `date` (Anvil 1.6.0 and later), read with
+  the widgets; a snapshot from the main menu, or from a game with an older
+  Anvil, has none and is otherwise the same. `Data ▾` shows it with the time
+  and the save: "as of 06:00:00, 1719.3.17, Russia1719.eu4".
 - **Kept** in the extension's workspace storage (`live-snapshots/<playset>/
   <window>.json`), the latest per top-level window and playset; a snapshot of
   another playset drops the others. Never in the mod's project, never shared

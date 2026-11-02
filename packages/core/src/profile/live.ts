@@ -37,7 +37,10 @@ export interface LiveSnapshot {
   readonly save?: string;
   /** SHA-256 of the window's winning `.gui` file when it was taken. */
   readonly fileHash?: string;
-  /** The game date, once `anvil-game` offers it (docs/spec/after-v2.md). */
+  /**
+   * The game date as a save writes it (`1444.11.11`): from `anvil-game` 1.6.0, while a session
+   * runs. Left out in the main menu and with an older Anvil or plugin.
+   */
   readonly gameDate?: string;
   /** The game process it came from: another one makes the snapshot "older". */
   readonly game?: { readonly pid: number; readonly startMs: number };
