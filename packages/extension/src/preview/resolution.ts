@@ -1,6 +1,7 @@
 // The command that chooses the preview resolution (spec section 6): the default (the player's
-// `settings.txt`, else the monitor), the monitor's native resolution, one of the six corpus
-// resolutions or a custom width × height. The choice is the `etch.previewResolution` setting.
+// `settings.txt`, else the monitor), the monitor's native resolution, one of the corpus
+// resolutions (3840×2160 marked as not measured against the game) or a custom width × height. The
+// choice is the `etch.previewResolution` setting.
 
 import * as vscode from 'vscode';
 import {
