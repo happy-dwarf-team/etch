@@ -7,7 +7,7 @@
  */
 import { copyFile, mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import type { CorpusPlayset } from '../manifest.ts';
+import type { CorpusPlayset, CorpusSave } from '../manifest.ts';
 import { hashFile, hashModFolder } from '../files.ts';
 
 export interface PlaysetProfile {
@@ -43,13 +43,15 @@ export function profileDescriptor(itemDescriptor: string, itemFolder: string): s
 
 /**
  * Creates or refreshes the playset's profile: `settings.txt` and its named baseline at the first
- * use, the mod descriptors and `dlc_load.json` every time, and the save copied once. Checks the
- * save's hash and every mod's content hash against the manifest; returns the hashes it read.
+ * use, the mod descriptors and `dlc_load.json` every time, and the save copied once: the playset's,
+ * or the one a session's views load instead (`viewSave`). Checks the save's hash and every mod's
+ * content hash against the manifest; returns the hashes it read.
  */
 export async function prepareProfile(
   hostDir: string,
   playset: CorpusPlayset,
   sources: ProfileSources,
+  pinned: CorpusSave | undefined = playset.save,
 ): Promise<{ saveSha256?: string; mods: { name: string; sha256: string }[] }> {
   const { profile, baselines } = playsetProfile(hostDir, playset.id);
   await mkdir(join(profile, 'mod'), { recursive: true });
@@ -88,22 +90,20 @@ export async function prepareProfile(
     JSON.stringify({ enabled_mods: enabled, disabled_dlcs: playset.disabledDlcs }),
   );
 
-  if (playset.save === undefined) return { mods };
+  if (pinned === undefined) return { mods };
   const saveFolder = join(profile, 'save games');
-  const save = join(saveFolder, playset.save.file);
+  const save = join(saveFolder, pinned.file);
   if (!(await exists(save))) {
-    const source = join(sources.saves, playset.save.file);
-    if ((await hashFile(source)) !== playset.save.sha256) {
+    const source = join(sources.saves, pinned.file);
+    if ((await hashFile(source)) !== pinned.sha256) {
       throw new Error(`${source} is not the save the manifest pins.`);
     }
     await mkdir(saveFolder, { recursive: true });
     await copyFile(source, save);
   }
   const saveSha256 = await hashFile(save);
-  if (saveSha256 !== playset.save.sha256) {
-    throw new Error(
-      `The profile's copy of ${playset.save.file} is not the save the manifest pins.`,
-    );
+  if (saveSha256 !== pinned.sha256) {
+    throw new Error(`The profile's copy of ${pinned.file} is not the save the manifest pins.`);
   }
   return { saveSha256, mods };
 }

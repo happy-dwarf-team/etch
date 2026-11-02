@@ -148,6 +148,11 @@ switch ($Action) {
         if (Test-Path -LiteralPath $HostDir) { throw "$HostDir exists; remove it first to prepare again" }
         $anvilSha = Assert-Archive $AnvilZip
         $tongsSha = Assert-Archive $TongsZip
+        # An Anvil installed in the Steam folder (a lab script's run) would become a junction of the
+        # copy, and the archives and settings would be written into it.
+        foreach ($n in 'version.dll', 'anvil') {
+            if (Test-Path (Join-Path $steamGame $n)) { throw "$n is in the Steam game folder; not preparing" }
+        }
         Assert-LabPreflight | Out-Null
         New-Item -ItemType Directory $copy, (Join-Path $HostDir 'profiles') | Out-Null
         foreach ($d in Get-ChildItem -LiteralPath $steamGame -Directory) {
