@@ -10,9 +10,9 @@ mods: edit a `.gui` or `.gfx` file and see the window as the game would show
 it, within moments, and have each saved file reloaded into the running game.
 Website: [etch.happydwarf.dev](https://etch.happydwarf.dev/).
 
-Status: the latest release is 2.1.0 (1 November 2026). 2.0.0, released the
-same day, is the whole of the [v2 specification](docs/spec/v2.md), frozen with
-it; what comes after it is in
+Status: 2.x, whose later releases the [changelog](CHANGELOG.md) lists. 2.0.0,
+released on 1 November 2026, is the whole of the
+[v2 specification](docs/spec/v2.md), frozen with it; what comes after it is in
 [docs/spec/after-v2.md](docs/spec/after-v2.md). v2 replaced 1.x's game host and
 its diff view with the **live game**: Etch's private copy of the game, played
 beside the editor, with each saved file reloaded into the game's own window,
