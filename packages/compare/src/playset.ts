@@ -136,12 +136,14 @@ export class CorpusPlaysetFiles {
 
   /**
    * A top-level window laid out at a resolution, or `undefined` when the playset defines none by
-   * that name. A definition in one of `files` (the corpus window's) is preferred.
+   * that name. A definition in one of `files` (the corpus window's) is preferred. `size` replaces
+   * the window's `.gui` size where the game's code sets it (the view's `codeSized`).
    */
   async window(
     name: string,
     screen: Screen,
     files: readonly string[] = [],
+    size?: Screen,
   ): Promise<PlanWindow | undefined> {
     const definitions = this.ui.index.guiTypeDefinitions(name);
     const preferred = new Set(files.map((f) => f.toLowerCase()));
@@ -153,6 +155,7 @@ export class CorpusPlaysetFiles {
     const layout = await layOutPreview(this.ui, this.assets, file, definition.item, {
       screen,
       localise: (text) => this.localisation?.text(text) ?? text,
+      ...(size !== undefined ? { windowSize: size } : {}),
     });
     const context = { constants: file.constants, index: this.ui.index, screen };
     return { layout, shaderOf: (widget) => spriteShaderOf(widget, context) };

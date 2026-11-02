@@ -125,6 +125,11 @@ export interface CorpusView {
    */
   readonly codeMoved?: readonly string[];
   /**
+   * Patterns of the top-level windows whose size the game's code sets, as the event window fits
+   * its text: the comparison lays each out at the size the game shows it (etch#97).
+   */
+  readonly codeSized?: readonly string[];
+  /**
    * The values of the window profiles' selectors this view is captured with, by selector id, where
    * a profile has a choice the screen does not make (`resolution` selectors come from the capture's
    * size). The visibility gate evaluates each profiled root's profile with them (ADR 0006).
@@ -649,7 +654,7 @@ function checkView(
     value,
     at,
     ['id', 'title', 'recipe', 'roots', 'codeFilled'],
-    ['codeMoved', 'selectors', 'data', 'save', 'byPlayset', 'note'],
+    ['codeMoved', 'codeSized', 'selectors', 'data', 'save', 'byPlayset', 'note'],
   );
   if (json === undefined) return undefined;
   const id = c.string(json['id'], field(at, 'id'), ID, 'an id in lowercase words joined by -');
@@ -664,6 +669,15 @@ function checkView(
   c.array(json['codeFilled'], field(at, 'codeFilled'), (v, pathAt) => pattern(c, v, pathAt));
   if (json['codeMoved'] !== undefined) {
     c.array(json['codeMoved'], field(at, 'codeMoved'), (v, pathAt) => pattern(c, v, pathAt));
+  }
+  if (json['codeSized'] !== undefined) {
+    c.array(json['codeSized'], field(at, 'codeSized'), (v, pathAt) => {
+      const sized = pattern(c, v, pathAt);
+      if (typeof sized === 'string' && sized.includes('/')) {
+        c.fail(pathAt, 'Only a top-level window takes the size the game gives it.');
+      }
+      return sized;
+    });
   }
   if ('selectors' in json) checkSelectors(c, json['selectors'], field(at, 'selectors'));
   if ('data' in json) checkData(c, json['data'], field(at, 'data'));
