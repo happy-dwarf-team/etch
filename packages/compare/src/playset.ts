@@ -27,9 +27,18 @@ import {
 import type { Localisation, Widget } from '@etch/core';
 import {
   checkProfile,
+  evaluateView,
   layerProfiles,
+  layoutContentOf,
+  layoutViewOf,
+  liveDifferences,
+  liveMatch,
+  liveSelectors,
   profileModMatches,
   readProfile,
+  sampleData,
+  type LiveSnapshot,
+  type LiveTexts,
   type PlaysetModKey,
   type ProfileFile,
   type WindowProfile,
@@ -208,6 +217,92 @@ export class CorpusPlaysetFiles {
       window: definition.item,
       problems: checked.diagnostics.map((d) => `${d.file}: ${d.message}`),
     };
+  }
+
+  /**
+   * A top-level window laid out as the preview draws it from a live snapshot (spec v2 section 7,
+   * the extension's `preview.ts`): with its profile, the selectors the snapshot fits, the
+   * profile's differences from it as toggles from the game, and the snapshot's texts, rows and
+   * states as the top sample data layer, from the profile's default view. Without a profile the
+   * preview takes nothing from a snapshot, and neither does this.
+   */
+  async livePreview(
+    name: string,
+    screen: Screen,
+    snapshot: LiveSnapshot,
+    loaded: { profile: WindowProfile; window: Widget } | undefined,
+    size?: Screen,
+  ): Promise<
+    { window: PlanWindow; texts?: LiveTexts; unknownSelectors: readonly string[] } | undefined
+  > {
+    const definition = this.ui.index.guiTypeDefinitions(name)[0];
+    const file = this.ui.index.guiFiles.find((f) => f.path === definition?.path)?.file;
+    if (definition === undefined || file === undefined) return undefined;
+    const context = { constants: file.constants, index: this.ui.index, screen };
+    const windowSize = size === undefined ? {} : { windowSize: size };
+    const shaderOf = (widget: Widget): string | undefined => spriteShaderOf(widget, context);
+    const localise = (text: string): string => this.localisation?.text(text) ?? text;
+    if (loaded === undefined) {
+      const layout = await layOutPreview(this.ui, this.assets, file, definition.item, {
+        screen,
+        localise,
+        ...windowSize,
+      });
+      return { window: { layout, shaderOf }, unknownSelectors: [] };
+    }
+    const { profile } = loaded;
+    const window = definition.item;
+    const own = profile.views.find((v) => v.id === profile.defaultView);
+    const choice = {
+      set: Object.fromEntries((own?.set ?? []).map((s) => [s.selector, s.value])),
+      toggles: Object.fromEntries((own?.toggles ?? []).map((t) => [t.path, t.shown])),
+    };
+    const live = liveSelectors(profile, window, snapshot);
+    const gameToggles = liveDifferences(
+      profile,
+      window,
+      screen,
+      { ...choice, live: live.values },
+      snapshot,
+    );
+    const view = evaluateView(profile, window, screen, {
+      ...choice,
+      live: live.values,
+      gameToggles,
+    });
+    const matched = liveMatch(snapshot, window, profile);
+    const sample = sampleData(profile, window, view, {
+      localise: this.localise,
+      length: 'typical',
+      live: matched.texts,
+      template: (template) => {
+        const found = this.ui.index.guiType(template);
+        const owner = this.ui.index.guiFiles.find((f) => f.path === found?.path)?.file;
+        return found === undefined || owner === undefined
+          ? undefined
+          : { widget: found.item, file: owner };
+      },
+    });
+    const layout = await layOutPreview(this.ui, this.assets, file, window, {
+      screen,
+      localise,
+      view: layoutViewOf(view),
+      content: layoutContentOf(sample),
+      ...windowSize,
+    });
+    return { window: { layout, shaderOf }, texts: matched.texts, unknownSelectors: live.unknown };
+  }
+
+  /** The winning top-level definition of a name, as the game takes it (the first in load order). */
+  definition(name: string): Widget | undefined {
+    return this.ui.index.guiTypeDefinitions(name)[0]?.item;
+  }
+
+  /** Every top-level definition of the playset's `.gui` files: kind, name and file. */
+  topLevel(): { kind: string; name: string; file: string }[] {
+    return this.ui.index.guiFiles.flatMap((f) =>
+      f.file.definitions.map((d) => ({ kind: d.kind, name: d.name ?? '', file: f.path })),
+    );
   }
 
   /** The playset's English localisation of a key; `undefined` when it has none. */

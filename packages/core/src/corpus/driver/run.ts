@@ -125,6 +125,12 @@ export interface RunOptions {
    * mouse back; then it stops.
    */
   readonly resumeTimeoutMs?: number;
+  /**
+   * Explores the started game instead of capturing the session's views: the coverage survey's
+   * crawler (`crawl.ts`), called once the start state has settled. `restart` asks for a fresh start
+   * of the same session, as when the game's state changed.
+   */
+  readonly explore?: (ctx: ViewContext, dir: string) => Promise<{ readonly restart: boolean }>;
 }
 
 export interface SessionReport {
@@ -242,15 +248,17 @@ export async function runCaptures(options: RunOptions): Promise<RunReport> {
   }
 }
 
-interface SessionResult {
+export interface SessionResult {
   readonly report: SessionReport;
   /** Views not yet tried because the start state was lost. */
   readonly remaining: readonly CorpusView[];
   /** The procedure was broken: the run stops. */
   readonly fatal?: string;
+  /** `explore` asked for a fresh start, or the game could not be explored to the end. */
+  readonly restart?: boolean;
 }
 
-async function runSession(
+export async function runSession(
   options: RunOptions,
   session: CaptureSession,
   runDir: string,
@@ -310,6 +318,7 @@ async function runSession(
   let readyMs: number | undefined;
   let error: string | undefined;
   let remaining: CorpusView[] = [];
+  let restart = false;
   let mouseReleased = false;
   const { mouse } = options.launcher;
   try {
@@ -353,7 +362,10 @@ async function runSession(
     try {
       const windows = await settleStart(context(tongs, ready.version, []));
       log({ startWindows: windows });
-      for (const [i, view] of session.views.entries()) {
+      if (options.explore !== undefined) {
+        restart = (await options.explore(context(tongs, ready.version, windows), dir)).restart;
+      }
+      for (const [i, view] of (options.explore === undefined ? session.views : []).entries()) {
         const outcome = await captureView(context(tongs, ready.version, windows), view);
         outcomes.push(outcome);
         if (outcome.ok) {
@@ -448,7 +460,8 @@ async function runSession(
     const done = new Set(outcomes.map((o) => o.view));
     remaining = session.views.filter((v) => !done.has(v.id));
   }
-  return { report, remaining };
+  if (error !== undefined || mouseReleased) restart = options.explore !== undefined;
+  return { report, remaining, ...(restart ? { restart } : {}) };
 }
 
 async function releaseMouse(

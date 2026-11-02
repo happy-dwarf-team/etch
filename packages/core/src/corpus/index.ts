@@ -101,3 +101,34 @@ export {
   type VisibilityMismatch,
   type VisibilityResult,
 } from './visibility.ts';
+export {
+  changedRoots,
+  laterRow,
+  newCrawlFile,
+  readCrawlFile,
+  viewSignature,
+  type CrawlFile,
+  type CrawlOutcome,
+  type CrawlRules,
+  type CrawlState,
+  type TreeWidget,
+} from './driver/crawl.ts';
+export {
+  SURVEY_FORMAT_VERSION,
+  readSurveyConfig,
+  surveyManifest,
+  surveyViewId,
+  type SurveyConfig,
+  type SurveyPlayset,
+} from './survey.ts';
+export {
+  constructsOf,
+  outlineGeometry,
+  snapshotOf,
+  textAgreement,
+  visibilityAgreement,
+  type GeometryCounts,
+  type RectMismatch,
+  type TextCounts,
+  type VisibilityCounts,
+} from './coverage.ts';
