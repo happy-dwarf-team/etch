@@ -89,10 +89,11 @@ A pnpm workspace (ADR 0001):
 | `packages/media`     | the Etch site's media: demo mod, clips (docs/media.md); never shipped |
 | `plugin`             | the live game's Anvil plugin (C++, CMake, Anvil SDK)           |
 | `corpus`             | precision corpus manifest and capture records (no screenshots) |
+| `coverage`           | the coverage survey's rules, `survey.json` (docs/coverage.md)  |
 | `pins`               | pinned game-side builds: release tag, URL and SHA-256 (pins/README.md) |
 | `profiles`           | window profiles Etch ships, by source, and their JSON Schema (ADR 0006) |
 | `docs/adr`           | architecture decisions                                         |
-| `docs/spec`          | the v1 and v2 specifications (frozen) and after-v2.md (living) |
+| `docs/spec`          | the v1 and v2 specifications (frozen), after-v2.md (living) and the v3 draft |
 
 Workspace packages are TypeScript sources that esbuild bundles into the
 extension and the webview script. The VSIX has no runtime dependencies besides

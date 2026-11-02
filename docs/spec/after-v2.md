@@ -64,6 +64,12 @@ From section 16 of the v2 specification, with v1's entries that v2 did not take:
 
 ## Done since 2.0.0
 
+- **The coverage survey and the v3 draft.** The grilling of 2 November 2026
+  started the [v3 specification draft](v3.md): v3 is to be trusted for every
+  view of vanilla and Anbennar, measured by the coverage survey
+  ([docs/coverage.md](../coverage.md)), which crawls the game for its views and
+  measures the outline, the live snapshot and the pixels of each one.
+
 - **A long text in a `fixedsize` box,** left open by the trial: the game cuts
   it with " ..." (`East Dam ...` for the culture "East Damerian" in the
   province view of P2KE Patch - Anbennar), and the preview wrapped it over
