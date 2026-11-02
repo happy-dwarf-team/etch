@@ -17,7 +17,9 @@ import {
   readCorpusManifest,
   requiredCaptures,
   viewInPlayset,
+  viewSave,
   type CorpusManifest,
+  type CorpusView,
   type KnownDeviation,
 } from '../../src/corpus/index.ts';
 import { SUPPORTED_GAME_EXE_SHA256 } from '../../src/playset/index.ts';
@@ -287,6 +289,43 @@ describe('parseCorpusManifest', () => {
     ]);
   });
 
+  it("checks a view's own save, in the view and by playset", () => {
+    const event = { file: 'event.eu4', sha256: 'B'.repeat(64), description: 'an event open' };
+    expect(
+      problemsOf((m) => {
+        set(m, 'windows.1.views.0.save', event);
+        set(m, 'windows.1.views.0.byPlayset', {
+          'big-mod': { save: { ...event, file: 'mod-event.eu4', confirm: 'DefaultConfirm' } },
+        });
+      }),
+    ).toEqual([]);
+    expect(
+      problemsOf((m) => {
+        set(m, 'windows.0.views.0.save', event);
+        set(m, 'windows.1.views.0.save', { file: 'event.sav', sha256: 'b', colour: 'red' });
+        set(m, 'windows.1.views.0.byPlayset', {
+          'big-mod': {
+            recipe: { from: 'main-menu', steps: [], verified: false, evidence: 'not yet' },
+            save: event,
+          },
+        });
+      }),
+    ).toEqual([
+      'windows[0].views[0].save: A view opened from the main menu loads no save.',
+      'windows[1].views[0].save.colour: Unknown field "colour".',
+      'windows[1].views[0].save: Missing field "description".',
+      'windows[1].views[0].save.file: "event.sav" is not a save file name.',
+      'windows[1].views[0].save.sha256: "b" is not an uppercase SHA-256.',
+      'windows[1].views[0].byPlayset.big-mod.save: A view opened from the main menu loads no save.',
+    ]);
+    // One file name is one save in a playset's profile.
+    expect(
+      problemsOf((m) => {
+        set(m, 'windows.1.views.0.save', { ...event, file: 'a.eu4' });
+      }),
+    ).toEqual(['windows[1].views[0]: The playset "vanilla" has another save named a.eu4.']);
+  });
+
   it("checks a playset's resolutions", () => {
     expect(
       problemsOf((m) => {
@@ -407,6 +446,26 @@ describe('the corpus helpers', () => {
     const own = viewInPlayset(view, { id: 'big-mod' });
     expect(own.recipe.steps).toEqual([{ key: 'f2' }]);
     expect(own.selectors).toEqual({ owner: 'no', tab: 'province' });
+  });
+
+  it("loads a view's own save in place of its playset's", () => {
+    const event = { file: 'event.eu4', sha256: 'B'.repeat(64), description: 'an event open' };
+    const modEvent = { ...event, file: 'mod-event.eu4' };
+    const m = sample();
+    set(m, 'windows.1.views.0.save', event);
+    set(m, 'windows.1.views.0.byPlayset', { 'big-mod': { save: modEvent } });
+    const parsed = parseCorpusManifest(m).manifest as CorpusManifest;
+    const [vanilla, bigMod] = parsed.playsets;
+    const view = findView(parsed, 'court')?.view;
+    const menu = findView(parsed, 'main-menu')?.view;
+    if (view === undefined || menu === undefined || vanilla === undefined || bigMod === undefined)
+      throw new Error('no view');
+    expect(viewSave(viewInPlayset(view, vanilla), vanilla)).toEqual(event);
+    expect(viewSave(viewInPlayset(view, bigMod), bigMod)).toEqual(modEvent);
+    expect(viewSave(findView(manifest, 'court')?.view as CorpusView, vanilla)).toEqual(
+      vanilla.save,
+    );
+    expect(viewSave(menu, vanilla)).toBeUndefined();
   });
 
   it('names capture files by playset, resolution and view', () => {

@@ -1,16 +1,19 @@
 /**
  * Which game sessions a capture run needs. ADR 0002 asks for a fresh game start for each
  * resolution and playset; views opened from the main menu and views opened from the save get a
- * start each, because the game cannot go back from a loaded save to a fresh main menu.
+ * start each, because the game cannot go back from a loaded save to a fresh main menu, and so does
+ * each view's own save (an event open, etch#97).
  */
 import {
   findView,
   requiredCaptures,
   resolutionKey,
   viewInPlayset,
+  viewSave,
   type CorpusManifest,
   type CorpusPlayset,
   type CorpusResolution,
+  type CorpusSave,
   type CorpusView,
   type RecipeStart,
 } from '../manifest.ts';
@@ -19,6 +22,8 @@ export interface CaptureSession {
   readonly playset: CorpusPlayset;
   readonly resolution: CorpusResolution;
   readonly start: RecipeStart;
+  /** The save the game loads, from a save: the playset's, or the views' own (`viewSave`). */
+  readonly save?: CorpusSave;
   /** The views to capture, in manifest order. */
   readonly views: readonly CorpusView[];
 }
@@ -44,7 +49,10 @@ export interface PlanFilter {
   readonly views?: readonly string[];
 }
 
-/** The sessions of a run, playset by playset, resolution by resolution, main menu first. */
+/**
+ * The sessions of a run, playset by playset, resolution by resolution: the main menu first, then
+ * the playset's save, then the views' own saves.
+ */
 export function planCaptures(manifest: CorpusManifest, filter: PlanFilter = {}): CapturePlan {
   const unknown = [
     ...(filter.playsets ?? [])
@@ -78,7 +86,8 @@ export function planCaptures(manifest: CorpusManifest, filter: PlanFilter = {}):
       skip('The recipe names no roots to read.');
       continue;
     }
-    if (view.recipe.from === 'save' && playset.save === undefined) {
+    const save = viewSave(view, playset);
+    if (view.recipe.from === 'save' && save === undefined) {
       skip(`The playset "${playset.id}" has no save.`);
       continue;
     }
@@ -86,15 +95,22 @@ export function planCaptures(manifest: CorpusManifest, filter: PlanFilter = {}):
       skip(`The playset "${playset.id}" has a mod without a Workshop item or a pin.`);
       continue;
     }
-    const id = `${playset.id} ${resolution} ${view.recipe.from}`;
+    const id = `${playset.id} ${resolution} ${view.recipe.from} ${save?.file ?? ''}`;
     let session = sessions.get(id);
     if (session === undefined) {
-      session = { playset, resolution: size, start: view.recipe.from, views: [] };
+      session = {
+        playset,
+        resolution: size,
+        start: view.recipe.from,
+        ...(save !== undefined ? { save } : {}),
+        views: [],
+      };
       sessions.set(id, session);
     }
     session.views.push(view);
   }
-  const order = (s: CaptureSession): number => (s.start === 'main-menu' ? 0 : 1);
+  const order = (s: CaptureSession): number =>
+    s.start === 'main-menu' ? 0 : s.save?.file === s.playset.save?.file ? 1 : 2;
   // Stable sort: playsets and resolutions keep manifest order, the main menu goes first.
   const list = [...sessions.values()];
   const grouped = list.sort((a, b) => {
@@ -109,5 +125,9 @@ export function planCaptures(manifest: CorpusManifest, filter: PlanFilter = {}):
 
 /** One line per session, for a run's log and a dry run. */
 export function describeSession(session: CaptureSession): string {
-  return `${session.playset.id} ${resolutionKey(session.resolution)} from ${session.start}: ${session.views.map((v) => v.id).join(', ')}`;
+  const own =
+    session.save !== undefined && session.save.file !== session.playset.save?.file
+      ? ` ${session.save.file}`
+      : '';
+  return `${session.playset.id} ${resolutionKey(session.resolution)} from ${session.start}${own}: ${session.views.map((v) => v.id).join(', ')}`;
 }

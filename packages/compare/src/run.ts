@@ -29,6 +29,7 @@ import {
   unstableMaskFile,
   splitWidgetPath,
   viewInPlayset,
+  viewSave,
   windowReport,
   type CaptureKey,
   type CaptureOutcome,
@@ -153,7 +154,7 @@ export async function runCorpus(options: RunOptions): Promise<RunResult> {
           key,
           record,
           corpusWindow,
-          await saveOf(manifest, options, key.playset, saves, log),
+          await saveOf(manifest, options, key, saves, log),
         );
         const problems = [
           ...comparison.problems,
@@ -286,25 +287,31 @@ async function profileGate(
 }
 
 /**
- * The playset's pinned save from `savesFolder`, read once per playset; `undefined` without the
- * folder, the file, or when the file is not the one the playset pins.
+ * The save the capture's view loads in its playset (`viewSave`) from `savesFolder`, read once per
+ * save; `undefined` without the folder, the file, or when the file is not the one the view pins.
  */
 function saveOf(
   manifest: CorpusManifest,
   options: RunOptions,
-  playsetId: string,
+  key: CaptureKey,
   saves: Map<string, Promise<Save | undefined>>,
   log: (line: string) => void,
 ): Promise<Save | undefined> {
-  let reading = saves.get(playsetId);
+  const playset = manifest.playsets.find((p) => p.id === key.playset);
+  const found = findView(manifest, key.view);
+  const pinned =
+    playset === undefined || found === undefined
+      ? undefined
+      : (viewSave(viewInPlayset(found.view, playset), playset) ?? playset.save);
+  if (options.savesFolder === undefined || pinned === undefined) return Promise.resolve(undefined);
+  const savesFolder = options.savesFolder;
+  let reading = saves.get(pinned.sha256);
   if (reading === undefined) {
     reading = (async () => {
-      const pinned = manifest.playsets.find((p) => p.id === playsetId)?.save;
-      if (options.savesFolder === undefined || pinned === undefined) return undefined;
-      const file = join(options.savesFolder, pinned.file);
+      const file = join(savesFolder, pinned.file);
       try {
         if ((await hashFile(file)) !== pinned.sha256) {
-          log(`${file}: not the save the playset pins; its save texts are not reported`);
+          log(`${file}: not the save the manifest pins; its save texts are not reported`);
           return undefined;
         }
         return await readSave(await readFile(file));
@@ -313,7 +320,7 @@ function saveOf(
         return undefined;
       }
     })();
-    saves.set(playsetId, reading);
+    saves.set(pinned.sha256, reading);
   }
   return reading;
 }
