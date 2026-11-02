@@ -24,11 +24,24 @@ export function snapshotOf(answer: SnapshotAnswer, meta: SnapshotMeta): LiveSnap
     takenAt: meta.takenAt.toISOString(),
     ...(meta.save === undefined ? {} : { save: meta.save }),
     ...(meta.fileHash === undefined ? {} : { fileHash: meta.fileHash }),
+    ...(answer.date === undefined ? {} : { gameDate: answer.date }),
     ...(meta.game === undefined ? {} : { game: meta.game }),
     screen: answer.screen,
     widgets: liveWidgetsOf(answer.widgets),
     stale: answer.stale,
   };
+}
+
+/**
+ * When a snapshot was taken, as `Data ▾` says it: the time, the game date when the snapshot has
+ * one, and the save, `as of 06:00:00, 1719.3.17, Russia1719.eu4`.
+ */
+export function snapshotWhen(snapshot: LiveSnapshot): string {
+  return [
+    `as of ${new Date(snapshot.takenAt).toLocaleTimeString()}`,
+    ...(snapshot.gameDate === undefined ? [] : [snapshot.gameDate]),
+    ...(snapshot.save === undefined ? [] : [snapshot.save]),
+  ].join(', ');
 }
 
 /** A key of a playset: its game folder (however it is spelled) and mods in load order. */

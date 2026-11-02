@@ -131,7 +131,6 @@ process:
   change is a planned restart.
 - Starting the player's `eu4.exe` directly, without Steam, beside the live
   game (not tried, H11).
-- The game date in a live snapshot needs `anvil-game.game` to offer it.
 - Reload policy rows not run live: `DeclareWarDialog` (an on-demand window
   closed before a reload), texture reloads, ironman and multiplayer
   (docs/release-2.0.0.md, "Live game").
