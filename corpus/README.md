@@ -454,7 +454,7 @@ both release playsets of v1 passed (etch#44). In M10, with the province views,
 the Anbennar playsets gating and the matrix of 2560×1440 and above for Proper
 2K UI Enhanced, 208 of the 224 gating captures passed at first, and all 224 for
 2.0.0 ([docs/release-2.0.0.md](../docs/release-2.0.0.md)). Taken again with
-Tongs 0.23.0 (etch#232), all 224 pass (2026-11-02).
+Tongs 0.23.0 (etch#232), all 240 pass with the event view (2026-11-02).
 SwiftShader rounds the linear
 filtering of scaled sprites differently: with it a few scaled icons of the
 diplomacy view, the declare war dialog and the province view fall to 94–99 %
