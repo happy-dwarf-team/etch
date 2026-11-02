@@ -267,7 +267,15 @@ export async function crawlGame(
       );
     }
     for (const step of state.steps) {
-      const answer = await runStep(ctx, stepCommand(step, window), timing);
+      let answer;
+      try {
+        answer = await runStep(ctx, stepCommand(step, window), timing);
+      } catch (error) {
+        // Tongs refused a step (a button no longer shown): the view cannot be reached again.
+        if (!(error instanceof ViewFailure) || error.lost) throw error;
+        state.unreproducible = error.message;
+        return false;
+      }
       if ('click' in step && (answer['clicked'] === undefined || answer['clicked'] === false)) {
         state.unreproducible = `"${stepCommand(step, window)}" did not click.`;
         return false;
