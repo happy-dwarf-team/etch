@@ -5,7 +5,7 @@
  *   node packages/core/src/corpus/driver/cli.ts plan [filters]
  *   node packages/core/src/corpus/driver/cli.ts run --lab <lab> --host <dir> --monitor 3440x1440
  *     --settings-baseline <settings.txt> [--records <dir>] [--manifest <file>] [--lock-minutes 240]
- *     [filters]
+ *     [--max-starts 2] [filters]
  *
  * The coverage survey (docs/coverage.md), with ETCH_CORPUS_PATH set to the survey's local folder:
  *
@@ -204,6 +204,7 @@ async function main(): Promise<void> {
           prettier.format(json, { ...(await prettier.resolveConfig(file)), filepath: file }),
         away: away(flags),
         ...(flags.has('hold') ? { holdMs: Number(flags.get('hold')) * 60_000 } : {}),
+        ...(flags.has('max-starts') ? { maxStarts: Number(flags.get('max-starts')) } : {}),
         print,
       });
     },

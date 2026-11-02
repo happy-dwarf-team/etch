@@ -75,8 +75,9 @@ export interface CrawlState {
   /** Its steps did not lead to it again. */
   unreproducible?: string;
   /**
-   * Escape does not close it (the outliner's options open the Esc menu instead): the capture
-   * driver could not go on to the next view after it, so the survey does not capture it.
+   * Escape does not close it (the outliner's options open the Esc menu instead, the main menu's
+   * windows close only by their own buttons): it is not explored, and the capture driver takes it
+   * last, in a game of its own.
    */
   escapeFails?: string;
 }
@@ -344,7 +345,7 @@ export async function crawlGame(
   } catch (error) {
     if (error instanceof ViewFailure && error.lost && last !== undefined) {
       // The last click left something Escape cannot close: it is not clicked again, and the view
-      // it opened, with every view found from it, is not explored or captured.
+      // it opened, with every view found from it, is not explored.
       const before = crawl.tried[last];
       const shown =
         before?.kind === 'opened' || before?.kind === 'known'

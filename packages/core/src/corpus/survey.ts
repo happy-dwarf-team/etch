@@ -71,9 +71,14 @@ export function surveyManifest(
   const byPlayset = new Map<string, string[]>();
   for (const crawl of crawls) {
     if (crawl.resolution !== config.resolution) continue;
-    for (const state of crawl.states) {
-      if (state.unreproducible !== undefined || state.escapeFails !== undefined) continue;
-      if (state.roots.length === 0) continue;
+    // A view Escape does not close ends its game when it is captured: such views go last, each
+    // taken by a fresh start of its own (`run --max-starts`).
+    const states = [
+      ...crawl.states.filter((x) => x.escapeFails === undefined),
+      ...crawl.states.filter((x) => x.escapeFails !== undefined),
+    ];
+    for (const state of states) {
+      if (state.unreproducible !== undefined || state.roots.length === 0) continue;
       const id = surveyViewId(crawl.playset, crawl.start, state.id);
       const view: CorpusView = {
         id,
@@ -86,6 +91,9 @@ export function surveyManifest(
         },
         roots: state.roots,
         codeFilled: [],
+        ...(state.escapeFails === undefined
+          ? {}
+          : { note: `Escape does not close it: ${state.escapeFails}` }),
       };
       const files = [
         ...new Set(state.roots.map((r) => fileOf(crawl.playset, r) ?? 'interface/unknown.gui')),
