@@ -93,11 +93,17 @@ From section 16 of the v2 specification, with v1's entries that v2 did not take:
   refused). The rule for the blank name was read in `eu4.exe` (`0x1345F40`,
   `0x13470C0`). docs/live-game.md, "Reopening the view" and its live run.
 
+- **The event window in the corpus (etch#97).** The event view loads its own
+  save with one event open (`flavor_rus.11` in the Russian save, `lilac_wars.1`
+  in the Anbennar one), so its recipe has no step and no capture makes a game
+  call, and the window gates the release playsets again. The game sizes the
+  window to its text (`codeSized`: laid out at the size the game shows it). With
+  `compare --gpu` (ANGLE on Direct3D 11, 2026-11-02) all 16 of its gating
+  captures pass, taken with Tongs 0.14.1 (corpus/README.md).
+
 ## Open issues
 
-- [etch#97](https://github.com/happy-dwarf-team/etch/issues/97): a recipe that
-  opens an event for the corpus. The event window gates no release until it
-  has one, in any playset.
+None open.
 
 ## Open points
 

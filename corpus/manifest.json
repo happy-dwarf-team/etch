@@ -1176,7 +1176,8 @@
           "codeFilled": [
             "EventWindow/Title",
             "EventWindow/Description",
-            "EventWindow/event_picture"
+            "EventWindow/event_picture",
+            "EventWindow/event_bg_middle[2]"
           ],
           "save": {
             "file": "Russia1719_03_17_event.eu4",
