@@ -32,7 +32,7 @@ such as a list's row template) or **not reached**.
 state (its save, and the main menu) it tries, breadth first and up to three
 steps deep, every shown and enabled button and check box, in a list only the
 first row; in the start state also the survey's keys (`f1` to `f10`, `l`, `b`)
-and up to three provinces of each kind (own, foreign, uncolonised, wasteland,
+and up to eight provinces of each kind (own, foreign, uncolonised, wasteland,
 sea), opened with Tongs' `province open`. A step that shows a new signature is
 a new view, with the steps that led to it as its recipe.
 

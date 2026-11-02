@@ -41,6 +41,12 @@ import {
 
 export const CRAWL_FORMAT_VERSION = 1;
 
+/**
+ * Provinces tried of each kind: the game refuses those the player has not discovered (Anbennar's
+ * first uncolonised ones are terra incognita), and a refusal costs no navigation.
+ */
+const PROVINCES_PER_KIND = 8;
+
 /** Milliseconds the crawler waits after a step or an Escape, after the frame that follows it. */
 const CRAWL_SETTLE_MS = 350;
 
@@ -445,7 +451,7 @@ async function candidatesOf(
 }
 
 /**
- * Up to three provinces of each kind, by reading provinces by id from 1 until each kind has three or
+ * Up to eight provinces of each kind, by reading provinces by id from 1 until each kind has eight or
  * an id answers that it has no province.
  */
 async function findProvinces(
@@ -454,7 +460,7 @@ async function findProvinces(
 ): Promise<Partial<Record<ProvinceKind, number[]>>> {
   const player = String((await tongs.call('player'))['tag']);
   const found: Partial<Record<ProvinceKind, number[]>> = {};
-  const full = (): boolean => kinds.every((k) => (found[k]?.length ?? 0) >= 3);
+  const full = (): boolean => kinds.every((k) => (found[k]?.length ?? 0) >= PROVINCES_PER_KIND);
   let misses = 0;
   for (let id = 1; id < 10_000 && !full() && misses < 50; id++) {
     const p = await tongs.call(`province ${String(id)}`);
@@ -473,7 +479,7 @@ async function findProvinces(
             : p['owner'] === player
               ? 'own'
               : 'foreign';
-    if (!kinds.includes(kind) || (found[kind]?.length ?? 0) >= 3) continue;
+    if (!kinds.includes(kind) || (found[kind]?.length ?? 0) >= PROVINCES_PER_KIND) continue;
     found[kind] = [...(found[kind] ?? []), id];
   }
   return found;
