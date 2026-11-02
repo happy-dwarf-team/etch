@@ -328,7 +328,14 @@ the format and what the preview takes from it; the extension's
   from `anvil-game`'s `date` (Anvil 1.6.0 and later), read with
   the widgets; a snapshot from the main menu, or from a game with an older
   Anvil, has none and is otherwise the same. `Data ▾` shows it with the time
-  and the save: "as of 06:00:00, 1719.3.17, Russia1719.eu4".
+  and the save: "as of 06:00:00, 1719.3.17, Russia1719.eu4". Checked live on
+  2026-11-02 (etch#250), vanilla, a private install made by `prepareInstall`
+  with the plugin of the branch, three starts under the lab's procedure: the
+  main menu on Anvil 1.6.1 (`country_selection_panel`, `date` `null`), the
+  corpus save on Anvil 1.6.1 (`speed_controls` and `topbar`, `1719.3.17`;
+  `DateText` showed "17 March 1719") and the same save on Anvil 1.5.2's
+  loader and `anvil-game` (`date` `null`, the snapshot otherwise the same).
+  The game drew 38–162 frames a second.
 - **Kept** in the extension's workspace storage (`live-snapshots/<playset>/
   <window>.json`), the latest per top-level window and playset; a snapshot of
   another playset drops the others. Never in the mod's project, never shared
