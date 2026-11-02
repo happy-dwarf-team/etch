@@ -2,7 +2,7 @@
   "name": "etch",
   "displayName": "Etch",
   "description": "Preview Europa Universalis IV interface mods while you edit them.",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "publisher": "happy-dwarf-team",
   "private": true,
   "license": "MIT",
@@ -258,7 +258,9 @@
             "1600x900",
             "1680x1050",
             "1920x1080",
-            "3440x1440"
+            "2560x1440",
+            "3440x1440",
+            "3840x2160"
           ],
           "scope": "window",
           "markdownDescription": "The screen size the preview lays windows out on and evaluates `if_resolution` blocks against: `default` (the resolution in the game's `settings.txt`, else the monitor's), `native` (the monitor's resolution), or a width × height such as `1920x1080`. UI scale is always 1.0. The command **Etch: Choose the Preview Resolution** also offers the corpus resolutions."
@@ -286,7 +288,7 @@
     "@etch/renderer": "workspace:*",
     "@types/vscode": "~1.100.0",
     "@vscode/test-electron": "^3.1.0",
-    "@vscode/vsce": "^4.0.0",
+    "@vscode/vsce": "^4.1.0",
     "esbuild": "^0.28.2",
     "ovsx": "^1.3.0"
   }

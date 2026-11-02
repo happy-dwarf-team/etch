@@ -71,6 +71,7 @@ Reply Connection::Handle(std::string_view line) {
     if (*type == "reload") return Reload(*id, request);
     if (*type == "save") return Save(*id);
     if (*type == "confirm") return Confirm(*id, request);
+    if (*type == "reselect") return Reselect(*id, request);
     if (*type == "pick_mode") return PickMode(*id, request);
     if (*type == "snapshot") return Snapshot(*id, request);
     return {Error(id, "unknown_type", "unknown request type")};
@@ -107,6 +108,7 @@ Reply Connection::Hello(std::uint64_t id, const json::Value& request) {
                 .Bool("ready", host_.ready())
                 .Uint("frame", host_.frame())
                 .Bool("tree", host_.tree)
+                .Bool("navigation", host_.navigation)
                 .Finish()};
 }
 
@@ -127,7 +129,34 @@ Reply Connection::Ping(std::uint64_t id) const {
     } else {
         w.Null("game_session");
     }
+    const std::optional<ProvinceView> view = host_.province_view ? host_.province_view() : std::nullopt;
+    if (view && view->OnScreen() > 0) {
+        json::Writer v;
+        w.Raw("province_view",
+              v.Uint("province", static_cast<std::uint64_t>(view->OnScreen())).Str("window", view->Window()).Finish());
+    } else {
+        w.Null("province_view");
+    }
     return {w.Finish()};
+}
+
+Reply Connection::Reselect(std::uint64_t id, const json::Value& request) {
+    const json::Value* province_member = request.Find("province");
+    const std::optional<std::uint64_t> province = province_member ? province_member->AsUint() : std::nullopt;
+    if (!province || *province == 0 || *province > 0x7FFFFFFF) {
+        return {Error(id, "bad_request", "\"province\" must be a province id from 1")};
+    }
+    if (host_.jobs == nullptr || !host_.ready()) return {Error(id, "not_ready", "the live game is not ready")};
+    if (!host_.game_session || !host_.game_session()) {
+        return {Error(id, "not_in_game", "the live game has no game loaded")};
+    }
+    const Send send = send_;
+    const std::optional<Refusal> refused =
+        host_.jobs->ReselectProvince(static_cast<std::int32_t>(*province), [send, id](const ReselectResult& r) {
+            if (send) send(ReselectAnswer(id, r));
+        });
+    if (refused) return {Error(id, refused->code, refused->message)};
+    return {};
 }
 
 Reply Connection::Reload(std::uint64_t id, const json::Value& request) {

@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.1.0](https://github.com/happy-dwarf-team/etch/compare/v2.0.0...v2.1.0) (2026-11-01)
+
+
+### Features
+
+* **core:** cut long text in a fixedsize text box as the game does ([#238](https://github.com/happy-dwarf-team/etch/issues/238)) ([b6a1654](https://github.com/happy-dwarf-team/etch/commit/b6a16548014da326347608f4072225ef5e4b28b2))
+* reopen the province view after a restart and a reload (H8) ([#239](https://github.com/happy-dwarf-team/etch/issues/239)) ([e16cb09](https://github.com/happy-dwarf-team/etch/commit/e16cb096d22adc203f91ddee0660cf1e5823d840))
+
 ## [2.0.0](https://github.com/happy-dwarf-team/etch/compare/v1.0.1...v2.0.0) (2026-11-01)
 
 

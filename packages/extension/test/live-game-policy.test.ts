@@ -77,7 +77,7 @@ afterEach(async () => {
 const mine = (path: string) => join(temp, 'mine', ...path.split('/'));
 
 describe('planReload', () => {
-  it('reloads the province view and closes it again when the rebuild shows it (H2)', async () => {
+  it('reloads the province view, closes it again when the rebuild shows it (H2) and selects its province again (H8)', async () => {
     expect(await plan(mine('interface/provinceview.gui'))).toEqual({
       kind: 'reload',
       path: 'interface/provinceview.gui',
@@ -86,6 +86,7 @@ describe('planReload', () => {
         check: ['interface/provinceview.gui'],
         close: [],
         keepHidden: ['provinceview'],
+        reselect: true,
       },
       rebuild: 'panel',
       thenVisible: false,
@@ -102,6 +103,7 @@ describe('planReload', () => {
       rebuild: 'panel',
     });
     expect(await plan(mine('interface/ledger.gui'))).toMatchObject({ rebuild: 'panel' });
+    expect(await plan(mine('interface/ledger.gui'))).not.toHaveProperty('request.reselect');
   });
 
   it('rebuilds the speed controls through the top bar (H6)', async () => {
@@ -175,7 +177,9 @@ describe('planReload', () => {
         'interface/topbar.gui',
       ],
       keepHidden: ['provinceview'],
+      reselect: true,
     });
+    expect(visibleReloads(['interface/ledger.gui'])).not.toHaveProperty('reselect');
     expect(visibleReloads(['interface/mapicons.gui', 'interface/core.gui'])).toBeUndefined();
     expect(visibleReloads([])).toBeUndefined();
   });

@@ -257,7 +257,11 @@ async function runSession(
   index: number,
   env: { now: () => Date; sleep: (ms: number) => Promise<void>; print: (line: string) => void },
 ): Promise<SessionResult> {
-  const name = `${String(index).padStart(2, '0')}-${session.playset.id}-${resolutionKey(session.resolution)}-${session.start}`;
+  const own =
+    session.save !== undefined && session.save.file !== session.playset.save?.file
+      ? `-${session.save.file.replace(/\.eu4$/, '')}`
+      : '';
+  const name = `${String(index).padStart(2, '0')}-${session.playset.id}-${resolutionKey(session.resolution)}-${session.start}${own}`;
   const dir = join(runDir, name);
   await mkdir(dir, { recursive: true });
   const events = join(dir, 'events.jsonl');
@@ -284,7 +288,12 @@ async function runSession(
         `The copy's eu4.exe is ${exeSha256}; the manifest pins ${options.manifest.game.exeSha256}.`,
       );
     }
-    prepared = await prepareProfile(options.hostDir, session.playset, options.sources);
+    prepared = await prepareProfile(
+      options.hostDir,
+      session.playset,
+      options.sources,
+      session.save,
+    );
   } catch (error) {
     return { report: { ...base, error: message(error) }, remaining: [], fatal: message(error) };
   }
@@ -306,7 +315,7 @@ async function runSession(
   try {
     game = await options.launcher.start(
       profile,
-      session.start === 'save' ? session.playset.save?.file : undefined,
+      session.start === 'save' ? session.save?.file : undefined,
     );
     await writeFile(join(dir, 'game.json'), `${JSON.stringify(game, null, 2)}\n`);
     env.print(`  game pid ${String(game.pid)}`);
@@ -511,7 +520,7 @@ async function prepareProfileHashes(
       sha256: await hashModFolder(join(options.sources.workshop, mod.workshopId ?? '')),
     });
   }
-  const save = session.playset.save;
+  const save = session.save ?? session.playset.save;
   if (save === undefined) return { mods };
   return { saveSha256: await hashFile(join(profile, 'save games', save.file)), mods };
 }
@@ -665,7 +674,7 @@ async function waitReady(
       if (await runningApplication(systemLog, game.creationUnixMs)) {
         runningSince ??= env.now().getTime();
         const state = await tongs.call('state');
-        const confirm = session.playset.save?.confirm;
+        const confirm = session.save?.confirm;
         if (session.start === 'save' && state['in_game'] !== true && confirm !== undefined) {
           // A dialog that asks before the save goes on loading (Anbennar's achievements warning,
           // etch#55): its button is clicked like a recipe's, and the load starts from there.

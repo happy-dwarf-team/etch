@@ -3,9 +3,15 @@
 // empty extensions folder and a copy of the demo mod as the workspace (spec section 8.3). It drives
 // the workbench with the keyboard, as a user would, and checks the framing rules before each
 // capture (section 8.4).
-import { cp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { copyFile, cp, mkdir, rm, writeFile } from 'node:fs/promises';
 import * as path from 'node:path';
-import { _electron, type ElectronApplication, type Frame, type Page } from '@playwright/test';
+import {
+  _electron,
+  type ElectronApplication,
+  type Frame,
+  type Locator,
+  type Page,
+} from '@playwright/test';
 import { downloadAndUnzipVSCode } from '@vscode/test-electron';
 import {
   DEVICE_SCALE,
@@ -17,6 +23,7 @@ import {
   WINDOW,
   workbenchSettings,
 } from './config.ts';
+import type { Rect } from './edit.ts';
 import { paintStep, settledPaint, type Paint, type PaintResult } from './paint.ts';
 
 export interface LaunchOptions {
@@ -29,18 +36,35 @@ export interface LaunchOptions {
   readonly extensionPath: string;
   /** The repository's demo mod; the workspace is a fresh copy, so no edit reaches the repository. */
   readonly demoMod: string;
-  /** The demo mod file to open first, relative to the mod. */
+  /**
+   * Base-game files copied into the workspace before it opens, relative to the game folder, as
+   * **Override in my mod** would: the copy lives only in the throwaway run folder.
+   */
+  readonly overrides: readonly string[];
+  /** The workspace file to open first, relative to the mod. */
   readonly open: string;
-  /** `etch.gamePath`; when undefined, Etch finds the game through Steam. */
-  readonly gamePath: string | undefined;
+  /** `etch.gamePath`, and where the overrides are copied from. */
+  readonly gamePath: string;
   /** Where Playwright records the window, for a loop recorded with `recordVideo`. */
   readonly videoDir: string | undefined;
+  /** Further extensions to load from folders beside Etch (the live take's helper). */
+  readonly helpers?: readonly string[];
+  /** Environment variables added to VS Code's, and so to its extension host's. */
+  readonly env?: Readonly<Record<string, string>>;
 }
 
 /** What may be on screen in a capture besides the scene's editor and preview. */
 export interface FrameRules {
   /** The quick pick or command palette is part of the scene. */
   readonly quickInput?: boolean;
+  /** The preview is zoomed in on purpose: its screen is shown larger than one pixel per pixel. */
+  readonly zoomed?: boolean;
+}
+
+/** A point of the game screen, in game pixels. */
+export interface ScreenPoint {
+  readonly x: number;
+  readonly y: number;
 }
 
 /** The workspace folder's name, as the Explorer shows it. */
@@ -51,6 +75,7 @@ export function launchArgs(paths: {
   workspace: string;
   file: string;
   extensionPath: string;
+  helpers?: readonly string[];
   userData: string;
   extensions: string;
 }): string[] {
@@ -58,6 +83,7 @@ export function launchArgs(paths: {
     paths.workspace,
     paths.file,
     `--extensionDevelopmentPath=${paths.extensionPath}`,
+    ...(paths.helpers ?? []).map((helper) => `--extensionDevelopmentPath=${helper}`),
     `--user-data-dir=${paths.userData}`,
     // An empty folder rather than --disable-extensions, which shows a notification.
     `--extensions-dir=${paths.extensions}`,
@@ -112,6 +138,30 @@ const SIDEBAR_WIDTH = 200;
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
+/** The variables of an environment that have a value, as Playwright's `env` takes them. */
+function definedEnv(env: NodeJS.ProcessEnv): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(env).filter((entry): entry is [string, string] => entry[1] !== undefined),
+  );
+}
+
+/**
+ * Launches VS Code, again after a pause when it exits at once: the previous scene's VS Code may
+ * still be shutting down, and a second instance then hands over to it and quits.
+ */
+async function launchElectron(
+  options: Parameters<typeof _electron.launch>[0],
+): Promise<ElectronApplication> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await _electron.launch(options);
+    } catch (error) {
+      if (attempt >= 3) throw error;
+      await sleep(5_000);
+    }
+  }
+}
+
 export class Workbench {
   /** The webview frame that holds the preview's `canvas#screen`, once the preview is open. */
   private previewFrame: Frame | undefined;
@@ -135,6 +185,11 @@ export class Workbench {
     await rm(run, { recursive: true, force: true });
     const workspace = path.join(run, WORKSPACE_NAME);
     await cp(options.demoMod, workspace, { recursive: true });
+    for (const file of options.overrides) {
+      const parts = file.split('/');
+      await mkdir(path.join(workspace, ...parts.slice(0, -1)), { recursive: true });
+      await copyFile(path.join(options.gamePath, ...parts), path.join(workspace, ...parts));
+    }
     const userData = path.join(run, 'user-data');
     await mkdir(path.join(userData, 'User'), { recursive: true });
     await writeFile(
@@ -148,15 +203,17 @@ export class Workbench {
       version: VSCODE_VERSION,
       cachePath: path.join(options.work, 'vscode'),
     });
-    const app = await _electron.launch({
+    const app = await launchElectron({
       executablePath,
       args: launchArgs({
         workspace,
         file: path.join(workspace, ...options.open.split('/')),
         extensionPath: options.extensionPath,
+        ...(options.helpers === undefined ? {} : { helpers: options.helpers }),
         userData,
         extensions,
       }),
+      ...(options.env === undefined ? {} : { env: { ...definedEnv(process.env), ...options.env } }),
       ...(options.videoDir === undefined
         ? {}
         : {
@@ -166,6 +223,7 @@ export class Workbench {
             },
           }),
     });
+    const size = WINDOW;
     try {
       const page = await app.firstWindow();
       for (let i = 0; i < 300 && !page.url().includes('workbench'); i++) await sleep(100);
@@ -189,7 +247,7 @@ export class Workbench {
         window.show();
         window.focus();
         return window.getNativeWindowHandle().readBigUInt64LE().toString();
-      }, WINDOW);
+      }, size);
       await page.waitForSelector('.monaco-workbench');
       await page.waitForSelector('.monaco-editor .view-lines');
       const measure = (): Promise<{ width: number; height: number; scale: number }> =>
@@ -199,22 +257,18 @@ export class Workbench {
           scale: window.devicePixelRatio,
         }));
       let inner = await measure();
-      for (
-        let i = 0;
-        i < 30 && (inner.width !== WINDOW.width || inner.height !== WINDOW.height);
-        i++
-      ) {
+      for (let i = 0; i < 30 && (inner.width !== size.width || inner.height !== size.height); i++) {
         await sleep(100);
         inner = await measure();
       }
       if (
-        inner.width !== WINDOW.width ||
-        inner.height !== WINDOW.height ||
+        inner.width !== size.width ||
+        inner.height !== size.height ||
         inner.scale !== DEVICE_SCALE
       ) {
         throw new Error(
           `VS Code is ${String(inner.width)} × ${String(inner.height)} CSS px at scale ` +
-            `${String(inner.scale)}, not ${String(WINDOW.width)} × ${String(WINDOW.height)} at ` +
+            `${String(inner.scale)}, not ${String(size.width)} × ${String(size.height)} at ` +
             String(DEVICE_SCALE),
         );
       }
@@ -327,7 +381,12 @@ export class Workbench {
       });
     }
     await this.page.keyboard.press('Escape');
-    await widget.waitFor({ state: 'hidden' });
+    // With the live game running the preview can take the focus as the cursor moves, and the
+    // Escape with it: the widget's own Close button closes it then.
+    await widget.waitFor({ state: 'hidden', timeout: 1_500 }).catch(async () => {
+      await widget.locator('[aria-label^="Close"]').first().click();
+      await widget.waitFor({ state: 'hidden' });
+    });
     await this.selectionIs(text.length);
     // The status bar's column is the selection's end; the match has no tabs.
     const end = await this.cursor();
@@ -383,6 +442,94 @@ export class Workbench {
     throw new Error(
       `the cursor did not reach Ln ${String(target.line)}, Col ${String(target.column)}`,
     );
+  }
+
+  /** A locator's box in master pixels: the window's device pixels from its top left corner. */
+  async box(locator: Locator): Promise<Rect> {
+    const box = await locator.first().boundingBox();
+    if (box === null) throw new Error(`${locator.toString()} is not shown`);
+    return {
+      x: box.x * DEVICE_SCALE,
+      y: box.y * DEVICE_SCALE,
+      w: box.width * DEVICE_SCALE,
+      h: box.height * DEVICE_SCALE,
+    };
+  }
+
+  /**
+   * The code around the editor's cursor, in master pixels: its line, from 320 px before the cursor
+   * (or the text area's left edge) for 420 px, where a close-up or inset of the code looks.
+   */
+  async lineRect(): Promise<Rect> {
+    // The editor's cursor shows its line even while the focus is elsewhere (the preview).
+    const editor = this.page.locator('.part.editor .monaco-editor').first();
+    const lines = await this.box(editor.locator('.view-lines'));
+    const cursor = await this.box(editor.locator('.cursors-layer .cursor'));
+    const x = Math.max(lines.x, cursor.x - 320);
+    return { x, y: cursor.y, w: Math.min(420, lines.x + lines.w - x), h: cursor.h };
+  }
+
+  /** The preview's outline of the widget at the cursor, in master pixels. */
+  async selectedRect(): Promise<Rect> {
+    return this.box(this.frame.locator('#selected:not([hidden])'));
+  }
+
+  /** The preview's game screen, in master pixels. */
+  async screenRect(): Promise<Rect> {
+    return this.box(this.frame.locator('canvas#screen'));
+  }
+
+  /** Where Playwright's mouse was last moved by `glide`, in CSS pixels. */
+  private mouse: { x: number; y: number } | undefined;
+
+  /**
+   * Moves Playwright's mouse to a point of the page (CSS pixels) in eased steps over `ms`, as a
+   * hand would, calling `step` with each position in master pixels: the drawn pointer's path.
+   */
+  async glide(
+    to: { x: number; y: number },
+    ms: number,
+    step: (at: { x: number; y: number }) => void,
+  ): Promise<void> {
+    const from = this.mouse ?? to;
+    const steps = Math.max(1, Math.round(ms / 16));
+    for (let i = 1; i <= steps; i++) {
+      const p = i / steps;
+      const e = p < 0.5 ? 4 * p * p * p : 1 - (-2 * p + 2) ** 3 / 2;
+      const at = { x: from.x + (to.x - from.x) * e, y: from.y + (to.y - from.y) * e };
+      await this.page.mouse.move(at.x, at.y);
+      step({ x: at.x * DEVICE_SCALE, y: at.y * DEVICE_SCALE });
+      await sleep(ms / steps);
+    }
+    this.mouse = to;
+  }
+
+  /** A game-screen point of the preview (unscaled), in the page's CSS pixels. */
+  async screenPoint(point: ScreenPoint): Promise<{ x: number; y: number }> {
+    const canvas = await this.screenRect();
+    return {
+      x: (canvas.x + point.x) / DEVICE_SCALE,
+      y: (canvas.y + point.y) / DEVICE_SCALE,
+    };
+  }
+
+  /**
+   * Makes the window draw: a pixel in its bottom right corner turns a shade darker or back. For a
+   * recording's end only (`GfxCapture.stop`), after the part an edit shows.
+   */
+  async nudge(): Promise<void> {
+    await this.page.evaluate(() => {
+      let dot = document.getElementById('etch-media-nudge');
+      if (dot === null) {
+        dot = document.createElement('div');
+        dot.id = 'etch-media-nudge';
+        dot.style.cssText =
+          'position:fixed;right:0;bottom:0;width:1px;height:1px;z-index:99999;pointer-events:none';
+        document.body.append(dot);
+      }
+      dot.style.background =
+        dot.style.background === 'rgb(0, 0, 1)' ? 'transparent' : 'rgb(0, 0, 1)';
+    });
   }
 
   /** Waits until the status bar shows `characters` selected. */
@@ -441,6 +588,89 @@ export class Workbench {
       );
     }
     throw new Error(`the quick pick has no item ${label}`);
+  }
+
+  /** Opens the preview's `View ▾` or `Data ▾`; it stays open while its items are clicked. */
+  async openMenu(menu: 'view' | 'data'): Promise<void> {
+    await this.frame.locator(`#${menu}-menu`).click();
+    await this.frame.locator(`#${menu}-popup:not([hidden])`).waitFor();
+  }
+
+  /** Closes the preview's menus, as Escape does. */
+  async closeMenus(): Promise<void> {
+    await this.frame.locator('#view-menu').press('Escape');
+    await this.frame.locator('#view-popup').waitFor({ state: 'hidden' });
+    await this.frame.locator('#data-popup').waitFor({ state: 'hidden' });
+  }
+
+  /** Clicks a view in the open `View ▾` and waits until the preview has drawn it. */
+  async chooseView(label: string): Promise<void> {
+    const item = this.frame.locator('#view-popup .item', { hasText: new RegExp(`^. ${label}$`) });
+    // The menu's height follows the toolbar, so the item below the click can move under the mouse:
+    // rest it at once, not after the paint.
+    await this.paint(async () => {
+      await item.click();
+      await this.restMouse();
+    });
+    await this.frame.locator('#view-menu', { hasText: `View: ${label} ▾` }).waitFor();
+  }
+
+  /**
+   * Rests Playwright's mouse on the preview's title, where it highlights nothing: a menu item it
+   * clicked would otherwise stay highlighted, and moving it out of the webview does not clear that.
+   */
+  async restMouse(): Promise<void> {
+    await this.frame.locator('#title').hover();
+  }
+
+  /** Presses a generated text length in the open `Data ▾` and waits for the preview. */
+  async chooseTextLength(length: 'short' | 'typical' | 'long' | 'overflow'): Promise<void> {
+    const button = this.frame.locator('#data-popup .actions button', { hasText: length });
+    await this.paint(() => button.click());
+    await this.frame
+      .locator('#data-popup .actions button[aria-pressed="true"]', { hasText: length })
+      .waitFor();
+    await this.restMouse();
+  }
+
+  /** Clicks a point of the game screen in the preview, as a user would. */
+  async clickScreen(point: ScreenPoint): Promise<void> {
+    await this.frame
+      .locator('canvas#screen')
+      .click({ position: { x: point.x / DEVICE_SCALE, y: point.y / DEVICE_SCALE } });
+  }
+
+  /**
+   * Zooms the preview in around a point of the game screen with Ctrl+wheel, as a user would, until
+   * the zoom level reads `level`.
+   */
+  async zoomAt(point: ScreenPoint, level: string): Promise<void> {
+    const canvas = this.frame.locator('canvas#screen');
+    await canvas.hover({ position: { x: point.x / DEVICE_SCALE, y: point.y / DEVICE_SCALE } });
+    const zoom = this.frame.locator('#zoom-level');
+    for (let i = 0; i < 10 && !((await zoom.textContent()) ?? '').includes(level); i++) {
+      await this.page.keyboard.down('Control');
+      await this.page.mouse.wheel(0, -120);
+      await this.page.keyboard.up('Control');
+      await sleep(200);
+    }
+    await this.frame.locator('#zoom-level', { hasText: level }).waitFor({ timeout: 2_000 });
+  }
+
+  /** Types a filter into the Problems panel, so it lists only the matching problems. */
+  async filterProblems(text: string): Promise<void> {
+    const filter = this.page.locator('.markers-panel-action-filter input, .viewpane-filter input');
+    await filter.first().click();
+    await this.page.keyboard.type(text);
+    const rows = this.page.locator('.markers-panel .monaco-list-row');
+    await rows.filter({ hasText: text }).first().waitFor();
+    // The filter applies after a debounce: wait until no other problem is listed (a problem's row
+    // reads its message, then its source and code as `Etchmissing-sprite`).
+    await rows
+      .filter({ hasText: 'Etch' })
+      .filter({ hasNotText: text })
+      .first()
+      .waitFor({ state: 'detached' });
   }
 
   /** Puts Playwright's mouse over the editor, where it shows nothing (hovers are off). */
@@ -574,7 +804,10 @@ export class Workbench {
       ) {
         problems.push(`the preview screen is ${String(preview.width)} × ${String(preview.height)}`);
       }
-      if (preview.shown.width !== preview.width || preview.shown.height !== preview.height) {
+      if (
+        rules.zoomed !== true &&
+        (preview.shown.width !== preview.width || preview.shown.height !== preview.height)
+      ) {
         problems.push(
           `the preview is scaled to ${String(preview.shown.width)} × ${String(preview.shown.height)}`,
         );

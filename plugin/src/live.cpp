@@ -1,6 +1,7 @@
 #include "live.hpp"
 
 #include <algorithm>
+#include <iterator>
 #include <memory>
 #include <set>
 #include <utility>
@@ -122,7 +123,34 @@ std::string NamesJson(const std::vector<std::string>& names) {
     return out + "]";
 }
 
+std::string ReselectJson(const Reselect& r) {
+    json::Writer w;
+    w.Uint("province", static_cast<std::uint64_t>(r.province)).Str("outcome", r.outcome);
+    if (r.window.empty()) {
+        w.Null("window");
+    } else {
+        w.Str("window", r.window);
+    }
+    return w.Finish();
+}
+
 }  // namespace
+
+std::string_view ProvinceView::Window() const {
+    if (view_shown) return "provinceview";
+    if (colonisation_shown) return "colonisationpanel";
+    return {};
+}
+
+std::string OutcomeName(std::uint32_t outcome) {
+    // TongsNavigationOutcome, in its order.
+    static constexpr std::string_view kNames[] = {
+        "opened",   "not_in_game", "unknown_province", "not_selectable", "terra_incognita", "selection_blocked",
+        "discover", "suspended",   "tripped",          "faulted",        "read_failed",
+    };
+    if (outcome < std::size(kNames)) return std::string(kNames[outcome]);
+    return "outcome_" + std::to_string(outcome);
+}
 
 std::optional<std::string> AllowedLine(std::string_view line, std::vector<std::string>& tokens) {
     tokens.clear();
@@ -166,6 +194,11 @@ std::optional<std::string> ReadReloadRequest(const json::Value& request, ReloadR
     if (auto error = ReadStrings(request, "check", false, IsToken, out.check)) return error;
     if (auto error = ReadStrings(request, "close", false, IsToken, out.close)) return error;
     if (auto error = ReadStrings(request, "keep_hidden", false, IsToken, out.keep_hidden)) return error;
+    if (const json::Value* reselect = request.Find("reselect")) {
+        const std::optional<bool> value = reselect->AsBool();
+        if (!value) return "\"reselect\" must be true or false";
+        out.reselect = *value;
+    }
     return std::nullopt;
 }
 
@@ -221,7 +254,16 @@ std::string ReloadAnswer(std::uint64_t id, const ReloadResult& result) {
             .Raw("visible", visible)
             .Raw("roots", roots.Uint("before", result.roots_before).Uint("after", result.roots_after).Finish());
     }
+    if (result.reselected) w.Raw("reselected", ReselectJson(*result.reselected));
     return w.Fixed("queued_ms", result.queued_ms).Fixed("run_ms", result.run_ms).Finish();
+}
+
+std::string ReselectAnswer(std::uint64_t id, const ReselectResult& result) {
+    if (!result.error.empty()) return Error(id, result.error, result.message);
+    std::string line = Ok(id).Fixed("queued_ms", result.queued_ms).Finish();
+    line.pop_back();
+    std::string members = ReselectJson(result.reselect);
+    return line + "," + members.substr(1);
 }
 
 std::string SaveAnswer(std::uint64_t id, const SaveResult& result) {
@@ -283,6 +325,7 @@ struct LiveJobs::ReloadState {
     ReloadRequest request;
     ReloadResult result;
     std::optional<std::vector<Root>> before;
+    std::optional<ProvinceView> view_before;  // with `reselect`
     std::function<void(const ReloadResult&)> done;
     double started = 0;
 };
@@ -302,6 +345,7 @@ bool LiveJobs::CloseWindow(const std::string& name, ReloadResult& result, bool& 
 void LiveJobs::ReloadFirst(const std::shared_ptr<ReloadState>& state) {
     ReloadResult& result = state->result;
     state->before = env_.roots();
+    if (state->request.reselect && env_.province_view) state->view_before = env_.province_view();
     const std::optional<std::vector<Root>>& before = state->before;
     result.tree = before.has_value();
     if (before) result.roots_before = before->size();
@@ -393,7 +437,31 @@ void LiveJobs::ReloadEnd(const std::shared_ptr<ReloadState>& state, const std::o
             if (root.visible && !root.file.empty() && !closing) result.visible.push_back(root);
         }
     }
+    ReselectAfterReload(*state);
     Finish(state);
+}
+
+void LiveJobs::ReselectAfterReload(ReloadState& state) {
+    if (!state.request.reselect) return;
+    const std::int32_t province = state.view_before ? state.view_before->OnScreen() : 0;
+    if (province <= 0) return;  // no province on screen before: nothing to bring back
+    Reselect& r = state.result.reselected.emplace();
+    r.province = province;
+    const std::optional<ProvinceView> now = env_.province_view ? env_.province_view() : std::nullopt;
+    if (!now || !env_.open_province) {
+        r.outcome = "no_navigation";
+        return;
+    }
+    // The rebuild selects the view's province itself (0x1345F40) and then clears the name it
+    // caches, which the next refresh of the view sets again: selecting the same province once
+    // more is the player's click on it, which changes no province and posts nothing.
+    if (now->OnScreen() != province) {
+        r.outcome = "not_shown";
+        return;
+    }
+    const std::optional<std::uint32_t> outcome = env_.open_province(province, kKeepViews | kNoCamera);
+    r.outcome = outcome ? OutcomeName(*outcome) : "no_navigation";
+    if (outcome && *outcome == kOpened) r.window = std::string(now->Window());
 }
 
 bool LiveJobs::AfterFrames(int frames, std::function<void()> work) {
@@ -471,6 +539,57 @@ std::optional<Refusal> LiveJobs::Confirm(std::string path, std::function<void(co
         }
         busy_.store(false);
         env_.run_later([result, done] { done(*result); });
+    });
+    if (!queued) {
+        busy_.store(false);
+        return Refusal{"no_main_thread", "the game's main thread does not take work"};
+    }
+    return std::nullopt;
+}
+
+std::optional<Refusal> LiveJobs::ReselectProvince(std::int32_t province,
+                                                  std::function<void(const ReselectResult&)> done) {
+    bool idle = false;
+    if (!busy_.compare_exchange_strong(idle, true)) return Refusal{"busy", "another job of the live game runs"};
+    const double asked = env_.now_ms();
+    auto result = std::make_shared<ReselectResult>();
+    result->reselect.province = province;
+    const auto finish = [this, result, done] {
+        busy_.store(false);
+        env_.run_later([result, done] { done(*result); });
+    };
+    const bool queued = env_.run_on_main([this, asked, result, finish] {
+        result->queued_ms = env_.now_ms() - asked;
+        Reselect& r = result->reselect;
+        const std::optional<ProvinceView> view = env_.province_view ? env_.province_view() : std::nullopt;
+        if (!view || !env_.open_province) {
+            r.outcome = "no_navigation";
+            return finish();
+        }
+        // The player came first: a province selected (even with its view closed again), the
+        // province view or another view open. Nothing is forced over it.
+        if (view->selected != 0 || view->shown != 0 || view->OnScreen() != 0 || view->views_open) {
+            r.outcome = "moved_on";
+            return finish();
+        }
+        // No view to close (checked above, in this frame); the camera moves, as a province link's.
+        const std::optional<std::uint32_t> outcome = env_.open_province(r.province, kKeepViews);
+        r.outcome = outcome ? OutcomeName(*outcome) : "no_navigation";
+        if (!outcome || *outcome != kOpened) return finish();
+        const bool checked = AfterFrames(kShowFrames, [this, result, finish] {
+            Reselect& shown = result->reselect;
+            const std::optional<ProvinceView> after = env_.province_view();
+            if (after && after->OnScreen() == shown.province) {
+                shown.window = std::string(after->Window());
+            } else {
+                shown.outcome = "not_shown";
+            }
+            finish();
+        });
+        if (!checked) {
+            r.outcome = "not_shown";
+            finish();
+        }
     });
     if (!queued) {
         busy_.store(false);

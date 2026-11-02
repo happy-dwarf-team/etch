@@ -183,6 +183,15 @@ scrolls towards the real cursor when it is outside the window.
 **Policy:** unchanged (best effort, then the map with a notice); the reopen
 through `0x139C830` is checked when the plugin has it.
 
+**Checked on 2026-11-01:** the plugin selects the province through Tongs'
+`tongs.navigation` (Tongs 0.24.0), which calls `0x139C830` with Tongs' checks.
+Planned and crash restarts reopened the view on the same province in vanilla
+(1920×1080) and the Anbennar playset (2560×1440), also with Tongs' pipe off,
+and nothing was forced when the player had closed the view or selected
+another province; selecting the province on screen again after a reload of
+`provinceview.gui` kept its name, which the plain reload blanked
+([live-game.md](live-game.md), "Reopening the view: the live run").
+
 ### H9: files created after the start
 
 - **A `.gui` file created after the start is seen.** With `attr_cache` on, a

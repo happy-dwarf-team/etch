@@ -1,0 +1,19 @@
+{
+  "name": "etch-media-live-helper",
+  "displayName": "Etch media: live scene helper",
+  "description": "Loaded beside Etch only in the media pipeline's VS Code for the live scene (docs/media.md). Never published.",
+  "version": "0.0.0",
+  "publisher": "happy-dwarf-team",
+  "private": true,
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+  "extensionDependencies": [
+    "happy-dwarf-team.etch"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./extension.js"
+}

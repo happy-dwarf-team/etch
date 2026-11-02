@@ -12,6 +12,7 @@ import {
   findView,
   resolutionKey,
   viewInPlayset,
+  viewSave,
   type CaptureKey,
   type CorpusManifest,
   type Recipe,
@@ -232,13 +233,13 @@ export function captureProblems(manifest: CorpusManifest, record: CaptureRecord)
   }
 
   if (playset !== undefined) {
-    const wantsSave =
-      (found === undefined ? undefined : viewInPlayset(found.view, playset))?.recipe.from ===
-      'save';
-    if (wantsSave && playset.save === undefined) {
+    const inPlayset = found === undefined ? undefined : viewInPlayset(found.view, playset);
+    const wantsSave = inPlayset?.recipe.from === 'save';
+    const save = inPlayset === undefined ? undefined : viewSave(inPlayset, playset);
+    if (wantsSave && save === undefined) {
       fail('save', `The playset "${playset.id}" pins no save for a view opened from one.`);
-    } else if (wantsSave && record.save?.sha256 !== playset.save?.sha256) {
-      fail('save', 'Taken with another save than the playset pins.');
+    } else if (wantsSave && record.save?.sha256 !== save?.sha256) {
+      fail('save', 'Taken with another save than the view pins in this playset.');
     } else if (!wantsSave && record.save !== undefined) {
       fail('save', 'The view opens from the main menu; no save is loaded.');
     }

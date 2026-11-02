@@ -168,10 +168,15 @@ void TestSnapshot() {
     tree[2].text = tree[2].markup = "plain";
     tree[5].flags = kEnabled | kChecked;
     for (UiWidget& w : tree) w.path = w.name;
-    const etch::Snapshot snapshot = etch::SnapshotOf(tree, 1, 1920, 1080, 6.5);
+    const etch::Snapshot snapshot = etch::SnapshotOf(tree, 1, 1920, 1080, etch::GameDate{1444, 11, 11}, 6.5);
     assert(snapshot.widgets == 5 && snapshot.stale == 1);
     const Value v = Json("{" + snapshot.members + "}");
     assert(v.Find("window")->AsString() == "provinceview");
+    assert(v.Find("date")->AsString() == "1444.11.11");
+    // In the main menu, or with an anvil-game before 1.6.0.
+    assert(Json("{" + etch::SnapshotOf(tree, 1, 1920, 1080, std::nullopt, 6.5).members + "}").Find("date")->kind() ==
+           Value::Kind::Null);
+    assert(etch::DateText({1821, 9, 29}) == "1821.9.29" && etch::DateText({-1, 1, 1}) == "-1.1.1");
     assert(v.Find("file")->AsString() == "interface/provinceview.gui");
     assert(v.Find("stale")->AsUint() == 1u);
     const auto& widgets = *v.Find("widgets")->AsArray();

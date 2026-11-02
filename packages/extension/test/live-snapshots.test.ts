@@ -2,7 +2,12 @@ import { mkdtemp, readdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { LiveSnapshots, playsetKey, snapshotOf } from '../src/preview/live-snapshots.ts';
+import {
+  LiveSnapshots,
+  playsetKey,
+  snapshotOf,
+  snapshotWhen,
+} from '../src/preview/live-snapshots.ts';
 import type { SnapshotAnswer } from '../src/live-game/pipe.ts';
 
 let temp: string;
@@ -19,6 +24,7 @@ const answer: SnapshotAnswer = {
   window: 'provinceview',
   file: 'interface/provinceview.gui',
   screen: { width: 3440, height: 1440 },
+  date: '1719.3.17',
   widgets: [
     {
       path: 'provinceview',
@@ -70,7 +76,13 @@ describe('LiveSnapshots', () => {
       game: { pid: 1, startMs: 2 },
     });
     expect(snapshot.widgets.map((w) => w.path)).toContain('provinceview/rows/row[1]/name');
-    expect(snapshot).toMatchObject({ formatVersion: 1, save: 'Russia1719.eu4', stale: 2 });
+    expect(snapshot).toMatchObject({
+      formatVersion: 1,
+      save: 'Russia1719.eu4',
+      gameDate: '1719.3.17',
+      stale: 2,
+    });
+    expect(snapshotWhen(snapshot)).toMatch(/^as of .+, 1719\.3\.17, Russia1719\.eu4$/);
     const vanilla = playsetKey('C:/Game', []);
     const anbennar = playsetKey('C:/Game', ['Anbennar']);
     expect(vanilla).not.toBe(anbennar);
@@ -91,12 +103,13 @@ describe('LiveSnapshots', () => {
 
   it('keeps snapshots in memory without a workspace', async () => {
     const store = new LiveSnapshots(undefined);
-    const snapshot = snapshotOf(answer, {
-      takenAt: new Date(),
-      save: undefined,
-      fileHash: undefined,
-      game: undefined,
-    });
+    // No game date: the main menu, or an Anvil before 1.6.0.
+    const snapshot = snapshotOf(
+      { ...answer, date: undefined },
+      { takenAt: new Date(), save: undefined, fileHash: undefined, game: undefined },
+    );
+    expect(snapshot.gameDate).toBeUndefined();
+    expect(snapshotWhen(snapshot)).toMatch(/^as of [^,]+$/);
     await store.put('x', snapshot);
     expect(await store.get('x', 'provinceview')).toBe(snapshot);
   });

@@ -58,6 +58,12 @@ import {
   visibleReloads,
   type ReloadPlan,
 } from './policy.ts';
+import {
+  ProvinceMemory,
+  reselectedMessage,
+  restartReopens,
+  type RememberedProvince,
+} from './reopen.ts';
 import { listSaves, liveSettings, newestSave, savesFolder, type SaveFile } from './saves.ts';
 import {
   CRASH_LIMIT,
@@ -212,8 +218,13 @@ const ANBENNAR_WORKSHOP_ID = '1385440355';
 const ACHIEVEMENTS_PROMPT = 'DefaultConfirm/AgreeButton';
 /** How long a start from a save may take to load it, the prompt included (about 100 s, H7). */
 const LOAD_TIMEOUT_MS = 300_000;
-/** The views a restart closes and the player may want back: the province view and the country view. */
-const REOPENED_VIEWS = /^(?:provinceview|countryview)$/i;
+/**
+ * The views a restart closes that Etch does not open again: the country view. The province view
+ * is selected again on its province (H8).
+ */
+const UNOPENED_VIEWS = /^countryview$/i;
+/** Frames the loaded game draws before Etch selects the province again: the load's own frame is past. */
+const REOPEN_AFTER_FRAMES = 2;
 /** Diagnostic source of the live game's Problems. */
 const SOURCE = 'Etch live game';
 /** The memento key that records the first start's confirmation. */
@@ -270,8 +281,12 @@ export class LiveGame implements vscode.Disposable {
   private index: Promise<InterfaceIndex> | undefined;
   /** The live game's Problems: `error.log` lines and the game's answers, on the saved files. */
   readonly diagnostics = vscode.languages.createDiagnosticCollection('etch-live-game');
-  /** The views on screen at the last reload, said after a restart that cannot reopen them (H8). */
+  /** The views on screen at the last reload that a restart does not open again, said after it. */
   private lastViews: readonly string[] = [];
+  /** The province on screen in the running process, from its pings (H8). */
+  private memory: ProvinceMemory | undefined;
+  /** The province the next ready process selects again once its save is loaded, or why it does not. */
+  private reopen: { readonly province: RememberedProvince } | { readonly why: string } | undefined;
   /** The next ready process comes from a restart, not a start. */
   private restarting = false;
   /** Said once per game session: reloads do not run in ironman or multiplayer. */
@@ -558,7 +573,17 @@ export class LiveGame implements vscode.Disposable {
     if (last.check !== undefined) {
       this.lastViews = last.check.visible
         .map((w) => w.name)
-        .filter((name) => REOPENED_VIEWS.test(name));
+        .filter((name) => UNOPENED_VIEWS.test(name));
+    }
+    const again = last.reselected ?? answer.reselected;
+    if (again !== undefined) {
+      const why = reselectedMessage(again);
+      // The rebuild blanks the province's name until its view is refreshed (H8).
+      this.output.info(
+        why === undefined
+          ? `Selected province ${String(again.province)} again after the rebuild, so that its view shows its name.`
+          : `Province ${String(again.province)} was not selected again after the rebuild: ${why}.`,
+      );
     }
     const stale = last.check?.stale.filter((w) => w.visible) ?? [];
     if (stale.length > 0) {
@@ -842,7 +867,22 @@ export class LiveGame implements vscode.Disposable {
         // made before a stop (spec section 6).
         const newest = await newestSave(this.savesFolder);
         this.startAt = { save: newest?.name };
+        // The province on screen comes back when that save is the game it was shown in (H8).
+        // Without a process served since (a start that failed), the last decision stands.
+        if (this.memory !== undefined) {
+          const remembered = this.memory.remembered;
+          const decision = restartReopens(remembered, newest);
+          this.reopen =
+            remembered === undefined
+              ? undefined
+              : decision.reopen
+                ? { province: remembered }
+                : { why: decision.why };
+        }
+      } else {
+        this.reopen = undefined;
       }
+      this.memory = undefined;
       this.set(
         reasons.length > 0
           ? { status: 'restarting', reason: reasons.join('; ') }
@@ -942,19 +982,86 @@ export class LiveGame implements vscode.Disposable {
     });
     const startLines = await this.errorLog.skip();
     this.output.info(`The live game's error.log had ${String(startLines)} lines at ready.`);
+    this.memory = new ProvinceMemory(this.saveName);
     this.watch(started);
     this.set({ status: 'ready', pid: started.identity.pid, readyMs: started.times.ready });
     if (this.restarting && this.lastViews.length > 0) {
-      // The game's own province selection is not called yet (H8): the player reopens the view.
       void vscode.window.showInformationMessage(
-        `The live game restarted on the map: open ${this.lastViews.join(' and ')} again; Etch ` +
-          'cannot reopen it yet.',
+        `The live game restarted: open ${this.lastViews.join(' and ')} again; Etch reopens only ` +
+          'the province view.',
       );
     }
+    const reopen = this.restarting ? this.reopen : undefined;
     this.restarting = false;
     this.lastViews = [];
+    this.reopen = undefined;
+    if (reopen !== undefined && 'why' in reopen) {
+      this.output.info(
+        `The live game restarted; the province view was not opened again: ${reopen.why}.`,
+      );
+      void vscode.window.showInformationMessage(
+        `The live game restarted on the map; Etch did not open the province view again: ${reopen.why}.`,
+      );
+    } else if (reopen !== undefined) {
+      void this.reselectAfterLoad(started, reopen.province);
+    }
     const anbennar = this.wanted?.mods.some((m) => m.workshopId === ANBENNAR_WORKSHOP_ID) === true;
     if (this.startAt.save !== undefined && anbennar) void this.answerPrompt(started);
+  }
+
+  /**
+   * Selects the province the player had on screen again once the restarted game has loaded its save
+   * (H8): the plugin opens its view as the game's province links do, unless the player selected a
+   * province or opened a view first, and never a province the player cannot see.
+   */
+  private async reselectAfterLoad(
+    started: LiveGameProcess,
+    remembered: RememberedProvince,
+  ): Promise<void> {
+    const deadline = performance.now() + LOAD_TIMEOUT_MS;
+    let loadedAt: number | undefined;
+    while (this.process === started && performance.now() < deadline) {
+      const ping = await started.ping().catch(() => undefined);
+      if (ping?.gameSession !== undefined) {
+        loadedAt ??= ping.frame;
+        if (ping.frame >= loadedAt + REOPEN_AFTER_FRAMES) break;
+      }
+      await new Promise((resolve) => setTimeout(resolve, loadedAt === undefined ? 500 : 50));
+    }
+    if (this.process !== started || loadedAt === undefined) return;
+    const province = String(remembered.province);
+    try {
+      // The prompt's last `confirm` (Anbennar) may still run: one job at a time.
+      const attempt = () =>
+        started.reselect(remembered.province).then(
+          (answer) => ({ answer }),
+          (error: unknown) => ({ error }),
+        );
+      let tried = await attempt();
+      for (let tries = 0; 'error' in tried && isBusy(tried.error) && tries < 10; tries++) {
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        tried = await attempt();
+      }
+      if ('error' in tried) throw tried.error;
+      const r = tried.answer;
+      const why = reselectedMessage(r);
+      if (why === undefined) {
+        this.output.info(
+          `Opened the province view again on province ${province} after the restart.`,
+        );
+        return;
+      }
+      this.output.info(`The province view of province ${province} was not opened again: ${why}.`);
+      // The player's own choice needs no notice.
+      if (r.outcome === 'moved_on') return;
+      void vscode.window.showInformationMessage(
+        `The live game restarted on the map; Etch did not open province ${province} again: ${why}.`,
+      );
+    } catch (error) {
+      this.output.warn(
+        `The province view of province ${province} was not opened again: ${String(error)}`,
+      );
+    }
   }
 
   /**
@@ -997,6 +1104,9 @@ export class LiveGame implements vscode.Disposable {
       signal: watching.signal,
       onStill: (reason) => {
         void this.stillAsked(started, reason);
+      },
+      onPing: (ping) => {
+        if (this.process === started) this.memory?.observe(ping);
       },
     }).then(async (hang) => {
       if (!this.serving(started)) return;
@@ -1244,6 +1354,11 @@ function fromModel(
     d.message,
     range,
   );
+}
+
+/** A job refused because another one runs. */
+function isBusy(error: unknown): boolean {
+  return error instanceof PipeError && error.code === 'busy';
 }
 
 /** How long ago a time was, for the quick pick. */

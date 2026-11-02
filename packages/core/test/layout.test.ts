@@ -185,6 +185,25 @@ describe('layoutWindow: placement', () => {
     expect(rectOf(l, 'panel')).toEqual([5, 6, 0, 0]);
   });
 
+  it("gives a window the size the game's code sets, and its background with it", () => {
+    const text = `guiTypes = { windowType = {
+      name = "event" backGround = "Background" orientation = "CENTER"
+      position = { x = -50 y = -40 } size = { x = 100 y = 80 }
+      guiButtonType = { name = "Background" quadTextureSprite = "GFX_tile" }
+      windowType = { name = "inner" size = { x = 30 y = 20 } }
+    } }`;
+    const { file, input } = setUp(text);
+    const window = file.definitions[0] as Widget;
+    const written = layoutWindow(window, input);
+    expect(rectOf(written, 'event')).toEqual([350, 260, 100, 80]);
+    expect(rectOf(written, 'Background')).toEqual([350, 260, 100, 80]);
+    // The event window fits its text (etch#97): the same place, the game's size.
+    const sized = layoutWindow(window, { ...input, windowSize: { width: 100, height: 52 } });
+    expect(rectOf(sized, 'event')).toEqual([350, 260, 100, 52]);
+    expect(rectOf(sized, 'Background')).toEqual([350, 260, 100, 52]);
+    expect(rectOf(sized, 'inner')).toEqual([350, 260, 30, 20]);
+  });
+
   it('applies if_resolution blocks for the preview screen, in file order', () => {
     const text = `guiTypes = { windowType = {
       name = "w"
@@ -561,6 +580,27 @@ describe('layoutWindow: text', () => {
     expect(rectOf(l, 'two')).toEqual([0, 0, 50, 24]);
     expect(rectOf(l, 'empty')).toEqual([0, 0, 50, 18]);
     expect(rectOf(l, 'edit')).toEqual([0, 0, 50, 30]);
+  });
+
+  it('cuts the text of a fixedsize instant text box, and only there', () => {
+    const { layout } = setUp(`guiTypes = { windowType = { name = "w"
+      instantTextBoxType = { name = "cut" font = "tiny" text = "aaaaaA" maxWidth = 26 maxHeight = 10 fixedsize = yes }
+      instantTextBoxType = { name = "wrapped" font = "tiny" text = "aaaaaA" maxWidth = 26 maxHeight = 10 fixedsize = yes truncate = no }
+      instantTextBoxType = { name = "free" font = "tiny" text = "aaaaaA" maxWidth = 26 maxHeight = 10 truncate = yes }
+      textBoxType = { name = "edit" font = "tiny" text = "aaaaaA" maxWidth = 26 maxHeight = 10 fixedsize = yes }
+    } }`);
+    const l = layout();
+    const glyphCount = (name: string): number => {
+      const text = drawsOf(l, name).find((d) => d.kind === 'text');
+      return text?.kind === 'text' ? text.glyphs.length / GLYPH_STRIDE : 0;
+    };
+    // "a ...": the tiny font has no period, and its space draws nothing.
+    expect(glyphCount('cut')).toBe(1);
+    expect(l.diagnostics.map((d) => d.code)).toContain('missing-glyph');
+    // "aaaaa\n": the line below the box is dropped.
+    expect(glyphCount('wrapped')).toBe(5);
+    expect(glyphCount('free')).toBe(6);
+    expect(glyphCount('edit')).toBe(6);
   });
 });
 

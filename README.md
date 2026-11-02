@@ -10,7 +10,8 @@ mods: edit a `.gui` or `.gfx` file and see the window as the game would show
 it, within moments, and have each saved file reloaded into the running game.
 Website: [etch.happydwarf.dev](https://etch.happydwarf.dev/).
 
-Status: 2.0.0, released on 1 November 2026, is the whole of the
+Status: 2.x, whose later releases the [changelog](CHANGELOG.md) lists. 2.0.0,
+released on 1 November 2026, is the whole of the
 [v2 specification](docs/spec/v2.md), frozen with it; what comes after it is in
 [docs/spec/after-v2.md](docs/spec/after-v2.md). v2 replaced 1.x's game host and
 its diff view with the **live game**: Etch's private copy of the game, played
@@ -40,7 +41,8 @@ in the wayfinder maps in this repository's issues (label `wayfinder:map`).
   mode and live snapshots.
 - Precision is measured against the game, not claimed: the precision corpus
   of vanilla, Proper 2K UI Enhanced and Anbennar, at seven resolutions from
-  1280×720 to 3440×1440.
+  1280×720 to 3440×1440. The preview also offers 3840×2160, not yet measured
+  against the game.
 - Target: EU4 1.37.5 (Steam, win64) on Windows.
 
 See [GLOSSARY.md](GLOSSARY.md) for the terms used in the issues.

@@ -28,6 +28,15 @@ export default defineConfig(
     extends: [tseslint.configs.disableTypeChecked],
   },
   {
+    // The media pipeline's helper extension is plain CommonJS, loaded by VS Code as it is.
+    files: ['packages/media/live-helper/**/*.js'],
+    languageOptions: {
+      sourceType: 'commonjs',
+      globals: { require: 'readonly', exports: 'writable', process: 'readonly' },
+    },
+    rules: { '@typescript-eslint/no-require-imports': 'off' },
+  },
+  {
     // ADR 0001: core runs in plain Node, so it never imports the VS Code API.
     files: ['packages/core/**'],
     rules: {

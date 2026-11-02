@@ -1,7 +1,8 @@
 # After v2
 
 Etch 2.0.0 is the scope of the [v2 specification](v2.md), frozen at that
-release on 1 November 2026. This file is the living list of what it left: the
+release on 1 November 2026. This file is the living list of what it left (and,
+briefly, what was settled since): the
 work v2 put out of scope (its section 16), what the 2.0.0 trial found but did
 not fix ([docs/release-2.0.0.md](../release-2.0.0.md), "The trial" and "Live
 game"), the open issues and the open points, those of v2's section 17 and those
@@ -31,7 +32,11 @@ From section 16 of the v2 specification, with v1's entries that v2 did not take:
 - **More in a live snapshot:** code-set sprites and frames (below), tooltips
   (with a new snapshot `formatVersion` once `tongs.ui` reads them), and
   exporting a snapshot.
-- Checking the **3840×2160** preview resolution against the game (below).
+- Checking the **3840×2160** preview resolution against the game on a machine
+  with a 4K screen. It is in the corpus and the preview but unconfirmed, as no
+  window of the lab holds a 2160-pixel client area; it gates nothing and the
+  preview marks it as not measured against the game. Its `if_resolution` band
+  and size step are those of 3440×1440 in every corpus playset (etch#163).
 - **A media refresh** showing the live game and a popular view, made with
   Etch's own demo mod: a release step after v2.
 
@@ -43,20 +48,6 @@ From section 16 of the v2 specification, with v1's entries that v2 did not take:
   `tongs.ui` version 1, so the preview drawn from it differs there (v2
   section 7, "Not in v2"). Seen in both trial runs against the game, on
   `cffbf88` and `c2cf182`.
-- **A long text in a `fixedsize` box.** The game cuts it with "…" (`East
-  Dam...` for a long province name), and the preview wraps it; no rule for the
-  cut has been found in `eu4.exe` yet. `fixedsize` and `truncate` are among the
-  layout properties the offline renderer does not apply (open points, below).
-- **Reopening or reselecting the province** after a restart or a reload (H8).
-  The plugin does not call the game's selection `0x139C830` yet; the recorded
-  workaround is that Etch says the view was not reopened (docs/live-game.md,
-  "Reopening the view"). Tongs' `province open` selects a province by id and
-  waits for its view, and the corpus driver uses it since
-  [etch#221](https://github.com/happy-dwarf-team/etch/issues/221); the plugin
-  reads Tongs only through `tongs.ui`. The trial also found that the game's own
-  `reload provinceview.gui` with the province view open clears the province's
-  name in its header until the next reload (3 of 3 provinces, Etch closing and
-  hiding nothing); reselecting the province after a reload would hide it.
 - **An uncolonised province.** That the game shows `colonisationpanel` for land
   without a city is read from `0x1347A50` (etch#155) and the profile's link
   draws it; no live capture of one was taken, so whether any of `provinceview`
@@ -71,15 +62,48 @@ From section 16 of the v2 specification, with v1's entries that v2 did not take:
   rule found, and the history list, whose entry template is in no `.gui` of the
   window.
 
+## Done since 2.0.0
+
+- **A long text in a `fixedsize` box,** left open by the trial: the game cuts
+  it with " ..." (`East Dam ...` for the culture "East Damerian" in the
+  province view of P2KE Patch - Anbennar), and the preview wrapped it over
+  the religion below. The rule is read from `eu4.exe` (the font's fit
+  `0x159F510`, which the text node calls only for a `fixedsize`
+  `instantTextBoxType`) and the offline renderer applies it, with
+  `truncate = no` (v2 section 3). It matched both game screenshots it was
+  checked on and the 196 corpus captures that could be compared. Open: the
+  28 `anbennar` captures were not compared, because the Workshop item of
+  P2KE Patch - Anbennar changed after it was pinned; after
+  [etch#236](https://github.com/happy-dwarf-team/etch/pull/236) takes them
+  again and pins the new version, compare them with the cut.
+- **Reopening and reselecting the province (H8).** After a planned restart
+  and a crash restart the province view comes back on the province the player
+  had on screen, remembered by province id with the game session it was seen
+  in, when the restart continues that game; after a reload of
+  `provinceview.gui` the province on screen is selected again, so that its
+  name, which the game's rebuild leaves blank, comes back. Nothing is forced
+  when the player selected a province or opened a view first, and Tongs
+  refuses a province the player cannot see. Decision: Tongs offers its
+  checked navigation to other plugins as the in-process service
+  `tongs.navigation` (Tongs 0.24.0, its ADR 0004), rather than Etch's plugin
+  calling the game's selection `0x139C830` itself: one copy of the addresses
+  and rules Tongs read in `eu4.exe` and checked live, no game address in Etch's
+  plugin, and `affects_gameplay = false` stays true, since the service makes no
+  game call (opening a view that would make the player discover a capital is
+  refused). The rule for the blank name was read in `eu4.exe` (`0x1345F40`,
+  `0x13470C0`). docs/live-game.md, "Reopening the view" and its live run.
+
+- **The event window in the corpus (etch#97).** The event view loads its own
+  save with one event open (`flavor_rus.11` in the Russian save, `lilac_wars.1`
+  in the Anbennar one), so its recipe has no step and no capture makes a game
+  call, and the window gates the release playsets again. The game sizes the
+  window to its text (`codeSized`: laid out at the size the game shows it). With
+  `compare --gpu` (ANGLE on Direct3D 11, 2026-11-02) all 16 of its gating
+  captures pass, taken with Tongs 0.14.1 (corpus/README.md).
+
 ## Open issues
 
-- [etch#97](https://github.com/happy-dwarf-team/etch/issues/97): a recipe that
-  opens an event for the corpus. The event window gates no release until it
-  has one, in any playset.
-- [etch#163](https://github.com/happy-dwarf-team/etch/issues/163): 3840×2160 is
-  in the corpus and the preview but unconfirmed, as no window of the lab holds
-  a 2160-pixel client area; it gates nothing and the preview marks it as not
-  measured against the game.
+None open.
 
 ## Open points
 
@@ -113,7 +137,6 @@ process:
   change is a planned restart.
 - Starting the player's `eu4.exe` directly, without Steam, beside the live
   game (not tried, H11).
-- The game date in a live snapshot needs `anvil-game.game` to offer it.
 - Reload policy rows not run live: `DeclareWarDialog` (an on-demand window
   closed before a reload), texture reloads, ironman and multiplayer
   (docs/release-2.0.0.md, "Live game").
@@ -141,8 +164,8 @@ with ADR 0005), and the one the release record left of the profiles:
   cornered tiles repeat their edges and middle; `frame` counts from 1;
   `CENTER` anchors round down; a `scale`d sprite keeps fractional pixels; an
   open window stands at `show_position`; an empty progress bar shows its second
-  texture or colour; a shield without a flag shows `textureFile1`. `rotation`,
-  `origo`, `fixedsize` and `truncate` are not applied, and `left`, `right` and
+  texture or colour; a shield without a flag shows `textureFile1`. `rotation`
+  and `origo` are not applied, and `left`, `right` and
   `UPPERL_LEFT` orientations anchor upper left with a diagnostic.
 - Which way `progress.shader` runs `v`: it negates `v` and samples with
   wrapping, which keeps textures upright and fills vertical bars upwards only

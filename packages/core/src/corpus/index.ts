@@ -14,6 +14,7 @@ export {
   requiredCaptures,
   resolutionKey,
   viewInPlayset,
+  viewSave,
   type CaptureKey,
   type CorpusManifest,
   type CorpusMod,
