@@ -46,9 +46,11 @@ It keeps the game as it was:
   and measured, then closed with Escape, never confirmed.
 - Before the first click it takes a fingerprint of the game's state: whether a
   game is loaded, its date, pause, session and game calls, the player, and
-  every text of the top bar (treasury, manpower, power, stability and the
-  rest). After every click it takes it again. A click that changed it is never
-  clicked again, and the game starts afresh from its save.
+  every text the top bar shows (treasury, manpower, power, stability and the
+  rest). After every click it takes it again and compares what the start
+  showed: a window opening inside the top bar (Anbennar's achievements) adds
+  texts without changing the game. A click that changed it is never clicked
+  again, and the game starts afresh from its save.
 - A click after which Escape cannot bring back the start state ends the game
   the same way.
 - Everything else is the capture driver's procedure (corpus/README.md, "The

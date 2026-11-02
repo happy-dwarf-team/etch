@@ -414,8 +414,10 @@ async function changeOf(
   before: Record<string, string>,
 ): Promise<string | undefined> {
   const now = await fingerprintOf(ctx);
-  const keys = new Set([...Object.keys(before), ...Object.keys(now)]);
-  const changed = [...keys].filter((k) => before[k] !== now[k]);
+  // Only what the start state showed: a window that opens inside the top bar (Anbennar's
+  // achievements) adds texts, and one that covers part of it hides some; neither is the game's
+  // state. The state's own fields are always there.
+  const changed = Object.keys(before).filter((k) => k in now && before[k] !== now[k]);
   if (changed.length === 0) return undefined;
   return changed.map((k) => `${k}: ${String(before[k])} -> ${String(now[k])}`).join('; ');
 }
