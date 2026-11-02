@@ -3,9 +3,9 @@
   "playset": "vanilla",
   "resolution": { "width": 1920, "height": 1080 },
   "view": "hud",
-  "takenAt": "2026-10-21T22:10:57.607Z",
+  "takenAt": "2026-11-01T05:29:20.973Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
-  "tongs": { "version": "0.14.1" },
+  "tongs": { "version": "0.23.0" },
   "save": { "sha256": "2A4CAF306CCDDB2DAFC7EE015C4ECFFB260654A1D10D86F5F4F768D3C3F56F6A" },
   "mods": [],
   "disabledDlcs": [],
@@ -13,17 +13,17 @@
     "from": "save",
     "steps": [],
     "verified": true,
-    "evidence": "Run by the capture driver (etch#42) at 1280x720 and 1920x1080 on 2026-10-21: the steps opened the view and its roots were read and shown."
+    "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown."
   },
   "window": { "width": 1920, "height": 1080, "dpi": 96 },
   "screenshot": {
-    "sha256": "BCD29208E1146C2E35A75229CAA357C17F203FC14D123326295FAE25894F30C7",
+    "sha256": "E71A2003EE79E3C1E04DC6CBCA278CC0C4D1CA10B897DD09BEFF3B970705071B",
     "width": 1920,
     "height": 1080,
     "shots": 4,
     "unstable": {
-      "pixels": 637457,
-      "sha256": "94A5497C5F67334CC590ED32A59CA09275B5705387AF94379C50D1026D135EBE"
+      "pixels": 635585,
+      "sha256": "F617D2B9BE407426D84C835B1000E696CFD8252CC659B37E7C4AC9FC7BE65919"
     }
   },
   "widgets": [
@@ -32,14 +32,14 @@
       "path": "topbar",
       "type": "window",
       "visible": true,
-      "rect": { "x": 0, "y": -1, "w": 1920, "h": 1080 },
+      "rect": { "x": 0, "y": 0, "w": 1163, "h": 169 },
       "children": [
         {
           "name": "player_shield",
           "path": "topbar/player_shield",
           "type": "button",
           "visible": true,
-          "rect": { "x": -5, "y": 1, "w": 1, "h": 152 },
+          "rect": { "x": 0, "y": 1, "w": 147, "h": 152 },
           "enabled": true
         },
         {
@@ -125,21 +125,21 @@
           "name": "topbar_1",
           "path": "topbar/topbar_1",
           "type": "icon",
-          "visible": true,
+          "visible": false,
           "rect": { "x": 99512, "y": -2, "w": 109, "h": 31 }
         },
         {
           "name": "topbar_2",
           "path": "topbar/topbar_2",
           "type": "icon",
-          "visible": true,
+          "visible": false,
           "rect": { "x": 991024, "y": -2, "w": 109, "h": 31 }
         },
         {
           "name": "topbar_3",
           "path": "topbar/topbar_3",
           "type": "icon",
-          "visible": true,
+          "visible": false,
           "rect": { "x": 991532, "y": -2, "w": 109, "h": 31 }
         },
         {
@@ -147,7 +147,7 @@
           "path": "topbar/topbar_upper_left_bg",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 0, "y": -1, "w": 927, "h": 160 }
+          "rect": { "x": 0, "y": 0, "w": 927, "h": 159 }
         },
         {
           "name": "topbar_upper_left_bg4",
@@ -168,7 +168,7 @@
           "path": "topbar/player_shield_glow",
           "type": "icon",
           "visible": true,
-          "rect": { "x": -5, "y": 1, "w": 152, "h": 152 }
+          "rect": { "x": 0, "y": 1, "w": 147, "h": 152 }
         },
         {
           "name": "great_power_button_base",
@@ -461,14 +461,14 @@
           "path": "topbar/powerprojection_topbar",
           "type": "window",
           "visible": true,
-          "rect": { "x": 148, "y": -1, "w": 100, "h": 100 },
+          "rect": { "x": 639, "y": 0, "w": 95, "h": 49 },
           "children": [
             {
               "name": "topbar_liberty_overlay",
               "path": "topbar/powerprojection_topbar/topbar_liberty_overlay",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 639, "y": -2, "w": 95, "h": 51 }
+              "rect": { "x": 639, "y": 0, "w": 95, "h": 49 }
             },
             {
               "name": "icon_powerprojection",
@@ -549,7 +549,7 @@
       "path": "speed_controls",
       "type": "window",
       "visible": true,
-      "rect": { "x": 1920, "y": 0, "w": 0, "h": 0 },
+      "rect": { "x": 1666, "y": 0, "w": 254, "h": 169 },
       "children": [
         {
           "name": "button_pause",
@@ -612,7 +612,7 @@
           "path": "speed_controls/button_outliner",
           "type": "button",
           "visible": true,
-          "rect": { "x": 1889, "y": 64, "w": 33, "h": 33 },
+          "rect": { "x": 1889, "y": 64, "w": 31, "h": 33 },
           "enabled": true
         },
         {
@@ -620,7 +620,7 @@
           "path": "speed_controls/icon_date_bg",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 1666, "y": -1, "w": 257, "h": 170 }
+          "rect": { "x": 1666, "y": 0, "w": 254, "h": 169 }
         },
         {
           "name": "icon_score",
@@ -689,7 +689,7 @@
           "path": "outliner/outliner_list",
           "type": "listbox",
           "visible": true,
-          "rect": { "x": 1664, "y": 113, "w": 256, "h": 6930 },
+          "rect": { "x": 1664, "y": 113, "w": 256, "h": 720 },
           "children": [
             {
               "name": "outliner_header_entry",
@@ -3396,7 +3396,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "25th Army"
+                  "text": "66th Army"
                 },
                 {
                   "name": "info_text",
@@ -3404,7 +3404,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 36, "y": 0, "w": 100, "h": 18 },
-                  "text": "50,000"
+                  "text": "50,000 £attrition £general_16 "
                 }
               ]
             },
@@ -3436,7 +3436,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "Army of the Ural"
+                  "text": "10th Army"
                 },
                 {
                   "name": "info_text",
@@ -3476,7 +3476,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "14th Army"
+                  "text": "13th Army"
                 },
                 {
                   "name": "info_text",
@@ -3484,7 +3484,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 36, "y": 0, "w": 100, "h": 18 },
-                  "text": "50,000 £general_16 "
+                  "text": "50,000 £attrition "
                 }
               ]
             },
@@ -3516,7 +3516,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "Army of Crimea"
+                  "text": "6th Army"
                 },
                 {
                   "name": "info_text",
@@ -3524,7 +3524,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 36, "y": 0, "w": 100, "h": 18 },
-                  "text": "50,000 £general_16 "
+                  "text": "50,000"
                 }
               ]
             },
@@ -3556,7 +3556,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "Army of Ukraine"
+                  "text": "5th Army"
                 },
                 {
                   "name": "info_text",
@@ -3564,7 +3564,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 36, "y": 0, "w": 100, "h": 18 },
-                  "text": "50,000 £general_16 "
+                  "text": "50,000 £attrition "
                 }
               ]
             },
@@ -3596,7 +3596,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "17th Army"
+                  "text": "4th Army"
                 },
                 {
                   "name": "info_text",
@@ -3604,7 +3604,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 36, "y": 0, "w": 100, "h": 18 },
-                  "text": "50,000 £general_16 "
+                  "text": "50,000 £attrition "
                 }
               ]
             },
@@ -3636,7 +3636,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "11th Army"
+                  "text": "16th Army"
                 },
                 {
                   "name": "info_text",
@@ -3676,7 +3676,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "Russian Imperial Army"
+                  "text": "21st Army"
                 },
                 {
                   "name": "info_text",
@@ -3684,7 +3684,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 36, "y": 0, "w": 100, "h": 18 },
-                  "text": "50,000 £general_16 "
+                  "text": "50,000 £attrition £general_16 "
                 }
               ]
             },
@@ -3716,7 +3716,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "32nd Army"
+                  "text": "7th Army"
                 },
                 {
                   "name": "info_text",
@@ -3756,7 +3756,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "15th Army"
+                  "text": "1st Army"
                 },
                 {
                   "name": "info_text",
@@ -3764,7 +3764,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 36, "y": 0, "w": 100, "h": 18 },
-                  "text": "50,000"
+                  "text": "50,000 £general_16 "
                 }
               ]
             },
@@ -3796,7 +3796,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "45th Army"
+                  "text": "Russian Imperial Army"
                 },
                 {
                   "name": "info_text",
@@ -3836,7 +3836,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "1st Army"
+                  "text": "Army of Finland"
                 },
                 {
                   "name": "info_text",
@@ -3844,7 +3844,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 36, "y": 0, "w": 100, "h": 18 },
-                  "text": "50,000 £general_16 "
+                  "text": "50,000 £attrition "
                 }
               ]
             },
@@ -3876,7 +3876,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "23rd Army"
+                  "text": "3rd Army"
                 },
                 {
                   "name": "info_text",
@@ -3916,7 +3916,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "3rd Army"
+                  "text": "23rd Army"
                 },
                 {
                   "name": "info_text",
@@ -3956,7 +3956,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "Army of Finland"
+                  "text": "17th Army"
                 },
                 {
                   "name": "info_text",
@@ -3964,7 +3964,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 36, "y": 0, "w": 100, "h": 18 },
-                  "text": "50,000 £attrition "
+                  "text": "50,000 £general_16 "
                 }
               ]
             },
@@ -3996,7 +3996,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "Army of Poland"
+                  "text": "Army of Ukraine"
                 },
                 {
                   "name": "info_text",
@@ -4036,7 +4036,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "1st Army"
+                  "text": "Army of Crimea"
                 },
                 {
                   "name": "info_text",
@@ -4076,7 +4076,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "2nd Army"
+                  "text": "45th Army"
                 },
                 {
                   "name": "info_text",
@@ -4116,7 +4116,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "50th Army"
+                  "text": "14th Army"
                 },
                 {
                   "name": "info_text",
@@ -4124,7 +4124,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 36, "y": 0, "w": 100, "h": 18 },
-                  "text": "50,000"
+                  "text": "50,000 £general_16 "
                 }
               ]
             },
@@ -4156,7 +4156,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "8th Army"
+                  "text": "25th Army"
                 },
                 {
                   "name": "info_text",
@@ -4164,7 +4164,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 36, "y": 0, "w": 100, "h": 18 },
-                  "text": "50,000 £general_16 "
+                  "text": "50,000"
                 }
               ]
             },
@@ -4196,7 +4196,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "28th Army"
+                  "text": "Army of Poland"
                 },
                 {
                   "name": "info_text",
@@ -4236,7 +4236,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "6th Army"
+                  "text": "8th Army"
                 },
                 {
                   "name": "info_text",
@@ -4244,7 +4244,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 36, "y": 0, "w": 100, "h": 18 },
-                  "text": "50,000"
+                  "text": "50,000 £general_16 "
                 }
               ]
             },
@@ -4276,7 +4276,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "5th Army"
+                  "text": "15th Army"
                 },
                 {
                   "name": "info_text",
@@ -4284,7 +4284,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 36, "y": 0, "w": 100, "h": 18 },
-                  "text": "50,000 £attrition "
+                  "text": "50,000"
                 }
               ]
             },
@@ -4316,7 +4316,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "4th Army"
+                  "text": "1st Army"
                 },
                 {
                   "name": "info_text",
@@ -4324,7 +4324,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 36, "y": 0, "w": 100, "h": 18 },
-                  "text": "50,000 £attrition "
+                  "text": "50,000 £general_16 "
                 }
               ]
             },
@@ -4356,7 +4356,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "16th Army"
+                  "text": "Army of the Ural"
                 },
                 {
                   "name": "info_text",
@@ -4364,7 +4364,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 36, "y": 0, "w": 100, "h": 18 },
-                  "text": "50,000 £general_16 "
+                  "text": "50,000"
                 }
               ]
             },
@@ -4396,7 +4396,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "21st Army"
+                  "text": "28th Army"
                 },
                 {
                   "name": "info_text",
@@ -4404,7 +4404,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 36, "y": 0, "w": 100, "h": 18 },
-                  "text": "50,000 £attrition £general_16 "
+                  "text": "50,000 £general_16 "
                 }
               ]
             },
@@ -4436,7 +4436,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "10th Army"
+                  "text": "2nd Army"
                 },
                 {
                   "name": "info_text",
@@ -4444,7 +4444,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 36, "y": 0, "w": 100, "h": 18 },
-                  "text": "50,000"
+                  "text": "50,000 £general_16 "
                 }
               ]
             },
@@ -4476,7 +4476,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "7th Army"
+                  "text": "32nd Army"
                 },
                 {
                   "name": "info_text",
@@ -4516,7 +4516,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "66th Army"
+                  "text": "11th Army"
                 },
                 {
                   "name": "info_text",
@@ -4524,7 +4524,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 36, "y": 0, "w": 100, "h": 18 },
-                  "text": "50,000 £attrition £general_16 "
+                  "text": "50,000 £general_16 "
                 }
               ]
             },
@@ -4556,7 +4556,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "13th Army"
+                  "text": "50th Army"
                 },
                 {
                   "name": "info_text",
@@ -4564,7 +4564,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 36, "y": 0, "w": 100, "h": 18 },
-                  "text": "50,000 £attrition "
+                  "text": "50,000"
                 }
               ]
             },
@@ -4596,7 +4596,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "61st Army"
+                  "text": "63rd Army"
                 },
                 {
                   "name": "info_text",
@@ -4636,7 +4636,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "31st Army"
+                  "text": "69th Army"
                 },
                 {
                   "name": "info_text",
@@ -4676,7 +4676,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "30th Army"
+                  "text": "42nd Army"
                 },
                 {
                   "name": "info_text",
@@ -4716,7 +4716,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "1st Army"
+                  "text": "65th Army"
                 },
                 {
                   "name": "info_text",
@@ -4756,7 +4756,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "9th Army"
+                  "text": "20th Army"
                 },
                 {
                   "name": "info_text",
@@ -4796,7 +4796,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "68th Army"
+                  "text": "70th Army"
                 },
                 {
                   "name": "info_text",
@@ -4836,7 +4836,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "72nd Army"
+                  "text": "40th Army"
                 },
                 {
                   "name": "info_text",
@@ -4876,7 +4876,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "65th Army"
+                  "text": "55th Army"
                 },
                 {
                   "name": "info_text",
@@ -4916,7 +4916,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "20th Army"
+                  "text": "1st Army"
                 },
                 {
                   "name": "info_text",
@@ -4956,7 +4956,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "69th Army"
+                  "text": "61st Army"
                 },
                 {
                   "name": "info_text",
@@ -4996,7 +4996,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "42nd Army"
+                  "text": "9th Army"
                 },
                 {
                   "name": "info_text",
@@ -5036,7 +5036,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "40th Army"
+                  "text": "68th Army"
                 },
                 {
                   "name": "info_text",
@@ -5076,7 +5076,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "55th Army"
+                  "text": "31st Army"
                 },
                 {
                   "name": "info_text",
@@ -5116,7 +5116,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "63rd Army"
+                  "text": "72nd Army"
                 },
                 {
                   "name": "info_text",
@@ -5156,7 +5156,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 76, "y": 0, "w": 154, "h": 18 },
-                  "text": "70th Army"
+                  "text": "30th Army"
                 },
                 {
                   "name": "info_text",
@@ -14255,14 +14255,14 @@
           "name": "mapmode_bg",
           "path": "menubar/mapmode_bg",
           "type": "icon",
-          "visible": true,
+          "visible": false,
           "rect": { "x": -97362, "y": 971, "w": 220, "h": 20 }
         },
         {
           "name": "mapmode_bg_2",
           "path": "menubar/mapmode_bg_2",
           "type": "icon",
-          "visible": true,
+          "visible": false,
           "rect": { "x": -97362, "y": 954, "w": 220, "h": 20 }
         },
         {
@@ -14282,46 +14282,48 @@
             {
               "name": "WarOverviewButtonList",
               "path": "menubar/WarOverviewButtonWindow/WarOverviewButtonList",
-              "type": "other",
+              "type": "listbox",
               "visible": true,
-              "rect": { "x": 1060, "y": 1015, "w": 300, "h": 40 }
-            },
-            {
-              "name": "waroverview_shieldItem",
-              "path": "menubar/WarOverviewButtonWindow/waroverview_shieldItem",
-              "type": "window",
-              "visible": true,
-              "rect": { "x": 1301, "y": 1015, "w": 60, "h": 40 },
+              "rect": { "x": 1060, "y": 1015, "w": 300, "h": 40 },
               "children": [
                 {
-                  "name": "button_war_overview_item",
-                  "path": "menubar/WarOverviewButtonWindow/waroverview_shieldItem/button_war_overview_item",
-                  "type": "button",
+                  "name": "waroverview_shieldItem",
+                  "path": "menubar/WarOverviewButtonWindow/WarOverviewButtonList/waroverview_shieldItem",
+                  "type": "window",
                   "visible": true,
-                  "rect": { "x": 1298, "y": 1000, "w": 70, "h": 81 },
-                  "enabled": true
-                },
-                {
-                  "name": "waroverview_icon",
-                  "path": "menubar/WarOverviewButtonWindow/waroverview_shieldItem/waroverview_icon",
-                  "type": "icon",
-                  "visible": true,
-                  "rect": { "x": 1300, "y": 1001, "w": 0, "h": 64 }
-                },
-                {
-                  "name": "war_enthusiasm_icon",
-                  "path": "menubar/WarOverviewButtonWindow/waroverview_shieldItem/war_enthusiasm_icon",
-                  "type": "icon",
-                  "visible": true,
-                  "rect": { "x": 960, "y": 516, "w": 25, "h": 24 }
-                },
-                {
-                  "name": "progress",
-                  "path": "menubar/WarOverviewButtonWindow/waroverview_shieldItem/progress",
-                  "type": "text",
-                  "visible": true,
-                  "rect": { "x": 1298, "y": 1053, "w": 64, "h": 26 },
-                  "text": "0%"
+                  "rect": { "x": 1301, "y": 1015, "w": 60, "h": 40 },
+                  "children": [
+                    {
+                      "name": "button_war_overview_item",
+                      "path": "menubar/WarOverviewButtonWindow/WarOverviewButtonList/waroverview_shieldItem/button_war_overview_item",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 1298, "y": 1000, "w": 70, "h": 80 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "waroverview_icon",
+                      "path": "menubar/WarOverviewButtonWindow/WarOverviewButtonList/waroverview_shieldItem/waroverview_icon",
+                      "type": "icon",
+                      "visible": true,
+                      "rect": { "x": 1300, "y": 1001, "w": 64, "h": 64 }
+                    },
+                    {
+                      "name": "war_enthusiasm_icon",
+                      "path": "menubar/WarOverviewButtonWindow/WarOverviewButtonList/waroverview_shieldItem/war_enthusiasm_icon",
+                      "type": "icon",
+                      "visible": true,
+                      "rect": { "x": 960, "y": 516, "w": 25, "h": 24 }
+                    },
+                    {
+                      "name": "progress",
+                      "path": "menubar/WarOverviewButtonWindow/WarOverviewButtonList/waroverview_shieldItem/progress",
+                      "type": "text",
+                      "visible": true,
+                      "rect": { "x": 1298, "y": 1053, "w": 64, "h": 26 },
+                      "text": "0%"
+                    }
+                  ]
                 }
               ]
             }
@@ -14332,7 +14334,7 @@
           "path": "menubar/messagelog_window",
           "type": "window",
           "visible": false,
-          "rect": { "x": 595, "y": 1090, "w": 770, "h": 100 },
+          "rect": { "x": 595, "y": 1080, "w": 1024, "h": 128 },
           "children": [
             {
               "name": "log_bg",
@@ -14353,7 +14355,7 @@
                   "path": "menubar/messagelog_window/messagelog/logtext",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 715, "y": 1100, "w": 700, "h": 18 },
+                  "rect": { "x": 725, "y": 1094, "w": 700, "h": 18 },
                   "children": [
                     {
                       "name": "messagelogbutton",
@@ -14547,7 +14549,7 @@
           "path": "menubar/message_window_container",
           "type": "window",
           "visible": true,
-          "rect": { "x": 1720, "y": 650, "w": 241, "h": 186 },
+          "rect": { "x": 1866, "y": 615, "w": 32, "h": 20 },
           "children": [
             {
               "name": "message_window",
@@ -14665,7 +14667,7 @@
                   "path": "menubar/message_window_container/toggle_message_interface_window/ToggleMessageBackground",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 1893, "y": 813, "w": 29, "h": 59 }
+                  "rect": { "x": 1893, "y": 813, "w": 27, "h": 59 }
                 }
               ]
             }
@@ -14747,56 +14749,56 @@
               "path": "menubar/floating_buttons/menubar_floating_bg_1",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 1558, "y": 1044, "w": 47, "h": 38 }
+              "rect": { "x": 1558, "y": 1044, "w": 47, "h": 36 }
             },
             {
               "name": "menubar_floating_bg_2",
               "path": "menubar/floating_buttons/menubar_floating_bg_2",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 1513, "y": 1044, "w": 47, "h": 38 }
+              "rect": { "x": 1513, "y": 1044, "w": 47, "h": 36 }
             },
             {
               "name": "menubar_floating_bg_3",
               "path": "menubar/floating_buttons/menubar_floating_bg_3",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 1468, "y": 1044, "w": 47, "h": 38 }
+              "rect": { "x": 1468, "y": 1044, "w": 47, "h": 36 }
             },
             {
               "name": "menubar_floating_bg_4",
               "path": "menubar/floating_buttons/menubar_floating_bg_4",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1423, "y": 1044, "w": 47, "h": 38 }
+              "rect": { "x": 1423, "y": 1044, "w": 47, "h": 36 }
             },
             {
               "name": "menubar_floating_bg_5",
               "path": "menubar/floating_buttons/menubar_floating_bg_5",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1378, "y": 1044, "w": 47, "h": 38 }
+              "rect": { "x": 1378, "y": 1044, "w": 47, "h": 36 }
             },
             {
               "name": "menubar_floating_bg_6",
               "path": "menubar/floating_buttons/menubar_floating_bg_6",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1323, "y": 1044, "w": 47, "h": 38 }
+              "rect": { "x": 1323, "y": 1044, "w": 47, "h": 36 }
             },
             {
               "name": "menubar_floating_bg_7",
               "path": "menubar/floating_buttons/menubar_floating_bg_7",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1268, "y": 1044, "w": 47, "h": 38 }
+              "rect": { "x": 1268, "y": 1044, "w": 47, "h": 36 }
             },
             {
               "name": "menubar_floating_bg_8",
               "path": "menubar/floating_buttons/menubar_floating_bg_8",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1213, "y": 1044, "w": 47, "h": 38 }
+              "rect": { "x": 1213, "y": 1044, "w": 47, "h": 36 }
             },
             {
               "name": "hre_strip_glow",
@@ -14810,7 +14812,7 @@
               "path": "menubar/floating_buttons/revolution_flag",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1474, "y": 1026, "w": 0, "h": 31 }
+              "rect": { "x": 1474, "y": 1026, "w": 31, "h": 31 }
             },
             {
               "name": "floating_number_1",

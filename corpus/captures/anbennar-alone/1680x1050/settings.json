@@ -3,9 +3,9 @@
   "playset": "anbennar-alone",
   "resolution": { "width": 1680, "height": 1050 },
   "view": "settings",
-  "takenAt": "2026-10-27T22:35:19.791Z",
+  "takenAt": "2026-11-01T06:00:03.565Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
-  "tongs": { "version": "0.14.1" },
+  "tongs": { "version": "0.23.0" },
   "save": { "sha256": "AACEDFE6FD0294B80961679AB9618BC48195A9E9A239BE41292CEFFE156FDD3D" },
   "mods": [
     {
@@ -22,13 +22,13 @@
   },
   "window": { "width": 1680, "height": 1050, "dpi": 96 },
   "screenshot": {
-    "sha256": "C4F18D0B85B45729CE2531F744B818F592D1DC38B44986E0B7E760D42E8D9702",
+    "sha256": "A886B25B1A41A7E36D191A8FAD44F07A0DF48AC2A05A5A43C4E8212628D0BD23",
     "width": 1680,
     "height": 1050,
     "shots": 4,
     "unstable": {
-      "pixels": 1318644,
-      "sha256": "B6549CD01D65AB4AE43B5151D948776712B193C66E42F2B24EAB8F5830B66F8E"
+      "pixels": 1222422,
+      "sha256": "090E69A4CA52C8F56EDBC0D0185F62B397E8A1A3FB8634DFEF0E1064A13E1687"
     }
   },
   "widgets": [
@@ -157,14 +157,14 @@
               "path": "menu_settings_ingame/menu_settings_AUDIO/menu",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 840, "y": -3, "w": 722, "h": 528 }
+              "rect": { "x": 840, "y": 0, "w": 722, "h": 525 }
             },
             {
               "name": "mastervolume_label",
               "path": "menu_settings_ingame/menu_settings_AUDIO/mastervolume_label",
               "type": "text",
               "visible": false,
-              "rect": { "x": -80, "y": 136, "w": 172, "h": 18 },
+              "rect": { "x": 0, "y": 136, "w": 92, "h": 18 },
               "text": "Master Volume"
             },
             {
@@ -172,7 +172,7 @@
               "path": "menu_settings_ingame/menu_settings_AUDIO/effectvolume_label",
               "type": "text",
               "visible": false,
-              "rect": { "x": -80, "y": 191, "w": 172, "h": 18 },
+              "rect": { "x": 0, "y": 191, "w": 92, "h": 18 },
               "text": "Effect Volume"
             },
             {
@@ -180,7 +180,7 @@
               "path": "menu_settings_ingame/menu_settings_AUDIO/musicvolume_label",
               "type": "text",
               "visible": false,
-              "rect": { "x": -80, "y": 243, "w": 172, "h": 18 },
+              "rect": { "x": 0, "y": 243, "w": 92, "h": 18 },
               "text": "Music Volume"
             },
             {
@@ -188,7 +188,7 @@
               "path": "menu_settings_ingame/menu_settings_AUDIO/ambient_label",
               "type": "text",
               "visible": false,
-              "rect": { "x": -80, "y": 297, "w": 172, "h": 18 },
+              "rect": { "x": 0, "y": 297, "w": 92, "h": 18 },
               "text": "Ambient"
             },
             {
@@ -370,14 +370,14 @@
               "path": "menu_settings_ingame/menu_settings_CONTROLS/menu",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 840, "y": -3, "w": 722, "h": 528 }
+              "rect": { "x": 840, "y": 0, "w": 722, "h": 525 }
             },
             {
               "name": "scrollspeed_label",
               "path": "menu_settings_ingame/menu_settings_CONTROLS/scrollspeed_label",
               "type": "text",
               "visible": false,
-              "rect": { "x": -80, "y": 244, "w": 172, "h": 18 },
+              "rect": { "x": 0, "y": 244, "w": 92, "h": 18 },
               "text": "Scroll Speed"
             },
             {
@@ -385,7 +385,7 @@
               "path": "menu_settings_ingame/menu_settings_CONTROLS/zoomspeed_label",
               "type": "text",
               "visible": false,
-              "rect": { "x": -80, "y": 189, "w": 172, "h": 18 },
+              "rect": { "x": 0, "y": 189, "w": 92, "h": 18 },
               "text": "Zoom Speed"
             },
             {
@@ -552,7 +552,7 @@
               "path": "menu_settings_ingame/menu_settings_VIDEO/menu",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 840, "y": -3, "w": 722, "h": 528 }
+              "rect": { "x": 840, "y": 0, "w": 722, "h": 525 }
             },
             {
               "name": "display_mode_label",
@@ -670,7 +670,7 @@
               "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox",
               "type": "listbox",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 250, "h": 720 },
+              "rect": { "x": 0, "y": 0, "w": 250, "h": 225 },
               "children": [
                 {
                   "name": "settings_item",
@@ -1639,7 +1639,7 @@
               "path": "menu_settings_ingame/menu_settings_ACCESSIBILITY/menu",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 840, "y": -3, "w": 722, "h": 528 }
+              "rect": { "x": 840, "y": 0, "w": 722, "h": 525 }
             },
             {
               "name": "speech_to_text_shortcut_edit_bkg",
@@ -1653,7 +1653,7 @@
               "path": "menu_settings_ingame/menu_settings_ACCESSIBILITY/visual_alerts_label",
               "type": "text",
               "visible": false,
-              "rect": { "x": -68, "y": 125, "w": 256, "h": 18 },
+              "rect": { "x": 0, "y": 125, "w": 188, "h": 18 },
               "text": "Multiplayer Chat Visual Alerts"
             },
             {
@@ -1661,7 +1661,7 @@
               "path": "menu_settings_ingame/menu_settings_ACCESSIBILITY/large_fonts_label",
               "type": "text",
               "visible": false,
-              "rect": { "x": -68, "y": 162, "w": 256, "h": 18 },
+              "rect": { "x": 0, "y": 162, "w": 188, "h": 18 },
               "text": "Multiplayer Chat Large Fonts"
             },
             {
@@ -1669,7 +1669,7 @@
               "path": "menu_settings_ingame/menu_settings_ACCESSIBILITY/text_to_speech_label",
               "type": "text",
               "visible": false,
-              "rect": { "x": -68, "y": 199, "w": 256, "h": 18 },
+              "rect": { "x": 0, "y": 199, "w": 188, "h": 18 },
               "text": "Multiplayer Chat Text To Speech"
             },
             {
@@ -1677,7 +1677,7 @@
               "path": "menu_settings_ingame/menu_settings_ACCESSIBILITY/speech_to_text_label",
               "type": "text",
               "visible": false,
-              "rect": { "x": -68, "y": 239, "w": 256, "h": 18 },
+              "rect": { "x": 0, "y": 239, "w": 188, "h": 18 },
               "text": "Multiplayer Chat Speech To Text"
             },
             {
@@ -1685,7 +1685,7 @@
               "path": "menu_settings_ingame/menu_settings_ACCESSIBILITY/speech_to_text_shortcut_state_label",
               "type": "text",
               "visible": false,
-              "rect": { "x": -68, "y": 276, "w": 256, "h": 18 },
+              "rect": { "x": 0, "y": 276, "w": 188, "h": 18 },
               "text": "Speech To Text Toggle Shortcut"
             },
             {
@@ -1693,7 +1693,7 @@
               "path": "menu_settings_ingame/menu_settings_ACCESSIBILITY/speech_to_text_shortcut_label",
               "type": "text",
               "visible": false,
-              "rect": { "x": -68, "y": 312, "w": 256, "h": 18 },
+              "rect": { "x": 0, "y": 312, "w": 188, "h": 18 },
               "text": "Multiplayer Chat Speech To Text Shortcut"
             },
             {

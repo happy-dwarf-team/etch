@@ -3,9 +3,9 @@
   "playset": "anbennar-alone",
   "resolution": { "width": 1280, "height": 720 },
   "view": "main-menu",
-  "takenAt": "2026-10-27T22:15:40.321Z",
+  "takenAt": "2026-11-01T05:40:35.768Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
-  "tongs": { "version": "0.14.1" },
+  "tongs": { "version": "0.23.0" },
   "mods": [
     {
       "name": "Anbennar: A Fantasy Total Conversion",
@@ -21,13 +21,13 @@
   },
   "window": { "width": 1280, "height": 720, "dpi": 96 },
   "screenshot": {
-    "sha256": "3DA382F3B7E33AF3D26AE19C872224DFDEC87B940F90B9DBE497BCE6ECE56068",
+    "sha256": "B4E9B1E9A55AD3005A2F9F36C41B7BD322BD8BDDE8EB7D5AE4799D19EAB590A6",
     "width": 1280,
     "height": 720,
     "shots": 4,
     "unstable": {
-      "pixels": 539034,
-      "sha256": "66382C5D952B25CFC7A52CB4E1A99CCFC8693148F0E34FBE37F21834E321F440"
+      "pixels": 539294,
+      "sha256": "BBF5412BECE7E9AC39C4023C54B3A9A7210D18FED9BB7C49D83562C2F60C2621"
     }
   },
   "widgets": [
@@ -156,14 +156,14 @@
               "path": "country_selection_panel/mainmenu/mainmenu_panel_upperleft",
               "type": "window",
               "visible": true,
-              "rect": { "x": 0, "y": -1, "w": 1280, "h": 720 },
+              "rect": { "x": 0, "y": 19, "w": 508, "h": 701 },
               "children": [
                 {
                   "name": "frontend_game_logo",
                   "path": "country_selection_panel/mainmenu/mainmenu_panel_upperleft/frontend_game_logo",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 0, "y": 19, "w": 508, "h": 950 }
+                  "rect": { "x": 0, "y": 19, "w": 508, "h": 701 }
                 }
               ]
             },
@@ -172,7 +172,7 @@
               "path": "country_selection_panel/mainmenu/mainmenu_panel_upperright",
               "type": "window",
               "visible": true,
-              "rect": { "x": 0, "y": -1, "w": 1280, "h": 720 },
+              "rect": { "x": 1070, "y": 14, "w": 192, "h": 192 },
               "children": [
                 {
                   "name": "frontend_dev_logo",
@@ -237,7 +237,7 @@
               "path": "country_selection_panel/mainmenu/mainmenu_panel_bottom",
               "type": "window",
               "visible": true,
-              "rect": { "x": 88, "y": 636, "w": 1280, "h": 720 },
+              "rect": { "x": 56, "y": 516, "w": 928, "h": 204 },
               "children": [
                 {
                   "name": "single_player_button",
@@ -310,7 +310,7 @@
                   "path": "country_selection_panel/mainmenu/mainmenu_panel_bottom/version_background",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 56, "y": 656, "w": 253, "h": 65 }
+                  "rect": { "x": 56, "y": 656, "w": 253, "h": 64 }
                 },
                 {
                   "name": "single_player_button_text",
@@ -357,7 +357,7 @@
                   "path": "country_selection_panel/mainmenu/mainmenu_panel_bottom/continue_container",
                   "type": "window",
                   "visible": true,
-                  "rect": { "x": 472, "y": 542, "w": 0, "h": 0 },
+                  "rect": { "x": 434, "y": 516, "w": 414, "h": 92 },
                   "children": [
                     {
                       "name": "continue_game_button",
@@ -372,7 +372,7 @@
                       "path": "country_selection_panel/mainmenu/mainmenu_panel_bottom/continue_container/continue_game_shield",
                       "type": "button",
                       "visible": true,
-                      "rect": { "x": 438, "y": 516, "w": 0, "h": 92 },
+                      "rect": { "x": 438, "y": 516, "w": 92, "h": 92 },
                       "enabled": true
                     },
                     {
@@ -406,7 +406,7 @@
               "path": "country_selection_panel/mainmenu/PersistentSocialButtons",
               "type": "window",
               "visible": true,
-              "rect": { "x": 1076, "y": 660, "w": 288, "h": 96 },
+              "rect": { "x": 906, "y": 655, "w": 374, "h": 65 },
               "children": [
                 {
                   "name": "homepage_button",
@@ -445,7 +445,7 @@
                   "path": "country_selection_panel/mainmenu/PersistentSocialButtons/background",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 906, "y": 655, "w": 392, "h": 66 }
+                  "rect": { "x": 906, "y": 655, "w": 374, "h": 65 }
                 },
                 {
                   "name": "frontend_small_frame",
@@ -502,7 +502,7 @@
               "path": "country_selection_panel/mainmenu_panel_top/frontend_game_logo",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 640, "y": -590, "w": 508, "h": 950 }
+              "rect": { "x": 640, "y": 0, "w": 508, "h": 360 }
             },
             {
               "name": "frontend_dev_logo",
@@ -583,7 +583,7 @@
               "path": "country_selection_panel/tutorial_panel/tutorial_list_bg",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 640, "y": -89, "w": 750, "h": 449 }
+              "rect": { "x": 640, "y": 0, "w": 640, "h": 360 }
             },
             {
               "name": "tutorial_part_bas_pic",
@@ -611,7 +611,7 @@
               "path": "country_selection_panel/tutorial_panel/tutorial_part_bas_title",
               "type": "text",
               "visible": false,
-              "rect": { "x": -50, "y": 350, "w": 140, "h": 54 },
+              "rect": { "x": 0, "y": 350, "w": 90, "h": 54 },
               "text": "Basic Tutorial\nBasic Controls\nBasic Gameplay"
             },
             {
@@ -619,7 +619,7 @@
               "path": "country_selection_panel/tutorial_panel/tutorial_part_adv_title",
               "type": "text",
               "visible": false,
-              "rect": { "x": -50, "y": 464, "w": 140, "h": 36 },
+              "rect": { "x": 0, "y": 464, "w": 90, "h": 36 },
               "text": "Advanced Tutorial\nAdvanced Gameplay"
             },
             {
@@ -627,7 +627,7 @@
               "path": "country_selection_panel/tutorial_panel/tutorial_part_cam_title",
               "type": "text",
               "visible": false,
-              "rect": { "x": -50, "y": 565, "w": 140, "h": 36 },
+              "rect": { "x": 0, "y": 565, "w": 90, "h": 36 },
               "text": "Spanish Empire\nBeginner Campaign"
             },
             {
@@ -667,7 +667,7 @@
               "path": "country_selection_panel/tutorial_panel/tutorial_list",
               "type": "listbox",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 150, "h": 30 },
+              "rect": { "x": 0, "y": 0, "w": 150, "h": 2 },
               "children": [
                 {
                   "name": "tutorial_entry",
@@ -793,14 +793,14 @@
                   "path": "country_selection_panel/lobby/bottom/chatpanel",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 640, "y": 170, "w": 810, "h": 190 }
+                  "rect": { "x": 640, "y": 170, "w": 640, "h": 190 }
                 },
                 {
                   "name": "scenario_description",
                   "path": "country_selection_panel/lobby/bottom/scenario_description",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": 17, "y": -1, "w": 767, "h": 26 },
+                  "rect": { "x": 17, "y": 0, "w": 767, "h": 25 },
                   "text": ""
                 },
                 {
@@ -890,7 +890,7 @@
               "path": "country_selection_panel/lobby/nation_designer_bottom_panel",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "rect": { "x": 274, "y": 83, "w": 762, "h": 277 },
               "children": [
                 {
                   "name": "nation_designer_close_button",
@@ -970,7 +970,7 @@
               "path": "country_selection_panel/lobby/random_new_world_loading_window",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "rect": { "x": 30, "y": 36, "w": 902, "h": 324 },
               "children": [
                 {
                   "name": "background",
@@ -1045,7 +1045,7 @@
                   "path": "country_selection_panel/lobby/left/left_sidepanel",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 640, "y": -210, "w": 292, "h": 570 }
+                  "rect": { "x": 640, "y": 0, "w": 292, "h": 360 }
                 },
                 {
                   "name": "observe_mode_title",
@@ -1058,7 +1058,7 @@
                 {
                   "name": "start_type_options",
                   "path": "country_selection_panel/lobby/left/start_type_options",
-                  "type": "other",
+                  "type": "listbox",
                   "visible": false,
                   "rect": { "x": 0, "y": 0, "w": 250, "h": 50 }
                 },
@@ -1067,7 +1067,7 @@
                   "path": "country_selection_panel/lobby/left/save_games",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 110, "h": 768 },
+                  "rect": { "x": 62, "y": 83, "w": 727, "h": 277 },
                   "children": [
                     {
                       "name": "location_button",
@@ -1158,14 +1158,14 @@
                   "path": "country_selection_panel/lobby/left/bookmarks",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 110, "h": 768 },
+                  "rect": { "x": 0, "y": 0, "w": 320, "h": 720 },
                   "children": [
                     {
                       "name": "bookmarks_list",
                       "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list",
                       "type": "listbox",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 320, "h": 1694 },
+                      "rect": { "x": 0, "y": 0, "w": 320, "h": 720 },
                       "children": [
                         {
                           "name": "bookmark_entry",
@@ -1634,7 +1634,7 @@
                           "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/standardlistbox_slider",
                           "type": "other",
                           "visible": false,
-                          "rect": { "x": 640, "y": 344, "w": 16, "h": 469 },
+                          "rect": { "x": 640, "y": 344, "w": 16, "h": 376 },
                           "children": [
                             {
                               "name": "listboxSliderButton",
@@ -1648,7 +1648,7 @@
                               "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/standardlistbox_slider/listboxTrackButton",
                               "type": "button",
                               "visible": false,
-                              "rect": { "x": 640, "y": 360, "w": 12, "h": 453 }
+                              "rect": { "x": 640, "y": 360, "w": 12, "h": 360 }
                             },
                             {
                               "name": "downButton",
@@ -1820,7 +1820,7 @@
                           "path": "country_selection_panel/lobby/left/lessons/lessons_list_box/standardlistbox_slider",
                           "type": "other",
                           "visible": false,
-                          "rect": { "x": 640, "y": 344, "w": 16, "h": 394 },
+                          "rect": { "x": 640, "y": 344, "w": 16, "h": 376 },
                           "children": [
                             {
                               "name": "listboxSliderButton",
@@ -1834,7 +1834,7 @@
                               "path": "country_selection_panel/lobby/left/lessons/lessons_list_box/standardlistbox_slider/listboxTrackButton",
                               "type": "button",
                               "visible": false,
-                              "rect": { "x": 640, "y": 360, "w": 12, "h": 378 }
+                              "rect": { "x": 640, "y": 360, "w": 12, "h": 360 }
                             },
                             {
                               "name": "downButton",
@@ -1870,7 +1870,7 @@
                       "path": "country_selection_panel/lobby/left/enabled_dlc_list/standardlistbox_slider",
                       "type": "other",
                       "visible": false,
-                      "rect": { "x": 640, "y": 344, "w": 16, "h": 484 },
+                      "rect": { "x": 640, "y": 344, "w": 16, "h": 376 },
                       "children": [
                         {
                           "name": "listboxSliderButton",
@@ -1884,7 +1884,7 @@
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list/standardlistbox_slider/listboxTrackButton",
                           "type": "button",
                           "visible": false,
-                          "rect": { "x": 640, "y": 360, "w": 12, "h": 468 }
+                          "rect": { "x": 640, "y": 360, "w": 12, "h": 360 }
                         },
                         {
                           "name": "downButton",
@@ -2046,7 +2046,7 @@
                   "path": "country_selection_panel/lobby/top/year_label",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": -150, "y": 18, "w": 300, "h": 30 },
+                  "rect": { "x": 0, "y": 18, "w": 150, "h": 30 },
                   "text": "The world 1453 AA"
                 },
                 {
@@ -2054,7 +2054,7 @@
                   "path": "country_selection_panel/lobby/top/select_label",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": -165, "y": 92, "w": 300, "h": 26 },
+                  "rect": { "x": 0, "y": 92, "w": 135, "h": 26 },
                   "text": "Click on the map to select a nation..."
                 },
                 {
@@ -2062,7 +2062,7 @@
                   "path": "country_selection_panel/lobby/top/nation_designer_hint",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": -143, "y": 110, "w": 320, "h": 18 },
+                  "rect": { "x": 0, "y": 110, "w": 177, "h": 18 },
                   "text": "NATION_DESIGNER_HINT"
                 }
               ]
@@ -2131,7 +2131,7 @@
                   "path": "country_selection_panel/lobby/right/right_sidepanel",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 640, "y": -324, "w": 272, "h": 684 }
+                  "rect": { "x": 640, "y": 0, "w": 272, "h": 360 }
                 },
                 {
                   "name": "ironman_icon",
@@ -2210,14 +2210,14 @@
                       "path": "country_selection_panel/lobby/right/multiplayer/right_sidepanel",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 640, "y": -196, "w": 252, "h": 556 }
+                      "rect": { "x": 640, "y": 0, "w": 252, "h": 360 }
                     },
                     {
                       "name": "checksum",
                       "path": "country_selection_panel/lobby/right/multiplayer/checksum",
                       "type": "text",
                       "visible": false,
-                      "rect": { "x": -20, "y": 32, "w": 260, "h": 26 },
+                      "rect": { "x": 0, "y": 32, "w": 240, "h": 26 },
                       "text": ""
                     },
                     {
@@ -2240,7 +2240,7 @@
                           "path": "country_selection_panel/lobby/right/multiplayer/multiplayer_list/standardlistbox_slider",
                           "type": "other",
                           "visible": false,
-                          "rect": { "x": 640, "y": 344, "w": 16, "h": 413 },
+                          "rect": { "x": 640, "y": 344, "w": 16, "h": 376 },
                           "children": [
                             {
                               "name": "listboxSliderButton",
@@ -2254,7 +2254,7 @@
                               "path": "country_selection_panel/lobby/right/multiplayer/multiplayer_list/standardlistbox_slider/listboxTrackButton",
                               "type": "button",
                               "visible": false,
-                              "rect": { "x": 640, "y": 360, "w": 12, "h": 397 }
+                              "rect": { "x": 640, "y": 360, "w": 12, "h": 360 }
                             },
                             {
                               "name": "downButton",
@@ -2307,7 +2307,7 @@
                       "path": "country_selection_panel/lobby/right/singleplayer/player_shield",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 640, "y": 268, "w": 0, "h": 92 },
+                      "rect": { "x": 640, "y": 268, "w": 92, "h": 92 },
                       "enabled": true
                     },
                     {
@@ -2542,7 +2542,7 @@
                       "path": "country_selection_panel/lobby/right/singleplayer/national_ideagroup_name",
                       "type": "text",
                       "visible": false,
-                      "rect": { "x": -5, "y": 369, "w": 175, "h": 26 },
+                      "rect": { "x": 0, "y": 369, "w": 170, "h": 26 },
                       "text": "Enlish Ideas"
                     },
                     {
@@ -2558,7 +2558,7 @@
                       "path": "country_selection_panel/lobby/right/singleplayer/provinces_value",
                       "type": "text",
                       "visible": false,
-                      "rect": { "x": -9, "y": 455, "w": 100, "h": 18 },
+                      "rect": { "x": 0, "y": 455, "w": 91, "h": 18 },
                       "text": "37"
                     },
                     {
@@ -2582,7 +2582,7 @@
                       "path": "country_selection_panel/lobby/right/singleplayer/diplomacy_banner_label",
                       "type": "text",
                       "visible": false,
-                      "rect": { "x": -5, "y": 485, "w": 160, "h": 26 },
+                      "rect": { "x": 0, "y": 485, "w": 155, "h": 26 },
                       "text": "Diplomacy"
                     },
                     {
@@ -2645,7 +2645,7 @@
                           "path": "country_selection_panel/lobby/right/singleplayer/suggested_dlc_list/standardlistbox_slider",
                           "type": "other",
                           "visible": false,
-                          "rect": { "x": 640, "y": 344, "w": 16, "h": 484 },
+                          "rect": { "x": 640, "y": 344, "w": 16, "h": 376 },
                           "children": [
                             {
                               "name": "listboxSliderButton",
@@ -2659,7 +2659,7 @@
                               "path": "country_selection_panel/lobby/right/singleplayer/suggested_dlc_list/standardlistbox_slider/listboxTrackButton",
                               "type": "button",
                               "visible": false,
-                              "rect": { "x": 640, "y": 360, "w": 12, "h": 468 }
+                              "rect": { "x": 640, "y": 360, "w": 12, "h": 360 }
                             },
                             {
                               "name": "downButton",

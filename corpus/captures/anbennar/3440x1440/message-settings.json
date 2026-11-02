@@ -3,9 +3,9 @@
   "playset": "anbennar",
   "resolution": { "width": 3440, "height": 1440 },
   "view": "message-settings",
-  "takenAt": "2026-10-27T22:12:11.974Z",
+  "takenAt": "2026-11-01T22:36:39.860Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
-  "tongs": { "version": "0.14.1" },
+  "tongs": { "version": "0.23.0" },
   "save": { "sha256": "AACEDFE6FD0294B80961679AB9618BC48195A9E9A239BE41292CEFFE156FDD3D" },
   "mods": [
     {
@@ -30,13 +30,13 @@
   },
   "window": { "width": 3440, "height": 1440, "dpi": 96 },
   "screenshot": {
-    "sha256": "E7051E0A880FFE3122DA0AB9C4E6AB0AC2F5B1F83078352642F52794DA2D1AD5",
+    "sha256": "A7FFC46A38454FFF58E70AB0A43BFBD49E3E67ED999668B3045179281BB7FF72",
     "width": 3440,
     "height": 1440,
     "shots": 4,
     "unstable": {
-      "pixels": 3943966,
-      "sha256": "C1A89E5D4FEA43D23477210DA34116EED5A8DBE38163168B16A7C804625B4243"
+      "pixels": 3944204,
+      "sha256": "0824D5F340A092F8F8E971F99C25C60FDF39E0D145CB99F8119A2B58D32BD98F"
     }
   },
   "widgets": [
@@ -255,7 +255,7 @@
               "name": "messagesettings_filter",
               "path": "menu/menu_message_settings/messagesettings_filter",
               "type": "button",
-              "visible": true,
+              "visible": false,
               "rect": { "x": 120763, "y": 495, "w": 179, "h": 37 },
               "text": "Filter",
               "enabled": true
@@ -338,7 +338,7 @@
               "name": "disable_all_messages",
               "path": "menu/menu_message_settings/disable_all_messages",
               "type": "button",
-              "visible": true,
+              "visible": false,
               "rect": { "x": 120745, "y": 873, "w": 179, "h": 37 },
               "text": "Disable all",
               "enabled": true
@@ -499,7 +499,7 @@
               "path": "menu/menu_message_settings/settings",
               "type": "listbox",
               "visible": true,
-              "rect": { "x": 1434, "y": 621, "w": 153, "h": 528 },
+              "rect": { "x": 1434, "y": 621, "w": 153, "h": 336 },
               "children": [
                 {
                   "name": "message_entry",

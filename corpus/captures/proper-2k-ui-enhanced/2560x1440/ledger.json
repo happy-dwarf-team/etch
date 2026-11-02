@@ -3,9 +3,9 @@
   "playset": "proper-2k-ui-enhanced",
   "resolution": { "width": 2560, "height": 1440 },
   "view": "ledger",
-  "takenAt": "2026-10-27T22:00:49.858Z",
+  "takenAt": "2026-11-01T07:06:21.821Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
-  "tongs": { "version": "0.14.1" },
+  "tongs": { "version": "0.23.0" },
   "save": { "sha256": "2A4CAF306CCDDB2DAFC7EE015C4ECFFB260654A1D10D86F5F4F768D3C3F56F6A" },
   "mods": [
     {
@@ -22,13 +22,13 @@
   },
   "window": { "width": 2560, "height": 1440, "dpi": 96 },
   "screenshot": {
-    "sha256": "93017CA6C4AA9E63ABE6555E01399E4414D54E6F5D51A07A68D20ECB061D3D28",
+    "sha256": "931289B642F94B2EAF643177206DA0CA3FF09B412CFEF412E2D0D6136B96847C",
     "width": 2560,
     "height": 1440,
     "shots": 4,
     "unstable": {
-      "pixels": 936618,
-      "sha256": "C3491E3F229BB45931E72858C1300B79DFA8383F08829E77251CF712C9286799"
+      "pixels": 911429,
+      "sha256": "BF5AFB30BEFBD530D48A96D1A176816DAE150A24370EBABF08BBFAD7747A7110"
     }
   },
   "widgets": [
@@ -288,7 +288,7 @@
               "path": "ledger/ledger_piecharts/ledger_piechart_bg",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1280, "y": -433, "w": 1921, "h": 1153 }
+              "rect": { "x": 1280, "y": 0, "w": 1280, "h": 720 }
             }
           ]
         },
@@ -416,7 +416,7 @@
                   "path": "ledger/ledger_index/list/standardlistbox_slider",
                   "type": "other",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 701, "w": 19, "h": 959 },
+                  "rect": { "x": 1280, "y": 701, "w": 19, "h": 739 },
                   "children": [
                     {
                       "name": "listboxSliderButton",
@@ -430,7 +430,7 @@
                       "path": "ledger/ledger_index/list/standardlistbox_slider/listboxTrackButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 720, "w": 15, "h": 940 }
+                      "rect": { "x": 1280, "y": 720, "w": 15, "h": 720 }
                     },
                     {
                       "name": "downButton",
@@ -480,7 +480,7 @@
                   "path": "ledger/filter_list/filter_list_item[1]/label",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": -15, "y": 7, "w": 216, "h": 21 },
+                  "rect": { "x": 0, "y": 7, "w": 201, "h": 21 },
                   "text": "Allies"
                 },
                 {
@@ -505,7 +505,7 @@
                   "path": "ledger/filter_list/filter_list_item[2]/label",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": -15, "y": 7, "w": 216, "h": 21 },
+                  "rect": { "x": 0, "y": 7, "w": 201, "h": 21 },
                   "text": "Rivals"
                 },
                 {
@@ -530,7 +530,7 @@
                   "path": "ledger/filter_list/filter_list_item[3]/label",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": -15, "y": 7, "w": 216, "h": 21 },
+                  "rect": { "x": 0, "y": 7, "w": 201, "h": 21 },
                   "text": "War Enemies"
                 },
                 {
@@ -555,7 +555,7 @@
                   "path": "ledger/filter_list/filter_list_item[4]/label",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": -15, "y": 7, "w": 216, "h": 21 },
+                  "rect": { "x": 0, "y": 7, "w": 201, "h": 21 },
                   "text": "War Allies"
                 },
                 {
@@ -580,7 +580,7 @@
                   "path": "ledger/filter_list/filter_list_item[5]/label",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": -15, "y": 7, "w": 216, "h": 21 },
+                  "rect": { "x": 0, "y": 7, "w": 201, "h": 21 },
                   "text": "+ve Opinion"
                 },
                 {
@@ -605,7 +605,7 @@
                   "path": "ledger/filter_list/filter_list_item[6]/label",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": -15, "y": 7, "w": 216, "h": 21 },
+                  "rect": { "x": 0, "y": 7, "w": 201, "h": 21 },
                   "text": "-ve Opinion"
                 },
                 {
@@ -671,7 +671,7 @@
               "path": "ledger/default_listbox/standardlistbox_slider",
               "type": "other",
               "visible": false,
-              "rect": { "x": 1280, "y": 701, "w": 19, "h": 902 },
+              "rect": { "x": 1280, "y": 701, "w": 19, "h": 739 },
               "children": [
                 {
                   "name": "listboxSliderButton",
@@ -685,7 +685,7 @@
                   "path": "ledger/default_listbox/standardlistbox_slider/listboxTrackButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 720, "w": 15, "h": 883 }
+                  "rect": { "x": 1280, "y": 720, "w": 15, "h": 720 }
                 },
                 {
                   "name": "downButton",

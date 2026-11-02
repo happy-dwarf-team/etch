@@ -3,9 +3,9 @@
   "playset": "anbennar",
   "resolution": { "width": 2560, "height": 1440 },
   "view": "lobby",
-  "takenAt": "2026-10-27T22:03:22.537Z",
+  "takenAt": "2026-11-01T22:26:56.304Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
-  "tongs": { "version": "0.14.1" },
+  "tongs": { "version": "0.23.0" },
   "mods": [
     {
       "name": "Anbennar: A Fantasy Total Conversion",
@@ -31,13 +31,13 @@
   },
   "window": { "width": 2560, "height": 1440, "dpi": 96 },
   "screenshot": {
-    "sha256": "439278BB558D3FF29CE2729EA0FEED051A8B8BA35BC05B32A42E27E34BCFFE83",
+    "sha256": "C15938D75ED5F35B3B5E505E92D40B077CD21BD11687F5D876994066DE2B64E1",
     "width": 2560,
     "height": 1440,
     "shots": 4,
     "unstable": {
-      "pixels": 2303893,
-      "sha256": "3DC8EE767BEE1210ED61021DA65DB7596A67A09AF23133C722F95F3B4F2847E8"
+      "pixels": 2298824,
+      "sha256": "1CC6440CA482C5CC637D12C723B32A4ACA60AA37DBCD8E480D69A897F14DC4EC"
     }
   },
   "widgets": [
@@ -166,14 +166,14 @@
               "path": "country_selection_panel/mainmenu/mainmenu_panel_upperleft",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": -240, "w": 2560, "h": 1440 },
+              "rect": { "x": 0, "y": 0, "w": 614, "h": 933 },
               "children": [
                 {
                   "name": "frontend_game_logo",
                   "path": "country_selection_panel/mainmenu/mainmenu_panel_upperleft/frontend_game_logo",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 0, "y": -216, "w": 614, "h": 1149 }
+                  "rect": { "x": 0, "y": 0, "w": 614, "h": 933 }
                 }
               ]
             },
@@ -182,14 +182,14 @@
               "path": "country_selection_panel/mainmenu/mainmenu_panel_upperright",
               "type": "window",
               "visible": false,
-              "rect": { "x": 240, "y": -1, "w": 2560, "h": 1440 },
+              "rect": { "x": 2548, "y": 17, "w": 12, "h": 231 },
               "children": [
                 {
                   "name": "frontend_dev_logo",
                   "path": "country_selection_panel/mainmenu/mainmenu_panel_upperright/frontend_dev_logo",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 2548, "y": 17, "w": 231, "h": 231 }
+                  "rect": { "x": 2548, "y": 17, "w": 12, "h": 231 }
                 }
               ]
             },
@@ -247,7 +247,7 @@
               "path": "country_selection_panel/mainmenu/mainmenu_panel_bottom",
               "type": "window",
               "visible": false,
-              "rect": { "x": 617, "y": 1560, "w": 2560, "h": 1440 },
+              "rect": { "x": 578, "y": 677, "w": 1114, "h": 763 },
               "children": [
                 {
                   "name": "single_player_button",
@@ -367,7 +367,7 @@
                   "path": "country_selection_panel/mainmenu/mainmenu_panel_bottom/continue_container",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 1078, "y": 1447, "w": 0, "h": 0 },
+                  "rect": { "x": 1033, "y": 677, "w": 497, "h": 763 },
                   "children": [
                     {
                       "name": "continue_game_button",
@@ -382,7 +382,7 @@
                       "path": "country_selection_panel/mainmenu/mainmenu_panel_bottom/continue_container/continue_game_shield",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 1037, "y": 1416, "w": 0, "h": 111 },
+                      "rect": { "x": 1037, "y": 1416, "w": 111, "h": 24 },
                       "enabled": true
                     },
                     {
@@ -390,7 +390,7 @@
                       "path": "country_selection_panel/mainmenu/mainmenu_panel_bottom/continue_container/frontend_continue_bg",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1033, "y": 1418, "w": 497, "h": 105 }
+                      "rect": { "x": 1033, "y": 1418, "w": 497, "h": 22 }
                     },
                     {
                       "name": "ironman_icon",
@@ -416,7 +416,7 @@
               "path": "country_selection_panel/mainmenu/PersistentSocialButtons",
               "type": "window",
               "visible": false,
-              "rect": { "x": 1803, "y": 1560, "w": 345, "h": 115 },
+              "rect": { "x": 1683, "y": 1554, "w": 471, "h": 90 },
               "children": [
                 {
                   "name": "background",
@@ -428,9 +428,131 @@
                 {
                   "name": "frontend_links",
                   "path": "country_selection_panel/mainmenu/PersistentSocialButtons/frontend_links",
-                  "type": "other",
+                  "type": "listbox",
                   "visible": false,
-                  "rect": { "x": 1753, "y": 1580, "w": 205, "h": 64 }
+                  "rect": { "x": 1753, "y": 1580, "w": 205, "h": 64 },
+                  "children": [
+                    {
+                      "name": "frontend_link_item",
+                      "path": "country_selection_panel/mainmenu/PersistentSocialButtons/frontend_links/frontend_link_item[1]",
+                      "type": "window",
+                      "visible": false,
+                      "rect": { "x": 1762, "y": 1580, "w": 36, "h": 36 },
+                      "children": [
+                        {
+                          "name": "button",
+                          "path": "country_selection_panel/mainmenu/PersistentSocialButtons/frontend_links/frontend_link_item[1]/button",
+                          "type": "button",
+                          "visible": false,
+                          "rect": { "x": 1762, "y": 1580, "w": 36, "h": 36 },
+                          "enabled": true
+                        },
+                        {
+                          "name": "frame",
+                          "path": "country_selection_panel/mainmenu/PersistentSocialButtons/frontend_links/frontend_link_item[1]/frame",
+                          "type": "icon",
+                          "visible": false,
+                          "rect": { "x": 1762, "y": 1580, "w": 36, "h": 36 }
+                        }
+                      ]
+                    },
+                    {
+                      "name": "frontend_link_item",
+                      "path": "country_selection_panel/mainmenu/PersistentSocialButtons/frontend_links/frontend_link_item[2]",
+                      "type": "window",
+                      "visible": false,
+                      "rect": { "x": 1799, "y": 1580, "w": 36, "h": 36 },
+                      "children": [
+                        {
+                          "name": "button",
+                          "path": "country_selection_panel/mainmenu/PersistentSocialButtons/frontend_links/frontend_link_item[2]/button",
+                          "type": "button",
+                          "visible": false,
+                          "rect": { "x": 1799, "y": 1580, "w": 36, "h": 36 },
+                          "enabled": true
+                        },
+                        {
+                          "name": "frame",
+                          "path": "country_selection_panel/mainmenu/PersistentSocialButtons/frontend_links/frontend_link_item[2]/frame",
+                          "type": "icon",
+                          "visible": false,
+                          "rect": { "x": 1799, "y": 1580, "w": 36, "h": 36 }
+                        }
+                      ]
+                    },
+                    {
+                      "name": "frontend_link_item",
+                      "path": "country_selection_panel/mainmenu/PersistentSocialButtons/frontend_links/frontend_link_item[3]",
+                      "type": "window",
+                      "visible": false,
+                      "rect": { "x": 1836, "y": 1580, "w": 36, "h": 36 },
+                      "children": [
+                        {
+                          "name": "button",
+                          "path": "country_selection_panel/mainmenu/PersistentSocialButtons/frontend_links/frontend_link_item[3]/button",
+                          "type": "button",
+                          "visible": false,
+                          "rect": { "x": 1836, "y": 1580, "w": 36, "h": 36 },
+                          "enabled": true
+                        },
+                        {
+                          "name": "frame",
+                          "path": "country_selection_panel/mainmenu/PersistentSocialButtons/frontend_links/frontend_link_item[3]/frame",
+                          "type": "icon",
+                          "visible": false,
+                          "rect": { "x": 1836, "y": 1580, "w": 36, "h": 36 }
+                        }
+                      ]
+                    },
+                    {
+                      "name": "frontend_link_item",
+                      "path": "country_selection_panel/mainmenu/PersistentSocialButtons/frontend_links/frontend_link_item[4]",
+                      "type": "window",
+                      "visible": false,
+                      "rect": { "x": 1873, "y": 1580, "w": 36, "h": 36 },
+                      "children": [
+                        {
+                          "name": "button",
+                          "path": "country_selection_panel/mainmenu/PersistentSocialButtons/frontend_links/frontend_link_item[4]/button",
+                          "type": "button",
+                          "visible": false,
+                          "rect": { "x": 1873, "y": 1580, "w": 36, "h": 36 },
+                          "enabled": true
+                        },
+                        {
+                          "name": "frame",
+                          "path": "country_selection_panel/mainmenu/PersistentSocialButtons/frontend_links/frontend_link_item[4]/frame",
+                          "type": "icon",
+                          "visible": false,
+                          "rect": { "x": 1873, "y": 1580, "w": 36, "h": 36 }
+                        }
+                      ]
+                    },
+                    {
+                      "name": "frontend_link_item",
+                      "path": "country_selection_panel/mainmenu/PersistentSocialButtons/frontend_links/frontend_link_item[5]",
+                      "type": "window",
+                      "visible": false,
+                      "rect": { "x": 1910, "y": 1580, "w": 36, "h": 36 },
+                      "children": [
+                        {
+                          "name": "button",
+                          "path": "country_selection_panel/mainmenu/PersistentSocialButtons/frontend_links/frontend_link_item[5]/button",
+                          "type": "button",
+                          "visible": false,
+                          "rect": { "x": 1910, "y": 1580, "w": 36, "h": 36 },
+                          "enabled": true
+                        },
+                        {
+                          "name": "frame",
+                          "path": "country_selection_panel/mainmenu/PersistentSocialButtons/frontend_links/frontend_link_item[5]/frame",
+                          "type": "icon",
+                          "visible": false,
+                          "rect": { "x": 1910, "y": 1580, "w": 36, "h": 36 }
+                        }
+                      ]
+                    }
+                  ]
                 },
                 {
                   "name": "login_logout_button",
@@ -447,126 +569,6 @@
                   "visible": false,
                   "rect": { "x": 2016, "y": 1569, "w": 61, "h": 57 },
                   "checked": false
-                },
-                {
-                  "name": "frontend_link_item",
-                  "path": "country_selection_panel/mainmenu/PersistentSocialButtons/frontend_link_item[1]",
-                  "type": "window",
-                  "visible": false,
-                  "rect": { "x": 1762, "y": 1580, "w": 36, "h": 36 },
-                  "children": [
-                    {
-                      "name": "button",
-                      "path": "country_selection_panel/mainmenu/PersistentSocialButtons/frontend_link_item[1]/button",
-                      "type": "button",
-                      "visible": false,
-                      "rect": { "x": 1762, "y": 1580, "w": 36, "h": 36 },
-                      "enabled": true
-                    },
-                    {
-                      "name": "frame",
-                      "path": "country_selection_panel/mainmenu/PersistentSocialButtons/frontend_link_item[1]/frame",
-                      "type": "icon",
-                      "visible": false,
-                      "rect": { "x": 1762, "y": 1580, "w": 36, "h": 36 }
-                    }
-                  ]
-                },
-                {
-                  "name": "frontend_link_item",
-                  "path": "country_selection_panel/mainmenu/PersistentSocialButtons/frontend_link_item[2]",
-                  "type": "window",
-                  "visible": false,
-                  "rect": { "x": 1799, "y": 1580, "w": 36, "h": 36 },
-                  "children": [
-                    {
-                      "name": "button",
-                      "path": "country_selection_panel/mainmenu/PersistentSocialButtons/frontend_link_item[2]/button",
-                      "type": "button",
-                      "visible": false,
-                      "rect": { "x": 1799, "y": 1580, "w": 36, "h": 36 },
-                      "enabled": true
-                    },
-                    {
-                      "name": "frame",
-                      "path": "country_selection_panel/mainmenu/PersistentSocialButtons/frontend_link_item[2]/frame",
-                      "type": "icon",
-                      "visible": false,
-                      "rect": { "x": 1799, "y": 1580, "w": 36, "h": 36 }
-                    }
-                  ]
-                },
-                {
-                  "name": "frontend_link_item",
-                  "path": "country_selection_panel/mainmenu/PersistentSocialButtons/frontend_link_item[3]",
-                  "type": "window",
-                  "visible": false,
-                  "rect": { "x": 1836, "y": 1580, "w": 36, "h": 36 },
-                  "children": [
-                    {
-                      "name": "button",
-                      "path": "country_selection_panel/mainmenu/PersistentSocialButtons/frontend_link_item[3]/button",
-                      "type": "button",
-                      "visible": false,
-                      "rect": { "x": 1836, "y": 1580, "w": 36, "h": 36 },
-                      "enabled": true
-                    },
-                    {
-                      "name": "frame",
-                      "path": "country_selection_panel/mainmenu/PersistentSocialButtons/frontend_link_item[3]/frame",
-                      "type": "icon",
-                      "visible": false,
-                      "rect": { "x": 1836, "y": 1580, "w": 36, "h": 36 }
-                    }
-                  ]
-                },
-                {
-                  "name": "frontend_link_item",
-                  "path": "country_selection_panel/mainmenu/PersistentSocialButtons/frontend_link_item[4]",
-                  "type": "window",
-                  "visible": false,
-                  "rect": { "x": 1873, "y": 1580, "w": 36, "h": 36 },
-                  "children": [
-                    {
-                      "name": "button",
-                      "path": "country_selection_panel/mainmenu/PersistentSocialButtons/frontend_link_item[4]/button",
-                      "type": "button",
-                      "visible": false,
-                      "rect": { "x": 1873, "y": 1580, "w": 36, "h": 36 },
-                      "enabled": true
-                    },
-                    {
-                      "name": "frame",
-                      "path": "country_selection_panel/mainmenu/PersistentSocialButtons/frontend_link_item[4]/frame",
-                      "type": "icon",
-                      "visible": false,
-                      "rect": { "x": 1873, "y": 1580, "w": 36, "h": 36 }
-                    }
-                  ]
-                },
-                {
-                  "name": "frontend_link_item",
-                  "path": "country_selection_panel/mainmenu/PersistentSocialButtons/frontend_link_item[5]",
-                  "type": "window",
-                  "visible": false,
-                  "rect": { "x": 1910, "y": 1580, "w": 36, "h": 36 },
-                  "children": [
-                    {
-                      "name": "button",
-                      "path": "country_selection_panel/mainmenu/PersistentSocialButtons/frontend_link_item[5]/button",
-                      "type": "button",
-                      "visible": false,
-                      "rect": { "x": 1910, "y": 1580, "w": 36, "h": 36 },
-                      "enabled": true
-                    },
-                    {
-                      "name": "frame",
-                      "path": "country_selection_panel/mainmenu/PersistentSocialButtons/frontend_link_item[5]/frame",
-                      "type": "icon",
-                      "visible": false,
-                      "rect": { "x": 1910, "y": 1580, "w": 36, "h": 36 }
-                    }
-                  ]
                 }
               ]
             }
@@ -600,7 +602,7 @@
               "path": "country_selection_panel/mainmenu_panel_top/frontend_game_logo",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1280, "y": -429, "w": 614, "h": 1149 }
+              "rect": { "x": 1280, "y": 0, "w": 614, "h": 720 }
             },
             {
               "name": "frontend_dev_logo",
@@ -709,7 +711,7 @@
               "path": "country_selection_panel/tutorial_panel/tutorial_part_bas_title",
               "type": "text",
               "visible": false,
-              "rect": { "x": -59, "y": 420, "w": 168, "h": 63 },
+              "rect": { "x": 0, "y": 420, "w": 109, "h": 63 },
               "text": "Basic Tutorial\nBasic Controls\nBasic Gameplay"
             },
             {
@@ -717,7 +719,7 @@
               "path": "country_selection_panel/tutorial_panel/tutorial_part_adv_title",
               "type": "text",
               "visible": false,
-              "rect": { "x": -57, "y": 544, "w": 168, "h": 63 },
+              "rect": { "x": 0, "y": 544, "w": 111, "h": 63 },
               "text": "Advanced Tutorial\nAdvanced Gameplay"
             },
             {
@@ -725,7 +727,7 @@
               "path": "country_selection_panel/tutorial_panel/tutorial_part_cam_title",
               "type": "text",
               "visible": false,
-              "rect": { "x": -59, "y": 666, "w": 168, "h": 63 },
+              "rect": { "x": 0, "y": 666, "w": 109, "h": 63 },
               "text": "Spanish Empire\nBeginner\nCampaign"
             },
             {
@@ -765,7 +767,7 @@
               "path": "country_selection_panel/tutorial_panel/tutorial_list",
               "type": "listbox",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 180, "h": 36 },
+              "rect": { "x": 0, "y": 0, "w": 180, "h": 2 },
               "children": [
                 {
                   "name": "tutorial_entry",
@@ -988,7 +990,7 @@
               "path": "country_selection_panel/lobby/nation_designer_bottom_panel",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "rect": { "x": 329, "y": 99, "w": 1427, "h": 621 },
               "children": [
                 {
                   "name": "nation_designer_close_button",
@@ -1068,7 +1070,7 @@
               "path": "country_selection_panel/lobby/random_new_world_loading_window",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "rect": { "x": 36, "y": 43, "w": 1595, "h": 677 },
               "children": [
                 {
                   "name": "background",
@@ -1092,7 +1094,7 @@
               "path": "country_selection_panel/lobby/left",
               "type": "window",
               "visible": true,
-              "rect": { "x": 0, "y": -33, "w": 2560, "h": 1440 },
+              "rect": { "x": 0, "y": 4, "w": 477, "h": 1427 },
               "children": [
                 {
                   "name": "observe_mode_button",
@@ -1125,7 +1127,7 @@
                   "path": "country_selection_panel/lobby/left/option_button",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": -39, "y": 1354, "w": 392, "h": 38 },
+                  "rect": { "x": 0, "y": 1354, "w": 353, "h": 38 },
                   "text": "Options",
                   "enabled": true
                 },
@@ -1156,9 +1158,59 @@
                 {
                   "name": "start_type_options",
                   "path": "country_selection_panel/lobby/left/start_type_options",
-                  "type": "other",
+                  "type": "listbox",
                   "visible": true,
-                  "rect": { "x": 41, "y": 26, "w": 403, "h": 60 }
+                  "rect": { "x": 41, "y": 26, "w": 403, "h": 60 },
+                  "children": [
+                    {
+                      "name": "start_type_option",
+                      "path": "country_selection_panel/lobby/left/start_type_options/start_type_option[1]",
+                      "type": "window",
+                      "visible": true,
+                      "rect": { "x": 143, "y": 26, "w": 96, "h": 60 },
+                      "children": [
+                        {
+                          "name": "button",
+                          "path": "country_selection_panel/lobby/left/start_type_options/start_type_option[1]/button",
+                          "type": "button",
+                          "visible": true,
+                          "rect": { "x": 143, "y": 26, "w": 96, "h": 42 },
+                          "enabled": true
+                        },
+                        {
+                          "name": "icon",
+                          "path": "country_selection_panel/lobby/left/start_type_options/start_type_option[1]/icon",
+                          "type": "icon",
+                          "visible": true,
+                          "rect": { "x": 143, "y": 26, "w": 80, "h": 36 }
+                        }
+                      ]
+                    },
+                    {
+                      "name": "start_type_option",
+                      "path": "country_selection_panel/lobby/left/start_type_options/start_type_option[2]",
+                      "type": "window",
+                      "visible": true,
+                      "rect": { "x": 242, "y": 26, "w": 96, "h": 60 },
+                      "children": [
+                        {
+                          "name": "button",
+                          "path": "country_selection_panel/lobby/left/start_type_options/start_type_option[2]/button",
+                          "type": "button",
+                          "visible": true,
+                          "rect": { "x": 242, "y": 26, "w": 96, "h": 42 },
+                          "enabled": true
+                        },
+                        {
+                          "name": "icon",
+                          "path": "country_selection_panel/lobby/left/start_type_options/start_type_option[2]/icon",
+                          "type": "icon",
+                          "visible": true,
+                          "rect": { "x": 242, "y": 26, "w": 80, "h": 36 }
+                        }
+                      ]
+                    }
+                  ]
                 },
                 {
                   "name": "save_games",
@@ -1205,7 +1257,7 @@
                           "path": "country_selection_panel/lobby/left/save_games/save_games_list/standardlistbox_slider",
                           "type": "other",
                           "visible": false,
-                          "rect": { "x": 1280, "y": 701, "w": 19, "h": 857 },
+                          "rect": { "x": 1280, "y": 701, "w": 19, "h": 739 },
                           "children": [
                             {
                               "name": "listboxSliderButton",
@@ -1219,7 +1271,7 @@
                               "path": "country_selection_panel/lobby/left/save_games/save_games_list/standardlistbox_slider/listboxTrackButton",
                               "type": "button",
                               "visible": false,
-                              "rect": { "x": 1280, "y": 720, "w": 15, "h": 838 }
+                              "rect": { "x": 1280, "y": 720, "w": 15, "h": 720 }
                             },
                             {
                               "name": "downButton",
@@ -1256,14 +1308,14 @@
                   "path": "country_selection_panel/lobby/left/bookmarks",
                   "type": "window",
                   "visible": true,
-                  "rect": { "x": 0, "y": -33, "w": 132, "h": 801 },
+                  "rect": { "x": 19, "y": 76, "w": 400, "h": 960 },
                   "children": [
                     {
                       "name": "bookmarks_list",
                       "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list",
                       "type": "listbox",
                       "visible": true,
-                      "rect": { "x": 19, "y": 76, "w": 400, "h": 2688 },
+                      "rect": { "x": 19, "y": 76, "w": 400, "h": 960 },
                       "children": [
                         {
                           "name": "bookmark_entry",
@@ -1292,7 +1344,7 @@
                               "name": "date",
                               "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[1]/date",
                               "type": "text",
-                              "visible": true,
+                              "visible": false,
                               "rect": { "x": -344, "y": 103, "w": 272, "h": 19 },
                               "text": "11 Nerament(11) 1444"
                             }
@@ -1325,7 +1377,7 @@
                               "name": "date",
                               "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[2]/date",
                               "type": "text",
-                              "visible": true,
+                              "visible": false,
                               "rect": { "x": -344, "y": 295, "w": 272, "h": 19 },
                               "text": "11 Nerament(11) 1444"
                             }
@@ -1358,7 +1410,7 @@
                               "name": "date",
                               "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[3]/date",
                               "type": "text",
-                              "visible": true,
+                              "visible": false,
                               "rect": { "x": -344, "y": 487, "w": 272, "h": 19 },
                               "text": "11 Nerament(11) 1444"
                             }
@@ -1391,7 +1443,7 @@
                               "name": "date",
                               "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[4]/date",
                               "type": "text",
-                              "visible": true,
+                              "visible": false,
                               "rect": { "x": -344, "y": 679, "w": 272, "h": 19 },
                               "text": "11 Nerament(11) 1444"
                             }
@@ -1424,7 +1476,7 @@
                               "name": "date",
                               "path": "country_selection_panel/lobby/left/bookmarks/bookmarks_list/bookmark_entry[5]/date",
                               "type": "text",
-                              "visible": true,
+                              "visible": false,
                               "rect": { "x": -344, "y": 871, "w": 272, "h": 19 },
                               "text": "11 Nerament(11) 1444"
                             }
@@ -1774,14 +1826,14 @@
                   "name": "datewidget",
                   "path": "country_selection_panel/lobby/left/datewidget",
                   "type": "window",
-                  "visible": true,
-                  "rect": { "x": -9999, "y": 452, "w": 242, "h": 242 },
+                  "visible": false,
+                  "rect": { "x": -19998, "y": 434, "w": 10324, "h": 212 },
                   "children": [
                     {
                       "name": "year_up1",
                       "path": "country_selection_panel/lobby/left/datewidget/year_up1",
                       "type": "button",
-                      "visible": true,
+                      "visible": false,
                       "rect": { "x": -9866, "y": 498, "w": 24, "h": 24 },
                       "enabled": true
                     },
@@ -1789,7 +1841,7 @@
                       "name": "year_down1",
                       "path": "country_selection_panel/lobby/left/datewidget/year_down1",
                       "type": "button",
-                      "visible": true,
+                      "visible": false,
                       "rect": { "x": -9866, "y": 553, "w": 24, "h": 24 },
                       "enabled": false
                     },
@@ -1797,7 +1849,7 @@
                       "name": "year_up2",
                       "path": "country_selection_panel/lobby/left/datewidget/year_up2",
                       "type": "button",
-                      "visible": true,
+                      "visible": false,
                       "rect": { "x": -9842, "y": 498, "w": 24, "h": 24 },
                       "enabled": true
                     },
@@ -1805,7 +1857,7 @@
                       "name": "year_down2",
                       "path": "country_selection_panel/lobby/left/datewidget/year_down2",
                       "type": "button",
-                      "visible": true,
+                      "visible": false,
                       "rect": { "x": -9842, "y": 553, "w": 24, "h": 24 },
                       "enabled": false
                     },
@@ -1813,7 +1865,7 @@
                       "name": "year_up3",
                       "path": "country_selection_panel/lobby/left/datewidget/year_up3",
                       "type": "button",
-                      "visible": true,
+                      "visible": false,
                       "rect": { "x": -9818, "y": 498, "w": 24, "h": 24 },
                       "enabled": true
                     },
@@ -1821,7 +1873,7 @@
                       "name": "year_down3",
                       "path": "country_selection_panel/lobby/left/datewidget/year_down3",
                       "type": "button",
-                      "visible": true,
+                      "visible": false,
                       "rect": { "x": -9818, "y": 553, "w": 24, "h": 24 },
                       "enabled": false
                     },
@@ -1829,7 +1881,7 @@
                       "name": "month_down",
                       "path": "country_selection_panel/lobby/left/datewidget/month_down",
                       "type": "button",
-                      "visible": true,
+                      "visible": false,
                       "rect": { "x": -9975, "y": 589, "w": 29, "h": 29 },
                       "enabled": false
                     },
@@ -1837,7 +1889,7 @@
                       "name": "day_down",
                       "path": "country_selection_panel/lobby/left/datewidget/day_down",
                       "type": "button",
-                      "visible": true,
+                      "visible": false,
                       "rect": { "x": -9948, "y": 589, "w": 29, "h": 29 },
                       "enabled": false
                     },
@@ -1845,7 +1897,7 @@
                       "name": "month_up",
                       "path": "country_selection_panel/lobby/left/datewidget/month_up",
                       "type": "button",
-                      "visible": true,
+                      "visible": false,
                       "rect": { "x": -9714, "y": 589, "w": 29, "h": 29 },
                       "enabled": true
                     },
@@ -1853,7 +1905,7 @@
                       "name": "day_up",
                       "path": "country_selection_panel/lobby/left/datewidget/day_up",
                       "type": "button",
-                      "visible": true,
+                      "visible": false,
                       "rect": { "x": -9741, "y": 589, "w": 29, "h": 29 },
                       "enabled": true
                     },
@@ -1861,14 +1913,14 @@
                       "name": "selectdate_bg",
                       "path": "country_selection_panel/lobby/left/datewidget/selectdate_bg",
                       "type": "icon",
-                      "visible": true,
+                      "visible": false,
                       "rect": { "x": -19998, "y": 434, "w": 472, "h": 212 }
                     },
                     {
                       "name": "startdatelabel",
                       "path": "country_selection_panel/lobby/left/datewidget/startdatelabel",
                       "type": "text",
-                      "visible": true,
+                      "visible": false,
                       "rect": { "x": -9986, "y": 454, "w": 312, "h": 24 },
                       "text": "Starting Date"
                     },
@@ -1876,7 +1928,7 @@
                       "name": "daymonth",
                       "path": "country_selection_panel/lobby/left/datewidget/daymonth",
                       "type": "text",
-                      "visible": true,
+                      "visible": false,
                       "rect": { "x": -9900, "y": 593, "w": 132, "h": 21 },
                       "text": "11 Nerament(11)"
                     },
@@ -1884,7 +1936,7 @@
                       "name": "year",
                       "path": "country_selection_panel/lobby/left/datewidget/year",
                       "type": "editbox",
-                      "visible": true,
+                      "visible": false,
                       "rect": { "x": -9855, "y": 526, "w": 96, "h": 36 },
                       "text": "1444"
                     }
@@ -1960,21 +2012,21 @@
                   "name": "enabled_dlc_list_1",
                   "path": "country_selection_panel/lobby/left/enabled_dlc_list_1",
                   "type": "listbox",
-                  "visible": true,
+                  "visible": false,
                   "rect": { "x": -1320, "y": 15, "w": 60, "h": 480 },
                   "children": [
                     {
                       "name": "enabled_dlc_entry_1",
                       "path": "country_selection_panel/lobby/left/enabled_dlc_list_1/enabled_dlc_entry_1[1]",
                       "type": "window",
-                      "visible": true,
-                      "rect": { "x": -1320, "y": 15, "w": 60, "h": 48 },
+                      "visible": false,
+                      "rect": { "x": 0, "y": 39, "w": 1307, "h": 681 },
                       "children": [
                         {
                           "name": "dlc_button",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_1/enabled_dlc_entry_1[1]/dlc_button",
                           "type": "button",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1277, "y": 50, "w": 45, "h": 45 },
                           "enabled": true
                         },
@@ -1982,7 +2034,7 @@
                           "name": "dlc_icon_bg",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_1/enabled_dlc_entry_1[1]/dlc_icon_bg",
                           "type": "icon",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1320, "y": 39, "w": 90, "h": 84 }
                         },
                         {
@@ -1998,14 +2050,14 @@
                       "name": "enabled_dlc_entry_1",
                       "path": "country_selection_panel/lobby/left/enabled_dlc_list_1/enabled_dlc_entry_1[2]",
                       "type": "window",
-                      "visible": true,
-                      "rect": { "x": -1320, "y": 63, "w": 60, "h": 48 },
+                      "visible": false,
+                      "rect": { "x": 0, "y": 87, "w": 1307, "h": 633 },
                       "children": [
                         {
                           "name": "dlc_button",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_1/enabled_dlc_entry_1[2]/dlc_button",
                           "type": "button",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1277, "y": 98, "w": 45, "h": 45 },
                           "enabled": true
                         },
@@ -2013,7 +2065,7 @@
                           "name": "dlc_icon_bg",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_1/enabled_dlc_entry_1[2]/dlc_icon_bg",
                           "type": "icon",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1320, "y": 87, "w": 90, "h": 84 }
                         },
                         {
@@ -2029,14 +2081,14 @@
                       "name": "enabled_dlc_entry_1",
                       "path": "country_selection_panel/lobby/left/enabled_dlc_list_1/enabled_dlc_entry_1[3]",
                       "type": "window",
-                      "visible": true,
-                      "rect": { "x": -1320, "y": 111, "w": 60, "h": 48 },
+                      "visible": false,
+                      "rect": { "x": 0, "y": 135, "w": 1307, "h": 585 },
                       "children": [
                         {
                           "name": "dlc_button",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_1/enabled_dlc_entry_1[3]/dlc_button",
                           "type": "button",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1277, "y": 146, "w": 45, "h": 45 },
                           "enabled": true
                         },
@@ -2044,7 +2096,7 @@
                           "name": "dlc_icon_bg",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_1/enabled_dlc_entry_1[3]/dlc_icon_bg",
                           "type": "icon",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1320, "y": 135, "w": 90, "h": 84 }
                         },
                         {
@@ -2060,14 +2112,14 @@
                       "name": "enabled_dlc_entry_1",
                       "path": "country_selection_panel/lobby/left/enabled_dlc_list_1/enabled_dlc_entry_1[4]",
                       "type": "window",
-                      "visible": true,
-                      "rect": { "x": -1320, "y": 159, "w": 60, "h": 48 },
+                      "visible": false,
+                      "rect": { "x": 0, "y": 183, "w": 1307, "h": 537 },
                       "children": [
                         {
                           "name": "dlc_button",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_1/enabled_dlc_entry_1[4]/dlc_button",
                           "type": "button",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1277, "y": 194, "w": 45, "h": 45 },
                           "enabled": true
                         },
@@ -2075,7 +2127,7 @@
                           "name": "dlc_icon_bg",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_1/enabled_dlc_entry_1[4]/dlc_icon_bg",
                           "type": "icon",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1320, "y": 183, "w": 90, "h": 84 }
                         },
                         {
@@ -2091,14 +2143,14 @@
                       "name": "enabled_dlc_entry_1",
                       "path": "country_selection_panel/lobby/left/enabled_dlc_list_1/enabled_dlc_entry_1[5]",
                       "type": "window",
-                      "visible": true,
-                      "rect": { "x": -1320, "y": 207, "w": 60, "h": 48 },
+                      "visible": false,
+                      "rect": { "x": 0, "y": 231, "w": 1307, "h": 489 },
                       "children": [
                         {
                           "name": "dlc_button",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_1/enabled_dlc_entry_1[5]/dlc_button",
                           "type": "button",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1277, "y": 242, "w": 45, "h": 45 },
                           "enabled": true
                         },
@@ -2106,7 +2158,7 @@
                           "name": "dlc_icon_bg",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_1/enabled_dlc_entry_1[5]/dlc_icon_bg",
                           "type": "icon",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1320, "y": 231, "w": 90, "h": 84 }
                         },
                         {
@@ -2122,14 +2174,14 @@
                       "name": "enabled_dlc_entry_1",
                       "path": "country_selection_panel/lobby/left/enabled_dlc_list_1/enabled_dlc_entry_1[6]",
                       "type": "window",
-                      "visible": true,
-                      "rect": { "x": -1320, "y": 255, "w": 60, "h": 48 },
+                      "visible": false,
+                      "rect": { "x": 0, "y": 279, "w": 1307, "h": 441 },
                       "children": [
                         {
                           "name": "dlc_button",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_1/enabled_dlc_entry_1[6]/dlc_button",
                           "type": "button",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1277, "y": 290, "w": 45, "h": 45 },
                           "enabled": true
                         },
@@ -2137,7 +2189,7 @@
                           "name": "dlc_icon_bg",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_1/enabled_dlc_entry_1[6]/dlc_icon_bg",
                           "type": "icon",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1320, "y": 279, "w": 90, "h": 84 }
                         },
                         {
@@ -2153,14 +2205,14 @@
                       "name": "enabled_dlc_entry_1",
                       "path": "country_selection_panel/lobby/left/enabled_dlc_list_1/enabled_dlc_entry_1[7]",
                       "type": "window",
-                      "visible": true,
-                      "rect": { "x": -1320, "y": 303, "w": 60, "h": 48 },
+                      "visible": false,
+                      "rect": { "x": 0, "y": 327, "w": 1307, "h": 393 },
                       "children": [
                         {
                           "name": "dlc_button",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_1/enabled_dlc_entry_1[7]/dlc_button",
                           "type": "button",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1277, "y": 338, "w": 45, "h": 45 },
                           "enabled": true
                         },
@@ -2168,7 +2220,7 @@
                           "name": "dlc_icon_bg",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_1/enabled_dlc_entry_1[7]/dlc_icon_bg",
                           "type": "icon",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1320, "y": 327, "w": 90, "h": 84 }
                         },
                         {
@@ -2184,14 +2236,14 @@
                       "name": "enabled_dlc_entry_1",
                       "path": "country_selection_panel/lobby/left/enabled_dlc_list_1/enabled_dlc_entry_1[8]",
                       "type": "window",
-                      "visible": true,
-                      "rect": { "x": -1320, "y": 351, "w": 60, "h": 48 },
+                      "visible": false,
+                      "rect": { "x": 0, "y": 375, "w": 1307, "h": 345 },
                       "children": [
                         {
                           "name": "dlc_button",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_1/enabled_dlc_entry_1[8]/dlc_button",
                           "type": "button",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1277, "y": 386, "w": 45, "h": 45 },
                           "enabled": true
                         },
@@ -2199,7 +2251,7 @@
                           "name": "dlc_icon_bg",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_1/enabled_dlc_entry_1[8]/dlc_icon_bg",
                           "type": "icon",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1320, "y": 375, "w": 90, "h": 84 }
                         },
                         {
@@ -2215,14 +2267,14 @@
                       "name": "enabled_dlc_entry_1",
                       "path": "country_selection_panel/lobby/left/enabled_dlc_list_1/enabled_dlc_entry_1[9]",
                       "type": "window",
-                      "visible": true,
-                      "rect": { "x": -1320, "y": 399, "w": 60, "h": 48 },
+                      "visible": false,
+                      "rect": { "x": 0, "y": 423, "w": 1307, "h": 297 },
                       "children": [
                         {
                           "name": "dlc_button",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_1/enabled_dlc_entry_1[9]/dlc_button",
                           "type": "button",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1277, "y": 434, "w": 45, "h": 45 },
                           "enabled": true
                         },
@@ -2230,7 +2282,7 @@
                           "name": "dlc_icon_bg",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_1/enabled_dlc_entry_1[9]/dlc_icon_bg",
                           "type": "icon",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1320, "y": 423, "w": 90, "h": 84 }
                         },
                         {
@@ -2246,14 +2298,14 @@
                       "name": "enabled_dlc_entry_1",
                       "path": "country_selection_panel/lobby/left/enabled_dlc_list_1/enabled_dlc_entry_1[10]",
                       "type": "window",
-                      "visible": true,
-                      "rect": { "x": -1320, "y": 447, "w": 60, "h": 48 },
+                      "visible": false,
+                      "rect": { "x": 0, "y": 471, "w": 1307, "h": 249 },
                       "children": [
                         {
                           "name": "dlc_button",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_1/enabled_dlc_entry_1[10]/dlc_button",
                           "type": "button",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1277, "y": 482, "w": 45, "h": 45 },
                           "enabled": true
                         },
@@ -2261,7 +2313,7 @@
                           "name": "dlc_icon_bg",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_1/enabled_dlc_entry_1[10]/dlc_icon_bg",
                           "type": "icon",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1320, "y": 471, "w": 90, "h": 84 }
                         },
                         {
@@ -2278,7 +2330,7 @@
                       "path": "country_selection_panel/lobby/left/enabled_dlc_list_1/standardlistbox_slider",
                       "type": "other",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 1041 },
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 739 },
                       "children": [
                         {
                           "name": "listboxSliderButton",
@@ -2292,7 +2344,7 @@
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_1/standardlistbox_slider/listboxTrackButton",
                           "type": "button",
                           "visible": false,
-                          "rect": { "x": 1280, "y": 720, "w": 15, "h": 1022 }
+                          "rect": { "x": 1280, "y": 720, "w": 15, "h": 720 }
                         },
                         {
                           "name": "downButton",
@@ -2318,21 +2370,21 @@
                   "name": "enabled_dlc_list_0",
                   "path": "country_selection_panel/lobby/left/enabled_dlc_list_0",
                   "type": "listbox",
-                  "visible": true,
+                  "visible": false,
                   "rect": { "x": -1320, "y": 15, "w": 60, "h": 528 },
                   "children": [
                     {
                       "name": "enabled_dlc_entry_0",
                       "path": "country_selection_panel/lobby/left/enabled_dlc_list_0/enabled_dlc_entry_0[1]",
                       "type": "window",
-                      "visible": true,
-                      "rect": { "x": -1320, "y": 15, "w": 60, "h": 48 },
+                      "visible": false,
+                      "rect": { "x": 0, "y": 15, "w": 1307, "h": 705 },
                       "children": [
                         {
                           "name": "dlc_button",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_0/enabled_dlc_entry_0[1]/dlc_button",
                           "type": "button",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1321, "y": 27, "w": 45, "h": 45 },
                           "enabled": true
                         },
@@ -2340,7 +2392,7 @@
                           "name": "dlc_icon_bg",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_0/enabled_dlc_entry_0[1]/dlc_icon_bg",
                           "type": "icon",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1320, "y": 15, "w": 42, "h": 69 }
                         },
                         {
@@ -2356,14 +2408,14 @@
                       "name": "enabled_dlc_entry_0",
                       "path": "country_selection_panel/lobby/left/enabled_dlc_list_0/enabled_dlc_entry_0[2]",
                       "type": "window",
-                      "visible": true,
-                      "rect": { "x": -1320, "y": 63, "w": 60, "h": 48 },
+                      "visible": false,
+                      "rect": { "x": 0, "y": 63, "w": 1307, "h": 657 },
                       "children": [
                         {
                           "name": "dlc_button",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_0/enabled_dlc_entry_0[2]/dlc_button",
                           "type": "button",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1321, "y": 75, "w": 45, "h": 45 },
                           "enabled": true
                         },
@@ -2371,7 +2423,7 @@
                           "name": "dlc_icon_bg",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_0/enabled_dlc_entry_0[2]/dlc_icon_bg",
                           "type": "icon",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1320, "y": 63, "w": 42, "h": 69 }
                         },
                         {
@@ -2387,14 +2439,14 @@
                       "name": "enabled_dlc_entry_0",
                       "path": "country_selection_panel/lobby/left/enabled_dlc_list_0/enabled_dlc_entry_0[3]",
                       "type": "window",
-                      "visible": true,
-                      "rect": { "x": -1320, "y": 111, "w": 60, "h": 48 },
+                      "visible": false,
+                      "rect": { "x": 0, "y": 111, "w": 1307, "h": 609 },
                       "children": [
                         {
                           "name": "dlc_button",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_0/enabled_dlc_entry_0[3]/dlc_button",
                           "type": "button",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1321, "y": 123, "w": 45, "h": 45 },
                           "enabled": true
                         },
@@ -2402,7 +2454,7 @@
                           "name": "dlc_icon_bg",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_0/enabled_dlc_entry_0[3]/dlc_icon_bg",
                           "type": "icon",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1320, "y": 111, "w": 42, "h": 69 }
                         },
                         {
@@ -2418,14 +2470,14 @@
                       "name": "enabled_dlc_entry_0",
                       "path": "country_selection_panel/lobby/left/enabled_dlc_list_0/enabled_dlc_entry_0[4]",
                       "type": "window",
-                      "visible": true,
-                      "rect": { "x": -1320, "y": 159, "w": 60, "h": 48 },
+                      "visible": false,
+                      "rect": { "x": 0, "y": 159, "w": 1307, "h": 561 },
                       "children": [
                         {
                           "name": "dlc_button",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_0/enabled_dlc_entry_0[4]/dlc_button",
                           "type": "button",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1321, "y": 171, "w": 45, "h": 45 },
                           "enabled": true
                         },
@@ -2433,7 +2485,7 @@
                           "name": "dlc_icon_bg",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_0/enabled_dlc_entry_0[4]/dlc_icon_bg",
                           "type": "icon",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1320, "y": 159, "w": 42, "h": 69 }
                         },
                         {
@@ -2449,14 +2501,14 @@
                       "name": "enabled_dlc_entry_0",
                       "path": "country_selection_panel/lobby/left/enabled_dlc_list_0/enabled_dlc_entry_0[5]",
                       "type": "window",
-                      "visible": true,
-                      "rect": { "x": -1320, "y": 207, "w": 60, "h": 48 },
+                      "visible": false,
+                      "rect": { "x": 0, "y": 207, "w": 1307, "h": 513 },
                       "children": [
                         {
                           "name": "dlc_button",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_0/enabled_dlc_entry_0[5]/dlc_button",
                           "type": "button",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1321, "y": 219, "w": 45, "h": 45 },
                           "enabled": true
                         },
@@ -2464,7 +2516,7 @@
                           "name": "dlc_icon_bg",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_0/enabled_dlc_entry_0[5]/dlc_icon_bg",
                           "type": "icon",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1320, "y": 207, "w": 42, "h": 69 }
                         },
                         {
@@ -2480,14 +2532,14 @@
                       "name": "enabled_dlc_entry_0",
                       "path": "country_selection_panel/lobby/left/enabled_dlc_list_0/enabled_dlc_entry_0[6]",
                       "type": "window",
-                      "visible": true,
-                      "rect": { "x": -1320, "y": 255, "w": 60, "h": 48 },
+                      "visible": false,
+                      "rect": { "x": 0, "y": 255, "w": 1307, "h": 465 },
                       "children": [
                         {
                           "name": "dlc_button",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_0/enabled_dlc_entry_0[6]/dlc_button",
                           "type": "button",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1321, "y": 267, "w": 45, "h": 45 },
                           "enabled": true
                         },
@@ -2495,7 +2547,7 @@
                           "name": "dlc_icon_bg",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_0/enabled_dlc_entry_0[6]/dlc_icon_bg",
                           "type": "icon",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1320, "y": 255, "w": 42, "h": 69 }
                         },
                         {
@@ -2511,14 +2563,14 @@
                       "name": "enabled_dlc_entry_0",
                       "path": "country_selection_panel/lobby/left/enabled_dlc_list_0/enabled_dlc_entry_0[7]",
                       "type": "window",
-                      "visible": true,
-                      "rect": { "x": -1320, "y": 303, "w": 60, "h": 48 },
+                      "visible": false,
+                      "rect": { "x": 0, "y": 303, "w": 1307, "h": 417 },
                       "children": [
                         {
                           "name": "dlc_button",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_0/enabled_dlc_entry_0[7]/dlc_button",
                           "type": "button",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1321, "y": 315, "w": 45, "h": 45 },
                           "enabled": true
                         },
@@ -2526,7 +2578,7 @@
                           "name": "dlc_icon_bg",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_0/enabled_dlc_entry_0[7]/dlc_icon_bg",
                           "type": "icon",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1320, "y": 303, "w": 42, "h": 69 }
                         },
                         {
@@ -2542,14 +2594,14 @@
                       "name": "enabled_dlc_entry_0",
                       "path": "country_selection_panel/lobby/left/enabled_dlc_list_0/enabled_dlc_entry_0[8]",
                       "type": "window",
-                      "visible": true,
-                      "rect": { "x": -1320, "y": 351, "w": 60, "h": 48 },
+                      "visible": false,
+                      "rect": { "x": 0, "y": 351, "w": 1307, "h": 369 },
                       "children": [
                         {
                           "name": "dlc_button",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_0/enabled_dlc_entry_0[8]/dlc_button",
                           "type": "button",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1321, "y": 363, "w": 45, "h": 45 },
                           "enabled": true
                         },
@@ -2557,7 +2609,7 @@
                           "name": "dlc_icon_bg",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_0/enabled_dlc_entry_0[8]/dlc_icon_bg",
                           "type": "icon",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1320, "y": 351, "w": 42, "h": 69 }
                         },
                         {
@@ -2573,14 +2625,14 @@
                       "name": "enabled_dlc_entry_0",
                       "path": "country_selection_panel/lobby/left/enabled_dlc_list_0/enabled_dlc_entry_0[9]",
                       "type": "window",
-                      "visible": true,
-                      "rect": { "x": -1320, "y": 399, "w": 60, "h": 48 },
+                      "visible": false,
+                      "rect": { "x": 0, "y": 399, "w": 1307, "h": 321 },
                       "children": [
                         {
                           "name": "dlc_button",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_0/enabled_dlc_entry_0[9]/dlc_button",
                           "type": "button",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1321, "y": 411, "w": 45, "h": 45 },
                           "enabled": true
                         },
@@ -2588,7 +2640,7 @@
                           "name": "dlc_icon_bg",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_0/enabled_dlc_entry_0[9]/dlc_icon_bg",
                           "type": "icon",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1320, "y": 399, "w": 42, "h": 69 }
                         },
                         {
@@ -2604,14 +2656,14 @@
                       "name": "enabled_dlc_entry_0",
                       "path": "country_selection_panel/lobby/left/enabled_dlc_list_0/enabled_dlc_entry_0[10]",
                       "type": "window",
-                      "visible": true,
-                      "rect": { "x": -1320, "y": 447, "w": 60, "h": 48 },
+                      "visible": false,
+                      "rect": { "x": 0, "y": 447, "w": 1307, "h": 273 },
                       "children": [
                         {
                           "name": "dlc_button",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_0/enabled_dlc_entry_0[10]/dlc_button",
                           "type": "button",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1321, "y": 459, "w": 45, "h": 45 },
                           "enabled": true
                         },
@@ -2619,7 +2671,7 @@
                           "name": "dlc_icon_bg",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_0/enabled_dlc_entry_0[10]/dlc_icon_bg",
                           "type": "icon",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1320, "y": 447, "w": 42, "h": 69 }
                         },
                         {
@@ -2635,14 +2687,14 @@
                       "name": "enabled_dlc_entry_0",
                       "path": "country_selection_panel/lobby/left/enabled_dlc_list_0/enabled_dlc_entry_0[11]",
                       "type": "window",
-                      "visible": true,
-                      "rect": { "x": -1320, "y": 495, "w": 60, "h": 48 },
+                      "visible": false,
+                      "rect": { "x": 0, "y": 495, "w": 1307, "h": 225 },
                       "children": [
                         {
                           "name": "dlc_button",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_0/enabled_dlc_entry_0[11]/dlc_button",
                           "type": "button",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1321, "y": 507, "w": 44, "h": 44 },
                           "enabled": true
                         },
@@ -2650,7 +2702,7 @@
                           "name": "dlc_icon_bg",
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_0/enabled_dlc_entry_0[11]/dlc_icon_bg",
                           "type": "icon",
-                          "visible": true,
+                          "visible": false,
                           "rect": { "x": -1320, "y": 495, "w": 42, "h": 69 }
                         },
                         {
@@ -2667,7 +2719,7 @@
                       "path": "country_selection_panel/lobby/left/enabled_dlc_list_0/standardlistbox_slider",
                       "type": "other",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 1041 },
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 739 },
                       "children": [
                         {
                           "name": "listboxSliderButton",
@@ -2681,7 +2733,7 @@
                           "path": "country_selection_panel/lobby/left/enabled_dlc_list_0/standardlistbox_slider/listboxTrackButton",
                           "type": "button",
                           "visible": false,
-                          "rect": { "x": 1280, "y": 720, "w": 15, "h": 1022 }
+                          "rect": { "x": 1280, "y": 720, "w": 15, "h": 720 }
                         },
                         {
                           "name": "downButton",
@@ -2700,54 +2752,6 @@
                           "enabled": true
                         }
                       ]
-                    }
-                  ]
-                },
-                {
-                  "name": "start_type_option",
-                  "path": "country_selection_panel/lobby/left/start_type_option[1]",
-                  "type": "window",
-                  "visible": true,
-                  "rect": { "x": 143, "y": 26, "w": 96, "h": 60 },
-                  "children": [
-                    {
-                      "name": "button",
-                      "path": "country_selection_panel/lobby/left/start_type_option[1]/button",
-                      "type": "button",
-                      "visible": true,
-                      "rect": { "x": 143, "y": 26, "w": 96, "h": 42 },
-                      "enabled": true
-                    },
-                    {
-                      "name": "icon",
-                      "path": "country_selection_panel/lobby/left/start_type_option[1]/icon",
-                      "type": "icon",
-                      "visible": true,
-                      "rect": { "x": 143, "y": 26, "w": 80, "h": 36 }
-                    }
-                  ]
-                },
-                {
-                  "name": "start_type_option",
-                  "path": "country_selection_panel/lobby/left/start_type_option[2]",
-                  "type": "window",
-                  "visible": true,
-                  "rect": { "x": 242, "y": 26, "w": 96, "h": 60 },
-                  "children": [
-                    {
-                      "name": "button",
-                      "path": "country_selection_panel/lobby/left/start_type_option[2]/button",
-                      "type": "button",
-                      "visible": true,
-                      "rect": { "x": 242, "y": 26, "w": 96, "h": 42 },
-                      "enabled": true
-                    },
-                    {
-                      "name": "icon",
-                      "path": "country_selection_panel/lobby/left/start_type_option[2]/icon",
-                      "type": "icon",
-                      "visible": true,
-                      "rect": { "x": 242, "y": 26, "w": 80, "h": 36 }
                     }
                   ]
                 }
@@ -2907,7 +2911,7 @@
                   "path": "country_selection_panel/lobby/top/nation_designer_hint",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": -171, "y": 132, "w": 384, "h": 21 },
+                  "rect": { "x": 0, "y": 132, "w": 213, "h": 21 },
                   "text": "NATION_DESIGNER_HINT"
                 }
               ]
@@ -2917,13 +2921,13 @@
               "path": "country_selection_panel/lobby/right",
               "type": "window",
               "visible": true,
-              "rect": { "x": 24, "y": -24, "w": 2560, "h": 1440 },
+              "rect": { "x": 2095, "y": 3, "w": 465, "h": 1428 },
               "children": [
                 {
                   "name": "observe_mode_button",
                   "path": "country_selection_panel/lobby/right/observe_mode_button",
                   "type": "button",
-                  "visible": true,
+                  "visible": false,
                   "rect": { "x": 119928, "y": 1224, "w": 38, "h": 39 },
                   "enabled": true
                 },
@@ -2976,7 +2980,7 @@
                   "path": "country_selection_panel/lobby/right/right_sidepanel",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 2095, "y": 3, "w": 472, "h": 1152 }
+                  "rect": { "x": 2095, "y": 3, "w": 465, "h": 1152 }
                 },
                 {
                   "name": "ironman_icon",
@@ -3013,7 +3017,7 @@
                   "name": "observe_mode_title",
                   "path": "country_selection_panel/lobby/right/observe_mode_title",
                   "type": "text",
-                  "visible": true,
+                  "visible": false,
                   "rect": { "x": 119970, "y": 1233, "w": 240, "h": 24 },
                   "text": "Observe mode"
                 },
@@ -3055,14 +3059,14 @@
                       "path": "country_selection_panel/lobby/right/multiplayer/right_sidepanel",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": -335, "w": 460, "h": 1055 }
+                      "rect": { "x": 1280, "y": 0, "w": 460, "h": 720 }
                     },
                     {
                       "name": "checksum",
                       "path": "country_selection_panel/lobby/right/multiplayer/checksum",
                       "type": "text",
                       "visible": false,
-                      "rect": { "x": -126, "y": 37, "w": 312, "h": 31 },
+                      "rect": { "x": 0, "y": 37, "w": 186, "h": 31 },
                       "text": "EU4 v1.37.5.0 Inca (1824)"
                     },
                     {
@@ -3070,7 +3074,7 @@
                       "path": "country_selection_panel/lobby/right/multiplayer/num_players",
                       "type": "text",
                       "visible": false,
-                      "rect": { "x": -76, "y": 61, "w": 216, "h": 31 },
+                      "rect": { "x": 0, "y": 61, "w": 140, "h": 31 },
                       "text": "Number of Players: 0"
                     },
                     {
@@ -3085,7 +3089,7 @@
                           "path": "country_selection_panel/lobby/right/multiplayer/multiplayer_list/standardlistbox_slider",
                           "type": "other",
                           "visible": false,
-                          "rect": { "x": 1280, "y": 701, "w": 19, "h": 856 },
+                          "rect": { "x": 1280, "y": 701, "w": 19, "h": 739 },
                           "children": [
                             {
                               "name": "listboxSliderButton",
@@ -3099,7 +3103,7 @@
                               "path": "country_selection_panel/lobby/right/multiplayer/multiplayer_list/standardlistbox_slider/listboxTrackButton",
                               "type": "button",
                               "visible": false,
-                              "rect": { "x": 1280, "y": 720, "w": 15, "h": 837 }
+                              "rect": { "x": 1280, "y": 720, "w": 15, "h": 720 }
                             },
                             {
                               "name": "downButton",
@@ -3152,7 +3156,7 @@
                       "path": "country_selection_panel/lobby/right/singleplayer/player_shield",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 609, "w": 0, "h": 111 },
+                      "rect": { "x": 1280, "y": 609, "w": 111, "h": 111 },
                       "enabled": true
                     },
                     {
@@ -3307,7 +3311,7 @@
                       "path": "country_selection_panel/lobby/right/singleplayer/diplomacy_banner_label",
                       "type": "text",
                       "visible": false,
-                      "rect": { "x": -20, "y": 583, "w": 192, "h": 31 },
+                      "rect": { "x": 0, "y": 583, "w": 172, "h": 31 },
                       "text": "Diplomacy"
                     },
                     {
@@ -3315,7 +3319,7 @@
                       "path": "country_selection_panel/lobby/right/singleplayer/selected_nation_label",
                       "type": "text",
                       "visible": false,
-                      "rect": { "x": -65, "y": 156, "w": 192, "h": 24 },
+                      "rect": { "x": 0, "y": 156, "w": 127, "h": 24 },
                       "text": ""
                     },
                     {
@@ -3323,7 +3327,7 @@
                       "path": "country_selection_panel/lobby/right/singleplayer/selected_fog",
                       "type": "text",
                       "visible": false,
-                      "rect": { "x": -73, "y": 190, "w": 210, "h": 21 },
+                      "rect": { "x": 0, "y": 190, "w": 137, "h": 21 },
                       "text": ""
                     },
                     {
@@ -3331,7 +3335,7 @@
                       "path": "country_selection_panel/lobby/right/singleplayer/selected_nation_status_label",
                       "type": "text",
                       "visible": false,
-                      "rect": { "x": -73, "y": 207, "w": 210, "h": 21 },
+                      "rect": { "x": 0, "y": 207, "w": 137, "h": 21 },
                       "text": ""
                     },
                     {
@@ -3339,7 +3343,7 @@
                       "path": "country_selection_panel/lobby/right/singleplayer/selected_ruler",
                       "type": "text",
                       "visible": false,
-                      "rect": { "x": -123, "y": 235, "w": 310, "h": 21 },
+                      "rect": { "x": 0, "y": 235, "w": 187, "h": 21 },
                       "text": ""
                     },
                     {
@@ -3379,7 +3383,7 @@
                       "path": "country_selection_panel/lobby/right/singleplayer/diptech_value",
                       "type": "text",
                       "visible": false,
-                      "rect": { "x": -21, "y": 397, "w": 77, "h": 31 },
+                      "rect": { "x": 0, "y": 397, "w": 56, "h": 31 },
                       "text": "-"
                     },
                     {
@@ -3395,7 +3399,7 @@
                       "path": "country_selection_panel/lobby/right/singleplayer/national_ideagroup_name",
                       "type": "text",
                       "visible": false,
-                      "rect": { "x": -115, "y": 441, "w": 280, "h": 31 },
+                      "rect": { "x": 0, "y": 441, "w": 165, "h": 31 },
                       "text": ""
                     },
                     {
@@ -3411,7 +3415,7 @@
                       "path": "country_selection_panel/lobby/right/singleplayer/provinces_value",
                       "type": "text",
                       "visible": false,
-                      "rect": { "x": -95, "y": 547, "w": 120, "h": 21 },
+                      "rect": { "x": 0, "y": 547, "w": 25, "h": 21 },
                       "text": "37"
                     },
                     {
@@ -3419,7 +3423,7 @@
                       "path": "country_selection_panel/lobby/right/singleplayer/economy_value",
                       "type": "text",
                       "visible": false,
-                      "rect": { "x": -5, "y": 547, "w": 120, "h": 21 },
+                      "rect": { "x": 0, "y": 547, "w": 115, "h": 21 },
                       "text": "1115"
                     },
                     {
@@ -3562,7 +3566,7 @@
       "path": "shield[1]",
       "type": "button",
       "visible": true,
-      "rect": { "x": 929, "y": 1016, "w": 0, "h": 111 },
+      "rect": { "x": 929, "y": 1016, "w": 111, "h": 111 },
       "enabled": true
     },
     {
@@ -3570,7 +3574,7 @@
       "path": "shield[2]",
       "type": "button",
       "visible": true,
-      "rect": { "x": 1013, "y": 1016, "w": 0, "h": 111 },
+      "rect": { "x": 1013, "y": 1016, "w": 111, "h": 111 },
       "enabled": true
     },
     {
@@ -3578,7 +3582,7 @@
       "path": "shield[3]",
       "type": "button",
       "visible": true,
-      "rect": { "x": 1097, "y": 1016, "w": 0, "h": 111 },
+      "rect": { "x": 1097, "y": 1016, "w": 111, "h": 111 },
       "enabled": true
     },
     {
@@ -3586,7 +3590,7 @@
       "path": "shield[4]",
       "type": "button",
       "visible": true,
-      "rect": { "x": 1181, "y": 1016, "w": 0, "h": 111 },
+      "rect": { "x": 1181, "y": 1016, "w": 111, "h": 111 },
       "enabled": true
     },
     {
@@ -3594,7 +3598,7 @@
       "path": "shield[5]",
       "type": "button",
       "visible": true,
-      "rect": { "x": 1265, "y": 1016, "w": 0, "h": 111 },
+      "rect": { "x": 1265, "y": 1016, "w": 111, "h": 111 },
       "enabled": true
     },
     {
@@ -3602,7 +3606,7 @@
       "path": "shield[6]",
       "type": "button",
       "visible": true,
-      "rect": { "x": 1349, "y": 1016, "w": 0, "h": 111 },
+      "rect": { "x": 1349, "y": 1016, "w": 111, "h": 111 },
       "enabled": true
     },
     {
@@ -3610,7 +3614,7 @@
       "path": "shield[7]",
       "type": "button",
       "visible": true,
-      "rect": { "x": 1433, "y": 1016, "w": 0, "h": 111 },
+      "rect": { "x": 1433, "y": 1016, "w": 111, "h": 111 },
       "enabled": true
     },
     {
@@ -3618,7 +3622,7 @@
       "path": "shield[8]",
       "type": "button",
       "visible": true,
-      "rect": { "x": 1517, "y": 1016, "w": 0, "h": 111 },
+      "rect": { "x": 1517, "y": 1016, "w": 111, "h": 111 },
       "enabled": true
     },
     {

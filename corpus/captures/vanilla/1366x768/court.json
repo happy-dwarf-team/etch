@@ -3,9 +3,9 @@
   "playset": "vanilla",
   "resolution": { "width": 1366, "height": 768 },
   "view": "court",
-  "takenAt": "2026-10-24T20:48:34.995Z",
+  "takenAt": "2026-11-01T05:20:56.759Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
-  "tongs": { "version": "0.14.1" },
+  "tongs": { "version": "0.23.0" },
   "save": { "sha256": "2A4CAF306CCDDB2DAFC7EE015C4ECFFB260654A1D10D86F5F4F768D3C3F56F6A" },
   "mods": [],
   "disabledDlcs": [],
@@ -13,17 +13,17 @@
     "from": "save",
     "steps": [{ "key": "f1" }],
     "verified": true,
-    "evidence": "Run by the capture driver (etch#42) at 1280x720 and 1920x1080 on 2026-10-21: the steps opened the view and its roots were read and shown."
+    "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown."
   },
   "window": { "width": 1366, "height": 768, "dpi": 96 },
   "screenshot": {
-    "sha256": "A0A60C9C3529E9727E24183084D229AD4CDF4EBFD43CCC8EDED4B1F63E50AA0E",
+    "sha256": "53D3D6EA943E96340F5F87EFBA85F62FB2C2370EA19FF00EC33ACB8859986E18",
     "width": 1366,
     "height": 768,
     "shots": 4,
     "unstable": {
-      "pixels": 93809,
-      "sha256": "19CB9E6BD7516980209E94BC047BDDE37D9E70F3E461C4DA49445E014EBBF7BC"
+      "pixels": 94686,
+      "sha256": "D04AFF8778F6502549DD257F55A45AB765864BC17D64521273FB3D8E5D2F74B1"
     }
   },
   "widgets": [
@@ -111,7 +111,7 @@
           "path": "countrycourtview/background",
           "type": "icon",
           "visible": true,
-          "rect": { "x": -7, "y": 130, "w": 576, "h": 590 }
+          "rect": { "x": 0, "y": 130, "w": 569, "h": 590 }
         },
         {
           "name": "heir_banner_green",
@@ -411,7 +411,7 @@
               "path": "countrycourtview/court_select/domesticpanel_overlay",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 683, "y": -205, "w": 573, "h": 589 }
+              "rect": { "x": 683, "y": 0, "w": 573, "h": 384 }
             },
             {
               "name": "description",
@@ -1343,7 +1343,7 @@
               "path": "countrycourtview/abilities_listbox/standardlistbox_slider",
               "type": "other",
               "visible": false,
-              "rect": { "x": 683, "y": 368, "w": 16, "h": 404 },
+              "rect": { "x": 683, "y": 368, "w": 16, "h": 400 },
               "children": [
                 {
                   "name": "listboxSliderButton",
@@ -1357,7 +1357,7 @@
                   "path": "countrycourtview/abilities_listbox/standardlistbox_slider/listboxTrackButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 683, "y": 384, "w": 12, "h": 388 }
+                  "rect": { "x": 683, "y": 384, "w": 12, "h": 384 }
                 },
                 {
                   "name": "downButton",
@@ -1523,14 +1523,14 @@
       "path": "topbar",
       "type": "window",
       "visible": true,
-      "rect": { "x": 0, "y": -1, "w": 1366, "h": 768 },
+      "rect": { "x": 0, "y": 0, "w": 927, "h": 169 },
       "children": [
         {
           "name": "player_shield",
           "path": "topbar/player_shield",
           "type": "button",
           "visible": true,
-          "rect": { "x": -5, "y": 1, "w": 1, "h": 152 },
+          "rect": { "x": 0, "y": 1, "w": 147, "h": 152 },
           "enabled": true
         },
         {
@@ -1616,21 +1616,21 @@
           "name": "topbar_1",
           "path": "topbar/topbar_1",
           "type": "icon",
-          "visible": true,
+          "visible": false,
           "rect": { "x": 99512, "y": -2, "w": 109, "h": 31 }
         },
         {
           "name": "topbar_2",
           "path": "topbar/topbar_2",
           "type": "icon",
-          "visible": true,
+          "visible": false,
           "rect": { "x": 991024, "y": -2, "w": 109, "h": 31 }
         },
         {
           "name": "topbar_3",
           "path": "topbar/topbar_3",
           "type": "icon",
-          "visible": true,
+          "visible": false,
           "rect": { "x": 991532, "y": -2, "w": 109, "h": 31 }
         },
         {
@@ -1638,7 +1638,7 @@
           "path": "topbar/topbar_upper_left_bg",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 0, "y": -1, "w": 927, "h": 160 }
+          "rect": { "x": 0, "y": 0, "w": 927, "h": 159 }
         },
         {
           "name": "topbar_upper_left_bg4",
@@ -1659,7 +1659,7 @@
           "path": "topbar/player_shield_glow",
           "type": "icon",
           "visible": true,
-          "rect": { "x": -5, "y": 1, "w": 152, "h": 152 }
+          "rect": { "x": 0, "y": 1, "w": 147, "h": 152 }
         },
         {
           "name": "great_power_button_base",
@@ -1952,14 +1952,14 @@
           "path": "topbar/powerprojection_topbar",
           "type": "window",
           "visible": true,
-          "rect": { "x": 148, "y": -1, "w": 100, "h": 100 },
+          "rect": { "x": 639, "y": 0, "w": 95, "h": 49 },
           "children": [
             {
               "name": "topbar_liberty_overlay",
               "path": "topbar/powerprojection_topbar/topbar_liberty_overlay",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 639, "y": -2, "w": 95, "h": 51 }
+              "rect": { "x": 639, "y": 0, "w": 95, "h": 49 }
             },
             {
               "name": "icon_powerprojection",

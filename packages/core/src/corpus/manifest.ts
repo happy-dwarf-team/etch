@@ -146,7 +146,10 @@ export interface CorpusView {
    * playset's save: an event open (etch#97). The driver starts the game once more for it.
    */
   readonly save?: CorpusSave;
-  /** What differs in one playset, by playset id: its own recipe, save, selector values or note. */
+  /**
+   * What differs in one playset, by playset id: its own recipe, save, selector values, data,
+   * code-filled patterns or note.
+   */
   readonly byPlayset?: Readonly<Record<string, PlaysetView>>;
   readonly note?: string;
 }
@@ -169,12 +172,14 @@ export interface PlaysetView {
   readonly data?: ViewData;
   /** Replaces the view's `save` in this playset. */
   readonly save?: CorpusSave;
+  /** Patterns of what the game's code fills or hides in this playset only; added to the view's. */
+  readonly codeFilled?: readonly string[];
   readonly note?: string;
 }
 
 /**
  * A view as one playset captures it: the view with its recipe, selectors, data and save of that
- * playset (`byPlayset`) in place of the defaults.
+ * playset (`byPlayset`) in place of the defaults, and that playset's code-filled patterns added.
  */
 export function viewInPlayset(view: CorpusView, playset: Pick<CorpusPlayset, 'id'>): CorpusView {
   const own = view.byPlayset?.[playset.id];
@@ -182,6 +187,7 @@ export function viewInPlayset(view: CorpusView, playset: Pick<CorpusPlayset, 'id
   return {
     ...view,
     recipe: own.recipe ?? view.recipe,
+    codeFilled: [...view.codeFilled, ...(own.codeFilled ?? [])],
     ...(own.data !== undefined ? { data: own.data } : {}),
     ...(own.save !== undefined ? { save: own.save } : {}),
     ...(view.selectors !== undefined || own.selectors !== undefined
@@ -694,7 +700,12 @@ function checkView(
     for (const [playset, own] of Object.entries(by ?? {})) {
       const ownAt = field(byAt, playset);
       playsets.push({ id: playset, at: ownAt });
-      const entry = c.object(own, ownAt, [], ['recipe', 'selectors', 'data', 'save', 'note']);
+      const entry = c.object(
+        own,
+        ownAt,
+        [],
+        ['recipe', 'selectors', 'data', 'save', 'codeFilled', 'note'],
+      );
       if (entry === undefined) continue;
       optionalString(c, entry, ownAt, 'note');
       if ('recipe' in entry) checkRecipe(c, entry['recipe'], field(ownAt, 'recipe'));
@@ -705,6 +716,10 @@ function checkView(
         if (from('recipe' in entry ? entry['recipe'] : json['recipe']) === 'main-menu') {
           c.fail(field(ownAt, 'save'), NO_SAVE_FROM_MENU);
         }
+      }
+      if ('codeFilled' in entry) {
+        const filledAt = field(ownAt, 'codeFilled');
+        c.array(entry['codeFilled'], filledAt, (v, pathAt) => pattern(c, v, pathAt));
       }
     }
   }

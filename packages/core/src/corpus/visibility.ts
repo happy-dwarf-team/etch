@@ -36,7 +36,10 @@ export interface VisibilityResult {
  * Compares a profile's prediction with one captured root window, widget by widget. A path the
  * capture lacks is left out, as the game's code may not have built it, and so is a text the game
  * showed empty, which draws nothing whether the profile shows it or not (`fort_number` without a
- * fort).
+ * fort). So is a widget the game puts wholly outside the client area, with everything inside it:
+ * Tongs ≥ 0.15 counts such a widget hidden for where it is (tongs#74), so whether the game's code
+ * shows it is not known, and it draws nothing on the screen either way (Anbennar's `topbar_1` at
+ * x 119415).
  */
 export function profileVisibility(
   profile: WindowProfile,
@@ -48,6 +51,7 @@ export function profileVisibility(
   const shown = new Map<string, boolean>();
   const empty = new Set<string>();
   const walk = (w: CapturedWidget, parent: boolean): void => {
+    if (!w.visible && outside(w.rect, screen)) return;
     const visible = parent && w.visible;
     shown.set(w.path.toLowerCase(), visible);
     if (visible && w.text === '') empty.add(w.path.toLowerCase());
@@ -65,6 +69,25 @@ export function profileVisibility(
     if (view.drawn(entry.widget) !== game) mismatches.push({ path: entry.path, game });
   }
   return { window: profile.window, compared, mismatches };
+}
+
+/**
+ * A rect Tongs counts hidden for where it is: one without a size placed outside the client area,
+ * or one wholly outside it (`FitRects`).
+ */
+function outside(
+  rect: { readonly x: number; readonly y: number; readonly w: number; readonly h: number },
+  screen: Screen,
+): boolean {
+  if (rect.w <= 0 || rect.h <= 0) {
+    return rect.x < 0 || rect.y < 0 || rect.x > screen.width || rect.y > screen.height;
+  }
+  return (
+    rect.x + rect.w <= 0 ||
+    rect.y + rect.h <= 0 ||
+    rect.x >= screen.width ||
+    rect.y >= screen.height
+  );
 }
 
 /** The selector values a profile has; a view's values for other windows' selectors are left out. */

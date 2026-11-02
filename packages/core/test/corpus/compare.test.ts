@@ -149,7 +149,7 @@ function captureOf(layout: WindowLayout): CapturedWidget {
     return {
       path,
       name: w.widget.name ?? '',
-      type: 'icon',
+      type: w.widget.kind === 'windowType' ? 'window' : 'icon',
       visible: true,
       rect: {
         x: Math.round(w.x),
@@ -187,8 +187,8 @@ function paint(list: DrawList): RgbaImage {
   for (const draw of list.draws) {
     if (draw.kind !== 'sprite') continue;
     const colour = COLOURS[list.textures[draw.texture] ?? ''] ?? [255, 255, 255];
-    for (let y = draw.y; y < draw.y + draw.height; y++) {
-      for (let x = draw.x; x < draw.x + draw.width; x++) {
+    for (let y = Math.max(0, draw.y); y < Math.min(list.height, draw.y + draw.height); y++) {
+      for (let x = Math.max(0, draw.x); x < Math.min(list.width, draw.x + draw.width); x++) {
         data.set([...colour, 255], (y * list.width + x) * 4);
       }
     }
@@ -490,23 +490,6 @@ describe('compareCapture', () => {
     expect(widget(result, 'panel/bg').pixels.masked).toBe(30 * 10 - 100 - 50 + 30 * 30);
   });
 
-  it('masks a code-filled shield Tongs gives no width as a square (etch#44)', () => {
-    const manifest = manifestWith((json) => {
-      set(json, 'windows.0.views.0.codeFilled', ['panel/flag']);
-    });
-    // The game draws the flag 10 × 10 at (70, 40) over the background; Tongs says 0 × 10.
-    const result = compare({
-      manifest,
-      capture: (root) =>
-        editWidget(root, 'panel/flag', (w) => ({ ...w, rect: { x: 70, y: 40, w: 0, h: 10 } })),
-      game: (g) => {
-        fill(g, 70, 40, 10, 10, [255, 255, 255]);
-      },
-    });
-    expect(result.passed).toBe(true);
-    expect(widget(result, 'panel/bg').status).toBe('pass');
-  });
-
   it('does not draw a code-filled widget the game did not create (etch#44)', () => {
     const manifest = manifestWith((json) => {
       set(json, 'windows.0.views.0.codeFilled', ['panel/icon[2]']);
@@ -746,6 +729,159 @@ describe('compareCapture', () => {
     expect(Array.from(image.data.subarray((25 * 200 + 15) * 4, (25 * 200 + 15) * 4 + 4))).toEqual([
       255, 0, 0, 255,
     ]);
+  });
+});
+
+/**
+ * A window without a size of its own, which Tongs gives its children's bounds, and an icon at the
+ * screen's edge.
+ */
+const GROUP_GUI = `
+guiTypes = {
+  windowType = {
+    name = "panel" position = { x = 10 y = 20 } size = { x = 100 y = 50 }
+    iconType = { name = "bg" spriteType = "GFX_bg" }
+    windowType = {
+      name = "group" position = { x = 5 y = 5 }
+      iconType = { name = "a" spriteType = "GFX_icon" position = { x = 10 y = 10 } }
+      iconType = { name = "b" spriteType = "GFX_icon" position = { x = 30 y = 20 } }
+    }
+    iconType = { name = "edge" spriteType = "GFX_icon" position = { x = 185 y = 5 } }
+  }
+}`;
+
+/** The capture Tongs ≥ 0.15 gives for {@link GROUP_GUI}: its rects fitted (tongs#74). */
+function fittedGroup(root: CapturedWidget): CapturedWidget {
+  const group = editWidget(root, 'panel/group', (w) => ({
+    ...w,
+    rect: { x: 25, y: 35, w: 30, h: 20 },
+  }));
+  return editWidget(group, 'panel/edge', (w) => ({ ...w, rect: { x: 195, y: 25, w: 5, h: 10 } }));
+}
+
+describe("Tongs' fitted rects (tongs#74)", () => {
+  it('fits a window without a size to its children and clips every rect to the screen', () => {
+    const result = compare({ window: laidOut(GROUP_GUI), capture: fittedGroup });
+    expect(result.passed).toBe(true);
+    expect(widget(result, 'panel/group')).toMatchObject({
+      status: 'pass',
+      renderRect: { x: 25, y: 35, w: 30, h: 20 },
+    });
+    expect(widget(result, 'panel/edge')).toMatchObject({
+      status: 'pass',
+      renderRect: { x: 195, y: 25, w: 5, h: 10 },
+    });
+
+    // The bounds are those of the children the game shows.
+    const hidden = compare({
+      window: laidOut(GROUP_GUI),
+      capture: (root) =>
+        editWidget(
+          editWidget(fittedGroup(root), 'panel/group/b', (w) => ({ ...w, visible: false })),
+          'panel/group',
+          (w) => ({ ...w, rect: { x: 25, y: 35, w: 10, h: 10 } }),
+        ),
+      game: (g) => {
+        fill(g, 45, 45, 10, 10, [40, 50, 60]);
+      },
+    });
+    expect(widget(hidden, 'panel/group').status).toBe('pass');
+    expect(hidden.passed).toBe(true);
+  });
+
+  it('fails a widget the render puts off the screen where the game shows it', () => {
+    const result = compare({
+      window: laidOut(GROUP_GUI.replace('x = 185', 'x = 195')),
+      capture: fittedGroup,
+    });
+    expect(widget(result, 'panel/edge')).toMatchObject({
+      status: 'fail',
+      problems: ['The render puts it outside the screen; the game shows it at (195, 25) 5×10.'],
+    });
+  });
+
+  it("takes the game's rect of a code-filled child for its window's bounds", () => {
+    const manifest = manifestWith((json) => {
+      set(json, 'windows.0.views.0.codeFilled', ['panel/group/b']);
+    });
+    // The game's code puts b at (20, 30), above and left of a: the group's bounds start there.
+    const result = compare({
+      manifest,
+      window: laidOut(GROUP_GUI),
+      capture: (root) =>
+        editWidget(
+          editWidget(fittedGroup(root), 'panel/group/b', (w) => ({
+            ...w,
+            rect: { x: 20, y: 30, w: 10, h: 10 },
+          })),
+          'panel/group',
+          (w) => ({ ...w, rect: { x: 20, y: 30, w: 15, h: 15 } }),
+        ),
+    });
+    expect(widget(result, 'panel/group').status).toBe('pass');
+    expect(result.passed).toBe(true);
+  });
+
+  it('moves a moved window by where the game shows its children, when they are its rect', () => {
+    const manifest = manifestWith((json) => {
+      set(json, 'windows.0.views.0.codeMoved', ['panel/group']);
+    });
+    // The game's code shows the group 20 px lower.
+    const lower = (root: CapturedWidget): CapturedWidget => {
+      let moved = fittedGroup(root);
+      for (const path of ['panel/group', 'panel/group/a', 'panel/group/b']) {
+        moved = editWidget(moved, path, (w) => ({ ...w, rect: { ...w.rect, y: w.rect.y + 20 } }));
+      }
+      return moved;
+    };
+    const result = compare({
+      manifest,
+      window: laidOut(GROUP_GUI),
+      capture: lower,
+      game: (g) => {
+        fill(g, 25, 35, 10, 10, [40, 50, 60]);
+        fill(g, 45, 45, 10, 10, [40, 50, 60]);
+        fill(g, 25, 55, 10, 10, [200, 100, 0]);
+        fill(g, 45, 65, 10, 10, [200, 100, 0]);
+      },
+    });
+    expect(widget(result, 'panel/group')).toMatchObject({
+      status: 'pass',
+      moved: { x: 0, y: 20 },
+      renderRect: { x: 25, y: 55, w: 30, h: 20 },
+    });
+    expect(widget(result, 'panel/group/a').renderRect).toEqual({ x: 25, y: 55, w: 10, h: 10 });
+    expect(result.passed).toBe(true);
+  });
+
+  it('does not compare the rect of a window the game shows without any of its children', () => {
+    // Tongs gives the group the bounds of children the game does not lay out.
+    const result = compare({
+      window: laidOut(GROUP_GUI),
+      capture: (root) => {
+        let parked = fittedGroup(root);
+        for (const [path, x] of [
+          ['panel/group/a', 150],
+          ['panel/group/b', 170],
+        ] as const) {
+          parked = editWidget(parked, path, (w) => ({
+            ...w,
+            visible: false,
+            rect: { x, y: 80, w: 10, h: 10 },
+          }));
+        }
+        return editWidget(parked, 'panel/group', (w) => ({
+          ...w,
+          rect: { x: 150, y: 80, w: 30, h: 10 },
+        }));
+      },
+      game: (g) => {
+        fill(g, 25, 35, 10, 10, [40, 50, 60]);
+        fill(g, 45, 45, 10, 10, [40, 50, 60]);
+      },
+    });
+    expect(widget(result, 'panel/group')).toMatchObject({ status: 'pass', problems: [] });
+    expect(result.passed).toBe(true);
   });
 });
 

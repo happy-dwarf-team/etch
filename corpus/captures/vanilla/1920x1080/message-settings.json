@@ -3,31 +3,27 @@
   "playset": "vanilla",
   "resolution": { "width": 1920, "height": 1080 },
   "view": "message-settings",
-  "takenAt": "2026-10-21T22:16:02.612Z",
-  "game": {
-    "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A"
-  },
-  "tongs": { "version": "0.14.1" },
-  "save": {
-    "sha256": "2A4CAF306CCDDB2DAFC7EE015C4ECFFB260654A1D10D86F5F4F768D3C3F56F6A"
-  },
+  "takenAt": "2026-11-01T05:29:36.091Z",
+  "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
+  "tongs": { "version": "0.23.0" },
+  "save": { "sha256": "2A4CAF306CCDDB2DAFC7EE015C4ECFFB260654A1D10D86F5F4F768D3C3F56F6A" },
   "mods": [],
   "disabledDlcs": [],
   "recipe": {
     "from": "save",
     "steps": [{ "key": "escape" }, { "click": "menu//menu_message_button" }],
     "verified": true,
-    "evidence": "Run by the capture driver (etch#42) at 1280x720 and 1920x1080 on 2026-10-21: the steps opened the view and its roots were read and shown."
+    "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown."
   },
   "window": { "width": 1920, "height": 1080, "dpi": 96 },
   "screenshot": {
-    "sha256": "50BACF373E61AA88256CD7696FCFB8182657A42F751FD7EDAE93083C8F86F65D",
+    "sha256": "B931D6D990B575751BBE2FCC57837375AF34CC0853A8CDFD1AD6F30B055600B4",
     "width": 1920,
     "height": 1080,
     "shots": 4,
     "unstable": {
-      "pixels": 554145,
-      "sha256": "0A75C87B8CAB42BC67EC25A711589A422CEEE0B79F63581D9D6F2D7855E7BF32"
+      "pixels": 554667,
+      "sha256": "A28A73EC6EECEF6B3B9C8ECE8C327B5D0AD4AB3CF36675FD8E12F9B169F8A928"
     }
   },
   "widgets": [
@@ -246,7 +242,7 @@
               "name": "messagesettings_filter",
               "path": "menu/menu_message_settings/messagesettings_filter",
               "type": "button",
-              "visible": true,
+              "visible": false,
               "rect": { "x": 100167, "y": 353, "w": 149, "h": 31 },
               "text": "Filter",
               "enabled": true
@@ -329,7 +325,7 @@
               "name": "disable_all_messages",
               "path": "menu/menu_message_settings/disable_all_messages",
               "type": "button",
-              "visible": true,
+              "visible": false,
               "rect": { "x": 100152, "y": 668, "w": 149, "h": 31 },
               "text": "Disable all",
               "enabled": true
@@ -490,7 +486,7 @@
               "path": "menu/menu_message_settings/settings",
               "type": "listbox",
               "visible": true,
-              "rect": { "x": 726, "y": 458, "w": 128, "h": 440 },
+              "rect": { "x": 726, "y": 458, "w": 128, "h": 280 },
               "children": [
                 {
                   "name": "message_entry",

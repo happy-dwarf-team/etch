@@ -3,9 +3,9 @@
   "playset": "anbennar-alone",
   "resolution": { "width": 1366, "height": 768 },
   "view": "macro-builder",
-  "takenAt": "2026-10-27T22:24:35.650Z",
+  "takenAt": "2026-11-01T05:49:00.550Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
-  "tongs": { "version": "0.14.1" },
+  "tongs": { "version": "0.23.0" },
   "save": { "sha256": "AACEDFE6FD0294B80961679AB9618BC48195A9E9A239BE41292CEFFE156FDD3D" },
   "mods": [
     {
@@ -22,13 +22,13 @@
   },
   "window": { "width": 1366, "height": 768, "dpi": 96 },
   "screenshot": {
-    "sha256": "E296071DD9E1708C14EEB454B6C39CFE2A0F4AA83423AB92C7BA5064214C1A40",
+    "sha256": "605C5383621FAB0EBE5CF91440D77F3E947D7902F0D8A0C7704F7A376C8C2E0D",
     "width": 1366,
     "height": 768,
     "shots": 4,
     "unstable": {
-      "pixels": 560314,
-      "sha256": "4AD9A9BD7656E2E0D697BA9F9A61F62650A7DD32674546BED42E12EB85570348"
+      "pixels": 539975,
+      "sha256": "D172FE9768D237308699B9C0F676C3C89B02AD5B04C4E086408FAC1667C8061D"
     }
   },
   "widgets": [
@@ -52,7 +52,7 @@
           "path": "macro_build_interface/background",
           "type": "icon",
           "visible": true,
-          "rect": { "x": -5, "y": 150, "w": 446, "h": 573 }
+          "rect": { "x": 0, "y": 150, "w": 441, "h": 573 }
         },
         {
           "name": "close_gold",
@@ -311,7 +311,7 @@
               "path": "macro_build_interface/select_culture_window/bg",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 683, "y": -129, "w": 321, "h": 513 }
+              "rect": { "x": 683, "y": 0, "w": 321, "h": 384 }
             },
             {
               "name": "label",
@@ -333,7 +333,7 @@
                   "path": "macro_build_interface/select_culture_window/listbox/standardlistbox_slider",
                   "type": "other",
                   "visible": false,
-                  "rect": { "x": 683, "y": 368, "w": 16, "h": 404 },
+                  "rect": { "x": 683, "y": 368, "w": 16, "h": 400 },
                   "children": [
                     {
                       "name": "listboxSliderButton",
@@ -347,7 +347,7 @@
                       "path": "macro_build_interface/select_culture_window/listbox/standardlistbox_slider/listboxTrackButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 683, "y": 384, "w": 12, "h": 388 }
+                      "rect": { "x": 683, "y": 384, "w": 12, "h": 384 }
                     },
                     {
                       "name": "downButton",
@@ -794,13 +794,13 @@
                       "path": "macro_build_interface/improve_relations_window/rule_button_list/improve_relation_button_entry[1]/improve_rule_text",
                       "type": "text",
                       "visible": false,
-                      "rect": { "x": -10, "y": -8, "w": 144, "h": 18 },
+                      "rect": { "x": 0, "y": 0, "w": 134, "h": 10 },
                       "text": "Neighbouring Countries"
                     },
                     {
                       "name": "diplomat_icon_list",
                       "path": "macro_build_interface/improve_relations_window/rule_button_list/improve_relation_button_entry[1]/diplomat_icon_list",
-                      "type": "other",
+                      "type": "listbox",
                       "visible": false,
                       "rect": { "x": 0, "y": 0, "w": 240, "h": 28 }
                     }
@@ -833,13 +833,13 @@
                       "path": "macro_build_interface/improve_relations_window/rule_button_list/improve_relation_button_entry[2]/improve_rule_text",
                       "type": "text",
                       "visible": false,
-                      "rect": { "x": -10, "y": -8, "w": 144, "h": 18 },
+                      "rect": { "x": 0, "y": 0, "w": 134, "h": 10 },
                       "text": "Own Subject Countries"
                     },
                     {
                       "name": "diplomat_icon_list",
                       "path": "macro_build_interface/improve_relations_window/rule_button_list/improve_relation_button_entry[2]/diplomat_icon_list",
-                      "type": "other",
+                      "type": "listbox",
                       "visible": false,
                       "rect": { "x": 0, "y": 0, "w": 240, "h": 28 }
                     }
@@ -872,13 +872,13 @@
                       "path": "macro_build_interface/improve_relations_window/rule_button_list/improve_relation_button_entry[3]/improve_rule_text",
                       "type": "text",
                       "visible": false,
-                      "rect": { "x": -10, "y": -8, "w": 144, "h": 18 },
+                      "rect": { "x": 0, "y": 0, "w": 134, "h": 10 },
                       "text": "Outraged Countries"
                     },
                     {
                       "name": "diplomat_icon_list",
                       "path": "macro_build_interface/improve_relations_window/rule_button_list/improve_relation_button_entry[3]/diplomat_icon_list",
-                      "type": "other",
+                      "type": "listbox",
                       "visible": false,
                       "rect": { "x": 0, "y": 0, "w": 240, "h": 28 }
                     }
@@ -911,13 +911,13 @@
                       "path": "macro_build_interface/improve_relations_window/rule_button_list/improve_relation_button_entry[4]/improve_rule_text",
                       "type": "text",
                       "visible": false,
-                      "rect": { "x": -10, "y": -8, "w": 144, "h": 18 },
+                      "rect": { "x": 0, "y": 0, "w": 134, "h": 10 },
                       "text": "Allies"
                     },
                     {
                       "name": "diplomat_icon_list",
                       "path": "macro_build_interface/improve_relations_window/rule_button_list/improve_relation_button_entry[4]/diplomat_icon_list",
-                      "type": "other",
+                      "type": "listbox",
                       "visible": false,
                       "rect": { "x": 0, "y": 0, "w": 240, "h": 28 }
                     }
@@ -950,13 +950,13 @@
                       "path": "macro_build_interface/improve_relations_window/rule_button_list/improve_relation_button_entry[5]/improve_rule_text",
                       "type": "text",
                       "visible": false,
-                      "rect": { "x": -10, "y": -8, "w": 144, "h": 18 },
+                      "rect": { "x": 0, "y": 0, "w": 134, "h": 10 },
                       "text": "Threatening Countries"
                     },
                     {
                       "name": "diplomat_icon_list",
                       "path": "macro_build_interface/improve_relations_window/rule_button_list/improve_relation_button_entry[5]/diplomat_icon_list",
-                      "type": "other",
+                      "type": "listbox",
                       "visible": false,
                       "rect": { "x": 0, "y": 0, "w": 240, "h": 28 }
                     }
@@ -1810,53 +1810,62 @@
               "rect": { "x": 683, "y": 356, "w": 418, "h": 28 }
             },
             {
-              "name": "tab_entry",
-              "path": "macro_build_interface/states_header/tab_entry[1]",
-              "type": "window",
+              "name": "tabs_gridbox",
+              "path": "macro_build_interface/states_header/tabs_gridbox",
+              "type": "listbox",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 52, "h": 55 },
+              "rect": { "x": 0, "y": 0, "w": 200, "h": 47 },
               "children": [
                 {
-                  "name": "button",
-                  "path": "macro_build_interface/states_header/tab_entry[1]/button",
-                  "type": "button",
+                  "name": "tab_entry",
+                  "path": "macro_build_interface/states_header/tabs_gridbox/tab_entry[1]",
+                  "type": "window",
                   "visible": false,
-                  "rect": { "x": 683, "y": 309, "w": 55, "h": 75 },
-                  "enabled": true
-                }
-              ]
-            },
-            {
-              "name": "tab_entry",
-              "path": "macro_build_interface/states_header/tab_entry[2]",
-              "type": "window",
-              "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 52, "h": 55 },
-              "children": [
+                  "rect": { "x": 0, "y": 0, "w": 52, "h": 55 },
+                  "children": [
+                    {
+                      "name": "button",
+                      "path": "macro_build_interface/states_header/tabs_gridbox/tab_entry[1]/button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 683, "y": 309, "w": 55, "h": 75 },
+                      "enabled": true
+                    }
+                  ]
+                },
                 {
-                  "name": "button",
-                  "path": "macro_build_interface/states_header/tab_entry[2]/button",
-                  "type": "button",
+                  "name": "tab_entry",
+                  "path": "macro_build_interface/states_header/tabs_gridbox/tab_entry[2]",
+                  "type": "window",
                   "visible": false,
-                  "rect": { "x": 683, "y": 309, "w": 55, "h": 75 },
-                  "enabled": true
-                }
-              ]
-            },
-            {
-              "name": "tab_entry",
-              "path": "macro_build_interface/states_header/tab_entry[3]",
-              "type": "window",
-              "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 52, "h": 55 },
-              "children": [
+                  "rect": { "x": 0, "y": 0, "w": 52, "h": 55 },
+                  "children": [
+                    {
+                      "name": "button",
+                      "path": "macro_build_interface/states_header/tabs_gridbox/tab_entry[2]/button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 683, "y": 309, "w": 55, "h": 75 },
+                      "enabled": true
+                    }
+                  ]
+                },
                 {
-                  "name": "button",
-                  "path": "macro_build_interface/states_header/tab_entry[3]/button",
-                  "type": "button",
+                  "name": "tab_entry",
+                  "path": "macro_build_interface/states_header/tabs_gridbox/tab_entry[3]",
+                  "type": "window",
                   "visible": false,
-                  "rect": { "x": 683, "y": 309, "w": 55, "h": 75 },
-                  "enabled": true
+                  "rect": { "x": 0, "y": 0, "w": 52, "h": 55 },
+                  "children": [
+                    {
+                      "name": "button",
+                      "path": "macro_build_interface/states_header/tabs_gridbox/tab_entry[3]/button",
+                      "type": "button",
+                      "visible": false,
+                      "rect": { "x": 683, "y": 309, "w": 55, "h": 75 },
+                      "enabled": true
+                    }
+                  ]
                 }
               ]
             }
@@ -2127,7 +2136,7 @@
                                       "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[1]/investment_category_list/investment_category_item[1]/title",
                                       "type": "text",
                                       "visible": false,
-                                      "rect": { "x": 30, "y": -2, "w": 200, "h": 22 },
+                                      "rect": { "x": 30, "y": 0, "w": 200, "h": 20 },
                                       "text": "Company Garrison"
                                     },
                                     {
@@ -2277,7 +2286,7 @@
                                       "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[1]/investment_category_list/investment_category_item[2]/title",
                                       "type": "text",
                                       "visible": false,
-                                      "rect": { "x": 30, "y": -2, "w": 200, "h": 22 },
+                                      "rect": { "x": 30, "y": 0, "w": 200, "h": 20 },
                                       "text": "Harbor"
                                     },
                                     {
@@ -2445,7 +2454,7 @@
                                       "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[2]/investment_category_list/investment_category_item[1]/title",
                                       "type": "text",
                                       "visible": false,
-                                      "rect": { "x": 30, "y": -2, "w": 200, "h": 22 },
+                                      "rect": { "x": 30, "y": 0, "w": 200, "h": 20 },
                                       "text": "Local Venture"
                                     },
                                     {
@@ -2595,7 +2604,7 @@
                                       "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[2]/investment_category_list/investment_category_item[2]/title",
                                       "type": "text",
                                       "visible": false,
-                                      "rect": { "x": 30, "y": -2, "w": 200, "h": 22 },
+                                      "rect": { "x": 30, "y": 0, "w": 200, "h": 20 },
                                       "text": "Foreign Influence"
                                     },
                                     {
@@ -2763,7 +2772,7 @@
                                       "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[3]/investment_category_list/investment_category_item/title",
                                       "type": "text",
                                       "visible": false,
-                                      "rect": { "x": 30, "y": -2, "w": 200, "h": 22 },
+                                      "rect": { "x": 30, "y": 0, "w": 200, "h": 20 },
                                       "text": "Governance"
                                     },
                                     {
@@ -3265,7 +3274,7 @@
                       "path": "macro_build_interface/content_list/build_content_entry/list_to_fill/standardlistbox_slider",
                       "type": "other",
                       "visible": false,
-                      "rect": { "x": 683, "y": 368, "w": 16, "h": 584 },
+                      "rect": { "x": 683, "y": 368, "w": 16, "h": 400 },
                       "children": [
                         {
                           "name": "listboxSliderButton",
@@ -3279,7 +3288,7 @@
                           "path": "macro_build_interface/content_list/build_content_entry/list_to_fill/standardlistbox_slider/listboxTrackButton",
                           "type": "button",
                           "visible": false,
-                          "rect": { "x": 683, "y": 384, "w": 12, "h": 568 }
+                          "rect": { "x": 683, "y": 384, "w": 12, "h": 384 }
                         },
                         {
                           "name": "downButton",
@@ -3461,14 +3470,14 @@
           "name": "mapmode_bg",
           "path": "menubar/mapmode_bg",
           "type": "icon",
-          "visible": true,
+          "visible": false,
           "rect": { "x": -97916, "y": 659, "w": 220, "h": 20 }
         },
         {
           "name": "mapmode_bg_2",
           "path": "menubar/mapmode_bg_2",
           "type": "icon",
-          "visible": true,
+          "visible": false,
           "rect": { "x": -97916, "y": 642, "w": 220, "h": 20 }
         },
         {
@@ -3488,7 +3497,7 @@
             {
               "name": "WarOverviewButtonList",
               "path": "menubar/WarOverviewButtonWindow/WarOverviewButtonList",
-              "type": "other",
+              "type": "listbox",
               "visible": true,
               "rect": { "x": 506, "y": 703, "w": 300, "h": 40 }
             }
@@ -3499,7 +3508,7 @@
           "path": "menubar/messagelog_window",
           "type": "window",
           "visible": false,
-          "rect": { "x": 41, "y": 1018, "w": 770, "h": 100 },
+          "rect": { "x": 41, "y": 1008, "w": 1024, "h": 128 },
           "children": [
             {
               "name": "log_bg",
@@ -3520,7 +3529,7 @@
                   "path": "menubar/messagelog_window/messagelog/logtext[1]",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 161, "y": 1028, "w": 700, "h": 18 },
+                  "rect": { "x": 171, "y": 1022, "w": 700, "h": 18 },
                   "children": [
                     {
                       "name": "messagelogbutton",
@@ -3538,7 +3547,7 @@
                   "path": "menubar/messagelog_window/messagelog/logtext[2]",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 161, "y": 1046, "w": 700, "h": 18 },
+                  "rect": { "x": 171, "y": 1040, "w": 700, "h": 18 },
                   "children": [
                     {
                       "name": "messagelogbutton",
@@ -3556,7 +3565,7 @@
                   "path": "menubar/messagelog_window/messagelog/logtext[3]",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 161, "y": 1064, "w": 700, "h": 18 },
+                  "rect": { "x": 171, "y": 1058, "w": 700, "h": 18 },
                   "children": [
                     {
                       "name": "messagelogbutton",
@@ -3574,7 +3583,7 @@
                   "path": "menubar/messagelog_window/messagelog/logtext[4]",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 161, "y": 1082, "w": 700, "h": 18 },
+                  "rect": { "x": 171, "y": 1076, "w": 700, "h": 18 },
                   "children": [
                     {
                       "name": "messagelogbutton",
@@ -3768,7 +3777,7 @@
           "path": "menubar/message_window_container",
           "type": "window",
           "visible": true,
-          "rect": { "x": 1166, "y": 338, "w": 241, "h": 186 },
+          "rect": { "x": 1312, "y": 303, "w": 32, "h": 20 },
           "children": [
             {
               "name": "message_window",
@@ -3886,7 +3895,7 @@
                   "path": "menubar/message_window_container/toggle_message_interface_window/ToggleMessageBackground",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 1339, "y": 501, "w": 29, "h": 59 }
+                  "rect": { "x": 1339, "y": 501, "w": 27, "h": 59 }
                 }
               ]
             }
@@ -3968,56 +3977,56 @@
               "path": "menubar/floating_buttons/menubar_floating_bg_1",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 1004, "y": 732, "w": 47, "h": 38 }
+              "rect": { "x": 1004, "y": 732, "w": 47, "h": 36 }
             },
             {
               "name": "menubar_floating_bg_2",
               "path": "menubar/floating_buttons/menubar_floating_bg_2",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 959, "y": 732, "w": 47, "h": 38 }
+              "rect": { "x": 959, "y": 732, "w": 47, "h": 36 }
             },
             {
               "name": "menubar_floating_bg_3",
               "path": "menubar/floating_buttons/menubar_floating_bg_3",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 914, "y": 732, "w": 47, "h": 38 }
+              "rect": { "x": 914, "y": 732, "w": 47, "h": 36 }
             },
             {
               "name": "menubar_floating_bg_4",
               "path": "menubar/floating_buttons/menubar_floating_bg_4",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 869, "y": 732, "w": 47, "h": 38 }
+              "rect": { "x": 869, "y": 732, "w": 47, "h": 36 }
             },
             {
               "name": "menubar_floating_bg_5",
               "path": "menubar/floating_buttons/menubar_floating_bg_5",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 824, "y": 732, "w": 47, "h": 38 }
+              "rect": { "x": 824, "y": 732, "w": 47, "h": 36 }
             },
             {
               "name": "menubar_floating_bg_6",
               "path": "menubar/floating_buttons/menubar_floating_bg_6",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 769, "y": 732, "w": 47, "h": 38 }
+              "rect": { "x": 769, "y": 732, "w": 47, "h": 36 }
             },
             {
               "name": "menubar_floating_bg_7",
               "path": "menubar/floating_buttons/menubar_floating_bg_7",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 714, "y": 732, "w": 47, "h": 38 }
+              "rect": { "x": 714, "y": 732, "w": 47, "h": 36 }
             },
             {
               "name": "menubar_floating_bg_8",
               "path": "menubar/floating_buttons/menubar_floating_bg_8",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 659, "y": 732, "w": 47, "h": 38 }
+              "rect": { "x": 659, "y": 732, "w": 47, "h": 36 }
             },
             {
               "name": "hre_strip_glow",
@@ -4031,7 +4040,7 @@
               "path": "menubar/floating_buttons/revolution_flag",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 920, "y": 714, "w": 0, "h": 31 }
+              "rect": { "x": 920, "y": 714, "w": 31, "h": 31 }
             },
             {
               "name": "floating_number_1",

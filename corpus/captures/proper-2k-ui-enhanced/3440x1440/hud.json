@@ -3,9 +3,9 @@
   "playset": "proper-2k-ui-enhanced",
   "resolution": { "width": 3440, "height": 1440 },
   "view": "hud",
-  "takenAt": "2026-10-24T17:39:11.011Z",
+  "takenAt": "2026-11-01T07:08:34.699Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
-  "tongs": { "version": "0.14.1" },
+  "tongs": { "version": "0.23.0" },
   "save": { "sha256": "2A4CAF306CCDDB2DAFC7EE015C4ECFFB260654A1D10D86F5F4F768D3C3F56F6A" },
   "mods": [
     {
@@ -18,17 +18,17 @@
     "from": "save",
     "steps": [],
     "verified": true,
-    "evidence": "Run by the capture driver (etch#42) at 1280x720 and 1920x1080 on 2026-10-21: the steps opened the view and its roots were read and shown."
+    "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown."
   },
   "window": { "width": 3440, "height": 1440, "dpi": 96 },
   "screenshot": {
-    "sha256": "2B008A2AE8C7811FBFA49789588EE65660DAC3E555C859D296341BDD58CE985E",
+    "sha256": "04C09202B8AB7251AB9C86CCDFDD4F04516E45933DAA935FF626F1E39A295FA2",
     "width": 3440,
     "height": 1440,
     "shots": 4,
     "unstable": {
-      "pixels": 1300122,
-      "sha256": "0139437837B9AD8F39569405F4E8C326F8FCC46A8B60D4A9473BF0B42DBEFA21"
+      "pixels": 1300764,
+      "sha256": "54CC2A1622230D27CB61789EF528F5E0F8407B7D65E016B7164B90A7B6C5071B"
     }
   },
   "widgets": [
@@ -37,14 +37,14 @@
       "path": "topbar",
       "type": "window",
       "visible": true,
-      "rect": { "x": 0, "y": -1, "w": 3440, "h": 1440 },
+      "rect": { "x": 0, "y": 0, "w": 1951, "h": 194 },
       "children": [
         {
           "name": "player_shield",
           "path": "topbar/player_shield",
           "type": "button",
           "visible": true,
-          "rect": { "x": -5, "y": 2, "w": 1, "h": 184 },
+          "rect": { "x": 0, "y": 2, "w": 179, "h": 184 },
           "enabled": true
         },
         {
@@ -130,21 +130,21 @@
           "name": "topbar_1",
           "path": "topbar/topbar_1",
           "type": "icon",
-          "visible": true,
+          "visible": false,
           "rect": { "x": 119415, "y": -2, "w": 131, "h": 37 }
         },
         {
           "name": "topbar_2",
           "path": "topbar/topbar_2",
           "type": "icon",
-          "visible": true,
+          "visible": false,
           "rect": { "x": 1189229, "y": -2, "w": 131, "h": 37 }
         },
         {
           "name": "topbar_3",
           "path": "topbar/topbar_3",
           "type": "icon",
-          "visible": true,
+          "visible": false,
           "rect": { "x": 1189839, "y": -2, "w": 131, "h": 37 }
         },
         {
@@ -152,7 +152,7 @@
           "path": "topbar/topbar_upper_left_bg",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 0, "y": -1, "w": 1173, "h": 192 }
+          "rect": { "x": 0, "y": 0, "w": 1173, "h": 191 }
         },
         {
           "name": "topbar_upper_left_bg4",
@@ -173,7 +173,7 @@
           "path": "topbar/player_shield_glow",
           "type": "icon",
           "visible": true,
-          "rect": { "x": -3, "y": 2, "w": 184, "h": 184 }
+          "rect": { "x": 0, "y": 2, "w": 181, "h": 184 }
         },
         {
           "name": "great_power_button_base",
@@ -466,14 +466,14 @@
           "path": "topbar/powerprojection_topbar",
           "type": "window",
           "visible": true,
-          "rect": { "x": 241, "y": -1, "w": 120, "h": 120 },
+          "rect": { "x": 830, "y": 0, "w": 115, "h": 61 },
           "children": [
             {
               "name": "topbar_liberty_overlay",
               "path": "topbar/powerprojection_topbar/topbar_liberty_overlay",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 830, "y": -2, "w": 115, "h": 63 }
+              "rect": { "x": 830, "y": 0, "w": 115, "h": 61 }
             },
             {
               "name": "icon_powerprojection",
@@ -554,7 +554,7 @@
       "path": "speed_controls",
       "type": "window",
       "visible": true,
-      "rect": { "x": 3440, "y": 0, "w": 0, "h": 0 },
+      "rect": { "x": 3065, "y": 0, "w": 375, "h": 203 },
       "children": [
         {
           "name": "button_pause",
@@ -617,7 +617,7 @@
           "path": "speed_controls/button_outliner",
           "type": "button",
           "visible": true,
-          "rect": { "x": 3403, "y": 77, "w": 40, "h": 40 },
+          "rect": { "x": 3403, "y": 77, "w": 37, "h": 40 },
           "enabled": true
         },
         {
@@ -625,7 +625,7 @@
           "path": "speed_controls/icon_date_bg",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 3065, "y": -1, "w": 376, "h": 204 }
+          "rect": { "x": 3065, "y": 0, "w": 375, "h": 203 }
         },
         {
           "name": "icon_score",
@@ -665,7 +665,7 @@
       "path": "outliner",
       "type": "window",
       "visible": true,
-      "rect": { "x": 3095, "y": 124, "w": 360, "h": 120 },
+      "rect": { "x": 3085, "y": 114, "w": 355, "h": 1096 },
       "children": [
         {
           "name": "button_outliner_options",
@@ -680,21 +680,21 @@
           "path": "outliner/outliner_top",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 3095, "y": 124, "w": 360, "h": 3 }
+          "rect": { "x": 3095, "y": 124, "w": 345, "h": 3 }
         },
         {
           "name": "outliner_bottom",
           "path": "outliner/outliner_bottom",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 3095, "y": 1207, "w": 360, "h": 3 }
+          "rect": { "x": 3095, "y": 1207, "w": 345, "h": 3 }
         },
         {
           "name": "outliner_list",
           "path": "outliner/outliner_list",
           "type": "listbox",
           "visible": true,
-          "rect": { "x": 3095, "y": 127, "w": 307, "h": 8085 },
+          "rect": { "x": 3095, "y": 127, "w": 307, "h": 1071 },
           "children": [
             {
               "name": "outliner_header_entry",
@@ -708,7 +708,7 @@
                   "path": "outliner/outliner_list/outliner_header_entry[1]/outliner_header",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 127, "w": 360, "h": 21 }
+                  "rect": { "x": 3095, "y": 127, "w": 345, "h": 21 }
                 },
                 {
                   "name": "entry_text",
@@ -732,7 +732,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[1]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 148, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 148, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -772,7 +772,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[2]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 169, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 169, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -812,7 +812,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[3]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 190, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 190, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -852,7 +852,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[4]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 211, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 211, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -892,7 +892,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[5]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 232, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 232, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -932,7 +932,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[6]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 253, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 253, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -972,7 +972,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[7]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 274, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 274, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -1012,7 +1012,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[8]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 295, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 295, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -1052,7 +1052,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[9]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 316, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 316, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -1092,7 +1092,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[10]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 337, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 337, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -1132,7 +1132,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[11]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 358, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 358, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -1172,7 +1172,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[12]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 379, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 379, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -1212,7 +1212,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[13]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 400, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 400, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -1252,7 +1252,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[14]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 421, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 421, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -1292,7 +1292,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[15]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 442, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 442, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -1332,7 +1332,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[16]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 463, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 463, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -1372,7 +1372,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[17]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 484, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 484, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -1412,7 +1412,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[18]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 505, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 505, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -1452,7 +1452,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[19]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 526, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 526, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -1492,7 +1492,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[20]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 547, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 547, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -1532,7 +1532,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[21]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 568, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 568, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -1572,7 +1572,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[22]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 589, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 589, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -1612,7 +1612,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[23]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 610, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 610, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -1652,7 +1652,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[24]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 631, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 631, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -1692,7 +1692,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[25]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 652, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 652, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -1732,7 +1732,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[26]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 673, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 673, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -1772,7 +1772,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[27]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 694, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 694, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -1812,7 +1812,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[28]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 715, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 715, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -1852,7 +1852,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[29]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 736, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 736, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -1892,7 +1892,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[30]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 757, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 757, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -1932,7 +1932,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[31]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 778, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 778, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -1972,7 +1972,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[32]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 799, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 799, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -2012,7 +2012,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[33]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 820, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 820, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -2052,7 +2052,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[34]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 841, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 841, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -2092,7 +2092,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[35]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 862, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 862, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -2132,7 +2132,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[36]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 883, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 883, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -2172,7 +2172,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[37]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 904, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 904, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -2212,7 +2212,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[38]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 925, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 925, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -2252,7 +2252,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[39]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 946, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 946, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -2292,7 +2292,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[40]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 967, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 967, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -2332,7 +2332,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[41]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 988, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 988, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -2372,7 +2372,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[42]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 1009, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 1009, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -2412,7 +2412,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[43]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 1030, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 1030, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -2452,7 +2452,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[44]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 1051, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 1051, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -2492,7 +2492,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[45]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 1072, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 1072, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -2532,7 +2532,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[46]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 1093, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 1093, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -2572,7 +2572,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[47]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 1114, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 1114, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -2612,7 +2612,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[48]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 1135, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 1135, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -2652,7 +2652,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[49]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 1156, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 1156, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -2692,7 +2692,7 @@
                   "path": "outliner/outliner_list/outliner_buildnavy_entry[50]/outliner_standard",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3095, "y": 1177, "w": 360, "h": 21 },
+                  "rect": { "x": 3095, "y": 1177, "w": 345, "h": 21 },
                   "enabled": true
                 },
                 {
@@ -3401,7 +3401,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "1st Army"
+                  "text": "Army of Ukraine"
                 },
                 {
                   "name": "info_text",
@@ -3441,7 +3441,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "23rd Army"
+                  "text": "Army of Crimea"
                 },
                 {
                   "name": "info_text",
@@ -3481,7 +3481,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "Russian Imperial Army"
+                  "text": "15th Army"
                 },
                 {
                   "name": "info_text",
@@ -3489,7 +3489,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 31, "y": 0, "w": 120, "h": 21 },
-                  "text": "50,000 £general_16 "
+                  "text": "50,000"
                 }
               ]
             },
@@ -3521,7 +3521,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "17th Army"
+                  "text": "1st Army"
                 },
                 {
                   "name": "info_text",
@@ -3561,7 +3561,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "3rd Army"
+                  "text": "50th Army"
                 },
                 {
                   "name": "info_text",
@@ -3569,7 +3569,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 31, "y": 0, "w": 120, "h": 21 },
-                  "text": "50,000 £general_16 "
+                  "text": "50,000"
                 }
               ]
             },
@@ -3601,7 +3601,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "2nd Army"
+                  "text": "8th Army"
                 },
                 {
                   "name": "info_text",
@@ -3641,7 +3641,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "Army of Poland"
+                  "text": "32nd Army"
                 },
                 {
                   "name": "info_text",
@@ -3681,7 +3681,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "14th Army"
+                  "text": "45th Army"
                 },
                 {
                   "name": "info_text",
@@ -3721,7 +3721,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "45th Army"
+                  "text": "Army of Finland"
                 },
                 {
                   "name": "info_text",
@@ -3729,7 +3729,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 31, "y": 0, "w": 120, "h": 21 },
-                  "text": "50,000 £general_16 "
+                  "text": "50,000 £attrition "
                 }
               ]
             },
@@ -3761,7 +3761,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "Army of the Ural"
+                  "text": "Army of Poland"
                 },
                 {
                   "name": "info_text",
@@ -3769,7 +3769,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 31, "y": 0, "w": 120, "h": 21 },
-                  "text": "50,000"
+                  "text": "50,000 £general_16 "
                 }
               ]
             },
@@ -3801,7 +3801,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "11th Army"
+                  "text": "Army of the Ural"
                 },
                 {
                   "name": "info_text",
@@ -3809,7 +3809,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 31, "y": 0, "w": 120, "h": 21 },
-                  "text": "50,000 £general_16 "
+                  "text": "50,000"
                 }
               ]
             },
@@ -3841,7 +3841,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "15th Army"
+                  "text": "14th Army"
                 },
                 {
                   "name": "info_text",
@@ -3849,7 +3849,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 31, "y": 0, "w": 120, "h": 21 },
-                  "text": "50,000"
+                  "text": "50,000 £general_16 "
                 }
               ]
             },
@@ -3881,7 +3881,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "50th Army"
+                  "text": "25th Army"
                 },
                 {
                   "name": "info_text",
@@ -3921,7 +3921,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "1st Army"
+                  "text": "2nd Army"
                 },
                 {
                   "name": "info_text",
@@ -3961,7 +3961,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "32nd Army"
+                  "text": "17th Army"
                 },
                 {
                   "name": "info_text",
@@ -4001,7 +4001,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "8th Army"
+                  "text": "11th Army"
                 },
                 {
                   "name": "info_text",
@@ -4041,7 +4041,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "Army of Finland"
+                  "text": "28th Army"
                 },
                 {
                   "name": "info_text",
@@ -4049,7 +4049,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 31, "y": 0, "w": 120, "h": 21 },
-                  "text": "50,000 £attrition "
+                  "text": "50,000 £general_16 "
                 }
               ]
             },
@@ -4081,7 +4081,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "Army of Crimea"
+                  "text": "66th Army"
                 },
                 {
                   "name": "info_text",
@@ -4089,7 +4089,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 31, "y": 0, "w": 120, "h": 21 },
-                  "text": "50,000 £general_16 "
+                  "text": "50,000 £attrition £general_16 "
                 }
               ]
             },
@@ -4121,7 +4121,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "25th Army"
+                  "text": "13th Army"
                 },
                 {
                   "name": "info_text",
@@ -4129,7 +4129,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 31, "y": 0, "w": 120, "h": 21 },
-                  "text": "50,000"
+                  "text": "50,000 £attrition "
                 }
               ]
             },
@@ -4161,7 +4161,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "28th Army"
+                  "text": "4th Army"
                 },
                 {
                   "name": "info_text",
@@ -4169,7 +4169,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 31, "y": 0, "w": 120, "h": 21 },
-                  "text": "50,000 £general_16 "
+                  "text": "50,000 £attrition "
                 }
               ]
             },
@@ -4201,7 +4201,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "Army of Ukraine"
+                  "text": "6th Army"
                 },
                 {
                   "name": "info_text",
@@ -4209,7 +4209,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 31, "y": 0, "w": 120, "h": 21 },
-                  "text": "50,000 £general_16 "
+                  "text": "50,000"
                 }
               ]
             },
@@ -4241,7 +4241,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "21st Army"
+                  "text": "16th Army"
                 },
                 {
                   "name": "info_text",
@@ -4249,7 +4249,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 31, "y": 0, "w": 120, "h": 21 },
-                  "text": "50,000 £attrition £general_16 "
+                  "text": "50,000 £general_16 "
                 }
               ]
             },
@@ -4281,7 +4281,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "6th Army"
+                  "text": "21st Army"
                 },
                 {
                   "name": "info_text",
@@ -4289,7 +4289,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 31, "y": 0, "w": 120, "h": 21 },
-                  "text": "50,000"
+                  "text": "50,000 £attrition £general_16 "
                 }
               ]
             },
@@ -4361,7 +4361,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "66th Army"
+                  "text": "7th Army"
                 },
                 {
                   "name": "info_text",
@@ -4369,7 +4369,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 31, "y": 0, "w": 120, "h": 21 },
-                  "text": "50,000 £attrition £general_16 "
+                  "text": "50,000 £general_16 "
                 }
               ]
             },
@@ -4401,7 +4401,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "7th Army"
+                  "text": "5th Army"
                 },
                 {
                   "name": "info_text",
@@ -4409,7 +4409,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 31, "y": 0, "w": 120, "h": 21 },
-                  "text": "50,000 £general_16 "
+                  "text": "50,000 £attrition "
                 }
               ]
             },
@@ -4441,7 +4441,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "4th Army"
+                  "text": "1st Army"
                 },
                 {
                   "name": "info_text",
@@ -4449,7 +4449,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 31, "y": 0, "w": 120, "h": 21 },
-                  "text": "50,000 £attrition "
+                  "text": "50,000 £general_16 "
                 }
               ]
             },
@@ -4481,7 +4481,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "16th Army"
+                  "text": "23rd Army"
                 },
                 {
                   "name": "info_text",
@@ -4521,7 +4521,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "13th Army"
+                  "text": "Russian Imperial Army"
                 },
                 {
                   "name": "info_text",
@@ -4529,7 +4529,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 31, "y": 0, "w": 120, "h": 21 },
-                  "text": "50,000 £attrition "
+                  "text": "50,000 £general_16 "
                 }
               ]
             },
@@ -4561,7 +4561,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "5th Army"
+                  "text": "3rd Army"
                 },
                 {
                   "name": "info_text",
@@ -4569,7 +4569,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 31, "y": 0, "w": 120, "h": 21 },
-                  "text": "50,000 £attrition "
+                  "text": "50,000 £general_16 "
                 }
               ]
             },
@@ -4601,7 +4601,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "1st Army"
+                  "text": "31st Army"
                 },
                 {
                   "name": "info_text",
@@ -4641,7 +4641,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "55th Army"
+                  "text": "69th Army"
                 },
                 {
                   "name": "info_text",
@@ -4681,7 +4681,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "61st Army"
+                  "text": "9th Army"
                 },
                 {
                   "name": "info_text",
@@ -4721,7 +4721,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "72nd Army"
+                  "text": "55th Army"
                 },
                 {
                   "name": "info_text",
@@ -4761,7 +4761,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "9th Army"
+                  "text": "68th Army"
                 },
                 {
                   "name": "info_text",
@@ -4801,7 +4801,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "68th Army"
+                  "text": "72nd Army"
                 },
                 {
                   "name": "info_text",
@@ -4881,7 +4881,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "31st Army"
+                  "text": "61st Army"
                 },
                 {
                   "name": "info_text",
@@ -4961,7 +4961,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "69th Army"
+                  "text": "63rd Army"
                 },
                 {
                   "name": "info_text",
@@ -5001,7 +5001,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "42nd Army"
+                  "text": "70th Army"
                 },
                 {
                   "name": "info_text",
@@ -5041,7 +5041,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "65th Army"
+                  "text": "42nd Army"
                 },
                 {
                   "name": "info_text",
@@ -5081,7 +5081,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "63rd Army"
+                  "text": "65th Army"
                 },
                 {
                   "name": "info_text",
@@ -5161,7 +5161,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "70th Army"
+                  "text": "1st Army"
                 },
                 {
                   "name": "info_text",
@@ -5241,7 +5241,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "Army of Siberia"
+                  "text": "Army of the Caucasus"
                 },
                 {
                   "name": "info_text",
@@ -5281,7 +5281,7 @@
                   "type": "text",
                   "visible": false,
                   "rect": { "x": 96, "y": 0, "w": 221, "h": 21 },
-                  "text": "Army of the Caucasus"
+                  "text": "Army of Siberia"
                 },
                 {
                   "name": "info_text",
@@ -14260,14 +14260,14 @@
           "name": "mapmode_bg",
           "path": "menubar/mapmode_bg",
           "type": "icon",
-          "visible": true,
+          "visible": false,
           "rect": { "x": -115699, "y": 1309, "w": 264, "h": 24 }
         },
         {
           "name": "mapmode_bg_2",
           "path": "menubar/mapmode_bg_2",
           "type": "icon",
-          "visible": true,
+          "visible": false,
           "rect": { "x": -115699, "y": 1289, "w": 264, "h": 24 }
         },
         {
@@ -14287,46 +14287,48 @@
             {
               "name": "WarOverviewButtonList",
               "path": "menubar/WarOverviewButtonWindow/WarOverviewButtonList",
-              "type": "other",
+              "type": "listbox",
               "visible": true,
-              "rect": { "x": 2408, "y": 1362, "w": 360, "h": 48 }
-            },
-            {
-              "name": "waroverview_shieldItem",
-              "path": "menubar/WarOverviewButtonWindow/waroverview_shieldItem",
-              "type": "window",
-              "visible": true,
-              "rect": { "x": 2697, "y": 1362, "w": 72, "h": 48 },
+              "rect": { "x": 2408, "y": 1362, "w": 360, "h": 48 },
               "children": [
                 {
-                  "name": "button_war_overview_item",
-                  "path": "menubar/WarOverviewButtonWindow/waroverview_shieldItem/button_war_overview_item",
-                  "type": "button",
+                  "name": "waroverview_shieldItem",
+                  "path": "menubar/WarOverviewButtonWindow/WarOverviewButtonList/waroverview_shieldItem",
+                  "type": "window",
                   "visible": true,
-                  "rect": { "x": 2694, "y": 1344, "w": 84, "h": 97 },
-                  "enabled": true
-                },
-                {
-                  "name": "waroverview_icon",
-                  "path": "menubar/WarOverviewButtonWindow/waroverview_shieldItem/waroverview_icon",
-                  "type": "icon",
-                  "visible": true,
-                  "rect": { "x": 2696, "y": 1345, "w": 0, "h": 77 }
-                },
-                {
-                  "name": "war_enthusiasm_icon",
-                  "path": "menubar/WarOverviewButtonWindow/waroverview_shieldItem/war_enthusiasm_icon",
-                  "type": "icon",
-                  "visible": true,
-                  "rect": { "x": 1720, "y": 691, "w": 30, "h": 29 }
-                },
-                {
-                  "name": "progress",
-                  "path": "menubar/WarOverviewButtonWindow/waroverview_shieldItem/progress",
-                  "type": "text",
-                  "visible": true,
-                  "rect": { "x": 2694, "y": 1407, "w": 77, "h": 31 },
-                  "text": "0%"
+                  "rect": { "x": 2697, "y": 1362, "w": 72, "h": 48 },
+                  "children": [
+                    {
+                      "name": "button_war_overview_item",
+                      "path": "menubar/WarOverviewButtonWindow/WarOverviewButtonList/waroverview_shieldItem/button_war_overview_item",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 2694, "y": 1344, "w": 84, "h": 96 },
+                      "enabled": true
+                    },
+                    {
+                      "name": "waroverview_icon",
+                      "path": "menubar/WarOverviewButtonWindow/WarOverviewButtonList/waroverview_shieldItem/waroverview_icon",
+                      "type": "icon",
+                      "visible": true,
+                      "rect": { "x": 2696, "y": 1345, "w": 77, "h": 77 }
+                    },
+                    {
+                      "name": "war_enthusiasm_icon",
+                      "path": "menubar/WarOverviewButtonWindow/WarOverviewButtonList/waroverview_shieldItem/war_enthusiasm_icon",
+                      "type": "icon",
+                      "visible": true,
+                      "rect": { "x": 1720, "y": 691, "w": 30, "h": 29 }
+                    },
+                    {
+                      "name": "progress",
+                      "path": "menubar/WarOverviewButtonWindow/WarOverviewButtonList/waroverview_shieldItem/progress",
+                      "type": "text",
+                      "visible": true,
+                      "rect": { "x": 2694, "y": 1407, "w": 77, "h": 31 },
+                      "text": "0%"
+                    }
+                  ]
                 }
               ]
             }
@@ -14337,7 +14339,7 @@
           "path": "menubar/messagelog_window",
           "type": "window",
           "visible": false,
-          "rect": { "x": 1690, "y": 1482, "w": 924, "h": 120 },
+          "rect": { "x": 1690, "y": 1442, "w": 1229, "h": 161 },
           "children": [
             {
               "name": "log_bg",
@@ -14358,7 +14360,7 @@
                   "path": "menubar/messagelog_window/messagelog/logtext",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 1834, "y": 1496, "w": 840, "h": 21 },
+                  "rect": { "x": 1846, "y": 1489, "w": 1000, "h": 19 },
                   "children": [
                     {
                       "name": "messagelogbutton",
@@ -14552,7 +14554,7 @@
           "path": "menubar/message_window_container",
           "type": "window",
           "visible": true,
-          "rect": { "x": 3143, "y": 895, "w": 345, "h": 223 },
+          "rect": { "x": 3376, "y": 903, "w": 39, "h": 24 },
           "children": [
             {
               "name": "message_window",
@@ -14662,7 +14664,7 @@
                   "path": "menubar/message_window_container/toggle_message_interface_window/ToggleMessageInterface",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 3411, "y": 1184, "w": 30, "h": 30 },
+                  "rect": { "x": 3411, "y": 1184, "w": 29, "h": 30 },
                   "enabled": true
                 },
                 {
@@ -14670,7 +14672,7 @@
                   "path": "menubar/message_window_container/toggle_message_interface_window/ToggleMessageBackground",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 3409, "y": 1163, "w": 35, "h": 71 }
+                  "rect": { "x": 3409, "y": 1163, "w": 31, "h": 71 }
                 }
               ]
             }
@@ -14752,56 +14754,56 @@
               "path": "menubar/floating_buttons/menubar_floating_bg_1",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 3005, "y": 1397, "w": 57, "h": 45 }
+              "rect": { "x": 3005, "y": 1397, "w": 57, "h": 43 }
             },
             {
               "name": "menubar_floating_bg_2",
               "path": "menubar/floating_buttons/menubar_floating_bg_2",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 2951, "y": 1397, "w": 57, "h": 45 }
+              "rect": { "x": 2951, "y": 1397, "w": 57, "h": 43 }
             },
             {
               "name": "menubar_floating_bg_3",
               "path": "menubar/floating_buttons/menubar_floating_bg_3",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 2897, "y": 1397, "w": 57, "h": 45 }
+              "rect": { "x": 2897, "y": 1397, "w": 57, "h": 43 }
             },
             {
               "name": "menubar_floating_bg_4",
               "path": "menubar/floating_buttons/menubar_floating_bg_4",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 2843, "y": 1397, "w": 57, "h": 45 }
+              "rect": { "x": 2843, "y": 1397, "w": 57, "h": 43 }
             },
             {
               "name": "menubar_floating_bg_5",
               "path": "menubar/floating_buttons/menubar_floating_bg_5",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 2789, "y": 1397, "w": 57, "h": 45 }
+              "rect": { "x": 2789, "y": 1397, "w": 57, "h": 43 }
             },
             {
               "name": "menubar_floating_bg_6",
               "path": "menubar/floating_buttons/menubar_floating_bg_6",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 2723, "y": 1397, "w": 57, "h": 45 }
+              "rect": { "x": 2723, "y": 1397, "w": 57, "h": 43 }
             },
             {
               "name": "menubar_floating_bg_7",
               "path": "menubar/floating_buttons/menubar_floating_bg_7",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 2657, "y": 1397, "w": 57, "h": 45 }
+              "rect": { "x": 2657, "y": 1397, "w": 57, "h": 43 }
             },
             {
               "name": "menubar_floating_bg_8",
               "path": "menubar/floating_buttons/menubar_floating_bg_8",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 2591, "y": 1397, "w": 57, "h": 45 }
+              "rect": { "x": 2591, "y": 1397, "w": 57, "h": 43 }
             },
             {
               "name": "hre_strip_glow",
@@ -14815,7 +14817,7 @@
               "path": "menubar/floating_buttons/revolution_flag",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 2905, "y": 1375, "w": 0, "h": 37 }
+              "rect": { "x": 2905, "y": 1375, "w": 37, "h": 37 }
             },
             {
               "name": "floating_number_1",

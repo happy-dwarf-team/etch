@@ -3,9 +3,9 @@
   "playset": "proper-2k-ui-enhanced",
   "resolution": { "width": 3440, "height": 1440 },
   "view": "esc-menu",
-  "takenAt": "2026-10-24T17:39:19.166Z",
+  "takenAt": "2026-11-01T07:08:42.804Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
-  "tongs": { "version": "0.14.1" },
+  "tongs": { "version": "0.23.0" },
   "save": { "sha256": "2A4CAF306CCDDB2DAFC7EE015C4ECFFB260654A1D10D86F5F4F768D3C3F56F6A" },
   "mods": [
     {
@@ -18,17 +18,17 @@
     "from": "save",
     "steps": [{ "key": "escape" }],
     "verified": true,
-    "evidence": "Run by the capture driver (etch#42) at 1280x720 and 1920x1080 on 2026-10-21: the steps opened the view and its roots were read and shown."
+    "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown."
   },
   "window": { "width": 3440, "height": 1440, "dpi": 96 },
   "screenshot": {
-    "sha256": "6B938D24C513FD9E52D4237B90AB344244A67F4C8904D8E95275289B4C83A4CD",
+    "sha256": "99657B359336EF8D3DF9718A2E8DB8254B9B4FD9B3F229B302EB702F021185BC",
     "width": 3440,
     "height": 1440,
     "shots": 4,
     "unstable": {
-      "pixels": 1252107,
-      "sha256": "6A8A98A490CC53653E4005D87F7959AD4D3466F8B5F9FA3AB1CEA41F705815DB"
+      "pixels": 1243011,
+      "sha256": "A48BE2DCB840241CFB26C23EB4A1A6CB611DF995F86670A54C7FF4D0664BED95"
     }
   },
   "widgets": [
@@ -363,7 +363,7 @@
               "path": "menu/menu_message_settings/messagesettings_label_02",
               "type": "text",
               "visible": false,
-              "rect": { "x": -56, "y": 140, "w": 95, "h": 21 },
+              "rect": { "x": 0, "y": 140, "w": 39, "h": 21 },
               "text": "Dynasty"
             },
             {

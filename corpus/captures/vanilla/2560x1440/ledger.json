@@ -3,9 +3,9 @@
   "playset": "vanilla",
   "resolution": { "width": 2560, "height": 1440 },
   "view": "ledger",
-  "takenAt": "2026-10-27T21:57:16.576Z",
+  "takenAt": "2026-11-01T05:33:29.476Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
-  "tongs": { "version": "0.14.1" },
+  "tongs": { "version": "0.23.0" },
   "save": { "sha256": "2A4CAF306CCDDB2DAFC7EE015C4ECFFB260654A1D10D86F5F4F768D3C3F56F6A" },
   "mods": [],
   "disabledDlcs": [],
@@ -17,13 +17,13 @@
   },
   "window": { "width": 2560, "height": 1440, "dpi": 96 },
   "screenshot": {
-    "sha256": "FD401E175B156F2556233FECEF8D086D182673BA828E83508E8DA01AC41B7A28",
+    "sha256": "85C83DEA606397E695AA97FFBA51BD893422804CAACC229B63E628BE894621F9",
     "width": 2560,
     "height": 1440,
     "shots": 4,
     "unstable": {
-      "pixels": 2318327,
-      "sha256": "DD58E6DC92EC87B453ADA5E46CA3F1E2B5358CF7FF7CA0C9EC1B4AC8AEA4C502"
+      "pixels": 2268331,
+      "sha256": "A6B18E9B65F03BED64B2E340D99301D22AE629EB982A182737844A790F9F73FF"
     }
   },
   "widgets": [

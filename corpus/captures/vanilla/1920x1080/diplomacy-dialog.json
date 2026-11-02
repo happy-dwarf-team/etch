@@ -3,9 +3,9 @@
   "playset": "vanilla",
   "resolution": { "width": 1920, "height": 1080 },
   "view": "diplomacy-dialog",
-  "takenAt": "2026-10-24T20:55:26.324Z",
+  "takenAt": "2026-11-01T07:01:35.203Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
-  "tongs": { "version": "0.14.1" },
+  "tongs": { "version": "0.23.0" },
   "save": { "sha256": "2A4CAF306CCDDB2DAFC7EE015C4ECFFB260654A1D10D86F5F4F768D3C3F56F6A" },
   "mods": [],
   "disabledDlcs": [],
@@ -15,22 +15,22 @@
       { "key": "f1" },
       { "key": "3" },
       {
-        "click": "countrydiplomacyview/diplomatic_listbox/countrydiplomacyview_diplistitem[2]/countrydiplomacyview_shieldprogressitem[1]"
+        "click": "countrydiplomacyview/diplomatic_listbox/countrydiplomacyview_diplistitem[2]/box/countrydiplomacyview_shieldprogressitem[1]"
       },
       { "click": "countrydiplomacyview/diploaction_list/diploactionentry[1]/button_diploaction" }
     ],
     "verified": true,
-    "evidence": "Run by the capture driver (etch#42) at 1920x1080: the steps opened the view and its roots were read."
+    "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown. The first shield of the second relation in Russia's diplomacy list is the Commonwealth, visible at every corpus size; its diplomacy shows Declare War first, which opens DeclareWarDialog and declares nothing."
   },
   "window": { "width": 1920, "height": 1080, "dpi": 96 },
   "screenshot": {
-    "sha256": "C934E55A80AFE8F41CEAA032717C434307454AEA3473DD15949DC9B531C0DD51",
+    "sha256": "06D8A36B328DC5FAEAFB1CE30210D2B26A6C23CCF9781CB314A7CBB193C29933",
     "width": 1920,
     "height": 1080,
     "shots": 4,
     "unstable": {
-      "pixels": 260904,
-      "sha256": "B5D717C5495281E21BBE866AA41071E3419324108CA0114729CD7ABBA3B61AF8"
+      "pixels": 259471,
+      "sha256": "4C46D5A5A3E8953A1607DC82F81C1D6A3FC96C99478A48BD7BA9154698B77D61"
     }
   },
   "widgets": [
@@ -80,7 +80,7 @@
           "path": "DeclareWarDialog/Background",
           "type": "icon",
           "visible": true,
-          "rect": { "x": -12, "y": 125, "w": 580, "h": 928 }
+          "rect": { "x": 0, "y": 125, "w": 568, "h": 928 }
         },
         {
           "name": "no_wargoal_icon",
@@ -309,7 +309,7 @@
           "path": "DeclareWarDialog/war_goals",
           "type": "listbox",
           "visible": true,
-          "rect": { "x": 335, "y": 375, "w": 300, "h": 3700 },
+          "rect": { "x": 335, "y": 375, "w": 300, "h": 300 },
           "children": [
             {
               "name": "DeclareWarDialog_wargoalcbentry",
@@ -4087,7 +4087,7 @@
           "path": "DeclareWarDialog/allies",
           "type": "listbox",
           "visible": true,
-          "rect": { "x": 331, "y": 743, "w": 300, "h": 273 },
+          "rect": { "x": 331, "y": 743, "w": 300, "h": 189 },
           "children": [
             {
               "name": "DeclareWarDialog_allyentry",
@@ -4101,7 +4101,7 @@
                   "path": "DeclareWarDialog/allies/DeclareWarDialog_allyentry[1]/country_flag",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 298, "y": 743, "w": 0, "h": 25 },
+                  "rect": { "x": 298, "y": 743, "w": 25, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -4157,7 +4157,7 @@
                   "path": "DeclareWarDialog/allies/DeclareWarDialog_allyentry[2]/country_flag",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 298, "y": 764, "w": 0, "h": 25 },
+                  "rect": { "x": 298, "y": 764, "w": 25, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -4213,7 +4213,7 @@
                   "path": "DeclareWarDialog/allies/DeclareWarDialog_allyentry[3]/country_flag",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 298, "y": 785, "w": 0, "h": 25 },
+                  "rect": { "x": 298, "y": 785, "w": 25, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -4269,7 +4269,7 @@
                   "path": "DeclareWarDialog/allies/DeclareWarDialog_allyentry[4]/country_flag",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 298, "y": 806, "w": 0, "h": 25 },
+                  "rect": { "x": 298, "y": 806, "w": 25, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -4325,7 +4325,7 @@
                   "path": "DeclareWarDialog/allies/DeclareWarDialog_allyentry[5]/country_flag",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 298, "y": 827, "w": 0, "h": 25 },
+                  "rect": { "x": 298, "y": 827, "w": 25, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -4381,7 +4381,7 @@
                   "path": "DeclareWarDialog/allies/DeclareWarDialog_allyentry[6]/country_flag",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 298, "y": 848, "w": 0, "h": 25 },
+                  "rect": { "x": 298, "y": 848, "w": 25, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -4437,7 +4437,7 @@
                   "path": "DeclareWarDialog/allies/DeclareWarDialog_allyentry[7]/country_flag",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 298, "y": 869, "w": 0, "h": 25 },
+                  "rect": { "x": 298, "y": 869, "w": 25, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -4493,7 +4493,7 @@
                   "path": "DeclareWarDialog/allies/DeclareWarDialog_allyentry[8]/country_flag",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 298, "y": 890, "w": 0, "h": 25 },
+                  "rect": { "x": 298, "y": 890, "w": 25, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -4549,7 +4549,7 @@
                   "path": "DeclareWarDialog/allies/DeclareWarDialog_allyentry[9]/country_flag",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 298, "y": 911, "w": 0, "h": 25 },
+                  "rect": { "x": 298, "y": 911, "w": 25, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -4605,7 +4605,7 @@
                   "path": "DeclareWarDialog/allies/DeclareWarDialog_allyentry[10]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 960, "y": 515, "w": 0, "h": 25 },
+                  "rect": { "x": 960, "y": 515, "w": 25, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -4636,7 +4636,7 @@
                   "path": "DeclareWarDialog/allies/DeclareWarDialog_allyentry[10]/name",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": -10, "y": 4, "w": 140, "h": 18 },
+                  "rect": { "x": 0, "y": 4, "w": 130, "h": 18 },
                   "text": "Russian Peru"
                 },
                 {
@@ -4661,7 +4661,7 @@
                   "path": "DeclareWarDialog/allies/DeclareWarDialog_allyentry[11]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 960, "y": 515, "w": 0, "h": 25 },
+                  "rect": { "x": 960, "y": 515, "w": 25, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -4692,7 +4692,7 @@
                   "path": "DeclareWarDialog/allies/DeclareWarDialog_allyentry[11]/name",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": -10, "y": 4, "w": 140, "h": 18 },
+                  "rect": { "x": 0, "y": 4, "w": 130, "h": 18 },
                   "text": "Russian La Plata"
                 },
                 {
@@ -4717,7 +4717,7 @@
                   "path": "DeclareWarDialog/allies/DeclareWarDialog_allyentry[12]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 960, "y": 515, "w": 0, "h": 25 },
+                  "rect": { "x": 960, "y": 515, "w": 25, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -4748,7 +4748,7 @@
                   "path": "DeclareWarDialog/allies/DeclareWarDialog_allyentry[12]/name",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": -10, "y": 4, "w": 140, "h": 18 },
+                  "rect": { "x": 0, "y": 4, "w": 130, "h": 18 },
                   "text": "Russian Brazil"
                 },
                 {
@@ -4773,7 +4773,7 @@
                   "path": "DeclareWarDialog/allies/DeclareWarDialog_allyentry[13]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 960, "y": 515, "w": 0, "h": 25 },
+                  "rect": { "x": 960, "y": 515, "w": 25, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -4804,7 +4804,7 @@
                   "path": "DeclareWarDialog/allies/DeclareWarDialog_allyentry[13]/name",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": -10, "y": 4, "w": 140, "h": 18 },
+                  "rect": { "x": 0, "y": 4, "w": 130, "h": 18 },
                   "text": "Cuba"
                 },
                 {
@@ -4877,7 +4877,7 @@
                   "path": "DeclareWarDialog/enemies/DeclareWarDialog_enemyentry[1]/country_flag",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 36, "y": 743, "w": 0, "h": 25 },
+                  "rect": { "x": 36, "y": 743, "w": 25, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -4940,7 +4940,7 @@
                   "path": "DeclareWarDialog/enemies/DeclareWarDialog_enemyentry[2]/country_flag",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 36, "y": 764, "w": 0, "h": 25 },
+                  "rect": { "x": 36, "y": 764, "w": 25, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -5076,7 +5076,7 @@
           "path": "DeclareWarDialog/LeftShield",
           "type": "button",
           "visible": true,
-          "rect": { "x": 32, "y": 260, "w": 0, "h": 92 },
+          "rect": { "x": 32, "y": 260, "w": 92, "h": 92 },
           "enabled": true
         },
         {
@@ -5084,7 +5084,7 @@
           "path": "DeclareWarDialog/RightShield",
           "type": "button",
           "visible": true,
-          "rect": { "x": 426, "y": 260, "w": 0, "h": 92 },
+          "rect": { "x": 426, "y": 260, "w": 92, "h": 92 },
           "enabled": true
         }
       ]
@@ -5094,14 +5094,14 @@
       "path": "topbar",
       "type": "window",
       "visible": true,
-      "rect": { "x": 0, "y": -1, "w": 1920, "h": 1080 },
+      "rect": { "x": 0, "y": 0, "w": 1163, "h": 169 },
       "children": [
         {
           "name": "player_shield",
           "path": "topbar/player_shield",
           "type": "button",
           "visible": true,
-          "rect": { "x": -5, "y": 1, "w": 1, "h": 152 },
+          "rect": { "x": 0, "y": 1, "w": 147, "h": 152 },
           "enabled": true
         },
         {
@@ -5187,21 +5187,21 @@
           "name": "topbar_1",
           "path": "topbar/topbar_1",
           "type": "icon",
-          "visible": true,
+          "visible": false,
           "rect": { "x": 99512, "y": -2, "w": 109, "h": 31 }
         },
         {
           "name": "topbar_2",
           "path": "topbar/topbar_2",
           "type": "icon",
-          "visible": true,
+          "visible": false,
           "rect": { "x": 991024, "y": -2, "w": 109, "h": 31 }
         },
         {
           "name": "topbar_3",
           "path": "topbar/topbar_3",
           "type": "icon",
-          "visible": true,
+          "visible": false,
           "rect": { "x": 991532, "y": -2, "w": 109, "h": 31 }
         },
         {
@@ -5209,7 +5209,7 @@
           "path": "topbar/topbar_upper_left_bg",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 0, "y": -1, "w": 927, "h": 160 }
+          "rect": { "x": 0, "y": 0, "w": 927, "h": 159 }
         },
         {
           "name": "topbar_upper_left_bg4",
@@ -5230,7 +5230,7 @@
           "path": "topbar/player_shield_glow",
           "type": "icon",
           "visible": true,
-          "rect": { "x": -5, "y": 1, "w": 152, "h": 152 }
+          "rect": { "x": 0, "y": 1, "w": 147, "h": 152 }
         },
         {
           "name": "great_power_button_base",
@@ -5523,14 +5523,14 @@
           "path": "topbar/powerprojection_topbar",
           "type": "window",
           "visible": true,
-          "rect": { "x": 148, "y": -1, "w": 100, "h": 100 },
+          "rect": { "x": 639, "y": 0, "w": 95, "h": 49 },
           "children": [
             {
               "name": "topbar_liberty_overlay",
               "path": "topbar/powerprojection_topbar/topbar_liberty_overlay",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 639, "y": -2, "w": 95, "h": 51 }
+              "rect": { "x": 639, "y": 0, "w": 95, "h": 49 }
             },
             {
               "name": "icon_powerprojection",

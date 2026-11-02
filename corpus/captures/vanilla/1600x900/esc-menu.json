@@ -3,9 +3,9 @@
   "playset": "vanilla",
   "resolution": { "width": 1600, "height": 900 },
   "view": "esc-menu",
-  "takenAt": "2026-10-21T22:06:00.857Z",
+  "takenAt": "2026-11-01T05:23:33.474Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
-  "tongs": { "version": "0.14.1" },
+  "tongs": { "version": "0.23.0" },
   "save": { "sha256": "2A4CAF306CCDDB2DAFC7EE015C4ECFFB260654A1D10D86F5F4F768D3C3F56F6A" },
   "mods": [],
   "disabledDlcs": [],
@@ -13,17 +13,17 @@
     "from": "save",
     "steps": [{ "key": "escape" }],
     "verified": true,
-    "evidence": "Run by the capture driver (etch#42) at 1280x720 and 1920x1080 on 2026-10-21: the steps opened the view and its roots were read and shown."
+    "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown."
   },
   "window": { "width": 1600, "height": 900, "dpi": 96 },
   "screenshot": {
-    "sha256": "28677637C3DEA804491E54D9AB933EA62BA3D899E9DCE91087AB36E417C8F986",
+    "sha256": "B1FCA46354895492F47C640AFBEB11B30176A0EB069309BCD6C71B949CF0C993",
     "width": 1600,
     "height": 900,
     "shots": 4,
     "unstable": {
-      "pixels": 402533,
-      "sha256": "31EA00240F5F6A29E2BC5D79ABABFECF48AD5BB66A560E4740759879EAFF04E3"
+      "pixels": 403302,
+      "sha256": "902C514B581628406EDB9C70B9641BB5F51664A9614739464F35231DD00520B7"
     }
   },
   "widgets": [
@@ -335,7 +335,7 @@
               "path": "menu/menu_message_settings/messagesettings_bg",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 800, "y": -27, "w": 881, "h": 477 }
+              "rect": { "x": 800, "y": 0, "w": 800, "h": 450 }
             },
             {
               "name": "messagesettings_label",
@@ -358,7 +358,7 @@
               "path": "menu/menu_message_settings/messagesettings_label_02",
               "type": "text",
               "visible": false,
-              "rect": { "x": -50, "y": 119, "w": 79, "h": 18 },
+              "rect": { "x": 0, "y": 119, "w": 29, "h": 18 },
               "text": "Dynasty"
             },
             {
