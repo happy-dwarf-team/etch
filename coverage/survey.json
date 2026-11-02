@@ -275,6 +275,10 @@
       {
         "pattern": "menu/menu_message_settings/messageicon_*",
         "reason": "Changes every message setting at once."
+      },
+      {
+        "pattern": "//ToggleMessageInterface",
+        "reason": "Opens or closes the message list, which the game keeps in settings.txt (messagelist_open)."
       }
     ]
   }
