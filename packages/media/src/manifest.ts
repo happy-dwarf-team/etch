@@ -4,12 +4,35 @@
 // Only facts about files: captions, alts and order stay in the site's code.
 import { MEDIA_TYPES } from './config.ts';
 
-/** The scene ids, the same in bucket keys, file names and the manifest (spec section 8.5). */
-export const LOOP_IDS = ['hero'] as const;
-export const STILL_IDS = ['preview', 'views', 'data', 'zoom', 'outline', 'problems'] as const;
-export type LoopId = (typeof LOOP_IDS)[number];
-export type StillId = (typeof STILL_IDS)[number];
-export type SceneId = LoopId | StillId;
+/**
+ * The clip ids, the same in bucket keys, file names and the manifest (spec section 8.5): the hero's
+ * trailer, the offline preview's six features and the live game's three. Every clip is a loop with
+ * its poster.
+ */
+export const CLIP_IDS = [
+  'hero',
+  'preview',
+  'views',
+  'data',
+  'zoom',
+  'outline',
+  'problems',
+  'reload',
+  'pick',
+  'snapshot',
+] as const;
+export type ClipId = (typeof CLIP_IDS)[number];
+/** The clips whose take starts the live game. */
+export const LIVE_CLIP_IDS = ['reload', 'pick', 'snapshot'] as const satisfies readonly ClipId[];
+/** The clips with a take of their own in the offline preview. */
+export const OFFLINE_CLIP_IDS = [
+  'preview',
+  'views',
+  'data',
+  'zoom',
+  'outline',
+  'problems',
+] as const satisfies readonly ClipId[];
 
 export interface DraftSource {
   /** The file in the capture folder, e.g. `hero.webm`. */
@@ -30,12 +53,11 @@ export interface DraftLoop {
 }
 
 export interface DraftManifest {
-  readonly schemaVersion: 1;
+  readonly schemaVersion: 2;
   readonly draft: true;
   /** The Etch version the set was captured for. */
   readonly etch: string;
-  readonly loops: Partial<Record<LoopId, DraftLoop>>;
-  readonly stills: Partial<Record<StillId, string>>;
+  readonly loops: Partial<Record<ClipId, DraftLoop>>;
 }
 
 export interface CapturedLoop {
@@ -46,14 +68,13 @@ export interface CapturedLoop {
   readonly mp4Bytes: number;
 }
 
-/** The draft manifest of the loops and stills in a capture folder, in the spec's order. */
+/** The draft manifest of the loops in a capture folder, in the spec's order. */
 export function draftManifest(
   etch: string,
-  loops: Partial<Record<LoopId, CapturedLoop>>,
-  stills: readonly StillId[],
+  loops: Partial<Record<ClipId, CapturedLoop>>,
 ): DraftManifest {
-  const draftLoops: Partial<Record<LoopId, DraftLoop>> = {};
-  for (const id of LOOP_IDS) {
+  const draftLoops: Partial<Record<ClipId, DraftLoop>> = {};
+  for (const id of CLIP_IDS) {
     const loop = loops[id];
     if (loop === undefined) continue;
     draftLoops[id] = {
@@ -67,7 +88,5 @@ export function draftManifest(
       ],
     };
   }
-  const draftStills: Partial<Record<StillId, string>> = {};
-  for (const id of STILL_IDS) if (stills.includes(id)) draftStills[id] = `${id}.png`;
-  return { schemaVersion: 1, draft: true, etch, loops: draftLoops, stills: draftStills };
+  return { schemaVersion: 2, draft: true, etch, loops: draftLoops };
 }

@@ -121,7 +121,7 @@ VSIX instead. Download it from the GitHub release and, at
 upload it: **New extension → Visual Studio Code** the first time, **Update**
 on the extension afterwards.
 
-After a release that changes what any media scene shows, do a media refresh
+After a release that changes what any media clip shows, do a media refresh
 ([docs/media.md](media.md#media-refresh-checklist)); release-please triggers none.
 
 ## 1.0.x releases until 2.0.0

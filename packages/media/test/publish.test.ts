@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import * as path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { CACHE_CONTROL, CREDENTIAL_VARIABLES, MEDIA_TYPES } from '../src/config.ts';
-import { draftManifest, STILL_IDS } from '../src/manifest.ts';
+import { CLIP_IDS, draftManifest } from '../src/manifest.ts';
 import {
   credentials,
   hash8,
@@ -63,23 +63,23 @@ beforeEach(async () => {
   await mkdir(capture, { recursive: true });
   await mkdir(site);
   await writeFile(path.join(site, 'package.json'), JSON.stringify({ name: 'etch-website' }));
-  await writeFile(path.join(capture, 'hero.webm'), WEBM);
-  await writeFile(path.join(capture, 'hero.mp4'), MP4);
-  for (const id of ['hero', ...STILL_IDS]) {
-    await writeFile(path.join(capture, `${id}.png`), png(2560, 1440));
+  for (const id of CLIP_IDS) {
+    await writeFile(path.join(capture, `${id}.webm`), WEBM);
+    await writeFile(path.join(capture, `${id}.mp4`), MP4);
+    await writeFile(path.join(capture, `${id}.png`), png(1920, 1080));
   }
+  const loop = {
+    width: 1920,
+    height: 1080,
+    duration: 9.366,
+    webmBytes: WEBM.byteLength,
+    mp4Bytes: MP4.byteLength,
+  };
   const draft = draftManifest(
     '0.3.0',
-    {
-      hero: {
-        width: 1920,
-        height: 1080,
-        duration: 9.366,
-        webmBytes: WEBM.byteLength,
-        mp4Bytes: MP4.byteLength,
-      },
-    },
-    STILL_IDS,
+    Object.fromEntries(
+      CLIP_IDS.map((id) => [id, id === 'pick' ? { ...loop, duration: 14.2 } : loop]),
+    ),
   );
   await writeFile(path.join(capture, 'media.draft.json'), JSON.stringify(draft));
   lines.length = 0;
@@ -97,17 +97,20 @@ async function siteFiles(): Promise<string[]> {
 }
 
 describe('publishing', () => {
-  it('uploads the loops under content-hashed keys, then writes the manifest and images', async () => {
+  it('uploads the loops under content-hashed keys, then writes the manifest and posters', async () => {
     const bucket = new FakeBucket();
     const manifest = await publish({ capture, site, bucket, log });
 
     const webmKey = `etch/v0.3.0/hero.${sha8(WEBM)}.webm`;
     const mp4Key = `etch/v0.3.0/hero.${sha8(MP4)}.mp4`;
+    const pickKeys = [`etch/v0.3.0/pick.${sha8(WEBM)}.webm`, `etch/v0.3.0/pick.${sha8(MP4)}.mp4`];
+    const keys = CLIP_IDS.flatMap((id) => [
+      `etch/v0.3.0/${id}.${sha8(WEBM)}.webm`,
+      `etch/v0.3.0/${id}.${sha8(MP4)}.mp4`,
+    ]);
     expect(bucket.calls).toEqual([
-      `put ${webmKey}`,
-      `put ${mp4Key}`,
-      `head ${webmKey}`,
-      `head ${mp4Key}`,
+      ...keys.map((key) => `put ${key}`),
+      ...keys.map((key) => `head ${key}`),
     ]);
     expect(bucket.objects.get(webmKey)).toMatchObject({
       bytes: WEBM.byteLength,
@@ -119,38 +122,32 @@ describe('publishing', () => {
       await readFile(path.join(site, 'src', 'data', 'media.json'), 'utf8'),
     ) as unknown;
     expect(written).toEqual(manifest);
-    expect(manifest).toEqual({
-      schemaVersion: 1,
-      etch: '0.3.0',
-      loops: {
-        hero: {
-          width: 1920,
-          height: 1080,
-          duration: 9.366,
-          poster: 'hero.png',
-          sources: [
-            {
-              src: `https://media.happydwarf.dev/${webmKey}`,
-              type: MEDIA_TYPES.webm,
-              bytes: WEBM.byteLength,
-            },
-            {
-              src: `https://media.happydwarf.dev/${mp4Key}`,
-              type: MEDIA_TYPES.mp4,
-              bytes: MP4.byteLength,
-            },
-          ],
+    expect(manifest.schemaVersion).toBe(2);
+    expect(manifest.etch).toBe('0.3.0');
+    expect(Object.keys(manifest.loops)).toEqual([...CLIP_IDS]);
+    expect(manifest).not.toHaveProperty('stills');
+    expect(manifest.loops.hero).toEqual({
+      width: 1920,
+      height: 1080,
+      duration: 9.366,
+      poster: 'hero.png',
+      sources: [
+        {
+          src: `https://media.happydwarf.dev/${webmKey}`,
+          type: MEDIA_TYPES.webm,
+          bytes: WEBM.byteLength,
         },
-      },
-      stills: {
-        preview: 'preview.png',
-        views: 'views.png',
-        data: 'data.png',
-        zoom: 'zoom.png',
-        outline: 'outline.png',
-        problems: 'problems.png',
-      },
+        {
+          src: `https://media.happydwarf.dev/${mp4Key}`,
+          type: MEDIA_TYPES.mp4,
+          bytes: MP4.byteLength,
+        },
+      ],
     });
+    expect(manifest.loops.pick.duration).toBe(14.2);
+    expect(manifest.loops.pick.sources.map((source) => source.src)).toEqual(
+      pickKeys.map((key) => `https://media.happydwarf.dev/${key}`),
+    );
     // The keys the site's schema accepts (etch-website src/lib/media-manifest.ts).
     const [webm, mp4] = manifest.loops.hero.sources;
     expect(webm.src).toMatch(
@@ -159,9 +156,7 @@ describe('publishing', () => {
     expect(mp4.src).toMatch(
       /^https:\/\/media\.happydwarf\.dev\/etch\/v0\.3\.0\/hero\.[0-9a-f]{8}\.mp4$/,
     );
-    expect(await siteFiles()).toEqual(
-      [...['hero', ...STILL_IDS].map((id) => `${id}.png`), 'media.json'].sort(),
-    );
+    expect(await siteFiles()).toEqual([...CLIP_IDS.map((id) => `${id}.png`), 'media.json'].sort());
   });
 
   it('keeps keys already in the bucket with the same size and type, so it can run again', async () => {
@@ -170,7 +165,7 @@ describe('publishing', () => {
     lines.length = 0;
     const again = await publish({ capture, site, bucket, log });
     expect(again).toEqual(first);
-    expect(lines.filter((line) => line.startsWith('Kept '))).toHaveLength(2);
+    expect(lines.filter((line) => line.startsWith('Kept '))).toHaveLength(2 * CLIP_IDS.length);
     expect(lines.some((line) => line.startsWith('Uploaded '))).toBe(false);
   });
 
@@ -193,24 +188,27 @@ describe('publishing', () => {
 
   it('checks the capture and the site before the first upload', async () => {
     const bucket = new FakeBucket();
-    await rm(path.join(capture, 'zoom.png'));
-    const draft = JSON.parse(await readFile(path.join(capture, 'media.draft.json'), 'utf8')) as {
-      stills: Record<string, string>;
-    };
-    delete draft.stills['zoom'];
-    await writeFile(path.join(capture, 'media.draft.json'), JSON.stringify(draft));
+    const text = await readFile(path.join(capture, 'media.draft.json'), 'utf8');
+    const draft = JSON.parse(text) as { loops: Record<string, unknown> };
+    const { zoom, ...others } = draft.loops;
+    await writeFile(
+      path.join(capture, 'media.draft.json'),
+      JSON.stringify({ ...draft, loops: others }),
+    );
     await expect(publish({ capture, site, bucket, log })).rejects.toThrow(
-      /lacks zoom.*--scene zoom/,
+      /lacks zoom.*--clip zoom/,
     );
 
     await writeFile(
       path.join(capture, 'media.draft.json'),
-      JSON.stringify({ ...draft, stills: { ...draft.stills, zoom: 'zoom.png' } }),
+      JSON.stringify({ ...draft, loops: { ...others, zoom } }),
     );
-    await writeFile(path.join(capture, 'zoom.png'), png(1280, 720));
-    await expect(publish({ capture, site, bucket, log })).rejects.toThrow(/zoom.png is 1280 × 720/);
-
     await writeFile(path.join(capture, 'zoom.png'), png(2560, 1440));
+    await expect(publish({ capture, site, bucket, log })).rejects.toThrow(
+      /zoom.png is 2560 × 1440/,
+    );
+
+    await writeFile(path.join(capture, 'zoom.png'), png(1920, 1080));
     await writeFile(path.join(capture, 'hero.webm'), 'other bytes, other size');
     await expect(publish({ capture, site, bucket, log })).rejects.toThrow(/hero.webm has 23 bytes/);
 

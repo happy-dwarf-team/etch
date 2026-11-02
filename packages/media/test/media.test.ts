@@ -1,17 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { pngSize } from '../src/capture.ts';
 import { MEDIA_TYPES, workbenchSettings } from '../src/config.ts';
-import {
-  cutArgs,
-  firstChangeArgs,
-  gfxcaptureArgs,
-  h264Args,
-  parseFirstChange,
-  vp9Args,
-} from '../src/ffmpeg.ts';
-import { draftManifest, LOOP_IDS, STILL_IDS } from '../src/manifest.ts';
+import { CLIPS } from '../src/clips.ts';
+import { gfxcaptureArgs, h264Args, posterArgs, vp9Args } from '../src/ffmpeg.ts';
+import { LIVE_CLIPS, windowedPdxSettings, windowedSettings } from '../src/live.ts';
+import { CLIP_IDS, draftManifest, LIVE_CLIP_IDS, OFFLINE_CLIP_IDS } from '../src/manifest.ts';
 import { checkPaint } from '../src/paint.ts';
-import { SCENES, scenesFor } from '../src/scenes.ts';
+import { proxyArgs, proxySize } from '../src/render.ts';
 import { launchArgs, parseCursor } from '../src/workbench.ts';
 
 /** The value after `flag` in an argument list. */
@@ -20,18 +15,16 @@ function after(args: readonly string[], flag: string): string | undefined {
   return index < 0 ? undefined : args[index + 1];
 }
 
-describe('scenes', () => {
-  it('writes every scene id once, the preview still from the hero run', () => {
-    const written = SCENES.flatMap((scene) => scene.writes);
-    expect([...written].sort()).toEqual([...LOOP_IDS, ...STILL_IDS].sort());
-    expect(scenesFor(['preview']).map((scene) => scene.id)).toEqual(['hero']);
-    expect(scenesFor(['zoom', 'hero']).map((scene) => scene.id)).toEqual(['hero', 'zoom']);
-    expect(SCENES.filter((scene) => scene.loop).map((scene) => scene.id)).toEqual(['hero']);
+describe('clips', () => {
+  it('shoots every clip id once: six offline takes, one live take for three, the hero cut from them', () => {
+    expect(CLIPS.map((clip) => clip.id)).toEqual([...OFFLINE_CLIP_IDS]);
+    expect(LIVE_CLIPS.map((clip) => clip.id)).toEqual([...LIVE_CLIP_IDS]);
+    expect(['hero', ...OFFLINE_CLIP_IDS, ...LIVE_CLIP_IDS]).toEqual([...CLIP_IDS]);
   });
 });
 
 describe('VS Code', () => {
-  it('starts with an empty extensions folder at device scale 2, without --disable-extensions', () => {
+  it('starts with an empty extensions folder at device scale 1, without --disable-extensions', () => {
     const args = launchArgs({
       workspace: 'W',
       file: 'W/interface/etch_demo.gui',
@@ -42,7 +35,7 @@ describe('VS Code', () => {
     expect(args.slice(0, 2)).toEqual(['W', 'W/interface/etch_demo.gui']);
     expect(args).toContain('--extensions-dir=X');
     expect(args).toContain('--extensionDevelopmentPath=E');
-    expect(args).toContain('--force-device-scale-factor=2');
+    expect(args).toContain('--force-device-scale-factor=1');
     expect(args).not.toContain('--disable-extensions');
   });
 
@@ -50,7 +43,7 @@ describe('VS Code', () => {
     const settings = workbenchSettings(undefined);
     expect(settings).toMatchObject({
       'workbench.colorTheme': 'Default Dark Modern',
-      'editor.fontSize': 18,
+      'editor.fontSize': 16,
       'window.zoomLevel': 0,
       'editor.minimap.enabled': false,
       'breadcrumbs.enabled': false,
@@ -92,26 +85,31 @@ describe('FFmpeg', () => {
     expect(args.at(-1)).toBe('m.mkv');
   });
 
-  it('finds the first change of a master', () => {
-    expect(after(firstChangeArgs('m.mkv'), '-vf')).toMatch(/^freezedetect=/);
-    const log = [
-      '[Parsed_freezedetect_0 @ 0] lavfi.freezedetect.freeze_start: 0',
-      '[Parsed_freezedetect_0 @ 0] lavfi.freezedetect.freeze_end: 4.967',
-      '[Parsed_freezedetect_0 @ 0] lavfi.freezedetect.freeze_end: 8.067',
-    ].join('\n');
-    expect(parseFirstChange(log)).toBe(4.967);
-    expect(parseFirstChange('no freezes')).toBeUndefined();
+  it('records the live scene against a shared clock, the game with its pointer', () => {
+    const filter = after(
+      gfxcaptureArgs('77', 'g.mkv', { cursor: true, epochUs: 1_700 }),
+      '-filter_complex',
+    );
+    expect(filter).toMatch(/^gfxcapture=hwnd=77:capture_cursor=1:/);
+    expect(filter).toContain(
+      "setpts='st(0,if(eq(N,0),(RTCTIME-1700)/1000000/TB-PTS,ld(0)));PTS+ld(0)'",
+    );
+    expect(filter).toContain('fps=30:start_time=0');
+    expect(after(gfxcaptureArgs('77', 'v.mkv'), '-filter_complex')).not.toContain('setpts');
   });
 
-  it('cuts a 2560 × 1440 loop at 30 fps, padding the last frame', () => {
-    const args = cutArgs('m.mkv', 3.5, 10.25, 'cut.mkv');
-    expect(after(args, '-ss')).toBe('3.500');
-    expect(after(args, '-t')).toBe('10.250');
-    const filter = after(args, '-filter_complex') ?? '';
-    expect(filter).toContain('crop=2560:1439:0:0');
-    expect(filter).toContain('vstack');
-    expect(filter).toContain('fps=30');
+  it('proxies a master for the composition, an odd side repeated, the end padded', () => {
+    const size = { width: 2560, height: 1439 };
+    expect(proxySize(size)).toEqual({ width: 2560, height: 1440 });
+    const filter = after(proxyArgs('m.mkv', 'p.mp4', size), '-vf') ?? '';
+    expect(filter).toContain('pad=2560:1440:0:0');
+    expect(filter).toContain('fillborders=right=0:bottom=1:mode=smear');
     expect(filter).toContain('tpad=stop_mode=clone');
+    expect(after(proxyArgs('m.mkv', 'p.mp4', size), '-g')).toBe('15');
+    expect(after(proxyArgs('g.mkv', 'p.mp4', { width: 2560, height: 1440 }), '-vf')).not.toContain(
+      'fillborders',
+    );
+    expect(after(posterArgs('c.mov', 'reload.png'), '-frames:v')).toBe('1');
   });
 
   it('encodes VP9 in two passes and H.264 with the spec settings, 1920 px wide, silent', () => {
@@ -139,15 +137,53 @@ describe('FFmpeg', () => {
   });
 });
 
-describe('draft manifest', () => {
-  it('lists the loops and stills captured, in the spec order, with file facts only', () => {
-    const manifest = draftManifest(
-      '0.1.0',
-      { hero: { width: 1920, height: 1080, duration: 10.63321, webmBytes: 1, mp4Bytes: 2 } },
-      ['problems', 'preview'],
+describe('live take', () => {
+  const settings = [
+    'graphics={',
+    '\tsize={',
+    '\t\tx=3440',
+    '\t\ty=1440',
+    '\t}',
+    '\tgame_ui_scale=1.000',
+    '\tfullScreen=no',
+    '\tborderless=yes',
+    '}',
+  ].join('\n');
+  const size = { width: 2560, height: 1440 };
+
+  it("windows the player's settings at the scene's resolution, keeping the rest", () => {
+    const windowed = windowedSettings(settings, size);
+    expect(windowed).toContain('x=2560');
+    expect(windowed).toContain('y=1440');
+    expect(windowed).toContain('borderless=no');
+    expect(windowed).toContain('game_ui_scale=1.000');
+    expect(() => windowedSettings(settings.replace('1.000', '1.250'), size)).toThrow(
+      /game_ui_scale is 1.250/,
     );
-    expect(manifest).toEqual({
-      schemaVersion: 1,
+    const pdx = [
+      '"Graphics"={',
+      '\t"display_mode"={',
+      '\t\tvalue="borderless_fullscreen"',
+      '\t}',
+      '\t"windowed_resolution"={',
+      '\t\tvalue="3440x1440"',
+      '\t}',
+      '}',
+    ].join('\n');
+    const windowedPdx = windowedPdxSettings(pdx, size);
+    expect(windowedPdx).toContain('value="windowed"');
+    expect(windowedPdx).toContain('value="2560x1440"');
+    expect(() => windowedPdxSettings('"Graphics"={}', size)).toThrow(/no display_mode/);
+  });
+});
+
+describe('draft manifest', () => {
+  it('lists the loops captured, in the spec order, with file facts only', () => {
+    const loop = { width: 1920, height: 1080, duration: 10.63321, webmBytes: 1, mp4Bytes: 2 };
+    const manifest = draftManifest('0.1.0', { pick: loop, hero: loop });
+    expect(Object.keys(manifest.loops)).toEqual(['hero', 'pick']);
+    expect({ ...manifest, loops: { hero: manifest.loops.hero } }).toEqual({
+      schemaVersion: 2,
       draft: true,
       etch: '0.1.0',
       loops: {
@@ -162,9 +198,7 @@ describe('draft manifest', () => {
           ],
         },
       },
-      stills: { preview: 'preview.png', problems: 'problems.png' },
     });
-    expect(Object.keys(manifest.stills)).toEqual(['preview', 'problems']);
     expect(MEDIA_TYPES).toEqual({
       webm: 'video/webm; codecs="vp9"',
       mp4: 'video/mp4; codecs="avc1.640028"',
@@ -172,7 +206,7 @@ describe('draft manifest', () => {
   });
 });
 
-describe('stills', () => {
+describe('posters', () => {
   it("reads a PNG's size from its header", () => {
     const header = new Uint8Array(24);
     header.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);

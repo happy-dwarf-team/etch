@@ -1,63 +1,39 @@
-// `pnpm media capture` (etch-website docs/spec.md section 8.1): builds the extension, runs each
-// chosen scene in a fresh VS Code, encodes the loops and writes everything into the git-ignored
-// `packages/media/out/v<version>/`: masters, WebM/MP4, PNG stills and posters, the draft manifest
-// and a capture log. It publishes nothing.
+// `pnpm media capture` (etch-website docs/spec.md section 8.1): builds the extension, shoots each
+// chosen clip (its take, then its edit rendered and encoded), and writes everything into the
+// git-ignored `packages/media/out/v<version>/`: masters, take logs, edits, WebM/MP4, PNG posters,
+// the draft manifest and a capture log. It publishes nothing.
 import { execFileSync } from 'node:child_process';
-import { mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import * as path from 'node:path';
-import { LOOP_HEIGHT, LOOP_WIDTH, MASTER, VSCODE_VERSION } from './config.ts';
+import { CLIPS, heroEdit } from './clips.ts';
+import { LOOP_HEIGHT, LOOP_WIDTH, VSCODE_VERSION } from './config.ts';
+import type { EditSpec } from './edit.ts';
+import { duration, h264Args, posterArgs, run, vp9Args } from './ffmpeg.ts';
+import { LIVE_CLIPS, takeLive } from './live.ts';
 import {
-  cutArgs,
-  duration,
-  firstChangeArgs,
-  GfxCapture,
-  h264Args,
-  parseFirstChange,
-  run,
-  vp9Args,
-} from './ffmpeg.ts';
-import {
+  CLIP_IDS,
   draftManifest,
-  LOOP_IDS,
-  STILL_IDS,
+  LIVE_CLIP_IDS,
   type CapturedLoop,
-  type LoopId,
-  type SceneId,
-  type StillId,
+  type ClipId,
 } from './manifest.ts';
-import {
-  LOOP_LEAD_MS,
-  OVERRIDES,
-  START_FILE,
-  WINDOW_NAME,
-  scenesFor,
-  type LoopMoment,
-  type Scene,
-} from './scenes.ts';
-import { Workbench } from './workbench.ts';
-
-/** How a loop is recorded: FFmpeg `gfxcapture` (lossless) or Playwright's `recordVideo`. */
-export type Recorder = 'gfxcapture' | 'playwright';
+import { Renderer } from './render.ts';
+import { editClip, takeClip, type ShootOptions } from './shoot.ts';
+import type { TakeLog } from './take.ts';
 
 export interface CaptureOptions {
   readonly repository: string;
-  readonly scenes: readonly SceneId[];
-  readonly recorder: Recorder;
+  readonly clips: readonly ClipId[];
   readonly ffmpeg: string;
   readonly ffprobe: string;
   /** A short folder for VS Code and its throwaway profiles (MAX_PATH). */
   readonly work: string;
   /** The game folder: `etch.gamePath`, and where the overridden base-game files come from. */
   readonly gamePath: string;
-}
-
-/** What one scene's run left, for the capture log. */
-interface SceneLog {
-  readonly capturedAt: string;
-  readonly recorder?: Recorder;
-  readonly firstPaint: number;
-  readonly master?: string;
-  readonly cut?: { readonly start: number; readonly duration: number };
+  /** The save the live take's game plays; needed for the live clips. */
+  readonly save?: string;
+  /** Edit the clips again from their takes' logs and masters, without new takes. */
+  readonly reedit?: boolean;
 }
 
 /** The width and height in a PNG's header. */
@@ -83,17 +59,76 @@ export async function capture(options: CaptureOptions): Promise<string> {
 
   const logFile = path.join(out, 'capture.json');
   const previous = await readFile(logFile, 'utf8').then(
-    (text) => JSON.parse(text) as { scenes?: Record<string, SceneLog> },
+    (text) => JSON.parse(text) as { takes?: Record<string, string> },
     () => undefined,
   );
-  const scenes: Record<string, SceneLog> = { ...previous?.scenes };
-  for (const scene of scenesFor(options.scenes)) {
-    console.log(`Scene ${scene.id}…`);
-    scenes[scene.id] = await runScene(scene, options, extension, out, masters);
+  const takes: Record<string, string> = { ...previous?.takes };
+  const shoot: ShootOptions = {
+    ...options,
+    extension,
+    out,
+    masters,
+    renderer: new Renderer(options.ffmpeg, path.join(masters, 'proxies')),
+    encode: (id, cut) => encode(id, cut, options.ffmpeg, out, masters),
+  };
+  const readTake = async (id: string): Promise<TakeLog> =>
+    JSON.parse(await readFile(path.join(masters, `${id}.take.json`), 'utf8')) as TakeLog;
+  const edits = new Map<string, EditSpec>();
+
+  for (const clip of CLIPS) {
+    if (!options.clips.includes(clip.id as ClipId)) continue;
+    console.log(`Clip ${clip.id}…`);
+    const log = options.reedit === true ? await readTake(clip.id) : await takeClip(clip, shoot);
+    takes[clip.id] = log.capturedAt;
+    edits.set(clip.id, await editClip(clip, log, shoot));
   }
 
-  const loops: Partial<Record<LoopId, CapturedLoop>> = {};
-  for (const id of LOOP_IDS) {
+  if (LIVE_CLIP_IDS.some((id) => options.clips.includes(id))) {
+    let log: TakeLog;
+    if (options.reedit === true) log = await readTake('live');
+    else {
+      if (options.save === undefined) throw new Error('the live clips need a save: pass --save');
+      console.log('Take live…');
+      log = await takeLive({ ...shoot, save: options.save });
+    }
+    takes['live'] = log.capturedAt;
+    for (const clip of LIVE_CLIPS) {
+      if (!options.clips.includes(clip.id as ClipId)) continue;
+      console.log(`Clip ${clip.id}…`);
+      edits.set(clip.id, await editClip(clip, log, shoot));
+    }
+  }
+
+  if (options.clips.includes('hero')) {
+    console.log('Clip hero…');
+    const parts = await heroParts(edits, masters);
+    const spec = heroEdit(
+      Object.fromEntries(
+        await Promise.all(
+          parts.map(
+            async ({ spec: part }) =>
+              [
+                part.id,
+                await shoot.renderer.proxy(
+                  path.join(masters, `${part.id}.cut.mov`),
+                  `hero.${part.id}`,
+                  { width: LOOP_WIDTH, height: LOOP_HEIGHT },
+                ),
+              ] as const,
+          ),
+        ),
+      ),
+      parts.map(({ spec: part }) => part),
+    );
+    await writeFile(path.join(masters, 'hero.edit.json'), `${JSON.stringify(spec, null, 2)}\n`);
+    const cut = path.join(masters, 'hero.cut.mov');
+    await shoot.renderer.render(spec, cut);
+    await run(options.ffmpeg, posterArgs(cut, path.join(out, 'hero.png')));
+    await encode('hero', cut, options.ffmpeg, out, masters);
+  }
+
+  const loops: Partial<Record<ClipId, CapturedLoop>> = {};
+  for (const id of CLIP_IDS) {
     const webm = path.join(out, `${id}.webm`);
     const mp4 = path.join(out, `${id}.mp4`);
     const sizes = await Promise.all([stat(webm), stat(mp4)]).catch(() => undefined);
@@ -106,11 +141,7 @@ export async function capture(options: CaptureOptions): Promise<string> {
       mp4Bytes: sizes[1].size,
     };
   }
-  const stills: StillId[] = [];
-  for (const id of STILL_IDS) {
-    if (await stat(path.join(out, `${id}.png`)).catch(() => undefined)) stills.push(id);
-  }
-  const manifest = draftManifest(version, loops, stills);
+  const manifest = draftManifest(version, loops);
   await writeFile(path.join(out, 'media.draft.json'), `${JSON.stringify(manifest, null, 2)}\n`);
   await writeFile(
     logFile,
@@ -120,13 +151,32 @@ export async function capture(options: CaptureOptions): Promise<string> {
         commit: gitCommit(options.repository),
         vscode: VSCODE_VERSION,
         ffmpeg: (await run(options.ffmpeg, ['-hide_banner', '-version'])).split('\n')[0]?.trim(),
-        scenes,
+        takes,
       },
       null,
       2,
     )}\n`,
   );
   return out;
+}
+
+/** The clips the hero's trailer takes its parts from, in order, with their edits. */
+async function heroParts(
+  edits: ReadonlyMap<string, EditSpec>,
+  masters: string,
+): Promise<{ spec: EditSpec }[]> {
+  const parts: { spec: EditSpec }[] = [];
+  for (const id of ['preview', 'reload', 'pick'] as const) {
+    const spec =
+      edits.get(id) ??
+      (JSON.parse(
+        await readFile(path.join(masters, `${id}.edit.json`), 'utf8').catch(() => {
+          throw new Error(`the hero needs the ${id} clip: capture it first`);
+        }),
+      ) as EditSpec);
+    parts.push({ spec });
+  }
+  return parts;
 }
 
 function gitCommit(repository: string): string {
@@ -141,110 +191,20 @@ function gitCommit(repository: string): string {
   }
 }
 
-async function runScene(
-  scene: Scene,
-  options: CaptureOptions,
-  extension: string,
+/** Encodes a loop's cut into the published VP9 WebM and H.264 MP4. */
+export async function encode(
+  id: string,
+  cut: string,
+  ffmpeg: string,
   out: string,
   masters: string,
-): Promise<SceneLog> {
-  const recorder = scene.loop ? options.recorder : undefined;
-  const videoDir =
-    recorder === 'playwright' ? path.join(masters, `${scene.id}-playwright`) : undefined;
-  if (videoDir !== undefined) await rm(videoDir, { recursive: true, force: true });
-  const gfxMaster = path.join(masters, `${scene.id}.gfxcapture.mkv`);
-  const marks: Partial<Record<LoopMoment, number>> = {};
-  let recording: GfxCapture | undefined;
-
-  const wb = await Workbench.launch({
-    work: options.work,
-    extensionPath: extension,
-    demoMod: path.join(options.repository, 'packages', 'media', 'demo-mod'),
-    overrides: OVERRIDES,
-    open: START_FILE,
-    gamePath: options.gamePath,
-    videoDir,
-  });
-  let firstPaint: number;
-  let video: string | undefined;
-  try {
-    // VS Code opens a folder with the Explorer shown; scenes that need it open it again.
-    await wb.command('View: Close Primary Side Bar');
-    await wb.find(`"${WINDOW_NAME}"`);
-    firstPaint = (await wb.openPreview()).id;
-    await wb.expectPreviewed(WINDOW_NAME);
-    await wb.fitPreview();
-    await wb.checkFrame();
-    await scene.run({
-      wb,
-      async still(id, rules) {
-        await wb.checkFrame(rules);
-        const file = path.join(out, `${id}.png`);
-        await wb.screenshot(file);
-        const size = pngSize(await readFile(file));
-        if (size.width !== MASTER.width || size.height !== MASTER.height) {
-          throw new Error(`${id}.png is ${String(size.width)} × ${String(size.height)}`);
-        }
-      },
-      async record() {
-        if (recorder === 'gfxcapture') {
-          recording = await GfxCapture.start(options.ffmpeg, wb.hwnd, gfxMaster);
-        }
-      },
-      mark(moment) {
-        const at = performance.now();
-        marks[moment] = at;
-        return at;
-      },
-    });
-  } catch (error) {
-    // What the window showed when the scene failed, beside the masters, for the maintainer only.
-    await wb.screenshot(path.join(masters, `${scene.id}.failed.png`)).catch(() => undefined);
-    throw error;
-  } finally {
-    const stopped = recording?.stop();
-    video = await wb.close();
-    await stopped;
-  }
-  const capturedAt = new Date().toISOString();
-  if (recorder === undefined) return { capturedAt, firstPaint };
-
-  const master = recorder === 'gfxcapture' ? gfxMaster : video;
-  if (master === undefined) throw new Error(`${scene.id}: Playwright recorded no video`);
-  const cut = await encodeLoop(scene.id as LoopId, master, marks, options, out, masters);
-  return { capturedAt, recorder, firstPaint, master: path.basename(master), cut };
-}
-
-/** Cuts the loop out of its master by its marks and encodes the WebM and MP4. */
-async function encodeLoop(
-  id: LoopId,
-  master: string,
-  marks: Partial<Record<LoopMoment, number>>,
-  options: CaptureOptions,
-  out: string,
-  masters: string,
-): Promise<{ start: number; duration: number }> {
-  const first = marks['first-key'];
-  const last = marks['last-key'];
-  if (first === undefined || last === undefined) throw new Error(`${id}: the loop has no marks`);
-  // The first keystroke is the master's first change: the cut starts LOOP_LEAD_MS before it and
-  // ends at the last keystroke, whose result (the start state again) is the loop's first frame.
-  const change = parseFirstChange(await run(options.ffmpeg, firstChangeArgs(master)));
-  if (change === undefined) throw new Error(`${id}: the master never changes`);
-  const start = change - LOOP_LEAD_MS / 1000;
-  if (start < 0) throw new Error(`${id}: the master starts ${String(-start)} s too late`);
-  const length = (last - first + LOOP_LEAD_MS) / 1000;
-  console.log(`Encoding ${id}: ${length.toFixed(2)} s from ${start.toFixed(2)} s of the master…`);
-
-  const cut = path.join(masters, `${id}.cut.mkv`);
-  await run(options.ffmpeg, cutArgs(master, start, length, cut));
+): Promise<void> {
   const [pass1, pass2] = vp9Args(
     cut,
     path.join(masters, `${id}.vp9`),
     path.join(out, `${id}.webm`),
   );
-  await run(options.ffmpeg, pass1, masters);
-  await run(options.ffmpeg, pass2, masters);
-  await run(options.ffmpeg, h264Args(cut, path.join(out, `${id}.mp4`)));
-  return { start, duration: length };
+  await run(ffmpeg, pass1, masters);
+  await run(ffmpeg, pass2, masters);
+  await run(ffmpeg, h264Args(cut, path.join(out, `${id}.mp4`)));
 }
