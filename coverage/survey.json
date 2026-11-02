@@ -279,6 +279,10 @@
       {
         "pattern": "//ToggleMessageInterface",
         "reason": "Opens or closes the message list, which the game keeps in settings.txt (messagelist_open)."
+      },
+      {
+        "pattern": "minimap_panel//*",
+        "reason": "The minimap's buttons change the map mode or the minimap, which Escape does not bring back."
       }
     ]
   }
