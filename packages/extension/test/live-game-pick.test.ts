@@ -14,7 +14,12 @@ import {
   type PickTarget,
 } from '../src/live-game/pick.ts';
 import { pickKey } from '../src/live-game/install.ts';
-import { readEvent, type PickEvent, type PickedWidget } from '../src/live-game/pipe.ts';
+import {
+  readEvent,
+  readSnapshot,
+  type PickEvent,
+  type PickedWidget,
+} from '../src/live-game/pipe.ts';
 
 let temp: string;
 let game: string;
@@ -320,6 +325,7 @@ describe('readEvent', () => {
       window: 'panel',
       file: 'interface/panel.gui',
       screen: { width: 1920, height: 1080 },
+      date: '1444.11.11',
       widgets: [
         {
           path: 'panel/culture',
@@ -336,8 +342,12 @@ describe('readEvent', () => {
     });
     expect(snapshot).toMatchObject({
       kind: 'snapshot',
-      snapshot: { stale: 1, widgets: [{ text: 'Svea' }] },
+      snapshot: { date: '1444.11.11', stale: 1, widgets: [{ text: 'Svea' }] },
     });
+    // The main menu (`null`), and a plugin built before Anvil 1.6.0 (no member).
+    for (const date of [{ date: null }, {}]) {
+      expect(readSnapshot({ window: 'panel', widgets: [], ...date }).date).toBeUndefined();
+    }
     expect(readEvent({ event: 'unknown' })).toBeUndefined();
   });
 });

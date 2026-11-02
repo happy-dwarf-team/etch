@@ -373,7 +373,7 @@ The answer gives the state after the request: `on` and `key`.
 ```
 
 ```json
-{"id":7,"ok":true,"queued_ms":11.2,"window":"provinceview","file":"interface/provinceview.gui","screen":{"width":3440,"height":1440},"widgets":[{"path":"provinceview","type":"window","visible":true,"enabled":true,"checked":false,"text":null,"rect":[1200,180,620,980]}],"stale":0,"read_ms":7.1}
+{"id":7,"ok":true,"queued_ms":11.2,"window":"provinceview","file":"interface/provinceview.gui","screen":{"width":3440,"height":1440},"date":"1444.11.11","widgets":[{"path":"provinceview","type":"window","visible":true,"enabled":true,"checked":false,"text":null,"rect":[1200,180,620,980]}],"stale":0,"read_ms":7.1}
 ```
 
 The live snapshot of a top-level window (etch#170): every widget of the
@@ -385,6 +385,7 @@ and stale widgets): the whole tree with hidden widgets took 150–215 ms in a va
 | ----------- | ------- |
 | `window`, `file` | the window's name and the game path of its definition's file |
 | `screen`    | the game window's client size, which the preview's `resolution` selector takes |
+| `date`      | the game date of the running session as a save writes it, `"1444.11.11"`, from `anvil-game.game`'s `date` (Anvil 1.6.0 and later), read with the widgets; `null` in the main menu and with an older `anvil-game`. An older plugin sends no `date` |
 | `widgets`   | each widget's `path` (Tongs' widget path from the window; list rows by position, `…/listbox/row[2]`), `type`, `visible`, `enabled`, `checked`, `text` (`null` for a widget without text; without the game's colour codes), `markup` (the text with them, `§` as U+00A7: `§G0.45§!`; only when it has some and the game's Tongs gives them, `tongs.ui`'s `markup`) and `rect` (`[x, y, width, height]` in client pixels) |
 | `stale`     | the stale widgets inside the window, left out |
 | `read_ms`, `queued_ms` | the read on the main thread, and from the request to it |

@@ -134,16 +134,27 @@ std::string PickEvent(std::uint64_t seq, const std::vector<UiWidget>& widgets, c
                       std::size_t stack_index, std::size_t stack_size, int screen_width, int screen_height, bool front,
                       const PickTimes& times);
 
+// The game date of the running session, as anvil-game's date() gives it (Anvil 1.6.0).
+struct GameDate {
+    std::int32_t year = 0;
+    std::uint32_t month = 0;
+    std::uint32_t day = 0;
+};
+
+// A date as a save writes it: `1444.11.11`.
+std::string DateText(const GameDate& date);
+
 // The live snapshot of one top-level window (spec section 7, etch#170): every
 // widget of it, hidden ones too, with path, type, flags, text and rectangle;
-// stale widgets are left out and counted. Members only, for a push or an answer.
+// stale widgets are left out and counted, and the game date is `null` without
+// a session or an anvil-game that gives it. Members only, for a push or an answer.
 struct Snapshot {
     std::size_t widgets = 0;
     std::size_t stale = 0;
     std::string members;  // `"window":...,"widgets":[...]...` without braces
 };
 Snapshot SnapshotOf(const std::vector<UiWidget>& widgets, std::size_t root, int screen_width, int screen_height,
-                    double read_ms);
+                    const std::optional<GameDate>& date, double read_ms);
 
 // The top-level window a snapshot is taken of: the visible one of that name
 // (ignoring case), else nullopt. `stale` says the visible one is stale.

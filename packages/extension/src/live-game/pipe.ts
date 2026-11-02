@@ -204,6 +204,8 @@ export interface SnapshotAnswer {
   /** The game path of the window's definition file. */
   readonly file: string | undefined;
   readonly screen: { readonly width: number; readonly height: number };
+  /** The game date (`1444.11.11`); undefined in the main menu or from an Anvil before 1.6.0. */
+  readonly date: string | undefined;
   readonly widgets: readonly SnapshotWidget[];
   /** Stale widgets inside the window, left out. */
   readonly stale: number;
@@ -313,6 +315,7 @@ export function readSnapshot(line: Record<string, unknown>): SnapshotAnswer {
     window: typeof line['window'] === 'string' ? line['window'] : '',
     file: typeof line['file'] === 'string' ? line['file'] : undefined,
     screen: screenOf(line['screen']),
+    date: typeof line['date'] === 'string' ? line['date'] : undefined,
     widgets: widgets.map((w) => ({
       path: typeof w['path'] === 'string' ? w['path'] : '',
       type: typeof w['type'] === 'string' ? w['type'] : 'other',
