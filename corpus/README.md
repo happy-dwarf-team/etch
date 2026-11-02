@@ -447,9 +447,29 @@ How a view is compared (`planCapture` and `compareCapture` in
   lobby's bookmark shields), is taken when the view names it code-filled. Below it, the capture's children pair with the layout's by
   name, ignoring case, in order among siblings of the same name; unnamed
   children pair in order among the unnamed ones.
+- **Fitted rects.** Tongs since 0.15 fits the game's rects to what it draws
+  (tongs#74), and the layout's are fitted the same way before they are
+  compared (`FitRects` in Tongs' `ui_tree.cpp`), children before their
+  parents:
+  - a window the game has children for, with no size of its own or not
+    inside the client area (a `fullscreen` window), takes the bounds of its
+    children that have a size, of the ones the game shows when any has one;
+  - then every rect is clipped to the client area, and a widget wholly
+    outside it is not shown.
+
+  A window's children are the game's: the layout's rect of each one the
+  layout has too, the game's rect of one only the game has or its code
+  fills. A window the game shows with none of its children shown takes the
+  bounds of children the game does not lay out (Anbennar's
+  `aPUI_parent_container` parks them at x 1280); its rect places nothing the
+  game draws and is not compared. A widget the layout puts wholly outside
+  the screen, where the game shows it, fails.
 - **Moved widgets.** A widget a `codeMoved` pattern names is drawn, with
   everything inside it, moved by the difference between the game's rect and
-  the layout's; its report says how far (`moved`).
+  the layout's; its report says how far (`moved`). A moved window that takes
+  its children's bounds has no position of its own to the game, so it is
+  moved by how far the children the layout places (not code-filled, shown by
+  the game) are from where the game shows them, together.
 - **What is drawn.** The roots' widgets in paint order, without code-filled
   widgets the game did not create (only the layout has them: alternative
   sub-windows the code never opens) and without the widgets the
@@ -460,8 +480,7 @@ How a view is compared (`planCapture` and `compareCapture` in
 - **Masks.** Pixels the render does not cover fully (alpha below 255); and
   code-filled content: the game's rects of the widgets the view's `codeFilled`
   patterns or the manifest's `codeFilledKinds` name and of everything inside
-  them, and the render's draws of those widgets. A game rect 0 or 1 pixel
-  wide and taller than that, which Tongs gives shields, is masked as a square. A widget the capture reports
+  them, and the render's draws of those widgets. A widget the capture reports
   disabled (`enabled` false) or checked (`checked` true) is code-filled too:
   the game's code set that state, and the offline renderer draws the `.gui`'s
   (etch#44: the Esc menu's AI settings, greyed out in the game).
@@ -470,7 +489,7 @@ How a view is compared (`planCapture` and `compareCapture` in
   more than 5 % of a widget's pixels are unstable, it fails: the capture
   shows something the game animates there. The mask's hash must be the
   record's, like the screenshot's.
-- **A widget passes** when its rect rounds to the game's rect (a window's
+- **A widget passes** when its fitted rect, rounded, is the game's rect (a window's
   position only: a window draws nothing itself, and Tongs' window sizes may
   not be the drawn panel) and at least
   99 % of its compared pixels are within ±2 in red, green and blue (the

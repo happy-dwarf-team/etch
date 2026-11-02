@@ -57,6 +57,8 @@ const WINDOW_KINDS: ReadonlySet<string> = new Set(['windowType', 'eu3dialogtype'
  * out like masked ones, and more of them make the widget an unstable capture (ADR 0002, etch#44).
  */
 export const UNSTABLE_SHARE = 0.05;
+/** How many times a moved window is moved again to put its fitted rect where the game's is. */
+const MOVE_ROUNDS = 4;
 
 /** A rect in client pixels, as Tongs reports it. */
 export interface WidgetRect {
@@ -101,6 +103,19 @@ export interface PlannedWidget {
   readonly notCovered?: string;
   /** How far the layout was moved to where the game's code put it (the view's `codeMoved`). */
   readonly moved?: { readonly x: number; readonly y: number };
+  /**
+   * The layout's rect fitted as Tongs fits the game's (see {@link fitRects}), rounded to pixels;
+   * for a widget the layout has.
+   */
+  readonly rect?: WidgetRect;
+  /** The fitted rect is wholly outside the client area, where Tongs counts a widget as hidden. */
+  readonly offScreen?: boolean;
+  /**
+   * A window the game shows without showing any of its children, so that Tongs gives it the bounds
+   * of children the game does not lay out (Anbennar parks them at x 1280): its rect places nothing
+   * the game draws, and is not compared.
+   */
+  readonly unplaced?: boolean;
 }
 
 export interface CapturePlan {
@@ -277,6 +292,60 @@ export function planCapture(input: CapturePlanInput): CapturePlan {
     match(found.window, found.at, root, -1);
   }
 
+  // A moved window that takes its children's bounds has no position of its own to the game (its
+  // rect is theirs), so it is moved by how far the children the layout places are from where the
+  // game shows them, together. Inner moved widgets first: an outer one's bounds take theirs.
+  const screen = record.resolution;
+  for (let index = widgets.length - 1; index >= 0; index--) {
+    if (widgets[index]?.moved === undefined) continue;
+    const placed = widgets.flatMap((w, i) =>
+      w.parent === index &&
+      w.laidOut !== undefined &&
+      w.captured?.visible === true &&
+      w.codeFilled === undefined
+        ? [i]
+        : [],
+    );
+    for (let round = 0; round < MOVE_ROUNDS; round++) {
+      const shift = shifts[index];
+      const fitted = fitRects(widgets, screen);
+      if (shift === undefined || fitted[index]?.bounds !== true) break;
+      const game = childrenBounds(
+        placed,
+        (i) => widgets[i]?.captured?.rect,
+        () => true,
+      )?.rect;
+      const layout = childrenBounds(
+        placed,
+        (i) => fitted[i]?.rect,
+        () => true,
+      )?.rect;
+      if (game === undefined || layout === undefined) break;
+      const by = { x: game.x - layout.x, y: game.y - layout.y };
+      if (by.x === 0 && by.y === 0) break;
+      const next = { x: shift.x + by.x, y: shift.y + by.y };
+      widgets.forEach((w, i) => {
+        if (shifts[i] !== shift || w.laidOut === undefined) return;
+        shifts[i] = next;
+        widgets[i] = {
+          ...w,
+          laidOut: shifted(w.laidOut, by),
+          ...(i === index ? { moved: next } : {}),
+        };
+      });
+    }
+  }
+  fitRects(widgets, screen).forEach((fitted, i) => {
+    const w = widgets[i];
+    if (fitted === undefined || w === undefined) return;
+    widgets[i] = {
+      ...w,
+      rect: fitted.rect,
+      ...(fitted.unplaced ? { unplaced: true } : {}),
+      ...(fitted.offScreen ? { offScreen: true } : {}),
+    };
+  });
+
   // The render: each root's window in record order, its widgets in paint order.
   const textures: string[] = [];
   const textureIndex = new Map<string, number>();
@@ -412,7 +481,10 @@ export interface WidgetComparison {
   /** The known deviations that cover a failure. */
   readonly deviations?: readonly string[];
   readonly gameRect?: WidgetRect;
-  /** Where the render drew it; moved with a widget the game's code moves. */
+  /**
+   * Where the render drew it, fitted as Tongs fits the game's rects ({@link PlannedWidget.rect});
+   * moved with a widget the game's code moves.
+   */
   readonly renderRect?: WidgetRect;
   /** How far the render was moved to where the game's code put this widget (`codeMoved`). */
   readonly moved?: { readonly x: number; readonly y: number };
@@ -492,15 +564,13 @@ export function compareCapture(
     }
   });
 
-  // Code-filled content, by the game's rects. Tongs gives shields a width of 0 or 1 (etch#42); the
-  // game draws them about as wide as they are high, so such a rect is taken as a square (etch#44).
+  // Code-filled content, by the game's rects.
   const masked = new Uint8Array(count);
   for (const widget of plan.widgets) {
     const rect = widget.captured?.rect;
     if (widget.codeFilled === undefined || widget.hidden || rect === undefined) continue;
-    const w = rect.w <= 1 && rect.h > 1 ? rect.h : rect.w;
     const x0 = Math.max(0, rect.x);
-    const x1 = Math.min(width, rect.x + w);
+    const x1 = Math.min(width, rect.x + rect.w);
     if (x1 <= x0) continue;
     for (let row = Math.max(0, rect.y); row < Math.min(height, rect.y + rect.h); row++) {
       masked.fill(1, row * width + x0, row * width + x1);
@@ -567,15 +637,7 @@ export function compareCapture(
       unstable: unstableBy[i] ?? 0,
     };
     const gameRect = widget.captured?.rect;
-    const renderRect =
-      widget.laidOut === undefined
-        ? undefined
-        : {
-            x: widget.laidOut.x,
-            y: widget.laidOut.y,
-            w: widget.laidOut.width,
-            h: widget.laidOut.height,
-          };
+    const renderRect = widget.rect;
     const base = {
       path: widget.path,
       ...(widget.kind === undefined ? {} : { kind: widget.kind }),
@@ -600,11 +662,15 @@ export function compareCapture(
         return { ...base, status: 'absent', problems: [] };
       }
       problems.push('The render has no such widget.');
-    } else if (gameRect !== undefined && renderRect !== undefined) {
+    } else if (widget.offScreen === true && gameRect !== undefined) {
+      problems.push(
+        `The render puts it outside the screen; the game shows it at ${showRect(gameRect)}.`,
+      );
+    } else if (gameRect !== undefined && renderRect !== undefined && widget.unplaced !== true) {
       // A window draws nothing itself, and Tongs' window sizes may not be the drawn panel (its
       // README): Proper 2K UI Enhanced's ledger is 1921 × 80 to Tongs at every size (etch#44).
       const fields = WINDOW_KINDS.has(widget.kind ?? '') ? (['x', 'y'] as const) : RECT_FIELDS;
-      const differs = fields.filter((c) => Math.round(renderRect[c]) !== gameRect[c]);
+      const differs = fields.filter((c) => renderRect[c] !== gameRect[c]);
       if (differs.length > 0) {
         problems.push(`The rect is ${showRect(renderRect)}; the game's is ${showRect(gameRect)}.`);
       }
@@ -717,6 +783,106 @@ export function differenceImage(map: PixelMap, screenshot: RgbaImage): RgbaImage
     data[o + 3] = 255;
   }
   return { width: map.width, height: map.height, data };
+}
+
+interface FittedRect {
+  readonly rect: WidgetRect;
+  /** A window that took its children's bounds. */
+  readonly bounds: boolean;
+  /** It took the bounds of children the game does not show (see {@link PlannedWidget.unplaced}). */
+  readonly unplaced: boolean;
+  readonly offScreen: boolean;
+}
+
+/**
+ * The layout's rects fitted as Tongs ≥ 0.15 fits the game's to what it draws (`FitRects`,
+ * tongs#74), children before their parents: a window the game has children for takes their
+ * bounds when it has no size of its own or is not inside the client area, of the ones the game
+ * shows when any of them has a size; then every rect is clipped to the client area, and a widget
+ * wholly outside it is not shown. A window's children are the game's: the layout's rect of each
+ * one the layout has too, the game's of one only the game has or its code fills. Rects are rounded
+ * to pixels first, as the comparison rounds.
+ */
+function fitRects(
+  widgets: readonly PlannedWidget[],
+  screen: { readonly width: number; readonly height: number },
+): (FittedRect | undefined)[] {
+  const children: number[][] = widgets.map(() => []);
+  widgets.forEach((w, i) => {
+    if (w.parent >= 0 && w.captured !== undefined) children[w.parent]?.push(i);
+  });
+  const fitted: (FittedRect | undefined)[] = widgets.map(() => undefined);
+  // The game's code places what it fills, so the game's rect stands for it, as in the comparison;
+  // so does it for a window whose rect places nothing the game draws.
+  const rectOf = (i: number): WidgetRect | undefined =>
+    widgets[i]?.codeFilled === undefined && fitted[i]?.unplaced !== true
+      ? (fitted[i]?.rect ?? widgets[i]?.captured?.rect)
+      : (widgets[i]?.captured?.rect ?? fitted[i]?.rect);
+  // The children the game shows, so that a window's rect follows where the layout puts them.
+  const shown = (i: number): boolean => widgets[i]?.captured?.visible === true;
+  for (let i = widgets.length - 1; i >= 0; i--) {
+    const laid = widgets[i]?.laidOut;
+    if (laid === undefined) continue;
+    let rect: WidgetRect = {
+      x: Math.round(laid.x),
+      y: Math.round(laid.y),
+      w: Math.round(laid.width),
+      h: Math.round(laid.height),
+    };
+    const kids = children[i] ?? [];
+    const inside =
+      rect.x >= 0 &&
+      rect.y >= 0 &&
+      rect.x + rect.w <= screen.width &&
+      rect.y + rect.h <= screen.height;
+    const bounds =
+      widgets[i]?.captured?.type === 'window' &&
+      kids.length > 0 &&
+      (rect.w <= 0 || rect.h <= 0 || !inside);
+    const around = bounds ? childrenBounds(kids, rectOf, shown) : undefined;
+    if (around !== undefined) rect = around.rect;
+    const unplaced = around?.ofShown === false;
+    let offScreen = false;
+    const left = Math.max(rect.x, 0);
+    const top = Math.max(rect.y, 0);
+    const right = Math.min(rect.x + rect.w, screen.width);
+    const bottom = Math.min(rect.y + rect.h, screen.height);
+    if (rect.w <= 0 || rect.h <= 0) {
+      offScreen = rect.x < 0 || rect.y < 0 || rect.x > screen.width || rect.y > screen.height;
+    } else if (left < right && top < bottom) {
+      rect = { x: left, y: top, w: right - left, h: bottom - top };
+    } else {
+      offScreen = true;
+    }
+    fitted[i] = { rect, bounds, unplaced, offScreen };
+  }
+  return fitted;
+}
+
+/** The smallest rect around the children with a size, the shown ones when any of them has one. */
+function childrenBounds(
+  kids: readonly number[],
+  rectOf: (i: number) => WidgetRect | undefined,
+  shown: (i: number) => boolean,
+): { readonly rect: WidgetRect; readonly ofShown: boolean } | undefined {
+  for (const shownOnly of [true, false]) {
+    let left = Infinity;
+    let top = Infinity;
+    let right = -Infinity;
+    let bottom = -Infinity;
+    for (const kid of kids) {
+      const r = rectOf(kid);
+      if (r === undefined || r.w <= 0 || r.h <= 0 || (shownOnly && !shown(kid))) continue;
+      left = Math.min(left, r.x);
+      top = Math.min(top, r.y);
+      right = Math.max(right, r.x + r.w);
+      bottom = Math.max(bottom, r.y + r.h);
+    }
+    if (left !== Infinity) {
+      return { rect: { x: left, y: top, w: right - left, h: bottom - top }, ofShown: shownOnly };
+    }
+  }
+  return undefined;
 }
 
 function childrenOf(layout: WindowLayout): number[][] {
