@@ -151,14 +151,24 @@ The mod Etch's media show being edited; our own files, drawn with the game's
 art.
 _Avoid_: sample mod, test mod, fixture
 
-**Scene**:
-One named shot (`hero`, `preview`, …) that the script captures; its id appears
-in the bucket key, the file name and the media manifest.
-_Avoid_: shot, clip
+**Clip**:
+One named loop of the Etch site (`hero`, `preview`, …) that the media script
+makes; its id appears in the bucket key, the file name and the media manifest.
+_Avoid_: scene, shot
+
+**Take**:
+One recorded run of a clip's steps: its masters and the log of its events; the
+live take serves three clips.
+_Avoid_: recording, capture
+
+**Edit**:
+What the media composition renders from a take: the camera, the editor's inset,
+captions, highlights and the drawn pointer.
+_Avoid_: montage, cut
 
 **Media refresh**:
 Capturing Etch's media for one Etch release and publishing them: loops to the
-media bucket; posters, stills and the media manifest to the Etch site.
+media bucket; posters and the media manifest to the Etch site.
 _Avoid_: media update, re-record
 
 ## Etch 1.x

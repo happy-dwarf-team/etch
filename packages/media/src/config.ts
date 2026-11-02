@@ -4,19 +4,28 @@
 /** The pinned VS Code, downloaded by `@vscode/test-electron`. */
 export const VSCODE_VERSION = '1.142.0';
 
-/** VS Code's window in CSS pixels; with the device scale, the master is 2560 × 1440. */
-export const WINDOW = { width: 1280, height: 720 } as const;
-export const DEVICE_SCALE = 2;
+/**
+ * VS Code's window in CSS pixels at device scale 1, as on an ordinary monitor: the master is
+ * 2560 × 1440, and the edit's close-ups make its text readable (section 8.4).
+ */
+export const WINDOW = { width: 2560, height: 1440 } as const;
+export const DEVICE_SCALE = 1;
 export const MASTER = {
   width: WINDOW.width * DEVICE_SCALE,
   height: WINDOW.height * DEVICE_SCALE,
 } as const;
 
+/**
+ * The live take's game (section 8.4): windowed at a corpus resolution as big as VS Code's master,
+ * on the monitor right of VS Code's (live.ts, `GAME_ORIGIN`).
+ */
+export const LIVE_GAME_RESOLUTION = { width: 2560, height: 1440 } as const;
+
 /** `etch.previewResolution`: one game pixel is one master pixel when the preview is not scaled. */
 export const PREVIEW_RESOLUTION = { width: 1280, height: 720 } as const;
 
 /** The editor font size. */
-export const EDITOR_FONT_SIZE = 18;
+export const EDITOR_FONT_SIZE = 16;
 
 /** How long the preview must stay without a new paint before a step counts as done. */
 export const QUIET_MS = 300;

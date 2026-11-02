@@ -1,20 +1,24 @@
 // `pnpm media publish --site <etch-website checkout>` (etch-website docs/spec.md section 8.8):
 // uploads a capture's loops to the media bucket, checks every one, and only then writes the
-// posters, the stills and `src/data/media.json` into the site's checkout. It commits nothing.
+// posters and `src/data/media.json` into the site's checkout. It commits nothing.
 import { HeadObjectCommand, PutObjectCommand, type S3Client } from '@aws-sdk/client-s3';
 import { createHash } from 'node:crypto';
 import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import * as path from 'node:path';
 import { pngSize } from './capture.ts';
-import { CACHE_CONTROL, CREDENTIAL_VARIABLES, MASTER, MEDIA_BUCKET } from './config.ts';
 import {
-  LOOP_IDS,
-  STILL_IDS,
+  CACHE_CONTROL,
+  CREDENTIAL_VARIABLES,
+  LOOP_HEIGHT,
+  LOOP_WIDTH,
+  MEDIA_BUCKET,
+} from './config.ts';
+import {
+  CLIP_IDS,
+  type ClipId,
   type DraftLoop,
   type DraftManifest,
   type DraftSource,
-  type LoopId,
-  type StillId,
 } from './manifest.ts';
 
 /** What `HeadObject` tells about a key. */
@@ -101,7 +105,7 @@ export function hash8(bytes: Uint8Array): string {
 }
 
 /** The bucket key of one loop file: `etch/v<version>/<scene>.<hash8>.<webm|mp4>`. */
-export function mediaKey(version: string, scene: LoopId, hash: string, file: string): string {
+export function mediaKey(version: string, scene: ClipId, hash: string, file: string): string {
   return `${MEDIA_BUCKET.prefix}/v${version}/${scene}.${hash}${path.extname(file)}`;
 }
 
@@ -127,10 +131,9 @@ export interface PublishedLoop {
 
 /** The site's media manifest, `src/data/media.json` (etch-website docs/spec.md section 5.2). */
 export interface MediaManifest {
-  readonly schemaVersion: 1;
+  readonly schemaVersion: 2;
   readonly etch: string;
-  readonly loops: Record<LoopId, PublishedLoop>;
-  readonly stills: Record<StillId, string>;
+  readonly loops: Record<ClipId, PublishedLoop>;
 }
 
 export interface PublishOptions {
@@ -150,34 +153,31 @@ async function readDraft(capture: string): Promise<DraftManifest> {
     throw new Error(`${file} does not exist: run pnpm media capture first, or pass --etch.`);
   }
   const json = JSON.parse(text) as { schemaVersion?: unknown; draft?: unknown };
-  if (json.schemaVersion !== 1 || json.draft !== true) {
-    throw new Error(`${file} is not a draft media manifest of schema version 1.`);
+  if (json.schemaVersion !== 2 || json.draft !== true) {
+    throw new Error(`${file} is not a draft media manifest of schema version 2.`);
   }
   const draft = json as DraftManifest;
   if (path.basename(capture) !== `v${draft.etch}`) {
     throw new Error(`${file} is for Etch ${draft.etch}, not the folder ${path.basename(capture)}.`);
   }
-  const missing = [
-    ...LOOP_IDS.filter((id) => draft.loops[id] === undefined),
-    ...STILL_IDS.filter((id) => draft.stills[id] === undefined),
-  ];
+  const missing = CLIP_IDS.filter((id) => draft.loops[id] === undefined);
   if (missing.length > 0) {
     throw new Error(
-      `The capture lacks ${missing.join(', ')}; the site needs every scene. ` +
-        `Capture them with pnpm media capture --scene ${missing.join(',')}.`,
+      `The capture lacks ${missing.join(', ')}; the site needs every clip. ` +
+        `Capture them with pnpm media capture --clip ${missing.join(',')}.`,
     );
   }
   return draft;
 }
 
-/** Checks every image is a 2560 × 1440 PNG named after its scene (section 8.6). */
+/** Checks every poster is a PNG of the loop's size, named after its clip (section 8.6). */
 async function checkImages(capture: string, files: readonly string[]): Promise<void> {
   for (const file of files) {
     const header = (await readFile(path.join(capture, file))).subarray(0, 24);
     const { width, height } = pngSize(header);
-    if (width !== MASTER.width || height !== MASTER.height) {
+    if (width !== LOOP_WIDTH || height !== LOOP_HEIGHT) {
       throw new Error(
-        `${file} is ${String(width)} × ${String(height)}, not ${String(MASTER.width)} × ${String(MASTER.height)}.`,
+        `${file} is ${String(width)} × ${String(height)}, not ${String(LOOP_WIDTH)} × ${String(LOOP_HEIGHT)}.`,
       );
     }
   }
@@ -250,15 +250,12 @@ export async function publish(options: PublishOptions): Promise<MediaManifest> {
   const log = options.log ?? console.log;
   const draft = await readDraft(options.capture);
   await checkSite(options.site);
-  const loops = LOOP_IDS.map((id) => [id, draft.loops[id] as DraftLoop] as const);
-  const images = [
-    ...loops.map(([, loop]) => loop.poster),
-    ...STILL_IDS.map((id) => draft.stills[id] as string),
-  ];
+  const loops = CLIP_IDS.map((id) => [id, draft.loops[id] as DraftLoop] as const);
+  const images = loops.map(([, loop]) => loop.poster);
   await checkImages(options.capture, images);
 
   // Every file is read and checked against the draft before the first upload.
-  const read = async (id: LoopId, source: DraftSource): Promise<LoopFile> => {
+  const read = async (id: ClipId, source: DraftSource): Promise<LoopFile> => {
     const body = await readFile(path.join(options.capture, source.file));
     if (body.byteLength !== source.bytes) {
       throw new Error(
@@ -299,7 +296,7 @@ export async function publish(options: PublishOptions): Promise<MediaManifest> {
     bytes: file.source.bytes,
   });
   const manifest: MediaManifest = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     etch: draft.etch,
     loops: byId(
       sets.map(({ id, loop, files: [webm, mp4] }) => [
@@ -313,7 +310,6 @@ export async function publish(options: PublishOptions): Promise<MediaManifest> {
         },
       ]),
     ),
-    stills: byId(STILL_IDS.map((id) => [id, draft.stills[id] as string])),
   };
 
   const assets = path.join(options.site, 'src', 'assets', 'media');
@@ -323,6 +319,6 @@ export async function publish(options: PublishOptions): Promise<MediaManifest> {
   for (const image of images)
     await copyFile(path.join(options.capture, image), path.join(assets, image));
   await writeFile(path.join(data, 'media.json'), `${JSON.stringify(manifest, null, '\t')}\n`);
-  log(`Wrote ${String(images.length)} images and src/data/media.json into ${options.site}.`);
+  log(`Wrote ${String(images.length)} posters and src/data/media.json into ${options.site}.`);
   return manifest;
 }

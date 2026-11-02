@@ -86,7 +86,7 @@ A pnpm workspace (ADR 0001):
 | `packages/renderer`  | WebGL2 drawing in the preview webview                          |
 | `packages/extension` | VS Code glue and the VSIX manifest                             |
 | `packages/compare`   | the precision corpus's headless comparison; never shipped      |
-| `packages/media`     | the Etch site's media: demo mod, scenes (docs/media.md); never shipped |
+| `packages/media`     | the Etch site's media: demo mod, clips (docs/media.md); never shipped |
 | `plugin`             | the live game's Anvil plugin (C++, CMake, Anvil SDK)           |
 | `corpus`             | precision corpus manifest and capture records (no screenshots) |
 | `pins`               | pinned game-side builds: release tag, URL and SHA-256 (pins/README.md) |

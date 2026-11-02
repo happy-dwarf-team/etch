@@ -1,63 +1,49 @@
-// FFmpeg for the loops (spec sections 8.3 and 8.6): a lossless `gfxcapture` master of VS Code's
-// window, the cut of one loop out of a master, and the published VP9 WebM and H.264 MP4. The
-// argument lists are plain functions so the encoder settings are tested without FFmpeg.
+// FFmpeg for the loops (spec sections 8.3 and 8.6): the lossless `gfxcapture` masters of a take's
+// windows, a rendered cut's poster, and the published VP9 WebM and H.264 MP4. The argument lists
+// are plain functions so the encoder settings are tested without FFmpeg.
 import { spawn, type ChildProcess } from 'node:child_process';
-import {
-  H264_CRF,
-  H264_PROFILE,
-  LOOP_FPS,
-  LOOP_HEIGHT,
-  LOOP_WIDTH,
-  MASTER,
-  VP9_CRF,
-} from './config.ts';
+import { H264_CRF, H264_PROFILE, LOOP_FPS, LOOP_HEIGHT, LOOP_WIDTH, VP9_CRF } from './config.ts';
+
+export interface GfxCaptureOptions {
+  /** Draw the pointer when it is over the window (the live scene's game). */
+  readonly cursor?: boolean;
+  /**
+   * A shared clock for several masters, in Unix microseconds: the master's time 0 is this moment,
+   * so masters recorded side by side line up frame by frame (the live scene).
+   */
+  readonly epochUs?: number;
+}
 
 /** Records a window by its handle, without the pointer, into a lossless RGB master. */
-export function gfxcaptureArgs(hwnd: string, master: string): string[] {
+export function gfxcaptureArgs(
+  hwnd: string,
+  master: string,
+  options: GfxCaptureOptions = {},
+): string[] {
+  // gfxcapture counts time from its first frame. Against a shared clock, that frame is placed at
+  // the wall clock it arrived at (RTCTIME, in µs), and every later frame keeps its distance from it.
+  const clock =
+    options.epochUs === undefined
+      ? ''
+      : `setpts='st(0,if(eq(N,0),(RTCTIME-${String(options.epochUs)})/1000000/TB-PTS,ld(0)));PTS+ld(0)',`;
   return [
     ...['-hide_banner', '-loglevel', 'error', '-stats', '-y'],
     '-filter_complex',
-    // gfxcapture emits a frame only when the window changes; fps fills the gaps.
-    `gfxcapture=hwnd=${hwnd}:capture_cursor=0:max_framerate=60,hwdownload,format=bgra,` +
-      `fps=${String(LOOP_FPS)},format=bgr0`,
+    // gfxcapture emits a frame only when the window changes; fps fills the gaps (from the shared
+    // clock's 0, with the first frame, when there is one).
+    `gfxcapture=hwnd=${hwnd}:capture_cursor=${options.cursor === true ? '1' : '0'}:max_framerate=60,` +
+      `${clock}hwdownload,format=bgra,` +
+      `fps=${String(LOOP_FPS)}${options.epochUs === undefined ? '' : ':start_time=0'},format=bgr0`,
     ...['-c:v', 'libx264rgb', '-preset', 'ultrafast', '-crf', '0'],
     master,
   ];
 }
 
-/** Finds when the picture first changes: the end of the first still stretch of a master. */
-export function firstChangeArgs(master: string): string[] {
+/** The first frame of a cut as a PNG: a loop's poster. */
+export function posterArgs(cut: string, png: string): string[] {
   return [
-    ...['-hide_banner', '-nostats', '-i', master],
-    ...['-vf', 'freezedetect=n=-60dB:d=1', '-map', '0:v:0', '-f', 'null', '-'],
-  ];
-}
-
-/** The first `freeze_end` FFmpeg's `freezedetect` reports, in seconds. */
-export function parseFirstChange(log: string): number | undefined {
-  const match = /freeze_end: (\d+(?:\.\d+)?)/.exec(log);
-  return match === null ? undefined : Number(match[1]);
-}
-
-/**
- * Cuts one loop out of a master into a lossless 2560 × 1440 intermediate at the loop frame rate.
- * `gfxcapture` gets one row less than the window (2560 × 1439, from the top), so the last row,
- * the status bar's bottom edge, is repeated; a `recordVideo` master loses its own last row the
- * same way. The end is padded with its last frame, since `gfxcapture` stops emitting frames on a
- * still window.
- */
-export function cutArgs(master: string, start: number, duration: number, out: string): string[] {
-  const width = String(MASTER.width);
-  const rows = MASTER.height - 1;
-  return [
-    ...['-hide_banner', '-loglevel', 'error', '-y'],
-    ...['-ss', start.toFixed(3), '-i', master, '-t', duration.toFixed(3)],
-    '-filter_complex',
-    // In RGB: a recordVideo master is 4:2:0, where a row of one pixel cannot be cut.
-    `[0:v]format=gbrp,crop=${width}:${String(rows)}:0:0,split[top][edge];` +
-      `[edge]crop=${width}:1:0:${String(rows - 1)}[row];[top][row]vstack,` +
-      `fps=${String(LOOP_FPS)},tpad=stop_mode=clone:stop_duration=5[v]`,
-    ...['-map', '[v]', '-an', '-c:v', 'ffv1', out],
+    ...['-hide_banner', '-loglevel', 'error', '-y', '-i', cut],
+    ...['-frames:v', '1', '-update', '1', png],
   ];
 }
 
@@ -113,6 +99,22 @@ export async function duration(ffprobe: string, file: string): Promise<number> {
   return seconds;
 }
 
+/** A video's width and height in pixels. */
+export async function videoSize(
+  ffprobe: string,
+  file: string,
+): Promise<{ width: number; height: number }> {
+  const out = await run(ffprobe, [
+    ...['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height'],
+    ...['-of', 'csv=p=0', file],
+  ]);
+  const [width, height] = out.trim().split(',').map(Number);
+  if (width === undefined || height === undefined || !(width > 0 && height > 0)) {
+    throw new Error(`ffprobe gives no size for ${file}`);
+  }
+  return { width, height };
+}
+
 /** A running `gfxcapture` recording. */
 export class GfxCapture {
   private readonly child: ChildProcess;
@@ -124,8 +126,13 @@ export class GfxCapture {
   }
 
   /** Starts recording and resolves once FFmpeg has written its first frame. */
-  static async start(ffmpeg: string, hwnd: string, master: string): Promise<GfxCapture> {
-    const child = spawn(ffmpeg, gfxcaptureArgs(hwnd, master), {
+  static async start(
+    ffmpeg: string,
+    hwnd: string,
+    master: string,
+    options: GfxCaptureOptions = {},
+  ): Promise<GfxCapture> {
+    const child = spawn(ffmpeg, gfxcaptureArgs(hwnd, master, options), {
       stdio: ['pipe', 'ignore', 'pipe'],
     });
     const exited = new Promise<number | null>((resolve) => child.on('exit', resolve));
@@ -150,10 +157,28 @@ export class GfxCapture {
     return new GfxCapture(child, exited);
   }
 
-  /** Asks FFmpeg to finish the file, as `q` on its console does. */
-  async stop(): Promise<void> {
+  /**
+   * Asks FFmpeg to finish the file, as `q` on its console does. FFmpeg reads it between frames,
+   * and `gfxcapture` gives none while the window stands still, so `nudge` makes the window draw
+   * until FFmpeg is done; after 15 s it is killed.
+   */
+  async stop(nudge?: () => Promise<void>): Promise<void> {
     this.child.stdin?.end('q');
-    const code = await this.exited;
+    // Set by the exit, which the loop below cannot see coming: a holder, not a local.
+    const exit: { code?: number | null } = {};
+    const done = this.exited.then((code) => {
+      exit.code = code;
+    });
+    const deadline = Date.now() + 15_000;
+    while (!('code' in exit) && Date.now() < deadline) {
+      await Promise.race([done, new Promise((resolve) => setTimeout(resolve, 250))]);
+      if (!('code' in exit)) await nudge?.().catch(() => undefined);
+    }
+    if (!('code' in exit)) {
+      this.child.kill();
+      throw new Error('gfxcapture did not finish its file in 15 s and was stopped');
+    }
+    const code = exit.code;
     if (code !== 0) throw new Error(`gfxcapture exited with ${String(code)}`);
   }
 }
