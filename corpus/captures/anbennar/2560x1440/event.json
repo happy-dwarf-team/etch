@@ -3,9 +3,9 @@
   "playset": "anbennar",
   "resolution": { "width": 2560, "height": 1440 },
   "view": "event",
-  "takenAt": "2026-11-02T03:09:45.709Z",
+  "takenAt": "2026-11-02T09:12:01.402Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
-  "tongs": { "version": "0.14.1" },
+  "tongs": { "version": "0.23.0" },
   "save": { "sha256": "C2B960AED4143C311DA2CED51763AA4B72D0B5FA5BCB971B31C80C4706A30C14" },
   "mods": [
     {
@@ -26,17 +26,17 @@
     "from": "save",
     "steps": [],
     "verified": true,
-    "evidence": "Run by the capture driver (etch#42) at 2560x1440: the steps opened the view and its roots were read."
+    "evidence": "Run by the capture driver (etch#42) on 2026-11-02 at every gating size of the four release playsets, with Tongs 0.14.1: the view's save loads with its event open, so the recipe has no step, and EventWindow was read (etch#97)."
   },
   "window": { "width": 2560, "height": 1440, "dpi": 96 },
   "screenshot": {
-    "sha256": "3CFE7D91FFC99BEE19A40FE1319F0C6B27907E43344D0C893866CDC159429D40",
+    "sha256": "A57C0B85B2E574ED1A1D276573447A53A29C2C882731EB0D75C33C8A69E3C6B0",
     "width": 2560,
     "height": 1440,
     "shots": 4,
     "unstable": {
-      "pixels": 3070,
-      "sha256": "7B998E0A1F6438F4F0825D770287160C45E3A368C84F16F97D20BA9F9C190229"
+      "pixels": 3011475,
+      "sha256": "CAD93A24F6448E90DCC247E7DC741051C91C9BDAB59F05276B2CAC9F61A7573F"
     }
   },
   "widgets": [
