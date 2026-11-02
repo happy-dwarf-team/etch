@@ -295,6 +295,25 @@ describe('profileVisibility', () => {
       'provinceview/top_section_window/history',
       'provinceview/province_window/foreign_province_window',
     ]);
+    // Tongs counts a widget wholly outside the screen hidden for where it is (tongs#74): whether
+    // the game shows it is not known, so it is left out with what is inside it.
+    const parked = profileVisibility(
+      PROFILE,
+      WINDOW,
+      LARGE,
+      { owner: 'yes', tab: 'province', sub: 'none' },
+      {
+        ...root,
+        children: [
+          { ...top(false), rect: { x: 119415, y: -2, w: 131, h: 37 } },
+          ...(root.children ?? []).slice(1),
+        ],
+      },
+    );
+    expect(parked.mismatches.map((m) => m.path)).toEqual([
+      'provinceview/province_window/foreign_province_window',
+    ]);
+    expect(parked.compared).toBe(6);
     const foreign = profileVisibility(
       PROFILE,
       WINDOW,

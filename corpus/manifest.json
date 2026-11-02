@@ -5,7 +5,7 @@
     "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A"
   },
   "tongs": {
-    "version": "0.14.1"
+    "version": "0.23.0"
   },
   "uiScale": 1,
   "resolutions": [
@@ -310,6 +310,16 @@
           ],
           "selectors": {
             "page": "lobby"
+          },
+          "byPlayset": {
+            "anbennar": {
+              "codeFilled": ["country_selection_panel/lobby/left/option_button"],
+              "note": "Anbennar's lobby pulses the Options button, beside the alert arrow it shows there, so every capture has it unstable; Tongs before 0.15 masked it under the bookmark list, whose rect then reached below the screen (etch#232, tongs#74)."
+            },
+            "anbennar-alone": {
+              "codeFilled": ["country_selection_panel/lobby/left/option_button"],
+              "note": "Anbennar's lobby pulses the Options button, beside the alert arrow it shows there, so every capture has it unstable; Tongs before 0.15 masked it under the bookmark list, whose rect then reached below the screen (etch#232, tongs#74)."
+            }
           }
         }
       ]
@@ -546,14 +556,14 @@
                 "key": "3"
               },
               {
-                "click": "countrydiplomacyview/diplomatic_listbox/countrydiplomacyview_diplistitem[2]/countrydiplomacyview_shieldprogressitem[1]"
+                "click": "countrydiplomacyview/diplomatic_listbox/countrydiplomacyview_diplistitem[2]/box/countrydiplomacyview_shieldprogressitem[1]"
               },
               {
                 "click": "countrydiplomacyview/diploaction_list/diploactionentry[1]/button_diploaction"
               }
             ],
             "verified": true,
-            "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown. The first shield of the second relation in Russia's diplomacy list is the Commonwealth, visible at every corpus size; its diplomacy shows Declare War first, which opens DeclareWarDialog and declares nothing."
+            "evidence": "Run by the capture driver with Tongs 0.23.0 at the seven corpus resolutions in vanilla and at 2560×1440 and 3440×1440 in Proper 2K UI Enhanced on 2026-11-01 (etch#232): the steps opened the view and its roots were read and shown. The first shield of the second relation in Russia's diplomacy list is the Commonwealth, visible at every corpus size; its diplomacy shows Declare War first, which opens DeclareWarDialog and declares nothing. Tongs 0.23.0 reads a relation's shields inside the item's box, so the click names it (`…/box/…`)."
           },
           "roots": ["DeclareWarDialog", "topbar"],
           "codeFilled": [
@@ -593,14 +603,14 @@
                     "key": "3"
                   },
                   {
-                    "click": "countrydiplomacyview/diplomatic_listbox/countrydiplomacyview_diplistitem/countrydiplomacyview_shielditem"
+                    "click": "countrydiplomacyview/diplomatic_listbox/countrydiplomacyview_diplistitem/box/countrydiplomacyview_shielditem"
                   },
                   {
                     "click": "countrydiplomacyview/diploaction_list/diploactionentry/button_diploaction"
                   }
                 ],
                 "verified": true,
-                "evidence": "Run by the capture driver in the Anbennar playset at 2560×1440 and 3440×1440 and in Anbennar alone at 1280×720 to 1920×1080 on 2026-10-27 (M10), from the corpus save with its events answered: the steps opened the view and its roots were read and shown. Verne’s diplomacy lists one relation; its shield selects that country, whose actions show Declare War first (Anbennar groups the others in categories), which opens DeclareWarDialog and declares nothing."
+                "evidence": "Run by the capture driver with Tongs 0.23.0 in the Anbennar playset at 2560×1440 and 3440×1440 on 2026-11-01 (etch#232), from the corpus save with its events answered: the steps opened the view and its roots were read and shown. Verne’s diplomacy lists one relation; its shield selects that country, whose actions show Declare War first (Anbennar groups the others in categories), which opens DeclareWarDialog and declares nothing. Tongs 0.23.0 reads a relation's shields inside the item's box, so the click names it (`…/box/…`)."
               },
               "selectors": {
                 "aggressiveExpansion": "none"
@@ -617,14 +627,14 @@
                     "key": "3"
                   },
                   {
-                    "click": "countrydiplomacyview/diplomatic_listbox/countrydiplomacyview_diplistitem/countrydiplomacyview_shielditem"
+                    "click": "countrydiplomacyview/diplomatic_listbox/countrydiplomacyview_diplistitem/box/countrydiplomacyview_shielditem"
                   },
                   {
                     "click": "countrydiplomacyview/diploaction_list/diploactionentry/button_diploaction"
                   }
                 ],
                 "verified": true,
-                "evidence": "Run by the capture driver in the Anbennar playset at 2560×1440 and 3440×1440 and in Anbennar alone at 1280×720 to 1920×1080 on 2026-10-27 (M10), from the corpus save with its events answered: the steps opened the view and its roots were read and shown. Verne’s diplomacy lists one relation; its shield selects that country, whose actions show Declare War first (Anbennar groups the others in categories), which opens DeclareWarDialog and declares nothing."
+                "evidence": "Run by the capture driver with Tongs 0.23.0 in Anbennar alone at 1280×720 to 1920×1080 on 2026-11-01 (etch#232), from the corpus save with its events answered: the steps opened the view and its roots were read and shown. Verne’s diplomacy lists one relation; its shield selects that country, whose actions show Declare War first (Anbennar groups the others in categories), which opens DeclareWarDialog and declares nothing. Tongs 0.23.0 reads a relation's shields inside the item's box, so the click names it (`…/box/…`)."
               },
               "selectors": {
                 "aggressiveExpansion": "none"
@@ -647,17 +657,11 @@
             "from": "save",
             "steps": [
               {
-                "click": "outliner//outliner_buildnavy_entry[1]/outliner_standard"
-              },
-              {
-                "point": {
-                  "x": 0.5,
-                  "y": 0.5
-                }
+                "province": 148
               }
             ],
             "verified": true,
-            "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown. The outliner's first ship in construction (Macedonia in this save) centres the map on its province, and a click on the middle of the client area opens it (etch#42); a map click alone depends on where the camera is."
+            "evidence": "Run by the capture driver with Tongs 0.23.0 at the seven corpus resolutions in vanilla and at 2560×1440 and 3440×1440 in Proper 2K UI Enhanced on 2026-11-01 (etch#232): Tongs' province open 148 answered the province view with nothing over it and no game call, and the view's roots were read and shown. Every capture shows Macedonia, the player's own province."
           },
           "roots": ["provinceview", "topbar", "menubar"],
           "codeFilled": [
@@ -736,29 +740,11 @@
                 "from": "save",
                 "steps": [
                   {
-                    "key": "f"
-                  },
-                  {
-                    "click": "goto_box/goto_edit"
-                  },
-                  {
-                    "text": "Gemisle"
-                  },
-                  {
-                    "click": "goto_box/provinces/province_finder_entry[1]/title"
-                  },
-                  {
-                    "key": "return"
-                  },
-                  {
-                    "map": {
-                      "x": -0.655,
-                      "y": -0.1
-                    }
+                    "province": 286
                   }
                 ],
                 "verified": true,
-                "evidence": "Run by the capture driver in the Anbennar playset at 2560×1440 and 3440×1440 and in Anbennar alone at 1280×720 to 1920×1080 on 2026-10-27 (M10), from the corpus save with its events answered: the steps opened the view and its roots were read and shown. The Goto box (f) centres the map on Gemisle, and Verne’s own Heroes’ Rest (province 286) lies 0.655 client heights left of the centre; every capture shows Heroes’ Rest."
+                "evidence": "Run by the capture driver with Tongs 0.23.0 in the Anbennar playset at 2560×1440 and 3440×1440 on 2026-11-01 (etch#232): Tongs' province open 286 answered the province view with nothing over it and no game call, and the view's roots were read and shown. Every capture shows Verne's own Heroes' Rest."
               },
               "selectors": {
                 "construction": "no",
@@ -769,7 +755,7 @@
                 "parliament": "none",
                 "centerOfTrade": "no"
               },
-              "note": "The save (Verne, 11 November 1444) has no ship in construction: the province opens through the Goto box and a map point the same at every size.",
+              "note": "The save (Verne, 11 November 1444) has its own map: the view opens Verne's own Heroes' Rest (province 286).",
               "data": {
                 "province": 286
               }
@@ -779,29 +765,11 @@
                 "from": "save",
                 "steps": [
                   {
-                    "key": "f"
-                  },
-                  {
-                    "click": "goto_box/goto_edit"
-                  },
-                  {
-                    "text": "Gemisle"
-                  },
-                  {
-                    "click": "goto_box/provinces/province_finder_entry[1]/title"
-                  },
-                  {
-                    "key": "return"
-                  },
-                  {
-                    "map": {
-                      "x": -0.655,
-                      "y": -0.1
-                    }
+                    "province": 286
                   }
                 ],
                 "verified": true,
-                "evidence": "Run by the capture driver in the Anbennar playset at 2560×1440 and 3440×1440 and in Anbennar alone at 1280×720 to 1920×1080 on 2026-10-27 (M10), from the corpus save with its events answered: the steps opened the view and its roots were read and shown. The Goto box (f) centres the map on Gemisle, and Verne’s own Heroes’ Rest (province 286) lies 0.655 client heights left of the centre; every capture shows Heroes’ Rest."
+                "evidence": "Run by the capture driver with Tongs 0.23.0 in Anbennar alone at 1280×720 to 1920×1080 on 2026-11-01 (etch#232): Tongs' province open 286 answered the province view with nothing over it and no game call, and the view's roots were read and shown. Every capture shows Verne's own Heroes' Rest."
               },
               "selectors": {
                 "construction": "no",
@@ -812,7 +780,7 @@
                 "parliament": "none",
                 "centerOfTrade": "no"
               },
-              "note": "The save (Verne, 11 November 1444) has no ship in construction: the province opens through the Goto box and a map point the same at every size.",
+              "note": "The save (Verne, 11 November 1444) has its own map: the view opens Verne's own Heroes' Rest (province 286).",
               "data": {
                 "province": 286
               }
@@ -826,17 +794,11 @@
             "from": "save",
             "steps": [
               {
-                "click": "outliner//outliner_buildnavy_entry[1]/outliner_standard"
-              },
-              {
-                "map": {
-                  "x": -0.02,
-                  "y": -0.055
-                }
+                "province": 4702
               }
             ],
             "verified": true,
-            "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-27 (M10): the steps opened the view and its roots were read and shown. The outliner’s first ship in construction centres the map on Macedonia, and Siroz (province 4702, the Commonwealth’s) lies just above it; every capture shows Siroz."
+            "evidence": "Run by the capture driver with Tongs 0.23.0 at the seven corpus resolutions in vanilla and at 2560×1440 and 3440×1440 in Proper 2K UI Enhanced on 2026-11-01 (etch#232): Tongs' province open 4702 answered the province view with nothing over it and no game call, and the view's roots were read and shown. Every capture shows Siroz, the Commonwealth's."
           },
           "roots": ["provinceview", "topbar", "menubar", "speed_controls"],
           "codeFilled": [
@@ -925,29 +887,11 @@
                 "from": "save",
                 "steps": [
                   {
-                    "key": "f"
-                  },
-                  {
-                    "click": "goto_box/goto_edit"
-                  },
-                  {
-                    "text": "Verne"
-                  },
-                  {
-                    "click": "goto_box/provinces/province_finder_entry[1]/title"
-                  },
-                  {
-                    "key": "return"
-                  },
-                  {
-                    "map": {
-                      "x": -0.75,
-                      "y": -0.035
-                    }
+                    "province": 89
                   }
                 ],
                 "verified": true,
-                "evidence": "Run by the capture driver in the Anbennar playset at 2560×1440 and 3440×1440 and in Anbennar alone at 1280×720 to 1920×1080 on 2026-10-27 (M10), from the corpus save with its events answered: the steps opened the view and its roots were read and shown. The Goto box centres the map on the province Verne, and Ebenuel (province 89, Sorncóst’s) lies 0.75 client heights left of the centre; every capture shows Ebenuel."
+                "evidence": "Run by the capture driver with Tongs 0.23.0 in the Anbennar playset at 2560×1440 and 3440×1440 on 2026-11-01 (etch#232): Tongs' province open 89 answered the province view with nothing over it and no game call, and the view's roots were read and shown. Every capture shows Ebenuel, Sorncóst's."
               },
               "selectors": {
                 "buttonBar": "closed",
@@ -964,29 +908,11 @@
                 "from": "save",
                 "steps": [
                   {
-                    "key": "f"
-                  },
-                  {
-                    "click": "goto_box/goto_edit"
-                  },
-                  {
-                    "text": "Verne"
-                  },
-                  {
-                    "click": "goto_box/provinces/province_finder_entry[1]/title"
-                  },
-                  {
-                    "key": "return"
-                  },
-                  {
-                    "map": {
-                      "x": -0.75,
-                      "y": -0.035
-                    }
+                    "province": 89
                   }
                 ],
                 "verified": true,
-                "evidence": "Run by the capture driver in the Anbennar playset at 2560×1440 and 3440×1440 and in Anbennar alone at 1280×720 to 1920×1080 on 2026-10-27 (M10), from the corpus save with its events answered: the steps opened the view and its roots were read and shown. The Goto box centres the map on the province Verne, and Ebenuel (province 89, Sorncóst’s) lies 0.75 client heights left of the centre; every capture shows Ebenuel."
+                "evidence": "Run by the capture driver with Tongs 0.23.0 in Anbennar alone at 1280×720 to 1920×1080 on 2026-11-01 (etch#232): Tongs' province open 89 answered the province view with nothing over it and no game call, and the view's roots were read and shown. Every capture shows Ebenuel, Sorncóst's."
               },
               "selectors": {
                 "buttonBar": "closed",

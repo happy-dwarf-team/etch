@@ -3,9 +3,9 @@
   "playset": "vanilla",
   "resolution": { "width": 1920, "height": 1080 },
   "view": "ledger",
-  "takenAt": "2026-10-21T22:11:34.737Z",
+  "takenAt": "2026-11-01T05:30:21.379Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
-  "tongs": { "version": "0.14.1" },
+  "tongs": { "version": "0.23.0" },
   "save": { "sha256": "2A4CAF306CCDDB2DAFC7EE015C4ECFFB260654A1D10D86F5F4F768D3C3F56F6A" },
   "mods": [],
   "disabledDlcs": [],
@@ -13,17 +13,17 @@
     "from": "save",
     "steps": [{ "key": "l" }],
     "verified": true,
-    "evidence": "Run by the capture driver (etch#42) at 1280x720 and 1920x1080 on 2026-10-21: the steps opened the view and its roots were read and shown."
+    "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown."
   },
   "window": { "width": 1920, "height": 1080, "dpi": 96 },
   "screenshot": {
-    "sha256": "91EAF6F8F150331CF604A7435AD6F435CF3A40D792A86D32DFA3709C3E5A564B",
+    "sha256": "FB92162EDE884EDD13FC0F061C5F650019511ED0838E7DAEF645BF98D82065A3",
     "width": 1920,
     "height": 1080,
     "shots": 4,
     "unstable": {
-      "pixels": 1008734,
-      "sha256": "11299AE77A65D57460D77F3E83900B852D33403CBB637D53A9CA62B595101BBE"
+      "pixels": 989825,
+      "sha256": "D2B6EE13232A325808323B48B6AF6A0C366152F5D78AEAE9232C751460E65292"
     }
   },
   "widgets": [
@@ -283,7 +283,7 @@
               "path": "ledger/ledger_piecharts/ledger_piechart_bg",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 960, "y": -100, "w": 1020, "h": 640 }
+              "rect": { "x": 960, "y": 0, "w": 960, "h": 540 }
             }
           ]
         },

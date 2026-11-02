@@ -133,7 +133,10 @@ export interface CorpusView {
    * left out).
    */
   readonly data?: ViewData;
-  /** What differs in one playset, by playset id: its own recipe, selector values or note. */
+  /**
+   * What differs in one playset, by playset id: its own recipe, selector values, data, code-filled
+   * patterns or note.
+   */
   readonly byPlayset?: Readonly<Record<string, PlaysetView>>;
   readonly note?: string;
 }
@@ -154,12 +157,14 @@ export interface PlaysetView {
   readonly selectors?: Readonly<Record<string, string>>;
   /** Replaces the view's `data` in this playset. */
   readonly data?: ViewData;
+  /** Patterns of what the game's code fills or hides in this playset only; added to the view's. */
+  readonly codeFilled?: readonly string[];
   readonly note?: string;
 }
 
 /**
  * A view as one playset captures it: the view with its recipe, selectors and data of that playset
- * (`byPlayset`) in place of the defaults.
+ * (`byPlayset`) in place of the defaults, and that playset's code-filled patterns added.
  */
 export function viewInPlayset(view: CorpusView, playset: Pick<CorpusPlayset, 'id'>): CorpusView {
   const own = view.byPlayset?.[playset.id];
@@ -167,6 +172,7 @@ export function viewInPlayset(view: CorpusView, playset: Pick<CorpusPlayset, 'id
   return {
     ...view,
     recipe: own.recipe ?? view.recipe,
+    codeFilled: [...view.codeFilled, ...(own.codeFilled ?? [])],
     ...(own.data !== undefined ? { data: own.data } : {}),
     ...(view.selectors !== undefined || own.selectors !== undefined
       ? { selectors: { ...view.selectors, ...own.selectors } }
@@ -624,12 +630,16 @@ function checkView(
     for (const [playset, own] of Object.entries(by ?? {})) {
       const ownAt = field(byAt, playset);
       playsets.push({ id: playset, at: ownAt });
-      const entry = c.object(own, ownAt, [], ['recipe', 'selectors', 'data', 'note']);
+      const entry = c.object(own, ownAt, [], ['recipe', 'selectors', 'data', 'codeFilled', 'note']);
       if (entry === undefined) continue;
       optionalString(c, entry, ownAt, 'note');
       if ('recipe' in entry) checkRecipe(c, entry['recipe'], field(ownAt, 'recipe'));
       if ('selectors' in entry) checkSelectors(c, entry['selectors'], field(ownAt, 'selectors'));
       if ('data' in entry) checkData(c, entry['data'], field(ownAt, 'data'));
+      if ('codeFilled' in entry) {
+        const filledAt = field(ownAt, 'codeFilled');
+        c.array(entry['codeFilled'], filledAt, (v, pathAt) => pattern(c, v, pathAt));
+      }
     }
   }
   return { id, playsets };

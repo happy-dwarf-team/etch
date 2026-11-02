@@ -3,9 +3,9 @@
   "playset": "vanilla",
   "resolution": { "width": 3440, "height": 1440 },
   "view": "ledger",
-  "takenAt": "2026-10-21T22:14:16.815Z",
+  "takenAt": "2026-11-01T05:36:46.693Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
-  "tongs": { "version": "0.14.1" },
+  "tongs": { "version": "0.23.0" },
   "save": { "sha256": "2A4CAF306CCDDB2DAFC7EE015C4ECFFB260654A1D10D86F5F4F768D3C3F56F6A" },
   "mods": [],
   "disabledDlcs": [],
@@ -13,17 +13,17 @@
     "from": "save",
     "steps": [{ "key": "l" }],
     "verified": true,
-    "evidence": "Run by the capture driver (etch#42) at 1280x720 and 1920x1080 on 2026-10-21: the steps opened the view and its roots were read and shown."
+    "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown."
   },
   "window": { "width": 3440, "height": 1440, "dpi": 96 },
   "screenshot": {
-    "sha256": "C9B0356B88D32ABA1E672AB7B41CBBFD0ACDB255F5699C4DA53B8A86F0F87124",
+    "sha256": "80AEF48AAD526BFF4A4E61159C8E9EF393AF2CB2F9B8952B869CF9B8110CA8FF",
     "width": 3440,
     "height": 1440,
     "shots": 4,
     "unstable": {
-      "pixels": 3015830,
-      "sha256": "1DEE86745836D0DDFAE4A907A39C0BD548C11AB2FBFAE3B1B10F4818526D405C"
+      "pixels": 3024330,
+      "sha256": "4946C3C6BEEB1D217991E6763910A7E5A80E42FD86841FAABDFF9F6308D815A1"
     }
   },
   "widgets": [

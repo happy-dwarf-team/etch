@@ -3,9 +3,9 @@
   "playset": "anbennar-alone",
   "resolution": { "width": 1920, "height": 1080 },
   "view": "esc-menu",
-  "takenAt": "2026-10-27T22:39:32.550Z",
+  "takenAt": "2026-11-01T06:04:29.438Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
-  "tongs": { "version": "0.14.1" },
+  "tongs": { "version": "0.23.0" },
   "save": { "sha256": "AACEDFE6FD0294B80961679AB9618BC48195A9E9A239BE41292CEFFE156FDD3D" },
   "mods": [
     {
@@ -22,13 +22,13 @@
   },
   "window": { "width": 1920, "height": 1080, "dpi": 96 },
   "screenshot": {
-    "sha256": "1464C272601973141E64CFA3F362093B04B9B4D17C5FDB8E7B8A1F0F3C0F31FE",
+    "sha256": "C6FE14F5808620ACBD5D6872230205D4DBCAB2619C1A7E040E7684BDECEE5022",
     "width": 1920,
     "height": 1080,
     "shots": 4,
     "unstable": {
-      "pixels": 1717933,
-      "sha256": "2B069FEFC5D9B131FF28BC114A8655BA4FFBB909A645EEA6B7D18246E3F80FCA"
+      "pixels": 1718501,
+      "sha256": "2B6AEA25BBD0F49947D00FDD2CA051CC5D9D646D544C1431254E882B9D032B8F"
     }
   },
   "widgets": [
@@ -363,7 +363,7 @@
               "path": "menu/menu_message_settings/messagesettings_label_02",
               "type": "text",
               "visible": false,
-              "rect": { "x": -50, "y": 119, "w": 79, "h": 18 },
+              "rect": { "x": 0, "y": 119, "w": 29, "h": 18 },
               "text": "Dynasty"
             },
             {

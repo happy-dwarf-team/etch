@@ -3,9 +3,9 @@
   "playset": "vanilla",
   "resolution": { "width": 1280, "height": 720 },
   "view": "message-settings",
-  "takenAt": "2026-10-21T22:01:16.661Z",
+  "takenAt": "2026-11-01T05:17:54.110Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
-  "tongs": { "version": "0.14.1" },
+  "tongs": { "version": "0.23.0" },
   "save": { "sha256": "2A4CAF306CCDDB2DAFC7EE015C4ECFFB260654A1D10D86F5F4F768D3C3F56F6A" },
   "mods": [],
   "disabledDlcs": [],
@@ -13,17 +13,17 @@
     "from": "save",
     "steps": [{ "key": "escape" }, { "click": "menu//menu_message_button" }],
     "verified": true,
-    "evidence": "Run by the capture driver (etch#42) at 1280x720 and 1920x1080 on 2026-10-21: the steps opened the view and its roots were read and shown."
+    "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown."
   },
   "window": { "width": 1280, "height": 720, "dpi": 96 },
   "screenshot": {
-    "sha256": "E7B798A93006CE4D78A4CF48674F35126866F7BB4D9518E01F877A2E3A5041E9",
+    "sha256": "DAC9FBBD6AC8EC94AFD51DAEA55D278BCC9B4786EF0BF2EE3E6CA5FDAB204D2F",
     "width": 1280,
     "height": 720,
     "shots": 4,
     "unstable": {
-      "pixels": 187920,
-      "sha256": "F8BA6778001C7E7DD6B5577E9041F6F7AFD65B1DA1E9A43472066EF36A1E6364"
+      "pixels": 395452,
+      "sha256": "35C8FCF3499C0BF0A52D8AD4C2C6B7944D4086EA211B80FE532582FD7C9BD172"
     }
   },
   "widgets": [
@@ -242,7 +242,7 @@
               "name": "messagesettings_filter",
               "path": "menu/menu_message_settings/messagesettings_filter",
               "type": "button",
-              "visible": true,
+              "visible": false,
               "rect": { "x": 99847, "y": 173, "w": 149, "h": 31 },
               "text": "Filter",
               "enabled": true
@@ -325,7 +325,7 @@
               "name": "disable_all_messages",
               "path": "menu/menu_message_settings/disable_all_messages",
               "type": "button",
-              "visible": true,
+              "visible": false,
               "rect": { "x": 99832, "y": 488, "w": 149, "h": 31 },
               "text": "Disable all",
               "enabled": true
@@ -486,7 +486,7 @@
               "path": "menu/menu_message_settings/settings",
               "type": "listbox",
               "visible": true,
-              "rect": { "x": 406, "y": 278, "w": 128, "h": 440 },
+              "rect": { "x": 406, "y": 278, "w": 128, "h": 280 },
               "children": [
                 {
                   "name": "message_entry",

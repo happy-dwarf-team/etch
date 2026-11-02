@@ -30,7 +30,7 @@ joined by `-`, because they become file names.
 | --- | --- |
 | `formatVersion` | `1` |
 | `game` | `version` and `exeSha256` (uppercase) of the build every capture comes from: 1.37.5 |
-| `tongs` | `version` of the Tongs release every capture is taken with. 0.14.1 is the first release that reads no false stale widgets on a fresh start (tongs#61, tongs#63) |
+| `tongs` | `version` of the Tongs release every capture is taken with: 0.23.0, for the `province` step (0.21) and the ready wait (0.19, etch#232). 0.14.1 was the first release that reads no false stale widgets on a fresh start (tongs#61, tongs#63) |
 | `uiScale` | `1`: no other `game_ui_scale` is checked |
 | `resolutions` | `width`, `height`, `confirmed` and `evidence` per size. Only confirmed sizes gate a release. [etch#18](https://github.com/happy-dwarf-team/etch/issues/18) confirmed the six of v1: 3440×1440 is the lab's monitor, borderless; the smaller sizes are windowed client areas (below). M10 added 2560×1440 (a windowed client area too, confirmed by its captures) and 3840×2160, which no window of the lab can hold (its desktop is 6000×1440, a window at most 6020×1460): it stays unconfirmed (etch#163). In every corpus playset 1920×1080 and above share one `if_resolution` band (no block has a width bound or a height bound above 1080) and 1440 and 2160 reach the country views' largest size step, so 3840×2160 differs from 3440×1440 only in the screen's size, read from the `.gui` files and not measured |
 | `codeFilledKinds` | `.gui` widget kinds whose content the game always fills (lists, grids, overlapping elements), masked in every view |
@@ -76,7 +76,7 @@ opens and one capture records, such as the main menu and the lobby of
 | `codeMoved` | optional widget patterns of what the game's code moves away from where its `.gui` puts it: a dialog the game opens beside the panel that asked for it, a section the game moves on a taller screen. The comparison draws each such widget and everything inside it where the game shows it, and compares it there (etch#44) |
 | `selectors` | optional values of the window profiles' selectors the view is captured with, by selector id (`"owner": "yes"`), where a profile has a choice the screen does not make; `resolution` selectors come from the capture's size. Each profiled root's profile is evaluated with them for the visibility gate (below, ADR 0006). An id a root's profile does not have is left out for that root |
 | `data` | optional: what of the playset's save the view shows, `province` by id and `country` by tag (the save's player when left out), for the report of the profiles' `save` texts against the capture's (below) |
-| `byPlayset` | optional, by playset id: what differs in that playset, its own `recipe`, `selectors` (replacing the view's values of those ids), `data` and `note`. The Anbennar playsets' save has no ship in construction, so their province views open another way (spec v2 section 11) |
+| `byPlayset` | optional, by playset id: what differs in that playset, its own `recipe`, `selectors` (replacing the view's values of those ids), `data`, `codeFilled` (added to the view's patterns) and `note`. The Anbennar playsets have their own map, so their province views open other provinces (spec v2 section 11), and their lobby pulses the Options button |
 
 A **recipe** is the Tongs input that opens a view from a known start state:
 
@@ -99,16 +99,17 @@ A **recipe** is the Tongs input that opens a view from a known start state:
 
 A verified recipe names its roots. Unverified recipes may leave steps or roots
 empty: the driver (etch#42) verifies each one live, fills in what is missing
-and sets `verified`. The province view
-opens with a `point` step on the map.
+and sets `verified`. The province views
+open with a `province` step.
 
 A `map` point is the same place of the map at every corpus resolution: the map's
 camera keeps its height in view, so a distance in client heights from the
 centre (where the Goto box or an outliner entry puts the camera) lands on the
 same province at 1280×720 and at 3440×1440 (checked by hand in M10: the same
 provinces under the same points at both sizes). A `point` scales with the
-width instead, so at another aspect ratio it lands elsewhere. The Anbennar
-playsets' province views use `map` points.
+width instead, so at another aspect ratio it lands elsewhere. Until
+etch#232 the province views opened with an outliner entry or the Goto box and
+such a point; no view uses one now.
 
 A `province` step needs no point at all: Tongs' `province open ID` (its
 `docs/commands.md`, "Navigation") closes the open views, moves the camera to
@@ -121,9 +122,7 @@ settled yet (`settled: false`, while the real mouse is at a screen edge) is
 not a failure. The step needs `input = true` and is a client call
 ([tongs ADR 0003](https://github.com/happy-dwarf-team/tongs/blob/main/docs/adr/0003-client-calls.md)),
 not a game call; with a Tongs older than 0.21 the view fails at that step,
-before Tongs is asked. The manifest's province views still use `point` and `map` steps: the
-corpus pins Tongs 0.14.1, and moving its recipes to `province` steps goes with
-the recapture that a newer Tongs pin needs.
+before Tongs is asked.
 
 The maintainer's Anbennar save opens with three events over the middle of the
 screen; below 1440 pixels the tallest one's option lies under the client area,
@@ -448,9 +447,29 @@ How a view is compared (`planCapture` and `compareCapture` in
   lobby's bookmark shields), is taken when the view names it code-filled. Below it, the capture's children pair with the layout's by
   name, ignoring case, in order among siblings of the same name; unnamed
   children pair in order among the unnamed ones.
+- **Fitted rects.** Tongs since 0.15 fits the game's rects to what it draws
+  (tongs#74), and the layout's are fitted the same way before they are
+  compared (`FitRects` in Tongs' `ui_tree.cpp`), children before their
+  parents:
+  - a window the game has children for, with no size of its own or not
+    inside the client area (a `fullscreen` window), takes the bounds of its
+    children that have a size, of the ones the game shows when any has one;
+  - then every rect is clipped to the client area, and a widget wholly
+    outside it is not shown.
+
+  A window's children are the game's: the layout's rect of each one the
+  layout has too, the game's rect of one only the game has or its code
+  fills. A window the game shows with none of its children shown takes the
+  bounds of children the game does not lay out (Anbennar's
+  `aPUI_parent_container` parks them at x 1280); its rect places nothing the
+  game draws and is not compared. A widget the layout puts wholly outside
+  the screen, where the game shows it, fails.
 - **Moved widgets.** A widget a `codeMoved` pattern names is drawn, with
   everything inside it, moved by the difference between the game's rect and
-  the layout's; its report says how far (`moved`).
+  the layout's; its report says how far (`moved`). A moved window that takes
+  its children's bounds has no position of its own to the game, so it is
+  moved by how far the children the layout places (not code-filled, shown by
+  the game) are from where the game shows them, together.
 - **What is drawn.** The roots' widgets in paint order, without code-filled
   widgets the game did not create (only the layout has them: alternative
   sub-windows the code never opens) and without the widgets the
@@ -461,8 +480,7 @@ How a view is compared (`planCapture` and `compareCapture` in
 - **Masks.** Pixels the render does not cover fully (alpha below 255); and
   code-filled content: the game's rects of the widgets the view's `codeFilled`
   patterns or the manifest's `codeFilledKinds` name and of everything inside
-  them, and the render's draws of those widgets. A game rect 0 or 1 pixel
-  wide and taller than that, which Tongs gives shields, is masked as a square. A widget the capture reports
+  them, and the render's draws of those widgets. A widget the capture reports
   disabled (`enabled` false) or checked (`checked` true) is code-filled too:
   the game's code set that state, and the offline renderer draws the `.gui`'s
   (etch#44: the Esc menu's AI settings, greyed out in the game).
@@ -471,7 +489,7 @@ How a view is compared (`planCapture` and `compareCapture` in
   more than 5 % of a widget's pixels are unstable, it fails: the capture
   shows something the game animates there. The mask's hash must be the
   record's, like the screenshot's.
-- **A widget passes** when its rect rounds to the game's rect (a window's
+- **A widget passes** when its fitted rect, rounded, is the game's rect (a window's
   position only: a window draws nothing itself, and Tongs' window sizes may
   not be the drawn panel) and at least
   99 % of its compared pixels are within ±2 in red, green and blue (the
@@ -489,7 +507,10 @@ How a view is compared (`planCapture` and `compareCapture` in
   Every widget of the window that the capture has must be drawn exactly when
   the game showed it (itself and its parents visible), whether the profile
   names it or not; a text the game showed empty is left out, as it draws
-  nothing either way. A mismatch, or a profile that does not load cleanly, is a problem
+  nothing either way. So is a widget the game puts wholly outside the
+  client area, with everything inside it: Tongs counts it hidden for where
+  it is (tongs#74), so whether the game's code shows it is not known
+  (Anbennar's `topbar_1` at x 119415). A mismatch, or a profile that does not load cleanly, is a problem
   of the capture and fails it; the report lists them, and `visibility` in the
   capture's report has each root's count.
 - **Save texts** (reported, not gated, spec v2 section 14). With `--saves

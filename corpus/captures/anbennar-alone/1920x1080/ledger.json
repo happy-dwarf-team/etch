@@ -3,9 +3,9 @@
   "playset": "anbennar-alone",
   "resolution": { "width": 1920, "height": 1080 },
   "view": "ledger",
-  "takenAt": "2026-10-27T22:40:41.875Z",
+  "takenAt": "2026-11-01T06:05:25.642Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
-  "tongs": { "version": "0.14.1" },
+  "tongs": { "version": "0.23.0" },
   "save": { "sha256": "AACEDFE6FD0294B80961679AB9618BC48195A9E9A239BE41292CEFFE156FDD3D" },
   "mods": [
     {
@@ -22,13 +22,13 @@
   },
   "window": { "width": 1920, "height": 1080, "dpi": 96 },
   "screenshot": {
-    "sha256": "2B272EFD0EC1AEA5620190825FB9E7245963E932B77D1CB6E837C98E26CDEFBC",
+    "sha256": "D4A1FFF693643C2FB4FC9532EEE65E785072544450FC65E8862CCC6D9F2FBFBA",
     "width": 1920,
     "height": 1080,
     "shots": 4,
     "unstable": {
-      "pixels": 1245165,
-      "sha256": "ABDB7802F22ADF25B62DAA55F8D8E8892A26588E2A26F6F450E8B7ABC59F8578"
+      "pixels": 1056931,
+      "sha256": "6E4945E4023C0993D139154930ED5225F39AC0FA746E54A6EBD3DBE43A4DDE34"
     }
   },
   "widgets": [
@@ -288,7 +288,7 @@
               "path": "ledger/ledger_piecharts/ledger_piechart_bg",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 960, "y": -100, "w": 1020, "h": 640 }
+              "rect": { "x": 960, "y": 0, "w": 960, "h": 540 }
             }
           ]
         },

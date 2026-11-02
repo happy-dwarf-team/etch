@@ -3,9 +3,9 @@
   "playset": "anbennar",
   "resolution": { "width": 2560, "height": 1440 },
   "view": "diplomacy",
-  "takenAt": "2026-10-27T22:06:14.661Z",
+  "takenAt": "2026-11-01T22:30:12.742Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
-  "tongs": { "version": "0.14.1" },
+  "tongs": { "version": "0.23.0" },
   "save": { "sha256": "AACEDFE6FD0294B80961679AB9618BC48195A9E9A239BE41292CEFFE156FDD3D" },
   "mods": [
     {
@@ -30,13 +30,13 @@
   },
   "window": { "width": 2560, "height": 1440, "dpi": 96 },
   "screenshot": {
-    "sha256": "70CFDBBFDBB2CE54B3CDEE1A53AD5369B1761FDF28AF4D9676873EF0C0304C9B",
+    "sha256": "3D681ABFF35CD204F1018EE48A79D476E24F4CBE9474B845750D1B5A2CC96194",
     "width": 2560,
     "height": 1440,
     "shots": 4,
     "unstable": {
-      "pixels": 2574637,
-      "sha256": "BBCB751DE5A1E82DF93051752D903D360C0B76ED20F23A1C2776A24E7F416DB3"
+      "pixels": 2582824,
+      "sha256": "FE51A43A8038C44842EAAA61DCCBC92E43197D6929EE0F8D3E373C0E165BCBF6"
     }
   },
   "widgets": [
@@ -60,7 +60,7 @@
           "path": "countrydiplomacyview/countryshield",
           "type": "button",
           "visible": true,
-          "rect": { "x": 0, "y": 273, "w": 0, "h": 111 },
+          "rect": { "x": 0, "y": 273, "w": 111, "h": 111 },
           "enabled": true
         },
         {
@@ -238,7 +238,7 @@
           "path": "countrydiplomacyview/domesticpanel_bg_bottom",
           "type": "icon",
           "visible": true,
-          "rect": { "x": -10, "y": 156, "w": 692, "h": 1114 }
+          "rect": { "x": 0, "y": 156, "w": 682, "h": 1114 }
         },
         {
           "name": "diplomacy_ui_overlay",
@@ -252,14 +252,14 @@
           "path": "countrydiplomacyview/topGold",
           "type": "icon",
           "visible": true,
-          "rect": { "x": -7, "y": 267, "w": 684, "h": 59 }
+          "rect": { "x": 0, "y": 267, "w": 677, "h": 59 }
         },
         {
           "name": "bottomGold",
           "path": "countrydiplomacyview/bottomGold",
           "type": "icon",
           "visible": true,
-          "rect": { "x": -1, "y": 504, "w": 684, "h": 59 }
+          "rect": { "x": 0, "y": 504, "w": 683, "h": 59 }
         },
         {
           "name": "countryshield_glow",
@@ -776,7 +776,7 @@
           "path": "countrydiplomacyview/lake_fed_info_cohesion_diplo",
           "type": "text",
           "visible": false,
-          "rect": { "x": -91, "y": 323, "w": 620, "h": 21 },
+          "rect": { "x": 0, "y": 323, "w": 529, "h": 21 },
           "text": ""
         },
         {
@@ -784,7 +784,7 @@
           "path": "countrydiplomacyview/lake_fed_info_cohesion_not_republic",
           "type": "text",
           "visible": false,
-          "rect": { "x": -91, "y": 290, "w": 620, "h": 21 },
+          "rect": { "x": 0, "y": 290, "w": 529, "h": 21 },
           "text": ""
         },
         {
@@ -792,7 +792,7 @@
           "path": "countrydiplomacyview/lake_fed_info_diplo",
           "type": "text",
           "visible": false,
-          "rect": { "x": -91, "y": 300, "w": 620, "h": 21 },
+          "rect": { "x": 0, "y": 300, "w": 529, "h": 21 },
           "text": ""
         },
         {
@@ -800,7 +800,7 @@
           "path": "countrydiplomacyview/lake_fed_info_diplo_not_republic",
           "type": "text",
           "visible": false,
-          "rect": { "x": -91, "y": 269, "w": 620, "h": 21 },
+          "rect": { "x": 0, "y": 269, "w": 529, "h": 21 },
           "text": ""
         },
         {
@@ -1094,23 +1094,129 @@
         {
           "name": "enemies_box",
           "path": "countrydiplomacyview/enemies_box",
-          "type": "other",
+          "type": "listbox",
           "visible": true,
-          "rect": { "x": 125, "y": 531, "w": 216, "h": 39 }
+          "rect": { "x": 125, "y": 531, "w": 216, "h": 39 },
+          "children": [
+            {
+              "name": "countrydiplomacyview_shielditem",
+              "path": "countrydiplomacyview/enemies_box/countrydiplomacyview_shielditem[1]",
+              "type": "window",
+              "visible": true,
+              "rect": { "x": 125, "y": 531, "w": 33, "h": 39 },
+              "children": [
+                {
+                  "name": "shield",
+                  "path": "countrydiplomacyview/enemies_box/countrydiplomacyview_shielditem[1]/shield",
+                  "type": "button",
+                  "visible": true,
+                  "rect": { "x": 125, "y": 531, "w": 39, "h": 39 },
+                  "enabled": true
+                }
+              ]
+            },
+            {
+              "name": "countrydiplomacyview_shielditem",
+              "path": "countrydiplomacyview/enemies_box/countrydiplomacyview_shielditem[2]",
+              "type": "window",
+              "visible": true,
+              "rect": { "x": 159, "y": 531, "w": 33, "h": 39 },
+              "children": [
+                {
+                  "name": "shield",
+                  "path": "countrydiplomacyview/enemies_box/countrydiplomacyview_shielditem[2]/shield",
+                  "type": "button",
+                  "visible": true,
+                  "rect": { "x": 159, "y": 531, "w": 39, "h": 39 },
+                  "enabled": true
+                }
+              ]
+            },
+            {
+              "name": "countrydiplomacyview_shielditem",
+              "path": "countrydiplomacyview/enemies_box/countrydiplomacyview_shielditem[3]",
+              "type": "window",
+              "visible": true,
+              "rect": { "x": 193, "y": 531, "w": 33, "h": 39 },
+              "children": [
+                {
+                  "name": "shield",
+                  "path": "countrydiplomacyview/enemies_box/countrydiplomacyview_shielditem[3]/shield",
+                  "type": "button",
+                  "visible": true,
+                  "rect": { "x": 193, "y": 531, "w": 39, "h": 39 },
+                  "enabled": true
+                }
+              ]
+            }
+          ]
         },
         {
           "name": "rivals_box",
           "path": "countrydiplomacyview/rivals_box",
-          "type": "other",
+          "type": "listbox",
           "visible": true,
-          "rect": { "x": 125, "y": 579, "w": 240, "h": 39 }
+          "rect": { "x": 125, "y": 579, "w": 240, "h": 39 },
+          "children": [
+            {
+              "name": "countrydiplomacyview_shielditem_rival",
+              "path": "countrydiplomacyview/rivals_box/countrydiplomacyview_shielditem_rival[1]",
+              "type": "window",
+              "visible": true,
+              "rect": { "x": 125, "y": 579, "w": 33, "h": 39 },
+              "children": [
+                {
+                  "name": "shield",
+                  "path": "countrydiplomacyview/rivals_box/countrydiplomacyview_shielditem_rival[1]/shield",
+                  "type": "button",
+                  "visible": true,
+                  "rect": { "x": 125, "y": 579, "w": 39, "h": 39 },
+                  "enabled": true
+                }
+              ]
+            },
+            {
+              "name": "countrydiplomacyview_shielditem_rival",
+              "path": "countrydiplomacyview/rivals_box/countrydiplomacyview_shielditem_rival[2]",
+              "type": "window",
+              "visible": true,
+              "rect": { "x": 159, "y": 579, "w": 33, "h": 39 },
+              "children": [
+                {
+                  "name": "shield",
+                  "path": "countrydiplomacyview/rivals_box/countrydiplomacyview_shielditem_rival[2]/shield",
+                  "type": "button",
+                  "visible": true,
+                  "rect": { "x": 159, "y": 579, "w": 39, "h": 39 },
+                  "enabled": true
+                }
+              ]
+            },
+            {
+              "name": "countrydiplomacyview_shielditem_rival",
+              "path": "countrydiplomacyview/rivals_box/countrydiplomacyview_shielditem_rival[3]",
+              "type": "window",
+              "visible": true,
+              "rect": { "x": 193, "y": 579, "w": 33, "h": 39 },
+              "children": [
+                {
+                  "name": "shield",
+                  "path": "countrydiplomacyview/rivals_box/countrydiplomacyview_shielditem_rival[3]/shield",
+                  "type": "button",
+                  "visible": true,
+                  "rect": { "x": 193, "y": 579, "w": 39, "h": 39 },
+                  "enabled": true
+                }
+              ]
+            }
+          ]
         },
         {
           "name": "custom_diplomacy_window",
           "path": "countrydiplomacyview/custom_diplomacy_window",
           "type": "window",
           "visible": false,
-          "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+          "rect": { "x": 21, "y": 18, "w": 1559, "h": 759 },
           "children": [
             {
               "name": "diplomatic_actions_button_grey",
@@ -1179,7 +1285,7 @@
               "path": "countrydiplomacyview/custom_diplomacy_window/custom_diplomacy_header_container",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "rect": { "x": 21, "y": 18, "w": 1502, "h": 702 },
               "children": [
                 {
                   "name": "custom_diplomacy_header_back",
@@ -1204,7 +1310,7 @@
               "path": "countrydiplomacyview/custom_diplomacy_window/custom_diplomacy_categories_container",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "rect": { "x": 1280, "y": 681, "w": 243, "h": 39 },
               "children": [
                 {
                   "name": "custdip_general_button",
@@ -1267,14 +1373,14 @@
               "path": "countrydiplomacyview/custom_diplomacy_window/custom_diplomacy_general_container",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "rect": { "x": 1280, "y": 687, "w": 262, "h": 33 },
               "children": [
                 {
                   "name": "custom_diplomacy_overlord_container",
                   "path": "countrydiplomacyview/custom_diplomacy_window/custom_diplomacy_general_container/custom_diplomacy_overlord_container",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 1280, "y": 687, "w": 262, "h": 33 },
                   "children": [
                     {
                       "name": "cancel_autonomous_vassal",
@@ -1303,14 +1409,14 @@
               "path": "countrydiplomacyview/custom_diplomacy_window/custom_diplomacy_government_container",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "rect": { "x": 1280, "y": 687, "w": 262, "h": 33 },
               "children": [
                 {
                   "name": "custom_diplomacy_raja",
                   "path": "countrydiplomacyview/custom_diplomacy_window/custom_diplomacy_government_container/custom_diplomacy_raja",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 1280, "y": 687, "w": 262, "h": 33 },
                   "children": [
                     {
                       "name": "raja_make_senapti_action",
@@ -1330,14 +1436,14 @@
               "path": "countrydiplomacyview/custom_diplomacy_window/custom_diplomacy_religion_container",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "rect": { "x": 1280, "y": 687, "w": 262, "h": 33 },
               "children": [
                 {
                   "name": "custom_diplomacy_religion_new_sun_cult",
                   "path": "countrydiplomacyview/custom_diplomacy_window/custom_diplomacy_religion_container/custom_diplomacy_religion_new_sun_cult",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 1280, "y": 687, "w": 262, "h": 33 },
                   "children": [
                     {
                       "name": "nsc_incense_itar_hasis_action",
@@ -1364,7 +1470,7 @@
                   "path": "countrydiplomacyview/custom_diplomacy_window/custom_diplomacy_religion_container/custom_diplomacy_religion_rinta_seekers",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 1280, "y": 687, "w": 262, "h": 33 },
                   "children": [
                     {
                       "name": "rs_steal_telescope_funds",
@@ -1382,7 +1488,7 @@
                   "path": "countrydiplomacyview/custom_diplomacy_window/custom_diplomacy_religion_container/custom_diplomacy_religion_shadowpact",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 1280, "y": 687, "w": 262, "h": 33 },
                   "children": [
                     {
                       "name": "sp_induce_illness",
@@ -1409,14 +1515,14 @@
               "path": "countrydiplomacyview/custom_diplomacy_window/custom_diplomacy_estates_container",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "rect": { "x": 1280, "y": 687, "w": 262, "h": 33 },
               "children": [
                 {
                   "name": "custom_diplomacy_vampires_container",
                   "path": "countrydiplomacyview/custom_diplomacy_window/custom_diplomacy_estates_container/custom_diplomacy_vampires_container",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 1280, "y": 687, "w": 262, "h": 33 },
                   "children": [
                     {
                       "name": "vampire_spread_action",
@@ -1463,14 +1569,14 @@
               "path": "countrydiplomacyview/custom_diplomacy_window/custom_diplomacy_unique_container",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "rect": { "x": 1280, "y": 687, "w": 262, "h": 33 },
               "children": [
                 {
                   "name": "custom_diplomacy_Y20",
                   "path": "countrydiplomacyview/custom_diplomacy_window/custom_diplomacy_unique_container/custom_diplomacy_Y20",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 1280, "y": 687, "w": 262, "h": 33 },
                   "children": [
                     {
                       "name": "Y20_feiten_buy_skyport_rights",
@@ -1496,7 +1602,7 @@
                   "path": "countrydiplomacyview/custom_diplomacy_window/custom_diplomacy_unique_container/custom_diplomacy_Y10",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 1280, "y": 687, "w": 262, "h": 33 },
                   "children": [
                     {
                       "name": "Y10_yingzhen_contract_killing_action",
@@ -1523,7 +1629,7 @@
                   "path": "countrydiplomacyview/custom_diplomacy_window/custom_diplomacy_unique_container/custom_diplomacy_Z99",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 1280, "y": 687, "w": 262, "h": 33 },
                   "children": [
                     {
                       "name": "Z99_acolytes_interaction",
@@ -1550,7 +1656,7 @@
                   "path": "countrydiplomacyview/custom_diplomacy_window/custom_diplomacy_unique_container/custom_diplomacy_B58",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 1280, "y": 687, "w": 262, "h": 33 },
                   "children": [
                     {
                       "name": "B58_adenica_convert_action",
@@ -1568,7 +1674,7 @@
                   "path": "countrydiplomacyview/custom_diplomacy_window/custom_diplomacy_unique_container/custom_diplomacy_F35",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 1280, "y": 687, "w": 262, "h": 33 },
                   "children": [
                     {
                       "name": "F35_azkabar_cult_minor_action",
@@ -1595,7 +1701,7 @@
                   "path": "countrydiplomacyview/custom_diplomacy_window/custom_diplomacy_unique_container/custom_diplomacy_B32",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 1280, "y": 687, "w": 262, "h": 33 },
                   "children": [
                     {
                       "name": "B32_make_castanorian_dominion_vassal",
@@ -1667,7 +1773,7 @@
                   "path": "countrydiplomacyview/custom_diplomacy_window/custom_diplomacy_unique_container/custom_diplomacy_Z97",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 1280, "y": 687, "w": 262, "h": 33 },
                   "children": [
                     {
                       "name": "Z97_build_up_aelantir_relics",
@@ -1719,7 +1825,7 @@
                   "path": "countrydiplomacyview/custom_diplomacy_window/custom_diplomacy_unique_container/custom_diplomacy_B02",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 1280, "y": 687, "w": 262, "h": 33 },
                   "children": [
                     {
                       "name": "B02_spiritual_guidance",
@@ -1737,7 +1843,7 @@
                   "path": "countrydiplomacyview/custom_diplomacy_window/custom_diplomacy_unique_container/custom_diplomacy_H85",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 1280, "y": 687, "w": 262, "h": 33 },
                   "children": [
                     {
                       "name": "H85_assassination_attempt_action",
@@ -1755,7 +1861,7 @@
                   "path": "countrydiplomacyview/custom_diplomacy_window/custom_diplomacy_unique_container/custom_diplomacy_B37",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 1280, "y": 687, "w": 262, "h": 33 },
                   "children": [
                     {
                       "name": "B37_invite_shadowmoon_conspiracy",
@@ -1773,7 +1879,7 @@
                   "path": "countrydiplomacyview/custom_diplomacy_window/custom_diplomacy_unique_container/custom_diplomacy_Y25",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 1280, "y": 687, "w": 262, "h": 33 },
                   "children": [
                     {
                       "name": "Y25_zongji_fealty_action",
@@ -1799,7 +1905,7 @@
                   "path": "countrydiplomacyview/custom_diplomacy_window/custom_diplomacy_unique_container/custom_diplomacy_J95",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 1280, "y": 687, "w": 262, "h": 33 },
                   "children": [
                     {
                       "name": "J95_rhasail_parrrley_action",
@@ -1817,7 +1923,7 @@
                   "path": "countrydiplomacyview/custom_diplomacy_window/custom_diplomacy_unique_container/custom_diplomacy_I69",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 1280, "y": 687, "w": 262, "h": 33 },
                   "children": [
                     {
                       "name": "star_rider_fervour_action",
@@ -1835,7 +1941,7 @@
                   "path": "countrydiplomacyview/custom_diplomacy_window/custom_diplomacy_unique_container/custom_diplomacy_Y15",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 1280, "y": 687, "w": 262, "h": 33 },
                   "children": [
                     {
                       "name": "beikdugang_turn_subject_revolutionary",
@@ -1853,7 +1959,7 @@
                   "path": "countrydiplomacyview/custom_diplomacy_window/custom_diplomacy_unique_container/custom_diplomacy_U39",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 1280, "y": 687, "w": 262, "h": 33 },
                   "children": [
                     {
                       "name": "U39_assassination_action",
@@ -1871,7 +1977,7 @@
                   "path": "countrydiplomacyview/custom_diplomacy_window/custom_diplomacy_unique_container/custom_diplomacy_L80",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 1280, "y": 687, "w": 262, "h": 33 },
                   "children": [
                     {
                       "name": "L80_relorks_plea",
@@ -1897,7 +2003,7 @@
                   "path": "countrydiplomacyview/custom_diplomacy_window/custom_diplomacy_unique_container/custom_diplomacy_S37",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 1280, "y": 687, "w": 262, "h": 33 },
                   "children": [
                     {
                       "name": "S37_send_bongo_band",
@@ -1915,7 +2021,7 @@
                   "path": "countrydiplomacyview/custom_diplomacy_window/custom_diplomacy_unique_container/custom_diplomacy_A80",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 1280, "y": 687, "w": 262, "h": 33 },
                   "children": [
                     {
                       "name": "A80_establish_hezoggdoum",
@@ -1933,7 +2039,7 @@
                   "path": "countrydiplomacyview/custom_diplomacy_window/custom_diplomacy_unique_container/custom_diplomacy_F98",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 1280, "y": 687, "w": 262, "h": 33 },
                   "children": [
                     {
                       "name": "F98_harpylen_encourage_migration_action",
@@ -1980,7 +2086,7 @@
               "path": "countrydiplomacyview/vassal_select_window/background",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1280, "y": -394, "w": 692, "h": 1114 }
+              "rect": { "x": 1280, "y": 0, "w": 692, "h": 720 }
             },
             {
               "name": "description",
@@ -2002,7 +2108,7 @@
                   "path": "countrydiplomacyview/vassal_select_window/vassal_select_list/standardlistbox_slider",
                   "type": "other",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 701, "w": 19, "h": 751 },
+                  "rect": { "x": 1280, "y": 701, "w": 19, "h": 739 },
                   "children": [
                     {
                       "name": "listboxSliderButton",
@@ -2016,7 +2122,7 @@
                       "path": "countrydiplomacyview/vassal_select_window/vassal_select_list/standardlistbox_slider/listboxTrackButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 720, "w": 15, "h": 732 }
+                      "rect": { "x": 1280, "y": 720, "w": 15, "h": 720 }
                     },
                     {
                       "name": "downButton",
@@ -2101,7 +2207,7 @@
               "path": "countrydiplomacyview/select_rivals_window/choose_rivals_bg",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1280, "y": -277, "w": 684, "h": 997 }
+              "rect": { "x": 1280, "y": 0, "w": 684, "h": 720 }
             },
             {
               "name": "rival_name_label",
@@ -2155,7 +2261,7 @@
                   "path": "countrydiplomacyview/select_rivals_window/list/standardlistbox_slider",
                   "type": "other",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 701, "w": 19, "h": 821 },
+                  "rect": { "x": 1280, "y": 701, "w": 19, "h": 739 },
                   "children": [
                     {
                       "name": "listboxSliderButton",
@@ -2169,7 +2275,7 @@
                       "path": "countrydiplomacyview/select_rivals_window/list/standardlistbox_slider/listboxTrackButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 720, "w": 15, "h": 802 }
+                      "rect": { "x": 1280, "y": 720, "w": 15, "h": 720 }
                     },
                     {
                       "name": "downButton",
@@ -2225,24 +2331,26 @@
                 {
                   "name": "box",
                   "path": "countrydiplomacyview/diplomatic_listbox/countrydiplomacyview_diplistitem/box",
-                  "type": "other",
+                  "type": "listbox",
                   "visible": true,
-                  "rect": { "x": 78, "y": 630, "w": 215, "h": 45 }
-                },
-                {
-                  "name": "countrydiplomacyview_shielditem",
-                  "path": "countrydiplomacyview/diplomatic_listbox/countrydiplomacyview_diplistitem/countrydiplomacyview_shielditem",
-                  "type": "window",
-                  "visible": true,
-                  "rect": { "x": 78, "y": 630, "w": 33, "h": 39 },
+                  "rect": { "x": 78, "y": 630, "w": 215, "h": 45 },
                   "children": [
                     {
-                      "name": "shield",
-                      "path": "countrydiplomacyview/diplomatic_listbox/countrydiplomacyview_diplistitem/countrydiplomacyview_shielditem/shield",
-                      "type": "button",
+                      "name": "countrydiplomacyview_shielditem",
+                      "path": "countrydiplomacyview/diplomatic_listbox/countrydiplomacyview_diplistitem/box/countrydiplomacyview_shielditem",
+                      "type": "window",
                       "visible": true,
-                      "rect": { "x": 78, "y": 630, "w": 0, "h": 39 },
-                      "enabled": true
+                      "rect": { "x": 78, "y": 630, "w": 33, "h": 39 },
+                      "children": [
+                        {
+                          "name": "shield",
+                          "path": "countrydiplomacyview/diplomatic_listbox/countrydiplomacyview_diplistitem/box/countrydiplomacyview_shielditem/shield",
+                          "type": "button",
+                          "visible": true,
+                          "rect": { "x": 78, "y": 630, "w": 39, "h": 39 },
+                          "enabled": true
+                        }
+                      ]
                     }
                   ]
                 }
@@ -2294,7 +2402,7 @@
           "path": "countrydiplomacyview/diploopinion_list",
           "type": "listbox",
           "visible": true,
-          "rect": { "x": 360, "y": 669, "w": 264, "h": 5053 },
+          "rect": { "x": 360, "y": 669, "w": 264, "h": 496 },
           "children": [
             {
               "name": "countryactionentry",
@@ -2316,7 +2424,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[1]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -2365,7 +2473,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[2]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -2414,7 +2522,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[3]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -2463,7 +2571,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[4]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -2512,7 +2620,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[5]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -2561,7 +2669,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[6]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -2610,7 +2718,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[7]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -2659,7 +2767,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[8]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -2708,7 +2816,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[9]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -2757,7 +2865,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[10]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -2806,7 +2914,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[11]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -2855,7 +2963,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[12]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -2904,7 +3012,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[13]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -2953,7 +3061,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[14]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -3002,7 +3110,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[15]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -3051,7 +3159,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[16]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -3100,7 +3208,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[17]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -3149,7 +3257,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[18]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -3198,7 +3306,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[19]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -3247,7 +3355,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[20]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -3296,7 +3404,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[21]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -3345,7 +3453,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[22]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -3394,7 +3502,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[23]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -3443,7 +3551,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[24]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -3492,7 +3600,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[25]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -3541,7 +3649,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[26]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -3590,7 +3698,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[27]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -3639,7 +3747,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[28]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -3688,7 +3796,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[29]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -3737,7 +3845,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[30]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -3786,7 +3894,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[31]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -3835,7 +3943,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[32]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -3884,7 +3992,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[33]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -3933,7 +4041,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[34]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -3982,7 +4090,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[35]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -4031,7 +4139,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[36]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -4080,7 +4188,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[37]/country_flag",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 375, "y": 768, "w": 0, "h": 25 },
+                  "rect": { "x": 375, "y": 768, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -4129,7 +4237,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[38]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -4178,7 +4286,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[39]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -4227,7 +4335,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[40]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -4276,7 +4384,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[41]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -4325,7 +4433,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[42]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -4374,7 +4482,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[43]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -4423,7 +4531,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[44]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -4472,7 +4580,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[45]/country_flag",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 375, "y": 985, "w": 0, "h": 25 },
+                  "rect": { "x": 375, "y": 985, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -4521,7 +4629,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[46]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -4570,7 +4678,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[47]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -4619,7 +4727,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[48]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -4668,7 +4776,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[49]/country_flag",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 375, "y": 892, "w": 0, "h": 25 },
+                  "rect": { "x": 375, "y": 892, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -4717,7 +4825,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[50]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -4766,7 +4874,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[51]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -4815,7 +4923,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[52]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -4864,7 +4972,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[53]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -4913,7 +5021,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[54]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -4962,7 +5070,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[55]/country_flag",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 375, "y": 1016, "w": 0, "h": 25 },
+                  "rect": { "x": 375, "y": 1016, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -5011,7 +5119,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[56]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -5060,7 +5168,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[57]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -5109,7 +5217,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[58]/country_flag",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 375, "y": 830, "w": 0, "h": 25 },
+                  "rect": { "x": 375, "y": 830, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -5158,7 +5266,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[59]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -5207,7 +5315,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[60]/country_flag",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 375, "y": 954, "w": 0, "h": 25 },
+                  "rect": { "x": 375, "y": 954, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -5256,7 +5364,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[61]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -5305,7 +5413,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[62]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -5354,7 +5462,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[63]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -5403,7 +5511,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[64]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -5452,7 +5560,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[65]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -5501,7 +5609,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[66]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -5550,7 +5658,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[67]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -5599,7 +5707,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[68]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -5648,7 +5756,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[69]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -5697,7 +5805,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[70]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -5746,7 +5854,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[71]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -5795,7 +5903,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[72]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -5844,7 +5952,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[73]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -5893,7 +6001,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[74]/country_flag",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 375, "y": 923, "w": 0, "h": 25 },
+                  "rect": { "x": 375, "y": 923, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -5942,7 +6050,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[75]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -5991,7 +6099,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[76]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -6040,7 +6148,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[77]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -6089,7 +6197,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[78]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -6138,7 +6246,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[79]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -6187,7 +6295,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[80]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -6236,7 +6344,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[81]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -6285,7 +6393,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[82]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -6334,7 +6442,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[83]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -6383,7 +6491,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[84]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -6432,7 +6540,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[85]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -6481,7 +6589,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[86]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -6530,7 +6638,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[87]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -6579,7 +6687,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[88]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -6628,7 +6736,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[89]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -6677,7 +6785,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[90]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -6726,7 +6834,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[91]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -6775,7 +6883,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[92]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -6824,7 +6932,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[93]/country_flag",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 375, "y": 1078, "w": 0, "h": 25 },
+                  "rect": { "x": 375, "y": 1078, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -6873,7 +6981,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[94]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -6922,7 +7030,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[95]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -6971,7 +7079,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[96]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -7020,7 +7128,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[97]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -7069,7 +7177,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[98]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -7118,7 +7226,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[99]/country_flag",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 375, "y": 706, "w": 0, "h": 25 },
+                  "rect": { "x": 375, "y": 706, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -7167,7 +7275,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[100]/country_flag",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 375, "y": 1109, "w": 0, "h": 25 },
+                  "rect": { "x": 375, "y": 1109, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -7216,7 +7324,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[101]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -7265,7 +7373,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[102]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -7314,7 +7422,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[103]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -7363,7 +7471,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[104]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -7412,7 +7520,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[105]/country_flag",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 375, "y": 799, "w": 0, "h": 25 },
+                  "rect": { "x": 375, "y": 799, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -7461,7 +7569,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[106]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -7510,7 +7618,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[107]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -7559,7 +7667,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[108]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -7608,7 +7716,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[109]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -7657,7 +7765,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[110]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -7706,7 +7814,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[111]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -7755,7 +7863,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[112]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -7804,7 +7912,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[113]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -7853,7 +7961,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[114]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -7902,7 +8010,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[115]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -7951,7 +8059,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[116]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -8000,7 +8108,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[117]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -8049,7 +8157,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[118]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -8098,7 +8206,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[119]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -8147,7 +8255,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[120]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -8196,7 +8304,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[121]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -8245,7 +8353,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[122]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -8294,7 +8402,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[123]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -8343,7 +8451,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[124]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -8392,7 +8500,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[125]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -8441,7 +8549,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[126]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -8490,7 +8598,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[127]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -8539,7 +8647,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[128]/country_flag",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 375, "y": 861, "w": 0, "h": 25 },
+                  "rect": { "x": 375, "y": 861, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -8588,7 +8696,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[129]/country_flag",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 375, "y": 1140, "w": 0, "h": 25 },
+                  "rect": { "x": 375, "y": 1140, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -8637,7 +8745,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[130]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -8686,7 +8794,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[131]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -8735,7 +8843,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[132]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -8784,7 +8892,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[133]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -8833,7 +8941,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[134]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -8882,7 +8990,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[135]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -8931,7 +9039,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[136]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -8980,7 +9088,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[137]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -9029,7 +9137,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[138]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -9078,7 +9186,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[139]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -9127,7 +9235,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[140]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -9176,7 +9284,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[141]/country_flag",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 375, "y": 1047, "w": 0, "h": 25 },
+                  "rect": { "x": 375, "y": 1047, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -9225,7 +9333,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[142]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -9274,7 +9382,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[143]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -9323,7 +9431,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[144]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -9372,7 +9480,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[145]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -9421,7 +9529,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[146]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -9470,7 +9578,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[147]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -9519,7 +9627,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[148]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -9568,7 +9676,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[149]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -9617,7 +9725,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[150]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -9666,7 +9774,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[151]/country_flag",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 375, "y": 675, "w": 0, "h": 25 },
+                  "rect": { "x": 375, "y": 675, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -9715,7 +9823,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[152]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -9764,7 +9872,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[153]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -9813,7 +9921,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[154]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -9862,7 +9970,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[155]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -9911,7 +10019,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[156]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -9960,7 +10068,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[157]/country_flag",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 375, "y": 737, "w": 0, "h": 25 },
+                  "rect": { "x": 375, "y": 737, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -10009,7 +10117,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[158]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -10058,7 +10166,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[159]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -10107,7 +10215,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[160]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -10156,7 +10264,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[161]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -10205,7 +10313,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[162]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -10254,7 +10362,7 @@
                   "path": "countrydiplomacyview/diploopinion_list/countryactionentry[163]/country_flag",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 695, "w": 0, "h": 25 },
+                  "rect": { "x": 1280, "y": 695, "w": 31, "h": 25 },
                   "enabled": true
                 },
                 {
@@ -10754,108 +10862,6 @@
           "visible": true,
           "rect": { "x": 380, "y": 583, "w": 255, "h": 39 },
           "text": "Search here..."
-        },
-        {
-          "name": "countrydiplomacyview_shielditem_rival",
-          "path": "countrydiplomacyview/countrydiplomacyview_shielditem_rival[1]",
-          "type": "window",
-          "visible": true,
-          "rect": { "x": 125, "y": 579, "w": 33, "h": 39 },
-          "children": [
-            {
-              "name": "shield",
-              "path": "countrydiplomacyview/countrydiplomacyview_shielditem_rival[1]/shield",
-              "type": "button",
-              "visible": true,
-              "rect": { "x": 125, "y": 579, "w": 0, "h": 39 },
-              "enabled": true
-            }
-          ]
-        },
-        {
-          "name": "countrydiplomacyview_shielditem_rival",
-          "path": "countrydiplomacyview/countrydiplomacyview_shielditem_rival[2]",
-          "type": "window",
-          "visible": true,
-          "rect": { "x": 159, "y": 579, "w": 33, "h": 39 },
-          "children": [
-            {
-              "name": "shield",
-              "path": "countrydiplomacyview/countrydiplomacyview_shielditem_rival[2]/shield",
-              "type": "button",
-              "visible": true,
-              "rect": { "x": 159, "y": 579, "w": 0, "h": 39 },
-              "enabled": true
-            }
-          ]
-        },
-        {
-          "name": "countrydiplomacyview_shielditem_rival",
-          "path": "countrydiplomacyview/countrydiplomacyview_shielditem_rival[3]",
-          "type": "window",
-          "visible": true,
-          "rect": { "x": 193, "y": 579, "w": 33, "h": 39 },
-          "children": [
-            {
-              "name": "shield",
-              "path": "countrydiplomacyview/countrydiplomacyview_shielditem_rival[3]/shield",
-              "type": "button",
-              "visible": true,
-              "rect": { "x": 193, "y": 579, "w": 0, "h": 39 },
-              "enabled": true
-            }
-          ]
-        },
-        {
-          "name": "countrydiplomacyview_shielditem",
-          "path": "countrydiplomacyview/countrydiplomacyview_shielditem[1]",
-          "type": "window",
-          "visible": true,
-          "rect": { "x": 125, "y": 531, "w": 33, "h": 39 },
-          "children": [
-            {
-              "name": "shield",
-              "path": "countrydiplomacyview/countrydiplomacyview_shielditem[1]/shield",
-              "type": "button",
-              "visible": true,
-              "rect": { "x": 125, "y": 531, "w": 0, "h": 39 },
-              "enabled": true
-            }
-          ]
-        },
-        {
-          "name": "countrydiplomacyview_shielditem",
-          "path": "countrydiplomacyview/countrydiplomacyview_shielditem[2]",
-          "type": "window",
-          "visible": true,
-          "rect": { "x": 159, "y": 531, "w": 33, "h": 39 },
-          "children": [
-            {
-              "name": "shield",
-              "path": "countrydiplomacyview/countrydiplomacyview_shielditem[2]/shield",
-              "type": "button",
-              "visible": true,
-              "rect": { "x": 159, "y": 531, "w": 0, "h": 39 },
-              "enabled": true
-            }
-          ]
-        },
-        {
-          "name": "countrydiplomacyview_shielditem",
-          "path": "countrydiplomacyview/countrydiplomacyview_shielditem[3]",
-          "type": "window",
-          "visible": true,
-          "rect": { "x": 193, "y": 531, "w": 33, "h": 39 },
-          "children": [
-            {
-              "name": "shield",
-              "path": "countrydiplomacyview/countrydiplomacyview_shielditem[3]/shield",
-              "type": "button",
-              "visible": true,
-              "rect": { "x": 193, "y": 531, "w": 0, "h": 39 },
-              "enabled": true
-            }
-          ]
         }
       ]
     },
@@ -11001,14 +11007,14 @@
       "path": "topbar",
       "type": "window",
       "visible": true,
-      "rect": { "x": 0, "y": -1, "w": 2560, "h": 1440 },
+      "rect": { "x": 0, "y": 0, "w": 2528, "h": 1440 },
       "children": [
         {
           "name": "player_shield",
           "path": "topbar/player_shield",
           "type": "button",
           "visible": true,
-          "rect": { "x": -5, "y": 2, "w": 1, "h": 184 },
+          "rect": { "x": 0, "y": 2, "w": 179, "h": 184 },
           "enabled": true
         },
         {
@@ -11102,21 +11108,21 @@
           "name": "topbar_1",
           "path": "topbar/topbar_1",
           "type": "icon",
-          "visible": true,
+          "visible": false,
           "rect": { "x": 119415, "y": -2, "w": 131, "h": 37 }
         },
         {
           "name": "topbar_2",
           "path": "topbar/topbar_2",
           "type": "icon",
-          "visible": true,
+          "visible": false,
           "rect": { "x": 1189229, "y": -2, "w": 131, "h": 37 }
         },
         {
           "name": "topbar_3",
           "path": "topbar/topbar_3",
           "type": "icon",
-          "visible": true,
+          "visible": false,
           "rect": { "x": 1189839, "y": -2, "w": 131, "h": 37 }
         },
         {
@@ -11124,7 +11130,7 @@
           "path": "topbar/topbar_upper_left_bg",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 0, "y": -1, "w": 1173, "h": 192 }
+          "rect": { "x": 0, "y": 0, "w": 1173, "h": 191 }
         },
         {
           "name": "topbar_upper_left_bg4",
@@ -11438,14 +11444,14 @@
           "path": "topbar/powerprojection_topbar",
           "type": "window",
           "visible": true,
-          "rect": { "x": 241, "y": -1, "w": 120, "h": 120 },
+          "rect": { "x": 830, "y": 0, "w": 115, "h": 61 },
           "children": [
             {
               "name": "topbar_liberty_overlay",
               "path": "topbar/powerprojection_topbar/topbar_liberty_overlay",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 830, "y": -2, "w": 115, "h": 63 }
+              "rect": { "x": 830, "y": 0, "w": 115, "h": 61 }
             },
             {
               "name": "icon_powerprojection",
@@ -11500,7 +11506,7 @@
           "path": "topbar/p2kuie_mana_window",
           "type": "window",
           "visible": true,
-          "rect": { "x": 2120, "y": 1365, "w": 0, "h": 0 },
+          "rect": { "x": 2070, "y": 1365, "w": 116, "h": 75 },
           "children": [
             {
               "name": "p2kuie_mana_value_btn",
@@ -11515,7 +11521,7 @@
               "path": "topbar/p2kuie_mana_window/p2kuie_mana_value",
               "type": "text",
               "visible": true,
-              "rect": { "x": 2070, "y": 1414, "w": 109, "h": 31 },
+              "rect": { "x": 2070, "y": 1414, "w": 109, "h": 26 },
               "text": "1"
             }
           ]
@@ -11655,7 +11661,7 @@
               "path": "topbar/racial_pop_root_window/racial_pop_list_interface",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "rect": { "x": 0, "y": 0, "w": 545, "h": 726 },
               "children": [
                 {
                   "name": "racial_pop_management_list",
@@ -11850,7 +11856,7 @@
                       "path": "topbar/racial_pop_root_window/racial_pop_list_interface/racial_pop_management_list/racial_pop_header_group",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 0, "y": 0, "w": 1476, "h": 720 },
                       "children": [
                         {
                           "name": "racial_pop_list_headerbutton1",
@@ -11944,7 +11950,7 @@
                       "path": "topbar/racial_pop_root_window/racial_pop_list_interface/racial_pop_management_list/racial_menu_list_red_underlays",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 685, "w": 527, "h": 35 },
                       "children": [
                         {
                           "name": "racial_menu_list_button_red_underlay_1",
@@ -13329,7 +13335,7 @@
               "path": "topbar/racial_pop_root_window/racial_pop_selection_window",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "rect": { "x": 235, "y": 12, "w": 1433, "h": 708 },
               "children": [
                 {
                   "name": "racial_pop_selected_portrait",
@@ -13367,14 +13373,14 @@
               "path": "topbar/racial_pop_root_window/racial_pop_management_window",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "rect": { "x": 0, "y": 0, "w": 1899, "h": 720 },
               "children": [
                 {
                   "name": "racial_pop_help_window",
                   "path": "topbar/racial_pop_root_window/racial_pop_management_window/racial_pop_help_window",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 5, "y": 2, "w": 1894, "h": 718 },
                   "children": [
                     {
                       "name": "racial_pop_help_outline",
@@ -13436,7 +13442,7 @@
                   "path": "topbar/racial_pop_root_window/racial_pop_management_window/racial_pop_ulation_data_window",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 0, "y": 0, "w": 1522, "h": 720 },
                   "children": [
                     {
                       "name": "racial_pop_population_data_outline",
@@ -13494,7 +13500,7 @@
                       "path": "topbar/racial_pop_root_window/racial_pop_management_window/racial_pop_ulation_data_window/racial_pop_ulation_textbox_column1",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 0, "y": 0, "w": 157, "h": 96 },
                       "children": [
                         {
                           "name": "racial_pop_current_percent_owned_text",
@@ -13535,7 +13541,7 @@
                       "path": "topbar/racial_pop_root_window/racial_pop_management_window/racial_pop_ulation_data_window/racial_pop_ulation_textbox_column2",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 0, "y": 0, "w": 61, "h": 96 },
                       "children": [
                         {
                           "name": "racial_pop_current_percent_owned",
@@ -13578,14 +13584,14 @@
                   "path": "topbar/racial_pop_root_window/racial_pop_management_window/racial_pop_ulation_policy_window",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 36, "y": 0, "w": 1473, "h": 720 },
                   "children": [
                     {
                       "name": "racial_pop_policy_window",
                       "path": "topbar/racial_pop_root_window/racial_pop_management_window/racial_pop_ulation_policy_window/racial_pop_policy_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 79, "y": 1, "w": 1415, "h": 719 },
                       "children": [
                         {
                           "name": "racial_pop_policy_outline",
@@ -13631,7 +13637,7 @@
                       "path": "topbar/racial_pop_root_window/racial_pop_management_window/racial_pop_ulation_policy_window/racial_pop_enact_policy_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 36, "y": 0, "w": 1473, "h": 720 },
                       "children": [
                         {
                           "name": "racial_pop_enact_policy_outline",
@@ -13697,7 +13703,7 @@
                           "path": "topbar/racial_pop_root_window/racial_pop_management_window/racial_pop_ulation_policy_window/racial_pop_enact_policy_window/racial_pop_policy_buttons_window",
                           "type": "window",
                           "visible": false,
-                          "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                          "rect": { "x": 1280, "y": 681, "w": 105, "h": 39 },
                           "children": [
                             {
                               "name": "racial_pop_policy_purge_button_1",
@@ -13811,7 +13817,7 @@
               "path": "topbar/racial_pop_root_window/racial_military_management_window",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "rect": { "x": 2, "y": 2, "w": 1897, "h": 1050 },
               "children": [
                 {
                   "name": "racial_mil_twist_banner",
@@ -13887,7 +13893,7 @@
                   "path": "topbar/racial_pop_root_window/racial_military_management_window/racial_mil_special_military_flavour_window",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 235, "y": 12, "w": 1433, "h": 708 },
                   "children": [
                     {
                       "name": "racial_mil_special_military_portrait",
@@ -13925,7 +13931,7 @@
                   "path": "topbar/racial_pop_root_window/racial_military_management_window/racial_mil_select_special_mil_window",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 8, "y": 4, "w": 1498, "h": 716 },
                   "children": [
                     {
                       "name": "racial_mil_select_spirit_military",
@@ -13965,7 +13971,7 @@
                   "path": "topbar/racial_pop_root_window/racial_military_management_window/racial_mil_change_military_buttons",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 1280, "y": 681, "w": 105, "h": 39 },
                   "children": [
                     {
                       "name": "racial_mil_change_racial_military_1",
@@ -14159,7 +14165,7 @@
               "path": "topbar/racial_pop_root_window/racial_pop_view_bg",
               "type": "button",
               "visible": false,
-              "rect": { "x": 1280, "y": -400, "w": 1229, "h": 1120 }
+              "rect": { "x": 1280, "y": 0, "w": 1229, "h": 720 }
             }
           ]
         },
@@ -14175,7 +14181,7 @@
               "path": "topbar/achievements_root_window/achievement_window_small_bg",
               "type": "button",
               "visible": false,
-              "rect": { "x": 1280, "y": -204, "w": 741, "h": 924 },
+              "rect": { "x": 1280, "y": 0, "w": 741, "h": 720 },
               "enabled": true
             },
             {
@@ -14222,7 +14228,7 @@
                   "path": "topbar/achievements_root_window/achievement_indiv/achievement_page_text",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": -5, "y": 924, "w": 1444, "h": 34 },
+                  "rect": { "x": 0, "y": 924, "w": 1439, "h": 34 },
                   "text": ""
                 },
                 {
@@ -15985,7 +15991,7 @@
                   "path": "topbar/achievements_root_window/achievement_indiv_small/achievement_page_small_text",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": -5, "y": 39, "w": 742, "h": 34 },
+                  "rect": { "x": 0, "y": 39, "w": 737, "h": 34 },
                   "text": ""
                 },
                 {
@@ -17196,7 +17202,7 @@
               "path": "topbar/achievements_root_window/achievement_window_bg",
               "type": "button",
               "visible": false,
-              "rect": { "x": 1280, "y": -251, "w": 1443, "h": 971 }
+              "rect": { "x": 1280, "y": 0, "w": 1280, "h": 720 }
             }
           ]
         },
@@ -17221,7 +17227,7 @@
               "path": "topbar/achievements_alert_window/achievement_complete_text",
               "type": "text",
               "visible": false,
-              "rect": { "x": -5, "y": 175, "w": 669, "h": 34 },
+              "rect": { "x": 0, "y": 175, "w": 664, "h": 34 },
               "text": "Achievement Complete"
             },
             {
@@ -17229,7 +17235,7 @@
               "path": "topbar/achievements_alert_window/achievement_complete_name",
               "type": "text",
               "visible": false,
-              "rect": { "x": -5, "y": 254, "w": 669, "h": 34 },
+              "rect": { "x": 0, "y": 254, "w": 664, "h": 34 },
               "text": ""
             },
             {
@@ -17665,7 +17671,7 @@
               "path": "topbar/magic_menu_parent/magic_menu_main",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "rect": { "x": 0, "y": 0, "w": 1812, "h": 865 },
               "children": [
                 {
                   "name": "magic_menu_heading",
@@ -17760,7 +17766,7 @@
                   "path": "topbar/magic_menu_parent/magic_menu_main/magic_menu_main_magic_stats_row",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 24, "y": 35, "w": 1493, "h": 830 },
                   "children": [
                     {
                       "name": "magical_infrastructure_banner",
@@ -17781,7 +17787,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_main/magic_menu_main_magic_stats_row/magic_menu_main_magic_exp_info",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 30, "y": 35, "w": 1487, "h": 830 },
                       "children": [
                         {
                           "name": "magic_menu_advancement_outline",
@@ -17901,7 +17907,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_main/magic_menu_main_magic_stats_row/magic_menu_main_mana_info",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 24, "y": 116, "w": 1493, "h": 749 },
                       "children": [
                         {
                           "name": "magic_menu_mana_shadow",
@@ -17976,7 +17982,7 @@
                   "path": "topbar/magic_menu_parent/magic_menu_main/magic_menu_main_row_3",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 0, "y": 4, "w": 1812, "h": 833 },
                   "children": [
                     {
                       "name": "magic_menu_infamy_shadow",
@@ -18023,7 +18029,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_main/magic_menu_main_row_3/magic_menu_infamy_types",
                       "type": "text",
                       "visible": false,
-                      "rect": { "x": -48, "y": 4, "w": 242, "h": 63 },
+                      "rect": { "x": 0, "y": 4, "w": 194, "h": 63 },
                       "text": "[Root.getNameIfRulerIsMage][Root.getNameIfHeirIsMage][Root.getNameIfConsortIsMage][Root.getNameIfIfHaveMagesEstate]"
                     },
                     {
@@ -18043,7 +18049,7 @@
               "path": "topbar/magic_menu_parent/magic_menu_spellbook_window",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "rect": { "x": 24, "y": 0, "w": 1624, "h": 1277 },
               "children": [
                 {
                   "name": "magic_spellbook_heading",
@@ -18058,7 +18064,7 @@
                   "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_main_mana_info",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 24, "y": 0, "w": 1493, "h": 865 },
                   "children": [
                     {
                       "name": "magic_menu_mana_shadow",
@@ -18111,7 +18117,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_main_mana_info/magic_menu_mana_title_text",
                       "type": "text",
                       "visible": false,
-                      "rect": { "x": 24, "y": -4, "w": 182, "h": 31 },
+                      "rect": { "x": 24, "y": 0, "w": 182, "h": 27 },
                       "text": "Mana"
                     },
                     {
@@ -18137,7 +18143,7 @@
                   "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_change_spellbook_window",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 24, "y": 2, "w": 1511, "h": 718 },
                   "children": [
                     {
                       "name": "magic_menu_button_change_school_abjuration_spellbook",
@@ -18305,7 +18311,7 @@
                   "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_standard_spells_window",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 48, "y": 0, "w": 1600, "h": 1277 },
                   "children": [
                     {
                       "name": "magic_menu_cast_spells_shadow",
@@ -18515,7 +18521,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_standard_spells_window/magic_menu_spellbook_abjuration",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_cast_abjuration_spell1_button",
@@ -18572,7 +18578,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_standard_spells_window/magic_menu_spellbook_conjuration",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_cast_conjuration_spell1_button",
@@ -18629,7 +18635,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_standard_spells_window/magic_menu_spellbook_divination",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_menu_divination_spell_1_button",
@@ -18686,7 +18692,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_standard_spells_window/magic_menu_spellbook_enchantment",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_cast_enchantment_spell1_button",
@@ -18743,7 +18749,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_standard_spells_window/magic_menu_spellbook_evocation",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_cast_evocation_spell1_button",
@@ -18800,7 +18806,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_standard_spells_window/magic_menu_spellbook_illusion",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_cast_illusion_spell1_button",
@@ -18857,7 +18863,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_standard_spells_window/magic_menu_spellbook_necromancy",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_cast_necromancy_spell1_button",
@@ -18914,7 +18920,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_standard_spells_window/magic_menu_spellbook_transmutation",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_cast_transmutation_spell1_button",
@@ -18973,7 +18979,7 @@
                   "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 48, "y": 0, "w": 1600, "h": 1277 },
                   "children": [
                     {
                       "name": "magic_menu_cast_spells_shadow",
@@ -19003,14 +19009,14 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_list_template",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_list_template_default",
                           "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_list_template/magic_list_template_default",
                           "type": "window",
                           "visible": false,
-                          "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                          "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                           "children": [
                             {
                               "name": "magic_list_template_1_button_default",
@@ -19109,7 +19115,7 @@
                           "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_list_template/magic_list_template_tag_specific_example",
                           "type": "window",
                           "visible": false,
-                          "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                          "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                           "children": [
                             {
                               "name": "magic_list_template_1_button_tag_specific_example",
@@ -19168,14 +19174,14 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_list_harpy",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_list_harpy_default",
                           "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_list_harpy/magic_list_harpy_default",
                           "type": "window",
                           "visible": false,
-                          "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                          "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                           "children": [
                             {
                               "name": "magic_list_harpy_1_button_default",
@@ -19261,7 +19267,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_list_centaur_black_herd",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_list_centaur_5_button_black_herd",
@@ -19285,7 +19291,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_list_eordand_eighard",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_list_eordand_5_button_eighard",
@@ -19309,14 +19315,14 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_list_bulwar",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_list_bulwar_default",
                           "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_list_bulwar/magic_list_bulwar_default",
                           "type": "window",
                           "visible": false,
-                          "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                          "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                           "children": [
                             {
                               "name": "magic_list_bulwar_1_button_default",
@@ -19387,14 +19393,14 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_list_xhazobkult",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_list_xhazobkult_default",
                           "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_list_xhazobkult/magic_list_xhazobkult_default",
                           "type": "window",
                           "visible": false,
-                          "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                          "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                           "children": [
                             {
                               "name": "magic_list_xhazobkult_1_button_default",
@@ -19450,7 +19456,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_menu_custom_spells_textbox_container",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 127, "y": 59, "w": 263, "h": 495 },
                       "children": [
                         {
                           "name": "custom_spell_text_slot_1",
@@ -19559,7 +19565,7 @@
               "path": "topbar/magic_menu_parent/magic_menu_advancement_window",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "rect": { "x": 24, "y": 57, "w": 1935, "h": 953 },
               "children": [
                 {
                   "name": "magic_menu_advancement_header_banner",
@@ -19744,7 +19750,7 @@
                   "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_default_projects_window",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 85, "y": 57, "w": 1475, "h": 663 },
                   "children": [
                     {
                       "name": "magical_fortress_project_button",
@@ -19993,7 +19999,7 @@
                   "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 73, "y": 57, "w": 1487, "h": 663 },
                   "children": [
                     {
                       "name": "regional_projects_none",
@@ -20016,7 +20022,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/template_region_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 85, "y": 57, "w": 1475, "h": 663 },
                       "children": [
                         {
                           "name": "template_region_project_1",
@@ -20149,7 +20155,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/template_tag_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 85, "y": 57, "w": 1475, "h": 663 },
                       "children": [
                         {
                           "name": "template_tag_project_1",
@@ -20282,7 +20288,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/lencenor_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "lencenor_project_1",
@@ -20383,7 +20389,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/lorent_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "lorent_project_1",
@@ -20484,7 +20490,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/drennen_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "drennen_project_1",
@@ -20509,7 +20515,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/umbral_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "umbral_project_spire",
@@ -20566,7 +20572,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/esthil_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "esthil_necronomics",
@@ -20591,7 +20597,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/great_storm_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "great_storm_project_1",
@@ -20623,7 +20629,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/black_herd_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "black_herd_project_1",
@@ -20685,7 +20691,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/eighard_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "eighard_project_1",
@@ -20717,7 +20723,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/cangji_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "cangji_project",
@@ -20749,7 +20755,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/lelanan_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "lelanan_project_1",
@@ -20781,7 +20787,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/bongo_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "bongo_project_1",
@@ -20813,7 +20819,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/harpylen_project_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "harpylen_project",
@@ -20838,7 +20844,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/kanolowele_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "kanolowele_volcanic_armoury",
@@ -21020,7 +21026,7 @@
               "path": "topbar/magic_menu_parent/magic_menu_patron_window",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "rect": { "x": 61, "y": 0, "w": 1788, "h": 1258 },
               "children": [
                 {
                   "name": "patron_info_outline",
@@ -21159,7 +21165,7 @@
                   "path": "topbar/magic_menu_parent/magic_menu_patron_window/magic_patron_heading",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": 145, "y": -7, "w": 363, "h": 24 },
+                  "rect": { "x": 145, "y": 0, "w": 363, "h": 17 },
                   "text": "Patrons"
                 },
                 {
@@ -21256,7 +21262,7 @@
               "path": "topbar/magic_menu_parent/magic_menu_bg",
               "type": "button",
               "visible": false,
-              "rect": { "x": 1280, "y": -116, "w": 663, "h": 836 }
+              "rect": { "x": 1280, "y": 0, "w": 663, "h": 720 }
             }
           ]
         }

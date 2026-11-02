@@ -3,9 +3,9 @@
   "playset": "anbennar",
   "resolution": { "width": 2560, "height": 1440 },
   "view": "province",
-  "takenAt": "2026-10-27T22:06:39.676Z",
+  "takenAt": "2026-11-01T22:30:37.174Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
-  "tongs": { "version": "0.14.1" },
+  "tongs": { "version": "0.23.0" },
   "save": { "sha256": "AACEDFE6FD0294B80961679AB9618BC48195A9E9A239BE41292CEFFE156FDD3D" },
   "mods": [
     {
@@ -24,26 +24,19 @@
   "disabledDlcs": [],
   "recipe": {
     "from": "save",
-    "steps": [
-      { "key": "f" },
-      { "click": "goto_box/goto_edit" },
-      { "text": "Gemisle" },
-      { "click": "goto_box/provinces/province_finder_entry[1]/title" },
-      { "key": "return" },
-      { "map": { "x": -0.655, "y": -0.1 } }
-    ],
+    "steps": [{ "province": 286 }],
     "verified": true,
-    "evidence": "Run by the capture driver at the six corpus resolutions in the Anbennar playset on 2026-10-27 (M10): the steps opened the view and its roots were read and shown. The Goto box (f) centres the map on Gemisle, and Verne’s own Heroes’ Rest (province 286) lies 0.655 client heights left of the centre, beside the opening events that cover the middle of the screen in this save; every capture shows Heroes’ Rest."
+    "evidence": "Run by the capture driver (etch#42) at 2560x1440: the steps opened the view and its roots were read."
   },
   "window": { "width": 2560, "height": 1440, "dpi": 96 },
   "screenshot": {
-    "sha256": "E5A7B61DBF26B4B3B121FA9A7544D44299DF6B7BCB0295FAC497117562E62324",
+    "sha256": "6F452C0944AB88E86F842F815A00708DADD7A5E0AE1E3D506001DC42C0733C16",
     "width": 2560,
     "height": 1440,
     "shots": 4,
     "unstable": {
-      "pixels": 2310547,
-      "sha256": "4E6EE24699CA3669E51BEB36AA4682F941566AB6D2F460B5747B1EE6D3D4AC33"
+      "pixels": 2663069,
+      "sha256": "129D5847F1A3D95689D997FABB57F49D677D54CE469E47A6BC9F9B5DF29D3206"
     }
   },
   "widgets": [
@@ -52,7 +45,7 @@
       "path": "provinceview",
       "type": "window",
       "visible": true,
-      "rect": { "x": -9, "y": 453, "w": 516, "h": 696 },
+      "rect": { "x": 0, "y": 8, "w": 1661, "h": 1432 },
       "children": [
         {
           "name": "institution_icon",
@@ -74,7 +67,7 @@
           "path": "provinceview/provinceview_bg_large",
           "type": "icon",
           "visible": true,
-          "rect": { "x": -12, "y": 356, "w": 610, "h": 1087 }
+          "rect": { "x": 0, "y": 356, "w": 598, "h": 1084 }
         },
         {
           "name": "provinceview_foreign_bg",
@@ -88,7 +81,7 @@
           "path": "provinceview/provinceview_foreign_bg_large",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 1280, "y": -368, "w": 610, "h": 1088 }
+          "rect": { "x": 1280, "y": 0, "w": 610, "h": 720 }
         },
         {
           "name": "trade_icon",
@@ -114,9 +107,34 @@
         {
           "name": "modifiers",
           "path": "provinceview/modifiers",
-          "type": "other",
+          "type": "listbox",
           "visible": true,
-          "rect": { "x": 202, "y": 850, "w": 303, "h": 39 }
+          "rect": { "x": 202, "y": 850, "w": 303, "h": 39 },
+          "children": [
+            {
+              "name": "province_modifier_item",
+              "path": "provinceview/modifiers/province_modifier_item",
+              "type": "window",
+              "visible": true,
+              "rect": { "x": 463, "y": 850, "w": 43, "h": 43 },
+              "children": [
+                {
+                  "name": "prov_modifier_bg",
+                  "path": "provinceview/modifiers/province_modifier_item/prov_modifier_bg",
+                  "type": "icon",
+                  "visible": true,
+                  "rect": { "x": 463, "y": 850, "w": 43, "h": 43 }
+                },
+                {
+                  "name": "icon",
+                  "path": "provinceview/modifiers/province_modifier_item/icon",
+                  "type": "icon",
+                  "visible": true,
+                  "rect": { "x": 463, "y": 850, "w": 41, "h": 41 }
+                }
+              ]
+            }
+          ]
         },
         {
           "name": "top_section_window",
@@ -203,7 +221,7 @@
               "path": "provinceview/top_section_window/province_banner",
               "type": "icon",
               "visible": true,
-              "rect": { "x": -32, "y": 356, "w": 650, "h": 87 }
+              "rect": { "x": 0, "y": 356, "w": 618, "h": 87 }
             },
             {
               "name": "move_button_box",
@@ -293,7 +311,7 @@
           "path": "provinceview/province_window",
           "type": "window",
           "visible": true,
-          "rect": { "x": -9, "y": 453, "w": 570, "h": 576 },
+          "rect": { "x": 15, "y": 525, "w": 631, "h": 729 },
           "children": [
             {
               "name": "tax_base_increase_button",
@@ -452,7 +470,7 @@
               "path": "provinceview/province_window/likely_rebel_shield",
               "type": "button",
               "visible": true,
-              "rect": { "x": 114, "y": 731, "w": 0, "h": 39 },
+              "rect": { "x": 114, "y": 731, "w": 39, "h": 39 },
               "enabled": true
             },
             {
@@ -519,7 +537,7 @@
               "path": "provinceview/province_window/occupied_by_shield",
               "type": "button",
               "visible": false,
-              "rect": { "x": 1280, "y": 681, "w": 0, "h": 39 },
+              "rect": { "x": 1280, "y": 681, "w": 39, "h": 39 },
               "enabled": true
             },
             {
@@ -585,7 +603,7 @@
               "path": "provinceview/province_window/trade_shield",
               "type": "button",
               "visible": true,
-              "rect": { "x": 363, "y": 1066, "w": 0, "h": 39 },
+              "rect": { "x": 363, "y": 1066, "w": 39, "h": 39 },
               "enabled": true
             },
             {
@@ -1118,7 +1136,7 @@
               "name": "attrition",
               "path": "provinceview/province_window/attrition",
               "type": "text",
-              "visible": true,
+              "visible": false,
               "rect": { "x": -26673, "y": 1161, "w": 153, "h": 27 },
               "text": "Max Attrition"
             },
@@ -1126,7 +1144,7 @@
               "name": "attrition_value",
               "path": "provinceview/province_window/attrition_value",
               "type": "text",
-              "visible": true,
+              "visible": false,
               "rect": { "x": -266709, "y": 1161, "w": 77, "h": 27 },
               "text": "5"
             },
@@ -1229,9 +1247,28 @@
             {
               "name": "cores_box",
               "path": "provinceview/province_window/cores_box",
-              "type": "other",
+              "type": "listbox",
               "visible": true,
-              "rect": { "x": 177, "y": 635, "w": 126, "h": 39 }
+              "rect": { "x": 177, "y": 635, "w": 126, "h": 39 },
+              "children": [
+                {
+                  "name": "CoreShieldItem",
+                  "path": "provinceview/province_window/cores_box/CoreShieldItem",
+                  "type": "window",
+                  "visible": true,
+                  "rect": { "x": 177, "y": 635, "w": 39, "h": 39 },
+                  "children": [
+                    {
+                      "name": "CoreShieldButton",
+                      "path": "provinceview/province_window/cores_box/CoreShieldItem/CoreShieldButton",
+                      "type": "button",
+                      "visible": true,
+                      "rect": { "x": 174, "y": 635, "w": 39, "h": 39 },
+                      "enabled": true
+                    }
+                  ]
+                }
+              ]
             },
             {
               "name": "queue_window",
@@ -1464,7 +1501,7 @@
                   "path": "provinceview/province_window/change_culture_view/label_type",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": 18, "y": -33, "w": 300, "h": 59 },
+                  "rect": { "x": 18, "y": 0, "w": 300, "h": 26 },
                   "text": "Culture"
                 },
                 {
@@ -1472,7 +1509,7 @@
                   "path": "provinceview/province_window/change_culture_view/cost_label_type",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": 329, "y": -33, "w": 300, "h": 59 },
+                  "rect": { "x": 329, "y": 0, "w": 300, "h": 26 },
                   "text": "Cost"
                 },
                 {
@@ -2573,14 +2610,14 @@
               "path": "provinceview/province_window/foreign_province_window",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 360, "h": -120 },
+              "rect": { "x": 0, "y": 0, "w": 1459, "h": 720 },
               "children": [
                 {
                   "name": "shield",
                   "path": "provinceview/province_window/foreign_province_window/shield",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 643, "w": 0, "h": 77 },
+                  "rect": { "x": 1280, "y": 643, "w": 77, "h": 77 },
                   "enabled": true
                 },
                 {
@@ -2654,7 +2691,7 @@
                   "path": "provinceview/province_window/foreign_province_window/country_name",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": 111, "y": -7, "w": 156, "h": 34 },
+                  "rect": { "x": 111, "y": 0, "w": 156, "h": 27 },
                   "text": "Country Name"
                 },
                 {
@@ -2662,7 +2699,7 @@
                   "path": "provinceview/province_window/foreign_province_window/demographics_header",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": -170, "y": -4, "w": 269, "h": 27 },
+                  "rect": { "x": 0, "y": 0, "w": 99, "h": 23 },
                   "text": "Demographics"
                 },
                 {
@@ -2670,7 +2707,7 @@
                   "path": "provinceview/province_window/foreign_province_window/military_header",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": -228, "y": 322, "w": 269, "h": 27 },
+                  "rect": { "x": 0, "y": 322, "w": 41, "h": 27 },
                   "text": "Military"
                 },
                 {
@@ -2678,7 +2715,7 @@
                   "path": "provinceview/province_window/foreign_province_window/trade_header",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": -228, "y": 442, "w": 269, "h": 27 },
+                  "rect": { "x": 0, "y": 442, "w": 41, "h": 27 },
                   "text": "Trade"
                 },
                 {
@@ -2700,7 +2737,7 @@
                 {
                   "name": "diplostatus_box",
                   "path": "provinceview/province_window/foreign_province_window/diplostatus_box",
-                  "type": "other",
+                  "type": "listbox",
                   "visible": false,
                   "rect": { "x": 0, "y": 0, "w": 222, "h": 39 }
                 }
@@ -2748,7 +2785,7 @@
                 {
                   "name": "client_states_box",
                   "path": "provinceview/province_window/client_state_selection/client_states_box",
-                  "type": "other",
+                  "type": "listbox",
                   "visible": false,
                   "rect": { "x": 0, "y": 0, "w": 528, "h": 39 }
                 },
@@ -2822,7 +2859,7 @@
                   "path": "provinceview/province_window/transfer_occupation_window/background",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": -98, "w": 477, "h": 818 }
+                  "rect": { "x": 1280, "y": 0, "w": 477, "h": 720 }
                 },
                 {
                   "name": "eligitable_allies",
@@ -2915,7 +2952,7 @@
                   "path": "provinceview/province_window/tradegoods_province_window/tradegoods_name",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": 58, "y": -9, "w": 300, "h": 31 },
+                  "rect": { "x": 58, "y": 0, "w": 300, "h": 22 },
                   "text": "Iron"
                 },
                 {
@@ -3319,23 +3356,6 @@
               "visible": true,
               "rect": { "x": 398, "y": 529, "w": 37, "h": 37 },
               "checked": false
-            },
-            {
-              "name": "CoreShieldItem",
-              "path": "provinceview/province_window/CoreShieldItem",
-              "type": "window",
-              "visible": true,
-              "rect": { "x": 177, "y": 635, "w": 39, "h": 39 },
-              "children": [
-                {
-                  "name": "CoreShieldButton",
-                  "path": "provinceview/province_window/CoreShieldItem/CoreShieldButton",
-                  "type": "button",
-                  "visible": true,
-                  "rect": { "x": 174, "y": 635, "w": 0, "h": 39 },
-                  "enabled": true
-                }
-              ]
             }
           ]
         },
@@ -3474,7 +3494,7 @@
               "path": "provinceview/state_window/states_view_bg",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1280, "y": -368, "w": 610, "h": 1088 }
+              "rect": { "x": 1280, "y": 0, "w": 610, "h": 720 }
             },
             {
               "name": "edict_overlay",
@@ -3699,13 +3719,13 @@
           "path": "provinceview/buildings_window",
           "type": "window",
           "visible": true,
-          "rect": { "x": -9, "y": 723, "w": 570, "h": 576 },
+          "rect": { "x": 0, "y": 8, "w": 1661, "h": 1432 },
           "children": [
             {
               "name": "building_close_button",
               "path": "provinceview/buildings_window/building_close_button",
               "type": "button",
-              "visible": true,
+              "visible": false,
               "rect": { "x": 591, "y": 27723, "w": 45, "h": 43 },
               "enabled": true
             },
@@ -3786,7 +3806,7 @@
               "path": "provinceview/buildings_window/general_buildings_window",
               "type": "window",
               "visible": true,
-              "rect": { "x": -9, "y": 1254, "w": 570, "h": 576 },
+              "rect": { "x": 0, "y": 1149, "w": 597, "h": 291 },
               "children": [
                 {
                   "name": "center_of_trade_button",
@@ -3801,7 +3821,7 @@
                   "path": "provinceview/buildings_window/general_buildings_window/provinceview_building_bg",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": -13, "y": 1155, "w": 610, "h": 285 }
+                  "rect": { "x": 0, "y": 1155, "w": 597, "h": 285 }
                 },
                 {
                   "name": "provinceview_building_icon",
@@ -3853,7 +3873,7 @@
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[1]/building_destroy",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": -1146, "y": 1199, "w": 19, "h": 19 },
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
                       "enabled": true
                     },
                     {
@@ -3861,28 +3881,28 @@
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[1]/building_status",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": -1146, "y": 1199, "w": 57, "h": 19 }
+                      "rect": { "x": 1280, "y": 701, "w": 57, "h": 19 }
                     },
                     {
                       "name": "building_progress",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[1]/building_progress",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": -1145, "y": 1199, "w": 55, "h": 6 }
+                      "rect": { "x": 1280, "y": 714, "w": 55, "h": 6 }
                     },
                     {
                       "name": "building_currentlybuilding",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[1]/building_currentlybuilding",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": -1146, "y": 1199, "w": 28, "h": 33 }
+                      "rect": { "x": 1280, "y": 687, "w": 28, "h": 33 }
                     },
                     {
                       "name": "required_development",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[1]/required_development",
                       "type": "text",
                       "visible": false,
-                      "rect": { "x": -1153, "y": 1197, "w": 60, "h": 21 },
+                      "rect": { "x": 5, "y": 9, "w": 60, "h": 21 },
                       "text": "0"
                     }
                   ]
@@ -3915,7 +3935,7 @@
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[2]/building_destroy",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": -1069, "y": 1199, "w": 19, "h": 19 },
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
                       "enabled": true
                     },
                     {
@@ -3923,28 +3943,28 @@
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[2]/building_status",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": -1069, "y": 1199, "w": 57, "h": 19 }
+                      "rect": { "x": 1280, "y": 701, "w": 57, "h": 19 }
                     },
                     {
                       "name": "building_progress",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[2]/building_progress",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": -1068, "y": 1199, "w": 55, "h": 6 }
+                      "rect": { "x": 1280, "y": 714, "w": 55, "h": 6 }
                     },
                     {
                       "name": "building_currentlybuilding",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[2]/building_currentlybuilding",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": -1069, "y": 1199, "w": 28, "h": 33 }
+                      "rect": { "x": 1280, "y": 687, "w": 28, "h": 33 }
                     },
                     {
                       "name": "required_development",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[2]/required_development",
                       "type": "text",
                       "visible": false,
-                      "rect": { "x": -1076, "y": 1197, "w": 60, "h": 21 },
+                      "rect": { "x": 5, "y": 9, "w": 60, "h": 21 },
                       "text": "0"
                     }
                   ]
@@ -3977,7 +3997,7 @@
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[3]/building_destroy",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": -992, "y": 1199, "w": 19, "h": 19 },
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
                       "enabled": true
                     },
                     {
@@ -3985,28 +4005,28 @@
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[3]/building_status",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": -992, "y": 1199, "w": 57, "h": 19 }
+                      "rect": { "x": 1280, "y": 701, "w": 57, "h": 19 }
                     },
                     {
                       "name": "building_progress",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[3]/building_progress",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": -991, "y": 1199, "w": 55, "h": 6 }
+                      "rect": { "x": 1280, "y": 714, "w": 55, "h": 6 }
                     },
                     {
                       "name": "building_currentlybuilding",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[3]/building_currentlybuilding",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": -992, "y": 1199, "w": 28, "h": 33 }
+                      "rect": { "x": 1280, "y": 687, "w": 28, "h": 33 }
                     },
                     {
                       "name": "required_development",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[3]/required_development",
                       "type": "text",
                       "visible": false,
-                      "rect": { "x": -999, "y": 1197, "w": 60, "h": 21 },
+                      "rect": { "x": 5, "y": 9, "w": 60, "h": 21 },
                       "text": "0"
                     }
                   ]
@@ -4039,7 +4059,7 @@
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[4]/building_destroy",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": -915, "y": 1199, "w": 19, "h": 19 },
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
                       "enabled": true
                     },
                     {
@@ -4047,28 +4067,28 @@
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[4]/building_status",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": -915, "y": 1199, "w": 57, "h": 19 }
+                      "rect": { "x": 1280, "y": 701, "w": 57, "h": 19 }
                     },
                     {
                       "name": "building_progress",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[4]/building_progress",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": -914, "y": 1199, "w": 55, "h": 6 }
+                      "rect": { "x": 1280, "y": 714, "w": 55, "h": 6 }
                     },
                     {
                       "name": "building_currentlybuilding",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[4]/building_currentlybuilding",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": -915, "y": 1199, "w": 28, "h": 33 }
+                      "rect": { "x": 1280, "y": 687, "w": 28, "h": 33 }
                     },
                     {
                       "name": "required_development",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[4]/required_development",
                       "type": "text",
                       "visible": false,
-                      "rect": { "x": -922, "y": 1197, "w": 60, "h": 21 },
+                      "rect": { "x": 5, "y": 9, "w": 60, "h": 21 },
                       "text": "0"
                     }
                   ]
@@ -4504,7 +4524,7 @@
                       "path": "provinceview/buildings_window/natives_buildings_window_large/province_values_window/province_values_label",
                       "type": "text",
                       "visible": false,
-                      "rect": { "x": -9, "y": 5, "w": 207, "h": 27 },
+                      "rect": { "x": 0, "y": 5, "w": 198, "h": 27 },
                       "text": "Values"
                     },
                     {
@@ -4612,14 +4632,14 @@
               "path": "provinceview/buildings_window/aPUI_parent_container",
               "type": "window",
               "visible": true,
-              "rect": { "x": 676, "y": 489, "w": 0, "h": 0 },
+              "rect": { "x": 16, "y": 8, "w": 1645, "h": 1021 },
               "children": [
                 {
                   "name": "aPUI_template_window",
                   "path": "provinceview/buildings_window/aPUI_parent_container/aPUI_template_window",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 25, "y": 8, "w": 1636, "h": 982 },
                   "children": [
                     {
                       "name": "aPUI_close_button",
@@ -4778,7 +4798,7 @@
                   "path": "provinceview/buildings_window/aPUI_parent_container/aPUI_transmutative_path_window",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 25, "y": 8, "w": 1636, "h": 982 },
                   "children": [
                     {
                       "name": "aPUI_close_button",
@@ -4866,7 +4886,7 @@
                   "path": "provinceview/buildings_window/aPUI_parent_container/aPUI_gor_vazumbrog_vault_window",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 25, "y": 8, "w": 1636, "h": 982 },
                   "children": [
                     {
                       "name": "aPUI_close_button",
@@ -4986,7 +5006,7 @@
                   "path": "provinceview/buildings_window/aPUI_parent_container/aPUI_zena_medakas_majestic_menagerie_window",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 25, "y": 8, "w": 1636, "h": 712 },
                   "children": [
                     {
                       "name": "aPUI_close_button",
@@ -5082,7 +5102,7 @@
                   "path": "provinceview/buildings_window/aPUI_parent_container/aPUI_mangrove_bio_infra_window",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 25, "y": 8, "w": 1636, "h": 982 },
                   "children": [
                     {
                       "name": "aPUI_close_button",
@@ -5328,7 +5348,7 @@
                   "path": "provinceview/buildings_window/aPUI_parent_container/aPUI_kobold_citadel_window",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 25, "y": 8, "w": 1636, "h": 712 },
                   "children": [
                     {
                       "name": "aPUI_close_button",
@@ -5408,7 +5428,7 @@
                   "path": "provinceview/buildings_window/aPUI_parent_container/aPUI_gene_pillar_interaction_window",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 16, "y": 8, "w": 1645, "h": 1021 },
                   "children": [
                     {
                       "name": "aPUI_close_button",
@@ -5454,7 +5474,7 @@
                       "path": "provinceview/buildings_window/aPUI_parent_container/aPUI_gene_pillar_interaction_window/aPUI_gene_pillar_interaction_sections_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 34, "y": 58, "w": 1612, "h": 662 },
                       "children": [
                         {
                           "name": "aPUI_gene_pillar_interaction_sections_button_1",
@@ -5502,7 +5522,7 @@
                       "path": "provinceview/buildings_window/aPUI_parent_container/aPUI_gene_pillar_interaction_window/aPUI_gene_pillar_interaction_unavailable_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 34, "y": 160, "w": 1612, "h": 869 },
                       "children": [
                         {
                           "name": "aPUI_gene_pillar_interaction_shadowbox_unavailable",
@@ -5542,7 +5562,7 @@
                       "path": "provinceview/buildings_window/aPUI_parent_container/aPUI_gene_pillar_interaction_window/aPUI_gene_pillar_interaction_progress_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 34, "y": 160, "w": 1612, "h": 835 },
                       "children": [
                         {
                           "name": "aPUI_gene_pillar_interaction_shadowbox_progress",
@@ -5595,7 +5615,7 @@
                           "path": "provinceview/buildings_window/aPUI_parent_container/aPUI_gene_pillar_interaction_window/aPUI_gene_pillar_interaction_progress_window/aPUI_gene_pillar_interaction_progress_window_bars",
                           "type": "window",
                           "visible": false,
-                          "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                          "rect": { "x": 39, "y": 192, "w": 1547, "h": 528 },
                           "children": [
                             {
                               "name": "aPUI_gene_pillar_interaction_progress_window_health_bg",
@@ -5720,7 +5740,7 @@
                           "path": "provinceview/buildings_window/aPUI_parent_container/aPUI_gene_pillar_interaction_window/aPUI_gene_pillar_interaction_progress_window/aPUI_gene_pillar_interaction_progress_window_members",
                           "type": "window",
                           "visible": false,
-                          "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                          "rect": { "x": 1280, "y": 677, "w": 43, "h": 43 },
                           "children": [
                             {
                               "name": "aPUI_gene_pillar_exploration_progress_party_slot_1",
@@ -5771,7 +5791,7 @@
                       "path": "provinceview/buildings_window/aPUI_parent_container/aPUI_gene_pillar_interaction_window/aPUI_gene_pillar_interaction_setup_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 34, "y": 160, "w": 1612, "h": 869 },
                       "children": [
                         {
                           "name": "aPUI_gene_pillar_interaction_shadowbox_setup",
@@ -5838,7 +5858,7 @@
                           "path": "provinceview/buildings_window/aPUI_parent_container/aPUI_gene_pillar_interaction_window/aPUI_gene_pillar_interaction_setup_window/aPUI_gene_pillar_interaction_setup_window_bars",
                           "type": "window",
                           "visible": false,
-                          "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                          "rect": { "x": 39, "y": 213, "w": 1547, "h": 507 },
                           "children": [
                             {
                               "name": "aPUI_gene_pillar_interaction_setup_window_health_bg",
@@ -5905,7 +5925,7 @@
                           "path": "provinceview/buildings_window/aPUI_parent_container/aPUI_gene_pillar_interaction_window/aPUI_gene_pillar_interaction_setup_window/aPUI_gene_pillar_interaction_setup_window_members",
                           "type": "window",
                           "visible": false,
-                          "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                          "rect": { "x": 1280, "y": 672, "w": 48, "h": 48 },
                           "children": [
                             {
                               "name": "aPUI_gene_pillar_exploration_setup_party_slot_1",
@@ -6029,7 +6049,7 @@
                           "path": "provinceview/buildings_window/aPUI_parent_container/aPUI_gene_pillar_interaction_window/aPUI_gene_pillar_interaction_setup_window/aPUI_gene_pillar_interaction_setup_window_archetypes",
                           "type": "window",
                           "visible": false,
-                          "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                          "rect": { "x": 1280, "y": 677, "w": 43, "h": 43 },
                           "children": [
                             {
                               "name": "aPUI_gene_pillar_exploration_setup_party_slot_fighter",
@@ -6086,7 +6106,7 @@
                           "path": "provinceview/buildings_window/aPUI_parent_container/aPUI_gene_pillar_interaction_window/aPUI_gene_pillar_interaction_setup_window/aPUI_gene_pillar_interaction_setup_window_members_fighter",
                           "type": "window",
                           "visible": false,
-                          "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                          "rect": { "x": 1280, "y": 677, "w": 43, "h": 43 },
                           "children": [
                             {
                               "name": "aPUI_gene_pillar_exploration_setup_class_slot_fighter_A",
@@ -6142,7 +6162,7 @@
                           "path": "provinceview/buildings_window/aPUI_parent_container/aPUI_gene_pillar_interaction_window/aPUI_gene_pillar_interaction_setup_window/aPUI_gene_pillar_interaction_setup_window_members_ranger",
                           "type": "window",
                           "visible": false,
-                          "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                          "rect": { "x": 1280, "y": 677, "w": 43, "h": 43 },
                           "children": [
                             {
                               "name": "aPUI_gene_pillar_exploration_setup_class_slot_ranger_A",
@@ -6198,7 +6218,7 @@
                           "path": "provinceview/buildings_window/aPUI_parent_container/aPUI_gene_pillar_interaction_window/aPUI_gene_pillar_interaction_setup_window/aPUI_gene_pillar_interaction_setup_window_members_rogue",
                           "type": "window",
                           "visible": false,
-                          "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                          "rect": { "x": 1280, "y": 677, "w": 43, "h": 43 },
                           "children": [
                             {
                               "name": "aPUI_gene_pillar_exploration_setup_class_slot_rogue_A",
@@ -6254,7 +6274,7 @@
                           "path": "provinceview/buildings_window/aPUI_parent_container/aPUI_gene_pillar_interaction_window/aPUI_gene_pillar_interaction_setup_window/aPUI_gene_pillar_interaction_setup_window_members_cleric",
                           "type": "window",
                           "visible": false,
-                          "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                          "rect": { "x": 1280, "y": 677, "w": 43, "h": 43 },
                           "children": [
                             {
                               "name": "aPUI_gene_pillar_exploration_setup_class_slot_cleric_A",
@@ -6310,7 +6330,7 @@
                           "path": "provinceview/buildings_window/aPUI_parent_container/aPUI_gene_pillar_interaction_window/aPUI_gene_pillar_interaction_setup_window/aPUI_gene_pillar_interaction_setup_window_members_mage",
                           "type": "window",
                           "visible": false,
-                          "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                          "rect": { "x": 1280, "y": 677, "w": 43, "h": 43 },
                           "children": [
                             {
                               "name": "aPUI_gene_pillar_exploration_setup_class_slot_mage_A",
@@ -6366,7 +6386,7 @@
                           "path": "provinceview/buildings_window/aPUI_parent_container/aPUI_gene_pillar_interaction_window/aPUI_gene_pillar_interaction_setup_window/aPUI_gene_pillar_interaction_setup_window_members_artificer",
                           "type": "window",
                           "visible": false,
-                          "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                          "rect": { "x": 1280, "y": 677, "w": 43, "h": 43 },
                           "children": [
                             {
                               "name": "aPUI_gene_pillar_exploration_setup_class_slot_artificer_A",
@@ -6422,7 +6442,7 @@
                           "path": "provinceview/buildings_window/aPUI_parent_container/aPUI_gene_pillar_interaction_window/aPUI_gene_pillar_interaction_setup_window/aPUI_gene_pillar_interaction_setup_window_highlights",
                           "type": "window",
                           "visible": false,
-                          "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                          "rect": { "x": 1280, "y": 672, "w": 48, "h": 48 },
                           "children": [
                             {
                               "name": "aPUI_gene_pillar_setup_classes_highlight_slot_1",
@@ -6652,29 +6672,6 @@
               ]
             }
           ]
-        },
-        {
-          "name": "province_modifier_item",
-          "path": "provinceview/province_modifier_item",
-          "type": "window",
-          "visible": true,
-          "rect": { "x": 463, "y": 850, "w": 43, "h": 43 },
-          "children": [
-            {
-              "name": "prov_modifier_bg",
-              "path": "provinceview/province_modifier_item/prov_modifier_bg",
-              "type": "icon",
-              "visible": true,
-              "rect": { "x": 463, "y": 850, "w": 43, "h": 43 }
-            },
-            {
-              "name": "icon",
-              "path": "provinceview/province_modifier_item/icon",
-              "type": "icon",
-              "visible": true,
-              "rect": { "x": 463, "y": 850, "w": 41, "h": 41 }
-            }
-          ]
         }
       ]
     },
@@ -6683,14 +6680,14 @@
       "path": "topbar",
       "type": "window",
       "visible": true,
-      "rect": { "x": 0, "y": -1, "w": 2560, "h": 1440 },
+      "rect": { "x": 0, "y": 0, "w": 2528, "h": 1440 },
       "children": [
         {
           "name": "player_shield",
           "path": "topbar/player_shield",
           "type": "button",
           "visible": true,
-          "rect": { "x": -5, "y": 2, "w": 1, "h": 184 },
+          "rect": { "x": 0, "y": 2, "w": 179, "h": 184 },
           "enabled": true
         },
         {
@@ -6784,21 +6781,21 @@
           "name": "topbar_1",
           "path": "topbar/topbar_1",
           "type": "icon",
-          "visible": true,
+          "visible": false,
           "rect": { "x": 119415, "y": -2, "w": 131, "h": 37 }
         },
         {
           "name": "topbar_2",
           "path": "topbar/topbar_2",
           "type": "icon",
-          "visible": true,
+          "visible": false,
           "rect": { "x": 1189229, "y": -2, "w": 131, "h": 37 }
         },
         {
           "name": "topbar_3",
           "path": "topbar/topbar_3",
           "type": "icon",
-          "visible": true,
+          "visible": false,
           "rect": { "x": 1189839, "y": -2, "w": 131, "h": 37 }
         },
         {
@@ -6806,7 +6803,7 @@
           "path": "topbar/topbar_upper_left_bg",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 0, "y": -1, "w": 1173, "h": 192 }
+          "rect": { "x": 0, "y": 0, "w": 1173, "h": 191 }
         },
         {
           "name": "topbar_upper_left_bg4",
@@ -7120,14 +7117,14 @@
           "path": "topbar/powerprojection_topbar",
           "type": "window",
           "visible": true,
-          "rect": { "x": 241, "y": -1, "w": 120, "h": 120 },
+          "rect": { "x": 830, "y": 0, "w": 115, "h": 61 },
           "children": [
             {
               "name": "topbar_liberty_overlay",
               "path": "topbar/powerprojection_topbar/topbar_liberty_overlay",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 830, "y": -2, "w": 115, "h": 63 }
+              "rect": { "x": 830, "y": 0, "w": 115, "h": 61 }
             },
             {
               "name": "icon_powerprojection",
@@ -7182,7 +7179,7 @@
           "path": "topbar/p2kuie_mana_window",
           "type": "window",
           "visible": true,
-          "rect": { "x": 2120, "y": 1365, "w": 0, "h": 0 },
+          "rect": { "x": 2070, "y": 1365, "w": 116, "h": 75 },
           "children": [
             {
               "name": "p2kuie_mana_value_btn",
@@ -7197,7 +7194,7 @@
               "path": "topbar/p2kuie_mana_window/p2kuie_mana_value",
               "type": "text",
               "visible": true,
-              "rect": { "x": 2070, "y": 1414, "w": 109, "h": 31 },
+              "rect": { "x": 2070, "y": 1414, "w": 109, "h": 26 },
               "text": "1"
             }
           ]
@@ -7337,7 +7334,7 @@
               "path": "topbar/racial_pop_root_window/racial_pop_list_interface",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "rect": { "x": 0, "y": 0, "w": 545, "h": 726 },
               "children": [
                 {
                   "name": "racial_pop_management_list",
@@ -7532,7 +7529,7 @@
                       "path": "topbar/racial_pop_root_window/racial_pop_list_interface/racial_pop_management_list/racial_pop_header_group",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 0, "y": 0, "w": 1476, "h": 720 },
                       "children": [
                         {
                           "name": "racial_pop_list_headerbutton1",
@@ -7626,7 +7623,7 @@
                       "path": "topbar/racial_pop_root_window/racial_pop_list_interface/racial_pop_management_list/racial_menu_list_red_underlays",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 685, "w": 527, "h": 35 },
                       "children": [
                         {
                           "name": "racial_menu_list_button_red_underlay_1",
@@ -9011,7 +9008,7 @@
               "path": "topbar/racial_pop_root_window/racial_pop_selection_window",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "rect": { "x": 235, "y": 12, "w": 1433, "h": 708 },
               "children": [
                 {
                   "name": "racial_pop_selected_portrait",
@@ -9049,14 +9046,14 @@
               "path": "topbar/racial_pop_root_window/racial_pop_management_window",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "rect": { "x": 0, "y": 0, "w": 1899, "h": 720 },
               "children": [
                 {
                   "name": "racial_pop_help_window",
                   "path": "topbar/racial_pop_root_window/racial_pop_management_window/racial_pop_help_window",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 5, "y": 2, "w": 1894, "h": 718 },
                   "children": [
                     {
                       "name": "racial_pop_help_outline",
@@ -9118,7 +9115,7 @@
                   "path": "topbar/racial_pop_root_window/racial_pop_management_window/racial_pop_ulation_data_window",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 0, "y": 0, "w": 1522, "h": 720 },
                   "children": [
                     {
                       "name": "racial_pop_population_data_outline",
@@ -9176,7 +9173,7 @@
                       "path": "topbar/racial_pop_root_window/racial_pop_management_window/racial_pop_ulation_data_window/racial_pop_ulation_textbox_column1",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 0, "y": 0, "w": 157, "h": 96 },
                       "children": [
                         {
                           "name": "racial_pop_current_percent_owned_text",
@@ -9217,7 +9214,7 @@
                       "path": "topbar/racial_pop_root_window/racial_pop_management_window/racial_pop_ulation_data_window/racial_pop_ulation_textbox_column2",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 0, "y": 0, "w": 61, "h": 96 },
                       "children": [
                         {
                           "name": "racial_pop_current_percent_owned",
@@ -9260,14 +9257,14 @@
                   "path": "topbar/racial_pop_root_window/racial_pop_management_window/racial_pop_ulation_policy_window",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 36, "y": 0, "w": 1473, "h": 720 },
                   "children": [
                     {
                       "name": "racial_pop_policy_window",
                       "path": "topbar/racial_pop_root_window/racial_pop_management_window/racial_pop_ulation_policy_window/racial_pop_policy_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 79, "y": 1, "w": 1415, "h": 719 },
                       "children": [
                         {
                           "name": "racial_pop_policy_outline",
@@ -9313,7 +9310,7 @@
                       "path": "topbar/racial_pop_root_window/racial_pop_management_window/racial_pop_ulation_policy_window/racial_pop_enact_policy_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 36, "y": 0, "w": 1473, "h": 720 },
                       "children": [
                         {
                           "name": "racial_pop_enact_policy_outline",
@@ -9379,7 +9376,7 @@
                           "path": "topbar/racial_pop_root_window/racial_pop_management_window/racial_pop_ulation_policy_window/racial_pop_enact_policy_window/racial_pop_policy_buttons_window",
                           "type": "window",
                           "visible": false,
-                          "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                          "rect": { "x": 1280, "y": 681, "w": 105, "h": 39 },
                           "children": [
                             {
                               "name": "racial_pop_policy_purge_button_1",
@@ -9493,7 +9490,7 @@
               "path": "topbar/racial_pop_root_window/racial_military_management_window",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "rect": { "x": 2, "y": 2, "w": 1897, "h": 1050 },
               "children": [
                 {
                   "name": "racial_mil_twist_banner",
@@ -9569,7 +9566,7 @@
                   "path": "topbar/racial_pop_root_window/racial_military_management_window/racial_mil_special_military_flavour_window",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 235, "y": 12, "w": 1433, "h": 708 },
                   "children": [
                     {
                       "name": "racial_mil_special_military_portrait",
@@ -9607,7 +9604,7 @@
                   "path": "topbar/racial_pop_root_window/racial_military_management_window/racial_mil_select_special_mil_window",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 8, "y": 4, "w": 1498, "h": 716 },
                   "children": [
                     {
                       "name": "racial_mil_select_spirit_military",
@@ -9647,7 +9644,7 @@
                   "path": "topbar/racial_pop_root_window/racial_military_management_window/racial_mil_change_military_buttons",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 1280, "y": 681, "w": 105, "h": 39 },
                   "children": [
                     {
                       "name": "racial_mil_change_racial_military_1",
@@ -9841,7 +9838,7 @@
               "path": "topbar/racial_pop_root_window/racial_pop_view_bg",
               "type": "button",
               "visible": false,
-              "rect": { "x": 1280, "y": -400, "w": 1229, "h": 1120 }
+              "rect": { "x": 1280, "y": 0, "w": 1229, "h": 720 }
             }
           ]
         },
@@ -9857,7 +9854,7 @@
               "path": "topbar/achievements_root_window/achievement_window_small_bg",
               "type": "button",
               "visible": false,
-              "rect": { "x": 1280, "y": -204, "w": 741, "h": 924 },
+              "rect": { "x": 1280, "y": 0, "w": 741, "h": 720 },
               "enabled": true
             },
             {
@@ -9904,7 +9901,7 @@
                   "path": "topbar/achievements_root_window/achievement_indiv/achievement_page_text",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": -5, "y": 924, "w": 1444, "h": 34 },
+                  "rect": { "x": 0, "y": 924, "w": 1439, "h": 34 },
                   "text": ""
                 },
                 {
@@ -11667,7 +11664,7 @@
                   "path": "topbar/achievements_root_window/achievement_indiv_small/achievement_page_small_text",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": -5, "y": 39, "w": 742, "h": 34 },
+                  "rect": { "x": 0, "y": 39, "w": 737, "h": 34 },
                   "text": ""
                 },
                 {
@@ -12878,7 +12875,7 @@
               "path": "topbar/achievements_root_window/achievement_window_bg",
               "type": "button",
               "visible": false,
-              "rect": { "x": 1280, "y": -251, "w": 1443, "h": 971 }
+              "rect": { "x": 1280, "y": 0, "w": 1280, "h": 720 }
             }
           ]
         },
@@ -12903,7 +12900,7 @@
               "path": "topbar/achievements_alert_window/achievement_complete_text",
               "type": "text",
               "visible": false,
-              "rect": { "x": -5, "y": 175, "w": 669, "h": 34 },
+              "rect": { "x": 0, "y": 175, "w": 664, "h": 34 },
               "text": "Achievement Complete"
             },
             {
@@ -12911,7 +12908,7 @@
               "path": "topbar/achievements_alert_window/achievement_complete_name",
               "type": "text",
               "visible": false,
-              "rect": { "x": -5, "y": 254, "w": 669, "h": 34 },
+              "rect": { "x": 0, "y": 254, "w": 664, "h": 34 },
               "text": ""
             },
             {
@@ -13347,7 +13344,7 @@
               "path": "topbar/magic_menu_parent/magic_menu_main",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "rect": { "x": 0, "y": 0, "w": 1812, "h": 865 },
               "children": [
                 {
                   "name": "magic_menu_heading",
@@ -13442,7 +13439,7 @@
                   "path": "topbar/magic_menu_parent/magic_menu_main/magic_menu_main_magic_stats_row",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 24, "y": 35, "w": 1493, "h": 830 },
                   "children": [
                     {
                       "name": "magical_infrastructure_banner",
@@ -13463,7 +13460,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_main/magic_menu_main_magic_stats_row/magic_menu_main_magic_exp_info",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 30, "y": 35, "w": 1487, "h": 830 },
                       "children": [
                         {
                           "name": "magic_menu_advancement_outline",
@@ -13583,7 +13580,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_main/magic_menu_main_magic_stats_row/magic_menu_main_mana_info",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 24, "y": 116, "w": 1493, "h": 749 },
                       "children": [
                         {
                           "name": "magic_menu_mana_shadow",
@@ -13658,7 +13655,7 @@
                   "path": "topbar/magic_menu_parent/magic_menu_main/magic_menu_main_row_3",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 0, "y": 4, "w": 1812, "h": 833 },
                   "children": [
                     {
                       "name": "magic_menu_infamy_shadow",
@@ -13705,7 +13702,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_main/magic_menu_main_row_3/magic_menu_infamy_types",
                       "type": "text",
                       "visible": false,
-                      "rect": { "x": -48, "y": 4, "w": 242, "h": 63 },
+                      "rect": { "x": 0, "y": 4, "w": 194, "h": 63 },
                       "text": "[Root.getNameIfRulerIsMage][Root.getNameIfHeirIsMage][Root.getNameIfConsortIsMage][Root.getNameIfIfHaveMagesEstate]"
                     },
                     {
@@ -13725,7 +13722,7 @@
               "path": "topbar/magic_menu_parent/magic_menu_spellbook_window",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "rect": { "x": 24, "y": 0, "w": 1624, "h": 1277 },
               "children": [
                 {
                   "name": "magic_spellbook_heading",
@@ -13740,7 +13737,7 @@
                   "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_main_mana_info",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 24, "y": 0, "w": 1493, "h": 865 },
                   "children": [
                     {
                       "name": "magic_menu_mana_shadow",
@@ -13793,7 +13790,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_main_mana_info/magic_menu_mana_title_text",
                       "type": "text",
                       "visible": false,
-                      "rect": { "x": 24, "y": -4, "w": 182, "h": 31 },
+                      "rect": { "x": 24, "y": 0, "w": 182, "h": 27 },
                       "text": "Mana"
                     },
                     {
@@ -13819,7 +13816,7 @@
                   "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_change_spellbook_window",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 24, "y": 2, "w": 1511, "h": 718 },
                   "children": [
                     {
                       "name": "magic_menu_button_change_school_abjuration_spellbook",
@@ -13987,7 +13984,7 @@
                   "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_standard_spells_window",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 48, "y": 0, "w": 1600, "h": 1277 },
                   "children": [
                     {
                       "name": "magic_menu_cast_spells_shadow",
@@ -14197,7 +14194,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_standard_spells_window/magic_menu_spellbook_abjuration",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_cast_abjuration_spell1_button",
@@ -14254,7 +14251,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_standard_spells_window/magic_menu_spellbook_conjuration",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_cast_conjuration_spell1_button",
@@ -14311,7 +14308,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_standard_spells_window/magic_menu_spellbook_divination",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_menu_divination_spell_1_button",
@@ -14368,7 +14365,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_standard_spells_window/magic_menu_spellbook_enchantment",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_cast_enchantment_spell1_button",
@@ -14425,7 +14422,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_standard_spells_window/magic_menu_spellbook_evocation",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_cast_evocation_spell1_button",
@@ -14482,7 +14479,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_standard_spells_window/magic_menu_spellbook_illusion",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_cast_illusion_spell1_button",
@@ -14539,7 +14536,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_standard_spells_window/magic_menu_spellbook_necromancy",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_cast_necromancy_spell1_button",
@@ -14596,7 +14593,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_standard_spells_window/magic_menu_spellbook_transmutation",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_cast_transmutation_spell1_button",
@@ -14655,7 +14652,7 @@
                   "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 48, "y": 0, "w": 1600, "h": 1277 },
                   "children": [
                     {
                       "name": "magic_menu_cast_spells_shadow",
@@ -14685,14 +14682,14 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_list_template",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_list_template_default",
                           "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_list_template/magic_list_template_default",
                           "type": "window",
                           "visible": false,
-                          "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                          "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                           "children": [
                             {
                               "name": "magic_list_template_1_button_default",
@@ -14791,7 +14788,7 @@
                           "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_list_template/magic_list_template_tag_specific_example",
                           "type": "window",
                           "visible": false,
-                          "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                          "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                           "children": [
                             {
                               "name": "magic_list_template_1_button_tag_specific_example",
@@ -14850,14 +14847,14 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_list_harpy",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_list_harpy_default",
                           "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_list_harpy/magic_list_harpy_default",
                           "type": "window",
                           "visible": false,
-                          "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                          "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                           "children": [
                             {
                               "name": "magic_list_harpy_1_button_default",
@@ -14943,7 +14940,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_list_centaur_black_herd",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_list_centaur_5_button_black_herd",
@@ -14967,7 +14964,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_list_eordand_eighard",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_list_eordand_5_button_eighard",
@@ -14991,14 +14988,14 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_list_bulwar",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_list_bulwar_default",
                           "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_list_bulwar/magic_list_bulwar_default",
                           "type": "window",
                           "visible": false,
-                          "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                          "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                           "children": [
                             {
                               "name": "magic_list_bulwar_1_button_default",
@@ -15069,14 +15066,14 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_list_xhazobkult",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                       "children": [
                         {
                           "name": "magic_list_xhazobkult_default",
                           "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_list_xhazobkult/magic_list_xhazobkult_default",
                           "type": "window",
                           "visible": false,
-                          "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                          "rect": { "x": 1280, "y": 643, "w": 350, "h": 77 },
                           "children": [
                             {
                               "name": "magic_list_xhazobkult_1_button_default",
@@ -15132,7 +15129,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_custom_spell_lists_container/magic_menu_custom_spells_textbox_container",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 127, "y": 59, "w": 263, "h": 495 },
                       "children": [
                         {
                           "name": "custom_spell_text_slot_1",
@@ -15241,7 +15238,7 @@
               "path": "topbar/magic_menu_parent/magic_menu_advancement_window",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "rect": { "x": 24, "y": 57, "w": 1935, "h": 953 },
               "children": [
                 {
                   "name": "magic_menu_advancement_header_banner",
@@ -15426,7 +15423,7 @@
                   "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_default_projects_window",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 85, "y": 57, "w": 1475, "h": 663 },
                   "children": [
                     {
                       "name": "magical_fortress_project_button",
@@ -15675,7 +15672,7 @@
                   "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                  "rect": { "x": 73, "y": 57, "w": 1487, "h": 663 },
                   "children": [
                     {
                       "name": "regional_projects_none",
@@ -15698,7 +15695,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/template_region_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 85, "y": 57, "w": 1475, "h": 663 },
                       "children": [
                         {
                           "name": "template_region_project_1",
@@ -15831,7 +15828,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/template_tag_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 85, "y": 57, "w": 1475, "h": 663 },
                       "children": [
                         {
                           "name": "template_tag_project_1",
@@ -15964,7 +15961,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/lencenor_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "lencenor_project_1",
@@ -16065,7 +16062,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/lorent_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "lorent_project_1",
@@ -16166,7 +16163,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/drennen_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "drennen_project_1",
@@ -16191,7 +16188,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/umbral_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "umbral_project_spire",
@@ -16248,7 +16245,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/esthil_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "esthil_necronomics",
@@ -16273,7 +16270,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/great_storm_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "great_storm_project_1",
@@ -16305,7 +16302,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/black_herd_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "black_herd_project_1",
@@ -16367,7 +16364,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/eighard_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "eighard_project_1",
@@ -16399,7 +16396,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/cangji_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "cangji_project",
@@ -16431,7 +16428,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/lelanan_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "lelanan_project_1",
@@ -16463,7 +16460,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/bongo_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "bongo_project_1",
@@ -16495,7 +16492,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/harpylen_project_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "harpylen_project",
@@ -16520,7 +16517,7 @@
                       "path": "topbar/magic_menu_parent/magic_menu_advancement_window/advancement_unique_projects_window/kanolowele_projects_window",
                       "type": "window",
                       "visible": false,
-                      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+                      "rect": { "x": 1280, "y": 658, "w": 280, "h": 62 },
                       "children": [
                         {
                           "name": "kanolowele_volcanic_armoury",
@@ -16702,7 +16699,7 @@
               "path": "topbar/magic_menu_parent/magic_menu_patron_window",
               "type": "window",
               "visible": false,
-              "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+              "rect": { "x": 61, "y": 0, "w": 1788, "h": 1258 },
               "children": [
                 {
                   "name": "patron_info_outline",
@@ -16841,7 +16838,7 @@
                   "path": "topbar/magic_menu_parent/magic_menu_patron_window/magic_patron_heading",
                   "type": "text",
                   "visible": false,
-                  "rect": { "x": 145, "y": -7, "w": 363, "h": 24 },
+                  "rect": { "x": 145, "y": 0, "w": 363, "h": 17 },
                   "text": "Patrons"
                 },
                 {
@@ -16938,7 +16935,7 @@
               "path": "topbar/magic_menu_parent/magic_menu_bg",
               "type": "button",
               "visible": false,
-              "rect": { "x": 1280, "y": -116, "w": 663, "h": 836 }
+              "rect": { "x": 1280, "y": 0, "w": 663, "h": 720 }
             }
           ]
         }
@@ -16971,14 +16968,14 @@
           "name": "mapmode_bg",
           "path": "menubar/mapmode_bg",
           "type": "icon",
-          "visible": true,
+          "visible": false,
           "rect": { "x": -116579, "y": 1309, "w": 264, "h": 24 }
         },
         {
           "name": "mapmode_bg_2",
           "path": "menubar/mapmode_bg_2",
           "type": "icon",
-          "visible": true,
+          "visible": false,
           "rect": { "x": -116579, "y": 1289, "w": 264, "h": 24 }
         },
         {
@@ -16998,7 +16995,7 @@
             {
               "name": "WarOverviewButtonList",
               "path": "menubar/WarOverviewButtonWindow/WarOverviewButtonList",
-              "type": "other",
+              "type": "listbox",
               "visible": true,
               "rect": { "x": 1476, "y": 1365, "w": 360, "h": 48 }
             }
@@ -17009,7 +17006,7 @@
           "path": "menubar/messagelog_window",
           "type": "window",
           "visible": false,
-          "rect": { "x": 810, "y": 1482, "w": 924, "h": 120 },
+          "rect": { "x": 810, "y": 1442, "w": 1229, "h": 161 },
           "children": [
             {
               "name": "log_bg",
@@ -17030,7 +17027,7 @@
                   "path": "menubar/messagelog_window/messagelog/logtext[1]",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 954, "y": 1496, "w": 840, "h": 21 },
+                  "rect": { "x": 966, "y": 1489, "w": 1000, "h": 19 },
                   "children": [
                     {
                       "name": "messagelogbutton",
@@ -17048,7 +17045,7 @@
                   "path": "menubar/messagelog_window/messagelog/logtext[2]",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 954, "y": 1517, "w": 840, "h": 21 },
+                  "rect": { "x": 966, "y": 1510, "w": 1000, "h": 19 },
                   "children": [
                     {
                       "name": "messagelogbutton",
@@ -17066,7 +17063,7 @@
                   "path": "menubar/messagelog_window/messagelog/logtext[3]",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 954, "y": 1538, "w": 840, "h": 21 },
+                  "rect": { "x": 966, "y": 1531, "w": 1000, "h": 19 },
                   "children": [
                     {
                       "name": "messagelogbutton",
@@ -17084,7 +17081,7 @@
                   "path": "menubar/messagelog_window/messagelog/logtext[4]",
                   "type": "window",
                   "visible": false,
-                  "rect": { "x": 954, "y": 1559, "w": 840, "h": 21 },
+                  "rect": { "x": 966, "y": 1552, "w": 1000, "h": 19 },
                   "children": [
                     {
                       "name": "messagelogbutton",
@@ -17278,7 +17275,7 @@
           "path": "menubar/message_window_container",
           "type": "window",
           "visible": true,
-          "rect": { "x": 2263, "y": 895, "w": 345, "h": 223 },
+          "rect": { "x": 2496, "y": 903, "w": 39, "h": 24 },
           "children": [
             {
               "name": "message_window",
@@ -17388,7 +17385,7 @@
                   "path": "menubar/message_window_container/toggle_message_interface_window/ToggleMessageInterface",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 2531, "y": 1184, "w": 30, "h": 30 },
+                  "rect": { "x": 2531, "y": 1184, "w": 29, "h": 30 },
                   "enabled": true
                 },
                 {
@@ -17396,7 +17393,7 @@
                   "path": "menubar/message_window_container/toggle_message_interface_window/ToggleMessageBackground",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 2529, "y": 1163, "w": 35, "h": 71 }
+                  "rect": { "x": 2529, "y": 1163, "w": 31, "h": 71 }
                 }
               ]
             }
@@ -17407,7 +17404,7 @@
           "path": "menubar/floating_buttons",
           "type": "window",
           "visible": true,
-          "rect": { "x": -90, "y": 0, "w": 2560, "h": 1440 },
+          "rect": { "x": 1959, "y": 1371, "w": 114, "h": 69 },
           "children": [
             {
               "name": "f_button_1",
@@ -17478,56 +17475,56 @@
               "path": "menubar/floating_buttons/menubar_floating_bg_1",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 2015, "y": 1397, "w": 57, "h": 45 }
+              "rect": { "x": 2015, "y": 1397, "w": 57, "h": 43 }
             },
             {
               "name": "menubar_floating_bg_2",
               "path": "menubar/floating_buttons/menubar_floating_bg_2",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 1961, "y": 1397, "w": 57, "h": 45 }
+              "rect": { "x": 1961, "y": 1397, "w": 57, "h": 43 }
             },
             {
               "name": "menubar_floating_bg_3",
               "path": "menubar/floating_buttons/menubar_floating_bg_3",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1907, "y": 1397, "w": 57, "h": 45 }
+              "rect": { "x": 1907, "y": 1397, "w": 57, "h": 43 }
             },
             {
               "name": "menubar_floating_bg_4",
               "path": "menubar/floating_buttons/menubar_floating_bg_4",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1853, "y": 1397, "w": 57, "h": 45 }
+              "rect": { "x": 1853, "y": 1397, "w": 57, "h": 43 }
             },
             {
               "name": "menubar_floating_bg_5",
               "path": "menubar/floating_buttons/menubar_floating_bg_5",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1799, "y": 1397, "w": 57, "h": 45 }
+              "rect": { "x": 1799, "y": 1397, "w": 57, "h": 43 }
             },
             {
               "name": "menubar_floating_bg_6",
               "path": "menubar/floating_buttons/menubar_floating_bg_6",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1733, "y": 1397, "w": 57, "h": 45 }
+              "rect": { "x": 1733, "y": 1397, "w": 57, "h": 43 }
             },
             {
               "name": "menubar_floating_bg_7",
               "path": "menubar/floating_buttons/menubar_floating_bg_7",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1667, "y": 1397, "w": 57, "h": 45 }
+              "rect": { "x": 1667, "y": 1397, "w": 57, "h": 43 }
             },
             {
               "name": "menubar_floating_bg_8",
               "path": "menubar/floating_buttons/menubar_floating_bg_8",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1601, "y": 1397, "w": 57, "h": 45 }
+              "rect": { "x": 1601, "y": 1397, "w": 57, "h": 43 }
             },
             {
               "name": "hre_strip_glow",
@@ -17541,7 +17538,7 @@
               "path": "menubar/floating_buttons/revolution_flag",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1915, "y": 1375, "w": 0, "h": 37 }
+              "rect": { "x": 1915, "y": 1375, "w": 37, "h": 37 }
             },
             {
               "name": "floating_number_1",
