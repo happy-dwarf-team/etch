@@ -258,7 +258,9 @@
             "1600x900",
             "1680x1050",
             "1920x1080",
-            "3440x1440"
+            "2560x1440",
+            "3440x1440",
+            "3840x2160"
           ],
           "scope": "window",
           "markdownDescription": "The screen size the preview lays windows out on and evaluates `if_resolution` blocks against: `default` (the resolution in the game's `settings.txt`, else the monitor's), `native` (the monitor's resolution), or a width × height such as `1920x1080`. UI scale is always 1.0. The command **Etch: Choose the Preview Resolution** also offers the corpus resolutions."

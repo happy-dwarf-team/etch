@@ -40,7 +40,8 @@ in the wayfinder maps in this repository's issues (label `wayfinder:map`).
   mode and live snapshots.
 - Precision is measured against the game, not claimed: the precision corpus
   of vanilla, Proper 2K UI Enhanced and Anbennar, at seven resolutions from
-  1280×720 to 3440×1440.
+  1280×720 to 3440×1440. The preview also offers 3840×2160, not yet measured
+  against the game.
 - Target: EU4 1.37.5 (Steam, win64) on Windows.
 
 See [GLOSSARY.md](GLOSSARY.md) for the terms used in the issues.

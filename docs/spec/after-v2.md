@@ -32,7 +32,11 @@ From section 16 of the v2 specification, with v1's entries that v2 did not take:
 - **More in a live snapshot:** code-set sprites and frames (below), tooltips
   (with a new snapshot `formatVersion` once `tongs.ui` reads them), and
   exporting a snapshot.
-- Checking the **3840×2160** preview resolution against the game (below).
+- Checking the **3840×2160** preview resolution against the game on a machine
+  with a 4K screen. It is in the corpus and the preview but unconfirmed, as no
+  window of the lab holds a 2160-pixel client area; it gates nothing and the
+  preview marks it as not measured against the game. Its `if_resolution` band
+  and size step are those of 3440×1440 in every corpus playset (etch#163).
 - **A media refresh** showing the live game and a popular view, made with
   Etch's own demo mod: a release step after v2.
 
@@ -94,10 +98,6 @@ From section 16 of the v2 specification, with v1's entries that v2 did not take:
 - [etch#97](https://github.com/happy-dwarf-team/etch/issues/97): a recipe that
   opens an event for the corpus. The event window gates no release until it
   has one, in any playset.
-- [etch#163](https://github.com/happy-dwarf-team/etch/issues/163): 3840×2160 is
-  in the corpus and the preview but unconfirmed, as no window of the lab holds
-  a 2160-pixel client area; it gates nothing and the preview marks it as not
-  measured against the game.
 
 ## Open points
 

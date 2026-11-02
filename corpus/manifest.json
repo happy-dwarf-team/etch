@@ -43,7 +43,7 @@
       "width": 2560,
       "height": 1440,
       "confirmed": true,
-      "evidence": "Added in M10 for the playsets with Proper 2K UI Enhanced, made for screens of at least 2560×1440 (etch#163): a windowed client area on the lab’s 3440×1440 monitor, as etch#18 confirmed the smaller sizes; every capture of the four playsets there had its client area exactly 2560×1440 at DPI 96 (2026-10-27)."
+      "evidence": "Added in M10 for the playsets with Proper 2K UI Enhanced, made for screens of at least 2560×1440 (etch#163): a windowed client area on the lab’s 3440×1440 monitor, as etch#18 confirmed the smaller sizes; every capture of the four playsets there had its client area exactly 2560×1440 at DPI 96 (2026-10-27). In vanilla, Proper 2K UI Enhanced and the Anbennar playset the same if_resolution blocks apply as at 1920×1080 and 3440×1440, and the country views take their largest size step, as at 3440×1440 (etch#163)."
     },
     {
       "width": 3440,
@@ -55,7 +55,7 @@
       "width": 3840,
       "height": 2160,
       "confirmed": false,
-      "evidence": "Not capturable in the lab (checked in M10): its monitors are 3440×1440 and 2560×1440 side by side, a 6000×1440 desktop, and Windows caps a window at 6020×1460 (MaxWindowTrackSize), so no 2160-pixel client area fits. It stays unconfirmed and gates nothing until a machine with a 4K screen captures it (etch#163)."
+      "evidence": "Not capturable in the lab (checked in M10): its monitors are 3440×1440 and 2560×1440 side by side, a 6000×1440 desktop, and Windows caps a window at 6020×1460 (MaxWindowTrackSize), so no 2160-pixel client area fits. It stays unconfirmed and gates nothing until a machine with a 4K screen captures it (etch#163). Read from the .gui files, not measured: in vanilla, Proper 2K UI Enhanced and the Anbennar playset the same if_resolution blocks apply as at 1920×1080 to 3440×1440 (no block has a width bound or a height bound above 1080), and the country views take their largest size step, as at 3440×1440; only the screen is larger."
     }
   ],
   "codeFilledKinds": [
