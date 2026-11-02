@@ -151,10 +151,8 @@ describe('the committed corpus', () => {
       'anbennar-alone',
     ]);
     for (const playset of release) {
-      // The event window waits for a recipe (etch#97) and gates nothing until then.
-      expect(playset.windows).toEqual(
-        manifest.windows.map((w) => w.id).filter((id) => id !== 'event'),
-      );
+      // The event window opens from saves with an event open since etch#97.
+      expect(playset.windows).toEqual(manifest.windows.map((w) => w.id));
     }
   });
 
@@ -317,6 +315,13 @@ describe('parseCorpusManifest', () => {
       'windows[1].views[0].save.file: "event.sav" is not a save file name.',
       'windows[1].views[0].save.sha256: "b" is not an uppercase SHA-256.',
       'windows[1].views[0].byPlayset.big-mod.save: A view opened from the main menu loads no save.',
+    ]);
+    expect(
+      problemsOf((m) => {
+        set(m, 'windows.1.views.0.codeSized', ['countrycourtview', 'countrycourtview/close']);
+      }),
+    ).toEqual([
+      'windows[1].views[0].codeSized[1]: Only a top-level window takes the size the game gives it.',
     ]);
     // One file name is one save in a playset's profile.
     expect(

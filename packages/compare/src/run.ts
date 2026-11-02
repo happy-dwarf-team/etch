@@ -18,6 +18,7 @@ import {
   encodePng,
   gates,
   hashFile,
+  matchesWidgetPattern,
   planCapture,
   profileSaveTexts,
   profileVisibility,
@@ -136,9 +137,15 @@ export async function runCorpus(options: RunOptions): Promise<RunResult> {
         }
         const files = await opening;
         const corpusWindow = manifest.windows.find((w) => w.id === manifestWindowOf(manifest, key));
+        const codeSized = findView(manifest, key.view)?.view.codeSized ?? [];
         const windows: PlanWindow[] = [];
         for (const top of new Set(record.widgets.map((w) => topLevel(w.path)))) {
-          const window = await files.window(top, record.resolution, corpusWindow?.files);
+          // A window whose size the game's code sets is laid out at the game's size.
+          const root = codeSized.some((p) => matchesWidgetPattern(p, top))
+            ? record.widgets.find((w) => w.path === top)?.rect
+            : undefined;
+          const size = root === undefined ? undefined : { width: root.w, height: root.h };
+          const window = await files.window(top, record.resolution, corpusWindow?.files, size);
           if (window !== undefined) windows.push(window);
         }
         const plan = planCapture({ manifest, record, windows });
