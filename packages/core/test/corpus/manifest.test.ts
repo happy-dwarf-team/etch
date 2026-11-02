@@ -391,22 +391,31 @@ describe('the corpus helpers', () => {
     expect(requiredCaptures(manifest)).toHaveLength(6);
   });
 
-  it("gives a view its playset's own recipe and selectors", () => {
+  it("gives a view its playset's own recipe and selectors, and adds its code-filled patterns", () => {
     const m = sample();
     set(m, 'windows.1.views.0.selectors', { owner: 'yes', tab: 'province' });
+    set(m, 'windows.1.views.0.codeFilled', ['countrycourtview/advisor']);
     set(m, 'windows.1.views.0.byPlayset', {
       'big-mod': {
         recipe: { from: 'save', steps: [{ key: 'f2' }], verified: false, evidence: 'not yet' },
         selectors: { owner: 'no' },
+        codeFilled: ['countrycourtview/pulse'],
       },
     });
-    const parsed = parseCorpusManifest(m).manifest as CorpusManifest;
-    const view = findView(parsed, 'court')?.view;
+    const { manifest: parsed, problems } = parseCorpusManifest(m);
+    expect(problems).toEqual([]);
+    const view = parsed === undefined ? undefined : findView(parsed, 'court')?.view;
     if (view === undefined) throw new Error('no view');
     expect(viewInPlayset(view, { id: 'vanilla' })).toBe(view);
     const own = viewInPlayset(view, { id: 'big-mod' });
     expect(own.recipe.steps).toEqual([{ key: 'f2' }]);
     expect(own.selectors).toEqual({ owner: 'no', tab: 'province' });
+    expect(own.codeFilled).toEqual(['countrycourtview/advisor', 'countrycourtview/pulse']);
+
+    set(m, 'windows.1.views.0.byPlayset.big-mod.codeFilled', ['']);
+    expect(parseCorpusManifest(m).problems.map((p) => p.at)).toEqual([
+      'windows[1].views[0].byPlayset.big-mod.codeFilled[0]',
+    ]);
   });
 
   it('names capture files by playset, resolution and view', () => {

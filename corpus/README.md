@@ -76,7 +76,7 @@ opens and one capture records, such as the main menu and the lobby of
 | `codeMoved` | optional widget patterns of what the game's code moves away from where its `.gui` puts it: a dialog the game opens beside the panel that asked for it, a section the game moves on a taller screen. The comparison draws each such widget and everything inside it where the game shows it, and compares it there (etch#44) |
 | `selectors` | optional values of the window profiles' selectors the view is captured with, by selector id (`"owner": "yes"`), where a profile has a choice the screen does not make; `resolution` selectors come from the capture's size. Each profiled root's profile is evaluated with them for the visibility gate (below, ADR 0006). An id a root's profile does not have is left out for that root |
 | `data` | optional: what of the playset's save the view shows, `province` by id and `country` by tag (the save's player when left out), for the report of the profiles' `save` texts against the capture's (below) |
-| `byPlayset` | optional, by playset id: what differs in that playset, its own `recipe`, `selectors` (replacing the view's values of those ids), `data` and `note`. The Anbennar playsets have their own map, so their province views open other provinces (spec v2 section 11) |
+| `byPlayset` | optional, by playset id: what differs in that playset, its own `recipe`, `selectors` (replacing the view's values of those ids), `data`, `codeFilled` (added to the view's patterns) and `note`. The Anbennar playsets have their own map, so their province views open other provinces (spec v2 section 11), and their lobby pulses the Options button |
 
 A **recipe** is the Tongs input that opens a view from a known start state:
 
@@ -507,7 +507,10 @@ How a view is compared (`planCapture` and `compareCapture` in
   Every widget of the window that the capture has must be drawn exactly when
   the game showed it (itself and its parents visible), whether the profile
   names it or not; a text the game showed empty is left out, as it draws
-  nothing either way. A mismatch, or a profile that does not load cleanly, is a problem
+  nothing either way. So is a widget the game puts wholly outside the
+  client area, with everything inside it: Tongs counts it hidden for where
+  it is (tongs#74), so whether the game's code shows it is not known
+  (Anbennar's `topbar_1` at x 119415). A mismatch, or a profile that does not load cleanly, is a problem
   of the capture and fails it; the report lists them, and `visibility` in the
   capture's report has each root's count.
 - **Save texts** (reported, not gated, spec v2 section 14). With `--saves

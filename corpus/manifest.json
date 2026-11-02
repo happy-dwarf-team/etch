@@ -310,6 +310,16 @@
           ],
           "selectors": {
             "page": "lobby"
+          },
+          "byPlayset": {
+            "anbennar": {
+              "codeFilled": ["country_selection_panel/lobby/left/option_button"],
+              "note": "Anbennar's lobby pulses the Options button, beside the alert arrow it shows there, so every capture has it unstable; Tongs before 0.15 masked it under the bookmark list, whose rect then reached below the screen (etch#232, tongs#74)."
+            },
+            "anbennar-alone": {
+              "codeFilled": ["country_selection_panel/lobby/left/option_button"],
+              "note": "Anbennar's lobby pulses the Options button, beside the alert arrow it shows there, so every capture has it unstable; Tongs before 0.15 masked it under the bookmark list, whose rect then reached below the screen (etch#232, tongs#74)."
+            }
           }
         }
       ]
