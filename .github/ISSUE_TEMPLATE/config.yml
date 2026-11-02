@@ -6,6 +6,6 @@ contact_links:
   - name: Anvil (game-side loader) issues
     url: https://github.com/happy-dwarf-team/anvil/issues/new/choose
     about: Problems that also happen in the game without Etch belong to Anvil or its plugins.
-  - name: What Etch v1 contains
-    url: https://github.com/happy-dwarf-team/etch/blob/main/docs/spec/v1.md
-    about: The v1 specification and the order it is built in.
+  - name: What Etch 2.x contains
+    url: https://github.com/happy-dwarf-team/etch/blob/main/docs/spec/v2.md
+    about: The v2 specification; later work and open points are in docs/spec/after-v2.md.
