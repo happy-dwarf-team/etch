@@ -635,6 +635,14 @@ void LogPickStats(PickState& p) {
     p.hover_ms.clear();
 }
 
+// The game date of the running session; nullopt in the main menu or with an anvil-game before 1.6.0.
+std::optional<etch::GameDate> GameDateNow() {
+    if (g_game == nullptr || !ANVIL_GAME_HAS(g_game, date)) return std::nullopt;
+    AnvilGameDate date{};
+    if (g_game->date(&date) == 0) return std::nullopt;
+    return etch::GameDate{date.year, date.month, date.day};
+}
+
 // The click, read on the next frame (H7): the widget the stack points at and
 // its parents with paths, files and lines (the visible tree), pushed to Etch
 // with VS Code brought forward; then the snapshot of its window, read apart.
@@ -696,8 +704,8 @@ void PickNow(PickState& p, int width, int height) {
     }
     std::string head = w.Finish();
     head.pop_back();
-    RunLater([head, widgets = std::move(*window), root_at = *at, width, height, snap_ms] {
-        Push(head + "," + etch::SnapshotOf(widgets, root_at, width, height, snap_ms).members + "}");
+    RunLater([head, widgets = std::move(*window), root_at = *at, width, height, date = GameDateNow(), snap_ms] {
+        Push(head + "," + etch::SnapshotOf(widgets, root_at, width, height, date, snap_ms).members + "}");
     });
 }
 
@@ -822,9 +830,10 @@ void SnapshotNow(const std::string& window, const std::function<void(const etch:
         RunLater([done, result] { done(result); });
         return;
     }
-    RunLater([done, result, widgets = std::move(*read), at = *root, client, read_ms]() mutable {
+    RunLater([done, result, widgets = std::move(*read), at = *root, client, date = GameDateNow(), read_ms]() mutable {
         result.members =
-            etch::SnapshotOf(widgets, at, client.right - client.left, client.bottom - client.top, read_ms).members;
+            etch::SnapshotOf(widgets, at, client.right - client.left, client.bottom - client.top, date, read_ms)
+                .members;
         done(result);
     });
 }

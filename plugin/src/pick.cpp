@@ -291,8 +291,12 @@ std::string PickEvent(std::uint64_t seq, const std::vector<UiWidget>& widgets, c
         .Finish();
 }
 
+std::string DateText(const GameDate& date) {
+    return std::to_string(date.year) + "." + std::to_string(date.month) + "." + std::to_string(date.day);
+}
+
 Snapshot SnapshotOf(const std::vector<UiWidget>& widgets, std::size_t root, int screen_width, int screen_height,
-                    double read_ms) {
+                    const std::optional<GameDate>& date, double read_ms) {
     Snapshot out;
     std::vector<bool> inside(widgets.size(), false);
     std::string items = "[";
@@ -327,6 +331,7 @@ Snapshot SnapshotOf(const std::vector<UiWidget>& widgets, std::size_t root, int 
     std::string members = json::Quote("window") + ":" + json::Quote(top.name) + ",";
     members += json::Quote("file") + ":" + (top.file.empty() ? std::string("null") : json::Quote(top.file)) + ",";
     members += json::Quote("screen") + ":" + Screen(screen_width, screen_height) + ",";
+    members += json::Quote("date") + ":" + (date ? json::Quote(DateText(*date)) : std::string("null")) + ",";
     members += json::Quote("widgets") + ":" + items + ",";
     members += json::Quote("stale") + ":" + std::to_string(out.stale) + ",";
     json::Writer ms;

@@ -68,7 +68,7 @@ import { PipeError, type SnapshotAnswer } from '../live-game/pipe.ts';
 import { listSaves, savesFolder } from '../live-game/saves.ts';
 import type { OutlineTextEdit, OutlineToggle, WidgetNavigation } from '../navigation.ts';
 import { PreviewData, type LiveLayer } from './data.ts';
-import { LiveSnapshots, playsetKey, snapshotOf } from './live-snapshots.ts';
+import { LiveSnapshots, playsetKey, snapshotOf, snapshotWhen } from './live-snapshots.ts';
 import { previewHtml } from './html.ts';
 import { ProfileStore, type LoadedProfile, type ProjectProblems } from './profiles.ts';
 import type {
@@ -1508,7 +1508,6 @@ export class Preview implements PreviewApi, vscode.Disposable {
     const game = this.liveGame;
     const running = game?.state.status === 'ready' || game?.state.status === 'stale';
     if (snapshot === undefined) return { detail: undefined, canRefresh: running };
-    const at = new Date(snapshot.takenAt);
     const id = game?.identity;
     const older =
       (snapshot.game !== undefined &&
@@ -1519,7 +1518,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
         game?.saveName !== undefined &&
         snapshot.save !== game.saveName);
     const parts = [
-      `as of ${at.toLocaleTimeString()}${snapshot.save === undefined ? '' : `, ${snapshot.save}`}`,
+      snapshotWhen(snapshot),
       ...(older ? ['older'] : []),
       ...(unmatched > 0
         ? [
