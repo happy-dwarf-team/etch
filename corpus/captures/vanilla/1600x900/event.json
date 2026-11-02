@@ -1,0 +1,199 @@
+{
+  "formatVersion": 1,
+  "playset": "vanilla",
+  "resolution": { "width": 1600, "height": 900 },
+  "view": "event",
+  "takenAt": "2026-11-02T03:01:00.052Z",
+  "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
+  "tongs": { "version": "0.14.1" },
+  "save": { "sha256": "FE1EC50168BFB7F412C0957CE016940617533A9EA2DC8780FE86A9074255CEA6" },
+  "mods": [],
+  "disabledDlcs": [],
+  "recipe": {
+    "from": "save",
+    "steps": [],
+    "verified": true,
+    "evidence": "Run by the capture driver (etch#42) at 1600x900: the steps opened the view and its roots were read."
+  },
+  "window": { "width": 1600, "height": 900, "dpi": 96 },
+  "screenshot": {
+    "sha256": "B661737A077F5CFCAF207E3B168217698CCB7611D07308BABE16B468A9757229",
+    "width": 1600,
+    "height": 900,
+    "shots": 4,
+    "unstable": {
+      "pixels": 594037,
+      "sha256": "54B963B8FCC53BBED071C6CA17BF1E2B261F14247E20E0F6A134BF618F6EE3F9"
+    }
+  },
+  "widgets": [
+    {
+      "name": "EventWindow",
+      "path": "EventWindow",
+      "type": "window",
+      "visible": true,
+      "rect": { "x": 518, "y": 140, "w": 564, "h": 414 },
+      "children": [
+        {
+          "name": "event_goto_province",
+          "path": "EventWindow/event_goto_province",
+          "type": "button",
+          "visible": false,
+          "rect": { "x": 800, "y": 359, "w": 55, "h": 91 },
+          "enabled": true
+        },
+        {
+          "name": "event_bg_top",
+          "path": "EventWindow/event_bg_top",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 475, "y": 140, "w": 656, "h": 223 }
+        },
+        {
+          "name": "event_picture",
+          "path": "EventWindow/event_picture",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 548, "y": 221, "w": 512, "h": 132 }
+        },
+        {
+          "name": "event_bg_middle",
+          "path": "EventWindow/event_bg_middle",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 475, "y": 363, "w": 656, "h": 58 }
+        },
+        {
+          "name": "event_bg_bottom",
+          "path": "EventWindow/event_bg_bottom",
+          "type": "icon",
+          "visible": true,
+          "rect": { "x": 475, "y": 421, "w": 656, "h": 133 }
+        },
+        {
+          "name": "Title",
+          "path": "EventWindow/Title",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 475, "y": 179, "w": 656, "h": 29 },
+          "text": "Hundred Chapter Synod"
+        },
+        {
+          "name": "Description",
+          "path": "EventWindow/Description",
+          "type": "text",
+          "visible": true,
+          "rect": { "x": 549, "y": 370, "w": 512, "h": 54 },
+          "text": "In 1551 Metropolitan Mascarius convened the Church in what became known as the Hundred Chapter Synod in order to unify Church ceremonies and duties all over Russia. They also demanded that the government cancel its jurisdiction over the Church."
+        },
+        {
+          "name": "Background",
+          "path": "EventWindow/Background",
+          "type": "button",
+          "visible": true,
+          "rect": { "x": 518, "y": 140, "w": 564, "h": 414 }
+        },
+        {
+          "name": "event_option_listbox",
+          "path": "EventWindow/event_option_listbox",
+          "type": "listbox",
+          "visible": true,
+          "rect": { "x": 531, "y": 454, "w": 547, "h": 60 },
+          "children": [
+            {
+              "name": "event_option_entry",
+              "path": "EventWindow/event_option_listbox/event_option_entry[1]",
+              "type": "window",
+              "visible": true,
+              "rect": { "x": 531, "y": 454, "w": 547, "h": 30 },
+              "children": [
+                {
+                  "name": "event_option_button",
+                  "path": "EventWindow/event_option_listbox/event_option_entry[1]/event_option_button",
+                  "type": "button",
+                  "visible": true,
+                  "rect": { "x": 531, "y": 454, "w": 547, "h": 31 },
+                  "text": "Affirm these changes",
+                  "enabled": true
+                },
+                {
+                  "name": "event_option_goto_button",
+                  "path": "EventWindow/event_option_listbox/event_option_entry[1]/event_option_goto_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 419, "w": 62, "h": 31 },
+                  "enabled": true
+                }
+              ]
+            },
+            {
+              "name": "event_option_entry",
+              "path": "EventWindow/event_option_listbox/event_option_entry[2]",
+              "type": "window",
+              "visible": true,
+              "rect": { "x": 531, "y": 484, "w": 547, "h": 30 },
+              "children": [
+                {
+                  "name": "event_option_button",
+                  "path": "EventWindow/event_option_listbox/event_option_entry[2]/event_option_button",
+                  "type": "button",
+                  "visible": true,
+                  "rect": { "x": 531, "y": 484, "w": 547, "h": 31 },
+                  "text": "Prohibit these ideas",
+                  "enabled": true
+                },
+                {
+                  "name": "event_option_goto_button",
+                  "path": "EventWindow/event_option_listbox/event_option_entry[2]/event_option_goto_button",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 419, "w": 62, "h": 31 },
+                  "enabled": true
+                }
+              ]
+            },
+            {
+              "name": "standardlistbox_slider",
+              "path": "EventWindow/event_option_listbox/standardlistbox_slider",
+              "type": "other",
+              "visible": false,
+              "rect": { "x": 800, "y": 434, "w": 16, "h": 44 },
+              "children": [
+                {
+                  "name": "listboxSliderButton",
+                  "path": "EventWindow/event_option_listbox/standardlistbox_slider/listboxSliderButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 434, "w": 16, "h": 16 }
+                },
+                {
+                  "name": "listboxTrackButton",
+                  "path": "EventWindow/event_option_listbox/standardlistbox_slider/listboxTrackButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 450, "w": 12, "h": 28 }
+                },
+                {
+                  "name": "downButton",
+                  "path": "EventWindow/event_option_listbox/standardlistbox_slider/downButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 434, "w": 16, "h": 16 },
+                  "enabled": true
+                },
+                {
+                  "name": "upButton",
+                  "path": "EventWindow/event_option_listbox/standardlistbox_slider/upButton",
+                  "type": "button",
+                  "visible": false,
+                  "rect": { "x": 800, "y": 434, "w": 16, "h": 16 },
+                  "enabled": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

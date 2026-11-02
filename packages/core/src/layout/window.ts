@@ -72,6 +72,11 @@ export interface LayoutInput {
   readonly view?: LayoutView;
   /** Sample data in code-filled widgets (spec section 5); without it they stay as written. */
   readonly content?: LayoutContent;
+  /**
+   * The window's size in place of its `.gui` size, where the game's code sets it: the event
+   * window fits its text (the corpus's `codeSized`, etch#97). Its background takes it too.
+   */
+  readonly windowSize?: Screen;
 }
 
 /**
@@ -277,7 +282,11 @@ class Layout {
     if (CONTAINERS.has(kind)) {
       // Verified: a full-screen window takes the screen's size (etch#9).
       const extent =
-        props.flag('fullscreen') === true ? this.input.screen : sizeIn(props.size('size'), parent);
+        parentIndex === -1 && this.input.windowSize !== undefined
+          ? this.input.windowSize
+          : props.flag('fullscreen') === true
+            ? this.input.screen
+            : sizeIn(props.size('size'), parent);
       rect = { x, y, ...extent };
     } else if (SPRITE_WIDGETS.has(kind)) {
       // Verified in the corpus (etch#44): a widget whose `.gui` picks its sprite by

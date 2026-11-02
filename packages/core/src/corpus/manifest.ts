@@ -53,7 +53,10 @@ export interface CorpusPlayset {
   readonly title: string;
   /** `release`: must pass for a release (ADR 0002); `report`: reported, blocks nothing. */
   readonly gate: PlaysetGate;
-  /** The save loaded for views opened from a save; required for a release playset. */
+  /**
+   * The save loaded for views opened from a save; required for a release playset. A view can load
+   * its own save instead (`CorpusView.save`).
+   */
   readonly save?: CorpusSave;
   /** The mods in load order, a later one winning. Empty for vanilla. */
   readonly mods: readonly CorpusMod[];
@@ -122,6 +125,11 @@ export interface CorpusView {
    */
   readonly codeMoved?: readonly string[];
   /**
+   * Patterns of the top-level windows whose size the game's code sets, as the event window fits
+   * its text: the comparison lays each out at the size the game shows it (etch#97).
+   */
+  readonly codeSized?: readonly string[];
+  /**
    * The values of the window profiles' selectors this view is captured with, by selector id, where
    * a profile has a choice the screen does not make (`resolution` selectors come from the capture's
    * size). The visibility gate evaluates each profiled root's profile with them (ADR 0006).
@@ -133,7 +141,12 @@ export interface CorpusView {
    * left out).
    */
   readonly data?: ViewData;
-  /** What differs in one playset, by playset id: its own recipe, selector values or note. */
+  /**
+   * The save this view loads in place of the playset's, for a state no recipe reaches from the
+   * playset's save: an event open (etch#97). The driver starts the game once more for it.
+   */
+  readonly save?: CorpusSave;
+  /** What differs in one playset, by playset id: its own recipe, save, selector values or note. */
   readonly byPlayset?: Readonly<Record<string, PlaysetView>>;
   readonly note?: string;
 }
@@ -154,12 +167,14 @@ export interface PlaysetView {
   readonly selectors?: Readonly<Record<string, string>>;
   /** Replaces the view's `data` in this playset. */
   readonly data?: ViewData;
+  /** Replaces the view's `save` in this playset. */
+  readonly save?: CorpusSave;
   readonly note?: string;
 }
 
 /**
- * A view as one playset captures it: the view with its recipe, selectors and data of that playset
- * (`byPlayset`) in place of the defaults.
+ * A view as one playset captures it: the view with its recipe, selectors, data and save of that
+ * playset (`byPlayset`) in place of the defaults.
  */
 export function viewInPlayset(view: CorpusView, playset: Pick<CorpusPlayset, 'id'>): CorpusView {
   const own = view.byPlayset?.[playset.id];
@@ -168,10 +183,19 @@ export function viewInPlayset(view: CorpusView, playset: Pick<CorpusPlayset, 'id
     ...view,
     recipe: own.recipe ?? view.recipe,
     ...(own.data !== undefined ? { data: own.data } : {}),
+    ...(own.save !== undefined ? { save: own.save } : {}),
     ...(view.selectors !== undefined || own.selectors !== undefined
       ? { selectors: { ...view.selectors, ...own.selectors } }
       : {}),
   };
+}
+
+/**
+ * The save a view loads in a playset, given the view as that playset captures it
+ * (`viewInPlayset`): its own save, or the playset's; none for a view opened from the main menu.
+ */
+export function viewSave(view: CorpusView, playset: CorpusPlayset): CorpusSave | undefined {
+  return view.recipe.from === 'save' ? (view.save ?? playset.save) : undefined;
 }
 
 /** The start state of a recipe: the main menu of a fresh start, or the playset's save loaded and paused. */
@@ -446,9 +470,36 @@ export function parseCorpusManifest(value: unknown): ManifestResult {
     'deviation id',
   );
 
+  if (c.problems.length === 0) checkSaveFiles(c, root as unknown as CorpusManifest);
   return c.problems.length === 0
     ? { manifest: root as unknown as CorpusManifest, problems: [] }
     : { problems: c.problems };
+}
+
+/**
+ * The saves of one playset share its profile's `save games` folder, so one file name is one save:
+ * a view's own save may not have the name of another save of the same playset.
+ */
+function checkSaveFiles(c: Checker, manifest: CorpusManifest): void {
+  for (const playset of manifest.playsets) {
+    const pinned = new Map<string, string>();
+    if (playset.save !== undefined) pinned.set(playset.save.file, playset.save.sha256);
+    manifest.windows.forEach((window, w) => {
+      if (!playset.windows.includes(window.id)) return;
+      window.views.forEach((view, v) => {
+        const save = viewSave(viewInPlayset(view, playset), playset);
+        if (save === undefined) return;
+        const sha256 = pinned.get(save.file);
+        if (sha256 === undefined) pinned.set(save.file, save.sha256);
+        else if (sha256 !== save.sha256) {
+          c.fail(
+            `windows[${String(w)}].views[${String(v)}]`,
+            `The playset "${playset.id}" has another save named ${save.file}.`,
+          );
+        }
+      });
+    });
+  }
 }
 
 function checkResolution(c: Checker, value: unknown, at: string): Screen | undefined {
@@ -501,14 +552,7 @@ function checkPlayset(
   const release = gate === 'release';
 
   if ('save' in json) {
-    const saveAt = field(at, 'save');
-    const save = c.object(json['save'], saveAt, ['file', 'sha256', 'description'], ['confirm']);
-    if (save !== undefined) {
-      c.string(save['file'], field(saveAt, 'file'), /^[^/\\]+\.eu4$/, 'a save file name');
-      c.string(save['sha256'], field(saveAt, 'sha256'), SHA256, 'an uppercase SHA-256');
-      c.string(save['description'], field(saveAt, 'description'));
-      if ('confirm' in save) pattern(c, save['confirm'], field(saveAt, 'confirm'));
-    }
+    checkSave(c, json['save'], field(at, 'save'));
   } else if (release) {
     c.fail(at, 'A release playset pins its save.');
   }
@@ -563,6 +607,17 @@ function checkPlayset(
   return { id };
 }
 
+function checkSave(c: Checker, value: unknown, at: string): void {
+  const save = c.object(value, at, ['file', 'sha256', 'description'], ['confirm']);
+  if (save === undefined) return;
+  c.string(save['file'], field(at, 'file'), /^[^/\\]+\.eu4$/, 'a save file name');
+  c.string(save['sha256'], field(at, 'sha256'), SHA256, 'an uppercase SHA-256');
+  c.string(save['description'], field(at, 'description'));
+  if ('confirm' in save) pattern(c, save['confirm'], field(at, 'confirm'));
+}
+
+const NO_SAVE_FROM_MENU = 'A view opened from the main menu loads no save.';
+
 function checkWindow(
   c: Checker,
   value: unknown,
@@ -599,7 +654,7 @@ function checkView(
     value,
     at,
     ['id', 'title', 'recipe', 'roots', 'codeFilled'],
-    ['codeMoved', 'selectors', 'data', 'byPlayset', 'note'],
+    ['codeMoved', 'codeSized', 'selectors', 'data', 'save', 'byPlayset', 'note'],
   );
   if (json === undefined) return undefined;
   const id = c.string(json['id'], field(at, 'id'), ID, 'an id in lowercase words joined by -');
@@ -615,8 +670,23 @@ function checkView(
   if (json['codeMoved'] !== undefined) {
     c.array(json['codeMoved'], field(at, 'codeMoved'), (v, pathAt) => pattern(c, v, pathAt));
   }
+  if (json['codeSized'] !== undefined) {
+    c.array(json['codeSized'], field(at, 'codeSized'), (v, pathAt) => {
+      const sized = pattern(c, v, pathAt);
+      if (typeof sized === 'string' && sized.includes('/')) {
+        c.fail(pathAt, 'Only a top-level window takes the size the game gives it.');
+      }
+      return sized;
+    });
+  }
   if ('selectors' in json) checkSelectors(c, json['selectors'], field(at, 'selectors'));
   if ('data' in json) checkData(c, json['data'], field(at, 'data'));
+  const from = (recipe: unknown): unknown =>
+    typeof recipe === 'object' && recipe !== null ? (recipe as { from?: unknown }).from : undefined;
+  if ('save' in json) {
+    checkSave(c, json['save'], field(at, 'save'));
+    if (from(json['recipe']) === 'main-menu') c.fail(field(at, 'save'), NO_SAVE_FROM_MENU);
+  }
   const playsets: { id: string; at: string }[] = [];
   if ('byPlayset' in json) {
     const byAt = field(at, 'byPlayset');
@@ -624,12 +694,18 @@ function checkView(
     for (const [playset, own] of Object.entries(by ?? {})) {
       const ownAt = field(byAt, playset);
       playsets.push({ id: playset, at: ownAt });
-      const entry = c.object(own, ownAt, [], ['recipe', 'selectors', 'data', 'note']);
+      const entry = c.object(own, ownAt, [], ['recipe', 'selectors', 'data', 'save', 'note']);
       if (entry === undefined) continue;
       optionalString(c, entry, ownAt, 'note');
       if ('recipe' in entry) checkRecipe(c, entry['recipe'], field(ownAt, 'recipe'));
       if ('selectors' in entry) checkSelectors(c, entry['selectors'], field(ownAt, 'selectors'));
       if ('data' in entry) checkData(c, entry['data'], field(ownAt, 'data'));
+      if ('save' in entry) {
+        checkSave(c, entry['save'], field(ownAt, 'save'));
+        if (from('recipe' in entry ? entry['recipe'] : json['recipe']) === 'main-menu') {
+          c.fail(field(ownAt, 'save'), NO_SAVE_FROM_MENU);
+        }
+      }
     }
   }
   return { id, playsets };

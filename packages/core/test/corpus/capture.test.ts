@@ -221,6 +221,28 @@ describe('captureProblems', () => {
     ]);
   });
 
+  it("asks for the view's own save where it has one", () => {
+    const event = { file: 'event.eu4', sha256: 'E'.repeat(64), description: 'an event open' };
+    const own = parseCorpusManifest({
+      ...JSON.parse(JSON.stringify(manifest)),
+      windows: manifest.windows.map((w) => ({
+        ...w,
+        views: w.views.map((v) => ({ ...v, save: event })),
+      })),
+    }).manifest as CorpusManifest;
+    expect(captureProblems(own, parsed()).map((p) => `${p.at}: ${p.message}`)).toEqual([
+      'save: Taken with another save than the view pins in this playset.',
+    ]);
+    expect(
+      captureProblems(
+        own,
+        parsed((r) => {
+          set(r, 'save.sha256', event.sha256);
+        }),
+      ),
+    ).toEqual([]);
+  });
+
   it('checks the client area, the DPI, the screenshot and the roots', () => {
     const capture = parsed((r) => {
       r['window'] = { width: 3440, height: 1400, dpi: 120 };

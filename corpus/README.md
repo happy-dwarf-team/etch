@@ -45,7 +45,7 @@ joined by `-`, because they become file names.
 | --- | --- |
 | `id`, `title` | |
 | `gate` | `release`: must pass for a release; `report`: reported, blocks nothing |
-| `save` | `file` (in the profile's `save games`), `sha256`, `description`, and `confirm`, a widget pattern the driver clicks when it shows while the save loads: Anbennar asks to confirm an achievements warning first (`DefaultConfirm/AgreeButton`, etch#55). Required for a release playset |
+| `save` | `file` (in the profile's `save games`), `sha256`, `description`, and `confirm`, a widget pattern the driver clicks when it shows while the save loads: Anbennar asks to confirm an achievements warning first (`DefaultConfirm/AgreeButton`, etch#55). Required for a release playset. A view can load its own save instead (`save` of a view, below) |
 | `mods` | load order, a later mod winning: `name` (the descriptor's), `workshopId`, `sha256`, `note` |
 | `disabledDlcs` | `dlc_load.json`'s `disabled_dlcs` while capturing; empty means every owned DLC |
 | `resolutions` | optional: the resolutions this playset is captured at (`2560x1440`); every corpus resolution when left out. Proper 2K UI Enhanced is made for screens of at least 2560×1440, so its playsets are captured there and above, and below 2560×1440 the corpus takes vanilla and Anbennar alone (M10) |
@@ -74,14 +74,17 @@ opens and one capture records, such as the main menu and the lobby of
 | `roots` | Tongs selectors of the widgets whose trees the capture reads, `ui tree ROOT all` |
 | `codeFilled` | widget patterns of what the game's code fills or hides in this view. The comparison masks these widgets, and every pixel under their game rect, as ADR 0002 says. The lists were completed from the captures of etch#44 |
 | `codeMoved` | optional widget patterns of what the game's code moves away from where its `.gui` puts it: a dialog the game opens beside the panel that asked for it, a section the game moves on a taller screen. The comparison draws each such widget and everything inside it where the game shows it, and compares it there (etch#44) |
+| `codeSized` | optional patterns of top-level windows whose size the game's code sets: the event window fits its text and options, so the game shows it 414 pixels high where its `.gui` says 620. The comparison lays each out at the size the game shows it, its background included (etch#97) |
 | `selectors` | optional values of the window profiles' selectors the view is captured with, by selector id (`"owner": "yes"`), where a profile has a choice the screen does not make; `resolution` selectors come from the capture's size. Each profiled root's profile is evaluated with them for the visibility gate (below, ADR 0006). An id a root's profile does not have is left out for that root |
 | `data` | optional: what of the playset's save the view shows, `province` by id and `country` by tag (the save's player when left out), for the report of the profiles' `save` texts against the capture's (below) |
-| `byPlayset` | optional, by playset id: what differs in that playset, its own `recipe`, `selectors` (replacing the view's values of those ids), `data` and `note`. The Anbennar playsets' save has no ship in construction, so their province views open another way (spec v2 section 11) |
+| `save` | optional, for a view opened from a save: the save it loads in place of the playset's, with the fields of a playset's `save`, for a state that no recipe reaches from the playset's save. The event view's saves have an event open (below, etch#97). In one playset a file name is one save: a view's save may not be named as another save of the same playset, since they share its profile |
+| `byPlayset` | optional, by playset id: what differs in that playset, its own `recipe`, `selectors` (replacing the view's values of those ids), `data`, `save` and `note`. The Anbennar playsets' save has no ship in construction, so their province views open another way (spec v2 section 11) |
 
 A **recipe** is the Tongs input that opens a view from a known start state:
 
 - `from`: `main-menu` (a fresh start, at the main menu, no save loaded) or
-  `save` (the playset's save loaded and paused);
+  `save` (the view's save loaded and paused: the playset's, or the view's
+  own `save`);
 - `steps`: in order, `{ "key": "f1" }` (Tongs `key`, its key names),
   `{ "click": "menu//menu_options_button" }` (Tongs `ui click`, a widget
   pattern), `{ "text": "Verne" }` (Tongs `text` into the focused field, such
@@ -133,6 +136,25 @@ player would (`verne.100` and `lilac_wars.1` with their one option,
 `anb_settings.1` with Start game) and saved again through the Esc menu as
 `Verne1444_11_11_corpus.eu4`, pinned by its hash. The maintainer's file is not
 changed, no event covers a view, and nothing is masked for one.
+
+The event view (etch#97) needs an event open, and none is open in the
+playsets' saves: events are random (three game years from the Russian save
+opened none), and a console `event` step would be a game call, which the
+driver refuses. So the view loads its own `save`, with one event open, and has
+no step; the game shows a pending event again when the save loads. Both were
+made once in the lab's private copy and saved through the Esc menu:
+
+- `Russia1719_03_17_event.eu4` (vanilla and Proper 2K UI Enhanced): the
+  playset's save with `flavor_rus.11` (Hundred Chapter Synod, two options)
+  opened by Tongs' `console event flavor_rus.11`, in that game only;
+- `Verne1444_11_11_event.eu4` (both Anbennar playsets): the maintainer's save
+  with `verne.100` and `anb_settings.1` answered as above and `lilac_wars.1`
+  (one option, short enough for 1280×720) left open; no game call.
+
+The game fills the title, text and picture of an event (`codeFilled`), moves
+the bottom of the window and the options below the text (`codeMoved`), adds
+copies of the middle piece for a longer text, and sizes the window to all of
+it (`codeSized`).
 
 Each resolution is a fresh start of the game, with the size in the
 capturing profile's `pdx_settings.txt` (etch#18). After its first start in a
@@ -284,7 +306,9 @@ another session's).
      -AnvilZip <anvil zip> -TongsZip <tongs zip>
    ```
 
-   Prepare checks both archives against their sums, turns Tongs on with
+   Prepare refuses while an Anvil is installed in the Steam folder (a lab
+   script's run: the copy's junctions would lead into it), checks both
+   archives against their sums, turns Tongs on with
    `input = true` and `game_calls = false`, turns `anvil-overlay` off (its
    notifications would be in the screenshots), and writes `host.json` with
    every hash. Nothing goes into the Steam folder.
@@ -323,12 +347,14 @@ What a run does:
 
 - **One playset profile** per playset in `<host>/profiles/<playset>/profile`
   (`-userdir`): descriptors with absolute paths to the pinned Workshop
-  items, `dlc_load.json`, and a copy of the playset's save. Every mod's
+  items, `dlc_load.json`, and a copy of each save its views load (the
+  playset's and the views' own). Every mod's
   content hash and the save's hash are checked against the manifest before
   and after each start. The player's own profile, saves and mods are only
   read; a run stops when the player's profile changed.
 - **A fresh start for each playset, resolution and start state**: one for the
-  views opened from the main menu and one for those opened from the save
+  views opened from the main menu, one for those opened from the playset's
+  save, and one for each view's own save after them
   (`continue=<save>`, which goes before `-userdir=`: the game takes the rest of
   the command line as the profile's path). Before each start: the Process Lasso rule, the hashes
   of both `eu4.exe` and of the host install, and no game running. The copy

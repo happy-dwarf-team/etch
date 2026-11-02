@@ -185,6 +185,25 @@ describe('layoutWindow: placement', () => {
     expect(rectOf(l, 'panel')).toEqual([5, 6, 0, 0]);
   });
 
+  it("gives a window the size the game's code sets, and its background with it", () => {
+    const text = `guiTypes = { windowType = {
+      name = "event" backGround = "Background" orientation = "CENTER"
+      position = { x = -50 y = -40 } size = { x = 100 y = 80 }
+      guiButtonType = { name = "Background" quadTextureSprite = "GFX_tile" }
+      windowType = { name = "inner" size = { x = 30 y = 20 } }
+    } }`;
+    const { file, input } = setUp(text);
+    const window = file.definitions[0] as Widget;
+    const written = layoutWindow(window, input);
+    expect(rectOf(written, 'event')).toEqual([350, 260, 100, 80]);
+    expect(rectOf(written, 'Background')).toEqual([350, 260, 100, 80]);
+    // The event window fits its text (etch#97): the same place, the game's size.
+    const sized = layoutWindow(window, { ...input, windowSize: { width: 100, height: 52 } });
+    expect(rectOf(sized, 'event')).toEqual([350, 260, 100, 52]);
+    expect(rectOf(sized, 'Background')).toEqual([350, 260, 100, 52]);
+    expect(rectOf(sized, 'inner')).toEqual([350, 260, 30, 20]);
+  });
+
   it('applies if_resolution blocks for the preview screen, in file order', () => {
     const text = `guiTypes = { windowType = {
       name = "w"
