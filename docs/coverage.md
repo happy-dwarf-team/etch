@@ -112,12 +112,18 @@ the playset's files (`packages/compare/src/coverage.ts`):
    the snapshot shows it when the sizes agree (etch#253), so this geometry
    measures how the snapshot is applied and the widgets' sizes; the outline
    offline is the measure of the layout's own positions.
-3. **Pixels.** `compare --gpu --corpus <survey folder>`: the corpus's own
+3. **The outline offline with the profiles.** For the windows that have a
+   profile: the window laid out offline with the profile's rules, its
+   selectors at the values that fit the game (as an author who knows the
+   state would set `View ▾`), without the snapshot's texts, toggles or
+   positions. Geometry and visibility as in 1: what the profiles alone get
+   right without a game.
+4. **Pixels.** `compare --gpu --corpus <survey folder>`: the corpus's own
    per-widget comparison. Reported only.
 
 And for windows no survey reaches, such as a mod's own:
 
-4. **Constructs.** Each compared widget's constructs: its kind, each property
+5. **Constructs.** Each compared widget's constructs: its kind, each property
    it sets (`iconType.position`), the values of enumerated properties
    (`instantTextBoxType.format=centre`) and whether it has `if_resolution`
    blocks; names, sprites, fonts and texts left out. A widget that only moves

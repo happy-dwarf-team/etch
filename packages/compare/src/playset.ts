@@ -301,6 +301,48 @@ export class CorpusPlaysetFiles {
     return { window: { layout, shaderOf }, texts: matched.texts, unknownSelectors: live.unknown };
   }
 
+  /**
+   * A profiled window laid out offline, as the preview draws it without a live game, with the
+   * profile's selectors at the values that fit the game (a snapshot of the same capture tells
+   * them, as `View ▾` would be set by the author who knows the state): the profile's rules alone,
+   * no texts, toggles or positions from the game.
+   */
+  async profilePreview(
+    name: string,
+    screen: Screen,
+    snapshot: LiveSnapshot,
+    loaded: { profile: WindowProfile; window: Widget },
+    size?: Screen,
+  ): Promise<PlanWindow | undefined> {
+    const definition = this.ui.index.guiTypeDefinitions(name)[0];
+    const file = this.ui.index.guiFiles.find((f) => f.path === definition?.path)?.file;
+    if (definition === undefined || file === undefined) return undefined;
+    const context = { constants: file.constants, index: this.ui.index, screen };
+    const { profile } = loaded;
+    const window = definition.item;
+    const values = liveSelectors(profile, window, snapshot).values;
+    const view = evaluateView(profile, window, screen, { set: values });
+    const sample = sampleData(profile, window, view, {
+      localise: this.localise,
+      length: 'typical',
+      template: (template) => {
+        const found = this.ui.index.guiType(template);
+        const owner = this.ui.index.guiFiles.find((f) => f.path === found?.path)?.file;
+        return found === undefined || owner === undefined
+          ? undefined
+          : { widget: found.item, file: owner };
+      },
+    });
+    const layout = await layOutPreview(this.ui, this.assets, file, window, {
+      screen,
+      localise: (text: string) => this.localisation?.text(text) ?? text,
+      view: layoutViewOf(view),
+      content: layoutContentOf(sample),
+      ...(size === undefined ? {} : { windowSize: size }),
+    });
+    return { layout, shaderOf: (widget: Widget) => spriteShaderOf(widget, context) };
+  }
+
   /** The winning top-level definition of a name, as the game takes it (the first in load order). */
   definition(name: string): Widget | undefined {
     return this.ui.index.guiTypeDefinitions(name)[0]?.item;
