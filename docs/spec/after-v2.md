@@ -64,6 +64,19 @@ From section 16 of the v2 specification, with v1's entries that v2 did not take:
 
 ## Done since 2.0.0
 
+- **The military tab with Cradle of Civilization** (etch#254, from the coverage
+  survey). With the DLC the game moves most of the tab down by the height of
+  `army_professionalism` (16 px), as the `.gui`'s own comment on that window
+  says and `UpdateArmyProfessionalism` does; the background, the close button
+  and the title stay. The vanilla profile `countrymilitaryview` has a `cradle`
+  selector (`game.cradleOfCivilization`, default yes) and that offset; Anbennar
+  and Bigger UI keep the 16 px and take it from the vanilla layer. In the
+  survey's outline with the profiles the tab's 26 views (vanilla, Anbennar
+  alone, Bigger UI, both sizes) have every rect exact; the corpus, which has no
+  military tab, still passes (240 of 240). Left in etch#254: what places
+  `activate_all`, `slacken_button` and `button_makeheirgeneral`, and the
+  widget at `this+0x668` of the tab.
+
 - **A word wider than a text box breaks between its characters** (etch#264,
   from the coverage survey). The hypothesis was that it stays whole and
   overflows; the game shows "1.75M" and "38000" in the war overview's 30 px
