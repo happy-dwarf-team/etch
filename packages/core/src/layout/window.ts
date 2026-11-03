@@ -1049,6 +1049,8 @@ class Layout {
     const box: TextBox = { x, y, width, border, ...(height === undefined ? {} : { height }) };
     const fixed = kind === 'instantTextBoxType' && props.flag('fixedsize') === true;
     const laid = this.drawText(props, 'text', 'font', box, source, {
+      // Seen in the coverage survey for `instantTextBoxType` only (etch#264).
+      breakWords: kind === 'instantTextBoxType',
       align: textAlign(props.text('format')),
       verticalAlign: verticalAlign(props.text('vertical_alignment')) ?? 'top',
       ...colourCode(props),
@@ -1143,6 +1145,8 @@ class Layout {
       colourCode?: string;
       /** A fixed-size text box's box, which the text is fitted into before it is laid out. */
       fit?: Omit<TextFit, 'iconWidth'>;
+      /** A word wider than the line breaks between its characters (`TextOptions.breakWords`). */
+      breakWords?: boolean;
     },
   ): number | undefined {
     const sample =
@@ -1197,6 +1201,7 @@ class Layout {
       align: options.align,
       verticalAlign: options.verticalAlign,
       ...(options.colourCode === undefined ? {} : { colourCode: options.colourCode }),
+      ...(options.breakWords === true ? { breakWords: true } : {}),
       icon: (name) => {
         const sprite = this.input.index.sprite(name)?.item;
         if (sprite === undefined) return undefined;

@@ -37,6 +37,11 @@ export interface TextOptions {
   readonly colourCode?: string;
   /** Size of an icon sprite such as `GFX_text_yes`, or `undefined` when it does not exist. */
   readonly icon?: (sprite: string) => { width: number; height: number } | undefined;
+  /**
+   * A word wider than the line is broken between its characters, as a text box's is (etch#264);
+   * otherwise it stays whole and overflows, as a button's text is centred over its edges.
+   */
+  readonly breakWords?: boolean;
 }
 
 /** A glyph quad: screen rect and atlas rect, in pixels. */
@@ -154,9 +159,12 @@ const isSpace = (item: Item): boolean => item.kind === 'glyph' && item.code === 
  * Greedy wrap at spaces, as in etch#9 (verified on the main menu): a word goes
  * to the next line when the line plus a space plus the word is wider than
  * `maxWidth`, and the wrapped line keeps that space when it is measured. A
- * word wider than the line stays whole and overflows (hypothesis).
+ * word wider than the line stays whole and overflows, or with `breakWords` is
+ * broken between its characters, as many on a line as fit and at least one
+ * (the coverage survey, etch#264: the game shows "Aggressiveness:" in a 64 px
+ * text box on three lines, "1.75M" in 30 px on two).
  */
-function wrap(font: BmFont, items: Item[], maxWidth: number): Row[] {
+function wrap(font: BmFont, items: Item[], maxWidth: number, breakWords = false): Row[] {
   // A paragraph that fits whole would not be broken by the greedy rule either.
   const whole = measure(font, items);
   if (maxWidth <= 0 || whole <= maxWidth) return [{ items, width: whole }];
@@ -197,6 +205,32 @@ function wrap(font: BmFont, items: Item[], maxWidth: number): Row[] {
     }
   }
   rows.push({ items: line, width: pen.width });
+  if (!breakWords) return rows;
+  return rows.flatMap((row) =>
+    row.width > maxWidth ? breakWord(font, row.items, maxWidth) : [row],
+  );
+}
+
+/** A line of one word wider than `maxWidth`, broken between its characters. */
+function breakWord(font: BmFont, items: readonly Item[], maxWidth: number): Row[] {
+  const rows: Row[] = [];
+  let line: Item[] = [];
+  let pen: Pen = { width: 0, prev: -1 };
+  for (const item of items) {
+    const next = { ...pen };
+    step(font, next, item);
+    // A trailing space kept by wrapping stays on its line, as in `wrap`.
+    if (line.length > 0 && next.width > maxWidth && !isSpace(item)) {
+      rows.push({ items: line, width: pen.width });
+      line = [];
+      pen = { width: 0, prev: -1 };
+      step(font, pen, item);
+    } else {
+      pen = next;
+    }
+    line.push(item);
+  }
+  if (line.length > 0) rows.push({ items: line, width: pen.width });
   return rows;
 }
 
@@ -304,7 +338,7 @@ export function layoutText(
 
   const rows: (Row & { at: number })[] = [];
   for (const p of paragraphs) {
-    for (const row of wrap(font, p.items, box.width - 2 * border.x)) {
+    for (const row of wrap(font, p.items, box.width - 2 * border.x, options.breakWords)) {
       rows.push({ ...row, at: row.items[0]?.start ?? p.at });
     }
   }

@@ -64,6 +64,20 @@ From section 16 of the v2 specification, with v1's entries that v2 did not take:
 
 ## Done since 2.0.0
 
+- **A word wider than a text box breaks between its characters** (etch#264,
+  from the coverage survey). The hypothesis was that it stays whole and
+  overflows; the game shows "1.75M" and "38000" in the war overview's 30 px
+  boxes, and "100%" in a 32 px one, on two lines. An `instantTextBoxType` now
+  breaks such a word, as many characters on a line as fit; a button's text
+  stays whole, as the corpus's centring over a button's edges shows. In the
+  survey's preview from a snapshot the text boxes of another height went from
+  25 to 11; the precision corpus still passes (`compare --gpu`, 240 of 240).
+  Left open: "Aggressiveness:" in 64 px is three lines in the game and two
+  in the preview, and a long sentence in a `fixedsize` box (the rebels'
+  description) is one line in the game and two in the preview. The offline
+  outline's sample texts break too (`200000` in 30 px), where the game shows
+  shorter values: its text boxes of another height went from 110 to 139.
+
 - **Selectors that fit a snapshot only together** (etch#257, from the
   coverage survey). `liveSelectors` chose one selector at a time against the
   others' current values, so a rule that needs two (Anbennar's `hre-foreign`:
