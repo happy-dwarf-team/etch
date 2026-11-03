@@ -62,7 +62,8 @@ function totalsOf(views: readonly ViewCoverage[]): Totals {
 /**
  * As the measures' target asks: every compared rect exact and nothing the game shows missing from
  * the layout; from the live snapshot also every visibility agreeing. Offline, without a profile,
- * the outline draws everything, so its visibility is not part of it.
+ * the outline draws everything but the other half of a `_large` pair, so its visibility is not part
+ * of it.
  */
 function full(v: ViewCoverage, which: 'offline' | 'live'): boolean {
   const m = v[which];

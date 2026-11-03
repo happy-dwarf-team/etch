@@ -289,6 +289,24 @@ function labelOf(selectors: readonly Selector[], id: string): string {
   return selectors.find((s) => s.id === id)?.label ?? id;
 }
 
+/**
+ * The view of a window without a profile: what the game's code does by the screen height alone,
+ * the `_large` pairs and the engine's moves. The game does it whether or not Etch has a profile of
+ * the window, so the outline of such a window takes it too (etch#272).
+ */
+export function screenLayoutView(window: Widget, screen: Screen): LayoutView {
+  const states = new Map<Widget, Partial<WidgetState>>();
+  deriveFromScreen(window, screen, (widget, change) => {
+    states.set(widget, { ...states.get(widget), ...change });
+  });
+  return {
+    shows: (widget) => states.get(widget)?.created !== false,
+    movedTo: (widget) => states.get(widget)?.positionType,
+    movedAxis: (widget) => states.get(widget)?.positionAxis,
+    frame: () => undefined,
+  };
+}
+
 /** The view as layout takes it (`LayoutInput.view`). */
 export function layoutViewOf(view: WindowView): LayoutView {
   return {
