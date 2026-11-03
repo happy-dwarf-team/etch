@@ -1,5 +1,36 @@
 # Changelog
 
+## [2.3.0](https://github.com/happy-dwarf-team/etch/compare/v2.2.0...v2.3.0) (2026-11-03)
+
+
+### Features
+
+* **compare:** measure the outline offline with the profiles' rules ([#281](https://github.com/happy-dwarf-team/etch/issues/281)) ([5b89903](https://github.com/happy-dwarf-team/etch/commit/5b8990308fb171a20351b6479f2cd023cb6c15a3))
+* **core:** keep a profile's widgets at their hide_position, and the war overview button by the message log ([#283](https://github.com/happy-dwarf-team/etch/issues/283)) ([e3077ed](https://github.com/happy-dwarf-team/etch/commit/e3077ed4c7ff37cbb8d474e5457fbeb56f17441e))
+* **core:** move a profile's widgets by pixels, and the diplomacy view's labels with it ([#282](https://github.com/happy-dwarf-team/etch/issues/282)) ([14fcf01](https://github.com/happy-dwarf-team/etch/commit/14fcf014281fef2224d31d39fd35613fa4458496))
+* **corpus:** capture the survey's views in the P2K playsets at 2560×1440 ([#284](https://github.com/happy-dwarf-team/etch/issues/284)) ([7bae637](https://github.com/happy-dwarf-team/etch/commit/7bae637461764c6057d166c693354f48ea51995f))
+* **corpus:** explore the views Escape does not close, one opening click per game ([#269](https://github.com/happy-dwarf-team/etch/issues/269)) ([8c71519](https://github.com/happy-dwarf-team/etch/commit/8c7151960d812bc80945ecfc00e50d56ce4d56a7))
+* **corpus:** measure the coverage of every view with a crawler and a survey report ([#252](https://github.com/happy-dwarf-team/etch/issues/252)) ([82fa078](https://github.com/happy-dwarf-team/etch/commit/82fa0788531836a85bee66caf86fb4748404f09b))
+
+
+### Bug Fixes
+
+* **core:** break a word wider than a text box between its characters ([#266](https://github.com/happy-dwarf-team/etch/issues/266)) ([33a64c0](https://github.com/happy-dwarf-team/etch/commit/33a64c077be236d7e60d77b3644b1ed7a1f13428))
+* **core:** draw the definitions a live snapshot showed inside a window ([#262](https://github.com/happy-dwarf-team/etch/issues/262)) ([917ca71](https://github.com/happy-dwarf-team/etch/commit/917ca7127302d1f6c981a273397615aad7a3addd))
+* **core:** keep the screen's rules in the view a snapshot gives a window without a profile ([#277](https://github.com/happy-dwarf-team/etch/issues/277)) ([f1f4838](https://github.com/happy-dwarf-team/etch/commit/f1f4838aa4859de71078681cde6f8d06da7d3957))
+* **core:** lay out a window without a profile with the game's screen rules ([#273](https://github.com/happy-dwarf-team/etch/issues/273)) ([661735c](https://github.com/happy-dwarf-team/etch/commit/661735c633e491edd0d2e1493bf82aa8490d22d4)), closes [#272](https://github.com/happy-dwarf-team/etch/issues/272)
+* **core:** move and lengthen what a country view's size step changes ([#276](https://github.com/happy-dwarf-team/etch/issues/276)) ([ed47535](https://github.com/happy-dwarf-team/etch/commit/ed47535b7c99dab3c8b402ade3ec593a45a1c39a))
+* **core:** pair a window's code-placed entries by their number ([#261](https://github.com/happy-dwarf-team/etch/issues/261)) ([cdec3c2](https://github.com/happy-dwarf-team/etch/commit/cdec3c2c1793cb430002438037aafe95e5890ac6))
+* **core:** place the menu's bookmark shields in the game's row ([#279](https://github.com/happy-dwarf-team/etch/issues/279)) ([476ac65](https://github.com/happy-dwarf-team/etch/commit/476ac65087a93bd767c910e35635797cdb402462)), closes [#278](https://github.com/happy-dwarf-team/etch/issues/278)
+* **core:** place widgets from a snapshot at the screen's edges ([#265](https://github.com/happy-dwarf-team/etch/issues/265)) ([1bf4bb8](https://github.com/happy-dwarf-team/etch/commit/1bf4bb8ee168b68977006dd55228c0b328f76410))
+* **core:** place widgets where the live snapshot showed them ([#259](https://github.com/happy-dwarf-team/etch/issues/259)) ([7ade172](https://github.com/happy-dwarf-team/etch/commit/7ade172d0b24177a5eff9c13d840a4c03575a42f))
+* **core:** size a pie chart that gives one number for its size ([#271](https://github.com/happy-dwarf-team/etch/issues/271)) ([328070e](https://github.com/happy-dwarf-team/etch/commit/328070e51b7187ed6ae1e08c83dadf6b11e77c75)), closes [#270](https://github.com/happy-dwarf-team/etch/issues/270)
+* **core:** try the selectors no snapshot value fits together ([#263](https://github.com/happy-dwarf-team/etch/issues/263)) ([a407132](https://github.com/happy-dwarf-team/etch/commit/a407132b8e123b5426a3b694ce18ac313a7cc89d))
+* **corpus:** keep the crawl off the outliner's options ([#280](https://github.com/happy-dwarf-team/etch/issues/280)) ([bf9ae9a](https://github.com/happy-dwarf-team/etch/commit/bf9ae9ae5cab35774afce9ba17d6862dd6c02428))
+* **corpus:** retake the corpus with Tongs 0.23.0 and compare it as Tongs fits its rects ([#236](https://github.com/happy-dwarf-team/etch/issues/236)) ([90d98b9](https://github.com/happy-dwarf-team/etch/commit/90d98b94a61a79a357118a0ef85714faef0cdabc))
+* **extension:** draw a live snapshot of a window without a profile ([#260](https://github.com/happy-dwarf-team/etch/issues/260)) ([bdacd3e](https://github.com/happy-dwarf-team/etch/commit/bdacd3ee64648862a632392530b9587205ae9b35))
+* **extension:** offer Data for a window without a profile that has a snapshot ([#268](https://github.com/happy-dwarf-team/etch/issues/268)) ([fc8d1c5](https://github.com/happy-dwarf-team/etch/commit/fc8d1c57479b3c734ac2ba33e7002799d5ef6634))
+
 ## [2.2.0](https://github.com/happy-dwarf-team/etch/compare/v2.1.0...v2.2.0) (2026-11-02)
 
 
