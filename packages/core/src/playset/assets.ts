@@ -86,6 +86,7 @@ export async function layOutPreview(
     readonly view?: LayoutView;
     readonly content?: LayoutContent;
     readonly windowSize?: Screen;
+    readonly instance?: { readonly index: number; readonly count: number };
   },
 ): Promise<WindowLayout> {
   const input: LayoutInput = {

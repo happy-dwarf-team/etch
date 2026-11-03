@@ -291,8 +291,12 @@ export function planCapture(input: CapturePlanInput): CapturePlan {
     });
   };
 
+  const occurrences = new Map<string, number>();
   for (const root of record.widgets) {
-    const found = findRoot(input.windows, children, root.path);
+    const name = (splitWidgetPath(root.path)?.[0]?.name ?? '').toLowerCase();
+    const occurrence = occurrences.get(name) ?? 0;
+    occurrences.set(name, occurrence + 1);
+    const found = findRoot(input.windows, children, root.path, occurrence);
     if (typeof found === 'string') {
       // A root the game's code creates (the lobby's bookmark shields) has no layout; the view names
       // it code-filled, and it masks what it covers (etch#44).
@@ -922,17 +926,40 @@ function layoutStep(
 }
 
 /** The laid-out widget a root's path names, or why there is none. */
+/**
+ * Which instance of its top-level widget a capture's root is, from 0, and how many instances of
+ * it the capture's roots show: what the layout of a widget the game places in a row takes
+ * (etch#278).
+ */
+export function rootInstance(
+  roots: readonly { readonly path: string }[],
+  path: string,
+): { index: number; count: number } {
+  const first = splitWidgetPath(path)?.[0];
+  const name = first?.name.toLowerCase();
+  let count = 1;
+  for (const r of roots) {
+    const step = splitWidgetPath(r.path)?.[0];
+    if (step?.name.toLowerCase() === name) count = Math.max(count, step?.index ?? 1);
+  }
+  return { index: (first?.index ?? 1) - 1, count };
+}
+
 function findRoot(
   windows: readonly PlanWindow[],
   children: readonly (readonly number[][])[],
   path: string,
+  occurrence: number,
 ): { window: number; at: number } | string {
   const steps = splitWidgetPath(path);
   const [first, ...rest] = steps ?? [];
   if (first === undefined) return `"${path}" is not a widget path.`;
-  const window = windows.findIndex(
-    (w) => (w.layout.widgets[0]?.widget.name ?? '').toLowerCase() === first.name.toLowerCase(),
+  const named = windows.flatMap((w, i) =>
+    (w.layout.widgets[0]?.widget.name ?? '').toLowerCase() === first.name.toLowerCase() ? [i] : [],
   );
+  // The n-th root of a name pairs with the n-th layout of it when the caller laid out one for each,
+  // as for the menu's bookmark shields (etch#278); otherwise with the only one.
+  const window = named[occurrence] ?? named[0] ?? -1;
   if (window < 0) return `The playset defines no window "${first.name}" for the root "${path}".`;
   let at = 0;
   for (const step of rest) {

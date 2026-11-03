@@ -288,6 +288,10 @@ profile gets it too (etch#272):
 - The `positionType` moves of the province view: `top_section_window` to
   `top_section_position_big` from 814 px, and `history`, `strait_indicator`,
   `river_indicator_2` and `state_window` to their low-resolution positions below it.
+- The main menu's bookmark shields (`shield` in `frontend.gui`): the game puts them in a row,
+  from `shield_position` counted from the lower center of the screen, one `shield_offset` apart
+  and centered on the row (etch#278). How many there are and which one is laid out the layout
+  takes from its caller; the coverage survey takes them from the capture.
 
 ## Checks
 

@@ -10,7 +10,14 @@
  */
 import type { LayoutView } from '../layout/window.ts';
 import type { Screen, Widget } from '../model/gui.ts';
-import { ENGINE_MOVES, ENGINE_STEPS, LARGE_FROM_HEIGHT, LARGE_SUFFIX } from './engine.ts';
+import {
+  ENGINE_MOVES,
+  ENGINE_ROWS,
+  ENGINE_STEPS,
+  LARGE_FROM_HEIGHT,
+  LARGE_SUFFIX,
+  type EngineRow,
+} from './engine.ts';
 import type { Group, Selector, SelectorValue, WindowProfile } from './format.ts';
 import { widgetsAt, windowPaths } from './paths.ts';
 
@@ -64,6 +71,8 @@ export interface WidgetState {
   readonly frame?: number;
   /** What a country view's size step does to it: moved down, or made taller (etch#274). */
   readonly stepped?: 'moved' | 'grown';
+  /** The row the game's code places the instances of this top-level widget in (etch#278). */
+  readonly row?: EngineRow;
 }
 
 /** An exclusive group of the view: which member shows, and the widgets of each. */
@@ -291,6 +300,9 @@ function deriveFromScreen(
     for (const widget of widgetsAt(window, path)) update(widget, { stepped: 'moved' });
   for (const path of steps?.grown ?? [])
     for (const widget of widgetsAt(window, path)) update(widget, { stepped: 'grown' });
+  // A row: the layout knows the file's positions and which instance it lays out.
+  const row = ENGINE_ROWS.get(window.name?.toLowerCase() ?? '');
+  if (row !== undefined) update(window, { row });
 }
 
 function labelOf(selectors: readonly Selector[], id: string): string {
@@ -313,6 +325,7 @@ export function screenLayoutView(window: Widget, screen: Screen): LayoutView {
     movedAxis: (widget) => states.get(widget)?.positionAxis,
     frame: () => undefined,
     stepped: (widget) => states.get(widget)?.stepped,
+    row: (widget) => states.get(widget)?.row,
   };
 }
 
@@ -327,5 +340,6 @@ export function layoutViewOf(view: WindowView): LayoutView {
     movedAxis: (widget) => view.widgets.get(widget)?.positionAxis,
     frame: (widget) => view.widgets.get(widget)?.frame,
     stepped: (widget) => view.widgets.get(widget)?.stepped,
+    row: (widget) => view.widgets.get(widget)?.row,
   };
 }
