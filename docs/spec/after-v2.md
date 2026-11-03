@@ -198,9 +198,10 @@ against the snapshot) and
 [etch#258](https://github.com/happy-dwarf-team/etch/issues/258) (the survey's
 next run), and after the first fixes
 [etch#264](https://github.com/happy-dwarf-team/etch/issues/264) (text boxes
-that break their lines elsewhere). etch#255 is done; etch#253, etch#254,
-etch#256 and etch#257 are done for the preview drawn from a snapshot and stay
-open for the offline outline or their rest (v3.md, section 5).
+that break their lines elsewhere, in part done by etch#266). etch#255 is done;
+etch#253, etch#254, etch#256 and etch#257 are done for the preview drawn from a
+snapshot and stay open for the offline outline or their rest (v3.md, section
+5).
 
 ## Open points
 
