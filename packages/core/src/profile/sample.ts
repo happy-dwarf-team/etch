@@ -386,9 +386,23 @@ export function formatNumber(
  * keeps its default.
  */
 export function saveFacts(choice: SaveChoice): Record<string, string> {
-  const province = choice.block('province');
-  if (province === undefined) return {};
   const yesNo = (value: boolean): string => (value ? 'yes' : 'no');
+  const dlcs = choice.save.meta.dlcs;
+  const cradle = dlcs?.includes('Cradle of Civilization');
+  const country = choice.block('country');
+  const countryFacts: Record<string, string> =
+    country === undefined
+      ? {}
+      : {
+          'country.religionIcon':
+            scalarIn(country, 'secondary_religion') !== undefined
+              ? 'secondary'
+              : cradle === true && scalarIn(country, 'religious_school') !== undefined
+                ? 'school'
+                : 'none',
+        };
+  const province = choice.block('province');
+  if (province === undefined) return countryFacts;
   const owner = scalarIn(province, 'owner');
   const controller = scalarIn(province, 'controller');
   const projects = valueIn(province, 'great_projects');
@@ -408,12 +422,10 @@ export function saveFacts(choice: SaveChoice): Record<string, string> {
                 ? 'noSeat'
                 : 'seat',
         };
-  const dlcs = choice.save.meta.dlcs;
   return {
+    ...countryFacts,
     ...ownerFacts,
-    ...(dlcs === undefined
-      ? {}
-      : { 'game.cradleOfCivilization': yesNo(dlcs.includes('Cradle of Civilization')) }),
+    ...(cradle === undefined ? {} : { 'game.cradleOfCivilization': yesNo(cradle) }),
     'province.centerOfTrade': yesNo(Number(scalarIn(province, 'center_of_trade') ?? 0) > 0),
     'province.owned': yesNo(owner !== undefined),
     'province.ownedByPlayer': yesNo(owner !== undefined && owner === choice.country),

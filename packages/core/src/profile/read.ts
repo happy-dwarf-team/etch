@@ -646,6 +646,7 @@ function readRule(
     'notCreated',
     'position',
     'frame',
+    'offset',
     'note',
   ]);
   optionalText(props.get('note'), 'note');
@@ -690,6 +691,18 @@ function readRule(
       }
       return { frame: value.value };
     }),
+    offset: keyed('offset', (value) => {
+      const by = object(value, 'an offset', ['x', 'y']);
+      const pixels = (axis: 'x' | 'y'): number => {
+        const n = by.get(axis);
+        if (n === undefined) return 0;
+        if (n.kind !== 'number' || !Number.isInteger(n.value)) {
+          throw new Faulty(`"${axis}" of an offset is a whole number of pixels.`, n);
+        }
+        return n.value;
+      };
+      return { x: pixels('x'), y: pixels('y') };
+    }),
     ...written,
   };
   const effects =
@@ -697,10 +710,11 @@ function readRule(
     rule.hide.length +
     rule.notCreated.length +
     rule.position.length +
-    rule.frame.length;
+    rule.frame.length +
+    rule.offset.length;
   if (effects === 0) {
     throw new Faulty(
-      `Rule "${id}" has no effect: show, hide, notCreated, position or frame.`,
+      `Rule "${id}" has no effect: show, hide, notCreated, position, frame or offset.`,
       node,
     );
   }

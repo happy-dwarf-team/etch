@@ -142,7 +142,7 @@ provinces={
 }
 countries={
 	SWE={ capital=1 trade_port=4 government_name="monarchy" parliament={ } }
-	DAN={ capital=12 trade_port=2 government_name="kingdom" }
+	DAN={ capital=12 trade_port=2 government_name="kingdom" secondary_religion=sunni }
 }
 `;
 
@@ -477,6 +477,7 @@ describe('sampleData', () => {
       'province.parliamentSeat': 'seat',
       'province.centerOfTrade': 'yes',
       'game.cradleOfCivilization': 'no',
+      'country.religionIcon': 'none',
     });
     expect(saveFacts(new SaveChoice(s, 'SWE', 2))).toMatchObject({
       'province.ownedByPlayer': 'no',
@@ -497,8 +498,15 @@ describe('sampleData', () => {
       'province.hasFort': 'no',
       'province.centerOfTrade': 'no',
       'game.cradleOfCivilization': 'no',
+      'country.religionIcon': 'none',
     });
-    expect(saveFacts(new SaveChoice(s, 'SWE', undefined))).toEqual({});
+    // The country's facts hold without a province.
+    expect(saveFacts(new SaveChoice(s, 'SWE', undefined))).toEqual({
+      'country.religionIcon': 'none',
+    });
+    expect(saveFacts(new SaveChoice(s, 'DAN', undefined))).toEqual({
+      'country.religionIcon': 'secondary',
+    });
   });
 
   it('opens on the player and the capital, and holds a link when its selectors do', async () => {

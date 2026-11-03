@@ -440,3 +440,55 @@ describe('a row of top-level widgets (etch#278)', () => {
     expect(at(1920, 1080)).toEqual([912, 810]);
   });
 });
+
+describe("a rule's offset (the diplomacy view's labels)", () => {
+  const file = readGuiFile(
+    parseScript(`guiTypes = {
+  windowType = {
+    name = "countrydiplomacyview"
+    size = { x = 600 y = 600 }
+    iconType = { name = "secondary_religion_icon" position = { x = 100 y = 120 } }
+    iconType = { name = "religious_school_icon" position = { x = 100 y = 120 } }
+    instantTextBoxType = { name = "label_nation" position = { x = 132 y = 123 } maxWidth = 200 maxHeight = 32 }
+    instantTextBoxType = { name = "label_fog" position = { x = 132 y = 145 } maxWidth = 170 maxHeight = 24 }
+  }
+}`),
+  );
+  const window = file.definitions.find((w) => w.name === 'countrydiplomacyview') as Widget;
+  const { file: written, diagnostics } = readProfile(
+    `{ "formatVersion": 1, "window": "countrydiplomacyview",
+      "selectors": { "religionIcon": { "kind": "data", "label": "Religion icon", "fact": "country.religionIcon",
+        "values": { "none": "None", "secondary": "Secondary", "school": "School" } } },
+      "groups": { "religionIcon": { "selector": "religionIcon", "none": true, "members": {
+        "secondary": "countrydiplomacyview/secondary_religion_icon",
+        "school": "countrydiplomacyview/religious_school_icon" } } },
+      "rules": { "labels": { "when": { "religionIcon": "none" }, "offset": {
+        "countrydiplomacyview/label_nation": { "x": -20 },
+        "countrydiplomacyview/label_fog": { "x": -20 } } } } }`,
+    { layer: 0, source: 'vanilla', file: 'countrydiplomacyview.jsonc' },
+  );
+  const labels = (icon: string) => {
+    expect(diagnostics).toEqual([]);
+    const profile = layerProfiles('countrydiplomacyview', written === undefined ? [] : [written]);
+    const view = evaluateView(profile, window, LARGE, { facts: { 'country.religionIcon': icon } });
+    const layout = layoutWindow(window, {
+      file,
+      index: InterfaceIndex.of([], [{ path: 'interface/countrydiplomacyview.gui', file }]),
+      exists: () => false,
+      assets: { textureSize: () => undefined, font: () => undefined },
+      screen: LARGE,
+      view: layoutViewOf(view),
+    });
+    const at = (name: string) => {
+      const w = layout.widgets.find((l) => l.widget.name === name);
+      return w === undefined ? undefined : [w.x, w.y];
+    };
+    return { nation: at('label_nation'), fog: at('label_fog') };
+  };
+
+  it('moves the labels 20 px left without a religion icon, as eu4.exe does', () => {
+    expect(labels('none')).toEqual({ nation: [112, 123], fog: [112, 145] });
+    expect(labels('secondary')).toEqual({ nation: [132, 123], fog: [132, 145] });
+    expect(labels('school')).toEqual({ nation: [132, 123], fog: [132, 145] });
+  });
+});

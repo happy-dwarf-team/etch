@@ -5,7 +5,34 @@
   "formatVersion": 1,
   "window": "countrydiplomacyview",
   "checkedWith": "1.37.5",
+  "selectors": {
+    "religionIcon": {
+      "kind": "data",
+      "label": "Religion icon",
+      "fact": "country.religionIcon",
+      "values": { "none": "None", "secondary": "Secondary religion", "school": "Religious school" },
+      "note": "eu4.exe shows the country's secondary religion, else with Cradle of Civilization its religious school, else neither, and then moves label_nation and label_fog 20 px left (GOG 1.37.5.2 0xEFC380, 0xEFC40D).",
+    },
+  },
+  "groups": {
+    "religionIcon": {
+      "label": "Religion icon",
+      "selector": "religionIcon",
+      "none": true,
+      "members": {
+        "secondary": "countrydiplomacyview/secondary_religion_icon",
+        "school": "countrydiplomacyview/religious_school_icon",
+      },
+    },
+  },
   "rules": {
+    "labels-without-religion-icon": {
+      "when": { "religionIcon": "none" },
+      "offset": {
+        "countrydiplomacyview/label_nation": { "x": -20 },
+        "countrydiplomacyview/label_fog": { "x": -20 },
+      },
+    },
     "hidden": {
       "note": "Hidden in the corpus capture of \"diplomacy\" in vanilla (Russia, 17 March 1719): the game decides these from its data or a click; show one by hand.",
       "hide": [
@@ -46,8 +73,6 @@
         "countrydiplomacyview/relation_bg_2",
         "countrydiplomacyview/relation_value",
         "countrydiplomacyview/relation_value_2",
-        "countrydiplomacyview/religious_school_icon",
-        "countrydiplomacyview/secondary_religion_icon",
         "countrydiplomacyview/select_rivals_window",
         "countrydiplomacyview/threat_checkbox",
         "countrydiplomacyview/threat_label",

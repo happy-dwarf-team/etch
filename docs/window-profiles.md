@@ -109,6 +109,7 @@ release.
 | `province.parliamentSeat` | `seat`, `noSeat`, `none` | It has a seat in its owner's parliament (`seat_in_parliament`), has none, or the owner has no `parliament`. |
 | `province.centerOfTrade` | `yes`, `no` | It is a centre of trade (`center_of_trade` above 0). |
 | `game.cradleOfCivilization` | `yes`, `no` | The DLC Cradle of Civilization is active (the save's `dlc_enabled`); the game gates development exploitation on it. |
+| `country.religionIcon` | `none`, `secondary`, `school` | The religion icon the diplomacy view shows by the chosen country's name: its secondary religion, else (with Cradle of Civilization) its religious school, else none; without one the game moves the name and fog labels 20 px left. |
 | `province.hreIndicator` | `yes`, `no` | The game shows its Holy Roman Empire indicator (the empire exists and the province can be part of it). The map decides that, not the save; it stays at the default until you set it. |
 | `owner.buildsNativeBuildings` | `yes`, `no` | The owner builds native buildings. A save does not say; it stays at the default until you set it. |
 
@@ -142,6 +143,7 @@ values); without `when` it always applies. Its effects:
 | `notCreated` | paths the game does not create at all in this case |
 | `position` | paths the game's code moves, each to a `positionType` of the window's file; `{ "positionType": …, "axis": "y" }` takes only its `y` (or `x`) |
 | `frame` | paths whose sprite frame (from 1) the game's code sets |
+| `offset` | paths the game's code moves by some pixels from where they would be, when the file has no `positionType` for it: `{ "x": -20 }` (each coordinate 0 when left out) |
 
 A rule may have a `note`. Groups apply first, then the rules in layer order (a later rule wins),
 then the hand toggles of the preview.

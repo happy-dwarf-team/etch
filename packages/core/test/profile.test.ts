@@ -162,7 +162,7 @@ describe('reading a profile file', () => {
     );
     expect(diagnostics.map((d) => d.message)).toEqual([
       'Only a resolution value has bounds.',
-      'Rule "r" has no effect: show, hide, notCreated, position or frame.',
+      'Rule "r" has no effect: show, hide, notCreated, position, frame or offset.',
     ]);
   });
 });
@@ -358,6 +358,7 @@ describe('the JSON Schema', () => {
       'hide',
       'notCreated',
       'note',
+      'offset',
       'position',
       'show',
       'when',
