@@ -161,6 +161,7 @@ export function checkProfile(profile: WindowProfile, input: ProfileCheckInput): 
       ...rule.notCreated,
       ...rule.position,
       ...rule.frame,
+      ...rule.offset,
     ]) {
       ok = !pathFails(rule, ref) && ok;
     }

@@ -162,6 +162,8 @@ export interface LayoutView {
    * names of the first one's place and of the step to the next (etch#278).
    */
   row?(widget: Widget): { readonly start: string; readonly step: string } | undefined;
+  /** How far the game's code moves the widget from where it would be, in pixels. */
+  offset?(widget: Widget): { readonly x: number; readonly y: number } | undefined;
 }
 
 /** One laid-out widget, in paint order: a parent comes before its children. */
@@ -316,8 +318,10 @@ class Layout {
     const stepped = view?.stepped?.(widget);
     const step = stepped === undefined ? 0 : this.stepIncrement();
     const inRow = parentIndex === -1 ? this.rowPoint(view?.row?.(widget)) : undefined;
-    const x = inRow?.x ?? anchor.x + offset.x;
-    const y = inRow?.y ?? anchor.y + offset.y + (stepped === 'moved' ? step : 0);
+    const shift = view?.offset?.(widget);
+    const x = (inRow?.x ?? anchor.x + offset.x) + (shift?.x ?? 0);
+    const y =
+      (inRow?.y ?? anchor.y + offset.y + (stepped === 'moved' ? step : 0)) + (shift?.y ?? 0);
     const drawStart = this.draws.length;
     const source = widget.node.start;
     const kind = widget.kind;

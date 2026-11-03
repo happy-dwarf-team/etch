@@ -92,6 +92,13 @@ export const FACTS: readonly Fact[] = [
     inSave: true,
   },
   {
+    name: 'country.religionIcon',
+    values: ['none', 'secondary', 'school'],
+    description:
+      "Which religion icon the diplomacy view shows beside the chosen country's name: its secondary religion (the save's `secondary_religion`), else with Cradle of Civilization its religious school (`religious_school`), else none. Without either `eu4.exe` moves `label_nation` and `label_fog` 20 px left (GOG 1.37.5.2 0xEFC380, 0xEFC40D).",
+    inSave: true,
+  },
+  {
     name: 'province.hreIndicator',
     values: ['yes', 'no'],
     description:

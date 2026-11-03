@@ -144,6 +144,7 @@
             "province.parliamentSeat",
             "province.centerOfTrade",
             "game.cradleOfCivilization",
+            "country.religionIcon",
             "province.hreIndicator",
             "owner.buildsNativeBuildings"
           ]
@@ -181,7 +182,8 @@
         { "required": ["hide"] },
         { "required": ["notCreated"] },
         { "required": ["position"] },
-        { "required": ["frame"] }
+        { "required": ["frame"] },
+        { "required": ["offset"] }
       ],
       "properties": {
         "when": {
@@ -222,6 +224,16 @@
           "description": "Sprite frames the game's code sets, keyed by path, counted from 1.",
           "type": "object",
           "additionalProperties": { "type": "integer", "minimum": 1 }
+        },
+        "offset": {
+          "description": "Widgets the game's code moves by a number of pixels from where they would be, keyed by path: { x, y }, each 0 when left out.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": false,
+            "properties": { "x": { "type": "integer" }, "y": { "type": "integer" } }
+          }
         },
         "note": { "$ref": "#/definitions/text" }
       }

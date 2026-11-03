@@ -106,6 +106,11 @@ export interface Rule extends Written {
   })[];
   /** Sprite frames (from 1) the game's code sets. */
   readonly frame: readonly (PathRef & { readonly frame: number })[];
+  /**
+   * Widgets the game's code moves by a number of pixels from where they would be, with no
+   * `positionType` to name: the diplomacy view's labels, 20 px left without a religion icon.
+   */
+  readonly offset: readonly (PathRef & { readonly x: number; readonly y: number })[];
 }
 
 export interface SelectorSetting {

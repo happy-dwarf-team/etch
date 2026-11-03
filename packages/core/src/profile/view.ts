@@ -73,6 +73,8 @@ export interface WidgetState {
   readonly stepped?: 'moved' | 'grown';
   /** The row the game's code places the instances of this top-level widget in (etch#278). */
   readonly row?: EngineRow;
+  /** How far the game's code moves it from where it would be, in pixels (a rule's `offset`). */
+  readonly offset?: { readonly x: number; readonly y: number };
 }
 
 /** An exclusive group of the view: which member shows, and the widgets of each. */
@@ -157,6 +159,9 @@ export function evaluateView(
     }
     for (const ref of rule.frame) {
       for (const w of widgetsAt(window, ref.path)) update(w, { frame: ref.frame });
+    }
+    for (const ref of rule.offset) {
+      for (const w of widgetsAt(window, ref.path)) update(w, { offset: { x: ref.x, y: ref.y } });
     }
   }
 
@@ -341,5 +346,6 @@ export function layoutViewOf(view: WindowView): LayoutView {
     frame: (widget) => view.widgets.get(widget)?.frame,
     stepped: (widget) => view.widgets.get(widget)?.stepped,
     row: (widget) => view.widgets.get(widget)?.row,
+    offset: (widget) => view.widgets.get(widget)?.offset,
   };
 }
