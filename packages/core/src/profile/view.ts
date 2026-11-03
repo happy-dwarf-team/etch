@@ -10,7 +10,7 @@
  */
 import type { LayoutView } from '../layout/window.ts';
 import type { Screen, Widget } from '../model/gui.ts';
-import { ENGINE_MOVES, LARGE_FROM_HEIGHT, LARGE_SUFFIX } from './engine.ts';
+import { ENGINE_MOVES, ENGINE_STEPS, LARGE_FROM_HEIGHT, LARGE_SUFFIX } from './engine.ts';
 import type { Group, Selector, SelectorValue, WindowProfile } from './format.ts';
 import { widgetsAt, windowPaths } from './paths.ts';
 
@@ -62,6 +62,8 @@ export interface WidgetState {
   readonly positionAxis?: 'x' | 'y' | undefined;
   /** The sprite frame the game's code sets, from 1. */
   readonly frame?: number;
+  /** What a country view's size step does to it: moved down, or made taller (etch#274). */
+  readonly stepped?: 'moved' | 'grown';
 }
 
 /** An exclusive group of the view: which member shows, and the widgets of each. */
@@ -283,6 +285,12 @@ function deriveFromScreen(
     for (const widget of widgetsAt(window, move.path))
       update(widget, { positionType: move.positionType, positionAxis: undefined });
   }
+  // The size steps: the layout knows the file's step heights, so it adds the step itself.
+  const steps = ENGINE_STEPS.get(window.name?.toLowerCase() ?? '');
+  for (const path of steps?.moved ?? [])
+    for (const widget of widgetsAt(window, path)) update(widget, { stepped: 'moved' });
+  for (const path of steps?.grown ?? [])
+    for (const widget of widgetsAt(window, path)) update(widget, { stepped: 'grown' });
 }
 
 function labelOf(selectors: readonly Selector[], id: string): string {
@@ -304,6 +312,7 @@ export function screenLayoutView(window: Widget, screen: Screen): LayoutView {
     movedTo: (widget) => states.get(widget)?.positionType,
     movedAxis: (widget) => states.get(widget)?.positionAxis,
     frame: () => undefined,
+    stepped: (widget) => states.get(widget)?.stepped,
   };
 }
 
@@ -317,5 +326,6 @@ export function layoutViewOf(view: WindowView): LayoutView {
     movedTo: (widget) => view.widgets.get(widget)?.positionType,
     movedAxis: (widget) => view.widgets.get(widget)?.positionAxis,
     frame: (widget) => view.widgets.get(widget)?.frame,
+    stepped: (widget) => view.widgets.get(widget)?.stepped,
   };
 }

@@ -275,12 +275,16 @@ position: `provinceview/province_window/queue_window`. Names are compared withou
 
 ## What Etch does by itself
 
-Etch derives two things the game's code does by the screen height, so a profile need not write
-them. The game does them whether or not Etch has a profile of the window, so a window without a
-profile gets them too (etch#272):
+Etch derives what the game's code does by the screen height, so a profile need not write it.
+The game does it whether or not Etch has a profile of the window, so a window without a
+profile gets it too (etch#272):
 
 - Of two sibling widgets `X` and `X_large` the game creates only one: below 814 px of height the
   small one, from 814 px the large one.
+- The size steps of the country views (`…_scaling_large_min_inc` and `…_scaling_huge_min_inc`):
+  from the step's height the game moves some widgets down by the step's `y` and makes others that
+  much taller, by view (etch#274; so far the subjects view's `country_subjects_info`, military
+  focus window and `subjects_listbox`).
 - The `positionType` moves of the province view: `top_section_window` to
   `top_section_position_big` from 814 px, and `history`, `strait_indicator`,
   `river_indicator_2` and `state_window` to their low-resolution positions below it.
