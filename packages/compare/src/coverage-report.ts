@@ -88,17 +88,27 @@ export function coverageMarkdown(result: CoverageResult): string {
     '"full" when every compared rect is exact and the game shows nothing the layout lacks, and from',
     'the live snapshot also when every visibility agrees.',
     '',
-    '| Playset | Views | Outline rects | Outline visibility | Full (outline) | Live rects | Live visibility | Full (live) | Live texts | Texts, profiled windows | Pixel pass |',
-    '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |',
+    '| Playset | Resolution | Views | Outline rects | Outline visibility | Full (outline) | Live rects | Live visibility | Full (live) | Live texts | Texts, profiled windows | Pixel pass |',
+    '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |',
   );
-  for (const id of playsets) {
-    const t = totalsOf(result.views.filter((v) => v.playset === id));
+  const groups = [...new Set(result.views.map((v) => `${v.playset} ${v.resolution}`))];
+  for (const group of groups) {
+    const [id = '', resolution = ''] = group.split(' ');
+    const t = totalsOf(result.views.filter((v) => v.playset === id && v.resolution === resolution));
     lines.push(
-      `| ${id} | ${String(t.views)} | ${percent(...t.offlineGeometry)} | ${percent(...t.offlineVisibility)} | ${String(t.full.offline)} | ${percent(...t.liveGeometry)} | ${percent(...t.liveVisibility)} | ${String(t.full.live)} | ${percent(...t.texts)} | ${percent(...t.profiledTexts)} | ${t.pixelsPassed[1] === 0 ? '–' : `${String(t.pixelsPassed[0])} of ${String(t.pixelsPassed[1])}`} |`,
+      `| ${id} | ${resolution} | ${String(t.views)} | ${percent(...t.offlineGeometry)} | ${percent(...t.offlineVisibility)} | ${String(t.full.offline)} | ${percent(...t.liveGeometry)} | ${percent(...t.liveVisibility)} | ${String(t.full.live)} | ${percent(...t.texts)} | ${percent(...t.profiledTexts)} | ${t.pixelsPassed[1] === 0 ? '–' : `${String(t.pixelsPassed[0])} of ${String(t.pixelsPassed[1])}`} |`,
     );
   }
   if (result.notCaptured.length > 0) {
-    lines.push('', `Not captured: ${String(result.notCaptured.length)} views of the manifest.`);
+    const by = new Map<string, number>();
+    for (const name of result.notCaptured) {
+      const [, playset = '', resolution = ''] = name.split('/');
+      by.set(`${playset} ${resolution}`, (by.get(`${playset} ${resolution}`) ?? 0) + 1);
+    }
+    lines.push(
+      '',
+      `Captures the survey's manifest lists but no record has: ${[...by].map(([k, n]) => `${k} ${String(n)}`).join(', ')}. At 1280×720 only the views whose windows have a variant there are captured.`,
+    );
   }
 
   lines.push('', '## What differs', '');
@@ -181,7 +191,9 @@ export function coverageMarkdown(result: CoverageResult): string {
   lines.push('## Where rects start to differ', '');
   lines.push(
     'Each row is a widget whose outline rect is off while its parent is not off by the same',
-    'amount; the widgets inside it that only move with it are counted, not listed.',
+    'amount; the widgets inside it that only move with it are counted, not listed. At the largest',
+    'captured resolution only: below it a window taller than the screen takes the bounds of its',
+    'children in Tongs, so its own rect is not compared and every child would count as an origin.',
     '',
   );
   for (const id of playsets) {
@@ -189,7 +201,9 @@ export function coverageMarkdown(result: CoverageResult): string {
       string,
       { delta: string; moved: number; views: Set<string>; kind: string }
     >();
-    for (const v of result.views.filter((x) => x.playset === id)) {
+    const own = result.views.filter((x) => x.playset === id);
+    const largest = Math.max(...own.map((x) => Number(x.resolution.split('x')[1] ?? 0)));
+    for (const v of own.filter((x) => Number(x.resolution.split('x')[1] ?? 0) === largest)) {
       for (const o of rectOrigins(v.offline.geometry.mismatches)) {
         const key = `${o.origin.path}|${o.delta}`;
         const row = rows.get(key) ?? {

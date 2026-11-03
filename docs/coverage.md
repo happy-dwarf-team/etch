@@ -107,10 +107,12 @@ And for windows no survey reaches, such as a mod's own:
 4. **Constructs.** Each compared widget's constructs: its kind, each property
    it sets (`iconType.position`), the values of enumerated properties
    (`instantTextBoxType.format=centre`) and whether it has `if_resolution`
-   blocks; names, sprites, fonts and texts left out. A construct is
-   *confirmed* when every widget built with it had the game's rect. A window's
-   **confidence** is the share of its widgets built only of confirmed
-   constructs.
+   blocks; names, sprites, fonts and texts left out. A widget that only moves
+   with a moved parent was not measured on its own and is left out. A
+   construct is *confirmed* when at least 10 widgets built with it were
+   compared and at least 95 % of them had the game's rect: an estimate for
+   windows nobody measured, not a target. A window's **confidence** is the
+   share of its widgets built only of confirmed constructs.
 
 **The target**: 100 % geometry in every view, 100 % visibility in every view
 with a profile, 100 % of the live snapshot's fields. A difference is a bug or a
@@ -129,9 +131,16 @@ node packages/core/src/corpus/driver/cli.ts run --manifest $env:ETCH_CORPUS_PATH
   --records $env:ETCH_CORPUS_PATH --all --resolution 1920x1080 --lab <lab> --host <host> `
   --monitor 3440x1440 --settings-baseline <settings.txt> --saves <saves>
 pnpm --filter @etch/compare compare --corpus $env:ETCH_CORPUS_PATH --gpu
-pnpm --filter @etch/compare coverage --out docs/coverage-results.md
+pnpm --filter @etch/compare coverage --out docs/coverage-results.md --inventory coverage/inventory.json
 ```
 
 The survey's local folder keeps the crawls, the manifest, the captures, the
-screenshots and the reports; only `coverage/survey.json`, this file and the
-results summary are in the repository.
+screenshots and the reports. In the repository: `coverage/survey.json` (the
+rules), `coverage/inventory.json` (every view with its recipe, and every
+top-level window's status and confidence), this file and the results
+summary.
+
+Views that Escape does not close are captured last, each in a game of its own,
+so `run` needs `--max-starts` above their number. A run that stops because the
+mouse was released waits for `resume` in its run folder, as the corpus's
+capture does; a batch of several runs should stop with it.

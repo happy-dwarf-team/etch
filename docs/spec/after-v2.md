@@ -109,7 +109,19 @@ From section 16 of the v2 specification, with v1's entries that v2 did not take:
 
 ## Open issues
 
-None open.
+From the first coverage survey ([v3.md](v3.md), section 5):
+[etch#253](https://github.com/happy-dwarf-team/etch/issues/253) (what the
+game's code moves),
+[etch#254](https://github.com/happy-dwarf-team/etch/issues/254) (the military
+tab),
+[etch#255](https://github.com/happy-dwarf-team/etch/issues/255) (a snapshot
+without a profile),
+[etch#256](https://github.com/happy-dwarf-team/etch/issues/256) (widgets from
+other definitions, code-set sprites),
+[etch#257](https://github.com/happy-dwarf-team/etch/issues/257) (profiles
+against the snapshot) and
+[etch#258](https://github.com/happy-dwarf-team/etch/issues/258) (the survey's
+next run).
 
 ## Open points
 
