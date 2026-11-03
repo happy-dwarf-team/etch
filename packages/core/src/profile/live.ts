@@ -6,6 +6,7 @@
  * predicts otherwise, toggles marked "from the game". Etch reads no facts from the game and writes
  * no rules itself.
  */
+import type { LayoutContent, LayoutView } from '../layout/window.ts';
 import type { Screen, Widget } from '../model/gui.ts';
 import type { WindowProfile } from './format.ts';
 import type { LiveState, LiveTexts } from './sample.ts';
@@ -324,4 +325,44 @@ export function liveDifferences(
     if (state.shown !== shown) out[entry.path] = shown;
   }
   return out;
+}
+
+/**
+ * What a live snapshot gives the preview of a window without a profile (etch#255, from the
+ * coverage survey: the outliner, the HRE, most country view tabs and the dialogs have none): the
+ * texts the game showed and each widget's state, by the widget's path in the window. Without a
+ * profile there are no repeaters, so a list keeps the rows its `.gui` has (none); with one, the
+ * sample data's live layer does this (`sampleData`).
+ */
+export function liveContent(window: Widget, texts: LiveTexts): LayoutContent {
+  const pathOf = new Map(windowPaths(window).map((e) => [e.widget, e.path]));
+  return {
+    text: (widget, row) => {
+      if (row !== undefined) return undefined;
+      const path = pathOf.get(widget);
+      return path === undefined ? undefined : texts.text(path);
+    },
+    state: (widget, row) => {
+      if (row !== undefined) return undefined;
+      const path = pathOf.get(widget);
+      return path === undefined ? undefined : texts.state?.(path);
+    },
+    rows: () => undefined,
+  };
+}
+
+/**
+ * The view a live snapshot gives a window without a profile: what the game hid is not drawn,
+ * and what the snapshot does not have (not created, or not read) is drawn as the `.gui` has it.
+ */
+export function liveView(window: Widget, texts: LiveTexts): LayoutView {
+  const pathOf = new Map(windowPaths(window).map((e) => [e.widget, e.path]));
+  return {
+    shows: (widget) => {
+      const path = pathOf.get(widget);
+      return path === undefined || texts.state?.(path)?.visible !== false;
+    },
+    movedTo: () => undefined,
+    frame: () => undefined,
+  };
 }

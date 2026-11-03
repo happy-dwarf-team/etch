@@ -31,9 +31,11 @@ import {
   layerProfiles,
   layoutContentOf,
   layoutViewOf,
+  liveContent,
   liveDifferences,
   liveMatch,
   liveSelectors,
+  liveView,
   profileModMatches,
   readProfile,
   sampleData,
@@ -223,8 +225,8 @@ export class CorpusPlaysetFiles {
    * A top-level window laid out as the preview draws it from a live snapshot (spec v2 section 7,
    * the extension's `preview.ts`): with its profile, the selectors the snapshot fits, the
    * profile's differences from it as toggles from the game, and the snapshot's texts, rows and
-   * states as the top sample data layer, from the profile's default view. Without a profile the
-   * preview takes nothing from a snapshot, and neither does this.
+   * states as the top sample data layer, from the profile's default view. Without a profile, the
+   * snapshot's texts, states and visibility alone (`liveContent`, `liveView`).
    */
   async livePreview(
     name: string,
@@ -243,12 +245,16 @@ export class CorpusPlaysetFiles {
     const shaderOf = (widget: Widget): string | undefined => spriteShaderOf(widget, context);
     const localise = (text: string): string => this.localisation?.text(text) ?? text;
     if (loaded === undefined) {
+      // As the preview does for a window without a profile (etch#255).
+      const matched = liveMatch(snapshot, definition.item);
       const layout = await layOutPreview(this.ui, this.assets, file, definition.item, {
         screen,
         localise,
+        view: liveView(definition.item, matched.texts),
+        content: liveContent(definition.item, matched.texts),
         ...windowSize,
       });
-      return { window: { layout, shaderOf }, unknownSelectors: [] };
+      return { window: { layout, shaderOf }, texts: matched.texts, unknownSelectors: [] };
     }
     const { profile } = loaded;
     const window = definition.item;

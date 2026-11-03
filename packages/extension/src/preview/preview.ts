@@ -46,9 +46,11 @@ import {
   evaluateView,
   layoutContentOf,
   layoutViewOf,
+  liveContent,
   liveDifferences,
   liveMatch,
   liveSelectors,
+  liveView,
   sampleData,
   windowPaths,
   withView,
@@ -740,8 +742,9 @@ export class Preview implements PreviewApi, vscode.Disposable {
       ...session.notices,
       ...found.notices.map((message) => ({ severity: 'warning' as const, message })),
     ];
+    // A window without a profile takes a snapshot too (etch#255).
     const snapshot =
-      loaded === undefined || window.name === undefined
+      window.name === undefined
         ? undefined
         : await this.snapshots.get(sessionPlaysetKey(session), window.name);
     if (panel !== this.panel) return;
@@ -841,6 +844,14 @@ export class Preview implements PreviewApi, vscode.Disposable {
             localise: session.localise,
             ...(view === undefined ? {} : { view: layoutViewOf(view) }),
             ...(sample === undefined ? {} : { content: layoutContentOf(sample) }),
+            // A window without a profile takes the snapshot's texts, states and visibility
+            // alone (etch#255).
+            ...(loaded === undefined && matched !== undefined
+              ? {
+                  view: liveView(window, matched.texts),
+                  content: liveContent(window, matched.texts),
+                }
+              : {}),
           })
         : await layOutPreview(session.ui, session.assets, linked.file, linked.window, {
             screen,

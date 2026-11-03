@@ -3,9 +3,11 @@ import { parseScript, readGuiFile, type Widget } from '../src/index.ts';
 import {
   evaluateView,
   layerProfiles,
+  liveContent,
   liveDifferences,
   liveMatch,
   liveSelectors,
+  liveView,
   liveWidgetsOf,
   readLiveSnapshot,
   readProfile,
@@ -276,5 +278,72 @@ describe('readLiveSnapshot', () => {
     expect(readLiveSnapshot(snapshot(FOREIGN))?.window).toBe('provinceview');
     expect(readLiveSnapshot({ ...snapshot(FOREIGN), formatVersion: 2 })).toBeUndefined();
     expect(readLiveSnapshot(null)).toBeUndefined();
+  });
+});
+
+describe('a live snapshot without a profile (etch#255)', () => {
+  const window = readGuiFile(
+    parseScript(`guiTypes = {
+      windowType = { name = "w"
+        instantTextBoxType = { name = "title" text = "TITLE" }
+        guiButtonType = { name = "hidden" }
+        iconType = { name = "unread" }
+      }
+    }`),
+  ).definitions[0] as Widget;
+  const snapshot: LiveSnapshot = {
+    formatVersion: 1,
+    window: 'w',
+    takenAt: '2026-11-03T00:00:00Z',
+    screen: { width: 1920, height: 1080 },
+    widgets: [
+      {
+        path: 'w',
+        type: 'window',
+        visible: true,
+        enabled: true,
+        checked: false,
+        rect: [0, 0, 10, 10],
+      },
+      {
+        path: 'w/title',
+        type: 'text',
+        visible: true,
+        enabled: true,
+        checked: false,
+        text: 'Holy Roman Empire',
+        rect: [0, 0, 10, 10],
+      },
+      {
+        path: 'w/hidden',
+        type: 'button',
+        visible: false,
+        enabled: true,
+        checked: false,
+        rect: [0, 0, 1, 1],
+      },
+    ],
+    stale: 0,
+  };
+  const texts = liveMatch(snapshot, window).texts;
+  const [title, hidden, unread] = window.children;
+
+  it("gives the window the game's texts and states", () => {
+    const content = liveContent(window, texts);
+    expect(title === undefined ? undefined : content.text(title, undefined)).toBe(
+      'Holy Roman Empire',
+    );
+    expect(hidden === undefined ? undefined : content.state?.(hidden, undefined)?.visible).toBe(
+      false,
+    );
+    expect(unread === undefined ? undefined : content.text(unread, undefined)).toBeUndefined();
+  });
+
+  it('hides what the game hid and draws what the snapshot does not have', () => {
+    const view = liveView(window, texts);
+    expect(view.shows(window)).toBe(true);
+    expect(title === undefined ? undefined : view.shows(title)).toBe(true);
+    expect(hidden === undefined ? undefined : view.shows(hidden)).toBe(false);
+    expect(unread === undefined ? undefined : view.shows(unread)).toBe(true);
   });
 });

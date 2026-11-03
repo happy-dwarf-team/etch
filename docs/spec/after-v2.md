@@ -64,6 +64,14 @@ From section 16 of the v2 specification, with v1's entries that v2 did not take:
 
 ## Done since 2.0.0
 
+- **A live snapshot without a profile** (etch#255, from the coverage survey).
+  A window without a profile takes the snapshot's texts, the widgets' states
+  and positions, and the game's visibility (what the game hid is not drawn);
+  the extension keeps and draws a snapshot of any window. With the positions
+  below, the survey's preview from a snapshot went at 1920×1080 from 77.9 %
+  to 98.5 % of rects in vanilla (87.5 to 98.7 % in Anbennar alone), from
+  95.8 to 99.1 % visibility and from 25 to 99 % of the texts the game shows.
+  A list keeps the rows of its `.gui` without a profile's repeater.
 - **Positions from the live snapshot** (etch#253, etch#254, from the coverage
   survey). The preview drawn from a snapshot puts a widget where the game
   showed it when the game's code moved it: a widget the snapshot shows at the
