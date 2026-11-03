@@ -230,6 +230,33 @@ describe('liveSelectors', () => {
     expect(live.unknown).toEqual([]);
   });
 
+  it('finds selectors whose rules only fit together (etch#257)', () => {
+    // As Anbennar's `hre-foreign`: `extra` shows only for a foreign province in the empire. One
+    // selector at a time, `owner` meets the default `hre` and `hre` the default `owner`.
+    const together = profile(`
+      "selectors": {
+        "owner": { "kind": "data", "fact": "province.ownedByPlayer", "default": "yes" },
+        "hre": { "kind": "data", "fact": "province.inHre", "values": { "yes": "In the empire", "no": "Outside" }, "default": "no" }
+      },
+      "rules": {
+        "hidden": { "hide": ["provinceview/extra"] },
+        "foreign": { "when": { "owner": "no" }, "hide": ["provinceview/province_window/queue_window"] },
+        "hre-foreign": { "when": { "hre": "yes", "owner": "no" }, "show": ["provinceview/extra"] }
+      }`);
+    const live = liveSelectors(
+      together,
+      WINDOW,
+      snapshot([
+        w('provinceview', true),
+        w('provinceview/province_window', true),
+        w('provinceview/province_window/queue_window', false),
+        w('provinceview/extra', true),
+      ]),
+    );
+    expect(live.unknown).toEqual([]);
+    expect(live.values).toMatchObject({ owner: 'no', hre: 'yes' });
+  });
+
   it('says unknown when no value predicts it, and the default when several do', () => {
     const both = FOREIGN.map((x) =>
       x.path.endsWith('queue_window') ? { ...x, visible: true } : x,

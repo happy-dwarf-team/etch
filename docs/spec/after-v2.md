@@ -64,6 +64,16 @@ From section 16 of the v2 specification, with v1's entries that v2 did not take:
 
 ## Done since 2.0.0
 
+- **Selectors that fit a snapshot only together** (etch#257, from the
+  coverage survey). `liveSelectors` chose one selector at a time against the
+  others' current values, so a rule that needs two (Anbennar's `hre-foreign`:
+  in the empire and foreign) fitted with neither: in a foreign province
+  `owner`, `hre`, `capital`, `tradePort`, `subPanel` and `buttonBar` all came
+  out unknown. The unknown ones are now tried together while their
+  combinations are few. In the survey the unknown selectors of Anbennar alone
+  went from 32 to 12; what is left is a view caught between the province and
+  state tabs, vanilla's `fort` (`fort_number` shown empty without a fort) and
+  the main menu's `page` (the continue button follows the saves).
 - **Widgets the game builds from other definitions, from a snapshot**
   (etch#256, from the coverage survey). A widget the snapshot shows right
   under one the window has, but which the window's `.gui` lacks, is a copy the
@@ -77,7 +87,6 @@ From section 16 of the v2 specification, with v1's entries that v2 did not take:
   the game's 23 × 23 for the markers), so live rects are 97.5 %: the second
   half of etch#256. The offline outline, without a snapshot, does not draw
   them.
-
 - **The province view's building slots from a snapshot** (etch#257, from the
   coverage survey). The game keeps the slots of the province shown before,
   hidden, ahead of this one's (ten entries, the first eight hidden), and the

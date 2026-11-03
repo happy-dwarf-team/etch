@@ -317,8 +317,37 @@ export function liveSelectors(
       }
     }
   }
+  // Selectors whose rules work together (`hre-foreign`: `hre` yes and `owner` no) fit only as a
+  // combination, which one selector at a time never tries (the coverage survey's foreign
+  // provinces of Anbennar, etch#257): while the combinations are few, the unknown selectors are
+  // tried together, and the first combination that fits all their widgets is taken.
+  if (unknown.length > 1) {
+    const together = profile.selectors.filter((s) => unknown.includes(s.id));
+    const total = together.reduce((n, s) => n * s.values.length, 1);
+    const widgets = [...new Set(together.flatMap((s) => named(s.id)))];
+    for (let i = 0; i < total && total <= MAX_COMBINATIONS; i++) {
+      let rest = i;
+      const combination: Record<string, string> = {};
+      for (const s of together) {
+        combination[s.id] = s.values[rest % s.values.length]?.id ?? s.default;
+        rest = Math.floor(rest / s.values.length);
+      }
+      const view = evaluateView(profile, window, snapshot.screen, {
+        live: { ...Object.fromEntries(values), ...combination },
+        ...(facts === undefined ? {} : { facts }),
+      });
+      if (widgets.every((w) => view.drawn(w) === visible.get(pathOf.get(w) ?? ''))) {
+        for (const [id, value] of Object.entries(combination)) values.set(id, value);
+        unknown = [];
+        break;
+      }
+    }
+  }
   return { values: Object.fromEntries(values), unknown };
 }
+
+/** The most combinations of unknown selectors' values `liveSelectors` tries together. */
+const MAX_COMBINATIONS = 4096;
 
 /**
  * Where the profile, with the choice's selectors, still predicts otherwise than the snapshot
