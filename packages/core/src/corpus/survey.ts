@@ -22,6 +22,11 @@ export interface SurveyPlayset {
   readonly viewsOf?: string;
   /** Measured once, before any fix the survey leads to, and reported apart. */
   readonly holdout?: boolean;
+  /**
+   * The resolutions this playset is captured at, in place of the survey's two: Proper 2K UI
+   * Enhanced is made for screens of at least 2560×1440, as in the corpus.
+   */
+  readonly resolutions?: readonly string[];
 }
 
 export interface SurveyConfig {
@@ -134,7 +139,7 @@ export function surveyManifest(
       {
         ...base,
         gate: 'report' as const,
-        resolutions: [config.resolution, config.smallResolution],
+        resolutions: p.resolutions ?? [config.resolution, config.smallResolution],
         windows: own,
         note: p.holdout === true ? 'The survey holdout.' : 'A playset of the coverage survey.',
       },
