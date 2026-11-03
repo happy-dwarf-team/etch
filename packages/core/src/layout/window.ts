@@ -798,9 +798,7 @@ class Layout {
       case 'PieChartType':
       case 'LineChartType':
         // Code-filled charts: only their size.
-        return sprite.properties.point('size') === undefined
-          ? undefined
-          : chartSize(sprite.properties);
+        return chartSize(sprite.properties);
     }
   }
 
@@ -1276,7 +1274,14 @@ function pointExtent(point: { x: number; y: number } | undefined): Extent | unde
   return point === undefined ? undefined : { width: point.x, height: point.y };
 }
 
+/**
+ * A chart's `size`: `{ x y }`, or one number for a square. Every `PieChartType` of vanilla 1.37.5
+ * gives one number, and the game draws `GFX_trade_power_chart_small` (`size = 20`) 20 × 20
+ * (`trade_pie` in the coverage survey, etch#270).
+ */
 function chartSize(properties: Properties): Extent | undefined {
+  const side = properties.number('size');
+  if (side !== undefined) return { width: side, height: side };
   return pointExtent(properties.point('size'));
 }
 
