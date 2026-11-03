@@ -283,6 +283,18 @@
       {
         "pattern": "minimap_panel//*",
         "reason": "The minimap's buttons change the map mode or the minimap, which Escape does not bring back."
+      },
+      {
+        "pattern": "//*build_unit*",
+        "reason": "Builds, recruits or hires at once, spending gold and manpower (seen with Anbennar's single unit panel)."
+      },
+      {
+        "pattern": "//*recruit*",
+        "reason": "Builds, recruits or hires at once, spending gold and manpower (seen with Anbennar's single unit panel)."
+      },
+      {
+        "pattern": "//*hire*",
+        "reason": "Builds, recruits or hires at once, spending gold and manpower (seen with Anbennar's single unit panel)."
       }
     ]
   }
