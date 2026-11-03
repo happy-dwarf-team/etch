@@ -348,3 +348,61 @@ describe('profileVisibility', () => {
     ]);
   });
 });
+
+describe('size steps of a country view (etch#274)', () => {
+  const file = readGuiFile(
+    parseScript(`guiTypes = {
+  positionType = { name = "countrysubjectsview_scaling_large_min_inc" position = { x = 900 y = 148 } }
+  positionType = { name = "countrysubjectsview_scaling_huge_min_inc" position = { x = 1080 y = 328 } }
+  windowType = {
+    name = "countrysubjectview"
+    size = { x = 600 y = 600 }
+    listboxType = { name = "subjects_listbox" position = { x = 10 y = 20 } size = { x = 50 y = 100 } }
+    windowType = { name = "country_subjects_info" position = { x = 0 y = 0 } size = { x = 10 y = 10 } }
+    windowType = { name = "subject_military_focus_window" position = { x = 520 y = 455 } size = { x = 10 y = 10 } }
+    windowType = { name = "other" position = { x = 5 y = 5 } size = { x = 10 y = 10 } }
+  }
+}`),
+  );
+  const window = file.definitions.find((w) => w.name === 'countrysubjectview') as Widget;
+  const rects = (height: number) => {
+    const screen = { width: 1920, height };
+    const layout = layoutWindow(window, {
+      file,
+      index: InterfaceIndex.of([], [{ path: 'interface/countrysubjectsview.gui', file }]),
+      exists: () => false,
+      assets: { textureSize: () => undefined, font: () => undefined },
+      screen,
+      view: screenLayoutView(window, screen),
+    });
+    const rect = (name: string) => {
+      const w = layout.widgets.find((l) => l.widget.name === name);
+      return w === undefined ? undefined : [w.x, w.y, w.width, w.height];
+    };
+    return {
+      info: rect('country_subjects_info'),
+      focus: rect('subject_military_focus_window'),
+      list: rect('subjects_listbox'),
+      other: rect('other'),
+    };
+  };
+
+  it('moves and lengthens what the game does by the step the screen reaches', () => {
+    expect(rects(720)).toEqual({
+      info: [0, 0, 10, 10],
+      focus: [520, 455, 10, 10],
+      list: [10, 20, 50, 100],
+      other: [5, 5, 10, 10],
+    });
+    expect(rects(900)).toMatchObject({
+      info: [0, 148, 10, 10],
+      list: [10, 20, 50, 248],
+      other: [5, 5, 10, 10],
+    });
+    expect(rects(1080)).toMatchObject({
+      info: [0, 328, 10, 10],
+      focus: [520, 783, 10, 10],
+      list: [10, 20, 50, 428],
+    });
+  });
+});
