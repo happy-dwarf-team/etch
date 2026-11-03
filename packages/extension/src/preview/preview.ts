@@ -849,7 +849,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
             // alone (etch#255).
             ...(loaded === undefined && matched !== undefined
               ? {
-                  view: liveView(window, matched.texts),
+                  view: liveView(window, matched.texts, screen),
                   content: liveContent(window, matched.texts),
                 }
               : {}),

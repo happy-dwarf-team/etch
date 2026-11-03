@@ -250,7 +250,7 @@ export class CorpusPlaysetFiles {
       const layout = await layOutPreview(this.ui, this.assets, file, definition.item, {
         screen,
         localise,
-        view: liveView(definition.item, matched.texts),
+        view: liveView(definition.item, matched.texts, screen),
         content: liveContent(definition.item, matched.texts),
         ...windowSize,
       });

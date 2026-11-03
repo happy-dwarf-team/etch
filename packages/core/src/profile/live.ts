@@ -11,7 +11,7 @@ import type { Screen, Widget } from '../model/gui.ts';
 import type { WindowProfile } from './format.ts';
 import type { LiveAdopted, LiveState, LiveTexts } from './sample.ts';
 import { widgetsAt, windowPaths } from './paths.ts';
-import { evaluateView, fitsScreen, type ViewChoice } from './view.ts';
+import { evaluateView, fitsScreen, screenLayoutView, type ViewChoice } from './view.ts';
 
 export const LIVE_SNAPSHOT_FORMAT = 1;
 
@@ -410,14 +410,18 @@ export function liveContent(window: Widget, texts: LiveTexts): LayoutContent {
  * The view a live snapshot gives a window without a profile: what the game hid is not drawn,
  * and what the snapshot does not have (not created, or not read) is drawn as the `.gui` has it.
  */
-export function liveView(window: Widget, texts: LiveTexts): LayoutView {
+export function liveView(window: Widget, texts: LiveTexts, screen: Screen): LayoutView {
   const pathOf = new Map(windowPaths(window).map((e) => [e.widget, e.path]));
+  // Over what the game's code does by the screen height (etch#272): the half of a `_large` pair
+  // the game does not create is in no snapshot, and stays undrawn.
+  const base = screenLayoutView(window, screen);
   return {
     shows: (widget) => {
       const path = pathOf.get(widget);
-      return path === undefined || texts.state?.(path)?.visible !== false;
+      return base.shows(widget) && (path === undefined || texts.state?.(path)?.visible !== false);
     },
-    movedTo: () => undefined,
+    movedTo: (widget) => base.movedTo(widget),
+    movedAxis: (widget) => base.movedAxis?.(widget),
     frame: () => undefined,
   };
 }

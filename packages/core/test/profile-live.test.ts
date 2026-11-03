@@ -366,8 +366,25 @@ describe('a live snapshot without a profile (etch#255)', () => {
     expect(unread === undefined ? undefined : content.text(unread, undefined)).toBeUndefined();
   });
 
+  it('keeps the half of a _large pair the game does not create undrawn (etch#272)', () => {
+    const pair = readGuiFile(
+      parseScript(`guiTypes = {
+        windowType = { name = "p"
+          iconType = { name = "bg" }
+          iconType = { name = "bg_large" }
+        }
+      }`),
+    ).definitions[0] as Widget;
+    const [small, large] = pair.children;
+    const none = liveMatch({ ...snapshot, window: 'p', widgets: [] }, pair).texts;
+    // At 1920×1080 the game creates only bg_large; the snapshot says nothing of bg.
+    const view = liveView(pair, none, SCREEN);
+    expect(small === undefined ? undefined : view.shows(small)).toBe(false);
+    expect(large === undefined ? undefined : view.shows(large)).toBe(true);
+  });
+
   it('hides what the game hid and draws what the snapshot does not have', () => {
-    const view = liveView(window, texts);
+    const view = liveView(window, texts, SCREEN);
     expect(view.shows(window)).toBe(true);
     expect(title === undefined ? undefined : view.shows(title)).toBe(true);
     expect(hidden === undefined ? undefined : view.shows(hidden)).toBe(false);
