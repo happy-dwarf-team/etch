@@ -68,6 +68,9 @@ export interface ViewCoverage {
     readonly pass: number;
     readonly within: number;
     readonly compared: number;
+    /** Failing widgets by `.gui` kind, and those of them that fail by their rect alone. */
+    readonly failByKind: Readonly<Record<string, number>>;
+    readonly rectOnly: number;
   };
   readonly problems: readonly string[];
 }
@@ -283,6 +286,14 @@ async function pixelsOf(
     const report = JSON.parse(
       await readFile(join(surveyFolder, 'reports', `${name}.json`), 'utf8'),
     ) as CaptureComparison;
+    const failByKind: Record<string, number> = {};
+    let rectOnly = 0;
+    for (const w of report.widgets) {
+      if (w.status !== 'fail') continue;
+      const kind = w.kind ?? 'none in the layout';
+      failByKind[kind] = (failByKind[kind] ?? 0) + 1;
+      if (w.problems.every((p) => p.startsWith('The rect is'))) rectOnly++;
+    }
     return {
       pixels: {
         passed: report.passed,
@@ -290,6 +301,8 @@ async function pixelsOf(
         pass: report.totals.widgets.pass,
         within: report.totals.pixels.within,
         compared: report.totals.pixels.compared,
+        failByKind,
+        rectOnly,
       },
     };
   } catch {

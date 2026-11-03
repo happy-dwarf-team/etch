@@ -173,6 +173,35 @@ export function coverageMarkdown(result: CoverageResult): string {
     lines.push('');
   }
 
+  lines.push('## Pixels', '');
+  lines.push(
+    "`compare`'s per-widget result for the survey's views. The survey's views have no hand-made",
+    'masks of what the game fills (the corpus has `codeFilled`), so a text or icon the game fills',
+    'fails by its content; the rect-only column counts the widgets that fail by their rect alone.',
+    '',
+    '| Playset | Views compared | Views passing | Widgets passing | Widgets failing | Rect only | Failing by kind |',
+    '| --- | --- | --- | --- | --- | --- | --- |',
+  );
+  for (const id of playsets) {
+    const own = result.views.filter((v) => v.playset === id && v.pixels !== undefined);
+    const kinds: Record<string, number> = {};
+    for (const v of own) {
+      for (const [k, n] of Object.entries(v.pixels?.failByKind ?? {}))
+        kinds[k] = (kinds[k] ?? 0) + n;
+    }
+    const sum = (f: (p: NonNullable<ViewCoverage['pixels']>) => number): number =>
+      own.reduce((n, v) => n + (v.pixels === undefined ? 0 : f(v.pixels)), 0);
+    lines.push(
+      `| ${id} | ${String(own.length)} | ${String(own.filter((v) => v.pixels?.passed === true).length)} | ${String(sum((p) => p.pass))} | ${String(sum((p) => p.fail))} | ${String(sum((p) => p.rectOnly))} | ${Object.entries(
+        kinds,
+      )
+        .sort((a, b) => b[1] - a[1])
+        .map(([k, n]) => `${k} ${String(n)}`)
+        .join(', ')} |`,
+    );
+  }
+  lines.push('');
+
   lines.push('## Where rects start to differ', '');
   lines.push(
     'Each row is a widget whose outline rect is off while its parent is not off by the same',
