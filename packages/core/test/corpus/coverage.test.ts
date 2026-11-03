@@ -103,6 +103,14 @@ describe('the survey manifest', () => {
           unreproducible: 'ui click ledger/page: not_visible.',
         },
         {
+          id: 's4',
+          steps: [{ click: 'speed_controls/button_speedup' }],
+          signature: 'speed_controls\ntopbar',
+          roots: ['speed_controls'],
+          depth: 1,
+          explored: true,
+        },
+        {
           id: 's3',
           steps: [{ key: 'b' }],
           signature: 'macro_build_interface\ntopbar',
@@ -120,7 +128,8 @@ describe('the survey manifest', () => {
     const out = surveyManifest(manifest, config, [crawl], (_, window) =>
       window === 'topbar' ? 'interface/topbar.gui' : 'interface/countryview.gui',
     );
-    // A refused step leaves a view out; a window that remembers its last tab does not.
+    // A refused step or a click the survey now never makes leaves a view out; a window that
+    // remembers its last tab does not.
     const ids = ['vanilla-save-s0', 'vanilla-save-s1', 'vanilla-save-s3'];
     expect(out.windows.map((w) => w.id)).toEqual(ids);
     expect(out.playsets.find((p) => p.id === 'bigger-ui')?.windows).toEqual(ids);

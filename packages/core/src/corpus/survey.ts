@@ -7,6 +7,7 @@
  */
 import { LED_ELSEWHERE, type CrawlFile, type CrawlRules } from './driver/crawl.ts';
 import type { CorpusManifest, CorpusPlayset, CorpusView, CorpusWindow } from './manifest.ts';
+import { matchesWidgetPattern } from './widget-path.ts';
 
 export const SURVEY_FORMAT_VERSION = 1;
 
@@ -82,6 +83,15 @@ export function surveyManifest(
       // the game's memory of a window's last tab (`LED_ELSEWHERE`), which a fresh game does not have.
       if (state.unreproducible !== undefined && state.unreproducible !== LED_ELSEWHERE) continue;
       if (state.roots.length === 0) continue;
+      // A view found before a `never` pattern named one of its clicks is left out with it.
+      const never = config.crawl.never.map((n) => n.pattern);
+      if (
+        state.steps.some(
+          (step) => 'click' in step && never.some((n) => matchesWidgetPattern(n, step.click)),
+        )
+      ) {
+        continue;
+      }
       const id = surveyViewId(crawl.playset, crawl.start, state.id);
       const view: CorpusView = {
         id,
