@@ -761,7 +761,8 @@ export class Preview implements PreviewApi, vscode.Disposable {
       session.serial,
       loaded?.key ?? '',
       JSON.stringify(choice ?? null),
-      loaded === undefined ? '' : this.data.key,
+      // Without a profile only the live layer's switch changes the render.
+      loaded === undefined ? String(this.data.live) : this.data.key,
       snapshot?.takenAt ?? '',
       this.liveIdentity(),
     ].join('|');
@@ -905,7 +906,9 @@ export class Preview implements PreviewApi, vscode.Disposable {
               liveValues?.unknown ?? [],
             ),
           }),
-      ...(loaded === undefined
+      // A window without a profile has `Data ▾` once it has a snapshot, so that the live layer
+      // can be turned off and every widget drawn again (etch#255).
+      ...(loaded === undefined && snapshot === undefined
         ? {}
         : {
             data: this.data.menu(

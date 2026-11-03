@@ -97,6 +97,9 @@ From section 16 of the v2 specification, with v1's entries that v2 did not take:
   as well as the preview's. The survey's 126 visibility differences, 22 rects
   and 18 texts of the slots are gone; the corpus's province views still pass
   (`compare --gpu`, 32 of 32 compared).
+- **`Data ▾` for a window without a profile** once it has a snapshot, so that
+  the live layer can be turned off and every widget the `.gui` has drawn again
+  (the snapshot hides what the game hid).
 - **A live snapshot without a profile** (etch#255, from the coverage survey).
   A window without a profile takes the snapshot's texts, the widgets' states
   and positions, and the game's visibility (what the game hid is not drawn);
