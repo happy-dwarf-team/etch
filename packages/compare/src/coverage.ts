@@ -20,6 +20,7 @@ import {
   rectOrigins,
   requiredCaptures,
   resolutionKey,
+  rootInstance,
   snapshotOf,
   splitWidgetPath,
   textAgreement,
@@ -193,7 +194,8 @@ export async function runCoverage(options: CoverageOptions): Promise<CoverageRes
         for (const c of w.children ?? []) walk(c);
       };
       walk(root);
-      const offline = await files.window(top, record.resolution, [], size);
+      const instance = rootInstance(record.widgets, root.path);
+      const offline = await files.window(top, record.resolution, [], size, instance);
       if (offline === undefined) {
         problems.push(`The playset defines no window "${top}".`);
         continue;

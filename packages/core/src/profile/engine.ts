@@ -52,6 +52,32 @@ export const ENGINE_STEPS: ReadonlyMap<string, EngineSteps> = new Map([
   ],
 ]);
 
+/**
+ * A top-level widget the game's code places in a row of its instances (etch#278): the
+ * `positionType` of the first one's place, counted from the lower center of the screen, and of the
+ * step from one to the next. The row is centered on its n instances: the first one's x is
+ * `W/2 − (n · step.x)/2 + start.x`, each half truncated, its y `H + start.y`.
+ */
+export interface EngineRow {
+  readonly start: string;
+  readonly step: string;
+  /** What the evidence is. */
+  readonly evidence: string;
+}
+
+/** The rows by top-level widget (lowercase). */
+export const ENGINE_ROWS: ReadonlyMap<string, EngineRow> = new Map([
+  [
+    'shield',
+    {
+      start: 'shield_position',
+      step: 'shield_offset',
+      evidence:
+        'CGameSetup::RefreshShortcutShields (GOG 1.37.5.2 0x111C740); the coverage survey at 1920×1080 and 1280×720',
+    },
+  ],
+]);
+
 /** The moves by top-level window (lowercase) and by screen: below 814 px (`small`) or from it. */
 export const ENGINE_MOVES: ReadonlyMap<
   string,

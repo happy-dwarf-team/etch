@@ -155,6 +155,7 @@ export class CorpusPlaysetFiles {
     screen: Screen,
     files: readonly string[] = [],
     size?: Screen,
+    instance?: { readonly index: number; readonly count: number },
   ): Promise<PlanWindow | undefined> {
     const definitions = this.ui.index.guiTypeDefinitions(name);
     const preferred = new Set(files.map((f) => f.toLowerCase()));
@@ -167,6 +168,7 @@ export class CorpusPlaysetFiles {
       screen,
       localise: (text) => this.localisation?.text(text) ?? text,
       ...(size !== undefined ? { windowSize: size } : {}),
+      ...(instance !== undefined ? { instance } : {}),
     });
     const context = { constants: file.constants, index: this.ui.index, screen };
     return { layout, shaderOf: (widget) => spriteShaderOf(widget, context) };

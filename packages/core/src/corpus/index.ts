@@ -73,6 +73,7 @@ export {
   compareCapture,
   differenceImage,
   planCapture,
+  rootInstance,
   spriteShaderOf,
   type CaptureComparison,
   type CapturePlan,

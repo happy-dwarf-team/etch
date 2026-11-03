@@ -78,6 +78,11 @@ export interface LayoutInput {
    * window fits its text (the corpus's `codeSized`, etch#97). Its background takes it too.
    */
   readonly windowSize?: Screen;
+  /**
+   * Which instance of a top-level widget the game's code places in a row this is, from 0, and how
+   * many the row has (the main menu's bookmark shields, etch#278). Default: the only one.
+   */
+  readonly instance?: { readonly index: number; readonly count: number };
 }
 
 /**
@@ -152,6 +157,11 @@ export interface LayoutView {
    * `y` of the step the screen height reaches (etch#274).
    */
   stepped?(widget: Widget): 'moved' | 'grown' | undefined;
+  /**
+   * The row the game's code places the instances of a top-level widget in: the `positionType`
+   * names of the first one's place and of the step to the next (etch#278).
+   */
+  row?(widget: Widget): { readonly start: string; readonly step: string } | undefined;
 }
 
 /** One laid-out widget, in paint order: a parent comes before its children. */
@@ -305,8 +315,9 @@ class Layout {
       (widget.kind === 'checkboxType' && state?.checked === true ? 2 : undefined);
     const stepped = view?.stepped?.(widget);
     const step = stepped === undefined ? 0 : this.stepIncrement();
-    const x = anchor.x + offset.x;
-    const y = anchor.y + offset.y + (stepped === 'moved' ? step : 0);
+    const inRow = parentIndex === -1 ? this.rowPoint(view?.row?.(widget)) : undefined;
+    const x = inRow?.x ?? anchor.x + offset.x;
+    const y = inRow?.y ?? anchor.y + offset.y + (stepped === 'moved' ? step : 0);
     const drawStart = this.draws.length;
     const source = widget.node.start;
     const kind = widget.kind;
@@ -608,13 +619,38 @@ class Layout {
    * definitions of the window's file; `undefined` when it is not moved or the file lacks it.
    */
   private movedPosition(widget: Widget): { x: number; y: number } | undefined {
-    const name = this.input.view?.movedTo(widget)?.toLowerCase();
-    if (name === undefined) return undefined;
+    const name = this.input.view?.movedTo(widget);
+    return name === undefined ? undefined : this.positionTypeAt(name);
+  }
+
+  /** The point of the window file's `positionType` of a name, ignoring case. */
+  private positionTypeAt(name: string): { x: number; y: number } | undefined {
+    const lower = name.toLowerCase();
     const target = this.input.file.definitions.find(
-      (d) => d.kind === 'positionType' && d.name?.toLowerCase() === name,
+      (d) => d.kind === 'positionType' && d.name?.toLowerCase() === lower,
     );
     if (target === undefined) return undefined;
     return widgetProperties(target, this.input.file.constants, this.input.screen).point('position');
+  }
+
+  /**
+   * Where the game's code puts this instance of a row's widget, as
+   * `CGameSetup::RefreshShortcutShields` puts the bookmark shields: the first at the row's start,
+   * from the lower center of the screen less half the row, each further one a step on.
+   */
+  private rowPoint(
+    row: { readonly start: string; readonly step: string } | undefined,
+  ): { x: number; y: number } | undefined {
+    if (row === undefined) return undefined;
+    const start = this.positionTypeAt(row.start);
+    const step = this.positionTypeAt(row.step);
+    if (start === undefined || step === undefined) return undefined;
+    const { index, count } = this.input.instance ?? { index: 0, count: 1 };
+    const { width, height } = this.input.screen;
+    return {
+      x: Math.trunc(width / 2) - Math.trunc((count * step.x) / 2) + start.x + index * step.x,
+      y: height + start.y + index * step.y,
+    };
   }
 
   /**

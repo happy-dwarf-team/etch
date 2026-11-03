@@ -89,7 +89,9 @@ the playset's files (`packages/compare/src/coverage.ts`):
    preview draws it without a live game and without a profile: with only what
    the game's code does by the screen height, the `_large` pairs and the moves
    of [What Etch does by itself](window-profiles.md#what-etch-does-by-itself)
-   (etch#272).
+   (etch#272). A root the game creates more than once, such as the menu's
+   bookmark shields, is laid out once for each instance the capture shows
+   (etch#278).
    - *Geometry*: of the widgets the game shows and the layout has (code-filled
      ones apart), the share whose rect, fitted as Tongs fits the game's, is the
      game's to the pixel (windows by position only, as the comparison does).

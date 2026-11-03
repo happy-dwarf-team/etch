@@ -406,3 +406,37 @@ describe('size steps of a country view (etch#274)', () => {
     });
   });
 });
+
+describe('a row of top-level widgets (etch#278)', () => {
+  const file = readGuiFile(
+    parseScript(`guiTypes = {
+  guiButtonType = { name = "shield" position = { x = 0 y = 0 } Orientation = "UPPER_LEFT" }
+  positionType = { name = "shield_position" position = { x = -13 y = -270 } }
+  positionType = { name = "shield_offset" position = { x = 70 y = 0 } }
+}`),
+  );
+  const shield = file.definitions.find((w) => w.name === 'shield') as Widget;
+  const at = (width: number, height: number, instance?: { index: number; count: number }) => {
+    const screen = { width, height };
+    const layout = layoutWindow(shield, {
+      file,
+      index: InterfaceIndex.of([], [{ path: 'interface/frontend.gui', file }]),
+      exists: () => false,
+      assets: { textureSize: () => undefined, font: () => undefined },
+      screen,
+      view: screenLayoutView(shield, screen),
+      ...(instance === undefined ? {} : { instance }),
+    });
+    const w = layout.widgets[0];
+    return w === undefined ? undefined : [w.x, w.y];
+  };
+
+  it('places each bookmark shield in the row the game centers near the bottom', () => {
+    // The coverage survey's vanilla menu: eleven shields.
+    expect(at(1920, 1080, { index: 0, count: 11 })).toEqual([562, 810]);
+    expect(at(1920, 1080, { index: 10, count: 11 })).toEqual([1262, 810]);
+    expect(at(1280, 720, { index: 0, count: 11 })).toEqual([242, 450]);
+    // Alone, a shield takes the middle of the row.
+    expect(at(1920, 1080)).toEqual([912, 810]);
+  });
+});

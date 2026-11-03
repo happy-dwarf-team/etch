@@ -26,6 +26,7 @@ import {
   readCorpusManifest,
   requiredCaptures,
   resolutionKey,
+  rootInstance,
   screenshotFile,
   unstableMaskFile,
   splitWidgetPath,
@@ -139,13 +140,24 @@ export async function runCorpus(options: RunOptions): Promise<RunResult> {
         const corpusWindow = manifest.windows.find((w) => w.id === manifestWindowOf(manifest, key));
         const codeSized = findView(manifest, key.view)?.view.codeSized ?? [];
         const windows: PlanWindow[] = [];
-        for (const top of new Set(record.widgets.map((w) => topLevel(w.path)))) {
+        // One layout per window, and per instance of a window the game creates more than once,
+        // which a row's widget needs (etch#278).
+        const tops = new Map<string, string>();
+        for (const w of record.widgets) tops.set(w.path.split('/')[0] ?? w.path, topLevel(w.path));
+        for (const [first, top] of tops) {
           // A window whose size the game's code sets is laid out at the game's size.
           const root = codeSized.some((p) => matchesWidgetPattern(p, top))
             ? record.widgets.find((w) => w.path === top)?.rect
             : undefined;
           const size = root === undefined ? undefined : { width: root.w, height: root.h };
-          const window = await files.window(top, record.resolution, corpusWindow?.files, size);
+          const instance = rootInstance(record.widgets, first);
+          const window = await files.window(
+            top,
+            record.resolution,
+            corpusWindow?.files,
+            size,
+            instance,
+          );
           if (window !== undefined) windows.push(window);
         }
         const plan = planCapture({ manifest, record, windows });
