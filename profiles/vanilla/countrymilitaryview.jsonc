@@ -1,0 +1,34 @@
+// The countrymilitaryview window of the base game, the country view's military tab
+// (docs/window-profiles.md). From the coverage survey (etch#254): with Cradle of Civilization the
+// game moves most of the tab down by the height of army_professionalism, as the .gui's own comment
+// on that window says and eu4.exe's UpdateArmyProfessionalism does (Steam 1.37.5: the DLC's flag at
+// 0x233FF24); the survey's captures show the tab and its widgets 16 px lower, with the background,
+// the close button and the title where the .gui puts them. Anbennar and Bigger UI keep the 16 px
+// height, so this layer serves them too.
+{
+  "formatVersion": 1,
+  "window": "countrymilitaryview",
+  "checkedWith": "1.37.5",
+  "selectors": {
+    "cradle": {
+      "kind": "data",
+      "label": "Cradle of Civilization",
+      "fact": "game.cradleOfCivilization",
+      "values": { "yes": "Cradle of Civilization", "no": "Without it" },
+      "default": "yes",
+      "note": "The army professionalism bar takes its place above the tab only with the DLC; a save's dlc_enabled says whether it was active.",
+    },
+  },
+  "rules": {
+    "cradle-moves-the-tab": {
+      "note": "army_professionalism is 16 px high: the tab moves down by it, and the background, the close button and the title stay (UpdateArmyProfessionalism). activate_all, slacken_button and button_makeheirgeneral are placed by other code (etch#254).",
+      "when": { "cradle": "yes" },
+      "offset": {
+        "countrymilitaryview": { "y": 16 },
+        "countrymilitaryview/CoCbackground": { "y": -16 },
+        "countrymilitaryview/close_button": { "y": -16 },
+        "countrymilitaryview/window_title": { "y": -16 },
+      },
+    },
+  },
+}

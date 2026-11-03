@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   layoutWindow,
@@ -490,6 +491,66 @@ describe("a rule's offset (the diplomacy view's labels)", () => {
     expect(labels('none')).toEqual({ nation: [112, 123], fog: [112, 145] });
     expect(labels('secondary')).toEqual({ nation: [132, 123], fog: [132, 145] });
     expect(labels('school')).toEqual({ nation: [132, 123], fog: [132, 145] });
+  });
+});
+
+describe('the military tab with Cradle of Civilization (etch#254)', () => {
+  const file = readGuiFile(
+    parseScript(`guiTypes = {
+  windowType = {
+    name = "countrymilitaryview"
+    show_position = { x = 0 y = 140 }
+    size = { x = 1024 y = 600 }
+    windowType = { name = "army_professionalism" position = { x = 32 y = 96 } size = { x = 280 y = 16 } }
+    iconType = { name = "CoCbackground" position = { x = -7 y = -10 } }
+    guiButtonType = { name = "close_button" position = { x = 514 y = -1 } }
+    instantTextBoxType = { name = "window_title" position = { x = 15 y = 78 } maxWidth = 512 maxHeight = 20 }
+    guiButtonType = { name = "infantry_type_button" position = { x = 57 y = 134 } }
+  }
+}`),
+  );
+  const window = file.definitions[0] as Widget;
+  const shipped = readFileSync(
+    new URL('../../../profiles/vanilla/countrymilitaryview.jsonc', import.meta.url),
+    'utf8',
+  );
+  const { file: written, diagnostics } = readProfile(shipped, {
+    layer: 0,
+    source: 'vanilla',
+    file: 'countrymilitaryview.jsonc',
+  });
+  const placed = (cradle: string) => {
+    expect(diagnostics).toEqual([]);
+    const profile = layerProfiles('countrymilitaryview', written === undefined ? [] : [written]);
+    const view = evaluateView(profile, window, LARGE, {
+      facts: { 'game.cradleOfCivilization': cradle },
+    });
+    const layout = layoutWindow(window, {
+      file,
+      index: InterfaceIndex.of([], [{ path: 'interface/countrymilitaryview.gui', file }]),
+      exists: () => false,
+      assets: { textureSize: () => undefined, font: () => undefined },
+      screen: LARGE,
+      view: layoutViewOf(view),
+    });
+    const at = (name: string) => {
+      const w = layout.widgets.find((l) => l.widget.name === name);
+      return w === undefined ? undefined : w.y;
+    };
+    return [
+      'countrymilitaryview',
+      'army_professionalism',
+      'CoCbackground',
+      'close_button',
+      'window_title',
+      'infantry_type_button',
+    ].map(at);
+  };
+
+  it('moves the tab down by army_professionalism, keeping its background, close button and title', () => {
+    // The survey's captures: the tab at y 156, infantry_type_button at 290, the title at 218.
+    expect(placed('yes')).toEqual([156, 252, 130, 139, 218, 290]);
+    expect(placed('no')).toEqual([140, 236, 130, 139, 218, 274]);
   });
 });
 
