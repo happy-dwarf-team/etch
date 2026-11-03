@@ -3,7 +3,7 @@
  * measures, the views, the classes of what differs, the windows reached and not, and the
  * constructs.
  */
-import type { WidgetRect } from '@etch/core/corpus';
+import type { RectMismatch, WidgetRect } from '@etch/core/corpus';
 import type { CoverageResult, ViewCoverage, WindowStatus } from './coverage.ts';
 
 const percent = (part: number, whole: number): string =>
@@ -74,6 +74,36 @@ function rectClass(kind: string | undefined, game: WidgetRect, layout?: WidgetRe
   return `${kind ?? '?'}: ${fields.join(', ')} differ`;
 }
 
+/**
+ * The mismatches of a view where they start: a widget whose rect is off by the same amount as an
+ * ancestor's only moves with it. Each origin carries how many widgets move with it.
+ */
+export function rectOrigins(
+  mismatches: readonly RectMismatch[],
+): { origin: RectMismatch; moved: number; delta: string }[] {
+  const deltaOf = (m: RectMismatch): string =>
+    m.layout === undefined
+      ? 'off screen'
+      : `${String(m.layout.x - m.game.x)},${String(m.layout.y - m.game.y)}`;
+  const byPath = new Map(mismatches.map((m) => [m.path.toLowerCase(), m]));
+  const origins = new Map<string, { origin: RectMismatch; moved: number; delta: string }>();
+  for (const m of mismatches) {
+    const delta = deltaOf(m);
+    const steps = m.path.toLowerCase().split('/');
+    let origin = m;
+    for (let i = steps.length - 1; i >= 1; i--) {
+      const up = byPath.get(steps.slice(0, i).join('/'));
+      if (up === undefined || deltaOf(up) !== delta || delta === '0,0') break;
+      origin = up;
+    }
+    const key = origin.path.toLowerCase();
+    const entry = origins.get(key) ?? { origin, moved: 0, delta: deltaOf(origin) };
+    if (origin !== m) entry.moved++;
+    origins.set(key, entry);
+  }
+  return [...origins.values()];
+}
+
 export function coverageMarkdown(result: CoverageResult): string {
   const lines: string[] = ['# Coverage survey results', ''];
   const playsets = [...new Set(result.views.map((v) => v.playset))];
@@ -106,8 +136,9 @@ export function coverageMarkdown(result: CoverageResult): string {
       classes.set(cls, c);
     };
     for (const v of views) {
-      for (const m of v.offline.geometry.mismatches) {
-        bump(`outline rect, ${rectClass(m.kind, m.game, m.layout)}`, v.view, m.path);
+      for (const o of rectOrigins(v.offline.geometry.mismatches)) {
+        const cls = `outline rect, ${rectClass(o.origin.kind, o.origin.game, o.origin.layout)}`;
+        bump(cls, v.view, o.origin.path);
       }
       for (const p of v.offline.geometry.gameOnly)
         bump('outline: the game shows a widget the layout lacks', v.view, p);
@@ -138,6 +169,47 @@ export function coverageMarkdown(result: CoverageResult): string {
     );
     for (const [cls, c] of [...classes].sort((a, b) => b[1].count - a[1].count).slice(0, 40)) {
       lines.push(`| ${cls} | ${String(c.count)} | ${String(c.views.size)} | \`${c.example}\` |`);
+    }
+    lines.push('');
+  }
+
+  lines.push('## Where rects start to differ', '');
+  lines.push(
+    'Each row is a widget whose outline rect is off while its parent is not off by the same',
+    'amount; the widgets inside it that only move with it are counted, not listed.',
+    '',
+  );
+  for (const id of playsets) {
+    const rows = new Map<
+      string,
+      { delta: string; moved: number; views: Set<string>; kind: string }
+    >();
+    for (const v of result.views.filter((x) => x.playset === id)) {
+      for (const o of rectOrigins(v.offline.geometry.mismatches)) {
+        const key = `${o.origin.path}|${o.delta}`;
+        const row = rows.get(key) ?? {
+          delta: o.delta,
+          moved: 0,
+          views: new Set<string>(),
+          kind: o.origin.kind ?? '?',
+        };
+        row.moved = Math.max(row.moved, o.moved);
+        row.views.add(v.view);
+        rows.set(key, row);
+      }
+    }
+    lines.push(
+      `### ${id}`,
+      '',
+      '| Widget | Kind | Layout − game (x, y) | Moved with it | Views |',
+      '| --- | --- | --- | --- | --- |',
+    );
+    for (const [key, row] of [...rows]
+      .sort((a, b) => b[1].moved + b[1].views.size - (a[1].moved + a[1].views.size))
+      .slice(0, 40)) {
+      lines.push(
+        `| \`${key.split('|')[0] ?? ''}\` | ${row.kind} | ${row.delta} | ${String(row.moved)} | ${String(row.views.size)} |`,
+      );
     }
     lines.push('');
   }
