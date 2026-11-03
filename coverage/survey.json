@@ -299,6 +299,10 @@
       {
         "pattern": "country_selection_panel/lobby/left/back_button",
         "reason": "Going back from the single-player lobby restarted the game as a child process (the coverage survey, 3 November 2026)."
+      },
+      {
+        "pattern": "outliner_configuration//*",
+        "reason": "The outliner's options choose what the outliner lists, which the game keeps beyond the view."
       }
     ]
   }
