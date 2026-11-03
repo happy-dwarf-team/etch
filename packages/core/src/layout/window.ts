@@ -147,6 +147,11 @@ export interface LayoutView {
   movedAxis?(widget: Widget): 'x' | 'y' | undefined;
   /** The sprite frame, from 1, the game's code sets. */
   frame(widget: Widget): number | undefined;
+  /**
+   * What a country view's size step does to the widget: `moved` down, or `grown` taller, by the
+   * `y` of the step the screen height reaches (etch#274).
+   */
+  stepped?(widget: Widget): 'moved' | 'grown' | undefined;
 }
 
 /** One laid-out widget, in paint order: a parent comes before its children. */
@@ -234,6 +239,7 @@ class Layout {
   private readonly unloaded = new Set<string>();
   /** The window file's size steps, read once; `null` until read. */
   private steps: { large?: number; huge?: number } | undefined | null = null;
+  private increments: { large?: number | undefined; huge?: number | undefined } = {};
   /** The `@name` constants in scope: the window's file's, or a list entry template's file's. */
   private constants: Constants;
   /** The list box entry being laid out, if any. */
@@ -297,8 +303,10 @@ class Layout {
     const frame =
       view?.frame(widget) ??
       (widget.kind === 'checkboxType' && state?.checked === true ? 2 : undefined);
+    const stepped = view?.stepped?.(widget);
+    const step = stepped === undefined ? 0 : this.stepIncrement();
     const x = anchor.x + offset.x;
-    const y = anchor.y + offset.y;
+    const y = anchor.y + offset.y + (stepped === 'moved' ? step : 0);
     const drawStart = this.draws.length;
     const source = widget.node.start;
     const kind = widget.kind;
@@ -350,7 +358,8 @@ class Layout {
     } else if (TEXT_BOXES.has(kind)) {
       rect = this.drawTextBox(kind, props, x, y, source);
     } else if (LISTS.has(kind)) {
-      rect = { x, y, ...sizeIn(props.size('size'), parent) };
+      const size = sizeIn(props.size('size'), parent);
+      rect = { x, y, ...size, height: size.height + (stepped === 'grown' ? step : 0) };
       // Hypothesis: a list draws its `background` sprite behind its (empty) rows.
       const background = props.text('background');
       if (background !== undefined && background !== '') {
@@ -744,8 +753,22 @@ class Layout {
   }
 
   /**
+   * What the window's size step adds, verified in `CCountrySubjectsView::SetupLargeOrHuge`: the `y`
+   * of the `_huge` step from its height, else of the `_large` step from its height, else 0.
+   */
+  private stepIncrement(): number {
+    const steps = this.sizeSteps();
+    if (steps === undefined) return 0;
+    const height = this.input.screen.height;
+    if (steps.huge !== undefined && height >= steps.huge) return this.increments.huge ?? 0;
+    if (steps.large !== undefined && height >= steps.large) return this.increments.large ?? 0;
+    return 0;
+  }
+
+  /**
    * The least screen heights of the window file's `_large` and `_huge` steps, from its
    * `…_scaling_large_min_inc` and `…_scaling_huge_min_inc` positionTypes; `undefined` without them.
+   * Their `y`, what the step adds, goes to `increments`.
    */
   private sizeSteps(): { large?: number; huge?: number } | undefined {
     if (this.steps !== null) return this.steps;
@@ -755,11 +778,17 @@ class Layout {
       if (d.kind !== 'positionType' || d.name === undefined) continue;
       const step = /_scaling_(large|huge)_min_inc$/i.exec(d.name)?.[1]?.toLowerCase();
       if (step === undefined) continue;
-      const x = widgetProperties(d, this.input.file.constants, this.input.screen).point(
+      const position = widgetProperties(d, this.input.file.constants, this.input.screen).point(
         'position',
-      )?.x;
-      if (step === 'large') large ??= x;
-      else huge ??= x;
+      );
+      const x = position?.x;
+      if (step === 'large') {
+        large ??= x;
+        this.increments.large ??= position?.y;
+      } else {
+        huge ??= x;
+        this.increments.huge ??= position?.y;
+      }
     }
     this.steps =
       large === undefined && huge === undefined

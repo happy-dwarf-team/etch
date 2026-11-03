@@ -23,6 +23,35 @@ export interface EngineMove {
   readonly evidence: string;
 }
 
+/**
+ * What a country view's code does at its size steps (`…_scaling_large_min_inc` and
+ * `…_scaling_huge_min_inc`: from the screen height of the step's `x`, by its `y`): the widgets it
+ * moves down by `y` and those it makes `y` taller, by top-level window (lowercase). Read from each
+ * view's `SetupLargeOrHuge` in the GOG build's `eu4.pdb` (the same code as Steam's); the layout
+ * applies them (etch#274).
+ */
+export interface EngineSteps {
+  readonly moved: readonly string[];
+  readonly grown: readonly string[];
+  /** What the evidence is. */
+  readonly evidence: string;
+}
+
+export const ENGINE_STEPS: ReadonlyMap<string, EngineSteps> = new Map([
+  [
+    'countrysubjectview',
+    {
+      moved: [
+        'countrysubjectview/country_subjects_info',
+        'countrysubjectview/subject_military_focus_window',
+      ],
+      grown: ['countrysubjectview/subjects_listbox'],
+      evidence:
+        'CCountrySubjectsView::SetupLargeOrHuge (GOG 1.37.5.2 0xF4ECC0); the coverage survey at 1920×1080 (+328)',
+    },
+  ],
+]);
+
 /** The moves by top-level window (lowercase) and by screen: below 814 px (`small`) or from it. */
 export const ENGINE_MOVES: ReadonlyMap<
   string,
