@@ -100,6 +100,15 @@ describe('the survey manifest', () => {
           roots: ['ledger'],
           depth: 1,
           explored: true,
+          unreproducible: 'ui click ledger/page: not_visible.',
+        },
+        {
+          id: 's3',
+          steps: [{ key: 'b' }],
+          signature: 'macro_build_interface\ntopbar',
+          roots: ['macro_build_interface'],
+          depth: 1,
+          explored: true,
           unreproducible: 'Its steps led to another view.',
         },
       ],
@@ -111,11 +120,10 @@ describe('the survey manifest', () => {
     const out = surveyManifest(manifest, config, [crawl], (_, window) =>
       window === 'topbar' ? 'interface/topbar.gui' : 'interface/countryview.gui',
     );
-    expect(out.windows.map((w) => w.id)).toEqual(['vanilla-save-s0', 'vanilla-save-s1']);
-    expect(out.playsets.find((p) => p.id === 'bigger-ui')?.windows).toEqual([
-      'vanilla-save-s0',
-      'vanilla-save-s1',
-    ]);
+    // A refused step leaves a view out; a window that remembers its last tab does not.
+    const ids = ['vanilla-save-s0', 'vanilla-save-s1', 'vanilla-save-s3'];
+    expect(out.windows.map((w) => w.id)).toEqual(ids);
+    expect(out.playsets.find((p) => p.id === 'bigger-ui')?.windows).toEqual(ids);
     expect(out.playsets.find((p) => p.id === 'anbennar-alone')).toBeUndefined();
     expect(out.windows[1]?.files).toEqual(['interface/countryview.gui']);
     expect(out.playsets.every((p) => p.gate === 'report')).toBe(true);
