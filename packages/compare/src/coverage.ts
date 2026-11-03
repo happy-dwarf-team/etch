@@ -63,6 +63,14 @@ export interface ViewCoverage {
   readonly offline: { readonly geometry: GeometryCounts; readonly visibility: VisibilityCounts };
   /** The preview from the live snapshot of the same game. */
   readonly live: { readonly geometry: GeometryCounts; readonly visibility: VisibilityCounts };
+  /**
+   * The outline offline with the profiles' rules, their selectors at the values that fit the game:
+   * the view's profiled roots alone.
+   */
+  readonly profiled?: {
+    readonly geometry: GeometryCounts;
+    readonly visibility: VisibilityCounts;
+  };
   /** `compare`'s result for the capture, when it ran. */
   readonly pixels?: {
     readonly passed: boolean;
@@ -180,6 +188,8 @@ export async function runCoverage(options: CoverageOptions): Promise<CoverageRes
     const problems: string[] = [];
     const offlineWindows: PlanWindow[] = [];
     const liveWindows: PlanWindow[] = [];
+    const profiledWindows: PlanWindow[] = [];
+    const profiledRoots: (typeof record.widgets)[number][] = [];
     const rootResults: RootCoverage[] = [];
     const codeSized = findView(manifest, key.view)?.view.codeSized ?? [];
     for (const root of record.widgets) {
@@ -206,6 +216,14 @@ export async function runCoverage(options: CoverageOptions): Promise<CoverageRes
         problems.push(...loaded.problems.map((p) => `Profile of ${top}: ${p}`));
       }
       const snapshot = snapshotOf(root, record.resolution, record.takenAt);
+      const withProfile =
+        loaded === undefined
+          ? undefined
+          : await files.profilePreview(top, record.resolution, snapshot, loaded, size);
+      if (withProfile !== undefined) {
+        profiledWindows.push(withProfile);
+        profiledRoots.push(root);
+      }
       const live = await files.livePreview(top, record.resolution, snapshot, loaded, size);
       if (live === undefined) continue;
       liveWindows.push(live.window);
@@ -228,6 +246,18 @@ export async function runCoverage(options: CoverageOptions): Promise<CoverageRes
       roots: rootResults,
       offline: { geometry, visibility: visibilityAgreement(offlinePlan) },
       live: { geometry: outlineGeometry(livePlan), visibility: visibilityAgreement(livePlan) },
+      ...(profiledRoots.length > 0
+        ? (() => {
+            const plan = planCapture({
+              manifest,
+              record: { ...record, widgets: profiledRoots },
+              windows: profiledWindows,
+            });
+            return {
+              profiled: { geometry: outlineGeometry(plan), visibility: visibilityAgreement(plan) },
+            };
+          })()
+        : {}),
       ...(await pixelsOf(options.surveyFolder, name)),
       problems,
     });

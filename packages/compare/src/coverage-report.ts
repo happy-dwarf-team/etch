@@ -21,6 +21,8 @@ interface Totals {
   offlineVisibility: [number, number];
   liveGeometry: [number, number];
   liveVisibility: [number, number];
+  profiledGeometry: [number, number];
+  profiledVisibility: [number, number];
   texts: [number, number];
   profiledTexts: [number, number];
   pixelsPassed: [number, number];
@@ -34,6 +36,8 @@ function totalsOf(views: readonly ViewCoverage[]): Totals {
     offlineVisibility: [0, 0],
     liveGeometry: [0, 0],
     liveVisibility: [0, 0],
+    profiledGeometry: [0, 0],
+    profiledVisibility: [0, 0],
     texts: [0, 0],
     profiledTexts: [0, 0],
     pixelsPassed: [0, 0],
@@ -48,6 +52,10 @@ function totalsOf(views: readonly ViewCoverage[]): Totals {
     add(t.offlineVisibility, v.offline.visibility.agree, v.offline.visibility.compared);
     add(t.liveGeometry, v.live.geometry.exact, v.live.geometry.compared);
     add(t.liveVisibility, v.live.visibility.agree, v.live.visibility.compared);
+    if (v.profiled !== undefined) {
+      add(t.profiledGeometry, v.profiled.geometry.exact, v.profiled.geometry.compared);
+      add(t.profiledVisibility, v.profiled.visibility.agree, v.profiled.visibility.compared);
+    }
     for (const r of v.roots) {
       add(t.texts, r.texts.taken, r.texts.shown);
       if (r.profiled) add(t.profiledTexts, r.texts.taken, r.texts.shown);
@@ -87,17 +95,19 @@ export function coverageMarkdown(result: CoverageResult): string {
   lines.push(
     'Shares are of widgets summed over the views (docs/coverage.md, "Measures"); a view is',
     '"full" when every compared rect is exact and the game shows nothing the layout lacks, and from',
-    'the live snapshot also when every visibility agrees.',
+    'the live snapshot also when every visibility agrees. "With profiles" is the outline offline',
+    "with the profiles' rules, their selectors set to what the game showed, over the windows that",
+    'have a profile.',
     '',
-    '| Playset | Resolution | Views | Outline rects | Outline visibility | Full (outline) | Live rects | Live visibility | Full (live) | Live texts | Texts, profiled windows | Pixel pass |',
-    '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |',
+    '| Playset | Resolution | Views | Outline rects | Outline visibility | Full (outline) | With profiles: rects | With profiles: visibility | Live rects | Live visibility | Full (live) | Live texts | Texts, profiled windows | Pixel pass |',
+    '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |',
   );
   const groups = [...new Set(result.views.map((v) => `${v.playset} ${v.resolution}`))];
   for (const group of groups) {
     const [id = '', resolution = ''] = group.split(' ');
     const t = totalsOf(result.views.filter((v) => v.playset === id && v.resolution === resolution));
     lines.push(
-      `| ${id} | ${resolution} | ${String(t.views)} | ${percent(...t.offlineGeometry)} | ${percent(...t.offlineVisibility)} | ${String(t.full.offline)} | ${percent(...t.liveGeometry)} | ${percent(...t.liveVisibility)} | ${String(t.full.live)} | ${percent(...t.texts)} | ${percent(...t.profiledTexts)} | ${t.pixelsPassed[1] === 0 ? '–' : `${String(t.pixelsPassed[0])} of ${String(t.pixelsPassed[1])}`} |`,
+      `| ${id} | ${resolution} | ${String(t.views)} | ${percent(...t.offlineGeometry)} | ${percent(...t.offlineVisibility)} | ${String(t.full.offline)} | ${percent(...t.profiledGeometry)} | ${percent(...t.profiledVisibility)} | ${percent(...t.liveGeometry)} | ${percent(...t.liveVisibility)} | ${String(t.full.live)} | ${percent(...t.texts)} | ${percent(...t.profiledTexts)} | ${t.pixelsPassed[1] === 0 ? '–' : `${String(t.pixelsPassed[0])} of ${String(t.pixelsPassed[1])}`} |`,
     );
   }
   if (result.notCaptured.length > 0) {
