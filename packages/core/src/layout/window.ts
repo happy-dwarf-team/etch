@@ -256,10 +256,13 @@ class Layout {
    */
   place(widget: Widget, parent: Rect, parentIndex: number, fill: Extent | undefined): void {
     const view = this.input.view;
-    if (view !== undefined && !view.shows(widget)) return;
     const state = this.input.content?.state?.(widget, this.row);
-    // The view says what shows of the window; a live snapshot says it for each list entry.
-    if (this.row !== undefined && state?.visible === false) return;
+    // The view says what shows of the window; a live snapshot says it for each list entry, over
+    // the view: an entry's part the game showed is drawn (the province view's building slots, the
+    // coverage survey, etch#257).
+    if (this.row !== undefined && state !== undefined) {
+      if (!state.visible) return;
+    } else if (view !== undefined && !view.shows(widget)) return;
     const props = widgetProperties(widget, this.constants, this.input.screen);
     this.checkNotApplied(props);
     this.current = widget;

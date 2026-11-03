@@ -191,15 +191,16 @@ export function liveMatch(
     if (known.has(row === null ? path : (row[1] ?? ''))) texts.set(path, text);
     else if (!builtByCode(path, known)) unmatched++;
   }
+  // Lookups take the game's paths too (`…/building_progress_entry[2]/…`), as they are stored.
   return {
     texts: {
-      text: (path) => texts.get(path.toLowerCase()),
+      text: (path) => texts.get(normal(path)),
       // A list the game showed has its rows, none when it showed none; a hidden one says nothing.
       rows: (list) => {
         const path = list.toLowerCase();
         return states.get(path)?.visible === true ? (rows.get(path) ?? 0) : undefined;
       },
-      state: (path) => states.get(path.toLowerCase()),
+      state: (path) => states.get(normal(path)),
     },
     unmatched,
   };
