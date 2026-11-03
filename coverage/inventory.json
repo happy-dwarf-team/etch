@@ -723,6 +723,99 @@
             }
           ],
           "note": "Escape does not close it: Not back at the start state after 4 Escape presses: open: menu_settings."
+        },
+        {
+          "id": "vanilla-menu-s4",
+          "roots": [
+            "country_selection_panel",
+            "menu_settings",
+            "shield[10]",
+            "shield[11]",
+            "shield[1]",
+            "shield[2]",
+            "shield[3]",
+            "shield[4]",
+            "shield[5]",
+            "shield[6]",
+            "shield[7]",
+            "shield[8]",
+            "shield[9]",
+            "shield_thin_glow[1]",
+            "shield_thin_glow[2]",
+            "shield_thin_glow[3]"
+          ],
+          "from": "main-menu",
+          "steps": [
+            {
+              "click": "country_selection_panel/mainmenu/mainmenu_panel_bottom/single_player_button"
+            },
+            {
+              "click": "country_selection_panel/lobby/left/gameoptions_button"
+            }
+          ],
+          "note": "Escape does not close it: Not back at the start state after 4 Escape presses: open: menu_settings, shield[10], shield[11], shield[1], shield[2], shield[3], shield[4], shield[5], shield[6], shield[7], shield[8], shield[9], shield_thin_glow[1], shield_thin_glow[2], shield_thin_glow[3]."
+        },
+        {
+          "id": "vanilla-menu-s5",
+          "roots": [
+            "country_selection_panel",
+            "goto_box",
+            "shield[10]",
+            "shield[11]",
+            "shield[1]",
+            "shield[2]",
+            "shield[3]",
+            "shield[4]",
+            "shield[5]",
+            "shield[6]",
+            "shield[7]",
+            "shield[8]",
+            "shield[9]",
+            "shield_thin_glow[1]",
+            "shield_thin_glow[2]",
+            "shield_thin_glow[3]"
+          ],
+          "from": "main-menu",
+          "steps": [
+            {
+              "click": "country_selection_panel/mainmenu/mainmenu_panel_bottom/single_player_button"
+            },
+            {
+              "click": "country_selection_panel/lobby/left/find_button"
+            }
+          ],
+          "note": "Escape does not close it: Not back at the start state after 4 Escape presses: open: goto_box, shield[10], shield[11], shield[1], shield[2], shield[3], shield[4], shield[5], shield[6], shield[7], shield[8], shield[9], shield_thin_glow[1], shield_thin_glow[2], shield_thin_glow[3]."
+        },
+        {
+          "id": "vanilla-menu-s6",
+          "roots": [
+            "country_selection_panel",
+            "option_window",
+            "shield[10]",
+            "shield[11]",
+            "shield[1]",
+            "shield[2]",
+            "shield[3]",
+            "shield[4]",
+            "shield[5]",
+            "shield[6]",
+            "shield[7]",
+            "shield[8]",
+            "shield[9]",
+            "shield_thin_glow[1]",
+            "shield_thin_glow[2]",
+            "shield_thin_glow[3]"
+          ],
+          "from": "main-menu",
+          "steps": [
+            {
+              "click": "country_selection_panel/mainmenu/mainmenu_panel_bottom/single_player_button"
+            },
+            {
+              "click": "country_selection_panel/lobby/left/option_button"
+            }
+          ],
+          "note": "Escape does not close it: Not back at the start state after 4 Escape presses: open: option_window, shield[10], shield[11], shield[1], shield[2], shield[3], shield[4], shield[5], shield[6], shield[7], shield[8], shield[9], shield_thin_glow[1], shield_thin_glow[2], shield_thin_glow[3]."
         }
       ],
       "windows": [
@@ -1133,7 +1226,7 @@
           "file": "interface/countrydiplomacyview.gui",
           "status": "view",
           "views": ["vanilla-save-s25", "vanilla-save-s26", "vanilla-save-s31", "vanilla-save-s32"],
-          "confidence": 0
+          "confidence": 0.007
         },
         {
           "name": "vassal_selection_entry",
@@ -1471,7 +1564,7 @@
           "kind": "eu3dialogtype",
           "file": "interface/countrydiplomacyview.gui",
           "status": "not reached",
-          "confidence": 0.063
+          "confidence": 0.125
         },
         {
           "name": "countryeconomyview",
@@ -2859,14 +2952,22 @@
           "kind": "windowType",
           "file": "interface/flagship_designer.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.032
         },
         {
           "name": "frontend_link_item",
           "kind": "windowType",
           "file": "interface/frontend.gui",
           "status": "inside",
-          "views": ["vanilla-menu-s0", "vanilla-menu-s1", "vanilla-menu-s2", "vanilla-menu-s3"],
+          "views": [
+            "vanilla-menu-s0",
+            "vanilla-menu-s1",
+            "vanilla-menu-s2",
+            "vanilla-menu-s3",
+            "vanilla-menu-s4",
+            "vanilla-menu-s5",
+            "vanilla-menu-s6"
+          ],
           "confidence": 0
         },
         {
@@ -2874,7 +2975,7 @@
           "kind": "windowType",
           "file": "interface/frontend.gui",
           "status": "inside",
-          "views": ["vanilla-menu-s1"],
+          "views": ["vanilla-menu-s1", "vanilla-menu-s4", "vanilla-menu-s5", "vanilla-menu-s6"],
           "confidence": 0
         },
         {
@@ -2882,7 +2983,15 @@
           "kind": "windowType",
           "file": "interface/frontend.gui",
           "status": "inside",
-          "views": ["vanilla-menu-s0", "vanilla-menu-s1", "vanilla-menu-s2", "vanilla-menu-s3"],
+          "views": [
+            "vanilla-menu-s0",
+            "vanilla-menu-s1",
+            "vanilla-menu-s2",
+            "vanilla-menu-s3",
+            "vanilla-menu-s4",
+            "vanilla-menu-s5",
+            "vanilla-menu-s6"
+          ],
           "confidence": 0.5
         },
         {
@@ -2897,8 +3006,16 @@
           "kind": "windowType",
           "file": "interface/frontend.gui",
           "status": "view",
-          "views": ["vanilla-menu-s0", "vanilla-menu-s1", "vanilla-menu-s2", "vanilla-menu-s3"],
-          "confidence": 0.005
+          "views": [
+            "vanilla-menu-s0",
+            "vanilla-menu-s1",
+            "vanilla-menu-s2",
+            "vanilla-menu-s3",
+            "vanilla-menu-s4",
+            "vanilla-menu-s5",
+            "vanilla-menu-s6"
+          ],
+          "confidence": 0.014
         },
         {
           "name": "testmember",
@@ -2961,7 +3078,15 @@
           "kind": "windowType",
           "file": "interface/frontend.gui",
           "status": "inside",
-          "views": ["vanilla-menu-s0", "vanilla-menu-s1", "vanilla-menu-s2", "vanilla-menu-s3"],
+          "views": [
+            "vanilla-menu-s0",
+            "vanilla-menu-s1",
+            "vanilla-menu-s2",
+            "vanilla-menu-s3",
+            "vanilla-menu-s4",
+            "vanilla-menu-s5",
+            "vanilla-menu-s6"
+          ],
           "confidence": 0
         },
         {
@@ -2969,7 +3094,7 @@
           "kind": "windowType",
           "file": "interface/frontend.gui",
           "status": "inside",
-          "views": ["vanilla-menu-s1"],
+          "views": ["vanilla-menu-s1", "vanilla-menu-s4", "vanilla-menu-s5", "vanilla-menu-s6"],
           "confidence": 0
         },
         {
@@ -2977,7 +3102,7 @@
           "kind": "windowType",
           "file": "interface/frontend.gui",
           "status": "inside",
-          "views": ["vanilla-menu-s1"],
+          "views": ["vanilla-menu-s1", "vanilla-menu-s4", "vanilla-menu-s5", "vanilla-menu-s6"],
           "confidence": 0
         },
         {
@@ -3041,7 +3166,7 @@
           "kind": "windowType",
           "file": "interface/frontend.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.077
         },
         {
           "name": "lesson_channel_entry",
@@ -3061,8 +3186,9 @@
           "name": "goto_box",
           "kind": "windowType",
           "file": "interface/goto.gui",
-          "status": "not reached",
-          "confidence": 0
+          "status": "view",
+          "views": ["vanilla-menu-s5"],
+          "confidence": 0.1
         },
         {
           "name": "great_powers",
@@ -3347,7 +3473,7 @@
           "kind": "windowType",
           "file": "interface/ingamesavemenu.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.071
         },
         {
           "name": "LanguageSelection",
@@ -3390,7 +3516,7 @@
           "file": "interface/ledger.gui",
           "status": "view",
           "views": ["vanilla-save-s28", "vanilla-save-s5"],
-          "confidence": 0
+          "confidence": 0.029
         },
         {
           "name": "ledger_legend_piechart_entry",
@@ -3938,7 +4064,7 @@
           "kind": "windowType",
           "file": "interface/matchmaking.gui",
           "status": "not reached",
-          "confidence": 0.138
+          "confidence": 0.207
         },
         {
           "name": "matchmaking_server_item",
@@ -3952,7 +4078,7 @@
           "kind": "windowType",
           "file": "interface/matchmaking_chat.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.167
         },
         {
           "name": "matchmaking_chat_item",
@@ -4004,7 +4130,7 @@
           "kind": "windowType",
           "file": "interface/menubar.gui",
           "status": "inside",
-          "views": ["vanilla-menu-s3"],
+          "views": ["vanilla-menu-s3", "vanilla-menu-s4"],
           "confidence": 0.212
         },
         {
@@ -4056,7 +4182,7 @@
           "file": "interface/menubar.gui",
           "status": "view",
           "views": ["vanilla-save-s0"],
-          "confidence": 0
+          "confidence": 0.015
         },
         {
           "name": "message_item",
@@ -4506,14 +4632,16 @@
           "name": "option_list_item",
           "kind": "windowType",
           "file": "interface/options.gui",
-          "status": "not reached",
+          "status": "inside",
+          "views": ["vanilla-menu-s6"],
           "confidence": 0
         },
         {
           "name": "option_window",
           "kind": "windowType",
           "file": "interface/options.gui",
-          "status": "not reached",
+          "status": "view",
+          "views": ["vanilla-menu-s6"],
           "confidence": 0
         },
         {
@@ -5172,7 +5300,7 @@
           "kind": "windowType",
           "file": "interface/settings.gui",
           "status": "view",
-          "views": ["vanilla-menu-s3"],
+          "views": ["vanilla-menu-s3", "vanilla-menu-s4"],
           "confidence": 0
         },
         {
@@ -5194,7 +5322,7 @@
           "kind": "windowType",
           "file": "interface/settings.gui",
           "status": "inside",
-          "views": ["vanilla-menu-s3"],
+          "views": ["vanilla-menu-s3", "vanilla-menu-s4"],
           "confidence": 0
         },
         {
@@ -5280,7 +5408,7 @@
           "kind": "containerWindowType",
           "file": "interface/social_view.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.125
         },
         {
           "name": "social_message_dialog",
@@ -5525,7 +5653,7 @@
           "kind": "windowType",
           "file": "interface/unitpanel_card.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.015
         },
         {
           "name": "unit_view_template_list_win",
@@ -5588,7 +5716,7 @@
           "kind": "windowType",
           "file": "interface/unitpanel_sub.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.025
         },
         {
           "name": "leader_selection_panel",
@@ -13231,6 +13359,99 @@
             }
           ],
           "note": "Escape does not close it: Not back at the start state after 4 Escape presses: open: menu_settings."
+        },
+        {
+          "id": "vanilla-menu-s4",
+          "roots": [
+            "country_selection_panel",
+            "menu_settings",
+            "shield[10]",
+            "shield[11]",
+            "shield[1]",
+            "shield[2]",
+            "shield[3]",
+            "shield[4]",
+            "shield[5]",
+            "shield[6]",
+            "shield[7]",
+            "shield[8]",
+            "shield[9]",
+            "shield_thin_glow[1]",
+            "shield_thin_glow[2]",
+            "shield_thin_glow[3]"
+          ],
+          "from": "main-menu",
+          "steps": [
+            {
+              "click": "country_selection_panel/mainmenu/mainmenu_panel_bottom/single_player_button"
+            },
+            {
+              "click": "country_selection_panel/lobby/left/gameoptions_button"
+            }
+          ],
+          "note": "Escape does not close it: Not back at the start state after 4 Escape presses: open: menu_settings, shield[10], shield[11], shield[1], shield[2], shield[3], shield[4], shield[5], shield[6], shield[7], shield[8], shield[9], shield_thin_glow[1], shield_thin_glow[2], shield_thin_glow[3]."
+        },
+        {
+          "id": "vanilla-menu-s5",
+          "roots": [
+            "country_selection_panel",
+            "goto_box",
+            "shield[10]",
+            "shield[11]",
+            "shield[1]",
+            "shield[2]",
+            "shield[3]",
+            "shield[4]",
+            "shield[5]",
+            "shield[6]",
+            "shield[7]",
+            "shield[8]",
+            "shield[9]",
+            "shield_thin_glow[1]",
+            "shield_thin_glow[2]",
+            "shield_thin_glow[3]"
+          ],
+          "from": "main-menu",
+          "steps": [
+            {
+              "click": "country_selection_panel/mainmenu/mainmenu_panel_bottom/single_player_button"
+            },
+            {
+              "click": "country_selection_panel/lobby/left/find_button"
+            }
+          ],
+          "note": "Escape does not close it: Not back at the start state after 4 Escape presses: open: goto_box, shield[10], shield[11], shield[1], shield[2], shield[3], shield[4], shield[5], shield[6], shield[7], shield[8], shield[9], shield_thin_glow[1], shield_thin_glow[2], shield_thin_glow[3]."
+        },
+        {
+          "id": "vanilla-menu-s6",
+          "roots": [
+            "country_selection_panel",
+            "option_window",
+            "shield[10]",
+            "shield[11]",
+            "shield[1]",
+            "shield[2]",
+            "shield[3]",
+            "shield[4]",
+            "shield[5]",
+            "shield[6]",
+            "shield[7]",
+            "shield[8]",
+            "shield[9]",
+            "shield_thin_glow[1]",
+            "shield_thin_glow[2]",
+            "shield_thin_glow[3]"
+          ],
+          "from": "main-menu",
+          "steps": [
+            {
+              "click": "country_selection_panel/mainmenu/mainmenu_panel_bottom/single_player_button"
+            },
+            {
+              "click": "country_selection_panel/lobby/left/option_button"
+            }
+          ],
+          "note": "Escape does not close it: Not back at the start state after 4 Escape presses: open: option_window, shield[10], shield[11], shield[1], shield[2], shield[3], shield[4], shield[5], shield[6], shield[7], shield[8], shield[9], shield_thin_glow[1], shield_thin_glow[2], shield_thin_glow[3]."
         }
       ],
       "windows": [
@@ -13641,7 +13862,7 @@
           "file": "interface/countrydiplomacyview.gui",
           "status": "view",
           "views": ["vanilla-save-s25", "vanilla-save-s26", "vanilla-save-s31", "vanilla-save-s32"],
-          "confidence": 0
+          "confidence": 0.007
         },
         {
           "name": "vassal_selection_entry",
@@ -13979,7 +14200,7 @@
           "kind": "eu3dialogtype",
           "file": "interface/countrydiplomacyview.gui",
           "status": "not reached",
-          "confidence": 0.063
+          "confidence": 0.125
         },
         {
           "name": "countryeconomyview",
@@ -15367,14 +15588,22 @@
           "kind": "windowType",
           "file": "interface/flagship_designer.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.032
         },
         {
           "name": "frontend_link_item",
           "kind": "windowType",
           "file": "interface/frontend.gui",
           "status": "inside",
-          "views": ["vanilla-menu-s0", "vanilla-menu-s1", "vanilla-menu-s2", "vanilla-menu-s3"],
+          "views": [
+            "vanilla-menu-s0",
+            "vanilla-menu-s1",
+            "vanilla-menu-s2",
+            "vanilla-menu-s3",
+            "vanilla-menu-s4",
+            "vanilla-menu-s5",
+            "vanilla-menu-s6"
+          ],
           "confidence": 0
         },
         {
@@ -15382,7 +15611,7 @@
           "kind": "windowType",
           "file": "interface/frontend.gui",
           "status": "inside",
-          "views": ["vanilla-menu-s1"],
+          "views": ["vanilla-menu-s1", "vanilla-menu-s4", "vanilla-menu-s5", "vanilla-menu-s6"],
           "confidence": 0
         },
         {
@@ -15390,7 +15619,15 @@
           "kind": "windowType",
           "file": "interface/frontend.gui",
           "status": "inside",
-          "views": ["vanilla-menu-s0", "vanilla-menu-s1", "vanilla-menu-s2", "vanilla-menu-s3"],
+          "views": [
+            "vanilla-menu-s0",
+            "vanilla-menu-s1",
+            "vanilla-menu-s2",
+            "vanilla-menu-s3",
+            "vanilla-menu-s4",
+            "vanilla-menu-s5",
+            "vanilla-menu-s6"
+          ],
           "confidence": 0.5
         },
         {
@@ -15405,8 +15642,16 @@
           "kind": "windowType",
           "file": "interface/frontend.gui",
           "status": "view",
-          "views": ["vanilla-menu-s0", "vanilla-menu-s1", "vanilla-menu-s2", "vanilla-menu-s3"],
-          "confidence": 0.005
+          "views": [
+            "vanilla-menu-s0",
+            "vanilla-menu-s1",
+            "vanilla-menu-s2",
+            "vanilla-menu-s3",
+            "vanilla-menu-s4",
+            "vanilla-menu-s5",
+            "vanilla-menu-s6"
+          ],
+          "confidence": 0.014
         },
         {
           "name": "testmember",
@@ -15469,7 +15714,15 @@
           "kind": "windowType",
           "file": "interface/frontend.gui",
           "status": "inside",
-          "views": ["vanilla-menu-s0", "vanilla-menu-s1", "vanilla-menu-s2", "vanilla-menu-s3"],
+          "views": [
+            "vanilla-menu-s0",
+            "vanilla-menu-s1",
+            "vanilla-menu-s2",
+            "vanilla-menu-s3",
+            "vanilla-menu-s4",
+            "vanilla-menu-s5",
+            "vanilla-menu-s6"
+          ],
           "confidence": 0
         },
         {
@@ -15477,7 +15730,7 @@
           "kind": "windowType",
           "file": "interface/frontend.gui",
           "status": "inside",
-          "views": ["vanilla-menu-s1"],
+          "views": ["vanilla-menu-s1", "vanilla-menu-s4", "vanilla-menu-s5", "vanilla-menu-s6"],
           "confidence": 0
         },
         {
@@ -15485,7 +15738,7 @@
           "kind": "windowType",
           "file": "interface/frontend.gui",
           "status": "inside",
-          "views": ["vanilla-menu-s1"],
+          "views": ["vanilla-menu-s1", "vanilla-menu-s4", "vanilla-menu-s5", "vanilla-menu-s6"],
           "confidence": 0
         },
         {
@@ -15549,7 +15802,7 @@
           "kind": "windowType",
           "file": "interface/frontend.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.077
         },
         {
           "name": "lesson_channel_entry",
@@ -15569,8 +15822,9 @@
           "name": "goto_box",
           "kind": "windowType",
           "file": "interface/goto.gui",
-          "status": "not reached",
-          "confidence": 0
+          "status": "view",
+          "views": ["vanilla-menu-s5"],
+          "confidence": 0.1
         },
         {
           "name": "great_powers",
@@ -15855,7 +16109,7 @@
           "kind": "windowType",
           "file": "interface/ingamesavemenu.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.071
         },
         {
           "name": "LanguageSelection",
@@ -15898,7 +16152,7 @@
           "file": "interface/ledger.gui",
           "status": "view",
           "views": ["vanilla-save-s28", "vanilla-save-s5"],
-          "confidence": 0
+          "confidence": 0.029
         },
         {
           "name": "ledger_legend_piechart_entry",
@@ -16446,7 +16700,7 @@
           "kind": "windowType",
           "file": "interface/matchmaking.gui",
           "status": "not reached",
-          "confidence": 0.138
+          "confidence": 0.207
         },
         {
           "name": "matchmaking_server_item",
@@ -16460,7 +16714,7 @@
           "kind": "windowType",
           "file": "interface/matchmaking_chat.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.167
         },
         {
           "name": "matchmaking_chat_item",
@@ -16512,7 +16766,7 @@
           "kind": "windowType",
           "file": "interface/menubar.gui",
           "status": "inside",
-          "views": ["vanilla-menu-s3"],
+          "views": ["vanilla-menu-s3", "vanilla-menu-s4"],
           "confidence": 0.212
         },
         {
@@ -16564,7 +16818,7 @@
           "file": "interface/menubar.gui",
           "status": "view",
           "views": ["vanilla-save-s0"],
-          "confidence": 0
+          "confidence": 0.015
         },
         {
           "name": "message_item",
@@ -17014,14 +17268,16 @@
           "name": "option_list_item",
           "kind": "windowType",
           "file": "interface/options.gui",
-          "status": "not reached",
+          "status": "inside",
+          "views": ["vanilla-menu-s6"],
           "confidence": 0
         },
         {
           "name": "option_window",
           "kind": "windowType",
           "file": "interface/options.gui",
-          "status": "not reached",
+          "status": "view",
+          "views": ["vanilla-menu-s6"],
           "confidence": 0
         },
         {
@@ -17680,7 +17936,7 @@
           "kind": "windowType",
           "file": "interface/settings.gui",
           "status": "view",
-          "views": ["vanilla-menu-s3"],
+          "views": ["vanilla-menu-s3", "vanilla-menu-s4"],
           "confidence": 0
         },
         {
@@ -17702,7 +17958,7 @@
           "kind": "windowType",
           "file": "interface/settings.gui",
           "status": "inside",
-          "views": ["vanilla-menu-s3"],
+          "views": ["vanilla-menu-s3", "vanilla-menu-s4"],
           "confidence": 0
         },
         {
@@ -17788,7 +18044,7 @@
           "kind": "containerWindowType",
           "file": "interface/social_view.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.125
         },
         {
           "name": "social_message_dialog",
@@ -18033,7 +18289,7 @@
           "kind": "windowType",
           "file": "interface/unitpanel_card.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.015
         },
         {
           "name": "unit_view_template_list_win",
@@ -18096,7 +18352,7 @@
           "kind": "windowType",
           "file": "interface/unitpanel_sub.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.025
         },
         {
           "name": "leader_selection_panel",

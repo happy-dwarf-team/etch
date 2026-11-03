@@ -90,8 +90,8 @@ export interface CrawlState {
   unreproducible?: string;
   /**
    * Escape does not close it (the outliner's options open the Esc menu instead, the main menu's
-   * windows close only by their own buttons): it is not explored, and the capture driver takes it
-   * last, in a game of its own.
+   * windows close only by their own buttons): it is explored one opening click per game, and the
+   * capture driver takes it last, in a game of its own.
    */
   escapeFails?: string;
 }
@@ -301,10 +301,12 @@ export async function crawlGame(
   };
 
   let last: string | undefined;
+  let current: CrawlState | undefined;
   try {
     for (let s = 0; s < crawl.states.length; s++) {
       const state = crawl.states[s];
       if (state === undefined || state.explored) continue;
+      current = state;
       if (!(await goTo(state))) {
         state.explored = true;
         await save(crawl);
@@ -366,22 +368,21 @@ export async function crawlGame(
     return { restart: false };
   } catch (error) {
     if (error instanceof ViewFailure && error.lost && last !== undefined) {
-      // The last click left something Escape cannot close: it is not clicked again, and the view
-      // it opened, with every view found from it, is not explored.
       const before = crawl.tried[last];
       const shown =
         before?.kind === 'opened' || before?.kind === 'known'
           ? crawl.states.find((x) => x.id === before.state)
           : undefined;
-      if (shown !== undefined) {
-        const prefix = JSON.stringify(shown.steps).slice(0, -1);
-        for (const x of crawl.states) {
-          if (x === shown || JSON.stringify(x.steps).startsWith(prefix)) {
-            x.escapeFails = error.message;
-            x.explored = true;
-          }
-        }
+      // Escape cannot close the view being explored, or the view the last click opened (the
+      // main menu's windows close only by their own buttons): that is the view's, not the
+      // click's. Each such view is explored one opening click per game, from fresh starts.
+      if (current?.escapeFails !== undefined || shown !== undefined) {
+        if (shown !== undefined) shown.escapeFails ??= error.message;
+        ctx.log({ candidate: last, escapeFails: shown?.id ?? current?.id, detail: error.message });
+        await save(crawl);
+        return { restart: true };
       }
+      // A click that changed nothing on screen but what Escape cannot bring back: not clicked again.
       crawl.tried[last] = { kind: 'start-lost', detail: error.message };
       ctx.log({ candidate: last, startLost: error.message });
       await save(crawl);
