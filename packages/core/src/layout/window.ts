@@ -105,6 +105,18 @@ export interface LayoutContent {
       }
     | undefined;
   /**
+   * What a live snapshot showed in a widget from top-level definitions the widget's `.gui` does
+   * not hold (etch#256): each drawn where the game showed it, with its text.
+   */
+  adopted?(
+    widget: Widget,
+    row: number | undefined,
+  ): readonly {
+    readonly name: string;
+    readonly rect: readonly [number, number, number, number];
+    readonly text?: string;
+  }[];
+  /**
    * The entries of a list box: a top-level definition, from its file, `count` times; with `place`,
    * the entries the game's code puts in a window, from `x`, `y`, `columns` to a row, `step` apart.
    */
@@ -228,6 +240,8 @@ class Layout {
   private row: number | undefined;
   /** The widget being drawn, for its sample text. */
   private current: Widget | undefined;
+  /** The definition being placed where a live snapshot showed it (`placeAdopted`). */
+  private adopting: { widget: Widget; x: number; y: number; text?: string } | undefined;
 
   constructor(input: LayoutInput) {
     this.input = input;
@@ -352,6 +366,7 @@ class Layout {
     }
 
     rect = this.livePosition(rect, state, drawStart);
+    if (this.adopting?.widget === widget) rect = this.moveTo(rect, this.adopting, drawStart);
 
     const index = this.widgets.length;
     this.widgets.push({
@@ -372,6 +387,49 @@ class Layout {
       this.place(child.widget, rect, index, child.background ? rect : undefined);
     }
     if (CONTAINERS.has(kind)) this.placeEntries(widget, rect, index);
+    this.placeAdopted(widget, rect, index);
+  }
+
+  /**
+   * The top-level definitions a live snapshot showed inside a widget, after its own children
+   * (etch#256): each laid out from its file and moved where the game showed it, with the text
+   * the game showed. A name the playset does not define is left out.
+   */
+  private placeAdopted(widget: Widget, rect: Rect, index: number): void {
+    const adopted = this.input.content?.adopted?.(widget, this.row) ?? [];
+    for (const entry of adopted) {
+      const found = this.input.index.guiType(entry.name);
+      if (found === undefined || found.item.kind === 'positionType') continue;
+      const file = this.input.index.guiFiles.find((f) => f.path === found.path)?.file;
+      if (file === undefined) continue;
+      const outer = { constants: this.constants, adopting: this.adopting };
+      this.constants = file.constants;
+      const [x, y] = entry.rect;
+      this.adopting = {
+        widget: found.item,
+        x,
+        y,
+        ...(entry.text === undefined ? {} : { text: entry.text }),
+      };
+      this.place(found.item, rect, index, undefined);
+      this.constants = outer.constants;
+      this.adopting = outer.adopting;
+    }
+  }
+
+  /** A widget and what it drew moved to a point, its children placed after it following. */
+  private moveTo(
+    rect: Rect,
+    to: { readonly x: number; readonly y: number },
+    drawStart: number,
+  ): Rect {
+    const by = { x: to.x - Math.round(rect.x), y: to.y - Math.round(rect.y) };
+    if (by.x === 0 && by.y === 0) return rect;
+    for (let i = drawStart; i < this.draws.length; i++) {
+      const draw = this.draws[i];
+      if (draw !== undefined) this.draws[i] = moveDraw(draw, by);
+    }
+    return { ...rect, x: rect.x + by.x, y: rect.y + by.y };
   }
 
   /**
@@ -524,13 +582,7 @@ class Layout {
     if (game === undefined || state?.visible !== true || this.row !== undefined) return rect;
     const [x, y, w, h] = game;
     if (Math.round(rect.width) !== w || Math.round(rect.height) !== h) return rect;
-    const by = { x: x - Math.round(rect.x), y: y - Math.round(rect.y) };
-    if (by.x === 0 && by.y === 0) return rect;
-    for (let i = drawStart; i < this.draws.length; i++) {
-      const draw = this.draws[i];
-      if (draw !== undefined) this.draws[i] = moveDraw(draw, by);
-    }
-    return { ...rect, x: rect.x + by.x, y: rect.y + by.y };
+    return this.moveTo(rect, { x, y }, drawStart);
   }
 
   /**
@@ -1085,7 +1137,11 @@ class Layout {
     },
   ): number | undefined {
     const sample =
-      this.current === undefined ? undefined : this.input.content?.text(this.current, this.row);
+      this.current === undefined
+        ? undefined
+        : this.adopting?.widget === this.current && this.adopting.text !== undefined
+          ? this.adopting.text
+          : this.input.content?.text(this.current, this.row);
     const written = sample ?? props.text(textKey);
     const fontName = props.text(fontKey);
     if (written === undefined || written === '' || fontName === undefined) return undefined;

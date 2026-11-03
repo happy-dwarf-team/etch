@@ -64,6 +64,20 @@ From section 16 of the v2 specification, with v1's entries that v2 did not take:
 
 ## Done since 2.0.0
 
+- **Widgets the game builds from other definitions, from a snapshot**
+  (etch#256, from the coverage survey). A widget the snapshot shows right
+  under one the window has, but which the window's `.gui` lacks, is a copy the
+  game's code made of a top-level definition (`minimap_bg` and `minimap_pic`
+  of `menubar.gui` in `minimap_panel`, the ledger's sort buttons, the
+  professionalism markers): the preview drawn from the snapshot lays the
+  definition out where the game showed it, with the game's text. In the
+  survey the widgets the game shows and the preview lacks went from 109 to 4
+  in vanilla, and visibility from the snapshot to 99.8 % at 1920×1080. Their
+  sprites, which the code also sets, keep the definition's size (8 × 8 against
+  the game's 23 × 23 for the markers), so live rects are 97.5 %: the second
+  half of etch#256. The offline outline, without a snapshot, does not draw
+  them.
+
 - **The province view's building slots from a snapshot** (etch#257, from the
   coverage survey). The game keeps the slots of the province shown before,
   hidden, ahead of this one's (ten entries, the first eight hidden), and the

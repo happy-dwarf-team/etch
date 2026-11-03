@@ -9,7 +9,7 @@
 import type { LayoutContent, LayoutView } from '../layout/window.ts';
 import type { Screen, Widget } from '../model/gui.ts';
 import type { WindowProfile } from './format.ts';
-import type { LiveState, LiveTexts } from './sample.ts';
+import type { LiveAdopted, LiveState, LiveTexts } from './sample.ts';
 import { widgetsAt, windowPaths } from './paths.ts';
 import { evaluateView, fitsScreen, type ViewChoice } from './view.ts';
 
@@ -170,9 +170,29 @@ export function liveMatch(
   const texts = new Map<string, string>();
   const states = new Map<string, LiveState>();
   const rows = new Map<string, number>();
+  const adopted = new Map<string, LiveAdopted[]>();
   let unmatched = 0;
   for (const w of snapshot.widgets) {
     const path = normal(w.path);
+    // A widget the window's `.gui` lacks right under one it has, outside a list's rows: one the
+    // game's code made from another definition (etch#256), drawn where the game showed it.
+    const at = path.lastIndexOf('/');
+    const parent = path.slice(0, at);
+    if (
+      at > 0 &&
+      w.visible &&
+      !known.has(path) &&
+      known.has(parent) &&
+      !/\/row\[\d+\]/.test(path)
+    ) {
+      const name = (w.path.split('/').pop() ?? '').replace(/\[\d+\]$/, '');
+      const entry = {
+        name,
+        rect: w.rect,
+        ...(w.text === undefined ? {} : { text: w.markup ?? w.text }),
+      };
+      adopted.set(parent, [...(adopted.get(parent) ?? []), entry]);
+    }
     states.set(path, {
       visible: w.visible,
       enabled: w.enabled,
@@ -201,6 +221,7 @@ export function liveMatch(
         return states.get(path)?.visible === true ? (rows.get(path) ?? 0) : undefined;
       },
       state: (path) => states.get(normal(path)),
+      adopted: (path) => adopted.get(normal(path)) ?? [],
     },
     unmatched,
   };
@@ -349,6 +370,10 @@ export function liveContent(window: Widget, texts: LiveTexts): LayoutContent {
       return path === undefined ? undefined : texts.state?.(path);
     },
     rows: () => undefined,
+    adopted: (widget, row) => {
+      const path = row === undefined ? pathOf.get(widget) : undefined;
+      return path === undefined ? [] : (texts.adopted?.(path) ?? []);
+    },
   };
 }
 
