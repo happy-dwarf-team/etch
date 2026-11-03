@@ -97,8 +97,11 @@ the playset's files (`packages/compare/src/coverage.ts`):
    profile's differences as toggles from the game, the snapshot's texts, rows
    and states as the top sample data layer. The same geometry and visibility,
    and *texts*: the share of the texts the game shows that the preview takes
-   from the snapshot. Without a profile the preview takes nothing from a
-   snapshot, and the report says so.
+   from the snapshot. Without a profile the preview takes the snapshot's texts,
+   states and visibility alone (etch#255). The preview places a widget where
+   the snapshot shows it when the sizes agree (etch#253), so this geometry
+   measures how the snapshot is applied and the widgets' sizes; the outline
+   offline is the measure of the layout's own positions.
 3. **Pixels.** `compare --gpu --corpus <survey folder>`: the corpus's own
    per-widget comparison. Reported only.
 
