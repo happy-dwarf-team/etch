@@ -133,6 +133,18 @@ The keys and clicks that open one state of a corpus window from a known start
 (the main menu, or the playset's save loaded and paused), without game calls.
 _Avoid_: script, macro
 
+**Coverage survey**:
+Every view a player can open in a playset, found by a crawler in the game,
+captured and measured three ways: the outline offline, the preview from the
+live snapshot, and the pixels (docs/coverage.md). It measures how much of the
+game Etch shows right; the precision corpus gates releases.
+_Avoid_: full corpus, crawl test
+
+**View signature**:
+What tells two views apart in the coverage survey: the visible top-level
+windows with the visible windows inside them, without list rows and texts.
+_Avoid_: screen hash, state id
+
 **Unstable pixel**:
 A pixel of a capture that was not the same in every screenshot of it, because
 the game animates what is under it (the main menu's background, the map); the

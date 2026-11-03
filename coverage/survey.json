@@ -1,0 +1,301 @@
+{
+  "formatVersion": 1,
+  "playsets": [
+    {
+      "id": "vanilla",
+      "crawl": true
+    },
+    {
+      "id": "anbennar-alone",
+      "crawl": true
+    },
+    {
+      "id": "bigger-ui",
+      "crawl": false,
+      "viewsOf": "vanilla",
+      "holdout": true,
+      "playset": {
+        "id": "bigger-ui",
+        "title": "Bigger UI V1.37 (the survey holdout)",
+        "gate": "report",
+        "save": {
+          "file": "mp_Russia1719_03_17.eu4",
+          "sha256": "2A4CAF306CCDDB2DAFC7EE015C4ECFFB260654A1D10D86F5F4F768D3C3F56F6A",
+          "description": "Russia, 17 March 1719: the EU4 engine lab's save."
+        },
+        "mods": [
+          {
+            "name": "Bigger UI V1.37",
+            "workshopId": "788906833",
+            "sha256": "46039D306F998C0E1438D9255EB1A64B5F093DA0AF43804E2F14A7AFF03F5D95"
+          }
+        ],
+        "disabledDlcs": [],
+        "windows": []
+      }
+    }
+  ],
+  "resolution": "1920x1080",
+  "smallResolution": "1280x720",
+  "starts": ["save", "main-menu"],
+  "crawl": {
+    "maxDepth": 3,
+    "keys": ["f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "l", "b"],
+    "provinces": ["own", "foreign", "uncolonised", "wasteland", "sea"],
+    "sessionMinutes": 50,
+    "never": [
+      {
+        "pattern": "speed_controls//*",
+        "reason": "Pause and speed: the crawl keeps the game paused."
+      },
+      {
+        "pattern": "//*mapmode*",
+        "reason": "Map modes change the map under every later view."
+      },
+      {
+        "pattern": "//*exit*",
+        "reason": "Leaves, saves or loads a game, or changes saves."
+      },
+      {
+        "pattern": "//*quit*",
+        "reason": "Leaves, saves or loads a game, or changes saves."
+      },
+      {
+        "pattern": "//*resign*",
+        "reason": "Leaves, saves or loads a game, or changes saves."
+      },
+      {
+        "pattern": "//*save*",
+        "reason": "Leaves, saves or loads a game, or changes saves."
+      },
+      {
+        "pattern": "//*load*",
+        "reason": "Leaves, saves or loads a game, or changes saves."
+      },
+      {
+        "pattern": "//*delete*",
+        "reason": "Leaves, saves or loads a game, or changes saves."
+      },
+      {
+        "pattern": "//*restart*",
+        "reason": "Leaves, saves or loads a game, or changes saves."
+      },
+      {
+        "pattern": "//*reload*",
+        "reason": "Leaves, saves or loads a game, or changes saves."
+      },
+      {
+        "pattern": "//*ironman*",
+        "reason": "Leaves, saves or loads a game, or changes saves."
+      },
+      {
+        "pattern": "//*accept*",
+        "reason": "Confirms a dialog's action; the dialog is opened and closed, never confirmed."
+      },
+      {
+        "pattern": "//*confirm*",
+        "reason": "Confirms a dialog's action; the dialog is opened and closed, never confirmed."
+      },
+      {
+        "pattern": "//*agree*",
+        "reason": "Confirms a dialog's action; the dialog is opened and closed, never confirmed."
+      },
+      {
+        "pattern": "//*yes*",
+        "reason": "Confirms a dialog's action; the dialog is opened and closed, never confirmed."
+      },
+      {
+        "pattern": "//*apply*",
+        "reason": "Confirms a dialog's action; the dialog is opened and closed, never confirmed."
+      },
+      {
+        "pattern": "//*reset*",
+        "reason": "Confirms a dialog's action; the dialog is opened and closed, never confirmed."
+      },
+      {
+        "pattern": "//*declare*",
+        "reason": "Acts on another country or gives something up at once."
+      },
+      {
+        "pattern": "//*send*",
+        "reason": "Acts on another country or gives something up at once."
+      },
+      {
+        "pattern": "//*propose*",
+        "reason": "Acts on another country or gives something up at once."
+      },
+      {
+        "pattern": "//*surrender*",
+        "reason": "Acts on another country or gives something up at once."
+      },
+      {
+        "pattern": "//*abandon*",
+        "reason": "Acts on another country or gives something up at once."
+      },
+      {
+        "pattern": "//*disband*",
+        "reason": "Acts on another country or gives something up at once."
+      },
+      {
+        "pattern": "//*annex*",
+        "reason": "Acts on another country or gives something up at once."
+      },
+      {
+        "pattern": "//*sell*",
+        "reason": "Acts on another country or gives something up at once."
+      },
+      {
+        "pattern": "//*buy*",
+        "reason": "Acts on another country or gives something up at once."
+      },
+      {
+        "pattern": "//*multi_player*",
+        "reason": "Starts a game, goes online, opens a browser or changes the DLCs."
+      },
+      {
+        "pattern": "//*tutorial*",
+        "reason": "Starts a game, goes online, opens a browser or changes the DLCs."
+      },
+      {
+        "pattern": "//*play_button*",
+        "reason": "Starts a game, goes online, opens a browser or changes the DLCs."
+      },
+      {
+        "pattern": "//*continue*",
+        "reason": "Starts a game, goes online, opens a browser or changes the DLCs."
+      },
+      {
+        "pattern": "//*join*",
+        "reason": "Starts a game, goes online, opens a browser or changes the DLCs."
+      },
+      {
+        "pattern": "//*host*",
+        "reason": "Starts a game, goes online, opens a browser or changes the DLCs."
+      },
+      {
+        "pattern": "//*login*",
+        "reason": "Starts a game, goes online, opens a browser or changes the DLCs."
+      },
+      {
+        "pattern": "//*logout*",
+        "reason": "Starts a game, goes online, opens a browser or changes the DLCs."
+      },
+      {
+        "pattern": "//*account*",
+        "reason": "Starts a game, goes online, opens a browser or changes the DLCs."
+      },
+      {
+        "pattern": "//*epic*",
+        "reason": "Starts a game, goes online, opens a browser or changes the DLCs."
+      },
+      {
+        "pattern": "//*link*",
+        "reason": "Starts a game, goes online, opens a browser or changes the DLCs."
+      },
+      {
+        "pattern": "//*nudge*",
+        "reason": "Starts a game, goes online, opens a browser or changes the DLCs."
+      },
+      {
+        "pattern": "//*dlc*",
+        "reason": "Starts a game, goes online, opens a browser or changes the DLCs."
+      },
+      {
+        "pattern": "//*privacy*",
+        "reason": "Starts a game, goes online, opens a browser or changes the DLCs."
+      },
+      {
+        "pattern": "//*store*",
+        "reason": "Starts a game, goes online, opens a browser or changes the DLCs."
+      },
+      {
+        "pattern": "//*steam*",
+        "reason": "Starts a game, goes online, opens a browser or changes the DLCs."
+      },
+      {
+        "pattern": "//*paradox*",
+        "reason": "Starts a game, goes online, opens a browser or changes the DLCs."
+      },
+      {
+        "pattern": "//*news*",
+        "reason": "Starts a game, goes online, opens a browser or changes the DLCs."
+      },
+      {
+        "pattern": "//*browser*",
+        "reason": "Starts a game, goes online, opens a browser or changes the DLCs."
+      },
+      {
+        "pattern": "//*random*",
+        "reason": "Starts a game, goes online, opens a browser or changes the DLCs."
+      },
+      {
+        "pattern": "//*increase*",
+        "reason": "Spends power or changes a value step by step (development, autosave, the lobby's date)."
+      },
+      {
+        "pattern": "//*decrease*",
+        "reason": "Spends power or changes a value step by step (development, autosave, the lobby's date)."
+      },
+      {
+        "pattern": "//*year_*",
+        "reason": "Spends power or changes a value step by step (development, autosave, the lobby's date)."
+      },
+      {
+        "pattern": "//*month_*",
+        "reason": "Spends power or changes a value step by step (development, autosave, the lobby's date)."
+      },
+      {
+        "pattern": "//*day_*",
+        "reason": "Spends power or changes a value step by step (development, autosave, the lobby's date)."
+      },
+      {
+        "pattern": "//ok",
+        "reason": "Confirms a dialog's action."
+      },
+      {
+        "pattern": "//*_ok",
+        "reason": "Confirms a dialog's action."
+      },
+      {
+        "pattern": "//ok_*",
+        "reason": "Confirms a dialog's action."
+      },
+      {
+        "pattern": "//StartGameButton",
+        "reason": "Starts a game."
+      },
+      {
+        "pattern": "menu_settings*/*//*",
+        "reason": "Changes a setting; the settings tabs are opened, their contents never changed."
+      },
+      {
+        "pattern": "menu/menu_message_settings/*//*",
+        "reason": "Changes a message setting."
+      },
+      {
+        "pattern": "menu/menu_message_settings/messageicon_*",
+        "reason": "Changes every message setting at once."
+      },
+      {
+        "pattern": "//ToggleMessageInterface",
+        "reason": "Opens or closes the message list, which the game keeps in settings.txt (messagelist_open)."
+      },
+      {
+        "pattern": "minimap_panel//*",
+        "reason": "The minimap's buttons change the map mode or the minimap, which Escape does not bring back."
+      },
+      {
+        "pattern": "//*build_unit*",
+        "reason": "Builds, recruits or hires at once, spending gold and manpower (seen with Anbennar's single unit panel)."
+      },
+      {
+        "pattern": "//*recruit*",
+        "reason": "Builds, recruits or hires at once, spending gold and manpower (seen with Anbennar's single unit panel)."
+      },
+      {
+        "pattern": "//*hire*",
+        "reason": "Builds, recruits or hires at once, spending gold and manpower (seen with Anbennar's single unit panel)."
+      }
+    ]
+  }
+}

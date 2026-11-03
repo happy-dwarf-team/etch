@@ -11,7 +11,8 @@
   "scripts": {
     "compare": "node src/cli.mts",
     "typecheck": "tsc -p .",
-    "test": "playwright test"
+    "test": "playwright test",
+    "coverage": "node src/coverage-cli.mts"
   },
   "devDependencies": {
     "@etch/core": "workspace:*",

@@ -155,7 +155,7 @@ export type ViewOutcome =
       readonly released?: boolean;
     };
 
-class ViewFailure extends Error {
+export class ViewFailure extends Error {
   readonly lost: boolean;
   retry = false;
 
@@ -404,7 +404,7 @@ function opened(province: number, answer: TongsAnswer, view: CorpusView): void {
  * have, or too many presses, lose the start state; the session then ends and a fresh start takes
  * the remaining views.
  */
-async function backToStart(ctx: ViewContext, timing: CaptureTiming): Promise<void> {
+export async function backToStart(ctx: ViewContext, timing: CaptureTiming): Promise<void> {
   const same = (a: readonly string[]): boolean => a.join('\n') === ctx.startWindows.join('\n');
   let current = await startWindows(ctx.tongs);
   for (let presses = 0; !same(current); presses++) {
@@ -484,7 +484,7 @@ function released(state: CursorState): MouseReleased {
  * user took the mouse back (`MouseReleased`); a pixel left behind by a moved window is pinned
  * again. Resolves with the pinned point.
  */
-async function holdCursor(
+export async function holdCursor(
   ctx: ViewContext,
   window: Screen,
 ): Promise<{ x: number; y: number } | undefined> {
@@ -573,7 +573,7 @@ async function checkCursor(
  * One step. A widget click that Tongs refuses as `covered` is tried again a few times: a window
  * that is still opening (the Esc menu grows in) covers its own buttons for a moment.
  */
-async function runStep(
+export async function runStep(
   ctx: ViewContext,
   command: string,
   timing: CaptureTiming,
@@ -587,7 +587,10 @@ async function runStep(
   }
 }
 
-async function awayPoint(ctx: ViewContext, window: Screen): Promise<{ x: number; y: number }> {
+export async function awayPoint(
+  ctx: ViewContext,
+  window: Screen,
+): Promise<{ x: number; y: number }> {
   const away = ctx.away[ctx.start];
   if ('fraction' in away) {
     return {
@@ -617,7 +620,7 @@ function describeDifference(start: readonly string[], now: readonly string[]): s
 }
 
 /** The same game, no game call since the start, and the start's own state. */
-async function checkState(ctx: ViewContext): Promise<void> {
+export async function checkState(ctx: ViewContext): Promise<void> {
   const state = await ask(ctx.tongs, 'state');
   if (state['pid'] !== ctx.pid) {
     throw new ViewFailure(`The game's process changed (pid ${String(state['pid'])}).`, true);
@@ -634,7 +637,7 @@ async function checkState(ctx: ViewContext): Promise<void> {
   }
 }
 
-async function gameWindow(
+export async function gameWindow(
   ctx: ViewContext,
 ): Promise<{ width: number; height: number; dpi: number }> {
   const answer = await ask(ctx.tongs, 'window');
@@ -646,7 +649,7 @@ async function gameWindow(
   return { width, height, dpi };
 }
 
-async function frame(ctx: ViewContext): Promise<void> {
+export async function frame(ctx: ViewContext): Promise<void> {
   await ask(ctx.tongs, 'frames timeout=30', 40_000);
 }
 

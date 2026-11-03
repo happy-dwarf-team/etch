@@ -4,8 +4,10 @@
 //   $env:ETCH_CORPUS_PATH = 'D:\etch-corpus'     # the local corpus folder (screenshots)
 //   $env:ETCH_GAME_PATH = '...\Europa Universalis IV'   # optional; else found through Steam
 //   pnpm --filter @etch/compare compare [--playset ID] [--view ID] [--resolution WxH] [--gpu]
-//     [--saves FOLDER]
+//     [--saves FOLDER] [--corpus FOLDER]
 //
+// --corpus compares another corpus folder's manifest and records, such as the coverage survey's
+// local folder (docs/coverage.md), with Etch's own profiles.
 // --saves names a folder with the playsets' pinned saves, for the report of the profiles' save
 // texts against the captures'; without it that report is left out.
 // Filters take several values separated by commas. Results go to the local corpus folder:
@@ -24,6 +26,7 @@ const { values } = parseArgs({
     resolution: { type: 'string', multiple: true },
     gpu: { type: 'boolean', default: false },
     saves: { type: 'string' },
+    corpus: { type: 'string' },
   },
 });
 const list = (items: string[] | undefined): string[] =>
@@ -39,7 +42,8 @@ if (localFolder === undefined) {
 }
 const gamePath = process.env['ETCH_GAME_PATH']?.trim();
 const result = await runCorpus({
-  corpusFolder: join(repository, 'corpus'),
+  corpusFolder: values.corpus ?? join(repository, 'corpus'),
+  profilesFolder: join(repository, 'profiles'),
   localFolder,
   gamePath: gamePath === undefined || gamePath === '' ? undefined : gamePath,
   playsets: list(values.playset),
