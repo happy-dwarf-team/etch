@@ -5,12 +5,31 @@
   "formatVersion": 1,
   "window": "menubar",
   "checkedWith": "1.37.5",
+  "selectors": {
+    "messageLog": {
+      "kind": "ui",
+      "label": "Message log",
+      "values": { "closed": "Closed", "open": "Open" },
+      "note": "The log the player opens from the menubar. menubar.gui moves WarOverviewButtonWindow to its show_position (y -175) to sit on top of the open log, and keeps it at hide_position (y -65) while the log is closed.",
+    },
+  },
+  "groups": {
+    "messageLog": {
+      "label": "Message log",
+      "selector": "messageLog",
+      "none": true,
+      "members": { "open": "menubar/messagelog_window" },
+    },
+  },
   "rules": {
+    "war-overview-below-closed-log": {
+      "when": { "messageLog": "closed" },
+      "hidePosition": ["menubar/WarOverviewButtonWindow"],
+    },
     "hidden": {
       "note": "Hidden in the corpus capture of \"hud\" and \"macro-builder\" and \"province\" in vanilla (Russia, 17 March 1719): the game decides these from its data or a click; show one by hand.",
       "hide": [
         "menubar/chat_window",
-        "menubar/messagelog_window",
         "menubar/observer_bg",
         "menubar/observer_select_country",
         "menubar/observer_unselect",

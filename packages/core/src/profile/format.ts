@@ -111,6 +111,12 @@ export interface Rule extends Written {
    * `positionType` to name: the diplomacy view's labels, 20 px left without a religion icon.
    */
   readonly offset: readonly (PathRef & { readonly x: number; readonly y: number })[];
+  /**
+   * Widgets the game keeps at their `hide_position` (else `position`) in this case, where the
+   * preview would draw them at their `show_position`: the menubar's war overview button while the
+   * message log is closed.
+   */
+  readonly hidePosition: readonly PathRef[];
 }
 
 export interface SelectorSetting {

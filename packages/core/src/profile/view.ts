@@ -75,6 +75,8 @@ export interface WidgetState {
   readonly row?: EngineRow;
   /** How far the game's code moves it from where it would be, in pixels (a rule's `offset`). */
   readonly offset?: { readonly x: number; readonly y: number };
+  /** Whether the game keeps it at its `hide_position` (a rule's `hidePosition`). */
+  readonly atHidePosition?: boolean;
 }
 
 /** An exclusive group of the view: which member shows, and the widgets of each. */
@@ -162,6 +164,9 @@ export function evaluateView(
     }
     for (const ref of rule.offset) {
       for (const w of widgetsAt(window, ref.path)) update(w, { offset: { x: ref.x, y: ref.y } });
+    }
+    for (const ref of rule.hidePosition) {
+      for (const w of widgetsAt(window, ref.path)) update(w, { atHidePosition: true });
     }
   }
 
@@ -347,5 +352,6 @@ export function layoutViewOf(view: WindowView): LayoutView {
     stepped: (widget) => view.widgets.get(widget)?.stepped,
     row: (widget) => view.widgets.get(widget)?.row,
     offset: (widget) => view.widgets.get(widget)?.offset,
+    atHidePosition: (widget) => view.widgets.get(widget)?.atHidePosition === true,
   };
 }

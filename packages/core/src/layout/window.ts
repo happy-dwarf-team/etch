@@ -164,6 +164,8 @@ export interface LayoutView {
   row?(widget: Widget): { readonly start: string; readonly step: string } | undefined;
   /** How far the game's code moves the widget from where it would be, in pixels. */
   offset?(widget: Widget): { readonly x: number; readonly y: number } | undefined;
+  /** Whether the game keeps the widget at its `hide_position` rather than its `show_position`. */
+  atHidePosition?(widget: Widget): boolean;
 }
 
 /** One laid-out widget, in paint order: a parent comes before its children. */
@@ -299,8 +301,12 @@ class Layout {
     this.checkNotApplied(props);
     this.current = widget;
     const anchor = this.anchor(props, parent);
-    // Hypothesis: the preview shows a window where it ends up once opened, at `show_position`.
-    const written = props.point('show_position') ?? props.point('position') ?? { x: 0, y: 0 };
+    // Hypothesis: the preview shows a window where it ends up once opened, at `show_position`,
+    // unless the view says the game keeps it at its `hide_position`.
+    const written = (view?.atHidePosition?.(widget) === true
+      ? props.point('hide_position')
+      : props.point('show_position')) ??
+      props.point('position') ?? { x: 0, y: 0 };
     const moved = this.movedPosition(widget);
     const axis = view?.movedAxis?.(widget);
     const offset =
