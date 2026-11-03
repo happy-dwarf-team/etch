@@ -17,6 +17,7 @@ import {
   DRAW_LIST_VERSION,
   effectName,
   isSpriteShader,
+  moveDraw,
   packGlyphs,
   type Draw,
   type DrawList,
@@ -95,7 +96,14 @@ export interface LayoutContent {
     widget: Widget,
     row: number | undefined,
   ):
-    { readonly visible: boolean; readonly enabled: boolean; readonly checked: boolean } | undefined;
+    | {
+        readonly visible: boolean;
+        readonly enabled: boolean;
+        readonly checked: boolean;
+        /** Where the game showed it: `x`, `y`, `w`, `h` in client pixels. */
+        readonly rect?: readonly [number, number, number, number];
+      }
+    | undefined;
   /**
    * The entries of a list box: a top-level definition, from its file, `count` times; with `place`,
    * the entries the game's code puts in a window, from `x`, `y`, `columns` to a row, `step` apart.
@@ -340,6 +348,8 @@ class Layout {
       rect = { x, y, ...sizeIn(props.size('size'), parent) };
     }
 
+    rect = this.livePosition(rect, state, drawStart);
+
     const index = this.widgets.length;
     this.widgets.push({
       widget,
@@ -489,6 +499,35 @@ class Layout {
     }
     this.constants = outer.constants;
     this.row = outer.row;
+  }
+
+  /**
+   * Where a live snapshot showed the widget, when the game's code put it elsewhere than its
+   * `.gui` (spec section 7; the coverage survey, etch#253 and etch#254: the military tab 16 px
+   * lower, the province view's top section, the subjects' panels). A widget the game showed at
+   * the size the layout gives it but at another place is moved there with what it draws, and its
+   * children, placed in its rect, follow. Not a list's entries, whose rows the snapshot numbers
+   * by position, and not a window to which Tongs gave its children's bounds (another size): its
+   * children are moved one by one instead.
+   */
+  private livePosition(
+    rect: Rect,
+    state:
+      | { readonly visible: boolean; readonly rect?: readonly [number, number, number, number] }
+      | undefined,
+    drawStart: number,
+  ): Rect {
+    const game = state?.rect;
+    if (game === undefined || state?.visible !== true || this.row !== undefined) return rect;
+    const [x, y, w, h] = game;
+    if (Math.round(rect.width) !== w || Math.round(rect.height) !== h) return rect;
+    const by = { x: x - Math.round(rect.x), y: y - Math.round(rect.y) };
+    if (by.x === 0 && by.y === 0) return rect;
+    for (let i = drawStart; i < this.draws.length; i++) {
+      const draw = this.draws[i];
+      if (draw !== undefined) this.draws[i] = moveDraw(draw, by);
+    }
+    return { ...rect, x: rect.x + by.x, y: rect.y + by.y };
   }
 
   /**

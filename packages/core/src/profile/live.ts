@@ -172,7 +172,12 @@ export function liveMatch(
   let unmatched = 0;
   for (const w of snapshot.widgets) {
     const path = normal(w.path);
-    states.set(path, { visible: w.visible, enabled: w.enabled, checked: w.checked });
+    states.set(path, {
+      visible: w.visible,
+      enabled: w.enabled,
+      checked: w.checked,
+      rect: w.rect,
+    });
     // A row's widgets come from its template: the list box must still be there.
     const row = /^(.*?)\/row\[(\d+)\](?:\/|$)/.exec(path);
     if (row !== null && known.has(row[1] ?? '')) {

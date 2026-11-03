@@ -209,6 +209,8 @@ describe('liveMatch with the profile', () => {
       visible: true,
       enabled: false,
       checked: false,
+      // Where the game showed it: the preview moves what the game's code moved (etch#253).
+      rect: expect.any(Array) as unknown,
     });
     expect(
       match.texts.state?.('provinceview/general_buildings_window/row[2]/building')?.visible,
