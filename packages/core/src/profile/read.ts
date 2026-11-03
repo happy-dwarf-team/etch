@@ -647,6 +647,7 @@ function readRule(
     'position',
     'frame',
     'offset',
+    'hidePosition',
     'note',
   ]);
   optionalText(props.get('note'), 'note');
@@ -703,6 +704,7 @@ function readRule(
       };
       return { x: pixels('x'), y: pixels('y') };
     }),
+    hidePosition: paths('hidePosition'),
     ...written,
   };
   const effects =
@@ -711,10 +713,11 @@ function readRule(
     rule.notCreated.length +
     rule.position.length +
     rule.frame.length +
-    rule.offset.length;
+    rule.offset.length +
+    rule.hidePosition.length;
   if (effects === 0) {
     throw new Faulty(
-      `Rule "${id}" has no effect: show, hide, notCreated, position, frame or offset.`,
+      `Rule "${id}" has no effect: show, hide, notCreated, position, frame, offset or hidePosition.`,
       node,
     );
   }

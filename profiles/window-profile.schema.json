@@ -183,7 +183,8 @@
         { "required": ["notCreated"] },
         { "required": ["position"] },
         { "required": ["frame"] },
-        { "required": ["offset"] }
+        { "required": ["offset"] },
+        { "required": ["hidePosition"] }
       ],
       "properties": {
         "when": {
@@ -234,6 +235,10 @@
             "additionalProperties": false,
             "properties": { "x": { "type": "integer" }, "y": { "type": "integer" } }
           }
+        },
+        "hidePosition": {
+          "description": "Widgets the game keeps at their hide_position (else position) in this case, where the preview would draw them at their show_position.",
+          "$ref": "#/definitions/paths"
         },
         "note": { "$ref": "#/definitions/text" }
       }

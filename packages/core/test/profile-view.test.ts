@@ -492,3 +492,45 @@ describe("a rule's offset (the diplomacy view's labels)", () => {
     expect(labels('school')).toEqual({ nation: [132, 123], fog: [132, 145] });
   });
 });
+
+describe("a rule's hidePosition (the menubar's war overview button)", () => {
+  const file = readGuiFile(
+    parseScript(`guiTypes = {
+  windowType = {
+    name = "menubar"
+    size = { x = 2048 y = 100 }
+    fullScreen = yes
+    windowType = { name = "messagelog_window" position = { x = -1325 y = -100 } show_position = { x = -1325 y = -100 } hide_position = { x = -1325 y = 10 } size = { x = 770 y = 100 } Orientation = "LOWER_RIGHT" }
+    windowType = { name = "WarOverviewButtonWindow" position = { x = -840 y = -65 } show_position = { x = -840 y = -175 } hide_position = { x = -840 y = -65 } size = { x = 300 y = 40 } Orientation = "LOWER_RIGHT" }
+  }
+}`),
+  );
+  const window = file.definitions.find((w) => w.name === 'menubar') as Widget;
+  const { file: written, diagnostics } = readProfile(
+    `{ "formatVersion": 1, "window": "menubar",
+      "selectors": { "messageLog": { "kind": "ui", "label": "Message log", "values": { "closed": "Closed", "open": "Open" } } },
+      "groups": { "messageLog": { "selector": "messageLog", "none": true, "members": { "open": "menubar/messagelog_window" } } },
+      "rules": { "below": { "when": { "messageLog": "closed" }, "hidePosition": ["menubar/WarOverviewButtonWindow"] } } }`,
+    { layer: 0, source: 'vanilla', file: 'menubar.jsonc' },
+  );
+  const button = (log: string) => {
+    expect(diagnostics).toEqual([]);
+    const profile = layerProfiles('menubar', written === undefined ? [] : [written]);
+    const view = evaluateView(profile, window, LARGE, { set: { messageLog: log } });
+    const layout = layoutWindow(window, {
+      file,
+      index: InterfaceIndex.of([], [{ path: 'interface/menubar.gui', file }]),
+      exists: () => false,
+      assets: { textureSize: () => undefined, font: () => undefined },
+      screen: LARGE,
+      view: layoutViewOf(view),
+    });
+    const w = layout.widgets.find((l) => l.widget.name === 'WarOverviewButtonWindow');
+    return w === undefined ? undefined : [w.x, w.y];
+  };
+
+  it('keeps the button at its hide_position while the log is closed', () => {
+    expect(button('closed')).toEqual([1080, 1015]);
+    expect(button('open')).toEqual([1080, 905]);
+  });
+});
