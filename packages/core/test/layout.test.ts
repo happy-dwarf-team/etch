@@ -820,6 +820,42 @@ describe('layoutWindow: sample data', () => {
     expect(only(drawsOf(l, 'inside'))).toMatchObject({ x: 15, y: 171 });
   });
 
+  it('draws the top-level definitions a snapshot showed inside a window where the game showed them', () => {
+    const { file, input } = setUp(`guiTypes = {
+      windowType = { name = "panel" size = { x = 200 y = 100 } position = { x = 10 y = 10 } }
+      iconType = { name = "map_bg" spriteType = "GFX_plain" position = { x = 0 y = 0 } }
+      positionType = { name = "map_pos" position = { x = 1 y = 1 } }
+    }`);
+    const panel = file.definitions[0] as Widget;
+    const l = layoutWindow(panel, {
+      ...input,
+      content: {
+        text: () => undefined,
+        rows: () => undefined,
+        adopted: (w) =>
+          w === panel
+            ? [
+                { name: 'MAP_BG', rect: [40, 50, 16, 16] },
+                { name: 'map_bg', rect: [70, 50, 16, 16] },
+                // Not a widget, and a name the playset does not define: left out.
+                { name: 'map_pos', rect: [0, 0, 1, 1] },
+                { name: 'nowhere', rect: [0, 0, 1, 1] },
+              ]
+            : [],
+      },
+    });
+    const copies = l.widgets.filter((w) => w.widget.name === 'map_bg');
+    expect(copies.map((w) => [w.x, w.y, w.parent])).toEqual([
+      [40, 50, 0],
+      [70, 50, 0],
+    ]);
+    expect(l.widgets).toHaveLength(3);
+    expect(only(l.drawList.draws.slice(copies[1]?.drawStart, copies[1]?.drawEnd))).toMatchObject({
+      x: 70,
+      y: 50,
+    });
+  });
+
   it("puts the entries the game's code places in a window in rows, a template's size apart", () => {
     const { file, input } = setUp(GUI);
     const window = file.definitions[0] as Widget;

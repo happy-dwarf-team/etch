@@ -69,8 +69,21 @@ export interface LiveState {
  * the window; a row of a list box as `<list path>/row[n]/<path in the entry>`, n from 1. A
  * snapshot also gives how many rows each list showed and each widget's state.
  */
+/**
+ * A widget the game's code put in a window from a top-level definition of another name or file
+ * (Anbennar's and vanilla's `minimap_bg` in `minimap_panel`, the ledger's sort buttons): the
+ * definition's name, where the game showed it and its text.
+ */
+export interface LiveAdopted {
+  readonly name: string;
+  readonly rect: readonly [number, number, number, number];
+  readonly text?: string;
+}
+
 export interface LiveTexts {
   text(path: string): string | undefined;
+  /** The widgets the game showed in a widget, by its path, that the window's `.gui` lacks. */
+  adopted?(path: string): readonly LiveAdopted[];
   /** The number of rows a list showed in the game, by the list's path. */
   rows?(list: string): number | undefined;
   /** A widget's state in the game, by path. */
@@ -140,6 +153,8 @@ export interface SampleData {
   state(widget: Widget, row?: number): LiveState | undefined;
   /** The entries of a list box a repeater fills. */
   rows(list: Widget): SampleRows | undefined;
+  /** What a live snapshot showed in a widget from other definitions (`LiveAdopted`). */
+  adopted(widget: Widget, row?: number): readonly LiveAdopted[];
   /** How many texts each layer fills, of the widgets the view draws. */
   readonly counts: Readonly<Record<DataLayer, number>>;
   /** The window's repeaters whose template the playset defines. */
@@ -287,6 +302,10 @@ export function sampleData(
       return undefined;
     },
     rows: (list) => rows.get(list),
+    adopted: (widget, row) => {
+      const path = row === undefined ? pathOf.get(widget) : undefined;
+      return path === undefined ? [] : (input.live?.adopted?.(path) ?? []);
+    },
     counts,
     lists,
   };
@@ -447,5 +466,6 @@ export function layoutContentOf(sample: SampleData): LayoutContent {
     text: (widget, row) => sample.text(widget, row)?.text,
     rows: (list) => sample.rows(list),
     state: (widget, row) => sample.state(widget, row),
+    adopted: (widget, row) => sample.adopted(widget, row),
   };
 }
