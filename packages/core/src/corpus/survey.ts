@@ -5,7 +5,7 @@
  * local folder, beside its captures; only `coverage/survey.json` and the inventory the coverage
  * report writes are in the repository.
  */
-import type { CrawlFile, CrawlRules } from './driver/crawl.ts';
+import { LED_ELSEWHERE, type CrawlFile, type CrawlRules } from './driver/crawl.ts';
 import type { CorpusManifest, CorpusPlayset, CorpusView, CorpusWindow } from './manifest.ts';
 
 export const SURVEY_FORMAT_VERSION = 1;
@@ -78,7 +78,10 @@ export function surveyManifest(
       ...crawl.states.filter((x) => x.escapeFails !== undefined),
     ];
     for (const state of states) {
-      if (state.unreproducible !== undefined || state.roots.length === 0) continue;
+      // Steps that Tongs refused cannot open the view again; steps that showed another view are
+      // the game's memory of a window's last tab (`LED_ELSEWHERE`), which a fresh game does not have.
+      if (state.unreproducible !== undefined && state.unreproducible !== LED_ELSEWHERE) continue;
+      if (state.roots.length === 0) continue;
       const id = surveyViewId(crawl.playset, crawl.start, state.id);
       const view: CorpusView = {
         id,
@@ -92,7 +95,11 @@ export function surveyManifest(
         roots: state.roots,
         codeFilled: [],
         ...(state.escapeFails === undefined
-          ? {}
+          ? state.unreproducible === undefined
+            ? {}
+            : {
+                note: 'The game remembers what this window last showed; captured as a fresh game opens it.',
+              }
           : { note: `Escape does not close it: ${state.escapeFails}` }),
       };
       const files = [

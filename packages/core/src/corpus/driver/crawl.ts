@@ -66,6 +66,14 @@ export interface CrawlRules {
 
 export type ProvinceKind = 'own' | 'foreign' | 'uncolonised' | 'wasteland' | 'sea';
 
+/**
+ * Why a view did not come back by its steps when they ran but showed another view: the game
+ * remembers a window's last tab, page or panel (the country view, the ledger, the macro builder,
+ * the province view), so the same key opens what was last on screen. A fresh game opens it as
+ * the crawl first saw it, so the survey still captures it.
+ */
+export const LED_ELSEWHERE = 'Its steps led to another view.';
+
 /** A state the crawler reached: one view of the survey. */
 export interface CrawlState {
   readonly id: string;
@@ -285,7 +293,7 @@ export async function crawlGame(
     }
     const now = await settle();
     if (now !== state.signature) {
-      state.unreproducible = 'Its steps led to another view.';
+      state.unreproducible = LED_ELSEWHERE;
       ctx.log({ unreproducible: state.id, now });
       return false;
     }
