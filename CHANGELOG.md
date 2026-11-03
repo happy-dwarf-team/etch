@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.3.1](https://github.com/happy-dwarf-team/etch/compare/v2.3.0...v2.3.1) (2026-11-03)
+
+
+### Bug Fixes
+
+* move the military tab down with Cradle of Civilization ([#288](https://github.com/happy-dwarf-team/etch/issues/288)) ([60fe045](https://github.com/happy-dwarf-team/etch/commit/60fe04538faab1a4536dd02a104ff9fdb9bfbb09))
+* **profiles:** move the military tab down with Cradle of Civilization ([60fe045](https://github.com/happy-dwarf-team/etch/commit/60fe04538faab1a4536dd02a104ff9fdb9bfbb09))
+
 ## [2.3.0](https://github.com/happy-dwarf-team/etch/compare/v2.2.0...v2.3.0) (2026-11-03)
 
 
