@@ -17,6 +17,7 @@ import {
   planCapture,
   readCaptureRecord,
   readCorpusManifest,
+  rectOrigins,
   requiredCaptures,
   resolutionKey,
   snapshotOf,
@@ -100,6 +101,17 @@ export interface CoverageResult {
   readonly constructs: Readonly<Record<string, Readonly<Record<string, ConstructCount>>>>;
   readonly windows: readonly WindowStatus[];
   readonly notCaptured: readonly string[];
+}
+
+/**
+ * A construct the survey confirms: compared often enough, and nearly always exact. A window's
+ * confidence is an estimate for windows no survey reached, not a gate, so it takes a share where
+ * the targets take none (docs/coverage.md, "Measures").
+ */
+export const CONFIRMED = { seen: 10, exactShare: 0.95 } as const;
+
+export function confirmedConstruct(c: ConstructCount): boolean {
+  return c.seen >= CONFIRMED.seen && c.exact / c.seen >= CONFIRMED.exactShare;
 }
 
 /** Top-level kinds that are windows a view can show; the others are parts and positions. */
@@ -224,7 +236,7 @@ export async function runCoverage(options: CoverageOptions): Promise<CoverageRes
     const files = await open(id);
     const confirmed = new Set(
       Object.entries(constructs[id] ?? {})
-        .filter(([, c]) => c.seen > 0 && c.exact === c.seen)
+        .filter(([, c]) => confirmedConstruct(c))
         .map(([k]) => k),
     );
     const seen = new Set<string>();
@@ -264,11 +276,14 @@ function tallyConstructs(
   plan: ReturnType<typeof planCapture>,
   geometry: GeometryCounts,
 ): void {
-  const missed = new Set(geometry.mismatches.map((m) => m.path));
+  // A widget that only moves with a moved ancestor was not measured on its own: left out.
+  const origins = rectOrigins(geometry.mismatches);
+  const missed = new Set(origins.map((o) => o.origin.path));
+  const moved = new Set(geometry.mismatches.map((m) => m.path).filter((p) => !missed.has(p)));
   const own = (constructs[playset] ??= {});
   for (const w of plan.widgets) {
     if (w.captured === undefined || w.hidden || w.codeFilled !== undefined) continue;
-    if (w.laidOut === undefined || w.unplaced === true) continue;
+    if (w.laidOut === undefined || w.unplaced === true || moved.has(w.path)) continue;
     const exact = !missed.has(w.path);
     for (const c of constructsOf(w.laidOut.widget)) {
       const count = (own[c] ??= { seen: 0, exact: 0 });

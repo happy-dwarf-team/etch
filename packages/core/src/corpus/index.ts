@@ -124,6 +124,7 @@ export {
 export {
   constructsOf,
   outlineGeometry,
+  rectOrigins,
   snapshotOf,
   textAgreement,
   visibilityAgreement,

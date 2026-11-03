@@ -3,8 +3,14 @@
  * measures, the views, the classes of what differs, the windows reached and not, and the
  * constructs.
  */
-import type { RectMismatch, WidgetRect } from '@etch/core/corpus';
-import type { CoverageResult, ViewCoverage, WindowStatus } from './coverage.ts';
+import { rectOrigins, type WidgetRect } from '@etch/core/corpus';
+import {
+  CONFIRMED,
+  confirmedConstruct,
+  type CoverageResult,
+  type ViewCoverage,
+  type WindowStatus,
+} from './coverage.ts';
 
 const percent = (part: number, whole: number): string =>
   whole === 0 ? '–' : `${(Math.floor((1000 * part) / whole) / 10).toFixed(1)} %`;
@@ -72,36 +78,6 @@ function rectClass(kind: string | undefined, game: WidgetRect, layout?: WidgetRe
   if (layout === undefined) return `${kind ?? '?'}: placed outside the screen`;
   const fields = (['x', 'y', 'w', 'h'] as const).filter((f) => game[f] !== layout[f]);
   return `${kind ?? '?'}: ${fields.join(', ')} differ`;
-}
-
-/**
- * The mismatches of a view where they start: a widget whose rect is off by the same amount as an
- * ancestor's only moves with it. Each origin carries how many widgets move with it.
- */
-export function rectOrigins(
-  mismatches: readonly RectMismatch[],
-): { origin: RectMismatch; moved: number; delta: string }[] {
-  const deltaOf = (m: RectMismatch): string =>
-    m.layout === undefined
-      ? 'off screen'
-      : `${String(m.layout.x - m.game.x)},${String(m.layout.y - m.game.y)}`;
-  const byPath = new Map(mismatches.map((m) => [m.path.toLowerCase(), m]));
-  const origins = new Map<string, { origin: RectMismatch; moved: number; delta: string }>();
-  for (const m of mismatches) {
-    const delta = deltaOf(m);
-    const steps = m.path.toLowerCase().split('/');
-    let origin = m;
-    for (let i = steps.length - 1; i >= 1; i--) {
-      const up = byPath.get(steps.slice(0, i).join('/'));
-      if (up === undefined || deltaOf(up) !== delta || delta === '0,0') break;
-      origin = up;
-    }
-    const key = origin.path.toLowerCase();
-    const entry = origins.get(key) ?? { origin, moved: 0, delta: deltaOf(origin) };
-    if (origin !== m) entry.moved++;
-    origins.set(key, entry);
-  }
-  return [...origins.values()];
 }
 
 export function coverageMarkdown(result: CoverageResult): string {
@@ -244,27 +220,42 @@ export function coverageMarkdown(result: CoverageResult): string {
   }
 
   lines.push('## Windows', '');
-  lines.push(
-    '| Playset | Windows | Views | Inside a view | Not reached | Not reached, all constructs confirmed |',
-  );
-  lines.push('| --- | --- | --- | --- | --- | --- |');
+  lines.push('| Playset | Windows | Views | Inside a view | Not reached |');
+  lines.push('| --- | --- | --- | --- | --- |');
   for (const id of playsets) {
     const own = result.windows.filter((w) => w.playset === id);
     const count = (s: WindowStatus['status']): number => own.filter((w) => w.status === s).length;
-    const sure = own.filter(
-      (w) => w.status === 'not reached' && w.widgets > 0 && w.confirmed === w.widgets,
-    ).length;
     lines.push(
-      `| ${id} | ${String(own.length)} | ${String(count('view'))} | ${String(count('inside'))} | ${String(count('not reached'))} | ${String(sure)} |`,
+      `| ${id} | ${String(own.length)} | ${String(count('view'))} | ${String(count('inside'))} | ${String(count('not reached'))} |`,
+    );
+  }
+
+  lines.push(
+    '',
+    "A window's confidence is the share of its widgets built only of confirmed constructs.",
+    '',
+    '| Playset | Not reached | Confidence 100 % | 90 % or more | 50 % or more | Below 50 % |',
+    '| --- | --- | --- | --- | --- | --- |',
+  );
+  for (const id of playsets) {
+    const own = result.windows.filter((w) => w.playset === id && w.status === 'not reached');
+    const share = (w: WindowStatus): number => (w.widgets === 0 ? 1 : w.confirmed / w.widgets);
+    lines.push(
+      `| ${id} | ${String(own.length)} | ${String(own.filter((w) => share(w) === 1).length)} | ${String(own.filter((w) => share(w) >= 0.9).length)} | ${String(own.filter((w) => share(w) >= 0.5).length)} | ${String(own.filter((w) => share(w) < 0.5).length)} |`,
     );
   }
 
   lines.push('', '## Constructs', '');
-  lines.push('| Playset | Seen | All exact | Some rect differs |', '| --- | --- | --- | --- |');
+  lines.push(
+    `A construct is confirmed when at least ${String(CONFIRMED.seen)} widgets built with it were compared on their own and at least ${String(100 * CONFIRMED.exactShare)} % of them had the game's rect.`,
+    '',
+    '| Playset | Seen | Confirmed | All exact | Some rect differs |',
+    '| --- | --- | --- | --- | --- |',
+  );
   for (const id of playsets) {
     const own = Object.values(result.constructs[id] ?? {});
     lines.push(
-      `| ${id} | ${String(own.length)} | ${String(own.filter((c) => c.exact === c.seen).length)} | ${String(own.filter((c) => c.exact < c.seen).length)} |`,
+      `| ${id} | ${String(own.length)} | ${String(own.filter(confirmedConstruct).length)} | ${String(own.filter((c) => c.exact === c.seen).length)} | ${String(own.filter((c) => c.exact < c.seen).length)} |`,
     );
   }
   for (const id of playsets) {

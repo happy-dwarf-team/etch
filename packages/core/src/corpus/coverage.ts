@@ -92,6 +92,36 @@ export function outlineGeometry(plan: CapturePlan): GeometryCounts {
   return { compared, exact, mismatches, gameOnly, layoutOnly, codeFilled };
 }
 
+/**
+ * The mismatches of a view where they start: a widget whose rect is off by the same amount as an
+ * ancestor's only moves with it. Each origin carries how many widgets move with it.
+ */
+export function rectOrigins(
+  mismatches: readonly RectMismatch[],
+): { origin: RectMismatch; moved: number; delta: string }[] {
+  const deltaOf = (m: RectMismatch): string =>
+    m.layout === undefined
+      ? 'off screen'
+      : `${String(m.layout.x - m.game.x)},${String(m.layout.y - m.game.y)}`;
+  const byPath = new Map(mismatches.map((m) => [m.path.toLowerCase(), m]));
+  const origins = new Map<string, { origin: RectMismatch; moved: number; delta: string }>();
+  for (const m of mismatches) {
+    const delta = deltaOf(m);
+    const steps = m.path.toLowerCase().split('/');
+    let origin = m;
+    for (let i = steps.length - 1; i >= 1; i--) {
+      const up = byPath.get(steps.slice(0, i).join('/'));
+      if (up === undefined || deltaOf(up) !== delta || delta === '0,0') break;
+      origin = up;
+    }
+    const key = origin.path.toLowerCase();
+    const entry = origins.get(key) ?? { origin, moved: 0, delta: deltaOf(origin) };
+    if (origin !== m) entry.moved++;
+    origins.set(key, entry);
+  }
+  return [...origins.values()];
+}
+
 export interface VisibilityCounts {
   /** Widgets the game created whose parent it shows: compared. */
   readonly compared: number;
