@@ -242,6 +242,22 @@ describe('layoutText', () => {
     expect(layoutText(font, 'AVAVAV', box(5), options).lines).toHaveLength(1);
   });
 
+  it("breaks a word wider than a text box's line between its characters (etch#264)", () => {
+    // "ab" is 10 px: "ababab" in 12 px lines is three lines of "ab", as the game breaks
+    // "Aggressiveness:" in a 64 px box; a space kept by wrapping stays on its line.
+    const broken = layoutText(font, 'ababab', box(12), { ...options, breakWords: true });
+    expect(broken.lines.map((l) => [l.start, l.end])).toEqual([
+      [0, 2],
+      [2, 4],
+      [4, 6],
+    ]);
+    expect(
+      layoutText(font, 'ab ababab', box(12), { ...options, breakWords: true }).lines,
+    ).toHaveLength(4);
+    // Without the option (a button's text) the word stays whole.
+    expect(layoutText(font, 'ababab', box(12), options).lines).toHaveLength(1);
+  });
+
   it('does not wrap without a width', () => {
     expect(layoutText(font, 'ab ab ab ab', box(0), options).lines).toHaveLength(1);
   });
