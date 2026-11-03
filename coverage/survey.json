@@ -295,6 +295,10 @@
       {
         "pattern": "//*hire*",
         "reason": "Builds, recruits or hires at once, spending gold and manpower (seen with Anbennar's single unit panel)."
+      },
+      {
+        "pattern": "country_selection_panel/lobby/left/back_button",
+        "reason": "Going back from the single-player lobby restarted the game as a child process (the coverage survey, 3 November 2026)."
       }
     ]
   }
