@@ -39,6 +39,7 @@ spriteTypes = {
     effectFile = "gfx/FX/maskedflag.lua"
   }
   PieChartType = { name = "GFX_pie" size = { x = 20 y = 20 } }
+  PieChartType = { name = "GFX_pie_round" size = 17 }
   spriteType = { name = "GFX_text_gold" texturefile = "gfx/interface/gold.dds" }
   spriteType = { name = "GFX_panel_standard" texturefile = "gfx/interface/panel.dds" }
   spriteType = { name = "GFX_panel_large" texturefile = "gfx/interface/panel_large.dds" }
@@ -439,6 +440,7 @@ describe('layoutWindow: sprites', () => {
       shieldtype = { name = "shield" spriteType = "GFX_shield" position = { x = 5 y = 5 } }
       guiButtonType = { name = "flag" quadTextureSprite = "GFX_shield" scale = 0.5 }
       iconType = { name = "pie" spriteType = "GFX_pie" }
+      iconType = { name = "round" spriteType = "GFX_pie_round" position = { x = 30 y = 4 } }
     } }`);
     const l = layout();
     expect(only(drawsOf(l, 'shield'))).toMatchObject({
@@ -452,6 +454,9 @@ describe('layoutWindow: sprites', () => {
     expect(rectOf(l, 'flag')).toEqual([0, 0, 12, 13]);
     expect(drawsOf(l, 'pie')).toEqual([]);
     expect(rectOf(l, 'pie')).toEqual([0, 0, 20, 20]);
+    // Vanilla's pie charts give one number: a square (etch#270).
+    expect(drawsOf(l, 'round')).toEqual([]);
+    expect(rectOf(l, 'round')).toEqual([30, 4, 17, 17]);
     expect(l.drawList.textures).toEqual(['gfx/interface/shield_frame.dds']);
   });
 
