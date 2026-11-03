@@ -52,7 +52,11 @@ It keeps the game as it was:
   texts without changing the game. A click that changed it is never clicked
   again, and the game starts afresh from its save.
 - A click after which Escape cannot bring back the start state ends the game
-  the same way.
+  the same way. When the view it opened is one Escape does not close (the main
+  menu's lobby, settings and credits close only by their own buttons), that
+  view is explored too, one opening click per fresh game, and the click keeps
+  its outcome; only a click that changed nothing on screen but what Escape
+  cannot bring back is never clicked again.
 - Everything else is the capture driver's procedure (corpus/README.md, "The
   capture driver"): the host install, the profiles, the settings put back, the
   lab's game lock, the pinned mouse.
