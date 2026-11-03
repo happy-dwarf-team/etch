@@ -64,6 +64,16 @@ From section 16 of the v2 specification, with v1's entries that v2 did not take:
 
 ## Done since 2.0.0
 
+- **The province view's building slots from a snapshot** (etch#257, from the
+  coverage survey). The game keeps the slots of the province shown before,
+  hidden, ahead of this one's (ten entries, the first eight hidden), and the
+  preview drew the right two in the right places, but the comparison paired
+  them with the hidden ones. A window's code-placed entries now pair by their
+  number with the game's `[n]`, an entry's parts show as the snapshot says over
+  the profile's view, and `liveMatch` finds a text or state by the game's path
+  as well as the preview's. The survey's 126 visibility differences, 22 rects
+  and 18 texts of the slots are gone; the corpus's province views still pass
+  (`compare --gpu`, 32 of 32 compared).
 - **A live snapshot without a profile** (etch#255, from the coverage survey).
   A window without a profile takes the snapshot's texts, the widgets' states
   and positions, and the game's visibility (what the game hid is not drawn);

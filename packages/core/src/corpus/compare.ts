@@ -259,7 +259,19 @@ export function planCapture(input: CapturePlanInput): CapturePlan {
       const key = child.name.toLowerCase();
       const n = seen.get(key) ?? 0;
       seen.set(key, n + 1);
-      const kid = byName.get(key)?.[n];
+      // The entries sample data puts in a window are rows: the game's `[n]` is row n, whatever
+      // the game hides before it (the province view keeps the slots of the province shown before,
+      // hidden, ahead of this one's: the coverage survey, etch#257).
+      // An entry's own root; its parts are paired by name inside it.
+      const isEntry = (k: number): boolean => {
+        const laid = window.layout.widgets[k];
+        return laid?.row !== undefined && window.layout.widgets[laid.parent]?.row !== laid.row;
+      };
+      const rows = (byName.get(key) ?? []).filter(isEntry);
+      const kid =
+        rows.length > 0
+          ? rows.find((k) => window.layout.widgets[k]?.row === stepIndex(child.path) - 1)
+          : byName.get(key)?.[n];
       if (kid === undefined) {
         addCaptureOnly(child, index);
       } else {
@@ -941,6 +953,12 @@ function findRoot(
 }
 
 /** A draw moved by an offset: its rect, or each glyph of a text. */
+/** The `[n]` of a path's last step, 1 without one. */
+function stepIndex(path: string): number {
+  const match = /\[(\d+)\]$/.exec(path);
+  return match === null ? 1 : Number(match[1]);
+}
+
 function remapTextures(draw: Draw, remap: readonly number[]): Draw {
   const t = (index: number): number => remap[index] ?? index;
   switch (draw.kind) {
