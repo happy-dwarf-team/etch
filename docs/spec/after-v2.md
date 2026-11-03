@@ -64,6 +64,17 @@ From section 16 of the v2 specification, with v1's entries that v2 did not take:
 
 ## Done since 2.0.0
 
+- **Positions from the live snapshot** (etch#253, etch#254, from the coverage
+  survey). The preview drawn from a snapshot puts a widget where the game
+  showed it when the game's code moved it: a widget the snapshot shows at the
+  size the layout gives it, but at another place, moves there with its
+  children. The survey's profiled windows went from 95 to 34 rects off at
+  1920×1080 (the menu bar's message and war buttons, the diplomacy view's
+  labels). Not a list's entries, and not a window that Tongs gives its
+  children's bounds. The offline outline, without a snapshot, keeps the
+  `.gui` positions; windows without a profile take the snapshot only with
+  etch#255.
+
 - **The coverage survey and the v3 draft.** The grilling of 2 November 2026
   started the [v3 specification draft](v3.md): v3 is to be trusted for every
   view of vanilla and Anbennar, measured by the coverage survey

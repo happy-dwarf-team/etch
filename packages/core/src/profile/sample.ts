@@ -60,6 +60,8 @@ export interface LiveState {
   readonly enabled: boolean;
   /** Check boxes: ticked. */
   readonly checked: boolean;
+  /** Where the game showed it, in client pixels (`x`, `y`, `w`, `h`), as the snapshot holds it. */
+  readonly rect?: readonly [number, number, number, number];
 }
 
 /**

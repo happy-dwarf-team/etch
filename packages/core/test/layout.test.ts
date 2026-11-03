@@ -774,6 +774,52 @@ describe('layoutWindow: sample data', () => {
     expect(l.widgets.filter((w) => w.widget.name === 'part').map((w) => w.row)).toEqual([0]);
   });
 
+  it("moves what a live snapshot showed elsewhere, at the layout's size, with its children", () => {
+    const { file, input } = setUp(`guiTypes = {
+      windowType = { name = "w" size = { x = 200 y = 100 } position = { x = 0 y = 140 }
+        windowType = { name = "panel" size = { x = 50 y = 40 } position = { x = 10 y = 10 }
+          iconType = { name = "inside" spriteType = "GFX_plain" position = { x = 5 y = 5 } }
+        }
+        iconType = { name = "kept" spriteType = "GFX_plain" position = { x = 100 y = 0 } }
+        iconType = { name = "resized" spriteType = "GFX_plain" position = { x = 150 y = 0 } }
+      }
+    }`);
+    const window = file.definitions[0] as Widget;
+    const at = (name: string, rect: readonly [number, number, number, number]) => ({
+      name,
+      state: { visible: true, enabled: true, checked: false, rect },
+    });
+    const states = new Map(
+      [
+        // The window 16 px lower, as the game shows the military tab (etch#254).
+        at('w', [0, 156, 200, 100]),
+        at('panel', [10, 166, 50, 40]),
+        // Where the layout has it already, once the window moved.
+        at('kept', [100, 156, 16, 16]),
+        // Another size: not this widget's own rect (a window Tongs gives its children's bounds).
+        at('resized', [0, 0, 20, 20]),
+      ].map((e) => [e.name, e.state]),
+    );
+    const l = layoutWindow(window, {
+      ...input,
+      content: {
+        text: () => undefined,
+        rows: () => undefined,
+        state: (w) => states.get(w.name ?? ''),
+      },
+    });
+    const rect = (name: string) => {
+      const w = l.widgets.find((x) => x.widget.name === name);
+      return [w?.x, w?.y];
+    };
+    expect(rect('w')).toEqual([0, 156]);
+    expect(rect('panel')).toEqual([10, 166]);
+    expect(rect('inside')).toEqual([15, 171]);
+    expect(rect('kept')).toEqual([100, 156]);
+    expect(rect('resized')).toEqual([150, 156]);
+    expect(only(drawsOf(l, 'inside'))).toMatchObject({ x: 15, y: 171 });
+  });
+
   it("puts the entries the game's code places in a window in rows, a template's size apart", () => {
     const { file, input } = setUp(GUI);
     const window = file.definitions[0] as Widget;

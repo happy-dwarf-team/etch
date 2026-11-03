@@ -208,3 +208,23 @@ export function isSpriteShader(name: string): name is SpriteShader {
 export function isMaskedShader(name: string): name is MaskedShader {
   return (MASKED_SHADERS as readonly string[]).includes(name);
 }
+
+/** A draw moved by whole pixels, its glyphs and a sprite's baked text with it. */
+export function moveDraw(draw: Draw, by: { readonly x: number; readonly y: number }): Draw {
+  if (draw.kind === 'text') return { ...draw, glyphs: moveGlyphs(draw.glyphs, by) };
+  const moved = { ...draw, x: draw.x + by.x, y: draw.y + by.y };
+  if (moved.kind !== 'sprite' || moved.text === undefined) return moved;
+  return { ...moved, text: { ...moved.text, glyphs: moveGlyphs(moved.text.glyphs, by) } };
+}
+
+function moveGlyphs(
+  glyphs: readonly number[],
+  by: { readonly x: number; readonly y: number },
+): number[] {
+  const moved = [...glyphs];
+  for (let i = 0; i + 1 < moved.length; i += GLYPH_STRIDE) {
+    moved[i] = (moved[i] ?? 0) + by.x;
+    moved[i + 1] = (moved[i + 1] ?? 0) + by.y;
+  }
+  return moved;
+}
