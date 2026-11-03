@@ -176,9 +176,12 @@ function* flatten(widget: CapturedWidget): Generator<CapturedWidget> {
  * a snapshot can be measured on every capture.
  */
 export function snapshotOf(root: CapturedWidget, screen: Screen, takenAt: string): LiveSnapshot {
+  // A top-level copy the game's code made (the lobby's `shield[10]`) is a snapshot of its
+  // definition, as the plugin names the window it reads.
+  const own = root.path.replace(/\[\d+\]$/, '');
   const widgets = liveWidgetsOf(
     [...flatten(root)].map((w) => ({
-      path: w.path,
+      path: own + w.path.slice(root.path.length),
       type: w.type,
       visible: w.visible,
       enabled: w.enabled ?? true,
@@ -189,7 +192,7 @@ export function snapshotOf(root: CapturedWidget, screen: Screen, takenAt: string
   );
   return {
     formatVersion: LIVE_SNAPSHOT_FORMAT,
-    window: root.path,
+    window: own,
     takenAt,
     screen,
     widgets,

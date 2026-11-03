@@ -581,8 +581,17 @@ class Layout {
     const game = state?.rect;
     if (game === undefined || state?.visible !== true || this.row !== undefined) return rect;
     const [x, y, w, h] = game;
-    if (Math.round(rect.width) !== w || Math.round(rect.height) !== h) return rect;
-    return this.moveTo(rect, { x, y }, drawStart);
+    // Tongs clips the game's rect to the client area (the military tab's background starts at
+    // x = -7): the layout's rect is clipped where it would stand, and an edge the game shows at
+    // the screen's edge, where the layout's is beyond it, stays where the layout has it.
+    const { width, height } = this.input.screen;
+    const left = Math.round(rect.x);
+    const top = Math.round(rect.y);
+    const to = { x: left < 0 && x === 0 ? left : x, y: top < 0 && y === 0 ? top : y };
+    const shownWidth = Math.min(width, to.x + Math.round(rect.width)) - Math.max(0, to.x);
+    const shownHeight = Math.min(height, to.y + Math.round(rect.height)) - Math.max(0, to.y);
+    if (shownWidth !== w || shownHeight !== h) return rect;
+    return this.moveTo(rect, to, drawStart);
   }
 
   /**

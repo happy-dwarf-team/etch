@@ -856,6 +856,42 @@ describe('layoutWindow: sample data', () => {
     });
   });
 
+  it("compares a snapshot's rect as Tongs clips it to the screen, where the widget would stand", () => {
+    const { file, input } = setUp(`guiTypes = {
+      windowType = { name = "w" size = { x = 200 y = 100 } position = { x = 0 y = 20 }
+        iconType = { name = "edge" spriteType = "GFX_plain" position = { x = -7 y = 0 } }
+        windowType = { name = "tall" size = { x = 50 y = 700 } position = { x = 0 y = 100 } }
+      }
+    }`);
+    const window = file.definitions[0] as Widget;
+    const states = new Map([
+      // 20 × 10 at x = -7: Tongs shows 13 px of it from x = 0, 10 px higher than the layout.
+      ['edge', [0, 10, 13, 10] as const],
+      // Beyond the bottom at the .gui's place, wholly inside at the game's.
+      ['tall', [0, 0, 50, 700] as const],
+    ]);
+    const l = layoutWindow(window, {
+      ...input,
+      screen: { width: 1280, height: 720 },
+      content: {
+        text: () => undefined,
+        rows: () => undefined,
+        state: (w) => {
+          const rect = states.get(w.name ?? '');
+          return rect === undefined
+            ? undefined
+            : { visible: true, enabled: true, checked: false, rect };
+        },
+      },
+    });
+    const at = (name: string) => {
+      const w = l.widgets.find((x) => x.widget.name === name);
+      return [w?.x, w?.y];
+    };
+    expect(at('edge')).toEqual([-7, 10]);
+    expect(at('tall')).toEqual([0, 0]);
+  });
+
   it("puts the entries the game's code places in a window in rows, a template's size apart", () => {
     const { file, input } = setUp(GUI);
     const window = file.definitions[0] as Widget;

@@ -105,6 +105,15 @@ From section 16 of the v2 specification, with v1's entries that v2 did not take:
   to 98.5 % of rects in vanilla (87.5 to 98.7 % in Anbennar alone), from
   95.8 to 99.1 % visibility and from 25 to 99 % of the texts the game shows.
   A list keeps the rows of its `.gui` without a profile's repeater.
+- **Positions from the snapshot at the screen's edges** (etch#253, from the
+  coverage survey). Tongs clips the game's rect to the client area, so a widget
+  partly off the screen (the military tab's background from x = -7) or a window
+  the `.gui` puts beyond the bottom at 1280×720 (the institutions) did not
+  move; the layout's rect is now clipped where the widget would stand before
+  the sizes are compared. A top-level copy the game's code made (the lobby's
+  `shield[10]`) is a snapshot of its definition. In the survey, live rects at
+  1920×1080 rose to 97.8 % in vanilla and 98.7 % in Anbennar alone, and the
+  institutions' view to 100 % at both sizes.
 - **Positions from the live snapshot** (etch#253, etch#254, from the coverage
   survey). The preview drawn from a snapshot puts a widget where the game
   showed it when the game's code moved it: a widget the snapshot shows at the
