@@ -33,6 +33,18 @@
         "disabledDlcs": [],
         "windows": []
       }
+    },
+    {
+      "id": "proper-2k-ui-enhanced",
+      "crawl": false,
+      "viewsOf": "vanilla",
+      "resolutions": ["2560x1440"]
+    },
+    {
+      "id": "anbennar",
+      "crawl": false,
+      "viewsOf": "anbennar-alone",
+      "resolutions": ["2560x1440"]
     }
   ],
   "resolution": "1920x1080",
