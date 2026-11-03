@@ -86,7 +86,10 @@ Each captured view is measured three ways, from the capture's widget trees and
 the playset's files (`packages/compare/src/coverage.ts`):
 
 1. **The outline, offline.** The window laid out from its `.gui` alone, as the
-   preview draws it without a live game and without a profile.
+   preview draws it without a live game and without a profile: with only what
+   the game's code does by the screen height, the `_large` pairs and the moves
+   of [What Etch does by itself](window-profiles.md#what-etch-does-by-itself)
+   (etch#272).
    - *Geometry*: of the widgets the game shows and the layout has (code-filled
      ones apart), the share whose rect, fitted as Tongs fits the game's, is the
      game's to the pixel (windows by position only, as the comparison does).
@@ -94,7 +97,8 @@ the playset's files (`packages/compare/src/coverage.ts`):
      that the game did not create, are listed apart.
    - *Visibility*: of the widgets the game created inside a shown parent, the
      share that the layout draws exactly when the game shows them. Without a
-     profile the outline draws everything, so this is the gap a profile fills.
+     profile the outline draws everything but the other half of a `_large`
+     pair, so this is the gap a profile fills.
 2. **The preview from the live snapshot.** A live snapshot made from the same
    capture (the fields of `tongs.ui` version 1 that the Etch plugin reads), put
    through the preview's own path: the profile's selectors that fit it, the

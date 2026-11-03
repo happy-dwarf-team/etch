@@ -58,7 +58,7 @@ export interface ViewCoverage {
   readonly resolution: string;
   readonly view: string;
   readonly roots: readonly RootCoverage[];
-  /** The offline outline: the `.gui` alone, every widget drawn. */
+  /** The offline outline: the `.gui` alone with the game's screen-height rules (etch#272). */
   readonly offline: { readonly geometry: GeometryCounts; readonly visibility: VisibilityCounts };
   /** The preview from the live snapshot of the same game. */
   readonly live: { readonly geometry: GeometryCounts; readonly visibility: VisibilityCounts };

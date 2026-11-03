@@ -11,6 +11,7 @@ import {
   layerProfiles,
   layoutViewOf,
   readProfile,
+  screenLayoutView,
   withView,
   widgetsAt,
   type WindowProfile,
@@ -179,6 +180,27 @@ describe('layout of a view', () => {
     expect(rect(LARGE, 'history')).toMatchObject({ x: 47, y: -62 });
     expect(rect(SMALL, 'top_section_window')).toMatchObject({ x: 42, y: 21 });
     expect(rect(SMALL, 'history')).toMatchObject({ x: 17, y: 61 });
+  });
+
+  it('applies the screen rules to a window without a profile too (etch#272)', () => {
+    const layout = (screen: typeof LARGE) =>
+      layoutWindow(WINDOW, {
+        ...input(evaluateView(PROFILE, WINDOW, screen), screen),
+        view: screenLayoutView(WINDOW, screen),
+      });
+    const large = layout(LARGE);
+    expect(large.widgets.find((w) => w.widget.name === 'top_section_window')).toMatchObject({
+      x: 42,
+      y: -68,
+    });
+    expect(large.widgets.map((w) => w.widget.name)).not.toContain('select_building');
+    expect(large.widgets.map((w) => w.widget.name)).toContain('select_building_large');
+    // Nothing else is hidden: without a profile every other widget is drawn.
+    expect(large.widgets.map((w) => w.widget.name)).toContain('state_window');
+    expect(large.widgets.map((w) => w.widget.name)).toContain('queue_window');
+    const small = layout(SMALL);
+    expect(small.widgets.find((w) => w.widget.name === 'history')).toMatchObject({ x: 17, y: 61 });
+    expect(small.widgets.map((w) => w.widget.name)).not.toContain('select_building_large');
   });
 
   it('moves what a rule names', () => {

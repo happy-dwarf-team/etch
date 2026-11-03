@@ -13,6 +13,7 @@ import {
 } from '../layout/index.ts';
 import type { GuiFile, Screen, Widget } from '../model/index.ts';
 import { normaliseGamePath } from '../model/index.ts';
+import { screenLayoutView } from '../profile/view.ts';
 import { parseBmFont, type BmFont } from '../text/bmfont.ts';
 import type { PlaysetInterface } from './interface.ts';
 
@@ -71,7 +72,8 @@ export class PlaysetAssets implements LayoutAssets {
 
 /**
  * Lays out a window of the playset, loading the texture sizes and fonts it needs first. With
- * everything loaded (a warm reload) this is one synchronous layout.
+ * everything loaded (a warm reload) this is one synchronous layout. Without a `view` (a window
+ * without a profile) the layout still takes what the game's code does by the screen height.
  */
 export async function layOutPreview(
   playset: PlaysetInterface,
@@ -92,6 +94,7 @@ export async function layOutPreview(
     exists: playset.exists,
     assets,
     ...options,
+    view: options.view ?? screenLayoutView(window, options.screen),
   };
   let layout = layoutWindow(window, input);
   // A loaded texture can give a widget the size its children anchor in, but it never names new

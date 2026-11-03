@@ -1,6 +1,7 @@
 /**
- * What the game's code does to a window by the screen height alone, which Etch derives itself for
- * a window that has a profile, so that a profile need not write it (spec section 3, ADR 0006).
+ * What the game's code does to a window by the screen height alone, which Etch derives itself so
+ * that a profile need not write it (spec section 3, ADR 0006), and for a window without a profile
+ * too: the game does it whatever profile Etch has (etch#272).
  *
  * - **`_large` pairs.** Of two sibling widgets `X` and `X_large` the game creates only one: below
  *   814 px of client height the small one, from 814 px the large one (`0x32e` in the province

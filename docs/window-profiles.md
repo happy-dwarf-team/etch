@@ -275,8 +275,9 @@ position: `provinceview/province_window/queue_window`. Names are compared withou
 
 ## What Etch does by itself
 
-For a window that has a profile, Etch derives two things the game's code does by the screen
-height, so a profile need not write them:
+Etch derives two things the game's code does by the screen height, so a profile need not write
+them. The game does them whether or not Etch has a profile of the window, so a window without a
+profile gets them too (etch#272):
 
 - Of two sibling widgets `X` and `X_large` the game creates only one: below 814 px of height the
   small one, from 814 px the large one.
