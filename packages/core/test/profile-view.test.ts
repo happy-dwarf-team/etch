@@ -494,6 +494,40 @@ describe("a rule's offset (the diplomacy view's labels)", () => {
   });
 });
 
+describe('the diplomacy view of another country (the coverage survey)', () => {
+  const file = readGuiFile(
+    parseScript(`guiTypes = {
+  windowType = {
+    name = "countrydiplomacyview"
+    size = { x = 100 y = 100 }
+    instantTextBoxType = { name = "sort_name" maxWidth = 50 }
+    listboxType = { name = "diploaction_list" size = { x = 50 y = 50 } }
+    instantTextBoxType = { name = "label_rivals" maxWidth = 50 }
+  }
+}`),
+  );
+  const window = file.definitions[0] as Widget;
+  const written = readProfile(
+    readFileSync(
+      new URL('../../../profiles/vanilla/countrydiplomacyview.jsonc', import.meta.url),
+      'utf8',
+    ),
+    { layer: 0, source: 'vanilla', file: 'countrydiplomacyview.jsonc' },
+  ).file;
+  const profile = layerProfiles('countrydiplomacyview', written === undefined ? [] : [written]);
+  const drawn = (country: string) => {
+    const view = evaluateView(profile, window, LARGE, { set: { country } });
+    return ['sort_name', 'diploaction_list', 'label_rivals'].filter((name) =>
+      widgetsAt(window, `countrydiplomacyview/${name}`).some((w) => view.drawn(w)),
+    );
+  };
+
+  it("shows the relations list for the player's country and the action list for another", () => {
+    expect(drawn('own')).toEqual(['sort_name']);
+    expect(drawn('other')).toEqual(['diploaction_list', 'label_rivals']);
+  });
+});
+
 describe('the military tab with Cradle of Civilization (etch#254)', () => {
   const file = readGuiFile(
     parseScript(`guiTypes = {

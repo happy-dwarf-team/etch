@@ -234,8 +234,9 @@ scroll. In an `OverlappingElementsBoxType` (the core shields of `cores_box`) the
 `spacing` apart, closer when they do not fit.
 
 The game's code puts some entries straight into a window rather than a list box: the building
-slots of `general_buildings_window`, the units of `build_army_view`. A repeater on such a window
-says where with `place`: the first entry at `start`, each next `step` further (the template's size
+slots of `general_buildings_window`, the units of `build_army_view`. A repeater on such a window,
+or on a list box whose first rows have another template (the diplomacy view's action list), says
+where with `place`: the first entry at `start`, each next `step` further (the template's size
 by default) and, with `columns`, a new row after that many. Each is a `positionType` of the
 window's file, which the game itself reads, so every playset's file gives its own, or pixels:
 
