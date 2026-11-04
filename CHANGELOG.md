@@ -1,5 +1,29 @@
 # Changelog
 
+## [2.4.0](https://github.com/happy-dwarf-team/etch/compare/v2.3.1...v2.4.0) (2026-11-04)
+
+
+### Features
+
+* **compare:** measure the offline preview as a whole in the coverage report ([#299](https://github.com/happy-dwarf-team/etch/issues/299)) ([371f094](https://github.com/happy-dwarf-team/etch/commit/371f094fc7486dfea4488583c3684b164ba594c0))
+* **core:** apply the size steps of the diplomacy, government, stability and trade views ([#292](https://github.com/happy-dwarf-team/etch/issues/292)) ([a57422f](https://github.com/happy-dwarf-team/etch/commit/a57422f4c4ba274ca1be4a97da78caf3d00af0ff)), closes [#253](https://github.com/happy-dwarf-team/etch/issues/253)
+* **core:** hide the military tab's unused background and consort button ([#294](https://github.com/happy-dwarf-team/etch/issues/294)) ([12fcea7](https://github.com/happy-dwarf-team/etch/commit/12fcea756c6944792a77f391414340de35f0957b))
+* **core:** let a repeater hide parts of its entries ([#300](https://github.com/happy-dwarf-team/etch/issues/300)) ([8e2e702](https://github.com/happy-dwarf-team/etch/commit/8e2e70284ddf523ad322b7a5238746f7014ff567))
+* **core:** move the message window container where the game shows it ([#305](https://github.com/happy-dwarf-team/etch/issues/305)) ([6914662](https://github.com/happy-dwarf-team/etch/commit/6914662a0dce034399aeb26580923fbce7fd615b))
+* **core:** ship window profiles drafted from the coverage survey ([#298](https://github.com/happy-dwarf-team/etch/issues/298)) ([301b864](https://github.com/happy-dwarf-team/etch/commit/301b864bdc55475a5050a918adf7071e3e2a58e1))
+* **core:** show Anbennar's magic menu and achievements window in its top bar profile ([#293](https://github.com/happy-dwarf-team/etch/issues/293)) ([81999dd](https://github.com/happy-dwarf-team/etch/commit/81999ddbb1f549bff9130642b12b03f0b19e7153))
+* **core:** tell the diplomacy view of another country from the player's ([#291](https://github.com/happy-dwarf-team/etch/issues/291)) ([d5767de](https://github.com/happy-dwarf-team/etch/commit/d5767decbcbfed56049731c36582a57722e0511b))
+* **core:** tell the ledger's table pages from its index ([#295](https://github.com/happy-dwarf-team/etch/issues/295)) ([27dec29](https://github.com/happy-dwarf-team/etch/commit/27dec293e4d2eb237e74fafc916da423b49b1ae1))
+* **core:** tell the lobby with a chosen country from the one without ([#296](https://github.com/happy-dwarf-team/etch/issues/296)) ([0f00b5d](https://github.com/happy-dwarf-team/etch/commit/0f00b5d67b902f282098aec045fa039d150dcc2d))
+* **core:** tell the main menu's other pages and its continue button ([#306](https://github.com/happy-dwarf-team/etch/issues/306)) ([fcdb10f](https://github.com/happy-dwarf-team/etch/commit/fcdb10f7de6c1cecc46c81d2ac19df633d43d489))
+
+
+### Bug Fixes
+
+* **core:** keep a province's selectors from failing on an empty text box ([#297](https://github.com/happy-dwarf-team/etch/issues/297)) ([1ed009d](https://github.com/happy-dwarf-team/etch/commit/1ed009d0b2225343a48368c04601a7a697ffedc4))
+* **core:** keep the preview from a snapshot as it was before the offline classes ([#302](https://github.com/happy-dwarf-team/etch/issues/302)) ([f32fcfd](https://github.com/happy-dwarf-team/etch/commit/f32fcfd967c001ab1a6a51c15e7601056ea79862))
+* **core:** size text boxes as the game's font measures them ([#304](https://github.com/happy-dwarf-team/etch/issues/304)) ([d192215](https://github.com/happy-dwarf-team/etch/commit/d1922151d1c5ad028bbf4766c4078c1ced55c7d4))
+
 ## [2.3.1](https://github.com/happy-dwarf-team/etch/compare/v2.3.0...v2.3.1) (2026-11-03)
 
 
