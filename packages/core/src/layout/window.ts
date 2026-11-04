@@ -157,6 +157,8 @@ export interface LayoutView {
    * `y` of the step the screen height reaches (etch#274).
    */
   stepped?(widget: Widget): 'moved' | 'grown' | undefined;
+  /** Pixels a `moved` widget goes further than the step, when a step applies. */
+  steppedFurther?(widget: Widget): number | undefined;
   /**
    * The row the game's code places the instances of a top-level widget in: the `positionType`
    * names of the first one's place and of the step to the next (etch#278).
@@ -323,11 +325,13 @@ class Layout {
       (widget.kind === 'checkboxType' && state?.checked === true ? 2 : undefined);
     const stepped = view?.stepped?.(widget);
     const step = stepped === undefined ? 0 : this.stepIncrement();
+    const further = step > 0 ? (view?.steppedFurther?.(widget) ?? 0) : 0;
     const inRow = parentIndex === -1 ? this.rowPoint(view?.row?.(widget)) : undefined;
     const shift = view?.offset?.(widget);
     const x = (inRow?.x ?? anchor.x + offset.x) + (shift?.x ?? 0);
     const y =
-      (inRow?.y ?? anchor.y + offset.y + (stepped === 'moved' ? step : 0)) + (shift?.y ?? 0);
+      (inRow?.y ?? anchor.y + offset.y + (stepped === 'moved' ? step + further : 0)) +
+      (shift?.y ?? 0);
     const drawStart = this.draws.length;
     const source = widget.node.start;
     const kind = widget.kind;

@@ -406,6 +406,40 @@ describe('size steps of a country view (etch#274)', () => {
       list: [10, 20, 50, 428],
     });
   });
+
+  it('moves a button further than the step where the game does, only when a step applies', () => {
+    const diplomacy = readGuiFile(
+      parseScript(`guiTypes = {
+  positionType = { name = "countrydiploview_scaling_large_min_inc" position = { x = 900 y = 114 } }
+  positionType = { name = "countrydiploview_scaling_huge_min_inc" position = { x = 1080 y = 304 } }
+  windowType = {
+    name = "countrydiplomacyview"
+    size = { x = 600 y = 600 }
+    guiButtonType = { name = "button_createvassals" position = { x = 394 y = 521 } }
+    guiButtonType = { name = "button_view_player_country" position = { x = 394 y = 521 } }
+  }
+}`),
+    );
+    const view = diplomacy.definitions.find((w) => w.name === 'countrydiplomacyview') as Widget;
+    const ys = (height: number) => {
+      const screen = { width: 1920, height };
+      const layout = layoutWindow(view, {
+        file: diplomacy,
+        index: InterfaceIndex.of(
+          [],
+          [{ path: 'interface/countrydiplomacyview.gui', file: diplomacy }],
+        ),
+        exists: () => false,
+        assets: { textureSize: () => undefined, font: () => undefined },
+        screen,
+        view: screenLayoutView(view, screen),
+      });
+      return layout.widgets.slice(1).map((w) => w.y);
+    };
+    expect(ys(720)).toEqual([521, 521]);
+    expect(ys(900)).toEqual([640, 635]);
+    expect(ys(1080)).toEqual([830, 825]);
+  });
 });
 
 describe('a row of top-level widgets (etch#278)', () => {

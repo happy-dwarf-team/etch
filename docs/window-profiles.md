@@ -287,8 +287,10 @@ profile gets it too (etch#272):
   small one, from 814 px the large one.
 - The size steps of the country views (`…_scaling_large_min_inc` and `…_scaling_huge_min_inc`):
   from the step's height the game moves some widgets down by the step's `y` and makes others that
-  much taller, by view (etch#274; so far the subjects view's `country_subjects_info`, military
-  focus window and `subjects_listbox`).
+  much taller, by view (etch#274): the subjects view's `country_subjects_info`, military focus
+  window and `subjects_listbox`; the diplomacy view's two bottom buttons and three lists; the
+  government view's culture slots, back button and lists; the stability view's rebels back button
+  and `handle_listbox`; the trade view's `tradenode_list`.
 - The `positionType` moves of the province view: `top_section_window` to
   `top_section_position_big` from 814 px, and `history`, `strait_indicator`,
   `river_indicator_2` and `state_window` to their low-resolution positions below it.

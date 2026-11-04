@@ -71,6 +71,8 @@ export interface WidgetState {
   readonly frame?: number;
   /** What a country view's size step does to it: moved down, or made taller (etch#274). */
   readonly stepped?: 'moved' | 'grown';
+  /** Pixels it moves further than the size step, when a step applies. */
+  readonly steppedFurther?: number;
   /** The row the game's code places the instances of this top-level widget in (etch#278). */
   readonly row?: EngineRow;
   /** How far the game's code moves it from where it would be, in pixels (a rule's `offset`). */
@@ -306,8 +308,15 @@ function deriveFromScreen(
   }
   // The size steps: the layout knows the file's step heights, so it adds the step itself.
   const steps = ENGINE_STEPS.get(window.name?.toLowerCase() ?? '');
-  for (const path of steps?.moved ?? [])
-    for (const widget of widgetsAt(window, path)) update(widget, { stepped: 'moved' });
+  for (const path of steps?.moved ?? []) {
+    const further = steps?.further?.[path];
+    for (const widget of widgetsAt(window, path)) {
+      update(widget, {
+        stepped: 'moved',
+        ...(further === undefined ? {} : { steppedFurther: further }),
+      });
+    }
+  }
   for (const path of steps?.grown ?? [])
     for (const widget of widgetsAt(window, path)) update(widget, { stepped: 'grown' });
   // A row: the layout knows the file's positions and which instance it lays out.
@@ -335,6 +344,7 @@ export function screenLayoutView(window: Widget, screen: Screen): LayoutView {
     movedAxis: (widget) => states.get(widget)?.positionAxis,
     frame: () => undefined,
     stepped: (widget) => states.get(widget)?.stepped,
+    steppedFurther: (widget) => states.get(widget)?.steppedFurther,
     row: (widget) => states.get(widget)?.row,
   };
 }
@@ -350,6 +360,7 @@ export function layoutViewOf(view: WindowView): LayoutView {
     movedAxis: (widget) => view.widgets.get(widget)?.positionAxis,
     frame: (widget) => view.widgets.get(widget)?.frame,
     stepped: (widget) => view.widgets.get(widget)?.stepped,
+    steppedFurther: (widget) => view.widgets.get(widget)?.steppedFurther,
     row: (widget) => view.widgets.get(widget)?.row,
     offset: (widget) => view.widgets.get(widget)?.offset,
     atHidePosition: (widget) => view.widgets.get(widget)?.atHidePosition === true,
