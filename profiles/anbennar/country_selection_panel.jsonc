@@ -11,6 +11,7 @@
     "name": "Anbennar: A Fantasy Total Conversion",
   },
   "rules": {
+    "no-game-to-continue": null,
     "hidden-mainmenu-mainmenu_panel_bottom-continue_container-on-main-menu": {
       "note": "Hidden in the corpus capture of \"lobby\" and \"main-menu\" in the Anbennar playset (Verne, 11 November 1444): the game decides these from its data or a click; show one by hand.",
       "when": {

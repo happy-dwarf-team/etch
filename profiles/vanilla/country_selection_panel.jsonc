@@ -12,7 +12,16 @@
       "values": {
         "main-menu": "Main menu",
         "lobby": "Single-player lobby",
+        "nation-designer": "Nation designer",
+        "credits": "Credits",
+        "settings": "Settings",
       },
+    },
+    "continueGame": {
+      "kind": "ui",
+      "label": "Continue game",
+      "values": { "no": "No save", "yes": "A save to continue" },
+      "note": "Whether the main menu offers to continue a game: it depends on the player's saves.",
     },
     "country": {
       "kind": "ui",
@@ -23,11 +32,11 @@
   },
   "rules": {
     "lobby-no-country": {
-      "when": { "page": "lobby", "country": "none" },
+      "when": { "page": ["lobby", "nation-designer"], "country": "none" },
       "hide": ["country_selection_panel/lobby/right/singleplayer"],
     },
     "lobby-country": {
-      "when": { "page": "lobby", "country": "chosen" },
+      "when": { "page": ["lobby", "nation-designer"], "country": "chosen" },
       "hide": ["country_selection_panel/lobby/right/no_player"],
     },
     "hidden": {
@@ -48,7 +57,7 @@
     "hidden-lobby-bottom-on-lobby": {
       "note": "Hidden in the corpus capture of \"lobby\" and \"main-menu\" in vanilla (Russia, 17 March 1719): the game decides these from its data or a click; show one by hand.",
       "when": {
-        "page": "lobby",
+        "page": ["lobby", "nation-designer"],
       },
       "hide": [
         "country_selection_panel/lobby/bottom/chatlog",
@@ -64,7 +73,7 @@
     "hidden-lobby-left-on-lobby": {
       "note": "Hidden in the corpus capture of \"lobby\" and \"main-menu\" in vanilla (Russia, 17 March 1719): the game decides these from its data or a click; show one by hand.",
       "when": {
-        "page": "lobby",
+        "page": ["lobby", "nation-designer"],
       },
       "hide": [
         "country_selection_panel/lobby/left/lessons",
@@ -76,7 +85,7 @@
     "hidden-lobby-on-lobby": {
       "note": "Hidden in the corpus capture of \"lobby\" and \"main-menu\" in vanilla (Russia, 17 March 1719): the game decides these from its data or a click; show one by hand.",
       "when": {
-        "page": "lobby",
+        "page": ["lobby", "nation-designer"],
       },
       "hide": [
         "country_selection_panel/lobby/nation_designer_bottom_panel",
@@ -86,7 +95,7 @@
     "hidden-lobby-right-on-lobby": {
       "note": "Hidden in the corpus capture of \"lobby\" and \"main-menu\" in vanilla (Russia, 17 March 1719): the game decides these from its data or a click; show one by hand.",
       "when": {
-        "page": "lobby",
+        "page": ["lobby", "nation-designer"],
       },
       "hide": [
         "country_selection_panel/lobby/right/country_tab",
@@ -104,7 +113,7 @@
     "hidden-lobby-top-on-lobby": {
       "note": "Hidden in the corpus capture of \"lobby\" and \"main-menu\" in vanilla (Russia, 17 March 1719): the game decides these from its data or a click; show one by hand.",
       "when": {
-        "page": "lobby",
+        "page": ["lobby", "nation-designer"],
       },
       "hide": [
         "country_selection_panel/lobby/top/mapmode_content",
@@ -112,14 +121,30 @@
         "country_selection_panel/lobby/top/mapmode_music",
         "country_selection_panel/lobby/top/mapmode_players",
         "country_selection_panel/lobby/top/mapmode_unit",
+      ],
+    },
+    "lobby-only": {
+      "when": { "page": "lobby" },
+      "hide": [
         "country_selection_panel/lobby/top/nation_designer_hint",
         "country_selection_panel/lobby/top/nation_designer_hint_bg",
+      ],
+    },
+    "nation-designer": {
+      "note": "Hidden in the nation designer in the coverage survey.",
+      "when": { "page": "nation-designer" },
+      "hide": [
+        "country_selection_panel/lobby/bottom",
+        "country_selection_panel/lobby/left",
+        "country_selection_panel/lobby/right/play_button",
+        "country_selection_panel/lobby/right/random_country_button",
+        "country_selection_panel/lobby/top/select_label",
       ],
     },
     "hidden-mainmenu-on-lobby": {
       "note": "Hidden in the corpus capture of \"lobby\" and \"main-menu\" in vanilla (Russia, 17 March 1719): the game decides these from its data or a click; show one by hand.",
       "when": {
-        "page": "lobby",
+        "page": ["lobby", "nation-designer", "credits", "settings"],
       },
       "hide": [
         "country_selection_panel/mainmenu/PersistentSocialButtons",
@@ -131,7 +156,7 @@
     "hidden-on-main-menu": {
       "note": "Hidden in the corpus capture of \"lobby\" and \"main-menu\" in vanilla (Russia, 17 March 1719): the game decides these from its data or a click; show one by hand.",
       "when": {
-        "page": "main-menu",
+        "page": ["main-menu", "credits", "settings"],
       },
       "hide": ["country_selection_panel/lobby"],
     },
@@ -140,10 +165,11 @@
       "when": {
         "page": "main-menu",
       },
-      "hide": [
-        "country_selection_panel/mainmenu/mainmenu_panel_bottom/continue_container",
-        "country_selection_panel/mainmenu/mainmenu_panel_bottom/nudge_button",
-      ],
+      "hide": ["country_selection_panel/mainmenu/mainmenu_panel_bottom/nudge_button"],
+    },
+    "no-game-to-continue": {
+      "when": { "page": "main-menu", "continueGame": "no" },
+      "hide": ["country_selection_panel/mainmenu/mainmenu_panel_bottom/continue_container"],
     },
   },
   "views": {

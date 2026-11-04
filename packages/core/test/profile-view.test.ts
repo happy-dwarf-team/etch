@@ -411,6 +411,20 @@ describe("the lobby's chosen country (the coverage survey)", () => {
     );
   };
 
+  it('hides the lobby on the main menu, and the main menu on its other pages', () => {
+    const shown = (page: string) => {
+      const view = evaluateView(profile, window, LARGE, { set: { page } });
+      return widgetsAt(window, 'country_selection_panel/lobby').some((w) => view.drawn(w));
+    };
+    expect(['main-menu', 'lobby', 'nation-designer', 'credits', 'settings'].map(shown)).toEqual([
+      false,
+      true,
+      true,
+      false,
+      false,
+    ]);
+  });
+
   it("shows the country's panel once one is chosen", () => {
     expect(drawn('none')).toEqual(['no_player']);
     expect(drawn('chosen')).toEqual(['singleplayer']);
