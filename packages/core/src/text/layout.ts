@@ -37,11 +37,6 @@ export interface TextOptions {
   readonly colourCode?: string;
   /** Size of an icon sprite such as `GFX_text_yes`, or `undefined` when it does not exist. */
   readonly icon?: (sprite: string) => { width: number; height: number } | undefined;
-  /**
-   * A word wider than the line is broken between its characters, as a text box's is (etch#264);
-   * otherwise it stays whole and overflows, as a button's text is centred over its edges.
-   */
-  readonly breakWords?: boolean;
 }
 
 /** A glyph quad: screen rect and atlas rect, in pixels. */
@@ -85,6 +80,8 @@ export interface TextLayout {
   readonly width: number;
   /** Lines × the font's `lineHeight`. */
   readonly height: number;
+  /** The box's size as the game's font measures this text ({@link requiredSize}). */
+  readonly required: { readonly width: number; readonly height: number };
   readonly issues: readonly TextIssue[];
 }
 
@@ -159,12 +156,11 @@ const isSpace = (item: Item): boolean => item.kind === 'glyph' && item.code === 
  * Greedy wrap at spaces, as in etch#9 (verified on the main menu): a word goes
  * to the next line when the line plus a space plus the word is wider than
  * `maxWidth`, and the wrapped line keeps that space when it is measured. A
- * word wider than the line stays whole and overflows, or with `breakWords` is
- * broken between its characters, as many on a line as fit and at least one
- * (the coverage survey, etch#264: the game shows "Aggressiveness:" in a 64 px
- * text box on three lines, "1.75M" in 30 px on two).
+ * word wider than the line stays whole and overflows (`0x15988E0`; the game
+ * draws "Aggressiveness:" on one line past its 64 px box, whose rect still has
+ * three lines by {@link requiredSize}).
  */
-function wrap(font: BmFont, items: Item[], maxWidth: number, breakWords = false): Row[] {
+function wrap(font: BmFont, items: Item[], maxWidth: number): Row[] {
   // A paragraph that fits whole would not be broken by the greedy rule either.
   const whole = measure(font, items);
   if (maxWidth <= 0 || whole <= maxWidth) return [{ items, width: whole }];
@@ -205,33 +201,84 @@ function wrap(font: BmFont, items: Item[], maxWidth: number, breakWords = false)
     }
   }
   rows.push({ items: line, width: pen.width });
-  if (!breakWords) return rows;
-  return rows.flatMap((row) =>
-    row.width > maxWidth ? breakWord(font, row.items, maxWidth) : [row],
-  );
+  return rows;
 }
 
-/** A line of one word wider than `maxWidth`, broken between its characters. */
-function breakWord(font: BmFont, items: readonly Item[], maxWidth: number): Row[] {
-  const rows: Row[] = [];
-  let line: Item[] = [];
-  let pen: Pen = { width: 0, prev: -1 };
-  for (const item of items) {
-    const next = { ...pen };
-    step(font, next, item);
-    // A trailing space kept by wrapping stays on its line, as in `wrap`.
-    if (line.length > 0 && next.width > maxWidth && !isSpace(item)) {
-      rows.push({ items: line, width: pen.width });
-      line = [];
-      pen = { width: 0, prev: -1 };
-      step(font, pen, item);
-    } else {
-      pen = next;
+/** A word this much wide or less does not start a new line by itself. */
+const UNBROKEN_WORD = 50;
+
+/**
+ * The size the game's font gives a text box for a text (`eu4.exe` 1.37.5 `0x159E510`, slot `+0x78`
+ * of the font, which the text object's `GetSize` calls): not the lines it draws, but a count of its
+ * own, which is why a box's rect can differ from them.
+ *
+ * It keeps a line's width and the current word's. At a space (a glyph without height) the line
+ * ends when it is wider than `maxWidth`, and the word starts the next one. At any other glyph the
+ * line ends once it reaches the inner width, and only when the word is wider than 50 px; the word
+ * then starts the next line, and is counted as a new word from there, so a long word takes several
+ * lines. A line can so end wider than the inner width, and the box with it (`rebelsize_desc`, 249
+ * wide for a `maxWidth` of 246). When the widest line is wider than `maxWidth` it is cut to it, and
+ * one line is added (a short word in a narrow box, "1.75M" in 30 px, is two lines).
+ */
+function requiredSize(
+  font: BmFont,
+  paragraphs: readonly { readonly items: readonly Item[] }[],
+  box: TextBox,
+): { width: number; height: number } {
+  const border = box.border ?? { x: 0, y: 0 };
+  const maxWidth = box.width > 0 ? box.width : 320;
+  const inner = maxWidth - 2 * border.x;
+  let lines = 0;
+  let widest = 0;
+  let line = 0;
+  let word = 0;
+  paragraphs.forEach((paragraph, index) => {
+    if (index > 0) {
+      widest = Math.max(widest, line);
+      lines++;
+      line = 0;
+      word = 0;
     }
-    line.push(item);
+    paragraph.items.forEach((item, at) => {
+      if (item.kind === 'icon' || item.kind === 'gap') {
+        const width = item.kind === 'icon' ? (item.advance ?? item.width) : item.width;
+        line += width;
+        word += width;
+        return;
+      }
+      if (item.kind !== 'glyph') return;
+      const next = paragraph.items[at + 1];
+      const kerning =
+        next?.kind === 'glyph' && next.start === item.end
+          ? (font.kerning.get(kerningKey(item.code, next.code)) ?? 0)
+          : 0;
+      line += item.glyph.xadvance + kerning;
+      word += item.glyph.xadvance + kerning;
+      if (item.glyph.height === 0) {
+        if (maxWidth < line) {
+          lines++;
+          line = word;
+        }
+        word = 0;
+        widest = Math.max(widest, line);
+      } else if (inner <= line && UNBROKEN_WORD < word) {
+        lines++;
+        widest = inner;
+        line = word;
+        word = 0;
+      }
+    });
+  });
+  widest = Math.max(widest, line);
+  if (maxWidth < widest) {
+    widest = maxWidth;
+    lines++;
   }
-  if (line.length > 0) rows.push({ items: line, width: pen.width });
-  return rows;
+  lines++;
+  return {
+    width: 2 * border.x + widest,
+    height: lines * font.lineHeight + 2 * border.y,
+  };
 }
 
 /** Lays out game text in a box with one font. Missing glyphs and icons are reported, never thrown. */
@@ -338,7 +385,7 @@ export function layoutText(
 
   const rows: (Row & { at: number })[] = [];
   for (const p of paragraphs) {
-    for (const row of wrap(font, p.items, box.width - 2 * border.x, options.breakWords)) {
+    for (const row of wrap(font, p.items, box.width - 2 * border.x)) {
       rows.push({ ...row, at: row.items[0]?.start ?? p.at });
     }
   }
@@ -397,7 +444,8 @@ export function layoutText(
     }
   });
 
-  return { lines, glyphs, icons, width, height, issues };
+  const required = requiredSize(font, paragraphs, box);
+  return { lines, glyphs, icons, width, height, required, issues };
 }
 
 function range(atom: { start: number; end: number }): { start: number; end: number } {

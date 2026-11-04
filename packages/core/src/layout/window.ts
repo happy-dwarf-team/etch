@@ -1122,8 +1122,10 @@ class Layout {
    * into `maxWidth` × `maxHeight` first (`fitText`), cut with " ..." unless `truncate = no`.
    * Without `fixedsize`, `truncate` does nothing, and a `textBoxType` never fits its text.
    *
-   * Verified in the corpus (etch#44): an `instantTextBoxType` is as tall as its lines plus the
-   * border above and below, whatever `maxHeight` and `fixedsize` say; empty text is one line.
+   * An `instantTextBoxType`'s rect is what the game's font measures, not the lines it draws
+   * (`requiredSize`, etch#264): as wide as `maxWidth` or wider, and as tall as the measured lines
+   * plus the border above and below, whatever `maxHeight` and `fixedsize` say; empty text is one
+   * line.
    */
   private drawTextBox(kind: string, props: Properties, x: number, y: number, source: number): Rect {
     const size = props.point('size');
@@ -1132,9 +1134,7 @@ class Layout {
     const border = props.point('bordersize') ?? { x: 0, y: 0 };
     const box: TextBox = { x, y, width, border, ...(height === undefined ? {} : { height }) };
     const fixed = kind === 'instantTextBoxType' && props.flag('fixedsize') === true;
-    const laid = this.drawText(props, 'text', 'font', box, source, {
-      // Seen in the coverage survey for `instantTextBoxType` only (etch#264).
-      breakWords: kind === 'instantTextBoxType',
+    const required = this.drawText(props, 'text', 'font', box, source, {
       align: textAlign(props.text('format')),
       verticalAlign: verticalAlign(props.text('vertical_alignment')) ?? 'top',
       ...colourCode(props),
@@ -1155,12 +1155,14 @@ class Layout {
         : {}),
     });
     if (kind === 'instantTextBoxType') {
-      const lineHeight = this.lineHeightOf(props, 'font');
-      if (lineHeight !== undefined) {
-        return { x, y, width, height: Math.max(laid ?? 0, lineHeight) + 2 * border.y };
+      if (required !== undefined) {
+        // The text object's `GetSize` (`0x15F3EA0`): as wide as `maxWidth` or wider.
+        return { x, y, width: Math.max(width, required.width), height: required.height };
       }
+      const lineHeight = this.lineHeightOf(props, 'font');
+      if (lineHeight !== undefined) return { x, y, width, height: lineHeight + 2 * border.y };
     }
-    return { x, y, width, height: height ?? laid ?? 0 };
+    return { x, y, width, height: height ?? required?.laid ?? 0 };
   }
 
   /** The `lineHeight` of a widget's font, when the font is loaded. */
@@ -1216,7 +1218,10 @@ class Layout {
     this.draws[spriteAt] = { ...sprite, text: baked };
   }
 
-  /** Lays out and draws a widget's text; returns the text's height, if any was laid out. */
+  /**
+   * Lays out and draws a widget's text; returns the size the game's font gives the box and the
+   * height of the lines drawn, if any text was laid out.
+   */
   private drawText(
     props: Properties,
     textKey: string,
@@ -1229,10 +1234,8 @@ class Layout {
       colourCode?: string;
       /** A fixed-size text box's box, which the text is fitted into before it is laid out. */
       fit?: Omit<TextFit, 'iconWidth'>;
-      /** A word wider than the line breaks between its characters (`TextOptions.breakWords`). */
-      breakWords?: boolean;
     },
-  ): number | undefined {
+  ): { width: number; height: number; laid: number } | undefined {
     const sample =
       this.current === undefined
         ? undefined
@@ -1285,7 +1288,6 @@ class Layout {
       align: options.align,
       verticalAlign: options.verticalAlign,
       ...(options.colourCode === undefined ? {} : { colourCode: options.colourCode }),
-      ...(options.breakWords === true ? { breakWords: true } : {}),
       icon: (name) => {
         const sprite = this.input.index.sprite(name)?.item;
         if (sprite === undefined) return undefined;
@@ -1330,7 +1332,7 @@ class Layout {
         shader: this.shader(found.sprite, textNode),
       });
     }
-    return laid.height;
+    return { ...laid.required, laid: laid.height };
   }
 
   private report(
