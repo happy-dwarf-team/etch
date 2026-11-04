@@ -4,7 +4,36 @@
   "formatVersion": 1,
   "window": "countrygovernmentview",
   "checkedWith": "1.37.5",
+  "selectors": {
+    "mechanics": {
+      "kind": "ui",
+      "label": "Government mechanics",
+      "values": { "shown": "Shown", "none": "None" },
+      "note": "Russia's game shows the government mechanics' list, France's does not (the coverage survey, etch#258).",
+    },
+    "revolutionSpread": {
+      "kind": "ui",
+      "label": "Revolution spread",
+      "values": { "shown": "Shown", "none": "None" },
+      "note": "The bar is shown in 1719 and not in 1550 (the coverage survey, etch#258); what decides it is not read in the code.",
+    },
+  },
   "rules": {
+    "no-mechanics": {
+      "when": { "mechanics": "none" },
+      "hide": [
+        "countrygovernmentview/government_mechanics_bg",
+        "countrygovernmentview/specific_governments_list",
+      ],
+    },
+    "no-revolution-spread": {
+      "when": { "revolutionSpread": "none" },
+      "hide": [
+        "countrygovernmentview/revolution_spread_bad_bar",
+        "countrygovernmentview/revolution_spread_frame",
+        "countrygovernmentview/revolution_spread_icon",
+      ],
+    },
     "hidden": {
       "note": "Hidden in every view of the coverage survey (the base game): the game decides these from its data or a click; show one by hand.",
       "hide": [

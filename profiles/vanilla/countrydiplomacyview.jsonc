@@ -98,7 +98,6 @@
       "show": ["countrydiplomacyview/label_enemies", "countrydiplomacyview/label_rivals"],
       "hide": [
         "countrydiplomacyview/button_createvassals",
-        "countrydiplomacyview/countryshield_glow",
         "countrydiplomacyview/diploopinion_list",
         "countrydiplomacyview/improve_relation_bg",
         "countrydiplomacyview/improve_relation_icon",

@@ -5,6 +5,20 @@
   "formatVersion": 1,
   "window": "topbar",
   "checkedWith": "1.37.5",
+  "selectors": {
+    "legitimacy": {
+      "kind": "ui",
+      "label": "Legitimacy",
+      "values": {
+        "meritocracy": "Meritocracy",
+        "legitimacy": "Legitimacy",
+        "republic": "Republican tradition",
+        "devotion": "Devotion",
+        "unity": "Horde unity",
+      },
+      "note": "The top bar shows one of these by the country's government: meritocracy for Russia in 1719, legitimacy for France in 1550 (the coverage survey, etch#258).",
+    },
+  },
   "rules": {
     "hidden": {
       "note": "Hidden in the corpus capture of \"court\" and \"diplomacy-dialog\" and \"diplomacy\" and \"estates\" and \"hud\" and \"province\" in vanilla (Russia, 17 March 1719): the game decides these from its data or a click; show one by hand.",
@@ -19,6 +33,26 @@
         "topbar/text_rep",
         "topbar/text_unity",
       ],
+    },
+    "legitimacy": {
+      "when": { "legitimacy": "legitimacy" },
+      "show": ["topbar/icon_leg", "topbar/text_leg"],
+      "hide": ["topbar/icon_meritocracy", "topbar/text_meritocracy"],
+    },
+    "republic": {
+      "when": { "legitimacy": "republic" },
+      "show": ["topbar/icon_rep", "topbar/text_rep"],
+      "hide": ["topbar/icon_meritocracy", "topbar/text_meritocracy"],
+    },
+    "devotion": {
+      "when": { "legitimacy": "devotion" },
+      "show": ["topbar/icon_dev", "topbar/text_dev"],
+      "hide": ["topbar/icon_meritocracy", "topbar/text_meritocracy"],
+    },
+    "unity": {
+      "when": { "legitimacy": "unity" },
+      "show": ["topbar/icon_unity", "topbar/text_unity"],
+      "hide": ["topbar/icon_meritocracy", "topbar/text_meritocracy"],
     },
   },
 }

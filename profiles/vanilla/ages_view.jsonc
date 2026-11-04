@@ -4,16 +4,35 @@
   "formatVersion": 1,
   "window": "ages_view",
   "checkedWith": "1.37.5",
+  "selectors": {
+    "age": {
+      "kind": "ui",
+      "label": "Age",
+      "values": {
+        "discovery": "Age of Discovery",
+        "reformation": "Age of Reformation",
+        "absolutism": "Age of Absolutism",
+        "revolutions": "Age of Revolutions",
+      },
+      "note": "The game shows the panel of the current age: discovery in 1444, reformation in 1550, revolutions in 1719 (the coverage survey, etch#258).",
+    },
+  },
+  "groups": {
+    "age": {
+      "label": "Age",
+      "selector": "age",
+      "members": {
+        "discovery": "ages_view/age_of_discovery",
+        "reformation": "ages_view/age_of_reformation",
+        "absolutism": "ages_view/age_of_absolutism",
+        "revolutions": "ages_view/age_of_revolutions",
+      },
+    },
+  },
   "rules": {
     "hidden": {
       "note": "Hidden in every view of the coverage survey (the base game): the game decides these from its data or a click; show one by hand.",
-      "hide": [
-        "ages_view/age_of_absolutism",
-        "ages_view/age_of_discovery",
-        "ages_view/age_of_reformation",
-        "ages_view/golden_age",
-        "ages_view/in_golden_age_banner",
-      ],
+      "hide": ["ages_view/golden_age", "ages_view/in_golden_age_banner"],
     },
   },
 }
