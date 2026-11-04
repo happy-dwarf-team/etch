@@ -242,20 +242,35 @@ describe('layoutText', () => {
     expect(layoutText(font, 'AVAVAV', box(5), options).lines).toHaveLength(1);
   });
 
-  it("breaks a word wider than a text box's line between its characters (etch#264)", () => {
-    // "ab" is 10 px: "ababab" in 12 px lines is three lines of "ab", as the game breaks
-    // "Aggressiveness:" in a 64 px box; a space kept by wrapping stays on its line.
-    const broken = layoutText(font, 'ababab', box(12), { ...options, breakWords: true });
-    expect(broken.lines.map((l) => [l.start, l.end])).toEqual([
-      [0, 2],
-      [2, 4],
-      [4, 6],
-    ]);
-    expect(
-      layoutText(font, 'ab ababab', box(12), { ...options, breakWords: true }).lines,
-    ).toHaveLength(4);
-    // Without the option (a button's text) the word stays whole.
+  it('keeps a word wider than the line whole, as the game draws it (etch#264)', () => {
     expect(layoutText(font, 'ababab', box(12), options).lines).toHaveLength(1);
+    expect(layoutText(font, 'ab ababab', box(12), options).lines).toHaveLength(2);
+  });
+
+  it("measures a box as the game's font does, not by the lines it draws (etch#264)", () => {
+    // "ab" is 10 px. "1.75M" in 30 px: a short word wider than the box is cut to it, one line more.
+    expect(layoutText(font, 'abab', box(12), options).required).toEqual({ width: 12, height: 20 });
+    // `rebelsize_desc`: the end of a short word goes past the inner width, and the box with it.
+    const border = { border: { x: 2, y: 3 } };
+    expect(layoutText(font, 'abab', box(22, border), options).required).toEqual({
+      width: 24,
+      height: 16,
+    });
+    // "Aggressiveness:" in 64 px: a word over 50 px ends the line once it reaches the inner width.
+    expect(layoutText(font, 'ab'.repeat(8), box(64), options)).toMatchObject({
+      height: 10,
+      required: { width: 64, height: 30 },
+    });
+    // Past `maxWidth` at a space the word starts the next line, and that line is too wide again.
+    expect(layoutText(font, 'ab ab', box(12), options).required.height).toBe(30);
+    // A space stays a space with a height in its font file, as Proper 2K UI Enhanced's has.
+    const tall = { ...font, glyphs: new Map(font.glyphs) };
+    const space = font.glyphs.get(0x20);
+    if (space !== undefined) tall.glyphs.set(0x20, { ...space, height: 20 });
+    expect(layoutText(tall, 'ab ab', box(12), options).required.height).toBe(30);
+    // A line break ends the line, and empty text is one line.
+    expect(layoutText(font, 'ab\nab', box(100), options).required.height).toBe(20);
+    expect(layoutText(font, '', box(100), options).required.height).toBe(10);
   });
 
   it('does not wrap without a width', () => {
