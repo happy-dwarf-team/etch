@@ -1,0 +1,26 @@
+// The peace_view window of the base game (docs/window-profiles.md). Its rule hides what the coverage
+// survey's 1 captures of it show hidden; drafted from them, as the corpus's are (ADR 0006).
+{
+  "formatVersion": 1,
+  "window": "peace_view",
+  "checkedWith": "1.37.5",
+  "rules": {
+    "hidden": {
+      "note": "Hidden in every view of the coverage survey (the base game): the game decides these from its data or a click; show one by hand.",
+      "hide": [
+        "peace_view/better_offer_icon",
+        "peace_view/coalition_icon",
+        "peace_view/peace_icon_annultreaty_glow",
+        "peace_view/peace_icon_cancelvassal_glow",
+        "peace_view/peace_icon_cede_glow",
+        "peace_view/peace_icon_releasenation_glow",
+        "peace_view/peace_icon_returncores_glow",
+        "peace_view/peace_icon_revokecores_glow",
+        "peace_view/peace_icon_treaties_glow",
+        "peace_view/peace_view_offer_bg",
+        "peace_view/surrender_button",
+        "peace_view/terms_accepted",
+      ],
+    },
+  },
+}

@@ -1,0 +1,28 @@
+// The countrygovernmentview window of the base game (docs/window-profiles.md). Its rule hides what the coverage
+// survey's 6 captures of it show hidden; drafted from them, as the corpus's are (ADR 0006).
+{
+  "formatVersion": 1,
+  "window": "countrygovernmentview",
+  "checkedWith": "1.37.5",
+  "rules": {
+    "hidden": {
+      "note": "Hidden in every view of the coverage survey (the base game): the game decides these from its data or a click; show one by hand.",
+      "hide": [
+        "countrygovernmentview/assimilated_cultures_window",
+        "countrygovernmentview/claim_revolution_button",
+        "countrygovernmentview/claim_revolution_icon",
+        "countrygovernmentview/icon_government_desc_1",
+        "countrygovernmentview/icon_government_desc_2",
+        "countrygovernmentview/icon_government_desc_3",
+        "countrygovernmentview/max_revolutionary_zeal_icon",
+        "countrygovernmentview/max_revolutionary_zeal_value",
+        "countrygovernmentview/modifier_view",
+        "countrygovernmentview/revolution_spread_button",
+        "countrygovernmentview/revolution_spread_good_bar",
+        "countrygovernmentview/revolution_target_icon",
+        "countrygovernmentview/revolutionary_zeal_icon",
+        "countrygovernmentview/revolutionary_zeal_value",
+      ],
+    },
+  },
+}

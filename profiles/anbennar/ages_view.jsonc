@@ -1,0 +1,24 @@
+// The ages_view window of Anbennar alone (docs/window-profiles.md). Its rule hides what the coverage
+// survey's 2 captures of it show hidden; drafted from them, as the corpus's are (ADR 0006).
+{
+  "formatVersion": 1,
+  "window": "ages_view",
+  "checkedWith": "1",
+  "mod": {
+    "remoteFileId": "1385440355",
+    "name": "Anbennar: A Fantasy Total Conversion",
+  },
+  "rules": {
+    "hidden": {
+      "note": "Hidden in every view of the coverage survey (Anbennar alone): the game decides these from its data or a click; show one by hand.",
+      "hide": [
+        "ages_view/after_golden_age_banner",
+        "ages_view/age_of_absolutism",
+        "ages_view/age_of_reformation",
+        "ages_view/age_of_revolutions",
+        "ages_view/in_golden_age_banner",
+        "ages_view/in_or_after_golden_age_text",
+      ],
+    },
+  },
+}
