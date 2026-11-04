@@ -22,6 +22,10 @@
     },
   },
   "rules": {
+    "message-window-container": {
+      "note": "The game shows the container 30 px lower than its .gui place (the coverage survey, vanilla and Anbennar alone, 1920×1080 and 1280×720; etch#253). No setter was found.",
+      "offset": { "menubar/message_window_container": { "y": 30 } },
+    },
     "war-overview-below-closed-log": {
       "when": { "messageLog": "closed" },
       "hidePosition": ["menubar/WarOverviewButtonWindow"],
