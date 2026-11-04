@@ -285,6 +285,41 @@ describe('the load checks of sample data', () => {
   });
 });
 
+describe('a repeater that hides parts of its entries', () => {
+  const hiding = PROFILE.replace('"count": 2,', '"count": 2, "hide": ["building_entry/builder"],');
+
+  it('leaves them out of every entry, unless a snapshot shows them', () => {
+    const { profile, diagnostics } = profileOf(hiding);
+    expect(diagnostics).toEqual([]);
+    const screen = { width: 1920, height: 1080 };
+    const view = evaluateView(profile, WINDOW, screen, {});
+    const builder = ENTRY.children.find((w) => w.name === 'builder') as Widget;
+    const sample = sampleData(profile, WINDOW, view, input({}));
+    expect(sample.state(builder, 1)?.visible).toBe(false);
+    const live = sampleData(
+      profile,
+      WINDOW,
+      view,
+      input({
+        live: {
+          text: () => undefined,
+          state: () => ({ visible: true, enabled: true, checked: false }),
+        },
+      }),
+    );
+    expect(live.state(builder, 1)?.visible).toBe(true);
+  });
+
+  it('checks the paths against the template', () => {
+    expect(
+      profileOf(
+        `{ "formatVersion": 1, "window": "provinceview", "repeaters": {
+          "provinceview/building_list": { "template": "building_entry", "hide": ["builder"] } } }`,
+      ).diagnostics.map((d) => [d.code, d.message]),
+    ).toMatchObject([['profile-unknown-path', /path to hide starts with the template's name/]]);
+  });
+});
+
 describe('sampleData', () => {
   it('fills texts from the save, the files and the generated layer, and counts them', async () => {
     const { profile } = profileOf(PROFILE);

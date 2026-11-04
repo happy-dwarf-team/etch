@@ -274,6 +274,17 @@ export function checkProfile(profile: WindowProfile, input: ProfileCheckInput): 
       );
       ok = false;
     }
+    for (const ref of repeater.hide) {
+      if (template !== undefined && widgetsAt(template, ref.path).length === 0) {
+        error(
+          repeater,
+          'profile-unknown-path',
+          ref.range,
+          `No widget of ${repeater.template} has the path "${ref.path}"; a path to hide starts with the template's name.`,
+        );
+        ok = false;
+      }
+    }
     for (const field of repeater.fields) {
       if (template !== undefined && widgetsAt(template, field.path.path).length === 0) {
         error(
