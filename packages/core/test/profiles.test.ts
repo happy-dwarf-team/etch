@@ -54,4 +54,13 @@ describe("Etch's window profiles", () => {
     );
     expect(file?.defaultView?.id).toBe('own');
   });
+
+  it("say which page of Anbennar's magic menu is open, and whether its achievements are", () => {
+    const text = readFileSync(new URL('anbennar/topbar.jsonc', root), 'utf8');
+    const file = readProfile(text, { layer: 0, source: 'anbennar', file: 'topbar' }).file;
+    const values = (id: string) =>
+      file?.selectors.flatMap((s) => ('id' in s && s.id === id ? s.values.map((v) => v.id) : []));
+    expect(values('magicMenu')).toEqual(['closed', 'main', 'spellbook', 'advancement']);
+    expect(values('achievements')).toEqual(['closed', 'open']);
+  });
 });
