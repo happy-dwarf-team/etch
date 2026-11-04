@@ -300,16 +300,20 @@ function reportShadowed(
   what: string,
   out: ModelDiagnostic[],
 ): void {
-  const winner = definitions[0];
+  const sprite = code === 'duplicate-sprite';
+  const winner = sprite ? definitions.at(-1) : definitions[0];
   if (winner === undefined || winner.item === item) return;
-  const where = samePath(winner.path, path) ? 'earlier in this file' : `in ${winner.path}`;
+  const inFile = sprite ? 'later in this file' : 'earlier in this file';
+  const where = samePath(winner.path, path) ? inFile : `in ${winner.path}`;
   out.push(
     diagnostic(
       'information',
       code,
       item.nameNode,
-      `${what} ${item.name} is also defined ${where}, which Etch uses because it loads first; ` +
-        'which definition the game uses is unverified.',
+      sprite
+        ? `${what} ${item.name} is also defined ${where}, which the game uses because it loads last.`
+        : `${what} ${item.name} is also defined ${where}, which Etch uses because it loads first; ` +
+            'which definition the game uses is unverified.',
     ),
   );
 }

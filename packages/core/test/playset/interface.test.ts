@@ -66,14 +66,16 @@ describe('PlaysetInterface', () => {
       'interface/window.gui 1',
       'interface/government_mechanics/mechanic.gui 1',
     ]);
-    expect(loaded.index.sprite('GFX_a')?.path).toBe('interface/core.gfx');
+    expect(loaded.index.sprite('GFX_a')?.path).toBe('interface/sub/extra.gfx');
     // a.tga resolves to a.dds; the mod's texture is missing.
     expect(loaded.gameFile('gfx//interface//a.dds')?.layer.name).toBe('game');
     expect(loaded.diagnostics('interface/window.gui').map((d) => d.code)).toEqual([
       'missing-texture',
     ]);
-    expect(loaded.diagnostics('interface/sub/extra.gfx').map((d) => d.code)).toEqual([
+    expect(loaded.diagnostics('interface/core.gfx').map((d) => d.code)).toEqual([
       'duplicate-sprite',
+    ]);
+    expect(loaded.diagnostics('interface/sub/extra.gfx').map((d) => d.code)).toEqual([
       'missing-texture',
     ]);
     expect(loaded.diagnostics('interface/unknown.gui')).toEqual([]);

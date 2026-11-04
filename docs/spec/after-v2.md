@@ -292,11 +292,15 @@ with ADR 0005), and the one the release record left of the profiles:
   layer, then a later path, wins (etch#32). Also unchecked: whether the game
   reads `.yml` files without a language suffix or without a BOM, and what it
   does with escapes other than `\n`, `\t`, `\"` and `\\`.
-- Which definition the game uses when a sprite or font name is defined twice,
-  and whether it compares those names without regard to case. Etch takes the
-  first in load order (the files of a folder sorted, then its subfolders), the
+- Which definition the game uses when a font name is defined twice, and whether
+  it compares font and sprite names without regard to case. Etch takes the first
+  font in load order (the files of a folder sorted, then its subfolders), the
   game's rule for `.gui` names at startup (etch#16), and reports a reference
-  that matches only when case is ignored (etch#33).
+  that matches only when case is ignored (etch#33). A sprite takes its last
+  definition, as the game shows `GFX_governing_capacity` (27 × 27 from
+  `topbar.gfx`, not 64 × 64 from `countrystabilityview.gfx`) and
+  `GFX_choose_rivals_bg` (570 × 508 from `countrygovernmentview.gfx`, not
+  573 × 589 from `countrycourtview.gfx`) in the survey's captures (etch#256).
 - Texture paths: a `.tga` path falls back to the `.dds` of the same name, as
   584 vanilla sprites need; which one the game takes when both exist (7
   vanilla paths) is unchecked. Also assumed: the last of a repeated key in one

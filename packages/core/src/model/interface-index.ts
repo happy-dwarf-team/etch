@@ -60,10 +60,11 @@ function indexBy<F, T>(
 }
 
 /**
- * Sprites, fonts and top-level `.gui` definitions by name, without regard to case. When a name
- * is defined more than once, the first definition in load order wins: the game's rule for
- * `.gui` names at startup (etch#16), assumed for sprites and fonts. A later mod overriding a file
- * by its path is handled before this, by the playset's file system.
+ * Sprites, fonts and top-level `.gui` definitions by name, without regard to case. When a `.gui`
+ * name is defined more than once, the first definition in load order wins: the game's rule at
+ * startup (etch#16), assumed for fonts. For a sprite the last one wins, as the game shows it
+ * (etch#256). A later mod overriding a file by its path is handled before this, by the playset's
+ * file system.
  */
 export class InterfaceIndex {
   private readonly gfx: GfxSide;
@@ -94,7 +95,7 @@ export class InterfaceIndex {
 
   /** The sprite a reference resolves to. */
   sprite(name: string): Located<Sprite> | undefined {
-    return this.spriteDefinitions(name)[0];
+    return this.spriteDefinitions(name).at(-1);
   }
 
   /** Every definition of a sprite name, in load order. */
