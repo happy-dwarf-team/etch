@@ -76,7 +76,8 @@ export interface LiveState {
  */
 export interface LiveAdopted {
   readonly name: string;
-  readonly rect: readonly [number, number, number, number];
+  /** Where the game showed it; without one, its own `.gui` position (a profile's `adopt`). */
+  readonly rect?: readonly [number, number, number, number];
   readonly text?: string;
 }
 
@@ -153,7 +154,7 @@ export interface SampleData {
   state(widget: Widget, row?: number): LiveState | undefined;
   /** The entries of a list box a repeater fills. */
   rows(list: Widget): SampleRows | undefined;
-  /** What a live snapshot showed in a widget from other definitions (`LiveAdopted`). */
+  /** What a widget shows from other definitions: a live snapshot's, else the profile's `adopt`. */
   adopted(widget: Widget, row?: number): readonly LiveAdopted[];
   /** How many texts each layer fills, of the widgets the view draws. */
   readonly counts: Readonly<Record<DataLayer, number>>;
@@ -320,7 +321,9 @@ export function sampleData(
     rows: (list) => rows.get(list),
     adopted: (widget, row) => {
       const path = row === undefined ? pathOf.get(widget) : undefined;
-      return path === undefined ? [] : (input.live?.adopted?.(path) ?? []);
+      if (path === undefined) return [];
+      if (input.live?.adopted !== undefined) return input.live.adopted(path);
+      return (view?.widgets.get(widget)?.adopted ?? []).map((name) => ({ name }));
     },
     counts,
     lists,

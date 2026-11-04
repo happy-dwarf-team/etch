@@ -1,0 +1,12 @@
+// The minimap panel of the base game (docs/window-profiles.md).
+{
+  "formatVersion": 1,
+  "window": "minimap_panel",
+  "checkedWith": "1.37.5",
+  "rules": {
+    "minimap": {
+      "note": "minimap_bg and minimap_pic are top-level definitions of menubar.gui; the game shows them in this panel at their own positions (etch#256).",
+      "adopt": { "minimap_panel": ["minimap_bg", "minimap_pic"] },
+    },
+  },
+}

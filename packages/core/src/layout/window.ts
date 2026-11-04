@@ -110,15 +110,15 @@ export interface LayoutContent {
       }
     | undefined;
   /**
-   * What a live snapshot showed in a widget from top-level definitions the widget's `.gui` does
-   * not hold (etch#256): each drawn where the game showed it, with its text.
+   * What a widget shows from top-level definitions its `.gui` does not hold (etch#256): each drawn
+   * where a live snapshot showed it, with its text, or without a `rect` at its own position.
    */
   adopted?(
     widget: Widget,
     row: number | undefined,
   ): readonly {
     readonly name: string;
-    readonly rect: readonly [number, number, number, number];
+    readonly rect?: readonly [number, number, number, number];
     readonly text?: string;
   }[];
   /**
@@ -425,9 +425,9 @@ class Layout {
   }
 
   /**
-   * The top-level definitions a live snapshot showed inside a widget, after its own children
-   * (etch#256): each laid out from its file and moved where the game showed it, with the text
-   * the game showed. A name the playset does not define is left out.
+   * The top-level definitions in a widget, after its own children (etch#256): each laid out from
+   * its file, and from a live snapshot moved where the game showed it, with the text the game
+   * showed. A name the playset does not define is left out.
    */
   private placeAdopted(widget: Widget, rect: Rect, index: number): void {
     const adopted = this.input.content?.adopted?.(widget, this.row) ?? [];
@@ -438,13 +438,15 @@ class Layout {
       if (file === undefined) continue;
       const outer = { constants: this.constants, adopting: this.adopting };
       this.constants = file.constants;
-      const [x, y] = entry.rect;
-      this.adopting = {
-        widget: found.item,
-        x,
-        y,
-        ...(entry.text === undefined ? {} : { text: entry.text }),
-      };
+      this.adopting =
+        entry.rect === undefined
+          ? undefined
+          : {
+              widget: found.item,
+              x: entry.rect[0],
+              y: entry.rect[1],
+              ...(entry.text === undefined ? {} : { text: entry.text }),
+            };
       this.place(found.item, rect, index, undefined);
       this.constants = outer.constants;
       this.adopting = outer.adopting;

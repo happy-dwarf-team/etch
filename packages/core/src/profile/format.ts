@@ -117,6 +117,11 @@ export interface Rule extends Written {
    * message log is closed.
    */
   readonly hidePosition: readonly PathRef[];
+  /**
+   * Top-level definitions the game's code puts in a widget, by that widget's path, each at its
+   * own `.gui` position: the minimap panel's `minimap_bg`, a definition of `menubar.gui`.
+   */
+  readonly adopt: readonly (PathRef & { readonly definitions: readonly string[] })[];
 }
 
 export interface SelectorSetting {
