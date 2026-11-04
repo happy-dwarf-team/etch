@@ -257,6 +257,14 @@ describe('liveSelectors', () => {
     expect(live.values).toMatchObject({ owner: 'no', hre: 'yes' });
   });
 
+  it('takes no evidence from a text box the game keeps shown with nothing in it', () => {
+    const empty = FOREIGN.map((x) =>
+      x.path.endsWith('queue_window') ? { ...x, visible: true, type: 'text', text: '' } : x,
+    );
+    const live = liveSelectors(PROFILE, WINDOW, snapshot(empty));
+    expect(live.unknown).toEqual([]);
+  });
+
   it('says unknown when no value predicts it, and the default when several do', () => {
     const both = FOREIGN.map((x) =>
       x.path.endsWith('queue_window') ? { ...x, visible: true } : x,
