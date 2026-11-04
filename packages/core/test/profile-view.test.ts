@@ -350,6 +350,36 @@ describe('profileVisibility', () => {
   });
 });
 
+describe("the ledger's pages (the coverage survey)", () => {
+  const file = readGuiFile(
+    parseScript(`guiTypes = {
+  windowType = {
+    name = "ledger"
+    size = { x = 100 y = 100 }
+    listboxType = { name = "default_listbox" size = { x = 50 y = 50 } }
+    windowType = { name = "ledger_index" size = { x = 50 y = 50 } }
+  }
+}`),
+  );
+  const window = file.definitions[0] as Widget;
+  const written = readProfile(
+    readFileSync(new URL('../../../profiles/vanilla/ledger.jsonc', import.meta.url), 'utf8'),
+    { layer: 0, source: 'vanilla', file: 'ledger.jsonc' },
+  ).file;
+  const profile = layerProfiles('ledger', written === undefined ? [] : [written]);
+  const drawn = (page: string) => {
+    const view = evaluateView(profile, window, LARGE, { set: { page } });
+    return ['default_listbox', 'ledger_index'].filter((name) =>
+      widgetsAt(window, `ledger/${name}`).some((w) => view.drawn(w)),
+    );
+  };
+
+  it('shows the index or the table', () => {
+    expect(drawn('index')).toEqual(['ledger_index']);
+    expect(drawn('table')).toEqual(['default_listbox']);
+  });
+});
+
 describe('size steps of a country view (etch#274)', () => {
   const file = readGuiFile(
     parseScript(`guiTypes = {
