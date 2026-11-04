@@ -479,6 +479,7 @@ class Layout {
     const rows = this.input.content?.rows(window);
     const place = rows?.place;
     if (rows === undefined || place === undefined || rows.count === 0) return;
+    const isList = LISTS.has(window.kind);
     const point = (
       value: { readonly x: number; readonly y: number } | string | undefined,
     ): { x: number; y: number } | undefined => {
@@ -510,6 +511,8 @@ class Layout {
         width: size.width,
         height: size.height,
       };
+      // A list box shows only the rows that fit whole, as `placeRows` does.
+      if (isList && box.y + box.height > rect.y + rect.height) break;
       this.place(rows.template, box, index, undefined);
     }
     this.constants = outer.constants;

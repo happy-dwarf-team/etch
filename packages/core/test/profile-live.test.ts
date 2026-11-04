@@ -263,6 +263,11 @@ describe('liveSelectors', () => {
     );
     const live = liveSelectors(PROFILE, WINDOW, snapshot(empty));
     expect(live.unknown).toEqual([]);
+    // It stays shown: a toggle keeps what the profile hides as the game has it.
+    const taken = snapshot(empty);
+    expect(
+      liveDifferences(PROFILE, WINDOW, taken.screen, { live: live.values }, taken),
+    ).toMatchObject({ 'provinceview/province_window/queue_window': true });
   });
 
   it('says unknown when no value predicts it, and the default when several do', () => {
