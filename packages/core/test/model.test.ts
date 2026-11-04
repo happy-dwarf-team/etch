@@ -257,7 +257,7 @@ describe('InterfaceIndex', () => {
     ]);
   });
 
-  it('resolves names without regard to case; the first definition in load order wins', () => {
+  it('resolves names without regard to case; a sprite takes its last definition in load order', () => {
     const index = InterfaceIndex.of(
       [
         {
@@ -276,7 +276,7 @@ describe('InterfaceIndex', () => {
         },
       ],
     );
-    expect(index.sprite('GFX_X')?.path).toBe('interface/early.gfx');
+    expect(index.sprite('GFX_X')?.path).toBe('interface/sub/late.gfx');
     expect(index.spriteDefinitions('gfx_x').map((d) => d.path)).toEqual([
       'interface/early.gfx',
       'interface/sub/late.gfx',
@@ -285,7 +285,10 @@ describe('InterfaceIndex', () => {
 
     const edited = index.withGfx('interface/EARLY.gfx', undefined);
     expect(edited.sprite('gfx_x')?.path).toBe('interface/sub/late.gfx');
-    expect(index.sprite('gfx_x')?.path).toBe('interface/early.gfx');
+    expect(index.sprite('gfx_x')?.path).toBe('interface/sub/late.gfx');
+    expect(index.withGfx('interface/sub/LATE.gfx', undefined).sprite('gfx_x')?.path).toBe(
+      'interface/early.gfx',
+    );
     expect(
       edited.withGui('interface/core.gui', gui('guiTypes = {}')).guiType('slider'),
     ).toBeUndefined();
@@ -392,8 +395,8 @@ bitmapfonts = {
       (d) => `${d.severity} ${d.code} ${gfxText.slice(d.start, d.end)}`,
     );
     expect(found).toEqual([
-      'warning missing-texture "gfx/interface/none.dds"',
       'information duplicate-sprite "GFX_ok"',
+      'warning missing-texture "gfx/interface/none.dds"',
       'warning missing-font-file "gfx/fonts/none"',
     ]);
   });
