@@ -24,7 +24,7 @@ Captures the survey's manifest lists but no record has: vanilla 1280x720 26, van
 ## Other countries: data the rules were not made from
 
 The run of 4 November 2026 (etch#258, [docs/coverage.md](coverage.md), "Other countries"): the
-same views in two other game states, EU4 1.37.5, 1920×1080, on `d6468ae`. Every figure in the
+same views in three other game states, EU4 1.37.5, 1920×1080, on `d6468ae`. Every figure in the
 first table comes from before any rule was changed for this run. "Same views" is the first run
 over the views the second run captured too, so the two rows compare the same recipes; the views
 of the main menu are not in it. The first run's figures for all its views are in the table above.
@@ -33,6 +33,8 @@ of the main menu are not in it. The first run's figures for all its views are in
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | vanilla, first run, same views (Russia, 1719) | 38 | 98.2 % | 98.2 % | 98.4 % | 97.9 % | 78.0 % | 89.0 % | 98.3 % | 100.0 % | 99.5 % |
 | **France, 1550, unseen** | 39 | **98.3 %** | **94.2 %** | 98.7 % | 93.9 % | 78.5 % | 86.5 % | 98.3 % | 100.0 % | 99.4 % |
+| vanilla, first run, same views (Russia, 1719) | 43 | 96.7 % | 97.9 % | 98.8 % | 97.9 % | 75.0 % | 88.8 % | 98.4 % | 100.0 % | 99.6 % |
+| **Ottomans, 1550, unseen** | 44 | **96.6 %** | **94.4 %** | 99.1 % | 94.2 % | 75.1 % | 85.5 % | 98.3 % | 100.0 % | 99.5 % |
 | Anbennar alone, first run, same views (Verne, 1444) | 43 | 96.1 % | 96.5 % | 99.0 % | 96.3 % | 82.4 % | 78.1 % | 98.6 % | 100.0 % | 99.6 % |
 | **Kobildzan, 1594, unseen** | 43 | **95.5 %** | **94.8 %** | 98.9 % | 94.0 % | 81.4 % | 82.3 % | 98.2 % | 99.9 % | 99.7 % |
 
@@ -40,7 +42,8 @@ of the main menu are not in it. The first run's figures for all its views are in
 against 98.2 % in vanilla, 95.5 against 96.1 % in Anbennar, where the estates' rows take most of
 the difference. The live preview holds on every measure.
 
-**What does not:** the visibility rules, 4.0 points lower on France and 1.7 on Kobildzan. On
+**What does not:** the visibility rules, 4.0 points lower on France, 3.5 on the Ottomans and 1.7
+on Kobildzan. On
 France 5.7 % of the widgets disagree against 1.8 % on the same views of Russia (367 of 6,435, 124
 of 7,084), on Kobildzan 5.1 % against 3.5 % (475 of 9,266, 257 of 7,394). The figures of 97.9 and
 96.8 % measured on the rules' own captures were optimistic by about that much.
@@ -61,7 +64,7 @@ On Kobildzan most of the new failures are `countryreligionview` (138, first run 
 religion's own lists, 121 rows of `province_listbox`, and `jewish_specific_window`) and
 `countrycourtview` (28, first run 0: an elected ruler's court, drawn as a monarch's).
 
-Not captured: 13 of 52 views on France, 6 of 49 on Kobildzan, because the country lacks them or the
+Not captured: 13 of 52 views on France, 8 of 52 on the Ottomans, 6 of 49 on Kobildzan, because the country lacks them or the
 game refused the click. The parliament, the Celestial Empire's three views, the two views of a
 war, the orthodox icons, a policy, a rebel faction, an idea group, the ruler as general, an
 undiscovered province, the estates' close button on France; the HRE's leave button, three of the magic
@@ -71,17 +74,23 @@ view (`vanilla-save-s69`) the first run lacks, so the unseen row has one view mo
 ### After the fixes: no longer unseen
 
 etch#310 changed the rules that failed on France. **France's figures below say that the fixes do
-what they were made to, not how far the rules carry.** Kobildzan was not used for them.
+what they were made to, not how far the rules carry.** The Ottomans and Kobildzan were not used
+for them: the Ottomans were captured after the fixes, so they are the test of those.
 
 | Set | Offline preview: rects | Offline preview: visibility | With profiles: visibility |
 | --- | --- | --- | --- |
 | France, 1550 (rules fixed on it) | 98.3 → 98.4 % | 94.2 → 97.3 % | 93.9 → 97.8 % |
+| Ottomans, 1550 (not used for the fixes) | 96.6 → 96.7 % | 94.4 → **97.0 %** | 94.2 → 97.6 % |
 | Kobildzan, 1594 (not used for the fixes) | 95.5 % | 94.8 → 94.9 % | 94.0 → 94.1 % |
 | vanilla, first run, all views | 96.1 % | 97.9 % | 98.1 % |
 | Anbennar alone, first run, all views | 96.6 % | 96.8 % | 96.7 % |
 
-The first run does not move, so the fixes cost nothing on Russia and Verne. Kobildzan barely moves:
-what was fixed from France does not reach Anbennar, whose profiles have their own rules. On `main`
+The first run does not move, so the fixes cost nothing on Russia and Verne. **The fixes carry to
+another country of the base game:** the Ottomans gain 2.6 points on rules never fitted to them,
+376 failures down to 196, and every selector finds a value. A selector still takes the value that
+fits the game, so this says the rules can describe that country, as an author who sets `View ▾`
+would see it. Kobildzan barely moves: what was fixed from France does not reach Anbennar, whose
+profiles have their own rules. On `main`
 with etch#308 and etch#309 too, France is 98.4 and 97.4 %, Kobildzan 95.6 and 94.9 %.
 
 **The moves with no setter in the code** (etch#253) hold on both unseen sets:
