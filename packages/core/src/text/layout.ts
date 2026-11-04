@@ -254,7 +254,8 @@ function requiredSize(
           : 0;
       line += item.glyph.xadvance + kerning;
       word += item.glyph.xadvance + kerning;
-      if (item.glyph.height === 0) {
+      // The game's font reader makes a space's height 0, whatever the file says (`0x158C73E`, GOG).
+      if (item.glyph.height === 0 || item.code === SPACE) {
         if (maxWidth < line) {
           lines++;
           line = word;

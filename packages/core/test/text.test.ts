@@ -263,6 +263,11 @@ describe('layoutText', () => {
     });
     // Past `maxWidth` at a space the word starts the next line, and that line is too wide again.
     expect(layoutText(font, 'ab ab', box(12), options).required.height).toBe(30);
+    // A space stays a space with a height in its font file, as Proper 2K UI Enhanced's has.
+    const tall = { ...font, glyphs: new Map(font.glyphs) };
+    const space = font.glyphs.get(0x20);
+    if (space !== undefined) tall.glyphs.set(0x20, { ...space, height: 20 });
+    expect(layoutText(tall, 'ab ab', box(12), options).required.height).toBe(30);
     // A line break ends the line, and empty text is one line.
     expect(layoutText(font, 'ab\nab', box(100), options).required.height).toBe(20);
     expect(layoutText(font, '', box(100), options).required.height).toBe(10);
