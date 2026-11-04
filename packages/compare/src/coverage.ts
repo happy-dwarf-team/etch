@@ -61,6 +61,11 @@ export interface ViewCoverage {
   readonly roots: readonly RootCoverage[];
   /** The offline outline: the `.gui` alone with the game's screen-height rules (etch#272). */
   readonly offline: { readonly geometry: GeometryCounts; readonly visibility: VisibilityCounts };
+  /**
+   * What the preview shows without a game: each root with its profile's rules where it has a
+   * profile, their selectors at the values that fit the game, else as the outline.
+   */
+  readonly preview: { readonly geometry: GeometryCounts; readonly visibility: VisibilityCounts };
   /** The preview from the live snapshot of the same game. */
   readonly live: { readonly geometry: GeometryCounts; readonly visibility: VisibilityCounts };
   /**
@@ -189,6 +194,7 @@ export async function runCoverage(options: CoverageOptions): Promise<CoverageRes
     const offlineWindows: PlanWindow[] = [];
     const liveWindows: PlanWindow[] = [];
     const profiledWindows: PlanWindow[] = [];
+    const previewWindows: PlanWindow[] = [];
     const profiledRoots: (typeof record.widgets)[number][] = [];
     const rootResults: RootCoverage[] = [];
     const codeSized = findView(manifest, key.view)?.view.codeSized ?? [];
@@ -224,6 +230,7 @@ export async function runCoverage(options: CoverageOptions): Promise<CoverageRes
         profiledWindows.push(withProfile);
         profiledRoots.push(root);
       }
+      previewWindows.push(withProfile ?? offline);
       const live = await files.livePreview(top, record.resolution, snapshot, loaded, size);
       if (live === undefined) continue;
       liveWindows.push(live.window);
@@ -236,6 +243,7 @@ export async function runCoverage(options: CoverageOptions): Promise<CoverageRes
     }
     const offlinePlan = planCapture({ manifest, record, windows: offlineWindows });
     const livePlan = planCapture({ manifest, record, windows: liveWindows });
+    const previewPlan = planCapture({ manifest, record, windows: previewWindows });
     problems.push(...offlinePlan.problems);
     const geometry = outlineGeometry(offlinePlan);
     tallyConstructs(constructs, key.playset, offlinePlan, geometry);
@@ -245,6 +253,10 @@ export async function runCoverage(options: CoverageOptions): Promise<CoverageRes
       view: key.view,
       roots: rootResults,
       offline: { geometry, visibility: visibilityAgreement(offlinePlan) },
+      preview: {
+        geometry: outlineGeometry(previewPlan),
+        visibility: visibilityAgreement(previewPlan),
+      },
       live: { geometry: outlineGeometry(livePlan), visibility: visibilityAgreement(livePlan) },
       ...(profiledRoots.length > 0
         ? (() => {

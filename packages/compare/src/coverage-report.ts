@@ -17,6 +17,8 @@ const percent = (part: number, whole: number): string =>
 
 interface Totals {
   views: number;
+  previewGeometry: [number, number];
+  previewVisibility: [number, number];
   offlineGeometry: [number, number];
   offlineVisibility: [number, number];
   liveGeometry: [number, number];
@@ -32,6 +34,8 @@ interface Totals {
 function totalsOf(views: readonly ViewCoverage[]): Totals {
   const t: Totals = {
     views: views.length,
+    previewGeometry: [0, 0],
+    previewVisibility: [0, 0],
     offlineGeometry: [0, 0],
     offlineVisibility: [0, 0],
     liveGeometry: [0, 0],
@@ -48,6 +52,8 @@ function totalsOf(views: readonly ViewCoverage[]): Totals {
     pair[1] += whole;
   };
   for (const v of views) {
+    add(t.previewGeometry, v.preview.geometry.exact, v.preview.geometry.compared);
+    add(t.previewVisibility, v.preview.visibility.agree, v.preview.visibility.compared);
     add(t.offlineGeometry, v.offline.geometry.exact, v.offline.geometry.compared);
     add(t.offlineVisibility, v.offline.visibility.agree, v.offline.visibility.compared);
     add(t.liveGeometry, v.live.geometry.exact, v.live.geometry.compared);
@@ -93,21 +99,23 @@ export function coverageMarkdown(result: CoverageResult): string {
   const lines: string[] = ['# Coverage survey results', ''];
   const playsets = [...new Set(result.views.map((v) => v.playset))];
   lines.push(
-    'Shares are of widgets summed over the views (docs/coverage.md, "Measures"); a view is',
+    'Shares are of widgets summed over the views (docs/coverage.md, "Measures"). "Offline preview" is',
+    'what a mod author sees without a game: each window with its profile where it has one, else as',
+    'the outline. A view is',
     '"full" when every compared rect is exact and the game shows nothing the layout lacks, and from',
     'the live snapshot also when every visibility agrees. "With profiles" is the outline offline',
     "with the profiles' rules, their selectors set to what the game showed, over the windows that",
     'have a profile.',
     '',
-    '| Playset | Resolution | Views | Outline rects | Outline visibility | Full (outline) | With profiles: rects | With profiles: visibility | Live rects | Live visibility | Full (live) | Live texts | Texts, profiled windows | Pixel pass |',
-    '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |',
+    '| Playset | Resolution | Views | Offline preview: rects | Offline preview: visibility | Outline rects | Outline visibility | Full (outline) | With profiles: rects | With profiles: visibility | Live rects | Live visibility | Full (live) | Live texts | Texts, profiled windows | Pixel pass |',
+    '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |',
   );
   const groups = [...new Set(result.views.map((v) => `${v.playset} ${v.resolution}`))];
   for (const group of groups) {
     const [id = '', resolution = ''] = group.split(' ');
     const t = totalsOf(result.views.filter((v) => v.playset === id && v.resolution === resolution));
     lines.push(
-      `| ${id} | ${resolution} | ${String(t.views)} | ${percent(...t.offlineGeometry)} | ${percent(...t.offlineVisibility)} | ${String(t.full.offline)} | ${percent(...t.profiledGeometry)} | ${percent(...t.profiledVisibility)} | ${percent(...t.liveGeometry)} | ${percent(...t.liveVisibility)} | ${String(t.full.live)} | ${percent(...t.texts)} | ${percent(...t.profiledTexts)} | ${t.pixelsPassed[1] === 0 ? '–' : `${String(t.pixelsPassed[0])} of ${String(t.pixelsPassed[1])}`} |`,
+      `| ${id} | ${resolution} | ${String(t.views)} | ${percent(...t.previewGeometry)} | ${percent(...t.previewVisibility)} | ${percent(...t.offlineGeometry)} | ${percent(...t.offlineVisibility)} | ${String(t.full.offline)} | ${percent(...t.profiledGeometry)} | ${percent(...t.profiledVisibility)} | ${percent(...t.liveGeometry)} | ${percent(...t.liveVisibility)} | ${String(t.full.live)} | ${percent(...t.texts)} | ${percent(...t.profiledTexts)} | ${t.pixelsPassed[1] === 0 ? '–' : `${String(t.pixelsPassed[0])} of ${String(t.pixelsPassed[1])}`} |`,
     );
   }
   if (result.notCaptured.length > 0) {
