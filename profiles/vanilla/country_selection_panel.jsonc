@@ -14,8 +14,22 @@
         "lobby": "Single-player lobby",
       },
     },
+    "country": {
+      "kind": "ui",
+      "label": "Country",
+      "values": { "none": "None chosen", "chosen": "Chosen" },
+      "note": "Whether the player has chosen a country in the single-player lobby: the coverage survey shows the country's panel in place of no_player.",
+    },
   },
   "rules": {
+    "lobby-no-country": {
+      "when": { "page": "lobby", "country": "none" },
+      "hide": ["country_selection_panel/lobby/right/singleplayer"],
+    },
+    "lobby-country": {
+      "when": { "page": "lobby", "country": "chosen" },
+      "hide": ["country_selection_panel/lobby/right/no_player"],
+    },
     "hidden": {
       "note": "Hidden in the corpus capture of \"lobby\" and \"main-menu\" in vanilla (Russia, 17 March 1719): the game decides these from its data or a click; show one by hand.",
       "hide": [
@@ -81,9 +95,10 @@
         "country_selection_panel/lobby/right/ironman_icon",
         "country_selection_panel/lobby/right/ironman_label",
         "country_selection_panel/lobby/right/multiplayer",
+        "country_selection_panel/lobby/right/observe_mode_button",
+        "country_selection_panel/lobby/right/observe_mode_title",
         "country_selection_panel/lobby/right/players_tab",
         "country_selection_panel/lobby/right/players_tab_title",
-        "country_selection_panel/lobby/right/singleplayer",
       ],
     },
     "hidden-lobby-top-on-lobby": {

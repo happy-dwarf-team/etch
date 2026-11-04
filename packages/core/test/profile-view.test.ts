@@ -380,6 +380,43 @@ describe("the ledger's pages (the coverage survey)", () => {
   });
 });
 
+describe("the lobby's chosen country (the coverage survey)", () => {
+  const file = readGuiFile(
+    parseScript(`guiTypes = {
+  windowType = {
+    name = "country_selection_panel"
+    size = { x = 100 y = 100 }
+    windowType = { name = "lobby" size = { x = 100 y = 100 }
+      windowType = { name = "right" size = { x = 100 y = 100 }
+        windowType = { name = "no_player" size = { x = 10 y = 10 } }
+        windowType = { name = "singleplayer" size = { x = 10 y = 10 } }
+      }
+    }
+  }
+}`),
+  );
+  const window = file.definitions[0] as Widget;
+  const written = readProfile(
+    readFileSync(
+      new URL('../../../profiles/vanilla/country_selection_panel.jsonc', import.meta.url),
+      'utf8',
+    ),
+    { layer: 0, source: 'vanilla', file: 'country_selection_panel.jsonc' },
+  ).file;
+  const profile = layerProfiles('country_selection_panel', written === undefined ? [] : [written]);
+  const drawn = (country: string) => {
+    const view = evaluateView(profile, window, LARGE, { set: { page: 'lobby', country } });
+    return ['no_player', 'singleplayer'].filter((name) =>
+      widgetsAt(window, `country_selection_panel/lobby/right/${name}`).some((w) => view.drawn(w)),
+    );
+  };
+
+  it("shows the country's panel once one is chosen", () => {
+    expect(drawn('none')).toEqual(['no_player']);
+    expect(drawn('chosen')).toEqual(['singleplayer']);
+  });
+});
+
 describe('size steps of a country view (etch#274)', () => {
   const file = readGuiFile(
     parseScript(`guiTypes = {
