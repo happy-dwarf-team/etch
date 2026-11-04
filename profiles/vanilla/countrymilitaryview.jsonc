@@ -30,5 +30,9 @@
         "countrymilitaryview/window_title": { "y": -16 },
       },
     },
+    "hidden": {
+      "note": "Hidden in every survey view of the tab: the game's code decides these from its data or a click; show one by hand.",
+      "hide": ["countrymilitaryview/background", "countrymilitaryview/button_makeconsortgeneral"],
+    },
   },
 }
