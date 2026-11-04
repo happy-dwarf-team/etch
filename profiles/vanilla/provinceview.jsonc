@@ -568,6 +568,13 @@
         "provinceview/province_window/transfer_occupation_button",
       ],
     },
+    "no-attrition": {
+      "note": "Never shown in the corpus's or the survey's province views: show it by hand.",
+      "hide": [
+        "provinceview/province_window/attrition",
+        "provinceview/province_window/attrition_value",
+      ],
+    },
     "hidden-province_window": {
       "note": "Hidden in the corpus captures of an own province (Macedonia, Russia 1719): the game decides these from data every frame; show one by hand.",
       "hide": [

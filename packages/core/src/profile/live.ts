@@ -247,6 +247,9 @@ function builtByCode(path: string, known: ReadonlySet<string>): boolean {
 function visibility(snapshot: LiveSnapshot): Map<string, boolean> {
   const out = new Map<string, boolean>();
   for (const w of snapshot.widgets) {
+    // A text box the game keeps shown with nothing in it (`fort_number` without a fort) says
+    // nothing about what the view is.
+    if (w.type === 'text' && w.text === '') continue;
     if (!/\/row\[\d+\](?:\/|$)/.test(w.path)) out.set(w.path.toLowerCase(), w.visible);
   }
   return out;
