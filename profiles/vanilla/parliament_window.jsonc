@@ -1,0 +1,22 @@
+// The parliament_window window of the base game (docs/window-profiles.md). Its rule hides what the coverage
+// survey's 1 captures of it show hidden; drafted from them, as the corpus's are (ADR 0006).
+{
+  "formatVersion": 1,
+  "window": "parliament_window",
+  "checkedWith": "1.37.5",
+  "rules": {
+    "hidden": {
+      "note": "Hidden in every view of the coverage survey (the base game): the game decides these from its data or a click; show one by hand.",
+      "hide": [
+        "parliament_window/chance_to_end",
+        "parliament_window/chance_to_end_label",
+        "parliament_window/chance_to_win",
+        "parliament_window/chance_to_win_label",
+        "parliament_window/current_issue",
+        "parliament_window/current_issue_effect",
+        "parliament_window/present_debate_slot",
+        "parliament_window/select_new_issue_window",
+      ],
+    },
+  },
+}

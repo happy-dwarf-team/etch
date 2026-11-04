@@ -1,0 +1,17 @@
+// The countrytechnologyview window of the base game (docs/window-profiles.md). Its rule hides what the coverage
+// survey's 4 captures of it show hidden; drafted from them, as the corpus's are (ADR 0006).
+{
+  "formatVersion": 1,
+  "window": "countrytechnologyview",
+  "checkedWith": "1.37.5",
+  "rules": {
+    "hidden": {
+      "note": "Hidden in every view of the coverage survey (the base game): the game decides these from its data or a click; show one by hand.",
+      "hide": [
+        "countrytechnologyview/institutions_window/embrace_cost",
+        "countrytechnologyview/institutions_window/goto_origin",
+        "countrytechnologyview/institutions_window/spread_info_icon",
+      ],
+    },
+  },
+}

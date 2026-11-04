@@ -1,0 +1,13 @@
+// The countrydecisionsview window of the base game (docs/window-profiles.md). Its rule hides what the coverage
+// survey's 4 captures of it show hidden; drafted from them, as the corpus's are (ADR 0006).
+{
+  "formatVersion": 1,
+  "window": "countrydecisionsview",
+  "checkedWith": "1.37.5",
+  "rules": {
+    "hidden": {
+      "note": "Hidden in every view of the coverage survey (the base game): the game decides these from its data or a click; show one by hand.",
+      "hide": ["countrydecisionsview/new_policy_window/no_policy_explanation"],
+    },
+  },
+}

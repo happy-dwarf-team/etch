@@ -1,0 +1,17 @@
+// The countrystabilityview window of the base game (docs/window-profiles.md). Its rule hides what the coverage
+// survey's 6 captures of it show hidden; drafted from them, as the corpus's are (ADR 0006).
+{
+  "formatVersion": 1,
+  "window": "countrystabilityview",
+  "checkedWith": "1.37.5",
+  "rules": {
+    "hidden": {
+      "note": "Hidden in every view of the coverage survey (the base game): the game decides these from its data or a click; show one by hand.",
+      "hide": [
+        "countrystabilityview/cv_governmentrebels_handlerebels/rebels_progress",
+        "countrystabilityview/manage_overext_window",
+        "countrystabilityview/warex_development_value",
+      ],
+    },
+  },
+}

@@ -1,0 +1,29 @@
+// The colonisationpanel window of Anbennar alone (docs/window-profiles.md). Its rule hides what the coverage
+// survey's 1 captures of it show hidden; drafted from them, as the corpus's are (ADR 0006).
+{
+  "formatVersion": 1,
+  "window": "colonisationpanel",
+  "checkedWith": "1",
+  "mod": {
+    "remoteFileId": "1385440355",
+    "name": "Anbennar: A Fantasy Total Conversion",
+  },
+  "rules": {
+    "hidden": {
+      "note": "Hidden in every view of the coverage survey (Anbennar alone): the game decides these from its data or a click; show one by hand.",
+      "hide": [
+        "colonisationpanel/colonist_window",
+        "colonisationpanel/controller_window",
+        "colonisationpanel/economy_window/religion_icon",
+        "colonisationpanel/no_colonist_window/add_tribal_land_button",
+        "colonisationpanel/no_colonist_window/migrate_tribe_button",
+        "colonisationpanel/no_colonist_window/settle_tribe_button",
+        "colonisationpanel/no_colonist_window/tribal_owner",
+        "colonisationpanel/present_envoy_window",
+        "colonisationpanel/select_minority_culture_window",
+        "colonisationpanel/send_envoy_window/siberian_frontier",
+        "colonisationpanel/strait_indicator",
+      ],
+    },
+  },
+}

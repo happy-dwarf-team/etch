@@ -1,0 +1,19 @@
+// The ages_view window of the base game (docs/window-profiles.md). Its rule hides what the coverage
+// survey's 2 captures of it show hidden; drafted from them, as the corpus's are (ADR 0006).
+{
+  "formatVersion": 1,
+  "window": "ages_view",
+  "checkedWith": "1.37.5",
+  "rules": {
+    "hidden": {
+      "note": "Hidden in every view of the coverage survey (the base game): the game decides these from its data or a click; show one by hand.",
+      "hide": [
+        "ages_view/age_of_absolutism",
+        "ages_view/age_of_discovery",
+        "ages_view/age_of_reformation",
+        "ages_view/golden_age",
+        "ages_view/in_golden_age_banner",
+      ],
+    },
+  },
+}

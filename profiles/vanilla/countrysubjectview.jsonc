@@ -1,0 +1,26 @@
+// The countrysubjectview window of the base game (docs/window-profiles.md). Its rule hides what the coverage
+// survey's 4 captures of it show hidden; drafted from them, as the corpus's are (ADR 0006).
+{
+  "formatVersion": 1,
+  "window": "countrysubjectview",
+  "checkedWith": "1.37.5",
+  "rules": {
+    "hidden": {
+      "note": "Hidden in every view of the coverage survey (the base game): the game decides these from its data or a click; show one by hand.",
+      "hide": [
+        "countrysubjectview/colony_select_window",
+        "countrysubjectview/country_subjects_info/toggle_overlord",
+        "countrysubjectview/interactions",
+        "countrysubjectview/interactions_listbox",
+        "countrysubjectview/liberty_desire_icon",
+        "countrysubjectview/liberty_desire_value",
+        "countrysubjectview/selected_subject_window",
+        "countrysubjectview/subject_interaction_window",
+        "countrysubjectview/subject_military_focus_window/hidden_size_of_window_without_rights_of_man",
+        "countrysubjectview/subject_overlay_bg",
+        "countrysubjectview/subjectspanel_bg_top",
+        "countrysubjectview/tribute_desc",
+      ],
+    },
+  },
+}

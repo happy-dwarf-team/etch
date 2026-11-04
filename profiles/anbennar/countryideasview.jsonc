@@ -1,0 +1,20 @@
+// The countryideasview window of Anbennar alone (docs/window-profiles.md). Its rule hides what the coverage
+// survey's 2 captures of it show hidden; drafted from them, as the corpus's are (ADR 0006).
+{
+  "formatVersion": 1,
+  "window": "countryideasview",
+  "checkedWith": "1",
+  "mod": {
+    "remoteFileId": "1385440355",
+    "name": "Anbennar: A Fantasy Total Conversion",
+  },
+  "rules": {
+    "hidden": {
+      "note": "Hidden in every view of the coverage survey (Anbennar alone): the game decides these from its data or a click; show one by hand.",
+      "hide": [
+        "countryideasview/countryideaview_ideagroupunlock/header",
+        "countryideasview/unique_ideas_bonus_icon",
+      ],
+    },
+  },
+}

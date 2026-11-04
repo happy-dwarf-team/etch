@@ -1,0 +1,14 @@
+// The countrymissionsview window of Anbennar, over the vanilla profile (docs/window-profiles.md):
+// its file has its own mission tree, so the vanilla rule's paths do not apply.
+{
+  "formatVersion": 1,
+  "window": "countrymissionsview",
+  "checkedWith": "1",
+  "mod": {
+    "remoteFileId": "1385440355",
+    "name": "Anbennar: A Fantasy Total Conversion",
+  },
+  "rules": {
+    "hidden": null,
+  },
+}

@@ -1,0 +1,31 @@
+// The hre_window window of Anbennar alone (docs/window-profiles.md). Its rule hides what the coverage
+// survey's 4 captures of it show hidden; drafted from them, as the corpus's are (ADR 0006).
+{
+  "formatVersion": 1,
+  "window": "hre_window",
+  "checkedWith": "1",
+  "mod": {
+    "remoteFileId": "1385440355",
+    "name": "Anbennar: A Fantasy Total Conversion",
+  },
+  "rules": {
+    "hidden": {
+      "note": "Hidden in every view of the coverage survey (Anbennar alone): the game decides these from its data or a click; show one by hand.",
+      "hide": [
+        "hre_window/feature_window",
+        "hre_window/hre_bg_extended",
+        "hre_window/hre_heretic_league",
+        "hre_window/hre_heretic_religion_icon",
+        "hre_window/hre_league",
+        "hre_window/hre_official_religion_icon",
+        "hre_window/hre_religion_icon",
+        "hre_window/hre_religion_icon_2",
+        "hre_window/hre_status_icon",
+        "hre_window/join_button",
+        "hre_window/join_heretic_league_button",
+        "hre_window/join_league_button",
+        "hre_window/vote_button",
+      ],
+    },
+  },
+}
