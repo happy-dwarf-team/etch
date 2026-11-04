@@ -32,12 +32,65 @@ export interface EngineMove {
  */
 export interface EngineSteps {
   readonly moved: readonly string[];
+  /** Pixels a moved widget goes further than the step, by path. */
+  readonly further?: Readonly<Record<string, number>>;
   readonly grown: readonly string[];
   /** What the evidence is. */
   readonly evidence: string;
 }
 
-export const ENGINE_STEPS: ReadonlyMap<string, EngineSteps> = new Map([
+export const ENGINE_STEPS: ReadonlyMap<string, EngineSteps> = new Map<string, EngineSteps>([
+  [
+    'countrydiplomacyview',
+    {
+      moved: [
+        'countrydiplomacyview/button_createvassals',
+        'countrydiplomacyview/button_view_player_country',
+      ],
+      further: { 'countrydiplomacyview/button_createvassals': 5 },
+      grown: [
+        'countrydiplomacyview/diploaction_list',
+        'countrydiplomacyview/diplomatic_listbox',
+        'countrydiplomacyview/diploopinion_list',
+      ],
+      evidence:
+        'CCountryDiplomacyView::SetupLargeOrHuge (GOG 1.37.5.2 0xEF7F70); the coverage survey at 1920×1080 (+304, +309)',
+    },
+  ],
+  [
+    'countrygovernmentview',
+    {
+      moved: [
+        'countrygovernmentview/cultures_window/accepted_culture_slots',
+        'countrygovernmentview/cultures_window/back_button',
+      ],
+      grown: [
+        'countrygovernmentview/cultures_window/accepted_cultures_listbox',
+        'countrygovernmentview/cultures_window/non_accepted_cultures_listbox',
+        'countrygovernmentview/**/modifier_listbox',
+      ],
+      evidence:
+        'CCountryGovernmentView::SetupLargeOrHuge (GOG 1.37.5.2 0xF337E0); the coverage survey at 1920×1080 (+330)',
+    },
+  ],
+  [
+    'countrystabilityview',
+    {
+      moved: ['countrystabilityview/cv_governmentrebels_handlerebels/back_button'],
+      further: { 'countrystabilityview/cv_governmentrebels_handlerebels/back_button': 30 },
+      grown: ['countrystabilityview/cv_governmentrebels_handlerebels/handle_listbox'],
+      evidence:
+        'CCountryStabilityView::Setup (GOG 1.37.5.2 0xF84931); the coverage survey at 1920×1080 (+320)',
+    },
+  ],
+  [
+    'countrytradeview',
+    {
+      moved: [],
+      grown: ['countrytradeview/trade_node_list_window/tradenode_list'],
+      evidence: 'CCountryTradeView::Setup (GOG 1.37.5.2 0x101F638)',
+    },
+  ],
   [
     'countrysubjectview',
     {
