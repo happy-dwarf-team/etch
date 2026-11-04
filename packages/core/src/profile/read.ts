@@ -370,7 +370,15 @@ function readRepeater(
   key: JsonMember,
 ): Repeater {
   const what = `the repeater of "${key.key}"`;
-  const props = object(node, what, ['template', 'from', 'count', 'fields', 'place', 'note']);
+  const props = object(node, what, [
+    'template',
+    'from',
+    'count',
+    'fields',
+    'hide',
+    'place',
+    'note',
+  ]);
   optionalText(props.get('note'), 'note');
   const templateNode = props.get('template');
   if (templateNode === undefined) {
@@ -405,6 +413,10 @@ function readRepeater(
       fields.push({ path: pathKey(entry), ...readSource(entry.value, fieldProps, field) });
     }
   }
+  const hideNode = props.get('hide');
+  if (hideNode !== undefined && hideNode.kind !== 'array') {
+    throw new Faulty('"hide" is an array of paths in the template.', hideNode);
+  }
   const placeNode = props.get('place');
   const place = placeNode === undefined ? undefined : readPlacement(placeNode);
   return {
@@ -418,6 +430,7 @@ function readRepeater(
       : { from: { path: text$(fromNode, '"from"'), range: fromNode } }),
     count,
     fields,
+    hide: hideNode?.kind === 'array' ? hideNode.items.map(pathOf) : [],
     ...written,
   };
 }

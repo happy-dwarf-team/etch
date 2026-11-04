@@ -376,6 +376,11 @@
           "propertyNames": { "$ref": "#/definitions/path" },
           "additionalProperties": { "$ref": "#/definitions/source" }
         },
+        "hide": {
+          "description": "Parts of an entry the preview does not draw without a snapshot, by path in the template, the template's name first: what the game shows only in some entries.",
+          "type": "array",
+          "items": { "$ref": "#/definitions/path" }
+        },
         "place": {
           "description": "For a window the game's code puts entries in, or a list box whose first rows have another template: the first entry's start, the step to the next (the template's size by default) and, with columns, how many to a row; each a positionType of the window's file, which the game reads, or pixels.",
           "type": "object",

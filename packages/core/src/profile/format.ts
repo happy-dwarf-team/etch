@@ -231,6 +231,8 @@ export interface Repeater extends Written {
   /** How many entries show without a save. */
   readonly count: number;
   readonly fields: readonly RepeaterField[];
+  /** Parts of an entry the preview does not draw without a snapshot, by path in the template. */
+  readonly hide: readonly PathRef[];
   /** Where the entries go in a window that is not a list box. */
   readonly place?: Placement;
 }

@@ -284,6 +284,12 @@
       "note": "The building slots, filled and free (building_progress_entry, eu4.exe 0x13899F0): from building_start, building_offset apart, building_max_per_row to a row (the corpus captures).",
       "template": "building_progress_entry",
       "count": 8,
+      "hide": [
+        "building_progress_entry/building_currentlybuilding",
+        "building_progress_entry/building_destroy",
+        "building_progress_entry/building_progress",
+        "building_progress_entry/building_status",
+      ],
       "place": {
         "start": "building_start",
         "step": "building_offset",

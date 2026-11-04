@@ -248,6 +248,10 @@ window's file, which the game itself reads, so every playset's file gives its ow
 },
 ```
 
+`hide` lists parts of an entry the preview leaves out, by path in the template, the template's name
+first, for what the game shows only in some entries: `"hide":
+["building_progress_entry/building_status"]`. A live snapshot's state of an entry wins.
+
 `Data ▾` lists the repeaters the view draws with their number of entries, which **−** and **+**
 change (the save's entries first, generated ones after) and **Reset** gives back.
 

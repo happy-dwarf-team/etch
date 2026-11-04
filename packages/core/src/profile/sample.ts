@@ -253,6 +253,13 @@ export function sampleData(
             if (state !== undefined) shown.set(entry.widget, state);
           }
         }
+        for (const ref of repeater.hide) {
+          for (const widget of widgetsAt(template.widget, ref.path)) {
+            if (!shown.has(widget)) {
+              shown.set(widget, { visible: false, enabled: true, checked: false });
+            }
+          }
+        }
         for (const field of repeater.fields) {
           for (const widget of widgetsAt(template.widget, field.path.path)) {
             const inEntry = templatePaths.find((p) => p.widget === widget)?.path ?? field.path.path;
