@@ -554,6 +554,10 @@ class Layout {
   private placeRows(list: Widget, props: Properties, rect: Rect, index: number): void {
     const rows = this.input.content?.rows(list);
     if (rows === undefined || rows.count === 0) return;
+    if (rows.place !== undefined) {
+      this.placeEntries(list, rect, index);
+      return;
+    }
     const border = props.point('bordersize') ?? { x: 0, y: 0 };
     const spacing = props.number('spacing') ?? 0;
     const horizontal = props.flag('horizontal') === true;

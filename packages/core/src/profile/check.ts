@@ -27,7 +27,13 @@ import { readSavePath } from './save-paths.ts';
 
 /** The widget kinds a repeater fills. */
 const LIST_KINDS = new Set(['listboxType', 'smoothListboxType', 'OverlappingElementsBoxType']);
-const WINDOW_KINDS = new Set(['windowType', 'containerWindowType']);
+/** The widget kinds a repeater with `place` fills: a list box's first rows can be another's. */
+const PLACE_KINDS = new Set([
+  'windowType',
+  'containerWindowType',
+  'listboxType',
+  'smoothListboxType',
+]);
 
 export interface ProfileCheckInput {
   /** The top-level window, as the playset's winning `.gui` file defines it. */
@@ -223,16 +229,14 @@ export function checkProfile(profile: WindowProfile, input: ProfileCheckInput): 
   const repeaters = profile.repeaters.filter((repeater: Repeater) => {
     let ok = !pathFails(repeater, repeater.path);
     for (const list of widgetsAt(input.window, repeater.path.path)) {
-      if (
-        repeater.place === undefined ? !LIST_KINDS.has(list.kind) : !WINDOW_KINDS.has(list.kind)
-      ) {
+      if (repeater.place === undefined ? !LIST_KINDS.has(list.kind) : !PLACE_KINDS.has(list.kind)) {
         error(
           repeater,
           'profile-unknown-path',
           repeater.path.range,
           repeater.place === undefined
             ? `A repeater fills a list box; "${repeater.path.path}" is a ${list.kind}.`
-            : `A repeater with "place" fills a window; "${repeater.path.path}" is a ${list.kind}.`,
+            : `A repeater with "place" fills a window or a list box; "${repeater.path.path}" is a ${list.kind}.`,
         );
         ok = false;
         break;

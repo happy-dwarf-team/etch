@@ -897,6 +897,36 @@ describe('layoutWindow: sample data', () => {
     expect(at('tall')).toEqual([0, 0]);
   });
 
+  it('puts the entries of a list box with a place where it says, not from its border', () => {
+    const { file, input } = setUp(`guiTypes = {
+      windowType = { name = "w" size = { x = 100 y = 100 }
+        listboxType = { name = "list" position = { x = 10 y = 10 } size = { x = 50 y = 80 } }
+      }
+      windowType = { name = "entry" size = { x = 50 y = 20 } }
+    }`);
+    const window = file.definitions[0] as Widget;
+    const entry = file.definitions[1] as Widget;
+    const l = layoutWindow(window, {
+      ...input,
+      content: {
+        text: () => undefined,
+        rows: (w) =>
+          w.name === 'list'
+            ? {
+                template: entry,
+                file,
+                count: 2,
+                place: { start: { x: 0, y: 20 }, step: { x: 0, y: 20 } },
+              }
+            : undefined,
+      },
+    });
+    expect(l.widgets.filter((w) => w.widget.name === 'entry').map((w) => [w.x, w.y])).toEqual([
+      [10, 30],
+      [10, 50],
+    ]);
+  });
+
   it("puts the entries the game's code places in a window in rows, a template's size apart", () => {
     const { file, input } = setUp(GUI);
     const window = file.definitions[0] as Widget;
