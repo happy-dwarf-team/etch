@@ -184,7 +184,8 @@
         { "required": ["position"] },
         { "required": ["frame"] },
         { "required": ["offset"] },
-        { "required": ["hidePosition"] }
+        { "required": ["hidePosition"] },
+        { "required": ["adopt"] }
       ],
       "properties": {
         "when": {
@@ -239,6 +240,16 @@
         "hidePosition": {
           "description": "Widgets the game keeps at their hide_position (else position) in this case, where the preview would draw them at their show_position.",
           "$ref": "#/definitions/paths"
+        },
+        "adopt": {
+          "description": "Top-level definitions the game's code puts in a widget, by that widget's path, each at its own .gui position.",
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "$ref": "#/definitions/text" }
+          }
         },
         "note": { "$ref": "#/definitions/text" }
       }

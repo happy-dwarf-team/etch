@@ -145,6 +145,7 @@ values); without `when` it always applies. Its effects:
 | `frame` | paths whose sprite frame (from 1) the game's code sets |
 | `hidePosition` | paths the game keeps at their `hide_position` (else `position`) in this case, where the preview would draw them at their `show_position` |
 | `offset` | paths the game's code moves by some pixels from where they would be, when the file has no `positionType` for it: `{ "x": -20 }` (each coordinate 0 when left out) |
+| `adopt` | top-level definitions the game's code puts in a widget, by that widget's path, each at its own `.gui` position: `{ "minimap_panel": ["minimap_bg"] }` |
 
 A rule may have a `note`. Groups apply first, then the rules in layer order (a later rule wins),
 then the hand toggles of the preview.

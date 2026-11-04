@@ -16,6 +16,9 @@ import {
   withView,
   widgetsAt,
   type WindowProfile,
+  sampleData,
+  layoutContentOf,
+  type SampleInput,
 } from '../src/profile/index.ts';
 import { InterfaceIndex } from '../src/model/interface-index.ts';
 import { profileVisibility, type CapturedWidget } from '../src/corpus/index.ts';
@@ -700,6 +703,68 @@ describe('the military tab with Cradle of Civilization (etch#254)', () => {
     // The survey's captures: the tab at y 156, infantry_type_button at 290, the title at 218.
     expect(placed('yes')).toEqual([156, 252, 130, 139, 218, 290]);
     expect(placed('no')).toEqual([140, 236, 130, 139, 218, 274]);
+  });
+});
+
+describe("a rule's adopt (the minimap panel's top-level definitions)", () => {
+  const file = readGuiFile(
+    parseScript(`guiTypes = {
+  windowType = { name = "panel" size = { x = 100 y = 50 } position = { x = -100 y = -50 } Orientation = "LOWER_RIGHT" }
+  iconType = { name = "panel_bg" spriteType = "GFX_plain" position = { x = 7 y = 9 } }
+}`),
+  );
+  const window = file.definitions.find((w) => w.name === 'panel') as Widget;
+  const profile = (rules: string): WindowProfile => {
+    const { file: written, diagnostics } = readProfile(
+      `{ "formatVersion": 1, "window": "panel", "rules": ${rules} }`,
+      { layer: 0, source: 'vanilla', file: 'panel.jsonc' },
+    );
+    expect(diagnostics).toEqual([]);
+    return layerProfiles('panel', written === undefined ? [] : [written]);
+  };
+  const place = (live?: SampleInput['live']): (readonly [number, number])[] => {
+    const adopting = profile('{ "bg": { "adopt": { "panel": ["panel_bg"] } } }');
+    const view = evaluateView(adopting, window, LARGE);
+    const sample = sampleData(adopting, window, view, {
+      localise: () => undefined,
+      length: 'typical',
+      template: () => undefined,
+      ...(live === undefined ? {} : { live }),
+    });
+    const layout = layoutWindow(window, {
+      file,
+      index: InterfaceIndex.of([], [{ path: 'interface/panel.gui', file }]),
+      exists: () => false,
+      assets: { textureSize: () => undefined, font: () => undefined },
+      screen: LARGE,
+      view: layoutViewOf(view),
+      content: layoutContentOf(sample),
+    });
+    return layout.widgets.filter((w) => w.widget.name === 'panel_bg').map((w) => [w.x, w.y]);
+  };
+
+  it('draws the definition in the widget at its own position', () => {
+    expect(place()).toEqual([[1827, 1039]]);
+  });
+
+  it('leaves it to a live snapshot, which says what the game showed', () => {
+    expect(place({ text: () => undefined, adopted: () => [] })).toEqual([]);
+    expect(
+      place({
+        text: () => undefined,
+        adopted: () => [{ name: 'panel_bg', rect: [30, 40, 16, 16] }],
+      }),
+    ).toEqual([[30, 40]]);
+  });
+
+  it('asks for at least one definition', () => {
+    const { diagnostics } = readProfile(
+      '{ "formatVersion": 1, "window": "panel", "rules": { "r": { "adopt": { "panel": [] } } } }',
+      { layer: 0, source: 'vanilla', file: 'panel.jsonc' },
+    );
+    expect(diagnostics.map((d) => d.message)).toEqual([
+      '"adopt" lists the top-level definitions a widget takes.',
+    ]);
   });
 });
 

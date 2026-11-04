@@ -79,6 +79,8 @@ export interface WidgetState {
   readonly offset?: { readonly x: number; readonly y: number };
   /** Whether the game keeps it at its `hide_position` (a rule's `hidePosition`). */
   readonly atHidePosition?: boolean;
+  /** Top-level definitions the game's code puts in it (a rule's `adopt`). */
+  readonly adopted?: readonly string[];
 }
 
 /** An exclusive group of the view: which member shows, and the widgets of each. */
@@ -169,6 +171,9 @@ export function evaluateView(
     }
     for (const ref of rule.hidePosition) {
       for (const w of widgetsAt(window, ref.path)) update(w, { atHidePosition: true });
+    }
+    for (const ref of rule.adopt) {
+      for (const w of widgetsAt(window, ref.path)) update(w, { adopted: ref.definitions });
     }
   }
 
