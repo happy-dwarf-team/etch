@@ -5,6 +5,10 @@
   "window": "countryreligionview",
   "checkedWith": "1.37.5",
   "rules": {
+    "religion-icon": {
+      "note": "The game's code puts the icon 62 px right of its .gui place (the coverage survey, every playset, 1920×1080 and 1280×720; etch#253).",
+      "offset": { "countryreligionview/current_religion_icon": { "x": 62 } },
+    },
     "hidden": {
       "note": "Hidden in every view of the coverage survey (the base game): the game decides these from its data or a click; show one by hand.",
       "hide": [

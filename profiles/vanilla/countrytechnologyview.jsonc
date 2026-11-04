@@ -5,6 +5,10 @@
   "window": "countrytechnologyview",
   "checkedWith": "1.37.5",
   "rules": {
+    "institutions-window": {
+      "note": "The game places the institutions window as if the tab were at y 0, not at its show_position's 140 (the coverage survey, every playset, 1920×1080 and 1280×720; etch#253). Nothing in the tab's code that sets a position explains it.",
+      "offset": { "countrytechnologyview/institutions_window": { "y": -140 } },
+    },
     "hidden": {
       "note": "Hidden in every view of the coverage survey (the base game): the game decides these from its data or a click; show one by hand.",
       "hide": [

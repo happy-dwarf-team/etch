@@ -575,6 +575,10 @@
         "provinceview/province_window/attrition_value",
       ],
     },
+    "great-projects-window": {
+      "note": "The game shows the window 10 px lower than its .gui place (the coverage survey, every playset, 1920×1080 and 1280×720; etch#253). CProvinceViewBuildings sets no position.",
+      "offset": { "provinceview/buildings_window/great_projects_window": { "y": 10 } },
+    },
     "hidden-province_window": {
       "note": "Hidden in the corpus captures of an own province (Macedonia, Russia 1719): the game decides these from data every frame; show one by hand.",
       "hide": [
