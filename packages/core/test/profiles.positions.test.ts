@@ -1,9 +1,9 @@
 /// <reference types="node" />
 // Local only: the province view laid out offline against the corpus captures, in the four corpus
 // playsets. Every widget of provinceview the game shows, laid out in its profile's view at the
-// capture's selector values and size, is where the game drew it (within 1 px); the 2.0.0 trial
-// found the base values 62 to 75 px off, as the game's code moves them (the profile's base-values
-// rule). With ETCH_CORPUS_SAVES naming a folder that holds the corpus saves, every text the profile
+// capture's selector values and size, is where the game drew it (within 1 px), its rect fitted as
+// Tongs fits the game's (`planCapture`, as `compare` does); the 2.0.0 trial found the base values
+// 62 to 75 px off, as the game's code moves them (the profile's base-values rule). With ETCH_CORPUS_SAVES naming a folder that holds the corpus saves, every text the profile
 // fills from the save is also the one the game shows in that widget. Read in place from an
 // installed game and its Workshop items (ETCH_GAME_PATH); skipped in CI, which has no game.
 import { readFileSync, readdirSync } from 'node:fs';
@@ -25,16 +25,17 @@ import {
   layerProfiles,
   layoutViewOf,
   readProfile,
-  windowPaths,
   type ProfileFile,
 } from '../src/profile/index.ts';
 import { readSave } from '../src/save/index.ts';
 import {
   findView,
+  parseCaptureRecord,
   parseCorpusManifest,
+  planCapture,
   profileSaveTexts,
   viewInPlayset,
-  type CapturedWidget,
+  type CorpusManifest,
 } from '../src/corpus/index.ts';
 
 const gamePath = process.env['ETCH_GAME_PATH'] ?? '';
@@ -69,6 +70,18 @@ function shipped(source: string): ProfileFile[] {
 const manifest = parseCorpusManifest(
   JSON.parse(readFileSync(new URL('../../../corpus/manifest.json', import.meta.url), 'utf8')),
 ).manifest;
+
+/** The manifest without `codeMoved`: a capture's rect must not put a widget where the game has it. */
+const unmoved: CorpusManifest | undefined =
+  manifest === undefined
+    ? undefined
+    : {
+        ...manifest,
+        windows: manifest.windows.map((w) => ({
+          ...w,
+          views: w.views.map((v) => ({ ...v, codeMoved: [] })),
+        })),
+      };
 
 describe.skipIf(gamePath === '')('the province view laid out offline', () => {
   for (const [id, playset] of Object.entries(PLAYSETS)) {
@@ -106,9 +119,10 @@ describe.skipIf(gamePath === '')('the province view laid out offline', () => {
       for (const resolution of readdirSync(folder)) {
         const [width, height] = resolution.split('x').map(Number) as [number, number];
         for (const viewName of ['province', 'province-foreign']) {
-          const capture = JSON.parse(
-            readFileSync(new URL(`${resolution}/${viewName}.json`, folder), 'utf8'),
-          ) as { widgets: CapturedWidget[] };
+          const record = parseCaptureRecord(
+            JSON.parse(readFileSync(new URL(`${resolution}/${viewName}.json`, folder), 'utf8')),
+          ).capture;
+          if (record === undefined || unmoved === undefined) throw new Error('no capture');
           const found = manifest === undefined ? undefined : findView(manifest, viewName);
           const corpusView = found === undefined ? undefined : viewInPlayset(found.view, { id });
           const selectors = corpusView?.selectors ?? {};
@@ -120,26 +134,16 @@ describe.skipIf(gamePath === '')('the province view laid out offline', () => {
             screen,
             view: layoutViewOf(view),
           });
-          const root = capture.widgets.find((w) => w.path === 'provinceview');
+          const root = record.widgets.find((w) => w.path === 'provinceview');
           if (root === undefined) throw new Error('no provinceview in the capture');
-          const shown = new Map<string, CapturedWidget>();
-          const walk = (w: CapturedWidget, parent: boolean): void => {
-            const visible = parent && w.visible;
-            if (visible) shown.set(w.path.toLowerCase(), w);
-            for (const child of w.children ?? []) walk(child, visible);
-          };
-          walk(root, true);
-          for (const entry of windowPaths(window)) {
-            const game = shown.get(entry.path.toLowerCase());
-            if (game === undefined) continue;
-            const laid = layout.widgets.find(
-              (w) => w.widget === entry.widget && w.row === undefined,
-            );
-            if (laid === undefined) continue;
-            const dx = Math.round(laid.x - game.rect.x);
-            const dy = Math.round(laid.y - game.rect.y);
+          const plan = planCapture({ manifest: unmoved, record, windows: [{ layout }] });
+          for (const w of plan.widgets) {
+            if (w.hidden || w.unplaced === true || w.laidOut?.row !== undefined) continue;
+            if (w.rect === undefined || w.captured === undefined) continue;
+            const dx = w.rect.x - w.captured.rect.x;
+            const dy = w.rect.y - w.captured.rect.y;
             if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
-              off.push(`${resolution} ${viewName} ${entry.path}: ${String(dx)}, ${String(dy)} px`);
+              off.push(`${resolution} ${viewName} ${w.path}: ${String(dx)}, ${String(dy)} px`);
             }
           }
           const province = corpusView?.data?.province;
