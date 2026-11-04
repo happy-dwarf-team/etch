@@ -925,6 +925,23 @@ describe('layoutWindow: sample data', () => {
       [10, 30],
       [10, 50],
     ]);
+    // Only the rows that fit whole show: 80 high from y 20, 20 a row.
+    const many = layoutWindow(window, {
+      ...input,
+      content: {
+        text: () => undefined,
+        rows: (w) =>
+          w.name === 'list'
+            ? {
+                template: entry,
+                file,
+                count: 5,
+                place: { start: { x: 0, y: 20 }, step: { x: 0, y: 20 } },
+              }
+            : undefined,
+      },
+    });
+    expect(many.widgets.filter((w) => w.widget.name === 'entry')).toHaveLength(3);
   });
 
   it("puts the entries the game's code places in a window in rows, a template's size apart", () => {

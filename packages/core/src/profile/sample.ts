@@ -213,6 +213,15 @@ export function sampleData(
     const set = input.count?.(repeater.id);
     const firstPath = found[0] === undefined ? undefined : pathOf.get(found[0]);
     const liveRows = firstPath === undefined ? undefined : input.live?.rows?.(firstPath);
+    // A list box's `place` says its first rows have another template. A snapshot numbers the rows
+    // over both, so it draws them itself.
+    if (
+      liveRows !== undefined &&
+      repeater.place !== undefined &&
+      found.some((w) => /listbox/i.test(w.kind))
+    ) {
+      continue;
+    }
     const count = set ?? liveRows ?? entries?.length ?? repeater.count;
     const layer: DataLayer =
       liveRows !== undefined ? 'live' : entries === undefined ? 'generated' : 'save';
