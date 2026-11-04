@@ -79,10 +79,7 @@ const unmoved: CorpusManifest | undefined =
         ...manifest,
         windows: manifest.windows.map((w) => ({
           ...w,
-          views: w.views.map((v) => {
-            const { codeMoved: _, ...view } = v;
-            return view;
-          }),
+          views: w.views.map((v) => ({ ...v, codeMoved: [] })),
         })),
       };
 
