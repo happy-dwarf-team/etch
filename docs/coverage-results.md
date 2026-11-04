@@ -81,7 +81,15 @@ what they were made to, not how far the rules carry.** Kobildzan was not used fo
 | Anbennar alone, first run, all views | 96.6 % | 96.8 % | 96.7 % |
 
 The first run does not move, so the fixes cost nothing on Russia and Verne. Kobildzan barely moves:
-what was fixed from France does not reach Anbennar, whose profiles have their own rules.
+what was fixed from France does not reach Anbennar, whose profiles have their own rules. On `main`
+with etch#308 and etch#309 too, France is 98.4 and 97.4 %, Kobildzan 95.6 and 94.9 %.
+
+**The moves with no setter in the code** (etch#253) hold on both unseen sets:
+`institutions_window` −140, `great_projects_window` +10 and `current_religion_icon` +62 have no
+position difference in either. What the code sets is the same in every state seen:
+`religionpanel_bg_top` is 569 × 590 and `dev_share_pie_chart` 32 × 32 on Russia, Verne, France and
+Kobildzan, so a rule can say so (etch#256). `stability_value` and `stability_progress_threshold`
+are 48 px right of the layout on both sets, as on Russia and not on Verne.
 
 Not measured: the other planned sets (Muscovy 1466, Ming, Venice, Bluescale 1472, Arg-Ordstun 1582),
 1280×720, pixels (`compare --gpu` over this run), and Anbennar with its usual mods: Kobildzan's save
