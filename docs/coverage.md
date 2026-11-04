@@ -80,6 +80,26 @@ comparison compares them as it does the corpus (`compare --corpus`).
 Views are captured at 1920×1080; the views whose windows have another variant
 at 1280×720 are captured there too.
 
+## Other countries
+
+The rules of the profiles were drafted from the survey's captures, so a share
+measured on those captures says what the rules were made to say. The run on
+other countries takes the same views from other saves, the same windows in other
+game states, as data the rules were not made from (etch#258). A figure stops
+being such data as soon as a rule changes because of it: results keep the
+measure before the fixes apart from the one after them, and a claim about how
+far a fixed rule carries needs a country it was not fixed on.
+
+Its playsets have the mods of `vanilla` or `anbennar-alone`, the views of that
+playset without the main menu's, and a save of their own; a province view's
+recipe takes a province of the same kind from that save. A save may be a copy
+with the player moved to another country (`player` in its `meta`, `human` in the
+gamestate): the world stays, the country changes. Ironman saves are out: Anvil
+suspends Tongs in them and the game rewrites them on load.
+
+A view the country lacks (the Celestial Empire's for a country outside it, the
+war overview without a war) fails its recipe. It is listed, not measured.
+
 ## Measures
 
 Each captured view is measured three ways, from the capture's widget trees and
@@ -163,6 +183,10 @@ screenshots and the reports. In the repository: `coverage/survey.json` (the
 rules), `coverage/inventory.json` (every view with its recipe, and every
 top-level window's status and confidence), this file and the results
 summary.
+
+`coverage --out` keeps the part of the results between
+`<!-- other countries: start -->` and `<!-- other countries: end -->`, which is
+written by hand.
 
 Views that Escape does not close are captured last, each in a game of its own,
 so `run` needs `--max-starts` above their number. A run that stops because the

@@ -15,6 +15,8 @@ import { runCoverage } from './coverage.ts';
 import { coverageMarkdown } from './coverage-report.ts';
 
 const repository = join(import.meta.dirname, '..', '..', '..');
+/** The hand-written part of the summary `--out` keeps: the run on other countries (etch#258). */
+const KEPT = { start: '<!-- other countries: start -->', end: '<!-- other countries: end -->' };
 const { values } = parseArgs({
   options: {
     playset: { type: 'string', multiple: true },
@@ -44,7 +46,18 @@ const markdown = coverageMarkdown(result);
 await writeFile(join(folder, 'coverage.md'), markdown);
 if (values.out !== undefined) {
   await mkdir(dirname(values.out), { recursive: true });
-  await writeFile(values.out, markdown);
+  const before = await readFile(values.out, 'utf8').catch(() => '');
+  const start = before.indexOf(KEPT.start);
+  const end = before.indexOf(KEPT.end);
+  await writeFile(
+    values.out,
+    start < 0 || end < 0
+      ? markdown
+      : markdown.replace(
+          '## What differs',
+          () => `${before.slice(start, end + KEPT.end.length)}\n\n## What differs`,
+        ),
+  );
 }
 if (values.inventory !== undefined) {
   const manifest = JSON.parse(
