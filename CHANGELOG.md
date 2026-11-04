@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.5.0](https://github.com/happy-dwarf-team/etch/compare/v2.4.0...v2.5.0) (2026-11-04)
+
+
+### Features
+
+* **core:** let a profile place top-level definitions in a widget ([#309](https://github.com/happy-dwarf-team/etch/issues/309)) ([480950c](https://github.com/happy-dwarf-team/etch/commit/480950c596f16f4970b9008523bbe7d0937a9ada)), closes [#256](https://github.com/happy-dwarf-team/etch/issues/256)
+
+
+### Bug Fixes
+
+* **core:** take a sprite's last definition, as the game does ([#308](https://github.com/happy-dwarf-team/etch/issues/308)) ([92228f5](https://github.com/happy-dwarf-team/etch/commit/92228f53a3beb13b4926a1f7ff1fb822c1c23ccb)), closes [#256](https://github.com/happy-dwarf-team/etch/issues/256)
+* **profiles:** let the rules hold on other countries' views ([#310](https://github.com/happy-dwarf-team/etch/issues/310)) ([ccc627b](https://github.com/happy-dwarf-team/etch/commit/ccc627b21f76f1900731a07b370e90e3a9af2824)), closes [#258](https://github.com/happy-dwarf-team/etch/issues/258)
+
 ## [2.4.0](https://github.com/happy-dwarf-team/etch/compare/v2.3.1...v2.4.0) (2026-11-04)
 
 
