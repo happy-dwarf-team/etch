@@ -6,8 +6,8 @@
 [![License: MIT](https://img.shields.io/github/license/happy-dwarf-team/etch)](LICENSE)
 
 Etch is a Visual Studio Code extension for Europa Universalis IV interface
-mods: edit a `.gui` or `.gfx` file and see the window as the game would show
-it, within moments, and have each saved file reloaded into the running game.
+mods: edit a `.gui` or `.gfx` file and see the window close to how the game
+shows it, within moments, and have each saved file reloaded into the running game.
 Website: [etch.happydwarf.dev](https://etch.happydwarf.dev/).
 
 Status: 2.x, whose later releases the [changelog](CHANGELOG.md) lists. 2.0.0,
@@ -36,13 +36,14 @@ in the wayfinder maps in this repository's issues (label `wayfinder:map`).
 - The editor is a Visual Studio Code extension: preview, widget outline,
   diagnostics and jump from a widget to its source line.
 - One preview, drawn by the offline renderer, which needs no game: a window in
-  one view, with sample data, as the game would show it.
+  one view, with sample data, close to how the game shows it.
 - The live game is the game itself, with Etch's Anvil plugin: reloads, pick
   mode and live snapshots.
 - Precision is measured against the game, not claimed: the precision corpus
-  of vanilla, Proper 2K UI Enhanced and Anbennar, at seven resolutions from
-  1280×720 to 3440×1440. The preview also offers 3840×2160, not yet measured
-  against the game.
+  of vanilla and Anbennar at seven resolutions from 1280×720 to 3440×1440, and
+  Proper 2K UI Enhanced at the two it is made for. The preview also offers
+  3840×2160, not yet measured against the game. The
+  [coverage survey](docs/coverage-results.md) has the share of widgets that match.
 - Target: EU4 1.37.5 (Steam, win64) on Windows.
 
 See [GLOSSARY.md](GLOSSARY.md) for the terms used in the issues.
