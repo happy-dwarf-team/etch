@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.5.2](https://github.com/happy-dwarf-team/etch/compare/v2.5.1...v2.5.2) (2026-11-05)
+
+
+### Bug Fixes
+
+* **core:** keep the size steps in the view a snapshot gives a window without a profile ([#316](https://github.com/happy-dwarf-team/etch/issues/316)) ([b71f57f](https://github.com/happy-dwarf-team/etch/commit/b71f57f70b3ddac2cab3df15d986eeea25593256))
+* **core:** take an adopted widget's size from the snapshot ([#320](https://github.com/happy-dwarf-team/etch/issues/320)) ([4001935](https://github.com/happy-dwarf-team/etch/commit/4001935d3579f94175a03fa5cf00d149aa43e490)), closes [#254](https://github.com/happy-dwarf-team/etch/issues/254) [#257](https://github.com/happy-dwarf-team/etch/issues/257)
+
 ## [2.5.1](https://github.com/happy-dwarf-team/etch/compare/v2.5.0...v2.5.1) (2026-11-05)
 
 
