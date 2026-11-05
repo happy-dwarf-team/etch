@@ -658,6 +658,16 @@ describe('the military tab with Cradle of Civilization (etch#254)', () => {
     guiButtonType = { name = "close_button" position = { x = 514 y = -1 } }
     instantTextBoxType = { name = "window_title" position = { x = 15 y = 78 } maxWidth = 512 maxHeight = 20 }
     guiButtonType = { name = "infantry_type_button" position = { x = 57 y = 134 } }
+    guiButtonType = {
+      name = "activate_all"
+      if_resolution = { max_height = 867 position = { x = 108 y = 507 } }
+      if_resolution = { min_height = 868 position = { x = 58 y = 511 } }
+    }
+    guiButtonType = {
+      name = "button_makeheirgeneral"
+      if_resolution = { max_height = 867 position = { x = 468 y = 466 } }
+      if_resolution = { min_height = 868 position = { x = 468 y = 830 } }
+    }
   }
 }`),
   );
@@ -696,13 +706,16 @@ describe('the military tab with Cradle of Civilization (etch#254)', () => {
       'close_button',
       'window_title',
       'infantry_type_button',
+      'activate_all',
+      'button_makeheirgeneral',
     ].map(at);
   };
 
   it('moves the tab down by army_professionalism, keeping its background, close button and title', () => {
-    // The survey's captures: the tab at y 156, infantry_type_button at 290, the title at 218.
-    expect(placed('yes')).toEqual([156, 252, 130, 139, 218, 290]);
-    expect(placed('no')).toEqual([140, 236, 130, 139, 218, 274]);
+    // The survey's captures: the tab at y 156, infantry_type_button at 290, the title at 218, and
+    // the bottom row with the tab, whose `.gui` place depends on the screen: 667 and 986 at 1080.
+    expect(placed('yes')).toEqual([156, 252, 130, 139, 218, 290, 667, 986]);
+    expect(placed('no')).toEqual([140, 236, 130, 139, 218, 274, 651, 970]);
   });
 });
 
@@ -722,7 +735,7 @@ describe("a rule's adopt (the minimap panel's top-level definitions)", () => {
     expect(diagnostics).toEqual([]);
     return layerProfiles('panel', written === undefined ? [] : [written]);
   };
-  const place = (live?: SampleInput['live']): (readonly [number, number])[] => {
+  const placed = (live?: SampleInput['live']) => {
     const adopting = profile('{ "bg": { "adopt": { "panel": ["panel_bg"] } } }');
     const view = evaluateView(adopting, window, LARGE);
     const sample = sampleData(adopting, window, view, {
@@ -740,8 +753,9 @@ describe("a rule's adopt (the minimap panel's top-level definitions)", () => {
       view: layoutViewOf(view),
       content: layoutContentOf(sample),
     });
-    return layout.widgets.filter((w) => w.widget.name === 'panel_bg').map((w) => [w.x, w.y]);
+    return layout.widgets.filter((w) => w.widget.name === 'panel_bg');
   };
+  const place = (live?: SampleInput['live']) => placed(live).map((w) => [w.x, w.y]);
 
   it('draws the definition in the widget at its own position', () => {
     expect(place()).toEqual([[1827, 1039]]);
@@ -755,6 +769,19 @@ describe("a rule's adopt (the minimap panel's top-level definitions)", () => {
         adopted: () => [{ name: 'panel_bg', rect: [30, 40, 16, 16] }],
       }),
     ).toEqual([[30, 40]]);
+  });
+
+  it('takes the size the game gave it from the snapshot', () => {
+    const rects = (rect: readonly [number, number, number, number]) =>
+      placed({ text: () => undefined, adopted: () => [{ name: 'panel_bg', rect }] }).map((w) => [
+        w.x,
+        w.y,
+        w.width,
+        w.height,
+      ]);
+    // A ledger column's text and a professionalism marker, as the survey's captures have them.
+    expect(rects([468, 347, 121, 18])).toEqual([[468, 347, 121, 18]]);
+    expect(rects([133, 251, 23, 23])).toEqual([[133, 251, 23, 23]]);
   });
 
   it('asks for at least one definition', () => {

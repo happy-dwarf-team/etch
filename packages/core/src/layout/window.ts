@@ -263,7 +263,9 @@ class Layout {
   /** The widget being drawn, for its sample text. */
   private current: Widget | undefined;
   /** The definition being placed where a live snapshot showed it (`placeAdopted`). */
-  private adopting: { widget: Widget; x: number; y: number; text?: string } | undefined;
+  private adopting:
+    | { widget: Widget; x: number; y: number; width: number; height: number; text?: string }
+    | undefined;
 
   constructor(input: LayoutInput) {
     this.input = input;
@@ -400,7 +402,12 @@ class Layout {
     }
 
     rect = this.livePosition(rect, state, drawStart);
-    if (this.adopting?.widget === widget) rect = this.moveTo(rect, this.adopting, drawStart);
+    // The game's code sizes what it adds (a ledger column's text, the professionalism markers), and
+    // the snapshot has that size. What is drawn stays as the definition has it.
+    if (this.adopting?.widget === widget) {
+      const { width, height } = this.adopting;
+      rect = { ...this.moveTo(rect, this.adopting, drawStart), width, height };
+    }
 
     const index = this.widgets.length;
     this.widgets.push({
@@ -445,6 +452,8 @@ class Layout {
               widget: found.item,
               x: entry.rect[0],
               y: entry.rect[1],
+              width: entry.rect[2],
+              height: entry.rect[3],
               ...(entry.text === undefined ? {} : { text: entry.text }),
             };
       this.place(found.item, rect, index, undefined);
