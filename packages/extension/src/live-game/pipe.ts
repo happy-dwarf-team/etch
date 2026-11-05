@@ -193,7 +193,7 @@ export interface SnapshotWidget {
   readonly checked: boolean;
   /** `undefined` for a widget without text. */
   readonly text: string | undefined;
-  /** The text with the game's colour codes (`Â§Gâ€¦Â§!`), when it has some. */
+  /** The text with the game's colour codes (`§G…§!`), when it has some. */
   readonly markup?: string;
   readonly rect: readonly [number, number, number, number];
 }
