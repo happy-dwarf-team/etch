@@ -32,7 +32,7 @@ jobs:
     # approval, and a group over the whole run would hold every later push behind it, so no
     # release pull request would appear until the approval (2.5.1 held 2.5.2 back).
     concurrency:
-      group: release
+      group: release-please
       cancel-in-progress: false
     permissions:
       contents: write
