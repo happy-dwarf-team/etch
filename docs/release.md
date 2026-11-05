@@ -113,7 +113,9 @@ the first release:
 
 Approve the `vscode-marketplace` deployment of the `marketplace` job; it
 publishes the release's VSIX. The Marketplace scans the file and lists it after
-a few minutes.
+a few minutes. While it waits, later pushes still update the release pull request.
+A deployment no longer needed, because the VSIX was uploaded by hand, can be
+cancelled on the run's page.
 
 Without the Entra ID identity and a `VSCE_PAT`, the job's summary links the
 VSIX instead. Download it from the GitHub release and, at
