@@ -421,12 +421,10 @@ export function liveView(window: Widget, texts: LiveTexts, screen: Screen): Layo
   // the game does not create is in no snapshot, and stays undrawn.
   const base = screenLayoutView(window, screen);
   return {
+    ...base,
     shows: (widget) => {
       const path = pathOf.get(widget);
       return base.shows(widget) && (path === undefined || texts.state?.(path)?.visible !== false);
     },
-    movedTo: (widget) => base.movedTo(widget),
-    movedAxis: (widget) => base.movedAxis?.(widget),
-    frame: () => undefined,
   };
 }
