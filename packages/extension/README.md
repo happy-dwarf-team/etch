@@ -9,16 +9,16 @@ saved file reloaded into the game's own window. Website:
 
 - Windows (x64) and Visual Studio Code 1.100 or later.
 - Europa Universalis IV 1.37.5 installed through Steam, or its folder in
-  `etch.gamePath`. Etch draws with the game's own textures, fonts and
-  localisation, and ships none of them.
-- For the live game: the same game folder with build 1.37.5 exactly (the live
-  game refuses any other `eu4.exe`). The extension creates its private install
+  `etch.gamePath` (a GOG game too, for the preview). Etch draws with the game's
+  own textures, fonts and localisation, and ships none of them.
+- For the live game: the same game folder with the Steam build 1.37.5 exactly
+  (the live game refuses any other `eu4.exe`). The extension creates its private install
   on first use, after one confirmation; it needs no other download.
 
 ## Preview
 
-Open a `.gui` file and run **Etch: Open Preview**, or click the preview button
-in the editor title. The preview opens beside the editor and shows the
+Open your mod's folder, open a `.gui` file and run **Etch: Open Preview** from the
+Command Palette (Ctrl+Shift+P), or click the preview button in the editor title. The preview opens beside the editor and shows the
 **previewed window**: the top-level window that holds the cursor. It follows
 the unsaved editor buffer on every change, including changes to the mod's
 `.gfx` and localisation files, and the model's diagnostics (missing sprites,
