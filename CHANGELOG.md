@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.1](https://github.com/happy-dwarf-team/etch/compare/v2.5.0...v2.5.1) (2026-11-05)
+
+
+### Bug Fixes
+
+* **core:** read a GOG install's own profile folder ([#314](https://github.com/happy-dwarf-team/etch/issues/314)) ([25c9c2a](https://github.com/happy-dwarf-team/etch/commit/25c9c2a9d3f9f0f336aff3f1c10cfe8cf981d44d))
+
 ## [2.5.0](https://github.com/happy-dwarf-team/etch/compare/v2.4.0...v2.5.0) (2026-11-04)
 
 
