@@ -23,7 +23,7 @@ export interface LiveWidget {
   readonly enabled: boolean;
   readonly checked: boolean;
   readonly text?: string;
-  /** The text with the game's colour codes (`Â§Gâ€¦Â§!`), when it has some: what the preview draws. */
+  /** The text with the game's colour codes (`§G…§!`), when it has some: what the preview draws. */
   readonly markup?: string;
   readonly rect: readonly [number, number, number, number];
 }
@@ -205,7 +205,7 @@ export function liveMatch(
       const list = row[1] ?? '';
       rows.set(list, Math.max(rows.get(list) ?? 0, Number(row[2])));
     }
-    // The colours too: the game colours values with codes (Â§Gâ€¦Â§!), which Tongs' `text` drops.
+    // The colours too: the game colours values with codes (§G…§!), which Tongs' `text` drops.
     const text = w.markup ?? w.text;
     if (text === undefined) continue;
     if (known.has(row === null ? path : (row[1] ?? ''))) texts.set(path, text);

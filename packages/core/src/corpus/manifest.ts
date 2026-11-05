@@ -66,7 +66,7 @@ export interface CorpusPlayset {
   readonly windows: readonly string[];
   /**
    * The resolutions this playset is captured at, as `3440x1440`; every corpus resolution when left
-   * out. Proper 2K UI Enhanced is made for screens of at least 2560Ă—1440, so its playsets are
+   * out. Proper 2K UI Enhanced is made for screens of at least 2560×1440, so its playsets are
    * captured there and above only.
    */
   readonly resolutions?: readonly string[];
