@@ -24,14 +24,16 @@ on:
 
 permissions: {}
 
-concurrency:
-  group: release
-  cancel-in-progress: false
-
 jobs:
   release-please:
     if: github.event_name == 'push'
     runs-on: ubuntu-24.04
+    # On this job and not on the workflow: a release's `marketplace` job waits for a maintainer's
+    # approval, and a group over the whole run would hold every later push behind it, so no
+    # release pull request would appear until the approval (2.5.1 held 2.5.2 back).
+    concurrency:
+      group: release
+      cancel-in-progress: false
     permissions:
       contents: write
       issues: write
