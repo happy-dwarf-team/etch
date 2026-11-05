@@ -13,6 +13,9 @@ export const EU4_STEAM_APP_ID = '236850';
 /** The game folder's name inside a Steam library. */
 export const EU4_STEAM_FOLDER = 'Europa Universalis IV';
 
+/** What GOG Galaxy and GOG's installers leave in the game folder. */
+const GOG_MARKER = 'goggame-2057001589.info';
+
 /** SHA-256 of `eu4.exe` 1.37.5 on Steam, win64, uppercase hex. */
 export const SUPPORTED_GAME_EXE_SHA256 =
   '9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A';
@@ -131,7 +134,7 @@ export function workshopFolderFor(gameFolder: string): string {
 /**
  * The player's profile folder, as the game finds it: the path in the game's `userdir.txt` when that
  * file is not empty (Steam ships it empty), else `Paradox Interactive/Europa Universalis IV` in the
- * Documents folder.
+ * Documents folder, or `Europa Universalis IV GOG` for a GOG install, whose `eu4.exe` adds " GOG".
  */
 export async function findProfileFolder(
   gameFolder: string | undefined,
@@ -153,7 +156,17 @@ export async function findProfileFolder(
       )) ?? '',
       environment.env,
     ) || join(environment.homedir, 'Documents');
-  return join(documents, 'Paradox Interactive', 'Europa Universalis IV');
+  const gog =
+    gameFolder !== undefined &&
+    (await stat(join(gameFolder, GOG_MARKER)).then(
+      (found) => found.isFile(),
+      () => false,
+    ));
+  return join(
+    documents,
+    'Paradox Interactive',
+    gog ? 'Europa Universalis IV GOG' : 'Europa Universalis IV',
+  );
 }
 
 /** The game build in a game folder. */
