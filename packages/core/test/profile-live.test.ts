@@ -403,4 +403,47 @@ describe('a live snapshot without a profile (etch#255)', () => {
     expect(hidden === undefined ? undefined : view.shows(hidden)).toBe(false);
     expect(unread === undefined ? undefined : view.shows(unread)).toBe(true);
   });
+
+  it('keeps the size steps and the rows of a window without a profile', () => {
+    const windowNamed = (text: string): Widget =>
+      readGuiFile(parseScript(`guiTypes = { ${text} }`)).definitions[0] as Widget;
+    const trade = windowNamed(`windowType = { name = "countrytradeview"
+      windowType = { name = "trade_node_list_window"
+        listboxType = { name = "tradenode_list" }
+      }
+    }`);
+    const list = widgetsAt(trade, 'countrytradeview/trade_node_list_window/tradenode_list')[0];
+    expect(list).toBeDefined();
+    const tradeView = liveView(trade, liveMatch({ ...snapshot, widgets: [] }, trade).texts, SCREEN);
+    expect(list === undefined ? undefined : tradeView.stepped?.(list)).toBe('grown');
+
+    const stability = windowNamed(`windowType = { name = "countrystabilityview"
+      windowType = { name = "cv_governmentrebels_handlerebels"
+        buttonType = { name = "back_button" }
+      }
+    }`);
+    const back = widgetsAt(
+      stability,
+      'countrystabilityview/cv_governmentrebels_handlerebels/back_button',
+    )[0];
+    expect(back).toBeDefined();
+    const stabilityView = liveView(
+      stability,
+      liveMatch({ ...snapshot, widgets: [] }, stability).texts,
+      SCREEN,
+    );
+    expect(back === undefined ? undefined : stabilityView.stepped?.(back)).toBe('moved');
+    expect(back === undefined ? undefined : stabilityView.steppedFurther?.(back)).toBe(30);
+
+    const shield = windowNamed('windowType = { name = "shield" }');
+    const shieldView = liveView(
+      shield,
+      liveMatch({ ...snapshot, widgets: [] }, shield).texts,
+      SCREEN,
+    );
+    expect(shieldView.row?.(shield)).toMatchObject({
+      start: 'shield_position',
+      step: 'shield_offset',
+    });
+  });
 });
