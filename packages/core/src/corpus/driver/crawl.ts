@@ -23,7 +23,15 @@ import { dirname, join } from 'node:path';
 import type { RecipeStart, RecipeStep } from '../manifest.ts';
 import { matchesWidgetPattern } from '../widget-path.ts';
 import type { CaptureSession } from './plan.ts';
-import { runSession, waitResume, type RunOptions, type SessionReport } from './run.ts';
+import {
+  LOCK_START_MARGIN_MS,
+  LOCK_VIEW_MARGIN_MS,
+  lockLeftMs,
+  runSession,
+  waitResume,
+  type RunOptions,
+  type SessionReport,
+} from './run.ts';
 import type { Tongs, TongsAnswer } from './tongs.ts';
 import {
   DEFAULT_TIMING,
@@ -229,7 +237,12 @@ export async function crawlGame(
   // capture, whose shots must not catch an animation. A view its steps did not open in time is
   // caught by its signature.
   const timing = { ...(ctx.timing ?? DEFAULT_TIMING), stepSettleMs: CRAWL_SETTLE_MS };
-  const deadline = ctx.now().getTime() + rules.sessionMinutes * 60_000;
+  const deadline =
+    ctx.now().getTime() +
+    Math.min(
+      rules.sessionMinutes * 60_000,
+      lockLeftMs(ctx.lockExpiresAt, ctx.now()) - LOCK_VIEW_MARGIN_MS,
+    );
   crawl.starts++;
   const window = await gameWindow(ctx);
   const startSignature = await signature(ctx.tongs);
@@ -536,8 +549,8 @@ export async function runCrawl(
   await mkdir(runDir, { recursive: true });
   const sessions: SessionReport[] = [];
   for (let start = 0; start < options.maxStarts && !crawl.done; start++) {
-    if (options.lockExpiresAt !== undefined && now() >= options.lockExpiresAt) {
-      return { crawl, sessions, stopped: "The lab's game lock expired." };
+    if (lockLeftMs(options.lockExpiresAt, now()) < LOCK_START_MARGIN_MS) {
+      return { crawl, sessions, stopped: "The lab's game lock ends too soon to start a game." };
     }
     print(`crawl ${crawl.playset} ${resolution} ${crawl.start}: start ${String(crawl.starts + 1)}`);
     const result = await runSession(

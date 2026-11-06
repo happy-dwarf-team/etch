@@ -55,6 +55,8 @@ export const DEFAULT_TIMING: CaptureTiming = {
 /** What a session knows when it captures a view. */
 export interface ViewContext {
   readonly tongs: Tongs;
+  /** When the lab's game lock of the run expires (`RunOptions`). */
+  readonly lockExpiresAt?: Date;
   readonly manifest: CorpusManifest;
   readonly playset: string;
   readonly resolution: Screen;

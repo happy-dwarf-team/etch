@@ -339,8 +339,14 @@ When another session holds the lock, the run stops before anything starts,
 with that session's name: wait for it or ask the user. A run started under a
 batch's lock (`Invoke-WithLabGameLock`, or `EU4LAB_GAME_LOCK_TOKEN` set to the
 token of `Enter-LabGameLock`) keeps that lock and leaves releasing it to the
-batch. No session starts once the lock has expired: the run stops with the
-captures it has.
+batch.
+
+**Every game is gone before the lock ends**, since from then on another session
+may start one. With less than 4 minutes of the lock left no game starts, with
+less than 2 no view starts and no game is waited for, and a game still running
+45 seconds before the end is closed whatever it is doing. The run then stops
+with the captures it has and lists the rest as not tried, so a batch gives its
+lock the time its views need and the next batch takes up what is left.
 
 What a run does:
 
