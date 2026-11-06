@@ -266,6 +266,8 @@ class Layout {
   private adopting:
     | { widget: Widget; x: number; y: number; width: number; height: number; text?: string }
     | undefined;
+  /** The windows a live snapshot could not move as one (`livePosition`), by their index. */
+  private readonly movedByChildren = new Set<number>();
 
   constructor(input: LayoutInput) {
     this.input = input;
@@ -401,7 +403,7 @@ class Layout {
       rect = { x, y, ...sizeIn(props.size('size'), parent) };
     }
 
-    rect = this.livePosition(rect, state, drawStart);
+    rect = this.livePosition(rect, state, drawStart, kind, parentIndex);
     // The game's code sizes what it adds (a ledger column's text, the professionalism markers), and
     // the snapshot has that size. What is drawn stays as the definition has it.
     if (this.adopting?.widget === widget) {
@@ -621,7 +623,9 @@ class Layout {
    * the size the layout gives it but at another place is moved there with what it draws, and its
    * children, placed in its rect, follow. Not a list's entries, whose rows the snapshot numbers
    * by position, and not a window to which Tongs gave its children's bounds (another size): its
-   * children are moved one by one instead.
+   * children are moved one by one instead. Such a child moves at any size, or an icon the game's
+   * code sized (an estate's modifier, 32 px against the definition's 48) would stay at the window's
+   * place in the `.gui` and stretch the window down to its row; what it draws keeps its size.
    */
   private livePosition(
     rect: Rect,
@@ -629,6 +633,8 @@ class Layout {
       | { readonly visible: boolean; readonly rect?: readonly [number, number, number, number] }
       | undefined,
     drawStart: number,
+    kind: string,
+    parentIndex: number,
   ): Rect {
     const game = state?.rect;
     if (game === undefined || state?.visible !== true || this.row !== undefined) return rect;
@@ -642,7 +648,13 @@ class Layout {
     const to = { x: left < 0 && x === 0 ? left : x, y: top < 0 && y === 0 ? top : y };
     const shownWidth = Math.min(width, to.x + Math.round(rect.width)) - Math.max(0, to.x);
     const shownHeight = Math.min(height, to.y + Math.round(rect.height)) - Math.max(0, to.y);
-    if (shownWidth !== w || shownHeight !== h) return rect;
+    if (shownWidth !== w || shownHeight !== h) {
+      if (CONTAINERS.has(kind)) {
+        this.movedByChildren.add(this.widgets.length);
+        return rect;
+      }
+      if (!this.movedByChildren.has(parentIndex)) return rect;
+    }
     return this.moveTo(rect, to, drawStart);
   }
 

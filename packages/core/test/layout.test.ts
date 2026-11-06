@@ -825,6 +825,45 @@ describe('layoutWindow: sample data', () => {
     expect(only(drawsOf(l, 'inside'))).toMatchObject({ x: 15, y: 171 });
   });
 
+  it("moves a child at any size when the snapshot's window has its children's bounds", () => {
+    const { file, input } = setUp(`guiTypes = {
+      windowType = { name = "row" size = { x = 200 y = 100 } position = { x = 0 y = 0 }
+        iconType = { name = "sized" spriteType = "GFX_plain" position = { x = 5 y = 5 } }
+        iconType = { name = "same" spriteType = "GFX_plain" position = { x = 40 y = 5 } }
+      }
+    }`);
+    const window = file.definitions[0] as Widget;
+    const at = (rect: readonly [number, number, number, number]) => ({
+      visible: true,
+      enabled: true,
+      checked: false,
+      rect,
+    });
+    // An estate's row: Tongs gives the window its children's bounds, and the game's code gave the
+    // icon another size than its definition's.
+    const states = new Map([
+      ['row', at([9, 383, 550, 132])],
+      ['sized', at([231, 426, 32, 32])],
+      ['same', at([300, 426, 20, 10])],
+    ]);
+    const l = layoutWindow(window, {
+      ...input,
+      content: {
+        text: () => undefined,
+        rows: () => undefined,
+        state: (w) => states.get(w.name ?? ''),
+      },
+    });
+    const rect = (name: string) => {
+      const w = l.widgets.find((x) => x.widget.name === name);
+      return [w?.x, w?.y, w?.width, w?.height];
+    };
+    expect(rect('row')).toEqual([0, 0, 200, 100]);
+    expect(rect('sized')).toEqual([231, 426, 20, 10]); // what it draws keeps its size
+    expect(rect('same')).toEqual([300, 426, 20, 10]);
+    expect(only(drawsOf(l, 'sized'))).toMatchObject({ x: 231, y: 426 });
+  });
+
   it('draws the top-level definitions a snapshot showed inside a window where the game showed them', () => {
     const { file, input } = setUp(`guiTypes = {
       windowType = { name = "panel" size = { x = 200 y = 100 } position = { x = 10 y = 10 } }

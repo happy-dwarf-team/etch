@@ -5,9 +5,35 @@
   "formatVersion": 1,
   "window": "countryestatesview",
   "checkedWith": "1.37.5",
+  "selectors": {
+    "crownLand": {
+      "kind": "ui",
+      "label": "Crown land effect",
+      "values": { "shown": "Shown", "none": "None" },
+      "note": "Russia's crown land in 1719 has its modifiers, Muscovy's in 1466 says 'No Effect' (the coverage survey's run of 6 November 2026).",
+    },
+    "agenda": {
+      "kind": "ui",
+      "label": "Agenda",
+      "values": { "none": "None", "shown": "Shown" },
+      "note": "No agenda in Russia's game in 1719, one in Muscovy's in 1466 (the coverage survey's run of 6 November 2026).",
+    },
+  },
   "rules": {
-    "hidden": {
-      "note": "Hidden in the corpus capture of \"estates\" in vanilla (Russia, 17 March 1719): the game decides these from its data or a click; show one by hand.",
+    "no-crown-land-effect": {
+      "when": { "crownLand": "none" },
+      "hide": [
+        "countryestatesview/crown_land_modifier_desc_2",
+        "countryestatesview/crown_land_modifier_desc_3",
+        "countryestatesview/crown_land_modifier_desc_4",
+        "countryestatesview/crown_land_modifier_icon_1",
+        "countryestatesview/crown_land_modifier_icon_2",
+        "countryestatesview/crown_land_modifier_icon_3",
+        "countryestatesview/crown_land_modifier_icon_4",
+      ],
+    },
+    "no-agenda": {
+      "when": { "agenda": "none" },
       "hide": ["countryestatesview/agenda_icon", "countryestatesview/agenda_state"],
     },
   },
