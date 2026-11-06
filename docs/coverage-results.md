@@ -100,9 +100,82 @@ position difference in either. What the code sets is the same in every state see
 Kobildzan, so a rule can say so (etch#256). `stability_value` and `stability_progress_threshold`
 are 48 px right of the layout on both sets, as on Russia and not on Verne.
 
-Not measured: the other planned sets (Muscovy 1466, Ming, Venice, Bluescale 1472, Arg-Ordstun 1582),
-1280×720, pixels (`compare --gpu` over this run), and Anbennar with its usual mods: Kobildzan's save
-was played with more mods than the playset loads.
+Not measured in that run: the other planned sets (Muscovy 1466 and Bluescale 1472 follow below; Ming,
+Venice, Arg-Ordstun 1582), 1280×720, pixels (`compare --gpu` over this run), and Anbennar with its
+usual mods: Kobildzan's save was played with more mods than the playset loads.
+
+### The run of 6 November 2026: on the game again, and two more countries
+
+etch#320 took the live preview to 99.5 % of rects on stored captures only. This run takes the same
+views from the running game: EU4 1.37.5 (`9AD3EFE1…`), 1920×1080, under the lab's game lock. Each
+figure below says what it was measured on. The tables above are older and keep their own commits.
+
+**The stored captures hold.** The game gives the same figures as the captures it was asked to
+replace, on one commit of the rules:
+
+| Set | Views taken again | Offline preview: rects | Offline preview: visibility | Live rects | Live visibility |
+| --- | --- | --- | --- | --- | --- |
+| vanilla (Russia, 1719) | 61 of 62 | 96.3 % (3515/3651) | 98.0 % (9742/9944) | 99.6 % (3690/3706) | 99.9 % (9953/9959) |
+| Anbennar alone (Verne, 1444) | 53 of 53 | 96.7 % (3248/3360) | 96.8 % (8695/8979) | 99.7 % (3422/3433) | 100.0 % (8875/8876) |
+
+Identical to the widget on both sets. Of the first 59 views of vanilla, 54 have widget trees equal to
+the byte; the other five differ by a list's order, a row's pixel or two, or a value, which changes
+no result. `vanilla-save-s69` is the one view left: its recipe does not open the view on Russia, and
+the stored set lacks it too. 108 views were taken on the survey's host, with Tongs 0.23.0, and 39
+again or for the first time on Anvil 1.12.0 and Tongs 0.26.1, which change no figure either.
+
+**Two countries the rules were not made from**, on `main` (`8f2e87b`), Anvil 1.12.0, Tongs 0.26.1:
+
+| Set | Views | Offline preview: rects | Offline preview: visibility | With profiles: rects | With profiles: visibility | Outline rects | Outline visibility | Live rects | Live visibility | Live texts |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| vanilla, stored, same views (Russia, 1719) | 40 | 96.4 % | 97.7 % | 98.5 % | 97.7 % | 77.1 % | 88.3 % | 99.3 % | 100.0 % | 99.6 % |
+| **Muscovy, 1466, unseen** | 41 | **96.3 %** | **96.0 %** | 98.8 % | 96.4 % | 77.4 % | 83.4 % | 99.3 % | 100.0 % | 99.6 % |
+| Anbennar alone, stored, same views (Verne, 1444) | 44 | 98.9 % | 97.1 % | 99.1 % | 96.6 % | 86.9 % | 75.8 % | 99.9 % | 100.0 % | 99.7 % |
+| **Bluescale, 1472, unseen** | 44 | **98.9 %** | **96.4 %** | 99.1 % | 95.8 % | 86.6 % | 73.5 % | 99.7 % | 100.0 % | 99.7 % |
+
+The result of etch#258 again, smaller: rects hold (96.3 against 96.4 %, 98.9 against 98.9 %), the
+live preview holds, and the visibility rules lose 1.7 points on Muscovy and 0.7 on Bluescale. The
+rule fixes of etch#310 did carry: France lost 4.0 points on the same measure. Live visibility has
+no failure on either set, 12,893 widgets.
+
+Not captured: 11 of 52 views on Muscovy, 5 of 49 on Bluescale. Muscovy lacks the parliament, the
+Celestial Empire and a war, among others; on Bluescale the game refused an undiscovered province,
+the HRE's leave button, the deity, and two estate views. Those views' rules were not tested.
+Bluescale's save was played with more mods than the playset loads.
+
+**What the run fixed.** Three things, so the figures after them are no longer unseen:
+
+- A window whose rect in the snapshot differs from its definition keeps its children's positions
+  from the snapshot now (`livePosition`, the live preview). Live rects on the stored captures:
+  vanilla 99.5 → 99.6 %, Anbennar alone 99.5 → 99.7 %.
+- `countrycourtview` and `countryestatesview` got selectors for what Muscovy has and Russia lacks:
+  a consort, the consort's crown, the heir's claim, an agenda, and the crown land's effect.
+- `single_unitpanel` has a profile, with a selector for an army or a fleet. It was the second
+  largest failure on France, 44 widgets.
+
+| Set | Offline preview: rects | Offline preview: visibility | With profiles: visibility | Live rects |
+| --- | --- | --- | --- | --- |
+| Muscovy, 1466 (rules fixed on it) | 96.3 % | 96.0 → 97.3 % | 96.4 → 97.2 % | 99.3 → 99.5 % |
+| Bluescale, 1472 (one rule fixed on it) | 98.9 % | 96.4 → 96.5 % | 95.8 → 95.9 % | 99.7 % |
+| France, 1550 | 98.5 % | 98.2 % | 98.0 % | 99.5 % |
+| Ottomans, 1550 | 96.7 % | 97.8 % | 97.8 % | 99.6 % |
+| Kobildzan, 1594 | 95.6 % | 95.1 % | 94.3 % | 99.2 % |
+| vanilla, stored, all views | 96.3 % | 98.0 % | 98.1 % | 99.6 % |
+| Anbennar alone, stored, all views | 96.7 % | 96.8 % | 96.7 % | 99.7 % |
+
+No view of 268 lost a widget, apart from `single_unitpanel` on Muscovy, a window that had no
+profile to be measured before. Bluescale is where the first draft failed: it has a consort and no
+crown, so a rule tying the two left the selector with no value; they are two selectors now. On
+8 of the 85 views of the two countries a selector still finds no value and its default is drawn:
+`unit` on 3, `construction`, `fort`, `religionPanel`, `crownLand` on one each, and six of the
+province view's on one view of Bluescale.
+
+The 13 rects left on Muscovy are sizes the game's code sets: `custom_mapmode_7`, `ages_view/picture`,
+`religionpanel_bg_top`, `dev_share_pie_chart`, `onsiegewon_desc`, `estate_icon` and the
+`modifier_icon_*`. The preview keeps drawing them at their definition's size on purpose: taking the
+size from the snapshot would only zero the measure.
+
+Not measured: 1280×720, pixels (`compare --gpu` over this run), Ming, Venice and Arg-Ordstun.
 <!-- other countries: end -->
 
 ## What differs

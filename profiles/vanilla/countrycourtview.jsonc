@@ -12,6 +12,12 @@
       "values": { "none": "None", "shown": "Shown" },
       "note": "Russia's court in 1719 has no consort, Muscovy's in 1466 has one (the coverage survey's run of 6 November 2026).",
     },
+    "consortCrown": {
+      "kind": "ui",
+      "label": "Consort's crown",
+      "values": { "none": "None", "shown": "Shown" },
+      "note": "Apart from the consort: Muscovy's in 1466 has it, Bluescale's in 1472 does not (the coverage survey's run of 6 November 2026).",
+    },
     "heirClaim": {
       "kind": "ui",
       "label": "Heir's claim",
@@ -26,13 +32,16 @@
         "countrycourtview/monarch_queen_adm_icon",
         "countrycourtview/monarch_queen_adm_value",
         "countrycourtview/monarch_queen_age",
-        "countrycourtview/monarch_queen_crown_icon",
         "countrycourtview/monarch_queen_dip_icon",
         "countrycourtview/monarch_queen_dip_value",
         "countrycourtview/monarch_queen_mil_icon",
         "countrycourtview/monarch_queen_mil_value",
         "countrycourtview/queen_gender",
       ],
+    },
+    "no-consort-crown": {
+      "when": { "consortCrown": "none" },
+      "hide": ["countrycourtview/monarch_queen_crown_icon"],
     },
     "no-heir-claim": {
       "when": { "heirClaim": "none" },

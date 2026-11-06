@@ -100,6 +100,11 @@ suspends Tongs in them and the game rewrites them on load.
 A view the country lacks (the Celestial Empire's for a country outside it, the
 war overview without a war) fails its recipe. It is listed, not measured.
 
+The run of 6 November 2026 took the survey's own views from the game again, to
+check that stored captures stand for it, and added Muscovy and Bluescale.
+A batch's lock has to outlast its games: the driver starts no game with less
+than 4 minutes of it left (corpus/README.md).
+
 ## Measures
 
 Each captured view is measured three ways, from the capture's widget trees and
