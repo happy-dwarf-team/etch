@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.5.3](https://github.com/happy-dwarf-team/etch/compare/v2.5.2...v2.5.3) (2026-11-06)
+
+
+### Bug Fixes
+
+* **core:** keep a snapshot's children and three windows' rules on other countries ([#324](https://github.com/happy-dwarf-team/etch/issues/324)) ([8cde4ef](https://github.com/happy-dwarf-team/etch/commit/8cde4efb959a72f8fd65ca32cdccabae1aec9624))
+* **corpus:** close every game before the lab's game lock ends ([#325](https://github.com/happy-dwarf-team/etch/issues/325)) ([297ae4e](https://github.com/happy-dwarf-team/etch/commit/297ae4ea4cdc493b8792100246d8518eb5bc8466))
+
 ## [2.5.2](https://github.com/happy-dwarf-team/etch/compare/v2.5.1...v2.5.2) (2026-11-05)
 
 
