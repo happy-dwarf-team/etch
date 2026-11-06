@@ -73,6 +73,21 @@ export interface StopResult {
 }
 
 /** Starting and closing the game under the lab's procedure (`game.ps1`). */
+/**
+ * A game starts only with this much of the lab's game lock left: a load takes up to 95 s on the
+ * lab's saves, a view up to a minute, the close 30 s at most.
+ */
+export const LOCK_START_MARGIN_MS = 4 * 60_000;
+/** No view starts, and no game is waited for, with less of the lock left than this. */
+export const LOCK_VIEW_MARGIN_MS = 2 * 60_000;
+/** With this much of the lock left the game is closed, whatever it is doing. */
+export const LOCK_CLOSE_MARGIN_MS = 45_000;
+
+/** What is left of the run's lock; a run with no lock has no limit. */
+export function lockLeftMs(lockExpiresAt: Date | undefined, now: Date): number {
+  return lockExpiresAt === undefined ? Infinity : lockExpiresAt.getTime() - now.getTime();
+}
+
 export interface GameLauncher {
   /** The preflight; resolves with the SHA-256 of the copy's `eu4.exe`. */
   check(): Promise<string>;
@@ -97,8 +112,10 @@ export interface RunOptions {
   readonly playerProfile: string;
   readonly launcher: GameLauncher;
   /**
-   * When the lab's game lock of the run expires: no session starts after it, since the lock no
-   * longer keeps other sessions from starting a game.
+   * When the lab's game lock of the run expires. Another session may start a game from then on,
+   * so every game of the run has to be gone before it: no session starts without
+   * `LOCK_START_MARGIN_MS` left, no view without `LOCK_VIEW_MARGIN_MS`, and a game still running
+   * at `LOCK_CLOSE_MARGIN_MS` is closed.
    */
   readonly lockExpiresAt?: Date;
   readonly connect: () => Promise<Tongs>;
@@ -198,14 +215,23 @@ export async function runCaptures(options: RunOptions): Promise<RunReport> {
   };
 
   try {
-    for (const planned of options.sessions) {
+    const named = (session: CaptureSession, views: readonly CorpusView[]): string[] =>
+      views.map((v) => `${session.playset.id} ${resolutionKey(session.resolution)} ${v.id}`);
+    for (const [index, planned] of options.sessions.entries()) {
       let views: readonly CorpusView[] = planned.views;
       // A session the user ended by taking the mouse back is not counted.
       let starts = 0;
       while (views.length > 0) {
         const session = { ...planned, views };
-        if (options.lockExpiresAt !== undefined && now() >= options.lockExpiresAt) {
-          report.stopped = `The lab's game lock expired at ${options.lockExpiresAt.toISOString()}; no game was started after it.`;
+        if (
+          options.lockExpiresAt !== undefined &&
+          lockLeftMs(options.lockExpiresAt, now()) < LOCK_START_MARGIN_MS
+        ) {
+          report.stopped = `The lab's game lock ends at ${options.lockExpiresAt.toISOString()}, too soon to start a game and close it.`;
+          report.notTried.push(
+            ...named(planned, views),
+            ...options.sessions.slice(index + 1).flatMap((s) => named(s, s.views)),
+          );
           return report;
         }
         print(`session ${describeSession(session)}`);
@@ -229,15 +255,15 @@ export async function runCaptures(options: RunOptions): Promise<RunReport> {
           continue;
         }
         starts++;
-        if (views.length > 0 && starts >= (options.maxStarts ?? 2)) {
+        if (
+          views.length > 0 &&
+          starts >= (options.maxStarts ?? 2) &&
+          lockLeftMs(options.lockExpiresAt, now()) >= LOCK_START_MARGIN_MS
+        ) {
           print(
             `  giving up on ${views.map((v) => v.id).join(', ')} after ${String(starts)} starts`,
           );
-          for (const v of views) {
-            report.notTried.push(
-              `${planned.playset.id} ${resolutionKey(planned.resolution)} ${v.id}`,
-            );
-          }
+          report.notTried.push(...named(planned, views));
           break;
         }
       }
@@ -256,6 +282,40 @@ export interface SessionResult {
   readonly fatal?: string;
   /** `explore` asked for a fresh start, or the game could not be explored to the end. */
   readonly restart?: boolean;
+}
+
+/**
+ * Closes the game when `LOCK_CLOSE_MARGIN_MS` of the lock is left, for a view or a load that takes
+ * longer than the margins allow: whatever the session was doing then fails and the run stops.
+ * `finish` cancels it and resolves with that close's result, if it came to one.
+ */
+export function closeBeforeLockEnds(
+  options: Pick<RunOptions, 'lockExpiresAt' | 'launcher'>,
+  game: GameRecord,
+  env: { now: () => Date; print: (line: string) => void },
+  log: (event: Readonly<Record<string, unknown>>) => void,
+): { finish: () => Promise<StopResult | undefined> } {
+  const left = lockLeftMs(options.lockExpiresAt, env.now());
+  if (left === Infinity) return { finish: () => Promise.resolve(undefined) };
+  let closing: Promise<StopResult | undefined> | undefined;
+  const timer = setTimeout(
+    () => {
+      env.print("  the lab's game lock ends soon: closing the game");
+      log({ lockEnding: true });
+      closing = options.launcher.stop(game).catch((e: unknown) => {
+        log({ lockClose: message(e) });
+        return undefined;
+      });
+    },
+    Math.max(0, left - LOCK_CLOSE_MARGIN_MS),
+  );
+  timer.unref();
+  return {
+    finish: () => {
+      clearTimeout(timer);
+      return closing ?? Promise.resolve(undefined);
+    },
+  };
 }
 
 export async function runSession(
@@ -314,6 +374,7 @@ export async function runSession(
   const playerBefore = await snapshotFolder(options.playerProfile);
   const outcomes: ViewOutcome[] = [];
   let game: GameRecord | undefined;
+  let lockGuard: ReturnType<typeof closeBeforeLockEnds> | undefined;
   let stop: StopResult | undefined;
   let readyMs: number | undefined;
   let error: string | undefined;
@@ -328,6 +389,7 @@ export async function runSession(
     );
     await writeFile(join(dir, 'game.json'), `${JSON.stringify(game, null, 2)}\n`);
     env.print(`  game pid ${String(game.pid)}`);
+    lockGuard = closeBeforeLockEnds(options, game, env, log);
     const pid = game.pid;
     const context = (
       tongs: Tongs,
@@ -353,6 +415,7 @@ export async function runSession(
       now: env.now,
       log,
       ...(options.timing !== undefined ? { timing: options.timing } : {}),
+      ...(options.lockExpiresAt !== undefined ? { lockExpiresAt: options.lockExpiresAt } : {}),
     });
     const ready = await waitReady(options, game, session, profile, env, log, (tongs) =>
       pinCursor(context(tongs, 'unknown', [])),
@@ -366,6 +429,12 @@ export async function runSession(
         restart = (await options.explore(context(tongs, ready.version, windows), dir)).restart;
       }
       for (const [i, view] of (options.explore === undefined ? session.views : []).entries()) {
+        if (lockLeftMs(options.lockExpiresAt, env.now()) < LOCK_VIEW_MARGIN_MS) {
+          env.print(`  the lab's game lock ends soon: stopping before ${view.id}`);
+          log({ lockEnding: true });
+          remaining = session.views.slice(i);
+          break;
+        }
         const outcome = await captureView(context(tongs, ready.version, windows), view);
         outcomes.push(outcome);
         if (outcome.ok) {
@@ -386,7 +455,12 @@ export async function runSession(
         await releaseMouse(mouse, log);
         const release = join(dir, 'release');
         env.print(`  holding the game open; create ${release} to close it`);
-        const until = env.now().getTime() + options.holdMs;
+        const until =
+          env.now().getTime() +
+          Math.min(
+            options.holdMs,
+            lockLeftMs(options.lockExpiresAt, env.now()) - LOCK_VIEW_MARGIN_MS,
+          );
         while (env.now().getTime() < until && !(await exists(release))) await env.sleep(1000);
       }
     } finally {
@@ -408,7 +482,7 @@ export async function runSession(
     // The user gets the mouse back first, whatever happens to the game.
     await releaseMouse(mouse, log);
     if (game !== undefined) {
-      stop = await options.launcher.stop(game);
+      stop = (await lockGuard?.finish()) ?? (await options.launcher.stop(game));
       log({ stop });
       const crashes = stop['anvilCrashes'];
       if (Array.isArray(crashes) && crashes.length > 0) {
@@ -632,7 +706,12 @@ async function waitReady(
   log: (event: Readonly<Record<string, unknown>>) => void,
   loaded: (tongs: Tongs) => Promise<void>,
 ): Promise<{ tongs: Tongs; version: string; readyMs: number }> {
-  const deadline = env.now().getTime() + (options.readyTimeoutMs ?? 5 * 60_000);
+  const deadline =
+    env.now().getTime() +
+    Math.min(
+      options.readyTimeoutMs ?? 5 * 60_000,
+      lockLeftMs(options.lockExpiresAt, env.now()) - LOCK_VIEW_MARGIN_MS,
+    );
   const systemLog = join(profile, 'logs', 'system.log');
   let tongs: Tongs | undefined;
   let version: string | undefined;

@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   decodePng,
   parseCaptureRecord,
@@ -12,10 +12,16 @@ import {
 import { planCaptures } from '../../src/corpus/driver/plan.ts';
 import { playsetProfile } from '../../src/corpus/driver/profile.ts';
 import {
+  closeBeforeLockEnds,
   hasSessions,
+  LOCK_CLOSE_MARGIN_MS,
+  LOCK_START_MARGIN_MS,
+  LOCK_VIEW_MARGIN_MS,
   runCaptures,
   type GameLauncher,
+  type GameRecord,
   type RunOptions,
+  type StopResult,
 } from '../../src/corpus/driver/run.ts';
 import {
   captureView,
@@ -606,10 +612,11 @@ describe('runCaptures', () => {
     ).toBeGreaterThan(0);
   });
 
-  it('starts no session once the game lock has expired', async () => {
+  it('starts no session with too little of the game lock left', async () => {
     const { started, stopped, options } = await runFixture();
     let clock = new Date('2026-10-26T10:00:00Z');
     const expires = new Date('2026-10-26T11:00:00Z');
+    const nearEnd = new Date(expires.getTime() - LOCK_START_MARGIN_MS + 1000);
     const report = await runCaptures({
       ...options,
       now: () => clock,
@@ -618,7 +625,7 @@ describe('runCaptures', () => {
         ...options.launcher,
         async stop(record) {
           const result = await options.launcher.stop(record);
-          clock = expires;
+          clock = nearEnd;
           return result;
         },
       },
@@ -628,8 +635,109 @@ describe('runCaptures', () => {
     expect(stopped).toEqual([4242]);
     expect(report.sessions).toHaveLength(1);
     expect(report.stopped).toBe(
-      "The lab's game lock expired at 2026-10-26T11:00:00.000Z; no game was started after it.",
+      "The lab's game lock ends at 2026-10-26T11:00:00.000Z, too soon to start a game and close it.",
     );
+    expect(report.notTried).toHaveLength(options.sessions.slice(1).flatMap((s) => s.views).length);
+  });
+
+  it('stops before a view with too little of the game lock left, and closes the game', async () => {
+    const { stopped, options } = await runFixture();
+    const session = options.sessions.find((s) => s.views.length > 1);
+    if (session === undefined) throw new Error('no session of two views');
+    const expires = new Date('2026-10-26T11:00:00Z');
+    let clock = new Date('2026-10-26T10:00:00Z');
+    const report = await runCaptures({
+      ...options,
+      sessions: [session],
+      lockExpiresAt: expires,
+      now: () => clock,
+      // A capture is written after its view: the next view finds the lock nearly over.
+      format: (json, file) => {
+        clock = new Date(expires.getTime() - LOCK_VIEW_MARGIN_MS + 1000);
+        return options.format(json, file);
+      },
+    });
+
+    expect(stopped).toEqual([4242]);
+    expect(report.sessions[0]?.views.map((v) => v.view)).toEqual([session.views[0]?.id]);
+    expect(report.notTried).toHaveLength(session.views.length - 1);
+    expect(report.stopped).toContain('too soon to start a game');
+  });
+
+  it("does not wait for a game past the lock's margin", async () => {
+    const { options } = await runFixture();
+    const expires = new Date('2026-10-26T11:00:00Z');
+    let now = expires.getTime() - LOCK_START_MARGIN_MS;
+    const report = await runCaptures({
+      ...options,
+      lockExpiresAt: expires,
+      now: () => new Date(now),
+      sleep: (ms) => {
+        now += ms;
+        return Promise.resolve();
+      },
+      connect: () => Promise.reject(new Error('no pipe yet')),
+    });
+
+    expect(report.sessions[0]?.error).toBe('The game was not ready in time.');
+    expect(expires.getTime() - now).toBeGreaterThanOrEqual(LOCK_VIEW_MARGIN_MS - 5000);
+  });
+
+  it("closes a game still running when the lock's last margin starts", async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    try {
+      const expires = new Date('2026-10-26T11:00:00Z');
+      const now = () => new Date(expires.getTime() - 60_000);
+      const stops: GameRecord[] = [];
+      const answer = { ok: true } as StopResult;
+      const launcher = {
+        stop: (record: GameRecord) => {
+          stops.push(record);
+          return Promise.resolve(answer);
+        },
+      } as unknown as GameLauncher;
+      const game = { pid: 7 } as GameRecord;
+      const guard = closeBeforeLockEnds(
+        { lockExpiresAt: expires, launcher },
+        game,
+        { now, print: () => undefined },
+        () => undefined,
+      );
+
+      await vi.advanceTimersByTimeAsync(60_000 - LOCK_CLOSE_MARGIN_MS - 1);
+      expect(stops).toEqual([]);
+      await vi.advanceTimersByTimeAsync(1);
+      expect(stops).toEqual([game]);
+      expect(await guard.finish()).toBe(answer);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('leaves the game to the session when it ends in time', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    try {
+      const stops: GameRecord[] = [];
+      const launcher = {
+        stop: (record: GameRecord) => {
+          stops.push(record);
+          return Promise.resolve({ ok: true } as StopResult);
+        },
+      } as unknown as GameLauncher;
+      const expires = new Date('2026-10-26T11:00:00Z');
+      const guard = closeBeforeLockEnds(
+        { lockExpiresAt: expires, launcher },
+        { pid: 7 } as GameRecord,
+        { now: () => new Date(expires.getTime() - 60_000), print: () => undefined },
+        () => undefined,
+      );
+
+      expect(await guard.finish()).toBeUndefined();
+      await vi.advanceTimersByTimeAsync(120_000);
+      expect(stops).toEqual([]);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("clicks the save's confirmation when a dialog asks before the save loads", async () => {
