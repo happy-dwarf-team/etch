@@ -14,6 +14,7 @@ import { dirname } from 'node:path';
 import * as vscode from 'vscode';
 import {
   DEFAULT_LANGUAGE,
+  MECHANICS_WINDOW,
   allWidgets,
   choosePreviewResolution,
   formatResolution,
@@ -23,16 +24,21 @@ import {
   gameTextKind,
   guiDiagnostics,
   laidOutIndexOf,
+  laidOutWithin,
   mapGameText,
   parseScript,
   readGuiFile,
   widgetAt,
   widgetHoverText,
   widgetPathAt,
+  withMechanics,
   type DrawList,
   type DrawRect,
   type GameTextOffsets,
+  type GovernmentMechanic,
   type GuiFile,
+  type LayoutContent,
+  type LayoutView,
   type ModelDiagnostic,
   type PreviewResolution,
   type ResolutionContext,
@@ -52,9 +58,11 @@ import {
   liveSelectors,
   liveView,
   sampleData,
+  screenLayoutView,
   windowPaths,
   withView,
   type LiveSnapshot,
+  type SampleInput,
   type ProfileDiagnostic,
   type SampleData,
   type WindowView,
@@ -153,6 +161,11 @@ export interface PreviewRender {
    * `colonisationpanel`, spec section 2): `layout` is that window's, and a click pins it.
    */
   readonly linked?: string;
+  /**
+   * Whether the window is drawn inside another, where the game's code puts it (a government
+   * mechanic's, docs/government-mechanics.md): `layout` has only the window's own widgets.
+   */
+  readonly hosted?: boolean;
 }
 
 /** The webview's answer to a render. */
@@ -809,23 +822,26 @@ export class Preview implements PreviewApi, vscode.Disposable {
     const matched = live === undefined ? undefined : liveMatch(live, window, loaded?.profile);
     const localiseKey = (key: string): string | undefined => session.localisation?.get(key);
     const choiceOfSave = this.data.choice;
+    const sampleInput = (name: string): SampleInput => ({
+      ...(choiceOfSave === undefined ? {} : { save: choiceOfSave }),
+      localise: localiseKey,
+      length: this.data.length,
+      hand: this.data.handTexts(name),
+      count: this.data.entryCounts(name),
+      template: (name) => {
+        const found = session.ui.index.guiType(name);
+        const owner = found === undefined ? undefined : session.guiFile(found.path);
+        return found === undefined || owner === undefined
+          ? undefined
+          : { widget: found.item, file: owner };
+      },
+    });
     const sample =
       loaded === undefined
         ? undefined
         : sampleData(loaded.profile, window, view, {
-            ...(choiceOfSave === undefined ? {} : { save: choiceOfSave }),
-            localise: localiseKey,
-            length: this.data.length,
+            ...sampleInput(window.name ?? ''),
             ...(matched === undefined ? {} : { live: matched.texts }),
-            hand: this.data.handTexts(window.name ?? ''),
-            count: this.data.entryCounts(window.name ?? ''),
-            template: (name) => {
-              const found = session.ui.index.guiType(name);
-              const owner = found === undefined ? undefined : session.guiFile(found.path);
-              return found === undefined || owner === undefined
-                ? undefined
-                : { widget: found.item, file: owner };
-            },
           });
     // A link that holds: the game opens another window instead, which the preview draws, keeping
     // this window's View ▾ so its selectors can switch back (spec section 2).
@@ -838,27 +854,48 @@ export class Preview implements PreviewApi, vscode.Disposable {
       linkedType === undefined || linkedFile === undefined || links[0] === undefined
         ? undefined
         : { name: links[0].window, file: linkedFile, window: linkedType.item };
-    const layout =
-      linked === undefined
-        ? await layOutPreview(session.ui, session.assets, file, window, {
-            screen,
-            localise: session.localise,
-            ...(view === undefined ? {} : { view: layoutViewOf(view) }),
-            ...(sample === undefined ? {} : { content: layoutContentOf(sample) }),
-            // A window without a profile takes the snapshot's texts, states and visibility
-            // alone (etch#255).
-            ...(loaded === undefined && matched !== undefined
-              ? {
-                  view: liveView(window, matched.texts, screen),
-                  content: liveContent(window, matched.texts),
-                }
-              : {}),
-          })
-        : await layOutPreview(session.ui, session.assets, linked.file, linked.window, {
-            screen,
-            localise: session.localise,
-          });
+    // A government mechanic's window has no place of its own: the game's code puts it in the
+    // government view, and its positions count from its row there, so the preview draws it there.
+    const mechanic =
+      loaded === undefined && linked === undefined ? session.mechanicShowing(window) : undefined;
+    const hosted =
+      mechanic === undefined
+        ? undefined
+        : await this.hostingWindow(session, mechanic, screen, sampleInput);
     if (panel !== this.panel) return;
+    const drawn =
+      hosted !== undefined
+        ? await layOutPreview(session.ui, session.assets, hosted.file, hosted.window, {
+            screen,
+            localise: session.localise,
+            view: hosted.view,
+            content: hosted.content,
+          })
+        : linked === undefined
+          ? await layOutPreview(session.ui, session.assets, file, window, {
+              screen,
+              localise: session.localise,
+              ...(view === undefined ? {} : { view: layoutViewOf(view) }),
+              ...(sample === undefined ? {} : { content: layoutContentOf(sample) }),
+              // A window without a profile takes the snapshot's texts, states and visibility
+              // alone (etch#255).
+              ...(loaded === undefined && matched !== undefined
+                ? {
+                    view: liveView(window, matched.texts, screen),
+                    content: liveContent(window, matched.texts),
+                  }
+                : {}),
+            })
+          : await layOutPreview(session.ui, session.assets, linked.file, linked.window, {
+              screen,
+              localise: session.localise,
+            });
+    if (panel !== this.panel) return;
+    // Drawn inside another window, only the window's own widgets answer the mouse and the source.
+    const layout =
+      hosted === undefined
+        ? drawn
+        : { ...drawn, widgets: laidOutWithin(drawn.widgets, window), diagnostics: [] };
     const drawList: DrawList = {
       ...layout.drawList,
       textures: layout.drawList.textures.map((path) =>
@@ -880,6 +917,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
       ...(loaded === undefined || view === undefined ? {} : { view: { profile: loaded, view } }),
       ...(sample === undefined ? {} : { sample }),
       ...(linked === undefined ? {} : { linked: linked.name }),
+      ...(hosted === undefined ? {} : { hosted: true }),
     };
     this.last = { uri: uri.toString(), name: window.name };
     // The draw goes first: diagnostics are not on the warm reload's path to pixels.
@@ -918,6 +956,18 @@ export class Preview implements PreviewApi, vscode.Disposable {
               this.liveLayer(snapshot, matched?.unmatched ?? 0),
             ),
           }),
+      ...(hosted !== undefined && mechanic !== undefined
+        ? {
+            links: [
+              {
+                window: MECHANICS_WINDOW,
+                label:
+                  `The game puts ${window.name ?? window.kind} in the government view with ` +
+                  `${mechanic.name}; the preview draws it there.`,
+              },
+            ],
+          }
+        : {}),
       ...(loaded === undefined || view === undefined
         ? {}
         : {
@@ -959,6 +1009,50 @@ export class Preview implements PreviewApi, vscode.Disposable {
       if (other.uri.toString() === uri.toString()) continue;
       this.publish(other.uri, session.ui.diagnostics(other.path), other.source);
     }
+  }
+
+  /**
+   * The government view as the game shows it with a mechanic: its default view, with the mechanic's
+   * rows in its list. `undefined` when the playset has no such view.
+   */
+  private async hostingWindow(
+    session: PreviewSession,
+    mechanic: GovernmentMechanic,
+    screen: Screen,
+    sampleInput: (name: string) => SampleInput,
+  ): Promise<
+    { file: GuiFile; window: Widget; view: LayoutView; content: LayoutContent } | undefined
+  > {
+    const { index } = session.ui;
+    const found = index.guiType(MECHANICS_WINDOW);
+    const file = found === undefined ? undefined : session.guiFile(found.path);
+    if (found === undefined || file === undefined) return undefined;
+    const window = found.item;
+    const { loaded } = await this.profiles.load(session.playset, index, file, window);
+    const choice = loaded === undefined ? undefined : initialChoice(loaded.profile);
+    const view =
+      loaded === undefined || choice === undefined
+        ? undefined
+        : evaluateView(loaded.profile, window, screen, {
+            ...viewChoiceOf(choice),
+            set: { ...choice.set, mechanics: 'shown' },
+            facts: this.data.facts(),
+          });
+    const sample =
+      loaded === undefined
+        ? undefined
+        : sampleData(loaded.profile, window, view, sampleInput(MECHANICS_WINDOW));
+    const hosted = withMechanics(
+      {
+        mechanics: [...session.mechanics.basic.filter((m) => m !== mechanic), mechanic],
+        scripted: session.mechanics.scripted,
+        index,
+        screen,
+      },
+      view === undefined ? screenLayoutView(window, screen) : layoutViewOf(view),
+      sample === undefined ? undefined : layoutContentOf(sample),
+    );
+    return hosted === null ? undefined : { file, window, ...hosted };
   }
 
   /** The `.gui` file to preview: the pinned one, else the active editor's, else the last one. */
@@ -1757,7 +1851,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
       probe(paint);
     }
     const render = this.render;
-    if (render?.id === paint.id && paint.problems.length > 0) {
+    if (render?.id === paint.id && render.hosted !== true && paint.problems.length > 0) {
       this.publishTextureProblems(render, paint.problems);
     }
     this.paintEmitter.fire(paint);

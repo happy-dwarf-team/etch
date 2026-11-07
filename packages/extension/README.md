@@ -66,6 +66,9 @@ precision corpus, for the base game and for Anbennar.
 - Of a `_large` pair the preview draws only the variant the game creates at the
   preview's height, and the province view's sections move where the game's code
   moves them.
+- A government mechanic's window (`gui` in `common/government_mechanics`) is
+  drawn where the game puts it, among the mechanic's rows in the government
+  view, so its negative positions land where they do in the game.
 
 How to write a profile:
 [docs/window-profiles.md](https://github.com/happy-dwarf-team/etch/blob/main/docs/window-profiles.md).

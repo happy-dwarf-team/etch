@@ -64,6 +64,17 @@ From section 16 of the v2 specification, with v1's entries that v2 did not take:
 
 ## Done since 2.0.0
 
+- **A government mechanic's windows where the game shows them.** A window that
+  `common/government_mechanics` names with `gui` has no place of its own: its
+  negative positions count from its row of `specific_governments_list`, so
+  alone at the top of the screen it drew nothing (Anbennar's `drakonshan_bar`,
+  reported by a mod author). The preview now draws it in
+  `countrygovernmentview`, among its mechanic's rows, with the list's place and
+  the rows as read in `eu4.exe` and measured in the game
+  ([government-mechanics.md](../government-mechanics.md)). A list also places
+  its entries itself: the `position` of an entry's window no longer counts,
+  which moves `diploactionentry_category` 20 px up, to where the game has it.
+
 - **The military tab with Cradle of Civilization** (etch#254, from the coverage
   survey). With the DLC the game moves most of the tab down by the height of
   `army_professionalism` (16 px), as the `.gui`'s own comment on that window
@@ -220,6 +231,13 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
 5).
 
 ## Open points
+
+- **Other windows the game's code places.** List entries a profile does not
+  name still draw alone, at the `position` of their window, which for some is
+  off the screen (`reorg_entry`, `DeclareWarDialog_enemyentry`): in vanilla 14
+  of 688 definitions that draw show nothing at 1920×1080, in Anbennar 24 of 805,
+  before the mechanics. Each needs its host, as the mechanics have theirs.
+  `countrygovernmentview` itself has no choice of mechanic in `View ▾`.
 
 Small unknowns, none worth an issue yet.
 
