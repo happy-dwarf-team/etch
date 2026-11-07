@@ -7,6 +7,7 @@ export type { PlaysetDiagnostic, PlaysetDiagnosticSeverity } from './diagnostics
 export { GameFiles, type GameFile, type GameFilesLayer } from './game-files.ts';
 export { PlaysetInterface } from './interface.ts';
 export { PlaysetAssets, layOutPreview } from './assets.ts';
+export { loadGovernmentMechanics, type PlaysetMechanics } from './government-mechanics.ts';
 export { loadPlaysetLocalisation } from './localisation.ts';
 export {
   EU4_STEAM_APP_ID,
