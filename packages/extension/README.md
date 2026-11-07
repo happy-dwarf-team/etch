@@ -164,6 +164,10 @@ it in the report. When an installed VSIX replaces the extension's files without 
 Etch warns that the window still runs the old build and offers **Reload Window**. The
 [changelog](https://github.com/happy-dwarf-team/etch/blob/main/CHANGELOG.md) lists what each release changed.
 
+Questions, or not sure it is a bug? Ask in `#help-and-bugs` (Etch tag) or `#modding` on the team's
+[Discord server](https://discord.happydwarf.dev/); what the team confirms there is tracked in the
+issue tracker.
+
 ## License
 
 MIT, see [LICENSE](https://github.com/happy-dwarf-team/etch/blob/main/LICENSE).
