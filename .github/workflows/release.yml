@@ -115,6 +115,18 @@ jobs:
     secrets:
       WEBSITE_DISPATCH_TOKEN: ${{ secrets.WEBSITE_DISPATCH_TOKEN }}
 
+  # Posts the release to the team's Discord server once it has its VSIX. A hand
+  # run rebuilds an existing tag, so it posts nothing.
+  notify-discord:
+    needs: [release-please, publish]
+    if: ${{ !cancelled() && needs.publish.result == 'success' && github.event_name == 'push' }}
+    uses: happy-dwarf-team/.github/.github/workflows/discord-release.yml@14db4f9e98bdc130c5d6e8dde9035ee1cabf30a6 # main
+    permissions: {}
+    with:
+      tag: ${{ needs.release-please.outputs.tag_name }}
+    secrets:
+      DISCORD_RELEASES_WEBHOOK: ${{ secrets.DISCORD_RELEASES_WEBHOOK }}
+
   # The Marketplace offers no trusted publishing (OIDC) policies yet, so the job
   # signs in over OIDC as the Microsoft Entra ID identity of the
   # vscode-marketplace environment (variables AZURE_CLIENT_ID and
