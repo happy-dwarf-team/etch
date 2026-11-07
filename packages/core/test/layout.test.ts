@@ -717,6 +717,41 @@ describe('layoutWindow: sample data', () => {
     expect(text.glyphs).toHaveLength(4 * GLYPH_STRIDE);
   });
 
+  it('places a list box entry itself, whatever position its template gives', () => {
+    const { file, input } = setUp(
+      GUI.replace('name = "entry" size', 'name = "entry" position = { x = 7 y = 20 } size'),
+    );
+    const window = file.definitions[0] as Widget;
+    const entry = file.definitions[1] as Widget;
+    const l = layoutWindow(window, {
+      ...input,
+      content: {
+        text: () => undefined,
+        rows: (list) => (list.name === 'list' ? { template: entry, file, count: 1 } : undefined),
+      },
+    });
+    expect(rectOf(l, 'entry').slice(0, 2)).toEqual([12, 33]);
+  });
+
+  it('places a list box entry at the place a repeater gives, whatever its template gives', () => {
+    const { file, input } = setUp(
+      GUI.replace('name = "entry" size', 'name = "entry" position = { x = 7 y = 20 } size'),
+    );
+    const window = file.definitions[0] as Widget;
+    const entry = file.definitions[1] as Widget;
+    const l = layoutWindow(window, {
+      ...input,
+      content: {
+        text: () => undefined,
+        rows: (list) =>
+          list.name === 'list'
+            ? { template: entry, file, count: 1, place: { start: { x: 0, y: 5 } } }
+            : undefined,
+      },
+    });
+    expect(rectOf(l, 'entry').slice(0, 2)).toEqual([10, 35]);
+  });
+
   it('lays out a list box entry per row from its border, with spacing, while whole entries fit', () => {
     const { file, input } = setUp(GUI);
     const window = file.definitions[0] as Widget;

@@ -137,6 +137,25 @@ export interface LayoutContent {
         };
       }
     | undefined;
+  /**
+   * The entries of a list box the game's code fills with different definitions (a government
+   * mechanic's rows); they take the place of `rows`. `row` is the entry the list is part of.
+   */
+  entries?(list: Widget, row: number | undefined): readonly ListEntry[] | undefined;
+  /** The sprite the game's code gives a widget in place of its `.gui` one. */
+  sprite?(widget: Widget, row: number | undefined): string | undefined;
+  /** Whether the game's code centres a widget in the width of its parent. */
+  centred?(widget: Widget, row: number | undefined): boolean;
+}
+
+/** An entry of a list box the game's code fills: {@link LayoutContent.entries}. */
+export interface ListEntry {
+  readonly template: Widget;
+  readonly file: GuiFile;
+  /** The number the other hooks of {@link LayoutContent} know this entry by. */
+  readonly row: number;
+  /** The height the game's code gives the entry, in place of its `size`. */
+  readonly height?: number;
 }
 
 /**
@@ -268,6 +287,8 @@ class Layout {
     | undefined;
   /** The windows a live snapshot could not move as one (`livePosition`), by their index. */
   private readonly movedByChildren = new Set<number>();
+  /** The list entry about to be placed: its template, and the height the game's code gives it. */
+  private entry: { readonly widget: Widget; readonly height: number | undefined } | undefined;
 
   constructor(input: LayoutInput) {
     this.input = input;
@@ -307,12 +328,19 @@ class Layout {
     this.checkNotApplied(props);
     this.current = widget;
     const anchor = this.anchor(props, parent);
+    const entry = this.entry?.widget === widget ? this.entry : undefined;
+    this.entry = undefined;
     // Hypothesis: the preview shows a window where it ends up once opened, at `show_position`,
-    // unless the view says the game keeps it at its `hide_position`.
-    const written = (view?.atHidePosition?.(widget) === true
-      ? props.point('hide_position')
-      : props.point('show_position')) ??
-      props.point('position') ?? { x: 0, y: 0 };
+    // unless the view says the game keeps it at its `hide_position`. A list places its entries
+    // itself: `peace_entry` gives `y = 20` and its first row stands at the top of `peace_list`,
+    // `diploactionentry_category` too, 26 px down `diploaction_list` below its 26 px first row.
+    const written =
+      entry !== undefined
+        ? { x: 0, y: 0 }
+        : ((view?.atHidePosition?.(widget) === true
+            ? props.point('hide_position')
+            : props.point('show_position')) ??
+          props.point('position') ?? { x: 0, y: 0 });
     const moved = this.movedPosition(widget);
     const axis = view?.movedAxis?.(widget);
     const offset =
@@ -349,7 +377,7 @@ class Layout {
           : props.flag('fullscreen') === true
             ? this.input.screen
             : sizeIn(props.size('size'), parent);
-      rect = { x, y, ...extent };
+      rect = { x, y, ...extent, height: entry?.height ?? extent.height };
     } else if (SPRITE_WIDGETS.has(kind)) {
       // Verified in the corpus (etch#44): a widget whose `.gui` picks its sprite by
       // `if_resolution` (the declare war dialog's background) gets no screen-sized variant.
@@ -403,6 +431,10 @@ class Layout {
       rect = { x, y, ...sizeIn(props.size('size'), parent) };
     }
 
+    if (this.input.content?.centred?.(widget, this.row) === true) {
+      const by = Math.trunc((parent.width - rect.width) / 2);
+      rect = this.moveTo(rect, { x: rect.x + by, y: rect.y }, drawStart);
+    }
     rect = this.livePosition(rect, state, drawStart, kind, parentIndex);
     // The game's code sizes what it adds (a ledger column's text, the professionalism markers), and
     // the snapshot has that size. What is drawn stays as the definition has it.
@@ -526,6 +558,7 @@ class Layout {
       };
       // A list box shows only the rows that fit whole, as `placeRows` does.
       if (isList && box.y + box.height > rect.y + rect.height) break;
+      if (isList) this.entry = { widget: rows.template, height: undefined };
       this.place(rows.template, box, index, undefined);
     }
     this.constants = outer.constants;
@@ -572,6 +605,11 @@ class Layout {
    * only those that fit whole show, as the list does not scroll in the preview.
    */
   private placeRows(list: Widget, props: Properties, rect: Rect, index: number): void {
+    const entries = this.input.content?.entries?.(list, this.row);
+    if (entries !== undefined) {
+      this.placeListEntries(entries, props, rect, index);
+      return;
+    }
     const rows = this.input.content?.rows(list);
     if (rows === undefined || rows.count === 0) return;
     if (rows.place !== undefined) {
@@ -602,6 +640,7 @@ class Layout {
           };
       const widgets = this.widgets.length;
       const draws = this.draws.length;
+      this.entry = { widget: rows.template, height: undefined };
       this.place(rows.template, box, index, undefined);
       const placed = this.widgets[widgets];
       const extent = placed === undefined ? 0 : horizontal ? placed.width : placed.height;
@@ -614,6 +653,56 @@ class Layout {
     }
     this.constants = outer.constants;
     this.row = outer.row;
+  }
+
+  /**
+   * The entries the game's code puts in a list box, each its own definition: placed as `placeRows`
+   * places a template's. A vertical list shows those that fit whole and takes their height, as
+   * `specific_governments_list` does; the game sizes a horizontal one to its entries (the
+   * interactions of a row, 400 px wide in a 300 px `.gui`), so it drops none.
+   */
+  private placeListEntries(
+    entries: readonly ListEntry[],
+    props: Properties,
+    rect: Rect,
+    index: number,
+  ): void {
+    const border = props.point('bordersize') ?? { x: 0, y: 0 };
+    const spacing = props.number('spacing') ?? 0;
+    const horizontal = props.flag('horizontal') === true;
+    const room = rect.height - 2 * border.y;
+    const outer = { constants: this.constants, row: this.row };
+    let offset = 0;
+    for (const entry of entries) {
+      this.constants = entry.file.constants;
+      this.row = entry.row;
+      const box: Rect = horizontal
+        ? { x: rect.x + border.x + offset, y: rect.y + border.y, width: 0, height: room }
+        : {
+            x: rect.x + border.x,
+            y: rect.y + border.y + offset,
+            width: rect.width - 2 * border.x,
+            height: room - offset,
+          };
+      const widgets = this.widgets.length;
+      const draws = this.draws.length;
+      this.entry = { widget: entry.template, height: entry.height };
+      this.place(entry.template, box, index, undefined);
+      const placed = this.widgets[widgets];
+      const extent = placed === undefined ? 0 : horizontal ? placed.width : placed.height;
+      if (!horizontal && offset > 0 && offset + extent > room) {
+        this.widgets.length = widgets;
+        this.draws.length = draws;
+        break;
+      }
+      offset += extent + spacing;
+    }
+    this.constants = outer.constants;
+    this.row = outer.row;
+    const list = this.widgets[index];
+    if (list !== undefined && !horizontal && offset < list.height) {
+      this.widgets[index] = { ...list, height: offset + 2 * border.y };
+    }
   }
 
   /**
@@ -777,7 +866,9 @@ class Layout {
     frame: number | undefined,
   ): Extent | undefined {
     const key = props.has('spritetype') ? 'spritetype' : 'quadtexturesprite';
-    const name = props.text(key);
+    const set =
+      this.current === undefined ? undefined : this.input.content?.sprite?.(this.current, this.row);
+    const name = set ?? props.text(key);
     if (name === undefined || name === '') return undefined;
     const sprite = variantTop === undefined ? name : this.sizedSprite(name, variantTop);
     return this.drawSprite(sprite, props.scalar(key), props, x, y, source, fill, frame);

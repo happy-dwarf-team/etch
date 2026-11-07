@@ -55,3 +55,23 @@ export function widgetHoverText(widgets: readonly LaidOutWidget[], index: number
 export function laidOutIndexOf(widgets: readonly LaidOutWidget[], source: number): number {
   return widgets.findIndex((entry) => entry.widget.node.start === source);
 }
+
+/**
+ * The widgets of one window among those laid out, as a layout of their own: what hover, clicks and
+ * the outline work on when the window is drawn inside another, whose widgets are in another file.
+ * Every copy of it counts, the first being the one its source finds.
+ */
+export function laidOutWithin(
+  widgets: readonly LaidOutWidget[],
+  window: Widget,
+): readonly LaidOutWidget[] {
+  const within = new Map<number, number>();
+  const out: LaidOutWidget[] = [];
+  widgets.forEach((widget, index) => {
+    const parent = within.get(widget.parent);
+    if (widget.widget !== window && parent === undefined) return;
+    within.set(index, out.length);
+    out.push({ ...widget, parent: widget.widget === window ? -1 : (parent ?? -1) });
+  });
+  return out;
+}

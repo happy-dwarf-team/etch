@@ -92,6 +92,46 @@ const GUI = `guiTypes = {
 }
 `;
 
+// A government mechanic's window: the game's code puts it in the government view's list.
+const MECHANICS_GUI = `guiTypes = {
+	positionType = { name = "specific_governments_list_position" position = { x = 30 y = 200 } }
+	windowType = {
+		name = "countrygovernmentview"
+		position = { x = 0 y = 100 }
+		size = { x = 400 y = 100 }
+		smoothListboxType = { name = "specific_governments_list" size = { x = 300 y = 120 } }
+	}
+	windowType = {
+		name = "government_mechanic_interactions"
+		size = { x = 300 y = 100 }
+		smoothListboxType = {
+			name = "government_interaction_list"
+			size = { x = 300 y = 100 }
+			horizontal = 1
+		}
+	}
+	windowType = { name = "government_interaction_type" size = { x = 100 y = 100 } }
+	windowType = {
+		name = "etch_bar"
+		size = { x = 300 y = 10 }
+		iconType = {
+			name = "etch_fill"
+			spriteType = "GFX_etch_box"
+			position = { x = 5 y = -80 }
+		}
+	}
+}
+`;
+
+const MECHANIC = `etch_mechanic = {
+	powers = { etch_power = { gui = etch_bar } }
+	interactions = {
+		first = { cost_type = etch_power }
+		second = { cost_type = etch_power }
+	}
+}
+`;
+
 // The player's settings as the game writes them: the default preview resolution, and a UI scale
 // the preview reports.
 const SETTINGS = `language="l_english"
@@ -114,6 +154,8 @@ async function fixtureGame(): Promise<string> {
     'profile/settings.txt': SETTINGS,
     'interface/etch.gfx': GFX,
     'interface/etch.gui': GUI,
+    'interface/etch_mechanics.gui': MECHANICS_GUI,
+    'common/government_mechanics/etch.txt': MECHANIC,
     'gfx/interface/etch_box.tga': tga(4, 4, [0, 0, 255, 255]),
     'gfx/fonts/etch_tiny.fnt': FONT,
     'gfx/fonts/etch_tiny.tga': tga(64, 64, [255, 255, 255, 255]),
@@ -430,6 +472,31 @@ export async function testPreview(api: EtchApi): Promise<void> {
           path.join(game, 'gfx', 'fonts', 'etch_tiny.fnt'),
           FONT.replace('xadvance=6', 'xadvance=9'),
         ),
+    );
+
+    // A government mechanic's window stands where the game's code puts it: 200 + 60 - 55 below
+    // the view's 100, a row of 100 px down, and its -80 from there, not above the screen.
+    const mechanic = await nextPaint(
+      preview,
+      (r) => r.window.name === 'etch_bar',
+      async () => {
+        const uri = vscode.Uri.file(path.join(game, 'interface', 'etch_mechanics.gui'));
+        const editor = await vscode.window.showTextDocument(uri);
+        moveCursor(editor, 'name = "etch_bar"');
+      },
+    );
+    assert.equal(mechanic.render.hosted, true);
+    assert.deepEqual(
+      mechanic.render.layout.widgets.map((w) => [w.widget.name, w.x, w.y, w.parent]),
+      [
+        ['etch_bar', 30, 405, -1],
+        ['etch_fill', 35, 325, 0],
+      ],
+    );
+    await nextPaint(
+      preview,
+      (r) => r.window.name === 'etch_first',
+      () => vscode.window.showTextDocument(gui.document),
     );
 
     // The webview keeps the window and the pin for a window reload.

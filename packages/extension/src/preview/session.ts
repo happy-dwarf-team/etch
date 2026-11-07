@@ -5,15 +5,23 @@
 // the files that changed.
 
 import { resolve } from 'node:path';
-import type { GuiFile, Localisation } from '@etch/core';
+import {
+  mechanicShowing,
+  type GovernmentMechanic,
+  type GuiFile,
+  type Localisation,
+  type Widget,
+} from '@etch/core';
 import {
   PlaysetAssets,
   PlaysetInterface,
   findPlayset,
+  loadGovernmentMechanics,
   loadPlaysetLocalisation,
   readPlayerSettings,
   type Playset,
   type PlayerSettings,
+  type PlaysetMechanics,
 } from '@etch/core/playset';
 import type { Notice } from './protocol.ts';
 
@@ -48,6 +56,8 @@ export class PreviewSession {
   readonly localisation: Localisation | undefined;
   /** The player's `settings.txt` in the profile folder, `undefined` when there is none. */
   readonly player: PlayerSettings | undefined;
+  /** The government mechanics, read once per session: `common` files change little. */
+  readonly mechanics: PlaysetMechanics;
   readonly notices: readonly Notice[];
 
   private constructor(
@@ -57,6 +67,7 @@ export class PreviewSession {
     ui: PlaysetInterface,
     localisation: Localisation | undefined,
     player: PlayerSettings | undefined,
+    mechanics: PlaysetMechanics,
     notices: readonly Notice[],
   ) {
     this.settings = settings;
@@ -66,6 +77,7 @@ export class PreviewSession {
     this.assets = new PlaysetAssets(ui);
     this.localisation = localisation;
     this.player = player;
+    this.mechanics = mechanics;
     this.notices = notices;
   }
 
@@ -85,7 +97,7 @@ export class PreviewSession {
       severity: found.severity,
       message: found.path === undefined ? found.message : `${found.message} (${found.path})`,
     }));
-    const [ui, localisation, player] = await Promise.all([
+    const [ui, localisation, player, mechanics] = await Promise.all([
       PlaysetInterface.load(playset.files),
       loadPlaysetLocalisation(playset.files, settings.language).catch((error: unknown) => {
         notices.push({
@@ -95,6 +107,13 @@ export class PreviewSession {
         return undefined;
       }),
       readPlayerSettings(playset.profileFolder),
+      loadGovernmentMechanics(playset.files).catch((error: unknown) => {
+        notices.push({
+          severity: 'error',
+          message: `The government mechanics could not be read: ${messageOf(error)}`,
+        });
+        return { mechanics: [], basic: [], scripted: [] };
+      }),
     ]);
     if (player?.uiScale !== undefined && player.uiScale !== 1) {
       notices.push({
@@ -111,6 +130,7 @@ export class PreviewSession {
       ui,
       localisation,
       player,
+      mechanics,
       notices,
     );
   }
@@ -177,6 +197,16 @@ export class PreviewSession {
   guiFile(path: string): GuiFile | undefined {
     const key = path.toLowerCase();
     return this.ui.index.guiFiles.find((f) => f.path.toLowerCase() === key)?.file;
+  }
+
+  /**
+   * The mechanic whose rows show a window of the playset in the government view: the game's code
+   * puts the window there, and no `.gui` file says so.
+   */
+  mechanicShowing(window: Widget): GovernmentMechanic | undefined {
+    const { name } = window;
+    if (name === undefined || this.ui.index.guiType(name)?.item !== window) return undefined;
+    return mechanicShowing(this.mechanics.mechanics, name);
   }
 
   /** A `.gui` text as the game shows it: its localised value, or the text itself. */
