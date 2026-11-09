@@ -108,9 +108,16 @@ From section 16 of the v2 specification, with v1's entries that v2 did not take:
   and Bigger UI keep the 16 px and take it from the vanilla layer. In the
   survey's outline with the profiles the tab's 26 views (vanilla, Anbennar
   alone, Bigger UI, both sizes) have every rect exact; the corpus, which has no
-  military tab, still passes (240 of 240). Left in etch#254: what places
-  `activate_all`, `slacken_button` and `button_makeheirgeneral`, and the
-  widget at `this+0x668` of the tab.
+  military tab, still passes (240 of 240). Left in etch#254 and settled since:
+  `activate_all`, `slacken_button` and `button_makeheirgeneral` move with the
+  tab like the rest (667 and 986 at 1920×1080 in the survey's captures, the
+  `.gui` place of the screen's height plus 16); no code places them. The widget
+  at `this+0x668` is `domesticpanel_naval_doctrine_select`, the naval doctrine
+  choice the tab opens (`CCountryMilitaryView::Setup`, `0xFAEDC0`), which moves
+  down 16 px with the tab: its own vanilla profile does so, and the survey's
+  capture of it matches. Without the DLC the same function hides
+  `army_professionalism`, `CoCbackground` and `slacken_button` and shows the
+  plain `background`; the profile follows it.
 
 - **A text box is as large as the game's font measures it** (etch#264, from
   the coverage survey). The game measures a box by one rule (`0x159E510`) and
