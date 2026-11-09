@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.6.0](https://github.com/happy-dwarf-team/etch/compare/v2.5.4...v2.6.0) (2026-11-09)
+
+
+### Features
+
+* **core:** sample entries in the province view's history list ([#342](https://github.com/happy-dwarf-team/etch/issues/342)) ([f72747a](https://github.com/happy-dwarf-team/etch/commit/f72747a6e3b549ae01e80bdc3b17033a15e498cc))
+* **core:** warn about a replace_path that hides files from the game ([#344](https://github.com/happy-dwarf-team/etch/issues/344)) ([c7eb76d](https://github.com/happy-dwarf-team/etch/commit/c7eb76d765b335e1ecb6414eb8604374424c5b96))
+
+
+### Bug Fixes
+
+* **core:** lay out list box entries as the game does, and the history panel over the side panel ([#346](https://github.com/happy-dwarf-team/etch/issues/346)) ([5f0c5cd](https://github.com/happy-dwarf-team/etch/commit/5f0c5cd9fafe4ca6e42d10211d322a7d46d5c1c8))
+* **core:** place an overlapping box's entries as the game does ([#337](https://github.com/happy-dwarf-team/etch/issues/337)) ([31f266a](https://github.com/happy-dwarf-team/etch/commit/31f266a4df0e98a039b6898220cfecb450a1145a))
+* **core:** read localisation from subfolders, as the game does ([#343](https://github.com/happy-dwarf-team/etch/issues/343)) ([7e98e44](https://github.com/happy-dwarf-team/etch/commit/7e98e443689471f39ae5f60084fb228f0e48fcd8))
+* **core:** size a fixed text box by the text the game's code sets first ([#338](https://github.com/happy-dwarf-team/etch/issues/338)) ([771a0ab](https://github.com/happy-dwarf-team/etch/commit/771a0abbee106766abcf5245a61978ce635e7277))
+* **core:** the military tab without Cradle of Civilization, and its doctrine choice ([#340](https://github.com/happy-dwarf-team/etch/issues/340)) ([fb5315c](https://github.com/happy-dwarf-team/etch/commit/fb5315c70f818e59c1ac0b26cb863ce65447733a))
+
 ## [2.5.4](https://github.com/happy-dwarf-team/etch/compare/v2.5.3...v2.5.4) (2026-11-07)
 
 
