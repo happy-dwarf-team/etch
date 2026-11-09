@@ -17,6 +17,8 @@ describe('loadPlaysetLocalisation', () => {
       'mod/localisation/replace/r_l_english.yml': `${BOM}l_english:\n C:0 "replace"\n`,
       'mod/localisation/notes.txt': 'not localisation',
       'top/localisation/top_l_english.yml': `${BOM}l_english:\n A:0 "top"\n`,
+      'sub/localisation/english/deep/sub_l_english.yml': `${BOM}l_english:\n E:0 "sub"\n`,
+      'sub/localisation/replace/english/sub_r_l_english.yml': `${BOM}l_english:\n D:0 "sub replace"\n`,
     });
   });
 
@@ -51,6 +53,21 @@ describe('loadPlaysetLocalisation', () => {
     expect(loc.get('D')).toBeUndefined();
     expect(loc.get('C')).toBe('replace');
     expect(loc.get('A')).toBe('top');
+  });
+
+  it('reads the files of subfolders too, as the game does', async () => {
+    const files = new GameFiles([
+      { name: 'game', root: join(root, 'game'), replacePaths: [] },
+      { name: 'Sub', root: join(root, 'sub'), replacePaths: [] },
+    ]);
+    const loc = await loadPlaysetLocalisation(files, 'english');
+    expect(loc.get('E')).toBe('sub');
+    expect(loc.source('E')).toEqual({
+      path: 'localisation/english/deep/sub_l_english.yml',
+      layer: 1,
+    });
+    // A file anywhere under localisation/replace wins over the others.
+    expect(loc.get('D')).toBe('sub replace');
   });
 
   it('reads another language', async () => {
