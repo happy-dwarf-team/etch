@@ -23,10 +23,12 @@ const fit = (text: string, box: Partial<TextFit>): string =>
 describe('fitText', () => {
   it('cuts before the fourth glyph back from the one that overflows, and adds " ..."', () => {
     // "East Damerian" is 63 wide; it overflows 60 at the "n", so "eria" and the "n" go.
-    expect(fitText(font, 'East Damerian', { width: 60, height: 10, truncate: true })).toEqual({
-      text: 'East Dam ...',
-      truncated: true,
-    });
+    expect(fitText(font, 'East Damerian', { width: 60, height: 10, truncate: true })).toMatchObject(
+      {
+        text: 'East Dam ...',
+        truncated: true,
+      },
+    );
   });
 
   it('leaves text that fits as it is, even when its one line is taller than the box', () => {
@@ -42,10 +44,20 @@ describe('fitText', () => {
   });
 
   it('cuts without " ..." before five glyphs', () => {
-    expect(fitText(font, 'abcdef', { width: 12, height: 10, truncate: true })).toEqual({
+    expect(fitText(font, 'abcdef', { width: 12, height: 10, truncate: true })).toMatchObject({
       text: 'ab',
       truncated: false,
     });
+  });
+
+  it('counts the height of the lines it makes and of the border, for a height left open', () => {
+    const open = (text: string, width = 60): number =>
+      fitText(font, text, { width, height: 0x7fffffff, border: { x: 0, y: 3 }, truncate: true })
+        .height;
+    expect(open('East Damerian', 63)).toBe(16);
+    expect(open('East Damerian')).toBe(26);
+    expect(open('a\nb')).toBe(26);
+    expect(open('aaaa bbbb cccc', 25)).toBe(36);
   });
 
   it('counts kerning with the next character', () => {

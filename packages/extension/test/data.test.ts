@@ -141,6 +141,7 @@ describe('PreviewData', () => {
       rows: () => undefined,
       state: () => undefined,
       adopted: () => [],
+      sizedBy: () => undefined,
       counts: { hand: 1, live: 0, save: 0, files: 2, generated: 5 },
       lists: [
         {

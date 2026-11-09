@@ -368,7 +368,7 @@ describe('the JSON Schema', () => {
     expect(keys('view')).toEqual(['label', 'set', 'toggles']);
     const source = ['decimals', 'engine', 'format', 'generated', 'loc', 'save', 'transform'];
     expect(keys('source')).toEqual(source);
-    expect(keys('content')).toEqual([...source, 'note'].sort());
+    expect(keys('content')).toEqual([...source, 'note', 'sizedBy'].sort());
     expect(keys('repeater')).toEqual([
       'count',
       'fields',

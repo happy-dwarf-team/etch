@@ -194,6 +194,11 @@ export interface ContentSource {
 export interface Content extends Written, ContentSource {
   readonly id: string;
   readonly path: PathRef;
+  /**
+   * A localisation key the game's code sets a fixed-size text box to first, with its height left
+   * open: the box keeps that text's height as its `maxHeight`, and later texts are fitted into it.
+   */
+  readonly sizedBy?: string;
 }
 
 /** A field of a repeater's entry: a path inside the template and its source. */

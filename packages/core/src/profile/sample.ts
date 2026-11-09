@@ -156,6 +156,8 @@ export interface SampleData {
   rows(list: Widget): SampleRows | undefined;
   /** What a widget shows from other definitions: a live snapshot's, else the profile's `adopt`. */
   adopted(widget: Widget, row?: number): readonly LiveAdopted[];
+  /** The text the game's code sizes a text box by first (a content's `sizedBy`), localised. */
+  sizedBy(widget: Widget): string | undefined;
   /** How many texts each layer fills, of the widgets the view draws. */
   readonly counts: Readonly<Record<DataLayer, number>>;
   /** The window's repeaters whose template the playset defines. */
@@ -174,10 +176,14 @@ export function sampleData(
   const pathOf = new Map(windowPaths(window).map((entry) => [entry.widget, entry.path]));
 
   const texts = new Map<Widget, SampleText>();
+  const sizers = new Map<Widget, string>();
   for (const content of profile.content) {
     for (const widget of widgetsAt(window, content.path.path)) {
       const text = resolve(content, pathOf.get(widget) ?? content.path.path, undefined, input);
       texts.set(widget, text);
+      if (content.sizedBy !== undefined) {
+        sizers.set(widget, input.localise(content.sizedBy) ?? content.sizedBy);
+      }
     }
   }
   // A live snapshot fills every text the game showed, not only the profile's sources.
@@ -325,6 +331,7 @@ export function sampleData(
       if (input.live?.adopted !== undefined) return input.live.adopted(path);
       return (view?.widgets.get(widget)?.adopted ?? []).map((name) => ({ name }));
     },
+    sizedBy: (widget) => sizers.get(widget),
     counts,
     lists,
   };
@@ -498,5 +505,6 @@ export function layoutContentOf(sample: SampleData): LayoutContent {
     rows: (list) => sample.rows(list),
     state: (widget, row) => sample.state(widget, row),
     adopted: (widget, row) => sample.adopted(widget, row),
+    sizedBy: (widget) => sample.sizedBy(widget),
   };
 }
