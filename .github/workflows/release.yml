@@ -128,13 +128,11 @@ jobs:
       DISCORD_RELEASES_WEBHOOK: ${{ secrets.DISCORD_RELEASES_WEBHOOK }}
       DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
 
-  # The Marketplace offers no trusted publishing (OIDC) policies yet, so the job
-  # signs in over OIDC as the Microsoft Entra ID identity of the
-  # vscode-marketplace environment (variables AZURE_CLIENT_ID and
-  # AZURE_TENANT_ID) and publishes with `vsce --azure-credential`, with no
-  # stored token. Without that identity a VSCE_PAT secret publishes, and without
-  # either the job leaves a warning with the VSIX to upload by hand
-  # (docs/release.md).
+  # Trusted publishing (OIDC): the happy-dwarf-team publisher's policy names this
+  # repository, release.yml and the vscode-marketplace environment, which needs a
+  # maintainer's approval for each run. Without the policy a VSCE_PAT secret
+  # publishes, and without either the job leaves a warning with the VSIX to upload
+  # by hand (docs/release.md).
   marketplace:
     needs: [release-please, publish]
     if: ${{ !cancelled() && needs.publish.result == 'success' }}
@@ -166,43 +164,39 @@ jobs:
           name: etch-${{ inputs.tag || needs.release-please.outputs.tag_name }}
           path: release
 
-      - name: Sign in to Microsoft Entra ID
-        if: vars.AZURE_CLIENT_ID != ''
-        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
-        with:
-          client-id: ${{ vars.AZURE_CLIENT_ID }}
-          tenant-id: ${{ vars.AZURE_TENANT_ID }}
-          allow-no-subscriptions: true
-
+      # `vsce publish --oidc` never falls back to a token by itself, so the step does: trusted
+      # publishing first, then VSCE_PAT if set, then a warning with the VSIX to upload by hand.
+      # The summary says which one published, so the token can be deleted once OIDC has.
       - name: Publish to the VS Code Marketplace
         env:
-          ENTRA_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
           MARKETPLACE_TOKEN: ${{ secrets.VSCE_PAT }}
         run: |
           vsix="etch-win32-x64-${TAG#v}.vsix"
-          if [ -n "$ENTRA_CLIENT_ID" ]; then
-            pnpm --filter etch exec vsce publish --packagePath "$GITHUB_WORKSPACE/release/$vsix" --azure-credential --skip-duplicate
+          package="$GITHUB_WORKSPACE/release/$vsix"
+          if pnpm --filter etch exec vsce publish --packagePath "$package" --oidc --skip-duplicate; then
+            echo "### VS Code Marketplace: published with trusted publishing (OIDC)" >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
-          if [ -z "$MARKETPLACE_TOKEN" ]; then
-            url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/$TAG/$vsix"
-            manage="https://marketplace.visualstudio.com/manage/publishers/happy-dwarf-team"
-            echo "::warning title=Upload to the Marketplace by hand::Neither AZURE_CLIENT_ID nor VSCE_PAT is set. Upload $url at $manage (docs/release.md)."
-            {
-              echo "### VS Code Marketplace: upload by hand"
-              echo
-              echo "Neither AZURE_CLIENT_ID nor VSCE_PAT is set, so this job did not publish. Download [$vsix]($url)"
-              echo "and upload it at <$manage> (docs/release.md)."
-            } >> "$GITHUB_STEP_SUMMARY"
+          if [ -n "$MARKETPLACE_TOKEN" ]; then
+            echo "::warning title=Marketplace trusted publishing failed::Publishing with the VSCE_PAT secret instead (docs/release.md)."
+            VSCE_PAT="$MARKETPLACE_TOKEN" pnpm --filter etch exec vsce publish --packagePath "$package" --skip-duplicate
+            echo "### VS Code Marketplace: published with VSCE_PAT (trusted publishing failed)" >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
-          export VSCE_PAT="$MARKETPLACE_TOKEN"
-          pnpm --filter etch exec vsce publish --packagePath "$GITHUB_WORKSPACE/release/$vsix" --skip-duplicate
+          url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/$TAG/$vsix"
+          manage="https://marketplace.visualstudio.com/manage/publishers/happy-dwarf-team"
+          echo "::warning title=Upload to the Marketplace by hand::Trusted publishing failed and VSCE_PAT is not set. Upload $url at $manage (docs/release.md)."
+          {
+            echo "### VS Code Marketplace: upload by hand"
+            echo
+            echo "Trusted publishing failed and VSCE_PAT is not set, so this job did not publish. Download [$vsix]($url)"
+            echo "and upload it at <$manage> (docs/release.md)."
+          } >> "$GITHUB_STEP_SUMMARY"
 
-  # Open VSX trusted publishing (OIDC) works only for an extension that already
-  # has a version, so the first release needs the OVSX_PAT secret. Once the
-  # trusted publisher for release.yml is registered and the secret is deleted,
-  # releases publish without a token (docs/release.md).
+  # Open VSX trusted publishing (OIDC), registered for release.yml by a namespace
+  # owner. Until it is registered, or when it fails, the OVSX_PAT secret
+  # publishes; once a release's summary shows OIDC published, the secret is
+  # deleted (docs/release.md).
   open-vsx:
     needs: [release-please, publish]
     if: ${{ !cancelled() && needs.publish.result == 'success' }}
@@ -233,13 +227,21 @@ jobs:
           name: etch-${{ inputs.tag || needs.release-please.outputs.tag_name }}
           path: release
 
+      # Trusted publishing first; OVSX_PAT, if still set, only when it fails. The summary says
+      # which one published, so the token can be deleted once OIDC has.
       - name: Publish to Open VSX
         env:
           OPEN_VSX_TOKEN: ${{ secrets.OVSX_PAT }}
         run: |
           vsix="$GITHUB_WORKSPACE/release/etch-win32-x64-${TAG#v}.vsix"
-          if [ -n "$OPEN_VSX_TOKEN" ]; then
-            OVSX_PAT="$OPEN_VSX_TOKEN" pnpm --filter etch exec ovsx publish "$vsix" --skip-duplicate
-          else
-            pnpm --filter etch exec ovsx publish "$vsix" --trusted-publishing --skip-duplicate
+          if pnpm --filter etch exec ovsx publish "$vsix" --trusted-publishing --skip-duplicate; then
+            echo "### Open VSX: published with trusted publishing (OIDC)" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
           fi
+          if [ -z "$OPEN_VSX_TOKEN" ]; then
+            echo "::error title=Open VSX trusted publishing failed::OVSX_PAT is not set either (docs/release.md)."
+            exit 1
+          fi
+          echo "::warning title=Open VSX trusted publishing failed::Publishing with the OVSX_PAT secret instead (docs/release.md)."
+          OVSX_PAT="$OPEN_VSX_TOKEN" pnpm --filter etch exec ovsx publish "$vsix" --skip-duplicate
+          echo "### Open VSX: published with OVSX_PAT (trusted publishing failed)" >> "$GITHUB_STEP_SUMMARY"

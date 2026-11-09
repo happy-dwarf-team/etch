@@ -58,8 +58,8 @@ repository has one version (ADR 0004):
 3. The release workflow then builds the tagged commit and attaches
    `etch-win32-x64-X.Y.Z.vsix` and `SHA256SUMS.txt`, with a build provenance
    attestation (`gh attestation verify <vsix> -R happy-dwarf-team/etch`).
-4. It publishes the same VSIX to Open VSX. The VS Code Marketplace gets it by
-   hand until the Marketplace offers trusted publishing.
+4. It publishes the same VSIX to the VS Code Marketplace and Open VSX, with
+   OIDC trusted publishing and a token only as a fallback.
    [docs/release.md](docs/release.md) describes the store accounts, the
    repository secrets and each release's steps.
 
