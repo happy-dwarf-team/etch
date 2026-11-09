@@ -572,9 +572,21 @@ class Layout {
 
   /**
    * The entries sample data puts in an `OverlappingElementsBoxType` (the core shields of
-   * `cores_box`): side by side from its left, `spacing` apart, and moved closer, overlapping, when
-   * they do not fit its width. Seen in the corpus: two 32 px shields of `cores_box` (spacing 1)
-   * 33 px apart; the overlap is a hypothesis from the name.
+   * `cores_box`, the province modifiers), side by side as `COverlappingElementsBox::UpdateGraphics`
+   * places them (`eu4.exe` 1.37.5 `0x163D060`; the format and spacing as its type's `ReadMember`,
+   * `0x15EBF80`, reads them):
+   *
+   * - An entry is as wide as its template, `w`; `spacing` is read as a whole number. The step is
+   *   `w + spacing`, and when the `n` entries' steps are wider than the box, `(width − w / 2) / n`
+   *   in single precision, so they overlap. An entry's offset is its step count times the step,
+   *   rounded half up.
+   * - `format = left` (and no `format`, or any other word): the first entry at the box's left.
+   *   `right`: the last entry at `width − w + spacing`, each earlier one an offset to its left.
+   *   `center` or `centre`: as `left`, moved right by `width / 2 − (n × step + 0.5) / 2`, cut.
+   *
+   * Measured in the coverage survey's captures, every one of them: `cores_box` (105 px, 4 shields
+   * 22.25 px apart), the diplomacy view's `box` (173 px, 6 to 50 flags), the province view's
+   * `modifiers` (`right`, 252 px, 1 to 16 icons) and the decisions view's policies (`center`).
    */
   private placeOverlapping(box: Widget, props: Properties, rect: Rect, index: number): void {
     const rows = this.input.content?.rows(box);
@@ -583,16 +595,27 @@ class Layout {
       widgetProperties(rows.template, rows.file.constants, this.input.screen).size('size'),
       rect,
     );
-    const spacing = props.number('spacing') ?? 0;
-    const fits = rows.count * size.width + (rows.count - 1) * spacing <= rect.width;
+    const n = rows.count;
+    const spacing = Math.trunc(props.number('spacing') ?? 0);
     const step =
-      fits || rows.count < 2 ? size.width + spacing : (rect.width - size.width) / (rows.count - 1);
+      rect.width < n * (size.width + spacing)
+        ? Math.fround(Math.fround(rect.width - size.width * 0.5) / n)
+        : size.width + spacing;
+    const offset = (k: number): number => Math.floor(Math.fround(k * step) + 0.5);
+    const format = props.text('format')?.toLowerCase();
+    const right = format === 'right';
+    const start =
+      format === 'center' || format === 'centre'
+        ? Math.trunc(Math.fround(rect.width * 0.5 - Math.fround(n * step + 0.5) * 0.5))
+        : right
+          ? rect.width - size.width + spacing
+          : 0;
     const outer = { constants: this.constants, row: this.row };
     this.constants = rows.file.constants;
-    for (let row = 0; row < rows.count; row++) {
+    for (let row = 0; row < n; row++) {
       this.row = row;
       const box: Rect = {
-        x: rect.x + Math.round(row * step),
+        x: rect.x + (right ? start - offset(n - 1 - row) : start + offset(row)),
         y: rect.y,
         width: size.width,
         height: size.height,

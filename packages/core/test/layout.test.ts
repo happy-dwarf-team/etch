@@ -781,6 +781,54 @@ describe('layoutWindow: sample data', () => {
     expect(rectOf(l, 'entry').slice(0, 2)).toEqual([10, 35]);
   });
 
+  it('places the entries of an overlapping box as the game does, by its format', () => {
+    // Boxes and entries as in vanilla's .gui files, positions from the coverage survey's captures.
+    const { file, input } = setUp(`guiTypes = {
+      windowType = { name = "w" size = { x = 800 y = 100 }
+        OverlappingElementsBoxType = { name = "flags" position = { x = 65 y = 0 } size = { x = 173 y = 38 } format = left spacing = 1 }
+        OverlappingElementsBoxType = { name = "cores" position = { x = 143 y = 0 } size = { x = 105 y = 32 } format = left spacing = 1 }
+        OverlappingElementsBoxType = { name = "modifiers" position = { x = 168 y = 40 } size = { x = 252 y = 32 } format = right spacing = 1 }
+        OverlappingElementsBoxType = { name = "aggressiveness" position = { x = 210 y = 80 } size = { x = 100 y = 16 } format = right spacing = 1.0 }
+        OverlappingElementsBoxType = { name = "policies" position = { x = 77 y = 0 } size = { x = 485 y = 64 } format = center spacing = 50 }
+      }
+      windowType = { name = "flag" size = { x = 28 y = 28 } }
+      windowType = { name = "shield" size = { x = 32 y = 32 } }
+      windowType = { name = "pip" size = { x = 16 y = 16 } }
+      windowType = { name = "policy" size = { x = 100 y = 64 } }
+    }`);
+    const [window, flag, shield, pip, policy] = file.definitions as Widget[];
+    const xs = (box: string, template: Widget | undefined, count: number): number[] => {
+      if (window === undefined || template === undefined) throw new Error('no definitions');
+      const l = layoutWindow(window, {
+        ...input,
+        content: {
+          text: () => undefined,
+          rows: (list) => (list.name === box ? { template, file, count } : undefined),
+        },
+      });
+      return l.widgets.filter((w) => w.widget === template).map((w) => w.x);
+    };
+    // 5 × 29 px fit in 173: 29 apart. 6 × 29 do not (not 6 × 28 + 5 × 1): (173 − 14) / 6.
+    expect(xs('flags', flag, 5)).toEqual([65, 94, 123, 152, 181]);
+    expect(xs('flags', flag, 6)).toEqual([65, 92, 118, 145, 171, 198]);
+    expect(xs('flags', flag, 12)).toEqual([
+      65, 78, 92, 105, 118, 131, 145, 158, 171, 184, 198, 211,
+    ]);
+    expect(xs('flags', flag, 50).at(-1)).toBe(221);
+    expect(xs('cores', shield, 3)).toEqual([143, 176, 209]);
+    expect(xs('cores', shield, 4)).toEqual([143, 165, 188, 210]);
+    // The last entry at 252 − 32 + 1 from the box, the earlier ones to its left.
+    expect(xs('modifiers', shield, 1)).toEqual([389]);
+    expect(xs('modifiers', shield, 4)).toEqual([290, 323, 356, 389]);
+    expect(xs('modifiers', shield, 9)).toEqual([179, 205, 232, 258, 284, 310, 337, 363, 389]);
+    expect(xs('modifiers', shield, 16)).toEqual([
+      168, 182, 197, 212, 227, 241, 256, 271, 286, 300, 315, 330, 345, 359, 374, 389,
+    ]);
+    expect(xs('aggressiveness', pip, 6)).toEqual([218, 234, 249, 264, 280, 295]);
+    expect(xs('aggressiveness', pip, 9)).toEqual([213, 223, 234, 244, 254, 264, 275, 285, 295]);
+    expect(xs('policies', policy, 3)).toEqual([94, 244, 394]);
+  });
+
   it('lays out a list box entry per row from its border, with spacing, while whole entries fit', () => {
     const { file, input } = setUp(GUI);
     const window = file.definitions[0] as Widget;

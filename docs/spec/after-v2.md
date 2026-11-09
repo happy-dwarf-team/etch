@@ -53,10 +53,9 @@ From section 16 of the v2 specification, with v1's entries that v2 did not take:
   values to `development_value_vertical_position_not_exploitable`; the vanilla
   profile's `exploit` selector follows it, read from the code only, as every
   corpus save has the DLC and no capture without it was taken.
-- **Lists without sample entries in `provinceview`:** the province modifiers,
-  whose placement from `province_modifier_start` matches the captures by no
-  rule found, and the history list, whose entry template is in no `.gui` of the
-  window.
+- **The history list of `provinceview` has no sample entries:** its entry
+  template, `province_history_entry`, is in `provincehistory.gui`, and no
+  capture of the list open was taken.
 
 ## Done since 2.0.0
 
@@ -65,8 +64,23 @@ From section 16 of the v2 specification, with v1's entries that v2 did not take:
   1161) and in Anbennar alone (421): the game showed `colonisationpanel` and no
   widget of `provinceview`, as `0x1347A50` (etch#155) and the vanilla profile's
   link say. With the profiles, both views have every rect and every widget's
-  visibility as the game's (36 and 35 rects, 51 widgets each), from a snapshot
-  from a live snapshot and in the profiled preview without one.
+  visibility as the game's (36 and 35 rects, 51 widgets each), from a live
+  snapshot and in the profiled preview without one.
+
+- **An `OverlappingElementsBoxType` places its entries as the game does,** and
+  the province modifiers have sample entries. The modifiers are not placed from
+  `province_modifier_start`: `modifiers` is an `OverlappingElementsBoxType`, and
+  `COverlappingElementsBox::UpdateGraphics` (`eu4.exe` `0x163D060`) places any
+  such box's entries. The step is the entry's width plus `spacing`, and when
+  the entries' steps are wider than the box, `(width − entry / 2) / count`, so
+  they overlap; `format = right` puts the last entry at `width − entry +
+  spacing` and the others to its left, `center` moves them to the middle. The
+  preview read the format as `left` always and overlapped by another rule (six
+  28 px flags in the diplomacy view's 173 px `box` were 29 px apart, against
+  26.5 in the game). The rule matches every such box in the coverage survey's
+  captures, 1 to 50 entries, in all three formats; vanilla has 82 of these
+  boxes. The vanilla profiles' `provinceview` and `colonisationpanel` now give
+  `modifiers` one `province_modifier_item` per modifier in the save.
 
 - **A government mechanic's windows where the game shows them.** A window that
   `common/government_mechanics` names with `gui` has no place of its own: its

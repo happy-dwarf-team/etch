@@ -280,6 +280,12 @@
   // changes. Entries the code puts in a window go where the window's file says: the game reads
   // the positionTypes named in "place" (building_start and its kin), so each playset has its own.
   "repeaters": {
+    "provinceview/modifiers": {
+      "note": "The province's modifiers (province_modifier_item), right to left from the box's right edge and overlapping when more do not fit (COverlappingElementsBox, eu4.exe 0x163D060; the survey's captures).",
+      "template": "province_modifier_item",
+      "from": "provinces.{province}.modifier",
+      "count": 3,
+    },
     "provinceview/buildings_window/general_buildings_window": {
       "note": "The building slots, filled and free (building_progress_entry, eu4.exe 0x13899F0): from building_start, building_offset apart, building_max_per_row to a row (the corpus captures).",
       "template": "building_progress_entry",

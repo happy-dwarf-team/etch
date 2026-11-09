@@ -882,3 +882,63 @@ describe('an uncolonised province (the coverage survey)', () => {
     ).toEqual(['send_envoy_window', 'no_colonist_window']);
   });
 });
+
+describe('the province modifiers (the coverage survey)', () => {
+  const file = readGuiFile(
+    parseScript(`guiTypes = {
+  windowType = {
+    name = "provinceview"
+    size = { x = 500 y = 100 }
+    OverlappingElementsBoxType = { name = "modifiers" position = { x = 168 y = 10 } size = { x = 252 y = 32 } format = right spacing = 1 }
+  }
+  windowType = {
+    name = "colonisationpanel"
+    size = { x = 354 y = 100 }
+    OverlappingElementsBoxType = { name = "modifiers" position = { x = 187 y = 10 } size = { x = 114 y = 32 } format = left spacing = 1 }
+  }
+  windowType = { name = "province_modifier_item" size = { x = 32 y = 32 } }
+}`),
+  );
+  const template = file.definitions.find((w) => w.name === 'province_modifier_item') as Widget;
+  const xs = (name: string, count: number): number[] => {
+    const window = file.definitions.find((w) => w.name === name) as Widget;
+    const written = readProfile(
+      readFileSync(new URL(`../../../profiles/vanilla/${name}.jsonc`, import.meta.url), 'utf8'),
+      { layer: 0, source: 'vanilla', file: `${name}.jsonc` },
+    ).file;
+    const profile = layerProfiles(name, written === undefined ? [] : [written]);
+    const view = evaluateView(profile, window, LARGE);
+    const sample = sampleData(profile, window, view, {
+      localise: () => undefined,
+      length: 'typical',
+      template: (t) => (t === 'province_modifier_item' ? { widget: template, file } : undefined),
+      count: () => count,
+    });
+    const layout = layoutWindow(window, {
+      file,
+      index: InterfaceIndex.of([], [{ path: 'interface/provinceview.gui', file }]),
+      exists: () => false,
+      assets: { textureSize: () => undefined, font: () => undefined },
+      screen: LARGE,
+      view: layoutViewOf(view),
+      content: layoutContentOf(sample),
+    });
+    return layout.widgets.filter((w) => w.widget === template).map((w) => w.x);
+  };
+
+  it('places them from the right of the province view, overlapping as the game does', () => {
+    // The x of every modifier in the survey's captures at 1920×1080 (the window at x = 0).
+    expect(xs('provinceview', 1)).toEqual([389]);
+    expect(xs('provinceview', 3)).toEqual([323, 356, 389]);
+    expect(xs('provinceview', 7)).toEqual([191, 224, 257, 290, 323, 356, 389]);
+    expect(xs('provinceview', 9)).toEqual([179, 205, 232, 258, 284, 310, 337, 363, 389]);
+    expect(xs('provinceview', 16)).toEqual([
+      168, 182, 197, 212, 227, 241, 256, 271, 286, 300, 315, 330, 345, 359, 374, 389,
+    ]);
+  });
+
+  it('places them from the left of the colonisation panel', () => {
+    expect(xs('colonisationpanel', 1)).toEqual([187]);
+    expect(xs('colonisationpanel', 3)).toEqual([187, 220, 253]);
+  });
+});
