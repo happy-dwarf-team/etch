@@ -20,4 +20,12 @@
       ],
     },
   },
+  "repeaters": {
+    "colonisationpanel/modifiers": {
+      "note": "The province's modifiers (province_modifier_item of provinceview.gui), from the box's left and overlapping when more do not fit (COverlappingElementsBox, eu4.exe 0x163D060; the survey's captures).",
+      "template": "province_modifier_item",
+      "from": "provinces.{province}.modifier",
+      "count": 1,
+    },
+  },
 }
