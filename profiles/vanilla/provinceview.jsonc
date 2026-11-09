@@ -408,6 +408,16 @@
         "great_project_entry/name_label": { "save": "entry", "transform": "localise" },
       },
     },
+    "provinceview/history_window/history_list": {
+      "note": "The province's history (CProvinceHistoryView::SetProvince, eu4.exe 0x133A060): one standard list entry of province_history_entry (provincehistory.gui) per dated change, the year only on the first entry of a year, the month and day (\"November 11\") and the change's description. Read from the code; no capture of the list open yet.",
+      "template": "province_history_entry",
+      "count": 4,
+      "fields": {
+        "province_history_entry/year": { "generated": "number" },
+        "province_history_entry/date": { "generated": "text" },
+        "province_history_entry/description": { "generated": "text" },
+      },
+    },
   },
   "links": {
     "uncolonised": {

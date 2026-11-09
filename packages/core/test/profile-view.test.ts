@@ -942,3 +942,71 @@ describe('the province modifiers (the coverage survey)', () => {
     expect(xs('colonisationpanel', 3)).toEqual([187, 220, 253]);
   });
 });
+
+describe('the province history list', () => {
+  const file = readGuiFile(
+    parseScript(`guiTypes = {
+  windowType = {
+    name = "provinceview"
+    size = { x = 500 y = 500 }
+    windowType = {
+      name = "history_window"
+      position = { x = 10 y = 20 }
+      size = { x = 505 y = 468 }
+      listboxType = { name = "history_list" position = { x = 27 y = 36 } size = { x = 430 y = 370 } spacing = 2 borderSize = { x = 0 y = 0 } }
+    }
+  }
+  windowType = {
+    name = "province_history_entry"
+    position = { x = -200 y = 0 }
+    size = { x = 416 y = 46 }
+    instantTextBoxType = { name = "year" position = { x = 10 y = 0 } maxWidth = 86 maxHeight = 100 }
+    instantTextBoxType = { name = "date" position = { x = 50 y = 0 } maxWidth = 86 maxHeight = 100 }
+    instantTextBoxType = { name = "description" position = { x = 106 y = 0 } maxWidth = 290 maxHeight = 40 }
+  }
+}`),
+  );
+  const window = file.definitions[0] as Widget;
+  const template = file.definitions[1] as Widget;
+
+  it("lays out the shipped profile's entries as a list box's, one below the other", () => {
+    const { file: written, diagnostics } = readProfile(
+      readFileSync(
+        new URL('../../../profiles/vanilla/provinceview.jsonc', import.meta.url),
+        'utf8',
+      ),
+      { layer: 0, source: 'vanilla', file: 'provinceview.jsonc' },
+    );
+    expect(diagnostics).toEqual([]);
+    const profile = layerProfiles('provinceview', written === undefined ? [] : [written]);
+    const view = evaluateView(profile, window, LARGE, { set: { side: 'history' } });
+    const sample = sampleData(profile, window, view, {
+      localise: () => undefined,
+      length: 'typical',
+      template: (name) =>
+        name === 'province_history_entry' ? { widget: template, file } : undefined,
+    });
+    const layout = layoutWindow(window, {
+      file,
+      index: InterfaceIndex.of([], [{ path: 'interface/provinceview.gui', file }]),
+      exists: () => false,
+      assets: { textureSize: () => undefined, font: () => undefined },
+      screen: LARGE,
+      view: layoutViewOf(view),
+      content: layoutContentOf(sample),
+    });
+    const entries = layout.widgets.filter((w) => w.widget === template);
+    // Four generated entries from the list's top, 46 px high and 2 px apart, whatever the
+    // template's own position says.
+    expect(entries.map((e) => [e.x, e.y])).toEqual([
+      [37, 56],
+      [37, 104],
+      [37, 152],
+      [37, 200],
+    ]);
+    expect(sample.lists.find((l) => l.template === 'province_history_entry')).toMatchObject({
+      count: 4,
+      layer: 'generated',
+    });
+  });
+});
