@@ -4,7 +4,8 @@ param(
     #   the pinned Anvil and Tongs releases (zips checked against the SHA256SUMS.txt next to them),
     #   Tongs set to input = true and game_calls = false, and host.json with every hash.
     # Check: the lab's preflight for one start (Process Lasso rule, both eu4.exe hashes, no game
-    #   running, nothing of Anvil in the Steam folder, the junctions, the plugin hashes).
+    #   running, the copy's own `anvil` folder (an Anvil in the Steam folder does not reach it),
+    #   the junctions, the plugin hashes).
     # Start: Check, then start the copy suspended with CreateProcess, mask 1-7, with
     #   -userdir=<ProfileDir>/ and continue=<Save> when given; prints the verified session record.
     # Stop: close only the process of -Record after its PID, image path and creation time are
@@ -116,9 +117,12 @@ function Get-HostHashes {
 function Assert-Host {
     if (-not (Test-Path -LiteralPath $hostFile)) { throw "$hostFile is missing; run -Action Prepare first" }
     $expected = Get-Content -LiteralPath $hostFile -Raw | ConvertFrom-Json
-    foreach ($n in 'version.dll', 'anvil') {
-        if (Test-Path (Join-Path $steamGame $n)) { throw "$n is in the Steam game folder; not starting" }
-    }
+    # A host prepared while the Steam folder had no Anvil has an `anvil` folder and a version.dll
+    # of its own (hashed below), so a player's Anvil installed there later does not reach it. Only
+    # a copy whose `anvil` is a link (prepared before Prepare refused such a folder) would share it.
+    $copyAnvil = Get-Item -LiteralPath (Join-Path $copy 'anvil') -ErrorAction SilentlyContinue
+    if (-not $copyAnvil -or -not $copyAnvil.PSIsContainer) { throw "The copy has no anvil folder: $copy" }
+    if ($copyAnvil.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "The copy's anvil folder is a link: $($copyAnvil.FullName)" }
     Assert-LabPreflight | Out-Null
     Assert-LabPreflight -ExePath $exe -ExpectedHash $expected.hashes.copyExe | Out-Null
     foreach ($j in Get-ChildItem -LiteralPath $copy -Directory | Where-Object Name -ne 'anvil') {
