@@ -628,9 +628,12 @@ class Layout {
 
   /**
    * The entries sample data puts in a list box (spec section 5): its template laid out once per
-   * entry, from the list's `borderSize`, each below the last (beside it with `horizontal`) with
-   * `spacing` between. Hypotheses for the precision corpus: the entries start at the border, and
-   * only those that fit whole show, as the list does not scroll in the preview.
+   * entry, from the list's `borderSize`, each right below the last (beside it with `horizontal`).
+   * The game does not add the list's `spacing`: every list box of the coverage survey's captures
+   * with `spacing` 1, 2 or 20 (`gp_list`, `accepted_cultures_listbox`, `peace_list`,
+   * `history_list`, `privileges_list`…) has its entries one entry's height (width) apart.
+   * Hypothesis for the precision corpus: only those that fit whole show, as the list does not
+   * scroll in the preview.
    */
   private placeRows(list: Widget, props: Properties, rect: Rect, index: number): void {
     const entries = this.input.content?.entries?.(list, this.row);
@@ -645,7 +648,6 @@ class Layout {
       return;
     }
     const border = props.point('bordersize') ?? { x: 0, y: 0 };
-    const spacing = props.number('spacing') ?? 0;
     const horizontal = props.flag('horizontal') === true;
     const room = horizontal ? rect.width - 2 * border.x : rect.height - 2 * border.y;
     const outer = { constants: this.constants, row: this.row };
@@ -677,7 +679,7 @@ class Layout {
         this.draws.length = draws;
         break;
       }
-      offset += extent + spacing;
+      offset += extent;
     }
     this.constants = outer.constants;
     this.row = outer.row;
@@ -685,7 +687,7 @@ class Layout {
 
   /**
    * The entries the game's code puts in a list box, each its own definition: placed as `placeRows`
-   * places a template's. A vertical list shows those that fit whole and takes their height, as
+   * places a template's, with no `spacing` between. A vertical list shows those that fit whole and takes their height, as
    * `specific_governments_list` does; the game sizes a horizontal one to its entries (the
    * interactions of a row, 400 px wide in a 300 px `.gui`), so it drops none.
    */
@@ -696,7 +698,6 @@ class Layout {
     index: number,
   ): void {
     const border = props.point('bordersize') ?? { x: 0, y: 0 };
-    const spacing = props.number('spacing') ?? 0;
     const horizontal = props.flag('horizontal') === true;
     const room = rect.height - 2 * border.y;
     const outer = { constants: this.constants, row: this.row };
@@ -723,7 +724,7 @@ class Layout {
         this.draws.length = draws;
         break;
       }
-      offset += extent + spacing;
+      offset += extent;
     }
     this.constants = outer.constants;
     this.row = outer.row;
