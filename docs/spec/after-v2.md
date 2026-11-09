@@ -56,6 +56,15 @@ From section 16 of the v2 specification, with v1's entries that v2 did not take:
 
 ## Done since 2.0.0
 
+- **Localisation from subfolders.** The game lists `localisation` and then
+  `localisation/replace` recursively (`PdxLocalizeReadFolder`; EU4 engine lab,
+  eu4-engine-lab#59), so a mod's `localisation/english/*.yml` is read; the
+  preview read only the files directly in the two folders. It now reads the
+  whole tree, and a file anywhere under `localisation/replace` wins as one
+  directly in it does. Vanilla, the corpus's mods and the 34 Workshop items on
+  the lab's disk with a `localisation` folder have no `.yml` in other
+  subfolders, so their previews do not change.
+
 - **The province view's history list has sample entries.** Its code
   (`CProvinceHistoryView::SetProvince`, `eu4.exe` `0x133A060`) adds one
   standard list entry of `province_history_entry`, a definition of
