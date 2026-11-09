@@ -180,6 +180,12 @@ format) at the length chosen in `Data ▾`. A save source takes:
   shows the localisation of the value (`culture=swedish` shows "Swedish", `owner="SWE"` shows
   "Sweden"). These are the only transforms: Etch never works a value out as the engine would.
 
+Any entry may also take `sizedBy`, a localisation key, for a fixed-size text box (`fixedsize`) the
+game's code first sets to that text with its height left open (`ChangeString` with `true`): the
+box keeps that text's height as its `maxHeight`, and the texts shown after it are fitted into it.
+The rebels' `onsiegewon_desc` is sized by `REB_NO_EFFECT`, one line, so a long description is cut
+after one line with " ...", though its `.gui` gives room for two.
+
 The save paths Etch reads:
 
 | Path | Of |

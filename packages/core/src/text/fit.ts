@@ -30,6 +30,11 @@ export interface FittedText {
   readonly text: string;
   /** Whether " ..." was put at the end. */
   readonly truncated: boolean;
+  /**
+   * The lines' height and the border above and below, as the fit counts them: what the game makes
+   * a box's `maxHeight` when its code sets a text with the height left open (`0x15F42C0`).
+   */
+  readonly height: number;
 }
 
 /** What the cut puts at its end: a space and three periods (`0x1D267F0`), not the glyph "…". */
@@ -84,12 +89,13 @@ export function fitText(font: BmFont, text: string, fit: TextFit): FittedText {
   let lineStart = 0;
   let wrapped = '';
   const recent: number[] = [];
+  const height = (): number => bottom + 2 * border.y;
   const cut = (at: number, ellipsisAt: number | undefined): FittedText =>
     fit.truncate
       ? ellipsisAt === undefined
-        ? { text: text.slice(0, at), truncated: false }
-        : { text: text.slice(0, ellipsisAt) + ELLIPSIS, truncated: true }
-      : { text: wrapped, truncated: false };
+        ? { text: text.slice(0, at), truncated: false, height: height() }
+        : { text: text.slice(0, ellipsisAt) + ELLIPSIS, truncated: true, height: height() }
+      : { text: wrapped, truncated: false, height: height() };
 
   for (let i = 0; i < text.length; i++) {
     const c = code(i);
@@ -184,6 +190,6 @@ export function fitText(font: BmFont, text: string, fit: TextFit): FittedText {
     line = next;
   }
   return fit.truncate
-    ? { text, truncated: false }
-    : { text: wrapped + text.slice(lineStart), truncated: false };
+    ? { text, truncated: false, height: height() }
+    : { text: wrapped + text.slice(lineStart), truncated: false, height: height() };
 }

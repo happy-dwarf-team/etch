@@ -74,7 +74,7 @@ const PROFILE = `{
     "provinceview/culture": { "save": "provinces.{province}.culture", "transform": "localise" },
     "provinceview/owner_name": { "save": "provinces.{province}.owner", "transform": "localise" },
     "provinceview/title": { "loc": "PROVINCE_TITLE" },
-    "provinceview/income_value": { "engine": true, "generated": "number" },
+    "provinceview/income_value": { "engine": true, "generated": "number", "sizedBy": "PROVINCE_TITLE" },
     "provinceview/foreign_province_window/country_name": { "save": "countries.{owner}.government_name" }
   },
   "repeaters": {
@@ -192,7 +192,11 @@ describe('reading content, repeaters and links', () => {
       'number',
     ]);
     const income = profile.content.find((c) => c.id === 'provinceview/income_value');
-    expect(income).toMatchObject({ source: 'engine', generated: 'number' });
+    expect(income).toMatchObject({
+      source: 'engine',
+      generated: 'number',
+      sizedBy: 'PROVINCE_TITLE',
+    });
     expect(profile.repeaters[0]).toMatchObject({ template: 'building_entry', count: 2 });
     expect(profile.links[0]).toMatchObject({ id: 'uncolonised', window: 'colonisationpanel' });
   });
@@ -217,6 +221,7 @@ describe('reading content, repeaters and links', () => {
     ['engine false', '{ "engine": false }', /engine/],
     ['an unknown kind', '{ "generated": "colour" }', /"generated" is one of/],
     ['decimals of a text', '{ "save": "meta.date", "decimals": 2 }', /number or a percentage/],
+    ['an empty sizedBy', '{ "engine": true, "sizedBy": "" }', /localisation key/],
   ])('refuses %s', (_name, entry, message) => {
     const { diagnostics } = profileOf(
       `{ "formatVersion": 1, "window": "provinceview", "content": { "provinceview/title": ${entry} } }`,
@@ -348,6 +353,9 @@ describe('sampleData', () => {
       layer: 'generated',
       detail: 'number, typical',
     });
+    // The text the code sizes the box by first, localised; none for the others.
+    expect(sample.sizedBy(named('income_value'))).toBe('Province');
+    expect(sample.sizedBy(named('tax_value'))).toBeUndefined();
     // Own province: the foreign window is hidden, so its text is not counted.
     expect(text('country_name')?.text).toBe('monarchy');
     // Three buildings: a localised name from the save and a generated builder each.

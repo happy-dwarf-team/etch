@@ -353,12 +353,16 @@ function readContent(
   written: { origin: ProfileOrigin; range: SourceRange },
   key: JsonMember,
 ): Content {
-  const props = object(node, `the content of "${key.key}"`, [...SOURCE_KEYS, 'note']);
+  const props = object(node, `the content of "${key.key}"`, [...SOURCE_KEYS, 'sizedBy', 'note']);
   optionalText(props.get('note'), 'note');
+  const sizedBy = optionalText(props.get('sizedBy'), '"sizedBy"');
+  if (sizedBy === '')
+    throw new Faulty('"sizedBy" is a localisation key.', props.get('sizedBy') ?? node);
   return {
     id,
     path: pathKey(key),
     ...readSource(node, props, `the content of "${key.key}"`),
+    ...(sizedBy === undefined ? {} : { sizedBy }),
     ...written,
   };
 }

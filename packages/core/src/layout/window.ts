@@ -110,6 +110,11 @@ export interface LayoutContent {
       }
     | undefined;
   /**
+   * The text the game's code sets a fixed-size text box to first with its height left open (a
+   * profile's `sizedBy`): the box keeps that text's fitted height as its `maxHeight`.
+   */
+  sizedBy?(widget: Widget): string | undefined;
+  /**
    * What a widget shows from top-level definitions its `.gui` does not hold (etch#256): each drawn
    * where a live snapshot showed it, with its text, or without a `rect` at its own position.
    */
@@ -1381,18 +1386,24 @@ class Layout {
 
     const text = sample ?? this.localise(written);
     const icons = new Map<string, { sprite: Sprite; index: number; size: Extent }>();
-    const shown =
-      options.fit === undefined
-        ? text
-        : fitText(font, text, {
-            ...options.fit,
-            // The fit measures an icon by its whole texture (`0x109B000`), whatever its frames.
-            iconWidth: (key) => {
-              const sprite = this.input.index.sprite(textIconSprite(key))?.item;
-              if (sprite === undefined) return 0;
-              return this.texture(sprite, 'texturefile', props.scalar(textKey))?.size.width ?? 0;
-            },
-          }).text;
+    // The fit measures an icon by its whole texture (`0x109B000`), whatever its frames.
+    const iconWidth = (key: string): number => {
+      const sprite = this.input.index.sprite(textIconSprite(key))?.item;
+      if (sprite === undefined) return 0;
+      return this.texture(sprite, 'texturefile', props.scalar(textKey))?.size.width ?? 0;
+    };
+    let fit = options.fit;
+    const sizer =
+      fit === undefined || this.current === undefined || this.row !== undefined
+        ? undefined
+        : this.input.content?.sizedBy?.(this.current);
+    if (fit !== undefined && sizer !== undefined) {
+      // `ChangeString(text, true)` fits the first text with no height limit and makes its height
+      // the box's `maxHeight` (`0x15F42C0`): the rebels' `onsiegewon_desc` is one line so.
+      const first = fitText(font, sizer, { ...fit, height: 0x7fffffff, iconWidth });
+      fit = { ...fit, height: first.height };
+    }
+    const shown = fit === undefined ? text : fitText(font, text, { ...fit, iconWidth }).text;
     const laid = layoutText(font, shown, box, {
       colours: {
         base: definition.colour ?? OPAQUE_WHITE,

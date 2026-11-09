@@ -341,6 +341,10 @@
           "description": "The engine works the value out (income, unrest, supply): only a live snapshot fills it.",
           "const": true
         },
+        "sizedBy": {
+          "description": "A localisation key the game's code sets this fixed-size text box to first, with its height left open: the box keeps that text's height as its maxHeight and fits later texts into it.",
+          "$ref": "#/definitions/text"
+        },
         "generated": {
           "description": "What the generated layer fills the text with; by default text, or the save value's format.",
           "enum": ["text", "number", "percent", "date"]

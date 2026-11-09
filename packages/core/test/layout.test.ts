@@ -609,6 +609,35 @@ describe('layoutWindow: text', () => {
   });
 });
 
+describe('layoutWindow: a text box sized by a first text', () => {
+  it('fits the text into the height of the text the code set first', () => {
+    const { file, input } = setUp(`guiTypes = { windowType = { name = "w"
+      instantTextBoxType = { name = "sized" font = "tiny" text = "aaaaaA" maxWidth = 26 maxHeight = 30 fixedsize = yes }
+      instantTextBoxType = { name = "free" font = "tiny" text = "aaaaaA" maxWidth = 26 maxHeight = 30 fixedsize = yes }
+    } }`);
+    const window = file.definitions[0] as Widget;
+    const glyphs = (sizer: string | undefined): number[] => {
+      const l = layoutWindow(window, {
+        ...input,
+        content: {
+          text: () => undefined,
+          rows: () => undefined,
+          sizedBy: (w) => (w.name === 'sized' ? sizer : undefined),
+        },
+      });
+      return ['sized', 'free'].map((name) => {
+        const text = drawsOf(l, name).find((d) => d.kind === 'text');
+        return text?.kind === 'text' ? text.glyphs.length / GLYPH_STRIDE : 0;
+      });
+    };
+    // Two lines fit in 30 px; a one-line first text leaves room for one: "a ...".
+    expect(glyphs(undefined)).toEqual([6, 6]);
+    expect(glyphs('a')).toEqual([1, 6]);
+    // A first text of two lines leaves room for both.
+    expect(glyphs('aaaaaA')).toEqual([6, 6]);
+  });
+});
+
 describe('layoutWindow: assets', () => {
   const text = `guiTypes = { windowType = { name = "w"
     iconType = { name = "i" spriteType = "GFX_plain" }

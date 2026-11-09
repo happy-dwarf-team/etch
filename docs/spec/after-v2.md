@@ -88,20 +88,22 @@ From section 16 of the v2 specification, with v1's entries that v2 did not take:
   `activate_all`, `slacken_button` and `button_makeheirgeneral`, and the
   widget at `this+0x668` of the tab.
 
-- **A word wider than a text box breaks between its characters** (etch#264,
-  from the coverage survey). The hypothesis was that it stays whole and
-  overflows; the game shows "1.75M" and "38000" in the war overview's 30 px
-  boxes, and "100%" in a 32 px one, on two lines. An `instantTextBoxType` now
-  breaks such a word, as many characters on a line as fit; a button's text
-  stays whole, as the corpus's centring over a button's edges shows. In the
-  survey's preview from a snapshot the text boxes of another height went from
-  25 to 11; the precision corpus still passes (`compare --gpu`, 240 of 240).
-  Left open: "Aggressiveness:" in 64 px is three lines in the game and two
-  in the preview, and a long sentence in a `fixedsize` box (the rebels'
-  description) is one line in the game and two in the preview. The offline
-  outline's sample texts break too (`200000` in 30 px), where the game shows
-  shorter values: its text boxes of another height went from 110 to 139.
-
+- **A text box is as large as the game's font measures it** (etch#264, from
+  the coverage survey). The game measures a box by one rule (`0x159E510`) and
+  draws its lines by another (`0x15988E0`), so "Aggressiveness:" in a 64 px box
+  is drawn whole on one line, in a rect three lines high, and "1.75M" in 30 px
+  is one line in a rect of two. etch#266 broke such words between their
+  characters, reading the rects as drawn lines; etch#304 measures as the font
+  does and draws such a word whole, as the game does. Left open by etch#266 and
+  settled since: "Aggressiveness:" (the rect, etch#304) and the rebels'
+  description, `onsiegewon_desc`, one line in the game and two in the
+  preview. Its code (`CCountryHandleRebelsView::OnDailyUpdate`, `0xF9B290`)
+  sets `REB_NO_EFFECT` first with the height left open (`ChangeString` with
+  `true`), which makes that one line the box's `maxHeight`, so the rebels'
+  effect after it is cut after one line with " ...", though the `.gui` gives
+  room for two. A profile's content says so with `sizedBy`, and the vanilla
+  `countrystabilityview` profile does: in the survey's preview from a snapshot
+  no text box is a different size than in the game any more.
 - **Selectors that fit a snapshot only together** (etch#257, from the
   coverage survey). `liveSelectors` chose one selector at a time against the
   others' current values, so a rule that needs two (Anbennar's `hre-foreign`:

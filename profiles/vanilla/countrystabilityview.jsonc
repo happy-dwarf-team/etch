@@ -14,4 +14,11 @@
       ],
     },
   },
+  "content": {
+    "countrystabilityview/cv_governmentrebels_handlerebels/onsiegewon_desc": {
+      "engine": true,
+      "sizedBy": "REB_NO_EFFECT",
+      "note": "What the rebels do when they win a siege. CCountryHandleRebelsView::OnDailyUpdate (eu4.exe 0xF9B290) sets REB_NO_EFFECT first with the height left open, so the box is one line high, and the rebels' effect after it ends in \" ...\" (the coverage survey's capture).",
+    },
+  },
 }
