@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.4](https://github.com/happy-dwarf-team/etch/compare/v2.5.3...v2.5.4) (2026-11-07)
+
+
+### Bug Fixes
+
+* draw a government mechanic's windows where the game puts them ([#328](https://github.com/happy-dwarf-team/etch/issues/328)) ([a103595](https://github.com/happy-dwarf-team/etch/commit/a103595f3403b0bd300bf24a7cd0b55a0819ad1e))
+
 ## [2.5.3](https://github.com/happy-dwarf-team/etch/compare/v2.5.2...v2.5.3) (2026-11-06)
 
 
