@@ -48,10 +48,6 @@ From section 16 of the v2 specification, with v1's entries that v2 did not take:
   `tongs.ui` version 1, so the preview drawn from it differs there (v2
   section 7, "Not in v2"). Seen in both trial runs against the game, on
   `cffbf88` and `c2cf182`.
-- **An uncolonised province.** That the game shows `colonisationpanel` for land
-  without a city is read from `0x1347A50` (etch#155) and the profile's link
-  draws it; no live capture of one was taken, so whether any of `provinceview`
-  stays with it is open.
 - **The `_not_exploitable` base values.** Without the DLC Cradle of
   Civilization the game hides the three exploit buttons and moves the base
   values to `development_value_vertical_position_not_exploitable`; the vanilla
@@ -63,6 +59,14 @@ From section 16 of the v2 specification, with v1's entries that v2 did not take:
   window.
 
 ## Done since 2.0.0
+
+- **An uncolonised province shows only `colonisationpanel`.** The coverage
+  survey's run of 6 November clicked an uncolonised province in vanilla (Bauchi,
+  1161) and in Anbennar alone (421): the game showed `colonisationpanel` and no
+  widget of `provinceview`, as `0x1347A50` (etch#155) and the vanilla profile's
+  link say. With the profiles, both views have every rect and every widget's
+  visibility as the game's (36 and 35 rects, 51 widgets each), from a snapshot
+  from a live snapshot and in the profiled preview without one.
 
 - **A government mechanic's windows where the game shows them.** A window that
   `common/government_mechanics` names with `gui` has no place of its own: its

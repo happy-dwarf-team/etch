@@ -18,6 +18,7 @@ import {
   type WindowProfile,
   sampleData,
   layoutContentOf,
+  activeLinks,
   type SampleInput,
 } from '../src/profile/index.ts';
 import { InterfaceIndex } from '../src/model/interface-index.ts';
@@ -834,5 +835,50 @@ describe("a rule's hidePosition (the menubar's war overview button)", () => {
   it('keeps the button at its hide_position while the log is closed', () => {
     expect(button('closed')).toEqual([1080, 1015]);
     expect(button('open')).toEqual([1080, 905]);
+  });
+});
+
+describe('an uncolonised province (the coverage survey)', () => {
+  const shipped = (name: string): WindowProfile => {
+    const { file, diagnostics } = readProfile(
+      readFileSync(new URL(`../../../profiles/vanilla/${name}.jsonc`, import.meta.url), 'utf8'),
+      { layer: 0, source: 'vanilla', file: `${name}.jsonc` },
+    );
+    expect(diagnostics).toEqual([]);
+    return layerProfiles(name, file === undefined ? [] : [file]);
+  };
+
+  it('draws the colonisation panel for land without an owner, not the province view', () => {
+    const profile = shipped('provinceview');
+    const links = (owned: string) =>
+      activeLinks(
+        profile,
+        evaluateView(profile, WINDOW, LARGE, { facts: { 'province.owned': owned } }),
+      );
+    expect(links('no').map((l) => l.window)).toEqual(['colonisationpanel']);
+    expect(links('yes')).toEqual([]);
+  });
+
+  it("hides in the panel what the game hid for Bauchi and for Anbennar's province 421", () => {
+    const file = readGuiFile(
+      parseScript(`guiTypes = {
+  windowType = {
+    name = "colonisationpanel"
+    size = { x = 354 y = 538 }
+    windowType = { name = "colonist_window" size = { x = 10 y = 10 } }
+    windowType = { name = "send_envoy_window" size = { x = 10 y = 10 } }
+    windowType = { name = "no_colonist_window" size = { x = 10 y = 10 } }
+  }
+}`),
+    );
+    const window = file.definitions[0] as Widget;
+    const profile = shipped('colonisationpanel');
+    const view = evaluateView(profile, window, LARGE);
+    // Both captures show the panel without a colonist on its way: no colonist_window.
+    expect(
+      ['colonist_window', 'send_envoy_window', 'no_colonist_window'].filter((name) =>
+        widgetsAt(window, `colonisationpanel/${name}`).some((w) => view.drawn(w)),
+      ),
+    ).toEqual(['send_envoy_window', 'no_colonist_window']);
   });
 });
