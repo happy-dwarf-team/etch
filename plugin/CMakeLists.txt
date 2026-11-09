@@ -24,6 +24,10 @@ endif()
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+if(MSVC)
+    # Compile a target's sources on every core; the Visual Studio generator runs cl one file at a time.
+    add_compile_options(/MP)
+endif()
 
 option(ETCH_BUILD_TESTS "Build the plugin's tests" ON)
 

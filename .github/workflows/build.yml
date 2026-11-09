@@ -80,7 +80,7 @@ jobs:
       - name: Plugin build
         run: |
           cmake -S plugin -B plugin/build -G "Visual Studio 17 2022" -A x64
-          cmake --build plugin/build --config Release
+          cmake --build plugin/build --config Release --parallel
 
       - name: Plugin tests
         run: ctest --test-dir plugin/build -C Release --output-on-failure

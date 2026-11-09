@@ -133,7 +133,7 @@ format with clang-format 21.1.8:
 
 ```powershell
 cmake -S plugin -B plugin/build -G "Visual Studio 17 2022" -A x64
-cmake --build plugin/build --config Release
+cmake --build plugin/build --config Release --parallel
 ctest --test-dir plugin/build -C Release --output-on-failure
 pipx run --spec clang-format==21.1.8 clang-format -i (git ls-files 'plugin/*.cpp' 'plugin/*.hpp')
 ```
