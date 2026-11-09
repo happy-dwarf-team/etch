@@ -3,6 +3,7 @@ import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
 import { decodeDescriptor, parseModDescriptor } from './descriptor.ts';
 import type { PlaysetDiagnostic } from './diagnostics.ts';
 import { GameFiles, type GameFilesLayer } from './game-files.ts';
+import { replacePathWarnings } from './replace-paths.ts';
 import {
   findGameInSteam,
   findProfileFolder,
@@ -150,6 +151,8 @@ export async function findPlayset(options: FindPlaysetOptions): Promise<Playset>
       });
     }
   }
+
+  diagnostics.push(...(await replacePathWarnings(mods)));
 
   const layers: GameFilesLayer[] = [];
   if (gameFolder !== undefined) layers.push({ name: 'game', root: gameFolder, replacePaths: [] });
