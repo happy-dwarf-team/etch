@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.6.0](https://github.com/happy-dwarf-team/etch/compare/v2.5.4...v2.6.0) (2026-11-09)
+
+
+### Features
+
+* **core:** the province view's history panel shows four sample entries of `province_history_entry` (from `provincehistory.gui`), placed where the game places them, so a changed entry template shows in the preview. Open it with the new **History** selector under **View ▾**; as in the game, it opens over the side panel, which stays open under it ([#342](https://github.com/happy-dwarf-team/etch/issues/342), [#346](https://github.com/happy-dwarf-team/etch/issues/346)) ([f72747a](https://github.com/happy-dwarf-team/etch/commit/f72747a6e3b549ae01e80bdc3b17033a15e498cc))
+* **core:** a new warning, `replace-path-hides-files`, on a mod's descriptor: a `replace_path` that names a subfolder of `interface`, `localisation`, `events`, `gfx`, `sound` or `music` hides that subfolder's files from the game (a bug in how the game lists those folders), while the preview still shows them. The warning names the files and the ways out: move them, or drop the `replace_path` ([#344](https://github.com/happy-dwarf-team/etch/issues/344)) ([c7eb76d](https://github.com/happy-dwarf-team/etch/commit/c7eb76d765b335e1ecb6414eb8604374424c5b96))
+
+
+### Bug Fixes
+
+* **core:** list box entries sit right below one another, as in the game: the list's `spacing` is no longer added between them ([#346](https://github.com/happy-dwarf-team/etch/issues/346)) ([5f0c5cd](https://github.com/happy-dwarf-team/etch/commit/5f0c5cd9fafe4ca6e42d10211d322a7d46d5c1c8))
+* **core:** entries of an `OverlappingElementsBoxType` (province modifiers, core shields, the diplomacy view's flags, the decisions view's policies and others) are placed as the game places them: by the box's `format` (`left`, `right` or `center`) and `spacing`, overlapping by the game's step when they do not fit. The province view and the colonisation panel show sample modifiers ([#337](https://github.com/happy-dwarf-team/etch/issues/337)) ([31f266a](https://github.com/happy-dwarf-team/etch/commit/31f266a4df0e98a039b6898220cfecb450a1145a))
+* **core:** localisation files in subfolders of `localisation` (such as `localisation/english/`) are read, as the game reads them ([#343](https://github.com/happy-dwarf-team/etch/issues/343)) ([7e98e44](https://github.com/happy-dwarf-team/etch/commit/7e98e443689471f39ae5f60084fb228f0e48fcd8))
+* **core:** a fixed-size text box can be sized by the text the game's code puts in it first (`sizedBy` in a window profile). The rebels' description in the stability view now takes one line, cut with " ...", as in the game ([#338](https://github.com/happy-dwarf-team/etch/issues/338)) ([771a0ab](https://github.com/happy-dwarf-team/etch/commit/771a0abbee106766abcf5245a61978ce635e7277))
+* **core:** without Cradle of Civilization the military tab hides army professionalism, its background and the slacken button and shows the plain background, as the game does; with the DLC, the naval doctrine choice moves down with the tab ([#340](https://github.com/happy-dwarf-team/etch/issues/340)) ([fb5315c](https://github.com/happy-dwarf-team/etch/commit/fb5315c70f818e59c1ac0b26cb863ce65447733a))
+
 ## [2.5.4](https://github.com/happy-dwarf-team/etch/compare/v2.5.3...v2.5.4) (2026-11-07)
 
 
