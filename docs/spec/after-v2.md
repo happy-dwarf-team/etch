@@ -53,11 +53,17 @@ From section 16 of the v2 specification, with v1's entries that v2 did not take:
   values to `development_value_vertical_position_not_exploitable`; the vanilla
   profile's `exploit` selector follows it, read from the code only, as every
   corpus save has the DLC and no capture without it was taken.
-- **The history list of `provinceview` has no sample entries:** its entry
-  template, `province_history_entry`, is in `provincehistory.gui`, and no
-  capture of the list open was taken.
 
 ## Done since 2.0.0
+
+- **The province view's history list has sample entries.** Its code
+  (`CProvinceHistoryView::SetProvince`, `eu4.exe` `0x133A060`) adds one
+  standard list entry of `province_history_entry`, a definition of
+  `provincehistory.gui`, per dated change: the year on a year's first entry,
+  the month and day, and the change's description. The vanilla profile's
+  repeater gives the list four generated entries, laid out as any list box's.
+  Read from the code only: no capture has the list open (a capture queued on
+  9 November did not start, another Anvil being in the game folder).
 
 - **An uncolonised province shows only `colonisationpanel`.** The coverage
   survey's run of 6 November clicked an uncolonised province in vanilla (Bauchi,
