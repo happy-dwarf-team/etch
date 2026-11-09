@@ -56,6 +56,20 @@ From section 16 of the v2 specification, with v1's entries that v2 did not take:
 
 ## Done since 2.0.0
 
+- **A warning for a `replace_path` the game mishandles.** A `replace_path` on a
+  subfolder of a folder the game lists recursively (`interface/assets`,
+  `gfx/entities`, `localisation/english`) makes EU4 1.37.5 skip the files
+  directly in it: its listing gives their bare names and the loader looks for
+  them at the listed folder's top (EU4 engine lab, eu4-engine-lab#56 and #59).
+  `GameFiles` still shows them, so the preview differs from the game. The
+  playset now warns (`replace-path-hides-files`) when that subfolder holds, in
+  the mod or a later one, a file the game loads from that root (`.gfx`/`.gui`,
+  `.yml`, `.txt` for events, `.asset` for `gfx`, `sound` and `music`); entries
+  such as `gfx/loadingscreens` with no such file stay quiet. It fires for none
+  of the 51 Workshop items on the lab's disk, Anbennar's 23 entries included.
+  Whether `GameFiles` should also hide those files, as the game does, is left
+  open.
+
 - **Localisation from subfolders.** The game lists `localisation` and then
   `localisation/replace` recursively (`PdxLocalizeReadFolder`; EU4 engine lab,
   eu4-engine-lab#59), so a mod's `localisation/english/*.yml` is read; the
