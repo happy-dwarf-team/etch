@@ -235,9 +235,9 @@ alone its value, or its key when the value is `yes` (`temple=yes` gives `temple`
 },
 ```
 
-The entries start at the list's `borderSize`, each below the last (beside it with
-`horizontal`) with `spacing` between; only those that fit whole show, as the preview does not
-scroll. In an `OverlappingElementsBoxType` (the core shields of `cores_box`, the province
+The entries start at the list's `borderSize`, each right below the last (beside it with
+`horizontal`): the game adds no `spacing` between a list box's entries. Only those that fit
+whole show, as the preview does not scroll. In an `OverlappingElementsBoxType` (the core shields of `cores_box`, the province
 modifiers) they go side by side, `spacing` apart, by the box's `format` from its left, right or
 middle, and overlap when they do not fit, as the game places them.
 

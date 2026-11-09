@@ -32,9 +32,15 @@
       "values": {
         "buildings": "Buildings",
         "institutions": "Institutions",
-        "history": "History",
         "none": "None",
       },
+    },
+    "history": {
+      "kind": "ui",
+      "label": "History",
+      "values": { "closed": "Closed", "open": "Open" },
+      "default": "closed",
+      "note": "The history button opens history_window over the side panel, which stays open under it (the captures of 9 November, vanilla and Anbennar: buildings_window and history_window both shown).",
     },
     "subPanel": {
       "kind": "ui",
@@ -409,7 +415,7 @@
       },
     },
     "provinceview/history_window/history_list": {
-      "note": "The province's history (CProvinceHistoryView::SetProvince, eu4.exe 0x133A060): one standard list entry of province_history_entry (provincehistory.gui) per dated change, the year only on the first entry of a year, the month and day (\"November 11\") and the change's description. Read from the code; no capture of the list open yet.",
+      "note": "The province's history (CProvinceHistoryView::SetProvince, eu4.exe 0x133A060): one standard list entry of province_history_entry (provincehistory.gui) per dated change, the year only on the first entry of a year, the month and day (\"November 11\") and the change's description. The captures of 9 November (vanilla and Anbennar, 1920x1080) have the entries from the list's top, one entry's height (46) apart.",
       "template": "province_history_entry",
       "count": 4,
       "fields": {
@@ -442,8 +448,13 @@
       "members": {
         "buildings": "provinceview/buildings_window",
         "institutions": "provinceview/institutions_window",
-        "history": "provinceview/history_window",
       },
+    },
+    "history": {
+      "label": "History",
+      "selector": "history",
+      "none": true,
+      "members": { "open": "provinceview/history_window" },
     },
     "subPanel": {
       "label": "Sub-panel",

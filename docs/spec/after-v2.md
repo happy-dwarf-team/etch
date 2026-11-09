@@ -85,8 +85,13 @@ From section 16 of the v2 specification, with v1's entries that v2 did not take:
   `provincehistory.gui`, per dated change: the year on a year's first entry,
   the month and day, and the change's description. The vanilla profile's
   repeater gives the list four generated entries, laid out as any list box's.
-  Read from the code only: no capture has the list open (a capture queued on
-  9 November did not start, another Anvil being in the game folder).
+  Captured open on 9 November (vanilla and Anbennar alone, 1920×1080): the
+  entries start at the list's top, one entry's height (46 px) apart. The list's
+  `spacing = 2` is not added, nor in any other list box of the coverage survey
+  (`gp_list`, `accepted_cultures_listbox`, `peace_list`, `privileges_list`…),
+  so no list box adds it now. The history button opens `history_window` over
+  the side panel, which stays open under it: in the profile it is a selector
+  of its own, `history`, not a value of `side`.
 
 - **An uncolonised province shows only `colonisationpanel`.** The coverage
   survey's run of 6 November clicked an uncolonised province in vanilla (Bauchi,

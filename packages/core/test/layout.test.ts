@@ -829,7 +829,7 @@ describe('layoutWindow: sample data', () => {
     expect(xs('policies', policy, 3)).toEqual([94, 244, 394]);
   });
 
-  it('lays out a list box entry per row from its border, with spacing, while whole entries fit', () => {
+  it('lays out a list box entry per row from its border, without its spacing, while whole entries fit', () => {
     const { file, input } = setUp(GUI);
     const window = file.definitions[0] as Widget;
     const entry = file.definitions[1] as Widget;
@@ -842,10 +842,11 @@ describe('layoutWindow: sample data', () => {
       },
     });
     const rows = l.widgets.filter((w) => w.widget === entry);
-    // 50 px less a 3 px border above and below: two 20 px entries with 4 px between fit, a third not.
+    // 50 px less a 3 px border above and below: two 20 px entries fit, a third not. The game adds
+    // no `spacing` (4 here) between a list box's entries.
     expect(rows.map((r) => [r.x, r.y, r.row])).toEqual([
       [12, 33, 0],
-      [12, 57, 1],
+      [12, 53, 1],
     ]);
     const labels = l.widgets.filter((w) => w.widget.name === 'label');
     expect(labels.map((w) => w.row)).toEqual([0, 1]);

@@ -1045,7 +1045,9 @@ describe('the province history list', () => {
     );
     expect(diagnostics).toEqual([]);
     const profile = layerProfiles('provinceview', written === undefined ? [] : [written]);
-    const view = evaluateView(profile, window, LARGE, { set: { side: 'history' } });
+    const view = evaluateView(profile, window, LARGE, {
+      set: { side: 'buildings', history: 'open' },
+    });
     const sample = sampleData(profile, window, view, {
       localise: () => undefined,
       length: 'typical',
@@ -1062,13 +1064,14 @@ describe('the province history list', () => {
       content: layoutContentOf(sample),
     });
     const entries = layout.widgets.filter((w) => w.widget === template);
-    // Four generated entries from the list's top, 46 px high and 2 px apart, whatever the
-    // template's own position says.
+    // Four generated entries from the list's top, one entry's height (46 px) apart whatever the
+    // list's spacing, and whatever the template's own position says: as the game's captures of
+    // 9 November have them (vanilla and Anbennar, 1920x1080: 635, 681, 727, 773 from the list's 635).
     expect(entries.map((e) => [e.x, e.y])).toEqual([
       [37, 56],
-      [37, 104],
-      [37, 152],
-      [37, 200],
+      [37, 102],
+      [37, 148],
+      [37, 194],
     ]);
     expect(sample.lists.find((l) => l.template === 'province_history_entry')).toMatchObject({
       count: 4,
