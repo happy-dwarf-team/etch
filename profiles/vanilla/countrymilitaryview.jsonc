@@ -3,8 +3,9 @@
 // game moves most of the tab down by the height of army_professionalism, as the .gui's own comment
 // on that window says and eu4.exe's UpdateArmyProfessionalism does (Steam 1.37.5: the DLC's flag at
 // 0x233FF24); the survey's captures show the tab and its widgets 16 px lower, with the background,
-// the close button and the title where the .gui puts them. Anbennar and Bigger UI keep the 16 px
-// height, so this layer serves them too.
+// the close button and the title where the .gui puts them. Without the DLC the same function hides
+// the professionalism bar, its background and the slacken button. Anbennar and Bigger UI keep the
+// 16 px height, so this layer serves them too.
 {
   "formatVersion": 1,
   "window": "countrymilitaryview",
@@ -21,7 +22,7 @@
   },
   "rules": {
     "cradle-moves-the-tab": {
-      "note": "army_professionalism is 16 px high: the tab moves down by it, and the background, the close button and the title stay (UpdateArmyProfessionalism). activate_all, slacken_button and button_makeheirgeneral are placed by other code (etch#254).",
+      "note": "army_professionalism is 16 px high: the tab moves down by it, and CoCbackground, the close button and the title stay (UpdateArmyProfessionalism, Steam 0xFBC0A0). Everything else moves with the tab, activate_all, slacken_button and button_makeheirgeneral included (the survey's captures: 667 and 986 at 1080).",
       "when": { "cradle": "yes" },
       "offset": {
         "countrymilitaryview": { "y": 16 },
@@ -30,9 +31,23 @@
         "countrymilitaryview/window_title": { "y": -16 },
       },
     },
+    "with-cradle": {
+      "note": "UpdateArmyProfessionalism hides the plain background and shows CoCbackground and army_professionalism with the DLC.",
+      "when": { "cradle": "yes" },
+      "hide": ["countrymilitaryview/background"],
+    },
+    "without-cradle": {
+      "note": "UpdateArmyProfessionalism, without the DLC: hides army_professionalism, CoCbackground and slacken_button (lowering recruitment standards comes with professionalism), and shows the plain background.",
+      "when": { "cradle": "no" },
+      "hide": [
+        "countrymilitaryview/army_professionalism",
+        "countrymilitaryview/CoCbackground",
+        "countrymilitaryview/slacken_button",
+      ],
+    },
     "hidden": {
       "note": "Hidden in every survey view of the tab: the game's code decides these from its data or a click; show one by hand.",
-      "hide": ["countrymilitaryview/background", "countrymilitaryview/button_makeconsortgeneral"],
+      "hide": ["countrymilitaryview/button_makeconsortgeneral"],
     },
   },
 }

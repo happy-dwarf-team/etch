@@ -1,0 +1,27 @@
+// The naval doctrine choice the military tab opens (docs/window-profiles.md). The tab's code holds
+// it (CCountryMilitaryView::Setup, Steam 1.37.5 0xFAEDC0, at this+0x668) and, with Cradle of
+// Civilization, moves it down by army_professionalism's height as it moves the tab
+// (UpdateArmyProfessionalism, 0xFBC0A0): the survey's capture shows it and every widget in it 16 px
+// below the .gui's place.
+{
+  "formatVersion": 1,
+  "window": "domesticpanel_naval_doctrine_select",
+  "checkedWith": "1.37.5",
+  "selectors": {
+    "cradle": {
+      "kind": "data",
+      "label": "Cradle of Civilization",
+      "fact": "game.cradleOfCivilization",
+      "values": { "yes": "Cradle of Civilization", "no": "Without it" },
+      "default": "yes",
+      "note": "The military tab's professionalism bar, and this window with it, take their place only with the DLC; a save's dlc_enabled says whether it was active.",
+    },
+  },
+  "rules": {
+    "cradle-moves-the-window": {
+      "note": "Moved down by army_professionalism's 16 px, as the tab is.",
+      "when": { "cradle": "yes" },
+      "offset": { "domesticpanel_naval_doctrine_select": { "y": 16 } },
+    },
+  },
+}

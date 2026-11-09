@@ -655,7 +655,9 @@ describe('the military tab with Cradle of Civilization (etch#254)', () => {
     show_position = { x = 0 y = 140 }
     size = { x = 1024 y = 600 }
     windowType = { name = "army_professionalism" position = { x = 32 y = 96 } size = { x = 280 y = 16 } }
+    iconType = { name = "background" }
     iconType = { name = "CoCbackground" position = { x = -7 y = -10 } }
+    guiButtonType = { name = "slacken_button" position = { x = 155 y = 511 } }
     guiButtonType = { name = "close_button" position = { x = 514 y = -1 } }
     instantTextBoxType = { name = "window_title" position = { x = 15 y = 78 } maxWidth = 512 maxHeight = 20 }
     guiButtonType = { name = "infantry_type_button" position = { x = 57 y = 134 } }
@@ -716,7 +718,71 @@ describe('the military tab with Cradle of Civilization (etch#254)', () => {
     // The survey's captures: the tab at y 156, infantry_type_button at 290, the title at 218, and
     // the bottom row with the tab, whose `.gui` place depends on the screen: 667 and 986 at 1080.
     expect(placed('yes')).toEqual([156, 252, 130, 139, 218, 290, 667, 986]);
-    expect(placed('no')).toEqual([140, 236, 130, 139, 218, 274, 651, 970]);
+    // Without the DLC the bar and its background are hidden, and nothing moves.
+    expect(placed('no')).toEqual([140, undefined, undefined, 139, 218, 274, 651, 970]);
+  });
+
+  it('shows the professionalism bar, its background and the slacken button only with the DLC', () => {
+    const profile = layerProfiles('countrymilitaryview', written === undefined ? [] : [written]);
+    const shown = (cradle: string) => {
+      const view = evaluateView(profile, window, LARGE, {
+        facts: { 'game.cradleOfCivilization': cradle },
+      });
+      return ['army_professionalism', 'background', 'CoCbackground', 'slacken_button'].filter(
+        (name) => widgetsAt(window, `countrymilitaryview/${name}`).some((w) => view.drawn(w)),
+      );
+    };
+    expect(shown('yes')).toEqual(['army_professionalism', 'CoCbackground', 'slacken_button']);
+    expect(shown('no')).toEqual(['background']);
+  });
+
+  it('moves the naval doctrine choice down with the tab', () => {
+    const doctrine = readGuiFile(
+      parseScript(`guiTypes = {
+  windowType = {
+    name = "domesticpanel_naval_doctrine_select"
+    position = { x = 0 y = 124 }
+    size = { x = 1024 y = 75 }
+    guiButtonType = { name = "back_button" position = { x = 13 y = 53 } }
+  }
+}`),
+    );
+    const panel = doctrine.definitions[0] as Widget;
+    const read = readProfile(
+      readFileSync(
+        new URL(
+          '../../../profiles/vanilla/domesticpanel_naval_doctrine_select.jsonc',
+          import.meta.url,
+        ),
+        'utf8',
+      ),
+      { layer: 0, source: 'vanilla', file: 'domesticpanel_naval_doctrine_select.jsonc' },
+    );
+    expect(read.diagnostics).toEqual([]);
+    const profile = layerProfiles(
+      'domesticpanel_naval_doctrine_select',
+      read.file === undefined ? [] : [read.file],
+    );
+    const back = (cradle: string) => {
+      const view = evaluateView(profile, panel, LARGE, {
+        facts: { 'game.cradleOfCivilization': cradle },
+      });
+      const layout = layoutWindow(panel, {
+        file: doctrine,
+        index: InterfaceIndex.of(
+          [],
+          [{ path: 'interface/countrymilitaryview.gui', file: doctrine }],
+        ),
+        exists: () => false,
+        assets: { textureSize: () => undefined, font: () => undefined },
+        screen: LARGE,
+        view: layoutViewOf(view),
+      });
+      return layout.widgets.find((w) => w.widget.name === 'back_button')?.y;
+    };
+    // The survey's capture: back_button 16 px below the .gui's place.
+    expect(back('yes')).toBe(124 + 53 + 16);
+    expect(back('no')).toBe(124 + 53);
   });
 });
 
