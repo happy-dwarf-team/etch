@@ -483,7 +483,17 @@
             "topbar/powerprojection_topbar/text_powerprojection",
             "countrycourtview/queen_gender",
             "topbar/p2kuie_mana_window/p2kuie_mana_value"
-          ]
+          ],
+          "byPlayset": {
+            "anbennar": {
+              "selectors": { "consort": "shown", "consortCrown": "shown", "heirClaim": "shown" },
+              "note": "Verne's court (1444) has a consort with a crown and an heir with a claim; the vanilla profile's defaults (none) are Russia's (1719)."
+            },
+            "anbennar-alone": {
+              "selectors": { "consort": "shown", "consortCrown": "shown", "heirClaim": "shown" },
+              "note": "Verne's court (1444) has a consort with a crown and an heir with a claim; the vanilla profile's defaults (none) are Russia's (1719)."
+            }
+          }
         }
       ]
     },
