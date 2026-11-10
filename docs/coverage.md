@@ -34,7 +34,10 @@ steps deep, every shown and enabled button and check box, in a list only the
 first row; in the start state also the survey's keys (`f1` to `f10`, `l`, `b`)
 and up to eight provinces of each kind (own, foreign, uncolonised, wasteland,
 sea), opened with Tongs' `province open`. A step that shows a new signature is
-a new view, with the steps that led to it as its recipe.
+a new view, with the steps that led to it as its recipe. A signature that is not
+the one expected is read again until two reads in a row agree: a window that
+fades out (the main menu's panels as Anbennar's lobby opens) is still visible at
+the first read, and a view taken with it would not come back by its steps.
 
 It keeps the game as it was:
 
@@ -44,6 +47,13 @@ It keeps the game as it was:
   (`declare`, `send`, `annex`), what goes online or changes the DLCs, the
   speed and the map modes, and the contents of the settings. A dialog is opened
   and measured, then closed with Escape, never confirmed.
+- A `dialogs` pattern names a button that only opens the game's confirmation
+  (an idea group's abandon, a unit's disband): it is clicked although a `never`
+  pattern names it, and the click must open a new top-level window. One that
+  opens none is taken for a changed state, never clicked again, and the game
+  starts afresh. What the dialog holds keeps to `never` (its `AgreeButton`), so
+  it is closed, never confirmed. Buttons that act at once (`send_missionary`,
+  `send_merchant`) stay out.
 - Before the first click it takes a fingerprint of the game's state: whether a
   game is loaded, its date, pause, session and game calls, the player, and
   every text the top bar shows (treasury, manpower, power, stability and the

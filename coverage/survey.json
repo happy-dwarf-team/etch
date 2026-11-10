@@ -55,6 +55,16 @@
     "keys": ["f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "l", "b"],
     "provinces": ["own", "foreign", "uncolonised", "wasteland", "sea"],
     "sessionMinutes": 50,
+    "dialogs": [
+      {
+        "pattern": "//abandon_idea_button",
+        "reason": "Opens the game's confirmation of abandoning an idea group."
+      },
+      {
+        "pattern": "//disbandbutton",
+        "reason": "Opens the game's confirmation of disbanding a unit."
+      }
+    ],
     "never": [
       {
         "pattern": "speed_controls//*",

@@ -5,9 +5,8 @@
  * local folder, beside its captures; only `coverage/survey.json` and the inventory the coverage
  * report writes are in the repository.
  */
-import { LED_ELSEWHERE, type CrawlFile, type CrawlRules } from './driver/crawl.ts';
+import { LED_ELSEWHERE, neverClicked, type CrawlFile, type CrawlRules } from './driver/crawl.ts';
 import type { CorpusManifest, CorpusPlayset, CorpusView, CorpusWindow } from './manifest.ts';
-import { matchesWidgetPattern } from './widget-path.ts';
 
 export const SURVEY_FORMAT_VERSION = 1;
 
@@ -89,10 +88,9 @@ export function surveyManifest(
       if (state.unreproducible !== undefined && state.unreproducible !== LED_ELSEWHERE) continue;
       if (state.roots.length === 0) continue;
       // A view found before a `never` pattern named one of its clicks is left out with it.
-      const never = config.crawl.never.map((n) => n.pattern);
       if (
         state.steps.some(
-          (step) => 'click' in step && never.some((n) => matchesWidgetPattern(n, step.click)),
+          (step) => 'click' in step && neverClicked(config.crawl, step.click) !== undefined,
         )
       ) {
         continue;
