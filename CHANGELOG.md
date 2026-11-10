@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.7.0](https://github.com/happy-dwarf-team/etch/compare/v2.6.0...v2.7.0) (2026-11-10)
+
+
+### Features
+
+* **extension:** compare with live game ([#348](https://github.com/happy-dwarf-team/etch/issues/348)) ([573f140](https://github.com/happy-dwarf-team/etch/commit/573f14052febe4259d0fd7870e8dfca8c8af1614))
+
+
+### Bug Fixes
+
+* **core:** the survey crawler reads a new view until it holds and opens confirmation dialogs ([4922d56](https://github.com/happy-dwarf-team/etch/commit/4922d56a1da330f5fe3849eb6c7b5f69d93b3dcd))
+* **corpus:** the survey crawler reads a new view until it holds and opens confirmation dialogs ([#352](https://github.com/happy-dwarf-team/etch/issues/352)) ([4922d56](https://github.com/happy-dwarf-team/etch/commit/4922d56a1da330f5fe3849eb6c7b5f69d93b3dcd))
+* **profiles:** anbennar's religion and court views on a country of its own ([#349](https://github.com/happy-dwarf-team/etch/issues/349)) ([7c79b62](https://github.com/happy-dwarf-team/etch/commit/7c79b6221c7f1d347d0333fc2340bc5f2ab4db6e))
+
 ## [2.6.0](https://github.com/happy-dwarf-team/etch/compare/v2.5.4...v2.6.0) (2026-11-09)
 
 
