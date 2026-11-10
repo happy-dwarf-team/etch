@@ -3,6 +3,7 @@ import { START_LIVE_GAME, type LiveGame, type PickMode } from '../live-game/inde
 import type { WidgetNavigation } from '../navigation.ts';
 import { CHOOSE_RESOLUTION, PREVIEW_VIEW_TYPE, Preview, type PreviewApi } from './preview.ts';
 import { chooseResolution } from './resolution.ts';
+import { OPEN_LIVE_PROFILE, SAVE_LIVE_VIEW } from './live-differences.ts';
 
 export type { PreviewApi, PreviewPaint, PreviewRender, SourceText } from './preview.ts';
 export type { PreviewMemento } from './protocol.ts';
@@ -20,6 +21,8 @@ export const OPEN_PREVIEW = 'etch.openPreview';
 export const TOGGLE_PREVIEW_PIN = 'etch.togglePreviewPin';
 /** Takes a live snapshot of the previewed window from the live game (spec section 7). */
 export const SNAPSHOT_FROM_LIVE_GAME = 'etch.snapshotFromLiveGame';
+/** Compares the previewed window's offline preview with the live game (spec v3 section 4). */
+export const COMPARE_WITH_LIVE_GAME = 'etch.compareWithLiveGame';
 
 /**
  * Starts the preview and its commands. The preview decides the previewed window of the widget
@@ -64,6 +67,13 @@ export function registerPreview(
       }
       await preview.takeSnapshot();
     }),
+    vscode.commands.registerCommand(COMPARE_WITH_LIVE_GAME, () => preview.compareWithLiveGame()),
+    vscode.commands.registerCommand(SAVE_LIVE_VIEW, (window: string, paths: readonly string[]) =>
+      preview.saveLiveView(window, paths),
+    ),
+    vscode.commands.registerCommand(OPEN_LIVE_PROFILE, (window: string) =>
+      preview.openLiveProfile(window),
+    ),
     // Reopens the preview after a window reload (`onWebviewPanel:etch.preview` activates Etch).
     vscode.window.registerWebviewPanelSerializer(PREVIEW_VIEW_TYPE, {
       deserializeWebviewPanel(panel, state: unknown) {

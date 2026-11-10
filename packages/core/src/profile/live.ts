@@ -26,6 +26,13 @@ export interface LiveWidget {
   /** The text with the game's colour codes (`§G…§!`), when it has some: what the preview draws. */
   readonly markup?: string;
   readonly rect: readonly [number, number, number, number];
+  /**
+   * The path as the game names it, when {@link path} names a list's row by position instead
+   * (`…/listbox/entry[3]` for `…/listbox/row[2]`): Compare with Live Game pairs the game's
+   * widgets with the layout's by it, as the survey pairs a capture's. Left out by snapshots of
+   * Etch before 2.7.0.
+   */
+  readonly gamePath?: string;
 }
 
 export interface LiveSnapshot {
@@ -95,8 +102,10 @@ export function liveWidgetsOf(widgets: readonly PluginWidget[]): LiveWidget[] {
         out.push(known);
       } else out.push(step);
     }
+    const path = out.join('/');
     return {
-      path: out.join('/'),
+      path,
+      ...(path === w.path ? {} : { gamePath: w.path }),
       type: w.type,
       visible: w.visible,
       enabled: w.enabled,

@@ -135,6 +135,15 @@ visibility and states the game shows, which the preview uses as its upper data
 layer. **Etch: Snapshot from the Live Game** takes one of the previewed window
 when the game has it open.
 
+**Etch: Compare with Live Game** (also in `Data ▾`) compares the previewed
+window's offline preview with what the live game shows and lists in Problems
+every widget the preview places or shows otherwise than the game. Most of them
+are the preview's to fix: **Report to Etch** on an entry opens a new Etch issue
+with its fields (the widget's path, both rectangles, the versions), which you
+send yourself; no file or text of your mod goes in it. For a window Etch has no
+profile of, **Save as view** keeps what the game hid as a view of your mod's
+own profile.
+
 ## Etch 1.x
 
 Etch 2.0.0 replaced 1.x's game host and its diff view with the live game. To
@@ -144,7 +153,8 @@ gets bug fixes only until 2.0.0 and none after.
 
 Etch only reads the game folder, the mods and the profile, and writes into the
 mod's project only on request (**Save as view…**, **Override in my mod**). It
-sends nothing anywhere: it has no telemetry.
+sends nothing anywhere: it has no telemetry, and **Report to Etch** only opens
+a filled-in issue in your browser for you to send.
 
 ## More from the Happy Dwarf Team
 

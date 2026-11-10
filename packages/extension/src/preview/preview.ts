@@ -10,7 +10,7 @@
 
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { dirname } from 'node:path';
+import { dirname, join } from 'node:path';
 import * as vscode from 'vscode';
 import {
   DEFAULT_LANGUAGE,
@@ -46,6 +46,12 @@ import {
   type Widget,
   type WindowLayout,
 } from '@etch/core';
+import {
+  compareLive,
+  offlinePreviewLayers,
+  planSnapshot,
+  type LiveComparison,
+} from '@etch/core/corpus';
 import { layOutPreview } from '@etch/core/playset';
 import {
   activeLinks,
@@ -79,8 +85,17 @@ import { listSaves, savesFolder } from '../live-game/saves.ts';
 import type { OutlineTextEdit, OutlineToggle, WidgetNavigation } from '../navigation.ts';
 import { PreviewData, type LiveLayer } from './data.ts';
 import { LiveSnapshots, playsetKey, snapshotOf, snapshotWhen } from './live-snapshots.ts';
+import { LiveDifferences, type LiveEntry } from './live-differences.ts';
+import { differenceMessage } from './live-report.ts';
+import { RUNNING_BUILD } from '../build-stamp.ts';
+import { PINNED_TAGS } from '../pins.ts';
 import { previewHtml } from './html.ts';
-import { ProfileStore, type LoadedProfile, type ProjectProblems } from './profiles.ts';
+import {
+  PROJECT_PROFILES,
+  ProfileStore,
+  type LoadedProfile,
+  type ProjectProblems,
+} from './profiles.ts';
 import type {
   DataAction,
   HostMessage,
@@ -250,6 +265,12 @@ export interface PreviewApi {
    * the game does not show it (said to the user) or does not run.
    */
   takeSnapshot(): Promise<boolean>;
+  /**
+   * **Compare with Live Game** (spec v3 section 4): the previewed window's offline preview against
+   * a fresh live snapshot, or the stored one of the same file; the live differences go to Problems.
+   * `undefined` when it did not compare (said to the user).
+   */
+  compareWithLiveGame(): Promise<LiveComparison | undefined>;
 }
 
 /** The countries and provinces of the chosen save, and the chosen ones. */
@@ -291,6 +312,12 @@ export class Preview implements PreviewApi, vscode.Disposable {
   private readonly profileDiagnostics =
     vscode.languages.createDiagnosticCollection('etch-profiles');
   private readonly profiles: ProfileStore;
+  /** Compare with Live Game's entries in Problems (spec v3 section 4). */
+  private readonly liveDifferences = new LiveDifferences(() => ({
+    etch: RUNNING_BUILD?.version ?? 'unknown',
+    anvil: PINNED_TAGS['anvil'] ?? 'unknown',
+    tongs: PINNED_TAGS['tongs'] ?? 'unknown',
+  }));
   /** The view chosen for each window while the preview is open, by window name. */
   private readonly choices = new Map<string, ChoiceState>();
   /** The sample data: the chosen save, its country and province, the generated length. */
@@ -645,6 +672,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
     vscode.Disposable.from(...this.subscriptions).dispose();
     this.diagnostics.dispose();
     this.profileDiagnostics.dispose();
+    this.liveDifferences.dispose();
     this.renderEmitter.dispose();
     this.paintEmitter.dispose();
   }
@@ -1406,6 +1434,9 @@ export class Preview implements PreviewApi, vscode.Disposable {
       case 'refreshLive':
         await this.takeSnapshot();
         return;
+      case 'compareLive':
+        await this.compareWithLiveGame();
+        return;
       case 'typeText':
         await this.typeText();
         return;
@@ -1551,10 +1582,10 @@ export class Preview implements PreviewApi, vscode.Disposable {
   }
 
   /** Keeps a snapshot from the live game as its window's latest, and draws it. */
-  private async keepSnapshot(answer: SnapshotAnswer): Promise<void> {
+  private async keepSnapshot(answer: SnapshotAnswer): Promise<LiveSnapshot | undefined> {
     const game = this.liveGame;
     const request = game?.request;
-    if (game === undefined || request === undefined) return;
+    if (game === undefined || request === undefined) return undefined;
     const files = game.files;
     const winner = answer.file === undefined ? undefined : await files?.find(answer.file);
     const fileHash =
@@ -1580,6 +1611,211 @@ export class Preview implements PreviewApi, vscode.Disposable {
         `${String(snapshot.stale)} stale left out, read in ${answer.readMs.toFixed(1)} ms.`,
     );
     this.request();
+    return snapshot;
+  }
+
+  async compareWithLiveGame(): Promise<LiveComparison | undefined> {
+    const started = performance.now();
+    const render = this.render;
+    const session = this.session;
+    const name = render?.window.name;
+    const tell = (message: string): void => {
+      void vscode.window.showInformationMessage(message);
+    };
+    if (render === undefined || session === undefined || name === undefined) {
+      tell('Compare with Live Game compares the previewed window: open the preview on it first.');
+      return undefined;
+    }
+    if (render.linked !== undefined || render.hosted === true) {
+      tell(
+        `The preview draws ${name} in or as another window; Compare with Live Game compares a window drawn on its own.`,
+      );
+      return undefined;
+    }
+    const document = vscode.workspace.textDocuments.find(
+      (d) => d.uri.toString() === render.uri.toString(),
+    );
+    if (document?.isDirty === true) {
+      tell(`Save ${name}'s file first: the live game shows the saved file.`);
+      return undefined;
+    }
+    const place = await session.place(render.uri.fsPath);
+    if (place !== undefined && !place.wins) {
+      tell(`The game takes ${place.path} from another mod of the playset, not from this file.`);
+      return undefined;
+    }
+    const hash = await readFile(render.uri.fsPath).then(
+      (bytes) => createHash('sha256').update(bytes).digest('hex'),
+      () => undefined,
+    );
+    // A fresh snapshot when the game shows the window; else the stored one, of the same file.
+    let snapshot: LiveSnapshot | undefined;
+    let fresh = false;
+    const game = this.liveGame;
+    if (game !== undefined && game.state.status === 'ready') {
+      try {
+        const answer = await game.snapshot(name);
+        if (answer !== undefined) {
+          snapshot = await this.keepSnapshot(answer);
+          fresh = snapshot !== undefined;
+        }
+      } catch (error) {
+        const code = error instanceof PipeError ? error.code : undefined;
+        if (code !== 'not_open') {
+          tell(`No live snapshot of ${name}: ${String(error)}`);
+          return undefined;
+        }
+      }
+    }
+    snapshot ??= await this.snapshots.get(sessionPlaysetKey(session), name);
+    if (snapshot === undefined) {
+      tell(
+        `No live snapshot of ${name}: open it in the live game (Etch: Start the Live Game), then compare.`,
+      );
+      return undefined;
+    }
+    if (snapshot.fileHash === undefined || snapshot.fileHash !== hash) {
+      tell(
+        fresh
+          ? `The live game shows another version of ${name}'s file: save it and let the game reload it, then compare.`
+          : `The stored snapshot of ${name} is of another version of its file: open ${name} in the live game to compare.`,
+      );
+      return undefined;
+    }
+    const found = await this.profiles.load(
+      session.playset,
+      session.ui.index,
+      render.file,
+      render.window,
+    );
+    const profile = found.loaded?.profile;
+    const layers = offlinePreviewLayers({
+      window: render.window,
+      screen: snapshot.screen,
+      snapshot,
+      profile,
+      localise: (key) => session.localisation?.get(key),
+      template: (template) => {
+        const type = session.ui.index.guiType(template);
+        const owner = type === undefined ? undefined : session.guiFile(type.path);
+        return type === undefined || owner === undefined
+          ? undefined
+          : { widget: type.item, file: owner };
+      },
+    });
+    const layout = await layOutPreview(session.ui, session.assets, render.file, render.window, {
+      screen: snapshot.screen,
+      localise: session.localise,
+      ...(layers.view === undefined ? {} : { view: layers.view }),
+      content: layers.content,
+    });
+    const result = compareLive(
+      planSnapshot(snapshot, { layout }),
+      profile !== undefined,
+      render.window,
+    );
+    const entries: LiveEntry[] = result.differences.map((difference) => {
+      const widget =
+        'widget' in difference
+          ? difference.widget
+          : this.nearestWidget(render.window, difference.path);
+      const diagnostic = new vscode.Diagnostic(
+        new vscode.Range(
+          positionOf(render.source, widget.node.key.start),
+          positionOf(render.source, widget.node.key.end),
+        ),
+        differenceMessage(difference),
+        vscode.DiagnosticSeverity.Information,
+      );
+      diagnostic.code = 'live-difference';
+      return { diagnostic, difference };
+    });
+    this.liveDifferences.set(render.uri, name, profile !== undefined, snapshot.screen, entries);
+    const ms = performance.now() - started;
+    this.output.info(
+      `Compare with Live Game, ${name}: ${String(entries.length)} live differences; rects ` +
+        `${String(result.geometry.exact)} of ${String(result.geometry.compared)} exact, visibility ` +
+        `${String(result.visibility.agree)} of ${String(result.visibility.compared)}, ` +
+        `${fresh ? 'fresh' : 'stored'} snapshot, ${ms.toFixed(0)} ms.`,
+    );
+    void vscode.window.showInformationMessage(
+      entries.length === 0
+        ? `Compare with Live Game: the offline preview of ${name} shows every widget where the game does.`
+        : `Compare with Live Game: ${String(entries.length)} live ${entries.length === 1 ? 'difference' : 'differences'} in ${name}, listed in Problems.`,
+    );
+    return result;
+  }
+
+  /** The window's widget nearest a path of the game's: the deepest one its steps name. */
+  private nearestWidget(window: Widget, path: string): Widget {
+    const steps = path.toLowerCase().split('/').slice(1);
+    let at = window;
+    for (const step of steps) {
+      const name = step.replace(/\[\d+\]$/, '');
+      const next = at.children.find((c) => (c.name ?? '').toLowerCase() === name);
+      if (next === undefined) break;
+      at = next;
+    }
+    return at;
+  }
+
+  /**
+   * **Save as view** for a window without a profile (spec v3 section 4): a view of the mod
+   * project's profile of the window that hides what the game hid.
+   */
+  async saveLiveView(window: string, paths: readonly string[]): Promise<void> {
+    const root = this.session?.playset.workspaceMod?.root;
+    if (root === undefined) {
+      void vscode.window.showInformationMessage(
+        'Save as view writes into the mod project, beside its descriptor.mod: open a file of a mod.',
+      );
+      return;
+    }
+    const file = vscode.Uri.file(join(root, ...PROJECT_PROFILES, `${window}.jsonc`));
+    const label = await vscode.window.showInputBox({
+      title: 'Save as View',
+      value: 'As the live game showed it',
+      prompt: `A name for this view of ${window}, saved in ${vscode.workspace.asRelativePath(file)}`,
+      validateInput: (text) => (text.trim() === '' ? 'Give the view a name.' : undefined),
+    });
+    if (label === undefined) return;
+    const id =
+      label
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '') || 'view';
+    const toggles = Object.fromEntries(paths.map((p) => [p, false]));
+    try {
+      const before = await readText(file);
+      const after = withView(before, window, id, { label: label.trim(), set: {}, toggles });
+      await mkdir(dirname(file.fsPath), { recursive: true });
+      await writeFile(file.fsPath, after, 'utf8');
+    } catch (error) {
+      void vscode.window.showErrorMessage(`Save as view: ${String(error)}`);
+      return;
+    }
+    await vscode.window.showTextDocument(file, {
+      viewColumn: vscode.ViewColumn.One,
+      preview: false,
+    });
+    this.request();
+  }
+
+  /** **Open profile** for a window without one: the mod project's file, once it exists. */
+  async openLiveProfile(window: string): Promise<void> {
+    const root = this.session?.playset.workspaceMod?.root;
+    const file =
+      root === undefined
+        ? undefined
+        : vscode.Uri.file(join(root, ...PROJECT_PROFILES, `${window}.jsonc`));
+    if (file === undefined || (await readText(file)) === undefined) {
+      void vscode.window.showInformationMessage(
+        `${window} has no window profile yet: Save as view writes one into the mod project's .etch/profiles.`,
+      );
+      return;
+    }
+    await vscode.window.showTextDocument(file, { viewColumn: vscode.ViewColumn.One });
   }
 
   /**

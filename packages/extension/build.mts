@@ -23,6 +23,15 @@ const stamp = {
   builtAt: new Date().toISOString(),
 };
 
+/** The pinned builds' release tags by id, for Report to Etch (src/pins.ts). */
+const pins = Object.fromEntries(
+  (
+    JSON.parse(readFileSync('../../pins/game-builds.json', 'utf8')) as {
+      builds: { id: string; tag: string }[];
+    }
+  ).builds.map((b) => [b.id, b.tag]),
+);
+
 const common = {
   bundle: true,
   format: 'cjs',
@@ -31,7 +40,7 @@ const common = {
   external: ['vscode'],
   sourcemap: true,
   logLevel: 'warning',
-  define: { ETCH_BUILD: JSON.stringify(stamp) },
+  define: { ETCH_BUILD: JSON.stringify(stamp), ETCH_PINS: JSON.stringify(pins) },
 } satisfies esbuild.BuildOptions;
 
 await Promise.all([

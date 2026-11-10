@@ -10,11 +10,13 @@ import { join } from 'node:path';
 import {
   capturePath,
   captureRecordFile,
+  compareLive,
   constructsOf,
   findView,
   matchesWidgetPattern,
   outlineGeometry,
   planCapture,
+  planSnapshot,
   readCaptureRecord,
   readCorpusManifest,
   rectOrigins,
@@ -27,6 +29,7 @@ import {
   visibilityAgreement,
   type CaptureComparison,
   type GeometryCounts,
+  type LiveComparison,
   type PlanWindow,
   type TextCounts,
   type VisibilityCounts,
@@ -73,6 +76,14 @@ export interface ViewCoverage {
    * the view's profiled roots alone.
    */
   readonly profiled?: {
+    readonly geometry: GeometryCounts;
+    readonly visibility: VisibilityCounts;
+  };
+  /**
+   * Measure 4 with the snapshot's texts and list rows as sample data: what Compare with Live Game
+   * compares (spec v3 section 4), through the same `compareLive`, over the profiled roots.
+   */
+  readonly profiledTexts?: {
     readonly geometry: GeometryCounts;
     readonly visibility: VisibilityCounts;
   };
@@ -195,6 +206,12 @@ export async function runCoverage(options: CoverageOptions): Promise<CoverageRes
     const liveWindows: PlanWindow[] = [];
     const profiledWindows: PlanWindow[] = [];
     const previewWindows: PlanWindow[] = [];
+    /**
+     * Measure 4 with texts, root by root as the command compares one window (spec v3 section 4):
+     * from the capture, and as the command finds it from each root's live snapshot.
+     */
+    const survey: LiveComparison[] = [];
+    const command: LiveComparison[] = [];
     const profiledRoots: (typeof record.widgets)[number][] = [];
     const rootResults: RootCoverage[] = [];
     const codeSized = findView(manifest, key.view)?.view.codeSized ?? [];
@@ -227,8 +244,28 @@ export async function runCoverage(options: CoverageOptions): Promise<CoverageRes
           ? undefined
           : await files.profilePreview(top, record.resolution, snapshot, loaded, size);
       if (withProfile !== undefined) {
-        profiledWindows.push(withProfile);
-        profiledRoots.push(root);
+        const withTexts = await files.offlinePreview(
+          top,
+          record.resolution,
+          snapshot,
+          loaded,
+          size,
+        );
+        if (withTexts !== undefined) {
+          survey.push(
+            compareLive(
+              planCapture({
+                manifest,
+                record: { ...record, widgets: [root] },
+                windows: [withTexts],
+              }),
+              true,
+            ),
+          );
+          command.push(compareLive(planSnapshot(snapshot, withTexts), true));
+          profiledWindows.push(withProfile);
+          profiledRoots.push(root);
+        }
       }
       previewWindows.push(withProfile ?? offline);
       const live = await files.livePreview(top, record.resolution, snapshot, loaded, size);
@@ -265,8 +302,20 @@ export async function runCoverage(options: CoverageOptions): Promise<CoverageRes
               record: { ...record, widgets: profiledRoots },
               windows: profiledWindows,
             });
+            const texts = summed(survey);
+            const found = summed(command);
+            // Compare with Live Game must find what the survey finds (spec v3 section 4).
+            const counts = (c: typeof texts): string =>
+              `rects ${String(c.geometry.exact)} of ${String(c.geometry.compared)}, visibility ` +
+              `${String(c.visibility.agree)} of ${String(c.visibility.compared)}`;
+            if (counts(found) !== counts(texts)) {
+              problems.push(
+                `Compare with Live Game differs from the survey: ${counts(found)} against ${counts(texts)}.`,
+              );
+            }
             return {
               profiled: { geometry: outlineGeometry(plan), visibility: visibilityAgreement(plan) },
+              profiledTexts: texts,
             };
           })()
         : {}),
@@ -306,6 +355,32 @@ export async function runCoverage(options: CoverageOptions): Promise<CoverageRes
     }
   }
   return { views, constructs, windows, notCaptured };
+}
+
+/** The geometry and visibility of several comparisons, as of one. */
+function summed(comparisons: readonly LiveComparison[]): {
+  geometry: GeometryCounts;
+  visibility: VisibilityCounts;
+} {
+  const g = comparisons.map((c) => c.geometry);
+  const v = comparisons.map((c) => c.visibility);
+  const sum = (values: number[]): number => values.reduce((a, b) => a + b, 0);
+  return {
+    geometry: {
+      compared: sum(g.map((x) => x.compared)),
+      exact: sum(g.map((x) => x.exact)),
+      mismatches: g.flatMap((x) => x.mismatches),
+      gameOnly: g.flatMap((x) => x.gameOnly),
+      layoutOnly: g.flatMap((x) => x.layoutOnly),
+      codeFilled: sum(g.map((x) => x.codeFilled)),
+    },
+    visibility: {
+      compared: sum(v.map((x) => x.compared)),
+      agree: sum(v.map((x) => x.agree)),
+      drawnHidden: v.flatMap((x) => x.drawnHidden),
+      shownMissing: v.flatMap((x) => x.shownMissing),
+    },
+  };
 }
 
 function* descendants(widget: Widget): Generator<Widget> {
