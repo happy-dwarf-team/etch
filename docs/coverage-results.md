@@ -176,6 +176,33 @@ The 13 rects left on Muscovy are sizes the game's code sets: `custom_mapmode_7`,
 size from the snapshot would only zero the measure.
 
 Not measured: 1280×720, pixels (`compare --gpu` over this run), Ming, Venice and Arg-Ordstun.
+
+### Anbennar's profiles on a country of its own (10 November 2026)
+
+The v3 draft (spec/v3.md section 8) takes up Anbennar's own countries: after etch#310 Kobildzan
+stayed at 94.9 %, its religion's own lists and an elected ruler's court the largest classes left.
+The religion and court profiles of Anbennar now have selectors for what differs between
+Anbennar's countries: the base game's religion panel an Anbennar religion takes (none for most,
+the jewish one for Kobildzan's aspects), the personal deity, the province list with its sort
+buttons, full unity, the deity selection screen, and an elective succession (the election's
+notice, no heir); with no consort the consort's banner, name and traits are hidden too. The rules
+were fitted on Kobildzan's captures only. Bluescale is the test: one rule of the court was fixed on
+it before (the consort's crown), none of these. On the stored captures, 1920×1080, rules of
+`main` (`e293a4e`) against this change, selectors set to what the game showed:
+
+| Set | Offline preview: visibility | With profiles: visibility | Religion and court views: failures |
+| --- | --- | --- | --- |
+| Kobildzan, 1594 (rules fitted on it) | 95.1 → 96.7 % (8849/9305 → 8886/9186) | 94.3 → 96.3 % | 156 → 0 |
+| **Bluescale, 1472 (not used for these rules)** | **96.5 → 96.6 %** (7222/7486 → 7233/7486) | 95.9 → 96.1 % | 12 → 1 |
+| Anbennar alone, stored, all views (Verne, 1444) | 96.9 → 96.9 % (8520/8797 → 8524/8797) | 96.7 → 96.7 % | 11 → 7 |
+
+Rects do not move (95.6, 98.9 and 96.7 %). **The fixes carry to Bluescale on the two views:** its
+religion view had the jewish panel and the deity wrong and has no failure left; the one left in
+its court is `monarch_heir_crown_icon`, which Anbennar's profile hides and Bluescale's heir shows.
+Verne loses nothing; the seven left are the deity selection view's own missionary widgets. What
+is left on Kobildzan is not of these two windows: the province view (135, as on Verne and
+Bluescale), the military tab (29), the diplomacy view (25), the estates' rows (16) and the top
+bar (16).
 <!-- other countries: end -->
 
 ## What differs
