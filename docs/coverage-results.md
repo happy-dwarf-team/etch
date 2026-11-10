@@ -247,6 +247,33 @@ row). The subject's focus is disabled on the Pope's controller and the colonial 
 doctrine on the emperor, and the colonial nation also has the estates tab and two of the military
 view's buttons disabled (`button_makerulergeneral`, `mothball_all`).
 The views those recipes open were not tested on these countries.
+
+### Anbennar's menu to the end, and confirmation dialogs (10 November 2026)
+
+The rest of the v3 draft's survey, after etch#352. Anbennar's single-player lobby was taken while
+the main menu still faded out, so its steps never led to it again and nothing behind it was
+crawled; the crawler now reads a new view until it holds. A crawl of Anbennar's main menu afresh
+(19 starts) found 10 views where it found 4, the same set as vanilla's: the lobby, its game
+options, find box, options and their custom tab, the nation designer, and a country's shield.
+The survey's `dialogs` let the crawler open the confirmation of an idea group's abandon and a
+unit's disband, never confirmed. Taken under the lab's game lock, EU4 1.37.5 (`9AD3EFE1…`),
+Tongs 0.23.0, 1920×1080, measured on `main` (`4922d56`):
+
+| View | Offline preview: rects | Offline preview: visibility | Outline visibility | With profiles: visibility | Live visibility |
+| --- | --- | --- | --- | --- | --- |
+| Anbennar, the lobby | 39/42 | 104/106 | 61/106 | 94/96 | 107/107 |
+| Anbennar, the lobby's game options | 65/68 | 130/137 | 87/137 | 94/96 | 137/138 |
+| Anbennar, the lobby's find box | 47/50 | 114/117 | 71/117 | 94/96 | 118/118 |
+| Anbennar, the lobby's options | 50/53 | 118/122 | 75/122 | 94/96 | 123/123 |
+| Anbennar, the nation designer | 22/22 | 56/57 | 22/57 | 56/57 | 57/57 |
+| vanilla, abandoning an idea group (`DefaultConfirm`) | 36/37 | 207/208 | 205/208 | 182/183 | 208/208 |
+
+What the lobby's views fail is the lobby's own: the rects of `scenario_description` and the two
+`shield_thin_glow`, and `datewidget` and `random_new_world_button`, which the preview draws and
+the game hides; behind it, the settings' audio and controls tabs, the find box's `goto`, and
+the options' multiplayer and custom setup tabs, drawn and hidden by the game the same way. The
+confirmation fails only its `Description`'s rect, a text the game's code sizes. Not captured in
+time: the country shield behind the lobby, and Anbennar's disband confirmations.
 <!-- other countries: end -->
 
 ## What differs
