@@ -8,6 +8,7 @@ import { join } from 'node:path';
 import type { Screen } from '@etch/core';
 import {
   hashModFolder,
+  offlinePreviewLayers,
   spriteShaderOf,
   type CorpusManifest,
   type CorpusPlayset,
@@ -338,6 +339,46 @@ export class CorpusPlaysetFiles {
       localise: (text: string) => this.localisation?.text(text) ?? text,
       view: layoutViewOf(view),
       content: layoutContentOf(sample),
+      ...(size === undefined ? {} : { windowSize: size }),
+    });
+    return { layout, shaderOf: (widget: Widget) => spriteShaderOf(widget, context) };
+  }
+
+  /**
+   * A top-level window laid out as Compare with Live Game lays out its offline preview (spec v3
+   * section 4, `offlinePreviewLayers`): with its profile at the selectors that fit the snapshot, or
+   * as the outline without one, and the snapshot's texts and list rows as sample data.
+   */
+  async offlinePreview(
+    name: string,
+    screen: Screen,
+    snapshot: LiveSnapshot,
+    loaded: { profile: WindowProfile; window: Widget } | undefined,
+    size?: Screen,
+  ): Promise<PlanWindow | undefined> {
+    const definition = this.ui.index.guiTypeDefinitions(name)[0];
+    const file = this.ui.index.guiFiles.find((f) => f.path === definition?.path)?.file;
+    if (definition === undefined || file === undefined) return undefined;
+    const context = { constants: file.constants, index: this.ui.index, screen };
+    const layers = offlinePreviewLayers({
+      window: definition.item,
+      screen,
+      snapshot,
+      profile: loaded?.profile,
+      localise: this.localise,
+      template: (template) => {
+        const found = this.ui.index.guiType(template);
+        const owner = this.ui.index.guiFiles.find((f) => f.path === found?.path)?.file;
+        return found === undefined || owner === undefined
+          ? undefined
+          : { widget: found.item, file: owner };
+      },
+    });
+    const layout = await layOutPreview(this.ui, this.assets, file, definition.item, {
+      screen,
+      localise: (text: string) => this.localisation?.text(text) ?? text,
+      ...(layers.view === undefined ? {} : { view: layers.view }),
+      content: layers.content,
       ...(size === undefined ? {} : { windowSize: size }),
     });
     return { layout, shaderOf: (widget: Widget) => spriteShaderOf(widget, context) };

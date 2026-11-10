@@ -134,3 +134,14 @@ export {
   type TextCounts,
   type VisibilityCounts,
 } from './coverage.ts';
+export {
+  LIVE_CODE_FILLED_KINDS,
+  compareLive,
+  offlinePreviewLayers,
+  planSnapshot,
+  snapshotTree,
+  type LiveComparison,
+  type LiveDifference,
+  type OfflinePreviewInput,
+  type OfflinePreviewLayers,
+} from './live-compare.ts';

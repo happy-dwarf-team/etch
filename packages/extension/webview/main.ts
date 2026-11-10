@@ -222,16 +222,27 @@ function showDataMenu(menu: DataMenu | undefined): void {
       }
       children.push(actions);
     }
-    if (layer.id === 'live' && menu.canRefresh) {
+    if (layer.id === 'live' && (menu.canRefresh || layer.count > 0)) {
       const actions = document.createElement('div');
       actions.className = 'actions';
+      if (menu.canRefresh) {
+        actions.append(
+          button(
+            'Refresh from live game',
+            () => {
+              dataAction({ kind: 'refreshLive' });
+            },
+            'Take a live snapshot of this window, which the live game must show',
+          ),
+        );
+      }
       actions.append(
         button(
-          'Refresh from live game',
+          'Compare with Live Game',
           () => {
-            dataAction({ kind: 'refreshLive' });
+            dataAction({ kind: 'compareLive' });
           },
-          'Take a live snapshot of this window, which the live game must show',
+          'List in Problems every widget the offline preview places or shows otherwise than the game',
         ),
       );
       children.push(actions);
@@ -398,7 +409,16 @@ function showViewMenu(menu: ViewMenu | undefined): void {
     note.textContent = `Profile differs in ${String(menu.gameToggles)} ${
       menu.gameToggles === 1 ? 'path' : 'paths'
     } from the live game: shown as toggles from the game.`;
-    children.push(note);
+    children.push(
+      note,
+      item(
+        'Compare with Live Game',
+        () => {
+          dataAction({ kind: 'compareLive' });
+        },
+        'List in Problems every widget the offline preview places or shows otherwise than the game',
+      ),
+    );
   }
   if (menu.liveUnknown.length > 0) {
     const note = document.createElement('div');

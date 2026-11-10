@@ -339,7 +339,8 @@ the format and what the preview takes from it; the extension's
 - **Kept** in the extension's workspace storage (`live-snapshots/<playset>/
   <window>.json`), the latest per top-level window and playset; a snapshot of
   another playset drops the others. Never in the mod's project, never shared
-  or exported.
+  or exported, but for the fields of one difference that **Report to Etch**
+  lets the author send (below).
 - **Texts:** the top layer of `Data ▾`, matched by widget path; a value whose
   widget the window no longer has falls through to the lower layers, and
   `Data ▾` counts it ("N values no longer match"). After a restart or with
@@ -362,6 +363,51 @@ the format and what the preview takes from it; the extension's
   its view cleared to the game's (no view, no selector set by hand, no hand
   toggles) and the live layer on. A pick is a moment: the preview does not
   follow the game afterwards.
+
+## Compare with Live Game
+
+**Etch: Compare with Live Game** (spec v3 section 4), also a button of the
+live layer in `Data ▾` and beside "Profile differs in N paths" in `View ▾`,
+compares the previewed window's **offline preview** with a live snapshot of
+it and lists each **live difference** in Problems.
+
+- **The snapshot:** a fresh one when the live game shows the window, else the
+  stored one. Either must have the SHA-256 of the previewed file as it is on
+  disk now, and the file must be the one the game takes and have no unsaved
+  changes; otherwise Etch says so and does not compare.
+- **The offline preview:** the window laid out at the snapshot's screen with
+  its profile where it has one, the profile's selectors at the values that fit
+  the snapshot, and the snapshot's texts and list rows as sample data; not the
+  snapshot's positions, visibility, states or toggles from the game. A window
+  without a profile is the outline with the snapshot's texts.
+- **The comparison** is the coverage survey's: `offlinePreviewLayers`,
+  `planSnapshot` and `compareLive` in `@etch/core`'s `corpus/live-compare.ts`,
+  the survey's `outlineGeometry` and `visibilityAgreement` over a plan built
+  from the snapshot as the survey builds one from a capture. The survey's
+  measure "with profiles and live texts" goes through the same functions, and
+  the coverage report notes any view where the command, from each root's
+  snapshot, would find otherwise than the survey from the capture; on the
+  survey's captures of 2–6 November 2026 (vanilla, Anbennar alone and Bigger
+  UI at both resolutions, 248 views with a profiled root) it finds none. A
+  snapshot names a list's rows by position; since 2.7.0 it keeps the game's own
+  path of such a row too (`gamePath`), which the comparison pairs by. Widgets
+  whose name has a space have a path step by the game's position (`[46]`),
+  which takes the name of the definition's children stepped the same way, in
+  order.
+- **In Problems:** the collection `etch-live-compare`, at Information, on the
+  widget's definition (a widget only the game has on its nearest parent):
+  where both show it but in other places, what only the game or only the
+  preview has, and what one shows and the other hides. A window without a
+  profile has one entry for what the game hides and the preview draws, with
+  **Save as view** (a view of the mod project's profile that hides those
+  widgets) and **Open profile**. A window's entries go at its next Compare or
+  when its file changes, not when the game stops.
+- **Report to Etch** on each entry shows the fields it sends (the widget's
+  path, the kind of difference, both rects, the visibility, whether the window
+  has a profile, the resolution and the versions of Etch and of the pinned
+  Anvil and Tongs), then opens a new issue of `happy-dwarf-team/etch` filled
+  in with them for the author to send from the browser. No file or text of the
+  mod goes in it; it is the one exception to a snapshot never being shared.
 
 ## Live runs
 

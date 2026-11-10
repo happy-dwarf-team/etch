@@ -136,6 +136,26 @@
         "command": "etch.snapshotFromLiveGame",
         "title": "Snapshot from the Live Game",
         "category": "Etch"
+      },
+      {
+        "command": "etch.compareWithLiveGame",
+        "title": "Compare with Live Game",
+        "category": "Etch"
+      },
+      {
+        "command": "etch.reportLiveDifference",
+        "title": "Report a Live Difference to Etch",
+        "category": "Etch"
+      },
+      {
+        "command": "etch.saveLiveView",
+        "title": "Save as View from the Live Game",
+        "category": "Etch"
+      },
+      {
+        "command": "etch.openLiveProfile",
+        "title": "Open the Window Profile",
+        "category": "Etch"
       }
     ],
     "menus": {
@@ -201,6 +221,22 @@
         },
         {
           "command": "etch.outline.clearText",
+          "when": "false"
+        },
+        {
+          "command": "etch.compareWithLiveGame",
+          "when": "etch.previewOpen"
+        },
+        {
+          "command": "etch.reportLiveDifference",
+          "when": "false"
+        },
+        {
+          "command": "etch.saveLiveView",
+          "when": "false"
+        },
+        {
+          "command": "etch.openLiveProfile",
           "when": "false"
         },
         {

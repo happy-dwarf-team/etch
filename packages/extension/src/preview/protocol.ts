@@ -94,7 +94,9 @@ export type DataAction =
   /** Set the number of entries of a list; none goes back to the save's or the profile's. */
   | { readonly kind: 'entries'; readonly list: string; readonly count?: number }
   /** Take a live snapshot of the previewed window (spec section 7). */
-  | { readonly kind: 'refreshLive' };
+  | { readonly kind: 'refreshLive' }
+  /** Compare with Live Game (spec v3 section 4). */
+  | { readonly kind: 'compareLive' };
 
 /** Where a selector's value came from (core's `SelectorSource`). */
 export type SelectorSourceName = 'auto' | 'save' | 'live' | 'you' | 'default';

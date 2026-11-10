@@ -25,6 +25,9 @@ interface Totals {
   liveVisibility: [number, number];
   profiledGeometry: [number, number];
   profiledVisibility: [number, number];
+  /** Measure 4 with the snapshot's texts: what Compare with Live Game compares. */
+  compareGeometry: [number, number];
+  compareVisibility: [number, number];
   texts: [number, number];
   profiledTexts: [number, number];
   pixelsPassed: [number, number];
@@ -42,6 +45,8 @@ function totalsOf(views: readonly ViewCoverage[]): Totals {
     liveVisibility: [0, 0],
     profiledGeometry: [0, 0],
     profiledVisibility: [0, 0],
+    compareGeometry: [0, 0],
+    compareVisibility: [0, 0],
     texts: [0, 0],
     profiledTexts: [0, 0],
     pixelsPassed: [0, 0],
@@ -61,6 +66,14 @@ function totalsOf(views: readonly ViewCoverage[]): Totals {
     if (v.profiled !== undefined) {
       add(t.profiledGeometry, v.profiled.geometry.exact, v.profiled.geometry.compared);
       add(t.profiledVisibility, v.profiled.visibility.agree, v.profiled.visibility.compared);
+    }
+    if (v.profiledTexts !== undefined) {
+      add(t.compareGeometry, v.profiledTexts.geometry.exact, v.profiledTexts.geometry.compared);
+      add(
+        t.compareVisibility,
+        v.profiledTexts.visibility.agree,
+        v.profiledTexts.visibility.compared,
+      );
     }
     for (const r of v.roots) {
       add(t.texts, r.texts.taken, r.texts.shown);
@@ -116,6 +129,21 @@ export function coverageMarkdown(result: CoverageResult): string {
     const t = totalsOf(result.views.filter((v) => v.playset === id && v.resolution === resolution));
     lines.push(
       `| ${id} | ${resolution} | ${String(t.views)} | ${percent(...t.previewGeometry)} | ${percent(...t.previewVisibility)} | ${percent(...t.offlineGeometry)} | ${percent(...t.offlineVisibility)} | ${String(t.full.offline)} | ${percent(...t.profiledGeometry)} | ${percent(...t.profiledVisibility)} | ${percent(...t.liveGeometry)} | ${percent(...t.liveVisibility)} | ${String(t.full.live)} | ${percent(...t.texts)} | ${percent(...t.profiledTexts)} | ${t.pixelsPassed[1] === 0 ? '–' : `${String(t.pixelsPassed[0])} of ${String(t.pixelsPassed[1])}`} |`,
+    );
+  }
+  lines.push(
+    '',
+    '"With profiles and live texts" is the same with the snapshot\'s texts and list rows as sample',
+    'data: what Compare with Live Game compares (spec/v3.md section 4), through the same functions.',
+    '',
+    '| Playset | Resolution | With profiles and live texts: rects | With profiles and live texts: visibility |',
+    '| --- | --- | --- | --- |',
+  );
+  for (const group of groups) {
+    const [id = '', resolution = ''] = group.split(' ');
+    const t = totalsOf(result.views.filter((v) => v.playset === id && v.resolution === resolution));
+    lines.push(
+      `| ${id} | ${resolution} | ${percent(...t.compareGeometry)} | ${percent(...t.compareVisibility)} |`,
     );
   }
   if (result.notCaptured.length > 0) {
