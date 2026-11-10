@@ -206,24 +206,28 @@ bar (16).
 
 ### Views that depend on the country (10 November 2026)
 
-The v3 draft's survey takes the views a country of another kind sees: the Pope's controller and a
-colonial nation. Each is a copy of the Russian game of 15 September 1550 with the player moved,
-as France and the Ottomans above: Aragon, which controls the Curia, and the colonial nation `C01`
-of Castile. The player is moved in the save rather than by the console's `tag`, so the capture
+The v3 draft's survey takes the views a country of another kind sees: the emperor, the Pope's
+controller and a colonial nation. Each is a copy of the Russian game of 15 September 1550 with the
+player moved, as France and the Ottomans above: Austria, the emperor, Aragon, which controls the
+Curia, and the colonial nation `C01` of Castile. The player is moved in the save rather than by the console's `tag`, so the capture
 makes no game call. EU4 1.37.5 (`9AD3EFE1…`), 1920×1080, Tongs 0.26.1 (France was taken with
 0.23.0, which changes no figure, as above), rules of `main` (`573f140`). France is the reference:
-the same game and date, a country of the usual kind. On the views all three have:
+the same game and date, a country of the usual kind. On the 33 views all four have:
 
 | Set | Views | Offline preview: rects | Offline preview: visibility | With profiles: visibility | Live rects | Live visibility |
 | --- | --- | --- | --- | --- | --- | --- |
-| France, 1550 (reference) | 34 | 99.2 % (2102/2120) | 98.2 % (5892/6002) | 98.0 % | 99.9 % | 100.0 % |
-| **Aragon, the Pope's controller** | 34 | **99.1 %** (2075/2094) | **97.5 %** (4896/5024) | 97.0 % | 99.9 % | 100.0 % |
-| **C01, a colonial nation** | 34 | **99.1 %** (2030/2048) | **96.7 %** (4450/4603) | 96.0 % | 99.9 % | 100.0 % |
+| France, 1550 (reference) | 33 | 99.1 % (1966/1984) | 98.2 % (5743/5848) | 98.0 % | 99.9 % | 100.0 % |
+| **Austria, the emperor** | 33 | **99.1 %** (1969/1987) | **98.2 %** (5440/5542) | 97.9 % | 99.9 % | 100.0 % |
+| **Aragon, the Pope's controller** | 33 | **99.0 %** (1941/1960) | **97.5 %** (4749/4872) | 97.0 % | 99.8 % | 100.0 % |
+| **C01, a colonial nation** | 33 | **99.1 %** (1898/1916) | **96.7 %** (4303/4451) | 96.0 % | 99.8 % | 100.0 % |
 
-Rects hold and live visibility has no failure on either country. The visibility rules lose 0.7
-points on the Pope's controller and 1.5 on the colonial nation. The religion view of the Pope's
-controller, with the Curia's controls, has no failure France does not have. What each country
-fails where France does not:
+Rects hold and live visibility has no failure on any of the three. The visibility rules hold on
+the emperor and lose 0.7 points on the Pope's controller and 1.5 on the colonial nation. The
+religion view of the Pope's controller, with the Curia's controls, has no failure France does not
+have. What each country fails where France does not:
+
+- **The emperor's HRE view:** `hre_window/join_button` is drawn, and the game hides it from the
+  emperor; in the diplomacy view, the rivals' and enemies' labels. Nothing else on 37 views.
 
 - **The court without an heir** (both): the heir's banner, traits and values, `abdicate_ruler_button`,
   `disinherit_button` and `extend_regency_button` are drawn, and the game hides them. Vanilla's
@@ -236,11 +240,12 @@ fails where France does not:
   religion profile has selectors for both, vanilla's has none), the national ideas' progress (a
   colonial nation has no national ideas of its own), and the golden age banner of the ages view.
 
-Not captured: 14 views on the Pope's controller, 17 on the colonial nation. The
-recipes written for Russia fail on both (the parliament, the Celestial Empire, the Orthodox
-icons, an undiscovered province, a war, the native policy, a rebel faction, the subject's focus);
-the colonial nation also has the estates tab disabled and two of the military view's buttons
-(`button_makerulergeneral`, `mothball_all`), so its estates and those two views were not taken.
+Not captured: 14 views on the emperor and on the Pope's controller, 17 on the colonial nation.
+The recipes written for Russia fail on all three (the parliament, the Celestial Empire, the
+Orthodox icons, an undiscovered province, a war, the native policy, a rebel faction, an estate's
+row). The subject's focus is disabled on the Pope's controller and the colonial nation, the naval
+doctrine on the emperor, and the colonial nation also has the estates tab and two of the military
+view's buttons disabled (`button_makerulergeneral`, `mothball_all`).
 The views those recipes open were not tested on these countries.
 <!-- other countries: end -->
 
