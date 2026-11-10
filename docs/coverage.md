@@ -148,6 +148,13 @@ the playset's files (`packages/compare/src/coverage.ts`):
    state would set `View ▾`), without the snapshot's texts, toggles or
    positions. Geometry and visibility as in 1: what the profiles alone get
    right without a game.
+   - *With the snapshot's texts*: the same, with the snapshot's texts and its
+     lists' row counts as sample data, so that the boxes the game sizes to
+     their text have the game's text; still no positions, visibility or
+     toggles from the snapshot. This is what **Compare with Live Game**
+     compares (spec/v3.md section 4), through the same functions of
+     `@etch/core`, so the survey and the command report the same figures. A
+     window without a profile is taken as the outline with those texts.
 5. **Pixels.** `compare --gpu --corpus <survey folder>`: the corpus's own
    per-widget comparison. Reported only.
 

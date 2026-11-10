@@ -25,6 +25,13 @@ _Avoid_: current window, active window
 What draws the preview from the mod's files alone, with no game running.
 _Avoid_: emulator, standalone renderer, backend
 
+**Offline preview**:
+The preview of a window without a live game: the outline, with the window's
+profile when it has one. Compare with Live Game takes it with the profile's
+selectors set to what a live snapshot shows and the snapshot's texts as sample
+data.
+_Avoid_: static preview
+
 **Code-filled content**:
 What the game's own code puts into a window at run time: hidden or moved
 widgets, list entries, values and text that depend on game data.
@@ -92,6 +99,11 @@ pick or on request: the texts, visibility and states of its widgets and list
 entries. It is the top layer of sample data and is kept per window and
 playset until a newer one replaces it.
 _Avoid_: capture (a screenshot in the corpus), dump, live data
+
+**Live difference**:
+A widget whose place or visibility in the offline preview differs from a live
+snapshot of the same window; Compare with Live Game lists them in Problems.
+_Avoid_: diff, mismatch
 
 **Planned restart**:
 A restart of the live game that Etch asks the player for, from a save the live
