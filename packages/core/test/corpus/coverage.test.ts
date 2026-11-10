@@ -18,7 +18,12 @@ import {
   type CrawlFile,
   type TreeWidget,
 } from '../../src/corpus/index.ts';
-import { candidateStep } from '../../src/corpus/driver/crawl.ts';
+import {
+  candidateStep,
+  neverClicked,
+  newWindows,
+  stableSignature,
+} from '../../src/corpus/driver/crawl.ts';
 
 const REPOSITORY = join(import.meta.dirname, '..', '..', '..', '..');
 
@@ -68,6 +73,48 @@ describe('the survey crawler', () => {
     expect(candidateStep('click menu/menu_panel/menu_options_button')).toEqual({
       click: 'menu/menu_panel/menu_options_button',
     });
+  });
+
+  it('reads a new signature again until it holds', async () => {
+    // Anbennar's lobby: the main menu's panels are still fading out at the first read.
+    const reads = ['lobby', 'lobby'];
+    const read = (): Promise<string> => Promise.resolve(reads.shift() ?? 'none');
+    expect(await stableSignature('lobby\nmainmenu', 'lobby', read)).toBe('lobby');
+    expect(reads).toEqual([]);
+    // The expected signature is taken at once.
+    expect(await stableSignature('lobby', 'lobby', () => Promise.reject(new Error('read')))).toBe(
+      'lobby',
+    );
+    // A signature that keeps changing is taken after the last read.
+    let n = 0;
+    expect(await stableSignature('a', undefined, () => Promise.resolve(String(++n)), 3)).toBe('3');
+  });
+
+  it('clicks a button that only opens a dialog, but nothing in the dialog that confirms', async () => {
+    const config = readSurveyConfig(
+      await readFile(join(REPOSITORY, 'coverage', 'survey.json'), 'utf8'),
+    );
+    const abandon =
+      'countryideasview/ideagroups_listbox_left/countryideaview_ideagroupitem[1]/abandon_idea_button';
+    expect(config.crawl.never.some((n) => n.pattern === '//*abandon*')).toBe(true);
+    expect(neverClicked(config.crawl, abandon)).toBeUndefined();
+    expect(
+      neverClicked(config.crawl, 'multi_unitpanel/unitlist/unitpanel/actual/disbandbutton'),
+    ).toBeUndefined();
+    expect(neverClicked(config.crawl, 'DefaultDialog/AgreeButton')?.pattern).toBe('//*agree*');
+    // Buttons that act at once stay out.
+    for (const path of [
+      'countryreligionview/province_listbox/countryreligionview_provincelistitem[1]/send_missionary',
+      'countrytradeview/trade_node_list_window/tradenode_list/trade_node_item[1]/send_merchant',
+    ]) {
+      expect(neverClicked(config.crawl, path)?.pattern).toBe('//*send*');
+    }
+    expect(neverClicked({ never: config.crawl.never }, abandon)?.pattern).toBe('//*abandon*');
+    // The click must open a window the view did not show.
+    expect(
+      newWindows('DefaultDialog\nDefaultDialog/x\ncountryideasview', 'countryideasview'),
+    ).toEqual(['DefaultDialog']);
+    expect(newWindows('countryideasview\ncountryideasview/x', 'countryideasview')).toEqual([]);
   });
 });
 

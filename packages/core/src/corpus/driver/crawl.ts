@@ -8,7 +8,9 @@
  * The crawler never makes a game call, and it keeps the game's state:
  *
  * - it clicks nothing a `never` pattern of the survey names (confirmations, exits, speed), and in
- *   a list only the first row;
+ *   a list only the first row; a `dialogs` pattern names a button that only opens the game's
+ *   confirmation, which it clicks although a `never` pattern names it, and a click of it that
+ *   opens no new window ends the session as a changed state does;
  * - before it starts it takes a fingerprint of the game's state (the date, the pause, the player,
  *   the game calls, the top bar's texts: treasury, manpower, power, stability and the rest), and
  *   after every click it takes it again. A click that changed it, or that left or entered a game,
@@ -58,6 +60,12 @@ const PROVINCES_PER_KIND = 8;
 /** Milliseconds the crawler waits after a step or an Escape, after the frame that follows it. */
 const CRAWL_SETTLE_MS = 350;
 
+/**
+ * Reads of a new signature at most until two in a row agree: a window that fades out (the main
+ * menu's panels as Anbennar's lobby opens) is still visible at the first read.
+ */
+const STABLE_READS = 6;
+
 /** What the survey's crawler may do (`coverage/survey.json`, `crawl`). */
 export interface CrawlRules {
   /** Steps from a view to a view it opens, at most. */
@@ -67,12 +75,72 @@ export interface CrawlRules {
   /** Kinds of province opened in the start state of a save. */
   readonly provinces: readonly ProvinceKind[];
   /** Widget patterns never clicked, with the reason. */
-  readonly never: readonly { readonly pattern: string; readonly reason: string }[];
+  readonly never: readonly CrawlPattern[];
+  /**
+   * Widget patterns of buttons that only open a dialog, the game's confirmation: clicked although
+   * a `never` pattern names them (an idea group's abandon, an army's disband). The click must open
+   * a new top-level window; what the dialog holds keeps to `never`, so it is opened and closed,
+   * never confirmed.
+   */
+  readonly dialogs?: readonly CrawlPattern[];
   /** Minutes of crawling at most per game start. */
   readonly sessionMinutes: number;
 }
 
 export type ProvinceKind = 'own' | 'foreign' | 'uncolonised' | 'wasteland' | 'sea';
+
+export interface CrawlPattern {
+  readonly pattern: string;
+  readonly reason: string;
+}
+
+/** The `never` pattern that keeps the crawler from clicking a widget, unless a `dialogs` one lets it. */
+export function neverClicked(
+  rules: Pick<CrawlRules, 'never' | 'dialogs'>,
+  path: string,
+): CrawlPattern | undefined {
+  const never = rules.never.find((n) => matchesWidgetPattern(n.pattern, path));
+  if (never === undefined) return undefined;
+  return opensDialog(rules, path) ? undefined : never;
+}
+
+/** Whether a `dialogs` pattern names a widget. */
+export function opensDialog(rules: Pick<CrawlRules, 'dialogs'>, path: string): boolean {
+  return (rules.dialogs ?? []).some((d) => matchesWidgetPattern(d.pattern, path));
+}
+
+/** The top-level windows of `signature` that `base` does not show at all. */
+export function newWindows(signature: string, base: string): string[] {
+  const tops = (s: string): Set<string> =>
+    new Set(
+      s
+        .split('\n')
+        .filter((l) => l !== '')
+        .map((l) => l.split('/')[0] ?? l),
+    );
+  const before = tops(base);
+  return [...tops(signature)].filter((top) => !before.has(top));
+}
+
+/**
+ * A signature once it holds: `first` if it is the one expected, else reads again until two reads
+ * in a row agree, at most `max` reads more.
+ */
+export async function stableSignature(
+  first: string,
+  expected: string | undefined,
+  readAgain: () => Promise<string>,
+  max: number = STABLE_READS,
+): Promise<string> {
+  if (first === expected) return first;
+  let last = first;
+  for (let i = 0; i < max; i++) {
+    const now = await readAgain();
+    if (now === last) return now;
+    last = now;
+  }
+  return last;
+}
 
 /**
  * Why a view did not come back by its steps when they ran but showed another view: the game
@@ -268,20 +336,27 @@ export async function crawlGame(
   }
   await save(crawl);
 
-  /** Rests the pointer, lets the game draw, and reads the signature. */
-  const settle = async (): Promise<string> => {
+  /**
+   * Rests the pointer, lets the game draw, and reads the signature; one that is not `expected` is
+   * read again until it holds.
+   */
+  const settle = async (expected?: string): Promise<string> => {
     const away = await awayPoint(ctx, window);
     await ctx.tongs.call(`move ${String(away.x)} ${String(away.y)}`);
     await ctx.sleep(timing.stepSettleMs);
     await frame(ctx);
-    return signature(ctx.tongs);
+    return stableSignature(await signature(ctx.tongs), expected, async () => {
+      await ctx.sleep(timing.stepSettleMs);
+      await frame(ctx);
+      return signature(ctx.tongs);
+    });
   };
 
   /** To a state from wherever the game is; `false` when its steps lead elsewhere. */
   const goTo = async (state: CrawlState): Promise<boolean> => {
     await holdCursor(ctx, window);
     await backToStart(ctx, timing);
-    if ((await settle()) !== base) {
+    if ((await settle(base)) !== base) {
       throw new ViewFailure(
         'Escape brought back the start windows, but not the start state.',
         true,
@@ -304,7 +379,7 @@ export async function crawlGame(
       await frame(ctx);
       await ctx.sleep(timing.stepSettleMs);
     }
-    const now = await settle();
+    const now = await settle(state.signature);
     if (now !== state.signature) {
       state.unreproducible = LED_ELSEWHERE;
       ctx.log({ unreproducible: state.id, now });
@@ -336,8 +411,14 @@ export async function crawlGame(
         const step = candidateStep(candidate);
         const answer = await ctx.tongs.call(stepCommand(step, window));
         await frame(ctx);
-        const now = await settle();
-        const change = await changeOf(ctx, fingerprint);
+        const now = await settle(state.signature);
+        const change =
+          (await changeOf(ctx, fingerprint)) ??
+          ('click' in step &&
+          opensDialog(rules, step.click) &&
+          newWindows(now, state.signature).length === 0
+            ? 'A dialogs pattern names the click, but it opened no new window.'
+            : undefined);
         if (change !== undefined) {
           crawl.tried[candidate] = { kind: 'state-changed', change };
           ctx.log({ candidate, stateChanged: change });
@@ -471,7 +552,7 @@ async function candidatesOf(
     for (const match of (answer['matches'] ?? []) as TongsAnswer[]) {
       const path = String(match['path']);
       if (match['enabled'] === false || TRANSIENT_WINDOWS.test(path) || laterRow(path)) continue;
-      const never = rules.never.find((n) => matchesWidgetPattern(n.pattern, path));
+      const never = neverClicked(rules, path);
       if (never !== undefined) {
         crawl.skipped[never.pattern] = (crawl.skipped[never.pattern] ?? 0) + 1;
         continue;
