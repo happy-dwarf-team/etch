@@ -13,7 +13,13 @@ specification.
 
 ## Not in v2
 
-From section 16 of the v2 specification, with v1's entries that v2 did not take:
+From section 16 of the v2 specification, with v1's entries that v2 did not take.
+Split on 9 November 2026 (eu4-engine-lab#17, Q7; the v3 draft, [v3.md](v3.md)
+section 8): **in v3** the profiles for more windows and for Anbennar's own
+countries; **later** the profile skeleton, the headless mode for CI and more in a
+live snapshot; **not planned** a UI scale other than 1.0, editing in the preview,
+ironman saves, faithful offline rendering and checking 3840×2160; the media
+refresh is a step of the 3.0.0 release.
 
 - **Editing in the preview** (drag, an attribute panel writing back to `.gui`).
 - **Headless mode for CI:** diagnostics and precision checks without VS Code.
