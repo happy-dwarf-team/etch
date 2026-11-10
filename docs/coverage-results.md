@@ -267,13 +267,17 @@ Tongs 0.23.0, 1920×1080, measured on `main` (`4922d56`):
 | Anbennar, the lobby's options | 50/53 | 118/122 | 75/122 | 94/96 | 123/123 |
 | Anbennar, the nation designer | 22/22 | 56/57 | 22/57 | 56/57 | 57/57 |
 | vanilla, abandoning an idea group (`DefaultConfirm`) | 36/37 | 207/208 | 205/208 | 182/183 | 208/208 |
+| Anbennar, disbanding a unit (`DefaultConfirm`) | 31/32 | 311/313 | 268/313 | 276/278 | 314/314 |
+| Anbennar, disbanding from the reorganisation (`DefaultConfirm`) | 48/49 | 338/339 | 338/339 | — | 340/340 |
 
 What the lobby's views fail is the lobby's own: the rects of `scenario_description` and the two
 `shield_thin_glow`, and `datewidget` and `random_new_world_button`, which the preview draws and
 the game hides; behind it, the settings' audio and controls tabs, the find box's `goto`, and
 the options' multiplayer and custom setup tabs, drawn and hidden by the game the same way. The
-confirmation fails only its `Description`'s rect, a text the game's code sizes. Not captured in
-time: the country shield behind the lobby, and Anbennar's disband confirmations.
+confirmation fails only its `Description`'s rect, a text the game's code sizes, on all three; the
+rest is the unit panel's (`enable_rebel_button_glow`, `mission_icon`, `reorg_window/naval_window`).
+No click of these changed the game, and their `AgreeButton` was never clicked. Not captured: the
+country shield behind the lobby, whose recipe failed after the view before it.
 <!-- other countries: end -->
 
 ## What differs
