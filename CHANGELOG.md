@@ -5,14 +5,13 @@
 
 ### Features
 
-* **extension:** compare with live game ([#348](https://github.com/happy-dwarf-team/etch/issues/348)) ([573f140](https://github.com/happy-dwarf-team/etch/commit/573f14052febe4259d0fd7870e8dfca8c8af1614))
+* **extension:** **Compare with Live Game**. With the live game showing a window of your mod, run **Etch: Compare with Live Game** (or the button in the live layer of `Data ▾`). Etch lays the window out as the preview draws it without a game, with the game's texts and the window profile's selectors set to what the game shows, and lists in Problems, at Information, every widget the preview places or shows otherwise than the game: in another place, only in the game or only in the preview, shown by one and hidden by the other. It compares only a snapshot of the file as it is saved now (a fresh one when the game shows the window, else the stored one), and otherwise says what to do. **Report to Etch** on an entry shows what it would send (the widget's path, the kind of difference, both rectangles, the visibility, the resolution and the versions; nothing of your mod's files or texts) and then opens a filled-in issue in your browser for you to send; Etch sends nothing by itself. For a window Etch has no profile of, what the game hides is one entry, with **Save as view** (a view of your mod's own profile that hides it) and **Open profile**. A window's entries go when you compare it again or change its file ([#348](https://github.com/happy-dwarf-team/etch/issues/348)) ([573f140](https://github.com/happy-dwarf-team/etch/commit/573f14052febe4259d0fd7870e8dfca8c8af1614))
 
 
 ### Bug Fixes
 
-* **core:** the survey crawler reads a new view until it holds and opens confirmation dialogs ([4922d56](https://github.com/happy-dwarf-team/etch/commit/4922d56a1da330f5fe3849eb6c7b5f69d93b3dcd))
-* **corpus:** the survey crawler reads a new view until it holds and opens confirmation dialogs ([#352](https://github.com/happy-dwarf-team/etch/issues/352)) ([4922d56](https://github.com/happy-dwarf-team/etch/commit/4922d56a1da330f5fe3849eb6c7b5f69d93b3dcd))
-* **profiles:** anbennar's religion and court views on a country of its own ([#349](https://github.com/happy-dwarf-team/etch/issues/349)) ([7c79b62](https://github.com/happy-dwarf-team/etch/commit/7c79b6221c7f1d347d0333fc2340bc5f2ab4db6e))
+* **corpus:** the coverage survey's crawler reaches what it missed: Anbennar's single-player lobby and what lies behind it (the lobby was read while the main menu still faded out), and the confirmation an idea group's abandon or a unit's disband opens, which it opens and closes, never confirms. Survey tooling only; the extension does not change ([#352](https://github.com/happy-dwarf-team/etch/issues/352)) ([4922d56](https://github.com/happy-dwarf-team/etch/commit/4922d56a1da330f5fe3849eb6c7b5f69d93b3dcd))
+* **profiles:** Anbennar's religion and court views have selectors under **View ▾** for what differs between Anbennar's countries: the religion's panel, the personal deity, the province list, full unity, the deity selection, and an elective court with no heir. A live snapshot sets them to what the game shows. On Bluescale, a country no rule was drafted from, the two views now differ from the game in 1 widget instead of 12 ([#349](https://github.com/happy-dwarf-team/etch/issues/349)) ([7c79b62](https://github.com/happy-dwarf-team/etch/commit/7c79b6221c7f1d347d0333fc2340bc5f2ab4db6e))
 
 ## [2.6.0](https://github.com/happy-dwarf-team/etch/compare/v2.5.4...v2.6.0) (2026-11-09)
 
