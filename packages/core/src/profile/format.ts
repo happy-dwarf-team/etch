@@ -223,6 +223,18 @@ export interface Placement {
   readonly start: PlacePoint;
   readonly step?: PlacePoint;
   readonly columns?: number | string;
+  /**
+   * Entries along a bar of the window instead of `step` apart: the n-th at the share `at[n]` of the
+   * bar's width, from `start` (0, 0 by default) and the template's own position. The game's code
+   * computes the offset in its fixed point (`CProfessionalismMarker`, eu4.exe 1.37.5 `0xFAC8B0`):
+   * the share in thousandths, cut, times the width, cut to whole pixels. `sprites`, when given,
+   * are the entries' sprites in place of the template's, as the game gives each marker its own.
+   */
+  readonly along?: {
+    readonly bar: string;
+    readonly at: readonly number[];
+    readonly sprites?: readonly string[];
+  };
 }
 
 /**

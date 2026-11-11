@@ -158,6 +158,8 @@ export interface SampleData {
   adopted(widget: Widget, row?: number): readonly LiveAdopted[];
   /** The text the game's code sizes a text box by first (a content's `sizedBy`), localised. */
   sizedBy(widget: Widget): string | undefined;
+  /** The sprite the game's code gives a repeater's entry `row` (its `place.along.sprites`). */
+  sprite?(widget: Widget, row?: number): string | undefined;
   /** How many texts each layer fills, of the widgets the view draws. */
   readonly counts: Readonly<Record<DataLayer, number>>;
   /** The window's repeaters whose template the playset defines. */
@@ -205,6 +207,7 @@ export function sampleData(
   const rowTexts = new Map<Widget, Map<Widget, SampleText>[]>();
   const rowStates = new Map<Widget, Map<Widget, LiveState>[]>();
   const lists: SampleList[] = [];
+  const entrySprites = new Map<Widget, readonly string[]>();
   for (const repeater of profile.repeaters) {
     const template = input.template?.(repeater.template);
     if (template === undefined) continue;
@@ -246,6 +249,8 @@ export function sampleData(
       layer,
       drawn: found.some(drawn),
     });
+    const sprites = repeater.place?.along?.sprites;
+    if (sprites !== undefined) entrySprites.set(template.widget, sprites);
     for (const list of found) {
       rows.set(list, {
         template: template.widget,
@@ -332,6 +337,7 @@ export function sampleData(
       return (view?.widgets.get(widget)?.adopted ?? []).map((name) => ({ name }));
     },
     sizedBy: (widget) => sizers.get(widget),
+    sprite: (widget, row) => (row === undefined ? undefined : entrySprites.get(widget)?.[row]),
     counts,
     lists,
   };
@@ -506,5 +512,6 @@ export function layoutContentOf(sample: SampleData): LayoutContent {
     state: (widget, row) => sample.state(widget, row),
     adopted: (widget, row) => sample.adopted(widget, row),
     sizedBy: (widget) => sample.sizedBy(widget),
+    sprite: (widget, row) => sample.sprite?.(widget, row),
   };
 }

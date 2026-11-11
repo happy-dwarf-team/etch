@@ -441,7 +441,7 @@ function readRepeater(
 
 /** A repeater's `place`: points and columns as pixels or `positionType` names. */
 function readPlacement(node: JsonNode): Placement {
-  const props = object(node, '"place"', ['start', 'step', 'columns']);
+  const props = object(node, '"place"', ['start', 'step', 'columns', 'along']);
   const point = (value: JsonNode, what: string): PlacePoint => {
     if (value.kind === 'string') return value.value;
     const xy = object(value, `"${what}" of "place"`, ['x', 'y']);
@@ -457,8 +457,50 @@ function readPlacement(node: JsonNode): Placement {
     return { x: whole(xy.get('x')), y: whole(xy.get('y')) };
   };
   const startNode = props.get('start');
-  if (startNode === undefined) {
-    throw new Faulty('"place" names the "start" of the first entry.', node);
+  const alongNode = props.get('along');
+  if (startNode === undefined && alongNode === undefined) {
+    throw new Faulty(
+      '"place" names the "start" of the first entry, or a bar to put them "along".',
+      node,
+    );
+  }
+  let along: Placement['along'];
+  if (alongNode !== undefined) {
+    const alongProps = object(alongNode, '"along" of "place"', ['bar', 'at', 'sprites']);
+    const barNode = alongProps.get('bar');
+    const atNode = alongProps.get('at');
+    const spritesNode = alongProps.get('sprites');
+    if (barNode === undefined || atNode === undefined) {
+      throw new Faulty(
+        '"along" names the "bar" and the shares of its width "at" which the entries go.',
+        alongNode,
+      );
+    }
+    if (
+      atNode.kind !== 'array' ||
+      atNode.items.length === 0 ||
+      atNode.items.some((n) => n.kind !== 'number' || n.value < 0 || n.value > 1)
+    ) {
+      throw new Faulty('"at" of "along" is an array of shares of the bar, from 0 to 1.', atNode);
+    }
+    if (
+      spritesNode !== undefined &&
+      (spritesNode.kind !== 'array' ||
+        spritesNode.items.length !== atNode.items.length ||
+        spritesNode.items.some((n) => n.kind !== 'string'))
+    ) {
+      throw new Faulty(
+        '"sprites" of "along" names one sprite for each share of "at".',
+        spritesNode,
+      );
+    }
+    along = {
+      bar: text$(barNode, '"bar"'),
+      at: atNode.items.map((n) => (n.kind === 'number' ? n.value : 0)),
+      ...(spritesNode?.kind === 'array'
+        ? { sprites: spritesNode.items.map((n) => (n.kind === 'string' ? n.value : '')) }
+        : {}),
+    };
   }
   const stepNode = props.get('step');
   const columnsNode = props.get('columns');
@@ -479,9 +521,10 @@ function readPlacement(node: JsonNode): Placement {
     }
   }
   return {
-    start: point(startNode, 'start'),
+    start: startNode === undefined ? { x: 0, y: 0 } : point(startNode, 'start'),
     ...(stepNode === undefined ? {} : { step: point(stepNode, 'step') }),
     ...(columns === undefined ? {} : { columns }),
+    ...(along === undefined ? {} : { along }),
   };
 }
 

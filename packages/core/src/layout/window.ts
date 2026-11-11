@@ -139,6 +139,7 @@ export interface LayoutContent {
           readonly start: { readonly x: number; readonly y: number } | string;
           readonly step?: { readonly x: number; readonly y: number } | string;
           readonly columns?: number | string;
+          readonly along?: { readonly bar: string; readonly at: readonly number[] };
         };
       }
     | undefined;
@@ -549,15 +550,31 @@ class Layout {
     const step = point(place.step) ?? { x: size.width, y: size.height };
     const columns =
       typeof place.columns === 'string' ? point(place.columns)?.x : (place.columns ?? undefined);
+    // Along a bar: its width as laid out, the bar being a child of the window placed before.
+    const along = place.along;
+    const bar =
+      along === undefined
+        ? undefined
+        : this.widgets.find(
+            (w) => w.parent === index && w.widget.name?.toLowerCase() === along.bar.toLowerCase(),
+          );
+    if (along !== undefined && bar === undefined) return;
     const outer = { constants: this.constants, row: this.row };
     this.constants = rows.file.constants;
     for (let row = 0; row < rows.count; row++) {
       this.row = row;
       const across = columns === undefined || columns < 1 ? row : row % columns;
       const down = columns === undefined || columns < 1 ? row : Math.floor(row / columns);
+      const share = along?.at[row];
+      if (along !== undefined && share === undefined) break;
       const box: Rect = {
-        x: rect.x + start.x + across * step.x,
-        y: rect.y + start.y + down * step.y,
+        x:
+          rect.x +
+          start.x +
+          (share === undefined || bar === undefined
+            ? across * step.x
+            : alongOffset(share, Math.round(bar.width))),
+        y: rect.y + start.y + (share === undefined ? down * step.y : 0),
         width: size.width,
         height: size.height,
       };
@@ -1558,4 +1575,17 @@ function hasAlpha(font: FontDefinition): boolean {
 
 function capitalise(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+/**
+ * An entry's offset along a bar `width` pixels wide at `share` of it, as
+ * `CProfessionalismMarker`'s constructor computes it (eu4.exe 1.37.5 `0xFAC8B0`): the share in the
+ * game's fixed point (1/32768, as a script's `0.2` reads), in thousandths cut, times the width
+ * in thousandths, cut to whole pixels. A bar of 483 px puts 0.2 … 1.0 at 96, 192, 289, 385 and
+ * 483, as the coverage survey's captures show.
+ */
+export function alongOffset(share: number, width: number): number {
+  const fixed = Math.round(share * 32768);
+  const thousandths = Math.trunc((fixed * 1000) / 32768);
+  return Math.trunc((thousandths * width) / 1000);
 }

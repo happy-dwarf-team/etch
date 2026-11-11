@@ -22,6 +22,7 @@ import {
   type SampleInput,
 } from '../src/profile/index.ts';
 import { InterfaceIndex } from '../src/model/interface-index.ts';
+import { alongOffset } from '../src/layout/window.ts';
 import { profileVisibility, type CapturedWidget } from '../src/corpus/index.ts';
 
 const FILE = readGuiFile(
@@ -1037,6 +1038,64 @@ describe('the province modifiers (the coverage survey)', () => {
   it('places them from the left of the colonisation panel', () => {
     expect(xs('colonisationpanel', 1)).toEqual([187]);
     expect(xs('colonisationpanel', 3)).toEqual([187, 220, 253]);
+  });
+});
+
+describe("the military tab's professionalism markers (the coverage survey)", () => {
+  const file = readGuiFile(
+    parseScript(`guiTypes = {
+  windowType = {
+    name = "countrymilitaryview"
+    size = { x = 1024 y = 600 }
+    windowType = {
+      name = "army_professionalism"
+      position = { x = 32 y = 96 }
+      size = { x = 280 y = 16 }
+      windowType = { name = "army_professionalism_progress" position = { x = 16 y = 4 } size = { x = 483 y = 12 } }
+    }
+  }
+  iconType = { name = "professionalism_marker_template" position = { x = 5 y = -1 } }
+}`),
+  );
+  const window = file.definitions[0] as Widget;
+  const template = file.definitions[1] as Widget;
+
+  it('puts one at each level along the bar, as the game cuts its fixed point', () => {
+    expect([0.2, 0.4, 0.6, 0.8, 1.0].map((share) => alongOffset(share, 483))).toEqual([
+      96, 192, 289, 385, 483,
+    ]);
+    const { file: written, diagnostics } = readProfile(
+      readFileSync(
+        new URL('../../../profiles/vanilla/countrymilitaryview.jsonc', import.meta.url),
+        'utf8',
+      ),
+      { layer: 0, source: 'vanilla', file: 'countrymilitaryview.jsonc' },
+    );
+    expect(diagnostics).toEqual([]);
+    const profile = layerProfiles('countrymilitaryview', written === undefined ? [] : [written]);
+    const view = evaluateView(profile, window, LARGE, {});
+    const sample = sampleData(profile, window, view, {
+      localise: () => undefined,
+      length: 'typical',
+      template: (name) =>
+        name === 'professionalism_marker_template' ? { widget: template, file } : undefined,
+    });
+    expect(sample.sprite?.(template, 0)).toBe('GFX_pa_rank_1');
+    expect(sample.sprite?.(template, 4)).toBe('GFX_pa_rank_5');
+    const layout = layoutWindow(window, {
+      file,
+      index: InterfaceIndex.of([], [{ path: 'interface/countrymilitaryview.gui', file }]),
+      exists: () => false,
+      assets: { textureSize: () => undefined, font: () => undefined },
+      screen: LARGE,
+      view: layoutViewOf(view),
+      content: layoutContentOf(sample),
+    });
+    const top = layout.widgets.find((w) => w.widget.name === 'army_professionalism');
+    const markers = layout.widgets.filter((w) => w.widget === template);
+    // The survey's captures at 1920x1080: 133, 229, 326, 422 and 520 with the window at 32.
+    expect(markers.map((m) => m.x - (top?.x ?? 0))).toEqual([101, 197, 294, 390, 488]);
+    expect(markers.map((m) => m.y - (top?.y ?? 0))).toEqual([-1, -1, -1, -1, -1]);
   });
 });
 

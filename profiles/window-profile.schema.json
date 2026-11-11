@@ -399,7 +399,7 @@
         "place": {
           "description": "For a window the game's code puts entries in, or a list box whose first rows have another template: the first entry's start, the step to the next (the template's size by default) and, with columns, how many to a row; each a positionType of the window's file, which the game reads, or pixels.",
           "type": "object",
-          "required": ["start"],
+          "anyOf": [{ "required": ["start"] }, { "required": ["along"] }],
           "additionalProperties": false,
           "properties": {
             "start": { "$ref": "#/definitions/placePoint" },
@@ -409,6 +409,28 @@
                 { "type": "integer", "minimum": 1 },
                 { "description": "A positionType whose x is the number.", "type": "string" }
               ]
+            },
+            "along": {
+              "description": "Entries along a bar of the window, as the game's code puts the military tab's professionalism markers: the n-th at the n-th share of the bar's width, from the start (0, 0 by default) and the template's own position.",
+              "type": "object",
+              "required": ["bar", "at"],
+              "additionalProperties": false,
+              "properties": {
+                "bar": {
+                  "description": "The bar's name, a child of the window.",
+                  "type": "string"
+                },
+                "at": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": { "type": "number", "minimum": 0, "maximum": 1 }
+                },
+                "sprites": {
+                  "description": "The entries' sprites in place of the template's, one for each share of at.",
+                  "type": "array",
+                  "items": { "type": "string" }
+                }
+              }
             }
           }
         },
