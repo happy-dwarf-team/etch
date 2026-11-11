@@ -35,6 +35,7 @@ describe('small rules of the HUD and the country tabs', () => {
       ['minimap_panel', 'mapModeList', ['mapmode_list_window', 'closebutton']],
       ['countrytechnologyview', 'institutions', ['institutions_window']],
       ['countrystabilityview', 'handleRebels', ['cv_governmentrebels_handlerebels']],
+      ['countryeconomyview', 'loanList', ['countryeconomyview_repayloan']],
     ];
     for (const [window, selector, names] of cases) {
       expect(drawn(window, names, { [selector]: 'closed' })).toEqual([]);
