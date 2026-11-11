@@ -1,5 +1,46 @@
 # Changelog
 
+## [2.8.0](https://github.com/happy-dwarf-team/etch/compare/v2.7.0...v2.8.0) (2026-11-11)
+
+
+### Features
+
+* **profiles:** a generated whole number, for the fort's level and the military technology ([#362](https://github.com/happy-dwarf-team/etch/issues/362)) ([83f5481](https://github.com/happy-dwarf-team/etch/commit/83f548128c41cb0797e8e392554ceaf624a71453))
+* **profiles:** a rule's sprite, for the religion view's standard background ([#374](https://github.com/happy-dwarf-team/etch/issues/374)) ([f8d169c](https://github.com/happy-dwarf-team/etch/commit/f8d169ca59563ef6b5b32bea0f8925fde7b97c97))
+* **profiles:** repeater entries along a bar, for the military tab's professionalism markers ([#357](https://github.com/happy-dwarf-team/etch/issues/357)) ([1181976](https://github.com/happy-dwarf-team/etch/commit/11819764c90a767cbe4895a3fcd07e816f781832))
+
+
+### Bug Fixes
+
+* **core:** a positionType inside a window is no widget ([#366](https://github.com/happy-dwarf-team/etch/issues/366)) ([abbb36d](https://github.com/happy-dwarf-team/etch/commit/abbb36de13bd9844ef7ca306d5d837f6e94ed6ec))
+* **core:** the lobby's shield glows stand on their shields ([#376](https://github.com/happy-dwarf-team/etch/issues/376)) ([6d6c07f](https://github.com/happy-dwarf-team/etch/commit/6d6c07f4a5de7ffc40ec4e114c21f188644bf384))
+* **corpus:** a root instance the game hides keeps its own empty layout ([#378](https://github.com/happy-dwarf-team/etch/issues/378)) ([91430f5](https://github.com/happy-dwarf-team/etch/commit/91430f594c29b986ecb5daa4ce26d0d6e14e1c32))
+* **corpus:** count the texts of adopted copies the live preview draws ([#377](https://github.com/happy-dwarf-team/etch/issues/377)) ([8ad0c1e](https://github.com/happy-dwarf-team/etch/commit/8ad0c1ecd90ab93f65ee97689ef6499751ccb0f2))
+* **corpus:** the survey leaves out the rows of a closed list ([#379](https://github.com/happy-dwarf-team/etch/issues/379)) ([02c0e59](https://github.com/happy-dwarf-team/etch/commit/02c0e59e0a481763b0880e0082eb3dc2925dbd97))
+* **profiles:** a profile of the trade tab ([#373](https://github.com/happy-dwarf-team/etch/issues/373)) ([0068d91](https://github.com/happy-dwarf-team/etch/commit/0068d914bc9493fd8f241643ba4b4056f0c6b6e5))
+* **profiles:** Anbennar hides the speed controls' achievements button ([eeeaed5](https://github.com/happy-dwarf-team/etch/commit/eeeaed55db6ec84f6893bc6be4d2542774414497))
+* **profiles:** Anbennar's estates view leaves the crown land and agenda to the base game's selectors ([cf74279](https://github.com/happy-dwarf-team/etch/commit/cf742790dafd6cce628eb35a758457177b0a0489))
+* **profiles:** Anbennar's lobby hides the date picker and the random New World button ([2644113](https://github.com/happy-dwarf-team/etch/commit/26441131b7723fa2ae1020c596c8d7d44318a80c))
+* **profiles:** heir, Empire, mage and unit choice rules from the Anbennar coverage refresh ([#356](https://github.com/happy-dwarf-team/etch/issues/356)) ([2a653e4](https://github.com/happy-dwarf-team/etch/commit/2a653e4e20921d0ce96ad2203d4b60c7f46d9c3c))
+* **profiles:** hide the date picker and the random New World button in Anbennar's lobby ([#360](https://github.com/happy-dwarf-team/etch/issues/360)) ([2644113](https://github.com/happy-dwarf-team/etch/commit/26441131b7723fa2ae1020c596c8d7d44318a80c))
+* **profiles:** leave Anbennar's crown land and agenda to the base game's selectors ([#369](https://github.com/happy-dwarf-team/etch/issues/369)) ([cf74279](https://github.com/happy-dwarf-team/etch/commit/cf742790dafd6cce628eb35a758457177b0a0489))
+* **profiles:** the ages view's picture is the current age's ([#375](https://github.com/happy-dwarf-team/etch/issues/375)) ([78c212c](https://github.com/happy-dwarf-team/etch/commit/78c212c476f7748a13cacf16fb804bd52f1a4c6b))
+* **profiles:** the country view's tabs under a choice, and the reorganization window's half ([#381](https://github.com/happy-dwarf-team/etch/issues/381)) ([950282d](https://github.com/happy-dwarf-team/etch/commit/950282d7f9736478d3945f652d9579bdc2640f47))
+* **profiles:** the decisions, ideas and government tabs' sub-screens ([#361](https://github.com/happy-dwarf-team/etch/issues/361)) ([25e4c30](https://github.com/happy-dwarf-team/etch/commit/25e4c304bc0687fd38e335f53b7f7298dab61730))
+* **profiles:** the diplomacy view's elective heir, rivals and Anbennar's shield glow ([#370](https://github.com/happy-dwarf-team/etch/issues/370)) ([b2cef4f](https://github.com/happy-dwarf-team/etch/commit/b2cef4f824ccd1f07881bb2be4086895e11313ba))
+* **profiles:** the economy tab's numbers, for a profile of its own ([#363](https://github.com/happy-dwarf-team/etch/issues/363)) ([dc31c32](https://github.com/happy-dwarf-team/etch/commit/dc31c32f2ca2fa6046f98518aa54f0adf1a0a25a))
+* **profiles:** the HUD's map mode parts and the tabs' windows that open by a click ([#367](https://github.com/happy-dwarf-team/etch/issues/367)) ([6a03470](https://github.com/happy-dwarf-team/etch/commit/6a03470b8d7f762ae42819d566c1571dd9216c8d))
+* **profiles:** the main menu's settings show one page at a time ([#364](https://github.com/happy-dwarf-team/etch/issues/364)) ([718b9ab](https://github.com/happy-dwarf-team/etch/commit/718b9ab4b6c5cd232ef248046b71f7df0dd1f08d))
+* **profiles:** the military tab moves by 19 px in Proper 2K UI Enhanced ([#384](https://github.com/happy-dwarf-team/etch/issues/384)) ([3dbf92b](https://github.com/happy-dwarf-team/etch/commit/3dbf92b95e1dc015faab30080562e353e267bd72))
+* **profiles:** the precision corpus's Anbennar captures predicted again ([#383](https://github.com/happy-dwarf-team/etch/issues/383)) ([b97f1fe](https://github.com/happy-dwarf-team/etch/commit/b97f1fee9fa1f72d64d6b31d500921a2c28b5a27))
+* **profiles:** the province view's state tab keeps the province window shown ([#355](https://github.com/happy-dwarf-team/etch/issues/355)) ([685a589](https://github.com/happy-dwarf-team/etch/commit/685a5893ae1adaa4f9b8015fc8f5e5013afe047f))
+* **profiles:** the religion view's selection screens cover the missionaries ([#359](https://github.com/happy-dwarf-team/etch/issues/359)) ([ba721e1](https://github.com/happy-dwarf-team/etch/commit/ba721e177d38e0837a635c3ee182cb3ae3ff15ee))
+* **profiles:** the speed controls' achievements button hidden in Anbennar ([#382](https://github.com/happy-dwarf-team/etch/issues/382)) ([eeeaed5](https://github.com/happy-dwarf-team/etch/commit/eeeaed55db6ec84f6893bc6be4d2542774414497))
+* **profiles:** the state tab hides the side panels' button and a territory's parts ([#372](https://github.com/happy-dwarf-team/etch/issues/372)) ([c4be378](https://github.com/happy-dwarf-team/etch/commit/c4be37821ac8df91d8a863004eb0594d72b6aa3f))
+* **profiles:** the top bar's other legitimacies and Anbennar's player shield glow ([#371](https://github.com/happy-dwarf-team/etch/issues/371)) ([d81f2e9](https://github.com/happy-dwarf-team/etch/commit/d81f2e9d4665942a4400785a26e8041041e1f5fe))
+* **profiles:** the top bar's other legitimacies hide legitimacy, and Anbennar's player shield glow ([d81f2e9](https://github.com/happy-dwarf-team/etch/commit/d81f2e9d4665942a4400785a26e8041041e1f5fe))
+* **profiles:** the unit panel's rebel suppression ([#365](https://github.com/happy-dwarf-team/etch/issues/365)) ([2d0810f](https://github.com/happy-dwarf-team/etch/commit/2d0810f9c9968c61ace0386e85abdb2043be211e))
+
 ## [2.7.0](https://github.com/happy-dwarf-team/etch/compare/v2.6.0...v2.7.0) (2026-11-10)
 
 
