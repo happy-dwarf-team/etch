@@ -394,14 +394,22 @@ Verne 1920×1080 fresh 97.2 → **99.1 %** (3589 of 3618), Verne 1280×720 fresh
 of 2830), Kobildzan 95.8 → **98.9 %**, vanilla 1920×1080 on the survey 97.2 → 98.5 %; visibility gains
 0.2 to 0.4 points on the same sets.
 
-Three more rules followed: etch#381 hides the country view's tabs while the idea group choice or the
-new policy window is open (vanilla and Anbennar alike), and the reorganization window's fleet half
-while it reorganizes armies; etch#382 hides the speed controls' achievements button in Anbennar's
-layer, which every Anbennar capture shows hidden and every other playset's shown. On the fresh
-captures of Verne the offline preview then gets 33 of the 58 views fully right at 1920×1080 and
-30 of the 50 at 1280×720.
+More rules followed: etch#381 hides the country view's tabs while the idea group choice or the new
+policy window is open (vanilla and Anbennar alike), and the reorganization window's fleet half while
+it reorganizes armies. On the fresh captures of Verne the offline preview then gets 33 of the 58 views
+fully right at 1920×1080 and 30 of the 50 at 1280×720.
 
-What is left on Verne at 1920×1080 (29 rects and 54 visibility failures offline, and 18 widgets only the game has): 33 are the province view's building slots, where Tongs
+**The precision corpus as a check.** `profiles.playsets.test.ts`, which predicts every corpus
+capture's visibility from the shipped profiles and runs only where the game is installed, passed
+before this run and failed after it: the corpus's Verne of 1444 is an Empire member that can choose
+rivals, its crown land has no effect, its speed controls show the achievements button, and P2KE
+Patch - Anbennar's lobby shows the random New World button. The survey's defaults had taken the
+other case. etch#383 sets those selectors for the corpus's Anbennar views, gives the patch its own
+lobby rule, and withdraws etch#382 (the achievements button hidden in Anbennar), which the corpus
+contradicts. The test passes again; a fix drawn from the survey needs it run before it
+merges.
+
+What is left on Verne at 1920×1080 (29 rects and 55 visibility failures offline, and 18 widgets only the game has): 33 are the province view's building slots, where Tongs
 reports a built slot as hidden while the screenshot shows it drawn; 24 are the ledger's sort buttons,
 which the game's code places by the columns of the page; the rest are sizes the game's code sets (the
 magic menu's and the dialogs' texts, `dev_share_pie_chart`, the estates' modifier icons, the lobby's
@@ -421,6 +429,14 @@ states of the survey's crawl in 19 starts. 37 of the 38 are states of the old cr
 is the unit panel's disband confirmation (`DefaultConfirm` over `multi_unitpanel` and
 `single_unitpanel`). A full crawl takes about three times as long, and the survey's manifest stays
 that of the old crawl.
+
+**The Anbennar playset at 2560×1440, from the game for the first time.** A third batch took the
+survey's views in the Anbennar playset with Proper 2K UI Enhanced and P2KE Patch - Anbennar at
+2560×1440 (Verne 1444): 58 of the 61 views (`menu-s8` and `s9` as above, and `save-s8`, whose
+outliner options button the recipe could not click). Rules of `6c175a5` against `main`, over the 57
+views that remain without `save-s52`: offline preview rects 87.5 → **98.0 %** (3612 of 3684), visibility 97.3 → 99.3 %, live visibility 99.9 → 100 %; 8 → 20 of the 57 views fully right offline. Most of the rects were one gap: Proper 2K UI
+Enhanced makes `army_professionalism` 19 px high, so the military tab moves down by 19 px, not 16
+(etch#384, a profile layer of its own for the mod).
 <!-- other countries: end -->
 
 ## What differs
