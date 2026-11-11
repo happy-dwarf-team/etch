@@ -31,10 +31,10 @@ const workshop =
 
 const PLAYSETS: Record<string, { mods: string[]; sources: string[] }> = {
   vanilla: { mods: [], sources: ['vanilla'] },
-  'proper-2k-ui-enhanced': { mods: ['3290499798'], sources: ['vanilla'] },
+  'proper-2k-ui-enhanced': { mods: ['3290499798'], sources: ['vanilla', 'proper-2k-ui-enhanced'] },
   anbennar: {
     mods: ['1385440355', '3290499798', '3777997797'],
-    sources: ['vanilla', 'anbennar', 'p2ke-patch-anbennar'],
+    sources: ['vanilla', 'anbennar', 'proper-2k-ui-enhanced', 'p2ke-patch-anbennar'],
   },
   'anbennar-alone': { mods: ['1385440355'], sources: ['vanilla', 'anbennar'] },
 };

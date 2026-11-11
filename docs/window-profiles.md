@@ -23,7 +23,8 @@ Each entry of a profile has a key (its id). A later layer **replaces** a whole e
 rule, change a view of Etch's, or drop a rule that does not fit your mod.
 
 Etch ships profiles (`profiles/<source>/` in the repository) for `provinceview` and for the
-windows of the precision corpus, in vanilla and for Anbennar. A window without a profile is drawn
+windows of the precision corpus, in vanilla and for Anbennar, with a few rules for Proper 2K UI
+Enhanced and P2KE Patch - Anbennar. A window without a profile is drawn
 with every widget, as Etch 1.x drew it. The vanilla `provinceview` profile also names the source
 of each code-filled text (the province's name, development, culture, religion, autonomy,
 garrison, trade goods; the engine's income, supply and modifiers), the great projects list and the
