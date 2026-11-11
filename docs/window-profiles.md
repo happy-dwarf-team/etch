@@ -256,6 +256,24 @@ window's file, which the game itself reads, so every playset's file gives its ow
 },
 ```
 
+With `along`, the entries go along a bar of the window instead: the n-th at the share `at[n]` of
+the bar's width, from the template's own position, as the game puts the military tab's
+professionalism markers (one per level of `common/professionalism`, at its
+`army_professionalism`, which the game cuts to thousandths and the offset to whole pixels).
+`sprites`, one for each share, replace the template's sprite, as each level's `marker_sprite`
+does:
+
+```jsonc
+"countrymilitaryview/army_professionalism": {
+  "template": "professionalism_marker_template",
+  "count": 5,
+  "place": {
+    "along": { "bar": "army_professionalism_progress", "at": [0.2, 0.4, 0.6, 0.8, 1.0],
+      "sprites": ["GFX_pa_rank_1", "GFX_pa_rank_2", "GFX_pa_rank_3", "GFX_pa_rank_4", "GFX_pa_rank_5"] },
+  },
+},
+```
+
 `hide` lists parts of an entry the preview leaves out, by path in the template, the template's name
 first, for what the game shows only in some entries: `"hide":
 ["building_progress_entry/building_status"]`. A live snapshot's state of an entry wins.

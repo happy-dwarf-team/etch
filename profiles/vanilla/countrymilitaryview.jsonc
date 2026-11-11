@@ -27,6 +27,26 @@
       "note": "infantry_type_button, cavalry_type_button and artillery_type_button open domesticpanel_unit_select over the leaders' buttons.",
     },
   },
+  "repeaters": {
+    "countrymilitaryview/army_professionalism": {
+      "note": "The professionalism markers (professionalism_marker_template): one per professionalism level that is not hidden, at its army_professionalism of the bar's width (UpdateArmyProfessionalism, Steam 0xFBC0A0; CProfessionalismMarker, 0xFAC8B0). The base game's levels and Anbennar's: 0.2, 0.4, 0.6, 0.8 and 1.0 (common/professionalism).",
+      "template": "professionalism_marker_template",
+      "count": 5,
+      "place": {
+        "along": {
+          "bar": "army_professionalism_progress",
+          "at": [0.2, 0.4, 0.6, 0.8, 1.0],
+          "sprites": [
+            "GFX_pa_rank_1",
+            "GFX_pa_rank_2",
+            "GFX_pa_rank_3",
+            "GFX_pa_rank_4",
+            "GFX_pa_rank_5",
+          ],
+        },
+      },
+    },
+  },
   "rules": {
     "cradle-moves-the-tab": {
       "note": "army_professionalism is 16 px high: the tab moves down by it, and CoCbackground, the close button and the title stay (UpdateArmyProfessionalism, Steam 0xFBC0A0). Everything else moves with the tab, activate_all, slacken_button and button_makeheirgeneral included (the survey's captures: 667 and 986 at 1080).",

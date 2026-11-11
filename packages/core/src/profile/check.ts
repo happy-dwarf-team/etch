@@ -244,6 +244,20 @@ export function checkProfile(profile: WindowProfile, input: ProfileCheckInput): 
       }
     }
     const place = repeater.place;
+    const bar = place?.along?.bar;
+    if (
+      bar !== undefined &&
+      widgetsAt(input.window, repeater.path.path).length > 0 &&
+      widgetsAt(input.window, `${repeater.path.path}/${bar}`).length === 0
+    ) {
+      error(
+        repeater,
+        'profile-unknown-path',
+        repeater.path.range,
+        `"${repeater.path.path}" has no child "${bar}" for the entries to go along.`,
+      );
+      ok = false;
+    }
     const named = [place?.start, place?.step, place?.columns].filter(
       (v): v is string => typeof v === 'string',
     );
