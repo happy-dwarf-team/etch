@@ -379,6 +379,7 @@
       "note": "The provinces of the state (state_province_entry).",
       "template": "state_province_entry",
       "count": 4,
+      "hide": ["state_province_entry/core_status", "state_province_entry/trade_company_icon"],
       "fields": {
         "state_province_entry/name": { "generated": "text" },
         "state_province_entry/development": { "generated": "number" },
@@ -473,12 +474,21 @@
   },
   "rules": {
     "state-tab": {
-      "note": "The state tab closes the side panels.",
+      "note": "The state tab closes the side panels and hides the button that opens them (the coverage survey's state tab, Anbennar, both resolutions).",
       "when": { "tab": "state" },
       "hide": [
         "provinceview/buildings_window",
         "provinceview/institutions_window",
         "provinceview/history_window",
+        "provinceview/province_window/buildings_button",
+      ],
+    },
+    "a-state": {
+      "note": "A state shows is_state; a territory make_state and is_territory instead. supply_depots shows where the state has a depot. Every state of the coverage survey is a state without a depot; show the others by hand.",
+      "hide": [
+        "provinceview/state_window/make_state",
+        "provinceview/state_window/is_territory",
+        "provinceview/state_window/supply_depots",
       ],
     },
     "own-province": {
