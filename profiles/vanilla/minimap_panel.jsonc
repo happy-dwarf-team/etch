@@ -3,7 +3,20 @@
   "formatVersion": 1,
   "window": "minimap_panel",
   "checkedWith": "1.37.5",
+  "selectors": {
+    "mapModeList": {
+      "kind": "ui",
+      "label": "Map mode list",
+      "values": { "closed": "Closed", "open": "Open" },
+      "default": "closed",
+      "note": "The list of map modes and its close button, opened by a click; closed in the coverage survey's HUD (vanilla and Anbennar).",
+    },
+  },
   "rules": {
+    "map-mode-list-closed": {
+      "when": { "mapModeList": "closed" },
+      "hide": ["minimap_panel/mapmode_list_window", "minimap_panel/closebutton"],
+    },
     "minimap": {
       "note": "minimap_bg and minimap_pic are top-level definitions of menubar.gui; the game shows them in this panel at their own positions (etch#256).",
       "adopt": { "minimap_panel": ["minimap_bg", "minimap_pic"] },
