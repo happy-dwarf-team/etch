@@ -77,6 +77,11 @@ export interface PlanWindow {
    * not-covered shaders; see {@link spriteShaderOf}.
    */
   readonly shaderOf?: (widget: Widget) => string | undefined;
+  /**
+   * The name of the window laid out, for a layout that may be empty: a root the game hides, which a
+   * live preview does not lay out (the main menu's second, hidden `menu_settings`).
+   */
+  readonly root?: string;
 }
 
 export interface CapturePlanInput {
@@ -302,6 +307,12 @@ export function planCapture(input: CapturePlanInput): CapturePlan {
       // A root the game's code creates (the lobby's bookmark shields) has no layout; the view names
       // it code-filled, and it masks what it covers (etch#44).
       if (!view?.codeFilled.some((p) => matchesWidgetPattern(p, root.path))) problems.push(found);
+      addCaptureOnly(root, -1);
+      continue;
+    }
+    // A root its preview does not lay out (the game hides it, and so does the preview): only the
+    // capture has it.
+    if (found.at < 0) {
       addCaptureOnly(root, -1);
       continue;
     }
@@ -958,12 +969,15 @@ function findRoot(
   const [first, ...rest] = steps ?? [];
   if (first === undefined) return `"${path}" is not a widget path.`;
   const named = windows.flatMap((w, i) =>
-    (w.layout.widgets[0]?.widget.name ?? '').toLowerCase() === first.name.toLowerCase() ? [i] : [],
+    (w.root ?? w.layout.widgets[0]?.widget.name ?? '').toLowerCase() === first.name.toLowerCase()
+      ? [i]
+      : [],
   );
   // The n-th root of a name pairs with the n-th layout of it when the caller laid out one for each,
   // as for the menu's bookmark shields (etch#278); otherwise with the only one.
   const window = named[occurrence] ?? named[0] ?? -1;
   if (window < 0) return `The playset defines no window "${first.name}" for the root "${path}".`;
+  if (windows[window]?.layout.widgets.length === 0) return { window, at: -1 };
   let at = 0;
   for (const step of rest) {
     const layout = windows[window]?.layout;

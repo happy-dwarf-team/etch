@@ -315,6 +315,37 @@ describe('planCapture', () => {
     expect(plan.drawList.draws).toEqual([]);
   });
 
+  it('pairs a hidden instance with its own empty layout, not with the next one', () => {
+    const window = laidOut();
+    const shown = captureOf(window.layout);
+    const hidden: CapturedWidget = {
+      path: 'panel[1]',
+      name: 'panel',
+      type: 'window',
+      visible: false,
+      rect: { x: 0, y: 0, w: 10, h: 10 },
+      children: [],
+    };
+    const empty = {
+      ...window,
+      root: 'panel',
+      layout: {
+        ...window.layout,
+        widgets: [],
+        drawList: { ...window.layout.drawList, draws: [] },
+      },
+    };
+    const plan = planCapture({
+      manifest: manifestWith(),
+      record: { ...recordOf(shown), widgets: [hidden, shown] },
+      windows: [empty, { ...window, root: 'panel' }],
+    });
+    expect(plan.problems).toEqual([]);
+    const first = plan.widgets.find((w) => w.path === 'panel[1]');
+    expect(first?.laidOut).toBeUndefined();
+    expect(plan.widgets.find((w) => w.path === 'panel')?.laidOut?.x).toBe(10);
+  });
+
   it('takes a code-filled root the code creates, which no file defines (etch#44)', () => {
     const window = laidOut();
     const shield: CapturedWidget = {
