@@ -10,28 +10,28 @@ have a profile.
 
 | Playset | Resolution | Views | Offline preview: rects | Offline preview: visibility | Outline rects | Outline visibility | Full (outline) | With profiles: rects | With profiles: visibility | Live rects | Live visibility | Full (live) | Live texts | Texts, profiled windows | Pixel pass |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| vanilla | 1280x720 | 36 | 98.8 % | 99.0 % | 75.6 % | 88.2 % | 11 | 98.8 % | 98.9 % | 99.7 % | 99.9 % | 32 | 99.6 % | 99.5 % | 1 of 36 |
-| vanilla | 1920x1080 | 61 | 96.6 % | 98.7 % | 79.5 % | 86.9 % | 22 | 98.5 % | 98.9 % | 99.5 % | 99.9 % | 51 | 99.6 % | 99.5 % | 3 of 61 |
-| anbennar-alone | 1280x720 | 33 | 99.3 % | 99.1 % | 82.6 % | 77.2 % | 14 | 99.4 % | 99.1 % | 99.8 % | 99.9 % | 29 | 99.8 % | 99.8 % | 1 of 33 |
-| anbennar-alone | 1920x1080 | 53 | 97.0 % | 98.9 % | 85.7 % | 75.4 % | 24 | 99.1 % | 99.1 % | 99.6 % | 99.9 % | 45 | 99.6 % | 99.5 % | 3 of 53 |
-| bigger-ui | 1280x720 | 36 | 98.8 % | 99.0 % | 75.6 % | 88.2 % | 11 | 98.8 % | 98.9 % | 99.7 % | 99.9 % | 32 | 99.6 % | 99.5 % | 1 of 36 |
-| bigger-ui | 1920x1080 | 61 | 96.6 % | 98.8 % | 79.5 % | 87.0 % | 22 | 98.5 % | 99.0 % | 99.5 % | 99.9 % | 52 | 99.6 % | 99.5 % | 3 of 61 |
-| proper-2k-ui-enhanced | 2560x1440 | 9 | 94.9 % | 99.3 % | 94.0 % | 76.2 % | 1 | 97.3 % | 99.4 % | 99.7 % | 99.8 % | 6 | 100.0 % | 100.0 % | 0 of 9 |
+| vanilla | 1280x720 | 36 | 98.9 % | 99.0 % | 75.7 % | 88.2 % | 11 | 99.1 % | 99.0 % | 99.7 % | 100.0 % | 34 | 100.0 % | 100.0 % | 1 of 36 |
+| vanilla | 1920x1080 | 60 | 98.5 % | 99.0 % | 81.2 % | 87.1 % | 22 | 98.8 % | 99.0 % | 99.6 % | 99.9 % | 56 | 100.0 % | 100.0 % | 3 of 60 |
+| anbennar-alone | 1280x720 | 33 | 99.5 % | 99.4 % | 82.7 % | 77.2 % | 14 | 99.6 % | 99.4 % | 99.9 % | 100.0 % | 31 | 100.0 % | 100.0 % | 1 of 33 |
+| anbennar-alone | 1920x1080 | 52 | 99.2 % | 99.4 % | 87.6 % | 75.4 % | 24 | 99.4 % | 99.4 % | 99.9 % | 100.0 % | 49 | 100.0 % | 100.0 % | 3 of 52 |
+| bigger-ui | 1280x720 | 36 | 98.9 % | 99.0 % | 75.7 % | 88.2 % | 11 | 99.1 % | 99.0 % | 99.7 % | 100.0 % | 34 | 100.0 % | 100.0 % | 1 of 36 |
+| bigger-ui | 1920x1080 | 60 | 98.6 % | 99.1 % | 81.2 % | 87.2 % | 22 | 98.9 % | 99.1 % | 99.6 % | 100.0 % | 57 | 100.0 % | 100.0 % | 3 of 60 |
+| proper-2k-ui-enhanced | 2560x1440 | 9 | 97.4 % | 99.3 % | 96.6 % | 76.2 % | 1 | 97.3 % | 99.4 % | 99.7 % | 100.0 % | 8 | 100.0 % | 100.0 % | 0 of 9 |
 
 "With profiles and live texts" is the same with the snapshot's texts and list rows as sample
 data: what Compare with Live Game compares (spec/v3.md section 4), through the same functions.
 
 | Playset | Resolution | With profiles and live texts: rects | With profiles and live texts: visibility |
 | --- | --- | --- | --- |
-| vanilla | 1280x720 | 99.2 % | 99.0 % |
-| vanilla | 1920x1080 | 99.1 % | 99.0 % |
-| anbennar-alone | 1280x720 | 99.8 % | 99.0 % |
-| anbennar-alone | 1920x1080 | 99.7 % | 99.1 % |
-| bigger-ui | 1280x720 | 99.2 % | 99.0 % |
-| bigger-ui | 1920x1080 | 99.1 % | 99.1 % |
+| vanilla | 1280x720 | 99.4 % | 99.1 % |
+| vanilla | 1920x1080 | 99.3 % | 99.1 % |
+| anbennar-alone | 1280x720 | 99.9 % | 99.4 % |
+| anbennar-alone | 1920x1080 | 99.8 % | 99.4 % |
+| bigger-ui | 1280x720 | 99.4 % | 99.1 % |
+| bigger-ui | 1920x1080 | 99.3 % | 99.1 % |
 | proper-2k-ui-enhanced | 2560x1440 | 99.7 % | 99.4 % |
 
-Captures the survey's manifest lists but no record has: vanilla 1280x720 26, vanilla 1920x1080 1, anbennar-alone 1280x720 20, bigger-ui 1280x720 26, bigger-ui 1920x1080 1, proper-2k-ui-enhanced 2560x1440 53, anbennar 2560x1440 53. At 1280×720 only the views whose windows have a variant there are captured.
+Captures the survey's manifest lists but no record has: vanilla 1280x720 25, vanilla 1920x1080 1, anbennar-alone 1280x720 19, bigger-ui 1280x720 25, bigger-ui 1920x1080 1, proper-2k-ui-enhanced 2560x1440 52, anbennar 2560x1440 52. At 1280×720 only the views whose windows have a variant there are captured.
 
 <!-- other countries: start -->
 ## Other countries: data the rules were not made from
@@ -299,8 +299,9 @@ what the offline preview gets wrong, and the largest gaps closed. EU4 1.37.5 (`9
 Tongs 0.26.1, 1920×1080, under the lab's game lock, from the manifest of the crawls of 10 November (61
 views of `anbennar-alone`). **The game gives the stored captures again:** on the rules of `6c175a5` the
 fresh captures and the stored ones agree to the widget on every measure (3511/3634 rects and 9796/10094
-visibility offline, 59 views at 1920×1080). Two views did not come back by their recipe in this run
-(`anbennar-alone-save-s13`, `s50`) and the stored set has no 1920×1080 capture of them either.
+visibility offline, 59 views at 1920×1080). The manifest's other two views, the lobby's country shield
+and its options' custom tab (`anbennar-alone-menu-s8`, `s9`), did not come back by their recipe in this
+run either: the main menu's `single_player_button` was not shown when the recipe clicked it.
 
 Verne, 1444, the fresh captures, rules of `6c175a5` against `main` after the fixes below:
 
@@ -318,11 +319,11 @@ from:
 
 | Set | Offline preview: visibility | With profiles: visibility | Offline preview: rects |
 | --- | --- | --- | --- |
-| Anbennar alone, 1280×720, stored, 33 views | 96.6 → 99.1 % | 96.2 → 99.1 % | 99.0 → 99.3 % |
+| Anbennar alone, 1280×720, stored, 33 views | 96.6 → 99.1 % | 96.1 → 99.1 % | 99.0 → 99.3 % |
 | vanilla, 1920×1080, stored, 52 views | 97.9 → 98.7 % | 97.9 → 98.9 % | 96.6 → 96.9 % |
 | vanilla, 1280×720, stored, 32 views | 98.1 → 99.0 % | 97.7 → 98.9 % | 98.8 → 98.9 % |
-| **Bluescale, 1472, unseen** | 96.6 → **98.8 %** | 96.0 → 98.7 % | 98.9 → 99.2 % |
-| **Kobildzan, 1594, unseen** | 96.7 → **98.5 %** | 96.3 → 98.5 % | 95.6 → 95.9 % |
+| **Bluescale, 1472, unseen** | 96.6 → **98.8 %** | 96.0 → 98.7 % | 98.8 → 99.2 % |
+| **Kobildzan, 1594, unseen** | 96.7 → **98.5 %** | 96.3 → 98.5 % | 95.5 → 95.9 % |
 
 No view of any set lost a widget. The two unseen countries are the test of the fixes: the rules carry to
 them as they do to Verne. Most fixes are rules of the base game's profiles, which the same views of
@@ -355,8 +356,87 @@ What is left, Verne 1920×1080, offline preview (111 rects and 100 visibility fa
   `ages_view/picture`, `DefaultConfirm/Description`, the lobby's `scenario_description`, the magic menu's
   and achievements' texts), and the strait and river marks, which the map decides.
 
-Not measured in this run: 1280×720 and pixels from the game again (the 1280×720 figures above are of the
-stored captures), and a new crawl of Anbennar with the current crawler.
+The 1280×720 figures above are of the stored captures; the game's own 1280×720 views and pixels follow
+below.
+
+**After that section** the same run took ten more fixes. Four are rules that no view of Verne fails
+and the unseen countries do: etch#369 (the estates' crown land and agenda in Anbennar), etch#370 (an
+elective heir, rivals and the shield glow in the diplomacy view), etch#371 (the top bar's other
+legitimacies and the player's shield glow), and the empty lists of etch#373's trade tab. Five fix views
+of Verne too: etch#372 (the rest of the state tab), etch#373 (the trade tab's merchant choice), etch#374
+(a rule's `sprite`, for the religion view's background), etch#375 (the ages view's picture) and etch#376
+(the lobby's shield glows on their shields). etch#377 is the measure's own: the live texts of the copies
+the game's code makes from other definitions (the ledger's sort buttons), which the live preview draws
+and the measure missed. **The estates, diplomacy, top bar and trade tab views of Bluescale and Kobildzan
+are no longer unseen after them**; the other fixes were not drawn from them. Rules of `main` with
+etch#377, before against after both passes:
+
+| Set | Offline preview: rects | Offline preview: visibility | With profiles: visibility | Live rects |
+| --- | --- | --- | --- | --- |
+| Verne, 1920×1080, fresh | 96.6 → **97.2 %** (3511 → 3589 of 3689) | 97.0 → **99.1 %** (9796 → 10004 of 10090) | 96.9 → 99.3 % | 99.7 → 99.7 % (3696 → 3699 of 3707) |
+| Verne, 1280×720, stored | 99.0 → 99.5 % | 96.6 → 99.3 % | 96.1 → 99.3 % | 99.8 → 99.9 % |
+| vanilla, 1920×1080, stored | 96.6 → 97.0 % | 97.9 → 98.7 % | 97.9 → 98.9 % | 99.5 → 99.6 % |
+| Bluescale, 1472 | 98.8 → 99.1 % | 96.6 → 99.2 % | 96.0 → 99.1 % | 99.7 → 99.8 % |
+| Kobildzan, 1594 | 95.5 → 95.8 % | 96.7 → 99.0 % | 96.3 → 99.1 % | 99.2 → 99.3 % |
+
+The live texts in profiled windows reach 100 % on every set (Verne 1982 → 1989 of 1989), a measure of
+the 3.0.0 gate (spec/v3.md section 3). On the fresh captures of Verne the offline preview gets 30 of the
+59 views fully right, from 10, and the live preview 53, from 50. Live visibility reaches 100 % (10032 of
+10032) with etch#378's measure fix: the two widgets it missed were the hidden second instance of the
+main menu's settings, which the measure paired with the shown one's layout.
+
+After both passes, 71 of the 100 rects and 27 of the 86 visibility failures left on Verne at
+1920×1080 were `anbennar-alone-save-s52`'s estate rows, which are not a view: after the estates view's
+close button, Tongs still lists its rows as shown top-level windows, and the game draws none of them.
+etch#379 leaves such a state out of the survey's manifest (roots that are all numbered copies), which
+drops `anbennar-alone-save-s52` and vanilla's `save-s73`. Offline preview rects, before → after it:
+Verne 1920×1080 fresh 97.2 → **99.1 %** (3589 of 3618), Verne 1280×720 fresh 97.2 → **99.3 %** (2811
+of 2830), Kobildzan 95.8 → **98.9 %**, vanilla 1920×1080 on the survey 97.2 → 98.5 %; visibility gains
+0.2 to 0.4 points on the same sets.
+
+More rules followed: etch#381 hides the country view's tabs while the idea group choice or the new
+policy window is open (vanilla and Anbennar alike), and the reorganization window's fleet half while
+it reorganizes armies. On the fresh captures of Verne the offline preview then gets 33 of the 58 views
+fully right at 1920×1080 and 30 of the 50 at 1280×720.
+
+**The precision corpus as a check.** `profiles.playsets.test.ts`, which predicts every corpus
+capture's visibility from the shipped profiles and runs only where the game is installed, passed
+before this run and failed after it: the corpus's Verne of 1444 is an Empire member that can choose
+rivals, its crown land has no effect, its speed controls show the achievements button, and P2KE
+Patch - Anbennar's lobby shows the random New World button. The survey's defaults had taken the
+other case. etch#383 sets those selectors for the corpus's Anbennar views, gives the patch its own
+lobby rule, and withdraws etch#382 (the achievements button hidden in Anbennar), which the corpus
+contradicts. The test passes again; a fix drawn from the survey needs it run before it
+merges.
+
+What is left on Verne at 1920×1080 (29 rects and 55 visibility failures offline, and 18 widgets only the game has): 33 are the province view's building slots, where Tongs
+reports a built slot as hidden while the screenshot shows it drawn; 24 are the ledger's sort buttons,
+which the game's code places by the columns of the page; the rest are sizes the game's code sets (the
+magic menu's and the dialogs' texts, `dev_share_pie_chart`, the estates' modifier icons, the lobby's
+`scenario_description`) and the map's strait and river marks.
+
+**1280×720 from the game, and pixels.** The same day's second batch took Anbennar's 1280×720 views
+from the game again: 51 views, 18 of which no run had taken at 1280×720 before (the views of the later
+crawls). On them, rules of `6c175a5` against `main` with etch#378: offline preview rects 96.4 → 97.2 %
+(2811 of 2890), visibility 96.3 → 98.8 % (8018 of 8114), with profiles 96.4 → 99.2 %, live visibility
+99.9 → 100 % (8109 of 8109); 9 → 27 of the 51 views fully right offline. `compare --gpu` over the fresh
+captures of both resolutions (rules of `1181976`): 5 of 110 pass, as the survey's views have no masks
+of what the game fills (see Pixels below).
+
+**A new crawl, in part.** The same batch crawled `anbennar-alone` from the save again with the crawler
+of `main` for the 20 minutes the lock had left: 6 starts, 38 states (16 explored), against the 54
+states of the survey's crawl in 19 starts. 37 of the 38 are states of the old crawl; the one new state
+is the unit panel's disband confirmation (`DefaultConfirm` over `multi_unitpanel` and
+`single_unitpanel`). A full crawl takes about three times as long, and the survey's manifest stays
+that of the old crawl.
+
+**The Anbennar playset at 2560×1440, from the game for the first time.** A third batch took the
+survey's views in the Anbennar playset with Proper 2K UI Enhanced and P2KE Patch - Anbennar at
+2560×1440 (Verne 1444): 58 of the 61 views (`menu-s8` and `s9` as above, and `save-s8`, whose
+outliner options button the recipe could not click). Rules of `6c175a5` against `main`, over the 57
+views that remain without `save-s52`: offline preview rects 87.5 → **98.0 %** (3612 of 3684), visibility 97.3 → 99.3 %, live visibility 99.9 → 100 %; 8 → 20 of the 57 views fully right offline. Most of the rects were one gap: Proper 2K UI
+Enhanced makes `army_professionalism` 19 px high, so the military tab moves down by 19 px, not 16
+(etch#384, a profile layer of its own for the mod).
 <!-- other countries: end -->
 
 ## What differs
@@ -371,27 +451,23 @@ stored captures), and a new crawl of Anbennar with the current crawler.
 | outline rect, guiButtonType: y differ | 52 | 5 | `countrymilitaryview/infantry_type_button` |
 | outline rect, instantTextBoxType: h differ | 33 | 19 | `ages_view/desc` |
 | outline rect, instantTextBoxType: x differ | 22 | 7 | `countrydiplomacyview/label_nation` |
-| outline rect, iconType: x, y, h differ | 21 | 6 | `shield_thin_glow[1]` |
 | outline rect, windowType: y, h differ | 20 | 10 | `provinceview` |
 | outline rect, windowType: y differ | 19 | 9 | `menubar/WarOverviewButtonWindow` |
-| live text not taken (profiled) | 17 | 4 | `countrystabilityview/[46]` |
-| outline rect, instantTextBoxType: x, y differ | 17 | 2 | `waroverview/waroverview_value` |
 | outline rect, iconType: w, h differ | 16 | 5 | `ages_view/picture` |
-| outline rect, iconType: x, y differ | 15 | 3 | `countryreligionview/orthodox_specific_window/current_patriarch_authority` |
 | outline rect, instantTextBoxType: w differ | 12 | 7 | `provinceview/province_window/warscore_value` |
 | outline rect, iconType: x differ | 10 | 5 | `countrystabilityview/stability_progress_threshold` |
 | outline rect, instantTextBoxType: w, h differ | 8 | 5 | `countrydiplomacyview/num_relations_value` |
-| outline rect, windowType: x, y differ | 7 | 2 | `diplomessageicons_window` |
 | live: the game shows it, not drawn (profiled) | 4 | 1 | `peace_view/standardtext_slider/listboxSliderButton` |
-| outline rect, windowType: x, y, w, h differ | 4 | 1 | `estate_item[1]` |
+| outline rect, iconType: x, y differ | 3 | 2 | `countryreligionview/orthodox_specific_window/current_patriarch_authority` |
 | outline rect, iconType: y, w, h differ | 3 | 2 | `countryestatesview/dev_share_pie_chart` |
-| live: drawn, the game hides it (no profile) | 3 | 2 | `menu_settings[1]` |
 | live: no value of selector page fits | 3 | 2 | `menu_settings` |
+| outline rect, windowType: x, y differ | 2 | 1 | `diplomessageicons_window` |
 | outline rect, guiButtonType: w, h differ | 2 | 1 | `minimap_panel/custom_mapmode_7` |
 | outline rect, instantTextBoxType: x, y, h differ | 2 | 1 | `countryreligionview/orthodox_specific_window/current_patriarch_authority_value` |
 | outline rect, iconType: placed outside the screen | 2 | 1 | `countrytechnologyview/institutions_window/country_progress` |
 | live: no value of selector religionPanel fits | 2 | 1 | `countryreligionview` |
 | outline rect, guiButtonType: placed outside the screen | 1 | 1 | `countrytechnologyview/institutions_window/back_button` |
+| outline rect, instantTextBoxType: x, y differ | 1 | 1 | `waroverview/waroverview_value` |
 
 ### anbennar-alone
 
@@ -400,28 +476,20 @@ stored captures), and a new crawl of Anbennar with the current crawler.
 | outline rect, instantTextBoxType: y differ | 195 | 7 | `provinceview/province_window/tax_base_value` |
 | outline rect, iconType: y differ | 96 | 3 | `countrymilitaryview/icon_cost` |
 | outline: the game shows a widget the layout lacks | 84 | 8 | `minimap_panel/minimap_bg` |
-| outline rect, instantTextBoxType: x, y differ | 30 | 1 | `estate_dev_share_item[1]/dev_share_text` |
 | outline rect, instantTextBoxType: h differ | 21 | 10 | `ages_view/desc` |
 | outline rect, guiButtonType: y differ | 19 | 3 | `countrymilitaryview/infantry_type_button` |
 | outline rect, windowType: y differ | 16 | 6 | `menubar/WarOverviewButtonWindow` |
 | outline rect, instantTextBoxType: x differ | 16 | 4 | `countrydiplomacyview/label_nation` |
-| outline rect, iconType: x, y differ | 15 | 1 | `estate_item[1]/icon` |
 | outline rect, windowType: y, h differ | 10 | 5 | `provinceview/province_window` |
 | outline rect, instantTextBoxType: w differ | 10 | 6 | `provinceview/province_window/warscore_value` |
-| live text not taken (profiled) | 9 | 2 | `countrystabilityview/[46]` |
-| outline rect, windowType: x, y, w differ | 6 | 1 | `estate_dev_share_item[1]` |
 | outline rect, instantTextBoxType: w, h differ | 5 | 4 | `countryestatesview/agenda_effects` |
-| outline rect, windowType: x, y, w, h differ | 5 | 1 | `estate_item[1]` |
 | outline rect, iconType: w, h differ | 4 | 3 | `ages_view/picture` |
 | outline rect, iconType: x differ | 4 | 2 | `countryreligionview/current_religion_icon` |
-| outline rect, iconType: x, y, h differ | 4 | 1 | `shield_thin_glow[1]` |
-| outline rect, iconType: x, y, w, h differ | 4 | 1 | `estate_item[1]/modifier_icon_1` |
 | outline rect, guiButtonType: x, y, h differ | 3 | 2 | `tributary_shield` |
 | outline rect, iconType: y, w, h differ | 3 | 2 | `countryestatesview/dev_share_pie_chart` |
 | outline rect, windowType: x, y differ | 2 | 1 | `diplomessageicons_window` |
 | outline rect, guiButtonType: w, h differ | 2 | 1 | `minimap_panel/custom_mapmode_7` |
 | outline rect, iconType: placed outside the screen | 2 | 1 | `countrytechnologyview/institutions_window/country_progress` |
-| live: drawn, the game hides it (no profile) | 2 | 1 | `menu_settings[1]` |
 | live: no value of selector page fits | 2 | 1 | `menu_settings` |
 | outline rect, guiButtonType: placed outside the screen | 1 | 1 | `countrytechnologyview/institutions_window/back_button` |
 | outline rect, guiButtonType: x, y, w, h differ | 1 | 1 | `topbar/achievements_root_window/achievement_window_bg` |
@@ -436,37 +504,31 @@ stored captures), and a new crawl of Anbennar with the current crawler.
 | outline rect, guiButtonType: y differ | 52 | 5 | `countrymilitaryview/infantry_type_button` |
 | outline rect, instantTextBoxType: h differ | 31 | 19 | `ages_view/desc` |
 | outline rect, instantTextBoxType: x differ | 22 | 7 | `countrydiplomacyview/label_nation` |
-| outline rect, iconType: x, y, h differ | 21 | 6 | `shield_thin_glow[1]` |
 | outline rect, windowType: y, h differ | 20 | 10 | `provinceview` |
 | outline rect, windowType: y differ | 19 | 9 | `menubar/WarOverviewButtonWindow` |
-| live text not taken (profiled) | 17 | 4 | `countrystabilityview/[46]` |
-| outline rect, instantTextBoxType: x, y differ | 17 | 2 | `waroverview/waroverview_value` |
 | outline rect, iconType: w, h differ | 16 | 5 | `ages_view/picture` |
-| outline rect, iconType: x, y differ | 15 | 3 | `countryreligionview/orthodox_specific_window/current_patriarch_authority` |
 | outline rect, instantTextBoxType: w differ | 12 | 7 | `provinceview/province_window/warscore_value` |
 | outline rect, iconType: x differ | 10 | 5 | `countrystabilityview/stability_progress_threshold` |
 | outline rect, instantTextBoxType: w, h differ | 8 | 5 | `countrydiplomacyview/num_relations_value` |
-| outline rect, windowType: x, y differ | 7 | 2 | `diplomessageicons_window` |
-| outline rect, windowType: x, y, w, h differ | 4 | 1 | `estate_item[1]` |
+| outline rect, iconType: x, y differ | 3 | 2 | `countryreligionview/orthodox_specific_window/current_patriarch_authority` |
 | outline rect, iconType: y, w, h differ | 3 | 2 | `countryestatesview/dev_share_pie_chart` |
-| live: drawn, the game hides it (no profile) | 3 | 2 | `menu_settings[1]` |
 | live: no value of selector page fits | 3 | 2 | `menu_settings` |
+| outline rect, windowType: x, y differ | 2 | 1 | `diplomessageicons_window` |
 | outline rect, guiButtonType: w, h differ | 2 | 1 | `minimap_panel/custom_mapmode_7` |
 | outline rect, instantTextBoxType: x, y, h differ | 2 | 1 | `countryreligionview/orthodox_specific_window/current_patriarch_authority_value` |
 | outline rect, iconType: placed outside the screen | 2 | 1 | `countrytechnologyview/institutions_window/country_progress` |
 | live: no value of selector religionPanel fits | 2 | 1 | `countryreligionview` |
 | outline rect, guiButtonType: placed outside the screen | 1 | 1 | `countrytechnologyview/institutions_window/back_button` |
+| outline rect, instantTextBoxType: x, y differ | 1 | 1 | `waroverview/waroverview_value` |
 
 ### proper-2k-ui-enhanced
 
 | Class | Widgets | Views | Example |
 | --- | --- | --- | --- |
-| outline rect, iconType: x, y, h differ | 12 | 4 | `shield_thin_glow[1]` |
 | outline rect, instantTextBoxType: h differ | 7 | 6 | `country_selection_panel/mainmenu/mainmenu_panel_bottom/version_label` |
 | outline rect, instantTextBoxType: w differ | 3 | 2 | `topbar/text_prestige` |
 | outline: the game shows a widget the layout lacks | 3 | 1 | `minimap_panel/minimap_bg` |
 | outline rect, windowType: y differ | 2 | 1 | `menubar/WarOverviewButtonWindow` |
-| live: drawn, the game hides it (no profile) | 2 | 2 | `menu_settings[1]` |
 | live: no value of selector page fits | 2 | 2 | `menu_settings` |
 | outline rect, windowType: x, y differ | 1 | 1 | `diplomessageicons_window` |
 
@@ -478,9 +540,9 @@ fails by its content; the rect-only column counts the widgets that fail by their
 
 | Playset | Views compared | Views passing | Widgets passing | Widgets failing | Rect only | Failing by kind |
 | --- | --- | --- | --- | --- | --- | --- |
-| vanilla | 97 | 4 | 3581 | 2827 | 643 | instantTextBoxType 1351, iconType 782, guiButtonType 523, none in the layout 109, windowType 62 |
-| anbennar-alone | 86 | 4 | 3483 | 2215 | 476 | instantTextBoxType 1084, iconType 600, guiButtonType 390, none in the layout 84, windowType 55, checkboxType 2 |
-| bigger-ui | 97 | 4 | 3578 | 2813 | 643 | instantTextBoxType 1349, iconType 779, guiButtonType 519, none in the layout 104, windowType 62 |
+| vanilla | 96 | 4 | 3581 | 2776 | 600 | instantTextBoxType 1330, iconType 761, guiButtonType 523, none in the layout 109, windowType 53 |
+| anbennar-alone | 85 | 4 | 3483 | 2144 | 412 | instantTextBoxType 1054, iconType 570, guiButtonType 390, none in the layout 84, windowType 44, checkboxType 2 |
+| bigger-ui | 96 | 4 | 3578 | 2762 | 600 | instantTextBoxType 1328, iconType 758, guiButtonType 519, none in the layout 104, windowType 53 |
 | proper-2k-ui-enhanced | 9 | 0 | 327 | 148 | 20 | guiButtonType 78, instantTextBoxType 32, iconType 31, windowType 4, none in the layout 3 |
 
 ## Where rects start to differ
@@ -498,9 +560,6 @@ children in Tongs, so its own rect is not compared and every child would count a
 | `countrytechnologyview/institutions_window` | windowType | 0,140 | 15 | 1 |
 | `DefaultConfirm/Description` | instantTextBoxType | 0,0 | 0 | 6 |
 | `country_selection_panel/lobby/bottom/scenario_description` | instantTextBoxType | 0,0 | 0 | 6 |
-| `shield_thin_glow[1]` | iconType | -562,-805 | 0 | 6 |
-| `shield_thin_glow[2]` | iconType | -632,-805 | 0 | 6 |
-| `shield_thin_glow[3]` | iconType | -702,-805 | 0 | 6 |
 | `menubar/message_window_container` | windowType | 0,-30 | 3 | 1 |
 | `provinceview/province_window` | windowType | 0,-60 | 0 | 4 |
 | `provinceview/province_window/tax_base_value` | instantTextBoxType | 0,-62 | 0 | 4 |
@@ -513,11 +572,6 @@ children in Tongs, so its own rect is not compared and every child would count a
 | `countrydiplomacyview/num_relations_value` | instantTextBoxType | 0,0 | 0 | 3 |
 | `countrystabilityview/stability_progress_threshold` | iconType | -48,0 | 0 | 3 |
 | `countrystabilityview/stability_value` | instantTextBoxType | -48,0 | 0 | 3 |
-| `estate_dev_share_item[1]` | windowType | -83,-280 | 2 | 1 |
-| `estate_dev_share_item[2]` | windowType | -141,-280 | 2 | 1 |
-| `estate_dev_share_item[3]` | windowType | -199,-280 | 2 | 1 |
-| `estate_dev_share_item[4]` | windowType | -83,-310 | 2 | 1 |
-| `estate_dev_share_item[5]` | windowType | -141,-310 | 2 | 1 |
 | `countryeconomyview/incomes_total` | instantTextBoxType | 0,0 | 0 | 2 |
 | `countryeconomyview/war_exhaustion` | instantTextBoxType | 0,0 | 0 | 2 |
 | `countryeconomyview/development_base` | instantTextBoxType | 0,0 | 0 | 2 |
@@ -528,12 +582,20 @@ children in Tongs, so its own rect is not compared and every child would count a
 | `countryestatesview/crown_land_modifier_icon_2` | iconType | 0,0 | 0 | 2 |
 | `countryestatesview/crown_land_modifier_icon_3` | iconType | 0,0 | 0 | 2 |
 | `countryestatesview/crown_land_modifier_icon_4` | iconType | 0,0 | 0 | 2 |
-| `estate_item[1]` | windowType | -9,-363 | 1 | 1 |
-| `estate_item[2]` | windowType | -9,-493 | 1 | 1 |
-| `estate_item[3]` | windowType | -9,-623 | 1 | 1 |
-| `estate_item[4]` | windowType | -9,-753 | 1 | 1 |
 | `diplomessageicons_window` | windowType | 10,910 | 0 | 1 |
 | `menubar/WarOverviewButtonWindow` | windowType | 0,-110 | 0 | 1 |
+| `minimap_panel/custom_mapmode_7` | guiButtonType | 0,0 | 0 | 1 |
+| `parliament_window/enacted_modifiers_effect` | instantTextBoxType | 0,0 | 0 | 1 |
+| `ages_view/picture` | iconType | 0,0 | 0 | 1 |
+| `ages_view/desc` | instantTextBoxType | 0,0 | 0 | 1 |
+| `waroverview/waroverview_icon` | iconType | -206,4 | 0 | 1 |
+| `waroverview/waroverview_value` | instantTextBoxType | -7,-1 | 0 | 1 |
+| `waroverview/ourcav` | instantTextBoxType | 0,0 | 0 | 1 |
+| `waroverview/waroverview_losses/ourtroops_lost` | instantTextBoxType | 0,0 | 0 | 1 |
+| `waroverview/waroverview_losses/ourtroops_attrit` | instantTextBoxType | 0,0 | 0 | 1 |
+| `waroverview/waroverview_losses/enemytroops_lost` | instantTextBoxType | 0,0 | 0 | 1 |
+| `waroverview/waroverview_losses/enemytroops_attrit` | instantTextBoxType | 0,0 | 0 | 1 |
+| `countryreligionview/orthodox_specific_window/current_patriarch_authority` | iconType | -80,3 | 0 | 1 |
 
 ### anbennar-alone
 
@@ -559,17 +621,6 @@ children in Tongs, so its own rect is not compared and every child would count a
 | `countryreligionview/current_religion_icon` | iconType | -62,0 | 0 | 2 |
 | `countryestatesview/dev_share_pie_chart` | iconType | 0,-96 | 0 | 2 |
 | `countryestatesview/agenda_effects` | instantTextBoxType | 0,0 | 0 | 2 |
-| `estate_dev_share_item[1]` | windowType | -82,-280 | 1 | 1 |
-| `estate_dev_share_item[2]` | windowType | -132,-280 | 1 | 1 |
-| `estate_dev_share_item[3]` | windowType | -182,-280 | 1 | 1 |
-| `estate_dev_share_item[4]` | windowType | -82,-310 | 1 | 1 |
-| `estate_dev_share_item[5]` | windowType | -132,-310 | 1 | 1 |
-| `estate_dev_share_item[6]` | windowType | -182,-310 | 1 | 1 |
-| `estate_item[1]` | windowType | -4,-371 | 1 | 1 |
-| `estate_item[2]` | windowType | -4,-461 | 1 | 1 |
-| `estate_item[3]` | windowType | -4,-551 | 1 | 1 |
-| `estate_item[4]` | windowType | -4,-641 | 1 | 1 |
-| `estate_item[5]` | windowType | -4,-731 | 1 | 1 |
 | `diplomessageicons_window` | windowType | 10,910 | 0 | 1 |
 | `menubar/WarOverviewButtonWindow` | windowType | 0,-110 | 0 | 1 |
 | `minimap_panel/custom_mapmode_7` | guiButtonType | 0,0 | 0 | 1 |
@@ -579,6 +630,13 @@ children in Tongs, so its own rect is not compared and every child would count a
 | `topbar/magic_menu_parent/magic_menu_main/magic_menu_main_row_3/magic_menu_infamy_text` | instantTextBoxType | 0,0 | 0 | 1 |
 | `topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_change_spellbook_window/magic_menu_button_custom_magic_lists_text` | instantTextBoxType | 0,0 | 0 | 1 |
 | `topbar/achievements_root_window/achievement_indiv/achievement_column_1/achievement_indiv_r1_c1/achievement_r1_c1_flavor_text` | instantTextBoxType | 0,0 | 0 | 1 |
+| `topbar/achievements_root_window/achievement_indiv/achievement_column_1/achievement_indiv_r4_c1/achievement_r4_c1_flavor_text` | instantTextBoxType | 0,0 | 0 | 1 |
+| `topbar/achievements_root_window/achievement_indiv/achievement_column_1/achievement_indiv_r8_c1/achievement_r8_c1_flavor_text` | instantTextBoxType | 0,0 | 0 | 1 |
+| `topbar/achievements_root_window/achievement_indiv/achievement_column_2/achievement_indiv_r1_c2/achievement_r1_c2_flavor_text` | instantTextBoxType | 0,0 | 0 | 1 |
+| `topbar/achievements_root_window/achievement_window_bg` | guiButtonType | 596,401 | 0 | 1 |
+| `country_selection_panel/mainmenu/mainmenu_panel_bottom/version_label` | instantTextBoxType | 0,0 | 0 | 1 |
+| `country_selection_panel/mainmenu/mainmenu_panel_bottom/continue_container/text` | instantTextBoxType | 0,0 | 0 | 1 |
+| `country_selection_panel/lobby/bottom/scenario_description` | instantTextBoxType | 0,0 | 0 | 1 |
 
 ### bigger-ui
 
@@ -588,9 +646,6 @@ children in Tongs, so its own rect is not compared and every child would count a
 | `countrytechnologyview/institutions_window` | windowType | 0,140 | 15 | 1 |
 | `DefaultConfirm/Description` | instantTextBoxType | 0,0 | 0 | 6 |
 | `country_selection_panel/lobby/bottom/scenario_description` | instantTextBoxType | 0,0 | 0 | 6 |
-| `shield_thin_glow[1]` | iconType | -562,-805 | 0 | 6 |
-| `shield_thin_glow[2]` | iconType | -632,-805 | 0 | 6 |
-| `shield_thin_glow[3]` | iconType | -702,-805 | 0 | 6 |
 | `menubar/message_window_container` | windowType | 0,-30 | 3 | 1 |
 | `provinceview/province_window` | windowType | 0,-60 | 0 | 4 |
 | `provinceview/province_window/tax_base_value` | instantTextBoxType | 0,-62 | 0 | 4 |
@@ -603,11 +658,6 @@ children in Tongs, so its own rect is not compared and every child would count a
 | `countrydiplomacyview/num_relations_value` | instantTextBoxType | 0,0 | 0 | 3 |
 | `countrystabilityview/stability_progress_threshold` | iconType | -48,0 | 0 | 3 |
 | `countrystabilityview/stability_value` | instantTextBoxType | -48,0 | 0 | 3 |
-| `estate_dev_share_item[1]` | windowType | -83,-280 | 2 | 1 |
-| `estate_dev_share_item[2]` | windowType | -141,-280 | 2 | 1 |
-| `estate_dev_share_item[3]` | windowType | -199,-280 | 2 | 1 |
-| `estate_dev_share_item[4]` | windowType | -83,-310 | 2 | 1 |
-| `estate_dev_share_item[5]` | windowType | -141,-310 | 2 | 1 |
 | `countryeconomyview/incomes_total` | instantTextBoxType | 0,0 | 0 | 2 |
 | `countryeconomyview/war_exhaustion` | instantTextBoxType | 0,0 | 0 | 2 |
 | `countryeconomyview/development_base` | instantTextBoxType | 0,0 | 0 | 2 |
@@ -618,12 +668,20 @@ children in Tongs, so its own rect is not compared and every child would count a
 | `countryestatesview/crown_land_modifier_icon_2` | iconType | 0,0 | 0 | 2 |
 | `countryestatesview/crown_land_modifier_icon_3` | iconType | 0,0 | 0 | 2 |
 | `countryestatesview/crown_land_modifier_icon_4` | iconType | 0,0 | 0 | 2 |
-| `estate_item[1]` | windowType | -9,-363 | 1 | 1 |
-| `estate_item[2]` | windowType | -9,-493 | 1 | 1 |
-| `estate_item[3]` | windowType | -9,-623 | 1 | 1 |
-| `estate_item[4]` | windowType | -9,-753 | 1 | 1 |
 | `diplomessageicons_window` | windowType | 10,910 | 0 | 1 |
 | `menubar/WarOverviewButtonWindow` | windowType | 0,-110 | 0 | 1 |
+| `minimap_panel/custom_mapmode_7` | guiButtonType | 0,0 | 0 | 1 |
+| `parliament_window/enacted_modifiers_effect` | instantTextBoxType | 0,0 | 0 | 1 |
+| `ages_view/picture` | iconType | 0,0 | 0 | 1 |
+| `ages_view/desc` | instantTextBoxType | 0,0 | 0 | 1 |
+| `waroverview/waroverview_icon` | iconType | -206,48 | 0 | 1 |
+| `waroverview/waroverview_value` | instantTextBoxType | -7,45 | 0 | 1 |
+| `waroverview/ourcav` | instantTextBoxType | 0,0 | 0 | 1 |
+| `waroverview/waroverview_losses/ourtroops_lost` | instantTextBoxType | 0,0 | 0 | 1 |
+| `waroverview/waroverview_losses/ourtroops_attrit` | instantTextBoxType | 0,0 | 0 | 1 |
+| `waroverview/waroverview_losses/enemytroops_lost` | instantTextBoxType | 0,0 | 0 | 1 |
+| `waroverview/waroverview_losses/enemytroops_attrit` | instantTextBoxType | 0,0 | 0 | 1 |
+| `countryreligionview/orthodox_specific_window/current_patriarch_authority` | iconType | -80,3 | 0 | 1 |
 
 ### proper-2k-ui-enhanced
 
@@ -631,9 +689,6 @@ children in Tongs, so its own rect is not compared and every child would count a
 | --- | --- | --- | --- | --- |
 | `menubar/message_window_container` | windowType | 0,-30 | 3 | 1 |
 | `country_selection_panel/lobby/bottom/scenario_description` | instantTextBoxType | 0,0 | 0 | 4 |
-| `shield_thin_glow[1]` | iconType | -803,-1110 | 0 | 4 |
-| `shield_thin_glow[2]` | iconType | -887,-1110 | 0 | 4 |
-| `shield_thin_glow[3]` | iconType | -971,-1110 | 0 | 4 |
 | `diplomessageicons_window` | windowType | 12,1236 | 0 | 1 |
 | `menubar/WarOverviewButtonWindow` | windowType | 0,-132 | 0 | 1 |
 | `topbar/text_prestige` | instantTextBoxType | 0,0 | 0 | 1 |
@@ -647,9 +702,9 @@ children in Tongs, so its own rect is not compared and every child would count a
 
 | Playset | Windows | Views | Inside a view | Not reached |
 | --- | --- | --- | --- | --- |
-| vanilla | 696 | 46 | 141 | 509 |
-| anbennar-alone | 813 | 43 | 105 | 665 |
-| bigger-ui | 696 | 46 | 141 | 509 |
+| vanilla | 696 | 44 | 143 | 509 |
+| anbennar-alone | 813 | 41 | 107 | 665 |
+| bigger-ui | 696 | 44 | 143 | 509 |
 | proper-2k-ui-enhanced | 696 | 12 | 20 | 664 |
 
 A window's confidence is the share of its widgets built only of confirmed constructs.
@@ -659,7 +714,7 @@ A window's confidence is the share of its widgets built only of confirmed constr
 | vanilla | 509 | 0 | 0 | 56 | 453 |
 | anbennar-alone | 665 | 0 | 0 | 81 | 584 |
 | bigger-ui | 509 | 0 | 0 | 56 | 453 |
-| proper-2k-ui-enhanced | 664 | 36 | 36 | 210 | 454 |
+| proper-2k-ui-enhanced | 664 | 86 | 87 | 360 | 304 |
 
 ## Constructs
 
@@ -667,101 +722,97 @@ A construct is confirmed when at least 10 widgets built with it were compared on
 
 | Playset | Seen | Confirmed | All exact | Some rect differs |
 | --- | --- | --- | --- | --- |
-| vanilla | 98 | 44 | 46 | 52 |
+| vanilla | 98 | 46 | 46 | 52 |
 | anbennar-alone | 111 | 42 | 54 | 57 |
-| bigger-ui | 98 | 46 | 48 | 50 |
-| proper-2k-ui-enhanced | 75 | 23 | 37 | 38 |
+| bigger-ui | 98 | 48 | 48 | 50 |
+| proper-2k-ui-enhanced | 75 | 27 | 41 | 34 |
 
 vanilla, constructs with rects that differ (most first):
 
-- `instantTextBoxType`: 405 of 1836 differ
-- `instantTextBoxType.position`: 400 of 1821 differ
-- `instantTextBoxType.maxwidth`: 400 of 1831 differ
-- `instantTextBoxType.maxheight`: 400 of 1831 differ
-- `instantTextBoxType.format`: 398 of 1797 differ
-- `instantTextBoxType.bordersize`: 326 of 1671 differ
-- `instantTextBoxType.fixedsize`: 278 of 705 differ
-- `instantTextBoxType.fixedsize=yes`: 278 of 689 differ
+- `instantTextBoxType`: 389 of 1820 differ
+- `instantTextBoxType.position`: 384 of 1805 differ
+- `instantTextBoxType.maxwidth`: 384 of 1815 differ
+- `instantTextBoxType.maxheight`: 384 of 1815 differ
+- `instantTextBoxType.format`: 382 of 1781 differ
+- `instantTextBoxType.bordersize`: 310 of 1655 differ
+- `instantTextBoxType.fixedsize`: 266 of 693 differ
+- `instantTextBoxType.fixedsize=yes`: 266 of 677 differ
 - `instantTextBoxType.format=right`: 252 of 658 differ
-- `iconType`: 230 of 1494 differ
-- `iconType.position`: 225 of 1487 differ
-- `iconType.scale`: 140 of 379 differ
+- `iconType`: 197 of 1482 differ
+- `iconType.position`: 192 of 1475 differ
+- `iconType.scale`: 132 of 371 differ
 - `iconType.hint_tag`: 104 of 401 differ
-- `instantTextBoxType.format=centre`: 89 of 587 differ
+- `instantTextBoxType.format=centre`: 85 of 583 differ
 - `guiButtonType`: 55 of 1795 differ
-- `iconType.orientation`: 55 of 938 differ
-- `iconType.orientation=upper_left`: 55 of 916 differ
-- `windowType`: 50 of 462 differ
-- `windowType.position`: 45 of 449 differ
-- `windowType.size`: 43 of 432 differ
-- `windowType.moveable`: 43 of 434 differ
-- `instantTextBoxType.format=left`: 41 of 449 differ
-- `windowType.orientation`: 38 of 236 differ
+- `windowType`: 41 of 453 differ
+- `windowType.position`: 41 of 445 differ
+- `windowType.size`: 39 of 428 differ
+- `windowType.moveable`: 39 of 430 differ
 - `guiButtonType.hint_tag`: 35 of 82 differ
 - `windowType.background`: 34 of 363 differ
+- `windowType.orientation`: 34 of 232 differ
+- `instantTextBoxType.orientation`: 34 of 228 differ
+- `instantTextBoxType.orientation=upper_left`: 34 of 208 differ
+- `windowType.dontrender`: 32 of 366 differ
 
 anbennar-alone, constructs with rects that differ (most first):
 
-- `instantTextBoxType`: 277 of 1815 differ
-- `instantTextBoxType.format`: 275 of 1740 differ
-- `instantTextBoxType.position`: 274 of 1805 differ
-- `instantTextBoxType.maxwidth`: 274 of 1811 differ
-- `instantTextBoxType.maxheight`: 273 of 1811 differ
-- `instantTextBoxType.bordersize`: 228 of 1623 differ
-- `instantTextBoxType.fixedsize`: 189 of 629 differ
-- `instantTextBoxType.fixedsize=yes`: 189 of 613 differ
+- `instantTextBoxType`: 247 of 1785 differ
+- `instantTextBoxType.format`: 245 of 1710 differ
+- `instantTextBoxType.position`: 244 of 1775 differ
+- `instantTextBoxType.maxwidth`: 244 of 1781 differ
+- `instantTextBoxType.maxheight`: 243 of 1781 differ
+- `instantTextBoxType.bordersize`: 198 of 1593 differ
+- `instantTextBoxType.fixedsize`: 174 of 614 differ
+- `instantTextBoxType.fixedsize=yes`: 174 of 598 differ
 - `instantTextBoxType.format=right`: 149 of 631 differ
-- `iconType`: 132 of 1452 differ
-- `iconType.position`: 129 of 1447 differ
-- `iconType.scale`: 86 of 294 differ
+- `iconType`: 109 of 1433 differ
+- `iconType.position`: 106 of 1428 differ
+- `iconType.scale`: 72 of 280 differ
 - `iconType.hint_tag`: 64 of 371 differ
-- `instantTextBoxType.format=centre`: 58 of 478 differ
-- `instantTextBoxType.format=left`: 56 of 447 differ
-- `windowType`: 39 of 443 differ
-- `windowType.position`: 33 of 414 differ
-- `windowType.size`: 31 of 404 differ
-- `windowType.moveable`: 31 of 406 differ
-- `iconType.orientation`: 31 of 990 differ
-- `iconType.orientation=upper_left`: 31 of 966 differ
-- `windowType.orientation`: 30 of 255 differ
+- `instantTextBoxType.format=centre`: 53 of 473 differ
+- `instantTextBoxType.format=left`: 31 of 422 differ
+- `windowType`: 28 of 432 differ
+- `windowType.position`: 28 of 409 differ
+- `windowType.size`: 26 of 399 differ
+- `windowType.moveable`: 26 of 401 differ
 - `guiButtonType`: 26 of 1469 differ
+- `windowType.orientation`: 25 of 250 differ
 - `windowType.background`: 23 of 288 differ
-- `windowType.orientation=upper_left`: 23 of 190 differ
+- `windowType.dontrender`: 21 of 290 differ
+- `windowType.horizontalborder`: 21 of 290 differ
+- `windowType.verticalborder`: 18 of 281 differ
 
 bigger-ui, constructs with rects that differ (most first):
 
-- `instantTextBoxType`: 403 of 1834 differ
-- `instantTextBoxType.position`: 398 of 1819 differ
-- `instantTextBoxType.maxwidth`: 398 of 1829 differ
-- `instantTextBoxType.maxheight`: 398 of 1829 differ
-- `instantTextBoxType.format`: 396 of 1795 differ
-- `instantTextBoxType.bordersize`: 326 of 1671 differ
-- `instantTextBoxType.fixedsize`: 276 of 703 differ
-- `instantTextBoxType.fixedsize=yes`: 276 of 687 differ
+- `instantTextBoxType`: 387 of 1818 differ
+- `instantTextBoxType.position`: 382 of 1803 differ
+- `instantTextBoxType.maxwidth`: 382 of 1813 differ
+- `instantTextBoxType.maxheight`: 382 of 1813 differ
+- `instantTextBoxType.format`: 380 of 1779 differ
+- `instantTextBoxType.bordersize`: 310 of 1655 differ
+- `instantTextBoxType.fixedsize`: 264 of 691 differ
+- `instantTextBoxType.fixedsize=yes`: 264 of 675 differ
 - `instantTextBoxType.format=right`: 252 of 658 differ
-- `iconType`: 230 of 1492 differ
-- `iconType.position`: 225 of 1485 differ
-- `iconType.scale`: 140 of 379 differ
+- `iconType`: 197 of 1480 differ
+- `iconType.position`: 192 of 1473 differ
+- `iconType.scale`: 132 of 371 differ
 - `iconType.hint_tag`: 104 of 401 differ
-- `instantTextBoxType.format=centre`: 89 of 587 differ
+- `instantTextBoxType.format=centre`: 85 of 583 differ
 - `guiButtonType`: 55 of 1789 differ
-- `iconType.orientation`: 55 of 938 differ
-- `iconType.orientation=upper_left`: 55 of 916 differ
-- `windowType`: 50 of 460 differ
-- `windowType.position`: 45 of 447 differ
-- `windowType.size`: 43 of 432 differ
-- `windowType.moveable`: 43 of 434 differ
-- `instantTextBoxType.format=left`: 39 of 447 differ
-- `windowType.orientation`: 38 of 236 differ
+- `windowType`: 41 of 451 differ
+- `windowType.position`: 41 of 443 differ
+- `windowType.size`: 39 of 428 differ
+- `windowType.moveable`: 39 of 430 differ
 - `guiButtonType.hint_tag`: 35 of 82 differ
 - `windowType.background`: 34 of 363 differ
+- `windowType.orientation`: 34 of 232 differ
+- `instantTextBoxType.orientation`: 34 of 228 differ
+- `instantTextBoxType.orientation=upper_left`: 34 of 208 differ
+- `windowType.dontrender`: 32 of 366 differ
 
 proper-2k-ui-enhanced, constructs with rects that differ (most first):
 
-- `iconType`: 12 of 76 differ
-- `iconType.position`: 12 of 76 differ
-- `iconType.orientation`: 12 of 62 differ
-- `iconType.orientation=upper_left`: 12 of 50 differ
 - `instantTextBoxType`: 10 of 86 differ
 - `instantTextBoxType.position`: 10 of 86 differ
 - `instantTextBoxType.maxwidth`: 9 of 85 differ
@@ -783,6 +834,10 @@ proper-2k-ui-enhanced, constructs with rects that differ (most first):
 - `windowType.dontrender`: 2 of 71 differ
 - `windowType.horizontalborder`: 2 of 71 differ
 - `windowType.verticalborder`: 2 of 71 differ
+- `windowType.fullscreen`: 2 of 72 differ
+- `windowType.orientation=lower_right`: 2 of 4 differ
+- `instantTextBoxType.format=centre`: 2 of 58 differ
+- `instantTextBoxType.format=right`: 2 of 9 differ
 
 ## Views
 
@@ -795,39 +850,39 @@ proper-2k-ui-enhanced, constructs with rects that differ (most first):
 | vanilla-save-s8 1280x720 | provinceview (profile) | 92.0 % | 70.4 % | 100.0 % | 100.0 % | 100.0 % | 58 fail |
 | vanilla-save-s9 1280x720 | provinceview (profile) | 94.2 % | 65.4 % | 100.0 % | 100.0 % | 100.0 % | 52 fail |
 | vanilla-save-s12 1280x720 | provinceview (profile) | 92.3 % | 67.9 % | 100.0 % | 100.0 % | 100.0 % | 56 fail |
-| vanilla-save-s14 1280x720 | countrygovernmentview (profile), countryview, gov_view_reform_select | 100.0 % | 93.8 % | 100.0 % | 100.0 % | 100.0 % | 9 fail |
-| vanilla-save-s15 1280x720 | ages_view (profile) | 88.8 % | 88.8 % | 94.4 % | 100.0 % | 100.0 % | 5 fail |
-| vanilla-save-s24 1280x720 | countrygovernmentview (profile), countryview | 100.0 % | 93.4 % | 100.0 % | 100.0 % | 100.0 % | 8 fail |
-| vanilla-save-s25 1280x720 | countrydiplomacyview (profile), countryview, hre_window (profile) | 98.1 % | 75.0 % | 100.0 % | 100.0 % | 100.0 % | 32 fail |
-| vanilla-save-s26 1280x720 | celestial_window, countrydiplomacyview (profile), countryview | 97.2 % | 85.2 % | 100.0 % | 100.0 % | 100.0 % | 44 fail |
-| vanilla-save-s31 1280x720 | countrydiplomacyview (profile), countryview, great_powers | 97.1 % | 82.6 % | 100.0 % | 100.0 % | 100.0 % | 23 fail |
-| vanilla-save-s32 1280x720 | countrydiplomacyview (profile), countryview | 96.8 % | 81.4 % | 100.0 % | 100.0 % | 100.0 % | 40 fail |
-| vanilla-save-s34 1280x720 | countrytradeview, countryview | 100.0 % | 98.6 % | 100.0 % | 100.0 % | 100.0 % | 15 fail |
-| vanilla-save-s35 1280x720 | countrytechnologyview (profile), countryview | 100.0 % | 97.6 % | 100.0 % | 100.0 % | 100.0 % | 3 fail |
-| vanilla-save-s37 1280x720 | countrymissionsview (profile), countryview | 100.0 % | 97.8 % | 100.0 % | 100.0 % | 100.0 % | pass |
-| vanilla-save-s38 1280x720 | countrydecisionsview (profile), countryview | 100.0 % | 98.0 % | 100.0 % | 100.0 % | 100.0 % | 9 fail |
-| vanilla-save-s39 1280x720 | countrystabilityview (profile), countryview | 97.0 % | 96.6 % | 100.0 % | 100.0 % | 94.4 % | 19 fail |
-| vanilla-save-s40 1280x720 | countryreligionview (profile), countryview | 94.9 % | 75.3 % | 100.0 % | 100.0 % | 100.0 % | 21 fail |
-| vanilla-save-s41 1280x720 | countrymilitaryview (profile), countryview | 15.9 % | 96.4 % | 100.0 % | 100.0 % | 100.0 % | 121 fail |
-| vanilla-save-s42 1280x720 | countrysubjectview (profile), countryview | 100.0 % | 92.3 % | 100.0 % | 100.0 % | 100.0 % | 3 fail |
-| vanilla-save-s44 1280x720 | DefaultConfirm, countrygovernmentview (profile), countryview, gov_view_reform_select | 98.5 % | 94.0 % | 100.0 % | 100.0 % | 100.0 % | 19 fail |
-| vanilla-save-s59 1280x720 | countrytechnologyview (profile), countryview | 60.0 % | 95.2 % | 100.0 % | 100.0 % | 100.0 % | 19 fail |
-| vanilla-save-s61 1280x720 | countrydecisionsview (profile), countryview | 100.0 % | 91.4 % | 100.0 % | 100.0 % | 100.0 % | 0 fail |
-| vanilla-save-s62 1280x720 | DefaultConfirm, countrystabilityview (profile), countryview | 95.9 % | 96.9 % | 100.0 % | 100.0 % | 95.0 % | 36 fail |
-| vanilla-save-s63 1280x720 | countrystabilityview (profile), countryview | 96.2 % | 97.3 % | 100.0 % | 100.0 % | 95.8 % | 10 fail |
-| vanilla-save-s64 1280x720 | countryreligionview (profile), countryview | 97.5 % | 52.1 % | 100.0 % | 100.0 % | 100.0 % | 10 fail |
-| vanilla-save-s65 1280x720 | countrymilitaryview (profile), countryview, domesticpanel_unit_select | 23.1 % | 93.7 % | 100.0 % | 100.0 % | 100.0 % | 112 fail |
-| vanilla-save-s66 1280x720 | ConfirmAndNameLeaderDialog, countrymilitaryview (profile), countryview | 19.4 % | 95.1 % | 100.0 % | 100.0 % | 100.0 % | 127 fail |
-| vanilla-save-s67 1280x720 | DefaultConfirm, countrymilitaryview (profile), countryview | 19.4 % | 96.5 % | 100.0 % | 100.0 % | 100.0 % | 127 fail |
-| vanilla-save-s68 1280x720 | countrymilitaryview (profile), countryview, domesticpanel_naval_doctrine_select (profile) | 15.4 % | 96.5 % | 100.0 % | 100.0 % | 100.0 % | 125 fail |
-| vanilla-save-s70 1280x720 | countrysubjectview (profile), countryview | 100.0 % | 92.7 % | 100.0 % | 100.0 % | 100.0 % | 3 fail |
-| vanilla-save-s43 1280x720 | countryestatesview (profile), countryview | 86.1 % | 97.6 % | 86.1 % | 100.0 % | 100.0 % | 5 fail |
+| vanilla-save-s14 1280x720 | countrygovernmentview (profile), countryview (profile), gov_view_reform_select | 100.0 % | 93.8 % | 100.0 % | 100.0 % | 100.0 % | 9 fail |
+| vanilla-save-s15 1280x720 | ages_view (profile) | 88.8 % | 88.8 % | 100.0 % | 100.0 % | 100.0 % | 5 fail |
+| vanilla-save-s24 1280x720 | countrygovernmentview (profile), countryview (profile) | 100.0 % | 93.4 % | 100.0 % | 100.0 % | 100.0 % | 8 fail |
+| vanilla-save-s25 1280x720 | countrydiplomacyview (profile), countryview (profile), hre_window (profile) | 98.1 % | 75.0 % | 100.0 % | 100.0 % | 100.0 % | 32 fail |
+| vanilla-save-s26 1280x720 | celestial_window, countrydiplomacyview (profile), countryview (profile) | 97.2 % | 85.2 % | 100.0 % | 100.0 % | 100.0 % | 44 fail |
+| vanilla-save-s31 1280x720 | countrydiplomacyview (profile), countryview (profile), great_powers | 97.1 % | 82.6 % | 100.0 % | 100.0 % | 100.0 % | 23 fail |
+| vanilla-save-s32 1280x720 | countrydiplomacyview (profile), countryview (profile) | 96.8 % | 81.4 % | 100.0 % | 100.0 % | 100.0 % | 40 fail |
+| vanilla-save-s34 1280x720 | countrytradeview (profile), countryview (profile) | 100.0 % | 98.6 % | 100.0 % | 100.0 % | 100.0 % | 15 fail |
+| vanilla-save-s35 1280x720 | countrytechnologyview (profile), countryview (profile) | 100.0 % | 97.6 % | 100.0 % | 100.0 % | 100.0 % | 3 fail |
+| vanilla-save-s37 1280x720 | countrymissionsview (profile), countryview (profile) | 100.0 % | 97.8 % | 100.0 % | 100.0 % | 100.0 % | pass |
+| vanilla-save-s38 1280x720 | countrydecisionsview (profile), countryview (profile) | 100.0 % | 98.0 % | 100.0 % | 100.0 % | 100.0 % | 9 fail |
+| vanilla-save-s39 1280x720 | countrystabilityview (profile), countryview (profile) | 97.0 % | 96.6 % | 100.0 % | 100.0 % | 100.0 % | 19 fail |
+| vanilla-save-s40 1280x720 | countryreligionview (profile), countryview (profile) | 94.9 % | 75.3 % | 100.0 % | 100.0 % | 100.0 % | 21 fail |
+| vanilla-save-s41 1280x720 | countrymilitaryview (profile), countryview (profile) | 15.9 % | 96.4 % | 100.0 % | 100.0 % | 100.0 % | 121 fail |
+| vanilla-save-s42 1280x720 | countrysubjectview (profile), countryview (profile) | 100.0 % | 92.3 % | 100.0 % | 100.0 % | 100.0 % | 3 fail |
+| vanilla-save-s44 1280x720 | DefaultConfirm, countrygovernmentview (profile), countryview (profile), gov_view_reform_select | 98.5 % | 94.0 % | 100.0 % | 100.0 % | 100.0 % | 19 fail |
+| vanilla-save-s59 1280x720 | countrytechnologyview (profile), countryview (profile) | 60.0 % | 95.2 % | 100.0 % | 100.0 % | 100.0 % | 19 fail |
+| vanilla-save-s61 1280x720 | countrydecisionsview (profile), countryview (profile) | 100.0 % | 91.4 % | 100.0 % | 100.0 % | 100.0 % | 0 fail |
+| vanilla-save-s62 1280x720 | DefaultConfirm, countrystabilityview (profile), countryview (profile) | 95.9 % | 96.9 % | 100.0 % | 100.0 % | 100.0 % | 36 fail |
+| vanilla-save-s63 1280x720 | countrystabilityview (profile), countryview (profile) | 96.2 % | 97.3 % | 100.0 % | 100.0 % | 100.0 % | 10 fail |
+| vanilla-save-s64 1280x720 | countryreligionview (profile), countryview (profile) | 97.5 % | 52.1 % | 100.0 % | 100.0 % | 100.0 % | 10 fail |
+| vanilla-save-s65 1280x720 | countrymilitaryview (profile), countryview (profile), domesticpanel_unit_select | 23.1 % | 93.7 % | 100.0 % | 100.0 % | 100.0 % | 112 fail |
+| vanilla-save-s66 1280x720 | ConfirmAndNameLeaderDialog, countrymilitaryview (profile), countryview (profile) | 19.4 % | 95.1 % | 100.0 % | 100.0 % | 100.0 % | 127 fail |
+| vanilla-save-s67 1280x720 | DefaultConfirm, countrymilitaryview (profile), countryview (profile) | 19.4 % | 96.5 % | 100.0 % | 100.0 % | 100.0 % | 127 fail |
+| vanilla-save-s68 1280x720 | countrymilitaryview (profile), countryview (profile), domesticpanel_naval_doctrine_select (profile) | 15.4 % | 96.5 % | 100.0 % | 100.0 % | 100.0 % | 125 fail |
+| vanilla-save-s70 1280x720 | countrysubjectview (profile), countryview (profile) | 100.0 % | 92.7 % | 100.0 % | 100.0 % | 100.0 % | 3 fail |
+| vanilla-save-s43 1280x720 | countryestatesview (profile), countryview (profile) | 86.1 % | 97.6 % | 86.1 % | 100.0 % | 100.0 % | 5 fail |
 | vanilla-menu-s0 1280x720 | country_selection_panel (profile) | 92.8 % | 75.0 % | 100.0 % | 100.0 % | 100.0 % | 5 fail |
-| vanilla-menu-s1 1280x720 | country_selection_panel (profile), shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 92.9 % | 69.0 % | 100.0 % | 100.0 % | 100.0 % | 19 fail |
+| vanilla-menu-s1 1280x720 | country_selection_panel (profile), shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 98.2 % | 69.0 % | 100.0 % | 100.0 % | 100.0 % | 19 fail |
 | vanilla-menu-s2 1280x720 | CreditsWindow, country_selection_panel (profile) | 100.0 % | 29.4 % | 100.0 % | 100.0 % | 100.0 % | 0 fail |
-| vanilla-menu-s3 1280x720 | country_selection_panel (profile), menu_settings (profile), menu_settings (profile) | 100.0 % | 62.2 % | 100.0 % | 97.7 % | 100.0 % | 7 fail |
+| vanilla-menu-s3 1280x720 | country_selection_panel (profile), menu_settings (profile), menu_settings (profile) | 100.0 % | 62.2 % | 100.0 % | 100.0 % | 100.0 % | 7 fail |
 | vanilla-save-s0 1920x1080 | diplomessageicons_window, menubar (profile), message_icons, minimap_panel (profile), outliner, speed_controls, topbar (profile) | 93.7 % | 91.7 % | 99.1 % | 100.0 % | 100.0 % | 40 fail |
-| vanilla-save-s1 1920x1080 | countrycourtview (profile), countryview | 100.0 % | 82.1 % | 100.0 % | 100.0 % | 100.0 % | 13 fail |
+| vanilla-save-s1 1920x1080 | countrycourtview (profile), countryview (profile) | 100.0 % | 82.1 % | 100.0 % | 100.0 % | 100.0 % | 13 fail |
 | vanilla-save-s2 1920x1080 | hre_window (profile) | 100.0 % | 89.1 % | 100.0 % | 100.0 % | 100.0 % | 3 fail |
 | vanilla-save-s3 1920x1080 | parliament_window (profile) | 87.5 % | 96.7 % | 100.0 % | 100.0 % | 100.0 % | 4 fail |
 | vanilla-save-s4 1920x1080 | celestial_window | 100.0 % | 100.0 % | 100.0 % | 100.0 % | 100.0 % | 4 fail |
@@ -839,54 +894,53 @@ proper-2k-ui-enhanced, constructs with rects that differ (most first):
 | vanilla-save-s10 1920x1080 | colonisationpanel (profile) | 100.0 % | 82.3 % | 100.0 % | 100.0 % | 100.0 % | 13 fail |
 | vanilla-save-s12 1920x1080 | provinceview (profile) | 93.2 % | 68.3 % | 100.0 % | 100.0 % | 100.0 % | 56 fail |
 | vanilla-save-s13 1920x1080 | great_powers | 100.0 % | 100.0 % | 100.0 % | 100.0 % | 100.0 % | pass |
-| vanilla-save-s14 1920x1080 | countrygovernmentview (profile), countryview, gov_view_reform_select | 100.0 % | 93.8 % | 100.0 % | 100.0 % | 100.0 % | 8 fail |
-| vanilla-save-s15 1920x1080 | ages_view (profile) | 88.8 % | 88.8 % | 94.4 % | 100.0 % | 100.0 % | 5 fail |
+| vanilla-save-s14 1920x1080 | countrygovernmentview (profile), countryview (profile), gov_view_reform_select | 100.0 % | 93.8 % | 100.0 % | 100.0 % | 100.0 % | 8 fail |
+| vanilla-save-s15 1920x1080 | ages_view (profile) | 88.8 % | 88.8 % | 100.0 % | 100.0 % | 100.0 % | 5 fail |
 | vanilla-save-s16 1920x1080 | waroverview | 90.6 % | 99.1 % | 100.0 % | 100.0 % | 100.0 % | 31 fail |
-| vanilla-save-s24 1920x1080 | countrygovernmentview (profile), countryview | 100.0 % | 94.0 % | 100.0 % | 100.0 % | 100.0 % | 7 fail |
-| vanilla-save-s25 1920x1080 | countrydiplomacyview (profile), countryview, hre_window (profile) | 98.1 % | 74.7 % | 100.0 % | 100.0 % | 100.0 % | 42 fail |
-| vanilla-save-s26 1920x1080 | celestial_window, countrydiplomacyview (profile), countryview | 97.2 % | 85.8 % | 100.0 % | 100.0 % | 100.0 % | 43 fail |
+| vanilla-save-s24 1920x1080 | countrygovernmentview (profile), countryview (profile) | 100.0 % | 94.0 % | 100.0 % | 100.0 % | 100.0 % | 7 fail |
+| vanilla-save-s25 1920x1080 | countrydiplomacyview (profile), countryview (profile), hre_window (profile) | 98.1 % | 74.7 % | 100.0 % | 100.0 % | 100.0 % | 42 fail |
+| vanilla-save-s26 1920x1080 | celestial_window, countrydiplomacyview (profile), countryview (profile) | 97.2 % | 85.8 % | 100.0 % | 100.0 % | 100.0 % | 43 fail |
 | vanilla-save-s27 1920x1080 | DefaultConfirm, celestial_window | 95.6 % | 100.0 % | 100.0 % | 100.0 % | 100.0 % | 11 fail |
-| vanilla-save-s28 1920x1080 | ledger (profile) | 100.0 % | 42.1 % | 100.0 % | 100.0 % | 90.7 % | 13 fail |
-| vanilla-save-s31 1920x1080 | countrydiplomacyview (profile), countryview, great_powers | 97.1 % | 83.4 % | 100.0 % | 100.0 % | 100.0 % | 39 fail |
-| vanilla-save-s32 1920x1080 | countrydiplomacyview (profile), countryview | 96.8 % | 82.3 % | 100.0 % | 100.0 % | 100.0 % | 39 fail |
-| vanilla-save-s33 1920x1080 | countryeconomyview (profile), countryview | 93.4 % | 98.1 % | 100.0 % | 100.0 % | 100.0 % | 13 fail |
-| vanilla-save-s34 1920x1080 | countrytradeview, countryview | 100.0 % | 98.5 % | 100.0 % | 100.0 % | 100.0 % | 14 fail |
-| vanilla-save-s35 1920x1080 | countrytechnologyview (profile), countryview | 100.0 % | 97.6 % | 100.0 % | 100.0 % | 100.0 % | 2 fail |
-| vanilla-save-s36 1920x1080 | countryideasview (profile), countryview | 100.0 % | 98.5 % | 100.0 % | 100.0 % | 100.0 % | 9 fail |
-| vanilla-save-s37 1920x1080 | countrymissionsview (profile), countryview | 100.0 % | 97.7 % | 100.0 % | 100.0 % | 100.0 % | pass |
-| vanilla-save-s38 1920x1080 | countrydecisionsview (profile), countryview | 100.0 % | 98.0 % | 100.0 % | 100.0 % | 100.0 % | 8 fail |
-| vanilla-save-s39 1920x1080 | countrystabilityview (profile), countryview | 97.0 % | 96.7 % | 100.0 % | 100.0 % | 95.8 % | 18 fail |
-| vanilla-save-s40 1920x1080 | countryreligionview (profile), countryview | 93.2 % | 76.9 % | 98.3 % | 100.0 % | 100.0 % | 21 fail |
-| vanilla-save-s41 1920x1080 | countrymilitaryview (profile), countryview | 15.1 % | 96.2 % | 100.0 % | 100.0 % | 100.0 % | 121 fail |
-| vanilla-save-s42 1920x1080 | countrysubjectview (profile), countryview | 100.0 % | 88.1 % | 100.0 % | 100.0 % | 100.0 % | 5 fail |
-| vanilla-save-s44 1920x1080 | DefaultConfirm, countrygovernmentview (profile), countryview, gov_view_reform_select | 98.5 % | 94.0 % | 100.0 % | 100.0 % | 100.0 % | 12 fail |
+| vanilla-save-s28 1920x1080 | ledger (profile) | 100.0 % | 42.1 % | 100.0 % | 100.0 % | 100.0 % | 13 fail |
+| vanilla-save-s31 1920x1080 | countrydiplomacyview (profile), countryview (profile), great_powers | 97.1 % | 83.4 % | 100.0 % | 100.0 % | 100.0 % | 39 fail |
+| vanilla-save-s32 1920x1080 | countrydiplomacyview (profile), countryview (profile) | 96.8 % | 82.3 % | 100.0 % | 100.0 % | 100.0 % | 39 fail |
+| vanilla-save-s33 1920x1080 | countryeconomyview (profile), countryview (profile) | 93.4 % | 98.1 % | 100.0 % | 100.0 % | 100.0 % | 13 fail |
+| vanilla-save-s34 1920x1080 | countrytradeview (profile), countryview (profile) | 100.0 % | 98.5 % | 100.0 % | 100.0 % | 100.0 % | 14 fail |
+| vanilla-save-s35 1920x1080 | countrytechnologyview (profile), countryview (profile) | 100.0 % | 97.6 % | 100.0 % | 100.0 % | 100.0 % | 2 fail |
+| vanilla-save-s36 1920x1080 | countryideasview (profile), countryview (profile) | 100.0 % | 98.5 % | 100.0 % | 100.0 % | 100.0 % | 9 fail |
+| vanilla-save-s37 1920x1080 | countrymissionsview (profile), countryview (profile) | 100.0 % | 97.7 % | 100.0 % | 100.0 % | 100.0 % | pass |
+| vanilla-save-s38 1920x1080 | countrydecisionsview (profile), countryview (profile) | 100.0 % | 98.0 % | 100.0 % | 100.0 % | 100.0 % | 8 fail |
+| vanilla-save-s39 1920x1080 | countrystabilityview (profile), countryview (profile) | 97.0 % | 96.7 % | 100.0 % | 100.0 % | 100.0 % | 18 fail |
+| vanilla-save-s40 1920x1080 | countryreligionview (profile), countryview (profile) | 93.2 % | 76.9 % | 100.0 % | 100.0 % | 100.0 % | 21 fail |
+| vanilla-save-s41 1920x1080 | countrymilitaryview (profile), countryview (profile) | 15.1 % | 96.2 % | 100.0 % | 100.0 % | 100.0 % | 121 fail |
+| vanilla-save-s42 1920x1080 | countrysubjectview (profile), countryview (profile) | 100.0 % | 88.1 % | 100.0 % | 100.0 % | 100.0 % | 5 fail |
+| vanilla-save-s44 1920x1080 | DefaultConfirm, countrygovernmentview (profile), countryview (profile), gov_view_reform_select | 98.5 % | 94.0 % | 100.0 % | 100.0 % | 100.0 % | 12 fail |
 | vanilla-save-s45 1920x1080 | peace_view (profile) | 97.9 % | 87.4 % | 100.0 % | 97.0 % | 100.0 % | 22 fail |
-| vanilla-save-s58 1920x1080 | DefaultConfirm, countryeconomyview (profile), countryview | 92.4 % | 98.4 % | 100.0 % | 100.0 % | 100.0 % | 17 fail |
-| vanilla-save-s59 1920x1080 | countrytechnologyview (profile), countryview | 60.0 % | 95.2 % | 100.0 % | 100.0 % | 100.0 % | 18 fail |
-| vanilla-save-s60 1920x1080 | countryideasview (profile), countryview | 100.0 % | 96.9 % | 100.0 % | 100.0 % | 100.0 % | 0 fail |
-| vanilla-save-s61 1920x1080 | countrydecisionsview (profile), countryview | 100.0 % | 91.4 % | 100.0 % | 100.0 % | 100.0 % | 0 fail |
-| vanilla-save-s62 1920x1080 | DefaultConfirm, countrystabilityview (profile), countryview | 95.9 % | 97.0 % | 100.0 % | 100.0 % | 96.1 % | 22 fail |
-| vanilla-save-s63 1920x1080 | countrystabilityview (profile), countryview | 96.2 % | 97.2 % | 100.0 % | 100.0 % | 96.9 % | 10 fail |
-| vanilla-save-s64 1920x1080 | countryreligionview (profile), countryview | 95.1 % | 52.1 % | 97.5 % | 100.0 % | 100.0 % | 15 fail |
-| vanilla-save-s65 1920x1080 | countrymilitaryview (profile), countryview, domesticpanel_unit_select | 22.4 % | 93.5 % | 100.0 % | 100.0 % | 100.0 % | 114 fail |
-| vanilla-save-s66 1920x1080 | ConfirmAndNameLeaderDialog, countrymilitaryview (profile), countryview | 18.7 % | 95.0 % | 100.0 % | 100.0 % | 100.0 % | 125 fail |
-| vanilla-save-s67 1920x1080 | DefaultConfirm, countrymilitaryview (profile), countryview | 18.7 % | 96.4 % | 100.0 % | 100.0 % | 100.0 % | 125 fail |
-| vanilla-save-s68 1920x1080 | countrymilitaryview (profile), countryview, domesticpanel_naval_doctrine_select (profile) | 14.7 % | 96.3 % | 100.0 % | 100.0 % | 100.0 % | 125 fail |
-| vanilla-save-s70 1920x1080 | countrysubjectview (profile), countryview | 100.0 % | 88.9 % | 100.0 % | 100.0 % | 100.0 % | 5 fail |
+| vanilla-save-s58 1920x1080 | DefaultConfirm, countryeconomyview (profile), countryview (profile) | 92.4 % | 98.4 % | 100.0 % | 100.0 % | 100.0 % | 17 fail |
+| vanilla-save-s59 1920x1080 | countrytechnologyview (profile), countryview (profile) | 60.0 % | 95.2 % | 100.0 % | 100.0 % | 100.0 % | 18 fail |
+| vanilla-save-s60 1920x1080 | countryideasview (profile), countryview (profile) | 100.0 % | 96.9 % | 100.0 % | 100.0 % | 100.0 % | 0 fail |
+| vanilla-save-s61 1920x1080 | countrydecisionsview (profile), countryview (profile) | 100.0 % | 91.4 % | 100.0 % | 100.0 % | 100.0 % | 0 fail |
+| vanilla-save-s62 1920x1080 | DefaultConfirm, countrystabilityview (profile), countryview (profile) | 95.9 % | 97.0 % | 100.0 % | 100.0 % | 100.0 % | 22 fail |
+| vanilla-save-s63 1920x1080 | countrystabilityview (profile), countryview (profile) | 96.2 % | 97.2 % | 100.0 % | 100.0 % | 100.0 % | 10 fail |
+| vanilla-save-s64 1920x1080 | countryreligionview (profile), countryview (profile) | 95.1 % | 52.1 % | 100.0 % | 100.0 % | 100.0 % | 15 fail |
+| vanilla-save-s65 1920x1080 | countrymilitaryview (profile), countryview (profile), domesticpanel_unit_select | 22.4 % | 93.5 % | 100.0 % | 100.0 % | 100.0 % | 114 fail |
+| vanilla-save-s66 1920x1080 | ConfirmAndNameLeaderDialog, countrymilitaryview (profile), countryview (profile) | 18.7 % | 95.0 % | 100.0 % | 100.0 % | 100.0 % | 125 fail |
+| vanilla-save-s67 1920x1080 | DefaultConfirm, countrymilitaryview (profile), countryview (profile) | 18.7 % | 96.4 % | 100.0 % | 100.0 % | 100.0 % | 125 fail |
+| vanilla-save-s68 1920x1080 | countrymilitaryview (profile), countryview (profile), domesticpanel_naval_doctrine_select (profile) | 14.7 % | 96.3 % | 100.0 % | 100.0 % | 100.0 % | 125 fail |
+| vanilla-save-s70 1920x1080 | countrysubjectview (profile), countryview (profile) | 100.0 % | 88.9 % | 100.0 % | 100.0 % | 100.0 % | 5 fail |
 | vanilla-save-s11 1920x1080 | outliner_configuration | 100.0 % | 100.0 % | 100.0 % | 100.0 % | 100.0 % | 1 fail |
-| vanilla-save-s43 1920x1080 | countryestatesview (profile), countryview | 86.1 % | 97.4 % | 86.1 % | 100.0 % | 100.0 % | 9 fail |
-| vanilla-save-s73 1920x1080 | estate_dev_share_item, estate_dev_share_item, estate_dev_share_item, estate_dev_share_item, estate_dev_share_item, estate_item, estate_item, estate_item, estate_item | 0.0 % | 69.2 % | 98.0 % | 100.0 % | 100.0 % | 51 fail |
-| vanilla-save-s74 1920x1080 | DefaultConfirm, countryestatesview (profile), countryview | 86.0 % | 97.6 % | 88.3 % | 100.0 % | 100.0 % | 13 fail |
+| vanilla-save-s43 1920x1080 | countryestatesview (profile), countryview (profile) | 86.1 % | 97.4 % | 86.1 % | 100.0 % | 100.0 % | 9 fail |
+| vanilla-save-s74 1920x1080 | DefaultConfirm, countryestatesview (profile), countryview (profile) | 86.0 % | 97.6 % | 88.3 % | 100.0 % | 100.0 % | 13 fail |
 | vanilla-menu-s0 1920x1080 | country_selection_panel (profile) | 92.8 % | 75.0 % | 100.0 % | 100.0 % | 100.0 % | 5 fail |
-| vanilla-menu-s1 1920x1080 | country_selection_panel (profile), shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 92.9 % | 69.0 % | 100.0 % | 100.0 % | 100.0 % | 19 fail |
+| vanilla-menu-s1 1920x1080 | country_selection_panel (profile), shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 98.2 % | 69.0 % | 100.0 % | 100.0 % | 100.0 % | 19 fail |
 | vanilla-menu-s2 1920x1080 | CreditsWindow, country_selection_panel (profile) | 100.0 % | 29.4 % | 100.0 % | 100.0 % | 100.0 % | 1 fail |
-| vanilla-menu-s3 1920x1080 | country_selection_panel (profile), menu_settings (profile), menu_settings (profile) | 100.0 % | 62.2 % | 100.0 % | 97.7 % | 100.0 % | 7 fail |
-| vanilla-menu-s4 1920x1080 | country_selection_panel (profile), menu_settings (profile), menu_settings (profile), shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 95.1 % | 71.7 % | 100.0 % | 99.4 % | 100.0 % | 26 fail |
-| vanilla-menu-s5 1920x1080 | country_selection_panel (profile), goto_box, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 93.8 % | 70.6 % | 100.0 % | 100.0 % | 100.0 % | 20 fail |
-| vanilla-menu-s6 1920x1080 | country_selection_panel (profile), option_window, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 94.1 % | 70.9 % | 100.0 % | 100.0 % | 100.0 % | 21 fail |
+| vanilla-menu-s3 1920x1080 | country_selection_panel (profile), menu_settings (profile), menu_settings (profile) | 100.0 % | 62.2 % | 100.0 % | 100.0 % | 100.0 % | 7 fail |
+| vanilla-menu-s4 1920x1080 | country_selection_panel (profile), menu_settings (profile), menu_settings (profile), shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 98.7 % | 71.7 % | 100.0 % | 100.0 % | 100.0 % | 26 fail |
+| vanilla-menu-s5 1920x1080 | country_selection_panel (profile), goto_box, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 98.4 % | 70.6 % | 100.0 % | 100.0 % | 100.0 % | 20 fail |
+| vanilla-menu-s6 1920x1080 | country_selection_panel (profile), option_window, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 98.5 % | 70.9 % | 100.0 % | 100.0 % | 100.0 % | 21 fail |
 | vanilla-menu-s7 1920x1080 | country_selection_panel (profile) | 100.0 % | 38.5 % | 100.0 % | 100.0 % | 100.0 % | 4 fail |
-| vanilla-menu-s8 1920x1080 | country_selection_panel (profile), shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 94.6 % | 76.0 % | 100.0 % | 100.0 % | 100.0 % | 42 fail |
-| vanilla-menu-s9 1920x1080 | country_selection_panel (profile), option_window, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 94.1 % | 70.9 % | 100.0 % | 100.0 % | 100.0 % | 21 fail |
+| vanilla-menu-s8 1920x1080 | country_selection_panel (profile), shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 97.8 % | 76.0 % | 100.0 % | 100.0 % | 100.0 % | 42 fail |
+| vanilla-menu-s9 1920x1080 | country_selection_panel (profile), option_window, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 98.5 % | 70.9 % | 100.0 % | 100.0 % | 100.0 % | 21 fail |
 
 ### anbennar-alone
 
@@ -896,37 +950,37 @@ proper-2k-ui-enhanced, constructs with rects that differ (most first):
 | anbennar-alone-save-s6 1280x720 | provinceview (profile) | 95.9 % | 55.2 % | 100.0 % | 100.0 % | 100.0 % | 52 fail |
 | anbennar-alone-save-s7 1280x720 | provinceview (profile) | 95.4 % | 61.3 % | 100.0 % | 100.0 % | 100.0 % | 54 fail |
 | anbennar-alone-save-s9 1280x720 | multi_unitpanel, single_unitpanel (profile) | 100.0 % | 85.2 % | 100.0 % | 100.0 % | 100.0 % | 12 fail |
-| anbennar-alone-save-s11 1280x720 | countrygovernmentview (profile), countryview, gov_view_reform_select | 100.0 % | 63.1 % | 100.0 % | 100.0 % | 100.0 % | 9 fail |
-| anbennar-alone-save-s12 1280x720 | ages_view (profile) | 87.5 % | 86.0 % | 93.7 % | 100.0 % | 100.0 % | 4 fail |
+| anbennar-alone-save-s11 1280x720 | countrygovernmentview (profile), countryview (profile), gov_view_reform_select | 100.0 % | 63.1 % | 100.0 % | 100.0 % | 100.0 % | 9 fail |
+| anbennar-alone-save-s12 1280x720 | ages_view (profile) | 87.5 % | 86.0 % | 100.0 % | 100.0 % | 100.0 % | 4 fail |
 | anbennar-alone-save-s14 1280x720 | provinceview (profile) | 92.9 % | 66.2 % | 100.0 % | 100.0 % | 100.0 % | 65 fail |
-| anbennar-alone-save-s17 1280x720 | countrygovernmentview (profile), countryview | 100.0 % | 52.0 % | 100.0 % | 100.0 % | 100.0 % | 10 fail |
-| anbennar-alone-save-s18 1280x720 | countrydiplomacyview (profile), countryview, hre_window (profile) | 98.4 % | 78.0 % | 100.0 % | 100.0 % | 100.0 % | 29 fail |
-| anbennar-alone-save-s20 1280x720 | celestial_window, countrydiplomacyview (profile), countryview, tributary_shield | 97.2 % | 72.2 % | 100.0 % | 100.0 % | 100.0 % | 44 fail |
+| anbennar-alone-save-s17 1280x720 | countrygovernmentview (profile), countryview (profile) | 100.0 % | 52.0 % | 100.0 % | 100.0 % | 100.0 % | 10 fail |
+| anbennar-alone-save-s18 1280x720 | countrydiplomacyview (profile), countryview (profile), hre_window (profile) | 98.4 % | 78.0 % | 100.0 % | 100.0 % | 100.0 % | 29 fail |
+| anbennar-alone-save-s20 1280x720 | celestial_window, countrydiplomacyview (profile), countryview (profile), tributary_shield | 97.2 % | 72.2 % | 100.0 % | 100.0 % | 100.0 % | 44 fail |
 | anbennar-alone-save-s25 1280x720 | multi_unitpanel, rebel_supression_panel, single_unitpanel (profile) | 100.0 % | 86.2 % | 100.0 % | 100.0 % | 100.0 % | 15 fail |
-| anbennar-alone-save-s26 1280x720 | countrydiplomacyview (profile), countryview, great_powers | 98.0 % | 66.5 % | 100.0 % | 100.0 % | 100.0 % | 26 fail |
-| anbennar-alone-save-s27 1280x720 | countrydiplomacyview (profile), countryview | 97.8 % | 62.2 % | 100.0 % | 100.0 % | 100.0 % | 43 fail |
-| anbennar-alone-save-s29 1280x720 | countrytradeview, countryview | 100.0 % | 98.7 % | 100.0 % | 100.0 % | 100.0 % | 15 fail |
-| anbennar-alone-save-s30 1280x720 | countrytechnologyview (profile), countryview | 100.0 % | 97.6 % | 100.0 % | 100.0 % | 100.0 % | 3 fail |
-| anbennar-alone-save-s32 1280x720 | countrymissionsview (profile), countryview | 100.0 % | 100.0 % | 100.0 % | 100.0 % | 100.0 % | pass |
-| anbennar-alone-save-s33 1280x720 | countrydecisionsview (profile), countryview | 100.0 % | 38.4 % | 100.0 % | 100.0 % | 100.0 % | 10 fail |
-| anbennar-alone-save-s34 1280x720 | countrystabilityview (profile), countryview | 100.0 % | 96.2 % | 100.0 % | 100.0 % | 91.6 % | 21 fail |
-| anbennar-alone-save-s35 1280x720 | countryreligionview (profile), countryview | 98.0 % | 46.0 % | 100.0 % | 100.0 % | 100.0 % | 18 fail |
-| anbennar-alone-save-s36 1280x720 | countrymilitaryview (profile), countryview | 15.7 % | 93.1 % | 100.0 % | 100.0 % | 100.0 % | 116 fail |
+| anbennar-alone-save-s26 1280x720 | countrydiplomacyview (profile), countryview (profile), great_powers | 98.0 % | 66.5 % | 100.0 % | 100.0 % | 100.0 % | 26 fail |
+| anbennar-alone-save-s27 1280x720 | countrydiplomacyview (profile), countryview (profile) | 97.8 % | 62.2 % | 100.0 % | 100.0 % | 100.0 % | 43 fail |
+| anbennar-alone-save-s29 1280x720 | countrytradeview (profile), countryview (profile) | 100.0 % | 98.7 % | 100.0 % | 100.0 % | 100.0 % | 15 fail |
+| anbennar-alone-save-s30 1280x720 | countrytechnologyview (profile), countryview (profile) | 100.0 % | 97.6 % | 100.0 % | 100.0 % | 100.0 % | 3 fail |
+| anbennar-alone-save-s32 1280x720 | countrymissionsview (profile), countryview (profile) | 100.0 % | 100.0 % | 100.0 % | 100.0 % | 100.0 % | pass |
+| anbennar-alone-save-s33 1280x720 | countrydecisionsview (profile), countryview (profile) | 100.0 % | 38.4 % | 100.0 % | 100.0 % | 100.0 % | 10 fail |
+| anbennar-alone-save-s34 1280x720 | countrystabilityview (profile), countryview (profile) | 100.0 % | 96.2 % | 100.0 % | 100.0 % | 100.0 % | 21 fail |
+| anbennar-alone-save-s35 1280x720 | countryreligionview (profile), countryview (profile) | 98.0 % | 46.0 % | 100.0 % | 100.0 % | 100.0 % | 18 fail |
+| anbennar-alone-save-s36 1280x720 | countrymilitaryview (profile), countryview (profile) | 15.7 % | 93.1 % | 100.0 % | 100.0 % | 100.0 % | 116 fail |
 | anbennar-alone-save-s38 1280x720 | provinceview (profile) | 94.7 % | 67.9 % | 100.0 % | 100.0 % | 100.0 % | 20 fail |
-| anbennar-alone-save-s41 1280x720 | DefaultConfirm, countrytradeview, countryview | 100.0 % | 98.8 % | 100.0 % | 100.0 % | 100.0 % | 26 fail |
-| anbennar-alone-save-s42 1280x720 | countrytechnologyview (profile), countryview | 58.9 % | 95.2 % | 100.0 % | 100.0 % | 100.0 % | 19 fail |
-| anbennar-alone-save-s47 1280x720 | countrydecisionsview (profile), countryview | 100.0 % | 36.3 % | 100.0 % | 100.0 % | 100.0 % | 0 fail |
-| anbennar-alone-save-s48 1280x720 | countryreligionview (profile), countryview | 97.4 % | 41.6 % | 100.0 % | 100.0 % | 100.0 % | 11 fail |
-| anbennar-alone-save-s49 1280x720 | countrymilitaryview (profile), countryview, domesticpanel_unit_select | 22.7 % | 90.9 % | 100.0 % | 100.0 % | 100.0 % | 111 fail |
-| anbennar-alone-save-s51 1280x720 | DefaultConfirm, countrymilitaryview (profile), countryview | 19.4 % | 93.5 % | 100.0 % | 100.0 % | 100.0 % | 122 fail |
-| anbennar-alone-save-s24 1280x720 | multi_unitpanel, reorg_window | 100.0 % | 99.6 % | 100.0 % | 100.0 % | 100.0 % | 17 fail |
-| anbennar-alone-save-s37 1280x720 | countryestatesview (profile), countryview | 92.8 % | 89.7 % | 96.4 % | 100.0 % | 100.0 % | 2 fail |
+| anbennar-alone-save-s41 1280x720 | DefaultConfirm, countrytradeview (profile), countryview (profile) | 100.0 % | 98.8 % | 100.0 % | 100.0 % | 100.0 % | 26 fail |
+| anbennar-alone-save-s42 1280x720 | countrytechnologyview (profile), countryview (profile) | 58.9 % | 95.2 % | 100.0 % | 100.0 % | 100.0 % | 19 fail |
+| anbennar-alone-save-s47 1280x720 | countrydecisionsview (profile), countryview (profile) | 100.0 % | 36.3 % | 100.0 % | 100.0 % | 100.0 % | 0 fail |
+| anbennar-alone-save-s48 1280x720 | countryreligionview (profile), countryview (profile) | 97.4 % | 41.6 % | 100.0 % | 100.0 % | 100.0 % | 11 fail |
+| anbennar-alone-save-s49 1280x720 | countrymilitaryview (profile), countryview (profile), domesticpanel_unit_select | 22.7 % | 90.9 % | 100.0 % | 100.0 % | 100.0 % | 111 fail |
+| anbennar-alone-save-s51 1280x720 | DefaultConfirm, countrymilitaryview (profile), countryview (profile) | 19.4 % | 93.5 % | 100.0 % | 100.0 % | 100.0 % | 122 fail |
+| anbennar-alone-save-s24 1280x720 | multi_unitpanel, reorg_window (profile) | 100.0 % | 99.6 % | 100.0 % | 100.0 % | 100.0 % | 17 fail |
+| anbennar-alone-save-s37 1280x720 | countryestatesview (profile), countryview (profile) | 92.8 % | 89.7 % | 96.4 % | 100.0 % | 100.0 % | 2 fail |
 | anbennar-alone-menu-s0 1280x720 | country_selection_panel (profile) | 93.9 % | 77.2 % | 100.0 % | 100.0 % | 100.0 % | 5 fail |
-| anbennar-alone-menu-s1 1280x720 | country_selection_panel (profile), shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow | 92.8 % | 57.5 % | 100.0 % | 100.0 % | 100.0 % | 14 fail |
+| anbennar-alone-menu-s1 1280x720 | country_selection_panel (profile), shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow | 97.6 % | 57.5 % | 100.0 % | 100.0 % | 100.0 % | 14 fail |
 | anbennar-alone-menu-s2 1280x720 | CreditsWindow, country_selection_panel (profile) | 100.0 % | 29.4 % | 100.0 % | 100.0 % | 100.0 % | 2 fail |
-| anbennar-alone-menu-s3 1280x720 | country_selection_panel (profile), menu_settings (profile), menu_settings (profile) | 100.0 % | 62.2 % | 100.0 % | 97.7 % | 100.0 % | 7 fail |
+| anbennar-alone-menu-s3 1280x720 | country_selection_panel (profile), menu_settings (profile), menu_settings (profile) | 100.0 % | 62.2 % | 100.0 % | 100.0 % | 100.0 % | 7 fail |
 | anbennar-alone-save-s0 1920x1080 | diplomessageicons_window, menubar (profile), message_icons, minimap_panel (profile), outliner, speed_controls, topbar (profile) | 93.5 % | 70.3 % | 99.1 % | 100.0 % | 100.0 % | 41 fail |
-| anbennar-alone-save-s1 1920x1080 | countrycourtview (profile), countryview | 100.0 % | 93.6 % | 100.0 % | 100.0 % | 100.0 % | 17 fail |
+| anbennar-alone-save-s1 1920x1080 | countrycourtview (profile), countryview (profile) | 100.0 % | 93.6 % | 100.0 % | 100.0 % | 100.0 % | 17 fail |
 | anbennar-alone-save-s2 1920x1080 | hre_window (profile) | 100.0 % | 91.9 % | 100.0 % | 100.0 % | 100.0 % | 4 fail |
 | anbennar-alone-save-s3 1920x1080 | celestial_window, tributary_shield | 94.1 % | 100.0 % | 100.0 % | 100.0 % | 100.0 % | 6 fail |
 | anbennar-alone-save-s4 1920x1080 | ledger (profile) | 100.0 % | 68.9 % | 100.0 % | 100.0 % | 100.0 % | pass |
@@ -935,49 +989,48 @@ proper-2k-ui-enhanced, constructs with rects that differ (most first):
 | anbennar-alone-save-s7 1920x1080 | provinceview (profile) | 95.4 % | 61.7 % | 100.0 % | 100.0 % | 100.0 % | 54 fail |
 | anbennar-alone-save-s9 1920x1080 | multi_unitpanel, single_unitpanel (profile) | 100.0 % | 85.2 % | 100.0 % | 100.0 % | 100.0 % | 12 fail |
 | anbennar-alone-save-s10 1920x1080 | great_powers | 100.0 % | 100.0 % | 100.0 % | 100.0 % | 100.0 % | pass |
-| anbennar-alone-save-s11 1920x1080 | countrygovernmentview (profile), countryview, gov_view_reform_select | 100.0 % | 68.0 % | 100.0 % | 100.0 % | 100.0 % | 7 fail |
-| anbennar-alone-save-s12 1920x1080 | ages_view (profile) | 87.5 % | 86.0 % | 93.7 % | 100.0 % | 100.0 % | 4 fail |
+| anbennar-alone-save-s11 1920x1080 | countrygovernmentview (profile), countryview (profile), gov_view_reform_select | 100.0 % | 68.0 % | 100.0 % | 100.0 % | 100.0 % | 7 fail |
+| anbennar-alone-save-s12 1920x1080 | ages_view (profile) | 87.5 % | 86.0 % | 100.0 % | 100.0 % | 100.0 % | 4 fail |
 | anbennar-alone-save-s14 1920x1080 | provinceview (profile) | 93.0 % | 66.5 % | 100.0 % | 100.0 % | 100.0 % | 65 fail |
 | anbennar-alone-save-s15 1920x1080 | colonisationpanel (profile) | 100.0 % | 78.4 % | 100.0 % | 100.0 % | 100.0 % | 11 fail |
-| anbennar-alone-save-s17 1920x1080 | countrygovernmentview (profile), countryview | 100.0 % | 52.0 % | 100.0 % | 100.0 % | 100.0 % | 9 fail |
-| anbennar-alone-save-s18 1920x1080 | countrydiplomacyview (profile), countryview, hre_window (profile) | 98.4 % | 77.5 % | 100.0 % | 100.0 % | 100.0 % | 47 fail |
+| anbennar-alone-save-s17 1920x1080 | countrygovernmentview (profile), countryview (profile) | 100.0 % | 52.0 % | 100.0 % | 100.0 % | 100.0 % | 9 fail |
+| anbennar-alone-save-s18 1920x1080 | countrydiplomacyview (profile), countryview (profile), hre_window (profile) | 98.4 % | 77.5 % | 100.0 % | 100.0 % | 100.0 % | 47 fail |
 | anbennar-alone-save-s19 1920x1080 | DefaultConfirm, hre_window (profile) | 97.0 % | 92.3 % | 100.0 % | 100.0 % | 100.0 % | 9 fail |
-| anbennar-alone-save-s20 1920x1080 | celestial_window, countrydiplomacyview (profile), countryview, tributary_shield | 97.2 % | 72.1 % | 100.0 % | 100.0 % | 100.0 % | 47 fail |
-| anbennar-alone-save-s21 1920x1080 | ledger (profile) | 100.0 % | 42.1 % | 100.0 % | 100.0 % | 90.7 % | 13 fail |
+| anbennar-alone-save-s20 1920x1080 | celestial_window, countrydiplomacyview (profile), countryview (profile), tributary_shield | 97.2 % | 72.1 % | 100.0 % | 100.0 % | 100.0 % | 47 fail |
+| anbennar-alone-save-s21 1920x1080 | ledger (profile) | 100.0 % | 42.1 % | 100.0 % | 100.0 % | 100.0 % | 13 fail |
 | anbennar-alone-save-s25 1920x1080 | multi_unitpanel, rebel_supression_panel, single_unitpanel (profile) | 100.0 % | 86.2 % | 100.0 % | 100.0 % | 100.0 % | 15 fail |
-| anbennar-alone-save-s26 1920x1080 | countrydiplomacyview (profile), countryview, great_powers | 98.0 % | 66.3 % | 100.0 % | 100.0 % | 100.0 % | 41 fail |
-| anbennar-alone-save-s27 1920x1080 | countrydiplomacyview (profile), countryview | 97.8 % | 62.0 % | 100.0 % | 100.0 % | 100.0 % | 41 fail |
-| anbennar-alone-save-s28 1920x1080 | countryeconomyview (profile), countryview | 93.3 % | 98.1 % | 100.0 % | 100.0 % | 100.0 % | 12 fail |
-| anbennar-alone-save-s29 1920x1080 | countrytradeview, countryview | 100.0 % | 98.7 % | 100.0 % | 100.0 % | 100.0 % | 14 fail |
-| anbennar-alone-save-s30 1920x1080 | countrytechnologyview (profile), countryview | 100.0 % | 97.6 % | 100.0 % | 100.0 % | 100.0 % | 2 fail |
-| anbennar-alone-save-s31 1920x1080 | countryideasview (profile), countryview | 100.0 % | 95.6 % | 100.0 % | 100.0 % | 100.0 % | 9 fail |
-| anbennar-alone-save-s32 1920x1080 | countrymissionsview (profile), countryview | 100.0 % | 100.0 % | 100.0 % | 100.0 % | 100.0 % | pass |
-| anbennar-alone-save-s33 1920x1080 | countrydecisionsview (profile), countryview | 100.0 % | 38.4 % | 100.0 % | 100.0 % | 100.0 % | 9 fail |
-| anbennar-alone-save-s34 1920x1080 | countrystabilityview (profile), countryview | 100.0 % | 96.2 % | 100.0 % | 100.0 % | 91.6 % | 20 fail |
-| anbennar-alone-save-s35 1920x1080 | countryreligionview (profile), countryview | 96.0 % | 46.0 % | 98.0 % | 100.0 % | 100.0 % | 18 fail |
-| anbennar-alone-save-s36 1920x1080 | countrymilitaryview (profile), countryview | 14.9 % | 93.1 % | 100.0 % | 100.0 % | 100.0 % | 116 fail |
+| anbennar-alone-save-s26 1920x1080 | countrydiplomacyview (profile), countryview (profile), great_powers | 98.0 % | 66.3 % | 100.0 % | 100.0 % | 100.0 % | 41 fail |
+| anbennar-alone-save-s27 1920x1080 | countrydiplomacyview (profile), countryview (profile) | 97.8 % | 62.0 % | 100.0 % | 100.0 % | 100.0 % | 41 fail |
+| anbennar-alone-save-s28 1920x1080 | countryeconomyview (profile), countryview (profile) | 93.3 % | 98.1 % | 100.0 % | 100.0 % | 100.0 % | 12 fail |
+| anbennar-alone-save-s29 1920x1080 | countrytradeview (profile), countryview (profile) | 100.0 % | 98.7 % | 100.0 % | 100.0 % | 100.0 % | 14 fail |
+| anbennar-alone-save-s30 1920x1080 | countrytechnologyview (profile), countryview (profile) | 100.0 % | 97.6 % | 100.0 % | 100.0 % | 100.0 % | 2 fail |
+| anbennar-alone-save-s31 1920x1080 | countryideasview (profile), countryview (profile) | 100.0 % | 95.6 % | 100.0 % | 100.0 % | 100.0 % | 9 fail |
+| anbennar-alone-save-s32 1920x1080 | countrymissionsview (profile), countryview (profile) | 100.0 % | 100.0 % | 100.0 % | 100.0 % | 100.0 % | pass |
+| anbennar-alone-save-s33 1920x1080 | countrydecisionsview (profile), countryview (profile) | 100.0 % | 38.4 % | 100.0 % | 100.0 % | 100.0 % | 9 fail |
+| anbennar-alone-save-s34 1920x1080 | countrystabilityview (profile), countryview (profile) | 100.0 % | 96.2 % | 100.0 % | 100.0 % | 100.0 % | 20 fail |
+| anbennar-alone-save-s35 1920x1080 | countryreligionview (profile), countryview (profile) | 96.0 % | 46.0 % | 100.0 % | 100.0 % | 100.0 % | 18 fail |
+| anbennar-alone-save-s36 1920x1080 | countrymilitaryview (profile), countryview (profile) | 14.9 % | 93.1 % | 100.0 % | 100.0 % | 100.0 % | 116 fail |
 | anbennar-alone-save-s38 1920x1080 | provinceview (profile) | 95.6 % | 68.3 % | 100.0 % | 100.0 % | 100.0 % | 16 fail |
-| anbennar-alone-save-s40 1920x1080 | DefaultConfirm, countryeconomyview (profile), countryview | 92.3 % | 98.4 % | 100.0 % | 100.0 % | 100.0 % | 16 fail |
-| anbennar-alone-save-s41 1920x1080 | DefaultConfirm, countrytradeview, countryview | 100.0 % | 98.8 % | 100.0 % | 100.0 % | 100.0 % | 18 fail |
-| anbennar-alone-save-s42 1920x1080 | countrytechnologyview (profile), countryview | 58.9 % | 95.2 % | 100.0 % | 100.0 % | 100.0 % | 18 fail |
-| anbennar-alone-save-s43 1920x1080 | countryideasview (profile), countryview | 100.0 % | 88.3 % | 100.0 % | 100.0 % | 100.0 % | 0 fail |
-| anbennar-alone-save-s44 1920x1080 | countrydecisionsview (profile), countryview, topbar (profile) | 98.7 % | 57.5 % | 100.0 % | 100.0 % | 100.0 % | 37 fail |
-| anbennar-alone-save-s45 1920x1080 | countrydecisionsview (profile), countryview, topbar (profile) | 99.4 % | 58.8 % | 100.0 % | 100.0 % | 100.0 % | 29 fail |
-| anbennar-alone-save-s46 1920x1080 | countrydecisionsview (profile), countryview, topbar (profile) | 100.0 % | 58.4 % | 100.0 % | 100.0 % | 100.0 % | 33 fail |
-| anbennar-alone-save-s47 1920x1080 | countrydecisionsview (profile), countryview | 100.0 % | 36.3 % | 100.0 % | 100.0 % | 100.0 % | 0 fail |
-| anbennar-alone-save-s48 1920x1080 | countryreligionview (profile), countryview | 94.8 % | 41.6 % | 97.4 % | 100.0 % | 100.0 % | 16 fail |
-| anbennar-alone-save-s49 1920x1080 | countrymilitaryview (profile), countryview, domesticpanel_unit_select | 22.0 % | 90.9 % | 100.0 % | 100.0 % | 100.0 % | 112 fail |
-| anbennar-alone-save-s51 1920x1080 | DefaultConfirm, countrymilitaryview (profile), countryview | 18.6 % | 93.5 % | 100.0 % | 100.0 % | 100.0 % | 120 fail |
+| anbennar-alone-save-s40 1920x1080 | DefaultConfirm, countryeconomyview (profile), countryview (profile) | 92.3 % | 98.4 % | 100.0 % | 100.0 % | 100.0 % | 16 fail |
+| anbennar-alone-save-s41 1920x1080 | DefaultConfirm, countrytradeview (profile), countryview (profile) | 100.0 % | 98.8 % | 100.0 % | 100.0 % | 100.0 % | 18 fail |
+| anbennar-alone-save-s42 1920x1080 | countrytechnologyview (profile), countryview (profile) | 58.9 % | 95.2 % | 100.0 % | 100.0 % | 100.0 % | 18 fail |
+| anbennar-alone-save-s43 1920x1080 | countryideasview (profile), countryview (profile) | 100.0 % | 88.3 % | 100.0 % | 100.0 % | 100.0 % | 0 fail |
+| anbennar-alone-save-s44 1920x1080 | countrydecisionsview (profile), countryview (profile), topbar (profile) | 98.7 % | 57.5 % | 100.0 % | 100.0 % | 100.0 % | 37 fail |
+| anbennar-alone-save-s45 1920x1080 | countrydecisionsview (profile), countryview (profile), topbar (profile) | 99.4 % | 58.8 % | 100.0 % | 100.0 % | 100.0 % | 29 fail |
+| anbennar-alone-save-s46 1920x1080 | countrydecisionsview (profile), countryview (profile), topbar (profile) | 100.0 % | 58.4 % | 100.0 % | 100.0 % | 100.0 % | 33 fail |
+| anbennar-alone-save-s47 1920x1080 | countrydecisionsview (profile), countryview (profile) | 100.0 % | 36.3 % | 100.0 % | 100.0 % | 100.0 % | 0 fail |
+| anbennar-alone-save-s48 1920x1080 | countryreligionview (profile), countryview (profile) | 94.8 % | 41.6 % | 100.0 % | 100.0 % | 100.0 % | 16 fail |
+| anbennar-alone-save-s49 1920x1080 | countrymilitaryview (profile), countryview (profile), domesticpanel_unit_select | 22.0 % | 90.9 % | 100.0 % | 100.0 % | 100.0 % | 112 fail |
+| anbennar-alone-save-s51 1920x1080 | DefaultConfirm, countrymilitaryview (profile), countryview (profile) | 18.6 % | 93.5 % | 100.0 % | 100.0 % | 100.0 % | 120 fail |
 | anbennar-alone-save-s8 1920x1080 | outliner_configuration | 100.0 % | 100.0 % | 100.0 % | 100.0 % | 100.0 % | 1 fail |
 | anbennar-alone-save-s16 1920x1080 | topbar (profile) | 97.0 % | 55.0 % | 100.0 % | 100.0 % | 100.0 % | 31 fail |
-| anbennar-alone-save-s24 1920x1080 | multi_unitpanel, reorg_window | 100.0 % | 99.6 % | 100.0 % | 100.0 % | 100.0 % | 17 fail |
-| anbennar-alone-save-s37 1920x1080 | countryestatesview (profile), countryview | 92.8 % | 88.6 % | 96.4 % | 100.0 % | 100.0 % | 4 fail |
-| anbennar-alone-save-s52 1920x1080 | estate_dev_share_item, estate_dev_share_item, estate_dev_share_item, estate_dev_share_item, estate_dev_share_item, estate_dev_share_item, estate_item, estate_item, estate_item, estate_item, estate_item | 0.0 % | 76.1 % | 92.9 % | 100.0 % | 100.0 % | 71 fail |
-| anbennar-alone-save-s53 1920x1080 | countryestatesview (profile), countryview, estate_privileges_window | 94.1 % | 91.0 % | 97.0 % | 100.0 % | 100.0 % | 5 fail |
+| anbennar-alone-save-s24 1920x1080 | multi_unitpanel, reorg_window (profile) | 100.0 % | 99.6 % | 100.0 % | 100.0 % | 100.0 % | 17 fail |
+| anbennar-alone-save-s37 1920x1080 | countryestatesview (profile), countryview (profile) | 92.8 % | 88.6 % | 96.4 % | 100.0 % | 100.0 % | 4 fail |
+| anbennar-alone-save-s53 1920x1080 | countryestatesview (profile), countryview (profile), estate_privileges_window | 94.1 % | 91.0 % | 97.0 % | 100.0 % | 100.0 % | 5 fail |
 | anbennar-alone-menu-s0 1920x1080 | country_selection_panel (profile) | 93.9 % | 77.2 % | 100.0 % | 100.0 % | 100.0 % | 5 fail |
-| anbennar-alone-menu-s1 1920x1080 | country_selection_panel (profile), shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow | 92.8 % | 57.5 % | 100.0 % | 100.0 % | 100.0 % | 15 fail |
+| anbennar-alone-menu-s1 1920x1080 | country_selection_panel (profile), shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow | 97.6 % | 57.5 % | 100.0 % | 100.0 % | 100.0 % | 15 fail |
 | anbennar-alone-menu-s2 1920x1080 | CreditsWindow, country_selection_panel (profile) | 100.0 % | 29.4 % | 100.0 % | 100.0 % | 100.0 % | 2 fail |
-| anbennar-alone-menu-s3 1920x1080 | country_selection_panel (profile), menu_settings (profile), menu_settings (profile) | 100.0 % | 62.2 % | 100.0 % | 97.7 % | 100.0 % | 7 fail |
+| anbennar-alone-menu-s3 1920x1080 | country_selection_panel (profile), menu_settings (profile), menu_settings (profile) | 100.0 % | 62.2 % | 100.0 % | 100.0 % | 100.0 % | 7 fail |
 
 ### bigger-ui
 
@@ -988,39 +1041,39 @@ proper-2k-ui-enhanced, constructs with rects that differ (most first):
 | vanilla-save-s8 1280x720 | provinceview (profile) | 92.0 % | 70.4 % | 100.0 % | 100.0 % | 100.0 % | 58 fail |
 | vanilla-save-s9 1280x720 | provinceview (profile) | 94.2 % | 65.4 % | 100.0 % | 100.0 % | 100.0 % | 52 fail |
 | vanilla-save-s12 1280x720 | provinceview (profile) | 92.3 % | 67.9 % | 100.0 % | 100.0 % | 100.0 % | 56 fail |
-| vanilla-save-s14 1280x720 | countrygovernmentview (profile), countryview, gov_view_reform_select | 100.0 % | 93.8 % | 100.0 % | 100.0 % | 100.0 % | 9 fail |
-| vanilla-save-s15 1280x720 | ages_view (profile) | 88.8 % | 88.8 % | 94.4 % | 100.0 % | 100.0 % | 5 fail |
-| vanilla-save-s24 1280x720 | countrygovernmentview (profile), countryview | 100.0 % | 93.4 % | 100.0 % | 100.0 % | 100.0 % | 8 fail |
-| vanilla-save-s25 1280x720 | countrydiplomacyview (profile), countryview, hre_window (profile) | 98.1 % | 75.0 % | 100.0 % | 100.0 % | 100.0 % | 32 fail |
-| vanilla-save-s26 1280x720 | celestial_window, countrydiplomacyview (profile), countryview | 97.2 % | 85.2 % | 100.0 % | 100.0 % | 100.0 % | 44 fail |
-| vanilla-save-s31 1280x720 | countrydiplomacyview (profile), countryview, great_powers | 97.1 % | 82.6 % | 100.0 % | 100.0 % | 100.0 % | 23 fail |
-| vanilla-save-s32 1280x720 | countrydiplomacyview (profile), countryview | 96.8 % | 81.4 % | 100.0 % | 100.0 % | 100.0 % | 40 fail |
-| vanilla-save-s34 1280x720 | countrytradeview, countryview | 100.0 % | 98.6 % | 100.0 % | 100.0 % | 100.0 % | 15 fail |
-| vanilla-save-s35 1280x720 | countrytechnologyview (profile), countryview | 100.0 % | 97.6 % | 100.0 % | 100.0 % | 100.0 % | 3 fail |
-| vanilla-save-s37 1280x720 | countrymissionsview (profile), countryview | 100.0 % | 97.8 % | 100.0 % | 100.0 % | 100.0 % | pass |
-| vanilla-save-s38 1280x720 | countrydecisionsview (profile), countryview | 100.0 % | 98.0 % | 100.0 % | 100.0 % | 100.0 % | 9 fail |
-| vanilla-save-s39 1280x720 | countrystabilityview (profile), countryview | 97.0 % | 96.6 % | 100.0 % | 100.0 % | 94.4 % | 19 fail |
-| vanilla-save-s40 1280x720 | countryreligionview (profile), countryview | 94.9 % | 75.3 % | 100.0 % | 100.0 % | 100.0 % | 21 fail |
-| vanilla-save-s41 1280x720 | countrymilitaryview (profile), countryview | 15.9 % | 96.4 % | 100.0 % | 100.0 % | 100.0 % | 121 fail |
-| vanilla-save-s42 1280x720 | countrysubjectview (profile), countryview | 100.0 % | 92.3 % | 100.0 % | 100.0 % | 100.0 % | 3 fail |
-| vanilla-save-s44 1280x720 | DefaultConfirm, countrygovernmentview (profile), countryview, gov_view_reform_select | 98.5 % | 94.0 % | 100.0 % | 100.0 % | 100.0 % | 19 fail |
-| vanilla-save-s59 1280x720 | countrytechnologyview (profile), countryview | 60.0 % | 95.2 % | 100.0 % | 100.0 % | 100.0 % | 19 fail |
-| vanilla-save-s61 1280x720 | countrydecisionsview (profile), countryview | 100.0 % | 91.4 % | 100.0 % | 100.0 % | 100.0 % | 0 fail |
-| vanilla-save-s62 1280x720 | DefaultConfirm, countrystabilityview (profile), countryview | 95.9 % | 96.9 % | 100.0 % | 100.0 % | 95.0 % | 36 fail |
-| vanilla-save-s63 1280x720 | countrystabilityview (profile), countryview | 96.2 % | 97.3 % | 100.0 % | 100.0 % | 95.8 % | 10 fail |
-| vanilla-save-s64 1280x720 | countryreligionview (profile), countryview | 97.5 % | 51.0 % | 100.0 % | 100.0 % | 100.0 % | 10 fail |
-| vanilla-save-s65 1280x720 | countrymilitaryview (profile), countryview, domesticpanel_unit_select | 22.6 % | 93.2 % | 100.0 % | 100.0 % | 100.0 % | 112 fail |
-| vanilla-save-s66 1280x720 | ConfirmAndNameLeaderDialog, countrymilitaryview (profile), countryview | 19.4 % | 95.1 % | 100.0 % | 100.0 % | 100.0 % | 127 fail |
-| vanilla-save-s67 1280x720 | DefaultConfirm, countrymilitaryview (profile), countryview | 19.4 % | 96.5 % | 100.0 % | 100.0 % | 100.0 % | 127 fail |
-| vanilla-save-s68 1280x720 | countrymilitaryview (profile), countryview, domesticpanel_naval_doctrine_select (profile) | 15.4 % | 96.5 % | 100.0 % | 100.0 % | 100.0 % | 125 fail |
-| vanilla-save-s70 1280x720 | countrysubjectview (profile), countryview | 100.0 % | 92.7 % | 100.0 % | 100.0 % | 100.0 % | 3 fail |
-| vanilla-save-s43 1280x720 | countryestatesview (profile), countryview | 86.1 % | 97.6 % | 86.1 % | 100.0 % | 100.0 % | 5 fail |
+| vanilla-save-s14 1280x720 | countrygovernmentview (profile), countryview (profile), gov_view_reform_select | 100.0 % | 93.8 % | 100.0 % | 100.0 % | 100.0 % | 9 fail |
+| vanilla-save-s15 1280x720 | ages_view (profile) | 88.8 % | 88.8 % | 100.0 % | 100.0 % | 100.0 % | 5 fail |
+| vanilla-save-s24 1280x720 | countrygovernmentview (profile), countryview (profile) | 100.0 % | 93.4 % | 100.0 % | 100.0 % | 100.0 % | 8 fail |
+| vanilla-save-s25 1280x720 | countrydiplomacyview (profile), countryview (profile), hre_window (profile) | 98.1 % | 75.0 % | 100.0 % | 100.0 % | 100.0 % | 32 fail |
+| vanilla-save-s26 1280x720 | celestial_window, countrydiplomacyview (profile), countryview (profile) | 97.2 % | 85.2 % | 100.0 % | 100.0 % | 100.0 % | 44 fail |
+| vanilla-save-s31 1280x720 | countrydiplomacyview (profile), countryview (profile), great_powers | 97.1 % | 82.6 % | 100.0 % | 100.0 % | 100.0 % | 23 fail |
+| vanilla-save-s32 1280x720 | countrydiplomacyview (profile), countryview (profile) | 96.8 % | 81.4 % | 100.0 % | 100.0 % | 100.0 % | 40 fail |
+| vanilla-save-s34 1280x720 | countrytradeview (profile), countryview (profile) | 100.0 % | 98.6 % | 100.0 % | 100.0 % | 100.0 % | 15 fail |
+| vanilla-save-s35 1280x720 | countrytechnologyview (profile), countryview (profile) | 100.0 % | 97.6 % | 100.0 % | 100.0 % | 100.0 % | 3 fail |
+| vanilla-save-s37 1280x720 | countrymissionsview (profile), countryview (profile) | 100.0 % | 97.8 % | 100.0 % | 100.0 % | 100.0 % | pass |
+| vanilla-save-s38 1280x720 | countrydecisionsview (profile), countryview (profile) | 100.0 % | 98.0 % | 100.0 % | 100.0 % | 100.0 % | 9 fail |
+| vanilla-save-s39 1280x720 | countrystabilityview (profile), countryview (profile) | 97.0 % | 96.6 % | 100.0 % | 100.0 % | 100.0 % | 19 fail |
+| vanilla-save-s40 1280x720 | countryreligionview (profile), countryview (profile) | 94.9 % | 75.3 % | 100.0 % | 100.0 % | 100.0 % | 21 fail |
+| vanilla-save-s41 1280x720 | countrymilitaryview (profile), countryview (profile) | 15.9 % | 96.4 % | 100.0 % | 100.0 % | 100.0 % | 121 fail |
+| vanilla-save-s42 1280x720 | countrysubjectview (profile), countryview (profile) | 100.0 % | 92.3 % | 100.0 % | 100.0 % | 100.0 % | 3 fail |
+| vanilla-save-s44 1280x720 | DefaultConfirm, countrygovernmentview (profile), countryview (profile), gov_view_reform_select | 98.5 % | 94.0 % | 100.0 % | 100.0 % | 100.0 % | 19 fail |
+| vanilla-save-s59 1280x720 | countrytechnologyview (profile), countryview (profile) | 60.0 % | 95.2 % | 100.0 % | 100.0 % | 100.0 % | 19 fail |
+| vanilla-save-s61 1280x720 | countrydecisionsview (profile), countryview (profile) | 100.0 % | 91.4 % | 100.0 % | 100.0 % | 100.0 % | 0 fail |
+| vanilla-save-s62 1280x720 | DefaultConfirm, countrystabilityview (profile), countryview (profile) | 95.9 % | 96.9 % | 100.0 % | 100.0 % | 100.0 % | 36 fail |
+| vanilla-save-s63 1280x720 | countrystabilityview (profile), countryview (profile) | 96.2 % | 97.3 % | 100.0 % | 100.0 % | 100.0 % | 10 fail |
+| vanilla-save-s64 1280x720 | countryreligionview (profile), countryview (profile) | 97.5 % | 51.0 % | 100.0 % | 100.0 % | 100.0 % | 10 fail |
+| vanilla-save-s65 1280x720 | countrymilitaryview (profile), countryview (profile), domesticpanel_unit_select | 22.6 % | 93.2 % | 100.0 % | 100.0 % | 100.0 % | 112 fail |
+| vanilla-save-s66 1280x720 | ConfirmAndNameLeaderDialog, countrymilitaryview (profile), countryview (profile) | 19.4 % | 95.1 % | 100.0 % | 100.0 % | 100.0 % | 127 fail |
+| vanilla-save-s67 1280x720 | DefaultConfirm, countrymilitaryview (profile), countryview (profile) | 19.4 % | 96.5 % | 100.0 % | 100.0 % | 100.0 % | 127 fail |
+| vanilla-save-s68 1280x720 | countrymilitaryview (profile), countryview (profile), domesticpanel_naval_doctrine_select (profile) | 15.4 % | 96.5 % | 100.0 % | 100.0 % | 100.0 % | 125 fail |
+| vanilla-save-s70 1280x720 | countrysubjectview (profile), countryview (profile) | 100.0 % | 92.7 % | 100.0 % | 100.0 % | 100.0 % | 3 fail |
+| vanilla-save-s43 1280x720 | countryestatesview (profile), countryview (profile) | 86.1 % | 97.6 % | 86.1 % | 100.0 % | 100.0 % | 5 fail |
 | vanilla-menu-s0 1280x720 | country_selection_panel (profile) | 95.6 % | 71.4 % | 100.0 % | 100.0 % | 100.0 % | 2 fail |
-| vanilla-menu-s1 1280x720 | country_selection_panel (profile), shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 92.9 % | 69.0 % | 100.0 % | 100.0 % | 100.0 % | 19 fail |
+| vanilla-menu-s1 1280x720 | country_selection_panel (profile), shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 98.2 % | 69.0 % | 100.0 % | 100.0 % | 100.0 % | 19 fail |
 | vanilla-menu-s2 1280x720 | CreditsWindow, country_selection_panel (profile) | 100.0 % | 29.4 % | 100.0 % | 100.0 % | 100.0 % | 0 fail |
-| vanilla-menu-s3 1280x720 | country_selection_panel (profile), menu_settings (profile), menu_settings (profile) | 100.0 % | 62.2 % | 100.0 % | 97.7 % | 100.0 % | 7 fail |
+| vanilla-menu-s3 1280x720 | country_selection_panel (profile), menu_settings (profile), menu_settings (profile) | 100.0 % | 62.2 % | 100.0 % | 100.0 % | 100.0 % | 7 fail |
 | vanilla-save-s0 1920x1080 | diplomessageicons_window, menubar (profile), message_icons, minimap_panel (profile), outliner, speed_controls, topbar (profile) | 93.7 % | 91.7 % | 99.1 % | 100.0 % | 100.0 % | 40 fail |
-| vanilla-save-s1 1920x1080 | countrycourtview (profile), countryview | 100.0 % | 82.1 % | 100.0 % | 100.0 % | 100.0 % | 13 fail |
+| vanilla-save-s1 1920x1080 | countrycourtview (profile), countryview (profile) | 100.0 % | 82.1 % | 100.0 % | 100.0 % | 100.0 % | 13 fail |
 | vanilla-save-s2 1920x1080 | hre_window (profile) | 100.0 % | 89.1 % | 100.0 % | 100.0 % | 100.0 % | 3 fail |
 | vanilla-save-s3 1920x1080 | parliament_window (profile) | 87.5 % | 96.7 % | 100.0 % | 100.0 % | 100.0 % | 4 fail |
 | vanilla-save-s4 1920x1080 | celestial_window | 100.0 % | 100.0 % | 100.0 % | 100.0 % | 100.0 % | 4 fail |
@@ -1032,54 +1085,53 @@ proper-2k-ui-enhanced, constructs with rects that differ (most first):
 | vanilla-save-s10 1920x1080 | colonisationpanel (profile) | 100.0 % | 82.3 % | 100.0 % | 100.0 % | 100.0 % | 13 fail |
 | vanilla-save-s12 1920x1080 | provinceview (profile) | 93.2 % | 68.3 % | 100.0 % | 100.0 % | 100.0 % | 56 fail |
 | vanilla-save-s13 1920x1080 | great_powers | 100.0 % | 100.0 % | 100.0 % | 100.0 % | 100.0 % | pass |
-| vanilla-save-s14 1920x1080 | countrygovernmentview (profile), countryview, gov_view_reform_select | 100.0 % | 93.8 % | 100.0 % | 100.0 % | 100.0 % | 8 fail |
-| vanilla-save-s15 1920x1080 | ages_view (profile) | 88.8 % | 88.8 % | 94.4 % | 100.0 % | 100.0 % | 5 fail |
+| vanilla-save-s14 1920x1080 | countrygovernmentview (profile), countryview (profile), gov_view_reform_select | 100.0 % | 93.8 % | 100.0 % | 100.0 % | 100.0 % | 8 fail |
+| vanilla-save-s15 1920x1080 | ages_view (profile) | 88.8 % | 88.8 % | 100.0 % | 100.0 % | 100.0 % | 5 fail |
 | vanilla-save-s16 1920x1080 | waroverview | 90.6 % | 99.2 % | 100.0 % | 100.0 % | 100.0 % | 29 fail |
-| vanilla-save-s24 1920x1080 | countrygovernmentview (profile), countryview | 100.0 % | 94.0 % | 100.0 % | 100.0 % | 100.0 % | 7 fail |
-| vanilla-save-s25 1920x1080 | countrydiplomacyview (profile), countryview, hre_window (profile) | 98.1 % | 74.7 % | 100.0 % | 100.0 % | 100.0 % | 42 fail |
-| vanilla-save-s26 1920x1080 | celestial_window, countrydiplomacyview (profile), countryview | 97.2 % | 85.8 % | 100.0 % | 100.0 % | 100.0 % | 43 fail |
+| vanilla-save-s24 1920x1080 | countrygovernmentview (profile), countryview (profile) | 100.0 % | 94.0 % | 100.0 % | 100.0 % | 100.0 % | 7 fail |
+| vanilla-save-s25 1920x1080 | countrydiplomacyview (profile), countryview (profile), hre_window (profile) | 98.1 % | 74.7 % | 100.0 % | 100.0 % | 100.0 % | 42 fail |
+| vanilla-save-s26 1920x1080 | celestial_window, countrydiplomacyview (profile), countryview (profile) | 97.2 % | 85.8 % | 100.0 % | 100.0 % | 100.0 % | 43 fail |
 | vanilla-save-s27 1920x1080 | DefaultConfirm, celestial_window | 95.6 % | 100.0 % | 100.0 % | 100.0 % | 100.0 % | 11 fail |
-| vanilla-save-s28 1920x1080 | ledger (profile) | 100.0 % | 42.1 % | 100.0 % | 100.0 % | 90.7 % | 13 fail |
-| vanilla-save-s31 1920x1080 | countrydiplomacyview (profile), countryview, great_powers | 97.1 % | 83.4 % | 100.0 % | 100.0 % | 100.0 % | 39 fail |
-| vanilla-save-s32 1920x1080 | countrydiplomacyview (profile), countryview | 96.8 % | 82.3 % | 100.0 % | 100.0 % | 100.0 % | 39 fail |
-| vanilla-save-s33 1920x1080 | countryeconomyview (profile), countryview | 93.4 % | 98.1 % | 100.0 % | 100.0 % | 100.0 % | 13 fail |
-| vanilla-save-s34 1920x1080 | countrytradeview, countryview | 100.0 % | 98.5 % | 100.0 % | 100.0 % | 100.0 % | 14 fail |
-| vanilla-save-s35 1920x1080 | countrytechnologyview (profile), countryview | 100.0 % | 97.6 % | 100.0 % | 100.0 % | 100.0 % | 2 fail |
-| vanilla-save-s36 1920x1080 | countryideasview (profile), countryview | 100.0 % | 98.5 % | 100.0 % | 100.0 % | 100.0 % | 9 fail |
-| vanilla-save-s37 1920x1080 | countrymissionsview (profile), countryview | 100.0 % | 97.7 % | 100.0 % | 100.0 % | 100.0 % | pass |
-| vanilla-save-s38 1920x1080 | countrydecisionsview (profile), countryview | 100.0 % | 98.0 % | 100.0 % | 100.0 % | 100.0 % | 8 fail |
-| vanilla-save-s39 1920x1080 | countrystabilityview (profile), countryview | 97.0 % | 96.7 % | 100.0 % | 100.0 % | 95.8 % | 18 fail |
-| vanilla-save-s40 1920x1080 | countryreligionview (profile), countryview | 93.2 % | 76.9 % | 98.3 % | 100.0 % | 100.0 % | 21 fail |
-| vanilla-save-s41 1920x1080 | countrymilitaryview (profile), countryview | 15.1 % | 96.2 % | 100.0 % | 100.0 % | 100.0 % | 121 fail |
-| vanilla-save-s42 1920x1080 | countrysubjectview (profile), countryview | 100.0 % | 88.1 % | 100.0 % | 100.0 % | 100.0 % | 5 fail |
-| vanilla-save-s44 1920x1080 | DefaultConfirm, countrygovernmentview (profile), countryview, gov_view_reform_select | 98.5 % | 94.0 % | 100.0 % | 100.0 % | 100.0 % | 12 fail |
+| vanilla-save-s28 1920x1080 | ledger (profile) | 100.0 % | 42.1 % | 100.0 % | 100.0 % | 100.0 % | 13 fail |
+| vanilla-save-s31 1920x1080 | countrydiplomacyview (profile), countryview (profile), great_powers | 97.1 % | 83.4 % | 100.0 % | 100.0 % | 100.0 % | 39 fail |
+| vanilla-save-s32 1920x1080 | countrydiplomacyview (profile), countryview (profile) | 96.8 % | 82.3 % | 100.0 % | 100.0 % | 100.0 % | 39 fail |
+| vanilla-save-s33 1920x1080 | countryeconomyview (profile), countryview (profile) | 93.4 % | 98.1 % | 100.0 % | 100.0 % | 100.0 % | 13 fail |
+| vanilla-save-s34 1920x1080 | countrytradeview (profile), countryview (profile) | 100.0 % | 98.5 % | 100.0 % | 100.0 % | 100.0 % | 14 fail |
+| vanilla-save-s35 1920x1080 | countrytechnologyview (profile), countryview (profile) | 100.0 % | 97.6 % | 100.0 % | 100.0 % | 100.0 % | 2 fail |
+| vanilla-save-s36 1920x1080 | countryideasview (profile), countryview (profile) | 100.0 % | 98.5 % | 100.0 % | 100.0 % | 100.0 % | 9 fail |
+| vanilla-save-s37 1920x1080 | countrymissionsview (profile), countryview (profile) | 100.0 % | 97.7 % | 100.0 % | 100.0 % | 100.0 % | pass |
+| vanilla-save-s38 1920x1080 | countrydecisionsview (profile), countryview (profile) | 100.0 % | 98.0 % | 100.0 % | 100.0 % | 100.0 % | 8 fail |
+| vanilla-save-s39 1920x1080 | countrystabilityview (profile), countryview (profile) | 97.0 % | 96.7 % | 100.0 % | 100.0 % | 100.0 % | 18 fail |
+| vanilla-save-s40 1920x1080 | countryreligionview (profile), countryview (profile) | 93.2 % | 76.9 % | 100.0 % | 100.0 % | 100.0 % | 21 fail |
+| vanilla-save-s41 1920x1080 | countrymilitaryview (profile), countryview (profile) | 15.1 % | 96.2 % | 100.0 % | 100.0 % | 100.0 % | 121 fail |
+| vanilla-save-s42 1920x1080 | countrysubjectview (profile), countryview (profile) | 100.0 % | 88.1 % | 100.0 % | 100.0 % | 100.0 % | 5 fail |
+| vanilla-save-s44 1920x1080 | DefaultConfirm, countrygovernmentview (profile), countryview (profile), gov_view_reform_select | 98.5 % | 94.0 % | 100.0 % | 100.0 % | 100.0 % | 12 fail |
 | vanilla-save-s45 1920x1080 | peace_view (profile) | 97.9 % | 92.1 % | 100.0 % | 100.0 % | 100.0 % | 17 fail |
-| vanilla-save-s58 1920x1080 | DefaultConfirm, countryeconomyview (profile), countryview | 92.4 % | 98.4 % | 100.0 % | 100.0 % | 100.0 % | 17 fail |
-| vanilla-save-s59 1920x1080 | countrytechnologyview (profile), countryview | 60.0 % | 95.2 % | 100.0 % | 100.0 % | 100.0 % | 18 fail |
-| vanilla-save-s60 1920x1080 | countryideasview (profile), countryview | 100.0 % | 96.9 % | 100.0 % | 100.0 % | 100.0 % | 0 fail |
-| vanilla-save-s61 1920x1080 | countrydecisionsview (profile), countryview | 100.0 % | 91.4 % | 100.0 % | 100.0 % | 100.0 % | 0 fail |
-| vanilla-save-s62 1920x1080 | DefaultConfirm, countrystabilityview (profile), countryview | 95.9 % | 97.0 % | 100.0 % | 100.0 % | 96.1 % | 22 fail |
-| vanilla-save-s63 1920x1080 | countrystabilityview (profile), countryview | 96.2 % | 97.2 % | 100.0 % | 100.0 % | 96.9 % | 10 fail |
-| vanilla-save-s64 1920x1080 | countryreligionview (profile), countryview | 95.1 % | 52.1 % | 97.5 % | 100.0 % | 100.0 % | 15 fail |
-| vanilla-save-s65 1920x1080 | countrymilitaryview (profile), countryview, domesticpanel_unit_select | 22.4 % | 93.5 % | 100.0 % | 100.0 % | 100.0 % | 113 fail |
-| vanilla-save-s66 1920x1080 | ConfirmAndNameLeaderDialog, countrymilitaryview (profile), countryview | 18.7 % | 95.0 % | 100.0 % | 100.0 % | 100.0 % | 125 fail |
-| vanilla-save-s67 1920x1080 | DefaultConfirm, countrymilitaryview (profile), countryview | 18.7 % | 96.4 % | 100.0 % | 100.0 % | 100.0 % | 125 fail |
-| vanilla-save-s68 1920x1080 | countrymilitaryview (profile), countryview, domesticpanel_naval_doctrine_select (profile) | 14.7 % | 96.3 % | 100.0 % | 100.0 % | 100.0 % | 125 fail |
-| vanilla-save-s70 1920x1080 | countrysubjectview (profile), countryview | 100.0 % | 88.9 % | 100.0 % | 100.0 % | 100.0 % | 5 fail |
+| vanilla-save-s58 1920x1080 | DefaultConfirm, countryeconomyview (profile), countryview (profile) | 92.4 % | 98.4 % | 100.0 % | 100.0 % | 100.0 % | 17 fail |
+| vanilla-save-s59 1920x1080 | countrytechnologyview (profile), countryview (profile) | 60.0 % | 95.2 % | 100.0 % | 100.0 % | 100.0 % | 18 fail |
+| vanilla-save-s60 1920x1080 | countryideasview (profile), countryview (profile) | 100.0 % | 96.9 % | 100.0 % | 100.0 % | 100.0 % | 0 fail |
+| vanilla-save-s61 1920x1080 | countrydecisionsview (profile), countryview (profile) | 100.0 % | 91.4 % | 100.0 % | 100.0 % | 100.0 % | 0 fail |
+| vanilla-save-s62 1920x1080 | DefaultConfirm, countrystabilityview (profile), countryview (profile) | 95.9 % | 97.0 % | 100.0 % | 100.0 % | 100.0 % | 22 fail |
+| vanilla-save-s63 1920x1080 | countrystabilityview (profile), countryview (profile) | 96.2 % | 97.2 % | 100.0 % | 100.0 % | 100.0 % | 10 fail |
+| vanilla-save-s64 1920x1080 | countryreligionview (profile), countryview (profile) | 95.1 % | 52.1 % | 100.0 % | 100.0 % | 100.0 % | 15 fail |
+| vanilla-save-s65 1920x1080 | countrymilitaryview (profile), countryview (profile), domesticpanel_unit_select | 22.4 % | 93.5 % | 100.0 % | 100.0 % | 100.0 % | 113 fail |
+| vanilla-save-s66 1920x1080 | ConfirmAndNameLeaderDialog, countrymilitaryview (profile), countryview (profile) | 18.7 % | 95.0 % | 100.0 % | 100.0 % | 100.0 % | 125 fail |
+| vanilla-save-s67 1920x1080 | DefaultConfirm, countrymilitaryview (profile), countryview (profile) | 18.7 % | 96.4 % | 100.0 % | 100.0 % | 100.0 % | 125 fail |
+| vanilla-save-s68 1920x1080 | countrymilitaryview (profile), countryview (profile), domesticpanel_naval_doctrine_select (profile) | 14.7 % | 96.3 % | 100.0 % | 100.0 % | 100.0 % | 125 fail |
+| vanilla-save-s70 1920x1080 | countrysubjectview (profile), countryview (profile) | 100.0 % | 88.9 % | 100.0 % | 100.0 % | 100.0 % | 5 fail |
 | vanilla-save-s11 1920x1080 | outliner_configuration | 100.0 % | 100.0 % | 100.0 % | 100.0 % | 100.0 % | 1 fail |
-| vanilla-save-s43 1920x1080 | countryestatesview (profile), countryview | 86.1 % | 97.4 % | 86.1 % | 100.0 % | 100.0 % | 9 fail |
-| vanilla-save-s73 1920x1080 | estate_dev_share_item, estate_dev_share_item, estate_dev_share_item, estate_dev_share_item, estate_dev_share_item, estate_item, estate_item, estate_item, estate_item | 0.0 % | 69.2 % | 98.0 % | 100.0 % | 100.0 % | 51 fail |
-| vanilla-save-s74 1920x1080 | DefaultConfirm, countryestatesview (profile), countryview | 86.0 % | 97.6 % | 88.3 % | 100.0 % | 100.0 % | 13 fail |
+| vanilla-save-s43 1920x1080 | countryestatesview (profile), countryview (profile) | 86.1 % | 97.4 % | 86.1 % | 100.0 % | 100.0 % | 9 fail |
+| vanilla-save-s74 1920x1080 | DefaultConfirm, countryestatesview (profile), countryview (profile) | 86.0 % | 97.6 % | 88.3 % | 100.0 % | 100.0 % | 13 fail |
 | vanilla-menu-s0 1920x1080 | country_selection_panel (profile) | 95.6 % | 71.4 % | 100.0 % | 100.0 % | 100.0 % | 2 fail |
-| vanilla-menu-s1 1920x1080 | country_selection_panel (profile), shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 92.9 % | 69.0 % | 100.0 % | 100.0 % | 100.0 % | 19 fail |
+| vanilla-menu-s1 1920x1080 | country_selection_panel (profile), shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 98.2 % | 69.0 % | 100.0 % | 100.0 % | 100.0 % | 19 fail |
 | vanilla-menu-s2 1920x1080 | CreditsWindow, country_selection_panel (profile) | 100.0 % | 29.4 % | 100.0 % | 100.0 % | 100.0 % | 1 fail |
-| vanilla-menu-s3 1920x1080 | country_selection_panel (profile), menu_settings (profile), menu_settings (profile) | 100.0 % | 62.2 % | 100.0 % | 97.7 % | 100.0 % | 7 fail |
-| vanilla-menu-s4 1920x1080 | country_selection_panel (profile), menu_settings (profile), menu_settings (profile), shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 95.1 % | 71.7 % | 100.0 % | 99.4 % | 100.0 % | 26 fail |
-| vanilla-menu-s5 1920x1080 | country_selection_panel (profile), goto_box, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 93.8 % | 70.6 % | 100.0 % | 100.0 % | 100.0 % | 20 fail |
-| vanilla-menu-s6 1920x1080 | country_selection_panel (profile), option_window, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 94.1 % | 70.9 % | 100.0 % | 100.0 % | 100.0 % | 21 fail |
+| vanilla-menu-s3 1920x1080 | country_selection_panel (profile), menu_settings (profile), menu_settings (profile) | 100.0 % | 62.2 % | 100.0 % | 100.0 % | 100.0 % | 7 fail |
+| vanilla-menu-s4 1920x1080 | country_selection_panel (profile), menu_settings (profile), menu_settings (profile), shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 98.7 % | 71.7 % | 100.0 % | 100.0 % | 100.0 % | 26 fail |
+| vanilla-menu-s5 1920x1080 | country_selection_panel (profile), goto_box, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 98.4 % | 70.6 % | 100.0 % | 100.0 % | 100.0 % | 20 fail |
+| vanilla-menu-s6 1920x1080 | country_selection_panel (profile), option_window, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 98.5 % | 70.9 % | 100.0 % | 100.0 % | 100.0 % | 21 fail |
 | vanilla-menu-s7 1920x1080 | country_selection_panel (profile) | 100.0 % | 38.5 % | 100.0 % | 100.0 % | 100.0 % | 4 fail |
-| vanilla-menu-s8 1920x1080 | country_selection_panel (profile), shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 94.6 % | 76.0 % | 100.0 % | 100.0 % | 100.0 % | 42 fail |
-| vanilla-menu-s9 1920x1080 | country_selection_panel (profile), option_window, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 94.1 % | 70.9 % | 100.0 % | 100.0 % | 100.0 % | 21 fail |
+| vanilla-menu-s8 1920x1080 | country_selection_panel (profile), shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 97.8 % | 76.0 % | 100.0 % | 100.0 % | 100.0 % | 42 fail |
+| vanilla-menu-s9 1920x1080 | country_selection_panel (profile), option_window, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 98.5 % | 70.9 % | 100.0 % | 100.0 % | 100.0 % | 21 fail |
 
 ### proper-2k-ui-enhanced
 
@@ -1087,11 +1139,11 @@ proper-2k-ui-enhanced, constructs with rects that differ (most first):
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | vanilla-save-s0 2560x1440 | diplomessageicons_window, menubar (profile), message_icons, minimap_panel (profile), outliner, speed_controls, topbar (profile) | 92.9 % | 91.5 % | 100.0 % | 100.0 % | 100.0 % | 41 fail |
 | vanilla-menu-s0 2560x1440 | country_selection_panel (profile) | 92.8 % | 75.0 % | 100.0 % | 100.0 % | 100.0 % | 5 fail |
-| vanilla-menu-s1 2560x1440 | country_selection_panel (profile), shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 92.9 % | 67.4 % | 100.0 % | 100.0 % | 100.0 % | 20 fail |
+| vanilla-menu-s1 2560x1440 | country_selection_panel (profile), shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 98.2 % | 67.4 % | 100.0 % | 100.0 % | 100.0 % | 20 fail |
 | vanilla-menu-s2 2560x1440 | CreditsWindow, country_selection_panel (profile) | 83.3 % | 33.3 % | 83.3 % | 100.0 % | 100.0 % | 1 fail |
-| vanilla-menu-s3 2560x1440 | country_selection_panel (profile), menu_settings (profile), menu_settings (profile) | 100.0 % | 63.0 % | 100.0 % | 97.8 % | 100.0 % | 7 fail |
-| vanilla-menu-s4 2560x1440 | country_selection_panel (profile), menu_settings (profile), menu_settings (profile), shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 95.2 % | 70.7 % | 100.0 % | 99.3 % | 100.0 % | 27 fail |
-| vanilla-menu-s5 2560x1440 | country_selection_panel (profile), goto_box, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 93.8 % | 69.2 % | 100.0 % | 100.0 % | 100.0 % | 20 fail |
-| vanilla-menu-s6 2560x1440 | country_selection_panel (profile), option_window, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 94.1 % | 69.5 % | 100.0 % | 100.0 % | 100.0 % | 22 fail |
+| vanilla-menu-s3 2560x1440 | country_selection_panel (profile), menu_settings (profile), menu_settings (profile) | 100.0 % | 63.0 % | 100.0 % | 100.0 % | 100.0 % | 7 fail |
+| vanilla-menu-s4 2560x1440 | country_selection_panel (profile), menu_settings (profile), menu_settings (profile), shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 98.8 % | 70.7 % | 100.0 % | 100.0 % | 100.0 % | 27 fail |
+| vanilla-menu-s5 2560x1440 | country_selection_panel (profile), goto_box, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 98.4 % | 69.2 % | 100.0 % | 100.0 % | 100.0 % | 20 fail |
+| vanilla-menu-s6 2560x1440 | country_selection_panel (profile), option_window, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow, shield_thin_glow | 98.5 % | 69.5 % | 100.0 % | 100.0 % | 100.0 % | 22 fail |
 | vanilla-menu-s7 2560x1440 | country_selection_panel (profile) | 95.4 % | 38.5 % | 100.0 % | 100.0 % | 100.0 % | 5 fail |
 
