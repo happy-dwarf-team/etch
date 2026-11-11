@@ -167,6 +167,7 @@ export function checkProfile(profile: WindowProfile, input: ProfileCheckInput): 
       ...rule.notCreated,
       ...rule.position,
       ...rule.frame,
+      ...(rule.sprite ?? []),
       ...rule.offset,
       ...rule.hidePosition,
       ...rule.adopt,

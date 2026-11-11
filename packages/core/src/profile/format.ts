@@ -107,6 +107,12 @@ export interface Rule extends Written {
   /** Sprite frames (from 1) the game's code sets. */
   readonly frame: readonly (PathRef & { readonly frame: number })[];
   /**
+   * Sprites the game's code sets in place of the `.gui` one: drawn as named, without the screen
+   * size's `_large` and `_huge` variants (the religion view's background keeps its standard
+   * sprite at every height).
+   */
+  readonly sprite?: readonly (PathRef & { readonly sprite: string })[];
+  /**
    * Widgets the game's code moves by a number of pixels from where they would be, with no
    * `positionType` to name: the diplomacy view's labels, 20 px left without a religion icon.
    */

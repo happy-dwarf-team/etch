@@ -143,6 +143,7 @@ values); without `when` it always applies. Its effects:
 | `notCreated` | paths the game does not create at all in this case |
 | `position` | paths the game's code moves, each to a `positionType` of the window's file; `{ "positionType": …, "axis": "y" }` takes only its `y` (or `x`) |
 | `frame` | paths whose sprite frame (from 1) the game's code sets |
+| `sprite` | paths whose sprite the game's code sets in place of the `.gui`'s, drawn as named without the screen size's `_large` and `_huge` variants: `{ "countryreligionview/religionpanel_bg_top": "GFX_country_religion_view_bg" }` |
 | `hidePosition` | paths the game keeps at their `hide_position` (else `position`) in this case, where the preview would draw them at their `show_position` |
 | `offset` | paths the game's code moves by some pixels from where they would be, when the file has no `positionType` for it: `{ "x": -20 }` (each coordinate 0 when left out) |
 | `adopt` | top-level definitions the game's code puts in a widget, by that widget's path, each at its own `.gui` position: `{ "minimap_panel": ["minimap_bg"] }` |

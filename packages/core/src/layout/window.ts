@@ -177,6 +177,8 @@ export interface LayoutView {
   movedAxis?(widget: Widget): 'x' | 'y' | undefined;
   /** The sprite frame, from 1, the game's code sets. */
   frame(widget: Widget): number | undefined;
+  /** The sprite the game's code sets in place of the `.gui` one, drawn without size variants. */
+  sprite?(widget: Widget): string | undefined;
   /**
    * What a country view's size step does to the widget: `moved` down, or `grown` taller, by the
    * `y` of the step the screen height reaches (etch#274).
@@ -915,10 +917,15 @@ class Layout {
   ): Extent | undefined {
     const key = props.has('spritetype') ? 'spritetype' : 'quadtexturesprite';
     const set =
-      this.current === undefined ? undefined : this.input.content?.sprite?.(this.current, this.row);
+      this.current === undefined
+        ? undefined
+        : (this.input.content?.sprite?.(this.current, this.row) ??
+          this.input.view?.sprite?.(this.current));
     const name = set ?? props.text(key);
     if (name === undefined || name === '') return undefined;
-    const sprite = variantTop === undefined ? name : this.sizedSprite(name, variantTop);
+    // A sprite the game's code sets is drawn as named: the size variants are the `.gui`'s.
+    const sprite =
+      variantTop === undefined || set !== undefined ? name : this.sizedSprite(name, variantTop);
     return this.drawSprite(sprite, props.scalar(key), props, x, y, source, fill, frame);
   }
 

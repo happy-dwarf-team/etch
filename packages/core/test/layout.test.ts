@@ -365,6 +365,31 @@ describe('layoutWindow: sprites', () => {
     expect(heights(1089)).toEqual([60, 40]);
   });
 
+  it("draws a sprite the game's code sets as named, with no variant", () => {
+    const { file, input } = setUp(
+      `guiTypes = {
+      positionType = { name = "view_scaling_large_min_inc" position = { x = 900 y = 100 } }
+      positionType = { name = "view_scaling_huge_min_inc" position = { x = 1089 y = 300 } }
+      windowType = { name = "w" position = { x = 0 y = 20 }
+        iconType = { name = "panel" spriteType = "GFX_panel_standard" }
+        iconType = { name = "kept" spriteType = "GFX_panel_standard" }
+    } }`,
+      { screen: { width: 1920, height: 1200 } },
+    );
+    const window = file.definitions.find((d) => d.name === 'w') as Widget;
+    const l = layoutWindow(window, {
+      ...input,
+      view: {
+        shows: () => true,
+        movedTo: () => undefined,
+        frame: () => undefined,
+        sprite: (w) => (w.name === 'kept' ? 'GFX_panel_standard' : undefined),
+      },
+    });
+    // At 1200 the step picks the _huge variant (60 high); the code's sprite keeps its 20.
+    expect([rectOf(l, 'panel')[3], rectOf(l, 'kept')[3]]).toEqual([60, 20]);
+  });
+
   it('keeps the sprite a widget picks by if_resolution, with no variant (etch#44)', () => {
     const gui = `guiTypes = { windowType = { name = "w"
       iconType = { name = "picked" if_resolution = { max_height = 50 spriteType = "GFX_crest" }
