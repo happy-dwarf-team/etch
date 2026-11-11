@@ -1309,3 +1309,57 @@ describe("the top bar's unused icons (the coverage survey)", () => {
     expect(drawn(shipped('topbar', ['vanilla', 'anbennar']), {})).toEqual([]);
   });
 });
+describe("the religion view's selection screens (the coverage survey)", () => {
+  const window = readGuiFile(
+    parseScript(`guiTypes = {
+  windowType = {
+    name = "countryreligionview"
+    size = { x = 100 y = 100 }
+    windowType = { name = "orthodox_specific_window" size = { x = 10 y = 10 } }
+    windowType = { name = "icon_selection_screen" size = { x = 10 y = 10 } }
+    windowType = { name = "deity_selection_screen" size = { x = 10 y = 10 } }
+    listboxType = { name = "missionary_icon_list" size = { x = 10 y = 10 } }
+    checkboxType = { name = "show_subjects" }
+  }
+}`),
+  ).definitions[0] as Widget;
+  const layered = (sources: readonly string[]) =>
+    layerProfiles(
+      'countryreligionview',
+      sources.flatMap((source, layer) => {
+        const read = readProfile(
+          readFileSync(
+            new URL(`../../../profiles/${source}/countryreligionview.jsonc`, import.meta.url),
+            'utf8',
+          ),
+          { layer, source, file: 'countryreligionview.jsonc' },
+        );
+        expect(read.diagnostics).toEqual([]);
+        return read.file === undefined ? [] : [read.file];
+      }),
+    );
+  const shown = (profile: WindowProfile, set: Record<string, string>) => {
+    const view = evaluateView(profile, window, LARGE, { set });
+    return [
+      'icon_selection_screen',
+      'deity_selection_screen',
+      'missionary_icon_list',
+      'show_subjects',
+    ].filter((name) => widgetsAt(window, `countryreligionview/${name}`).some((w) => view.drawn(w)));
+  };
+
+  it('hides the missionaries under an open screen', () => {
+    const vanilla = layered(['vanilla']);
+    expect(shown(vanilla, { religionPanel: 'orthodox' })).toEqual([
+      'missionary_icon_list',
+      'show_subjects',
+    ]);
+    expect(shown(vanilla, { religionPanel: 'orthodox', selection: 'open' })).toEqual([
+      'icon_selection_screen',
+    ]);
+    const anbennar = layered(['vanilla', 'anbennar']);
+    expect(shown(anbennar, { religionPanel: 'none', deitySelection: 'open' })).toEqual([
+      'deity_selection_screen',
+    ]);
+  });
+});
