@@ -1,0 +1,35 @@
+// The main menu's settings (menu_settings) of the base game (docs/window-profiles.md). The window
+// shows one page at a time: the game's own when it opens (the coverage survey's settings views,
+// vanilla and Anbennar, 1920×1080), the others by their buttons.
+{
+  "formatVersion": 1,
+  "window": "menu_settings",
+  "checkedWith": "1.37.5",
+  "selectors": {
+    "page": {
+      "kind": "ui",
+      "label": "Page",
+      "values": {
+        "game": "Game",
+        "video": "Video",
+        "audio": "Audio",
+        "controls": "Controls",
+        "accessibility": "Accessibility",
+      },
+      "default": "game",
+    },
+  },
+  "groups": {
+    "page": {
+      "label": "Page",
+      "selector": "page",
+      "members": {
+        "game": "menu_settings/menu_settings_GAME",
+        "video": "menu_settings/menu_settings_VIDEO",
+        "audio": "menu_settings/menu_settings_AUDIO",
+        "controls": "menu_settings/menu_settings_CONTROLS",
+        "accessibility": "menu_settings/menu_settings_ACCESSIBILITY",
+      },
+    },
+  },
+}
