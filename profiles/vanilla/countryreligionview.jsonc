@@ -60,6 +60,10 @@
     },
   },
   "rules": {
+    "standard-background": {
+      "note": "The game draws religionpanel_bg_top with its standard sprite (576 × 590) at every screen height, not the _large or _huge variant the window's size steps would pick (the coverage survey, every playset, 1920×1080 and 1280×720: 569 × 590, cut at the window's left edge).",
+      "sprite": { "countryreligionview/religionpanel_bg_top": "GFX_country_religion_view_bg" },
+    },
     "religion-icon": {
       "note": "The game's code puts the icon 62 px right of its .gui place (the coverage survey, every playset, 1920×1080 and 1280×720; etch#253).",
       "offset": { "countryreligionview/current_religion_icon": { "x": 62 } },
