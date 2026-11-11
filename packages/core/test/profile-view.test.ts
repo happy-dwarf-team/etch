@@ -23,7 +23,7 @@ import {
 } from '../src/profile/index.ts';
 import { InterfaceIndex } from '../src/model/interface-index.ts';
 import { alongOffset } from '../src/layout/window.ts';
-import { profileVisibility, type CapturedWidget } from '../src/corpus/index.ts';
+import { profileVisibility, rootInstance, type CapturedWidget } from '../src/corpus/index.ts';
 
 const FILE = readGuiFile(
   parseScript(`guiTypes = {
@@ -590,6 +590,38 @@ describe('a row of top-level widgets (etch#278)', () => {
     expect(at(1280, 720, { index: 0, count: 11 })).toEqual([242, 450]);
     // Alone, a shield takes the middle of the row.
     expect(at(1920, 1080)).toEqual([912, 810]);
+  });
+
+  it("puts a shield's glow on its shield, by the glow's own position", () => {
+    const glows = readGuiFile(
+      parseScript(`guiTypes = {
+  iconType = { name = "shield_thin_glow" position = { x = 8 y = -5 } Orientation = "UPPER_LEFT" }
+  positionType = { name = "shield_position" position = { x = -13 y = -270 } }
+  positionType = { name = "shield_offset" position = { x = 70 y = 0 } }
+}`),
+    );
+    const glow = glows.definitions.find((w) => w.name === 'shield_thin_glow') as Widget;
+    const screen = { width: 1920, height: 1080 };
+    const layout = layoutWindow(glow, {
+      file: glows,
+      index: InterfaceIndex.of([], [{ path: 'interface/frontend.gui', file: glows }]),
+      exists: () => false,
+      assets: { textureSize: () => undefined, font: () => undefined },
+      screen,
+      view: screenLayoutView(glow, screen),
+      instance: { index: 1, count: 11 },
+    });
+    const w = layout.widgets[0];
+    // The second shield of eleven stands at 632, 810.
+    expect(w === undefined ? undefined : [w.x, w.y]).toEqual([640, 805]);
+    // The glows count the shields of the row, not themselves.
+    const roots = [
+      ...Array.from({ length: 11 }, (_, i) => ({ path: `shield[${String(i + 1)}]` })),
+      { path: 'shield_thin_glow[1]' },
+      { path: 'shield_thin_glow[2]' },
+    ];
+    expect(rootInstance(roots, 'shield_thin_glow[2]')).toEqual({ index: 1, count: 11 });
+    expect(rootInstance(roots, 'shield[3]')).toEqual({ index: 2, count: 11 });
   });
 });
 
