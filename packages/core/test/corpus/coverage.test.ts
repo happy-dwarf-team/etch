@@ -259,5 +259,13 @@ describe('the coverage measures', () => {
     });
     expect(counts).toEqual({ shown: 2, taken: 1, missing: ['w/b'] });
     expect(textAgreement(snapshot, undefined).taken).toBe(0);
+    // A copy the game's code made from another definition is drawn with the text it showed.
+    const adopted = textAgreement(snapshot, {
+      text: (path) => (path === 'w/a' ? 'One' : undefined),
+      rows: () => undefined,
+      state: () => undefined,
+      adopted: (path) => (path === 'w' ? [{ name: 'b', rect: [5, 0, 5, 5], text: 'Two' }] : []),
+    });
+    expect(adopted).toEqual({ shown: 2, taken: 2, missing: [] });
   });
 });
