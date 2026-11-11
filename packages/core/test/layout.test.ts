@@ -176,6 +176,16 @@ describe('layoutWindow: placement', () => {
     expect(rectOf(l, 'x_only')).toEqual([0, 5, 20, 10]);
   });
 
+  it('lays out no widget for a positionType inside a window', () => {
+    const { layout } = setUp(`guiTypes = { windowType = { name = "w" size = { x = 400 y = 100 }
+      positionType = { name = "naval_mission_window_position" position = { x = 0 y = 55 } }
+      iconType = { name = "icon" spriteType = "GFX_plain" position = { x = 8 y = 0 } }
+    } }`);
+    const l = layout();
+    expect(l.widgets.map((w) => w.widget.name)).toEqual(['w', 'icon']);
+    expect(rectOf(l, 'icon')).toEqual([8, 0, 20, 10]);
+  });
+
   it('gives a full-screen window the screen size and uses show_position', () => {
     const { layout } = setUp(`guiTypes = { windowType = {
       name = "full" fullScreen = yes size = { x = 10 y = 10 }
@@ -474,7 +484,8 @@ describe('layoutWindow: sprites', () => {
     expect(drawsOf(l, 'list')).toHaveLength(9);
     expect(rectOf(l, 'grid')).toEqual([0, 0, 30, 30]);
     expect(rectOf(l, 'row')).toEqual([0, 0, 40, 10]);
-    expect(rectOf(l, 'point')).toEqual([7, 8, 0, 0]);
+    // A positionType is a point for the game's code, not a widget.
+    expect(l.widgets.map((w) => w.widget.name)).not.toContain('point');
     expect(l.widgets.map((w) => w.widget.name)).not.toContain('slider');
   });
 });
