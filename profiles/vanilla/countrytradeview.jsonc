@@ -1,0 +1,56 @@
+// The countrytradeview window of the base game, the country view's trade tab
+// (docs/window-profiles.md). From the coverage survey's trade tabs: Russia 1719, and Verne 1444,
+// Bluescale 1472 and Kobildzan 1594 in Anbennar.
+{
+  "formatVersion": 1,
+  "window": "countrytradeview",
+  "checkedWith": "1.37.5",
+  "selectors": {
+    "sendMerchant": {
+      "kind": "ui",
+      "label": "Send a merchant",
+      "values": { "closed": "Closed", "open": "Open" },
+      "default": "closed",
+      "note": "send_merchant_window, the choice of a node for a merchant, opens by a click; closed as the tab opens in every view of the survey.",
+    },
+    "ourEmbargoes": {
+      "kind": "ui",
+      "label": "Our embargoes",
+      "values": { "none": "None", "some": "Some" },
+      "default": "none",
+      "note": "trade_our_embargoes_none says so when the country embargoes nobody.",
+    },
+    "embargoesOnUs": {
+      "kind": "ui",
+      "label": "Embargoes on us",
+      "values": { "none": "None", "some": "Some" },
+      "default": "none",
+      "note": "trade_embargoes_on_us_none says so when nobody embargoes the country (Bluescale in 1472 is embargoed).",
+    },
+    "transferringTrade": {
+      "kind": "ui",
+      "label": "Transfers of trade power",
+      "values": { "none": "None", "some": "Some" },
+      "default": "none",
+      "note": "transferring_trade_none says so when no country transfers trade power (Russia in 1719 and Kobildzan in 1594 have transfers).",
+    },
+  },
+  "rules": {
+    "send-merchant-closed": {
+      "when": { "sendMerchant": "closed" },
+      "hide": ["countrytradeview/send_merchant_window"],
+    },
+    "our-embargoes": {
+      "when": { "ourEmbargoes": "some" },
+      "hide": ["countrytradeview/trade_our_embargoes_none"],
+    },
+    "embargoes-on-us": {
+      "when": { "embargoesOnUs": "some" },
+      "hide": ["countrytradeview/trade_embargoes_on_us_none"],
+    },
+    "transferring-trade": {
+      "when": { "transferringTrade": "some" },
+      "hide": ["countrytradeview/transferring_trade_none"],
+    },
+  },
+}
