@@ -170,7 +170,7 @@ data** there (spec section 5). Each entry has one source:
 | `generated` | `{ "generated": "percent" }` | generated text only |
 
 Every entry also falls through to the **generated** layer when its source has no value: text,
-a number, a percentage or a date (`generated`; by default `text`, or the save value's
+a number, a whole number (`integer`: a level or a count), a percentage or a date (`generated`; by default `text`, or the save value's
 format) at the length chosen in `Data ▾`. A save source takes:
 
 - `format`: `text` (as the save writes it, the default), `number` (at most two decimals,

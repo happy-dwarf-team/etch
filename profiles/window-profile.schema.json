@@ -298,7 +298,7 @@
         },
         "generated": {
           "description": "What the generated layer fills the text with; by default text, or the save value's format.",
-          "enum": ["text", "number", "percent", "date"]
+          "enum": ["text", "number", "integer", "percent", "date"]
         },
         "transform": {
           "description": "sum adds up several save paths; localise shows the localisation of the save value (a culture, a religion, a tag).",
@@ -347,7 +347,7 @@
         },
         "generated": {
           "description": "What the generated layer fills the text with; by default text, or the save value's format.",
-          "enum": ["text", "number", "percent", "date"]
+          "enum": ["text", "number", "integer", "percent", "date"]
         },
         "transform": {
           "description": "sum adds up several save paths; localise shows the localisation of the save value (a culture, a religion, a tag).",

@@ -39,6 +39,7 @@ const GENERATED: Readonly<Record<GeneratedKind, Readonly<Record<TextLength, stri
       'The Most Serene Grand Duchy of the Western Marches, the Northern Isles and the Lands Beyond the Sea',
   },
   number: { short: '7', typical: '12.3', long: '-1234.56', overflow: '123456789.01' },
+  integer: { short: '1', typical: '3', long: '12', overflow: '123456789' },
   percent: { short: '5%', typical: '12.5%', long: '-45.25%', overflow: '1234567.89%' },
   date: {
     short: '1 May 1444',

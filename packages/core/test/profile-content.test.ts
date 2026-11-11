@@ -10,6 +10,7 @@ import {
   checkProfile,
   defaultSaveChoice,
   evaluateView,
+  generatedText,
   knownSavePaths,
   layerProfiles,
   readProfile,
@@ -629,5 +630,16 @@ describe('profileSaveTexts', () => {
         },
       ],
     });
+  });
+});
+
+describe('generated whole numbers', () => {
+  it('fit a level or a count, where a number with decimals would wrap', () => {
+    expect(['short', 'typical', 'long'].map((l) => generatedText('integer', l as never))).toEqual([
+      '1',
+      '3',
+      '12',
+    ]);
+    expect(generatedText('number', 'typical')).toBe('12.3');
   });
 });
