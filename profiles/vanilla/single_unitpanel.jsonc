@@ -12,6 +12,13 @@
       "values": { "army": "Army", "fleet": "Fleet" },
       "note": "The same panel shows an army or a fleet, with the other's buttons and rows hidden (the coverage survey's run of 6 November 2026).",
     },
+    "rebelSuppression": {
+      "kind": "ui",
+      "label": "Rebel suppression",
+      "values": { "off": "Off", "on": "On" },
+      "default": "off",
+      "note": "enable_rebel_button sets the army to suppress rebels: the game lights the button and shows the mission's icon (the coverage survey, Verne 1444, anbennar-alone-save-s25).",
+    },
   },
   "rules": {
     "an-army": {
@@ -99,6 +106,10 @@
         "single_unitpanel/mothball_button_glow",
         "single_unitpanel/toggle_foreign_armies_button_glow",
       ],
+    },
+    "rebel-suppression": {
+      "when": { "rebelSuppression": "on", "unit": "army" },
+      "show": ["single_unitpanel/enable_rebel_button_glow", "single_unitpanel/mission_icon"],
     },
   },
 }
