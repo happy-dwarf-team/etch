@@ -270,7 +270,7 @@ export async function runCoverage(options: CoverageOptions): Promise<CoverageRes
       previewWindows.push(withProfile ?? offline);
       const live = await files.livePreview(top, record.resolution, snapshot, loaded, size);
       if (live === undefined) continue;
-      liveWindows.push(live.window);
+      liveWindows.push({ ...live.window, root: top });
       rootResults.push({
         window: top,
         profiled: loaded !== undefined,
