@@ -35,7 +35,8 @@
       "kind": "ui",
       "label": "Rivals",
       "values": { "possible": "Possible", "notPossible": "Not possible" },
-      "note": "The player's own country shows its rivals and enemies, or label_rivals_not_possible when it cannot choose rivals (the coverage survey: Verne can, Kobildzan cannot).",
+      "default": "notPossible",
+      "note": "The player's own country shows its rivals and enemies, or label_rivals_not_possible when it cannot choose rivals (the coverage survey: Verne can; Russia in 1719 and Kobildzan cannot).",
     },
     "hreMember": {
       "kind": "ui",
