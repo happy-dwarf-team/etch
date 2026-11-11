@@ -1,0 +1,27 @@
+// The reorg_window window of the base game (docs/window-profiles.md). Its rules hide what the coverage
+// survey's captures of it show hidden (an army of Verne, 1444); drafted from them, as the corpus's are
+// (ADR 0006).
+{
+  "formatVersion": 1,
+  "window": "reorg_window",
+  "checkedWith": "1.37.5",
+  "selectors": {
+    "unit": {
+      "kind": "ui",
+      "label": "Units",
+      "values": { "army": "Armies", "fleet": "Fleets" },
+      "default": "army",
+      "note": "The same window reorganizes armies or fleets. With armies the game hides naval_window (the coverage survey, Anbennar save-s24 and save-s55); that fleets hide army_window is a hypothesis, as no capture has a fleet's.",
+    },
+  },
+  "rules": {
+    "armies": {
+      "when": { "unit": "army" },
+      "hide": ["reorg_window/naval_window"],
+    },
+    "fleets": {
+      "when": { "unit": "fleet" },
+      "hide": ["reorg_window/army_window"],
+    },
+  },
+}
