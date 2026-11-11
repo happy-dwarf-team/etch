@@ -946,7 +946,7 @@ proper-2k-ui-enhanced, constructs with rects that differ (most first):
 
 | View | Roots | Outline rects | Outline visibility | Live rects | Live visibility | Live texts | Pixels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| anbennar-alone-save-s0 1280x720 | diplomessageicons_window, menubar (profile), message_icons, minimap_panel (profile), outliner, speed_controls (profile), topbar (profile) | 93.5 % | 70.3 % | 99.1 % | 100.0 % | 100.0 % | 41 fail |
+| anbennar-alone-save-s0 1280x720 | diplomessageicons_window, menubar (profile), message_icons, minimap_panel (profile), outliner, speed_controls, topbar (profile) | 93.5 % | 70.3 % | 99.1 % | 100.0 % | 100.0 % | 41 fail |
 | anbennar-alone-save-s6 1280x720 | provinceview (profile) | 95.9 % | 55.2 % | 100.0 % | 100.0 % | 100.0 % | 52 fail |
 | anbennar-alone-save-s7 1280x720 | provinceview (profile) | 95.4 % | 61.3 % | 100.0 % | 100.0 % | 100.0 % | 54 fail |
 | anbennar-alone-save-s9 1280x720 | multi_unitpanel, single_unitpanel (profile) | 100.0 % | 85.2 % | 100.0 % | 100.0 % | 100.0 % | 12 fail |
@@ -979,7 +979,7 @@ proper-2k-ui-enhanced, constructs with rects that differ (most first):
 | anbennar-alone-menu-s1 1280x720 | country_selection_panel (profile), shield, shield, shield, shield, shield, shield, shield, shield, shield_thin_glow, shield_thin_glow | 97.6 % | 57.5 % | 100.0 % | 100.0 % | 100.0 % | 14 fail |
 | anbennar-alone-menu-s2 1280x720 | CreditsWindow, country_selection_panel (profile) | 100.0 % | 29.4 % | 100.0 % | 100.0 % | 100.0 % | 2 fail |
 | anbennar-alone-menu-s3 1280x720 | country_selection_panel (profile), menu_settings (profile), menu_settings (profile) | 100.0 % | 62.2 % | 100.0 % | 100.0 % | 100.0 % | 7 fail |
-| anbennar-alone-save-s0 1920x1080 | diplomessageicons_window, menubar (profile), message_icons, minimap_panel (profile), outliner, speed_controls (profile), topbar (profile) | 93.5 % | 70.3 % | 99.1 % | 100.0 % | 100.0 % | 41 fail |
+| anbennar-alone-save-s0 1920x1080 | diplomessageicons_window, menubar (profile), message_icons, minimap_panel (profile), outliner, speed_controls, topbar (profile) | 93.5 % | 70.3 % | 99.1 % | 100.0 % | 100.0 % | 41 fail |
 | anbennar-alone-save-s1 1920x1080 | countrycourtview (profile), countryview (profile) | 100.0 % | 93.6 % | 100.0 % | 100.0 % | 100.0 % | 17 fail |
 | anbennar-alone-save-s2 1920x1080 | hre_window (profile) | 100.0 % | 91.9 % | 100.0 % | 100.0 % | 100.0 % | 4 fail |
 | anbennar-alone-save-s3 1920x1080 | celestial_window, tributary_shield | 94.1 % | 100.0 % | 100.0 % | 100.0 % | 100.0 % | 6 fail |
