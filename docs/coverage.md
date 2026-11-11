@@ -75,7 +75,10 @@ The crawl's state is a JSON file per playset and start in the survey's local
 folder, so that a fresh start goes on where the last one stopped.
 
 The views it found become the survey's own manifest, in the corpus's format
-(`survey-manifest`). The capture driver then captures each one from a fresh
+(`survey-manifest`). A state whose roots are all numbered copies
+(`estate_item[1]`) is left out: those are the rows of a list whose window a
+click closed, which Tongs still lists as top-level windows and the game does
+not draw. The capture driver then captures each one from a fresh
 start (`run --manifest`), which also checks that its recipe holds; the
 comparison compares them as it does the corpus (`compare --corpus`).
 

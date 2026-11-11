@@ -59,6 +59,11 @@ export function surveyViewId(playset: string, start: string, state: string): str
   return `${playset}-${start === 'main-menu' ? 'menu' : 'save'}-${state}`;
 }
 
+/** Whether a root is a numbered copy (`estate_item[1]`): a row the game's code made for a list. */
+function orphanedRow(root: string): boolean {
+  return /\[\d+\]$/.test(root);
+}
+
 /**
  * The survey's manifest: the corpus manifest's game, Tongs, resolutions and rules, the survey's
  * playsets as report playsets at the survey's resolutions, and one window with one view for each
@@ -87,6 +92,10 @@ export function surveyManifest(
       // the game's memory of a window's last tab (`LED_ELSEWHERE`), which a fresh game does not have.
       if (state.unreproducible !== undefined && state.unreproducible !== LED_ELSEWHERE) continue;
       if (state.roots.length === 0) continue;
+      // Roots that are all numbered copies are the rows of a list whose window a click closed:
+      // Tongs still lists them as top-level windows, and the game draws none of them (the estate
+      // rows after the estates view's close button, vanilla and Anbennar). Not a view.
+      if (state.roots.every(orphanedRow)) continue;
       // A view found before a `never` pattern named one of its clicks is left out with it.
       if (
         state.steps.some(

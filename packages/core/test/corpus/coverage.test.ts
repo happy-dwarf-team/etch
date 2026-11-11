@@ -166,6 +166,22 @@ describe('the survey manifest', () => {
           explored: true,
           unreproducible: 'Its steps led to another view.',
         },
+        {
+          id: 's5',
+          steps: [{ click: 'countryestatesview/close_button' }],
+          signature: 'estate_item[1]\nestate_item[2]\ntopbar',
+          roots: ['estate_item[1]', 'estate_item[2]'],
+          depth: 2,
+          explored: true,
+        },
+        {
+          id: 's6',
+          steps: [{ click: 'topbar/shield' }],
+          signature: 'country_selection_panel\nshield[1]\ntopbar',
+          roots: ['country_selection_panel', 'shield[1]'],
+          depth: 1,
+          explored: true,
+        },
       ],
       tried: {},
       skipped: {},
@@ -175,9 +191,10 @@ describe('the survey manifest', () => {
     const out = surveyManifest(manifest, config, [crawl], (_, window) =>
       window === 'topbar' ? 'interface/topbar.gui' : 'interface/countryview.gui',
     );
-    // A refused step or a click the survey now never makes leaves a view out; a window that
-    // remembers its last tab does not.
-    const ids = ['vanilla-save-s0', 'vanilla-save-s1', 'vanilla-save-s3'];
+    // A refused step, a click the survey now never makes, or roots that are only the rows of a
+    // closed list leave a view out; a window that remembers its last tab, or numbered copies
+    // beside a window of their own, do not.
+    const ids = ['vanilla-save-s0', 'vanilla-save-s1', 'vanilla-save-s3', 'vanilla-save-s6'];
     expect(out.windows.map((w) => w.id)).toEqual(ids);
     expect(out.playsets.find((p) => p.id === 'bigger-ui')?.windows).toEqual(ids);
     expect(out.playsets.find((p) => p.id === 'anbennar-alone')).toBeUndefined();
