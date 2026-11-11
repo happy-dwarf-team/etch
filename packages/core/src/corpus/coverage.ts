@@ -216,7 +216,16 @@ export function textAgreement(snapshot: LiveSnapshot, texts: LiveTexts | undefin
   for (const w of snapshot.widgets) {
     if (!w.visible || w.text === undefined || w.text.trim() === '') continue;
     shownCount++;
-    const value = texts?.text(w.path);
+    // A copy the game's code made from another definition (the ledger's sort buttons) is drawn
+    // where the snapshot showed it, with the text it showed: the preview takes that text.
+    const at = w.path.lastIndexOf('/');
+    const value =
+      texts?.text(w.path) ??
+      (at < 0
+        ? undefined
+        : texts
+            ?.adopted?.(w.path.slice(0, at))
+            .find((a) => a.rect !== undefined && a.rect.join() === w.rect.join())?.text);
     if (value !== undefined && stripCodes(value) === w.text) taken++;
     else missing.push(w.path);
   }
