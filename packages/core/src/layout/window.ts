@@ -848,8 +848,10 @@ class Layout {
         background = children.find((c) => c.name?.toLowerCase() === name);
       }
     }
+    // A `positionType` inside a window is a point the game's code reads (the unit panel's
+    // `naval_mission_window_position`), never a widget the game creates.
     const rest = children
-      .filter((c) => c !== background)
+      .filter((c) => c !== background && c.kind !== 'positionType')
       .map((c) => ({ widget: c, background: false }));
     return background === undefined ? rest : [{ widget: background, background: true }, ...rest];
   }
