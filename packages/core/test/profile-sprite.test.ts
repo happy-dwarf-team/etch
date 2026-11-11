@@ -45,3 +45,26 @@ describe("a rule's sprite", () => {
     expect(read.diagnostics.map((d) => d.message).join(' ')).toMatch(/sprite/);
   });
 });
+
+describe("the ages view's picture", () => {
+  it("takes the current age's sprite", () => {
+    const window = readGuiFile(
+      parseScript(`guiTypes = { windowType = { name = "ages_view" size = { x = 100 y = 100 }
+        iconType = { name = "picture" spriteType = "GFX_age_picture_placeholder" }
+      } }`),
+    ).definitions[0] as Widget;
+    const read = readProfile(
+      readFileSync(new URL('../../../profiles/vanilla/ages_view.jsonc', import.meta.url), 'utf8'),
+      { layer: 0, source: 'vanilla', file: 'ages_view.jsonc' },
+    );
+    expect(read.diagnostics).toEqual([]);
+    const profile = layerProfiles('ages_view', read.file === undefined ? [] : [read.file]);
+    const [picture] = widgetsAt(window, 'ages_view/picture');
+    const sprite = (age: string) =>
+      picture === undefined
+        ? undefined
+        : layoutViewOf(evaluateView(profile, window, LARGE, { set: { age } })).sprite?.(picture);
+    expect(sprite('discovery')).toBe('GFX_age_of_discovery');
+    expect(sprite('revolutions')).toBe('GFX_age_of_revolutions');
+  });
+});
