@@ -39,6 +39,10 @@
         "menubar/observer_unselect",
       ],
     },
+    "unused-map-mode-backgrounds": {
+      "note": "mapmode_bg and mapmode_bg_2 sit at x = -97362 and the game never shows them (the coverage survey's HUD, vanilla and Anbennar).",
+      "hide": ["menubar/mapmode_bg", "menubar/mapmode_bg_2"],
+    },
     "hidden-floating_buttons": {
       "note": "Hidden in the corpus capture of \"hud\" and \"macro-builder\" and \"province\" in vanilla (Russia, 17 March 1719): the game decides these from its data or a click; show one by hand.",
       "hide": [

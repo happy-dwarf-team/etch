@@ -7,6 +7,21 @@
   "formatVersion": 1,
   "window": "countryeconomyview",
   "checkedWith": "1.37.5",
+  "selectors": {
+    "loanList": {
+      "kind": "ui",
+      "label": "Loans to repay",
+      "values": { "closed": "Closed", "open": "Open" },
+      "default": "closed",
+      "note": "repay_loan opens countryeconomyview_repayloan, the list of loans; closed as the tab opens (the coverage survey, Russia 1719 and Verne 1444).",
+    },
+  },
+  "rules": {
+    "loan-list-closed": {
+      "when": { "loanList": "closed" },
+      "hide": ["countryeconomyview/countryeconomyview_repayloan"],
+    },
+  },
   "content": {
     "countryeconomyview/incomes_total": { "engine": true, "generated": "number" },
     "countryeconomyview/expenses_total": { "engine": true, "generated": "number" },

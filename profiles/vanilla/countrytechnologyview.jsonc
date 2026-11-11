@@ -4,7 +4,20 @@
   "formatVersion": 1,
   "window": "countrytechnologyview",
   "checkedWith": "1.37.5",
+  "selectors": {
+    "institutions": {
+      "kind": "ui",
+      "label": "Institutions",
+      "values": { "closed": "Closed", "open": "Open" },
+      "default": "closed",
+      "note": "show_institutions opens institutions_window over the tab (the coverage survey, vanilla and Anbennar: closed as the tab opens, open after the click).",
+    },
+  },
   "rules": {
+    "institutions-closed": {
+      "when": { "institutions": "closed" },
+      "hide": ["countrytechnologyview/institutions_window"],
+    },
     "institutions-window": {
       "note": "The game places the institutions window as if the tab were at y 0, not at its show_position's 140 (the coverage survey, every playset, 1920×1080 and 1280×720; etch#253). Nothing in the tab's code that sets a position explains it.",
       "offset": { "countrytechnologyview/institutions_window": { "y": -140 } },
