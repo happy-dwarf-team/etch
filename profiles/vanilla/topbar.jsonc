@@ -46,17 +46,32 @@
     "republic": {
       "when": { "legitimacy": "republic" },
       "show": ["topbar/icon_rep", "topbar/text_rep"],
-      "hide": ["topbar/icon_meritocracy", "topbar/text_meritocracy"],
+      "hide": [
+        "topbar/icon_leg",
+        "topbar/text_leg",
+        "topbar/icon_meritocracy",
+        "topbar/text_meritocracy",
+      ],
     },
     "devotion": {
       "when": { "legitimacy": "devotion" },
       "show": ["topbar/icon_dev", "topbar/text_dev"],
-      "hide": ["topbar/icon_meritocracy", "topbar/text_meritocracy"],
+      "hide": [
+        "topbar/icon_leg",
+        "topbar/text_leg",
+        "topbar/icon_meritocracy",
+        "topbar/text_meritocracy",
+      ],
     },
     "unity": {
       "when": { "legitimacy": "unity" },
       "show": ["topbar/icon_unity", "topbar/text_unity"],
-      "hide": ["topbar/icon_meritocracy", "topbar/text_meritocracy"],
+      "hide": [
+        "topbar/icon_leg",
+        "topbar/text_leg",
+        "topbar/icon_meritocracy",
+        "topbar/text_meritocracy",
+      ],
     },
   },
 }
