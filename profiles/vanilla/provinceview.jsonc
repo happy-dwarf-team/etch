@@ -24,7 +24,7 @@
       "kind": "ui",
       "label": "Tab",
       "values": { "province": "Province", "state": "State" },
-      "note": "The game remembers the tab between provinces.",
+      "note": "The game remembers the tab between provinces. The state tab draws state_window over province_window, which stays shown under it (the coverage survey's state tab, Anbennar, 1920×1080).",
     },
     "side": {
       "kind": "ui",
@@ -436,8 +436,8 @@
     "tab": {
       "label": "Tab",
       "selector": "tab",
+      "none": true,
       "members": {
-        "province": "provinceview/province_window",
         "state": "provinceview/state_window",
       },
     },
