@@ -299,8 +299,9 @@ what the offline preview gets wrong, and the largest gaps closed. EU4 1.37.5 (`9
 Tongs 0.26.1, 1920×1080, under the lab's game lock, from the manifest of the crawls of 10 November (61
 views of `anbennar-alone`). **The game gives the stored captures again:** on the rules of `6c175a5` the
 fresh captures and the stored ones agree to the widget on every measure (3511/3634 rects and 9796/10094
-visibility offline, 59 views at 1920×1080). Two views did not come back by their recipe in this run
-(`anbennar-alone-save-s13`, `s50`) and the stored set has no 1920×1080 capture of them either.
+visibility offline, 59 views at 1920×1080). The manifest's other two views, the lobby's country shield
+and its options' custom tab (`anbennar-alone-menu-s8`, `s9`), did not come back by their recipe in this
+run either: the main menu's `single_player_button` was not shown when the recipe clicked it.
 
 Verne, 1444, the fresh captures, rules of `6c175a5` against `main` after the fixes below:
 
@@ -318,11 +319,11 @@ from:
 
 | Set | Offline preview: visibility | With profiles: visibility | Offline preview: rects |
 | --- | --- | --- | --- |
-| Anbennar alone, 1280×720, stored, 33 views | 96.6 → 99.1 % | 96.2 → 99.1 % | 99.0 → 99.3 % |
+| Anbennar alone, 1280×720, stored, 33 views | 96.6 → 99.1 % | 96.1 → 99.1 % | 99.0 → 99.3 % |
 | vanilla, 1920×1080, stored, 52 views | 97.9 → 98.7 % | 97.9 → 98.9 % | 96.6 → 96.9 % |
 | vanilla, 1280×720, stored, 32 views | 98.1 → 99.0 % | 97.7 → 98.9 % | 98.8 → 98.9 % |
-| **Bluescale, 1472, unseen** | 96.6 → **98.8 %** | 96.0 → 98.7 % | 98.9 → 99.2 % |
-| **Kobildzan, 1594, unseen** | 96.7 → **98.5 %** | 96.3 → 98.5 % | 95.6 → 95.9 % |
+| **Bluescale, 1472, unseen** | 96.6 → **98.8 %** | 96.0 → 98.7 % | 98.8 → 99.2 % |
+| **Kobildzan, 1594, unseen** | 96.7 → **98.5 %** | 96.3 → 98.5 % | 95.5 → 95.9 % |
 
 No view of any set lost a widget. The two unseen countries are the test of the fixes: the rules carry to
 them as they do to Verne. Most fixes are rules of the base game's profiles, which the same views of
@@ -355,8 +356,49 @@ What is left, Verne 1920×1080, offline preview (111 rects and 100 visibility fa
   `ages_view/picture`, `DefaultConfirm/Description`, the lobby's `scenario_description`, the magic menu's
   and achievements' texts), and the strait and river marks, which the map decides.
 
-Not measured in this run: 1280×720 and pixels from the game again (the 1280×720 figures above are of the
-stored captures), and a new crawl of Anbennar with the current crawler.
+The 1280×720 figures above are of the stored captures; the game's own 1280×720 views and pixels follow
+below.
+
+**After that section** the same run took ten more fixes. Four are rules that no view of Verne fails
+and the unseen countries do: etch#369 (the estates' crown land and agenda in Anbennar), etch#370 (an
+elective heir, rivals and the shield glow in the diplomacy view), etch#371 (the top bar's other
+legitimacies and the player's shield glow), and the empty lists of etch#373's trade tab. Five fix views
+of Verne too: etch#372 (the rest of the state tab), etch#373 (the trade tab's merchant choice), etch#374
+(a rule's `sprite`, for the religion view's background), etch#375 (the ages view's picture) and etch#376
+(the lobby's shield glows on their shields). etch#377 is the measure's own: the live texts of the copies
+the game's code makes from other definitions (the ledger's sort buttons), which the live preview draws
+and the measure missed. **The estates, diplomacy, top bar and trade tab views of Bluescale and Kobildzan
+are no longer unseen after them**; the other fixes were not drawn from them. Rules of `main` with
+etch#377, before against after both passes:
+
+| Set | Offline preview: rects | Offline preview: visibility | With profiles: visibility | Live rects |
+| --- | --- | --- | --- | --- |
+| Verne, 1920×1080, fresh | 96.6 → **97.2 %** (3511 → 3589 of 3689) | 97.0 → **99.1 %** (9796 → 10004 of 10090) | 96.9 → 99.3 % | 99.7 → 99.7 % (3696 → 3699 of 3707) |
+| Verne, 1280×720, stored | 99.0 → 99.5 % | 96.6 → 99.3 % | 96.1 → 99.3 % | 99.8 → 99.9 % |
+| vanilla, 1920×1080, stored | 96.6 → 97.0 % | 97.9 → 98.7 % | 97.9 → 98.9 % | 99.5 → 99.6 % |
+| Bluescale, 1472 | 98.8 → 99.1 % | 96.6 → 99.2 % | 96.0 → 99.1 % | 99.7 → 99.8 % |
+| Kobildzan, 1594 | 95.5 → 95.8 % | 96.7 → 99.0 % | 96.3 → 99.1 % | 99.2 → 99.3 % |
+
+The live texts in profiled windows reach 100 % on every set (Verne 1982 → 1989 of 1989), a measure of
+the 3.0.0 gate (spec/v3.md section 3). On the fresh captures of Verne the offline preview gets 30 of the
+59 views fully right, from 10, and the live preview 53, from 50. Live visibility reaches 100 % (10032 of
+10032) with etch#378's measure fix: the two widgets it missed were the hidden second instance of the
+main menu's settings, which the measure paired with the shown one's layout.
+
+What is left on Verne at 1920×1080 after both passes, offline preview (100 rects and 86 visibility
+failures): 71 of the rects and 27 of the visibility failures are `anbennar-alone-save-s52`'s orphaned
+estate rows; about 50 are the province view's building slots; 24 are the ledger's sort buttons, which
+the game's code places by the columns of the page; the rest are sizes the game's code sets (the magic
+menu's and the dialogs' texts, `dev_share_pie_chart`, the lobby's `scenario_description`) and the map's
+strait and river marks.
+
+**1280×720 from the game, and pixels.** The same day's second batch took Anbennar's 1280×720 views
+from the game again: 51 views, 18 of which no run had taken at 1280×720 before (the views of the later
+crawls). On them, rules of `6c175a5` against `main` with etch#378: offline preview rects 96.4 → 97.2 %
+(2811 of 2890), visibility 96.3 → 98.8 % (8018 of 8114), with profiles 96.4 → 99.2 %, live visibility
+99.9 → 100 % (8109 of 8109); 9 → 27 of the 51 views fully right offline. `compare --gpu` over the fresh
+captures of both resolutions (rules of `1181976`): 5 of 110 pass, as the survey's views have no masks
+of what the game fills (see Pixels below).
 <!-- other countries: end -->
 
 ## What differs
