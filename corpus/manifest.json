@@ -555,7 +555,17 @@
             "countrydiplomacyview/ruler_race_icon",
             "countrydiplomacyview/countrydiplomacyview_shielditem*",
             "topbar/p2kuie_mana_window/p2kuie_mana_value"
-          ]
+          ],
+          "byPlayset": {
+            "anbennar": {
+              "selectors": { "hreMember": "yes", "rivals": "possible" },
+              "note": "Verne, 11 November 1444, is a member of the Empire and can choose rivals: member_of_HRE, label_rivals and label_enemies show, label_rivals_not_possible does not."
+            },
+            "anbennar-alone": {
+              "selectors": { "hreMember": "yes", "rivals": "possible" },
+              "note": "Verne, 11 November 1444, is a member of the Empire and can choose rivals: member_of_HRE, label_rivals and label_enemies show, label_rivals_not_possible does not."
+            }
+          }
         },
         {
           "id": "diplomacy-dialog",
@@ -1089,7 +1099,17 @@
             "topbar/PlayerNationText",
             "topbar/powerprojection_topbar/text_powerprojection",
             "topbar/p2kuie_mana_window/p2kuie_mana_value"
-          ]
+          ],
+          "byPlayset": {
+            "anbennar": {
+              "selectors": { "crownLand": "none" },
+              "note": "Verne's crown land on 11 November 1444 has no effect: its modifiers' icons and texts are hidden."
+            },
+            "anbennar-alone": {
+              "selectors": { "crownLand": "none" },
+              "note": "Verne's crown land on 11 November 1444 has no effect: its modifiers' icons and texts are hidden."
+            }
+          }
         }
       ]
     },
