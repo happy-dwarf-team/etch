@@ -4,7 +4,24 @@
   "formatVersion": 1,
   "window": "countryideasview",
   "checkedWith": "1.37.5",
+  "selectors": {
+    "groupChoice": {
+      "kind": "ui",
+      "label": "Idea group choice",
+      "values": { "closed": "Closed", "open": "Open" },
+      "default": "closed",
+      "note": "A free slot's unlock button opens countryideaview_ideagroupunlock, and the game hides the background and the gold top under it (the coverage survey, Russia 1719 and Verne 1444).",
+    },
+  },
   "rules": {
+    "group-choice-closed": {
+      "when": { "groupChoice": "closed" },
+      "hide": ["countryideasview/countryideaview_ideagroupunlock"],
+    },
+    "group-choice-open": {
+      "when": { "groupChoice": "open" },
+      "hide": ["countryideasview/domesticpanel_bg", "countryideasview/topGold"],
+    },
     "hidden": {
       "note": "Hidden in every view of the coverage survey (the base game): the game decides these from its data or a click; show one by hand.",
       "hide": [
