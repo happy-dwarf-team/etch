@@ -114,6 +114,13 @@ export const ENGINE_STEPS: ReadonlyMap<string, EngineSteps> = new Map<string, En
 export interface EngineRow {
   readonly start: string;
   readonly step: string;
+  /**
+   * The top-level widget whose instances the row is centered on, when not this one's: the glows
+   * of the bookmark shields stand on the shields' row, two glows over eight shields.
+   */
+  readonly countOf?: string;
+  /** Whether the widget's own `position` is added to its place in the row (the glows' 8, −5). */
+  readonly ownPosition?: boolean;
   /** What the evidence is. */
   readonly evidence: string;
 }
@@ -127,6 +134,17 @@ export const ENGINE_ROWS: ReadonlyMap<string, EngineRow> = new Map([
       step: 'shield_offset',
       evidence:
         'CGameSetup::RefreshShortcutShields (GOG 1.37.5.2 0x111C740); the coverage survey at 1920×1080 and 1280×720',
+    },
+  ],
+  [
+    'shield_thin_glow',
+    {
+      start: 'shield_position',
+      step: 'shield_offset',
+      countOf: 'shield',
+      ownPosition: true,
+      evidence:
+        "the coverage survey's lobby, vanilla and Anbennar, 1920×1080 and 1280×720: shield_thin_glow[n] at shield[n] and its own position (8, −5), the row centered on the shields",
     },
   ],
 ]);

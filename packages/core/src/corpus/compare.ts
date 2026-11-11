@@ -42,6 +42,7 @@ import {
   type PlaysetGate,
 } from './manifest.ts';
 import { matchesWidgetPattern, splitWidgetPath } from './widget-path.ts';
+import { ENGINE_ROWS } from '../profile/engine.ts';
 import type { RgbaImage } from './png.ts';
 import type { SaveTextReport, VisibilityResult } from './visibility.ts';
 
@@ -936,7 +937,9 @@ export function rootInstance(
   path: string,
 ): { index: number; count: number } {
   const first = splitWidgetPath(path)?.[0];
-  const name = first?.name.toLowerCase();
+  // A row centered on another widget's instances counts those (the shields' glows, etch#278).
+  const own = first?.name.toLowerCase();
+  const name = ENGINE_ROWS.get(own ?? '')?.countOf?.toLowerCase() ?? own;
   let count = 1;
   for (const r of roots) {
     const step = splitWidgetPath(r.path)?.[0];

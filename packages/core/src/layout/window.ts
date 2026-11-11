@@ -190,7 +190,9 @@ export interface LayoutView {
    * The row the game's code places the instances of a top-level widget in: the `positionType`
    * names of the first one's place and of the step to the next (etch#278).
    */
-  row?(widget: Widget): { readonly start: string; readonly step: string } | undefined;
+  row?(
+    widget: Widget,
+  ): { readonly start: string; readonly step: string; readonly ownPosition?: boolean } | undefined;
   /** How far the game's code moves the widget from where it would be, in pixels. */
   offset?(widget: Widget): { readonly x: number; readonly y: number } | undefined;
   /** Whether the game keeps the widget at its `hide_position` rather than its `show_position`. */
@@ -366,7 +368,13 @@ class Layout {
     const stepped = view?.stepped?.(widget);
     const step = stepped === undefined ? 0 : this.stepIncrement();
     const further = step > 0 ? (view?.steppedFurther?.(widget) ?? 0) : 0;
-    const inRow = parentIndex === -1 ? this.rowPoint(view?.row?.(widget)) : undefined;
+    const row = parentIndex === -1 ? view?.row?.(widget) : undefined;
+    const rowPoint = this.rowPoint(row);
+    // A row's widget may stand off its place by its own position, as the shields' glows do.
+    const inRow =
+      rowPoint === undefined || row?.ownPosition !== true
+        ? rowPoint
+        : { x: rowPoint.x + offset.x, y: rowPoint.y + offset.y };
     const shift = view?.offset?.(widget);
     const x = (inRow?.x ?? anchor.x + offset.x) + (shift?.x ?? 0);
     const y =
