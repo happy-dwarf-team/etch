@@ -1,0 +1,18 @@
+// The speed_controls window in the Anbennar playset (Anbennar, Proper 2K UI Enhanced, P2KE Patch -
+// Anbennar). The base game has no profile of it. Drafted from the playset's survey captures (ADR
+// 0006); Anbennar's descriptor gives version "1" for every release, so checkedWith says little.
+{
+  "formatVersion": 1,
+  "window": "speed_controls",
+  "checkedWith": "1",
+  "mod": {
+    "remoteFileId": "1385440355",
+    "name": "Anbennar: A Fantasy Total Conversion",
+  },
+  "rules": {
+    "hidden": {
+      "note": "Hidden in every capture of Anbennar in the coverage survey (Verne 1444, Bluescale 1472, Kobildzan 1594), shown in every capture of the base game, Bigger UI and Proper 2K UI Enhanced: hypothesis, the game hides the achievements button when the playset's checksum rules achievements out.",
+      "hide": ["speed_controls/button_achievements"],
+    },
+  },
+}
