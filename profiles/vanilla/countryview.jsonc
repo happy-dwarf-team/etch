@@ -1,0 +1,22 @@
+// The countryview window of the base game (docs/window-profiles.md). Its rule hides what the coverage
+// survey's captures of it show hidden; drafted from them, as the corpus's are (ADR 0006).
+{
+  "formatVersion": 1,
+  "window": "countryview",
+  "checkedWith": "1.37.5",
+  "selectors": {
+    "choice": {
+      "kind": "ui",
+      "label": "A choice over the tab",
+      "values": { "closed": "Closed", "open": "Open" },
+      "default": "closed",
+      "note": "While the ideas tab's idea group choice or the policies tab's new policy window is open, the game hides the tabs (the coverage survey: vanilla save-s60 and save-s61, Anbennar save-s43 and save-s47, both resolutions).",
+    },
+  },
+  "rules": {
+    "choice-open": {
+      "when": { "choice": "open" },
+      "hide": ["countryview/countryview_tabs"],
+    },
+  },
+}
