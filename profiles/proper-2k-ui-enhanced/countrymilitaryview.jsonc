@@ -1,0 +1,26 @@
+// The countrymilitaryview window in Proper 2K UI Enhanced, over the vanilla profile (and Anbennar's
+// in the Anbennar playset). Proper 2K UI Enhanced, and P2KE Patch - Anbennar after it, make
+// army_professionalism 19 px high, so with Cradle of Civilization the tab moves down by 19 px, not
+// the base game's 16: the coverage survey's captures of the Anbennar playset at 2560x1440 (11
+// November 2026, Verne 1444) show the tab at y 187 for the .gui's 168.
+{
+  "formatVersion": 1,
+  "window": "countrymilitaryview",
+  "checkedWith": "1",
+  "mod": {
+    "remoteFileId": "3290499798",
+    "name": "Proper 2K UI Enhanced",
+  },
+  "rules": {
+    "cradle-moves-the-tab": {
+      "note": "army_professionalism is 19 px high here: the tab moves down by it, and CoCbackground, the close button and the title stay (UpdateArmyProfessionalism, Steam 0xFBC0A0).",
+      "when": { "cradle": "yes" },
+      "offset": {
+        "countrymilitaryview": { "y": 19 },
+        "countrymilitaryview/CoCbackground": { "y": -19 },
+        "countrymilitaryview/close_button": { "y": -19 },
+        "countrymilitaryview/window_title": { "y": -19 },
+      },
+    },
+  },
+}
