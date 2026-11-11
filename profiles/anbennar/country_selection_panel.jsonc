@@ -28,5 +28,12 @@
       },
       "hide": ["country_selection_panel/mainmenu/mainmenu_panel_bottom/nudge_button"],
     },
+    "no-date-or-random-world": {
+      "note": "Anbennar's lobby puts the date picker and the random New World button off the screen (x = -300 and 2220 at 1920×1080), and the game hides both in the lobby, its options, its find box and the nation designer (the coverage survey, Anbennar alone).",
+      "hide": [
+        "country_selection_panel/lobby/left/datewidget",
+        "country_selection_panel/lobby/right/random_new_world_button",
+      ],
+    },
   },
 }

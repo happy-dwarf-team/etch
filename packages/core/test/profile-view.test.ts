@@ -1363,3 +1363,44 @@ describe("the religion view's selection screens (the coverage survey)", () => {
     ]);
   });
 });
+
+describe("Anbennar's lobby without the date or a random New World (the coverage survey)", () => {
+  const window = readGuiFile(
+    parseScript(`guiTypes = {
+  windowType = {
+    name = "country_selection_panel"
+    size = { x = 100 y = 100 }
+    windowType = { name = "lobby" size = { x = 100 y = 100 }
+      windowType = { name = "left" size = { x = 100 y = 100 }
+        windowType = { name = "datewidget" size = { x = 10 y = 10 } }
+      }
+      windowType = { name = "right" size = { x = 100 y = 100 }
+        guiButtonType = { name = "random_new_world_button" }
+      }
+    }
+  }
+}`),
+  ).definitions[0] as Widget;
+  const layer = (source: string, at: number) =>
+    readProfile(
+      readFileSync(
+        new URL(`../../../profiles/${source}/country_selection_panel.jsonc`, import.meta.url),
+        'utf8',
+      ),
+      { layer: at, source, file: 'country_selection_panel.jsonc' },
+    ).file;
+  const shown = (sources: readonly string[]) => {
+    const files = sources.flatMap((s, i) => layer(s, i) ?? []);
+    const view = evaluateView(layerProfiles('country_selection_panel', files), window, LARGE, {
+      set: { page: 'lobby' },
+    });
+    return ['left/datewidget', 'right/random_new_world_button'].filter((name) =>
+      widgetsAt(window, `country_selection_panel/lobby/${name}`).some((w) => view.drawn(w)),
+    );
+  };
+
+  it('hides both in Anbennar only', () => {
+    expect(shown(['vanilla'])).toEqual(['left/datewidget', 'right/random_new_world_button']);
+    expect(shown(['vanilla', 'anbennar'])).toEqual([]);
+  });
+});
