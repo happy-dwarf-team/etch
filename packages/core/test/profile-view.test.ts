@@ -1110,3 +1110,143 @@ describe('the province history list', () => {
     });
   });
 });
+
+/** The shipped profile of a window, layered from vanilla up to the given sources. */
+function shipped(window: string, sources: readonly string[]) {
+  return layerProfiles(
+    window,
+    sources.flatMap((source, layer) => {
+      const read = readProfile(
+        readFileSync(
+          new URL(`../../../profiles/${source}/${window}.jsonc`, import.meta.url),
+          'utf8',
+        ),
+        { layer, source, file: `${window}.jsonc` },
+      );
+      expect(read.diagnostics).toEqual([]);
+      return read.file === undefined ? [] : [read.file];
+    }),
+  );
+}
+
+function drawnOf(window: Widget, root: string, names: readonly string[]) {
+  return (profile: ReturnType<typeof shipped>, set: Record<string, string>) => {
+    const view = evaluateView(profile, window, LARGE, { set });
+    return names.filter((name) => widgetsAt(window, `${root}/${name}`).some((w) => view.drawn(w)));
+  };
+}
+
+describe('the diplomacy view of a country without an heir, in the Empire (the coverage survey)', () => {
+  const window = readGuiFile(
+    parseScript(`guiTypes = {
+  windowType = {
+    name = "countrydiplomacyview"
+    size = { x = 100 y = 100 }
+    iconType = { name = "member_of_HRE" }
+    iconType = { name = "heir_gender" }
+    instantTextBoxType = { name = "monarch_heir_label" }
+    instantTextBoxType = { name = "monarch_heir_name" }
+    instantTextBoxType = { name = "monarch_heir_info" }
+    iconType = { name = "ruler_is_mage_icon" }
+  }
+}`),
+  ).definitions[0] as Widget;
+  const drawn = drawnOf(window, 'countrydiplomacyview', [
+    'member_of_HRE',
+    'heir_gender',
+    'monarch_heir_label',
+    'monarch_heir_name',
+    'monarch_heir_info',
+    'ruler_is_mage_icon',
+  ]);
+
+  it('hides the heir but its name, and shows the Empire mark for a member', () => {
+    const vanilla = shipped('countrydiplomacyview', ['vanilla']);
+    expect(drawn(vanilla, { heir: 'no' })).toEqual(['monarch_heir_name', 'ruler_is_mage_icon']);
+    expect(drawn(vanilla, { heir: 'yes', hreMember: 'yes' })).toEqual([
+      'member_of_HRE',
+      'heir_gender',
+      'monarch_heir_label',
+      'monarch_heir_name',
+      'monarch_heir_info',
+      'ruler_is_mage_icon',
+    ]);
+  });
+
+  it("shows Anbennar's mage mark only for a mage, and the Empire mark only for a member", () => {
+    const anbennar = shipped('countrydiplomacyview', ['vanilla', 'anbennar']);
+    expect(drawn(anbennar, { heir: 'no' })).toEqual(['monarch_heir_name']);
+    expect(drawn(anbennar, { heir: 'no', hreMember: 'yes', rulerMage: 'yes' })).toEqual([
+      'member_of_HRE',
+      'monarch_heir_name',
+      'ruler_is_mage_icon',
+    ]);
+  });
+});
+
+describe("the military tab's leaders under the unit type choice (the coverage survey)", () => {
+  const window = readGuiFile(
+    parseScript(`guiTypes = {
+  windowType = {
+    name = "countrymilitaryview"
+    size = { x = 100 y = 100 }
+    guiButtonType = { name = "button_recruit_general" }
+    guiButtonType = { name = "button_makerulergeneral" }
+    guiButtonType = { name = "button_makeheirgeneral" }
+    guiButtonType = { name = "convert_ruler_to_war_wizard" }
+    guiButtonType = { name = "convert_heir_to_war_wizard" }
+  }
+}`),
+  ).definitions[0] as Widget;
+  const drawn = drawnOf(window, 'countrymilitaryview', [
+    'button_recruit_general',
+    'button_makerulergeneral',
+    'button_makeheirgeneral',
+    'convert_ruler_to_war_wizard',
+    'convert_heir_to_war_wizard',
+  ]);
+
+  it('hides the leaders while the choice is open, and keeps scripted buttons hidden by default', () => {
+    const vanilla = shipped('countrymilitaryview', ['vanilla']);
+    expect(drawn(vanilla, { unitSelect: 'open' })).toEqual([
+      'convert_ruler_to_war_wizard',
+      'convert_heir_to_war_wizard',
+    ]);
+    const anbennar = shipped('countrymilitaryview', ['vanilla', 'anbennar']);
+    expect(drawn(anbennar, { unitSelect: 'closed' })).toEqual([
+      'button_recruit_general',
+      'button_makerulergeneral',
+      'button_makeheirgeneral',
+    ]);
+    expect(drawn(anbennar, { unitSelect: 'open' })).toEqual(['button_makerulergeneral']);
+    expect(
+      drawn(anbennar, { unitSelect: 'closed', rulerLeader: 'war_wizard', heirWarWizard: 'yes' }),
+    ).toEqual([
+      'button_recruit_general',
+      'button_makerulergeneral',
+      'button_makeheirgeneral',
+      'convert_ruler_to_war_wizard',
+      'convert_heir_to_war_wizard',
+    ]);
+  });
+});
+
+describe("the top bar's unused icons (the coverage survey)", () => {
+  const window = readGuiFile(
+    parseScript(`guiTypes = {
+  windowType = {
+    name = "topbar"
+    size = { x = 100 y = 100 }
+    iconType = { name = "topbar_1" position = { x = 99512 y = -1 } }
+    iconType = { name = "topbar_2" position = { x = 99512 y = -1 } }
+    iconType = { name = "topbar_3" position = { x = 99512 y = -1 } }
+  }
+}`),
+  ).definitions[0] as Widget;
+
+  it('never draws them', () => {
+    const drawn = drawnOf(window, 'topbar', ['topbar_1', 'topbar_2', 'topbar_3']);
+    expect(drawn(shipped('topbar', ['vanilla']), {})).toEqual([]);
+    expect(drawn(shipped('topbar', ['vanilla', 'anbennar']), {})).toEqual([]);
+  });
+});

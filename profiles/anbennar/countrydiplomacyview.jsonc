@@ -10,6 +10,15 @@
     "remoteFileId": "1385440355",
     "name": "Anbennar: A Fantasy Total Conversion",
   },
+  "selectors": {
+    "rulerMage": {
+      "kind": "ui",
+      "label": "Ruler is a mage",
+      "values": { "yes": "Mage", "no": "Not a mage" },
+      "default": "no",
+      "note": "ruler_is_mage_icon shows by the ruler's name when the ruler is a mage (the coverage survey: the emperor of 1444).",
+    },
+  },
   "rules": {
     "hidden": {
       "note": "Hidden in the corpus capture of \"diplomacy\" in the Anbennar playset (Verne, 11 November 1444): the game decides these from its data or a click; show one by hand.",
@@ -41,6 +50,7 @@
         "countrydiplomacyview/lake_fed_info_diplo_not_republic",
         "countrydiplomacyview/manual_manage_checkbox",
         "countrydiplomacyview/manual_manage_label",
+        "countrydiplomacyview/member_of_HRE",
         "countrydiplomacyview/neutral_checkbox",
         "countrydiplomacyview/neutral_icon",
         "countrydiplomacyview/neutral_label",
@@ -57,6 +67,10 @@
         "countrydiplomacyview/trust_value",
         "countrydiplomacyview/vassal_select_window",
       ],
+    },
+    "ruler-mage": {
+      "when": { "rulerMage": "yes" },
+      "show": ["countrydiplomacyview/ruler_is_mage_icon"],
     },
   },
 }

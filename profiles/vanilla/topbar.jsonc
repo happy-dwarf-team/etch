@@ -34,6 +34,10 @@
         "topbar/text_unity",
       ],
     },
+    "unused-icons": {
+      "note": "topbar_1 to topbar_3 have the sprite GFX_remove and sit at x = 99512, and the game never shows them (the coverage survey, vanilla and Anbennar, every top bar view).",
+      "hide": ["topbar/topbar_1", "topbar/topbar_2", "topbar/topbar_3"],
+    },
     "legitimacy": {
       "when": { "legitimacy": "legitimacy" },
       "show": ["topbar/icon_leg", "topbar/text_leg"],

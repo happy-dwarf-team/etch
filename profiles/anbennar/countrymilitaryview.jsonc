@@ -1,0 +1,62 @@
+// The military tab in the Anbennar playset (docs/window-profiles.md), over the vanilla profile.
+// Anbennar adds buttons through scripted GUI (common/custom_gui/countrymilitaryview.txt), whose
+// potential triggers Etch shows and never evaluates; they are set by hand (ADR 0006).
+{
+  "formatVersion": 1,
+  "window": "countrymilitaryview",
+  "checkedWith": "1",
+  "mod": {
+    "remoteFileId": "1385440355",
+    "name": "Anbennar: A Fantasy Total Conversion",
+  },
+  "selectors": {
+    "rulerLeader": {
+      "kind": "scripted",
+      "label": "Ruler as a leader",
+      "values": {
+        "none": "Neither",
+        "war_wizard": "War wizard",
+        "planetouched": "Planetouched commander",
+      },
+      "default": "none",
+      "note": "custom_gui/countrymilitaryview.txt: convert_ruler_to_war_wizard for a powerful mage, convert_ruler_to_planetouched_commander for a planetouched ruler who is not one; both need a government with rulers_can_be_generals, no regency and no junior union. Hidden in every military tab of the coverage survey (Verne, 1444).",
+    },
+    "heirWarWizard": {
+      "kind": "scripted",
+      "label": "Heir as a war wizard",
+      "values": { "no": "No", "yes": "Yes" },
+      "default": "no",
+      "note": "custom_gui/countrymilitaryview.txt: convert_heir_to_war_wizard for an heir who is a powerful mage and not yet a leader.",
+    },
+  },
+  "rules": {
+    "unit-select-open": {
+      "note": "Anbennar makes button_makerulergeneral a scripted button (custom_gui/countrymilitaryview.txt), which its potential shows under the unit type choice too (the coverage survey, Verne 1444).",
+      "when": { "unitSelect": "open" },
+      "hide": [
+        "countrymilitaryview/button_recruit_general",
+        "countrymilitaryview/button_recruit_conquistador",
+        "countrymilitaryview/button_recruit_admiral",
+        "countrymilitaryview/button_recruit_explorer",
+        "countrymilitaryview/button_makeheirgeneral",
+      ],
+    },
+  },
+  "groups": {
+    "rulerLeader": {
+      "label": "Ruler as a leader",
+      "selector": "rulerLeader",
+      "none": true,
+      "members": {
+        "war_wizard": "countrymilitaryview/convert_ruler_to_war_wizard",
+        "planetouched": "countrymilitaryview/convert_ruler_to_planetouched_commander",
+      },
+    },
+    "heirWarWizard": {
+      "label": "Heir as a war wizard",
+      "selector": "heirWarWizard",
+      "none": true,
+      "members": { "yes": "countrymilitaryview/convert_heir_to_war_wizard" },
+    },
+  },
+}
