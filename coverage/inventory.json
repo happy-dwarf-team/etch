@@ -670,33 +670,6 @@
           "note": "Escape does not close it: Escape opened estate_dev_share_item[1], estate_dev_share_item[2], estate_dev_share_item[3], estate_dev_share_item[4], estate_dev_share_item[5], estate_item[1], estate_item[2], estate_item[3], estate_item[4] instead of closing a window."
         },
         {
-          "id": "vanilla-save-s73",
-          "roots": [
-            "estate_dev_share_item[1]",
-            "estate_dev_share_item[2]",
-            "estate_dev_share_item[3]",
-            "estate_dev_share_item[4]",
-            "estate_dev_share_item[5]",
-            "estate_item[1]",
-            "estate_item[2]",
-            "estate_item[3]",
-            "estate_item[4]"
-          ],
-          "from": "save",
-          "steps": [
-            {
-              "click": "topbar/government_reforms_button"
-            },
-            {
-              "click": "countryview/countryview_tabs/tab_estates"
-            },
-            {
-              "click": "countryestatesview/close_button"
-            }
-          ],
-          "note": "Escape does not close it: Escape opened menu instead of closing a window."
-        },
-        {
           "id": "vanilla-save-s74",
           "roots": ["DefaultConfirm", "countryestatesview", "countryview"],
           "from": "save",
@@ -1741,16 +1714,16 @@
           "name": "estate_item",
           "kind": "windowType",
           "file": "interface/countryestatesview.gui",
-          "status": "view",
-          "views": ["vanilla-save-s73"],
+          "status": "inside",
+          "views": ["vanilla-save-s43", "vanilla-save-s74"],
           "confidence": 0.19
         },
         {
           "name": "estate_dev_share_item",
           "kind": "windowType",
           "file": "interface/countryestatesview.gui",
-          "status": "view",
-          "views": ["vanilla-save-s73"],
+          "status": "inside",
+          "views": ["vanilla-save-s43", "vanilla-save-s74"],
           "confidence": 0
         },
         {
@@ -1766,7 +1739,7 @@
           "kind": "windowType",
           "file": "interface/countryestatesview.gui",
           "status": "inside",
-          "views": ["vanilla-save-s43", "vanilla-save-s73", "vanilla-save-s74"],
+          "views": ["vanilla-save-s43", "vanilla-save-s74"],
           "confidence": 0.667
         },
         {
@@ -6769,35 +6742,6 @@
           "note": "Escape does not close it: Escape opened estate_dev_share_item[1], estate_dev_share_item[2], estate_dev_share_item[3], estate_dev_share_item[4], estate_dev_share_item[5], estate_dev_share_item[6], estate_item[1], estate_item[2], estate_item[3], estate_item[4], estate_item[5] instead of closing a window."
         },
         {
-          "id": "anbennar-alone-save-s52",
-          "roots": [
-            "estate_dev_share_item[1]",
-            "estate_dev_share_item[2]",
-            "estate_dev_share_item[3]",
-            "estate_dev_share_item[4]",
-            "estate_dev_share_item[5]",
-            "estate_dev_share_item[6]",
-            "estate_item[1]",
-            "estate_item[2]",
-            "estate_item[3]",
-            "estate_item[4]",
-            "estate_item[5]"
-          ],
-          "from": "save",
-          "steps": [
-            {
-              "click": "topbar/government_reforms_button"
-            },
-            {
-              "click": "countryview/countryview_tabs/tab_estates"
-            },
-            {
-              "click": "countryestatesview/close_button"
-            }
-          ],
-          "note": "Escape does not close it: Escape opened menu instead of closing a window."
-        },
-        {
           "id": "anbennar-alone-save-s53",
           "roots": ["countryestatesview", "countryview", "estate_privileges_window"],
           "from": "save",
@@ -7710,16 +7654,16 @@
           "name": "estate_item",
           "kind": "windowType",
           "file": "interface/countryestatesview.gui",
-          "status": "view",
-          "views": ["anbennar-alone-save-s52"],
+          "status": "inside",
+          "views": ["anbennar-alone-save-s37", "anbennar-alone-save-s53"],
           "confidence": 0.19
         },
         {
           "name": "estate_dev_share_item",
           "kind": "windowType",
           "file": "interface/countryestatesview.gui",
-          "status": "view",
-          "views": ["anbennar-alone-save-s52"],
+          "status": "inside",
+          "views": ["anbennar-alone-save-s37", "anbennar-alone-save-s53"],
           "confidence": 0
         },
         {
@@ -7735,11 +7679,7 @@
           "kind": "windowType",
           "file": "interface/countryestatesview.gui",
           "status": "inside",
-          "views": [
-            "anbennar-alone-save-s37",
-            "anbennar-alone-save-s52",
-            "anbennar-alone-save-s53"
-          ],
+          "views": ["anbennar-alone-save-s37", "anbennar-alone-save-s53"],
           "confidence": 0.667
         },
         {
@@ -13538,33 +13478,6 @@
           "note": "Escape does not close it: Escape opened estate_dev_share_item[1], estate_dev_share_item[2], estate_dev_share_item[3], estate_dev_share_item[4], estate_dev_share_item[5], estate_item[1], estate_item[2], estate_item[3], estate_item[4] instead of closing a window."
         },
         {
-          "id": "vanilla-save-s73",
-          "roots": [
-            "estate_dev_share_item[1]",
-            "estate_dev_share_item[2]",
-            "estate_dev_share_item[3]",
-            "estate_dev_share_item[4]",
-            "estate_dev_share_item[5]",
-            "estate_item[1]",
-            "estate_item[2]",
-            "estate_item[3]",
-            "estate_item[4]"
-          ],
-          "from": "save",
-          "steps": [
-            {
-              "click": "topbar/government_reforms_button"
-            },
-            {
-              "click": "countryview/countryview_tabs/tab_estates"
-            },
-            {
-              "click": "countryestatesview/close_button"
-            }
-          ],
-          "note": "Escape does not close it: Escape opened menu instead of closing a window."
-        },
-        {
           "id": "vanilla-save-s74",
           "roots": ["DefaultConfirm", "countryestatesview", "countryview"],
           "from": "save",
@@ -14609,16 +14522,16 @@
           "name": "estate_item",
           "kind": "windowType",
           "file": "interface/countryestatesview.gui",
-          "status": "view",
-          "views": ["vanilla-save-s73"],
+          "status": "inside",
+          "views": ["vanilla-save-s43", "vanilla-save-s74"],
           "confidence": 0.19
         },
         {
           "name": "estate_dev_share_item",
           "kind": "windowType",
           "file": "interface/countryestatesview.gui",
-          "status": "view",
-          "views": ["vanilla-save-s73"],
+          "status": "inside",
+          "views": ["vanilla-save-s43", "vanilla-save-s74"],
           "confidence": 0
         },
         {
@@ -14634,7 +14547,7 @@
           "kind": "windowType",
           "file": "interface/countryestatesview.gui",
           "status": "inside",
-          "views": ["vanilla-save-s43", "vanilla-save-s73", "vanilla-save-s74"],
+          "views": ["vanilla-save-s43", "vanilla-save-s74"],
           "confidence": 0.667
         },
         {
@@ -19682,33 +19595,6 @@
           "note": "Escape does not close it: Escape opened estate_dev_share_item[1], estate_dev_share_item[2], estate_dev_share_item[3], estate_dev_share_item[4], estate_dev_share_item[5], estate_item[1], estate_item[2], estate_item[3], estate_item[4] instead of closing a window."
         },
         {
-          "id": "vanilla-save-s73",
-          "roots": [
-            "estate_dev_share_item[1]",
-            "estate_dev_share_item[2]",
-            "estate_dev_share_item[3]",
-            "estate_dev_share_item[4]",
-            "estate_dev_share_item[5]",
-            "estate_item[1]",
-            "estate_item[2]",
-            "estate_item[3]",
-            "estate_item[4]"
-          ],
-          "from": "save",
-          "steps": [
-            {
-              "click": "topbar/government_reforms_button"
-            },
-            {
-              "click": "countryview/countryview_tabs/tab_estates"
-            },
-            {
-              "click": "countryestatesview/close_button"
-            }
-          ],
-          "note": "Escape does not close it: Escape opened menu instead of closing a window."
-        },
-        {
           "id": "vanilla-save-s74",
           "roots": ["DefaultConfirm", "countryestatesview", "countryview"],
           "from": "save",
@@ -19958,42 +19844,42 @@
           "kind": "windowType",
           "file": "interface/achievements.gui",
           "status": "not reached",
-          "confidence": 0.167
+          "confidence": 0.333
         },
         {
           "name": "achievement_entry",
           "kind": "windowType",
           "file": "interface/achievements.gui",
           "status": "not reached",
-          "confidence": 0.1
+          "confidence": 0.7
         },
         {
           "name": "ages_view",
           "kind": "windowType",
           "file": "interface/ages_view.gui",
           "status": "not reached",
-          "confidence": 0.146
+          "confidence": 0.463
         },
         {
           "name": "age_objectives_entry",
           "kind": "windowType",
           "file": "interface/ages_view.gui",
           "status": "not reached",
-          "confidence": 0.125
+          "confidence": 0.5
         },
         {
           "name": "age_ability_entry",
           "kind": "windowType",
           "file": "interface/ages_view.gui",
           "status": "not reached",
-          "confidence": 0.333
+          "confidence": 1
         },
         {
           "name": "alerticon_window",
           "kind": "windowType",
           "file": "interface/alerts.gui",
           "status": "not reached",
-          "confidence": 0.667
+          "confidence": 1
         },
         {
           "name": "back_end",
@@ -20028,28 +19914,28 @@
           "kind": "windowType",
           "file": "interface/blessings.gui",
           "status": "not reached",
-          "confidence": 0.143
+          "confidence": 0.286
         },
         {
           "name": "holy_site_entry",
           "kind": "windowType",
           "file": "interface/blessings.gui",
           "status": "not reached",
-          "confidence": 0.273
+          "confidence": 0.364
         },
         {
           "name": "blessingitem",
           "kind": "windowType",
           "file": "interface/blessings.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 0.75
         },
         {
           "name": "blessing_entry",
           "kind": "windowType",
           "file": "interface/blessings.gui",
           "status": "not reached",
-          "confidence": 0.333
+          "confidence": 0.667
         },
         {
           "name": "stats_list_item",
@@ -20063,21 +19949,21 @@
           "kind": "windowType",
           "file": "interface/campaign_stats.gui",
           "status": "not reached",
-          "confidence": 0.167
+          "confidence": 0.333
         },
         {
           "name": "cb_entry",
           "kind": "windowType",
           "file": "interface/casus_bellis.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 0.75
         },
         {
           "name": "celestial_window",
           "kind": "windowType",
           "file": "interface/celestialempireview.gui",
           "status": "not reached",
-          "confidence": 0.053
+          "confidence": 0.211
         },
         {
           "name": "celestial_decree_entry",
@@ -20091,7 +19977,7 @@
           "kind": "windowType",
           "file": "interface/celestialempireview.gui",
           "status": "not reached",
-          "confidence": 0.4
+          "confidence": 0.6
         },
         {
           "name": "chat_window",
@@ -20099,7 +19985,7 @@
           "file": "interface/chat.gui",
           "status": "inside",
           "views": ["vanilla-save-s0"],
-          "confidence": 0.182
+          "confidence": 0.273
         },
         {
           "name": "chat_item",
@@ -20120,7 +20006,7 @@
           "kind": "windowType",
           "file": "interface/chat.gui",
           "status": "not reached",
-          "confidence": 0.2
+          "confidence": 0.6
         },
         {
           "name": "channel_window",
@@ -20148,21 +20034,21 @@
           "kind": "windowType",
           "file": "interface/colonisationpanel.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.5
         },
         {
           "name": "ferocity_window",
           "kind": "windowType",
           "file": "interface/colonisationpanel.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.5
         },
         {
           "name": "colonisationpanel",
           "kind": "windowType",
           "file": "interface/colonisationpanel.gui",
           "status": "not reached",
-          "confidence": 0.227
+          "confidence": 0.5
         },
         {
           "name": "send_colonist_button",
@@ -20191,21 +20077,21 @@
           "file": "interface/combat.gui",
           "status": "inside",
           "views": ["vanilla-save-s0"],
-          "confidence": 0.067
+          "confidence": 0.36
         },
         {
           "name": "combat_modifier",
           "kind": "windowType",
           "file": "interface/combat.gui",
           "status": "not reached",
-          "confidence": 0.333
+          "confidence": 0.667
         },
         {
           "name": "ContentWindow",
           "kind": "windowType",
           "file": "interface/contentview.gui",
           "status": "not reached",
-          "confidence": 0.4
+          "confidence": 0.5
         },
         {
           "name": "content_item",
@@ -20219,7 +20105,7 @@
           "kind": "windowType",
           "file": "interface/contentview.gui",
           "status": "not reached",
-          "confidence": 0.174
+          "confidence": 0.217
         },
         {
           "name": "console_wnd",
@@ -20240,28 +20126,28 @@
           "kind": "windowType",
           "file": "interface/core.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.25
         },
         {
           "name": "countrycourtview",
           "kind": "windowType",
           "file": "interface/countrycourtview.gui",
           "status": "not reached",
-          "confidence": 0.169
+          "confidence": 0.542
         },
         {
           "name": "countrycourtview_personalityitem",
           "kind": "windowType",
           "file": "interface/countrycourtview.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.75
         },
         {
           "name": "countrycourtview_abilitylistitem",
           "kind": "windowType",
           "file": "interface/countrycourtview.gui",
           "status": "not reached",
-          "confidence": 0.143
+          "confidence": 0.429
         },
         {
           "name": "advisor_modifier_item",
@@ -20275,28 +20161,28 @@
           "kind": "windowType",
           "file": "interface/countrycourtview.gui",
           "status": "not reached",
-          "confidence": 0.15
+          "confidence": 0.35
         },
         {
           "name": "countrydecisionsview",
           "kind": "windowType",
           "file": "interface/countrydecisionsview.gui",
           "status": "not reached",
-          "confidence": 0.07
+          "confidence": 0.233
         },
         {
           "name": "countrydecisionsview_decision_entry",
           "kind": "windowType",
           "file": "interface/countrydecisionsview.gui",
           "status": "not reached",
-          "confidence": 0.429
+          "confidence": 0.857
         },
         {
           "name": "countrydecisionsview_major_decision_entry",
           "kind": "windowType",
           "file": "interface/countrydecisionsview.gui",
           "status": "not reached",
-          "confidence": 0.429
+          "confidence": 0.857
         },
         {
           "name": "countrydecisionsview_activepolicy",
@@ -20338,14 +20224,14 @@
           "kind": "windowType",
           "file": "interface/countrydiplomacyview.gui",
           "status": "not reached",
-          "confidence": 0.164
+          "confidence": 0.397
         },
         {
           "name": "vassal_selection_entry",
           "kind": "windowType",
           "file": "interface/countrydiplomacyview.gui",
           "status": "not reached",
-          "confidence": 0.286
+          "confidence": 0.714
         },
         {
           "name": "countrydiplomacyview_shielditem",
@@ -20366,28 +20252,28 @@
           "kind": "windowType",
           "file": "interface/countrydiplomacyview.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 0.75
         },
         {
           "name": "countrydiplomacyview_shieldprogressitem",
           "kind": "windowType",
           "file": "interface/countrydiplomacyview.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 0.75
         },
         {
           "name": "countrydiplomacyview_diplistitem",
           "kind": "windowType",
           "file": "interface/countrydiplomacyview.gui",
           "status": "not reached",
-          "confidence": 0.25
+          "confidence": 0.5
         },
         {
           "name": "possible_rival_entry",
           "kind": "windowType",
           "file": "interface/countrydiplomacyview.gui",
           "status": "not reached",
-          "confidence": 0.375
+          "confidence": 0.5
         },
         {
           "name": "countryactionentry",
@@ -20401,70 +20287,70 @@
           "kind": "windowType",
           "file": "interface/countrydiplomacyview.gui",
           "status": "not reached",
-          "confidence": 0.333
+          "confidence": 0.667
         },
         {
           "name": "diploactionentry_category",
           "kind": "windowType",
           "file": "interface/countrydiplomacyview.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "GiftDiplomacyDialog",
           "kind": "eu3dialogtype",
           "file": "interface/countrydiplomacyview.gui",
           "status": "not reached",
-          "confidence": 0.167
+          "confidence": 0.25
         },
         {
           "name": "TradeFavorsForTrustDialog",
           "kind": "eu3dialogtype",
           "file": "interface/countrydiplomacyview.gui",
           "status": "not reached",
-          "confidence": 0.125
+          "confidence": 0.438
         },
         {
           "name": "DefaultDiplomacyDialog",
           "kind": "eu3dialogtype",
           "file": "interface/countrydiplomacyview.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.385
         },
         {
           "name": "SendInsultDiplomacyDialog",
           "kind": "eu3dialogtype",
           "file": "interface/countrydiplomacyview.gui",
           "status": "not reached",
-          "confidence": 0.095
+          "confidence": 0.333
         },
         {
           "name": "AppointCardinalDiplomacyDialog",
           "kind": "eu3dialogtype",
           "file": "interface/countrydiplomacyview.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.333
         },
         {
           "name": "VassalCreationDialog",
           "kind": "eu3dialogtype",
           "file": "interface/countrydiplomacyview.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.1
         },
         {
           "name": "DeclareWarDialog",
           "kind": "eu3dialogtype",
           "file": "interface/countrydiplomacyview.gui",
           "status": "not reached",
-          "confidence": 0.05
+          "confidence": 0.075
         },
         {
           "name": "DeclareWarDialog_wargoalcbentry",
           "kind": "windowType",
           "file": "interface/countrydiplomacyview.gui",
           "status": "not reached",
-          "confidence": 0.25
+          "confidence": 0.75
         },
         {
           "name": "DeclareWarDialog_wargoalentry",
@@ -20492,21 +20378,21 @@
           "kind": "eu3dialogtype",
           "file": "interface/countrydiplomacyview.gui",
           "status": "not reached",
-          "confidence": 0.067
+          "confidence": 0.4
         },
         {
           "name": "CallAllyDialog",
           "kind": "eu3dialogtype",
           "file": "interface/countrydiplomacyview.gui",
           "status": "not reached",
-          "confidence": 0.063
+          "confidence": 0.375
         },
         {
           "name": "FormCoalitionDialog",
           "kind": "eu3dialogtype",
           "file": "interface/countrydiplomacyview.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.2
         },
         {
           "name": "FormCoalitionDialog_rivalentry",
@@ -20520,7 +20406,7 @@
           "kind": "eu3dialogtype",
           "file": "interface/countrydiplomacyview.gui",
           "status": "not reached",
-          "confidence": 0.053
+          "confidence": 0.316
         },
         {
           "name": "EnforcePeaceDiplomacyDialogue_enemyentry",
@@ -20534,14 +20420,14 @@
           "kind": "eu3dialogtype",
           "file": "interface/countrydiplomacyview.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.308
         },
         {
           "name": "InterveneDiplomacyDialogue_countryentry",
           "kind": "windowType",
           "file": "interface/countrydiplomacyview.gui",
           "status": "not reached",
-          "confidence": 0.25
+          "confidence": 0.75
         },
         {
           "name": "InterveneDiplomacyDialogue_warentry",
@@ -20555,7 +20441,7 @@
           "kind": "eu3dialogtype",
           "file": "interface/countrydiplomacyview.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.067
         },
         {
           "name": "SupportRebelsDiplomacyDialogue_rebelentry",
@@ -20569,7 +20455,7 @@
           "kind": "eu3dialogtype",
           "file": "interface/countrydiplomacyview.gui",
           "status": "not reached",
-          "confidence": 0.167
+          "confidence": 0.333
         },
         {
           "name": "offer_condottieri_entry",
@@ -20583,35 +20469,35 @@
           "kind": "eu3dialogtype",
           "file": "interface/countrydiplomacyview.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.308
         },
         {
           "name": "SellProvDialog",
           "kind": "eu3dialogtype",
           "file": "interface/countrydiplomacyview.gui",
           "status": "not reached",
-          "confidence": 0.2
+          "confidence": 0.4
         },
         {
           "name": "ReturnCoreDialog",
           "kind": "eu3dialogtype",
           "file": "interface/countrydiplomacyview.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.308
         },
         {
           "name": "ShareMapDialog",
           "kind": "eu3dialogtype",
           "file": "interface/countrydiplomacyview.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.308
         },
         {
           "name": "SellShipsDialog",
           "kind": "eu3dialogtype",
           "file": "interface/countrydiplomacyview.gui",
           "status": "not reached",
-          "confidence": 0.2
+          "confidence": 0.4
         },
         {
           "name": "province_overview_entry",
@@ -20639,21 +20525,21 @@
           "kind": "eu3dialogtype",
           "file": "interface/countrydiplomacyview.gui",
           "status": "not reached",
-          "confidence": 0.222
+          "confidence": 0.37
         },
         {
           "name": "TransferTradePowerDialog",
           "kind": "eu3dialogtype",
           "file": "interface/countrydiplomacyview.gui",
           "status": "not reached",
-          "confidence": 0.158
+          "confidence": 0.368
         },
         {
           "name": "DemandUnlawfulTerritoryDiplomacyDialogue",
           "kind": "eu3dialogtype",
           "file": "interface/countrydiplomacyview.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.308
         },
         {
           "name": "EnemyShieldWindow",
@@ -20667,14 +20553,14 @@
           "kind": "eu3dialogtype",
           "file": "interface/countrydiplomacyview.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.375
         },
         {
           "name": "countryeconomyview",
           "kind": "windowType",
           "file": "interface/countryeconomyview.gui",
           "status": "not reached",
-          "confidence": 0.125
+          "confidence": 0.375
         },
         {
           "name": "countryeconomyview_listitem",
@@ -20695,14 +20581,14 @@
           "kind": "windowType",
           "file": "interface/countryeconomyview.gui",
           "status": "not reached",
-          "confidence": 0.333
+          "confidence": 0.5
         },
         {
           "name": "estate_item",
           "kind": "windowType",
           "file": "interface/countryestatesview.gui",
           "status": "not reached",
-          "confidence": 0.19
+          "confidence": 0.286
         },
         {
           "name": "estate_dev_share_item",
@@ -20737,21 +20623,21 @@
           "kind": "windowType",
           "file": "interface/countryestatesview.gui",
           "status": "not reached",
-          "confidence": 0.083
+          "confidence": 0.25
         },
         {
           "name": "countrygovernmentview",
           "kind": "windowType",
           "file": "interface/countrygovernmentview.gui",
           "status": "not reached",
-          "confidence": 0.27
+          "confidence": 0.405
         },
         {
           "name": "government_view_states_general_mechanic",
           "kind": "windowType",
           "file": "interface/countrygovernmentview.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.429
         },
         {
           "name": "government_mechanic_interactions",
@@ -20765,14 +20651,14 @@
           "kind": "windowType",
           "file": "interface/countrygovernmentview.gui",
           "status": "not reached",
-          "confidence": 0.25
+          "confidence": 0.5
         },
         {
           "name": "government_shared_power",
           "kind": "windowType",
           "file": "interface/countrygovernmentview.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.333
         },
         {
           "name": "gov_view_modifierviewitem",
@@ -20786,7 +20672,7 @@
           "kind": "windowType",
           "file": "interface/countrygovernmentview.gui",
           "status": "not reached",
-          "confidence": 0.375
+          "confidence": 0.625
         },
         {
           "name": "gov_view_modifier_entry",
@@ -20800,21 +20686,21 @@
           "kind": "windowType",
           "file": "interface/countrygovernmentview.gui",
           "status": "not reached",
-          "confidence": 0.333
+          "confidence": 1
         },
         {
           "name": "gov_view_presentcultureviewitem",
           "kind": "windowType",
           "file": "interface/countrygovernmentview.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.4
         },
         {
           "name": "gov_view_presentculturegroupviewitem",
           "kind": "windowType",
           "file": "interface/countrygovernmentview.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.143
         },
         {
           "name": "country_history_window",
@@ -20828,14 +20714,14 @@
           "kind": "windowType",
           "file": "interface/countryideasview.gui",
           "status": "not reached",
-          "confidence": 0.143
+          "confidence": 0.321
         },
         {
           "name": "countryideaview_uniqueideaitem",
           "kind": "windowType",
           "file": "interface/countryideasview.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "countryideaview_selectideaitem",
@@ -20849,77 +20735,77 @@
           "kind": "windowType",
           "file": "interface/countryideasview.gui",
           "status": "not reached",
-          "confidence": 0.1
+          "confidence": 0.6
         },
         {
           "name": "countrynativeview_ideagroupitem",
           "kind": "windowType",
           "file": "interface/countryideasview.gui",
           "status": "not reached",
-          "confidence": 0.111
+          "confidence": 0.778
         },
         {
           "name": "countryideaview_ideaitem",
           "kind": "windowType",
           "file": "interface/countryideasview.gui",
           "status": "not reached",
-          "confidence": 0.2
+          "confidence": 0.6
         },
         {
           "name": "countryideaview_ideagroupunlockitem",
           "kind": "windowType",
           "file": "interface/countryideasview.gui",
           "status": "not reached",
-          "confidence": 0.25
+          "confidence": 0.5
         },
         {
           "name": "countryideaview_ideagroupunlocklistitem",
           "kind": "windowType",
           "file": "interface/countryideasview.gui",
           "status": "not reached",
-          "confidence": 0.286
+          "confidence": 0.429
         },
         {
           "name": "leader_list_entry",
           "kind": "windowType",
           "file": "interface/countrymilitaryview.gui",
           "status": "not reached",
-          "confidence": 0.308
+          "confidence": 0.692
         },
         {
           "name": "unit_list_item",
           "kind": "windowType",
           "file": "interface/countrymilitaryview.gui",
           "status": "not reached",
-          "confidence": 0.333
+          "confidence": 0.556
         },
         {
           "name": "countrymilitaryview",
           "kind": "windowType",
           "file": "interface/countrymilitaryview.gui",
           "status": "not reached",
-          "confidence": 0.022
+          "confidence": 0.096
         },
         {
           "name": "domesticpanel_unit_select",
           "kind": "windowType",
           "file": "interface/countrymilitaryview.gui",
           "status": "not reached",
-          "confidence": 0.167
+          "confidence": 0.667
         },
         {
           "name": "domesticpanel_unit_selection_entry",
           "kind": "windowType",
           "file": "interface/countrymilitaryview.gui",
           "status": "not reached",
-          "confidence": 0.167
+          "confidence": 0.833
         },
         {
           "name": "domesticpanel_naval_doctrine_select",
           "kind": "windowType",
           "file": "interface/countrymilitaryview.gui",
           "status": "not reached",
-          "confidence": 0.4
+          "confidence": 0.6
         },
         {
           "name": "domesticpanel_naval_doctrine_selection_entry",
@@ -20933,7 +20819,7 @@
           "kind": "windowType",
           "file": "interface/countrymissionsview.gui",
           "status": "not reached",
-          "confidence": 0.026
+          "confidence": 0.051
         },
         {
           "name": "countrymissionsview_missions_gridbox_listbox_entry",
@@ -20947,21 +20833,21 @@
           "kind": "windowType",
           "file": "interface/countrymissionsview.gui",
           "status": "not reached",
-          "confidence": 0.15
+          "confidence": 0.45
         },
         {
           "name": "countrymissionsview_nation_entry",
           "kind": "windowType",
           "file": "interface/countrymissionsview.gui",
           "status": "not reached",
-          "confidence": 0.667
+          "confidence": 1
         },
         {
           "name": "natives_window",
           "kind": "windowType",
           "file": "interface/countrynativesview.gui",
           "status": "not reached",
-          "confidence": 0.086
+          "confidence": 0.229
         },
         {
           "name": "federation_advancement_entry",
@@ -20975,42 +20861,42 @@
           "kind": "windowType",
           "file": "interface/countryreformview.gui",
           "status": "not reached",
-          "confidence": 0.167
+          "confidence": 0.333
         },
         {
           "name": "gov_view_reform_level_entry_1",
           "kind": "windowType",
           "file": "interface/countryreformview.gui",
           "status": "not reached",
-          "confidence": 0.056
+          "confidence": 0.111
         },
         {
           "name": "gov_view_reform_level_entry_2",
           "kind": "windowType",
           "file": "interface/countryreformview.gui",
           "status": "not reached",
-          "confidence": 0.053
+          "confidence": 0.105
         },
         {
           "name": "gov_view_reform_level_entry_3",
           "kind": "windowType",
           "file": "interface/countryreformview.gui",
           "status": "not reached",
-          "confidence": 0.05
+          "confidence": 0.1
         },
         {
           "name": "gov_view_reform_level_entry_4",
           "kind": "windowType",
           "file": "interface/countryreformview.gui",
           "status": "not reached",
-          "confidence": 0.048
+          "confidence": 0.095
         },
         {
           "name": "gov_view_reform_entry",
           "kind": "windowType",
           "file": "interface/countryreformview.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 0.75
         },
         {
           "name": "gov_view_legacy_government_select",
@@ -21024,28 +20910,28 @@
           "kind": "windowType",
           "file": "interface/countryreformview.gui",
           "status": "not reached",
-          "confidence": 0.063
+          "confidence": 0.125
         },
         {
           "name": "fervor_power_entry",
           "kind": "windowType",
           "file": "interface/countryreligionview.gui",
           "status": "not reached",
-          "confidence": 0.667
+          "confidence": 1
         },
         {
           "name": "countryreligionview_provincelistitem",
           "kind": "windowType",
           "file": "interface/countryreligionview.gui",
           "status": "not reached",
-          "confidence": 0.2
+          "confidence": 0.4
         },
         {
           "name": "religionlistitem",
           "kind": "windowType",
           "file": "interface/countryreligionview.gui",
           "status": "not reached",
-          "confidence": 0.222
+          "confidence": 0.667
         },
         {
           "name": "religion_modifier_item",
@@ -21066,35 +20952,35 @@
           "kind": "windowType",
           "file": "interface/countryreligionview.gui",
           "status": "not reached",
-          "confidence": 0.103
+          "confidence": 0.395
         },
         {
           "name": "personal_deity_item",
           "kind": "windowType",
           "file": "interface/countryreligionview.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.2
         },
         {
           "name": "orthodox_icon_item",
           "kind": "windowType",
           "file": "interface/countryreligionview.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.2
         },
         {
           "name": "religious_school_item",
           "kind": "windowType",
           "file": "interface/countryreligionview.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.143
         },
         {
           "name": "fetishist_cult_item",
           "kind": "windowType",
           "file": "interface/countryreligionview.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.167
         },
         {
           "name": "countryreligionview_unlockedaspectitem",
@@ -21108,35 +20994,35 @@
           "kind": "windowType",
           "file": "interface/countryreligionview.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.2
         },
         {
           "name": "countryreligionview_aspectitem_hussite",
           "kind": "windowType",
           "file": "interface/countryreligionview.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.2
         },
         {
           "name": "countryreligionview_aspectitem_jewish",
           "kind": "windowType",
           "file": "interface/countryreligionview.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.2
         },
         {
           "name": "countryreligionview_aspectitem_anglican",
           "kind": "windowType",
           "file": "interface/countryreligionview.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.2
         },
         {
           "name": "countryreligionview_cardinalitem",
           "kind": "windowType",
           "file": "interface/countryreligionview.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "countryreligionview_blessingitem",
@@ -21150,7 +21036,7 @@
           "kind": "windowType",
           "file": "interface/countryreligionview.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "religion_select_item",
@@ -21185,14 +21071,14 @@
           "kind": "windowType",
           "file": "interface/countryreligionview.gui",
           "status": "not reached",
-          "confidence": 0.4
+          "confidence": 0.6
         },
         {
           "name": "ancestor_entry",
           "kind": "windowType",
           "file": "interface/countryreligionview.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 0.75
         },
         {
           "name": "potential_ancestor_entry",
@@ -21206,7 +21092,7 @@
           "kind": "windowType",
           "file": "interface/countryreligionview.gui",
           "status": "not reached",
-          "confidence": 0.4
+          "confidence": 0.6
         },
         {
           "name": "automated_missionary_button_entry",
@@ -21220,35 +21106,35 @@
           "kind": "windowType",
           "file": "interface/countrystabilityview.gui",
           "status": "not reached",
-          "confidence": 0.25
+          "confidence": 1
         },
         {
           "name": "countrystabilityview",
           "kind": "windowType",
           "file": "interface/countrystabilityview.gui",
           "status": "not reached",
-          "confidence": 0.119
+          "confidence": 0.393
         },
         {
           "name": "countrystabilityview_revolterlistitem",
           "kind": "windowType",
           "file": "interface/countrystabilityview.gui",
           "status": "not reached",
-          "confidence": 0.176
+          "confidence": 0.529
         },
         {
           "name": "countrystabilityview_nonactiverevolterlistitem",
           "kind": "windowType",
           "file": "interface/countrystabilityview.gui",
           "status": "not reached",
-          "confidence": 0.286
+          "confidence": 0.5
         },
         {
           "name": "countrystabilityview_overext_item",
           "kind": "windowType",
           "file": "interface/countrystabilityview.gui",
           "status": "not reached",
-          "confidence": 0.333
+          "confidence": 0.5
         },
         {
           "name": "cv_governmentrebels_handlerebels_acceptdemands",
@@ -21311,7 +21197,7 @@
           "kind": "windowType",
           "file": "interface/countrysubjectsview.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.333
         },
         {
           "name": "interaction_icon_item",
@@ -21325,21 +21211,21 @@
           "kind": "windowType",
           "file": "interface/countrysubjectsview.gui",
           "status": "not reached",
-          "confidence": 0.125
+          "confidence": 0.625
         },
         {
           "name": "subject_item",
           "kind": "windowType",
           "file": "interface/countrysubjectsview.gui",
           "status": "not reached",
-          "confidence": 0.059
+          "confidence": 0.471
         },
         {
           "name": "countrysubjectview",
           "kind": "windowType",
           "file": "interface/countrysubjectsview.gui",
           "status": "not reached",
-          "confidence": 0.382
+          "confidence": 0.49
         },
         {
           "name": "subject_interaction_item",
@@ -21353,21 +21239,21 @@
           "kind": "windowType",
           "file": "interface/countrysubjectsview.gui",
           "status": "not reached",
-          "confidence": 0.4
+          "confidence": 0.6
         },
         {
           "name": "subject_military_focus_entry",
           "kind": "windowType",
           "file": "interface/countrysubjectsview.gui",
           "status": "not reached",
-          "confidence": 0.333
+          "confidence": 0.667
         },
         {
           "name": "subject_interaction_entry",
           "kind": "windowType",
           "file": "interface/countrysubjectsview.gui",
           "status": "not reached",
-          "confidence": 0.25
+          "confidence": 0.75
         },
         {
           "name": "subject_interaction_entry2",
@@ -21381,35 +21267,35 @@
           "kind": "eu3dialogtype",
           "file": "interface/countrysubjectsview.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.111
         },
         {
           "name": "countrytechnologyview",
           "kind": "windowType",
           "file": "interface/countrytechnologyview.gui",
           "status": "not reached",
-          "confidence": 0.138
+          "confidence": 0.448
         },
         {
           "name": "countrytechnologyview_table_adm_tech",
           "kind": "windowType",
           "file": "interface/countrytechnologyview.gui",
           "status": "not reached",
-          "confidence": 0.029
+          "confidence": 0.235
         },
         {
           "name": "countrytechnologyview_table_dip_tech",
           "kind": "windowType",
           "file": "interface/countrytechnologyview.gui",
           "status": "not reached",
-          "confidence": 0.023
+          "confidence": 0.256
         },
         {
           "name": "countrytechnologyview_table_mil_tech",
           "kind": "windowType",
           "file": "interface/countrytechnologyview.gui",
           "status": "not reached",
-          "confidence": 0.022
+          "confidence": 0.2
         },
         {
           "name": "countrytechnologyview_researchunititem",
@@ -21430,7 +21316,7 @@
           "kind": "windowType",
           "file": "interface/countrytechnologyview.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "countrytechnologyview_researchlandmoraleitem",
@@ -21444,7 +21330,7 @@
           "kind": "windowType",
           "file": "interface/countrytechnologyview.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "countrytechnologyview_researchnavalmoraleitem",
@@ -21458,28 +21344,28 @@
           "kind": "windowType",
           "file": "interface/countrytechnologyview.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "countrytechnologyview_researchtradeefficiencyitem",
           "kind": "windowType",
           "file": "interface/countrytechnologyview.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "countrytechnologyview_researchtraderangeitem",
           "kind": "windowType",
           "file": "interface/countrytechnologyview.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "countrytechnologyview_researchcolonialrangeitem",
           "kind": "windowType",
           "file": "interface/countrytechnologyview.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "countrytechnologyview_researchcolonialgrowthitem",
@@ -21493,7 +21379,7 @@
           "kind": "windowType",
           "file": "interface/countrytechnologyview.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "countrytechnologyview_enable_flag",
@@ -21507,28 +21393,28 @@
           "kind": "windowType",
           "file": "interface/countrytechnologyview.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "countrytechnologyview_researchallowedideagroupsitem",
           "kind": "windowType",
           "file": "interface/countrytechnologyview.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "countrytechnologyview_researchmaxstatessitem",
           "kind": "windowType",
           "file": "interface/countrytechnologyview.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "countrytechnologyview_researchproductionefficiencyitem",
           "kind": "windowType",
           "file": "interface/countrytechnologyview.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "countrytechnologyview_researchadministrativeefficiencyitem",
@@ -21542,49 +21428,49 @@
           "kind": "windowType",
           "file": "interface/countrytechnologyview.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "countrytechnologyview_researchacceptedculturesitem",
           "kind": "windowType",
           "file": "interface/countrytechnologyview.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "countrytechnologyview_researchcombatwidthitem",
           "kind": "windowType",
           "file": "interface/countrytechnologyview.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "countrytechnologyview_researchnavalengagementwidthitem",
           "kind": "windowType",
           "file": "interface/countrytechnologyview.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "countrytechnologyview_researchfireitem",
           "kind": "windowType",
           "file": "interface/countrytechnologyview.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "countrytechnologyview_researchshockitem",
           "kind": "windowType",
           "file": "interface/countrytechnologyview.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "countrytechnologyview_researchmaneuveritem",
           "kind": "windowType",
           "file": "interface/countrytechnologyview.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "countrytechnologyview_institution",
@@ -21612,21 +21498,21 @@
           "kind": "windowType",
           "file": "interface/countrytradeview.gui",
           "status": "not reached",
-          "confidence": 0.364
+          "confidence": 0.545
         },
         {
           "name": "countrytradeview",
           "kind": "windowType",
           "file": "interface/countrytradeview.gui",
           "status": "not reached",
-          "confidence": 0.077
+          "confidence": 0.218
         },
         {
           "name": "countryview",
           "kind": "windowType",
           "file": "interface/countryview.gui",
           "status": "not reached",
-          "confidence": 0.882
+          "confidence": 0.941
         },
         {
           "name": "CreditsWindow",
@@ -21641,7 +21527,7 @@
           "kind": "windowType",
           "file": "interface/dlc_browser.gui",
           "status": "not reached",
-          "confidence": 0.667
+          "confidence": 1
         },
         {
           "name": "dlc_browser",
@@ -21662,35 +21548,35 @@
           "kind": "windowType",
           "file": "interface/dlc_browser.gui",
           "status": "not reached",
-          "confidence": 0.133
+          "confidence": 0.267
         },
         {
           "name": "minor_landing_page",
           "kind": "windowType",
           "file": "interface/dlc_browser.gui",
           "status": "not reached",
-          "confidence": 0.2
+          "confidence": 0.4
         },
         {
           "name": "EndOfLandCombatPopup",
           "kind": "eu3dialogtype",
           "file": "interface/end_of_combat.gui",
           "status": "not reached",
-          "confidence": 0.048
+          "confidence": 0.422
         },
         {
           "name": "EndOfLandCombatCompactPopup",
           "kind": "eu3dialogtype",
           "file": "interface/end_of_combat.gui",
           "status": "not reached",
-          "confidence": 0.08
+          "confidence": 0.36
         },
         {
           "name": "EndOfNavalCombatPopup",
           "kind": "eu3dialogtype",
           "file": "interface/end_of_combat.gui",
           "status": "not reached",
-          "confidence": 0.027
+          "confidence": 0.32
         },
         {
           "name": "diplo_shield_item",
@@ -21704,7 +21590,7 @@
           "kind": "eu3dialogtype",
           "file": "interface/end_of_war.gui",
           "status": "not reached",
-          "confidence": 0.053
+          "confidence": 0.147
         },
         {
           "name": "attacker_shield_item",
@@ -21732,77 +21618,77 @@
           "kind": "eu3dialogtype",
           "file": "interface/endgamedialog.gui",
           "status": "not reached",
-          "confidence": 0.072
+          "confidence": 0.108
         },
         {
           "name": "estate_privileges_window",
           "kind": "windowType",
           "file": "interface/estate_privileges.gui",
           "status": "not reached",
-          "confidence": 0.143
+          "confidence": 0.429
         },
         {
           "name": "estate_privilege_entry",
           "kind": "windowType",
           "file": "interface/estate_privileges.gui",
           "status": "not reached",
-          "confidence": 0.292
+          "confidence": 0.5
         },
         {
           "name": "DefaultDialog",
           "kind": "eu3dialogtype",
           "file": "interface/eu3dialog.gui",
           "status": "not reached",
-          "confidence": 0.167
+          "confidence": 0.417
         },
         {
           "name": "DefaultDialogResizeable",
           "kind": "eu3dialogtype",
           "file": "interface/eu3dialog.gui",
           "status": "not reached",
-          "confidence": 0.167
+          "confidence": 0.417
         },
         {
           "name": "DefaultConfirm",
           "kind": "eu3dialogtype",
           "file": "interface/eu3dialog.gui",
           "status": "not reached",
-          "confidence": 0.143
+          "confidence": 0.286
         },
         {
           "name": "DefaultInfoDialog",
           "kind": "eu3dialogtype",
           "file": "interface/eu3dialog.gui",
           "status": "not reached",
-          "confidence": 0.167
+          "confidence": 0.333
         },
         {
           "name": "ShieldedInformationDialog",
           "kind": "eu3dialogtype",
           "file": "interface/eu3dialog.gui",
           "status": "not reached",
-          "confidence": 0.125
+          "confidence": 0.25
         },
         {
           "name": "DefaultPopup",
           "kind": "eu3dialogtype",
           "file": "interface/eu3dialog.gui",
           "status": "not reached",
-          "confidence": 0.111
+          "confidence": 0.278
         },
         {
           "name": "ConfirmAndNameLeaderDialog",
           "kind": "eu3dialogtype",
           "file": "interface/eu3dialog.gui",
           "status": "not reached",
-          "confidence": 0.2
+          "confidence": 0.4
         },
         {
           "name": "ConfirmAndNameTeamDialog",
           "kind": "eu3dialogtype",
           "file": "interface/eu3dialog.gui",
           "status": "not reached",
-          "confidence": 0.125
+          "confidence": 0.25
         },
         {
           "name": "ConfirmRemoveTeamDialog",
@@ -21816,28 +21702,28 @@
           "kind": "eu3dialogtype",
           "file": "interface/eu3dialog.gui",
           "status": "not reached",
-          "confidence": 0.093
+          "confidence": 0.14
         },
         {
           "name": "NewColonyForeignDialog",
           "kind": "eu3dialogtype",
           "file": "interface/eu3dialog.gui",
           "status": "not reached",
-          "confidence": 0.103
+          "confidence": 0.154
         },
         {
           "name": "FabricateClaimOnStateDialog",
           "kind": "eu3dialogtype",
           "file": "interface/eu3dialog.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.111
         },
         {
           "name": "FabricateClaimDialog",
           "kind": "eu3dialogtype",
           "file": "interface/eu3dialog.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.111
         },
         {
           "name": "fabricateclaim_province_entry",
@@ -21865,7 +21751,7 @@
           "kind": "windowType",
           "file": "interface/eventwindow.gui",
           "status": "not reached",
-          "confidence": 0.2
+          "confidence": 0.6
         },
         {
           "name": "event_option_entry",
@@ -21879,35 +21765,35 @@
           "kind": "windowType",
           "file": "interface/explore_mission_dialog.gui",
           "status": "not reached",
-          "confidence": 0.2
+          "confidence": 0.4
         },
         {
           "name": "exploration_entry",
           "kind": "windowType",
           "file": "interface/explore_mission_dialog.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 0.75
         },
         {
           "name": "default_faction_view",
           "kind": "windowType",
           "file": "interface/faction.gui",
           "status": "not reached",
-          "confidence": 0.167
+          "confidence": 0.333
         },
         {
           "name": "merchant_republic_faction_view",
           "kind": "windowType",
           "file": "interface/faction.gui",
           "status": "not reached",
-          "confidence": 0.167
+          "confidence": 0.333
         },
         {
           "name": "revolutionary_republic_faction_view",
           "kind": "windowType",
           "file": "interface/faction.gui",
           "status": "not reached",
-          "confidence": 0.167
+          "confidence": 0.333
         },
         {
           "name": "faction_entry",
@@ -21928,7 +21814,7 @@
           "kind": "windowType",
           "file": "interface/flagship_designer.gui",
           "status": "not reached",
-          "confidence": 0.219
+          "confidence": 0.5
         },
         {
           "name": "frontend_link_item",
@@ -21983,7 +21869,7 @@
           "kind": "windowType",
           "file": "interface/frontend.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 0.75
         },
         {
           "name": "country_selection_panel",
@@ -22000,7 +21886,7 @@
             "vanilla-menu-s6",
             "vanilla-menu-s7"
           ],
-          "confidence": 0.342
+          "confidence": 0.486
         },
         {
           "name": "testmember",
@@ -22014,28 +21900,28 @@
           "kind": "windowType",
           "file": "interface/frontend.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 0.8
         },
         {
           "name": "largefonts_multiplayer_entry_server",
           "kind": "windowType",
           "file": "interface/frontend.gui",
           "status": "not reached",
-          "confidence": 0.556
+          "confidence": 0.778
         },
         {
           "name": "multiplayer_entry",
           "kind": "windowType",
           "file": "interface/frontend.gui",
           "status": "not reached",
-          "confidence": 0.286
+          "confidence": 0.714
         },
         {
           "name": "largefonts_multiplayer_entry",
           "kind": "windowType",
           "file": "interface/frontend.gui",
           "status": "not reached",
-          "confidence": 0.333
+          "confidence": 0.667
         },
         {
           "name": "team_entry",
@@ -22087,7 +21973,7 @@
             "vanilla-menu-s6",
             "vanilla-menu-s7"
           ],
-          "confidence": 0.5
+          "confidence": 0.75
         },
         {
           "name": "enabled_dlc_entry_1",
@@ -22101,35 +21987,35 @@
             "vanilla-menu-s6",
             "vanilla-menu-s7"
           ],
-          "confidence": 0.5
+          "confidence": 0.75
         },
         {
           "name": "savegameentry",
           "kind": "windowType",
           "file": "interface/frontend.gui",
           "status": "not reached",
-          "confidence": 0.333
+          "confidence": 0.556
         },
         {
           "name": "savegameentry_wide",
           "kind": "windowType",
           "file": "interface/frontend.gui",
           "status": "not reached",
-          "confidence": 0.25
+          "confidence": 0.5
         },
         {
           "name": "savedirectoryentry",
           "kind": "windowType",
           "file": "interface/frontend.gui",
           "status": "not reached",
-          "confidence": 0.25
+          "confidence": 0.5
         },
         {
           "name": "savedirectoryentry_wide",
           "kind": "windowType",
           "file": "interface/frontend.gui",
           "status": "not reached",
-          "confidence": 0.25
+          "confidence": 0.5
         },
         {
           "name": "local_game_entry",
@@ -22150,21 +22036,21 @@
           "kind": "windowType",
           "file": "interface/frontend.gui",
           "status": "not reached",
-          "confidence": 0.133
+          "confidence": 0.2
         },
         {
           "name": "connect_window",
           "kind": "windowType",
           "file": "interface/frontend.gui",
           "status": "not reached",
-          "confidence": 0.2
+          "confidence": 0.3
         },
         {
           "name": "IronmanSaveSelectDialog",
           "kind": "windowType",
           "file": "interface/frontend.gui",
           "status": "not reached",
-          "confidence": 0.308
+          "confidence": 0.385
         },
         {
           "name": "lesson_channel_entry",
@@ -22193,7 +22079,7 @@
           "kind": "windowType",
           "file": "interface/great_powers.gui",
           "status": "not reached",
-          "confidence": 0.154
+          "confidence": 0.538
         },
         {
           "name": "gp_entry",
@@ -22207,14 +22093,14 @@
           "kind": "windowType",
           "file": "interface/great_powers.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "great_powers_old",
           "kind": "windowType",
           "file": "interface/great_powers.gui",
           "status": "not reached",
-          "confidence": 0.182
+          "confidence": 0.636
         },
         {
           "name": "gp_entry_old",
@@ -22228,21 +22114,21 @@
           "kind": "windowType",
           "file": "interface/hints.gui",
           "status": "not reached",
-          "confidence": 0.583
+          "confidence": 0.667
         },
         {
           "name": "hints_minimized",
           "kind": "windowType",
           "file": "interface/hints.gui",
           "status": "not reached",
-          "confidence": 0.4
+          "confidence": 0.6
         },
         {
           "name": "hints_window",
           "kind": "windowType",
           "file": "interface/hints.gui",
           "status": "not reached",
-          "confidence": 0.25
+          "confidence": 0.5
         },
         {
           "name": "tutorial_minimized",
@@ -22256,7 +22142,7 @@
           "kind": "windowType",
           "file": "interface/holy_orders_view.gui",
           "status": "not reached",
-          "confidence": 0.2
+          "confidence": 0.4
         },
         {
           "name": "holy_order_item",
@@ -22270,35 +22156,35 @@
           "kind": "windowType",
           "file": "interface/holy_orders_view.gui",
           "status": "not reached",
-          "confidence": 0.333
+          "confidence": 0.667
         },
         {
           "name": "hotjoin_request_entry",
           "kind": "windowType",
           "file": "interface/hotjoin.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.2
         },
         {
           "name": "hotjoin_request_confirm",
           "kind": "windowType",
           "file": "interface/hotjoin.gui",
           "status": "not reached",
-          "confidence": 0.333
+          "confidence": 0.667
         },
         {
           "name": "hre_window",
           "kind": "windowType",
           "file": "interface/hre.gui",
           "status": "not reached",
-          "confidence": 0.147
+          "confidence": 0.227
         },
         {
           "name": "hre_elector",
           "kind": "windowType",
           "file": "interface/hre.gui",
           "status": "not reached",
-          "confidence": 0.4
+          "confidence": 0.6
         },
         {
           "name": "hre_empty_elector",
@@ -22326,7 +22212,7 @@
           "kind": "windowType",
           "file": "interface/hre.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "incident_option_entry",
@@ -22340,7 +22226,7 @@
           "kind": "windowType",
           "file": "interface/hre.gui",
           "status": "not reached",
-          "confidence": 0.333
+          "confidence": 0.667
         },
         {
           "name": "hre_free_cities_grid",
@@ -22382,7 +22268,7 @@
           "kind": "eu3dialogtype",
           "file": "interface/ingame_accountbadge.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.125
         },
         {
           "name": "pdx_online_createprofile_dialog",
@@ -22410,28 +22296,28 @@
           "kind": "windowType",
           "file": "interface/ingameloadmenu.gui",
           "status": "not reached",
-          "confidence": 0.333
+          "confidence": 0.417
         },
         {
           "name": "ingame_lobby_window",
           "kind": "windowType",
           "file": "interface/ingamelobby.gui",
           "status": "not reached",
-          "confidence": 0.273
+          "confidence": 0.364
         },
         {
           "name": "ingame_multiplayer_entry",
           "kind": "windowType",
           "file": "interface/ingamelobby.gui",
           "status": "not reached",
-          "confidence": 0.4
+          "confidence": 0.8
         },
         {
           "name": "largefonts_ingame_multiplayer_entry",
           "kind": "windowType",
           "file": "interface/ingamelobby.gui",
           "status": "not reached",
-          "confidence": 0.4
+          "confidence": 0.8
         },
         {
           "name": "ingame_lobby_chat_text",
@@ -22459,35 +22345,35 @@
           "kind": "windowType",
           "file": "interface/ingamesavemenu.gui",
           "status": "not reached",
-          "confidence": 0.286
+          "confidence": 0.357
         },
         {
           "name": "LanguageSelection",
           "kind": "windowType",
           "file": "interface/language_selection.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.25
         },
         {
           "name": "LanguageEntry",
           "kind": "windowType",
           "file": "interface/language_selection.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 0.75
         },
         {
           "name": "ledger_piechart_entry",
           "kind": "windowType",
           "file": "interface/ledger.gui",
           "status": "not reached",
-          "confidence": 0.2
+          "confidence": 0.4
         },
         {
           "name": "ledger_legend_entry",
           "kind": "windowType",
           "file": "interface/ledger.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.25
         },
         {
           "name": "ledger_great_project_entry",
@@ -22501,14 +22387,14 @@
           "kind": "windowType",
           "file": "interface/ledger.gui",
           "status": "not reached",
-          "confidence": 0.361
+          "confidence": 0.556
         },
         {
           "name": "ledger_legend_piechart_entry",
           "kind": "windowType",
           "file": "interface/ledger.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.333
         },
         {
           "name": "default_listbox_entry",
@@ -22557,14 +22443,14 @@
           "kind": "windowType",
           "file": "interface/load_screen.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.333
         },
         {
           "name": "building_improvements_mapicon",
           "kind": "windowType",
           "file": "interface/macrobuild_mapicons.gui",
           "status": "not reached",
-          "confidence": 0.167
+          "confidence": 0.25
         },
         {
           "name": "build_unit_mapicon",
@@ -22578,70 +22464,70 @@
           "kind": "windowType",
           "file": "interface/macrobuild_mapicons.gui",
           "status": "not reached",
-          "confidence": 0.188
+          "confidence": 0.25
         },
         {
           "name": "build_template_mapicon",
           "kind": "windowType",
           "file": "interface/macrobuild_mapicons.gui",
           "status": "not reached",
-          "confidence": 0.6
+          "confidence": 0.8
         },
         {
           "name": "development_mapicon",
           "kind": "windowType",
           "file": "interface/macrobuild_mapicons.gui",
           "status": "not reached",
-          "confidence": 0.077
+          "confidence": 0.308
         },
         {
           "name": "exploit_mapicon",
           "kind": "windowType",
           "file": "interface/macrobuild_mapicons.gui",
           "status": "not reached",
-          "confidence": 0.1
+          "confidence": 0.3
         },
         {
           "name": "cancel_construction",
           "kind": "windowType",
           "file": "interface/macrobuild_mapicons.gui",
           "status": "not reached",
-          "confidence": 0.091
+          "confidence": 0.182
         },
         {
           "name": "local_autonomy_mapicon",
           "kind": "windowType",
           "file": "interface/macrobuild_mapicons.gui",
           "status": "not reached",
-          "confidence": 0.286
+          "confidence": 0.429
         },
         {
           "name": "mutually_exclusive_mapicon",
           "kind": "windowType",
           "file": "interface/macrobuild_mapicons.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 0.667
         },
         {
           "name": "window_for_building_icon",
           "kind": "windowType",
           "file": "interface/macrobuildinterface.gui",
           "status": "not reached",
-          "confidence": 0.167
+          "confidence": 0.667
         },
         {
           "name": "building_icon_overlay",
           "kind": "windowType",
           "file": "interface/macrobuildinterface.gui",
           "status": "not reached",
-          "confidence": 0.167
+          "confidence": 0.333
         },
         {
           "name": "window_for_land_units",
           "kind": "windowType",
           "file": "interface/macrobuildinterface.gui",
           "status": "not reached",
-          "confidence": 0.071
+          "confidence": 0.143
         },
         {
           "name": "window_for_naval_units",
@@ -22662,7 +22548,7 @@
           "kind": "windowType",
           "file": "interface/macrobuildinterface.gui",
           "status": "not reached",
-          "confidence": 0.01
+          "confidence": 0.225
         },
         {
           "name": "building_province_list_entry",
@@ -22676,35 +22562,35 @@
           "kind": "windowType",
           "file": "interface/macrobuildinterface.gui",
           "status": "not reached",
-          "confidence": 0.167
+          "confidence": 0.833
         },
         {
           "name": "build_category_entry_land_template",
           "kind": "windowType",
           "file": "interface/macrobuildinterface.gui",
           "status": "not reached",
-          "confidence": 0.167
+          "confidence": 0.333
         },
         {
           "name": "build_category_entry_navy_template",
           "kind": "windowType",
           "file": "interface/macrobuildinterface.gui",
           "status": "not reached",
-          "confidence": 0.143
+          "confidence": 0.286
         },
         {
           "name": "build_category_entry_naval",
           "kind": "windowType",
           "file": "interface/macrobuildinterface.gui",
           "status": "not reached",
-          "confidence": 0.125
+          "confidence": 0.875
         },
         {
           "name": "build_category_entry_building",
           "kind": "windowType",
           "file": "interface/macrobuildinterface.gui",
           "status": "not reached",
-          "confidence": 0.333
+          "confidence": 0.667
         },
         {
           "name": "build_content_entry",
@@ -22725,14 +22611,14 @@
           "kind": "windowType",
           "file": "interface/macrobuildinterface_override.gui",
           "status": "not reached",
-          "confidence": 0.4
+          "confidence": 0.6
         },
         {
           "name": "send_missionary_entry",
           "kind": "windowType",
           "file": "interface/macrobuildinterface_override.gui",
           "status": "not reached",
-          "confidence": 0.4
+          "confidence": 0.6
         },
         {
           "name": "local_autonomy_entry",
@@ -22746,21 +22632,21 @@
           "kind": "windowType",
           "file": "interface/macrobuildinterface_override.gui",
           "status": "not reached",
-          "confidence": 0.3
+          "confidence": 0.6
         },
         {
           "name": "development_entry",
           "kind": "windowType",
           "file": "interface/macrobuildinterface_override.gui",
           "status": "not reached",
-          "confidence": 0.357
+          "confidence": 0.5
         },
         {
           "name": "exploit_entry",
           "kind": "windowType",
           "file": "interface/macrobuildinterface_override.gui",
           "status": "not reached",
-          "confidence": 0.455
+          "confidence": 0.545
         },
         {
           "name": "macro_diplo_action_type_item",
@@ -22781,7 +22667,7 @@
           "kind": "windowType",
           "file": "interface/macrobuildinterface_override.gui",
           "status": "not reached",
-          "confidence": 0.498
+          "confidence": 0.67
         },
         {
           "name": "window_for_army_template",
@@ -22823,14 +22709,14 @@
           "kind": "windowType",
           "file": "interface/macrobuildinterface_override.gui",
           "status": "not reached",
-          "confidence": 0.4
+          "confidence": 0.667
         },
         {
           "name": "states_tab_edicts_entry",
           "kind": "windowType",
           "file": "interface/macrobuildinterface_override.gui",
           "status": "not reached",
-          "confidence": 0.167
+          "confidence": 0.333
         },
         {
           "name": "states_tab_delegate_administration_entry",
@@ -22851,7 +22737,7 @@
           "kind": "windowType",
           "file": "interface/mapicons.gui",
           "status": "not reached",
-          "confidence": 0.105
+          "confidence": 0.368
         },
         {
           "name": "trade_onmap_flags_box",
@@ -22865,77 +22751,77 @@
           "kind": "windowType",
           "file": "interface/mapicons.gui",
           "status": "not reached",
-          "confidence": 0.167
+          "confidence": 0.5
         },
         {
           "name": "trade_wind_window",
           "kind": "windowType",
           "file": "interface/mapicons.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "loot_mapicon",
           "kind": "windowType",
           "file": "interface/mapicons.gui",
           "status": "not reached",
-          "confidence": 0.333
+          "confidence": 0.667
         },
         {
           "name": "tradegoods_mapicon",
           "kind": "windowType",
           "file": "interface/mapicons.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "fort_mapicon",
           "kind": "windowType",
           "file": "interface/mapicons.gui",
           "status": "not reached",
-          "confidence": 0.333
+          "confidence": 0.667
         },
         {
           "name": "objective_mapicon",
           "kind": "windowType",
           "file": "interface/mapicons.gui",
           "status": "not reached",
-          "confidence": 0.333
+          "confidence": 1
         },
         {
           "name": "supply_depot_mapicon",
           "kind": "windowType",
           "file": "interface/mapicons.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "battle_mapicon",
           "kind": "windowType",
           "file": "interface/mapicons.gui",
           "status": "not reached",
-          "confidence": 0.333
+          "confidence": 1
         },
         {
           "name": "reformation_conversion_mapicon",
           "kind": "windowType",
           "file": "interface/mapicons.gui",
           "status": "not reached",
-          "confidence": 0.2
+          "confidence": 0.8
         },
         {
           "name": "institution_origin_mapicon",
           "kind": "windowType",
           "file": "interface/mapicons.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "minority_expulsion_mapicon",
           "kind": "windowType",
           "file": "interface/mapicons.gui",
           "status": "not reached",
-          "confidence": 0.333
+          "confidence": 1
         },
         {
           "name": "trade_modifier_item",
@@ -22956,42 +22842,42 @@
           "kind": "windowType",
           "file": "interface/mapicons.gui",
           "status": "not reached",
-          "confidence": 0.129
+          "confidence": 0.742
         },
         {
           "name": "navy_mapicon",
           "kind": "windowType",
           "file": "interface/mapicons.gui",
           "status": "not reached",
-          "confidence": 0.107
+          "confidence": 0.714
         },
         {
           "name": "combat_mapicon",
           "kind": "windowType",
           "file": "interface/mapicons.gui",
           "status": "not reached",
-          "confidence": 0.294
+          "confidence": 0.765
         },
         {
           "name": "navy_combat_mapicon",
           "kind": "windowType",
           "file": "interface/mapicons.gui",
           "status": "not reached",
-          "confidence": 0.2
+          "confidence": 0.733
         },
         {
           "name": "construction_progress_mapicon",
           "kind": "windowType",
           "file": "interface/mapicons.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.8
         },
         {
           "name": "flip_progress_mapicon",
           "kind": "windowType",
           "file": "interface/mapicons.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.667
         },
         {
           "name": "religious_school_mapicon",
@@ -23005,14 +22891,14 @@
           "kind": "windowType",
           "file": "interface/mapicons.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "revolution_mapicon",
           "kind": "windowType",
           "file": "interface/mapicons.gui",
           "status": "not reached",
-          "confidence": 0.2
+          "confidence": 0.6
         },
         {
           "name": "imperial_modifier_mapicon",
@@ -23033,21 +22919,21 @@
           "kind": "windowType",
           "file": "interface/mapmode_more.gui",
           "status": "not reached",
-          "confidence": 0.423
+          "confidence": 0.808
         },
         {
           "name": "matchmaking_window",
           "kind": "windowType",
           "file": "interface/matchmaking.gui",
           "status": "not reached",
-          "confidence": 0.448
+          "confidence": 0.483
         },
         {
           "name": "matchmaking_server_item",
           "kind": "windowType",
           "file": "interface/matchmaking.gui",
           "status": "not reached",
-          "confidence": 0.222
+          "confidence": 0.333
         },
         {
           "name": "matchmaking_chat_window",
@@ -23076,7 +22962,7 @@
           "file": "interface/menubar.gui",
           "status": "inside",
           "views": ["vanilla-save-s0"],
-          "confidence": 0
+          "confidence": 0.4
         },
         {
           "name": "logtext",
@@ -23107,7 +22993,7 @@
           "file": "interface/menubar.gui",
           "status": "inside",
           "views": ["vanilla-menu-s3", "vanilla-menu-s4"],
-          "confidence": 0.379
+          "confidence": 0.409
         },
         {
           "name": "message_icons",
@@ -23129,7 +23015,7 @@
           "kind": "windowType",
           "file": "interface/menubar.gui",
           "status": "not reached",
-          "confidence": 0.25
+          "confidence": 0.5
         },
         {
           "name": "province_finder_entry",
@@ -23158,42 +23044,42 @@
           "file": "interface/menubar.gui",
           "status": "view",
           "views": ["vanilla-save-s0"],
-          "confidence": 0.152
+          "confidence": 0.197
         },
         {
           "name": "message_item",
           "kind": "windowType",
           "file": "interface/menubar.gui",
           "status": "not reached",
-          "confidence": 0.143
+          "confidence": 0.429
         },
         {
           "name": "ingamesavegameentry",
           "kind": "windowType",
           "file": "interface/menubar.gui",
           "status": "not reached",
-          "confidence": 0.333
+          "confidence": 0.667
         },
         {
           "name": "short_player_entry",
           "kind": "windowType",
           "file": "interface/menubar.gui",
           "status": "not reached",
-          "confidence": 0.333
+          "confidence": 0.667
         },
         {
           "name": "player_entry",
           "kind": "windowType",
           "file": "interface/menubar.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 0.75
         },
         {
           "name": "messageicon_entry_window",
           "kind": "windowType",
           "file": "interface/menubar.gui",
           "status": "not reached",
-          "confidence": 0.25
+          "confidence": 0.5
         },
         {
           "name": "MessageSettingWindow",
@@ -23321,7 +23207,7 @@
           "file": "interface/minimappanel.gui",
           "status": "view",
           "views": ["vanilla-save-s0"],
-          "confidence": 0.813
+          "confidence": 0.844
         },
         {
           "name": "mapmode_item",
@@ -23342,21 +23228,21 @@
           "kind": "windowType",
           "file": "interface/modifier_interface.gui",
           "status": "not reached",
-          "confidence": 0.286
+          "confidence": 0.429
         },
         {
           "name": "modifier_entry",
           "kind": "windowType",
           "file": "interface/modifier_interface.gui",
           "status": "not reached",
-          "confidence": 0.111
+          "confidence": 0.667
         },
         {
           "name": "message_filters",
           "kind": "windowType",
           "file": "interface/msg_filters.gui",
           "status": "not reached",
-          "confidence": 0.737
+          "confidence": 0.789
         },
         {
           "name": "message_filters_entry",
@@ -23412,7 +23298,7 @@
           "kind": "eu3dialogtype",
           "file": "interface/name_heir_message.gui",
           "status": "not reached",
-          "confidence": 0.176
+          "confidence": 0.294
         },
         {
           "name": "nation_save_item",
@@ -23426,14 +23312,14 @@
           "kind": "windowType",
           "file": "interface/nationdesignersave.gui",
           "status": "not reached",
-          "confidence": 0.462
+          "confidence": 0.538
         },
         {
           "name": "nation_designer_window",
           "kind": "windowType",
           "file": "interface/nationdesignerview.gui",
           "status": "not reached",
-          "confidence": 0.397
+          "confidence": 0.533
         },
         {
           "name": "nationdesignerview_personalitylistingitem",
@@ -23447,14 +23333,14 @@
           "kind": "windowType",
           "file": "interface/nationdesignerview.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.5
         },
         {
           "name": "dropdown_listitem",
           "kind": "windowType",
           "file": "interface/nationdesignerview.gui",
           "status": "not reached",
-          "confidence": 0.667
+          "confidence": 1
         },
         {
           "name": "government_listitem",
@@ -23496,7 +23382,7 @@
           "kind": "windowType",
           "file": "interface/nationdesignerview.gui",
           "status": "not reached",
-          "confidence": 0.417
+          "confidence": 0.583
         },
         {
           "name": "nd_religion_modifier_item",
@@ -23517,28 +23403,28 @@
           "kind": "windowType",
           "file": "interface/navalmissions.gui",
           "status": "not reached",
-          "confidence": 0.231
+          "confidence": 0.308
         },
         {
           "name": "new_age_popup",
           "kind": "windowType",
           "file": "interface/new_age_popup.gui",
           "status": "not reached",
-          "confidence": 0.125
+          "confidence": 0.375
         },
         {
           "name": "new_age_objectives_entry",
           "kind": "windowType",
           "file": "interface/new_age_popup.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "NewColonialCountryPopup",
           "kind": "eu3dialogtype",
           "file": "interface/new_colonial_country_message.gui",
           "status": "not reached",
-          "confidence": 0.111
+          "confidence": 0.222
         },
         {
           "name": "subject_type",
@@ -23552,14 +23438,14 @@
           "kind": "eu3dialogtype",
           "file": "interface/new_colonial_country_message.gui",
           "status": "not reached",
-          "confidence": 0.118
+          "confidence": 0.235
         },
         {
           "name": "news_banner",
           "kind": "windowType",
           "file": "interface/news_banner.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.167
         },
         {
           "name": "nudge_selection_window",
@@ -23617,7 +23503,7 @@
           "file": "interface/options.gui",
           "status": "view",
           "views": ["vanilla-menu-s6"],
-          "confidence": 0.471
+          "confidence": 0.529
         },
         {
           "name": "outliner",
@@ -23625,7 +23511,7 @@
           "file": "interface/outliner.gui",
           "status": "view",
           "views": ["vanilla-save-s0"],
-          "confidence": 0.25
+          "confidence": 0.5
         },
         {
           "name": "outliner_configuration",
@@ -23728,14 +23614,14 @@
           "file": "interface/outliner.gui",
           "status": "inside",
           "views": ["vanilla-save-s0"],
-          "confidence": 0.333
+          "confidence": 0.667
         },
         {
           "name": "papacy_window",
           "kind": "windowType",
           "file": "interface/papacy.gui",
           "status": "not reached",
-          "confidence": 0.19
+          "confidence": 0.302
         },
         {
           "name": "council_support_window",
@@ -23770,21 +23656,21 @@
           "kind": "windowType",
           "file": "interface/papacy.gui",
           "status": "not reached",
-          "confidence": 0.4
+          "confidence": 0.6
         },
         {
           "name": "council_concession_right",
           "kind": "windowType",
           "file": "interface/papacy.gui",
           "status": "not reached",
-          "confidence": 0.4
+          "confidence": 0.6
         },
         {
           "name": "council_concession_picked",
           "kind": "windowType",
           "file": "interface/papacy.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 0.75
         },
         {
           "name": "golden_bull_entry",
@@ -23805,21 +23691,21 @@
           "kind": "windowType",
           "file": "interface/parliament.gui",
           "status": "not reached",
-          "confidence": 0.217
+          "confidence": 0.348
         },
         {
           "name": "seat_entry",
           "kind": "windowType",
           "file": "interface/parliament.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 0.75
         },
         {
           "name": "new_issue_entry",
           "kind": "windowType",
           "file": "interface/parliament.gui",
           "status": "not reached",
-          "confidence": 0.4
+          "confidence": 0.6
         },
         {
           "name": "secede_province_entry",
@@ -23840,21 +23726,21 @@
           "kind": "windowType",
           "file": "interface/peace.gui",
           "status": "not reached",
-          "confidence": 0.2
+          "confidence": 0.4
         },
         {
           "name": "annul_treaty_entry",
           "kind": "windowType",
           "file": "interface/peace.gui",
           "status": "not reached",
-          "confidence": 0.2
+          "confidence": 0.4
         },
         {
           "name": "release_country_entry",
           "kind": "windowType",
           "file": "interface/peace.gui",
           "status": "not reached",
-          "confidence": 0.2
+          "confidence": 0.4
         },
         {
           "name": "BelligerentShieldItem",
@@ -23882,14 +23768,14 @@
           "kind": "windowType",
           "file": "interface/peaceview.gui",
           "status": "not reached",
-          "confidence": 0.4
+          "confidence": 0.707
         },
         {
           "name": "peace_entry",
           "kind": "windowType",
           "file": "interface/peaceview.gui",
           "status": "not reached",
-          "confidence": 0.4
+          "confidence": 0.533
         },
         {
           "name": "playeraiprefs",
@@ -23938,7 +23824,7 @@
           "kind": "windowType",
           "file": "interface/provincehistory.gui",
           "status": "not reached",
-          "confidence": 0.2
+          "confidence": 0.4
         },
         {
           "name": "janissaries_state_view",
@@ -23952,28 +23838,28 @@
           "kind": "windowType",
           "file": "interface/provinceview.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "patriarch_state_view",
           "kind": "windowType",
           "file": "interface/provinceview.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "banners_state_view",
           "kind": "windowType",
           "file": "interface/provinceview.gui",
           "status": "not reached",
-          "confidence": 0.4
+          "confidence": 0.6
         },
         {
           "name": "cawa_state_view",
           "kind": "windowType",
           "file": "interface/provinceview.gui",
           "status": "not reached",
-          "confidence": 0.4
+          "confidence": 0.6
         },
         {
           "name": "province_estate_entry",
@@ -23987,14 +23873,14 @@
           "kind": "windowType",
           "file": "interface/provinceview.gui",
           "status": "not reached",
-          "confidence": 0.21
+          "confidence": 0.483
         },
         {
           "name": "province_modifier_item",
           "kind": "windowType",
           "file": "interface/provinceview.gui",
           "status": "not reached",
-          "confidence": 0.333
+          "confidence": 0.667
         },
         {
           "name": "CoreShieldItem",
@@ -24029,21 +23915,21 @@
           "kind": "windowType",
           "file": "interface/provinceview.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "unit",
           "kind": "windowType",
           "file": "interface/provinceview.gui",
           "status": "not reached",
-          "confidence": 0.167
+          "confidence": 0.667
         },
         {
           "name": "merc",
           "kind": "windowType",
           "file": "interface/provinceview.gui",
           "status": "not reached",
-          "confidence": 0.167
+          "confidence": 0.75
         },
         {
           "name": "naval_unit",
@@ -24057,7 +23943,7 @@
           "kind": "windowType",
           "file": "interface/provinceview.gui",
           "status": "not reached",
-          "confidence": 0.286
+          "confidence": 0.714
         },
         {
           "name": "queue_entry",
@@ -24078,14 +23964,14 @@
           "kind": "windowType",
           "file": "interface/provinceview.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "great_project_entry",
           "kind": "windowType",
           "file": "interface/provinceview.gui",
           "status": "not reached",
-          "confidence": 0.526
+          "confidence": 0.895
         },
         {
           "name": "possible_building_entry",
@@ -24099,14 +23985,14 @@
           "kind": "windowType",
           "file": "interface/provinceview.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 0.875
         },
         {
           "name": "native_building_entry",
           "kind": "windowType",
           "file": "interface/provinceview.gui",
           "status": "not reached",
-          "confidence": 0.4
+          "confidence": 0.7
         },
         {
           "name": "allies_selection_entry",
@@ -24134,91 +24020,91 @@
           "kind": "eu3dialogtype",
           "file": "interface/provinceview.gui",
           "status": "not reached",
-          "confidence": 0.238
+          "confidence": 0.333
         },
         {
           "name": "ConfirmCreateClientState",
           "kind": "eu3dialogtype",
           "file": "interface/provinceview.gui",
           "status": "not reached",
-          "confidence": 0.429
+          "confidence": 0.457
         },
         {
           "name": "CustomizeColony",
           "kind": "eu3dialogtype",
           "file": "interface/provinceview.gui",
           "status": "not reached",
-          "confidence": 0.1
+          "confidence": 0.2
         },
         {
           "name": "new_buildings_entry2",
           "kind": "windowType",
           "file": "interface/provinceview.gui",
           "status": "not reached",
-          "confidence": 0.01
+          "confidence": 0.228
         },
         {
           "name": "province_institution_entry",
           "kind": "windowType",
           "file": "interface/provinceview.gui",
           "status": "not reached",
-          "confidence": 0.125
+          "confidence": 0.625
         },
         {
           "name": "state_province_entry",
           "kind": "windowType",
           "file": "interface/provinceview.gui",
           "status": "not reached",
-          "confidence": 0.25
+          "confidence": 0.417
         },
         {
           "name": "state_edict_entry",
           "kind": "windowType",
           "file": "interface/provinceview.gui",
           "status": "not reached",
-          "confidence": 0.25
+          "confidence": 0.5
         },
         {
           "name": "edicts_window",
           "kind": "windowType",
           "file": "interface/provinceview.gui",
           "status": "not reached",
-          "confidence": 0.4
+          "confidence": 0.6
         },
         {
           "name": "reforms_window",
           "kind": "windowType",
           "file": "interface/religiousreforms.gui",
           "status": "not reached",
-          "confidence": 0.182
+          "confidence": 0.273
         },
         {
           "name": "religiousreformitem",
           "kind": "windowType",
           "file": "interface/religiousreforms.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "reorg_window",
           "kind": "windowType",
           "file": "interface/reorg_window_main.gui",
           "status": "not reached",
-          "confidence": 0.258
+          "confidence": 0.288
         },
         {
           "name": "reorg_entry",
           "kind": "windowType",
           "file": "interface/reorg_window_sub.gui",
           "status": "not reached",
-          "confidence": 0.061
+          "confidence": 0.818
         },
         {
           "name": "reorg_entry_right",
           "kind": "windowType",
           "file": "interface/reorg_window_sub.gui",
           "status": "not reached",
-          "confidence": 0.061
+          "confidence": 0.818
         },
         {
           "name": "right_click_entry",
@@ -24254,14 +24140,14 @@
           "file": "interface/settings.gui",
           "status": "view",
           "views": ["vanilla-menu-s3", "vanilla-menu-s4"],
-          "confidence": 0.538
+          "confidence": 0.597
         },
         {
           "name": "menu_settings_ingame",
           "kind": "windowType",
           "file": "interface/settings.gui",
           "status": "not reached",
-          "confidence": 0.539
+          "confidence": 0.586
         },
         {
           "name": "SettingsMustRestartWindow",
@@ -24291,14 +24177,14 @@
           "file": "interface/siege.gui",
           "status": "inside",
           "views": ["vanilla-save-s0"],
-          "confidence": 0.182
+          "confidence": 0.614
         },
         {
           "name": "social_friends_list_item",
           "kind": "containerWindowType",
           "file": "interface/social_view.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.143
         },
         {
           "name": "social_friendrequest_ingoing_list_item",
@@ -24382,7 +24268,7 @@
           "kind": "containerWindowType",
           "file": "interface/social_view.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.077
         },
         {
           "name": "social_message_popup_window",
@@ -24411,42 +24297,42 @@
           "kind": "windowType",
           "file": "interface/speed_controls.gui",
           "status": "not reached",
-          "confidence": 0.556
+          "confidence": 0.667
         },
         {
           "name": "start_game_dialog",
           "kind": "windowType",
           "file": "interface/startgamedialog.gui",
           "status": "not reached",
-          "confidence": 0.455
+          "confidence": 0.545
         },
         {
           "name": "enabled_dlc_entry",
           "kind": "windowType",
           "file": "interface/startup_screen.gui",
           "status": "not reached",
-          "confidence": 0.667
+          "confidence": 1
         },
         {
           "name": "startup_screen",
           "kind": "windowType",
           "file": "interface/startup_screen.gui",
           "status": "not reached",
-          "confidence": 0.148
+          "confidence": 0.185
         },
         {
           "name": "game_subscription_banner_view",
           "kind": "windowType",
           "file": "interface/subscription_banner_view.gui",
           "status": "not reached",
-          "confidence": 0.333
+          "confidence": 0.667
         },
         {
           "name": "sub_message_window",
           "kind": "windowType",
           "file": "interface/subscription_message_view.gui",
           "status": "not reached",
-          "confidence": 0.077
+          "confidence": 0.385
         },
         {
           "name": "topbar",
@@ -24454,7 +24340,7 @@
           "file": "interface/topbar.gui",
           "status": "view",
           "views": ["vanilla-save-s0"],
-          "confidence": 0.103
+          "confidence": 0.397
         },
         {
           "name": "alerts_parent",
@@ -24468,14 +24354,14 @@
           "kind": "windowType",
           "file": "interface/topbar.gui",
           "status": "not reached",
-          "confidence": 0
+          "confidence": 0.333
         },
         {
           "name": "trade_company_investment_view",
           "kind": "windowType",
           "file": "interface/trade_company_investments_view.gui",
           "status": "not reached",
-          "confidence": 0.25
+          "confidence": 0.5
         },
         {
           "name": "investment_category_pair_item",
@@ -24489,14 +24375,14 @@
           "kind": "windowType",
           "file": "interface/trade_company_investments_view.gui",
           "status": "not reached",
-          "confidence": 0.25
+          "confidence": 0.5
         },
         {
           "name": "investment_item",
           "kind": "windowType",
           "file": "interface/trade_company_investments_view.gui",
           "status": "not reached",
-          "confidence": 0.4
+          "confidence": 0.6
         },
         {
           "name": "trade_goods_entry",
@@ -24524,14 +24410,14 @@
           "kind": "windowType",
           "file": "interface/tradeinterface.gui",
           "status": "not reached",
-          "confidence": 0.1
+          "confidence": 0.225
         },
         {
           "name": "TradeCompanyNodeInterface",
           "kind": "windowType",
           "file": "interface/tradeinterface.gui",
           "status": "not reached",
-          "confidence": 0.089
+          "confidence": 0.2
         },
         {
           "name": "envoy_item",
@@ -24545,28 +24431,28 @@
           "kind": "windowType",
           "file": "interface/tradeinterface.gui",
           "status": "not reached",
-          "confidence": 0.167
+          "confidence": 0.417
         },
         {
           "name": "trade_node_trader",
           "kind": "windowType",
           "file": "interface/tradeinterface.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "trade_node_modifer",
           "kind": "windowType",
           "file": "interface/tradeinterface.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 1
         },
         {
           "name": "tradecompanies_item",
           "kind": "windowType",
           "file": "interface/tradeinterface.gui",
           "status": "not reached",
-          "confidence": 0.333
+          "confidence": 1
         },
         {
           "name": "dummy-ul",
@@ -24601,14 +24487,14 @@
           "kind": "windowType",
           "file": "interface/unitpanel_card.gui",
           "status": "not reached",
-          "confidence": 0.235
+          "confidence": 0.515
         },
         {
           "name": "unit_view_template_list_win",
           "kind": "windowType",
           "file": "interface/unitpanel_card.gui",
           "status": "not reached",
-          "confidence": 0.4
+          "confidence": 0.6
         },
         {
           "name": "army_template_list_item",
@@ -24629,14 +24515,14 @@
           "kind": "windowType",
           "file": "interface/unitpanel_main.gui",
           "status": "not reached",
-          "confidence": 0.469
+          "confidence": 0.719
         },
         {
           "name": "multi_unitpanel",
           "kind": "windowType",
           "file": "interface/unitpanel_main.gui",
           "status": "not reached",
-          "confidence": 0.429
+          "confidence": 0.571
         },
         {
           "name": "attachable_army_entry",
@@ -24650,42 +24536,42 @@
           "kind": "windowType",
           "file": "interface/unitpanel_sub.gui",
           "status": "not reached",
-          "confidence": 0.25
+          "confidence": 0.75
         },
         {
           "name": "tradenode_entry",
           "kind": "windowType",
           "file": "interface/unitpanel_sub.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 0.75
         },
         {
           "name": "subunit_entry",
           "kind": "windowType",
           "file": "interface/unitpanel_sub.gui",
           "status": "not reached",
-          "confidence": 0.025
+          "confidence": 0.85
         },
         {
           "name": "leader_selection_panel",
           "kind": "windowType",
           "file": "interface/unitpanel_sub.gui",
           "status": "not reached",
-          "confidence": 0.65
+          "confidence": 0.7
         },
         {
           "name": "leader_entry",
           "kind": "windowType",
           "file": "interface/unitpanel_sub.gui",
           "status": "not reached",
-          "confidence": 0.182
+          "confidence": 0.545
         },
         {
           "name": "rebel_supression_panel",
           "kind": "windowType",
           "file": "interface/unitpanel_sub.gui",
           "status": "not reached",
-          "confidence": 0.286
+          "confidence": 0.429
         },
         {
           "name": "area_item",
@@ -24699,7 +24585,7 @@
           "kind": "windowType",
           "file": "interface/unitpanel_sub.gui",
           "status": "not reached",
-          "confidence": 0.286
+          "confidence": 0.429
         },
         {
           "name": "carpet_item",
@@ -24713,35 +24599,35 @@
           "kind": "windowType",
           "file": "interface/waroverview.gui",
           "status": "not reached",
-          "confidence": 0.296
+          "confidence": 0.358
         },
         {
           "name": "waroverview_countryItem",
           "kind": "windowType",
           "file": "interface/waroverview.gui",
           "status": "not reached",
-          "confidence": 0.167
+          "confidence": 0.5
         },
         {
           "name": "waroverview_battleItem",
           "kind": "windowType",
           "file": "interface/waroverview.gui",
           "status": "not reached",
-          "confidence": 0.143
+          "confidence": 0.429
         },
         {
           "name": "WarSubsidyDialog",
           "kind": "eu3dialogtype",
           "file": "interface/warsubsidydialog.gui",
           "status": "not reached",
-          "confidence": 0.316
+          "confidence": 0.368
         },
         {
           "name": "arabic_trade_influence_gov_mech",
           "kind": "windowType",
           "file": "interface/government_mechanics/arabic_trade_influence.gui",
           "status": "not reached",
-          "confidence": 0.25
+          "confidence": 0.5
         },
         {
           "name": "arabic_trade_influence_interaction_left_button",
@@ -24769,112 +24655,112 @@
           "kind": "windowType",
           "file": "interface/government_mechanics/blood_gathering.gui",
           "status": "not reached",
-          "confidence": 0.25
+          "confidence": 0.5
         },
         {
           "name": "blood_gathering_interaction_button",
           "kind": "windowType",
           "file": "interface/government_mechanics/blood_gathering.gui",
           "status": "not reached",
-          "confidence": 0.25
+          "confidence": 0.5
         },
         {
           "name": "council_of_ten_gov_mech",
           "kind": "windowType",
           "file": "interface/government_mechanics/council_of_ten.gui",
           "status": "not reached",
-          "confidence": 0.25
+          "confidence": 0.5
         },
         {
           "name": "council_of_ten_interaction_button",
           "kind": "windowType",
           "file": "interface/government_mechanics/council_of_ten.gui",
           "status": "not reached",
-          "confidence": 0.25
+          "confidence": 0.5
         },
         {
           "name": "cultural_unity_gov_mech",
           "kind": "windowType",
           "file": "interface/government_mechanics/cultural_unity.gui",
           "status": "not reached",
-          "confidence": 0.333
+          "confidence": 0.667
         },
         {
           "name": "divine_authority_gov_mech",
           "kind": "windowType",
           "file": "interface/government_mechanics/divine_authority.gui",
           "status": "not reached",
-          "confidence": 0.25
+          "confidence": 0.5
         },
         {
           "name": "divine_authority_interaction_button",
           "kind": "windowType",
           "file": "interface/government_mechanics/divine_authority.gui",
           "status": "not reached",
-          "confidence": 0.25
+          "confidence": 0.5
         },
         {
           "name": "egyptian_westernization_gov_mech",
           "kind": "windowType",
           "file": "interface/government_mechanics/egyptian_westernization.gui",
           "status": "not reached",
-          "confidence": 0.25
+          "confidence": 0.5
         },
         {
           "name": "egyptian_westernization_interaction_button",
           "kind": "windowType",
           "file": "interface/government_mechanics/egyptian_westernization.gui",
           "status": "not reached",
-          "confidence": 0.25
+          "confidence": 0.5
         },
         {
           "name": "end_time_gov_mech",
           "kind": "windowType",
           "file": "interface/government_mechanics/end_time.gui",
           "status": "not reached",
-          "confidence": 0.333
+          "confidence": 0.667
         },
         {
           "name": "hessian_militarization_gov_mech",
           "kind": "windowType",
           "file": "interface/government_mechanics/hessian_militarization.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 0.75
         },
         {
           "name": "militarization_gov_mech",
           "kind": "windowType",
           "file": "interface/government_mechanics/militarization.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 0.75
         },
         {
           "name": "ottoman_decadende_gov_mech",
           "kind": "windowType",
           "file": "interface/government_mechanics/ottoman_decadence.gui",
           "status": "not reached",
-          "confidence": 0.333
+          "confidence": 0.667
         },
         {
           "name": "parliament_vs_monarchy_gov_mech",
           "kind": "windowType",
           "file": "interface/government_mechanics/parliament_vs_monarchy.gui",
           "status": "not reached",
-          "confidence": 0.333
+          "confidence": 0.667
         },
         {
           "name": "prussian_militarization_gov_mech_1_2",
           "kind": "windowType",
           "file": "interface/government_mechanics/prussian_militarization.gui",
           "status": "not reached",
-          "confidence": 0.5
+          "confidence": 0.75
         },
         {
           "name": "prussian_militarization_gov_mech_3_power",
           "kind": "windowType",
           "file": "interface/government_mechanics/prussian_militarization.gui",
           "status": "not reached",
-          "confidence": 0.333
+          "confidence": 0.667
         },
         {
           "name": "prussian_militarization_gov_mech_3_interaction",
@@ -24888,28 +24774,28 @@
           "kind": "windowType",
           "file": "interface/government_mechanics/russian_mechanics.gui",
           "status": "not reached",
-          "confidence": 0.25
+          "confidence": 0.5
         },
         {
           "name": "russian_modernization_gov_mech",
           "kind": "windowType",
           "file": "interface/government_mechanics/russian_modernization.gui",
           "status": "not reached",
-          "confidence": 0.333
+          "confidence": 0.667
         },
         {
           "name": "three_flames_gov_mech",
           "kind": "windowType",
           "file": "interface/government_mechanics/three_flames_bar.gui",
           "status": "not reached",
-          "confidence": 0.25
+          "confidence": 0.5
         },
         {
           "name": "three_flames_interaction_button",
           "kind": "windowType",
           "file": "interface/government_mechanics/three_flames_bar.gui",
           "status": "not reached",
-          "confidence": 0.25
+          "confidence": 0.5
         }
       ]
     },
@@ -25544,35 +25430,6 @@
             }
           ],
           "note": "Escape does not close it: Escape opened estate_dev_share_item[1], estate_dev_share_item[2], estate_dev_share_item[3], estate_dev_share_item[4], estate_dev_share_item[5], estate_dev_share_item[6], estate_item[1], estate_item[2], estate_item[3], estate_item[4], estate_item[5] instead of closing a window."
-        },
-        {
-          "id": "anbennar-alone-save-s52",
-          "roots": [
-            "estate_dev_share_item[1]",
-            "estate_dev_share_item[2]",
-            "estate_dev_share_item[3]",
-            "estate_dev_share_item[4]",
-            "estate_dev_share_item[5]",
-            "estate_dev_share_item[6]",
-            "estate_item[1]",
-            "estate_item[2]",
-            "estate_item[3]",
-            "estate_item[4]",
-            "estate_item[5]"
-          ],
-          "from": "save",
-          "steps": [
-            {
-              "click": "topbar/government_reforms_button"
-            },
-            {
-              "click": "countryview/countryview_tabs/tab_estates"
-            },
-            {
-              "click": "countryestatesview/close_button"
-            }
-          ],
-          "note": "Escape does not close it: Escape opened menu instead of closing a window."
         },
         {
           "id": "anbennar-alone-save-s53",
