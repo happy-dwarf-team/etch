@@ -394,11 +394,18 @@ Verne 1920×1080 fresh 97.2 → **99.1 %** (3589 of 3618), Verne 1280×720 fresh
 of 2830), Kobildzan 95.8 → **98.9 %**, vanilla 1920×1080 on the survey 97.2 → 98.5 %; visibility gains
 0.2 to 0.4 points on the same sets.
 
-What is left on Verne at 1920×1080 (29 rects and 59 visibility failures offline, and 18 widgets only
-the game has): 33 are the province view's building slots, where Tongs reports a built slot as hidden while the screenshot shows
-it drawn; 24 are the ledger's sort buttons, which the game's code places by the columns of the page;
-the rest are sizes the game's code sets (the magic menu's and the dialogs' texts, `dev_share_pie_chart`,
-the estates' modifier icons, the lobby's `scenario_description`) and the map's strait and river marks.
+Three more rules followed: etch#381 hides the country view's tabs while the idea group choice or the
+new policy window is open (vanilla and Anbennar alike), and the reorganization window's fleet half
+while it reorganizes armies; etch#382 hides the speed controls' achievements button in Anbennar's
+layer, which every Anbennar capture shows hidden and every other playset's shown. On the fresh
+captures of Verne the offline preview then gets 33 of the 58 views fully right at 1920×1080 and
+30 of the 50 at 1280×720.
+
+What is left on Verne at 1920×1080 (29 rects and 54 visibility failures offline, and 18 widgets only the game has): 33 are the province view's building slots, where Tongs
+reports a built slot as hidden while the screenshot shows it drawn; 24 are the ledger's sort buttons,
+which the game's code places by the columns of the page; the rest are sizes the game's code sets (the
+magic menu's and the dialogs' texts, `dev_share_pie_chart`, the estates' modifier icons, the lobby's
+`scenario_description`) and the map's strait and river marks.
 
 **1280×720 from the game, and pixels.** The same day's second batch took Anbennar's 1280×720 views
 from the game again: 51 views, 18 of which no run had taken at 1280×720 before (the views of the later
