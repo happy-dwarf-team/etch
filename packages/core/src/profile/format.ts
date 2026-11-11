@@ -153,10 +153,19 @@ export interface ProfileMod {
  */
 export type ContentSourceKind = 'save' | 'loc' | 'engine' | 'generated';
 
-/** What the generated layer writes: a text, a number, a percentage or a date. */
-export type GeneratedKind = 'text' | 'number' | 'percent' | 'date';
+/**
+ * What the generated layer writes: a text, a number, a whole number (a level, a count), a
+ * percentage or a date.
+ */
+export type GeneratedKind = 'text' | 'number' | 'integer' | 'percent' | 'date';
 
-export const GENERATED_KINDS: readonly GeneratedKind[] = ['text', 'number', 'percent', 'date'];
+export const GENERATED_KINDS: readonly GeneratedKind[] = [
+  'text',
+  'number',
+  'integer',
+  'percent',
+  'date',
+];
 
 /** How a save value is written: as it is, as a number, or as a number with `%`. */
 export type ValueFormat = 'text' | 'number' | 'percent';

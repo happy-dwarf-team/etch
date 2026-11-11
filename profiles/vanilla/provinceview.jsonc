@@ -215,7 +215,7 @@
       "format": "number",
       "decimals": 0,
     },
-    "provinceview/province_window/fort_number": { "engine": true, "generated": "number" },
+    "provinceview/province_window/fort_number": { "engine": true, "generated": "integer" },
     "provinceview/province_window/tradepower_value": {
       "save": "provinces.{province}.trade_power",
       "format": "number",
@@ -238,7 +238,7 @@
     },
     "provinceview/province_window/foreign_province_window/miltech_value": {
       "engine": true,
-      "generated": "number",
+      "generated": "integer",
     },
     "provinceview/province_window/tradegoods_province_window/tradegoods_name": {
       "save": "provinces.{province}.trade_goods",
