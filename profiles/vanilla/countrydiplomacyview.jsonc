@@ -19,6 +19,20 @@
       "values": { "none": "None", "secondary": "Secondary religion", "school": "Religious school" },
       "note": "eu4.exe shows the country's secondary religion, else with Cradle of Civilization its religious school, else neither, and then moves label_nation and label_fog 20 px left (GOG 1.37.5.2 0xEFC380, 0xEFC40D).",
     },
+    "heir": {
+      "kind": "ui",
+      "label": "Heir",
+      "values": { "yes": "Heir", "no": "No heir" },
+      "default": "yes",
+      "note": "Without an heir the game keeps monarch_heir_name (its text says so) and hides the heir's label, gender and age (the coverage survey: Russia has an heir, Anbennar's Verne, the Celestial Emperor and the first great power of 1444 have none).",
+    },
+    "hreMember": {
+      "kind": "ui",
+      "label": "Empire member",
+      "values": { "yes": "Member", "no": "Not a member" },
+      "default": "no",
+      "note": "member_of_HRE shows for a member of the Holy Roman Empire (the coverage survey: Anbennar's emperor in 1444).",
+    },
   },
   "groups": {
     "religionIcon": {
@@ -79,6 +93,18 @@
         "countrydiplomacyview/trust_value",
         "countrydiplomacyview/vassal_select_window",
       ],
+    },
+    "no-heir": {
+      "when": { "heir": "no" },
+      "hide": [
+        "countrydiplomacyview/heir_gender",
+        "countrydiplomacyview/monarch_heir_label",
+        "countrydiplomacyview/monarch_heir_info",
+      ],
+    },
+    "hre-member": {
+      "when": { "hreMember": "yes" },
+      "show": ["countrydiplomacyview/member_of_HRE"],
     },
     "own-country": {
       "when": { "country": "own" },

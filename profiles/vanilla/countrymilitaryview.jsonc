@@ -19,6 +19,13 @@
       "default": "yes",
       "note": "The army professionalism bar takes its place above the tab only with the DLC; a save's dlc_enabled says whether it was active.",
     },
+    "unitSelect": {
+      "kind": "ui",
+      "label": "Unit type choice",
+      "values": { "closed": "Closed", "open": "Open" },
+      "default": "closed",
+      "note": "infantry_type_button, cavalry_type_button and artillery_type_button open domesticpanel_unit_select over the leaders' buttons.",
+    },
   },
   "rules": {
     "cradle-moves-the-tab": {
@@ -43,6 +50,18 @@
         "countrymilitaryview/army_professionalism",
         "countrymilitaryview/CoCbackground",
         "countrymilitaryview/slacken_button",
+      ],
+    },
+    "unit-select-open": {
+      "note": "With the unit type choice open the game hides the buttons that recruit leaders and make the ruler or the heir a general (the coverage survey, Russia 1719, 1920×1080).",
+      "when": { "unitSelect": "open" },
+      "hide": [
+        "countrymilitaryview/button_recruit_general",
+        "countrymilitaryview/button_recruit_conquistador",
+        "countrymilitaryview/button_recruit_admiral",
+        "countrymilitaryview/button_recruit_explorer",
+        "countrymilitaryview/button_makerulergeneral",
+        "countrymilitaryview/button_makeheirgeneral",
       ],
     },
     "hidden": {
