@@ -18,6 +18,13 @@
       "default": "no",
       "note": "ruler_is_mage_icon shows by the ruler's name when the ruler is a mage (the coverage survey: the emperor of 1444).",
     },
+    "shieldGlow": {
+      "kind": "ui",
+      "label": "Shield glow",
+      "values": { "no": "None", "yes": "Glow" },
+      "default": "no",
+      "note": "countryshield_glow shows behind the chosen country's shield in every diplomacy view of Bluescale (1472) and in Kobildzan's own (1594), and in none of Verne's (1444); what decides it is not read in the code.",
+    },
   },
   "rules": {
     "hidden": {
@@ -71,6 +78,10 @@
     "ruler-mage": {
       "when": { "rulerMage": "yes" },
       "show": ["countrydiplomacyview/ruler_is_mage_icon"],
+    },
+    "shield-glow": {
+      "when": { "shieldGlow": "yes" },
+      "show": ["countrydiplomacyview/countryshield_glow"],
     },
   },
 }

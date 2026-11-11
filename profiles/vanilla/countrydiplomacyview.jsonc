@@ -22,9 +22,21 @@
     "heir": {
       "kind": "ui",
       "label": "Heir",
-      "values": { "yes": "Heir", "no": "No heir" },
+      "values": {
+        "yes": "Heir",
+        "no": "No heir",
+        "elective": "Elective",
+        "hidden": "No heir line",
+      },
       "default": "yes",
-      "note": "Without an heir the game keeps monarch_heir_name (its text says so) and hides the heir's label, gender and age (the coverage survey: Russia has an heir, Anbennar's Verne, the Celestial Emperor and the first great power of 1444 have none).",
+      "note": "Without an heir the game keeps monarch_heir_name (its text says so) and hides the heir's label, gender and age (the coverage survey: Russia has an heir, Anbennar's Verne, the Celestial Emperor and the first great power of 1444 have none). An elective country shows election_info in place of the heir's name (Kobildzan, 1594); Kobildzan's view of the Celestial Emperor shows neither the heir's line nor election_info.",
+    },
+    "rivals": {
+      "kind": "ui",
+      "label": "Rivals",
+      "values": { "possible": "Possible", "notPossible": "Not possible" },
+      "default": "notPossible",
+      "note": "The player's own country shows its rivals and enemies, or label_rivals_not_possible when it cannot choose rivals (the coverage survey: Verne can; Russia in 1719 and Kobildzan cannot).",
     },
     "hreMember": {
       "kind": "ui",
@@ -101,6 +113,35 @@
         "countrydiplomacyview/monarch_heir_label",
         "countrydiplomacyview/monarch_heir_info",
       ],
+    },
+    "no-heir-line": {
+      "when": { "heir": "hidden" },
+      "hide": [
+        "countrydiplomacyview/heir_gender",
+        "countrydiplomacyview/monarch_heir_label",
+        "countrydiplomacyview/monarch_heir_name",
+        "countrydiplomacyview/monarch_heir_info",
+      ],
+    },
+    "elective": {
+      "when": { "heir": "elective" },
+      "show": ["countrydiplomacyview/election_info"],
+      "hide": [
+        "countrydiplomacyview/heir_gender",
+        "countrydiplomacyview/monarch_heir_label",
+        "countrydiplomacyview/monarch_heir_name",
+        "countrydiplomacyview/monarch_heir_info",
+      ],
+    },
+    "own-rivals": {
+      "when": { "country": "own", "rivals": "possible" },
+      "show": ["countrydiplomacyview/label_enemies", "countrydiplomacyview/label_rivals"],
+      "hide": ["countrydiplomacyview/label_rivals_not_possible"],
+    },
+    "own-rivals-not-possible": {
+      "when": { "country": "own", "rivals": "notPossible" },
+      "show": ["countrydiplomacyview/label_rivals_not_possible"],
+      "hide": ["countrydiplomacyview/label_enemies", "countrydiplomacyview/label_rivals"],
     },
     "hre-member": {
       "when": { "hreMember": "yes" },
