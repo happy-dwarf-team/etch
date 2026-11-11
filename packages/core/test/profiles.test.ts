@@ -14,11 +14,17 @@ const sources = readdirSync(root, { withFileTypes: true })
 const MODS: Record<string, string> = {
   anbennar: '1385440355',
   'p2ke-patch-anbennar': '3777997797',
+  'proper-2k-ui-enhanced': '3290499798',
 };
 
 describe("Etch's window profiles", () => {
-  it('ship vanilla, Anbennar and P2KE Patch - Anbennar', () => {
-    expect(sources.sort()).toEqual(['anbennar', 'p2ke-patch-anbennar', 'vanilla']);
+  it('ship vanilla, Anbennar, P2KE Patch - Anbennar and Proper 2K UI Enhanced', () => {
+    expect(sources.sort()).toEqual([
+      'anbennar',
+      'p2ke-patch-anbennar',
+      'proper-2k-ui-enhanced',
+      'vanilla',
+    ]);
   });
 
   for (const source of sources) {
