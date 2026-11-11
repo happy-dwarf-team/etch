@@ -1,0 +1,19 @@
+// The countryeconomyview window of the base game, the country view's economy tab
+// (docs/window-profiles.md). Its totals and values are texts the game's code writes over the
+// .gui's own ("TOTAL +1234", "War Exhaustion: 12%", "Tax Base: 124"), which wrap in their boxes
+// where the game's numbers fit on one line (the coverage survey, Anbennar's Verne 1444: 9.21,
+// 0.0/20, 105).
+{
+  "formatVersion": 1,
+  "window": "countryeconomyview",
+  "checkedWith": "1.37.5",
+  "content": {
+    "countryeconomyview/incomes_total": { "engine": true, "generated": "number" },
+    "countryeconomyview/expenses_total": { "engine": true, "generated": "number" },
+    "countryeconomyview/balance": { "engine": true, "generated": "number" },
+    "countryeconomyview/inflation_info": { "engine": true, "generated": "percent" },
+    "countryeconomyview/war_exhaustion": { "engine": true, "generated": "number" },
+    "countryeconomyview/development_base": { "engine": true, "generated": "number" },
+    "countryeconomyview/take_loan_sum": { "engine": true, "generated": "number" },
+  },
+}

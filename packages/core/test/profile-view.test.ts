@@ -1462,3 +1462,38 @@ describe("the country views' sub-screens (the coverage survey)", () => {
     }
   });
 });
+
+describe("the economy tab's numbers (the coverage survey)", () => {
+  const file = readGuiFile(
+    parseScript(`guiTypes = {
+  windowType = {
+    name = "countryeconomyview"
+    size = { x = 100 y = 100 }
+    instantTextBoxType = { name = "war_exhaustion" text = "War Exhaustion: 12%" maxWidth = 64 maxHeight = 32 }
+    instantTextBoxType = { name = "inflation_info" text = "0%" maxWidth = 64 maxHeight = 32 }
+  }
+}`),
+  );
+  const window = file.definitions[0] as Widget;
+
+  it("writes the game's numbers over the .gui's texts", () => {
+    const read = readProfile(
+      readFileSync(
+        new URL('../../../profiles/vanilla/countryeconomyview.jsonc', import.meta.url),
+        'utf8',
+      ),
+      { layer: 0, source: 'vanilla', file: 'countryeconomyview.jsonc' },
+    );
+    expect(read.diagnostics).toEqual([]);
+    const profile = layerProfiles('countryeconomyview', read.file === undefined ? [] : [read.file]);
+    const view = evaluateView(profile, window, LARGE, {});
+    const sample = sampleData(profile, window, view, {
+      localise: () => undefined,
+      length: 'typical',
+    });
+    const text = (name: string) =>
+      sample.text(widgetsAt(window, `countryeconomyview/${name}`)[0] as Widget)?.text;
+    expect(text('war_exhaustion')).toBe('12.3');
+    expect(text('inflation_info')).toBe('12.5%');
+  });
+});
