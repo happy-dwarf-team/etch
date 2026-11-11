@@ -28,6 +28,13 @@
       "values": { "closed": "Closed", "open": "Open" },
       "note": "Anbennar's achievements window, opened from the top bar.",
     },
+    "playerShieldGlow": {
+      "kind": "ui",
+      "label": "Player's shield glow",
+      "values": { "no": "None", "yes": "Glow" },
+      "default": "no",
+      "note": "player_shield_glow shows behind the player's shield in every top bar of Bluescale (1472) and Kobildzan (1594), and in none of Verne's (1444); what decides it is not read in the code.",
+    },
   },
   "groups": {
     "magicMenu": {
@@ -58,6 +65,10 @@
         "topbar/text_rep",
         "topbar/text_unity",
       ],
+    },
+    "player-shield-glow": {
+      "when": { "playerShieldGlow": "yes" },
+      "show": ["topbar/player_shield_glow"],
     },
     "magic-menu-closed": {
       "when": { "magicMenu": "closed" },
