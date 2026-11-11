@@ -1,0 +1,19 @@
+// The country_selection_panel window in P2KE Patch - Anbennar, over the vanilla and Anbennar
+// profiles. The patch keeps Anbennar's date picker off the screen (x = -9999) but puts the random
+// New World button back on it (x = -311 from the right), and the precision corpus's captures of the
+// Anbennar playset's lobby (2560×1440 and 3440×1440) show it.
+{
+  "formatVersion": 1,
+  "window": "country_selection_panel",
+  "checkedWith": "1",
+  "mod": {
+    "remoteFileId": "3777997797",
+    "name": "P2KE Patch - Anbennar",
+  },
+  "rules": {
+    "no-date-or-random-world": {
+      "note": "The patch's lobby shows the random New World button; the date picker stays hidden.",
+      "hide": ["country_selection_panel/lobby/left/datewidget"],
+    },
+  },
+}
