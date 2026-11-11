@@ -384,6 +384,37 @@ describe("the ledger's pages (the coverage survey)", () => {
   });
 });
 
+describe("the province view's state tab (the coverage survey)", () => {
+  const file = readGuiFile(
+    parseScript(`guiTypes = {
+  windowType = {
+    name = "provinceview"
+    size = { x = 100 y = 100 }
+    windowType = { name = "province_window" size = { x = 50 y = 50 } }
+    windowType = { name = "state_window" size = { x = 50 y = 50 } }
+  }
+}`),
+  );
+  const window = file.definitions[0] as Widget;
+  const { file: written, diagnostics } = readProfile(
+    readFileSync(new URL('../../../profiles/vanilla/provinceview.jsonc', import.meta.url), 'utf8'),
+    { layer: 0, source: 'vanilla', file: 'provinceview.jsonc' },
+  );
+  const drawn = (tab: string) => {
+    expect(diagnostics).toEqual([]);
+    const profile = layerProfiles('provinceview', written === undefined ? [] : [written]);
+    const view = evaluateView(profile, window, LARGE, { set: { tab } });
+    return ['province_window', 'state_window'].filter((name) =>
+      widgetsAt(window, `provinceview/${name}`).some((w) => view.drawn(w)),
+    );
+  };
+
+  it('draws the state window over the province window, which the game keeps shown', () => {
+    expect(drawn('province')).toEqual(['province_window']);
+    expect(drawn('state')).toEqual(['province_window', 'state_window']);
+  });
+});
+
 describe("the lobby's chosen country (the coverage survey)", () => {
   const file = readGuiFile(
     parseScript(`guiTypes = {
