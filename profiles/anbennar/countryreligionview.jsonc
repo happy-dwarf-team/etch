@@ -138,8 +138,18 @@
       ],
     },
     "deity-selection": {
+      "note": "The screen covers the lower half of the view, and the game hides the missionaries' controls under it, as under the base game's selection screens.",
       "when": { "deitySelection": "open" },
       "show": ["countryreligionview/deity_selection_screen"],
+      "hide": [
+        "countryreligionview/religionpanel_bg_bottom",
+        "countryreligionview/show_subjects",
+        "countryreligionview/show_subjects_title",
+        "countryreligionview/assign_automatic_missionary",
+        "countryreligionview/automatic_missionariy_BG",
+        "countryreligionview/automatic_missionary_title",
+        "countryreligionview/missionary_icon_list",
+      ],
     },
     "full-unity": {
       "when": { "fullUnity": "full" },
