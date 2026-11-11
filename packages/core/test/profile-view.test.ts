@@ -1404,3 +1404,61 @@ describe("Anbennar's lobby without the date or a random New World (the coverage 
     expect(shown(['vanilla', 'anbennar'])).toEqual([]);
   });
 });
+
+describe("the country views' sub-screens (the coverage survey)", () => {
+  const cases = [
+    {
+      window: 'countrydecisionsview',
+      selector: 'newPolicy',
+      names: ['new_policy_window', 'domesticpanel_bg', 'decisions_window'],
+      closed: ['domesticpanel_bg', 'decisions_window'],
+      open: ['new_policy_window'],
+    },
+    {
+      window: 'countryideasview',
+      selector: 'groupChoice',
+      names: ['countryideaview_ideagroupunlock', 'domesticpanel_bg', 'topGold'],
+      closed: ['domesticpanel_bg', 'topGold'],
+      open: ['countryideaview_ideagroupunlock'],
+    },
+    {
+      window: 'countrygovernmentview',
+      selector: 'reformChoice',
+      names: ['bg_top', 'background'],
+      closed: ['background'],
+      open: ['bg_top'],
+    },
+  ];
+
+  it.each(cases)('$window shows one side or the other', (c) => {
+    const window = readGuiFile(
+      parseScript(
+        `guiTypes = { windowType = { name = "${c.window}" size = { x = 100 y = 100 } ${c.names
+          .map((n) => `windowType = { name = "${n}" size = { x = 10 y = 10 } }`)
+          .join(' ')} } }`,
+      ),
+    ).definitions[0] as Widget;
+    const files = ['vanilla', 'anbennar'].flatMap((source, layer) => {
+      const read = readProfile(
+        readFileSync(
+          new URL(`../../../profiles/${source}/${c.window}.jsonc`, import.meta.url),
+          'utf8',
+        ),
+        { layer, source, file: `${c.window}.jsonc` },
+      );
+      expect(read.diagnostics).toEqual([]);
+      return read.file === undefined ? [] : [read.file];
+    });
+    for (const layers of [files.slice(0, 1), files]) {
+      const profile = layerProfiles(c.window, layers);
+      const shown = (value: string) => {
+        const view = evaluateView(profile, window, LARGE, { set: { [c.selector]: value } });
+        return c.names.filter((n) =>
+          widgetsAt(window, `${c.window}/${n}`).some((w) => view.drawn(w)),
+        );
+      };
+      expect(shown('closed')).toEqual(c.closed);
+      expect(shown('open')).toEqual(c.open);
+    }
+  });
+});

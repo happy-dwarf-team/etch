@@ -4,7 +4,24 @@
   "formatVersion": 1,
   "window": "countrydecisionsview",
   "checkedWith": "1.37.5",
+  "selectors": {
+    "newPolicy": {
+      "kind": "ui",
+      "label": "New policy",
+      "values": { "closed": "Closed", "open": "Open" },
+      "default": "closed",
+      "note": "A click on a policy's button opens new_policy_window, and the game hides the background and the decisions under it (the coverage survey, Russia 1719 and Verne 1444).",
+    },
+  },
   "rules": {
+    "new-policy-closed": {
+      "when": { "newPolicy": "closed" },
+      "hide": ["countrydecisionsview/new_policy_window"],
+    },
+    "new-policy-open": {
+      "when": { "newPolicy": "open" },
+      "hide": ["countrydecisionsview/domesticpanel_bg", "countrydecisionsview/decisions_window"],
+    },
     "hidden": {
       "note": "Hidden in every view of the coverage survey (the base game): the game decides these from its data or a click; show one by hand.",
       "hide": ["countrydecisionsview/new_policy_window/no_policy_explanation"],

@@ -17,8 +17,28 @@
       "values": { "shown": "Shown", "none": "None" },
       "note": "The bar is shown in 1719 and not in 1550 (the coverage survey, etch#258); what decides it is not read in the code.",
     },
+    "reformChoice": {
+      "kind": "ui",
+      "label": "Reform choice",
+      "values": { "closed": "Closed", "open": "Open" },
+      "default": "closed",
+      "note": "The top bar's government reforms button opens the tab with gov_view_reform_select beside it: the game then shows bg_top instead of the full background and hides the culture lists. The country view's government tab opens it closed (the coverage survey, Russia 1719 and Verne 1444).",
+    },
   },
   "rules": {
+    "reform-choice-closed": {
+      "when": { "reformChoice": "closed" },
+      "hide": ["countrygovernmentview/bg_top"],
+    },
+    "reform-choice-open": {
+      "when": { "reformChoice": "open" },
+      "hide": [
+        "countrygovernmentview/background",
+        "countrygovernmentview/cultures_window/accepted_culture_slots",
+        "countrygovernmentview/cultures_window/accepted_cultures_listbox",
+        "countrygovernmentview/cultures_window/non_accepted_cultures_listbox",
+      ],
+    },
     "no-mechanics": {
       "when": { "mechanics": "none" },
       "hide": [
