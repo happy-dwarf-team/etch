@@ -385,12 +385,20 @@ the 3.0.0 gate (spec/v3.md section 3). On the fresh captures of Verne the offlin
 10032) with etch#378's measure fix: the two widgets it missed were the hidden second instance of the
 main menu's settings, which the measure paired with the shown one's layout.
 
-What is left on Verne at 1920×1080 after both passes, offline preview (100 rects and 86 visibility
-failures): 71 of the rects and 27 of the visibility failures are `anbennar-alone-save-s52`'s orphaned
-estate rows; about 50 are the province view's building slots; 24 are the ledger's sort buttons, which
-the game's code places by the columns of the page; the rest are sizes the game's code sets (the magic
-menu's and the dialogs' texts, `dev_share_pie_chart`, the lobby's `scenario_description`) and the map's
-strait and river marks.
+After both passes, 71 of the 100 rects and 27 of the 86 visibility failures left on Verne at
+1920×1080 were `anbennar-alone-save-s52`'s estate rows, which are not a view: after the estates view's
+close button, Tongs still lists its rows as shown top-level windows, and the game draws none of them.
+etch#379 leaves such a state out of the survey's manifest (roots that are all numbered copies), which
+drops `anbennar-alone-save-s52` and vanilla's `save-s73`. Offline preview rects, before → after it:
+Verne 1920×1080 fresh 97.2 → **99.1 %** (3589 of 3618), Verne 1280×720 fresh 97.2 → **99.3 %** (2811
+of 2830), Kobildzan 95.8 → **98.9 %**, vanilla 1920×1080 on the survey 97.2 → 98.5 %; visibility gains
+0.2 to 0.4 points on the same sets.
+
+What is left on Verne at 1920×1080 (29 rects and 59 visibility failures offline, and 18 widgets only
+the game has): 33 are the province view's building slots, where Tongs reports a built slot as hidden while the screenshot shows
+it drawn; 24 are the ledger's sort buttons, which the game's code places by the columns of the page;
+the rest are sizes the game's code sets (the magic menu's and the dialogs' texts, `dev_share_pie_chart`,
+the estates' modifier icons, the lobby's `scenario_description`) and the map's strait and river marks.
 
 **1280×720 from the game, and pixels.** The same day's second batch took Anbennar's 1280×720 views
 from the game again: 51 views, 18 of which no run had taken at 1280×720 before (the views of the later
