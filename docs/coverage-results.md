@@ -407,6 +407,13 @@ crawls). On them, rules of `6c175a5` against `main` with etch#378: offline previ
 99.9 → 100 % (8109 of 8109); 9 → 27 of the 51 views fully right offline. `compare --gpu` over the fresh
 captures of both resolutions (rules of `1181976`): 5 of 110 pass, as the survey's views have no masks
 of what the game fills (see Pixels below).
+
+**A new crawl, in part.** The same batch crawled `anbennar-alone` from the save again with the crawler
+of `main` for the 20 minutes the lock had left: 6 starts, 38 states (16 explored), against the 54
+states of the survey's crawl in 19 starts. 37 of the 38 are states of the old crawl; the one new state
+is the unit panel's disband confirmation (`DefaultConfirm` over `multi_unitpanel` and
+`single_unitpanel`). A full crawl takes about three times as long, and the survey's manifest stays
+that of the old crawl.
 <!-- other countries: end -->
 
 ## What differs
