@@ -22,7 +22,7 @@ import type {
   WindowProfile,
   Written,
 } from './format.ts';
-import { profilePattern, widgetsAt } from './paths.ts';
+import { entryPath, profilePattern, widgetsAt } from './paths.ts';
 import { readSavePath } from './save-paths.ts';
 
 /** The widget kinds a repeater fills. */
@@ -161,9 +161,19 @@ export function checkProfile(profile: WindowProfile, input: ProfileCheckInput): 
         ok = hasValue(rule, condition.selector, value, condition.range) && ok;
       }
     }
+    // A shown or hidden part of a repeater's entries: the list's path, then the path in its
+    // template, the template's name first.
+    const inEntries = (ref: PathRef): boolean => {
+      const found = entryPath(profile.repeaters, ref.path);
+      if (found === undefined) return false;
+      const template = input.template?.(found.repeater.template);
+      return template === undefined || widgetsAt(template, found.inEntry).length > 0;
+    };
+    for (const ref of [...rule.show, ...rule.hide]) {
+      if (widgetsAt(input.window, ref.path).length === 0 && inEntries(ref)) continue;
+      ok = !pathFails(rule, ref) && ok;
+    }
     for (const ref of [
-      ...rule.show,
-      ...rule.hide,
       ...rule.notCreated,
       ...rule.position,
       ...rule.frame,

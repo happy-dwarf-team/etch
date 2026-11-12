@@ -105,3 +105,22 @@ export function widgetsAt(window: Widget, path: string): readonly Widget[] {
 const matches = new WeakMap<Widget, Map<string, readonly Widget[]>>();
 /** Each window path split into its steps once, in `windowPaths` order. */
 const steps = new WeakMap<Widget, readonly (readonly PathStep[] | undefined)[]>();
+
+/**
+ * A path into a repeater's entries: the list's path as the repeater is keyed, then the path in
+ * its template, the template's name first (`…/great_projects_list/great_project_entry/move_button`).
+ * A rule's show and hide reach every entry so. Undefined for any other path.
+ */
+export function entryPath<
+  R extends { readonly path: { readonly path: string }; readonly template: string },
+>(repeaters: readonly R[], path: string): { repeater: R; inEntry: string } | undefined {
+  const lower = path.toLowerCase();
+  for (const repeater of repeaters) {
+    const list = `${repeater.path.path.toLowerCase()}/`;
+    if (!lower.startsWith(list)) continue;
+    const inEntry = path.slice(list.length);
+    const first = inEntry.split('/')[0]?.toLowerCase();
+    if (first === repeater.template.toLowerCase()) return { repeater, inEntry };
+  }
+  return undefined;
+}

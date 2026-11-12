@@ -280,6 +280,19 @@ does:
 first, for what the game shows only in some entries: `"hide":
 ["building_progress_entry/building_status"]`. A live snapshot's state of an entry wins.
 
+A rule's `show` and `hide` reach the same parts by the list's path, as the repeater is keyed, and
+the path in the template: while the rule holds, the part is shown or hidden in every entry (a live
+snapshot's state still wins). A foreign province's great projects lose their buttons so:
+
+```jsonc
+"foreign-great-projects": {
+  "when": { "owner": "no" },
+  "hide": [
+    "provinceview/buildings_window/great_projects_window/great_projects_list/great_project_entry/move_button",
+  ],
+},
+```
+
 `Data ▾` lists the repeaters the view draws with their number of entries, which **−** and **+**
 change (the save's entries first, generated ones after) and **Reset** gives back.
 

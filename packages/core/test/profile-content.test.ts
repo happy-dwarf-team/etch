@@ -326,6 +326,55 @@ describe('a repeater that hides parts of its entries', () => {
   });
 });
 
+describe("a rule that reaches a repeater's entries", () => {
+  const ruled = PROFILE.replace(
+    '"groups": {',
+    `"rules": {
+      "foreign-builder": {
+        "when": { "owner": "no" },
+        "hide": ["provinceview/building_list/building_entry/builder"]
+      }
+    },
+    "groups": {`,
+  );
+
+  it('hides the part in every entry while it holds, under a snapshot', () => {
+    const { profile, diagnostics } = profileOf(ruled);
+    expect(diagnostics).toEqual([]);
+    const screen = { width: 1920, height: 1080 };
+    const builder = ENTRY.children.find((w) => w.name === 'builder') as Widget;
+    const at = (owner: string) =>
+      sampleData(
+        profile,
+        WINDOW,
+        evaluateView(profile, WINDOW, screen, { set: { owner } }),
+        input(),
+      );
+    expect(at('no').state(builder, 0)?.visible).toBe(false);
+    expect(at('no').state(builder, 1)?.visible).toBe(false);
+    expect(at('yes').state(builder, 1)?.visible).toBeUndefined();
+    const live = sampleData(
+      profile,
+      WINDOW,
+      evaluateView(profile, WINDOW, screen, { set: { owner: 'no' } }),
+      input({
+        live: {
+          text: () => undefined,
+          state: () => ({ visible: true, enabled: true, checked: false }),
+        },
+      }),
+    );
+    expect(live.state(builder, 1)?.visible).toBe(true);
+  });
+
+  it('checks the part against the template', () => {
+    const bad = ruled.replace('building_entry/builder"]', 'building_entry/nothing"]');
+    expect(profileOf(bad).diagnostics.map((d) => [d.code, d.message])).toMatchObject([
+      ['profile-unknown-path', /No widget of provinceview has the path/],
+    ]);
+  });
+});
+
 describe('sampleData', () => {
   it('fills texts from the save, the files and the generated layer, and counts them', async () => {
     const { profile } = profileOf(PROFILE);
