@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.9.0](https://github.com/happy-dwarf-team/etch/compare/v2.8.1...v2.9.0) (2026-11-12)
+
+
+### Features
+
+* run a selected script in the live game ([#388](https://github.com/happy-dwarf-team/etch/issues/388)) ([8d61a43](https://github.com/happy-dwarf-team/etch/commit/8d61a43a705d7714e6529c365984163f28a28055))
+
 ## [2.8.1](https://github.com/happy-dwarf-team/etch/compare/v2.8.0...v2.8.1) (2026-11-12)
 
 
