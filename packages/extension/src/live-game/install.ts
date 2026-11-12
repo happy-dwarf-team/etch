@@ -709,5 +709,7 @@ function isInside(path: string, folder: string): boolean {
 }
 
 function slashed(path: string): string {
-  return resolve(path).replace(/\\/g, '/').replace(/\/+$/, '');
+  const resolved = resolve(path).replace(/\\/g, '/').replace(/\/+$/, '');
+  // The game runs under Wine or Proton off Windows, where `/run/x` would be read against C:; Z: is the host's root.
+  return process.platform === 'win32' || !resolved.startsWith('/') ? resolved : `Z:${resolved}`;
 }

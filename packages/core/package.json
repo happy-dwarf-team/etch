@@ -11,7 +11,8 @@
     "./playset": "./src/playset/index.ts",
     "./corpus": "./src/corpus/index.ts",
     "./profile": "./src/profile/index.ts",
-    "./save": "./src/save/index.ts"
+    "./save": "./src/save/index.ts",
+    "./pipe": "./src/pipe/index.ts"
   },
   "scripts": {
     "typecheck": "tsc -p ."

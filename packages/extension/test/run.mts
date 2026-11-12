@@ -10,5 +10,13 @@ await runTests({
   version: process.env['ETCH_VSCODE_VERSION'] ?? 'stable',
   extensionDevelopmentPath: root,
   extensionTestsPath: path.join(root, 'dist-test', 'suite.js'),
-  launchArgs: ['--disable-extensions', '--disable-workspace-trust', '--skip-welcome'],
+  launchArgs: [
+    '--disable-extensions',
+    '--disable-workspace-trust',
+    '--skip-welcome',
+    // Extra switches for VS Code and Electron, space separated: a machine without a GPU needs
+    // "--use-gl=angle --use-angle=swiftshader --enable-unsafe-swiftshader --ignore-gpu-blocklist" for WebGL2,
+    // and a container "--no-sandbox".
+    ...(process.env['ETCH_VSCODE_ARGS']?.split(/\s+/).filter((arg) => arg !== '') ?? []),
+  ],
 });

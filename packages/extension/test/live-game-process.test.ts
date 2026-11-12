@@ -1,5 +1,5 @@
 import { spawn, type ChildProcess } from 'node:child_process';
-import { realpathSync } from 'node:fs';
+import { mkdtempSync, realpathSync } from 'node:fs';
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { createServer, type Server } from 'node:net';
 import { tmpdir } from 'node:os';
@@ -29,7 +29,14 @@ import {
 import { watch } from '../src/live-game/watchdog.ts';
 
 // The Win32 helper runs in Windows PowerShell, about a second per call.
-const windows = process.platform === 'win32' ? describe : describe.skip;
+const windows =
+  process.platform === 'win32' || process.platform === 'linux' ? describe : describe.skip;
+// Off Windows the fake games serve their pipes as Unix sockets in this folder, and connections to them are direct
+// (no socket): ETCH_PIPE_DIRECT names it for the child processes too.
+const pipeDir = mkdtempSync(join(tmpdir(), 'etch-pipes-'));
+if (process.platform !== 'win32') process.env['ETCH_PIPE_DIRECT'] = pipeDir;
+const serverPath = (session: string): string =>
+  process.platform === 'win32' ? pipePath(session) : join(pipeDir, `etch-host-${session}`);
 const TIMEOUT = 60_000;
 const FAKE_GAME = join(dirname(fileURLToPath(import.meta.url)), 'fixtures', 'fake-game.mts');
 
@@ -58,8 +65,9 @@ async function sleeper(): Promise<{ child: ChildProcess; identity: ProcessIdenti
   return { child, identity };
 }
 
+// A process killed by a signal (Linux) has a signalCode and no exitCode, so both count as exited.
 const exited = (child: ChildProcess) =>
-  child.exitCode !== null
+  child.exitCode !== null || child.signalCode !== null
     ? Promise.resolve()
     : new Promise<void>((resolve) =>
         child.once('exit', () => {
@@ -201,6 +209,9 @@ windows('the lock', () => {
   );
 });
 
+// These tests listen on the pipe path itself (Node makes a socket of it), so they connect to it directly, as on Windows.
+const direct = { env: {}, homedir: '', platform: 'linux', direct: pipeDir } as const;
+
 describe('the session pipe', () => {
   let server: Server | undefined;
   afterEach(() => {
@@ -226,7 +237,7 @@ describe('the session pipe', () => {
       });
     });
     const listening = server;
-    await new Promise<void>((resolve) => listening.listen(pipePath(session), resolve));
+    await new Promise<void>((resolve) => listening.listen(serverPath(session), resolve));
   }
 
   const hello = (session: string) => ({
@@ -265,8 +276,8 @@ describe('the session pipe', () => {
       });
     });
     const listening = server;
-    await new Promise<void>((resolve) => listening.listen(pipePath(session), resolve));
-    const pipe = await HostPipe.connect(session);
+    await new Promise<void>((resolve) => listening.listen(serverPath(session), resolve));
+    const pipe = await HostPipe.connect(session, 2_000, direct);
     const pushes: unknown[] = [];
     const stop = pipe.onEvent((event) => pushes.push(event));
     expect(await pipe.pickMode({ on: true, front: true })).toEqual({
@@ -297,7 +308,7 @@ describe('the session pipe', () => {
             game_session: { ironman: false, multiplayer: true, number: 2 },
           },
     );
-    const pipe = await HostPipe.connect(session);
+    const pipe = await HostPipe.connect(session, 2_000, direct);
     expect(pipe.hello.pid).toBe(42);
     expect(pipe.hello.tree).toBe(true);
     expect(await pipe.ping()).toEqual({
@@ -334,7 +345,7 @@ describe('the session pipe', () => {
         run_ms: 71,
       };
     });
-    const pipe = await HostPipe.connect(session);
+    const pipe = await HostPipe.connect(session, 2_000, direct);
     const reload = await pipe.reload({
       lines: ['reload provinceview.gui'],
       check: ['interface/provinceview.gui'],
@@ -378,7 +389,9 @@ describe('the session pipe', () => {
   it('refuses a plugin that answers for another session', async () => {
     const session = newSessionId();
     await plugin(session, () => hello('f'.repeat(32)));
-    await expect(HostPipe.connect(session)).rejects.toMatchObject({ code: 'wrong_session' });
+    await expect(HostPipe.connect(session, 2_000, direct)).rejects.toMatchObject({
+      code: 'wrong_session',
+    });
   });
 
   it("passes on the plugin's error", async () => {
@@ -392,7 +405,7 @@ describe('the session pipe', () => {
             message: 'reload is not available in multiplayer',
           },
     );
-    const pipe = await HostPipe.connect(session);
+    const pipe = await HostPipe.connect(session, 2_000, direct);
     const failure = pipe.reload({ lines: ['reloadloc'] });
     await expect(failure).rejects.toBeInstanceOf(PipeError);
     await expect(failure).rejects.toMatchObject({
@@ -422,6 +435,7 @@ windows('LiveGameProcess', () => {
     async () => {
       const lock: LockOptions = { path: join(temp, 'game-host.lock'), owner: await self() };
       const host = await LiveGameProcess.start({
+        launcher: 'direct',
         install: install([lock.path, '500']),
         originalGameFolder: temp,
         lock,
@@ -445,6 +459,7 @@ windows('LiveGameProcess', () => {
       const lock: LockOptions = { path: join(temp, 'game-host.lock'), owner: await self() };
       await expect(
         LiveGameProcess.start({
+          launcher: 'direct',
           install: install([lock.path, '60000', 'exit']),
           originalGameFolder: temp,
           lock,
@@ -460,6 +475,7 @@ windows('LiveGameProcess', () => {
     async () => {
       const lock: LockOptions = { path: join(temp, 'game-host.lock'), owner: await self() };
       const host = await LiveGameProcess.start({
+        launcher: 'direct',
         install: install([lock.path, '2500', 'loading']),
         originalGameFolder: temp,
         lock,
@@ -480,6 +496,7 @@ windows('LiveGameProcess', () => {
       const lock: LockOptions = { path: join(temp, 'game-host.lock'), owner: await self() };
       await expect(
         LiveGameProcess.start({
+          launcher: 'direct',
           install: install([lock.path, '200', 'mute-start']),
           originalGameFolder: temp,
           lock,
@@ -497,6 +514,7 @@ windows('LiveGameProcess', () => {
     async () => {
       const lock: LockOptions = { path: join(temp, 'game-host.lock'), owner: await self() };
       const host = await LiveGameProcess.start({
+        launcher: 'direct',
         install: install([lock.path, '200', 'freeze']),
         originalGameFolder: temp,
         lock,
@@ -533,6 +551,7 @@ windows('LiveGameProcess', () => {
     async () => {
       const lock: LockOptions = { path: join(temp, 'game-host.lock'), owner: await self() };
       const host = await LiveGameProcess.start({
+        launcher: 'direct',
         install: install([lock.path, '200', 'mute']),
         originalGameFolder: temp,
         lock,

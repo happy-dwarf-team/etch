@@ -2,7 +2,8 @@
 // lines, every request answered once by its id, and the plugin's pushes (picks, their snapshots and
 // pick mode changes), which carry an `event` instead. Node only, no vscode.
 import { randomBytes } from 'node:crypto';
-import { connect, type Socket } from 'node:net';
+import type { Socket } from 'node:net';
+import { openPipe, type BridgeEnvironment } from '@etch/core/pipe';
 
 export const PROTOCOL_VERSION = 2;
 
@@ -393,22 +394,15 @@ export class HostPipe {
    * Connects and greets the plugin. Rejects with `PipeError` `no_pipe` while the pipe is not up
    * yet (or busy), and with the plugin's error code when it refuses the handshake.
    */
-  static async connect(session: string, timeoutMs = 2_000): Promise<HostPipe> {
-    const socket = await new Promise<Socket>((resolve, reject) => {
-      const s = connect(pipePath(session));
-      s.once('connect', () => {
-        s.removeAllListeners('error');
-        resolve(s);
-      });
-      s.once('error', (error: NodeJS.ErrnoException) => {
-        s.destroy();
-        reject(
-          new PipeError(
-            'no_pipe',
-            `The live game's pipe is not up (${error.code ?? error.message}).`,
-          ),
-        );
-      });
+  static async connect(
+    session: string,
+    timeoutMs = 2_000,
+    bridge?: BridgeEnvironment,
+  ): Promise<HostPipe> {
+    // Windows opens the pipe itself; elsewhere the connection goes through the socket the plugin serves under Wine.
+    const socket = await openPipe(pipePath(session), bridge).catch((error: unknown) => {
+      const { code, message } = error as NodeJS.ErrnoException;
+      throw new PipeError('no_pipe', `The live game's pipe is not up (${code ?? message}).`);
     });
     const waiting = new Map<number, Waiting>();
     const listeners = new Set<(event: PipeEvent) => void>();

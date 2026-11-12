@@ -38,6 +38,27 @@ gets `unknown_type`; their description is in this page's history on
   connected. When the client disconnects, the plugin waits for the next one,
   which starts again with the handshake.
 
+## Finding the session on Linux
+
+Wine and Proton keep named pipes inside the wineserver, so the extension, a native Linux process, cannot open the
+session pipe. Under Wine the plugin therefore also serves the session on a socket on `127.0.0.1`. The protocol on it is
+the one of the rest of this document. Windows is unchanged: the plugin starts no socket there.
+
+- The extension makes a folder with mode `0700` for the state files and starts `eu4.exe` with `ETCH_HOST_BRIDGE_DIR`
+  set to its Unix path (next to `ETCH_HOST_SESSION`). Without the variable the plugin uses `etch/` in the XDG state
+  folder, found through `WINEHOMEDIR`.
+- The plugin writes `{"port": N, "token": "...", "pid": N}` to `<folder>/etch-host-<id>.json`, once it listens. The token
+  is 128 random bits, made at every start of the plugin.
+- A client connects to the port and sends one line, `RELAY <token> etch-host-<id>`. The answer is `OK`, after which the
+  stream is the one under "Framing", or `ERR <reason>` and a close: `bad request` (no such line within five seconds),
+  `bad token`, `pipe not served` (another name), `wrong user`, `busy` (a client was let in already).
+- One client at a time, as on the pipe. The place is taken only by a client that was let in, so a program that merely
+  connects cannot keep Etch out.
+- The plugin looks the connection up in the host's `/proc/net/tcp` and refuses a client of another Linux user, so a token
+  that reaches them is of no use. Where the table cannot be read, the token alone decides (the log says so).
+- A game that restarts itself (Exit to Main Menu) starts a new plugin with a new token, so the extension reads the file
+  again for the child, as it matches the pipe by `pid` and `process_start_ms`.
+
 ## Framing
 
 - Byte stream, UTF-8. Each message is one JSON object (RFC 8259) on one line,

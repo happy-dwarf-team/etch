@@ -5,7 +5,10 @@
 // what Etch started. Node only, no vscode.
 import { spawn, type ChildProcess } from 'node:child_process';
 import { readFile, realpath, stat, unlink, writeFile } from 'node:fs/promises';
+import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
+import { bridgeFolder } from '@etch/core/pipe';
+import { hostRemove, hostShell, hostSpawn, shellQuote } from './host.ts';
 import type { PreparedInstall } from './install.ts';
 import {
   HostPipe,
@@ -16,6 +19,13 @@ import {
   type PipeEvent,
   type ReloadRequest,
 } from './pipe.ts';
+import {
+  ProtonError,
+  findProton,
+  protonCommand,
+  windowsPathOf,
+  type ProtonSetup,
+} from './proton.ts';
 import {
   childProcesses,
   creationUnixMs,
@@ -251,6 +261,18 @@ export interface StartOptions {
   readonly log?: (message: string) => void;
   /** Cancels the start: the game is closed and the lock released. */
   readonly signal?: AbortSignal;
+  /**
+   * How the game is started: `direct` runs `eu4.exe` as a process (Windows), `proton` through Steam's compatibility
+   * tool (Linux), where the plugin serves the session on a socket as well. Proton when not given on Linux.
+   */
+  readonly launcher?: 'direct' | 'proton';
+}
+
+/** How a start launches the game. */
+export function launcherOf(options: {
+  readonly launcher?: 'direct' | 'proton';
+}): 'direct' | 'proton' {
+  return options.launcher ?? (process.platform === 'win32' ? 'direct' : 'proton');
 }
 
 /** Times from process creation, in milliseconds. */
@@ -327,29 +349,39 @@ export class LiveGameProcess {
     let identity: ProcessIdentity | undefined;
     try {
       const { install } = options;
-      child = spawn(install.exe, [...install.arguments], {
-        cwd: install.gameFolder,
-        env: gameEnvironment(process.env, session),
-        stdio: 'ignore',
-        windowsHide: false,
-      });
-      const started = child;
-      const exited = new Promise<number | null>((resolve) => {
-        started.once('exit', (code) => {
-          resolve(code);
+      let exited: Promise<number | null>;
+      if (launcherOf(options) === 'direct') {
+        child = spawn(install.exe, [...install.arguments], {
+          cwd: install.gameFolder,
+          env: gameEnvironment(process.env, session),
+          stdio: 'ignore',
+          windowsHide: false,
         });
-      });
-      await new Promise<void>((resolve, reject) => {
-        started.once('spawn', resolve);
-        started.once('error', reject);
-      });
-      if (started.pid === undefined) throw new Error('The live game did not start.');
-      identity = await processIdentity(started.pid);
-      if (identity === undefined) throw new Error('The live game exited at once.');
-      // Windows reports the image's final path, after any junction or link on the way.
-      const expected = await realpath(install.exe);
-      if (normalizePath(identity.imagePath) !== normalizePath(expected)) {
-        throw new Error(`PID ${String(started.pid)} is ${identity.imagePath}, not the live game.`);
+        const started = child;
+        exited = new Promise<number | null>((resolve) => {
+          started.once('exit', (code) => {
+            resolve(code);
+          });
+        });
+        await new Promise<void>((resolve, reject) => {
+          started.once('spawn', resolve);
+          started.once('error', reject);
+        });
+        if (started.pid === undefined) throw new Error('The live game did not start.');
+        identity = await processIdentity(started.pid);
+        if (identity === undefined) throw new Error('The live game exited at once.');
+        // Windows reports the image's final path, after any junction or link on the way.
+        const expected = await realpath(install.exe);
+        if (normalizePath(identity.imagePath) !== normalizePath(expected)) {
+          throw new Error(
+            `PID ${String(started.pid)} is ${identity.imagePath}, not the live game.`,
+          );
+        }
+      } else {
+        const launched = await startUnderProton(options, session, log);
+        child = launched.child;
+        identity = launched.identity;
+        exited = launched.exited;
       }
       await writeLock(options, session, identity);
       log(`Live game started: PID ${String(identity.pid)}, session ${session}.`);
@@ -357,6 +389,7 @@ export class LiveGameProcess {
     } catch (error) {
       if (identity !== undefined) await closeGame(identity, options.originalGameFolder, log);
       else if (child?.exitCode === null) child.kill();
+      if (launcherOf(options) === 'proton') await removeSessionState(session);
       await releaseLock(options.lock);
       throw error;
     }
@@ -439,7 +472,13 @@ export class LiveGameProcess {
         }
       }
       const { hello } = pipe;
-      if (hello.pid !== identity.pid || Math.abs(hello.process_start_ms - created) > 1) {
+      // Under Wine the plugin reports the Windows process id and a start time read from another clock, so neither can
+      // equal the Linux process: the session id, 128 random bits only the game was given, names the pipe instead.
+      const underWine = launcherOf(options) === 'proton';
+      if (
+        (!underWine && hello.pid !== identity.pid) ||
+        Math.abs(hello.process_start_ms - created) > (underWine ? WINE_START_TOLERANCE_MS : 1)
+      ) {
         throw new Error(
           `The pipe answered for PID ${String(hello.pid)} started at ${String(hello.process_start_ms)}, ` +
             `not the live game (PID ${String(identity.pid)} at ${String(created)}).`,
@@ -605,6 +644,7 @@ export class LiveGameProcess {
     ).catch((error: unknown) => {
       this.options.log?.(`Crash reporters not checked: ${String(error)}`);
     });
+    if (launcherOf(this.options) === 'proton') await removeSessionState(this.session);
     await releaseLock(this.options.lock);
   }
 }
@@ -646,6 +686,84 @@ async function writeLock(
 }
 
 /** Resolves when a process that is not Node's child ends; its exit code is not known. */
+/** How far the plugin's start time may be from the one read from /proc: boot time is only known to the second. */
+const WINE_START_TOLERANCE_MS = 5_000;
+/** How long Proton may take to bring up the game's own process. */
+const PROTON_PROCESS_TIMEOUT_MS = 90_000;
+
+/**
+ * Starts the game through Proton, the way Steam does (docs/live-game.md, "On Linux"), and finds its own process: the
+ * `eu4.exe` of the install that appeared after the launch (its image is the command line's first word, a Windows
+ * path). What is spawned is Proton's launcher, so that process is not the game and its exit is not the game's.
+ * Under Wine the plugin serves the session on a socket as well; the folder for its state file is made here (mode 0700)
+ * and passed as `ETCH_HOST_BRIDGE_DIR`.
+ */
+async function startUnderProton(
+  options: StartOptions,
+  session: string,
+  log: (message: string) => void,
+): Promise<{ child: ChildProcess; identity: ProcessIdentity; exited: Promise<number | null> }> {
+  const { install } = options;
+  const setup: ProtonSetup = await findProton(options.originalGameFolder, {
+    env: process.env,
+    homedir: homedir(),
+  }).catch((error: unknown) => {
+    throw error instanceof ProtonError ? error : new ProtonError(String(error));
+  });
+  const bridge = bridgeFolder();
+  await hostShell(`mkdir -p ${shellQuote(bridge)} && chmod 700 ${shellQuote(bridge)}`);
+  const launch = protonCommand(setup, 'waitforexitandrun', install.exe, install.arguments, {
+    cwd: install.gameFolder,
+    installPath: install.gameFolder,
+    extraPaths: [dirname(install.gameFolder)],
+    env: { ETCH_HOST_SESSION: session, ETCH_HOST_BRIDGE_DIR: bridge },
+  });
+  const spawnedAt = Date.now();
+  const child = hostSpawn(launch.command, launch.args, { cwd: launch.cwd, env: launch.env });
+  const launcherExit = new Promise<number | null>((resolve) => {
+    child.once('exit', (code) => {
+      resolve(code);
+    });
+  });
+  await new Promise<void>((resolve, reject) => {
+    child.once('spawn', resolve);
+    child.once('error', reject);
+  });
+  log(`Started ${setup.toolName} for the live game.`);
+
+  const wanted = new Set([
+    normalizePath(windowsPathOf(install.exe)),
+    normalizePath(windowsPathOf(await realpath(install.exe))),
+  ]);
+  const deadline = Date.now() + PROTON_PROCESS_TIMEOUT_MS;
+  for (;;) {
+    const found = (await processesNamed(GAME_EXE).catch(() => []))
+      .filter(
+        (process) =>
+          wanted.has(normalizePath(process.imagePath)) &&
+          creationUnixMs(process) >= spawnedAt - 5_000,
+      )
+      .sort((a, b) => creationUnixMs(b) - creationUnixMs(a))[0];
+    if (found !== undefined) {
+      return { child, identity: found, exited: waitForExit(found) };
+    }
+    if (child.exitCode !== null || Date.now() > deadline) {
+      throw new HostCrashedError(
+        child.exitCode === null
+          ? 'Proton did not bring up the live game.'
+          : `Proton ended (exit ${String(child.exitCode)}) before the live game started.`,
+      );
+    }
+    await delay(250);
+    void launcherExit;
+  }
+}
+
+/** Removes the session's state file of the plugin's socket (Proton): once the game has ended it is of no use. */
+async function removeSessionState(session: string): Promise<void> {
+  await hostRemove(join(bridgeFolder(), `etch-host-${session}.json`)).catch(() => undefined);
+}
+
 async function waitForExit(identity: ProcessIdentity): Promise<number | null> {
   for (;;) {
     await delay(ADOPTED_POLL_MS);

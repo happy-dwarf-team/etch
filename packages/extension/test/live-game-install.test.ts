@@ -136,6 +136,10 @@ const prepare = (folder = game, into = layout, continueSave?: string | SaveFile)
     continueSave,
   });
 
+/** A path as the game is told it: forward slashes, and off Windows `Z:` (Wine's root) before a unix path. */
+const gamePath = (path: string): string =>
+  process.platform === 'win32' ? path.replaceAll('\\', '/') : `Z:${path}`;
+
 describe('prepareInstall', () => {
   it('links the folders, copies the top-level files and installs the pinned builds', async () => {
     const before = await snapshot(game);
@@ -159,7 +163,7 @@ describe('prepareInstall', () => {
     expect(prepared.restored).toHaveLength(Object.keys(PINNED).length);
     expect(prepared.exe).toBe(join(layout.game, 'eu4.exe'));
     expect(prepared.gameFolder).toBe(layout.game);
-    expect(prepared.arguments).toEqual([`-userdir=${layout.profile.replaceAll('\\', '/')}/`]);
+    expect(prepared.arguments).toEqual([`-userdir=${gamePath(layout.profile)}/`]);
     // The player's game folder is only read.
     expect(await snapshot(game)).toEqual(before);
   });
@@ -174,7 +178,7 @@ describe('prepareInstall', () => {
       enabled_mods: ['mod/mod-001.mod', 'mod/mod-002.mod'],
       disabled_dlcs: [],
     });
-    const slash = (p: string) => p.replaceAll('\\', '/');
+    const slash = gamePath;
     expect(await readFile(join(layout.profile, 'mod', 'mod-001.mod'), 'utf8')).toBe(
       `name="Base"\npath="${slash(join(temp, 'base'))}"\n`,
     );
@@ -217,7 +221,7 @@ describe('prepareInstall', () => {
     );
     expect(prepared.arguments).toEqual([
       '-continue=Verne1444_11_11.eu4',
-      `-userdir=${layout.profile.replaceAll('\\', '/')}/`,
+      `-userdir=${gamePath(layout.profile)}/`,
     ]);
     expect(prepared.savesFolder).toBe(join(layout.profile, 'save games'));
     // The player's profile is only read.
@@ -396,14 +400,20 @@ describe('privateDescriptor', () => {
   it("replaces the descriptor's path and archive with the mod's folder", () => {
     const text =
       'name="X"\narchive="mod/x.zip"\n  path = "mod/x"\nsupported_version="v1.37.*.*"\n\n';
-    expect(privateDescriptor({ name: 'X', root: 'D:\\mods\\x' }, text)).toBe(
-      'name="X"\nsupported_version="v1.37.*.*"\npath="D:/mods/x"\n',
+    // A Windows drive path only resolves to itself on Windows; elsewhere the mod's folder is a POSIX path.
+    const windows = process.platform === 'win32';
+    expect(privateDescriptor({ name: 'X', root: windows ? 'D:\\mods\\x' : '/mods/x' }, text)).toBe(
+      `name="X"\nsupported_version="v1.37.*.*"\npath="${windows ? 'D:/mods/x' : 'Z:/mods/x'}"\n`,
     );
   });
 
   it('names a mod without a descriptor after itself', () => {
-    expect(privateDescriptor({ name: 'Say "hi"', root: 'D:\\mods\\hi\\' }, undefined)).toBe(
-      `name="Say 'hi'"\npath="D:/mods/hi"\n`,
-    );
+    const windows = process.platform === 'win32';
+    expect(
+      privateDescriptor(
+        { name: 'Say "hi"', root: windows ? 'D:\\mods\\hi\\' : '/mods/hi/' },
+        undefined,
+      ),
+    ).toBe(`name="Say 'hi'"\npath="${windows ? 'D:/mods/hi' : 'Z:/mods/hi'}"\n`);
   });
 });

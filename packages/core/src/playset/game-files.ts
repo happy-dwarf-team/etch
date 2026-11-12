@@ -30,6 +30,16 @@ interface DirEntry {
 }
 
 /**
+ * A folder's entries by lower-case name, and the folder's path on disk relative to the layer's
+ * root, in the case the disk has: a request for `INTERFACE` finds `interface` on a case-sensitive
+ * file system too (Linux, macOS), as it does on Windows.
+ */
+interface Listing {
+  actualDir: string;
+  entries: Map<string, DirEntry>;
+}
+
+/**
  * The game's files as a playset sees them: the game folder, then each mod in load order, where a
  * later layer's file wins over an earlier one with the same path, as in the game. Paths compare
  * without regard to case and separator, as on Windows. Read only: nothing here writes to disk.
@@ -40,7 +50,7 @@ interface DirEntry {
 export class GameFiles {
   readonly layers: readonly GameFilesLayer[];
   private readonly replaced: ReadonlySet<string>[];
-  private readonly listings = new Map<string, Promise<Map<string, DirEntry>>>();
+  private readonly listings = new Map<string, Promise<Listing>>();
 
   constructor(layers: readonly GameFilesLayer[]) {
     this.layers = layers;
@@ -56,8 +66,9 @@ export class GameFiles {
     const dir = parts.join('/');
     const key = fileName.toLowerCase();
     for (let i = this.layers.length - 1; i >= this.firstVisibleLayer(dir); i--) {
-      const entry = (await this.listing(i, dir)).get(key);
-      if (entry?.isFile === true) return this.file(i, dir, entry.name);
+      const listing = await this.listing(i, dir);
+      const entry = listing.entries.get(key);
+      if (entry?.isFile === true) return this.file(i, dir, listing.actualDir, entry.name);
     }
     return undefined;
   }
@@ -80,9 +91,10 @@ export class GameFiles {
     const suffix = extension?.toLowerCase();
     const winners = new Map<string, GameFile>();
     for (let i = this.firstVisibleLayer(folder); i < this.layers.length; i++) {
-      for (const [key, entry] of await this.listing(i, folder)) {
+      const listing = await this.listing(i, folder);
+      for (const [key, entry] of listing.entries) {
         if (!entry.isFile || (suffix !== undefined && !key.endsWith(suffix))) continue;
-        winners.set(key, this.file(i, folder, entry.name));
+        winners.set(key, this.file(i, folder, listing.actualDir, entry.name));
       }
     }
     return [...winners.entries()]
@@ -101,7 +113,7 @@ export class GameFiles {
     const folder = parts.join('/');
     const found = new Map<string, string>();
     for (let i = 0; i < this.layers.length; i++) {
-      for (const [key, entry] of await this.listing(i, folder)) {
+      for (const [key, entry] of (await this.listing(i, folder)).entries) {
         if (entry.isDirectory && !found.has(key)) {
           found.set(key, folder === '' ? entry.name : `${folder}/${entry.name}`);
         }
@@ -120,22 +132,35 @@ export class GameFiles {
     return 0;
   }
 
-  private file(layerIndex: number, dir: string, name: string): GameFile {
+  private file(layerIndex: number, dir: string, actualDir: string, name: string): GameFile {
     const layer = this.layers[layerIndex];
     if (layer === undefined) throw new RangeError(`No layer ${String(layerIndex)}`);
     const path = dir === '' ? name : `${dir}/${name}`;
-    return { path, absolutePath: join(layer.root, ...path.split('/')), layer };
+    const onDisk = actualDir === '' ? name : `${actualDir}/${name}`;
+    return { path, absolutePath: join(layer.root, ...onDisk.split('/')), layer };
   }
 
-  private listing(layerIndex: number, dir: string): Promise<Map<string, DirEntry>> {
+  /** The entries of a game-relative folder in one layer; each segment is found through its parent's listing. */
+  private listing(layerIndex: number, dir: string): Promise<Listing> {
     const cacheKey = `${String(layerIndex)}\0${dir.toLowerCase()}`;
     let listing = this.listings.get(cacheKey);
     if (listing === undefined) {
-      const root = this.layers[layerIndex]?.root;
-      listing = root === undefined ? Promise.resolve(new Map()) : readListing(join(root, dir));
+      listing = this.readFolder(layerIndex, dir);
       this.listings.set(cacheKey, listing);
     }
     return listing;
+  }
+
+  private async readFolder(layerIndex: number, dir: string): Promise<Listing> {
+    const root = this.layers[layerIndex]?.root;
+    if (root === undefined) return { actualDir: '', entries: new Map() };
+    if (dir === '') return { actualDir: '', entries: await readListing(root) };
+    const slash = dir.lastIndexOf('/');
+    const parent = await this.listing(layerIndex, slash < 0 ? '' : dir.slice(0, slash));
+    const entry = parent.entries.get(dir.slice(slash + 1).toLowerCase());
+    if (entry?.isDirectory !== true) return { actualDir: '', entries: new Map() };
+    const actualDir = parent.actualDir === '' ? entry.name : `${parent.actualDir}/${entry.name}`;
+    return { actualDir, entries: await readListing(join(root, ...actualDir.split('/'))) };
   }
 }
 

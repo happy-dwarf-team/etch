@@ -15,14 +15,14 @@ constexpr std::size_t kCreateDeviceEx = 20;  // IDirect3D9Ex
 constexpr std::size_t kPresent = 17;         // IDirect3DDevice9
 constexpr std::size_t kPresentEx = 121;      // IDirect3DDevice9Ex
 
-using Create9Fn = IDirect3D9*(WINAPI)(UINT);
-using Create9ExFn = HRESULT(WINAPI)(UINT, IDirect3D9Ex**);
-using CreateDeviceFn = HRESULT(STDMETHODCALLTYPE)(IDirect3D9*, UINT, D3DDEVTYPE, HWND, DWORD, D3DPRESENT_PARAMETERS*,
+using Create9Fn = IDirect3D9* WINAPI(UINT);
+using Create9ExFn = HRESULT WINAPI(UINT, IDirect3D9Ex**);
+using CreateDeviceFn = HRESULT STDMETHODCALLTYPE(IDirect3D9*, UINT, D3DDEVTYPE, HWND, DWORD, D3DPRESENT_PARAMETERS*,
                                                   IDirect3DDevice9**);
-using CreateDeviceExFn = HRESULT(STDMETHODCALLTYPE)(IDirect3D9Ex*, UINT, D3DDEVTYPE, HWND, DWORD,
+using CreateDeviceExFn = HRESULT STDMETHODCALLTYPE(IDirect3D9Ex*, UINT, D3DDEVTYPE, HWND, DWORD,
                                                     D3DPRESENT_PARAMETERS*, D3DDISPLAYMODEEX*, IDirect3DDevice9Ex**);
-using PresentFn = HRESULT(STDMETHODCALLTYPE)(IDirect3DDevice9*, const RECT*, const RECT*, HWND, const RGNDATA*);
-using PresentExFn = HRESULT(STDMETHODCALLTYPE)(IDirect3DDevice9Ex*, const RECT*, const RECT*, HWND, const RGNDATA*,
+using PresentFn = HRESULT STDMETHODCALLTYPE(IDirect3DDevice9*, const RECT*, const RECT*, HWND, const RGNDATA*);
+using PresentExFn = HRESULT STDMETHODCALLTYPE(IDirect3DDevice9Ex*, const RECT*, const RECT*, HWND, const RGNDATA*,
                                                DWORD);
 
 // A hook placed once, at the first object's method; another object of the
