@@ -153,6 +153,36 @@ describe('reading a profile file', () => {
     expect(file.views[0]).toMatchObject({ removed: true, id: 'state' });
   });
 
+  it("reads a repeater's table and refuses weights or number columns it cannot use", () => {
+    const repeater = (table: string): string =>
+      `{ "formatVersion": 1, "window": "w", "repeaters": {
+        "w/buttons": { "template": "b", "place": { "table": ${table} } } } }`;
+    const { file, diagnostics } = readProfile(
+      repeater(
+        '{ "weights": [1, 3, 1], "numbers": [3], "label": "heading", "list": "default_listbox" }',
+      ),
+      VANILLA,
+    );
+    expect(diagnostics).toEqual([]);
+    const first = file?.repeaters[0];
+    expect(first !== undefined && 'place' in first ? first.place.table : undefined).toEqual({
+      weights: [1, 3, 1],
+      numbers: [3],
+      label: 'heading',
+      list: 'default_listbox',
+    });
+    expect(
+      readProfile(repeater('{ "weights": [1, 0] }'), VANILLA).diagnostics.map((d) => d.message),
+    ).toEqual(['"weights" of "table" is an array of whole numbers from 1, one for each column.']);
+    expect(
+      readProfile(repeater('{ "weights": [1, 1], "numbers": [3] }'), VANILLA).diagnostics.map(
+        (d) => d.message,
+      ),
+    ).toEqual([
+      '"numbers" of "table" lists the columns of numbers, from 1 to the number of "weights".',
+    ]);
+  });
+
   it('refuses a rule without effects and bounds outside resolution selectors', () => {
     const { diagnostics } = readProfile(
       `{ "formatVersion": 1, "window": "w",

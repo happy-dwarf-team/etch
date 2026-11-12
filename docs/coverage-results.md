@@ -528,10 +528,26 @@ code says where they go:
   buttons at 0, 121, 484, 606, 727 and 848 to the pixel at 1920×1080 (button width 100) and at 0,
   229, 916, 1234, 1463 and 1692 at 2560×1440 (width 120).
 
-The preview cannot draw them yet: a repeater makes one template's entries, these are two templates
-side by side with widths the code sets, and every page has its own columns. A page's columns are the
-code's data, so a profile could carry the great powers page's; that needs a repeater placement of its
-own, not done here.
+etch#399 draws them: a repeater's `place.table` puts its entries as the columns of a table, with a
+heading of another template beside each, and the base game's ledger profile carries the great
+powers page's columns (other table pages have their own). Offline preview, rules of `main` after
+etch#395 against etch#399:
+
+| Set | Rects compared, exact | Visibility | Views fully right |
+| --- | --- | --- | --- |
+| Verne, 1920×1080, fresh | 3618 → 3630, 3589 → 3601 | 99.77 → **99.89 %** (9966 of 9977) | 33 → 34 of 58 |
+| Verne, 1280×720, fresh | 2830 → 2842, 2811 → 2823 | 99.71 → **99.86 %** | 30 → 31 of 50 |
+| Anbennar + P2KE, 2560×1440, fresh | 3684 → 3696, 3627 → 3628 | 99.78 → **99.90 %** | 20 → 20 of 57 |
+| vanilla, 1920×1080, stored | 3628 → 3640, 3586 → 3598 | 99.35 → **99.47 %** | 31 → 32 of 60 |
+| Bigger UI, 1920×1080, stored | 3623 → 3635, 3582 → 3594 | 99.40 → **99.53 %** | 31 → 32 of 60 |
+| Anbennar alone, 1920×1080, stored | 3344 → 3356, 3332 exact | 99.75 → **99.89 %** | 32 → 33 of 52 |
+| Bluescale 1472, unseen | 3157 → 3169, 3145 exact | 99.63 → **99.79 %** | 26 → 27 of 44 |
+| Kobildzan 1594, unseen | 2734 → 2746, 2637 exact | 99.20 → 99.34 % | 17 → 18 of 43 |
+
+Every button and heading is right to the pixel at 1920×1080 and 1280×720. In the Anbennar playset at
+2560×1440 they are now drawn (visibility right), but 11 of the 12 stand a few pixels off: the game's
+list box there is 1839 px wide against the 1863 px of Proper 2K UI Enhanced's file, so its unit is
+229 and the preview's 232. Why the game's list is 24 px narrower was not read in the code.
 
 **Tried and dropped.** The map mode button on screen (`custom_mapmode_7` in every HUD view) is
 42 × 32 in the game against 41 × 31 for the others; `GFX_mapmode_selected` is 46 × 35, so it is not
