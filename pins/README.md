@@ -29,13 +29,11 @@ JSON; unknown fields are errors. Hashes are uppercase hexadecimal SHA-256.
 | `licenses` | `component`, `spdx` and `file` (an archive path among the files taken) of the build itself, first, and of each component compiled into it |
 
 Only what the live game loads is taken, with its licence texts: from Anvil
-`version.dll`, `anvil/anvil.toml` and all its standard plugins (`anvil/plugins/`:
-the game, map, script, inspector and log-throttle plugins, and the overlay),
-but not `AnvilManager.exe` or the example plugins. So the live game runs with
-the whole of Anvil, as a game started by a player does, and the notices of the
-overlay can appear in the captures. The licences of Dear ImGui and miniz, and
-the font licence (OFL-1.1) of Source Han Sans, which the overlay brings, are
-taken with them. From Bellows its whole plugin folder, which goes to
+`version.dll`, `anvil/anvil.toml`, `anvil-game`, `anvil-map` and `anvil-script`,
+but not `anvil-overlay` (its notices would be drawn into the captures),
+`anvil-inspector` and `anvil-log-throttle` (both need the overlay),
+`AnvilManager.exe` or the example plugins, and so not the licences of Dear
+ImGui and miniz, which only those contain. From Bellows its whole plugin folder, which goes to
 `anvil/plugins/bellows/`. From Tongs its plugin folder without `include/`
 (the headers of `tongs.ui` and `tongs.navigation`, which Etch's plugin
 vendors), to `anvil/plugins/tongs/`: the live game loads Tongs for those
@@ -49,7 +47,7 @@ in-process services only, and the private install removes `anvil/data/tongs/sett
 of the `windows` job:
 
 1. It checks the file: every field, and that each licence is MIT,
-   Apache-2.0, BSD-2-Clause, BSD-3-Clause, BSL-1.0, Zlib or OFL-1.1 (ADR 0004).
+   Apache-2.0, BSD-2-Clause, BSD-3-Clause, BSL-1.0 or Zlib (ADR 0004).
 2. It downloads each asset (kept by hash in
    `packages/extension/node_modules/.cache/etch-pins/`) and refuses it unless
    its SHA-256 is the pinned one.

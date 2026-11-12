@@ -14,15 +14,14 @@
       "files": [
         "version.dll",
         "anvil/anvil.toml",
-        "anvil/plugins/",
+        "anvil/plugins/anvil-game/",
+        "anvil/plugins/anvil-map/",
+        "anvil/plugins/anvil-script/",
         "anvil/docs/LICENSE",
         "anvil/docs/third-party/safetyhook-LICENSE.txt",
         "anvil/docs/third-party/zydis-LICENSE.txt",
         "anvil/docs/third-party/zycore-LICENSE.txt",
-        "anvil/docs/third-party/tomlplusplus-LICENSE.txt",
-        "anvil/docs/third-party/imgui-LICENSE.txt",
-        "anvil/docs/third-party/miniz-LICENSE.txt",
-        "anvil/docs/third-party/SourceHanSans-OFL.txt"
+        "anvil/docs/third-party/tomlplusplus-LICENSE.txt"
       ],
       "licenses": [
         { "component": "Anvil", "spdx": "MIT", "file": "anvil/docs/LICENSE" },
@@ -41,17 +40,6 @@
           "component": "toml++",
           "spdx": "MIT",
           "file": "anvil/docs/third-party/tomlplusplus-LICENSE.txt"
-        },
-        {
-          "component": "Dear ImGui",
-          "spdx": "MIT",
-          "file": "anvil/docs/third-party/imgui-LICENSE.txt"
-        },
-        { "component": "miniz", "spdx": "MIT", "file": "anvil/docs/third-party/miniz-LICENSE.txt" },
-        {
-          "component": "Source Han Sans",
-          "spdx": "OFL-1.1",
-          "file": "anvil/docs/third-party/SourceHanSans-OFL.txt"
         }
       ]
     },

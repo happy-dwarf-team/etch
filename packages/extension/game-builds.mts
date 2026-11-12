@@ -16,7 +16,6 @@ export const ALLOWED_LICENSES = [
   'BSD-3-Clause',
   'BSL-1.0',
   'Zlib',
-  'OFL-1.1',
 ] as const;
 export type AllowedLicense = (typeof ALLOWED_LICENSES)[number];
 
@@ -316,7 +315,6 @@ function isLicenseFile(path: string): boolean {
 export function detectLicense(text: string): AllowedLicense | undefined {
   const t = text.replace(/\s+/g, ' ');
   if (t.includes('Boost Software License - Version 1.0')) return 'BSL-1.0';
-  if (/SIL Open Font License,? Version 1\.1/i.test(t)) return 'OFL-1.1';
   if (/Apache License,? Version 2\.0/.test(t)) return 'Apache-2.0';
   if (t.includes('Permission is granted to anyone to use this software for any purpose')) {
     return 'Zlib';

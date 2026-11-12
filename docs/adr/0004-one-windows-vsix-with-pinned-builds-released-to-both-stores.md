@@ -28,10 +28,9 @@ secrets.
 ## Consequences
 
 - Everything inside the VSIX (extension dependencies, the plugin and the pinned
-  builds) must be MIT, Apache-2.0, BSD, BSL-1.0, Zlib or OFL-1.1; BSL-1.0 is
-  admitted because Anvil compiles in SafetyHook, Zlib (added 2026-11-12) because
-  Bellows compiles in zlib from 0.18, and OFL-1.1 because the font of Anvil's
-  overlay (Source Han Sans) comes under it. Pinned builds go in unchanged with their own
+  builds) must be MIT, Apache-2.0, BSD, BSL-1.0 or Zlib; BSL-1.0 is admitted
+  because Anvil compiles in SafetyHook, and Zlib (added 2026-11-12) because
+  Bellows compiles in zlib from 0.18. Pinned builds go in unchanged with their own
   licence files, `THIRD-PARTY-NOTICES.md` at the VSIX root lists every
   component, and no game asset is ever packaged.
 - A pinned build changes only through a hand-written `build(deps)` pull
