@@ -425,7 +425,7 @@
       "from": "provinces.{province}.great_projects",
       "count": 1,
       "hide": ["great_project_entry/progress_bar_window"],
-      "note": "Entries of great_project_entry (0x1398C30, etch#155), one per great project of the province. progress_bar_window shows only while the project is built up (hidden in every view of the coverage survey). A foreign province's entries show no upgrade, boost or move buttons (Kronborg, Anbennar's Imperial Palace), the player's own do (Falun Copper Mine); a rule cannot reach a repeater's entries yet, so the preview draws them.",
+      "note": "Entries of great_project_entry (0x1398C30, etch#155), one per great project of the province. progress_bar_window shows only while the project is built up (hidden in every view of the coverage survey). The rule foreign-great-projects hides their buttons in a foreign province.",
       "fields": {
         "great_project_entry/name_label": { "save": "entry", "transform": "localise" },
       },
@@ -522,6 +522,16 @@
         "provinceview/provinceview_bg_large",
         "provinceview/top_section_window/province_banner",
         "provinceview/province_window/queue_window",
+      ],
+    },
+    "foreign-great-projects": {
+      "note": "A foreign province's great projects show no upgrade, boost or move buttons (the coverage survey: Kronborg and Anbennar's Imperial Palace hide them, Falun Copper Mine in the player's own province shows them).",
+      "when": { "owner": "no" },
+      "hide": [
+        "provinceview/buildings_window/great_projects_window/great_projects_list/great_project_entry/build_upgrade_button",
+        "provinceview/buildings_window/great_projects_window/great_projects_list/great_project_entry/move_button",
+        "provinceview/buildings_window/great_projects_window/great_projects_list/great_project_entry/use_manpower_to_boost_button",
+        "provinceview/buildings_window/great_projects_window/great_projects_list/great_project_entry/use_money_to_boost_button",
       ],
     },
     "build-views": {

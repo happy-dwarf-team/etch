@@ -17,7 +17,7 @@ import type { LayoutContent } from '../layout/window.ts';
 import type { GuiFile, Widget } from '../model/gui.ts';
 import { scalarIn, valueIn } from '../save/save.ts';
 import type { ContentSource, GeneratedKind, Link, Placement, WindowProfile } from './format.ts';
-import { widgetsAt, windowPaths } from './paths.ts';
+import { entryPath, widgetsAt, windowPaths } from './paths.ts';
 import { readSavePath, type RepeaterEntry, type SaveChoice } from './save-paths.ts';
 import type { WindowView } from './view.ts';
 
@@ -209,6 +209,12 @@ export function sampleData(
   const rowStates = new Map<Widget, Map<Widget, LiveState>[]>();
   const lists: SampleList[] = [];
   const entrySprites = new Map<Widget, readonly string[]>();
+  // The rules of the view that show or hide parts of a repeater's entries (by the list's path and
+  // the path in the template): they apply to every entry, under a live snapshot's own state.
+  const valueOf = new Map(view?.selectors.map((s) => [s.selector.id, s.value]) ?? []);
+  const entryRules = profile.rules.filter((rule) =>
+    rule.when.every((c) => c.values.includes(valueOf.get(c.selector) ?? '')),
+  );
   for (const repeater of profile.repeaters) {
     const template = input.template?.(repeater.template);
     if (template === undefined) continue;
@@ -275,10 +281,26 @@ export function sampleData(
             if (state !== undefined) shown.set(entry.widget, state);
           }
         }
+        const fromLive = new Set(shown.keys());
         for (const ref of repeater.hide) {
           for (const widget of widgetsAt(template.widget, ref.path)) {
             if (!shown.has(widget)) {
               shown.set(widget, { visible: false, enabled: true, checked: false });
+            }
+          }
+        }
+        for (const rule of entryRules) {
+          for (const [refs, visible] of [
+            [rule.show, true],
+            [rule.hide, false],
+          ] as const) {
+            for (const ref of refs) {
+              const found = entryPath([repeater], ref.path);
+              if (found === undefined) continue;
+              for (const widget of widgetsAt(template.widget, found.inEntry)) {
+                if (!fromLive.has(widget))
+                  shown.set(widget, { visible, enabled: true, checked: false });
+              }
             }
           }
         }
