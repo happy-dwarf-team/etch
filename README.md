@@ -38,7 +38,7 @@ in the wayfinder maps in this repository's issues (label `wayfinder:map`).
 - One preview, drawn by the offline renderer, which needs no game: a window in
   one view, with sample data, close to how the game shows it.
 - The live game is the game itself, with Etch's Anvil plugin: reloads, pick
-  mode and live snapshots.
+  mode, live snapshots and Run selection (a selected script run in the game).
 - Precision is measured against the game, not claimed: the precision corpus
   of vanilla and Anbennar at seven resolutions from 1280×720 to 3440×1440, and
   Proper 2K UI Enhanced at the two it is made for. The preview also offers

@@ -178,6 +178,34 @@ function trimEnd(text: string, start: number, end: number): number {
   return stop;
 }
 
+/**
+ * Whether the selection's braces balance, outside comments and quoted strings: `undefined` when they
+ * do, else what is wrong. The game runs a block that does not close without a line in `error.log`
+ * (live, lab#156), so Etch refuses it before the game sees it; it checks nothing else.
+ */
+export function unbalancedBraces(text: string): string | undefined {
+  let depth = 0;
+  let quoted = false;
+  let comment = false;
+  for (const c of text) {
+    if (c === '\n') {
+      comment = false;
+      quoted = false;
+    } else if (comment) continue;
+    else if (quoted) {
+      if (c === '"') quoted = false;
+    } else if (c === '"') quoted = true;
+    else if (c === '#') comment = true;
+    else if (c === '{') depth++;
+    else if (c === '}') {
+      depth--;
+      if (depth < 0) return 'a `}` closes a block the selection did not open';
+    }
+  }
+  if (depth > 0) return `${String(depth)} \`{\` ${depth === 1 ? 'is' : 'are'} not closed`;
+  return undefined;
+}
+
 /** A stretch of time in which the live game's state may hold what a Run changed. */
 export interface RunSpan {
   readonly from: number;

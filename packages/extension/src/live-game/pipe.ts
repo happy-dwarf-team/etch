@@ -131,7 +131,7 @@ export interface SaveAnswer {
 /** The answer to a `run`: the console's `run <file>`, as for a `save`. */
 export interface RunAnswer {
   readonly success: boolean;
-  /** The console's answer: `<file> executed`, `No such file`, `Wrong format`. */
+  /** The console's answer: `<file> executed`; none for a file the game does not find (live). */
   readonly text: string;
   readonly ms: number;
   readonly queuedMs: number;

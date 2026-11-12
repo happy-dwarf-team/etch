@@ -8,6 +8,7 @@ import {
   mapRunErrors,
   newRunFile,
   readCheck,
+  unbalancedBraces,
 } from '../src/live-game/run-script.ts';
 
 describe('run files', () => {
@@ -135,6 +136,20 @@ describe('blockAtLine', () => {
     expect(at(5)).toBeUndefined();
     expect(at(6)).toBeUndefined();
     expect(at(7)).toBeUndefined();
+  });
+});
+
+describe('unbalancedBraces', () => {
+  it('passes balanced blocks, braces in comments and strings left out', () => {
+    expect(unbalancedBraces('a = { b = { c = 1 } }')).toBeUndefined();
+    expect(unbalancedBraces('a = { # }\n}')).toBeUndefined();
+    expect(unbalancedBraces('name = "{"\nx = 1')).toBeUndefined();
+  });
+
+  it('names an open block and a stray closing brace', () => {
+    expect(unbalancedBraces('capital_scope = {\nadd_base_tax = 1')).toBe('1 `{` is not closed');
+    expect(unbalancedBraces('a = { b = {')).toBe('2 `{` are not closed');
+    expect(unbalancedBraces('add_base_tax = 1 }')).toMatch(/closes a block/);
   });
 });
 

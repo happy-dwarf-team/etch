@@ -144,6 +144,24 @@ send yourself; no file or text of your mod goes in it. For a window Etch has no
 profile of, **Save as view** keeps what the game hid as a view of your mod's
 own profile.
 
+### Run selection
+
+In a script file of the playset, select an effect or a trigger and run it in
+the live game (also from the editor's context menu while the game runs):
+
+- **Etch: Run Selection in the Live Game** runs the effects in your country.
+- **Etch: Run Selection in the Province on Screen** runs them in the province
+  you have open in the game.
+- **Etch: Check Selection as Trigger in the Live Game** says whether the
+  trigger is true, in your country or the province on screen.
+
+With nothing selected, the statement on the cursor's line runs, with its
+block. The game's `error.log` lines from the run go to the Problems panel on
+the selection. A trigger the game cannot read counts as true: Etch then shows
+its error beside the answer. Run changes only the live game's private copy,
+never your own saves, and does not work in ironman or multiplayer games.
+**Continue** says when the newest private save was written after a Run.
+
 ## Etch 1.x
 
 Etch 2.0.0 replaced 1.x's game host and its diff view with the live game. To

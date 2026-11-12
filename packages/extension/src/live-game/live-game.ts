@@ -28,6 +28,7 @@ import {
   encodeScript,
   newRunFile,
   readCheck,
+  unbalancedBraces,
   type RunMode,
   type RunScope,
   type RunScript,
@@ -575,6 +576,14 @@ export class LiveGame implements vscode.Disposable {
         kind: 'refused',
         code: 'too_long',
         message: `the selection is longer than ${String(MAX_SCRIPT / 1024)} KiB`,
+      };
+    }
+    const braces = unbalancedBraces(selection);
+    if (braces !== undefined) {
+      return {
+        kind: 'refused',
+        code: 'unbalanced',
+        message: `the selection's braces do not balance: ${braces}`,
       };
     }
     const { file, token } = newRunFile();
