@@ -46,7 +46,7 @@ in-process services only, and the private install removes `anvil/data/tongs/sett
 of the `windows` job:
 
 1. It checks the file: every field, and that each licence is MIT,
-   Apache-2.0, BSD-2-Clause, BSD-3-Clause or BSL-1.0 (ADR 0004).
+   Apache-2.0, BSD-2-Clause, BSD-3-Clause, BSL-1.0 or Zlib (ADR 0004).
 2. It downloads each asset (kept by hash in
    `packages/extension/node_modules/.cache/etch-pins/`) and refuses it unless
    its SHA-256 is the pinned one.

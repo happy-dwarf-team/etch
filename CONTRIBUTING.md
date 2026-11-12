@@ -97,8 +97,8 @@ A pnpm workspace (ADR 0001):
 
 Workspace packages are TypeScript sources that esbuild bundles into the
 extension and the webview script. The VSIX has no runtime dependencies besides
-the VS Code API; anything that would ship in it must be MIT, Apache-2.0, BSD or
-BSL-1.0 (ADR 0004). Packaging also puts the pinned builds of Anvil and Bellows
+the VS Code API; anything that would ship in it must be MIT, Apache-2.0, BSD,
+BSL-1.0 or Zlib (ADR 0004). Packaging also puts the pinned builds of Anvil and Bellows
 into it unchanged, with their licence texts, and writes
 `THIRD-PARTY-NOTICES.md` from `pins/game-builds.json`.
 

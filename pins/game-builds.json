@@ -8,9 +8,9 @@
     {
       "id": "anvil",
       "name": "Anvil",
-      "tag": "v1.6.1",
-      "url": "https://github.com/happy-dwarf-team/anvil/releases/download/v1.6.1/anvil-windows-x64.zip",
-      "sha256": "EA45FF3504EF2223F43CD13F6B6EF0F7E00217BD85251AA17238E3A3BF603454",
+      "tag": "v1.20.0",
+      "url": "https://github.com/happy-dwarf-team/anvil/releases/download/v1.20.0/anvil-windows-x64.zip",
+      "sha256": "369615A655B63FEF29229DD812E5E546EBB5C8E275D84DCDFBB6D592EDF18EED",
       "files": [
         "version.dll",
         "anvil/anvil.toml",
@@ -44,9 +44,9 @@
     {
       "id": "bellows",
       "name": "Bellows",
-      "tag": "v0.17.0",
-      "url": "https://github.com/happy-dwarf-team/bellows/releases/download/v0.17.0/bellows-windows-x64.zip",
-      "sha256": "9317BA452415AAB59C7E713E3CED30CEEBDB6E7B4D5D7A9DBE3DCADCE46014AE",
+      "tag": "v1.7.0",
+      "url": "https://github.com/happy-dwarf-team/bellows/releases/download/v1.7.0/bellows-windows-x64.zip",
+      "sha256": "4B4742EFE39B84CE6124437CE4EA0B65EA84B525695C7F20F33D351789B8DAD2",
       "into": "anvil/plugins/",
       "files": ["bellows/"],
       "licenses": [
@@ -60,15 +60,16 @@
           "component": "toml++",
           "spdx": "MIT",
           "file": "bellows/third-party/tomlplusplus-LICENSE.txt"
-        }
+        },
+        { "component": "zlib", "spdx": "Zlib", "file": "bellows/third-party/zlib-LICENSE.txt" }
       ]
     },
     {
       "id": "tongs",
       "name": "Tongs",
-      "tag": "v0.24.0",
-      "url": "https://github.com/happy-dwarf-team/tongs/releases/download/v0.24.0/tongs-windows-x64.zip",
-      "sha256": "70A20D7FDDCC263DB8F31F60ED2638F5C3D0C0E63BB3BCD801D39BBC91393383",
+      "tag": "v0.31.0",
+      "url": "https://github.com/happy-dwarf-team/tongs/releases/download/v0.31.0/tongs-windows-x64.zip",
+      "sha256": "02AE26B1056837B19BAD1AD2E55178C323253AA960428DAE22A4DA306509E942",
       "into": "anvil/plugins/",
       "files": [
         "tongs/tongs.dll",

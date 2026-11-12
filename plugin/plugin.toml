@@ -27,7 +27,9 @@ version = "^1"
 # pick mode and live snapshots (from 0.22, each text with its colour codes);
 # tongs.navigation version 1 (from 0.24): the province view selected again after
 # a restart or a reload (H8). The private install pins Tongs and keeps it at
-# enabled = false (no pipe).
+# enabled = false (no pipe). A caret on 0.x takes one minor version only, so
+# this follows the pin in pins/game-builds.json; from 0.28 the widget
+# rectangles are in window pixels at any GUI scale.
 [[dependencies]]
 id = "tongs"
-version = "^0.24"
+version = "^0.31"

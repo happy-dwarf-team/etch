@@ -25,6 +25,12 @@ const BSL = `Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
 obtaining a copy of the software and accompanying documentation covered by
 this license (the "Software")`;
+const ZLIB = `  This software is provided 'as-is', without any express or implied
+  warranty.
+
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely, subject to the following restrictions:`;
 const GPL = 'GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007';
 
 const committed = (): unknown =>
@@ -190,6 +196,7 @@ describe('licences and paths', () => {
   it('tells the allowed licences apart by their wording', () => {
     expect(detectLicense(MIT)).toBe('MIT');
     expect(detectLicense(BSL)).toBe('BSL-1.0');
+    expect(detectLicense(ZLIB)).toBe('Zlib');
     expect(detectLicense('Apache License\n  Version 2.0, January 2004')).toBe('Apache-2.0');
     expect(
       detectLicense('Redistribution and use in source and binary forms, with or without'),
