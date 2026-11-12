@@ -197,6 +197,11 @@ describe('licences and paths', () => {
     expect(detectLicense(MIT)).toBe('MIT');
     expect(detectLicense(BSL)).toBe('BSL-1.0');
     expect(detectLicense(ZLIB)).toBe('Zlib');
+    expect(
+      detectLicense(
+        'This Font Software is licensed under the SIL Open Font License,\n  Version 1.1.',
+      ),
+    ).toBe('OFL-1.1');
     expect(detectLicense('Apache License\n  Version 2.0, January 2004')).toBe('Apache-2.0');
     expect(
       detectLicense('Redistribution and use in source and binary forms, with or without'),
