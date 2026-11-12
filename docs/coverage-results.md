@@ -503,6 +503,11 @@ A great project's buttons show only in the player's own province, which a rule c
 rules did not reach a repeater's entries. etch#395 lets them, and the base game's profile hides the
 buttons in a foreign province: offline preview visibility on Verne at 1920×1080 99.73 → **99.77 %**
 (9954 of 9977), vanilla at 1920×1080 99.31 → 99.35 %, and 4 widgets more on every other set.
+
+The two Anbennar countries no rule of either change was drawn from, at 1920×1080, rules of `1ace2e2`
+against etch#395: **Bluescale** (1472, 44 views) rects 99.18 → 99.24 %, visibility 99.29 →
+**99.63 %**, 25 → 26 views fully right; **Kobildzan** (1594, 43 views) rects 95.86 → 96.01 %,
+visibility 99.08 → 99.20 %, 15 → 17 views fully right. No view of either lost a widget.
 <!-- other countries: end -->
 
 ## What differs
