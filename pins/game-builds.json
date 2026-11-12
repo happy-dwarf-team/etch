@@ -67,9 +67,9 @@
     {
       "id": "tongs",
       "name": "Tongs",
-      "tag": "v0.31.0",
-      "url": "https://github.com/happy-dwarf-team/tongs/releases/download/v0.31.0/tongs-windows-x64.zip",
-      "sha256": "02AE26B1056837B19BAD1AD2E55178C323253AA960428DAE22A4DA306509E942",
+      "tag": "v0.32.0",
+      "url": "https://github.com/happy-dwarf-team/tongs/releases/download/v0.32.0/tongs-windows-x64.zip",
+      "sha256": "263DD2B59083BC992F908D1693AF4AC41E3A9D179B63936C22E9DCC82D8687DE",
       "into": "anvil/plugins/",
       "files": [
         "tongs/tongs.dll",
