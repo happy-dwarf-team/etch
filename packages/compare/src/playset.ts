@@ -40,6 +40,7 @@ import {
   profileModMatches,
   readProfile,
   sampleData,
+  widgetsAt,
   type LiveSnapshot,
   type LiveTexts,
   type PlaysetModKey,
@@ -321,26 +322,72 @@ export class CorpusPlaysetFiles {
     const context = { constants: file.constants, index: this.ui.index, screen };
     const { profile } = loaded;
     const window = definition.item;
-    const values = liveSelectors(profile, window, snapshot).values;
-    const view = evaluateView(profile, window, screen, { set: values });
-    const sample = sampleData(profile, window, view, {
-      localise: this.localise,
-      length: 'typical',
-      template: (template) => {
-        const found = this.ui.index.guiType(template);
-        const owner = this.ui.index.guiFiles.find((f) => f.path === found?.path)?.file;
-        return found === undefined || owner === undefined
-          ? undefined
-          : { widget: found.item, file: owner };
-      },
-    });
-    const layout = await layOutPreview(this.ui, this.assets, file, window, {
-      screen,
-      localise: (text: string) => this.localisation?.text(text) ?? text,
-      view: layoutViewOf(view),
-      content: layoutContentOf(sample),
-      ...(size === undefined ? {} : { windowSize: size }),
-    });
+    const layOut = async (values: Readonly<Record<string, string>>) => {
+      const view = evaluateView(profile, window, screen, { set: values });
+      const sample = sampleData(profile, window, view, {
+        localise: this.localise,
+        length: 'typical',
+        template: (template) => {
+          const found = this.ui.index.guiType(template);
+          const owner = this.ui.index.guiFiles.find((f) => f.path === found?.path)?.file;
+          return found === undefined || owner === undefined
+            ? undefined
+            : { widget: found.item, file: owner };
+        },
+      });
+      return layOutPreview(this.ui, this.assets, file, window, {
+        screen,
+        localise: (text: string) => this.localisation?.text(text) ?? text,
+        view: layoutViewOf(view),
+        content: layoutContentOf(sample),
+        ...(size === undefined ? {} : { windowSize: size }),
+      });
+    };
+    const values: Record<string, string> = { ...liveSelectors(profile, window, snapshot).values };
+    // A selector whose rules only move widgets (the stability marker, by the country's stability)
+    // leaves the visibility the same at every value, so the snapshot's visibility cannot tell it.
+    // The author who knows the state would set it: take the value that puts the moved widgets
+    // where the game has them, the default on a tie.
+    for (const selector of profile.selectors) {
+      if (selector.kind === 'resolution') continue;
+      const rules = profile.rules.filter((r) => r.when.some((c) => c.selector === selector.id));
+      const moved = [
+        ...new Set(rules.flatMap((r) => [...r.offset, ...r.position].map((ref) => ref.path))),
+      ];
+      if (
+        moved.length === 0 ||
+        rules.some((r) => r.show.length + r.hide.length + r.notCreated.length > 0) ||
+        profile.groups.some((g) => g.selector === selector.id)
+      ) {
+        continue;
+      }
+      const game = new Map(snapshot.widgets.map((w) => [w.path.toLowerCase(), w.rect]));
+      const targets = moved.flatMap((path) => {
+        const rect = game.get(path.toLowerCase());
+        return rect === undefined ? [] : widgetsAt(window, path).map((w) => ({ w, rect }));
+      });
+      if (targets.length === 0) continue;
+      const order = [
+        ...selector.values.filter((v) => v.id === selector.default),
+        ...selector.values.filter((v) => v.id !== selector.default),
+      ];
+      let best: { value: string; score: number } | undefined;
+      for (const value of order) {
+        const layout = await layOut({ ...values, [selector.id]: value.id });
+        const score = targets.filter(({ w, rect }) =>
+          layout.widgets.some(
+            (l) =>
+              l.widget === w &&
+              l.row === undefined &&
+              Math.round(l.x) === rect[0] &&
+              Math.round(l.y) === rect[1],
+          ),
+        ).length;
+        if (best === undefined || score > best.score) best = { value: value.id, score };
+      }
+      if (best !== undefined) values[selector.id] = best.value;
+    }
+    const layout = await layOut(values);
     return { layout, shaderOf: (widget: Widget) => spriteShaderOf(widget, context) };
   }
 

@@ -5,6 +5,21 @@
   "window": "countrystabilityview",
   "checkedWith": "1.37.5",
   "selectors": {
+    "stability": {
+      "kind": "ui",
+      "label": "Stability",
+      "values": {
+        "minus3": "-3",
+        "minus2": "-2",
+        "minus1": "-1",
+        "zero": "0",
+        "plus1": "+1",
+        "plus2": "+2",
+        "plus3": "+3",
+      },
+      "default": "zero",
+      "note": "CCountryStabilityView::OnDailyUpdate (eu4.exe 0xF87E80) moves stability_progress_threshold and stability_value from their .gui place by the x of the positionType stability_progress_threshold_move (16 px here) times the stability (the coverage survey: 0 in Anbennar's Verne at x 84, +3 in Russia 1719 at x 132).",
+    },
     "handleRebels": {
       "kind": "ui",
       "label": "Handle rebels",
@@ -14,6 +29,48 @@
     },
   },
   "rules": {
+    "stability-minus3": {
+      "when": { "stability": "minus3" },
+      "offset": {
+        "countrystabilityview/stability_progress_threshold": { "x": -48 },
+        "countrystabilityview/stability_value": { "x": -48 },
+      },
+    },
+    "stability-minus2": {
+      "when": { "stability": "minus2" },
+      "offset": {
+        "countrystabilityview/stability_progress_threshold": { "x": -32 },
+        "countrystabilityview/stability_value": { "x": -32 },
+      },
+    },
+    "stability-minus1": {
+      "when": { "stability": "minus1" },
+      "offset": {
+        "countrystabilityview/stability_progress_threshold": { "x": -16 },
+        "countrystabilityview/stability_value": { "x": -16 },
+      },
+    },
+    "stability-plus1": {
+      "when": { "stability": "plus1" },
+      "offset": {
+        "countrystabilityview/stability_progress_threshold": { "x": 16 },
+        "countrystabilityview/stability_value": { "x": 16 },
+      },
+    },
+    "stability-plus2": {
+      "when": { "stability": "plus2" },
+      "offset": {
+        "countrystabilityview/stability_progress_threshold": { "x": 32 },
+        "countrystabilityview/stability_value": { "x": 32 },
+      },
+    },
+    "stability-plus3": {
+      "when": { "stability": "plus3" },
+      "offset": {
+        "countrystabilityview/stability_progress_threshold": { "x": 48 },
+        "countrystabilityview/stability_value": { "x": 48 },
+      },
+    },
     "handle-rebels-closed": {
       "when": { "handleRebels": "closed" },
       "hide": ["countrystabilityview/cv_governmentrebels_handlerebels"],
