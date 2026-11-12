@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.8.1](https://github.com/happy-dwarf-team/etch/compare/v2.8.0...v2.8.1) (2026-11-12)
+
+
+### Build
+
+* **pins:** pin Anvil 1.20.0, Bellows 1.7.0 and Tongs 0.31.0 ([#385](https://github.com/happy-dwarf-team/etch/issues/385)) ([8988c3b](https://github.com/happy-dwarf-team/etch/commit/8988c3ba5ddabda0db1cc7758231b1d6399e2c5c))
+* **pins:** pin Tongs 0.32.0 ([#387](https://github.com/happy-dwarf-team/etch/issues/387)) ([acce266](https://github.com/happy-dwarf-team/etch/commit/acce266f548e99ca0f93f5dc283a4553c63fda8e))
+
 ## [2.8.0](https://github.com/happy-dwarf-team/etch/compare/v2.7.0...v2.8.0) (2026-11-11)
 
 Most of this release comes from taking the coverage survey's Anbennar views again from the game and closing the gaps they showed. Over the survey's captures of Verne in 1444 at 1920×1080, the preview without a game now shows or hides the same widgets as the game for 99.4% of them, and places 99.1% where the game does; before this release it was 97.0% and 96.6%. Part of that rise is the survey's own: it no longer measures one state the game does not draw (see the corpus fixes below). On Kobildzan, an Anbennar country kept aside as an unseen check, it is 99.2% and 98.9%, though some fixes below were drawn from it and from Bluescale; in the base game's views it is 99.0% and 98.5%. The figures compare the preview's layout with the survey's captures of the game, widget by widget. The live preview itself changes only with the religion view's background and the ages view's picture below.
