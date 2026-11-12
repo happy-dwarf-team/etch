@@ -497,8 +497,12 @@ What is left on Verne at 1920×1080 (29 rects and 27 visibility failures offline
 buttons (24, the columns of the page come from the game's code), the building slots (the built slot
 above, and a province's number of slots, which the save does not hold), and texts the game's code
 fills (`DefaultConfirm/Description`, the lobby's `scenario_description`, Anbennar's magic menu), which
-the preview cannot know offline. A great project's buttons show only in the player's own province,
-but a rule cannot reach a repeater's entries yet.
+the preview cannot know offline.
+
+A great project's buttons show only in the player's own province, which a rule could not say while
+rules did not reach a repeater's entries. etch#395 lets them, and the base game's profile hides the
+buttons in a foreign province: offline preview visibility on Verne at 1920×1080 99.73 → **99.77 %**
+(9954 of 9977), vanilla at 1920×1080 99.31 → 99.35 %, and 4 widgets more on every other set.
 <!-- other countries: end -->
 
 ## What differs
