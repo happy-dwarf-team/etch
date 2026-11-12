@@ -148,7 +148,9 @@ export function visibilityAgreement(plan: CapturePlan): VisibilityCounts {
     const parent = plan.widgets[w.parent];
     if (parent !== undefined && !shown(parent)) continue;
     const game = w.captured.visible;
-    const drawn = w.laidOut !== undefined;
+    // A widget the layout puts wholly outside the client area is not seen, and Tongs counts the
+    // game's as hidden there (P2KE's lobby parks its DLC lists at x -1320).
+    const drawn = w.laidOut !== undefined && w.offScreen !== true;
     if (!drawn && game && w.codeFilled !== undefined) continue;
     if (!drawn && !game) {
       // Neither: the layout has no such widget, or hides it as the game does.

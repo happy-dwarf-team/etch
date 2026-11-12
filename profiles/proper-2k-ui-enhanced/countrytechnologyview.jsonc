@@ -1,0 +1,19 @@
+// The countrytechnologyview window in Proper 2K UI Enhanced, over the vanilla profile (and Anbennar's
+// in the Anbennar playset). Proper 2K UI Enhanced, and P2KE Patch - Anbennar after it, put the tab's
+// show_position at y 168, not the base game's 140, so the institutions window, which the game places
+// as if the tab were at y 0, moves up by 168 (the coverage survey's captures of the Anbennar playset
+// at 2560x1440, 11 November 2026, Verne 1444: the window at y 157 for the layout's 185).
+{
+  "formatVersion": 1,
+  "window": "countrytechnologyview",
+  "checkedWith": "1",
+  "mod": {
+    "remoteFileId": "3290499798",
+    "name": "Proper 2K UI Enhanced",
+  },
+  "rules": {
+    "institutions-window": {
+      "offset": { "countrytechnologyview/institutions_window": { "y": -168 } },
+    },
+  },
+}

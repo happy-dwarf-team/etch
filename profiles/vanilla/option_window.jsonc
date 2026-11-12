@@ -1,0 +1,31 @@
+// The lobby's game options (option_window) of the base game (docs/window-profiles.md). The window
+// shows one tab at a time: single player when it opens (the coverage survey's lobby options views,
+// vanilla, Bigger UI and Anbennar, 1920×1080), the others by their buttons.
+{
+  "formatVersion": 1,
+  "window": "option_window",
+  "checkedWith": "1.37.5",
+  "selectors": {
+    "tab": {
+      "kind": "ui",
+      "label": "Tab",
+      "values": {
+        "singleplayer": "Single player",
+        "multiplayer": "Multiplayer",
+        "custom": "Custom setup",
+      },
+      "default": "singleplayer",
+    },
+  },
+  "groups": {
+    "tab": {
+      "label": "Tab",
+      "selector": "tab",
+      "members": {
+        "singleplayer": "option_window/singleplayer_tab",
+        "multiplayer": "option_window/multiplayer_tab",
+        "custom": "option_window/custom_setup_tab",
+      },
+    },
+  },
+}

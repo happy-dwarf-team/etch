@@ -437,6 +437,68 @@ outliner options button the recipe could not click). Rules of `6c175a5` against 
 views that remain without `save-s52`: offline preview rects 87.5 → **98.0 %** (3612 of 3684), visibility 97.3 → 99.3 %, live visibility 99.9 → 100 %; 8 → 20 of the 57 views fully right offline. Most of the rects were one gap: Proper 2K UI
 Enhanced makes `army_professionalism` 19 px high, so the military tab moves down by 19 px, not 16
 (etch#384, a profile layer of its own for the mod).
+
+### The ranking's next gaps (12 November 2026)
+
+The gaps the run of 11 November left, taken from the top of its ranking, measured on the same
+captures: the fresh Anbennar captures of 11 November (Verne 1444, `anbennar-alone` at 1920×1080 and
+1280×720, the Anbennar playset with Proper 2K UI Enhanced and P2KE at 2560×1440, without `save-s52`)
+and the survey's stored captures of every playset. Rules of `main` (`1ace2e2`, which gives the
+figures above to the widget) against etch#393:
+
+| Set | Offline preview: rects | Offline preview: visibility | With profiles: visibility | Views fully right |
+| --- | --- | --- | --- | --- |
+| Verne, 1920×1080, fresh | 99.2 → 99.2 % (3589/3618) | 99.4 → **99.7 %** (9950/9977) | 99.5 → 99.7 % | 33 → 33 of 58 |
+| Verne, 1280×720, fresh | 99.3 → 99.3 % (2811/2830) | 99.3 → **99.7 %** (7976/8003) | 99.3 → 99.7 % | 30 → 30 of 50 |
+| Anbennar + P2KE, 2560×1440, fresh | 98.0 → **98.5 %** (3627/3684) | 99.4 → **99.7 %** (10601/10628) | 99.4 → 99.7 % | 20 → 20 of 57 |
+| Anbennar alone, 1920×1080, stored | 99.3 → 99.3 % | 99.4 → 99.7 % | 99.4 → 99.7 % | 32 → 32 of 52 |
+| vanilla, 1920×1080, stored | 98.6 → **98.8 %** (3586/3628) | 99.1 → **99.3 %** (9818/9886) | 99.1 → 99.2 % | 23 → **31** of 60 |
+| vanilla, 1280×720, stored | 99.0 → 99.3 % | 99.1 → 99.3 % | 99.0 → 99.2 % | 12 → **18** of 36 |
+| Bigger UI, 1920×1080, stored | 98.6 → 98.9 % | 99.1 → 99.4 % | 99.1 → 99.3 % | 23 → **31** of 60 |
+| Proper 2K UI Enhanced, 2560×1440, stored | 97.5 → 97.5 % | 99.4 → 99.8 % | 99.5 → 99.8 % | 0 → 0 of 9 |
+
+No set lost a widget it had right; the live measures did not move (live visibility 100 % on every
+Anbennar set). What was fixed:
+
+- **The building slots' parts**: `building_canbuild` and `required_development` hidden in the
+  generated slots, as the game shows `required_development` only on the locked slot
+  (`CBuildingEntry::SetLocked`, eu4.exe 0x138AFF0) and the green frame only where something can be
+  built now. A great project's `progress_bar_window` is hidden until it is built up.
+- **Selectors for what a click or the map decides**: the province's river and strait marks
+  (`waterway`), the stability marker and value (`stability`: `CCountryStabilityView::OnDailyUpdate`,
+  0xF87E80, moves them by `stability_progress_threshold_move` times the stability, 16 px a point in
+  the base game, 19 px in Proper 2K UI Enhanced and P2KE), the subjects tab's military focus window,
+  the diplomacy view's shield glow in the base game, and new profiles of the lobby's options
+  (`option_window`, one tab at a time) and the new leader's dialog (`ConfirmAndNameLeaderDialog`: the
+  ruler as a general keeps their name).
+- **What the game keeps or hides whatever the data**: `fort_number` stays shown, empty, without a
+  fort; `goto_box`'s `goto` is off the screen in both searches; the Orthodox panel hides while its icon
+  choice is open; the main menu's `ironman_icon` and the nation designer's random New World button
+  are hidden; the diplomacy view's relations count fits one line; Proper 2K UI Enhanced's tab is at
+  y 168, so its institutions window moves up by 168, not 140.
+- **The measure**: a selector whose rules only move widgets (`stability`) cannot be told from
+  visibility, so `profilePreview` takes the value that puts the moved widgets where the capture has
+  them; and a widget the layout puts wholly outside the screen counts as not drawn, as Tongs counts
+  the game's (P2KE's lobby parks its DLC lists at x -1320).
+
+**A built building slot, checked in the game.** Tongs reports the slot of a built building (and of
+the construction) as hidden while the game draws it, in every capture with buildings. A check on 12
+November under the lab's game lock (vanilla Russia 1719, Moskva and Stanovoy, Anvil 1.20.0 and Tongs
+0.33.0) found the same, and the game's own hover landed on the hidden slot's `building` button.
+`CProvinceViewBuildings::RebuildAllBuildingEntries` (0x138EF20) calls `Show` only on the free and
+locked slots' windows, so a built slot's window keeps its shown byte (`+0xC5`) at 0. Hypothesis: its
+render node, which `CFixedWindow::Hide` (0x1547B00) would have hidden, still draws it. Tongs' `visible`
+needs every ancestor's byte, so it reports the slot and its parts as hidden, and the live preview
+hides them too. Built slots are 29 of the 68 offline visibility failures left in vanilla at
+1920×1080 (Russia's provinces have many buildings) and 3 of Verne's 27; the offline preview draws
+the slots and is right there.
+
+What is left on Verne at 1920×1080 (29 rects and 27 visibility failures offline): the ledger's sort
+buttons (24, the columns of the page come from the game's code), the building slots (the built slot
+above, and a province's number of slots, which the save does not hold), and texts the game's code
+fills (`DefaultConfirm/Description`, the lobby's `scenario_description`, Anbennar's magic menu), which
+the preview cannot know offline. A great project's buttons show only in the player's own province,
+but a rule cannot reach a repeater's entries yet.
 <!-- other countries: end -->
 
 ## What differs

@@ -6,6 +6,13 @@
   "window": "countrydiplomacyview",
   "checkedWith": "1.37.5",
   "selectors": {
+    "shieldGlow": {
+      "kind": "ui",
+      "label": "Shield glow",
+      "values": { "no": "None", "yes": "Glow" },
+      "default": "yes",
+      "note": "countryshield_glow shows behind the chosen country's shield in Russia's own view, the Celestial Emperor's and the first great power's, and not in the Holy Roman Emperor's (the coverage survey, Russia 1719, vanilla and Bigger UI); what decides it is not read in the code.",
+    },
     "country": {
       "kind": "ui",
       "label": "Country",
@@ -58,6 +65,10 @@
     },
   },
   "rules": {
+    "no-shield-glow": {
+      "when": { "shieldGlow": "no" },
+      "hide": ["countrydiplomacyview/countryshield_glow"],
+    },
     "labels-without-religion-icon": {
       "when": { "religionIcon": "none" },
       "offset": {
@@ -194,6 +205,13 @@
       "template": "diploactionentry_category",
       "count": 8,
       "place": { "start": { "x": 0, "y": 26 }, "step": { "x": 0, "y": 26 } },
+    },
+  },
+  "content": {
+    "countrydiplomacyview/num_relations_value": {
+      "engine": true,
+      "generated": "integer",
+      "note": "The game's code writes the relations in use over the limit, as 2/7, in place of the file's \"+155 ???\", which does not fit the box's 44 px and wraps (the coverage survey: one line, 44×26, in every playset).",
     },
   },
 }

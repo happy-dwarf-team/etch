@@ -1,0 +1,58 @@
+// The countrystabilityview window in Proper 2K UI Enhanced, over the vanilla profile (and Anbennar's
+// in the Anbennar playset). Proper 2K UI Enhanced, and P2KE Patch - Anbennar after it, set the
+// positionType stability_progress_threshold_move to 19 px, not the base game's 16, so the stability
+// marker and its value move by 19 px for each point of stability (CCountryStabilityView::OnDailyUpdate,
+// eu4.exe 0xF87E80).
+{
+  "formatVersion": 1,
+  "window": "countrystabilityview",
+  "checkedWith": "1",
+  "mod": {
+    "remoteFileId": "3290499798",
+    "name": "Proper 2K UI Enhanced",
+  },
+  "rules": {
+    "stability-minus3": {
+      "when": { "stability": "minus3" },
+      "offset": {
+        "countrystabilityview/stability_progress_threshold": { "x": -57 },
+        "countrystabilityview/stability_value": { "x": -57 },
+      },
+    },
+    "stability-minus2": {
+      "when": { "stability": "minus2" },
+      "offset": {
+        "countrystabilityview/stability_progress_threshold": { "x": -38 },
+        "countrystabilityview/stability_value": { "x": -38 },
+      },
+    },
+    "stability-minus1": {
+      "when": { "stability": "minus1" },
+      "offset": {
+        "countrystabilityview/stability_progress_threshold": { "x": -19 },
+        "countrystabilityview/stability_value": { "x": -19 },
+      },
+    },
+    "stability-plus1": {
+      "when": { "stability": "plus1" },
+      "offset": {
+        "countrystabilityview/stability_progress_threshold": { "x": 19 },
+        "countrystabilityview/stability_value": { "x": 19 },
+      },
+    },
+    "stability-plus2": {
+      "when": { "stability": "plus2" },
+      "offset": {
+        "countrystabilityview/stability_progress_threshold": { "x": 38 },
+        "countrystabilityview/stability_value": { "x": 38 },
+      },
+    },
+    "stability-plus3": {
+      "when": { "stability": "plus3" },
+      "offset": {
+        "countrystabilityview/stability_progress_threshold": { "x": 57 },
+        "countrystabilityview/stability_value": { "x": 57 },
+      },
+    },
+  },
+}

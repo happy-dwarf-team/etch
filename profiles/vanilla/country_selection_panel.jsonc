@@ -138,6 +138,7 @@
         "country_selection_panel/lobby/left",
         "country_selection_panel/lobby/right/play_button",
         "country_selection_panel/lobby/right/random_country_button",
+        "country_selection_panel/lobby/right/random_new_world_button",
         "country_selection_panel/lobby/top/select_label",
       ],
     },
@@ -165,7 +166,10 @@
       "when": {
         "page": "main-menu",
       },
-      "hide": ["country_selection_panel/mainmenu/mainmenu_panel_bottom/nudge_button"],
+      "hide": [
+        "country_selection_panel/mainmenu/mainmenu_panel_bottom/continue_container/ironman_icon",
+        "country_selection_panel/mainmenu/mainmenu_panel_bottom/nudge_button",
+      ],
     },
     "no-game-to-continue": {
       "when": { "page": "main-menu", "continueGame": "no" },

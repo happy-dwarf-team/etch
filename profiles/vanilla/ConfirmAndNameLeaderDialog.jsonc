@@ -1,0 +1,27 @@
+// The new leader's confirmation (ConfirmAndNameLeaderDialog) of the base game
+// (docs/window-profiles.md): the military tab's recruit buttons and its "ruler as general" button
+// open the same dialog.
+{
+  "formatVersion": 1,
+  "window": "ConfirmAndNameLeaderDialog",
+  "checkedWith": "1.37.5",
+  "selectors": {
+    "leader": {
+      "kind": "ui",
+      "label": "Leader",
+      "values": { "new": "A new leader", "ruler": "The ruler or heir" },
+      "default": "new",
+      "note": "A new general or admiral gets a name to edit; the ruler or heir as a general keeps their own (the coverage survey: recruit_general in Anbennar, makerulergeneral in vanilla and Bigger UI).",
+    },
+  },
+  "rules": {
+    "ruler-keeps-name": {
+      "when": { "leader": "ruler" },
+      "hide": [
+        "ConfirmAndNameLeaderDialog/leader_name_editbox",
+        "ConfirmAndNameLeaderDialog/leader_name_editbox_bg",
+        "ConfirmAndNameLeaderDialog/random_leader_name_button",
+      ],
+    },
+  },
+}

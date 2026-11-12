@@ -124,6 +124,18 @@
       "default": "none",
       "note": "The third slot of an own province: add_parliament without a seat, remove_parliament with one; have_parliament replaces remove_parliament where seats cannot be removed (0x13497F0), shown by hand.",
     },
+    "waterway": {
+      "kind": "ui",
+      "label": "River and strait",
+      "values": {
+        "river": "River",
+        "strait": "Strait",
+        "both": "River and strait",
+        "none": "Neither",
+      },
+      "default": "river",
+      "note": "The map decides, not the save: a strait shows strait_indicator in the lower mark's place and a river river_indicator above it; a river alone shows river_indicator_2 in the lower place instead (the coverage survey: vanilla provinces 1, 12, 13 and 8, Anbennar 51, 2 and 8).",
+    },
     "centerOfTrade": {
       "kind": "data",
       "label": "Centre of trade",
@@ -297,10 +309,12 @@
       "template": "building_progress_entry",
       "count": 8,
       "hide": [
+        "building_progress_entry/building_canbuild",
         "building_progress_entry/building_currentlybuilding",
         "building_progress_entry/building_destroy",
         "building_progress_entry/building_progress",
         "building_progress_entry/building_status",
+        "building_progress_entry/required_development",
       ],
       "place": {
         "start": "building_start",
@@ -407,10 +421,11 @@
       },
     },
     "provinceview/buildings_window/great_projects_window/great_projects_list": {
-      "note": "Entries of great_project_entry (0x1398C30, etch#155), one per great project of the province.",
       "template": "great_project_entry",
       "from": "provinces.{province}.great_projects",
       "count": 1,
+      "hide": ["great_project_entry/progress_bar_window"],
+      "note": "Entries of great_project_entry (0x1398C30, etch#155), one per great project of the province. progress_bar_window shows only while the project is built up (hidden in every view of the coverage survey). A foreign province's entries show no upgrade, boost or move buttons (Kronborg, Anbennar's Imperial Palace), the player's own do (Falun Copper Mine); a rule cannot reach a repeater's entries yet, so the preview draws them.",
       "fields": {
         "great_project_entry/name_label": { "save": "entry", "transform": "localise" },
       },
@@ -645,12 +660,11 @@
       ],
     },
     "no-fort": {
-      "note": "Without a fort the game shows no_building_fort instead of building_fort and hides the fort's level and maintenance (eu4.exe 0x13728C0; Siroz and Heroes' Rest in the corpus).",
+      "note": "Without a fort the game shows no_building_fort instead of building_fort and hides the level's background and the maintenance (eu4.exe 0x13728C0; Siroz and Heroes' Rest in the corpus). fort_number stays shown with an empty text (the coverage survey's vanilla views of provinces 1, 8 and 13).",
       "when": { "fort": "no" },
       "show": ["provinceview/province_window/no_building_fort"],
       "hide": [
         "provinceview/province_window/building_fort",
-        "provinceview/province_window/fort_number",
         "provinceview/province_window/province_view_fort_nr_bg",
         "provinceview/province_window/maintenance_icon",
         "provinceview/province_window/maintenance_lock_icon",
@@ -722,6 +736,19 @@
         "provinceview/top_section_window/river_indicator",
         "provinceview/top_section_window/strait_indicator",
       ],
+    },
+    "waterway-strait": {
+      "when": { "waterway": ["strait", "both"] },
+      "show": ["provinceview/top_section_window/strait_indicator"],
+      "hide": ["provinceview/top_section_window/river_indicator_2"],
+    },
+    "waterway-both": {
+      "when": { "waterway": "both" },
+      "show": ["provinceview/top_section_window/river_indicator"],
+    },
+    "waterway-none": {
+      "when": { "waterway": "none" },
+      "hide": ["provinceview/top_section_window/river_indicator_2"],
     },
     "capital": {
       "note": "The first slot of the top section: have_capital in the owner's capital, own or foreign (0x1349580).",

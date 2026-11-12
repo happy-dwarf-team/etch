@@ -238,12 +238,14 @@ describe('the province view as the 2.0.0 trial found it', () => {
     expect(at('yes', 1080)).toBe('building_close_button_natives_large');
   });
 
-  it('swaps the fort for the no-fort icon and hides its level (0x13728C0)', () => {
+  it('swaps the fort for the no-fort icon and hides its maintenance (0x13728C0)', () => {
     const fort = drawn(VANILLA, { fort: 'yes' });
     expect(['building_fort', 'fort_number', 'maintenance_icon'].every(fort)).toBe(true);
     expect(fort('no_building_fort')).toBe(false);
     const none = drawn(VANILLA, { fort: 'no' });
-    expect(['building_fort', 'fort_number', 'maintenance_icon'].some(none)).toBe(false);
+    expect(['building_fort', 'maintenance_icon'].some(none)).toBe(false);
     expect(none('no_building_fort')).toBe(true);
+    // The level's text stays shown, empty (the coverage survey's vanilla provinces without a fort).
+    expect(none('fort_number')).toBe(true);
   });
 });
