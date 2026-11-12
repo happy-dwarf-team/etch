@@ -36,8 +36,8 @@ option(ETCH_BUILD_TESTS "Build the plugin's tests" ON)
 # checked against the release's SHA256SUMS.txt. It is the Anvil the game host
 # runs (pins/, ADR 0004), so both change together in one pull request.
 # -DAnvilPlugin_DIR=<sdk>/cmake uses an unpacked SDK instead.
-set(ETCH_ANVIL_VERSION 1.20.0)
-set(ETCH_ANVIL_SDK_SHA256 4a42d527018b143051c2c0c12ea40aa8096c7b108b7f24b2fb941530e1e2b7dd)
+set(ETCH_ANVIL_VERSION 1.21.0)
+set(ETCH_ANVIL_SDK_SHA256 e6e4f3d558138727b55ca843268d94bcddd1c9b306c2090c2522afe08718cc24)
 if(AnvilPlugin_DIR)
     find_package(AnvilPlugin REQUIRED)
 else()
