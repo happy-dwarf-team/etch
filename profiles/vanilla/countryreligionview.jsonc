@@ -97,7 +97,9 @@
     },
     "icon-selection": {
       "when": { "selection": "open", "religionPanel": "orthodox" },
+      "note": "The icon choice takes the Orthodox panel's place: the game hides the panel while it is open (the coverage survey, Russia 1719, vanilla and Bigger UI).",
       "show": ["countryreligionview/icon_selection_screen"],
+      "hide": ["countryreligionview/orthodox_specific_window"],
     },
     "selection-covers-the-list": {
       "when": { "selection": "open" },
