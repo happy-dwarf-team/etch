@@ -49,11 +49,11 @@ else()
 endif()
 
 # The parts that do not need the game, also linked into the tests.
-add_library(etch_core STATIC src/json.cpp src/protocol.cpp src/session.cpp src/pipe_server.cpp src/console.cpp src/live.cpp
+add_library(etch_core STATIC src/json.cpp src/protocol.cpp src/session.cpp src/pipe_server.cpp src/socket_server.cpp src/console.cpp src/live.cpp
     src/pick.cpp)
 target_include_directories(etch_core PUBLIC src)
 target_compile_definitions(etch_core PUBLIC WIN32_LEAN_AND_MEAN NOMINMAX ETCH_PLUGIN_VERSION="${ETCH_VERSION}")
-target_link_libraries(etch_core PUBLIC advapi32)
+target_link_libraries(etch_core PUBLIC advapi32 ws2_32 bcrypt)
 
 # etch.dll and its folder <build>/plugin/etch/ (plugin.toml, symbols.toml, the DLL).
 anvil_add_plugin(etch SOURCES src/plugin.cpp src/overlay.cpp)
@@ -75,7 +75,7 @@ file(GENERATE OUTPUT ${CMAKE_BINARY_DIR}/anvil-tool.txt CONTENT "${ETCH_ANVIL_TO
 
 if(ETCH_BUILD_TESTS)
     enable_testing()
-    foreach(test json protocol session pipe_server console live pick)
+    foreach(test json protocol session pipe_server socket_server console live pick)
         add_executable(test_${test} tests/test_${test}.cpp)
         target_link_libraries(test_${test} PRIVATE etch_core)
         if(MSVC)

@@ -1,5 +1,6 @@
 import { readFile, readdir } from 'node:fs/promises';
 import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
+import { hostPathFromWindows, isWindowsDrivePath, winePrefixOf } from './wine.ts';
 import { decodeDescriptor, parseModDescriptor, type ModDescriptor } from './descriptor.ts';
 import { isDirectory, isFile, pathKey } from './locate.ts';
 import type { PlaysetDiagnostic } from './diagnostics.ts';
@@ -84,6 +85,7 @@ export async function readProfileDescriptor(
   profileFolder: string | undefined,
   source: ModSource,
   diagnostics: PlaysetDiagnostic[],
+  platform: NodeJS.Platform = process.platform,
 ): Promise<Mod | undefined> {
   const descriptor = await readDescriptor(descriptorPath);
   if (descriptor === undefined) return undefined;
@@ -100,9 +102,12 @@ export async function readProfileDescriptor(
     return undefined;
   }
   const base = profileFolder ?? dirname(descriptorPath);
-  const root = isAbsolute(descriptor.path)
-    ? resolve(descriptor.path)
-    : resolve(base, descriptor.path);
+  // A game run by Wine or Proton writes `C:/users/...` paths; read natively they name the prefix's files.
+  const written =
+    platform !== 'win32' && isWindowsDrivePath(descriptor.path)
+      ? hostPathFromWindows(descriptor.path, winePrefixOf(descriptorPath))
+      : descriptor.path;
+  const root = isAbsolute(written) ? resolve(written) : resolve(base, written);
   return modFrom(descriptor, root, descriptorPath, source);
 }
 

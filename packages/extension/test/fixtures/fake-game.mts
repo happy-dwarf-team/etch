@@ -8,6 +8,7 @@
 // "mute-start" it stops answering pings 200 ms after it started and is never ready.
 import { readFileSync } from 'node:fs';
 import { createServer } from 'node:net';
+import { join } from 'node:path';
 
 const [lockFile, readyAfter = '300', mode = ''] = process.argv.slice(2);
 const session = process.env['ETCH_HOST_SESSION'] ?? '';
@@ -72,4 +73,9 @@ createServer((socket) => {
       socket.write(`${JSON.stringify({ id: request.id, ...answer })}\n`);
     }
   });
-}).listen(`\\\\.\\pipe\\etch-host-${session}`);
+}).listen(
+  // Off Windows ETCH_PIPE_DIRECT names the folder whose Unix sockets stand in for the pipes (see @etch/core/pipe).
+  process.env['ETCH_PIPE_DIRECT'] === undefined || process.env['ETCH_PIPE_DIRECT'] === ''
+    ? `\\\\.\\pipe\\etch-host-${session}`
+    : join(process.env['ETCH_PIPE_DIRECT'], `etch-host-${session}`),
+);

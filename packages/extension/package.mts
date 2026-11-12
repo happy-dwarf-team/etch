@@ -14,7 +14,9 @@ if (version !== workspaceVersion) {
   throw new Error(`extension version ${version} differs from the workspace's ${workspaceVersion}`);
 }
 
-const target = 'win32-x64';
+// ETCH_VSIX_TARGET builds the VSIX for another platform (for example linux-x64, to try the offline preview
+// on Linux); the default is the released target.
+const target = process.env['ETCH_VSIX_TARGET'] ?? 'win32-x64';
 
 copyFileSync('../../LICENSE', 'LICENSE');
 // release-please writes CHANGELOG.md at the root with the first release.

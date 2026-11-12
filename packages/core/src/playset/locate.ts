@@ -27,6 +27,8 @@ export interface DiscoveryEnvironment {
   /** Environment variables, for `%USERPROFILE%` and `ProgramFiles(x86)`. */
   env: Readonly<Record<string, string | undefined>>;
   homedir: string;
+  /** The system Etch runs on; `process.platform` when absent. Windows uses the registry, others Steam's folders. */
+  platform?: NodeJS.Platform;
 }
 
 /** Reads the real registry with `reg.exe` and the process's environment. */
@@ -67,6 +69,18 @@ export async function findSteamFolders(environment: DiscoveryEnvironment): Promi
       ? undefined
       : join(environment.env['ProgramFiles(x86)'], 'Steam'),
   ];
+  if ((environment.platform ?? process.platform) !== 'win32') {
+    // Steam's own folders on Linux (the first is usually a link to the second), and Flatpak's.
+    const home = environment.homedir;
+    const data = environment.env['XDG_DATA_HOME'] ?? join(home, '.local', 'share');
+    for (const folder of [
+      join(home, '.steam', 'steam'),
+      join(data, 'Steam'),
+      join(home, '.var', 'app', 'com.valvesoftware.Steam', '.local', 'share', 'Steam'),
+    ]) {
+      if (await isDirectory(join(folder, 'steamapps'))) candidates.push(folder);
+    }
+  }
   return unique(candidates.filter((c): c is string => c !== undefined && c !== ''));
 }
 
@@ -148,6 +162,8 @@ export async function findProfileFolder(
     if (userdir !== '')
       return isAbsolute(userdir) ? resolve(userdir) : resolve(gameFolder, userdir);
   }
+  const proton = await findProtonProfile(gameFolder, environment);
+  if (proton !== undefined) return proton;
   const documents =
     expandEnv(
       (await environment.readRegistryValue(
@@ -167,6 +183,50 @@ export async function findProfileFolder(
     'Paradox Interactive',
     gog ? 'Europa Universalis IV GOG' : 'Europa Universalis IV',
   );
+}
+
+/**
+ * The profile folder of a game run by Proton, or of the native Linux game, when there is one: Steam keeps
+ * the Proton prefix of an app next to its library's `common` folder, with the player's Documents in it.
+ * `undefined` on Windows and when no such folder exists, so the usual Documents folder is used.
+ */
+async function findProtonProfile(
+  gameFolder: string | undefined,
+  environment: DiscoveryEnvironment,
+): Promise<string | undefined> {
+  if ((environment.platform ?? process.platform) === 'win32') return undefined;
+  const gog =
+    gameFolder !== undefined &&
+    (await stat(join(gameFolder, GOG_MARKER)).then(
+      (found) => found.isFile(),
+      () => false,
+    ));
+  const leaf = join(
+    'Paradox Interactive',
+    gog ? 'Europa Universalis IV GOG' : 'Europa Universalis IV',
+  );
+  const candidates: string[] = [];
+  if (gameFolder !== undefined) {
+    const steamapps = dirname(dirname(gameFolder));
+    candidates.push(
+      join(
+        steamapps,
+        'compatdata',
+        EU4_STEAM_APP_ID,
+        'pfx',
+        'drive_c',
+        'users',
+        'steamuser',
+        'Documents',
+        leaf,
+      ),
+    );
+  }
+  candidates.push(
+    join(environment.env['XDG_DATA_HOME'] ?? join(environment.homedir, '.local', 'share'), leaf),
+  );
+  for (const candidate of candidates) if (await isDirectory(candidate)) return candidate;
+  return undefined;
 }
 
 /** The game build in a game folder. */

@@ -2,7 +2,8 @@
 // whether a save is loaded, the player's capital, the province view's widgets and where they are.
 // Etch's private install keeps Tongs without a pipe; the media helper (live-helper/) turns the pipe
 // on in the capture's own install, with input for `province open` only.
-import { connect, type Socket } from 'node:net';
+import type { Socket } from 'node:net';
+import { openPipe } from '@etch/core/pipe';
 
 export const TONGS_PIPE = '\\\\.\\pipe\\tongs';
 
@@ -44,13 +45,7 @@ export class Tongs {
     const until = Date.now() + timeoutMs;
     for (;;) {
       try {
-        const socket = await new Promise<Socket>((resolve, reject) => {
-          const socket = connect(TONGS_PIPE, () => {
-            resolve(socket);
-          });
-          socket.once('error', reject);
-        });
-        return new Tongs(socket);
+        return new Tongs(await openPipe(TONGS_PIPE));
       } catch (error) {
         if (Date.now() > until) throw new Error(`Tongs' pipe did not come up`, { cause: error });
         await sleep(1_000);

@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { join } from 'node:path';
+import { join, sep } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { findPlayset, type FindPlaysetOptions, type Playset } from '../../src/playset/index.ts';
 import {
@@ -72,8 +72,7 @@ function options(root: string, more: Partial<FindPlaysetOptions> = {}): FindPlay
     environment: fakeEnvironment(
       {
         'HKCU\\Software\\Valve\\Steam\\SteamPath': join(root, 'steam').replace(/\\/g, '/'),
-        'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders\\Personal':
-          '%USERPROFILE%\\Documents',
+        'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders\\Personal': `%USERPROFILE%${sep}Documents`,
       },
       { USERPROFILE: join(root, 'home') },
     ),

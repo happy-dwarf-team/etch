@@ -86,7 +86,12 @@ describe('LiveSnapshots', () => {
     const vanilla = playsetKey('C:/Game', []);
     const anbennar = playsetKey('C:/Game', ['Anbennar']);
     expect(vanilla).not.toBe(anbennar);
-    expect(playsetKey('c:\\game\\', [])).toBe(playsetKey('C:/Game', []));
+    // Windows paths differ by case, separator and a trailing slash only; POSIX paths by a trailing slash.
+    if (process.platform === 'win32') {
+      expect(playsetKey('c:\\game\\', [])).toBe(playsetKey('C:/Game', []));
+    } else {
+      expect(playsetKey('/game/', [])).toBe(playsetKey('/game', []));
+    }
 
     const store = new LiveSnapshots(temp);
     await store.put(vanilla, snapshot);

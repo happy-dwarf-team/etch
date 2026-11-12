@@ -555,10 +555,12 @@ export class Preview implements PreviewApi, vscode.Disposable {
 
   startLiveGame(): void {
     if (this.liveGame === undefined) return;
+    this.output.info('Live game: the preview asked for a start.');
     this.liveGameStartPending = true;
     if (this.session !== undefined) {
       this.startPendingLiveGame(this.session);
     } else {
+      this.output.info('Live game: no preview playset yet; waiting for one.');
       void vscode.window.showInformationMessage(
         'The live game starts with the playset of the previewed .gui file: open one.',
       );

@@ -2,7 +2,7 @@
  * A client of Tongs' pipe (`\\.\pipe\tongs`, tongs README "Commands"): one line of text per
  * request, one JSON object per answer, in order on one connection.
  */
-import { connect, type Socket } from 'node:net';
+import { openPipe } from '../../pipe/index.ts';
 
 /** A Tongs answer: `ok`, and `error` when it is false, with the command's own fields. */
 export type TongsAnswer = Readonly<Record<string, unknown>> & {
@@ -28,14 +28,7 @@ export function tongsAtLeast(version: string, minor: number): boolean {
 
 /** Connects to the Tongs pipe; rejects when no game with Tongs is listening. */
 export async function connectTongs(pipe = TONGS_PIPE): Promise<Tongs> {
-  const socket = await new Promise<Socket>((resolve, reject) => {
-    const s = connect(pipe);
-    s.once('connect', () => {
-      s.off('error', reject);
-      resolve(s);
-    });
-    s.once('error', reject);
-  });
+  const socket = await openPipe(pipe);
   socket.setEncoding('utf8');
   let buffer = '';
   let failure: Error | undefined;
