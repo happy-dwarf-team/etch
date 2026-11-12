@@ -1,0 +1,13 @@
+// The search box (goto_box) of the base game (docs/window-profiles.md): the lobby's country search
+// and the map's province search open the same window.
+{
+  "formatVersion": 1,
+  "window": "goto_box",
+  "checkedWith": "1.37.5",
+  "rules": {
+    "goto-off-screen": {
+      "note": "The game keeps the goto button off the screen in both searches, about four screen widths to the right (x 5150 at 1920×1080, 6165 at 2560×1440; the coverage survey, vanilla, Bigger UI, Proper 2K UI Enhanced and Anbennar); button_home takes its place.",
+      "hide": ["goto_box/goto"],
+    },
+  },
+}

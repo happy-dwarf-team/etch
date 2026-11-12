@@ -297,10 +297,12 @@
       "template": "building_progress_entry",
       "count": 8,
       "hide": [
+        "building_progress_entry/building_canbuild",
         "building_progress_entry/building_currentlybuilding",
         "building_progress_entry/building_destroy",
         "building_progress_entry/building_progress",
         "building_progress_entry/building_status",
+        "building_progress_entry/required_development",
       ],
       "place": {
         "start": "building_start",
@@ -645,12 +647,11 @@
       ],
     },
     "no-fort": {
-      "note": "Without a fort the game shows no_building_fort instead of building_fort and hides the fort's level and maintenance (eu4.exe 0x13728C0; Siroz and Heroes' Rest in the corpus).",
+      "note": "Without a fort the game shows no_building_fort instead of building_fort and hides the level's background and the maintenance (eu4.exe 0x13728C0; Siroz and Heroes' Rest in the corpus). fort_number stays shown with an empty text (the coverage survey's vanilla views of provinces 1, 8 and 13).",
       "when": { "fort": "no" },
       "show": ["provinceview/province_window/no_building_fort"],
       "hide": [
         "provinceview/province_window/building_fort",
-        "provinceview/province_window/fort_number",
         "provinceview/province_window/province_view_fort_nr_bg",
         "provinceview/province_window/maintenance_icon",
         "provinceview/province_window/maintenance_lock_icon",
