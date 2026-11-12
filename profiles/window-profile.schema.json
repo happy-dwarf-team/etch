@@ -405,7 +405,11 @@
         "place": {
           "description": "For a window the game's code puts entries in, or a list box whose first rows have another template: the first entry's start, the step to the next (the template's size by default) and, with columns, how many to a row; each a positionType of the window's file, which the game reads, or pixels.",
           "type": "object",
-          "anyOf": [{ "required": ["start"] }, { "required": ["along"] }],
+          "anyOf": [
+            { "required": ["start"] },
+            { "required": ["along"] },
+            { "required": ["table"] }
+          ],
           "additionalProperties": false,
           "properties": {
             "start": { "$ref": "#/definitions/placePoint" },
@@ -435,6 +439,33 @@
                   "description": "The entries' sprites in place of the template's, one for each share of at.",
                   "type": "array",
                   "items": { "type": "string" }
+                }
+              }
+            },
+            "table": {
+              "description": "Entries as the columns of a table across the window, as the ledger's code puts its sort buttons: the unit is the width (of list, else of the window) over the sum of weights, cut; an entry stands at its column's start, in a column of numbers at its right edge less its width less 20 px; label is drawn with each entry as the column's heading, as wide as the column.",
+              "type": "object",
+              "required": ["weights"],
+              "additionalProperties": false,
+              "properties": {
+                "weights": {
+                  "description": "Each column's width in units.",
+                  "type": "array",
+                  "minItems": 1,
+                  "items": { "type": "integer", "minimum": 1 }
+                },
+                "numbers": {
+                  "description": "The columns of numbers, from 1.",
+                  "type": "array",
+                  "items": { "type": "integer", "minimum": 1 }
+                },
+                "label": {
+                  "description": "A top-level definition of the template's file, drawn as each column's heading.",
+                  "type": "string"
+                },
+                "list": {
+                  "description": "A sibling of the window, by name, whose width the unit divides.",
+                  "type": "string"
                 }
               }
             }

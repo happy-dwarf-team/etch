@@ -300,6 +300,20 @@ export function checkProfile(profile: WindowProfile, input: ProfileCheckInput): 
       );
       ok = false;
     }
+    const label = repeater.place?.table?.label;
+    if (
+      label !== undefined &&
+      input.template !== undefined &&
+      input.template(label) === undefined
+    ) {
+      error(
+        repeater,
+        'profile-unknown-source',
+        repeater.templateRange,
+        `The playset defines no top-level "${label}" for the table's headings.`,
+      );
+      ok = false;
+    }
     for (const ref of repeater.hide) {
       if (template !== undefined && widgetsAt(template, ref.path).length === 0) {
         error(

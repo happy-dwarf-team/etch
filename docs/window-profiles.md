@@ -276,6 +276,26 @@ does:
 },
 ```
 
+With `table`, the entries are the columns of a table across the window, as the ledger's code puts
+its sort buttons (`CLedger::UpdateSpreadSheet`, eu4.exe 0x118CFF0). The unit is a width over the
+sum of `weights`, cut: the width of `list`, a sibling of the window (the ledger takes its list
+box's), else the window's own. Each column is its weight in units wide, after the ones before it.
+An entry stands at its column's start; in a column of `numbers` (counted from 1) at the column's
+right edge less the entry's width less 20 px. `label`, a top-level definition of the template's
+file, is drawn with each entry as the column's heading: 10 px down, 1 px right of the column's
+start (19 px left of it in a column of numbers), as wide as the column.
+
+```jsonc
+"ledger/ledger_sort_buttons": {
+  "template": "ledger_default_button",
+  "count": 6,
+  "place": {
+    "table": { "weights": [1, 3, 1, 1, 1, 1], "numbers": [4, 5, 6],
+      "label": "ledger_default_button_text", "list": "default_listbox" },
+  },
+},
+```
+
 `hide` lists parts of an entry the preview leaves out, by path in the template, the template's name
 first, for what the game shows only in some entries: `"hide":
 ["building_progress_entry/building_status"]`. A live snapshot's state of an entry wins.

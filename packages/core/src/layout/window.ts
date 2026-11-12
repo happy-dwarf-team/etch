@@ -140,6 +140,12 @@ export interface LayoutContent {
           readonly step?: { readonly x: number; readonly y: number } | string;
           readonly columns?: number | string;
           readonly along?: { readonly bar: string; readonly at: readonly number[] };
+          readonly table?: {
+            readonly weights: readonly number[];
+            readonly numbers: readonly number[];
+            readonly label?: string;
+            readonly list?: string;
+          };
         };
       }
     | undefined;
@@ -260,6 +266,8 @@ const SPRITE_WIDGETS = new Set([
 const BUTTONS = new Set(['guiButtonType', 'checkboxType', 'buttonType']);
 const TEXT_BOXES = new Set(['instantTextBoxType', 'textBoxType', 'editBoxType']);
 const LISTS = new Set(['listboxType', 'smoothListboxType']);
+/** How far `CLedger::UpdateSpreadSheet` keeps a column of numbers' entry from its right edge. */
+const TABLE_MARGIN = 20;
 /** Boxes the game's code fills; the `.gui` gives only their rect. */
 const CODE_FILLED_BOXES = new Set(['gridBoxType', 'OverlappingElementsBoxType']);
 
@@ -298,7 +306,14 @@ class Layout {
   /** The windows a live snapshot could not move as one (`livePosition`), by their index. */
   private readonly movedByChildren = new Set<number>();
   /** The list entry about to be placed: its template, and the height the game's code gives it. */
-  private entry: { readonly widget: Widget; readonly height: number | undefined } | undefined;
+  private entry:
+    | {
+        readonly widget: Widget;
+        readonly height: number | undefined;
+        /** A text box's width the game's code sets: a table's heading is as wide as its column. */
+        readonly width?: number;
+      }
+    | undefined;
 
   constructor(input: LayoutInput) {
     this.input = input;
@@ -429,7 +444,7 @@ class Layout {
       const drawn = this.drawSpriteOf(props, x, y, source, undefined, undefined, frame);
       if (drawn !== undefined) rect = { x, y, ...drawn };
     } else if (TEXT_BOXES.has(kind)) {
-      rect = this.drawTextBox(kind, props, x, y, source);
+      rect = this.drawTextBox(kind, props, x, y, source, entry?.width);
     } else if (LISTS.has(kind)) {
       const size = sizeIn(props.size('size'), parent);
       rect = { x, y, ...size, height: size.height + (stepped === 'grown' ? step : 0) };
@@ -540,6 +555,10 @@ class Layout {
     const rows = this.input.content?.rows(window);
     const place = rows?.place;
     if (rows === undefined || place === undefined || rows.count === 0) return;
+    if (place.table !== undefined) {
+      this.placeTable(place.table, rows, rect, index);
+      return;
+    }
     const isList = LISTS.has(window.kind);
     const point = (
       value: { readonly x: number; readonly y: number } | string | undefined,
@@ -595,6 +614,82 @@ class Layout {
     }
     this.constants = outer.constants;
     this.row = outer.row;
+  }
+
+  /**
+   * The entries of a table across a window (a repeater's `place.table`), as
+   * `CLedger::UpdateSpreadSheet` (eu4.exe 1.37.5 `0x118CFF0`) puts the ledger's sort buttons: the unit
+   * is the window's width over the weights, cut; each column is its weight in units wide, after the
+   * ones before it. An entry stands at its column's start, in a column of numbers at its right edge
+   * less the entry's width less 20 px (the code's constant at `0x14233E838`, 20 in every capture).
+   * The heading (`label`) is set as wide as the column and placed at `(x + 1, 10)`, in a column of
+   * numbers `x − 20 + 1`. Measured in the coverage survey: the great powers page's buttons at 0, 121,
+   * 484, 606, 727 and 848 at 1920×1080, and 0, 229, 916, 1234, 1463 and 1692 in Proper 2K UI Enhanced.
+   */
+  private placeTable(
+    table: {
+      readonly weights: readonly number[];
+      readonly numbers: readonly number[];
+      readonly label?: string;
+      readonly list?: string;
+    },
+    rows: { readonly template: Widget; readonly file: GuiFile; readonly count: number },
+    rect: Rect,
+    index: number,
+  ): void {
+    const total = table.weights.reduce((a, b) => a + b, 0);
+    if (total <= 0) return;
+    const unit = Math.trunc(this.tableWidth(table.list, rect, index) / total);
+    const label =
+      table.label === undefined
+        ? undefined
+        : rows.file.definitions.find((d) => d.name?.toLowerCase() === table.label?.toLowerCase());
+    const outer = { constants: this.constants, row: this.row };
+    this.constants = rows.file.constants;
+    let x = 0;
+    for (let row = 0; row < Math.min(rows.count, table.weights.length); row++) {
+      this.row = row;
+      const width = (table.weights[row] ?? 0) * unit;
+      const numbers = table.numbers.includes(row + 1);
+      const box = { x: rect.x + x, y: rect.y, width, height: rect.height };
+      const before = { widgets: this.widgets.length, draws: this.draws.length };
+      this.entry = { widget: rows.template, height: undefined };
+      this.place(rows.template, box, index, undefined);
+      const placed = this.widgets[before.widgets];
+      if (numbers && placed?.widget === rows.template) {
+        // Its own width, as laid out at the column's start, puts it at the right edge.
+        this.widgets.length = before.widgets;
+        this.draws.length = before.draws;
+        this.entry = { widget: rows.template, height: undefined };
+        const right = { ...box, x: rect.x + x + width - Math.round(placed.width) - TABLE_MARGIN };
+        this.place(rows.template, right, index, undefined);
+      }
+      if (label !== undefined) {
+        const headingX = (numbers ? x - TABLE_MARGIN : x) + 1;
+        this.entry = { widget: label, height: undefined, width };
+        this.place(
+          label,
+          { x: rect.x + headingX, y: rect.y + 10, width, height: rect.height },
+          index,
+          undefined,
+        );
+      }
+      x += width;
+    }
+    this.constants = outer.constants;
+    this.row = outer.row;
+  }
+
+  /** The width a table's unit divides: a named sibling's `size`, else the table's own window's. */
+  private tableWidth(list: string | undefined, rect: Rect, index: number): number {
+    if (list === undefined) return rect.width;
+    const parent = this.widgets[this.widgets[index]?.parent ?? -1];
+    const sibling = parent?.widget.children.find(
+      (c) => c.name?.toLowerCase() === list.toLowerCase(),
+    );
+    if (parent === undefined || sibling === undefined) return rect.width;
+    const props = widgetProperties(sibling, this.constants, this.input.screen);
+    return sizeIn(props.size('size'), parent).width || rect.width;
   }
 
   /**
@@ -1304,9 +1399,17 @@ class Layout {
    * plus the border above and below, whatever `maxHeight` and `fixedsize` say; empty text is one
    * line.
    */
-  private drawTextBox(kind: string, props: Properties, x: number, y: number, source: number): Rect {
+  private drawTextBox(
+    kind: string,
+    props: Properties,
+    x: number,
+    y: number,
+    source: number,
+    setWidth?: number,
+  ): Rect {
     const size = props.point('size');
-    const width = props.number('maxwidth') ?? size?.x ?? 0;
+    // A width the game's code sets (a table's heading) takes the place of `maxWidth`.
+    const width = setWidth ?? props.number('maxwidth') ?? size?.x ?? 0;
     const height = props.number('maxheight') ?? size?.y;
     const border = props.point('bordersize') ?? { x: 0, y: 0 };
     const box: TextBox = { x, y, width, border, ...(height === undefined ? {} : { height }) };
@@ -1319,7 +1422,7 @@ class Layout {
         ? {
             fit: {
               // The text node reads only `maxWidth` and `maxHeight`, and makes 0 into 200.
-              width: props.number('maxwidth') || 200,
+              width: setWidth ?? (props.number('maxwidth') || 200),
               height: props.number('maxheight') || 200,
               border,
               truncate: props.flag('truncate') !== false,

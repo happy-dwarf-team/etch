@@ -250,6 +250,26 @@ export interface Placement {
     readonly at: readonly number[];
     readonly sprites?: readonly string[];
   };
+  /**
+   * Entries as the columns of a table across the window, as the ledger's code puts its sort
+   * buttons (`CLedger::UpdateSpreadSheet`, eu4.exe 1.37.5 `0x118CFF0`): the unit is the window's
+   * width over the sum of `weights`, cut, and the n-th column is `weights[n]` units wide, after the
+   * ones before it. An entry stands at its column's start; in a column of `numbers` (from 1) at the
+   * column's right edge less its own width less 20 px. `label`, a top-level definition of the
+   * template's file, is drawn with each entry as the column's heading: 10 px down, 1 px right of the
+   * column's start (19 px left of it in a column of numbers), as wide as the column.
+   */
+  readonly table?: {
+    readonly weights: readonly number[];
+    readonly numbers: readonly number[];
+    readonly label?: string;
+    /**
+     * A sibling of the window, by name, whose width the unit divides in place of the window's own:
+     * the ledger's code takes its list box's (`default_listbox`, 1832 px in Proper 2K UI Enhanced
+     * against 1760 for its sort buttons).
+     */
+    readonly list?: string;
+  };
 }
 
 /**

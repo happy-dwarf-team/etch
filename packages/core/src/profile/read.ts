@@ -441,7 +441,7 @@ function readRepeater(
 
 /** A repeater's `place`: points and columns as pixels or `positionType` names. */
 function readPlacement(node: JsonNode): Placement {
-  const props = object(node, '"place"', ['start', 'step', 'columns', 'along']);
+  const props = object(node, '"place"', ['start', 'step', 'columns', 'along', 'table']);
   const point = (value: JsonNode, what: string): PlacePoint => {
     if (value.kind === 'string') return value.value;
     const xy = object(value, `"${what}" of "place"`, ['x', 'y']);
@@ -458,11 +458,63 @@ function readPlacement(node: JsonNode): Placement {
   };
   const startNode = props.get('start');
   const alongNode = props.get('along');
-  if (startNode === undefined && alongNode === undefined) {
+  const tableNode = props.get('table');
+  if (startNode === undefined && alongNode === undefined && tableNode === undefined) {
     throw new Faulty(
-      '"place" names the "start" of the first entry, or a bar to put them "along".',
+      '"place" names the "start" of the first entry, a bar to put them "along", or a "table".',
       node,
     );
+  }
+  let table: Placement['table'];
+  if (tableNode !== undefined) {
+    const tableProps = object(tableNode, '"table" of "place"', [
+      'weights',
+      'numbers',
+      'label',
+      'list',
+    ]);
+    const weightsNode = tableProps.get('weights');
+    if (
+      weightsNode?.kind !== 'array' ||
+      weightsNode.items.length === 0 ||
+      weightsNode.items.some(
+        (n) => n.kind !== 'number' || !Number.isInteger(n.value) || n.value < 1,
+      )
+    ) {
+      throw new Faulty(
+        '"weights" of "table" is an array of whole numbers from 1, one for each column.',
+        weightsNode ?? tableNode,
+      );
+    }
+    const weights = weightsNode.items.map((n) => (n.kind === 'number' ? n.value : 1));
+    const numbersNode = tableProps.get('numbers');
+    if (
+      numbersNode !== undefined &&
+      (numbersNode.kind !== 'array' ||
+        numbersNode.items.some(
+          (n) =>
+            n.kind !== 'number' ||
+            !Number.isInteger(n.value) ||
+            n.value < 1 ||
+            n.value > weights.length,
+        ))
+    ) {
+      throw new Faulty(
+        '"numbers" of "table" lists the columns of numbers, from 1 to the number of "weights".',
+        numbersNode,
+      );
+    }
+    const label = optionalText(tableProps.get('label'), 'label');
+    const list = optionalText(tableProps.get('list'), 'list');
+    table = {
+      weights,
+      numbers:
+        numbersNode?.kind === 'array'
+          ? numbersNode.items.map((n) => (n.kind === 'number' ? n.value : 0))
+          : [],
+      ...(label === undefined ? {} : { label }),
+      ...(list === undefined ? {} : { list }),
+    };
   }
   let along: Placement['along'];
   if (alongNode !== undefined) {
@@ -525,6 +577,7 @@ function readPlacement(node: JsonNode): Placement {
     ...(stepNode === undefined ? {} : { step: point(stepNode, 'step') }),
     ...(columns === undefined ? {} : { columns }),
     ...(along === undefined ? {} : { along }),
+    ...(table === undefined ? {} : { table }),
   };
 }
 

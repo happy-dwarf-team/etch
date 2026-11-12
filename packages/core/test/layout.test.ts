@@ -1159,4 +1159,47 @@ describe('layoutWindow: sample data', () => {
     const list = l.widgets.findIndex((w) => w.widget.name === 'list');
     expect(l.widgets.findIndex((w) => w.widget === entry)).toBeGreaterThan(list);
   });
+
+  it('puts a table across a window as the ledger puts its sort buttons', () => {
+    const { file, input } = setUp(`guiTypes = {
+      windowType = {
+        name = "ledger"
+        size = { x = 1000 y = 600 }
+        windowType = { name = "sort_buttons" position = { x = 10 y = 20 } size = { x = 900 y = 32 } }
+        listboxType = { name = "rows" position = { x = 10 y = 60 } size = { x = 972 y = 400 } }
+      }
+      windowType = { name = "button" size = { x = 100 y = 24 } }
+      instantTextBoxType = { name = "heading" maxWidth = 135 maxHeight = 16 fixedsize = yes }
+    }`);
+    const window = file.definitions[0] as Widget;
+    const buttons = window.children[0] as Widget;
+    const button = file.definitions[1] as Widget;
+    const heading = file.definitions[2] as Widget;
+    const table = { weights: [1, 3, 1, 1], numbers: [3, 4], label: 'heading', list: 'rows' };
+    const l = layoutWindow(window, {
+      ...input,
+      content: {
+        text: () => undefined,
+        rows: (w) =>
+          w === buttons
+            ? { template: button, file, count: 4, place: { start: { x: 0, y: 0 }, table } }
+            : undefined,
+      },
+    });
+    // The unit is the list's width over the weights, cut: 972 / 6 = 162. A text column's button at
+    // its start, a number column's 100 + 20 px left of its right edge.
+    expect(l.widgets.filter((w) => w.widget === button).map((w) => [w.x, w.y, w.row])).toEqual([
+      [10, 20, 0],
+      [172, 20, 1],
+      [10 + 648 + 162 - 120, 20, 2],
+      [10 + 810 + 162 - 120, 20, 3],
+    ]);
+    // Headings 10 px down, 1 px right of the column (19 px left of it for numbers), as wide as it.
+    expect(l.widgets.filter((w) => w.widget === heading).map((w) => [w.x, w.y, w.width])).toEqual([
+      [11, 30, 162],
+      [173, 30, 486],
+      [10 + 648 - 19, 30, 162],
+      [10 + 810 - 19, 30, 162],
+    ]);
+  });
 });
