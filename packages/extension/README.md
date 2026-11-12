@@ -162,6 +162,18 @@ its error beside the answer. Run changes only the live game's private copy,
 never your own saves, and does not work in ironman or multiplayer games.
 **Continue** says when the newest private save was written after a Run.
 
+## Script profile
+
+Anvil's script profiler (Anvil 1.22 or newer, the **Script profiler** window in
+the Anvil panel) times your events', decisions' and other owners' triggers and
+effects in your own game and writes a CSV to the game's `logs` folder.
+**Etch: Show Latest Script Profile** opens the newest one: how long the span
+was, then the triggers and the effects, each with its longest rows (calls,
+total, mean and the longest single run, `max`). A span that a load, the menu or
+quitting ended early is marked interrupted. Blocks whose owner the profiler
+cannot tell are one row, as in its window; the CSV splits them by where the
+game runs them.
+
 ## Etch 1.x
 
 Etch 2.0.0 replaced 1.x's game host and its diff view with the live game. To

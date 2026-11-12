@@ -7,6 +7,7 @@ import { closeWindowsHelper } from './live-game/windows.ts';
 import { registerGameText } from './game-text.ts';
 import { WidgetNavigation } from './navigation.ts';
 import { registerPreview, type PreviewApi } from './preview/index.ts';
+import { registerScriptProfile } from './script-profile-view.ts';
 
 /** What `activate` returns: for Etch's own tests, not a stable API for other extensions. */
 export interface EtchApi {
@@ -31,6 +32,7 @@ export function activate(context: vscode.ExtensionContext): EtchApi {
   context.subscriptions.push(navigation);
   const live = registerLiveGame(context, output);
   liveGame = live.game;
+  context.subscriptions.push(registerScriptProfile(live.game, output));
   if (RUNNING_BUILD !== undefined) {
     const build = new BuildCheck(RUNNING_BUILD, context.extensionUri, output);
     context.subscriptions.push(

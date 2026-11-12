@@ -62,6 +62,17 @@ refresh is a step of the 3.0.0 release.
 
 ## Done since 2.0.0
 
+- **The latest script profile (lab#166).** **Etch: Show Latest Script Profile**
+  reads the newest `logs/script_profile_*.csv` that Anvil's
+  `anvil-script-profiler` (lab#158, Anvil 1.22) wrote, in the player's game
+  profile or the live game's private one, and shows it as a Markdown preview:
+  the span, an `interrupted` status, and the longest rows of the triggers and
+  the effects with calls, total, mean and `max`. Columns are found by the
+  header's names, so a later format's new columns are left out with a note.
+  The rows without an owner are summed into one, as the profiler's window does.
+  Not in it: a jump from a row to the event's or decision's file, and starting
+  a measurement from Etch.
+
 - **Run selection (lab#156).** The selected script, or the statement on the
   cursor's line, runs in the live game through the plugin's new `run` job and
   the game's console `run`: effects in the player's country or the province on
