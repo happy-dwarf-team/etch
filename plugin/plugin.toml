@@ -32,4 +32,4 @@ version = "^1"
 # rectangles are in window pixels at any GUI scale.
 [[dependencies]]
 id = "tongs"
-version = "^0.31"
+version = "^0.32"
