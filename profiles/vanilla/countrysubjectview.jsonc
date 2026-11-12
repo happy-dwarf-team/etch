@@ -4,7 +4,20 @@
   "formatVersion": 1,
   "window": "countrysubjectview",
   "checkedWith": "1.37.5",
+  "selectors": {
+    "militaryFocus": {
+      "kind": "ui",
+      "label": "Military focus",
+      "values": { "closed": "Closed", "open": "Open" },
+      "default": "closed",
+      "note": "country_subjects_info's subject_military_focus button opens subject_military_focus_window (the coverage survey: closed as the tab opens, open after the click; vanilla and Bigger UI).",
+    },
+  },
   "rules": {
+    "military-focus-closed": {
+      "when": { "militaryFocus": "closed" },
+      "hide": ["countrysubjectview/subject_military_focus_window"],
+    },
     "hidden": {
       "note": "Hidden in every view of the coverage survey (the base game): the game decides these from its data or a click; show one by hand.",
       "hide": [
