@@ -508,6 +508,37 @@ The two Anbennar countries no rule of either change was drawn from, at 1920×108
 against etch#395: **Bluescale** (1472, 44 views) rects 99.18 → 99.24 %, visibility 99.29 →
 **99.63 %**, 25 → 26 views fully right; **Kobildzan** (1594, 43 views) rects 95.86 → 96.01 %,
 visibility 99.08 → 99.20 %, 15 → 17 views fully right. No view of either lost a widget.
+
+**The ledger's sort buttons, read in the code.** They are now the top of what is left on Verne at
+1920×1080 (12 buttons and 12 texts in one view, 72 widgets over the survey's playsets), and the
+code says where they go:
+
+- `CLedger::CLedger` (eu4.exe 0x117BE40) gives each page its columns (`SColumnInfo`): the great
+  powers page an unnamed column, `LEDGER_COUNTRY`, `LEDGER_GREAT_POWER_RANK`,
+  `LEDGER_GREAT_POWER_SCORE`, `LEDGER_DEVELOPMENT` and `LEDGER_INSTITUTIONS_PENALTY`, with the
+  weights 1, 3, 1, 1, 1, 1 and no fixed widths.
+- `CLedger::UpdateSpreadSheet` (0x118CFF0) makes the unit `(list width − fixed widths) / weights`,
+  cut: 972 / 8 = 121 at 1920×1080, 229 in Proper 2K UI Enhanced at 2560×1440. A column is as wide as
+  its weight times the unit (a fixed width wins, 0x117AE40), and the columns follow each other from
+  0.
+- Each column gets a copy of `ledger_default_button` and of `ledger_default_button_text`. A text
+  column's button stands at the column's start and its text 1 px right of it; a number column's
+  button at the column's right edge less the button's width less 20 px (a constant of the code), its
+  text 19 px left of the column's start; the text is as wide as the column. That gives the captures'
+  buttons at 0, 121, 484, 606, 727 and 848 to the pixel at 1920×1080 (button width 100) and at 0,
+  229, 916, 1234, 1463 and 1692 at 2560×1440 (width 120).
+
+The preview cannot draw them yet: a repeater makes one template's entries, these are two templates
+side by side with widths the code sets, and every page has its own columns. A page's columns are the
+code's data, so a profile could carry the great powers page's; that needs a repeater placement of its
+own, not done here.
+
+**Tried and dropped.** The map mode button on screen (`custom_mapmode_7` in every HUD view) is
+42 × 32 in the game against 41 × 31 for the others; `GFX_mapmode_selected` is 46 × 35, so it is not
+that sprite, and the rule that drew it lost a widget in Proper 2K UI Enhanced. The patriarch
+authority marker (`current_patriarch_authority`, 4 views, 80 px right of its `.gui` place in Russia
+1719) most likely moves with the authority's value, as the stability marker moves with stability;
+the code was not read, and a share is not a few steps a selector could name.
 <!-- other countries: end -->
 
 ## What differs
