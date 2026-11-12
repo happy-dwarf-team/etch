@@ -156,6 +156,21 @@
         "command": "etch.openLiveProfile",
         "title": "Open the Window Profile",
         "category": "Etch"
+      },
+      {
+        "command": "etch.runSelection",
+        "title": "Run Selection in the Live Game",
+        "category": "Etch"
+      },
+      {
+        "command": "etch.runSelectionInProvince",
+        "title": "Run Selection in the Province on Screen",
+        "category": "Etch"
+      },
+      {
+        "command": "etch.checkSelectionAsTrigger",
+        "title": "Check Selection as Trigger in the Live Game",
+        "category": "Etch"
       }
     ],
     "menus": {
@@ -164,6 +179,23 @@
           "command": "etch.openPreview",
           "when": "resourceExtname =~ /^\\.gui$/i",
           "group": "navigation"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "etch.runSelection",
+          "when": "etch.liveGame.canRun && resourceExtname =~ /^\\.txt$/i",
+          "group": "etch@1"
+        },
+        {
+          "command": "etch.runSelectionInProvince",
+          "when": "etch.liveGame.canRun && resourceExtname =~ /^\\.txt$/i",
+          "group": "etch@2"
+        },
+        {
+          "command": "etch.checkSelectionAsTrigger",
+          "when": "etch.liveGame.canRun && resourceExtname =~ /^\\.txt$/i",
+          "group": "etch@3"
         }
       ],
       "view/item/context": [

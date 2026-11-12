@@ -154,6 +154,20 @@ struct SaveResult {
 
 std::string SaveAnswer(std::uint64_t id, const SaveResult& result);
 
+// The script files `run` executes (lab#156): Etch writes the selection into the private
+// profile as `etch_run_<8 to 32 lowercase hex digits>.txt` and names it here. Nothing else is
+// run: no folder, no other name, so a client can make the game read no other file.
+bool IsRunFile(std::string_view name);
+
+struct RunResult {
+    std::string error;
+    std::string message;
+    LineResult line;  // the console's `run <file>`: its success byte and answer
+    double queued_ms = 0;
+};
+
+std::string RunAnswer(std::uint64_t id, const RunResult& result);
+
 // The only buttons `confirm` clicks: Anbennar's achievements prompt, which
 // shows before a save loads (live check H7).
 bool IsConfirmPath(std::string_view path);
@@ -224,6 +238,10 @@ public:
     // Saves the loaded game through the game's `autosave`, which writes
     // `save games/autosave.eu4` after the console answers.
     std::optional<Refusal> Save(std::function<void(const SaveResult&)> done);
+    // Runs a script file of the private profile (IsRunFile) through the game's console `run`,
+    // which executes its effects in the player's country (lab#156). Refused like a reload in
+    // ironman and multiplayer, here and again on the main thread.
+    std::optional<Refusal> RunScript(std::string file, std::function<void(const RunResult&)> done);
     // Answers the prompt whose button is `path` (IsConfirmPath) with Enter when
     // it is on screen; `busy` while another job runs.
     std::optional<Refusal> Confirm(std::string path, std::function<void(const ConfirmResult&)> done);
@@ -238,7 +256,8 @@ public:
 
 private:
     struct ReloadState;
-    std::optional<Refusal> Begin();
+    // `job` names the job in the refusals: "reload", "run".
+    std::optional<Refusal> Begin(std::string_view job = "reload");
     void ReloadFirst(const std::shared_ptr<ReloadState>& state);
     void ReloadRest(const std::shared_ptr<ReloadState>& state);
     void ReloadKeysLanded(const std::shared_ptr<ReloadState>& state,

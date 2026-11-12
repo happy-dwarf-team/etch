@@ -184,6 +184,20 @@ std::optional<std::string> AllowedLine(std::string_view line, std::vector<std::s
 
 bool IsConfirmPath(std::string_view path) { return path == "DefaultConfirm/AgreeButton"; }
 
+bool IsRunFile(std::string_view name) {
+    constexpr std::string_view kPrefix = "etch_run_";
+    constexpr std::string_view kSuffix = ".txt";
+    if (name.size() < kPrefix.size() + kSuffix.size() || !name.starts_with(kPrefix) || !name.ends_with(kSuffix)) {
+        return false;
+    }
+    const std::string_view hex = name.substr(kPrefix.size(), name.size() - kPrefix.size() - kSuffix.size());
+    if (hex.size() < 8 || hex.size() > 32) return false;
+    for (const char c : hex) {
+        if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f'))) return false;
+    }
+    return true;
+}
+
 std::optional<std::string> ReadReloadRequest(const json::Value& request, ReloadRequest& out) {
     out = {};
     if (auto error = ReadStrings(request, "lines", true, AnyLine, out.lines)) return error;
@@ -276,6 +290,16 @@ std::string SaveAnswer(std::uint64_t id, const SaveResult& result) {
         .Finish();
 }
 
+std::string RunAnswer(std::uint64_t id, const RunResult& result) {
+    if (!result.error.empty()) return Error(id, result.error, result.message);
+    return Ok(id)
+        .Bool("success", result.line.success)
+        .Str("text", result.line.text)
+        .Fixed("ms", result.line.ms)
+        .Fixed("queued_ms", result.queued_ms)
+        .Finish();
+}
+
 std::string ConfirmAnswer(std::uint64_t id, const ConfirmResult& result) {
     if (!result.error.empty()) return Error(id, result.error, result.message);
     json::Writer w = Ok(id);
@@ -283,14 +307,23 @@ std::string ConfirmAnswer(std::uint64_t id, const ConfirmResult& result) {
     return w.Fixed("queued_ms", result.queued_ms).Finish();
 }
 
-std::optional<Refusal> LiveJobs::Begin() {
+namespace {
+
+// Why a job does not run in this session: ironman and multiplayer; nullopt when it may.
+std::optional<Refusal> SessionRefusal(const std::optional<GameSession>& session, std::string_view job) {
+    if (!session) return std::nullopt;
+    if (session->multiplayer) return Refusal{"not_available", std::string(job) + " is not available in multiplayer"};
+    if (session->ironman) return Refusal{"not_available", std::string(job) + " does not work in ironman"};
+    return std::nullopt;
+}
+
+}  // namespace
+
+std::optional<Refusal> LiveJobs::Begin(std::string_view job) {
     if (faulted_.load()) {
         return Refusal{"console_broken", "a console call faulted earlier; the live game needs a restart"};
     }
-    if (const std::optional<GameSession> session = env_.session ? env_.session() : std::nullopt) {
-        if (session->multiplayer) return Refusal{"not_available", "reload is not available in multiplayer"};
-        if (session->ironman) return Refusal{"not_available", "reload does not work in ironman"};
-    }
+    if (auto refused = SessionRefusal(env_.session ? env_.session() : std::nullopt, job)) return refused;
     bool idle = false;
     if (!busy_.compare_exchange_strong(idle, true)) return Refusal{"busy", "another job of the live game runs"};
     return std::nullopt;
@@ -490,11 +523,9 @@ std::optional<Refusal> LiveJobs::Reload(ReloadRequest request, std::function<voi
         state->started = env_.now_ms();
         state->result.queued_ms = state->started - asked;
         // The session may have changed while the job waited.
-        const std::optional<GameSession> session = env_.session ? env_.session() : std::nullopt;
-        if (session && (session->multiplayer || session->ironman)) {
-            state->result.error = "not_available";
-            state->result.message =
-                session->multiplayer ? "reload is not available in multiplayer" : "reload does not work in ironman";
+        if (auto refused = SessionRefusal(env_.session ? env_.session() : std::nullopt, "reload")) {
+            state->result.error = refused->code;
+            state->result.message = refused->message;
             return Finish(state);
         }
         ReloadFirst(state);
@@ -514,6 +545,30 @@ std::optional<Refusal> LiveJobs::Save(std::function<void(const SaveResult&)> don
         result->queued_ms = env_.now_ms() - asked;
         // `savegame` answers but writes nothing; `autosave` writes save games/autosave.eu4 (live).
         Run({"autosave"}, result->line, result->error, result->message);
+        busy_.store(false);
+        env_.run_later([result, done] { done(*result); });
+    });
+    if (!queued) {
+        busy_.store(false);
+        return Refusal{"no_main_thread", "the game's main thread does not take work"};
+    }
+    return std::nullopt;
+}
+
+std::optional<Refusal> LiveJobs::RunScript(std::string file, std::function<void(const RunResult&)> done) {
+    if (auto refused = Begin("run")) return refused;
+    const double asked = env_.now_ms();
+    const bool queued = env_.run_on_main([this, file = std::move(file), asked, done = std::move(done)] {
+        auto result = std::make_shared<RunResult>();
+        result->queued_ms = env_.now_ms() - asked;
+        // The session may have changed while the job waited: never run effects in ironman or
+        // multiplayer, where they would change a game the player keeps or desynchronise it.
+        if (auto refused = SessionRefusal(env_.session ? env_.session() : std::nullopt, "run")) {
+            result->error = refused->code;
+            result->message = refused->message;
+        } else {
+            Run({"run", file}, result->line, result->error, result->message);
+        }
         busy_.store(false);
         env_.run_later([result, done] { done(*result); });
     });

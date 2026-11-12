@@ -95,6 +95,7 @@ private:
     Reply Ping(std::uint64_t id) const;
     Reply Reload(std::uint64_t id, const json::Value& request);
     Reply Save(std::uint64_t id);
+    Reply RunScript(std::uint64_t id, const json::Value& request);
     Reply Confirm(std::uint64_t id, const json::Value& request);
     Reply Reselect(std::uint64_t id, const json::Value& request);
     Reply PickMode(std::uint64_t id, const json::Value& request);

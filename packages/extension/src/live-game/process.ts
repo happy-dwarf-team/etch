@@ -524,6 +524,10 @@ export class LiveGameProcess {
     return this.pipe.save(timeoutMs);
   }
 
+  run(file: string, timeoutMs?: number) {
+    return this.pipe.run(file, timeoutMs);
+  }
+
   confirm(path: string, timeoutMs?: number) {
     return this.pipe.confirm(path, timeoutMs);
   }

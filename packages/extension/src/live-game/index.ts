@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import { LiveGame, type LiveGameState } from './live-game.ts';
 import { PrivateInstallError } from './install.ts';
 import { PickMode } from './pick-mode.ts';
+import { CAN_RUN_CONTEXT, registerRunSelection } from './run-selection.ts';
 
 export type { LiveGameDisplay, LiveGameMod, PreparedInstall } from './install.ts';
 export { PrivateInstallError } from './install.ts';
@@ -49,6 +50,11 @@ export function registerLiveGame(
     game.onDidChangeState((state) => {
       showState(state);
       showStatus(status, state);
+      void vscode.commands.executeCommand(
+        'setContext',
+        CAN_RUN_CONTEXT,
+        state.status === 'ready' || state.status === 'stale',
+      );
     }),
     vscode.commands.registerCommand(RESTART_LIVE_GAME, () => game.restartNow()),
     // Each saved file of the playset goes to the reload policy (spec section 6): text files as
@@ -83,6 +89,7 @@ export function registerLiveGame(
       }
     }),
   );
+  registerRunSelection(context, game, output);
   void game.closeOrphan().then(() => removeGameHostInstall(game, output));
   return { game, pick };
 }

@@ -230,6 +230,11 @@ export function errorLogPath(profileFolder: string): string {
   return join(profileFolder, 'logs', 'error.log');
 }
 
+/** `game.log`, where the script effect `log` writes (a checked trigger's answer, lab#156). */
+export function gameLogPath(profileFolder: string): string {
+  return join(profileFolder, 'logs', 'game.log');
+}
+
 /** The last `count` non-empty lines of a log, read from its end; none when it cannot be read. */
 export async function logTail(path: string, count = 10, maxBytes = 64 * 1024): Promise<string[]> {
   let file;
