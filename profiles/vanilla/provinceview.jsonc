@@ -124,6 +124,18 @@
       "default": "none",
       "note": "The third slot of an own province: add_parliament without a seat, remove_parliament with one; have_parliament replaces remove_parliament where seats cannot be removed (0x13497F0), shown by hand.",
     },
+    "waterway": {
+      "kind": "ui",
+      "label": "River and strait",
+      "values": {
+        "river": "River",
+        "strait": "Strait",
+        "both": "River and strait",
+        "none": "Neither",
+      },
+      "default": "river",
+      "note": "The map decides, not the save: a strait shows strait_indicator in the lower mark's place and a river river_indicator above it; a river alone shows river_indicator_2 in the lower place instead (the coverage survey: vanilla provinces 1, 12, 13 and 8, Anbennar 51, 2 and 8).",
+    },
     "centerOfTrade": {
       "kind": "data",
       "label": "Centre of trade",
@@ -723,6 +735,19 @@
         "provinceview/top_section_window/river_indicator",
         "provinceview/top_section_window/strait_indicator",
       ],
+    },
+    "waterway-strait": {
+      "when": { "waterway": ["strait", "both"] },
+      "show": ["provinceview/top_section_window/strait_indicator"],
+      "hide": ["provinceview/top_section_window/river_indicator_2"],
+    },
+    "waterway-both": {
+      "when": { "waterway": "both" },
+      "show": ["provinceview/top_section_window/river_indicator"],
+    },
+    "waterway-none": {
+      "when": { "waterway": "none" },
+      "hide": ["provinceview/top_section_window/river_indicator_2"],
     },
     "capital": {
       "note": "The first slot of the top section: have_capital in the owner's capital, own or foreign (0x1349580).",
