@@ -117,6 +117,12 @@ What Etch records of when the live game's state holds what a Run selection
 changed, so that **Continue** can say a private save was written after one.
 _Avoid_: tainted save, dirty save
 
+**Script profile**:
+The CSV that Anvil's script profiler writes after a profiling span, timing
+triggers and effects by their owner (an event, a decision, an on_action) and
+role; Etch shows the newest one.
+_Avoid_: profile (a window profile), performance log
+
 **Planned restart**:
 A restart of the live game that Etch asks the player for, from a save the live
 game makes just before it, so that no play is lost; unlike the restart after a

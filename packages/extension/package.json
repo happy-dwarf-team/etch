@@ -171,6 +171,11 @@
         "command": "etch.checkSelectionAsTrigger",
         "title": "Check Selection as Trigger in the Live Game",
         "category": "Etch"
+      },
+      {
+        "command": "etch.showScriptProfile",
+        "title": "Show Latest Script Profile",
+        "category": "Etch"
       }
     ],
     "menus": {
