@@ -549,6 +549,23 @@ Every button and heading is right to the pixel at 1920×1080 and 1280×720. In t
 list box there is 1839 px wide against the 1863 px of Proper 2K UI Enhanced's file, so its unit is
 229 and the preview's 232. Why the game's list is 24 px narrower was not read in the code.
 
+**The settings' hidden second instance in the offline measure.** The main menu keeps two
+`menu_settings` windows, one of them hidden (`menu_settings[1]` or `[2]`). etch#378 made the live
+measure leave the hidden one to the capture; the offline preview still drew a window for it, so each
+settings view counted it as drawn where the game hides it. The offline measure now does as the live
+one: a numbered root the capture hides while another instance of it is shown gets no layout. It is
+the measure's own, not the preview's; rules of `main` after etch#399 against etch#400:
+
+| Set | Offline preview: visibility | Views fully right |
+| --- | --- | --- |
+| Verne, 1920×1080, fresh | 99.89 → **99.91 %** (9968 of 9977) | 34 → 35 of 58 |
+| Verne, 1280×720, fresh | 99.86 → 99.89 % | 31 → 32 of 50 |
+| Anbennar + P2KE, 2560×1440, fresh | 99.90 → 99.92 % | 20 → 21 of 57 |
+| vanilla, 1920×1080, stored | 99.47 → 99.49 % | 32 → 33 of 60 |
+| Proper 2K UI Enhanced, 2560×1440, stored | 99.76 → 99.92 % | 0 → 1 of 9 |
+
+Rects do not move; no view gained a failure.
+
 **Tried and dropped.** The map mode button on screen (`custom_mapmode_7` in every HUD view) is
 42 × 32 in the game against 41 × 31 for the others; `GFX_mapmode_selected` is 46 × 35, so it is not
 that sprite, and the rule that drew it lost a widget in Proper 2K UI Enhanced. The patriarch
