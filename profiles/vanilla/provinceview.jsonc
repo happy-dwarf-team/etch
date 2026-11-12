@@ -421,10 +421,11 @@
       },
     },
     "provinceview/buildings_window/great_projects_window/great_projects_list": {
-      "note": "Entries of great_project_entry (0x1398C30, etch#155), one per great project of the province.",
       "template": "great_project_entry",
       "from": "provinces.{province}.great_projects",
       "count": 1,
+      "hide": ["great_project_entry/progress_bar_window"],
+      "note": "Entries of great_project_entry (0x1398C30, etch#155), one per great project of the province. progress_bar_window shows only while the project is built up (hidden in every view of the coverage survey). A foreign province's entries show no upgrade, boost or move buttons (Kronborg, Anbennar's Imperial Palace), the player's own do (Falun Copper Mine); a rule cannot reach a repeater's entries yet, so the preview draws them.",
       "fields": {
         "great_project_entry/name_label": { "save": "entry", "transform": "localise" },
       },
