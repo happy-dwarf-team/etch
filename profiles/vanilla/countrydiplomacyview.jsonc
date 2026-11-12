@@ -196,4 +196,11 @@
       "place": { "start": { "x": 0, "y": 26 }, "step": { "x": 0, "y": 26 } },
     },
   },
+  "content": {
+    "countrydiplomacyview/num_relations_value": {
+      "engine": true,
+      "generated": "integer",
+      "note": "The game's code writes the relations in use over the limit, as 2/7, in place of the file's \"+155 ???\", which does not fit the box's 44 px and wraps (the coverage survey: one line, 44×26, in every playset).",
+    },
+  },
 }
