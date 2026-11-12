@@ -1,4 +1,4 @@
-import { readFile, rm, stat } from 'node:fs/promises';
+import { readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import {
   decodeGameText,
@@ -15,7 +15,25 @@ import {
   systemEnvironment,
 } from '@etch/core/playset';
 import * as vscode from 'vscode';
-import { ErrorLogTail, collapseErrorLog, textureDrawnMissing } from './error-log.ts';
+import {
+  ErrorLogTail,
+  collapseErrorLog,
+  textureDrawnMissing,
+  type CollapsedLine,
+} from './error-log.ts';
+import {
+  MAX_SCRIPT,
+  RunMarks,
+  buildScript,
+  encodeScript,
+  newRunFile,
+  readCheck,
+  unbalancedBraces,
+  type RunMode,
+  type RunScope,
+  type RunScript,
+  type RunSpan,
+} from './run-script.ts';
 import {
   copySize,
   gameHostLayout,
@@ -46,8 +64,10 @@ import {
   PipeError,
   type PipeEvent,
   type PickModeRequest,
+  type ProvinceOnScreen,
   type ReloadAnswer,
   type ReloadRequest,
+  type RunAnswer,
   type SnapshotAnswer,
 } from './pipe.ts';
 import {
@@ -71,6 +91,7 @@ import {
   CrashLimit,
   RestartQueue,
   errorLogPath,
+  gameLogPath,
   logTail,
   watch as watchHang,
 } from './watchdog.ts';
@@ -229,6 +250,8 @@ const REOPEN_AFTER_FRAMES = 2;
 const SOURCE = 'Etch live game';
 /** The memento key that records the first start's confirmation. */
 const CONFIRMED_KEY = 'etch.liveGame.confirmed';
+/** The memento key of the spans in which the live game held what a Run changed (lab#156). */
+const RUN_MARKS_KEY = 'etch.liveGame.runSpans';
 /**
  * How long a save before a stop or a planned restart may take; a game that does not write it (live:
  * one with stale windows on screen deadlocked in `autosave`) is closed anyway and the next start
@@ -238,6 +261,24 @@ const STOP_SAVE_MS = 30_000;
 
 /** What the player chose to start: a save of the private `save games/` by name, or the main menu. */
 type StartAt = { readonly save: string | SaveFile | undefined };
+
+/** What running a selection in the live game came to (lab#156). */
+export type RunOutcome =
+  /** Nothing ran: no game, no game loaded, ironman or multiplayer, another job, a bad selection. */
+  | { readonly kind: 'refused'; readonly code: string; readonly message: string }
+  | {
+      readonly kind: 'ran';
+      readonly answer: RunAnswer;
+      readonly script: RunScript;
+      /** The new `error.log` lines of the run, repeats collapsed. */
+      readonly errors: readonly CollapsedLine[];
+      /** A trigger's answer from `game.log`; `undefined` for effects or when none came. */
+      readonly check: boolean | undefined;
+      /** The first Run of this game session: the notice that the private copy changes. */
+      readonly firstInSession: boolean;
+      /** Characters the game's code page has no byte for, written as `?`. */
+      readonly lost: number;
+    };
 
 /**
  * The machine's one live game, owned by this VS Code window: started on request, stopped by
@@ -291,6 +332,12 @@ export class LiveGame implements vscode.Disposable {
   private restarting = false;
   /** Said once per game session: reloads do not run in ironman or multiplayer. */
   private notAvailableSaid = 0;
+  /** The running process's `game.log`, where a checked trigger logs its answer (lab#156). */
+  private gameLog: ErrorLogTail | undefined;
+  /** The game session of the last Run: the notice about the private copy comes once per session. */
+  private runSession = 0;
+  /** When the private saves hold what a Run changed (lab#156), kept in the global state. */
+  private readonly runMarks: RunMarks;
 
   readonly onDidChangeState = this.emitter.event;
   private readonly pushEmitter = new vscode.EventEmitter<PipeEvent>();
@@ -307,6 +354,7 @@ export class LiveGame implements vscode.Disposable {
     this.output = output;
     this.memento = memento;
     this.lockFile = lockPath(storageFolder);
+    this.runMarks = new RunMarks(memento.get<RunSpan[]>(RUN_MARKS_KEY) ?? []);
   }
 
   get state(): LiveGameState {
@@ -476,6 +524,129 @@ export class LiveGame implements vscode.Disposable {
       return undefined;
     }
     return running.snapshot(window);
+  }
+
+  // ---- Run selection (lab#156) -----------------------------------------------------------------
+
+  /** Whether a game is ready to take a Run. */
+  get canRun(): boolean {
+    return (
+      this.process !== undefined &&
+      (this.current.status === 'ready' || this.current.status === 'stale')
+    );
+  }
+
+  /**
+   * The province on screen in the running game and the game session, from a fresh ping;
+   * `undefined` without a ready game.
+   */
+  async onScreen(): Promise<
+    { readonly province: ProvinceOnScreen | undefined; readonly inGame: boolean } | undefined
+  > {
+    const running = this.process;
+    if (running === undefined || !this.canRun) return undefined;
+    const ping = await running.ping().catch(() => undefined);
+    if (ping === undefined) return undefined;
+    return { province: ping.provinceView, inGame: ping.gameSession !== undefined };
+  }
+
+  /**
+   * Runs a selection in the live game (lab#156): writes it into the private profile as
+   * `etch_run_<hex>.txt`, wrapped for its scope and mode, and has the plugin run it with the
+   * game's console `run`; then reads the run's new `error.log` lines and, for a trigger, its answer
+   * from `game.log`. Runs one at a time, between reloads. The plugin refuses it in ironman and
+   * multiplayer, as it refuses reloads.
+   */
+  runScript(selection: string, scope: RunScope, mode: RunMode): Promise<RunOutcome> {
+    const next = this.reloads.then(() => this.runNow(selection, scope, mode));
+    this.reloads = next.catch(() => undefined);
+    return next;
+  }
+
+  private async runNow(selection: string, scope: RunScope, mode: RunMode): Promise<RunOutcome> {
+    const running = this.process;
+    if (running === undefined || !this.canRun) {
+      return { kind: 'refused', code: 'not_ready', message: 'the live game is not running' };
+    }
+    if (selection.trim() === '') {
+      return { kind: 'refused', code: 'empty', message: 'nothing is selected' };
+    }
+    if (selection.length > MAX_SCRIPT) {
+      return {
+        kind: 'refused',
+        code: 'too_long',
+        message: `the selection is longer than ${String(MAX_SCRIPT / 1024)} KiB`,
+      };
+    }
+    const braces = unbalancedBraces(selection);
+    if (braces !== undefined) {
+      return {
+        kind: 'refused',
+        code: 'unbalanced',
+        message: `the selection's braces do not balance: ${braces}`,
+      };
+    }
+    const { file, token } = newRunFile();
+    const script = buildScript(selection, scope, mode, token);
+    const { bytes, lost } = encodeScript(script.text);
+    const path = join(this.install.layout.profile, file);
+    await this.errorLog?.read();
+    await this.gameLog?.read();
+    let answer: RunAnswer;
+    try {
+      await writeFile(path, bytes);
+      try {
+        answer = await running.run(file);
+      } finally {
+        // The game read the file within the job; it is written for one run only.
+        await rm(path, { force: true }).catch(() => undefined);
+      }
+    } catch (error) {
+      if (error instanceof PipeError) {
+        if (error.code === 'console_fault' || error.code === 'console_broken') {
+          if (this.serving(running)) {
+            this.release();
+            await running.stop();
+            await this.crashed("the game's console faulted while it ran a selection");
+          }
+        }
+        return { kind: 'refused', code: error.code, message: error.message };
+      }
+      return { kind: 'refused', code: 'failed', message: String(error) };
+    }
+    const session = (await running.ping().catch(() => undefined))?.gameSession?.number ?? 0;
+    const firstInSession = session !== this.runSession;
+    this.runSession = session;
+    if (answer.success) {
+      // The saves this process writes from now on hold what the Run changed.
+      this.runMarks.open(Date.now());
+      void this.memento.update(RUN_MARKS_KEY, this.runMarks.all);
+    }
+    await new Promise((resolve) => setTimeout(resolve, ERROR_LOG_SETTLE_MS));
+    const errors = collapseErrorLog((await this.errorLog?.read()) ?? []);
+    const check =
+      mode === 'trigger' ? readCheck((await this.gameLog?.read()) ?? [], token) : undefined;
+    this.output.info(
+      `Ran a selection (${mode}, ${scope.kind === 'province' ? `province ${String(scope.province)}` : "the player's country"}) ` +
+        `in ${answer.ms.toFixed(1)} ms: ${answer.success ? 'ok' : 'refused'}, "${answer.text}"; ` +
+        `${String(errors.length)} error.log lines` +
+        (mode === 'trigger'
+          ? `; trigger ${check === undefined ? 'gave no answer' : String(check)}`
+          : ''),
+    );
+    return { kind: 'ran', answer, script, errors, check, firstInSession, lost };
+  }
+
+  /** Whether a private save holds what a Run changed: the Continue list says so (lab#156). */
+  isAfterRun(modifiedMs: number): boolean {
+    return this.runMarks.isAfterRun(modifiedMs);
+  }
+
+  /** The running process ended or another starts: the span of a Run ends with it. */
+  private closeRunSpan(): void {
+    if (!this.runMarks.openNow) return;
+    this.runMarks.close(Date.now());
+    void this.memento.update(RUN_MARKS_KEY, this.runMarks.all);
   }
 
   // ---- Reloads ---------------------------------------------------------------------------------
@@ -800,7 +971,12 @@ export class LiveGame implements vscode.Disposable {
       items.push({
         label: '$(debug-continue) Continue',
         description: newest.name,
-        detail: `The live game's newest save, ${age(newest.modifiedMs)}`,
+        detail:
+          `The live game's newest save, ${age(newest.modifiedMs)}` +
+          // Run changed the private copy before this save was written (lab#156).
+          (this.runMarks.isAfterRun(newest.modifiedMs)
+            ? ', written after Run changed the game'
+            : ''),
         pick: { save: newest.name },
       });
     }
@@ -895,6 +1071,9 @@ export class LiveGame implements vscode.Disposable {
   }
 
   private async startProcess(request: LiveGameRequest, signal: AbortSignal): Promise<boolean> {
+    // A span left open by a window that closed without stopping its game ends here, before a
+    // player's save is copied into the private saves.
+    this.closeRunSpan();
     try {
       const prepared = await this.install.prepare({
         gameFolder: request.gameFolder,
@@ -982,6 +1161,21 @@ export class LiveGame implements vscode.Disposable {
     });
     const startLines = await this.errorLog.skip();
     this.output.info(`The live game's error.log had ${String(startLines)} lines at ready.`);
+    this.gameLog = new ErrorLogTail(gameLogPath(this.install.layout.profile));
+    await this.gameLog.skip();
+    this.runSession = 0;
+    // A process that continues a save written after a Run holds what the Run changed.
+    const startSave = this.startAt.save;
+    if (typeof startSave === 'string') {
+      const modified = await stat(join(this.savesFolder, startSave)).then(
+        (s) => s.mtimeMs,
+        () => undefined,
+      );
+      if (modified !== undefined && this.runMarks.isAfterRun(modified)) {
+        this.runMarks.open(Date.now());
+        void this.memento.update(RUN_MARKS_KEY, this.runMarks.all);
+      }
+    }
     this.memory = new ProvinceMemory(this.saveName);
     this.watch(started);
     this.set({ status: 'ready', pid: started.identity.pid, readyMs: started.times.ready });
@@ -1285,6 +1479,7 @@ export class LiveGame implements vscode.Disposable {
 
   /** Lets go of the running process: its hang watch ends. */
   private release(): void {
+    this.closeRunSpan();
     this.process = undefined;
     this.watching?.abort();
     this.watching = undefined;

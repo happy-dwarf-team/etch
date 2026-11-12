@@ -21,6 +21,8 @@ requirement. This page says how it is built. The code is in
 | `live-game.ts` | `LiveGame`, the owner: start, stop, reloads, planned restarts, crashes |
 | `pick.ts` | what a pick opens: the winning file, the line, templates and sprites; **Override in my mod** |
 | `pick-mode.ts` | pick mode in VS Code: the toggle, the key setting, opening a pick, read-only files |
+| `run-script.ts` | Run selection: the script file, the trigger's answer, the errors on the selection, the block at the cursor, the Run marks |
+| `run-selection.ts` | Run selection in VS Code: the three commands, Problems, the notices |
 | `index.ts` | the commands, the status bar item, the save and texture watchers |
 | `windows.ts` | the Win32 helper: identities, verified stops, child processes, `eu4.exe` processes |
 
@@ -408,6 +410,94 @@ it and lists each **live difference** in Problems.
   Anvil and Tongs), then opens a new issue of `happy-dwarf-team/etch` filled
   in with them for the author to send from the browser. No file or text of the
   mod goes in it; it is the one exception to a snapshot never being shared.
+
+## Run selection
+
+Run selection (lab#156, decided in lab#65) runs the script selected in the
+editor in the live game, through Etch's plugin and the game's console `run`;
+not through Tongs, whose pipe stays off in the private install. It works in
+any `.txt` file of the playset, also one the game has not read.
+
+- **Etch: Run Selection in the Live Game** runs the selection's effects in the
+  player's country, as `run` itself does.
+- **Etch: Run Selection in the Province on Screen** wraps it in
+  `<id> = { … }` for the province the last ping's `province_view` names; with
+  none on screen the command says so and runs nothing.
+- **Etch: Check Selection as Trigger in the Live Game** wraps it in
+  `if = { limit = { … } log = "ETCH_CHECK <token> TRUE" } else = { log =
+  "ETCH_CHECK <token> FALSE" }` and reads the answer from `game.log`, where the
+  effect `log` writes `EVENT [<date>]:<text>`. With a province on screen it
+  asks for the scope: the player's country or that province.
+- **What runs:** the selection, or with nothing selected the statement that
+  starts on the cursor's line, with its block (braces in comments and strings
+  do not count); the editor then selects what ran. Etch does not parse or
+  check the script (CWTools does), with one exception: a selection whose
+  braces do not balance is refused before the game sees it, because the game
+  runs a block that does not close without a line in `error.log` (live, below).
+  Characters Windows-1252 has no byte for are written as `?`, and the notice
+  says how many.
+- **How:** the extension writes the script into the private profile's root
+  as `etch_run_<16 hex digits>.txt`, has the plugin's `run` job run it
+  ([plugin-protocol.md](plugin-protocol.md), `run`), and deletes the file
+  after the answer. Runs and reloads go one at a time, in order.
+- **Answers:** the new `error.log` lines of the run go to Problems on the
+  selection, a line with `near line: N` on the selection's line it names
+  (the wrapper's lines are counted out), any other on the whole selection;
+  every line that came during the run, also the game's own (in vanilla, a
+  building model the capital lacked after `add_base_tax`). A trigger answers
+  TRUE or FALSE. A trigger the game cannot read is left out of the `limit`
+  without stopping the run, so an unknown key counts as true: the run leaves
+  `Unknown trigger type. Key: …, near line: N` in `error.log` (live, the gate
+  of lab#156), and a TRUE with errors says so.
+- **Limits:** only in Etch's live game, its private copy; the plugin refuses
+  it in ironman and multiplayer, as it refuses reloads, before the job and
+  again on the main thread, and in the main menu. The first Run of each game
+  session says "Run changes the live game's private copy of the game. Your own
+  saves are untouched." `affects_gameplay` stays `false`: true would make
+  Anvil hold back pick mode and `confirm` in ironman and multiplayer too; the
+  description in `plugin.toml` says that Run changes the private copy.
+- **Run marks:** Etch keeps in its global state when the live game held what
+  a Run changed: from a successful Run, or from the start of a process that
+  continues such a save, until the process ends. **Continue** adds "written
+  after Run changed the game" to the newest private save written in such a
+  span.
+
+## Run selection: the live run
+
+Run on 2026-11-12 under the EU4 engine lab's procedure (its game lock for the
+batch, `eu4.exe` 1.37.5 `9AD3EFE1…DC4D771A` and the Process Lasso rule
+`eu4.exe,0,1-7` checked before and after and left unchanged, every process
+closed after its PID, path and creation time were checked), with Etch's
+plugin from this change and the pinned Anvil 1.20.0, Bellows 1.7.0 and Tongs
+0.32.0. The extension's modules (`process.ts`, `pipe.ts`, `run-script.ts`,
+`error-log.ts`) drove the plugin from the lab's Node script the way
+`LiveGame.runScript` does, not from VS Code. Tongs' pipe and input were on in
+the lab's copy for the reads (`player`, `country`, `province`) and to open the
+capital's province view. Saves were copies: vanilla Russia 1719.3.17
+(1920×1080), and Anbennar with Proper 2K UI Enhanced and P2KE Patch -
+Anbennar, Verne (`A33`) 1444.11.11 (2560×1440). Twelve runs in each; `run` took
+0.26–7.8 ms on the main thread.
+
+| Check | Vanilla (RUS) | Anbennar (A33) |
+| --- | --- | --- |
+| `run` before the save was loaded | `not_in_game` | `not_in_game` |
+| country: `add_treasury = 500`, `set_country_flag`, `capital_scope = { add_base_tax = 1 }` | `<file> executed`; the capital's base tax 32 → 33 | executed; base tax 5 → 6, the top bar's gold 54 → 554 |
+| trigger `has_country_flag` of that flag / of another / `tag` with a `NOT` | TRUE / FALSE / TRUE | TRUE / FALSE / TRUE |
+| province on screen (the capital, 33 and 292): `add_base_production = 1` | 9 → 10 | 5 → 6 |
+| province trigger `is_capital = yes` / a base production it does not have | TRUE / FALSE | TRUE / FALSE |
+| `add_treasuryy = 5` between two good lines | executed; `Parsing Error. … Unknown effect type. Key: add_treasuryy …, near line: 2`, on the selection's second line | the same |
+| a block that does not close (`capital_scope = {` and a line) | executed, no line in `error.log`: refused by Etch since | the same |
+| `add_treasury = lots` | executed, no line in `error.log` | the same |
+| trigger `adm_techh = 99` (unknown) | TRUE, with `Unknown trigger type. Key: adm_techh …, near line: 3` | the same |
+| unknown trigger beside a false one | FALSE, the same error | the same |
+| a file that is not there (`etch_run_deadbeef.txt`) | success false, no text | the same |
+| `file` `events/x.txt` | `bad_request` | `bad_request` |
+
+The game wrote a multi-line entry for the unknown trigger (`Parsing Errors.
+File: …`, then `[0]: …` lines): each line goes to Problems, the indented ones
+on the selection's line. Not checked live: ironman and multiplayer (the
+plugin's unit tests), the commands, notices and Problems inside VS Code, and
+the Run marks in **Continue** (unit tests).
 
 ## Live runs
 

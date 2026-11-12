@@ -105,6 +105,18 @@ A widget whose place or visibility in the offline preview differs from a live
 snapshot of the same window; Compare with Live Game lists them in Problems.
 _Avoid_: diff, mismatch
 
+**Run selection**:
+Running the script selected in the editor in the live game, through the game's
+console `run`: its effects in the player's country or the province on screen,
+or the selection checked as a trigger. It changes the private copy's game, never
+the player's own saves, and is refused in ironman and multiplayer.
+_Avoid_: execute, eval, console mode
+
+**Run marks**:
+What Etch records of when the live game's state holds what a Run selection
+changed, so that **Continue** can say a private save was written after one.
+_Avoid_: tainted save, dirty save
+
 **Planned restart**:
 A restart of the live game that Etch asks the player for, from a save the live
 game makes just before it, so that no play is lost; unlike the restart after a

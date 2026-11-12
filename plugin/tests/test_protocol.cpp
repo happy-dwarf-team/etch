@@ -165,6 +165,14 @@ void TestJobsRefused() {
     }
     AssertError(c.Handle(R"({"id":12,"type":"reselect","province":295})"), "not_ready", true, 12);
     AssertError(c.Handle(R"({"id":13,"type":"reload","lines":["reloadloc"],"reselect":1})"), "bad_request", true, 13);
+    // run takes Etch's own script file names only: no path, no other file.
+    for (const char* bad : {R"({"id":14,"type":"run"})", R"({"id":14,"type":"run","file":7})",
+                            R"({"id":14,"type":"run","file":"events/x.txt"})",
+                            R"({"id":14,"type":"run","file":"..\\etch_run_0123abcd.txt"})",
+                            R"({"id":14,"type":"run","file":"etch_run_0123abcd.txt;debug_crash"})"}) {
+        AssertError(c.Handle(bad), "bad_request", true, 14);
+    }
+    AssertError(c.Handle(R"({"id":15,"type":"run","file":"etch_run_0123abcd.txt"})"), "not_ready", true, 15);
 }
 
 void TestBadRequests() {

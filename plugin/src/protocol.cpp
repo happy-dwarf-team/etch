@@ -70,6 +70,7 @@ Reply Connection::Handle(std::string_view line) {
     if (*type == "ping") return Ping(*id);
     if (*type == "reload") return Reload(*id, request);
     if (*type == "save") return Save(*id);
+    if (*type == "run") return RunScript(*id, request);
     if (*type == "confirm") return Confirm(*id, request);
     if (*type == "reselect") return Reselect(*id, request);
     if (*type == "pick_mode") return PickMode(*id, request);
@@ -181,6 +182,24 @@ Reply Connection::Save(std::uint64_t id) {
     const Send send = send_;
     const std::optional<Refusal> refused = host_.jobs->Save([send, id](const SaveResult& r) {
         if (send) send(SaveAnswer(id, r));
+    });
+    if (refused) return {Error(id, refused->code, refused->message)};
+    return {};
+}
+
+Reply Connection::RunScript(std::uint64_t id, const json::Value& request) {
+    const json::Value* file_member = request.Find("file");
+    const std::optional<std::string_view> file = file_member ? file_member->AsString() : std::nullopt;
+    if (!file || !IsRunFile(*file)) {
+        return {Error(id, "bad_request", "\"file\" must be a script file of Etch, etch_run_<hex>.txt")};
+    }
+    if (host_.jobs == nullptr || !host_.ready()) return {Error(id, "not_ready", "the live game is not ready")};
+    if (!host_.game_session || !host_.game_session()) {
+        return {Error(id, "not_in_game", "the live game has no game loaded to run the script in")};
+    }
+    const Send send = send_;
+    const std::optional<Refusal> refused = host_.jobs->RunScript(std::string(*file), [send, id](const RunResult& r) {
+        if (send) send(RunAnswer(id, r));
     });
     if (refused) return {Error(id, refused->code, refused->message)};
     return {};

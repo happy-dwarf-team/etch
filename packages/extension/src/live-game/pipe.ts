@@ -128,6 +128,15 @@ export interface SaveAnswer {
   readonly queuedMs: number;
 }
 
+/** The answer to a `run`: the console's `run <file>`, as for a `save`. */
+export interface RunAnswer {
+  readonly success: boolean;
+  /** The console's answer: `<file> executed`; none for a file the game does not find (live). */
+  readonly text: string;
+  readonly ms: number;
+  readonly queuedMs: number;
+}
+
 /** What `pick_mode` asks for; every member is optional (docs/plugin-protocol.md, `pick_mode`). */
 export interface PickModeRequest {
   /** Turn pick mode on or off; absent leaves it. */
@@ -545,6 +554,21 @@ export class HostPipe {
    */
   async save(timeoutMs = 120_000): Promise<SaveAnswer> {
     const answer = await this.request({ type: 'save' }, timeoutMs);
+    return {
+      success: answer['success'] === true,
+      text: typeof answer['text'] === 'string' ? answer['text'] : '',
+      ms: Number(answer['ms']),
+      queuedMs: Number(answer['queued_ms']),
+    };
+  }
+
+  /**
+   * Runs a script file of the private profile through the game's console `run` (lab#156,
+   * docs/plugin-protocol.md, `run`). Rejects with `PipeError` `not_available` in ironman and
+   * multiplayer, `not_in_game` in the main menu and `busy` while another job runs.
+   */
+  async run(file: string, timeoutMs = 30_000): Promise<RunAnswer> {
+    const answer = await this.request({ type: 'run', file }, timeoutMs);
     return {
       success: answer['success'] === true,
       text: typeof answer['text'] === 'string' ? answer['text'] : '',

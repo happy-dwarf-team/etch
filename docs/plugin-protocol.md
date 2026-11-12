@@ -10,7 +10,7 @@ would misread it. The extension and the plugin ship together in one VSIX
 
 Protocol version: **2**, the live game's (v2 specification sections 6 and 7):
 the handshake, the ping, the jobs the plugin runs on the game's main thread
-(`reload`, `save`, `confirm` and `reselect`), pick mode (`pick_mode`, `snapshot`) and the
+(`reload`, `save`, `run`, `confirm` and `reselect`), pick mode (`pick_mode`, `snapshot`) and the
 plugin's pushes (`pick`, `snapshot`, `pick_mode`). Protocol 1 was Etch 1.x's game host: its preview
 job (`job`, etch#50) and frame capture are gone (ADR 0005), and a `job` now
 gets `unknown_type`; their description is in this page's history on
@@ -102,7 +102,7 @@ connection gets `already_greeted`.
 | `ready`        | as in `hello`                                                                                               |
 | `frame`        | as in `hello`; it stands still while a save loads (the whole load is one frame of the main loop) or saves  |
 | `responding`   | the game's window takes messages (`IsHungAppWindow` is false); true while no window is found yet           |
-| `busy`         | a `reload` or `save` waits for or runs on the main thread                                                   |
+| `busy`         | a `reload`, `save` or `run` waits for or runs on the main thread                                            |
 | `pick`         | pick mode is on                                                                                             |
 | `game_session` | the game session as `anvil-game` last published it, `null` in the main menu: `ironman`, `multiplayer`, `number` (1 for the first since the start) |
 | `province_view` | the province on screen: `province`, and `window`, `provinceview` or `colonisationpanel` (the game shows a province without an owner there); `null` when neither window shows one, or without `tongs.navigation`. The main thread reads it every 15 frames, so it may be that old |
@@ -117,7 +117,7 @@ the plugin's own save is `busy` (spec section 6). The live game is ready when
 
 ## Jobs
 
-`reload` and `save` run on the game's main thread, after an outer frame
+`reload`, `save` and `run` run on the game's main thread, after an outer frame
 (`anvil-game`'s `run_on_main_thread`), one at a time. The request is answered
 once the main thread ran the job, through the overlapped pipe; pings are
 answered meanwhile. A job is refused at once with:
@@ -126,7 +126,7 @@ answered meanwhile. A job is refused at once with:
 | ---------------- | ---------------------------------------------------------------------------------------- |
 | `not_ready`      | the game is not ready yet                                                                |
 | `busy`           | another job waits or runs                                                                |
-| `not_available`  | the game session is ironman (`reload does not work in ironman`) or multiplayer (`reload is not available in multiplayer`); checked again on the main thread. Etch never goes around the console's own refusal |
+| `not_available`  | the game session is ironman (`reload does not work in ironman`) or multiplayer (`reload is not available in multiplayer`; `run` for a `run`); checked again on the main thread. Etch never goes around the console's own refusal |
 | `console_broken` | a console call faulted earlier in this process                                           |
 | `no_main_thread` | `anvil-game` did not take the work                                                       |
 
@@ -230,6 +230,40 @@ In one live run a game with stale windows on screen (left by a reload of
 `core.gui` and `mapicons.gui`) deadlocked in `autosave`: the main thread waited
 while the window kept taking messages, and no file was written. The extension
 gives a save 30 s before it closes the game anyway.
+
+### `run`
+
+```json
+{"id":8,"type":"run","file":"etch_run_3f9c2a71d04be688.txt"}
+```
+
+```json
+{"id":8,"ok":true,"success":true,"text":"etch_run_3f9c2a71d04be688.txt executed","ms":2.4,"queued_ms":9.8}
+```
+
+Runs a script file through the game's console command `run` (lab#156, Run
+selection in [live-game.md](live-game.md)). The extension writes the selection
+into the private profile's root, the game's user folder, as
+`etch_run_<8 to 32 lowercase hex digits>.txt` and names it in `file`; any
+other name, among them one with a folder, is `bad_request`, so a client cannot
+make the game run another file. On the main thread the plugin checks the game
+session again and runs the console line `run <file>`. `success` and `text` are
+the console's: `<file> executed`; for a file the game does not find, `success`
+false and no text (live, lab#156).
+
+The console's `run` (`OnExecute_RunEffects`, Steam `0xE4F1D0`) takes one
+argument with `.txt` in it, looks for it in the game's virtual file system,
+which finds it in the user folder's root, reads it as one effect block, and
+runs it in the player's country (read in `eu4.exe`, checked live). The plugin does not read the file or the game's answer beyond the
+console's text; the extension reads the run's `error.log` lines and, for a
+checked trigger, `game.log`.
+
+It is refused like `reload`: `not_ready`, `not_in_game` in the main menu,
+`busy`, `not_available` in ironman (`run does not work in ironman`) and
+multiplayer (`run is not available in multiplayer`), also when the session
+changed while the job waited, `console_broken`. A console fault is
+`console_fault`. A `run` changes the game state of the private copy; no other
+request does.
 
 ### `reselect`
 

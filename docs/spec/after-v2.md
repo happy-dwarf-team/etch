@@ -62,6 +62,19 @@ refresh is a step of the 3.0.0 release.
 
 ## Done since 2.0.0
 
+- **Run selection (lab#156).** The selected script, or the statement on the
+  cursor's line, runs in the live game through the plugin's new `run` job and
+  the game's console `run`: effects in the player's country or the province on
+  screen, or the selection checked as a trigger whose answer comes from
+  `game.log`. The run's `error.log` lines go to Problems on the selection. The
+  plugin refuses it in ironman and multiplayer; the first Run of a game session
+  says that only the private copy changes, and **Continue** marks a save written
+  after a Run. Decision (lab#65): Etch's own plugin and pipe, not Tongs, and
+  `affects_gameplay` stays `false`. The gate on unreadable triggers passed: the
+  run leaves `Unknown trigger type` in `error.log`, shown beside a TRUE. A block
+  that does not close runs without any error, so Etch refuses unbalanced braces.
+  docs/live-game.md, "Run selection" and its live run.
+
 - **A warning for a `replace_path` the game mishandles.** A `replace_path` on a
   subfolder of a folder the game lists recursively (`interface/assets`,
   `gfx/entities`, `localisation/english`) makes EU4 1.37.5 skip the files

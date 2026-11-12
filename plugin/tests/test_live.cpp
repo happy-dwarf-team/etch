@@ -395,6 +395,56 @@ void TestSave() {
     assert(a.Find("text")->AsString() == "Autosave command started!");
 }
 
+void TestRunFiles() {
+    assert(etch::IsRunFile("etch_run_0123abcd.txt"));
+    assert(etch::IsRunFile("etch_run_0123456789abcdef0123456789abcdef.txt"));
+    for (const char* name :
+         {"etch_run_0123abc.txt", "etch_run_0123456789abcdef0123456789abcdef0.txt", "etch_run_0123ABCD.txt",
+          "etch_run_0123abcd.TXT", "etch_run_0123abcd.txt ", "../etch_run_0123abcd.txt", "etch_run_0123abcd",
+          "x/etch_run_0123abcd.txt", "etch_run_.txt", "events/x.txt", "run_0123abcd.txt", ""}) {
+        assert(!etch::IsRunFile(name));
+    }
+}
+
+void TestRunScript() {
+    FakeGame game;
+    game.session = GameSession{false, false, 1};
+    LiveJobs jobs(game.Env());
+    std::optional<etch::RunResult> got;
+    assert(!jobs.RunScript("etch_run_0123abcd.txt", [&](const etch::RunResult& r) { got = r; }));
+    assert(jobs.Busy());
+    // One job at a time.
+    const auto busy = jobs.RunScript("etch_run_0123abcd.txt", [](const etch::RunResult&) {});
+    assert(busy && busy->code == "busy");
+    game.Frame();
+    assert(!jobs.Busy());
+    assert((game.calls == std::vector<std::string>{"run etch_run_0123abcd.txt"}));
+    const Value a = *Parse(etch::RunAnswer(5, *got)).value;
+    assert(a.Find("ok")->AsBool() == true && a.Find("success")->AsBool() == true);
+    assert(a.Find("text")->AsString() == "reloaded!");
+    assert(a.Find("ms") != nullptr && a.Find("queued_ms") != nullptr);
+}
+
+void TestRunRefusedInIronmanAndMultiplayer() {
+    FakeGame game;
+    game.session = GameSession{true, false, 1};
+    LiveJobs jobs(game.Env());
+    auto refused = jobs.RunScript("etch_run_0123abcd.txt", [](const etch::RunResult&) {});
+    assert(refused && refused->code == "not_available" && refused->message == "run does not work in ironman");
+    game.session = GameSession{false, true, 2};
+    refused = jobs.RunScript("etch_run_0123abcd.txt", [](const etch::RunResult&) {});
+    assert(refused && refused->message == "run is not available in multiplayer");
+    // A session that turns multiplayer while the job waits: refused on the main thread, nothing run.
+    game.session = GameSession{false, false, 3};
+    std::optional<etch::RunResult> got;
+    assert(!jobs.RunScript("etch_run_0123abcd.txt", [&](const etch::RunResult& r) { got = r; }));
+    game.session = GameSession{false, true, 4};
+    game.Frame();
+    assert(got->error == "not_available" && game.calls.empty() && !jobs.Busy());
+    const Value a = *Parse(etch::RunAnswer(6, *got)).value;
+    assert(a.Find("ok")->AsBool() == false && a.Find("error")->AsString() == "not_available");
+}
+
 void TestConfirm() {
     assert(etch::IsConfirmPath("DefaultConfirm/AgreeButton"));
     assert(!etch::IsConfirmPath("DefaultConfirm/CancelButton"));
@@ -574,6 +624,9 @@ int main() {
     TestRefusedInIronmanAndMultiplayer();
     TestFaultStopsTheConsole();
     TestSave();
+    TestRunFiles();
+    TestRunScript();
+    TestRunRefusedInIronmanAndMultiplayer();
     TestConfirm();
     TestReloadReselectsTheProvince();
     TestReloadDoesNotReselectAnotherProvince();
