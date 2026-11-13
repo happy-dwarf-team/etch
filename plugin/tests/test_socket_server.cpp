@@ -204,7 +204,8 @@ void TestSilentClientIsCutOff() {
 }
 
 void ClearFolderEnvironment() {
-    for (const wchar_t* name : {L"XDG_STATE_HOME", L"WINE_HOST_XDG_STATE_HOME", L"WINEHOMEDIR", L"HOME", L"WINE_HOST_HOME"}) {
+    for (const wchar_t* name :
+         {L"XDG_STATE_HOME", L"WINE_HOST_XDG_STATE_HOME", L"WINEHOMEDIR", L"HOME", L"WINE_HOST_HOME"}) {
         SetEnvironmentVariableW(name, nullptr);
     }
 }
@@ -227,16 +228,21 @@ void TestFolder() {
 void TestProcNetTcp() {
     const char* table =
         "  sl  local_address rem_address   st tx_queue rx_queue tr tm->when retrnsmt   uid  timeout inode\n"
-        "   0: 00000000:0016 00000000:0000 0A 00000000:00000000 00:00000000 00000000     0        0 11 1 0 100 0 0 10 0\n"
-        "   1: 0100007F:A7C1 0100007F:C350 01 00000000:00000000 00:00000000 00000000  1001        0 12 1 0 20 4 28 10 -1\n"
-        "   2: 0100007F:C350 0100007F:A7C1 01 00000000:00000000 00:00000000 00000000  1000        0 13 1 0 20 4 29 10 -1\n"
-        "   3: 0A00020F:A7C2 0A00020F:C350 01 00000000:00000000 00:00000000 00000000  7777        0 14 1 0 20 4 29 10 -1\n";
+        "   0: 00000000:0016 00000000:0000 0A 00000000:00000000 00:00000000 00000000     0        0 11 1 0 100 0 0 10 "
+        "0\n"
+        "   1: 0100007F:A7C1 0100007F:C350 01 00000000:00000000 00:00000000 00000000  1001        0 12 1 0 20 4 28 10 "
+        "-1\n"
+        "   2: 0100007F:C350 0100007F:A7C1 01 00000000:00000000 00:00000000 00000000  1000        0 13 1 0 20 4 29 10 "
+        "-1\n"
+        "   3: 0A00020F:A7C2 0A00020F:C350 01 00000000:00000000 00:00000000 00000000  7777        0 14 1 0 20 4 29 10 "
+        "-1\n";
     const etch::PeerUids other_user = etch::ProcNetTcpUids(table, 0xC350, 0xA7C1);
     assert(other_user.client == 1001 && other_user.server == 1000);
     assert(etch::ProcNetTcpUids(table, 0xC350, 0x1234).client < 0);
     assert(etch::ProcNetTcpUids(table, 0xC350, 0xA7C2).client < 0);  // only 127.0.0.1 counts
     assert(etch::ProcNetTcpUids("", 1, 2).client < 0);
-    // The real table, where there is one (Wine on Linux): it lists this very connection, with the same owner at both ends.
+    // The real table, where there is one (Wine on Linux): it lists this very connection, with the same owner at both
+    // ends.
     std::ifstream probe(L"Z:\\proc\\net\\tcp", std::ios::binary);
     if (!probe) {
         std::puts("  skipped the real /proc/net/tcp: not Wine on Linux");
@@ -259,7 +265,8 @@ int main() {
     WSADATA wsa;
     assert(WSAStartup(MAKEWORD(2, 2), &wsa) == 0);
     char id[33] = {};
-    std::snprintf(id, sizeof id, "%08lx%024llx", GetCurrentProcessId(), static_cast<unsigned long long>(GetTickCount64()));
+    std::snprintf(id, sizeof id, "%08lx%024llx", GetCurrentProcessId(),
+                  static_cast<unsigned long long>(GetTickCount64()));
     assert(etch::IsSessionId(id));
     g_pipe_name = std::string("etch-host-") + id;
     g_folder = fs::temp_directory_path() / ("etch-socket-test-" + std::to_string(GetCurrentProcessId()));

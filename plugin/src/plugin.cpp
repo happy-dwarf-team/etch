@@ -966,7 +966,9 @@ struct EtchPlugin : anvil::Plugin {
             const DWORD n = GetEnvironmentVariableA("ETCH_HOST_BRIDGE_DIR", configured, MAX_PATH);
             const auto folder = etch::BridgeFolder(n > 0 && n < MAX_PATH ? std::string(configured, n) : std::string());
             if (folder.empty()) {
-                host.warn("no folder for the socket's state file (ETCH_HOST_BRIDGE_DIR is not set and the host's home is unknown)");
+                host.warn(
+                    "no folder for the socket's state file (ETCH_HOST_BRIDGE_DIR is not set and the host's home is "
+                    "unknown)");
             } else {
                 etch::StartSocketServer(std::string("etch-host-") + *session.id, state, Log, folder);
             }
