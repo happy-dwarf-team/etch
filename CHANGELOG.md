@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.11.0](https://github.com/happy-dwarf-team/etch/compare/v2.10.0...v2.11.0) (2026-11-13)
+
+
+### Features
+
+* **extension:** show scripted triggers and church aspects in the script profile ([#407](https://github.com/happy-dwarf-team/etch/issues/407)) ([1e228dc](https://github.com/happy-dwarf-team/etch/commit/1e228dcdf5aa9c6d187b322f7bcd87ed7a840e07))
+
+
+### Build
+
+* **pins:** pin Tongs 0.34.0 ([#405](https://github.com/happy-dwarf-team/etch/issues/405)) ([57288f5](https://github.com/happy-dwarf-team/etch/commit/57288f5a9d3aa2c4537ab9113c002673a189a1b0))
+
 ## [2.10.0](https://github.com/happy-dwarf-team/etch/compare/v2.9.0...v2.10.0) (2026-11-13)
 
 
