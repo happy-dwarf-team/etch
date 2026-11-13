@@ -29,10 +29,11 @@ JSON; unknown fields are errors. Hashes are uppercase hexadecimal SHA-256.
 | `licenses` | `component`, `spdx` and `file` (an archive path among the files taken) of the build itself, first, and of each component compiled into it |
 
 Only what the live game loads is taken, with its licence texts: from Anvil
-`version.dll`, `anvil/anvil.toml` and `anvil-game`, but not `anvil-overlay`
-(its notices would be drawn into the captures), `AnvilManager.exe` or the
-example plugins, and so not the licences of Dear ImGui and miniz, which only
-those contain. From Bellows its whole plugin folder, which goes to
+`version.dll`, `anvil/anvil.toml`, `anvil-game`, `anvil-map` and `anvil-script`,
+but not `anvil-overlay` (its notices would be drawn into the captures),
+`anvil-inspector` and `anvil-log-throttle` (both need the overlay),
+`AnvilManager.exe` or the example plugins, and so not the licences of Dear
+ImGui and miniz, which only those contain. From Bellows its whole plugin folder, which goes to
 `anvil/plugins/bellows/`. From Tongs its plugin folder without `include/`
 (the headers of `tongs.ui` and `tongs.navigation`, which Etch's plugin
 vendors), to `anvil/plugins/tongs/`: the live game loads Tongs for those
