@@ -1,5 +1,29 @@
 # Changelog
 
+## [2.10.0](https://github.com/happy-dwarf-team/etch/compare/v2.9.0...v2.10.0) (2026-11-13)
+
+
+### Features
+
+* On Linux, Etch's live game runs through Steam's Proton: it finds Steam, Proton and the game's prefix and starts the game as Steam does, so start, compare, snapshot and pick work there too. Windows works as before. ([#403](https://github.com/happy-dwarf-team/etch/issues/403)) ([d70ccf1](https://github.com/happy-dwarf-team/etch/commit/d70ccf13be963970ec1038b1088b201e50d34d6a))
+* Window profiles can show or hide parts of a list's entries, so the preview hides a foreign great project's upgrade and boost buttons as the game does. ([#395](https://github.com/happy-dwarf-team/etch/issues/395)) ([43bad2e](https://github.com/happy-dwarf-team/etch/commit/43bad2e5557357401476be085483050f39e2800e))
+* The preview draws the ledger's sort buttons, laid out as the game's columns (`place.table` in window profiles). ([#399](https://github.com/happy-dwarf-team/etch/issues/399)) ([e1ec344](https://github.com/happy-dwarf-team/etch/commit/e1ec344f55dc4e75dc0b9e90d656e96a4beaaf67))
+* **Etch: Show Latest Script Profile** opens the newest file of Anvil's script profiler as a page with the slowest triggers and effects and what they belong to. The profiler comes with Anvil 1.22. ([#397](https://github.com/happy-dwarf-team/etch/issues/397)) ([a2af7fd](https://github.com/happy-dwarf-team/etch/commit/a2af7fdde5d3dba77c7dec9ba6993929ebc23040))
+
+
+### Bug Fixes
+
+* The coverage measure no longer counts the main menu's hidden second settings window as drawn. ([#400](https://github.com/happy-dwarf-team/etch/issues/400)) ([c91cf52](https://github.com/happy-dwarf-team/etch/commit/c91cf52fe793141f5f0464a326d2d93769c86439))
+* The preview is closer to the game in building slots, great projects, river and strait marks, the stability marker, the relations count and the lobby options. ([#393](https://github.com/happy-dwarf-team/etch/issues/393)) ([f92c80e](https://github.com/happy-dwarf-team/etch/commit/f92c80e078f1be7488ae3a2bc400db4a2647e7aa))
+
+
+### Build
+
+* Etch's live game also loads Anvil's `anvil-map` and `anvil-script`, so a mod that uses plugin map modes, plugin effects or `has_dlc = "anvil:<id>"` behaves as in a player's game. ([#402](https://github.com/happy-dwarf-team/etch/issues/402)) ([7e1a721](https://github.com/happy-dwarf-team/etch/commit/7e1a7214916c86b74862f91a69b384cf998f3299))
+* Etch's live game uses Anvil 1.22.0. ([#394](https://github.com/happy-dwarf-team/etch/issues/394)) ([3910a40](https://github.com/happy-dwarf-team/etch/commit/3910a4038fb571d3b39d7ac80f12651506baa694)) ([#404](https://github.com/happy-dwarf-team/etch/issues/404)) ([8fc330c](https://github.com/happy-dwarf-team/etch/commit/8fc330cdf80e16f9bc7eec898b8a40f2332d0291))
+* Etch's live game uses Bellows 1.8.0. ([#396](https://github.com/happy-dwarf-team/etch/issues/396)) ([a075344](https://github.com/happy-dwarf-team/etch/commit/a075344e9289910521ae59c40a05280486d47a99))
+* Etch's live game uses Tongs 0.33.0. ([#391](https://github.com/happy-dwarf-team/etch/issues/391)) ([3541e0f](https://github.com/happy-dwarf-team/etch/commit/3541e0f3a66536da3a3136784d8476806e242114))
+
 ## [2.9.0](https://github.com/happy-dwarf-team/etch/compare/v2.8.1...v2.9.0) (2026-11-12)
 
 ### Features
