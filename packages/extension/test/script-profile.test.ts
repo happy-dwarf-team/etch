@@ -31,6 +31,23 @@ const PROFILE = [
   '',
 ].join('\r\n');
 
+// The same with v1.1's additions (eu4-engine-lab#165): church aspect and scripted trigger owners
+// in the trigger list, and the list of scripted triggers by name, whose role is empty.
+const V11_PROFILE = [
+  '# format=1 plugin=anvil-script-profiler version=1.22.0 build=eu4-1.37.5-steam-win64 status=complete started=2026-11-12T10:34:20 first_day=1445.4.5 last_day=1445.10.2 days=181 wall_s=28.338 threads=7 root_calls=2000 nested_triggers=0 nested_effects=0 nested_scripted_triggers=900 dropped_calls=0 multiplayer=0 ironman=0',
+  '# Root blocks only, merged by owner and role.',
+  'list,rank,owner,name,option,role,calls,total_ms,mean_us,max_us,main_thread_ms,caller_rva',
+  'trigger,1,church_aspect,test_aspect,,trigger,300,50.0,166.7,900.0,20.0,',
+  'trigger,2,event,test_events.1,,trigger,100,40.25,402.5,900.0,10.0,',
+  'trigger,3,none,,,trigger,800,12.5,0.016,30.2,1.1,0xB5F80',
+  'trigger,4,scripted_trigger,is_test_trigger,,trigger,20,4.0,200.0,300.0,1.0,',
+  'trigger,5,casus_belli,cb_test,,prerequisites,50,3.0,60.0,80.0,3.0,',
+  'effect,1,church_aspect,test_aspect,,effect,2,1.0,500.0,600.0,1.0,',
+  'scripted_trigger,1,scripted_trigger,is_test_trigger,,,600,12.0,20.0,142.1,7.0,',
+  'scripted_trigger,2,scripted_trigger,has_test_flag_trigger,,,300,6.0,20.0,88.0,3.0,',
+  '',
+].join('\r\n');
+
 describe('parseScriptProfile', () => {
   it('reads the line of pairs and the two lists, each longest first', () => {
     const profile = parseScriptProfile(PROFILE);
@@ -105,8 +122,42 @@ describe('parseScriptProfile', () => {
     });
     expect(profile.problems).toEqual([
       'The file is in format 2, newer than Etch reads (1): only the columns Etch knows are shown.',
-      '1 rows of other lists than triggers and effects are left out.',
+      '1 rows of other lists than triggers, scripted triggers and effects are left out.',
     ]);
+  });
+
+  it('reads the scripted trigger list and the church aspect owner of Anvil 1.22 v1.1', () => {
+    const profile = parseScriptProfile(V11_PROFILE);
+    expect(profile.problems).toEqual([]);
+    expect(profile.scriptedTriggers.rows.map((r) => r.name)).toEqual([
+      'is_test_trigger',
+      'has_test_flag_trigger',
+    ]);
+    expect(profile.scriptedTriggers.totalMs).toBeCloseTo(18);
+    expect(profile.scriptedTriggers.calls).toBe(900);
+    expect(profile.triggers.rows.map((r) => r.owner)).toEqual([
+      'church_aspect',
+      'event',
+      'none',
+      'scripted_trigger',
+      'casus_belli',
+    ]);
+    const page = scriptProfileMarkdown(profile, { path: 'p.csv', uri: 'file:///p.csv' }, 10);
+    expect(page).toContain('| 1 | Church aspect | test_aspect | trigger | 300 |');
+    expect(page).toContain('| 4 | Scripted trigger | is_test_trigger | trigger | 20 |');
+    expect(page).toContain('## Scripted triggers');
+    expect(page).toContain('18.0 ms in 900 calls, 2 rows.');
+    expect(page).toContain('| 1 | Scripted trigger | is_test_trigger |  | 600 | 12.00 |');
+    expect(page.indexOf('## Scripted triggers')).toBeGreaterThan(page.indexOf('## Triggers'));
+    expect(page.indexOf('## Scripted triggers')).toBeLessThan(page.indexOf('## Effects'));
+  });
+
+  it('leaves the scripted trigger list out of the page of an older file', () => {
+    const profile = parseScriptProfile(PROFILE);
+    expect(profile.scriptedTriggers.rows).toEqual([]);
+    expect(
+      scriptProfileMarkdown(profile, { path: 'p.csv', uri: 'file:///p.csv' }, 10),
+    ).not.toContain('Scripted triggers');
   });
 
   it('refuses a file without the columns a row needs', () => {

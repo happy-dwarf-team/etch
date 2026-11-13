@@ -70,6 +70,9 @@ refresh is a step of the 3.0.0 release.
   the effects with calls, total, mean and `max`. Columns are found by the
   header's names, so a later format's new columns are left out with a note.
   The rows without an owner are summed into one, as the profiler's window does.
+  The profiler's v1.1 (lab#165, Anvil 1.22) adds church aspect and scripted
+  trigger owners and a third list, scripted triggers by name, which the page
+  shows between the triggers and the effects when the file has it.
   Not in it: a jump from a row to the event's or decision's file, and starting
   a measurement from Etch.
 

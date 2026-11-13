@@ -1,6 +1,6 @@
 // The latest script profile (eu4-engine-lab#166): the CSV that Anvil's `anvil-script-profiler`
-// writes to the game's `logs/` folder after each profiling span, read and shown as two lists,
-// triggers and effects. The format is Anvil's (docs/script-profiler.md there, `format=1`): a `#` line
+// writes to the game's `logs/` folder after each profiling span, read and shown as its lists:
+// triggers, scripted triggers (Anvil 1.22's v1.1, lab#165) and effects. The format is Anvil's (docs/script-profiler.md there, `format=1`): a `#` line
 // of `key=value` pairs, a `#` note, a header and one row per owner and role. Columns are found by
 // the header's names, so a later Anvil may add columns. Node only, no vscode.
 import { readdir, readFile, stat } from 'node:fs/promises';
@@ -8,13 +8,13 @@ import { join } from 'node:path';
 
 /** One owner and role of a list: what the profiler measured for it. */
 export interface ScriptProfileRow {
-  /** `event`, `event_option`, `decision`, `on_action`, `casus_belli`, …, or `none`. */
+  /** `event`, `event_option`, `decision`, …, `church_aspect`, `scripted_trigger`, or `none`. */
   readonly owner: string;
   /** The owner's key; empty for `none`. */
   readonly name: string;
   /** An event option's number; empty otherwise. */
   readonly option: string;
-  /** `trigger`, `effect`, `mean_time_to_happen`, `potential`, … */
+  /** `trigger`, `effect`, `mean_time_to_happen`, `potential`, …; empty in the scripted trigger list. */
   readonly role: string;
   readonly calls: number;
   readonly totalMs: number;
@@ -38,6 +38,12 @@ export interface ScriptProfile {
   /** The span was ended by a load, the menu or quitting the game (`status=interrupted_*`). */
   readonly interrupted: boolean;
   readonly triggers: ScriptProfileList;
+  /**
+   * Every call of a scripted trigger by its name (`list=scripted_trigger`, Anvil 1.22's v1.1): the
+   * outermost on its thread, also inside other blocks, so its time is in the trigger list too.
+   * Empty for a file of an older Anvil.
+   */
+  readonly scriptedTriggers: ScriptProfileList;
   readonly effects: ScriptProfileList;
   /** What could not be read: a newer format, a missing column, a row that is not a number. */
   readonly problems: readonly string[];
@@ -116,6 +122,7 @@ export function parseScriptProfile(text: string): ScriptProfile {
   let meta: Record<string, string> = {};
   let header: string[] | undefined;
   const triggers = emptyList();
+  const scriptedTriggers = emptyList();
   const effects = emptyList();
   let other = 0;
   let unreadable = 0;
@@ -160,7 +167,14 @@ export function parseScriptProfile(text: string): ScriptProfile {
       continue;
     }
     const list = at('list').toLowerCase();
-    const into = list === 'trigger' ? triggers : list === 'effect' ? effects : undefined;
+    const into =
+      list === 'trigger'
+        ? triggers
+        : list === 'effect'
+          ? effects
+          : list === 'scripted_trigger'
+            ? scriptedTriggers
+            : undefined;
     if (into === undefined) {
       other++;
       continue;
@@ -177,10 +191,12 @@ export function parseScriptProfile(text: string): ScriptProfile {
     );
   }
   if (other > 0)
-    problems.push(`${String(other)} rows of other lists than triggers and effects are left out.`);
+    problems.push(
+      `${String(other)} rows of other lists than triggers, scripted triggers and effects are left out.`,
+    );
   if (unreadable > 0)
     problems.push(`${String(unreadable)} rows whose numbers could not be read are left out.`);
-  for (const list of [triggers, effects]) {
+  for (const list of [triggers, scriptedTriggers, effects]) {
     list.rows = withOneUnowned(list.rows);
     list.rows.sort((a, b) => b.totalMs - a.totalMs);
   }
@@ -188,6 +204,7 @@ export function parseScriptProfile(text: string): ScriptProfile {
     meta,
     interrupted: (meta['status'] ?? '').startsWith('interrupted'),
     triggers,
+    scriptedTriggers,
     effects,
     problems,
   };
@@ -236,6 +253,8 @@ const OWNERS: Readonly<Record<string, string>> = {
   triggered_modifier: 'Triggered modifier',
   province_triggered_modifier: 'Province triggered modifier',
   mission: 'Mission',
+  church_aspect: 'Church aspect',
+  scripted_trigger: 'Scripted trigger',
   none: 'No owner found',
 };
 
@@ -265,13 +284,19 @@ function figure(value: number, decimals: number): string {
   });
 }
 
-function listMarkdown(title: string, list: ScriptProfileList, rows: number): string[] {
+function listMarkdown(
+  title: string,
+  list: ScriptProfileList,
+  rows: number,
+  note?: string,
+): string[] {
   const out = [
     `## ${title}`,
     '',
     `${figure(list.totalMs, 1)} ms in ${figure(list.calls, 0)} calls, ${figure(list.rows.length, 0)} rows.`,
     '',
   ];
+  if (note !== undefined) out.push(note, '');
   if (list.rows.length === 0) return [...out, 'None measured.', ''];
   out.push(
     '| # | Owner | Name | Role | Calls | Total (ms) | Mean (µs) | Max (µs) |',
@@ -325,6 +350,17 @@ export function scriptProfileMarkdown(
   }
   for (const problem of profile.problems) out.push(`> ${cell(problem)}`, '');
   out.push(...listMarkdown('Triggers', profile.triggers, rows));
+  // As the profiler's window: the list only when the file has it (Anvil 1.22's v1.1 or newer).
+  if (profile.scriptedTriggers.rows.length > 0) {
+    out.push(
+      ...listMarkdown(
+        'Scripted triggers',
+        profile.scriptedTriggers,
+        rows,
+        'Every use of a scripted trigger by its name, also inside an event or a decision, so this time is part of the triggers above too.',
+      ),
+    );
+  }
   out.push(...listMarkdown('Effects', profile.effects, rows));
   out.push(
     'Times are summed over every game thread. A trigger inside an effect (a `limit`) counts in both lists.',
