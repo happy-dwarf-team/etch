@@ -39,7 +39,8 @@ describe('the compatibility tool of EU4', () => {
   });
 });
 
-describe('findProton and protonCommand', () => {
+// Steam's Linux layout on a POSIX file system: Proton only starts the game there.
+describe.skipIf(process.platform === 'win32')('findProton and protonCommand', () => {
   let root: string;
   let home: string;
   let game: string;

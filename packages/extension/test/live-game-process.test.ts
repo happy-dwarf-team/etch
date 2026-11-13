@@ -209,8 +209,12 @@ windows('the lock', () => {
   );
 });
 
-// These tests listen on the pipe path itself (Node makes a socket of it), so they connect to it directly, as on Windows.
-const direct = { env: {}, homedir: '', platform: 'linux', direct: pipeDir } as const;
+// These tests listen on the pipe path itself: on Windows the named pipe, elsewhere a socket Node makes of a path in
+// pipeDir. Either way they connect to it directly, without the state file of the game socket.
+const direct =
+  process.platform === 'win32'
+    ? ({ env: {}, homedir: '', platform: 'win32' } as const)
+    : ({ env: {}, homedir: '', platform: 'linux', direct: pipeDir } as const);
 
 describe('the session pipe', () => {
   let server: Server | undefined;

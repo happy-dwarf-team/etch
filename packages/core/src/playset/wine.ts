@@ -31,7 +31,7 @@ export function winePrefixOf(path: string): string | undefined {
  * a drive the prefix does not have, is returned as it is.
  */
 export function hostPathFromWindows(path: string, prefix: string | undefined): string {
-  const match = /^([A-Za-z]):[\\/]*(.*)$/.exec(path);
+  const match = /^([A-Za-z]):(.*)$/.exec(path);
   if (match?.[1] === undefined) return path;
   const drive = match[1].toLowerCase();
   const rest = (match[2] ?? '').split(/[\\/]+/).filter((part) => part !== '' && part !== '.');

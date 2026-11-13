@@ -107,9 +107,16 @@ describe('the pipe sockets', () => {
       openPipe(`\\\\.\\pipe\\etch-host-${'b'.repeat(32)}`, linux()),
     ).rejects.toMatchObject({ code: 'ENOENT' });
     await writeFile(join(dir, 'bridge.json'), JSON.stringify({ port: 1, token: 'secret' }));
-    await expect(openPipe('\\\\.\\pipe\\tongs', linux())).rejects.toMatchObject({
-      code: 'ECONNREFUSED',
-    });
+    // A closed loopback port refuses the connection; a Windows host whose firewall drops it instead times out.
+    // Callers read both as "the pipe is not up".
+    const stale = await openPipe('\\\\.\\pipe\\tongs', linux()).then(
+      (socket) => {
+        socket.destroy();
+        return 'connected';
+      },
+      (error: unknown) => (error as NodeJS.ErrnoException).code,
+    );
+    expect(['ECONNREFUSED', 'ETIMEDOUT']).toContain(stale);
   });
 
   it('knows the pipe name of a path and where the state files live', () => {

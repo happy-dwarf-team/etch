@@ -12,7 +12,8 @@ import { addFiles, descriptor, fakeEnvironment, makeTree, removeTree } from './f
 // A Linux machine whose EU4 runs under Proton, as Steam lays it out: Steam in ~/.local/share/Steam, the
 // game in a second library, the Proton prefix of app 236850 next to the library's `common` folder, and
 // the mod descriptors the game wrote with Windows drive paths.
-describe('Linux and Proton', () => {
+// Paths of a Linux host: the prefix and the Windows paths inside it are only resolved there.
+describe.skipIf(process.platform === 'win32')('Linux and Proton', () => {
   let root: string;
   let prefix: string;
 

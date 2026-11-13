@@ -37,9 +37,11 @@ describe('GameFiles', () => {
     expect(topbar?.path).toBe('INTERFACE/topbar.gui');
     expect(new TextDecoder().decode(await files.read('interface/topbar.gui'))).toBe('top topbar');
     expect((await files.find('interface/core.gfx'))?.layer.name).toBe('game');
-    expect((await files.find('interface/base.gfx'))?.absolutePath).toBe(
-      join(root, 'base', 'interface', 'base.gfx'),
-    );
+    const base = (await files.find('interface/base.gfx'))?.absolutePath;
+    const expected = join(root, 'base', 'interface', 'base.gfx');
+    // On Windows Interface/ and interface/ of the fixture are one folder, whose case on disk is Interface.
+    if (process.platform === 'win32') expect(base?.toLowerCase()).toBe(expected.toLowerCase());
+    else expect(base).toBe(expected);
   });
 
   it('skips a folder with the same name as a file', async () => {
