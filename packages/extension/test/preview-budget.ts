@@ -14,6 +14,7 @@
 import * as assert from 'node:assert/strict';
 import { copyFile, mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
+import { existsSync } from 'node:fs';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { hashModFolder, readCorpusManifest } from '@etch/core/corpus';
@@ -157,12 +158,43 @@ export async function playsetMods(gamePath: string, playsetId: string): Promise<
   return folders;
 }
 
+/**
+ * Why the playset's Workshop items cannot be measured here: each is pinned by hash in the corpus manifest, and an item
+ * that is not subscribed, or that the author has updated since the pin, gives timings that are not comparable.
+ */
+async function unavailablePlaysetMods(gamePath: string, playsetId: string): Promise<string[]> {
+  const extension = vscode.extensions.getExtension<EtchApi>('happy-dwarf-team.etch');
+  assert.ok(extension);
+  const read = await readCorpusManifest(
+    path.join(extension.extensionPath, '..', '..', 'corpus', 'manifest.json'),
+  );
+  const playset = read.manifest?.playsets.find((p) => p.id === playsetId);
+  const workshop = workshopFolderFor(gamePath);
+  const reasons: string[] = [];
+  for (const mod of playset?.mods ?? []) {
+    const folder = mod.workshopId === undefined ? undefined : path.join(workshop, mod.workshopId);
+    const label = `${mod.name} (${mod.workshopId ?? '?'})`;
+    if (folder === undefined || !existsSync(folder)) reasons.push(`${label} is not subscribed`);
+    else if (mod.sha256 !== undefined && (await hashModFolder(folder)) !== mod.sha256) {
+      reasons.push(`${label} is not the pinned version`);
+    }
+  }
+  return reasons;
+}
+
 async function measure(
   api: EtchApi,
   gamePath: string,
   budget: BudgetCase,
   misses: string[],
 ): Promise<void> {
+  const unavailable = await unavailablePlaysetMods(gamePath, budget.playset);
+  if (unavailable.length > 0) {
+    console.log(
+      `[etch] budget ${budget.playset} ${budget.window}: skipped, ${unavailable.join('; ')}`,
+    );
+    return;
+  }
   const mods = await playsetMods(gamePath, budget.playset);
   let source = path.join(gamePath, budget.file);
   if (budget.fromMod !== undefined) {

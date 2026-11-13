@@ -18,6 +18,7 @@
 #include "pipe_server.hpp"
 #include "protocol.hpp"
 #include "session.hpp"
+#include "socket_server.hpp"
 
 #include <anvil/anvil.hpp>
 #include <anvil/anvil_game.h>
@@ -360,8 +361,8 @@ PickState& Pick() {
 
 WNDPROC g_previous_proc = nullptr;
 HWND g_subclassed = nullptr;
-anvil::FunctionHook<SHORT(WINAPI)(int)> g_async_key_state;
-anvil::FunctionHook<SHORT(WINAPI)(int)> g_key_state;
+anvil::FunctionHook<SHORT WINAPI(int)> g_async_key_state;
+anvil::FunctionHook<SHORT WINAPI(int)> g_key_state;
 
 etch::UiWidget Copy(const TongsUiWidget* w) {
     etch::UiWidget out;
@@ -958,6 +959,20 @@ struct EtchPlugin : anvil::Plugin {
         // A pipe that cannot be created leaves the game running without Etch;
         // Etch sees no handshake and stops the game itself.
         etch::StartPipeServer(etch::PipeName(*session.id), state, Log);
+        // Under Wine the extension is a native Linux process and cannot open the pipe: the session is also served on a
+        // socket on 127.0.0.1. Etch passes the (private) folder for its state file in ETCH_HOST_BRIDGE_DIR.
+        if (etch::RunningUnderWine()) {
+            char configured[MAX_PATH] = {};
+            const DWORD n = GetEnvironmentVariableA("ETCH_HOST_BRIDGE_DIR", configured, MAX_PATH);
+            const auto folder = etch::BridgeFolder(n > 0 && n < MAX_PATH ? std::string(configured, n) : std::string());
+            if (folder.empty()) {
+                host.warn(
+                    "no folder for the socket's state file (ETCH_HOST_BRIDGE_DIR is not set and the host's home is "
+                    "unknown)");
+            } else {
+                etch::StartSocketServer(std::string("etch-host-") + *session.id, state, Log, folder);
+            }
+        }
     }
 };
 

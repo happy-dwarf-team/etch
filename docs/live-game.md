@@ -676,3 +676,34 @@ Enhanced and P2KE Patch - Anbennar windowed 2560×1440 on Verne 1444.11.11.
   file, or the windows before the job from the last job's read, would cut it.
 - **Saves of other playsets.** The private profile has one `save games/` for
   every playset, so **Continue** may offer the newest save of another playset.
+
+## On Linux (Proton)
+
+Etch starts its own private copy of the game on Linux too, through the compatibility tool Steam uses for EU4, in EU4's
+Proton prefix. What differs from Windows:
+
+- **Starting.** `proton.ts` reads Steam's `config.vdf` for the tool of app 236850, its `toolmanifest.vdf` for the Steam
+  Linux Runtime it needs, and finds the prefix next to the game, then runs what Steam runs:
+  `[<runtime>/_v2-entry-point --verb=waitforexitandrun --] <proton> waitforexitandrun <eu4.exe> [args]` with
+  `STEAM_COMPAT_*`, `SteamAppId`, `SteamGameId` and `ETCH_HOST_SESSION`. The Steam client has to be running, as on Windows.
+  Paths given to the game are written `Z:/...` (Wine's root). `ETCH_PROTON` names a tool folder when it is not found.
+- **Flatpak.** VS Code from Flathub cannot run Proton and does not see host processes; programs are started with
+  `flatpak-spawn --host` and the host's process table is read through it (`host.ts`, `procfs.ts`). The sandbox needs the
+  `org.freedesktop.Flatpak=talk` permission, which Flathub's VS Code has.
+- **The game's process.** What is spawned is Proton's launcher. The game is the `eu4.exe` of the install that appeared
+  after it: a Wine process's command line starts with its Windows path, which is the image Etch compares (`posix.ts`).
+  Its Linux PID cannot equal the Windows PID the plugin reports, so only that check is dropped (the session id, 128 random
+  bits that only the game was given, names the pipe) and the start times are compared within five seconds.
+- **The pipe.** A named pipe cannot be opened from outside Wine, so the plugin serves the session on a socket on
+  127.0.0.1 as well, with a token, and the extension connects to it (`@etch/core/pipe`; docs/plugin-protocol.md, "Finding
+  the session on Linux"). Before the start the extension makes a folder for the plugin's state file with mode 0700
+  (`etch` in the XDG state folder, `~/.local/state/etch`; `ETCH_HOST_BRIDGE_DIR` names another) and gives it to the game
+  as `ETCH_HOST_BRIDGE_DIR`. The plugin writes `etch-host-<session>.json` there; the extension removes it when the game
+  has ended. No helper program is started, and nothing is added to the VSIX. Tongs' pipe, which the corpus driver and
+  the media tools use, is reached the same way through the socket Tongs serves when its `bridge` setting is on
+  (`~/.local/state/tongs/bridge.json`, or `TONGS_BRIDGE`).
+- **Not the same as Windows.** A game that restarts itself on Exit to Main Menu is not followed: Linux re-parents the
+  child when its parent exits, so `childProcesses` finds the children of a live parent only.
+
+This path is tested with a fake Proton, a stand-in game process and a stand-in plugin (`live-game-proton-start.test.ts`);
+it has not been run against the real game by the author.

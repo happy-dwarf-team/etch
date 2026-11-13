@@ -25,3 +25,4 @@ export type { Mod, ModSource } from './mods.ts';
 export { parsePlayerSettings, readPlayerSettings, type PlayerSettings } from './player-settings.ts';
 export { findPlayset, type FindPlaysetOptions, type Playset } from './playset.ts';
 export { parseVdf, type VdfObject } from './vdf.ts';
+export { hostPathFromWindows, isWindowsDrivePath, winePrefixOf } from './wine.ts';

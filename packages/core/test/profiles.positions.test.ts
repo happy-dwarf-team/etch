@@ -6,7 +6,7 @@
 // 62 to 75 px off, as the game's code moves them (the profile's base-values rule). With ETCH_CORPUS_SAVES naming a folder that holds the corpus saves, every text the profile
 // fills from the save is also the one the game shows in that widget. Read in place from an
 // installed game and its Workshop items (ETCH_GAME_PATH); skipped in CI, which has no game.
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -83,90 +83,102 @@ const unmoved: CorpusManifest | undefined =
         })),
       };
 
+/** The corpus pins each playset's Workshop items by hash; a playset whose items are not subscribed cannot be checked. */
+const installed = (mods: readonly string[]): boolean =>
+  mods.every((mod) => existsSync(join(workshop, mod)));
+
 describe.skipIf(gamePath === '')('the province view laid out offline', () => {
   for (const [id, playset] of Object.entries(PLAYSETS)) {
-    it(`puts every widget and save text where the game does in ${id}`, async () => {
-      const files = new GameFiles([
-        { name: 'game', root: gamePath, replacePaths: [] },
-        ...playset.mods.map((mod) => ({ name: mod, root: join(workshop, mod), replacePaths: [] })),
-      ]);
-      const ui = await PlaysetInterface.load(files);
-      const gui = ui.index.guiFiles.find((f) =>
-        f.file.definitions.some((d) => d.name === 'provinceview'),
-      );
-      const window = gui?.file.definitions.find((d) => d.name === 'provinceview') as Widget;
-      if (gui === undefined) throw new Error('no provinceview');
-      const profile = checkProfile(
-        layerProfiles('provinceview', playset.sources.flatMap(shipped)),
-        {
-          window,
-          positionType: () => true,
-          template: (n) => ui.index.guiType(n)?.item,
-          windowExists: () => true,
-        },
-      ).profile;
-      const assets = new PlaysetAssets(ui);
-      const pinned = manifest?.playsets.find((p) => p.id === id)?.save;
-      const save =
-        saves === undefined || pinned === undefined
-          ? undefined
-          : await readSave(await readFile(join(saves, pinned.file)));
-      const localisation =
-        save === undefined ? undefined : await loadPlaysetLocalisation(files, 'english');
-      const off: string[] = [];
-      const texts: string[] = [];
-      const folder = new URL(`../../../corpus/captures/${id}/`, import.meta.url);
-      for (const resolution of readdirSync(folder)) {
-        const [width, height] = resolution.split('x').map(Number) as [number, number];
-        for (const viewName of ['province', 'province-foreign']) {
-          const record = parseCaptureRecord(
-            JSON.parse(readFileSync(new URL(`${resolution}/${viewName}.json`, folder), 'utf8')),
-          ).capture;
-          if (record === undefined || unmoved === undefined) throw new Error('no capture');
-          const found = manifest === undefined ? undefined : findView(manifest, viewName);
-          const corpusView = found === undefined ? undefined : viewInPlayset(found.view, { id });
-          const selectors = corpusView?.selectors ?? {};
-          const own = new Set(profile.selectors.map((s) => s.id));
-          const set = Object.fromEntries(Object.entries(selectors).filter(([k]) => own.has(k)));
-          const screen = { width, height };
-          const view = evaluateView(profile, window, screen, { set });
-          const layout = await layOutPreview(ui, assets, gui.file, window, {
-            screen,
-            view: layoutViewOf(view),
-          });
-          const root = record.widgets.find((w) => w.path === 'provinceview');
-          if (root === undefined) throw new Error('no provinceview in the capture');
-          const plan = planCapture({ manifest: unmoved, record, windows: [{ layout }] });
-          for (const w of plan.widgets) {
-            if (w.hidden || w.unplaced === true || w.laidOut?.row !== undefined) continue;
-            if (w.rect === undefined || w.captured === undefined) continue;
-            const dx = w.rect.x - w.captured.rect.x;
-            const dy = w.rect.y - w.captured.rect.y;
-            if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
-              off.push(`${resolution} ${viewName} ${w.path}: ${String(dx)}, ${String(dy)} px`);
+    it.skipIf(!installed(playset.mods))(
+      `puts every widget and save text where the game does in ${id}`,
+      async () => {
+        const files = new GameFiles([
+          { name: 'game', root: gamePath, replacePaths: [] },
+          ...playset.mods.map((mod) => ({
+            name: mod,
+            root: join(workshop, mod),
+            replacePaths: [],
+          })),
+        ]);
+        const ui = await PlaysetInterface.load(files);
+        const gui = ui.index.guiFiles.find((f) =>
+          f.file.definitions.some((d) => d.name === 'provinceview'),
+        );
+        const window = gui?.file.definitions.find((d) => d.name === 'provinceview') as Widget;
+        if (gui === undefined) throw new Error('no provinceview');
+        const profile = checkProfile(
+          layerProfiles('provinceview', playset.sources.flatMap(shipped)),
+          {
+            window,
+            positionType: () => true,
+            template: (n) => ui.index.guiType(n)?.item,
+            windowExists: () => true,
+          },
+        ).profile;
+        const assets = new PlaysetAssets(ui);
+        const pinned = manifest?.playsets.find((p) => p.id === id)?.save;
+        const save =
+          saves === undefined || pinned === undefined
+            ? undefined
+            : await readSave(await readFile(join(saves, pinned.file)));
+        const localisation =
+          save === undefined ? undefined : await loadPlaysetLocalisation(files, 'english');
+        const off: string[] = [];
+        const texts: string[] = [];
+        const folder = new URL(`../../../corpus/captures/${id}/`, import.meta.url);
+        for (const resolution of readdirSync(folder)) {
+          const [width, height] = resolution.split('x').map(Number) as [number, number];
+          for (const viewName of ['province', 'province-foreign']) {
+            const record = parseCaptureRecord(
+              JSON.parse(readFileSync(new URL(`${resolution}/${viewName}.json`, folder), 'utf8')),
+            ).capture;
+            if (record === undefined || unmoved === undefined) throw new Error('no capture');
+            const found = manifest === undefined ? undefined : findView(manifest, viewName);
+            const corpusView = found === undefined ? undefined : viewInPlayset(found.view, { id });
+            const selectors = corpusView?.selectors ?? {};
+            const own = new Set(profile.selectors.map((s) => s.id));
+            const set = Object.fromEntries(Object.entries(selectors).filter(([k]) => own.has(k)));
+            const screen = { width, height };
+            const view = evaluateView(profile, window, screen, { set });
+            const layout = await layOutPreview(ui, assets, gui.file, window, {
+              screen,
+              view: layoutViewOf(view),
+            });
+            const root = record.widgets.find((w) => w.path === 'provinceview');
+            if (root === undefined) throw new Error('no provinceview in the capture');
+            const plan = planCapture({ manifest: unmoved, record, windows: [{ layout }] });
+            for (const w of plan.widgets) {
+              if (w.hidden || w.unplaced === true || w.laidOut?.row !== undefined) continue;
+              if (w.rect === undefined || w.captured === undefined) continue;
+              const dx = w.rect.x - w.captured.rect.x;
+              const dy = w.rect.y - w.captured.rect.y;
+              if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+                off.push(`${resolution} ${viewName} ${w.path}: ${String(dx)}, ${String(dy)} px`);
+              }
+            }
+            const province = corpusView?.data?.province;
+            if (save === undefined || province === undefined) continue;
+            const choice = new SaveChoice(save, save.meta.player, province);
+            const report = profileSaveTexts(
+              profile,
+              window,
+              screen,
+              set,
+              choice,
+              (key) => localisation?.get(key),
+              root,
+            );
+            expect(report.compared).toBeGreaterThan(5);
+            for (const d of report.differences) {
+              const line = `${d.path} ${d.sample} ${d.game}`;
+              if (!KNOWN_TEXTS.has(line)) texts.push(`${resolution} ${viewName} ${line}`);
             }
           }
-          const province = corpusView?.data?.province;
-          if (save === undefined || province === undefined) continue;
-          const choice = new SaveChoice(save, save.meta.player, province);
-          const report = profileSaveTexts(
-            profile,
-            window,
-            screen,
-            set,
-            choice,
-            (key) => localisation?.get(key),
-            root,
-          );
-          expect(report.compared).toBeGreaterThan(5);
-          for (const d of report.differences) {
-            const line = `${d.path} ${d.sample} ${d.game}`;
-            if (!KNOWN_TEXTS.has(line)) texts.push(`${resolution} ${viewName} ${line}`);
-          }
         }
-      }
-      expect(off).toEqual([]);
-      expect(texts).toEqual([]);
-    }, 300_000);
+        expect(off).toEqual([]);
+        expect(texts).toEqual([]);
+      },
+      300_000,
+    );
   }
 });

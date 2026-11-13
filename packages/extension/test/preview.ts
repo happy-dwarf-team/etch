@@ -21,7 +21,7 @@ import {
 } from '../src/preview/index.ts';
 
 const COLD_TIMEOUT_MS = 30_000;
-const TIMEOUT_MS = 5_000;
+const TIMEOUT_MS = Number(process.env['ETCH_TEST_TIMEOUT_MS'] ?? 5_000);
 
 /** An uncompressed 32-bit TGA, top-left origin, every texel the same BGRA. */
 function tga(width: number, height: number, bgra: [number, number, number, number]): Uint8Array {
@@ -171,10 +171,16 @@ async function fixtureGame(): Promise<string> {
 
 /** The next event that satisfies a condition. */
 function next<T>(event: vscode.Event<T>, done: (value: T) => boolean, ms: number): Promise<T> {
+  // The waiting step, for the message: a timeout fires from a timer, with no stack of its own.
+  const waiting = (new Error().stack ?? '')
+    .split('\n')
+    .slice(2, 5)
+    .join(' <- ')
+    .replaceAll(/\s+/g, ' ');
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => {
       listener.dispose();
-      reject(new Error(`no matching event in ${String(ms)} ms`));
+      reject(new Error(`no matching event in ${String(ms)} ms, waiting at ${waiting}`));
     }, ms);
     const listener = event((value) => {
       if (!done(value)) return;

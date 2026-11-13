@@ -6,6 +6,12 @@
 // small C# class and answers in JSON on stdout. The rules are the EU4 engine lab's verified
 // sessions (scripts/lib/LabProcess.psm1).
 import { spawn, type ChildProcess } from 'node:child_process';
+import {
+  posixChildProcesses,
+  posixProcessIdentity,
+  posixProcessesNamed,
+  posixStopVerified,
+} from './posix.ts';
 
 /** Who a process is: equal identities are the same process, compared exactly. */
 export interface ProcessIdentity {
@@ -46,6 +52,7 @@ export function normalizePath(path: string): string {
 
 /** The identity of a running process, `undefined` when there is none (or it cannot be queried). */
 export async function processIdentity(pid: number): Promise<ProcessIdentity | undefined> {
+  if (process.platform !== 'win32') return posixProcessIdentity(pid);
   const answer = await helper<{ identity: ProcessIdentity | null }>({ op: 'identity', pid });
   return answer.identity ?? undefined;
 }
@@ -58,6 +65,7 @@ export async function stopVerified(
   expected: ProcessIdentity,
   timeoutMs = 10_000,
 ): Promise<StopOutcome> {
+  if (process.platform !== 'win32') return posixStopVerified(expected, timeoutMs, sameIdentity);
   const answer = await helper<{ outcome: StopOutcome }>({
     op: 'stop',
     expected,
@@ -75,6 +83,7 @@ export async function childProcesses(
   parent: ProcessIdentity,
   imageName: string,
 ): Promise<ProcessIdentity[]> {
+  if (process.platform !== 'win32') return posixChildProcesses(parent, imageName);
   const answer = await helper<{ children: ProcessIdentity[] }>({
     op: 'children',
     parent,
@@ -85,6 +94,7 @@ export async function childProcesses(
 
 /** Every live process whose image is named `imageName` (such as `eu4.exe`). */
 export async function processesNamed(imageName: string): Promise<ProcessIdentity[]> {
+  if (process.platform !== 'win32') return posixProcessesNamed(imageName);
   const answer = await helper<{ processes: ProcessIdentity[] }>({ op: 'named', imageName });
   return answer.processes;
 }

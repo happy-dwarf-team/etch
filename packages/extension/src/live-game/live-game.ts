@@ -95,6 +95,7 @@ import {
   logTail,
   watch as watchHang,
 } from './watchdog.ts';
+import { flatpakInstancePid } from './host.ts';
 import { childProcesses, processIdentity, type ProcessIdentity } from './windows.ts';
 
 /**
@@ -383,9 +384,17 @@ export class LiveGame implements vscode.Disposable {
    * (see `state`). A live game that runs already keeps running.
    */
   async start(request: LiveGameRequest): Promise<void> {
-    if (this.isActive()) return this.restarts.idle();
-    const playerGame = await playerGameRunning(request.gameFolder).catch(() => undefined);
+    this.output.info('Live game: start requested.');
+    if (this.isActive()) {
+      this.output.info('Live game: already starting or running.');
+      return this.restarts.idle();
+    }
+    const playerGame = await playerGameRunning(request.gameFolder).catch((error: unknown) => {
+      this.output.warn(`Live game: the process table could not be read: ${String(error)}`);
+      return undefined;
+    });
     if (playerGame !== undefined) {
+      this.output.info(`Live game: the player's own EU4 runs (PID ${String(playerGame.pid)}).`);
       void vscode.window.showWarningMessage(
         `Your own EU4 runs (PID ${String(playerGame.pid)}). The live game counts as your EU4 ` +
           'session for Steam, so it starts only when your game is closed.',
@@ -393,10 +402,17 @@ export class LiveGame implements vscode.Disposable {
       return;
     }
     const playerProfile = await this.playerProfile(request.gameFolder);
-    if (!(await this.confirmFirstStart(playerProfile))) return;
+    if (!(await this.confirmFirstStart(playerProfile))) {
+      this.output.info('Live game: the first-start confirmation was declined or dismissed.');
+      return;
+    }
     const startAt = await this.chooseStart(playerProfile);
     // Another start may have begun while the player chose.
-    if (startAt === undefined || this.isActive()) return;
+    if (startAt === undefined || this.isActive()) {
+      this.output.info('Live game: no start point was chosen.');
+      return;
+    }
+    this.output.info('Live game: starting.');
     this.wanted = request;
     this.startAt = startAt;
     this.crashes.reset();
@@ -1486,10 +1502,13 @@ export class LiveGame implements vscode.Disposable {
   }
 
   private async lockOptions(): Promise<LockOptions> {
-    this.owner ??= processIdentity(process.pid).then((identity) => {
+    this.owner ??= (async () => {
+      // In a Flatpak sandbox this process's PID is not the host's: the lock's owner is the sandbox's root process.
+      const instance = await flatpakInstancePid();
+      const identity = await processIdentity(instance ?? process.pid);
       if (identity === undefined) throw new Error("The extension host's identity cannot be read.");
       return identity;
-    });
+    })();
     return {
       path: this.lockFile,
       owner: await this.owner,

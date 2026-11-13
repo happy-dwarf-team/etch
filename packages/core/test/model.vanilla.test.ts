@@ -47,6 +47,9 @@ describe.skipIf(gamePath === undefined)('the widget model on the installed game'
       'missing-font': 1,
       'duplicate-sprite': 69,
       'missing-texture': 39,
+      // `gfx_mission_effect` and `gfx_mission_trigger` (twice) in countrymissionsview.gui name sprites that
+      // countryview.gfx defines as `GFX_mission_effect` and `GFX_mission_trigger`: a match only when case is ignored.
+      'reference-case': 3,
     });
     expect(loadMs).toBeLessThan(1000);
   });
