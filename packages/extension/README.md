@@ -172,7 +172,9 @@ was, then the triggers and the effects, each with its longest rows (calls,
 total, mean and the longest single run, `max`). A span that a load, the menu or
 quitting ended early is marked interrupted. Blocks whose owner the profiler
 cannot tell are one row, as in its window; the CSV splits them by where the
-game runs them.
+game runs them. With Anvil 1.22's scripted triggers and church aspects, the
+page also lists every scripted trigger by its name, between the triggers and
+the effects; that time is part of the triggers too.
 
 ## Etch 1.x
 
