@@ -1,5 +1,30 @@
 # Changelog
 
+## [2.10.0](https://github.com/happy-dwarf-team/etch/compare/v2.9.0...v2.10.0) (2026-11-13)
+
+
+### Features
+
+* **core:** a profile rule shows or hides parts of a repeater's entries ([#395](https://github.com/happy-dwarf-team/etch/issues/395)) ([43bad2e](https://github.com/happy-dwarf-team/etch/commit/43bad2e5557357401476be085483050f39e2800e))
+* **core:** a repeater's entries as the columns of a table, for the ledger's sort buttons ([#399](https://github.com/happy-dwarf-team/etch/issues/399)) ([e1ec344](https://github.com/happy-dwarf-team/etch/commit/e1ec344f55dc4e75dc0b9e90d656e96a4beaaf67))
+* **extension:** show the latest script profile ([#397](https://github.com/happy-dwarf-team/etch/issues/397)) ([a2af7fd](https://github.com/happy-dwarf-team/etch/commit/a2af7fdde5d3dba77c7dec9ba6993929ebc23040))
+* run Etch's live game on Linux through Proton ([#403](https://github.com/happy-dwarf-team/etch/issues/403)) ([d70ccf1](https://github.com/happy-dwarf-team/etch/commit/d70ccf13be963970ec1038b1088b201e50d34d6a))
+
+
+### Bug Fixes
+
+* **corpus:** the offline measure leaves a window's hidden second instance to the capture ([#400](https://github.com/happy-dwarf-team/etch/issues/400)) ([c91cf52](https://github.com/happy-dwarf-team/etch/commit/c91cf52fe793141f5f0464a326d2d93769c86439))
+* **profiles:** building slots, river and strait, stability, lobby options and other gaps of the coverage survey ([#393](https://github.com/happy-dwarf-team/etch/issues/393)) ([f92c80e](https://github.com/happy-dwarf-team/etch/commit/f92c80e078f1be7488ae3a2bc400db4a2647e7aa))
+
+
+### Build
+
+* **pins:** bundle Anvil's map and script plugins in the live game ([#402](https://github.com/happy-dwarf-team/etch/issues/402)) ([7e1a721](https://github.com/happy-dwarf-team/etch/commit/7e1a7214916c86b74862f91a69b384cf998f3299))
+* **pins:** pin Anvil 1.21.0 ([#394](https://github.com/happy-dwarf-team/etch/issues/394)) ([3910a40](https://github.com/happy-dwarf-team/etch/commit/3910a4038fb571d3b39d7ac80f12651506baa694))
+* **pins:** pin Anvil 1.22.0 ([#404](https://github.com/happy-dwarf-team/etch/issues/404)) ([8fc330c](https://github.com/happy-dwarf-team/etch/commit/8fc330cdf80e16f9bc7eec898b8a40f2332d0291))
+* **pins:** pin Bellows 1.8.0 ([#396](https://github.com/happy-dwarf-team/etch/issues/396)) ([a075344](https://github.com/happy-dwarf-team/etch/commit/a075344e9289910521ae59c40a05280486d47a99))
+* **pins:** pin Tongs 0.33.0 ([#391](https://github.com/happy-dwarf-team/etch/issues/391)) ([3541e0f](https://github.com/happy-dwarf-team/etch/commit/3541e0f3a66536da3a3136784d8476806e242114))
+
 ## [2.9.0](https://github.com/happy-dwarf-team/etch/compare/v2.8.1...v2.9.0) (2026-11-12)
 
 ### Features
