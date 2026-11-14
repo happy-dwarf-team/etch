@@ -79,3 +79,15 @@ policy. When `vsce publish --oidc` works, the job moves to it and the identity
 is removed. The identity needs a work or school tenant, and the maintainer's
 personal Microsoft account has none, so until one exists the release VSIX is
 still uploaded by hand. [docs/release.md](../release.md) has the steps.
+
+## Update (9 November 2026)
+
+The Marketplace has offered trusted publishing policies since 28 October 2026,
+and `vsce publish --oidc` works from `@vscode/vsce` 4.1.0, so the `marketplace`
+job publishes with it, as this decision chose. The Entra ID route of the
+previous update was never set up (the maintainer's account has no tenant) and is
+removed with `marketplace-identity.yml`. Both store jobs try trusted publishing
+first and fall back to a token only when it fails: `VSCE_PAT` or the hand upload
+for the Marketplace, `OVSX_PAT` for Open VSX, so a token can be deleted once a
+release has published without it. [docs/release.md](../release.md) has the
+steps.

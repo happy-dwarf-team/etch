@@ -4,11 +4,11 @@ Merging the release-please pull request tags `vX.Y.Z`, and `release.yml` then
 builds that commit and publishes one file, `etch-win32-x64-X.Y.Z.vsix`, three
 times (ADR 0004):
 
-| Job           | Where                                                                                                      | Authentication                                             |
-| ------------- | ---------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| `publish`     | the GitHub release, with `SHA256SUMS.txt` and a provenance attestation                                      | `GITHUB_TOKEN`                                             |
-| `marketplace` | [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=happy-dwarf-team.etch)            | Microsoft Entra ID over OIDC; else `VSCE_PAT`; else by hand |
-| `open-vsx`    | [Open VSX](https://open-vsx.org/extension/happy-dwarf-team/etch)                                            | secret `OVSX_PAT` if set, otherwise OIDC trusted publishing |
+| Job           | Where                                                                                                      | Authentication                                                  |
+| ------------- | ---------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `publish`     | the GitHub release, with `SHA256SUMS.txt` and a provenance attestation                                      | `GITHUB_TOKEN`                                                  |
+| `marketplace` | [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=happy-dwarf-team.etch)            | OIDC trusted publishing; else secret `VSCE_PAT`; else by hand   |
+| `open-vsx`    | [Open VSX](https://open-vsx.org/extension/happy-dwarf-team/etch)                                            | OIDC trusted publishing; else secret `OVSX_PAT`                 |
 
 Once the GitHub release has its assets, `notify-website` (`website.yml`) asks
 etch.happydwarf.dev and happydwarf.dev to rebuild, so their badges show the new
@@ -23,39 +23,33 @@ show the extension's `README.md`, `CHANGELOG.md`, icon and `preview` flag.
 ## Authentication
 
 ADR 0004 chose OIDC trusted publishing for both stores, so that no publishing
-token lives in the repository. As of October 2026 neither store allows it for
-the first release:
+token lives in the repository. Each store job tries it first, and falls back to
+a token only when it fails:
 
-- **VS Code Marketplace.** `vsce publish --oidc` exists in `@vscode/vsce`
-  4.0.0 (hidden from `--help`), but the Marketplace does not yet let a
-  publisher register a trusted publishing policy, and the token exchange of
-  4.0.0 predates the Marketplace's contract (fixed in the 4.0.1 pre-releases).
-  The other automatic routes need Azure: a personal access token needs an
-  Azure DevOps organization, and new organizations need an Azure subscription
-  (since late 2025); Azure DevOps retires the global tokens the Marketplace
-  needs on 1 December 2026; Microsoft Entra ID (`--azure-credential`) needs an
-  Azure identity. Etch therefore publishes with **Microsoft Entra ID** until
-  `--oidc` works: the `marketplace` job runs in the `vscode-marketplace`
-  environment, signs in with `azure/login` over GitHub's OIDC token (a
-  federated credential, no subscription and no stored secret) and runs
-  `vsce publish --azure-credential`. The identity is an app registration whose
-  client and tenant IDs are the environment variables `AZURE_CLIENT_ID` and
-  `AZURE_TENANT_ID`, and it publishes as a Contributor of the publisher (setup
-  below). Without `AZURE_CLIENT_ID`, a `VSCE_PAT` secret publishes; without
-  either, the job publishes nothing, succeeds, and leaves a warning and a step
-  summary with the release's VSIX link to upload by hand.
+- **VS Code Marketplace.** The Marketplace has offered trusted publishing
+  since 28 October 2026: a policy on the publisher names a GitHub repository,
+  a workflow file and, optionally, an environment, and
+  `vsce publish --oidc` (`@vscode/vsce` 4.1.0; 4.0.0's token exchange is
+  rejected) exchanges the job's OIDC token for a Marketplace credential valid
+  for 15 minutes. `--oidc` never falls back to a token by itself, so the
+  `marketplace` job does: if it fails and a `VSCE_PAT` secret is set, the
+  token publishes; without either, the job publishes nothing, succeeds, and
+  leaves a warning and a step summary with the release's VSIX link to upload
+  by hand. Azure DevOps retires the global tokens a `VSCE_PAT` would be on
+  1 December 2026, so after that date only OIDC or the hand upload are left.
+  The job runs in the `vscode-marketplace` environment, which needs a
+  maintainer's approval for each run and allows only `main` and `release/1.x`;
+  the policy names that environment.
+- **Open VSX.** `ovsx publish --trusted-publishing` (ovsx 1.1.0 and later) is
+  tried first. A trusted publisher can only be registered for an extension
+  that already has a version, by a namespace owner, which is why the first
+  releases went out with `OVSX_PAT`. If trusted publishing fails and
+  `OVSX_PAT` is set, the token publishes; without it the job fails.
 
-  The Entra ID route needs a work or school tenant to register the identity
-  in. A personal Microsoft account has none: the Entra admin center turns it
-  away with "The selected user account does not exist in tenant 'Microsoft
-  Services'". The maintainer's account is personal (October 2026), so until
-  `--oidc` works or a tenant exists, releases reach the Marketplace by hand
-  (see [Each release](#each-release)).
-- **Open VSX.** `ovsx publish --trusted-publishing` (ovsx 1.1.0 and later)
-  works, but a trusted publisher can only be registered for an extension that
-  already has a version, by a namespace owner. The first release publishes
-  with `OVSX_PAT`; afterwards the maintainer registers the trusted publisher
-  and deletes the secret, and the job switches to OIDC by itself.
+Each job's step summary says which route published ("published with trusted
+publishing (OIDC)" or "published with VSCE_PAT / OVSX_PAT"), with a warning
+when it fell back, so a token can be deleted once a release has published
+without it.
 
 ## One-time setup (maintainer)
 
@@ -79,35 +73,26 @@ the first release:
    namespace `happy-dwarf-team`"). Until it is granted the namespace is
    unverified, and an extension with the Marketplace's identifier may stay
    under review.
-5. **Marketplace identity (Microsoft Entra ID), only with a work or school
-   tenant** (see Authentication). In the
-   [Microsoft Entra admin center](https://entra.microsoft.com), in a tenant you
-   administer:
-   1. **App registrations → New registration**: name `etch-marketplace`,
-      single tenant, no redirect URI. Note the *Application (client) ID* and
-      the *Directory (tenant) ID*. It needs no client secret.
-   2. In the app, **Certificates & secrets → Federated credentials → Add
-      credential**: scenario *GitHub Actions deploying Azure resources*,
-      organization `happy-dwarf-team`, repository `etch`, entity *Environment*,
-      name `vscode-marketplace`. The subject is
-      `repo:happy-dwarf-team/etch:environment:vscode-marketplace`.
-   3. Save the two IDs in the environment (they are not secrets):
+5. **Marketplace trusted publishing policy.** At
+   <https://marketplace.visualstudio.com/manage/publishers/happy-dwarf-team>,
+   open the **Trusted Publishing** tab, expand **Create** and fill in:
 
-      ```sh
-      gh variable set AZURE_CLIENT_ID --env vscode-marketplace --repo happy-dwarf-team/etch --body <client ID>
-      gh variable set AZURE_TENANT_ID --env vscode-marketplace --repo happy-dwarf-team/etch --body <tenant ID>
-      ```
+   | Field            | Value                |
+   | ---------------- | -------------------- |
+   | Policy name      | `Etch release`       |
+   | Repository owner | `happy-dwarf-team`   |
+   | Repository       | `etch`               |
+   | Workflow         | `release.yml`        |
+   | Environment      | `vscode-marketplace` |
 
-   4. Run the `marketplace-identity` workflow (**Actions → marketplace-identity
-      → Run workflow**, then approve the environment). Its summary shows the
-      identity's Marketplace profile ID. Add that ID on
-      <https://marketplace.visualstudio.com/manage/publishers/happy-dwarf-team>
-      under **Members** with the **Contributor** role, and run the workflow
-      again: its last step, `vsce verify-pat --azure-credential`, passes once
-      the identity may publish.
-
-   The `vscode-marketplace` environment requires a maintainer's approval for
-   each run and allows only `main`, where `release.yml` runs.
+   The names must be exact. The repository is public, so the policy does not
+   expire before its first use (a private repository's policy must be used
+   within 48 hours). The page shows each policy's status and last use.
+6. **Open VSX trusted publisher.** Once the namespace is owned, register a
+   trusted publisher for `happy-dwarf-team.etch` on
+   <https://open-vsx.org/user-settings/trusted-publishers>: GitHub Actions,
+   owner `happy-dwarf-team`, repository `etch`, workflow `release.yml`, no
+   environment. If the form limits it to a branch, allow `release/1.x` too.
 
 ## Each release
 
@@ -117,14 +102,23 @@ a few minutes. While it waits, later pushes still update the release pull reques
 A deployment no longer needed, because the VSIX was uploaded by hand, can be
 cancelled on the run's page.
 
-Without the Entra ID identity and a `VSCE_PAT`, the job's summary links the
-VSIX instead. Download it from the GitHub release and, at
+Read both store jobs' summaries. A warning that trusted publishing failed means
+a token published, or for the Marketplace without `VSCE_PAT`, that the VSIX has
+to be uploaded by hand: download it from the GitHub release and, at
 <https://marketplace.visualstudio.com/manage/publishers/happy-dwarf-team>,
-upload it: **New extension → Visual Studio Code** the first time, **Update**
-on the extension afterwards.
+upload it with **Update** on the extension.
 
 After a release that changes what any media clip shows, do a media refresh
 ([docs/media.md](media.md#media-refresh-checklist)); release-please triggers none.
+
+## After the first release with OIDC
+
+1. When the `open-vsx` summary says "published with trusted publishing
+   (OIDC)", delete the `OVSX_PAT` repository secret
+   (`gh secret delete OVSX_PAT --repo happy-dwarf-team/etch`) and revoke the
+   token at <https://open-vsx.org/user-settings/tokens>.
+2. When the `marketplace` summary says the same, delete `VSCE_PAT` if one was
+   ever set, and revoke its token in Azure DevOps.
 
 ## 1.0.x releases until 2.0.0
 
@@ -141,19 +135,3 @@ deletion or force push. The `vscode-marketplace` environment allows deployments
 from `main` and `release/1.x`, so the `marketplace` job publishes a 1.0.x
 release after the same approval. Before the first one, check that the Open VSX
 trusted publisher (when registered) is not limited to `main`.
-
-## After the first release
-
-1. Once the Open VSX namespace is owned, register a trusted publisher for
-   `happy-dwarf-team.etch` on
-   <https://open-vsx.org/user-settings/trusted-publishers>: GitHub Actions,
-   owner `happy-dwarf-team`, repository `etch`, workflow `release.yml`, no
-   environment.
-2. Delete the `OVSX_PAT` repository secret and revoke the token. A set
-   `OVSX_PAT` always wins over trusted publishing.
-3. When the Marketplace offers trusted publishing policies, register one for
-   `release.yml`, update `@vscode/vsce` to a version with the current token
-   exchange, and switch the `marketplace` job to `vsce publish --oidc`. Then
-   remove the Entra ID identity from the publisher's members, delete the app
-   registration and the environment variables, and drop `azure/login` and
-   `marketplace-identity.yml`.
