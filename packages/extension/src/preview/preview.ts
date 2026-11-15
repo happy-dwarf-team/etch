@@ -1838,10 +1838,13 @@ export class Preview implements PreviewApi, vscode.Disposable {
       const lower = render.view?.profile.profile;
       const below = (list: readonly { id: string; origin: { source: string } }[] = []) =>
         new Set(list.filter((e) => e.origin.source !== 'mod project').map((e) => e.id));
-      result = await addScriptedSelectors(render.window, session.playset.files, root, {
-        selectors: below(lower?.selectors),
-        rules: below(lower?.rules),
-      });
+      result = await addScriptedSelectors(
+        render.window,
+        session.playset.files,
+        root,
+        { selectors: below(lower?.selectors), rules: below(lower?.rules) },
+        (key) => session.localisation?.get(key),
+      );
     } catch (error) {
       void vscode.window.showErrorMessage(`Add scripted selectors: ${messageOf(error)}`);
       return undefined;

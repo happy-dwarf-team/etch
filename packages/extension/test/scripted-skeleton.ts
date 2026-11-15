@@ -39,6 +39,7 @@ const CUSTOM_GUI = `custom_window = {
 custom_button = {
 	name = etch_button
 	potential = { ai = no }
+	tooltip = etch_button_tt
 }
 custom_button = {
 	name = etch_plain
@@ -60,6 +61,8 @@ async function fixture(): Promise<{ root: string; game: string; mod: string }> {
     'mod/descriptor.mod': 'name="Etch scripted"\nsupported_version="1.37.*"\n',
     'mod/interface/etch_scripted.gui': GUI,
     'mod/common/custom_gui/etch_scripted.txt': CUSTOM_GUI,
+    'mod/localisation/etch_scripted_l_english.yml':
+      '﻿l_english:\n etch_button_tt:0 "§YPress§! the £gold£ button"\n',
   };
   for (const [name, content] of Object.entries(files)) {
     const file = path.join(root, ...name.split('/'));
@@ -130,6 +133,7 @@ export async function testScriptedSkeleton(api: EtchApi): Promise<void> {
     assert.equal(result.file.fsPath.toLowerCase(), file.toLowerCase());
     const text = await readFile(file, 'utf8');
     assert.match(text, /"window": "etch_scripted"/);
+    assert.match(text, /"label": "etch_button: Press the button"/);
     assert.match(
       text,
       /common\/custom_gui\/etch_scripted\.txt, custom_window: potential = \{ has_country_flag = etch_panel_open \}/,

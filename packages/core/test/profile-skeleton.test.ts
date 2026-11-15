@@ -5,6 +5,7 @@ import {
   layerProfiles,
   readCustomGui,
   readProfile,
+  plainLabelText,
   scriptedSkeleton,
   withMembers,
   withSkeleton,
@@ -353,5 +354,48 @@ describe('withSkeleton', () => {
     expect(again.selectors).toEqual([]);
     expect(again.rules).toEqual([]);
     expect([...again.kept].sort()).toEqual([...first.selectors, ...first.rules].sort());
+  });
+});
+
+describe('labels from localisation', () => {
+  it('turns a localised text into a short plain label', () => {
+    expect(plainLabelText('£no£ Is not allowed to §YDisable§! this')).toBe(
+      'Is not allowed to Disable this',
+    );
+    expect(plainLabelText('Costs $COST$ gold for [Root.GetName]\\nNow')).toBe(
+      'Costs … gold for … Now',
+    );
+    expect(plainLabelText('----- Federation Standing -----\\nRank: $RANK$')).toBe(
+      'Federation Standing Rank: …',
+    );
+    expect(plainLabelText('§G£yes£§!')).toBeUndefined();
+    expect(plainLabelText('word '.repeat(30))?.length).toBe(60);
+  });
+
+  it('labels a widget with its tooltip and a group value with its name', () => {
+    const gui = `custom_icon = { name = faith_a potential = { religion = faith_one } }
+custom_icon = { name = faith_b potential = { religion = faith_two } }
+custom_icon = { name = only_tag potential = { tag = AAA } tooltip = only_tag_tt }
+custom_icon = { name = faith_root potential = { religion = ROOT } tooltip = missing_tt }
+`;
+    const localisation: Record<string, string> = {
+      only_tag_tt: '§YOpen§! the §Gtag§! panel',
+      faith_one: 'First Faith',
+    };
+    const { selectors } = scriptedSkeleton(
+      GROUPED,
+      readCustomGui(gui, 'common/custom_gui/faiths.txt'),
+      (key) => localisation[key],
+    );
+    const labels = Object.fromEntries(
+      selectors.map(([id, s]) => [id, s as { label: string; values: object }]),
+    );
+    expect(labels['only_tag']?.label).toBe('only_tag: Open the tag panel');
+    expect(labels['faith_root']?.label).toBe('faith_root');
+    expect(labels['scripted-religion']?.values).toEqual({
+      faith_one: 'First Faith',
+      faith_two: 'faith_two',
+      other: 'Another religion',
+    });
   });
 });

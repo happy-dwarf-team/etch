@@ -407,6 +407,10 @@ The faulty entry is skipped and the rest of the profile applies.
     value is not a scope such as `ROOT`. Those widgets share one selector, `scripted-<trigger>`,
     with a value for each tested value and `other`, and a rule for each value that hides its
     widgets under the other values.
+  - **Labels.** A selector's label is the widget's name, followed by the playset's text of its
+    `tooltip` when it has one. The label drops icons, colour codes and variables and is cut at 60
+    characters. A group's value is labelled with the playset's text of that value, such as a
+    religion's name.
 
 ## A profile for another mod
 
