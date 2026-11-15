@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.11.0](https://github.com/happy-dwarf-team/etch/compare/v2.10.0...v2.11.0) (2026-11-15)
+
+
+### Features
+
+* **Etch: Show Latest Script Profile** also shows the scripted triggers, whose time is part of the triggers too, and names church aspects and scripted triggers instead of their raw keys. It reads the script profiler of Anvil 1.22 or newer. ([#407](https://github.com/happy-dwarf-team/etch/issues/407)) ([1e228dc](https://github.com/happy-dwarf-team/etch/commit/1e228dcdf5aa9c6d187b322f7bcd87ed7a840e07))
+
+
+### Build
+
+* Etch's live game uses Anvil 1.23.0, Bellows 2.0.0 and Tongs 0.35.0. ([#405](https://github.com/happy-dwarf-team/etch/issues/405)) ([57288f5](https://github.com/happy-dwarf-team/etch/commit/57288f5a9d3aa2c4537ab9113c002673a189a1b0)) ([#408](https://github.com/happy-dwarf-team/etch/issues/408)) ([e1bda91](https://github.com/happy-dwarf-team/etch/commit/e1bda91d169d37649c22729ccec69e82b6812606))
+
 ## [2.10.0](https://github.com/happy-dwarf-team/etch/compare/v2.9.0...v2.10.0) (2026-11-13)
 
 
