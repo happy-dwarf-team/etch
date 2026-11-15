@@ -1855,8 +1855,12 @@ export class Preview implements PreviewApi, vscode.Disposable {
       result.taken.length === 0
         ? ''
         : ` ${String(result.taken.length)} widgets Etch's own profile already has a selector or rule for are left out (${result.taken.slice(0, 5).join(', ')}${result.taken.length > 5 ? ', …' : ''}).`;
+    const always =
+      result.alwaysShown.length === 0
+        ? ''
+        : ` ${String(result.alwaysShown.length)} widgets with potential = { always = yes } need none.`;
     void vscode.window.showInformationMessage(
-      `${String(result.selectors.length)} scripted selectors and ${String(result.rules.length)} rules added to ${vscode.workspace.asRelativePath(result.file)}; set them in View ▾.${kept}${taken}`,
+      `${String(result.selectors.length)} scripted selectors and ${String(result.rules.length)} rules added to ${vscode.workspace.asRelativePath(result.file)}; set them in View ▾.${kept}${taken}${always}`,
     );
     await vscode.window.showTextDocument(result.file, {
       viewColumn: vscode.ViewColumn.One,

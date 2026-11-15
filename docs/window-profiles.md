@@ -399,6 +399,14 @@ The faulty entry is skipped and the rest of the profile applies.
   the playset's `common/custom_gui` gives a `potential`, with the values `shown` and `hidden` and
   the `potential` in its note, and a rule that hides the widget when it is `hidden`. Ids the file
   already has stay as written. Set the selectors in `View ▾`, or save views of them.
+  - A `potential` of `always = yes` needs nothing: the widget always shows. One of `always = no`
+    gets only a rule `<id>-never` that always hides it.
+  - Widgets whose `potential` is one test of the same trigger against different values exclude
+    each other. The triggers are `tag`, `religion`, `religion_group`, `government`,
+    `primary_culture`, `culture_group`, `technology_group` and `is_subject_of_type`, and the
+    value is not a scope such as `ROOT`. Those widgets share one selector, `scripted-<trigger>`,
+    with a value for each tested value and `other`, and a rule for each value that hides its
+    widgets under the other values.
 
 ## A profile for another mod
 
@@ -406,8 +414,9 @@ A profile for a mod Etch does not describe comes by pull request to `profiles/<s
 `mod` naming the mod and `checkedWith` its version. Unless the mod is in the precision corpus, Etch
 checks it only when it loads (paths, names, values), not against the game's captures; say so in
 the pull request. Scripted widgets (a mod's `custom_window`, `custom_button`… blocks with a
-`potential`) are a selector each with **Etch: Add Scripted Selectors to the Window Profile**;
-exclusive groups among them are written by hand, as Etch does not read what the triggers exclude.
+`potential`) get their selectors from **Etch: Add Scripted Selectors to the Window Profile**. The
+command groups only widgets that test one single-valued trigger, so write other exclusive groups by
+hand, such as flags that a mod's effects set one at a time.
 
 Etch's own profiles of the corpus windows hide what the corpus captures show hidden (drafted from
 the captures). The precision corpus gates them: each corpus view records the selector values it is

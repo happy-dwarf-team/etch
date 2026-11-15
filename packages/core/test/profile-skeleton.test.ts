@@ -40,7 +40,7 @@ custom_button = {
 }
 custom_icon = {
 \tname = my_icon
-\tpotential = { always = yes }
+\tpotential = { has_country_flag = my_icon_shown }
 }
 custom_icon = {
 \tname = plain_icon
@@ -136,6 +136,134 @@ describe('scriptedSkeleton', () => {
       'my_icon',
     ]);
     expect(checked.profile.rules).toHaveLength(3);
+  });
+});
+
+// Made-up names: four religion panels, a tag panel tested once, and constant potentials.
+const GROUPED = readGuiFile(
+  parseScript(`guiTypes = {
+  windowType = {
+    name = "countryreligionview"
+    iconType = { name = "faith_a" }
+    iconType = { name = "faith_b" }
+    iconType = { name = "faith_b2" }
+    iconType = { name = "faith_c" }
+    iconType = { name = "faith_root" }
+    iconType = { name = "only_tag" }
+    iconType = { name = "never_icon" }
+    iconType = { name = "never_icon" }
+    iconType = { name = "always_icon" }
+  }
+}`),
+).definitions.find((w) => w.name === 'countryreligionview') as Widget;
+
+const GROUPED_GUI = `custom_icon = { name = faith_a potential = { religion = faith_one } }
+custom_icon = { name = faith_b potential = { religion = faith_two } }
+custom_icon = { name = faith_b2 potential = { religion = faith_two } }
+custom_icon = { name = faith_c potential = { religion = other } }
+custom_icon = { name = faith_root potential = { religion = ROOT } }
+custom_icon = { name = only_tag potential = { tag = AAA } }
+custom_icon = { name = never_icon potential = { always = no } }
+custom_icon = { name = always_icon potential = { ALWAYS = yes } }
+`;
+
+describe('scriptedSkeleton with constant and exclusive potentials', () => {
+  const entries = readCustomGui(GROUPED_GUI, 'common/custom_gui/faiths.txt');
+
+  it('reads the only test of a potential', () => {
+    expect(entries.map((e) => e.test)).toEqual([
+      { key: 'religion', value: 'faith_one' },
+      { key: 'religion', value: 'faith_two' },
+      { key: 'religion', value: 'faith_two' },
+      { key: 'religion', value: 'other' },
+      { key: 'religion', value: 'ROOT' },
+      { key: 'tag', value: 'AAA' },
+      { key: 'always', value: 'no' },
+      { key: 'always', value: 'yes' },
+    ]);
+    expect(
+      readCustomGui('custom_icon = { name = x potential = { a = 1 b = 2 } }', 'a.txt')[0]?.test,
+    ).toBeUndefined();
+    expect(
+      readCustomGui('custom_icon = { name = x potential = { a > 1 } }', 'a.txt')[0]?.test,
+    ).toBeUndefined();
+  });
+
+  it('leaves out always = yes and always hides always = no', () => {
+    const { rules, alwaysShown, parts } = scriptedSkeleton(GROUPED, entries);
+    expect(alwaysShown).toEqual(['always_icon']);
+    expect(rules.find(([id]) => id === 'never_icon-never')).toEqual([
+      'never_icon-never',
+      {
+        note: 'common/custom_gui/faiths.txt, custom_icon: potential = { always = no }: the game never shows it',
+        hide: ['countryreligionview/never_icon[1]', 'countryreligionview/never_icon[2]'],
+      },
+    ]);
+    expect(parts).toContainEqual({ rules: ['never_icon-never'] });
+  });
+
+  it('gives the widgets testing one single-valued trigger one selector', () => {
+    const { selectors, rules, parts } = scriptedSkeleton(GROUPED, entries);
+    // A test against a scope and a trigger tested once stay selectors of their own.
+    expect(selectors.map(([id]) => id)).toEqual(['faith_root', 'only_tag', 'scripted-religion']);
+    expect(selectors[2]?.[1]).toEqual({
+      kind: 'scripted',
+      label: 'religion (scripted)',
+      values: {
+        faith_one: 'faith_one',
+        faith_two: 'faith_two',
+        other: 'other',
+        another: 'Another religion',
+      },
+      note: 'faith_a, faith_b, faith_b2, faith_c test religion against one value each, so at most one of them shows',
+    });
+    expect(rules.filter(([id]) => id.startsWith('scripted-religion'))).toEqual([
+      [
+        'scripted-religion-faith_one',
+        {
+          when: { 'scripted-religion': ['faith_two', 'other', 'another'] },
+          hide: ['countryreligionview/faith_a'],
+        },
+      ],
+      [
+        'scripted-religion-faith_two',
+        {
+          when: { 'scripted-religion': ['faith_one', 'other', 'another'] },
+          hide: ['countryreligionview/faith_b', 'countryreligionview/faith_b2'],
+        },
+      ],
+      [
+        'scripted-religion-other',
+        {
+          when: { 'scripted-religion': ['faith_one', 'faith_two', 'another'] },
+          hide: ['countryreligionview/faith_c'],
+        },
+      ],
+    ]);
+    expect(parts).toContainEqual({
+      selector: 'scripted-religion',
+      rules: [
+        'scripted-religion-faith_one',
+        'scripted-religion-faith_two',
+        'scripted-religion-other',
+      ],
+    });
+  });
+
+  it('writes a profile file that Etch reads and checks without a problem', () => {
+    const { selectors, rules } = scriptedSkeleton(GROUPED, entries);
+    let text = withMembers(undefined, 'countryreligionview', 'selectors', selectors).text;
+    text = withMembers(text, 'countryreligionview', 'rules', rules).text;
+    const origin = { ...PROJECT, file: '.etch/profiles/countryreligionview.jsonc' };
+    const { file, diagnostics } = readProfile(text, origin);
+    expect(diagnostics).toEqual([]);
+    if (file === undefined) throw new Error('not read');
+    const checked = checkProfile(layerProfiles('countryreligionview', [file]), {
+      window: GROUPED,
+      positionType: () => false,
+    });
+    expect(checked.diagnostics).toEqual([]);
+    expect(checked.profile.rules).toHaveLength(rules.length);
   });
 });
 

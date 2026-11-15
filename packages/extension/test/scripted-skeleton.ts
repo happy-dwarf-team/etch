@@ -1,5 +1,5 @@
 // Etch: Add Scripted Selectors to the Window Profile in a real VS Code: a mod whose window has two
-// widgets that its common/custom_gui gives a potential. The command writes them into the mod
+// widgets that its common/custom_gui gives a potential, and two whose potential is constant. The command writes them into the mod
 // project's profile, the preview reads them as selectors, and a second run keeps what is there.
 import * as assert from 'node:assert/strict';
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
@@ -26,6 +26,8 @@ const GUI = `guiTypes = {
 			guiButtonType = { name = "etch_button" position = { x = 10 y = 10 } }
 		}
 		guiButtonType = { name = "etch_plain" position = { x = 10 y = 70 } }
+		guiButtonType = { name = "etch_never" position = { x = 60 y = 70 } }
+		guiButtonType = { name = "etch_always" position = { x = 110 y = 70 } }
 	}
 }
 `;
@@ -40,6 +42,14 @@ custom_button = {
 }
 custom_button = {
 	name = etch_plain
+}
+custom_button = {
+	name = etch_never
+	potential = { always = no }
+}
+custom_button = {
+	name = etch_always
+	potential = { always = yes }
 }
 `;
 
@@ -114,7 +124,8 @@ export async function testScriptedSkeleton(api: EtchApi): Promise<void> {
     );
     assert.ok(result, 'the command added the selectors');
     assert.deepEqual(result.selectors, ['etch_panel', 'etch_button']);
-    assert.deepEqual(result.rules, ['etch_panel-hidden', 'etch_button-hidden']);
+    assert.deepEqual(result.rules, ['etch_panel-hidden', 'etch_button-hidden', 'etch_never-never']);
+    assert.deepEqual(result.alwaysShown, ['etch_always']);
     const file = path.join(mod, '.etch', 'profiles', 'etch_scripted.jsonc');
     assert.equal(result.file.fsPath.toLowerCase(), file.toLowerCase());
     const text = await readFile(file, 'utf8');
@@ -132,7 +143,7 @@ export async function testScriptedSkeleton(api: EtchApi): Promise<void> {
     );
     assert.ok(again, 'a second run answers');
     assert.deepEqual(again.selectors, []);
-    assert.equal(again.kept.length, 4);
+    assert.equal(again.kept.length, 5);
     assert.equal(await readFile(file, 'utf8'), text);
   } finally {
     await settings.update('gamePath', undefined, vscode.ConfigurationTarget.Global);
