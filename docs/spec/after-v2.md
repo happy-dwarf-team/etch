@@ -55,11 +55,6 @@ refresh is a step of the 3.0.0 release.
   `tongs.ui` version 1, so the preview drawn from it differs there (v2
   section 7, "Not in v2"). Seen in both trial runs against the game, on
   `cffbf88` and `c2cf182`.
-- **The `_not_exploitable` base values.** Without the DLC Cradle of
-  Civilization the game hides the three exploit buttons and moves the base
-  values to `development_value_vertical_position_not_exploitable`; the vanilla
-  profile's `exploit` selector follows it, read from the code only, as every
-  corpus save has the DLC and no capture without it was taken.
 
 ## Done since 2.0.0
 
@@ -233,6 +228,13 @@ refresh is a step of the 3.0.0 release.
   capture of it matches. Without the DLC the same function hides
   `army_professionalism`, `CoCbackground` and `slacken_button` and shows the
   plain `background`; the profile follows it.
+
+- **The `_not_exploitable` base values** (left open by the 2.0.0 trial). A
+  capture of the province view without Cradle of Civilization (a new 1444
+  game saved with the DLC off, 9 November 2026) agrees with the vanilla
+  profile's `exploit: no`: the exploit buttons hidden, and the three base
+  values at the y of `development_value_vertical_position_not_exploitable`.
+  The same run's capture of the military tab confirmed etch#340.
 
 - **A text box is as large as the game's font measures it** (etch#264, from
   the coverage survey). The game measures a box by one rule (`0x159E510`) and
