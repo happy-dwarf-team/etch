@@ -1,5 +1,35 @@
 # Changelog
 
+## [2.12.0](https://github.com/happy-dwarf-team/etch/compare/v2.11.0...v2.12.0) (2026-11-15)
+
+
+### Features
+
+* **extension:** add scripted selectors to a window profile from common/custom_gui ([#410](https://github.com/happy-dwarf-team/etch/issues/410)) ([a717c3b](https://github.com/happy-dwarf-team/etch/commit/a717c3b67d4e7b60d593c0e7238c205f2bb634f7))
+* **extension:** constant potentials and exclusive tests in the scripted selectors ([#415](https://github.com/happy-dwarf-team/etch/issues/415)) ([fec8a1e](https://github.com/happy-dwarf-team/etch/commit/fec8a1e36a7e45384b541462c1d64abecb823ed8))
+* **extension:** label scripted selectors with the playset's localisation ([#417](https://github.com/happy-dwarf-team/etch/issues/417)) ([96cf1d5](https://github.com/happy-dwarf-team/etch/commit/96cf1d5fb2c8c130cd108d448e46eecfb5c424c1))
+* **extension:** link a script profile's names to where they are written ([#409](https://github.com/happy-dwarf-team/etch/issues/409)) ([844ea09](https://github.com/happy-dwarf-team/etch/commit/844ea0960d2f70772d7d60f218524d4e3aab4db7))
+* **extension:** one scripted selector for widgets with the same potential ([#419](https://github.com/happy-dwarf-team/etch/issues/419)) ([7484777](https://github.com/happy-dwarf-team/etch/commit/7484777500805a2e96ebecb602bdd2c27d6a58b5))
+* **extension:** show the script profile's numbers above the measured blocks ([#413](https://github.com/happy-dwarf-team/etch/issues/413)) ([efe7021](https://github.com/happy-dwarf-team/etch/commit/efe7021a9722d24998c015c82ddaa11802f4dbe6))
+
+
+### Bug Fixes
+
+* **corpus:** leave game_calls out of the host's Tongs settings, a retired setting from Tongs 0.35 ([#412](https://github.com/happy-dwarf-team/etch/issues/412)) ([f2a5d70](https://github.com/happy-dwarf-team/etch/commit/f2a5d708e626901abe64c31e6485640f54cfb138))
+* **corpus:** Prepare leaves out game_calls, a retired setting from Tongs 0.35 ([f2a5d70](https://github.com/happy-dwarf-team/etch/commit/f2a5d708e626901abe64c31e6485640f54cfb138))
+* **extension:** add no scripted rule for a selector the profile already had ([#414](https://github.com/happy-dwarf-team/etch/issues/414)) ([b9563b9](https://github.com/happy-dwarf-team/etch/commit/b9563b9802327afe6dc95b01f27e8eab213f7aa5))
+* **extension:** keep a widget a lower layer has a selector of out of a shared one ([#423](https://github.com/happy-dwarf-team/etch/issues/423)) ([4a853a7](https://github.com/happy-dwarf-team/etch/commit/4a853a7afe23a1bc46b320372934fc15cb5bdbf7))
+* **extension:** script profile lenses only on the copy the playset loads ([#416](https://github.com/happy-dwarf-team/etch/issues/416)) ([6c8de66](https://github.com/happy-dwarf-team/etch/commit/6c8de668c765904f84b234f8a22759ac6ea98d2c))
+* **live-game:** Pick mode finds widgets in a .gui file with a byte order mark ([7998397](https://github.com/happy-dwarf-team/etch/commit/799839735fa2d5ba6410d23f018965717627c1a3))
+* **live-game:** pick mode finds widgets in a .gui file with a byte order mark ([#422](https://github.com/happy-dwarf-team/etch/issues/422)) ([7998397](https://github.com/happy-dwarf-team/etch/commit/799839735fa2d5ba6410d23f018965717627c1a3))
+* **profile:** a widget named after a group keeps a selector of its own ([#421](https://github.com/happy-dwarf-team/etch/issues/421)) ([709218a](https://github.com/happy-dwarf-team/etch/commit/709218ae4316eeb2f9925e5298e7f0e24b4363f5))
+
+
+### Build
+
+* **pins:** pin Anvil 1.24.0 ([#425](https://github.com/happy-dwarf-team/etch/issues/425)) ([b383abe](https://github.com/happy-dwarf-team/etch/commit/b383abe40fdccf55f2c12dd965d5754f1c6f19ee))
+* **pins:** pin Tongs 0.36.0 ([#426](https://github.com/happy-dwarf-team/etch/issues/426)) ([f80f550](https://github.com/happy-dwarf-team/etch/commit/f80f5507855c0cea7eacc672d712e7a973720740))
+
 ## [2.11.0](https://github.com/happy-dwarf-team/etch/compare/v2.10.0...v2.11.0) (2026-11-15)
 
 
