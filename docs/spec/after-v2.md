@@ -95,7 +95,14 @@ refresh is a step of the 3.0.0 release.
   defined more than once links to the first in file order and says how many
   more there are. A file is parsed only when its text may define a wanted name:
   the 90 rows of an Anbennar profile take about 0.8 s, 88 of them found (the
-  other two have no owner). Not in it: starting a measurement from Etch.
+  other two have no owner). The other way round, once a profile is shown, a
+  CodeLens above each block it measured in a `.txt` file (the owner's kind from
+  the file's folder, as above) sums its rows by list, triggers apart from
+  effects since an effect's time includes its `limit`s, a scripted trigger from
+  the list of its uses; an event's lens includes its options, and each measured
+  option has one of its own. The lens opens the profile; **Etch: Hide the Script
+  Profile in Script Files** removes the lenses. Not in it: starting a
+  measurement from Etch.
 
 - **Run selection (lab#156).** The selected script, or the statement on the
   cursor's line, runs in the live game through the plugin's new `run` job and

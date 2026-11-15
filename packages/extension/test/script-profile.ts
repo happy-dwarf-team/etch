@@ -6,6 +6,7 @@ import { mkdtemp, mkdir, rm, utimes, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
+import { HIDE_SCRIPT_PROFILE_LENSES } from '../src/script-profile-lenses.ts';
 import { SHOW_SCRIPT_PROFILE } from '../src/script-profile-view.ts';
 
 const TIMEOUT_MS = 10000;
@@ -70,6 +71,23 @@ export async function testScriptProfile(): Promise<void> {
     assert.match(page, /Names link to where they are written in the game folder/);
     assert.match(page, /\| 1 \| Decision \| test_decision \| effect \| 3 \|/);
     assert.doesNotMatch(page, /old_events/);
+
+    // The lenses: above the event in its file, gone after the hide command.
+    const lensesOf = async (): Promise<vscode.CodeLens[]> =>
+      (await vscode.commands.executeCommand<vscode.CodeLens[] | undefined>(
+        'vscode.executeCodeLensProvider',
+        vscode.Uri.file(events),
+      )) ?? [];
+    await vscode.window.showTextDocument(vscode.Uri.file(events));
+    const lenses = await lensesOf();
+    assert.deepEqual(
+      lenses.map((l) => [l.range.start.line, l.command?.title]),
+      [[2, 'Script profile: triggers 2.5 ms (10 calls)']],
+      'one lens above the measured event',
+    );
+    assert.equal(lenses[0]?.command?.command, 'markdown.showPreview');
+    await vscode.commands.executeCommand(HIDE_SCRIPT_PROFILE_LENSES);
+    assert.deepEqual(await lensesOf(), [], 'no lens after hiding');
   } finally {
     await settings.update('gamePath', undefined, vscode.ConfigurationTarget.Global);
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');

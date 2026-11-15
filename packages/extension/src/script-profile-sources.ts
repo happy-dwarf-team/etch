@@ -207,3 +207,112 @@ export async function findScriptSources(
   }
   return sources;
 }
+
+/** A line of a script file and what the profile measured for the block that starts there. */
+export interface ScriptProfileLens {
+  /** 1-based line of the owner's block (or an event option's). */
+  readonly line: number;
+  /** One line: the lists' times and calls, `triggers 40.25 ms (100 calls) · effects 62 ms (10 calls)`. */
+  readonly title: string;
+  /** Each row's role, list, time and calls, one per line. */
+  readonly detail: string;
+}
+
+/** The owner kinds a script file can hold, by its path: `…/events/…`, `…/common/cb_types/…`. */
+function ownerKindsOfPath(path: string): string[] {
+  const normalized = `/${path.replace(/\\/g, '/').toLowerCase()}`;
+  return Object.entries(OWNER_FOLDERS)
+    .filter(([, where]) => normalized.includes(`/${where.folder}/`))
+    .map(([owner]) => owner);
+}
+
+function milliseconds(value: number): string {
+  return `${value.toLocaleString('en-US', { maximumFractionDigits: 2 })} ms`;
+}
+
+function callsText(calls: number): string {
+  return `${calls.toLocaleString('en-US')} ${calls === 1 ? 'call' : 'calls'}`;
+}
+
+/** The lens of a set of rows: each list's sum, then a line per row. */
+function lensOf(
+  line: number,
+  rows: readonly { list: string; row: ScriptProfileRow }[],
+): ScriptProfileLens {
+  const lists = ['triggers', 'scripted trigger uses', 'effects'];
+  const title = lists
+    .map((list) => {
+      const of = rows.filter((r) => r.list === list);
+      if (of.length === 0) return undefined;
+      const ms = of.reduce((n, r) => n + r.row.totalMs, 0);
+      const calls = of.reduce((n, r) => n + r.row.calls, 0);
+      return `${list} ${milliseconds(ms)} (${callsText(calls)})`;
+    })
+    .filter((part) => part !== undefined)
+    .join(' · ');
+  const detail = rows
+    .map(({ list, row }) => {
+      const what = row.option !== '' ? `option ${row.option} ${row.role}` : row.role || 'all uses';
+      return `${what} (${list}): ${milliseconds(row.totalMs)} in ${callsText(row.calls)}, max ${row.maxUs.toLocaleString('en-US', { maximumFractionDigits: 1 })} µs`;
+    })
+    .join('\n');
+  return { line, title: `Script profile: ${title}`, detail };
+}
+
+/**
+ * The lenses of a script file from a profile: above each owner block the profile measured, the
+ * times of its rows (an event's options included), and above each measured option its own. The
+ * file's kind comes from its folder; a scripted trigger takes the list of all its uses, the other
+ * owners the trigger and effect lists, kept apart since an effect's time includes its `limit`s.
+ */
+export function scriptProfileLenses(
+  text: string,
+  path: string,
+  profile: {
+    readonly triggers: { readonly rows: readonly ScriptProfileRow[] };
+    readonly scriptedTriggers: { readonly rows: readonly ScriptProfileRow[] };
+    readonly effects: { readonly rows: readonly ScriptProfileRow[] };
+  },
+): ScriptProfileLens[] {
+  const owners = ownerKindsOfPath(path);
+  if (owners.length === 0) return [];
+  const listed = [
+    ...profile.triggers.rows.map((row) => ({ list: 'triggers', row })),
+    ...profile.scriptedTriggers.rows.map((row) => ({ list: 'scripted trigger uses', row })),
+    ...profile.effects.rows.map((row) => ({ list: 'effects', row })),
+  ].filter(
+    ({ list, row }) =>
+      owners.includes(row.owner) &&
+      row.name !== '' &&
+      // A scripted trigger's root rows are part of its uses, listed on their own.
+      (row.owner !== 'scripted_trigger' || list === 'scripted trigger uses'),
+  );
+  if (listed.length === 0) return [];
+  const byName = new Map<string, { list: string; row: ScriptProfileRow }[]>();
+  for (const entry of listed) {
+    const key = entry.row.name.toLowerCase();
+    byName.set(key, [...(byName.get(key) ?? []), entry]);
+  }
+  const kinds = new Set(owners.map((owner) => OWNER_FOLDERS[owner]?.kind));
+  const lenses: ScriptProfileLens[] = [];
+  const { entries } = parseScript(text);
+  for (const kind of kinds) {
+    if (kind === undefined) continue;
+    for (const [name, owner] of ownersOf(entries, kind)) {
+      const rows = byName.get(name.toLowerCase());
+      if (rows === undefined) continue;
+      lenses.push(lensOf(lineAt(text, owner.start), rows));
+      const options = owner.value.entries.filter(
+        (e): e is PropertyNode & { value: BlockNode } =>
+          isBlockProperty(e) && e.key.text.toLowerCase() === 'option',
+      );
+      options.forEach((option, index) => {
+        const of = rows.filter(
+          (r) => r.row.owner === 'event_option' && r.row.option === String(index + 1),
+        );
+        if (of.length > 0) lenses.push(lensOf(lineAt(text, option.start), of));
+      });
+    }
+  }
+  return lenses.sort((a, b) => a.line - b.line);
+}

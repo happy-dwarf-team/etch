@@ -20,6 +20,7 @@ import {
   type ScriptProfileLinks,
 } from './script-profile.ts';
 import { findScriptSources } from './script-profile-sources.ts';
+import { ScriptProfileLenses, registerScriptProfileLenses } from './script-profile-lenses.ts';
 
 export const SHOW_SCRIPT_PROFILE = 'etch.showScriptProfile';
 /** The virtual documents' scheme: the CSV's path is the query, read again on each open. */
@@ -153,8 +154,10 @@ export function registerScriptProfile(
   output: vscode.LogOutputChannel,
 ): vscode.Disposable {
   const documents = new ScriptProfileDocuments(output);
+  const lenses = new ScriptProfileLenses();
   return vscode.Disposable.from(
     documents,
+    registerScriptProfileLenses(lenses),
     vscode.workspace.registerTextDocumentContentProvider(SCHEME, documents),
     vscode.commands.registerCommand(SHOW_SCRIPT_PROFILE, async () => {
       const folders = await profileFolders(game);
@@ -174,6 +177,14 @@ export function registerScriptProfile(
       });
       documents.refresh(uri);
       await vscode.commands.executeCommand('markdown.showPreview', uri);
+      // The same numbers above the measured blocks of the script files.
+      try {
+        lenses.show(await readScriptProfile(latest.path), uri, latest.path);
+      } catch (error) {
+        output.warn(
+          `Script profile: no lenses, the file could not be read: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
     }),
   );
 }
