@@ -396,6 +396,32 @@ describe('scriptedSkeleton with one potential for several widgets', () => {
     const { selectors } = scriptedSkeleton(window, pair);
     expect((selectors[0]?.[1] as { label: string }).label).toBe('page_a, page_b');
   });
+
+  it('keeps a widget a lower layer has a selector of out of the shared one', () => {
+    const hideOf = (rules: readonly (readonly [string, unknown])[], id: string): unknown =>
+      (rules.find(([rule]) => rule === id)?.[1] as { hide: string[] } | undefined)?.hide;
+    const later = scriptedSkeleton(window, scripted, undefined, new Set(['page_b']));
+    expect(later.selectors.map(([id]) => id)).toEqual(['page_a', 'page_b', 'other_page']);
+    expect((later.selectors[0]?.[1] as { label: string }).label).toBe('page_a and 2 more');
+    expect(hideOf(later.rules, 'page_a-hidden')).toEqual([
+      'provinceview/page_a',
+      'provinceview/page_c',
+      'provinceview/page_d',
+    ]);
+    expect(hideOf(later.rules, 'page_b-hidden')).toEqual(['provinceview/page_b']);
+    // The first one taken: the next widget of that potential stands for the rest.
+    const first = scriptedSkeleton(window, scripted, undefined, new Set(['page_a']));
+    expect(first.parts).toEqual([
+      { selector: 'page_a', rules: ['page_a-hidden'] },
+      { selector: 'page_b', rules: ['page_b-hidden'] },
+      { selector: 'other_page', rules: ['other_page-hidden'] },
+    ]);
+    expect(hideOf(first.rules, 'page_b-hidden')).toEqual([
+      'provinceview/page_b',
+      'provinceview/page_c',
+      'provinceview/page_d',
+    ]);
+  });
 });
 
 describe('withSkeleton', () => {
