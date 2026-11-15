@@ -73,8 +73,15 @@ refresh is a step of the 3.0.0 release.
   The profiler's v1.1 (lab#165, Anvil 1.22) adds church aspect and scripted
   trigger owners and a third list, scripted triggers by name, which the page
   shows between the triggers and the effects when the file has it.
-  Not in it: a jump from a row to the event's or decision's file, and starting
-  a measurement from Etch.
+  Each name links to where its owner is written, at the block the row measured
+  (an event's `trigger`, an option's `ai_chance`, a decision's `allow`), in the
+  playset of the first workspace folder, or the game folder without one: events
+  by their `id`, decisions and missions by their key inside their group, the
+  rest by their top-level key, in the owner's folder and its subfolders. A key
+  defined more than once links to the first in file order and says how many
+  more there are. A file is parsed only when its text may define a wanted name:
+  the 90 rows of an Anbennar profile take about 0.8 s, 88 of them found (the
+  other two have no owner). Not in it: starting a measurement from Etch.
 
 - **Run selection (lab#156).** The selected script, or the statement on the
   cursor's line, runs in the live game through the plugin's new `run` job and
