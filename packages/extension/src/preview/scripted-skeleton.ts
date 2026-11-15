@@ -12,6 +12,7 @@ import {
   scriptedSkeleton,
   withMembers,
   type CustomGuiEntry,
+  type SkeletonPart,
 } from '@etch/core/profile';
 import { PROJECT_PROFILES } from './profiles.ts';
 
@@ -31,6 +32,8 @@ export interface ScriptedSkeletonResult {
    * selector or a rule of their id, which the project's file would replace.
    */
   readonly taken: readonly string[];
+  /** Scripted widgets whose `potential` is `always = yes`, which need nothing in the profile. */
+  readonly alwaysShown: readonly string[];
 }
 
 /** The selector and rule ids of a window's profile layers below the mod project's. */
@@ -63,21 +66,26 @@ export async function addScriptedSelectors(
 ): Promise<ScriptedSkeletonResult | undefined> {
   const name = window.name ?? '';
   const all = scriptedSkeleton(window, await customGuiEntries(files));
-  // A selector and its rule go together: both are left out when a lower layer has either id.
-  const taken = all.selectors
-    .map(([id]) => id)
-    .filter((id) => lower.selectors.has(id) || lower.rules.has(`${id}-hidden`));
+  // A selector and its rules go together: all are left out when a lower layer has any of the ids.
+  const isTaken = (part: SkeletonPart): boolean =>
+    (part.selector !== undefined && lower.selectors.has(part.selector)) ||
+    part.rules.some((rule) => lower.rules.has(rule));
+  const takenParts = all.parts.filter(isTaken);
+  const taken = takenParts.map((part) => part.selector ?? part.rules[0] ?? '');
+  const leftOut = new Set(takenParts.flatMap((part) => [part.selector, ...part.rules]));
   const skeleton = {
-    selectors: all.selectors.filter(([id]) => !taken.includes(id)),
-    rules: all.rules.filter(([id]) => !taken.some((t) => `${t}-hidden` === id)),
+    selectors: all.selectors.filter(([id]) => !leftOut.has(id)),
+    rules: all.rules.filter(([id]) => !leftOut.has(id)),
   };
-  if (all.selectors.length === 0) {
+  if (all.parts.length === 0) {
     void vscode.window.showInformationMessage(
-      `No widget of ${name} has a potential in the playset's common/custom_gui: there is nothing scripted to add.`,
+      all.alwaysShown.length === 0
+        ? `No widget of ${name} has a potential in the playset's common/custom_gui: there is nothing scripted to add.`
+        : `Each scripted widget of ${name} has potential = { always = yes }, so the game always shows it: there is nothing to add.`,
     );
     return undefined;
   }
-  if (skeleton.selectors.length === 0) {
+  if (skeleton.selectors.length === 0 && skeleton.rules.length === 0) {
     void vscode.window.showInformationMessage(
       `Etch's own profile of ${name} already has a selector or rule for each of its ${String(taken.length)} scripted widgets (${taken.slice(0, 5).join(', ')}${taken.length > 5 ? ', …' : ''}): there is nothing to add.`,
     );
@@ -105,5 +113,6 @@ export async function addScriptedSelectors(
     rules: rules.added,
     kept: [...selectors.kept, ...rules.kept],
     taken,
+    alwaysShown: all.alwaysShown,
   };
 }

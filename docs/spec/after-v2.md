@@ -31,9 +31,9 @@ refresh is a step of the 3.0.0 release.
 - **Ironman and other binary saves**, melting or writing saves: only if
   Paradox publishes or licenses a token table.
 - **Deriving scripted groups** of a profile from `custom_window` and
-  `potential` beyond one selector per widget (below, "Done since 2.0.0"): an
-  exclusive group of widgets whose `potential`s exclude each other, and labels
-  from localisation.
+  `potential` beyond what "Done since 2.0.0" lists below: exclusive groups that
+  a mod's effects make (flags set one at a time, nested `potential`s), and
+  labels from localisation.
 - **Profiles for more windows and other big mods** (Dwarven Knowledge and
   others), and captures of the state tab, `colonisationpanel` and Anbennar's
   `aPUI_*` windows.
@@ -75,6 +75,20 @@ refresh is a step of the 3.0.0 release.
   kept as written, so a second run adds only new widgets. A name scripted twice
   takes the later file's entry. Etch still evaluates no trigger, and an entry
   without a `potential` (shown whenever its window is) gets no selector.
+
+  The command also reads two simple kinds of `potential`:
+  - **Constant.** `always = yes` gets nothing; `always = no` gets a rule
+    `<id>-never` that always hides the widget.
+  - **One test.** A `potential` that is only a test of a single-valued trigger
+    (`tag`, `religion`, `government`, …), against a value that is not a scope,
+    joins the window's other tests of that trigger into one selector,
+    `scripted-<trigger>`. The selector has a value per tested value plus
+    `other`, and a rule per value. This happens when the window tests the
+    trigger against two or more values.
+
+  In Anbennar this leaves `countrygovernmentview` 104 selectors instead of 173,
+  since 67 of its scripted widgets are `always = yes`.
+  `countryreligionview`'s panels for ten religions become one selector.
 
 - **The latest script profile (lab#166).** **Etch: Show Latest Script Profile**
   reads the newest `logs/script_profile_*.csv` that Anvil's
