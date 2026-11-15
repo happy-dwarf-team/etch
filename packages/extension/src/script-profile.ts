@@ -298,7 +298,10 @@ function nameCell(row: ScriptProfileRow, links: ScriptProfileLinks | undefined):
   const label = cell(rowLabel(row));
   const link = links?.(row);
   if (link === undefined || label === '') return label;
-  const text = label.replace(/[[\]]/g, '\\$&');
+  // A link's text escapes its brackets too, in the same pass as the backslashes and the bars.
+  const text = rowLabel(row)
+    .replace(/[\\|[\]]/g, '\\$&')
+    .replace(/[\r\n]+/g, ' ');
   return `[${text}](<${link.uri}> "${cell(link.title.replace(/"/g, "'"))}")`;
 }
 
