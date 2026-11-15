@@ -90,7 +90,7 @@ export async function addScriptedSelectors(
   }
   if (skeleton.selectors.length === 0 && skeleton.rules.length === 0) {
     void vscode.window.showInformationMessage(
-      `Etch's own profile of ${name} already has a selector or rule for each of its ${String(taken.length)} scripted widgets (${taken.slice(0, 5).join(', ')}${taken.length > 5 ? ', …' : ''}): there is nothing to add.`,
+      `Etch's own profile of ${name} already has all ${String(taken.length)} scripted selectors and rules Etch would add (${taken.slice(0, 5).join(', ')}${taken.length > 5 ? ', …' : ''}): there is nothing to add.`,
     );
     return undefined;
   }

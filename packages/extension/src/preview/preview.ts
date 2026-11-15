@@ -1857,7 +1857,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
     const taken =
       result.taken.length === 0
         ? ''
-        : ` ${String(result.taken.length)} widgets Etch's own profile already has a selector or rule for are left out (${result.taken.slice(0, 5).join(', ')}${result.taken.length > 5 ? ', …' : ''}).`;
+        : ` ${String(result.taken.length)} scripted selectors and rules that Etch's own profile already has are left out (${result.taken.slice(0, 5).join(', ')}${result.taken.length > 5 ? ', …' : ''}).`;
     const always =
       result.alwaysShown.length === 0
         ? ''
