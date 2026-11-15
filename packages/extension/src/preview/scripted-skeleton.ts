@@ -10,7 +10,7 @@ import type { GameFiles } from '@etch/core/playset';
 import {
   readCustomGui,
   scriptedSkeleton,
-  withMembers,
+  withSkeleton,
   type CustomGuiEntry,
   type SkeletonPart,
 } from '@etch/core/profile';
@@ -76,6 +76,8 @@ export async function addScriptedSelectors(
   const skeleton = {
     selectors: all.selectors.filter(([id]) => !leftOut.has(id)),
     rules: all.rules.filter(([id]) => !leftOut.has(id)),
+    parts: all.parts.filter((part) => !isTaken(part)),
+    alwaysShown: all.alwaysShown,
   };
   if (all.parts.length === 0) {
     void vscode.window.showInformationMessage(
@@ -96,22 +98,21 @@ export async function addScriptedSelectors(
   const before =
     document?.getText() ??
     (await readFile(file.fsPath, 'utf8').catch(() => undefined as string | undefined));
-  const selectors = withMembers(before, name, 'selectors', skeleton.selectors);
-  const rules = withMembers(selectors.text, name, 'rules', skeleton.rules);
+  const added = withSkeleton(before, name, skeleton);
   if (document !== undefined) {
     const edit = new vscode.WorkspaceEdit();
-    edit.replace(file, new vscode.Range(0, 0, document.lineCount, 0), rules.text);
+    edit.replace(file, new vscode.Range(0, 0, document.lineCount, 0), added.text);
     await vscode.workspace.applyEdit(edit);
     await document.save();
   } else {
     await mkdir(dirname(file.fsPath), { recursive: true });
-    await writeFile(file.fsPath, rules.text, 'utf8');
+    await writeFile(file.fsPath, added.text, 'utf8');
   }
   return {
     file,
-    selectors: selectors.added,
-    rules: rules.added,
-    kept: [...selectors.kept, ...rules.kept],
+    selectors: added.selectors,
+    rules: added.rules,
+    kept: added.kept,
     taken,
     alwaysShown: all.alwaysShown,
   };

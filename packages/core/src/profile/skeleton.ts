@@ -11,6 +11,7 @@
  */
 import type { Widget } from '../model/gui.ts';
 import { parseScript, type BlockNode, type EntryNode } from '../script/index.ts';
+import { withMembers } from './edit.ts';
 import { windowPaths } from './paths.ts';
 
 /** A `custom_…` entry of `common/custom_gui` with a `potential`. */
@@ -185,13 +186,23 @@ export function scriptedSkeleton(
     return (tested.get(key)?.size ?? 0) > 1 ? key : undefined;
   };
 
+  // Names that give one id (`my.icon`, `my-icon`) get `-2`, `-3`… after the first, so that each
+  // keeps a selector and a rule of its own.
+  const used = new Set<string>();
+  const uniqueId = (name: string): string => {
+    const base = scriptedSelectorId(name);
+    let id = base;
+    for (let n = 2; used.has(id); n++) id = `${base}-${String(n)}`;
+    used.add(id);
+    return id;
+  };
   const selectors: [string, unknown][] = [];
   const rules: [string, unknown][] = [];
   const parts: SkeletonPart[] = [];
   const alwaysShown: string[] = [];
   const groups = new Map<string, { entry: CustomGuiEntry; hidden: string[] }[]>();
   for (const { entry, hidden } of found) {
-    const id = scriptedSelectorId(entry.name);
+    const id = uniqueId(entry.name);
     const always = entry.test?.key === 'always' ? entry.test.value.toLowerCase() : undefined;
     if (always === 'yes') {
       alwaysShown.push(entry.name);
@@ -249,4 +260,53 @@ export function scriptedSkeleton(
     parts.push({ selector: id, rules: ruleIds });
   }
   return { selectors, rules, parts, alwaysShown };
+}
+
+/** What {@link withSkeleton} did: the new text, and the ids it added and the ones it left alone. */
+export interface AddedSkeleton {
+  readonly text: string;
+  readonly selectors: readonly string[];
+  readonly rules: readonly string[];
+  /** Ids the file already had, selectors and rules, left as written. */
+  readonly kept: readonly string[];
+}
+
+/**
+ * The text of a profile file with a skeleton's selectors and rules added (a new file when `text`
+ * is `undefined`). What the file already has is kept as written, and so is a selector's meaning:
+ * the rules of a part whose selector the file already had are not added, since that selector's
+ * values may not be the ones they test; those it already has count as kept. Throws when the file
+ * is not JSONC.
+ */
+export function withSkeleton(
+  text: string | undefined,
+  window: string,
+  skeleton: SkeletonEntries,
+): AddedSkeleton {
+  const selectors = withMembers(text, window, 'selectors', skeleton.selectors);
+  const own = new Set(selectors.kept);
+  const ofOwn = new Set(
+    skeleton.parts
+      .filter((part) => part.selector !== undefined && own.has(part.selector))
+      .flatMap((part) => part.rules),
+  );
+  const rules = withMembers(
+    selectors.text,
+    window,
+    'rules',
+    skeleton.rules.filter(([id]) => !ofOwn.has(id)),
+  );
+  // Only its `kept` is used: the rules of the file's own selectors that it already has.
+  const ownRules = withMembers(
+    selectors.text,
+    window,
+    'rules',
+    skeleton.rules.filter(([id]) => ofOwn.has(id)),
+  );
+  return {
+    text: rules.text,
+    selectors: selectors.added,
+    rules: rules.added,
+    kept: [...selectors.kept, ...rules.kept, ...ownRules.kept],
+  };
 }

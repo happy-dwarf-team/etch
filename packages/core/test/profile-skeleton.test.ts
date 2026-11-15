@@ -7,6 +7,7 @@ import {
   readProfile,
   scriptedSkeleton,
   withMembers,
+  withSkeleton,
   type ProfileOrigin,
 } from '../src/profile/index.ts';
 
@@ -289,5 +290,68 @@ describe('withMembers', () => {
     expect(result.text).not.toContain('Generated');
     const { diagnostics } = readProfile(result.text, PROJECT);
     expect(diagnostics).toEqual([]);
+  });
+});
+
+describe('scriptedSkeleton ids', () => {
+  it('gives names of one selector id a selector and a rule each, the later with a suffix', () => {
+    const window = readGuiFile(
+      parseScript(`guiTypes = {
+  windowType = {
+    name = "provinceview"
+    iconType = { name = "my.icon" }
+    iconType = { name = "my-icon" }
+  }
+}`),
+    ).definitions.find((w) => w.name === 'provinceview') as Widget;
+    const scripted = readCustomGui(
+      'custom_icon = { name = my.icon potential = { has_country_flag = a } }\n' +
+        'custom_icon = { name = my-icon potential = { has_country_flag = b } }',
+      'common/custom_gui/dots.txt',
+    );
+    const { selectors, rules } = scriptedSkeleton(window, scripted);
+    expect(selectors.map(([id]) => id)).toEqual(['my-icon', 'my-icon-2']);
+    expect(rules).toEqual([
+      ['my-icon-hidden', { when: { 'my-icon': 'hidden' }, hide: ['provinceview/my.icon'] }],
+      ['my-icon-2-hidden', { when: { 'my-icon-2': 'hidden' }, hide: ['provinceview/my-icon'] }],
+    ]);
+  });
+});
+
+describe('withSkeleton', () => {
+  const entries = readCustomGui(CUSTOM_GUI, 'common/custom_gui/my_panel.txt');
+
+  it("adds no rule for a selector the file already had, so the file's own values stay valid", () => {
+    const before = `{
+  "formatVersion": 1,
+  "window": "provinceview",
+  "selectors": {
+    "my_button": { "kind": "scripted", "label": "Mine", "values": { "a": "A" } },
+  },
+}
+`;
+    const skeleton = scriptedSkeleton(WINDOW, entries);
+    const result = withSkeleton(before, 'provinceview', skeleton);
+    expect(result.selectors).not.toContain('my_button');
+    expect(result.rules).not.toContain('my_button-hidden');
+    expect(result.kept).toEqual(['my_button']);
+    const { file, diagnostics } = readProfile(result.text, PROJECT);
+    expect(diagnostics).toEqual([]);
+    if (file === undefined) throw new Error('not read');
+    const checked = checkProfile(layerProfiles('provinceview', [file]), {
+      window: WINDOW,
+      positionType: () => false,
+    });
+    expect(checked.diagnostics).toEqual([]);
+  });
+
+  it('keeps the selectors and the rules it added before, a second time', () => {
+    const skeleton = scriptedSkeleton(WINDOW, entries);
+    const first = withSkeleton(undefined, 'provinceview', skeleton);
+    const again = withSkeleton(first.text, 'provinceview', skeleton);
+    expect(again.text).toBe(first.text);
+    expect(again.selectors).toEqual([]);
+    expect(again.rules).toEqual([]);
+    expect([...again.kept].sort()).toEqual([...first.selectors, ...first.rules].sort());
   });
 });
