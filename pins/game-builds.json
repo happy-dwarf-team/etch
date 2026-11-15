@@ -8,9 +8,9 @@
     {
       "id": "anvil",
       "name": "Anvil",
-      "tag": "v1.22.0",
-      "url": "https://github.com/happy-dwarf-team/anvil/releases/download/v1.22.0/anvil-windows-x64.zip",
-      "sha256": "829AEBB48A2708F2C79694CBA70FDD9C9BD0B2CAC8B2588037D5C985399BD6E8",
+      "tag": "v1.23.0",
+      "url": "https://github.com/happy-dwarf-team/anvil/releases/download/v1.23.0/anvil-windows-x64.zip",
+      "sha256": "B286A84C7C62C5796ADD709537BE15A6E2A421D3A72266D671479309A60DAC8B",
       "files": [
         "version.dll",
         "anvil/anvil.toml",
@@ -46,9 +46,9 @@
     {
       "id": "bellows",
       "name": "Bellows",
-      "tag": "v1.8.0",
-      "url": "https://github.com/happy-dwarf-team/bellows/releases/download/v1.8.0/bellows-windows-x64.zip",
-      "sha256": "1570FA076DA09C6C953F943A3B160921070DEA28F3E64D862EDC6A19953E9C52",
+      "tag": "v2.0.0",
+      "url": "https://github.com/happy-dwarf-team/bellows/releases/download/v2.0.0/bellows-windows-x64.zip",
+      "sha256": "393D451A7EE0A07CEF53481E96C45BD096CA5B43BAF859B2A3F94C187D5A8D14",
       "into": "anvil/plugins/",
       "files": ["bellows/"],
       "licenses": [
