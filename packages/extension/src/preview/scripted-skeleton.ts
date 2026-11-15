@@ -63,9 +63,10 @@ export async function addScriptedSelectors(
   files: GameFiles,
   projectRoot: string,
   lower: LowerIds,
+  localise?: (key: string) => string | undefined,
 ): Promise<ScriptedSkeletonResult | undefined> {
   const name = window.name ?? '';
-  const all = scriptedSkeleton(window, await customGuiEntries(files));
+  const all = scriptedSkeleton(window, await customGuiEntries(files), localise);
   // A selector and its rules go together: all are left out when a lower layer has any of the ids.
   const isTaken = (part: SkeletonPart): boolean =>
     (part.selector !== undefined && lower.selectors.has(part.selector)) ||

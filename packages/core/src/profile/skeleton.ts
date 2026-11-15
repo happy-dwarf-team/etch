@@ -26,6 +26,34 @@ export interface CustomGuiEntry {
   readonly potential: string;
   /** The `potential`'s only test, when it holds one `key = value` with a word for its value. */
   readonly test?: { readonly key: string; readonly value: string };
+  /** The localisation key of its `tooltip`, when it has one. */
+  readonly tooltip?: string;
+}
+
+/** How much of a tooltip's text a selector's label shows. */
+export const LABEL_TEXT_CHARS = 60;
+
+/**
+ * A localised text as a short plain label: icons (`£…£`), colour codes (`§Y`, `§!`), variables
+ * (`$…$`), scripted text (`[…]`) and rules drawn with `-----` dropped, lines joined and the
+ * result cut with `…`.
+ * `undefined` when nothing readable is left.
+ */
+export function plainLabelText(text: string): string | undefined {
+  const plain = text
+    .replace(/£[^£\s]*£?/g, ' ')
+    .replace(/§[A-Za-z0-9!]/g, '')
+    .replace(/\$[^$]*\$/g, '…')
+    .replace(/\[[^\]]*\]/g, '…')
+    .replace(/\\n|[\r\n]+/g, ' ')
+    // Rules drawn with characters (`-----`, `=====`).
+    .replace(/([-=_*~.])\1{2,}/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!/[\p{L}\p{N}]/u.test(plain)) return undefined;
+  return plain.length <= LABEL_TEXT_CHARS
+    ? plain
+    : `${plain.slice(0, LABEL_TEXT_CHARS - 1).trimEnd()}…`;
 }
 
 /** How much of a `potential` a selector's note quotes. */
@@ -87,12 +115,14 @@ export function readCustomGui(text: string, file: string): CustomGuiEntry[] {
       const potential = blockOf(entry.value, 'potential');
       if (name === undefined || name === '' || potential === undefined) continue;
       const test = onlyTest(potential);
+      const tooltip = scalarOf(entry.value, 'tooltip');
       found.push({
         name,
         type,
         file,
         potential: `potential = ${oneLine(text.slice(potential.start, potential.end))}`,
         ...(test === undefined ? {} : { test }),
+        ...(tooltip === undefined || tooltip === '' ? {} : { tooltip }),
       });
     }
   };
@@ -153,7 +183,14 @@ export function scriptedSelectorId(name: string): string {
 export function scriptedSkeleton(
   window: Widget,
   entries: readonly CustomGuiEntry[],
+  localise?: (key: string) => string | undefined,
 ): SkeletonEntries {
+  // A widget's label: its name, and the playset's text of its tooltip when it has one.
+  const labelOf = (entry: CustomGuiEntry): string => {
+    const text = entry.tooltip === undefined ? undefined : localise?.(entry.tooltip);
+    const plain = text === undefined ? undefined : plainLabelText(text);
+    return plain === undefined ? entry.name : `${entry.name}: ${plain}`;
+  };
   const byName = new Map<string, CustomGuiEntry>();
   for (const entry of entries) byName.set(entry.name.toLowerCase(), entry);
   const paths = new Map<string, string[]>();
@@ -224,7 +261,7 @@ export function scriptedSkeleton(
       id,
       {
         kind: 'scripted',
-        label: entry.name,
+        label: labelOf(entry),
         values: { shown: 'Shown', hidden: 'Hidden' },
         note: `${entry.file}, ${entry.type}: ${entry.potential}`,
       },
@@ -238,7 +275,9 @@ export function scriptedSkeleton(
     const hiddenOf = new Map<string, string[]>();
     for (const { entry, hidden } of members) {
       const value = entry.test?.value ?? '';
-      values[valueId(value)] = value;
+      // Religions, cultures, tags… are localisation keys of their names.
+      const text = localise?.(value);
+      values[valueId(value)] = (text === undefined ? undefined : plainLabelText(text)) ?? value;
       hiddenOf.set(valueId(value), [...(hiddenOf.get(valueId(value)) ?? []), ...hidden]);
     }
     values['other' in values ? 'another' : 'other'] = `Another ${key}`;

@@ -32,8 +32,7 @@ refresh is a step of the 3.0.0 release.
   Paradox publishes or licenses a token table.
 - **Deriving scripted groups** of a profile from `custom_window` and
   `potential` beyond what "Done since 2.0.0" lists below: exclusive groups that
-  a mod's effects make (flags set one at a time, nested `potential`s), and
-  labels from localisation.
+  a mod's effects make (flags set one at a time, nested `potential`s).
 - **Profiles for more windows and other big mods** (Dwarven Knowledge and
   others), and captures of the state tab, `colonisationpanel` and Anbennar's
   `aPUI_*` windows.
@@ -89,6 +88,12 @@ refresh is a step of the 3.0.0 release.
   In Anbennar this leaves `countrygovernmentview` 104 selectors instead of 173,
   since 67 of its scripted widgets are `always = yes`.
   `countryreligionview`'s panels for ten religions become one selector.
+
+  **Labels from localisation.** A selector's label is the widget's name, followed by the
+  playset's text of the entry's `tooltip` in plain form: no icons, colour codes, variables or
+  scripted text, cut at 60 characters. A group's values are labelled with the localised names of
+  the tested values (religions, tags, cultures). A key with no text, such as Anbennar's
+  placeholder `localisation_key`, leaves the name alone.
 
 - **The latest script profile (lab#166).** **Etch: Show Latest Script Profile**
   reads the newest `logs/script_profile_*.csv` that Anvil's
