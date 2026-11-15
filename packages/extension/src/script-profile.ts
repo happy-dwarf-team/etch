@@ -284,10 +284,29 @@ function figure(value: number, decimals: number): string {
   });
 }
 
+/** A row's link to where its owner is written: a URI the page can open, and its tooltip. */
+export interface ScriptProfileLink {
+  readonly uri: string;
+  readonly title: string;
+}
+
+/** Finds the link of a row; `undefined` when the row has none (no owner, or not found). */
+export type ScriptProfileLinks = (row: ScriptProfileRow) => ScriptProfileLink | undefined;
+
+/** A row's name, linked to its owner's block when there is a link. */
+function nameCell(row: ScriptProfileRow, links: ScriptProfileLinks | undefined): string {
+  const label = cell(rowLabel(row));
+  const link = links?.(row);
+  if (link === undefined || label === '') return label;
+  const text = label.replace(/[[\]]/g, '\\$&');
+  return `[${text}](<${link.uri}> "${cell(link.title.replace(/"/g, "'"))}")`;
+}
+
 function listMarkdown(
   title: string,
   list: ScriptProfileList,
   rows: number,
+  links: ScriptProfileLinks | undefined,
   note?: string,
 ): string[] {
   const out = [
@@ -304,7 +323,7 @@ function listMarkdown(
   );
   list.rows.slice(0, rows).forEach((row, i) => {
     out.push(
-      `| ${String(i + 1)} | ${cell(OWNERS[row.owner] ?? row.owner)} | ${cell(rowLabel(row))} | ${cell(row.role)} | ${figure(row.calls, 0)} | ${figure(row.totalMs, 2)} | ${figure(row.meanUs, 3)} | ${figure(row.maxUs, 1)} |`,
+      `| ${String(i + 1)} | ${cell(OWNERS[row.owner] ?? row.owner)} | ${nameCell(row, links)} | ${cell(row.role)} | ${figure(row.calls, 0)} | ${figure(row.totalMs, 2)} | ${figure(row.meanUs, 3)} | ${figure(row.maxUs, 1)} |`,
     );
   });
   if (list.rows.length > rows) {
@@ -338,6 +357,7 @@ export function scriptProfileMarkdown(
   profile: ScriptProfile,
   file: { path: string; uri: string },
   rows: number,
+  links?: { find: ScriptProfileLinks; playset: string },
 ): string {
   const out = ['# Script profile', '', `[${cell(file.path)}](${file.uri})`, ''];
   const span = spanLine(profile.meta);
@@ -349,7 +369,14 @@ export function scriptProfileMarkdown(
     );
   }
   for (const problem of profile.problems) out.push(`> ${cell(problem)}`, '');
-  out.push(...listMarkdown('Triggers', profile.triggers, rows));
+  if (links !== undefined) {
+    out.push(
+      `Names link to where they are written in ${cell(links.playset)}, which may differ from the playset the profile was measured in.`,
+      '',
+    );
+  }
+  const find = links?.find;
+  out.push(...listMarkdown('Triggers', profile.triggers, rows, find));
   // As the profiler's window: the list only when the file has it (Anvil 1.22's v1.1 or newer).
   if (profile.scriptedTriggers.rows.length > 0) {
     out.push(
@@ -357,11 +384,12 @@ export function scriptProfileMarkdown(
         'Scripted triggers',
         profile.scriptedTriggers,
         rows,
+        find,
         'Every use of a scripted trigger by its name, also inside an event or a decision, so this time is part of the triggers above too.',
       ),
     );
   }
-  out.push(...listMarkdown('Effects', profile.effects, rows));
+  out.push(...listMarkdown('Effects', profile.effects, rows, find));
   out.push(
     'Times are summed over every game thread. A trigger inside an effect (a `limit`) counts in both lists.',
     '',

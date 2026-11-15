@@ -174,7 +174,12 @@ quitting ended early is marked interrupted. Blocks whose owner the profiler
 cannot tell are one row, as in its window; the CSV splits them by where the
 game runs them. With Anvil 1.22's scripted triggers and church aspects, the
 page also lists every scripted trigger by its name, between the triggers and
-the effects; that time is part of the triggers too.
+the effects; that time is part of the triggers too. Each name links to where
+it is written (an event, a decision, a mission, an `on_action`, a casus belli,
+a triggered modifier, a church aspect or a scripted trigger), at the block the
+row measured, such as an option's `ai_chance`: in the playset of your
+workspace, or the game folder without one, so a profile from another playset
+may not find every name.
 
 ## Etch 1.x
 

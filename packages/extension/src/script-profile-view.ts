@@ -4,13 +4,22 @@
 // game profile is searched first, then the live game's private one.
 import { dirname } from 'node:path';
 import * as vscode from 'vscode';
-import { findGameInSteam, findProfileFolder, systemEnvironment } from '@etch/core/playset';
+import {
+  findGameInSteam,
+  findPlayset,
+  findProfileFolder,
+  GameFiles,
+  systemEnvironment,
+} from '@etch/core/playset';
 import type { LiveGame } from './live-game/index.ts';
 import {
   findLatestScriptProfile,
   readScriptProfile,
   scriptProfileMarkdown,
+  type ScriptProfile,
+  type ScriptProfileLinks,
 } from './script-profile.ts';
+import { findScriptSources } from './script-profile-sources.ts';
 
 export const SHOW_SCRIPT_PROFILE = 'etch.showScriptProfile';
 /** The virtual documents' scheme: the CSV's path is the query, read again on each open. */
@@ -31,18 +40,97 @@ async function profileFolders(game: LiveGame): Promise<string[]> {
   return folders;
 }
 
+/**
+ * The files the links point into: the playset of the first workspace folder (the game and the
+ * mods `etch.gamePath` and `etch.playset` give, as the preview finds them), or the game folder
+ * alone without a workspace folder. `undefined` when no game folder is found.
+ */
+async function linkedFiles(): Promise<{ files: GameFiles; playset: string } | undefined> {
+  const folder = vscode.workspace.workspaceFolders?.[0];
+  const settings = vscode.workspace.getConfiguration('etch', folder?.uri);
+  const gamePath = settings.get<string>('gamePath', '').trim();
+  if (folder === undefined) {
+    const game =
+      gamePath !== ''
+        ? gamePath
+        : await findGameInSteam(systemEnvironment()).catch(() => undefined);
+    if (game === undefined) return undefined;
+    return {
+      files: new GameFiles([{ name: 'game', root: game, replacePaths: [] }]),
+      playset: 'the game folder',
+    };
+  }
+  const playset = await findPlayset({
+    gamePath,
+    playsetOverride: settings.get<string[]>('playset', []),
+    workspaceFolder: folder.uri.fsPath,
+  });
+  if (playset.gameFolder === undefined) return undefined;
+  const layers = playset.files.layers.map((layer) =>
+    layer.name === 'game' ? 'the game' : layer.name,
+  );
+  return { files: playset.files, playset: `the workspace's playset (${layers.join(', ')})` };
+}
+
+/** Links from the shown rows to where their owners are written; `undefined` without a game folder. */
+async function sourceLinks(
+  profile: ScriptProfile,
+  output: vscode.LogOutputChannel,
+): Promise<{ find: ScriptProfileLinks; playset: string } | undefined> {
+  const linked = await linkedFiles();
+  if (linked === undefined) return undefined;
+  const shown = [profile.triggers, profile.scriptedTriggers, profile.effects].flatMap((list) =>
+    list.rows.slice(0, ROWS_PER_LIST),
+  );
+  const started = Date.now();
+  const sources = await findScriptSources(linked.files, shown);
+  output.info(
+    `Script profile: ${String(sources.size)} of ${String(shown.length)} rows found in the playset in ${String(Date.now() - started)} ms`,
+  );
+  return {
+    playset: linked.playset,
+    find: (row) => {
+      const source = sources.get(row);
+      if (source === undefined) return undefined;
+      const others =
+        source.others === 0
+          ? ''
+          : `; ${String(source.others)} more ${source.others === 1 ? 'definition' : 'definitions'} in the playset`;
+      return {
+        uri: vscode.Uri.file(source.absolutePath)
+          .with({ fragment: `L${String(source.line)}` })
+          .toString(),
+        title: `${source.path}, line ${String(source.line)} (${source.layer === 'game' ? 'the game' : source.layer})${others}`,
+      };
+    },
+  };
+}
+
 class ScriptProfileDocuments implements vscode.TextDocumentContentProvider {
   private readonly changed = new vscode.EventEmitter<vscode.Uri>();
   readonly onDidChange = this.changed.event;
+
+  private readonly output: vscode.LogOutputChannel;
+
+  constructor(output: vscode.LogOutputChannel) {
+    this.output = output;
+  }
 
   async provideTextDocumentContent(uri: vscode.Uri): Promise<string> {
     const path = uri.query;
     try {
       const profile = await readScriptProfile(path);
+      const links = await sourceLinks(profile, this.output).catch((error: unknown) => {
+        this.output.warn(
+          `Script profile: the playset could not be searched: ${error instanceof Error ? error.message : String(error)}`,
+        );
+        return undefined;
+      });
       return scriptProfileMarkdown(
         profile,
         { path, uri: vscode.Uri.file(path).toString() },
         ROWS_PER_LIST,
+        links,
       );
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -64,7 +152,7 @@ export function registerScriptProfile(
   game: LiveGame,
   output: vscode.LogOutputChannel,
 ): vscode.Disposable {
-  const documents = new ScriptProfileDocuments();
+  const documents = new ScriptProfileDocuments(output);
   return vscode.Disposable.from(
     documents,
     vscode.workspace.registerTextDocumentContentProvider(SCHEME, documents),

@@ -1,5 +1,6 @@
 // Etch: Show Latest Script Profile in a real VS Code: the newest CSV of the game profile that the
-// game folder's userdir.txt names, shown as a Markdown preview of a virtual document.
+// game folder's userdir.txt names, shown as a Markdown preview of a virtual document, its names
+// linked to where the game folder defines them (no workspace folder is open in the test).
 import * as assert from 'node:assert/strict';
 import { mkdtemp, mkdir, rm, utimes, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -38,6 +39,12 @@ export async function testScriptProfile(): Promise<void> {
   await mkdir(game, { recursive: true });
   await mkdir(path.join(profile, 'logs'), { recursive: true });
   await writeFile(path.join(game, 'userdir.txt'), profile);
+  await mkdir(path.join(game, 'events'), { recursive: true });
+  const events = path.join(game, 'events', 'new_events.txt');
+  await writeFile(
+    events,
+    'namespace = new_events\n\ncountry_event = {\n\tid = new_events.1\n\ttrigger = { always = yes }\n}\n',
+  );
   const older = path.join(profile, 'logs', 'script_profile_2026-11-01_100000.csv');
   const newest = path.join(profile, 'logs', 'script_profile_2026-11-02_100000.csv');
   await writeFile(older, csv('complete', 'old_events.1'));
@@ -53,7 +60,14 @@ export async function testScriptProfile(): Promise<void> {
     assert.match(page, /# Script profile/);
     assert.match(page, /30 days \(1444\.11\.11 to 1444\.12\.11\)/);
     assert.match(page, /\*\*Interrupted\*\* \(interrupted_session\)/);
-    assert.match(page, /\| 1 \| Event \| new_events\.1 \| trigger \| 10 \|/);
+    const link = vscode.Uri.file(events).with({ fragment: 'L5' }).toString();
+    assert.ok(
+      page.includes(
+        `| 1 | Event | [new_events.1](<${link}> "events/new_events.txt, line 5 (the game)") | trigger | 10 |`,
+      ),
+      'the event links to its trigger in the game folder',
+    );
+    assert.match(page, /Names link to where they are written in the game folder/);
     assert.match(page, /\| 1 \| Decision \| test_decision \| effect \| 3 \|/);
     assert.doesNotMatch(page, /old_events/);
   } finally {
