@@ -63,6 +63,11 @@ precision corpus, for the base game and for Anbennar.
 - **Save as view…** writes the selectors and hand toggles into the mod's
   `.etch/profiles/<window>.jsonc`, which can be committed with the mod. A mod can
   write its own profile there; VS Code checks it as you type.
+- **Etch: Add Scripted Selectors to the Window Profile** starts that file for a
+  mod's scripted interface: each widget of the previewed window that
+  `common/custom_gui` gives a `potential` becomes a selector, shown or hidden,
+  set in **View ▾**, with the `potential` quoted in its note. Etch does not
+  evaluate the trigger.
 - Of a `_large` pair the preview draws only the variant the game creates at the
   preview's height, and the province view's sections move where the game's code
   moves them.

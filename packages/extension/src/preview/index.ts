@@ -4,6 +4,7 @@ import type { WidgetNavigation } from '../navigation.ts';
 import { CHOOSE_RESOLUTION, PREVIEW_VIEW_TYPE, Preview, type PreviewApi } from './preview.ts';
 import { chooseResolution } from './resolution.ts';
 import { OPEN_LIVE_PROFILE, SAVE_LIVE_VIEW } from './live-differences.ts';
+import { ADD_SCRIPTED_SELECTORS } from './scripted-skeleton.ts';
 
 export type { PreviewApi, PreviewPaint, PreviewRender, SourceText } from './preview.ts';
 export type { PreviewMemento } from './protocol.ts';
@@ -14,6 +15,7 @@ export {
   RESOLUTION_SETTING,
 } from './preview.ts';
 export { writeResolution } from './resolution.ts';
+export { ADD_SCRIPTED_SELECTORS, type ScriptedSkeletonResult } from './scripted-skeleton.ts';
 
 /** Opens the preview beside the editor (the editor title of a `.gui` file shows it). */
 export const OPEN_PREVIEW = 'etch.openPreview';
@@ -71,6 +73,7 @@ export function registerPreview(
     vscode.commands.registerCommand(SAVE_LIVE_VIEW, (window: string, paths: readonly string[]) =>
       preview.saveLiveView(window, paths),
     ),
+    vscode.commands.registerCommand(ADD_SCRIPTED_SELECTORS, () => preview.addScriptedSelectors()),
     vscode.commands.registerCommand(OPEN_LIVE_PROFILE, (window: string) =>
       preview.openLiveProfile(window),
     ),

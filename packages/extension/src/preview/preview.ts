@@ -109,6 +109,7 @@ import type {
 } from './protocol.ts';
 import { RenderLoop } from './render-loop.ts';
 import { PreviewSession, type SessionSettings } from './session.ts';
+import { addScriptedSelectors, type ScriptedSkeletonResult } from './scripted-skeleton.ts';
 import {
   applyViewAction,
   chooseMember,
@@ -271,6 +272,11 @@ export interface PreviewApi {
    * `undefined` when it did not compare (said to the user).
    */
   compareWithLiveGame(): Promise<LiveComparison | undefined>;
+  /**
+   * **Add Scripted Selectors to the Window Profile**: `undefined` when it added nothing (said to
+   * the user).
+   */
+  addScriptedSelectors(): Promise<ScriptedSkeletonResult | undefined>;
 }
 
 /** The countries and provinces of the chosen save, and the chosen ones. */
@@ -1802,6 +1808,62 @@ export class Preview implements PreviewApi, vscode.Disposable {
       preview: false,
     });
     this.request();
+  }
+
+  /**
+   * **Add Scripted Selectors to the Window Profile**: the previewed window's widgets that the
+   * playset's `common/custom_gui` gives a `potential`, as `scripted` selectors and rules of the
+   * mod project's profile (after-v2.md, "Deriving scripted groups").
+   */
+  async addScriptedSelectors(): Promise<ScriptedSkeletonResult | undefined> {
+    const render = this.render;
+    const session = this.session;
+    const name = render?.window.name;
+    if (render === undefined || session === undefined || name === undefined) {
+      void vscode.window.showInformationMessage(
+        'Scripted selectors are added for the previewed window: open the preview on it first.',
+      );
+      return undefined;
+    }
+    const root = session.playset.workspaceMod?.root;
+    if (root === undefined) {
+      void vscode.window.showInformationMessage(
+        'Scripted selectors are written into the mod project, beside its descriptor.mod: open a file of a mod.',
+      );
+      return undefined;
+    }
+    let result: ScriptedSkeletonResult | undefined;
+    try {
+      // Ids of Etch's own layers stay theirs: the project's file would replace those entries.
+      const lower = render.view?.profile.profile;
+      const below = (list: readonly { id: string; origin: { source: string } }[] = []) =>
+        new Set(list.filter((e) => e.origin.source !== 'mod project').map((e) => e.id));
+      result = await addScriptedSelectors(render.window, session.playset.files, root, {
+        selectors: below(lower?.selectors),
+        rules: below(lower?.rules),
+      });
+    } catch (error) {
+      void vscode.window.showErrorMessage(`Add scripted selectors: ${messageOf(error)}`);
+      return undefined;
+    }
+    if (result === undefined) return undefined;
+    const kept =
+      result.kept.length === 0
+        ? ''
+        : ` ${String(result.kept.length)} ids the file already had are left as they are.`;
+    const taken =
+      result.taken.length === 0
+        ? ''
+        : ` ${String(result.taken.length)} widgets Etch's own profile already has a selector or rule for are left out (${result.taken.slice(0, 5).join(', ')}${result.taken.length > 5 ? ', …' : ''}).`;
+    void vscode.window.showInformationMessage(
+      `${String(result.selectors.length)} scripted selectors and ${String(result.rules.length)} rules added to ${vscode.workspace.asRelativePath(result.file)}; set them in View ▾.${kept}${taken}`,
+    );
+    await vscode.window.showTextDocument(result.file, {
+      viewColumn: vscode.ViewColumn.One,
+      preview: false,
+    });
+    this.request();
+    return result;
   }
 
   /** **Open profile** for a window without one: the mod project's file, once it exists. */
