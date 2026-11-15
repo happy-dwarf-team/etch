@@ -213,12 +213,15 @@ export function scriptedSelectorId(name: string): string {
  * window (below its top), the later entry winning when the playset scripts a name twice, as a
  * later file wins in the game. Each rule hides every widget of that name. A constant `potential`
  * gets no selector, widgets testing one single-valued trigger share one (the file's top), and so
- * do widgets with the same condition (the first one's id).
+ * do widgets with the same condition (the first one's id). A widget whose own id is in
+ * `lowerSelectors` (a lower layer's profile already has its selector) shares with none, so that
+ * its part is the one the lower layer has.
  */
 export function scriptedSkeleton(
   window: Widget,
   entries: readonly CustomGuiEntry[],
   localise?: (key: string) => string | undefined,
+  lowerSelectors: ReadonlySet<string> = new Set(),
 ): SkeletonEntries {
   // A widget's label: its name, and the playset's text of its tooltip when it has one.
   const labelOf = (entry: CustomGuiEntry): string => {
@@ -281,10 +284,15 @@ export function scriptedSkeleton(
   const constant = (entry: CustomGuiEntry): string | undefined =>
     entry.test?.key === 'always' ? entry.test.value.toLowerCase() : undefined;
   // Widgets with the same condition, neither constant nor in a group: one selector for them all.
+  // A widget a lower layer already gives a selector keeps its own, or the shared rule would hide
+  // it a second time under another id.
+  const ownSelector = (entry: CustomGuiEntry): boolean =>
+    lowerSelectors.has(scriptedSelectorId(entry.name));
   const sharing = new Map<string, { entry: CustomGuiEntry; hidden: string[] }[]>();
   for (const member of found) {
     const always = constant(member.entry);
     if (always === 'yes' || always === 'no' || groupOf(member.entry) !== undefined) continue;
+    if (ownSelector(member.entry)) continue;
     const key = member.entry.condition;
     sharing.set(key, [...(sharing.get(key) ?? []), member]);
   }
@@ -306,7 +314,9 @@ export function scriptedSkeleton(
       groups.set(group, [...(groups.get(group) ?? []), { entry, hidden }]);
       continue;
     }
-    const members = sharing.get(entry.condition) ?? [{ entry, hidden }];
+    const members = ownSelector(entry)
+      ? [{ entry, hidden }]
+      : (sharing.get(entry.condition) ?? [{ entry, hidden }]);
     // The first widget of a shared condition stands for the others.
     if (members[0]?.entry !== entry) continue;
     const id = uniqueId(entry.name);
