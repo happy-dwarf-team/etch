@@ -179,7 +179,9 @@ export function registerScriptProfile(
       await vscode.commands.executeCommand('markdown.showPreview', uri);
       // The same numbers above the measured blocks of the script files.
       try {
-        lenses.show(await readScriptProfile(latest.path), uri, latest.path);
+        const profile = await readScriptProfile(latest.path);
+        const linked = await linkedFiles().catch(() => undefined);
+        lenses.show(profile, uri, latest.path, linked?.files);
       } catch (error) {
         output.warn(
           `Script profile: no lenses, the file could not be read: ${error instanceof Error ? error.message : String(error)}`,
