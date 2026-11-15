@@ -259,8 +259,13 @@ export function scriptedSkeleton(
   };
 
   // Names that give one id (`my.icon`, `my-icon`) get `-2`, `-3`… after the first, so that each
-  // keeps a selector and a rule of its own.
+  // keeps a selector and a rule of its own. The groups' ids (`scripted-<key>`) are taken first, so
+  // a widget named `scripted.tag` does not share the selector of the `tag` group.
   const used = new Set<string>();
+  for (const { entry } of found) {
+    const key = groupOf(entry);
+    if (key !== undefined) used.add(`scripted-${scriptedSelectorId(key)}`);
+  }
   const uniqueId = (name: string): string => {
     const base = scriptedSelectorId(name);
     let id = base;

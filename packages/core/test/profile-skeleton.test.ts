@@ -317,6 +317,27 @@ describe('scriptedSkeleton ids', () => {
       ['my-icon-2-hidden', { when: { 'my-icon-2': 'hidden' }, hide: ['provinceview/my-icon'] }],
     ]);
   });
+
+  it('keeps a group selector apart from a widget named after it', () => {
+    const window = readGuiFile(
+      parseScript(`guiTypes = {
+  windowType = {
+    name = "provinceview"
+    iconType = { name = "tag_a" }
+    iconType = { name = "tag_b" }
+    iconType = { name = "scripted.tag" }
+  }
+}`),
+    ).definitions.find((w) => w.name === 'provinceview') as Widget;
+    const scripted = readCustomGui(
+      'custom_icon = { name = tag_a potential = { tag = AAA } }\n' +
+        'custom_icon = { name = tag_b potential = { tag = BBB } }\n' +
+        'custom_icon = { name = scripted.tag potential = { has_country_flag = a } }',
+      'common/custom_gui/tags.txt',
+    );
+    const { selectors } = scriptedSkeleton(window, scripted);
+    expect(selectors.map(([id]) => id)).toEqual(['scripted-tag-2', 'scripted-tag']);
+  });
 });
 
 describe('scriptedSkeleton with one potential for several widgets', () => {
