@@ -7,7 +7,8 @@
  * Two kinds of `potential` are read further. `always = yes` and `always = no` are constant: the
  * widget gets no selector, and with `no` a rule that always hides it. Widgets whose `potential` is
  * one test of the same single-valued trigger (`religion = …`, `tag = …`) against different values
- * exclude each other: they share one selector with a value per tested value and `other`.
+ * exclude each other: they share one selector with a value per tested value and `other`. Widgets
+ * with the same `potential` show together: they share one selector and one rule.
  */
 import type { Widget } from '../model/gui.ts';
 import { parseScript, type BlockNode, type EntryNode } from '../script/index.ts';
@@ -24,6 +25,11 @@ export interface CustomGuiEntry {
   readonly file: string;
   /** The `potential` block's text, on one line, cut after {@link POTENTIAL_CHARS} characters. */
   readonly potential: string;
+  /**
+   * The whole `potential` block's text, on one line with one space around `=`, `<`, `>` and the
+   * braces: two entries with the same condition are shown and hidden together.
+   */
+  readonly condition: string;
   /** The `potential`'s only test, when it holds one `key = value` with a word for its value. */
   readonly test?: { readonly key: string; readonly value: string };
   /** The localisation key of its `tooltip`, when it has one. */
@@ -94,6 +100,17 @@ function oneLine(text: string): string {
   return flat.length <= POTENTIAL_CHARS ? flat : `${flat.slice(0, POTENTIAL_CHARS - 1).trimEnd()}…`;
 }
 
+/** A block's text as a condition to compare: comments dropped, one space between tokens. */
+function conditionOf(text: string): string {
+  return text
+    .replace(/#[^\r\n]*/g, ' ')
+    .replace(/([{}=<>])/g, ' $1 ')
+    .replace(/<\s+=/g, '<=')
+    .replace(/>\s+=/g, '>=')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 /** A block's only entry when it is `key = word`, the key in lower case. */
 function onlyTest(block: BlockNode): { key: string; value: string } | undefined {
   const [entry, ...rest] = block.entries;
@@ -121,6 +138,7 @@ export function readCustomGui(text: string, file: string): CustomGuiEntry[] {
         type,
         file,
         potential: `potential = ${oneLine(text.slice(potential.start, potential.end))}`,
+        condition: conditionOf(text.slice(potential.start, potential.end)),
         ...(test === undefined ? {} : { test }),
         ...(tooltip === undefined || tooltip === '' ? {} : { tooltip }),
       });
@@ -169,6 +187,22 @@ function valueId(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9_]+/g, '-');
 }
 
+/** How many names a shared selector's note lists before it counts the rest. */
+const LISTED_NAMES = 8;
+
+/** Names for a note: the first {@link LISTED_NAMES}, then how many more. */
+function listedNames(names: readonly string[]): string {
+  if (names.length <= LISTED_NAMES) return names.join(', ');
+  return `${names.slice(0, LISTED_NAMES).join(', ')} and ${String(names.length - LISTED_NAMES)} more`;
+}
+
+/** The label of a selector that widgets with one condition share. */
+function sharedLabel(names: readonly string[]): string {
+  const [first, second] = names;
+  if (names.length === 2) return `${first ?? ''}, ${second ?? ''}`;
+  return `${first ?? ''} and ${String(names.length - 1)} more`;
+}
+
 /** The selector id of a scripted widget: its name in lower case, `-` for anything but a–z, 0–9, `_`. */
 export function scriptedSelectorId(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9_]+/g, '-');
@@ -178,7 +212,8 @@ export function scriptedSelectorId(name: string): string {
  * The skeleton's selectors and rules for a window: one per scripted widget name found in the
  * window (below its top), the later entry winning when the playset scripts a name twice, as a
  * later file wins in the game. Each rule hides every widget of that name. A constant `potential`
- * gets no selector, and widgets testing one single-valued trigger share one (the file's top).
+ * gets no selector, widgets testing one single-valued trigger share one (the file's top), and so
+ * do widgets with the same condition (the first one's id).
  */
 export function scriptedSkeleton(
   window: Widget,
@@ -238,14 +273,24 @@ export function scriptedSkeleton(
   const parts: SkeletonPart[] = [];
   const alwaysShown: string[] = [];
   const groups = new Map<string, { entry: CustomGuiEntry; hidden: string[] }[]>();
+  const constant = (entry: CustomGuiEntry): string | undefined =>
+    entry.test?.key === 'always' ? entry.test.value.toLowerCase() : undefined;
+  // Widgets with the same condition, neither constant nor in a group: one selector for them all.
+  const sharing = new Map<string, { entry: CustomGuiEntry; hidden: string[] }[]>();
+  for (const member of found) {
+    const always = constant(member.entry);
+    if (always === 'yes' || always === 'no' || groupOf(member.entry) !== undefined) continue;
+    const key = member.entry.condition;
+    sharing.set(key, [...(sharing.get(key) ?? []), member]);
+  }
   for (const { entry, hidden } of found) {
-    const id = uniqueId(entry.name);
-    const always = entry.test?.key === 'always' ? entry.test.value.toLowerCase() : undefined;
+    const always = constant(entry);
     if (always === 'yes') {
       alwaysShown.push(entry.name);
       continue;
     }
     if (always === 'no') {
+      const id = uniqueId(entry.name);
       const note = `${entry.file}, ${entry.type}: ${entry.potential}: the game never shows it`;
       rules.push([`${id}-never`, { note, hide: hidden }]);
       parts.push({ rules: [`${id}-never`] });
@@ -256,17 +301,29 @@ export function scriptedSkeleton(
       groups.set(group, [...(groups.get(group) ?? []), { entry, hidden }]);
       continue;
     }
+    const members = sharing.get(entry.condition) ?? [{ entry, hidden }];
+    // The first widget of a shared condition stands for the others.
+    if (members[0]?.entry !== entry) continue;
+    const id = uniqueId(entry.name);
+    const shared = members.length > 1;
+    const names = members.map((member) => member.entry.name);
     parts.push({ selector: id, rules: [`${id}-hidden`] });
     selectors.push([
       id,
       {
         kind: 'scripted',
-        label: labelOf(entry),
+        label: shared ? sharedLabel(names) : labelOf(entry),
         values: { shown: 'Shown', hidden: 'Hidden' },
-        note: `${entry.file}, ${entry.type}: ${entry.potential}`,
+        note: shared
+          ? `${entry.file}, ${entry.type}: ${entry.potential}: the same potential as ` +
+            `${listedNames(names.slice(1))}, so they show together`
+          : `${entry.file}, ${entry.type}: ${entry.potential}`,
       },
     ]);
-    rules.push([`${id}-hidden`, { when: { [id]: 'hidden' }, hide: hidden }]);
+    rules.push([
+      `${id}-hidden`,
+      { when: { [id]: 'hidden' }, hide: members.flatMap((member) => member.hidden) },
+    ]);
   }
 
   for (const [key, members] of groups) {

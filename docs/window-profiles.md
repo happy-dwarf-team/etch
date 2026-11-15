@@ -407,6 +407,9 @@ The faulty entry is skipped and the rest of the profile applies.
     value is not a scope such as `ROOT`. Those widgets share one selector, `scripted-<trigger>`,
     with a value for each tested value and `other`, and a rule for each value that hides its
     widgets under the other values.
+  - Widgets with the same `potential` (spaces and comments aside) show and hide together, so they
+    share one selector, named after the first of them, and one rule that hides them all. Its
+    label is `<first> and N more`, and its note names the others.
   - **Labels.** A selector's label is the widget's name, followed by the playset's text of its
     `tooltip` when it has one. The label drops icons, colour codes and variables and is cut at 60
     characters. A group's value is labelled with the playset's text of that value, such as a
