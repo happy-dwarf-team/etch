@@ -44,8 +44,9 @@ interface Listing {
  * later layer's file wins over an earlier one with the same path, as in the game. Paths compare
  * without regard to case and separator, as on Windows. Read only: nothing here writes to disk.
  *
- * `replace_path` hides the earlier layers' files directly in that folder, not in its subfolders.
- * The game's handling of subfolders has not been checked against 1.37.5.
+ * `replace_path` hides the earlier layers' files directly in that folder, not in its subfolders,
+ * as in EU4 1.37.5: with `replace_path = "events"` the game still loads the base game's
+ * `events/<sub>/*.txt` (checked in the game on 15.11.2026).
  */
 export class GameFiles {
   readonly layers: readonly GameFilesLayer[];
