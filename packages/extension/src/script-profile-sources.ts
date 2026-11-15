@@ -2,6 +2,7 @@
 // of an event, a decision, an on_action, … in the playset's files, so that a row of the page links
 // to the block it measured. Node only, no vscode.
 import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import type { GameFile, GameFiles } from '@etch/core/playset';
 import { parseScript, type BlockNode, type EntryNode, type PropertyNode } from '@etch/core';
 import type { ScriptProfileRow } from './script-profile.ts';
@@ -168,10 +169,15 @@ export async function findScriptSources(
     const test = mayDefine([...wanted.keys()], kinds);
     const folderFiles = await filesUnder(files, folder);
     // One character per byte, so offsets are lines either way: script files are Windows-1252 or
-    // UTF-8, and only the ASCII keys are compared.
+    // UTF-8, and only the ASCII keys are compared. A UTF-8 BOM, on the first line, goes first: as
+    // latin1 it would join the file's first key.
     const read = (file: GameFile): Promise<string | undefined> =>
       readFile(file.absolutePath).then(
-        (bytes) => bytes.toString('latin1'),
+        (bytes) =>
+          (bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf
+            ? bytes.subarray(3)
+            : bytes
+          ).toString('latin1'),
         () => undefined,
       );
     const pending = folderFiles.slice(0, READ_AHEAD).map(read);
@@ -257,6 +263,29 @@ function lensOf(
     })
     .join('\n');
   return { line, title: `Script profile: ${title}`, detail };
+}
+
+/** A comparable form of an absolute path: resolved, `/` separators, lower case. */
+function pathKey(path: string): string {
+  return resolve(path).replace(/\\/g, '/').toLowerCase();
+}
+
+/**
+ * Whether the file at `path` is the copy the playset loads: the winning file at its game path in
+ * the layer whose folder holds it (the deepest one). `false` for a copy a later layer overrides or
+ * a `replace_path` hides, whose blocks the measured game never ran; `undefined` for a file in none
+ * of the layers.
+ */
+export async function isLoadedCopy(path: string, files: GameFiles): Promise<boolean | undefined> {
+  const file = pathKey(path);
+  let root: string | undefined;
+  for (const layer of files.layers) {
+    const key = `${pathKey(layer.root)}/`;
+    if (file.startsWith(key) && (root === undefined || key.length > root.length)) root = key;
+  }
+  if (root === undefined) return undefined;
+  const winner = await files.find(file.slice(root.length));
+  return winner !== undefined && pathKey(winner.absolutePath) === file;
 }
 
 /**

@@ -5,7 +5,11 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { GameFiles } from '@etch/core/playset';
 import { scriptProfileMarkdown, parseScriptProfile } from '../src/script-profile.ts';
 import type { ScriptProfileRow } from '../src/script-profile.ts';
-import { findScriptSources, scriptProfileLenses } from '../src/script-profile-sources.ts';
+import {
+  findScriptSources,
+  isLoadedCopy,
+  scriptProfileLenses,
+} from '../src/script-profile-sources.ts';
 
 const roots: string[] = [];
 
@@ -113,6 +117,21 @@ describe('findScriptSources', () => {
     expect(event?.others).toBe(0);
   });
 
+  it('finds the first key of a file that starts with a UTF-8 BOM', async () => {
+    const files = new GameFiles([
+      {
+        name: 'game',
+        root: await folder({
+          'common/scripted_triggers/bom.txt': '﻿is_bom_trigger = {\n\talways = yes\n}\n',
+        }),
+        replacePaths: [],
+      },
+    ]);
+    const bom = row('scripted_trigger', 'is_bom_trigger', '');
+    const sources = await findScriptSources(files, [bom]);
+    expect(sources.get(bom)).toMatchObject({ path: 'common/scripted_triggers/bom.txt', line: 1 });
+  });
+
   it('links the winning file, a subfolder too, and counts other definitions', async () => {
     const game = await folder(GAME);
     const mod = await folder({
@@ -166,6 +185,32 @@ describe('scriptProfileMarkdown with links', () => {
     expect(page).toContain('| 2 | Decision | test_decision | potential |');
     expect(page).toContain(
       "Names link to where they are written in the workspace's playset (the game)",
+    );
+  });
+});
+
+describe('isLoadedCopy', () => {
+  it('is true for the winning copy only, false for one overridden or hidden', async () => {
+    const game = await folder({
+      'events/flavor.txt': 'country_event = { id = flavor.1 }\n',
+      'events/kept.txt': 'country_event = { id = kept.1 }\n',
+      'decisions/old.txt': 'country_decisions = { }\n',
+    });
+    const mod = await folder({
+      'events/flavor.txt': 'country_event = { id = flavor.1 }\n',
+      'decisions/new.txt': 'country_decisions = { }\n',
+    });
+    const files = new GameFiles([
+      { name: 'game', root: game, replacePaths: [] },
+      { name: 'Test Mod', root: mod, replacePaths: ['decisions'] },
+    ]);
+    expect(await isLoadedCopy(join(mod, 'events', 'flavor.txt'), files)).toBe(true);
+    expect(await isLoadedCopy(join(game, 'events', 'flavor.txt'), files)).toBe(false);
+    expect(await isLoadedCopy(join(game, 'EVENTS', 'Kept.txt'), files)).toBe(true);
+    expect(await isLoadedCopy(join(game, 'decisions', 'old.txt'), files)).toBe(false);
+    expect(await isLoadedCopy(join(mod, 'decisions', 'new.txt'), files)).toBe(true);
+    expect(await isLoadedCopy(join(tmpdir(), 'elsewhere', 'events', 'a.txt'), files)).toBe(
+      undefined,
     );
   });
 });
