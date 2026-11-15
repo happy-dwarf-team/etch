@@ -2,7 +2,7 @@
 param(
     # Prepare: build the capture host install in -HostDir: a junction copy of the Steam game with
     #   the pinned Anvil and Tongs releases (zips checked against the SHA256SUMS.txt next to them),
-    #   Tongs set to input = true and game_calls = false, and host.json with every hash.
+    #   Tongs set to input = true (its game calls stay off by default), and host.json with every hash.
     # Check: the lab's preflight for one start (Process Lasso rule, both eu4.exe hashes, no game
     #   running, the copy's own `anvil` folder (an Anvil in the Steam folder does not reach it),
     #   the junctions, the plugin hashes).
@@ -175,7 +175,9 @@ switch ($Action) {
         [IO.File]::WriteAllText($anvilToml, ($toml -replace '(?m)^disabled_plugins = \[\]', 'disabled_plugins = ["anvil-overlay"]'))
         $data = Join-Path $copy 'anvil\data\tongs'
         New-Item -ItemType Directory $data -Force | Out-Null
-        Set-Content (Join-Path $data 'settings.toml') @('enabled = true', 'input = true', 'game_calls = false') -Encoding ascii
+        # No game_calls: from Tongs 0.35 it is a retired setting, which Anvil 1.23 moves into anvil.toml at the
+        # first start, and the host would then differ from host.json. Game calls are off by default either way.
+        Set-Content (Join-Path $data 'settings.toml') @('enabled = true', 'input = true') -Encoding ascii
         $hostInfo = [ordered]@{
             created = (Get-Date).ToUniversalTime().ToString('o')
             archives = [ordered]@{ anvil = [ordered]@{ file = (Split-Path -Leaf $AnvilZip); sha256 = $anvilSha }
