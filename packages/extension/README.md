@@ -66,8 +66,12 @@ precision corpus, for the base game and for Anbennar.
 - **Etch: Add Scripted Selectors to the Window Profile** starts that file for a
   mod's scripted interface: each widget of the previewed window that
   `common/custom_gui` gives a `potential` becomes a selector, shown or hidden,
-  set in **View ▾**, with the `potential` quoted in its note. Etch does not
-  evaluate the trigger.
+  set in **View ▾**, with the `potential` quoted in its note and the
+  widget's tooltip text in its label. Etch does not evaluate the trigger, but
+  reads a few shapes: `always = yes` needs no selector and `always = no` always
+  hides, widgets with the same `potential` share one selector, and widgets
+  that test one `religion`, `tag`, `government`… against different values
+  share one with a value each.
 - Of a `_large` pair the preview draws only the variant the game creates at the
   preview's height, and the province view's sections move where the game's code
   moves them.
