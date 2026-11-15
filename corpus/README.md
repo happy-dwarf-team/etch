@@ -308,7 +308,7 @@ another session's).
    Prepare refuses while an Anvil is installed in the Steam folder (a lab
    script's run: the copy's junctions would lead into it), checks both
    archives against their sums, turns Tongs on with
-   `input = true` and `game_calls = false`, turns `anvil-overlay` off (its
+   `input = true` (game calls stay off by default), turns `anvil-overlay` off (its
    notifications would be in the screenshots), and writes `host.json` with
    every hash. Nothing goes into the Steam folder.
 
