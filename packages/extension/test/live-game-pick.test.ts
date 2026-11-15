@@ -159,6 +159,20 @@ describe('resolvePick', () => {
     expect(target.sprite).toBe('GFX_tax');
   });
 
+  it('finds the widget in a file that starts with a UTF-8 byte order mark', async () => {
+    await writeFile(
+      join(game, 'interface', 'bom.gui'),
+      Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), Buffer.from(PANEL, 'latin1')]),
+    );
+    const target = await resolved([
+      widget('tax_button', 'interface/bom.gui', 5),
+      widget('panel', 'interface/bom.gui', 3),
+    ]);
+    expect(target.match).toBe('line');
+    expect(target.open.line).toBe(4);
+    expect(target.sprite).toBe('GFX_tax');
+  });
+
   it('accepts a window whose keyword is on the line before its brace', async () => {
     const target = await resolved([widget('panel', 'interface/panel.gui', 3)]);
     expect(target.open.line).toBe(2);

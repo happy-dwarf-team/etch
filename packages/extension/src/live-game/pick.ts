@@ -103,7 +103,7 @@ async function locate(
 ): Promise<{ location: PickLocation; match: LineMatch; sprite: string | undefined } | undefined> {
   const winner = await sources.files.find(path);
   if (winner === undefined) return undefined;
-  const text = await sources.text(winner.absolutePath);
+  const text = withoutBom(await sources.text(winner.absolutePath));
   const base = {
     path: winner.path,
     absolutePath: winner.absolutePath,
@@ -217,7 +217,7 @@ export async function spriteLocation(
   if (located === undefined) return undefined;
   const winner = await sources.files.find(located.path);
   if (winner === undefined) return undefined;
-  const text = (await sources.text(winner.absolutePath)) ?? '';
+  const text = withoutBom(await sources.text(winner.absolutePath)) ?? '';
   return {
     path: winner.path,
     absolutePath: winner.absolutePath,
@@ -226,6 +226,17 @@ export async function spriteLocation(
     readOnly: !inside(winner.absolutePath, sources.editedRoot),
     name,
   };
+}
+
+/**
+ * The text without a leading UTF-8 byte order mark: read byte per character it is `ï»¿`, which
+ * would join the file's first key, so no widget of the file is found; the interface index skips
+ * it too, so the offsets agree.
+ */
+function withoutBom(text: string | undefined): string | undefined {
+  if (text?.startsWith('\u00EF\u00BB\u00BF') === true) return text.slice(3);
+  if (text?.startsWith('\uFEFF') === true) return text.slice(1);
+  return text;
 }
 
 function lineStarts(text: string): number[] {
