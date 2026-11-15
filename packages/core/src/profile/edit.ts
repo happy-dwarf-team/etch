@@ -104,3 +104,54 @@ function insertMember(
   const after = comma ? at + 1 : last.end;
   return `${text.slice(0, after)}${comma ? '' : ','}\n${INDENT.repeat(level)}${body}${text.slice(after)}`;
 }
+
+/** What {@link withMembers} did: the new text, and the ids it added and the ones it left alone. */
+export interface AddedMembers {
+  readonly text: string;
+  readonly added: readonly string[];
+  readonly kept: readonly string[];
+}
+
+/**
+ * The text of a profile file with members added to one of its objects (`selectors`, `rules`…),
+ * each only when the object has no member of that id yet: what the file already says is kept as
+ * written. A new file when `text` is `undefined`. Throws when the file is not JSONC.
+ */
+export function withMembers(
+  text: string | undefined,
+  window: string,
+  section: string,
+  members: readonly (readonly [string, unknown])[],
+): AddedMembers {
+  const added: string[] = [];
+  const kept: string[] = [];
+  let current =
+    text === undefined || text.trim() === ''
+      ? `{\n${INDENT}"formatVersion": ${String(PROFILE_FORMAT_VERSION)},\n${INDENT}"window": ${JSON.stringify(window)}\n}\n`
+      : text;
+  for (const [id, value] of members) {
+    const { root, error } = parseJsonc(current);
+    if (root?.kind !== 'object') {
+      throw new Error(error === undefined ? 'The file is not an object.' : `${error.message}.`);
+    }
+    const member = `${JSON.stringify(id)}: ${JSON.stringify(value, undefined, 2)}`;
+    const object = root.members.find((m) => m.key === section);
+    if (object === undefined) {
+      current = insertMember(
+        current,
+        root,
+        `${JSON.stringify(section)}: {\n${indent(member, 1)}\n}`,
+        1,
+      );
+    } else if (object.value.kind !== 'object') {
+      throw new Error(`"${section}" is not an object.`);
+    } else if (object.value.members.some((m) => m.key === id)) {
+      kept.push(id);
+      continue;
+    } else {
+      current = insertMember(current, object.value, member, 2);
+    }
+    added.push(id);
+  }
+  return { text: current, added, kept };
+}

@@ -158,6 +158,11 @@
         "category": "Etch"
       },
       {
+        "command": "etch.addScriptedSelectors",
+        "title": "Add Scripted Selectors to the Window Profile",
+        "category": "Etch"
+      },
+      {
         "command": "etch.runSelection",
         "title": "Run Selection in the Live Game",
         "category": "Etch"
@@ -275,6 +280,10 @@
         {
           "command": "etch.openLiveProfile",
           "when": "false"
+        },
+        {
+          "command": "etch.addScriptedSelectors",
+          "when": "etch.previewOpen"
         },
         {
           "command": "etch.overrideInMyMod",

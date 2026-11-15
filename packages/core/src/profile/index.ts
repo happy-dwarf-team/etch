@@ -11,3 +11,4 @@ export * from './save-paths.ts';
 export * from './view.ts';
 export * from './edit.ts';
 export * from './live.ts';
+export * from './skeleton.ts';

@@ -31,7 +31,9 @@ refresh is a step of the 3.0.0 release.
 - **Ironman and other binary saves**, melting or writing saves: only if
   Paradox publishes or licenses a token table.
 - **Deriving scripted groups** of a profile from `custom_window` and
-  `potential`, and their labels; a command that writes a profile skeleton.
+  `potential` beyond one selector per widget (below, "Done since 2.0.0"): an
+  exclusive group of widgets whose `potential`s exclude each other, and labels
+  from localisation.
 - **Profiles for more windows and other big mods** (Dwarven Knowledge and
   others), and captures of the state tab, `colonisationpanel` and Anbennar's
   `aPUI_*` windows.
@@ -61,6 +63,18 @@ refresh is a step of the 3.0.0 release.
   corpus save has the DLC and no capture without it was taken.
 
 ## Done since 2.0.0
+
+- **Scripted selectors from `common/custom_gui` (a profile skeleton).**
+  **Etch: Add Scripted Selectors to the Window Profile** reads the playset's
+  `common/custom_gui` and, for each widget of the previewed window (below its
+  top) that a `custom_…` entry with a `potential` names, adds to the mod
+  project's `.etch/profiles/<window>.jsonc` a `scripted` selector (its id the
+  widget's name, `shown` or `hidden`, the file, the entry's type and the
+  `potential` on one line in its note) and a rule `<id>-hidden` that hides every
+  widget of that name. The file is created when needed; ids it already has are
+  kept as written, so a second run adds only new widgets. A name scripted twice
+  takes the later file's entry. Etch still evaluates no trigger, and an entry
+  without a `potential` (shown whenever its window is) gets no selector.
 
 - **The latest script profile (lab#166).** **Etch: Show Latest Script Profile**
   reads the newest `logs/script_profile_*.csv` that Anvil's

@@ -394,14 +394,20 @@ The faulty entry is skipped and the rest of the profile applies.
 - **Save as view…** writes the current selectors and hand toggles under a name into your
   project's `.etch/profiles/<window>.jsonc`, creating the file if needed and keeping the rest of
   it, comments included. The view is an ordinary view of the top layer.
+- **Etch: Add Scripted Selectors to the Window Profile** (Command Palette, with the preview
+  open) adds to the same file a `scripted` selector for each widget of the previewed window that
+  the playset's `common/custom_gui` gives a `potential`, with the values `shown` and `hidden` and
+  the `potential` in its note, and a rule that hides the widget when it is `hidden`. Ids the file
+  already has stay as written. Set the selectors in `View ▾`, or save views of them.
 
 ## A profile for another mod
 
 A profile for a mod Etch does not describe comes by pull request to `profiles/<source>/`, with
 `mod` naming the mod and `checkedWith` its version. Unless the mod is in the precision corpus, Etch
 checks it only when it loads (paths, names, values), not against the game's captures; say so in
-the pull request. Scripted groups (a mod's `custom_window` blocks) are written by hand: Etch does
-not derive them from `potential` triggers.
+the pull request. Scripted widgets (a mod's `custom_window`, `custom_button`… blocks with a
+`potential`) are a selector each with **Etch: Add Scripted Selectors to the Window Profile**;
+exclusive groups among them are written by hand, as Etch does not read what the triggers exclude.
 
 Etch's own profiles of the corpus windows hide what the corpus captures show hidden (drafted from
 the captures). The precision corpus gates them: each corpus view records the selector values it is

@@ -10,6 +10,7 @@ import { testNavigation } from './navigation.ts';
 import { testPreviewBudget } from './preview-budget.ts';
 import { testSaveBudget } from './save-budget.ts';
 import { testScriptProfile } from './script-profile.ts';
+import { testScriptedSkeleton } from './scripted-skeleton.ts';
 import { testPreview } from './preview.ts';
 import { testPlaysetWindows } from './playset-windows.ts';
 import { testViews } from './views.ts';
@@ -77,4 +78,5 @@ export async function run(): Promise<void> {
   await testViews(api);
   await testData(api);
   await testScriptProfile();
+  await testScriptedSkeleton(api);
 }
