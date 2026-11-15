@@ -158,6 +158,11 @@
         "category": "Etch"
       },
       {
+        "command": "etch.hideScriptProfileLenses",
+        "title": "Hide the Script Profile in Script Files",
+        "category": "Etch"
+      },
+      {
         "command": "etch.addScriptedSelectors",
         "title": "Add Scripted Selectors to the Window Profile",
         "category": "Etch"
@@ -284,6 +289,10 @@
         {
           "command": "etch.addScriptedSelectors",
           "when": "etch.previewOpen"
+        },
+        {
+          "command": "etch.hideScriptProfileLenses",
+          "when": "etch.scriptProfileShown"
         },
         {
           "command": "etch.overrideInMyMod",

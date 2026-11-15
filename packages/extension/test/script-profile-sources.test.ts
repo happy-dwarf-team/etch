@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { GameFiles } from '@etch/core/playset';
 import { scriptProfileMarkdown, parseScriptProfile } from '../src/script-profile.ts';
 import type { ScriptProfileRow } from '../src/script-profile.ts';
-import { findScriptSources } from '../src/script-profile-sources.ts';
+import { findScriptSources, scriptProfileLenses } from '../src/script-profile-sources.ts';
 
 const roots: string[] = [];
 
@@ -167,5 +167,51 @@ describe('scriptProfileMarkdown with links', () => {
     expect(page).toContain(
       "Names link to where they are written in the workspace's playset (the game)",
     );
+  });
+});
+
+describe('scriptProfileLenses', () => {
+  const profile = parseScriptProfile(
+    [
+      '# format=1 status=complete days=30',
+      'list,rank,owner,name,option,role,calls,total_ms,mean_us,max_us,main_thread_ms,caller_rva',
+      'trigger,1,event,test_events.1,,trigger,100,40.25,402.5,900.0,10.0,',
+      'trigger,2,event,test_events.1,,mean_time_to_happen,20,2.0,100.0,150.0,2.0,',
+      'trigger,3,event_option,test_events.1,2,trigger,5,0.5,100.0,120.0,0.5,',
+      'trigger,4,scripted_trigger,is_test_trigger,,trigger,4,1.0,250.0,300.0,1.0,',
+      'trigger,5,decision,test_decision,,allow,3,1.0,333.3,500.0,1.0,',
+      'effect,1,event_option,test_events.1,2,effect,10,62.0,6200.0,61000.5,62.0,',
+      'scripted_trigger,1,scripted_trigger,is_test_trigger,,,600,12.0,20.0,142.1,7.0,',
+    ].join('\n'),
+  );
+
+  it('puts each measured event and option above its block, the lists apart', () => {
+    const lenses = scriptProfileLenses(EVENTS, 'C:\\mod\\events\\test_events.txt', profile);
+    expect(lenses.map((l) => [l.line, l.title])).toEqual([
+      [3, 'Script profile: triggers 42.75 ms (125 calls) · effects 62 ms (10 calls)'],
+      [13, 'Script profile: triggers 0.5 ms (5 calls) · effects 62 ms (10 calls)'],
+    ]);
+    expect(lenses[0]?.detail.split('\n')).toEqual([
+      'trigger (triggers): 40.25 ms in 100 calls, max 900 µs',
+      'mean_time_to_happen (triggers): 2 ms in 20 calls, max 150 µs',
+      'option 2 trigger (triggers): 0.5 ms in 5 calls, max 120 µs',
+      'option 2 effect (effects): 62 ms in 10 calls, max 61,000.5 µs',
+    ]);
+  });
+
+  it('takes a scripted trigger from the list of its uses, and knows the file by its folder', () => {
+    const text = 'is_test_trigger = {\n\talways = yes\n}\n';
+    expect(
+      scriptProfileLenses(text, '/home/me/mod/common/scripted_triggers/a.txt', profile).map(
+        (l) => l.title,
+      ),
+    ).toEqual(['Script profile: scripted trigger uses 12 ms (600 calls)']);
+    // The same text outside its folder has no lens; a decision in decisions/ has one.
+    expect(scriptProfileLenses(text, '/home/me/mod/common/on_actions/a.txt', profile)).toEqual([]);
+    expect(
+      scriptProfileLenses(GAME['decisions/test_decisions.txt'], 'mod/decisions/d.txt', profile).map(
+        (l) => [l.line, l.title],
+      ),
+    ).toEqual([[2, 'Script profile: triggers 1 ms (3 calls)']]);
   });
 });
