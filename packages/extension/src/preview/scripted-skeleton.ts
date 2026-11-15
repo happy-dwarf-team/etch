@@ -77,6 +77,12 @@ export async function addScriptedSelectors(
     );
     return undefined;
   }
+  if (skeleton.selectors.length === 0) {
+    void vscode.window.showInformationMessage(
+      `Etch's own profile of ${name} already has a selector or rule for each of its ${String(taken.length)} scripted widgets (${taken.slice(0, 5).join(', ')}${taken.length > 5 ? ', …' : ''}): there is nothing to add.`,
+    );
+    return undefined;
+  }
   const file = vscode.Uri.file(join(projectRoot, ...PROJECT_PROFILES, `${name}.jsonc`));
   const document = vscode.workspace.textDocuments.find((d) => d.uri.toString() === file.toString());
   const before =
