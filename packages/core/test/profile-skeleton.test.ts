@@ -319,6 +319,64 @@ describe('scriptedSkeleton ids', () => {
   });
 });
 
+describe('scriptedSkeleton with one potential for several widgets', () => {
+  const window = readGuiFile(
+    parseScript(`guiTypes = {
+  windowType = {
+    name = "provinceview"
+    iconType = { name = "page_a" }
+    iconType = { name = "page_b" }
+    iconType = { name = "page_c" }
+    iconType = { name = "page_d" }
+    iconType = { name = "other_page" }
+  }
+}`),
+  ).definitions.find((w) => w.name === 'provinceview') as Widget;
+  const scripted = readCustomGui(
+    'custom_icon = { name = page_a potential = { has_country_flag = page_one } }\n' +
+      'custom_icon = { name = page_b potential = {\n  has_country_flag=page_one # the first page\n} }\n' +
+      'custom_icon = { name = page_c potential = { has_country_flag = page_one } }\n' +
+      'custom_icon = { name = other_page potential = { has_country_flag = page_two } }\n' +
+      'custom_icon = { name = page_d potential = { has_country_flag = page_one } }',
+    'common/custom_gui/pages.txt',
+  );
+
+  it('gives widgets with the same potential one selector and one rule', () => {
+    const { selectors, rules, parts } = scriptedSkeleton(window, scripted);
+    expect(selectors.map(([id]) => id)).toEqual(['page_a', 'other_page']);
+    const shared = selectors[0]?.[1] as { label: string; note: string };
+    expect(shared.label).toBe('page_a and 3 more');
+    expect(shared.note).toContain('the same potential as page_b, page_c, page_d');
+    expect(rules).toEqual([
+      [
+        'page_a-hidden',
+        {
+          when: { page_a: 'hidden' },
+          hide: [
+            'provinceview/page_a',
+            'provinceview/page_b',
+            'provinceview/page_c',
+            'provinceview/page_d',
+          ],
+        },
+      ],
+      ['other_page-hidden', { when: { other_page: 'hidden' }, hide: ['provinceview/other_page'] }],
+    ]);
+    expect(parts).toEqual([
+      { selector: 'page_a', rules: ['page_a-hidden'] },
+      { selector: 'other_page', rules: ['other_page-hidden'] },
+    ]);
+  });
+
+  it('names both widgets of a pair in the label', () => {
+    const pair = scripted.filter((entry) =>
+      ['page_a', 'page_b', 'other_page'].includes(entry.name),
+    );
+    const { selectors } = scriptedSkeleton(window, pair);
+    expect((selectors[0]?.[1] as { label: string }).label).toBe('page_a, page_b');
+  });
+});
+
 describe('withSkeleton', () => {
   const entries = readCustomGui(CUSTOM_GUI, 'common/custom_gui/my_panel.txt');
 

@@ -85,9 +85,16 @@ refresh is a step of the 3.0.0 release.
     `other`, and a rule per value. This happens when the window tests the
     trigger against two or more values.
 
+  Widgets with the same `potential` (compared with spaces and comments
+  normalised) share one selector, named after the first of them, and one rule
+  that hides them all.
+
   In Anbennar this leaves `countrygovernmentview` 104 selectors instead of 173,
   since 67 of its scripted widgets are `always = yes`.
-  `countryreligionview`'s panels for ten religions become one selector.
+  `countryreligionview`'s panels for ten religions become one selector. With shared
+  `potential`s, `countryreligionview` has 56 selectors instead of 88 (the Noukahi pilgrimage
+  panels share three), `countrydiplomacyview` 45 instead of 86 (40 subject buttons share one), and
+  `provinceview` 141 instead of 170.
 
   **Labels from localisation.** A selector's label is the widget's name, followed by the
   playset's text of the entry's `tooltip` in plain form: no icons, colour codes, variables or
