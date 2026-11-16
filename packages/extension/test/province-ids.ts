@@ -104,6 +104,7 @@ export async function testProvinceIds(): Promise<void> {
     await vscode.commands.executeCommand('workbench.action.files.revert');
     await settings.update('gamePath', undefined, vscode.ConfigurationTarget.Global);
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
-    await rm(root, { recursive: true, force: true });
+    // Windows can still hold the folder of a file the editor just closed.
+    await rm(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
   }
 }
