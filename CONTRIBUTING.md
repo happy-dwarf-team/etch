@@ -117,6 +117,7 @@ pnpm --filter @etch/renderer exec playwright install chromium   # once
 pnpm test:renderer   # Playwright: WebGL2 in Chromium (renderer and corpus comparison)
 pnpm test:extension  # @vscode/test-electron: downloads VS Code into .vscode-test
 pnpm pins            # download and check the pinned builds, stage them, write the notices
+pnpm pins:check      # the same checks without the plugin build, staging nothing
 pnpm package         # packages/extension/dist/etch-win32-x64-<version>.vsix (runs pnpm pins)
 ```
 

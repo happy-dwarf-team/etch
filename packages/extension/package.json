@@ -372,6 +372,7 @@
     "typecheck": "tsc -p . && tsc -p webview",
     "test": "node build.mts && node test/run.mts",
     "pins": "node stage-game.mts",
+    "pins:check": "node stage-game.mts --check",
     "package": "node build.mts && node stage-game.mts && node package.mts"
   },
   "devDependencies": {
