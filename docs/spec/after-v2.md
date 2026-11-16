@@ -138,6 +138,36 @@ refresh is a step of the 3.0.0 release.
   that does not close runs without any error, so Etch refuses unbalanced braces.
   docs/live-game.md, "Run selection" and its live run.
 
+- **Province ids the map does not have (anvil#426).** EU4 1.37.5 takes the
+  province id of `owns = 5075` without a range check and writes nothing to
+  `error.log`; `owns` reads past the province table, which crashed the game
+  when Bellows' allocator left that memory reserved (EU4 engine lab, 16
+  November 2026). Etch warns (`province-id-out-of-range`) about an id of 0 or
+  of at least `max_provinces` of the playset's winning `map/default.map`, and
+  (`province-id-not-defined`) about one below it that the definition file it
+  names (`definitions`, `definition.csv` by default) does not list. It reads
+  the `.txt` files under `common` (but `province_names`), `events`,
+  `decisions`, `missions` and `history`: the integer values of the keys in
+  `PROVINCE_ID_KEYS` (30 triggers, effects and properties such as `owns`,
+  `add_core`, `goto`, `home_province`; each one vanilla uses with integers
+  only of its provinces, checked over 7811 files) and the integer keys of
+  blocks, which are province scopes except `random_list`'s weights, a
+  `trigger_switch`'s values when its `on_trigger` is not one of those keys,
+  the top level, and the properties of a database entry in the other `common`
+  folders (an imperial incident's `0 = { … }`). `map/default.map` itself gets
+  the same check of its `sea_starts`, `lakes`, `force_coastal` and
+  `only_used_for_random`. Warnings come for the open documents as they are
+  typed, against the playset of the first workspace folder; **Etch: Check
+  Province IDs in the Playset** checks every file the playset loads and puts
+  the rest in Problems, for a player looking for the mod behind a crash. Over
+  vanilla, Anbennar (its own map, 7039 provinces), Extended Timeline and the
+  other Workshop items on the lab's disk (66, each against its own map,
+  vanilla's or Anbennar's for its submods) it warns only about one mod that
+  uses provinces 5152 and 8042 on the vanilla map. Not checked: a trigger that
+  takes a province id inside a block (`province_distance`), the map's own
+  files (`area.txt`, `positions.txt`) and the other id lists a mod can change
+  (trade nodes, colonial regions).
+
 - **A warning for a `replace_path` the game mishandles.** A `replace_path` on a
   subfolder of a folder the game lists recursively (`interface/assets`,
   `gfx/entities`, `localisation/english`) makes EU4 1.37.5 skip the files

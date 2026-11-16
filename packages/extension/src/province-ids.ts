@@ -1,0 +1,309 @@
+// Province ids the map does not have (anvil#426): a warning on `owns = 5075`, a `5075 = { … }`
+// scope and the other keys `PROVINCE_ID_KEYS` lists, in the open script files, against the
+// `max_provinces` of the playset's `map/default.map` (a mod's when it has one) and its
+// `map/definition.csv`. Etch: Check Province IDs in the Playset checks every script file the
+// playset loads, so that a player can find which mod has such a line.
+import { readFile } from 'node:fs/promises';
+import * as vscode from 'vscode';
+import {
+  checkDefaultMap,
+  checkProvinceIds,
+  decodeGameText,
+  isProvinceIdScriptPath,
+  parseScript,
+  type ProvinceIdDiagnostic,
+} from '@etch/core';
+import {
+  definedIds,
+  findProvinceIdProblems,
+  loadProvinceIds,
+  type GameFiles,
+  type PlaysetProvinceIds,
+} from '@etch/core/playset';
+import { gamePathOf } from './live-game/pick.ts';
+import { linkedFiles } from './script-profile-view.ts';
+
+export const CHECK_PROVINCE_IDS = 'etch.checkProvinceIds';
+
+/** Diagnostics are not on the preview's path to pixels; a short debounce spares bursts of typing. */
+const DEBOUNCE_MS = 150;
+
+/** The workspace's playset and its map's province ids; `ids` is `undefined` without a map. */
+interface PlaysetMap {
+  readonly files: GameFiles;
+  readonly ids: PlaysetProvinceIds | undefined;
+}
+
+/** Keeps the province id warnings of the open script files and of the last playset check. */
+export class ProvinceIdDiagnostics implements vscode.Disposable {
+  private readonly collection = vscode.languages.createDiagnosticCollection('etch-province-ids');
+  private readonly timers = new Map<string, ReturnType<typeof setTimeout>>();
+  private readonly subscriptions: vscode.Disposable[];
+  /** Files the last playset check put warnings on, by URI; they keep them when closed. */
+  private readonly checked = new Set<string>();
+  private map: Promise<PlaysetMap | undefined> | undefined;
+  private disposed = false;
+
+  private readonly output: vscode.LogOutputChannel;
+
+  constructor(output: vscode.LogOutputChannel) {
+    this.output = output;
+    this.subscriptions = [
+      vscode.workspace.onDidOpenTextDocument((document) => {
+        this.schedule(document);
+      }),
+      vscode.workspace.onDidChangeTextDocument(({ document }) => {
+        this.schedule(document);
+      }),
+      vscode.workspace.onDidCloseTextDocument((document) => {
+        void this.closed(document.uri);
+      }),
+      // A saved map file can change the ids; so can the playset's settings.
+      vscode.workspace.onDidSaveTextDocument((document) => {
+        if (/[\\/]map[\\/][^\\/]+$/i.test(document.uri.fsPath)) this.refresh();
+      }),
+      vscode.workspace.onDidChangeConfiguration((event) => {
+        if (
+          event.affectsConfiguration('etch.gamePath') ||
+          event.affectsConfiguration('etch.playset')
+        )
+          this.refresh();
+      }),
+    ];
+    for (const document of vscode.workspace.textDocuments) this.schedule(document);
+  }
+
+  /**
+   * Reads the playset and its map again, and checks again the open documents and the closed files
+   * the last playset check put warnings on.
+   */
+  refresh(): void {
+    this.map = undefined;
+    for (const document of vscode.workspace.textDocuments) this.schedule(document);
+    for (const key of this.checked) {
+      if (!vscode.workspace.textDocuments.some((open) => open.uri.toString() === key)) {
+        void this.fromDisk(vscode.Uri.parse(key));
+      }
+    }
+  }
+
+  private playsetMap(): Promise<PlaysetMap | undefined> {
+    this.map ??= (async () => {
+      const linked = await linkedFiles();
+      if (linked === undefined) return undefined;
+      return { files: linked.files, ids: await loadProvinceIds(linked.files) };
+    })().catch((error: unknown) => {
+      this.output.warn(
+        `Province ids: the playset's map could not be read: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      return undefined;
+    });
+    return this.map;
+  }
+
+  private schedule(document: vscode.TextDocument): void {
+    if (document.uri.scheme !== 'file' || !/\.(?:txt|map)$/i.test(document.uri.fsPath)) return;
+    const key = document.uri.toString();
+    clearTimeout(this.timers.get(key));
+    this.timers.set(
+      key,
+      setTimeout(() => {
+        this.timers.delete(key);
+        void this.update(document);
+      }, DEBOUNCE_MS),
+    );
+  }
+
+  private async update(document: vscode.TextDocument): Promise<void> {
+    const { version } = document;
+    const pending = this.playsetMap();
+    const map = await pending;
+    if (this.disposed || document.isClosed || document.version !== version) return;
+    // A refresh during the wait scheduled a newer update against the new map.
+    if (this.map !== pending) return;
+    const found =
+      map?.ids === undefined
+        ? undefined
+        : diagnose(document.getText(), document.uri.fsPath, map.files, map.ids);
+    if (found === undefined) {
+      this.collection.delete(document.uri);
+      return;
+    }
+    this.collection.set(
+      document.uri,
+      found.map((d) => toDiagnostic(d, document)),
+    );
+  }
+
+  /** A closed file keeps the playset check's warnings, from its text on disk; others lose theirs. */
+  private async closed(uri: vscode.Uri): Promise<void> {
+    const key = uri.toString();
+    clearTimeout(this.timers.get(key));
+    this.timers.delete(key);
+    if (!this.checked.has(key)) {
+      this.collection.delete(uri);
+      return;
+    }
+    await this.fromDisk(uri);
+  }
+
+  /** Checks a file that is not open from its text on disk, as the playset check does. */
+  private async fromDisk(uri: vscode.Uri): Promise<void> {
+    const pending = this.playsetMap();
+    const map = await pending;
+    const text = await readFile(uri.fsPath).then(
+      (bytes) => decodeGameText(bytes, 'interface').text,
+      () => undefined,
+    );
+    if (this.disposed || this.map !== pending) return;
+    if (vscode.workspace.textDocuments.some((open) => open.uri.toString() === uri.toString())) {
+      return; // Opened meanwhile: its editor text is checked instead.
+    }
+    if (map?.ids === undefined || text === undefined) {
+      this.collection.delete(uri);
+      return;
+    }
+    const found = diagnose(text, uri.fsPath, map.files, map.ids) ?? [];
+    this.collection.set(
+      uri,
+      found.map((d) => toDiagnosticInText(d, text)),
+    );
+  }
+
+  /** Etch: Check Province IDs in the Playset. */
+  async checkPlayset(): Promise<void> {
+    this.refresh();
+    const map = await this.playsetMap();
+    if (map === undefined) {
+      void vscode.window.showWarningMessage(
+        'Etch could not find the game folder: set etch.gamePath to check the province ids.',
+      );
+      return;
+    }
+    if (map.ids === undefined) {
+      void vscode.window.showWarningMessage(
+        'The playset has no map/default.map with max_provinces, so Etch cannot check province ids.',
+      );
+      return;
+    }
+    const ids = map.ids;
+    const started = Date.now();
+    const { findings, filesChecked } = await vscode.window.withProgress(
+      { location: vscode.ProgressLocation.Notification, title: 'Etch: checking province ids…' },
+      () => findProvinceIdProblems(map.files, ids),
+    );
+    for (const key of this.checked) {
+      const uri = vscode.Uri.parse(key);
+      if (!vscode.workspace.textDocuments.some((open) => open.uri.toString() === key)) {
+        this.collection.delete(uri);
+      }
+    }
+    this.checked.clear();
+    let warnings = 0;
+    for (const finding of findings) {
+      const uri = vscode.Uri.file(finding.file.absolutePath);
+      this.checked.add(uri.toString());
+      warnings += finding.diagnostics.length;
+      const open = vscode.workspace.textDocuments.find((d) => d.uri.toString() === uri.toString());
+      // An open document's own diagnostics are of its editor text.
+      if (open !== undefined) continue;
+      this.collection.set(
+        uri,
+        finding.diagnostics.map((d) => toDiagnosticInText(d, finding.text)),
+      );
+    }
+    this.output.info(
+      `Province ids: ${String(filesChecked)} files checked in ${String(Date.now() - started)} ms against ${ids.maxSource} (max_provinces = ${String(ids.maxProvinces)}); ${String(warnings)} ids the map lacks in ${String(findings.length)} files`,
+    );
+    for (const finding of findings) {
+      const layer = finding.file.layer.name === 'game' ? 'the game' : finding.file.layer.name;
+      for (const d of finding.diagnostics) {
+        const line = lineOf(finding.text, d.start);
+        this.output.info(
+          `  ${layer}: ${finding.file.path}:${String(line)}: ${d.key} = ${String(d.id)}`,
+        );
+      }
+    }
+    if (warnings === 0) {
+      void vscode.window.showInformationMessage(
+        `Every province id in the playset's ${String(filesChecked)} script files is on the map (max_provinces = ${String(ids.maxProvinces)}).`,
+      );
+      return;
+    }
+    const mods = new Set(findings.map((finding) => finding.file.layer.name));
+    void vscode.window.showWarningMessage(
+      `${String(warnings)} province ${warnings === 1 ? 'id' : 'ids'} the map does not have, in ${String(findings.length)} ${findings.length === 1 ? 'file' : 'files'} of ${[...mods].map((m) => (m === 'game' ? 'the game' : m)).join(', ')}: see Problems.`,
+    );
+    await vscode.commands.executeCommand('workbench.actions.view.problems');
+  }
+
+  dispose(): void {
+    this.disposed = true;
+    for (const timer of this.timers.values()) clearTimeout(timer);
+    this.timers.clear();
+    vscode.Disposable.from(...this.subscriptions).dispose();
+    this.collection.dispose();
+  }
+}
+
+/**
+ * The province id warnings of a file's text by its game path in the playset (the path below the
+ * layer that holds it): a script file's, `map/default.map`'s own lists, `undefined` for any other
+ * file or one outside the playset's folders.
+ */
+export function diagnose(
+  text: string,
+  file: string,
+  files: GameFiles,
+  ids: PlaysetProvinceIds,
+): ProvinceIdDiagnostic[] | undefined {
+  const path = gamePathOf(file, files);
+  if (path === undefined) return undefined;
+  if (path.toLowerCase() === 'map/default.map') {
+    return checkDefaultMap(parseScript(text), definedIds(ids));
+  }
+  if (!isProvinceIdScriptPath(path)) return undefined;
+  return checkProvinceIds(parseScript(text), ids, path);
+}
+
+function toDiagnostic(
+  found: ProvinceIdDiagnostic,
+  document: vscode.TextDocument,
+): vscode.Diagnostic {
+  return make(
+    found,
+    new vscode.Range(document.positionAt(found.start), document.positionAt(found.end)),
+  );
+}
+
+function toDiagnosticInText(found: ProvinceIdDiagnostic, text: string): vscode.Diagnostic {
+  return make(found, new vscode.Range(positionIn(text, found.start), positionIn(text, found.end)));
+}
+
+function make(found: ProvinceIdDiagnostic, range: vscode.Range): vscode.Diagnostic {
+  const diagnostic = new vscode.Diagnostic(range, found.message, vscode.DiagnosticSeverity.Warning);
+  diagnostic.source = 'Etch';
+  diagnostic.code = found.code;
+  return diagnostic;
+}
+
+/** The 1-based line of an offset. */
+function lineOf(text: string, offset: number): number {
+  let line = 1;
+  for (let i = text.indexOf('\n'); i !== -1 && i < offset; i = text.indexOf('\n', i + 1)) line++;
+  return line;
+}
+
+function positionIn(text: string, offset: number): vscode.Position {
+  const start = text.lastIndexOf('\n', offset - 1) + 1;
+  return new vscode.Position(lineOf(text, offset) - 1, offset - start);
+}
+
+/** Registers the diagnostics and Etch: Check Province IDs in the Playset. */
+export function registerProvinceIds(output: vscode.LogOutputChannel): vscode.Disposable {
+  const diagnostics = new ProvinceIdDiagnostics(output);
+  return vscode.Disposable.from(
+    diagnostics,
+    vscode.commands.registerCommand(CHECK_PROVINCE_IDS, () => diagnostics.checkPlayset()),
+  );
+}

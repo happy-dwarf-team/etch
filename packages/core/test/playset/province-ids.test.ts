@@ -1,0 +1,149 @@
+import { join } from 'node:path';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import {
+  GameFiles,
+  findProvinceIdProblems,
+  loadProvinceIds,
+  type GameFilesLayer,
+} from '../../src/playset/index.ts';
+import { addFiles, makeTree, removeTree } from './fixture.ts';
+
+const GAME_MAP = 'max_provinces = 10\nsea_starts = { 8 9 }\n';
+const GAME_DEFINITIONS = 'province;red;green;blue;x;x\n1;1;1;1;A;x\n2;2;2;2;B;x\n9;9;9;9;I;x\n';
+
+describe('province ids of a playset', () => {
+  let root: string;
+
+  beforeEach(async () => {
+    root = await makeTree({
+      'game/map/default.map': GAME_MAP,
+      'game/map/definition.csv': GAME_DEFINITIONS,
+      'game/events/game.txt': 'e = { trigger = { owns = 12 } }',
+      'game/events/overridden.txt': 'e = { trigger = { owns = 13 } }',
+      'game/decisions/hidden.txt': 'd = { x = { allow = { owns = 14 } } }',
+      // A map mod: more provinces, its own definition file under another name.
+      'map/map/default.map': 'max_provinces = 20\ndefinitions = "big.csv"\nlakes = { 2 15 25 }\n',
+      'map/map/big.csv': '1;1;1;1;A;x\n2;2;2;2;B;x\n12;1;1;1;L;x\n13;1;1;1;M;x\n',
+      'map/events/overridden.txt': 'e = { immediate = { 13 = { add_core = ROOT } } }',
+      // A mod for the vanilla map in the same playset.
+      'other/events/other.txt':
+        'e = {\n  trigger = { owns = 12 owns = 5 }\n  immediate = { add_core = 30 }\n}\n',
+      'other/common/scripted_effects/fx.txt': 'fx = { 25 = { add_core = ROOT } }',
+      'other/common/province_names/names.txt': '25 = "Far"',
+      'other/decisions/shown.txt': 'd = { x = { allow = { owns = 99 } } }',
+    });
+  });
+
+  afterEach(async () => {
+    await removeTree(root);
+  });
+
+  function playset(...mods: GameFilesLayer[]): GameFiles {
+    return new GameFiles([{ name: 'game', root: join(root, 'game'), replacePaths: [] }, ...mods]);
+  }
+
+  const mapMod: () => GameFilesLayer = () => ({
+    name: 'Big Map',
+    root: join(root, 'map'),
+    replacePaths: [],
+  });
+  const otherMod: () => GameFilesLayer = () => ({
+    name: 'Other',
+    root: join(root, 'other'),
+    replacePaths: ['decisions'],
+  });
+
+  it("reads the game's map without mods", async () => {
+    const ids = await loadProvinceIds(playset());
+    expect(ids?.maxProvinces).toBe(10);
+    expect(ids?.maxSource).toBe('map/default.map of the game');
+    expect([...(ids?.defined ?? [])]).toEqual([1, 2, 9]);
+    expect(ids?.definedSource).toBe('map/definition.csv of the game');
+  });
+
+  it("takes a mod's default.map and the definition file it names", async () => {
+    const ids = await loadProvinceIds(playset(mapMod()));
+    expect(ids?.maxProvinces).toBe(20);
+    expect(ids?.maxSource).toBe('map/default.map of Big Map');
+    expect([...(ids?.defined ?? [])]).toEqual([1, 2, 12, 13]);
+    expect(ids?.definitionFile?.path).toBe('map/big.csv');
+    expect(ids?.definedSource).toBe('map/big.csv of Big Map');
+  });
+
+  it('is undefined without a default.map', async () => {
+    const files = new GameFiles([{ name: 'Other', root: join(root, 'other'), replacePaths: [] }]);
+    expect(await loadProvinceIds(files)).toBeUndefined();
+  });
+
+  it('finds, file by file, the ids the vanilla map lacks', async () => {
+    const files = playset(otherMod());
+    const ids = await loadProvinceIds(files);
+    if (ids === undefined) throw new Error('no map');
+    const { findings, filesChecked } = await findProvinceIdProblems(files, ids);
+    const summary = findings.map((finding) => [
+      finding.file.layer.name,
+      finding.file.path,
+      finding.diagnostics.map((d) => `${d.key} ${String(d.id)} ${d.code}`),
+    ]);
+    expect(summary).toEqual([
+      ['Other', 'common/scripted_effects/fx.txt', ['fx 25 province-id-out-of-range']],
+      // `replace_path = "decisions"` hides the game's decisions/hidden.txt (owns = 14).
+      ['Other', 'decisions/shown.txt', ['owns 99 province-id-out-of-range']],
+      ['game', 'events/game.txt', ['owns 12 province-id-out-of-range']],
+      [
+        'Other',
+        'events/other.txt',
+        [
+          'owns 12 province-id-out-of-range',
+          'owns 5 province-id-not-defined',
+          'add_core 30 province-id-out-of-range',
+        ],
+      ],
+      ['game', 'events/overridden.txt', ['owns 13 province-id-out-of-range']],
+      ['game', 'map/default.map', ['sea_starts 8 province-id-not-defined']],
+    ]);
+    // Five script files and default.map; common/province_names is not read.
+    expect(filesChecked).toBe(6);
+    const other = findings.find((finding) => finding.file.path === 'events/other.txt');
+    const first = other?.diagnostics[0];
+    expect(other?.text.slice(first?.start, first?.end)).toBe('12');
+  });
+
+  it('reads a file with a UTF-8 byte order mark, as the game does', async () => {
+    await addFiles(root, {
+      'bom/history/countries/X.txt': '\uFEFFcapital = 50\n',
+    });
+    const files = playset({ name: 'Bom', root: join(root, 'bom'), replacePaths: [] });
+    const ids = await loadProvinceIds(files);
+    if (ids === undefined) throw new Error('no map');
+    const { findings } = await findProvinceIdProblems(files, ids);
+    const bom = findings.find((finding) => finding.file.path === 'history/countries/X.txt');
+    expect(bom?.diagnostics.map((d) => `${d.key} ${String(d.id)}`)).toEqual(['capital 50']);
+    expect(bom?.text.slice(bom.diagnostics[0]?.start, bom.diagnostics[0]?.end)).toBe('50');
+  });
+
+  it("checks against a map mod's default.map, and its own lists", async () => {
+    const files = playset(mapMod(), otherMod());
+    const ids = await loadProvinceIds(files);
+    if (ids === undefined) throw new Error('no map');
+    const { findings } = await findProvinceIdProblems(files, ids);
+    const summary = findings.map((finding) => [
+      finding.file.path,
+      finding.diagnostics.map((d) => `${d.key} ${String(d.id)} ${d.code}`),
+    ]);
+    expect(summary).toEqual([
+      ['common/scripted_effects/fx.txt', ['fx 25 province-id-out-of-range']],
+      ['decisions/shown.txt', ['owns 99 province-id-out-of-range']],
+      // 12 is on the big map; events/overridden.txt is the map mod's copy, and 13 is defined.
+      [
+        'events/other.txt',
+        ['owns 5 province-id-not-defined', 'add_core 30 province-id-out-of-range'],
+      ],
+      [
+        'map/default.map',
+        ['lakes 15 province-id-not-defined', 'lakes 25 province-id-out-of-range'],
+      ],
+    ]);
+    expect(findings.at(-1)?.file.layer.name).toBe('Big Map');
+  });
+});

@@ -8,6 +8,7 @@ import { testData } from './data.ts';
 import { testGameText } from './game-text.ts';
 import { testNavigation } from './navigation.ts';
 import { testPreviewBudget } from './preview-budget.ts';
+import { testProvinceIds } from './province-ids.ts';
 import { testSaveBudget } from './save-budget.ts';
 import { testScriptProfile } from './script-profile.ts';
 import { testScriptedSkeleton } from './scripted-skeleton.ts';
@@ -78,5 +79,6 @@ export async function run(): Promise<void> {
   await testViews(api);
   await testData(api);
   await testScriptProfile();
+  await testProvinceIds();
   await testScriptedSkeleton(api);
 }

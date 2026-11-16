@@ -1,0 +1,319 @@
+/**
+ * Province ids in script files that the map in use does not have (anvil#426). The game takes the id
+ * of `owns = 5075`, of a `5075 = { … }` scope and of the other keys below without a range check and
+ * writes nothing to `error.log`; `owns` reads past the province table, which crashed the game when
+ * that memory was not committed (checked in the game on 16.11.2026). The map's ids are those below
+ * `max_provinces` of `map/default.map`, and, when it is read, those that `map/definition.csv` lists.
+ */
+import { parseScript } from './parse.ts';
+import type { BlockNode, EntryNode, ParsedScript, ScalarNode, SourceRange } from './tree.ts';
+
+/** What a script key's integer value is to the game. */
+export type ProvinceIdKeyKind = 'trigger' | 'effect' | 'property';
+
+/**
+ * Keys whose integer value is a province id. Each one is used in vanilla 1.37.5's `common`,
+ * `events`, `decisions` and `missions` with integer values only of provinces in
+ * `map/definition.csv` (checked on 16.11.2026, 1 to 4938 across 4704 uses of `province_id`). A
+ * key that also takes a tag, a scope or a name (`add_core = FRA`, `capital = yes`) is only checked
+ * when its value is an integer. Keys whose integers vanilla uses for other things (`start`, a year;
+ * `random`, a chance) are left out.
+ */
+export const PROVINCE_ID_KEYS: ReadonlyMap<string, ProvinceIdKeyKind> = new Map<
+  string,
+  ProvinceIdKeyKind
+>([
+  // Triggers.
+  ['province_id', 'trigger'],
+  ['owns', 'trigger'],
+  ['owns_core_province', 'trigger'],
+  ['owns_or_non_sovereign_subject_of', 'trigger'],
+  ['owns_or_vassal_of', 'trigger'],
+  ['controls', 'trigger'],
+  ['capital', 'trigger'],
+  ['is_core', 'trigger'],
+  ['is_claim', 'trigger'],
+  ['is_permanent_claim', 'trigger'],
+  ['has_discovered', 'trigger'],
+  ['higher_development_than', 'trigger'],
+  ['is_neighbor_of_province', 'trigger'],
+  ['same_trade_node_as', 'trigger'],
+  // Effects.
+  ['add_core', 'effect'],
+  ['remove_core', 'effect'],
+  ['add_claim', 'effect'],
+  ['add_permanent_claim', 'effect'],
+  ['remove_claim', 'effect'],
+  ['set_capital', 'effect'],
+  ['discover_province', 'effect'],
+  ['war_goal_province', 'effect'],
+  // Properties of database entries and blocks: an event's `goto`, a decision's `do_not_core`, an
+  // advisor's or trade node's `location`, a mercenary company's `home_province`, a bookmark's
+  // `center`, an institution's `historical_start_province`, a religion's `center_of_religion` and
+  // `seat_of_papacy`.
+  ['goto', 'property'],
+  ['do_not_core', 'property'],
+  ['location', 'property'],
+  ['home_province', 'property'],
+  ['center', 'property'],
+  ['historical_start_province', 'property'],
+  ['center_of_religion', 'property'],
+  ['seat_of_papacy', 'property'],
+]);
+
+/**
+ * Blocks whose integer keys are not provinces: `random_list`'s weights. A `trigger_switch`'s keys
+ * are values of its `on_trigger`, provinces only when that is one of `PROVINCE_ID_KEYS`. Every other
+ * `<integer> = { … }` in a trigger or an effect is a province scope.
+ */
+const NON_PROVINCE_INTEGER_KEYS: ReadonlySet<string> = new Set(['random_list']);
+
+/**
+ * `common` folders whose top-level blocks are themselves triggers or effects, so that a province
+ * scope can be a top-level block's child. In the other `common` folders a top-level block is a
+ * database entry whose children are its properties (an imperial incident's `0 = { factor = 1 }`),
+ * and scopes start one level deeper.
+ */
+const COMMON_SCRIPT_FOLDERS: readonly string[] = [
+  'common/scripted_effects/',
+  'common/scripted_triggers/',
+  'common/on_actions/',
+];
+
+/** How deep a block's children must be for an integer key to be a province scope. */
+function firstScopeDepth(path: string | undefined): number {
+  if (path === undefined) return 1;
+  const lower = path.toLowerCase().replace(/\\/g, '/');
+  if (!lower.startsWith('common/')) return 1;
+  return COMMON_SCRIPT_FOLDERS.some((folder) => lower.startsWith(folder)) ? 1 : 2;
+}
+
+/** The province ids of the map in use. */
+export interface ProvinceIds {
+  /** `max_provinces` of `map/default.map`: ids run from 1 to `maxProvinces - 1`. */
+  readonly maxProvinces: number;
+  /** Where `max_provinces` came from, for messages, such as `map/default.map of the game`. */
+  readonly maxSource: string;
+  /** The ids `map/definition.csv` lists, when it was read. */
+  readonly defined?: ReadonlySet<number> | undefined;
+  /** Where `defined` came from, for messages, such as `map/definition.csv of My Mod`. */
+  readonly definedSource?: string | undefined;
+}
+
+export type ProvinceIdDiagnosticCode =
+  /** A province id of 0 or at least `max_provinces`: no province of the map has it. */
+  | 'province-id-out-of-range'
+  /** A province id below `max_provinces` that `map/definition.csv` does not list. */
+  | 'province-id-not-defined';
+
+/** A province id the map does not have; the range is the id's scalar. */
+export interface ProvinceIdDiagnostic extends SourceRange {
+  readonly severity: 'warning';
+  readonly code: ProvinceIdDiagnosticCode;
+  readonly message: string;
+  /** The province id as written. */
+  readonly id: number;
+  /** The key the id is the value of, or the parent block's key for a `<id> = { … }` scope. */
+  readonly key: string;
+}
+
+/**
+ * Whether a game-relative path is a script file whose triggers and effects this check reads:
+ * `.txt` under `common`, `events`, `decisions`, `missions` or `history`. `common/province_names`
+ * is left out: its keys are province ids, but with names as values, not scopes.
+ */
+export function isProvinceIdScriptPath(path: string): boolean {
+  const lower = path.toLowerCase().replace(/\\/g, '/');
+  if (!lower.endsWith('.txt')) return false;
+  if (lower.startsWith('common/province_names/')) return false;
+  return /^(?:common|events|decisions|missions|history)\//.test(lower);
+}
+
+/**
+ * The province ids in a parsed script file that the map does not have, in text order. `path`, the
+ * file's game-relative path, tells how deep its province scopes start (`firstScopeDepth`); without
+ * it they start in the top-level blocks.
+ */
+export function checkProvinceIds(
+  parsed: ParsedScript,
+  ids: ProvinceIds,
+  path?: string,
+): ProvinceIdDiagnostic[] {
+  const found: ProvinceIdDiagnostic[] = [];
+  walk(parsed.entries, { key: '', scopes: false }, 0, firstScopeDepth(path), ids, found);
+  return found.sort((a, b) => a.start - b.start);
+}
+
+/** The block a walk is in: its key, and whether its integer keys are province scopes. */
+interface Parent {
+  readonly key: string;
+  readonly scopes: boolean;
+}
+
+function walk(
+  entries: readonly EntryNode[],
+  parent: Parent,
+  depth: number,
+  scopeDepth: number,
+  ids: ProvinceIds,
+  found: ProvinceIdDiagnostic[],
+): void {
+  for (const entry of entries) {
+    if (entry.kind === 'block') {
+      walk(entry.entries, parent, depth + 1, scopeDepth, ids, found);
+      continue;
+    }
+    if (entry.kind !== 'property') continue;
+    const key = entry.key.text.toLowerCase();
+    const value = entry.value;
+    if (value?.kind === 'scalar') {
+      if (PROVINCE_ID_KEYS.has(key)) checkScalar(value, key, ids, found);
+      continue;
+    }
+    if (value?.kind !== 'block') continue;
+    if (parent.scopes && depth >= scopeDepth && !entry.key.quoted) {
+      checkScalar(entry.key, parent.key, ids, found);
+    }
+    walk(value.entries, { key, scopes: scopesIn(key, value) }, depth + 1, scopeDepth, ids, found);
+  }
+}
+
+/** Whether a block's integer keys are province scopes. */
+function scopesIn(key: string, block: BlockNode): boolean {
+  if (NON_PROVINCE_INTEGER_KEYS.has(key)) return false;
+  if (key !== 'trigger_switch') return true;
+  for (const entry of block.entries) {
+    if (
+      entry.kind === 'property' &&
+      entry.key.text.toLowerCase() === 'on_trigger' &&
+      entry.value?.kind === 'scalar'
+    ) {
+      return PROVINCE_ID_KEYS.has(entry.value.text.toLowerCase());
+    }
+  }
+  return false;
+}
+
+function checkScalar(
+  scalar: ScalarNode,
+  key: string,
+  ids: ProvinceIds,
+  found: ProvinceIdDiagnostic[],
+): void {
+  if (!/^\d+$/.test(scalar.text)) return;
+  const id = Number(scalar.text);
+  const problem = provinceIdProblem(id, ids);
+  if (problem === undefined) return;
+  found.push({ ...problem, severity: 'warning', id, key, start: scalar.start, end: scalar.end });
+}
+
+/** Why the map does not have a province id, or `undefined` when it has it. */
+export function provinceIdProblem(
+  id: number,
+  ids: ProvinceIds,
+): { code: ProvinceIdDiagnosticCode; message: string } | undefined {
+  const last = ids.maxProvinces - 1;
+  if (id < 1 || id > last) {
+    return {
+      code: 'province-id-out-of-range',
+      message:
+        `Province ${String(id)} is not on the map: ${ids.maxSource} sets max_provinces = ` +
+        `${String(ids.maxProvinces)}, so province ids run from 1 to ${String(last)}. The game ` +
+        'does not check the id or report it in error.log, and reading such a province can ' +
+        'crash the game.',
+    };
+  }
+  if (ids.defined !== undefined && !ids.defined.has(id)) {
+    return {
+      code: 'province-id-not-defined',
+      message:
+        `Province ${String(id)} is not in ${ids.definedSource ?? 'map/definition.csv'}, so the ` +
+        'map has no such province.',
+    };
+  }
+  return undefined;
+}
+
+/** The lists of province ids `map/default.map` holds. */
+export const DEFAULT_MAP_ID_LISTS: readonly string[] = [
+  'sea_starts',
+  'only_used_for_random',
+  'lakes',
+  'force_coastal',
+];
+
+/** What Etch reads from `map/default.map`. */
+export interface DefaultMap {
+  /** `max_provinces`, when the file sets an integer. */
+  readonly maxProvinces: number | undefined;
+  /** `definitions`: the province definition file's name in `map/`, `definition.csv` by default. */
+  readonly definitions: string;
+  /** The lists of province ids (`sea_starts`, `lakes`, …), each id with its range. */
+  readonly idLists: readonly { readonly key: string; readonly ids: readonly ScalarNode[] }[];
+}
+
+/** Reads `map/default.map`'s text; the last `max_provinces` and `definitions` win. */
+export function parseDefaultMap(text: string): DefaultMap {
+  return readDefaultMap(parseScript(text));
+}
+
+function readDefaultMap(parsed: ParsedScript): DefaultMap {
+  let maxProvinces: number | undefined;
+  let definitions = 'definition.csv';
+  const idLists: { key: string; ids: ScalarNode[] }[] = [];
+  for (const entry of parsed.entries) {
+    if (entry.kind !== 'property') continue;
+    const key = entry.key.text.toLowerCase();
+    const value = entry.value;
+    if (key === 'max_provinces' && value?.kind === 'scalar' && /^\d+$/.test(value.text)) {
+      maxProvinces = Number(value.text);
+    } else if (key === 'definitions' && value?.kind === 'scalar' && value.text !== '') {
+      definitions = value.text;
+    } else if (DEFAULT_MAP_ID_LISTS.includes(key) && value?.kind === 'block') {
+      idLists.push({ key, ids: bareScalars(value) });
+    }
+  }
+  return { maxProvinces, definitions, idLists };
+}
+
+function bareScalars(block: BlockNode): ScalarNode[] {
+  return block.entries.filter((entry): entry is ScalarNode => entry.kind === 'scalar');
+}
+
+/**
+ * The province ids in `map/default.map`'s own lists (`sea_starts`, `lakes`, `force_coastal`,
+ * `only_used_for_random`) that the map does not have, checked against the file's own
+ * `max_provinces` and, when given, the ids of its definition file.
+ */
+export function checkDefaultMap(
+  parsed: ParsedScript,
+  defined?: { readonly ids: ReadonlySet<number>; readonly source: string },
+): ProvinceIdDiagnostic[] {
+  const map = readDefaultMap(parsed);
+  if (map.maxProvinces === undefined) return [];
+  const ids: ProvinceIds = {
+    maxProvinces: map.maxProvinces,
+    maxSource: 'this file',
+    defined: defined?.ids,
+    definedSource: defined?.source,
+  };
+  const found: ProvinceIdDiagnostic[] = [];
+  for (const list of map.idLists) {
+    for (const scalar of list.ids) checkScalar(scalar, list.key, ids, found);
+  }
+  return found.sort((a, b) => a.start - b.start);
+}
+
+/**
+ * The province ids of a `map/definition.csv` text: the leading integer of each line, which is how
+ * the game's lines start (`1;128;34;64;Stockholm;x`). The header line and lines without one are
+ * skipped.
+ */
+export function parseProvinceDefinitions(text: string): Set<number> {
+  const ids = new Set<number>();
+  for (const line of text.split(/\r?\n/)) {
+    const match = /^\s*(\d+)\s*;/.exec(line);
+    if (match?.[1] !== undefined) ids.add(Number(match[1]));
+  }
+  return ids;
+}
