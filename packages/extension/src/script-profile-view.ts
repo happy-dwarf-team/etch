@@ -46,7 +46,7 @@ async function profileFolders(game: LiveGame): Promise<string[]> {
  * mods `etch.gamePath` and `etch.playset` give, as the preview finds them), or the game folder
  * alone without a workspace folder. `undefined` when no game folder is found.
  */
-async function linkedFiles(): Promise<{ files: GameFiles; playset: string } | undefined> {
+export async function linkedFiles(): Promise<{ files: GameFiles; playset: string } | undefined> {
   const folder = vscode.workspace.workspaceFolders?.[0];
   const settings = vscode.workspace.getConfiguration('etch', folder?.uri);
   const gamePath = settings.get<string>('gamePath', '').trim();

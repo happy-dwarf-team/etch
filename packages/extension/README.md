@@ -194,6 +194,21 @@ owner gives its triggers' and effects' time and calls (a scripted trigger's
 from all its uses), and opens the profile. **Etch: Hide the Script Profile in
 Script Files** takes them away.
 
+## Province IDs
+
+A script that names a province the map does not have, such as `owns = 5075`
+or `5075 = { … }` on the 4941 provinces of EU4 1.37.5, gets no line in the
+game's `error.log`, and the game may crash when it reads that province. Etch
+warns about such ids in the script files you open (events, decisions,
+missions, `common` and `history`): the province triggers and effects (`owns`,
+`owns_core_province`, `province_id`, `add_core`, `add_permanent_claim`,
+`set_capital` and more), province scopes, and ids such as an event's `goto`.
+The map is your playset's: `max_provinces` of `map/default.map`, a mod's when
+it has its own, and the provinces its `map/definition.csv` lists. An id written
+as a tag, a scope or a variable is not checked. **Etch: Check Province IDs in
+the Playset** checks every script file the playset loads, from all its mods,
+and lists the lines in the Problems panel, so you can find which mod has one.
+
 ## Etch 1.x
 
 Etch 2.0.0 replaced 1.x's game host and its diff view with the live game. To

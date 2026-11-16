@@ -26,3 +26,10 @@ export { parsePlayerSettings, readPlayerSettings, type PlayerSettings } from './
 export { findPlayset, type FindPlaysetOptions, type Playset } from './playset.ts';
 export { parseVdf, type VdfObject } from './vdf.ts';
 export { hostPathFromWindows, isWindowsDrivePath, winePrefixOf } from './wine.ts';
+export {
+  definedIds,
+  findProvinceIdProblems,
+  loadProvinceIds,
+  type PlaysetProvinceIds,
+  type ProvinceIdFinding,
+} from './province-ids.ts';
