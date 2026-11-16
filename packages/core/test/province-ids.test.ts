@@ -49,6 +49,33 @@ describe('checkProvinceIds', () => {
     expect(found('e = { trigger = { owns = 0 } }')).toEqual(['owns 0 province-id-out-of-range']);
   });
 
+  it('flags a negative id, which the game reads with its sign', () => {
+    expect(found('e = { trigger = { owns = -1 } immediate = { add_core = -12 } }')).toEqual([
+      'owns -1 province-id-out-of-range',
+      'add_core -12 province-id-out-of-range',
+    ]);
+  });
+
+  it('leaves a negative integer key alone: no one knows how the game reads it', () => {
+    expect(found('e = { immediate = { -5 = { add_core = ROOT } } }')).toEqual([]);
+  });
+
+  it("checks province_distance's who and trading_policy_in_node's node", () => {
+    const text = [
+      'e = { trigger = {',
+      '  province_distance = { who = 5075 distance = 9000 }',
+      '  province_distance = { who = FROM distance = 150 }',
+      '  trading_policy_in_node = { node = 6000 policy = trade_policy_x }',
+      '  trading_policy_in_node = { node = 1 policy = trade_policy_x }',
+      '  opinion = { who = 5075 value = 10 }',
+      '} }',
+    ].join('\n');
+    expect(found(text)).toEqual([
+      'who 5075 province-id-out-of-range',
+      'node 6000 province-id-out-of-range',
+    ]);
+  });
+
   it('reads keys without regard to case', () => {
     expect(found('e = { trigger = { OWNS = 5075 } }')).toEqual([
       'owns 5075 province-id-out-of-range',
@@ -98,7 +125,7 @@ describe('checkProvinceIds', () => {
       'e = {',
       '  "5075" = { }',
       '  1444.11.11 = { }',
-      '  trigger = { owns = $province$ owns = 5075.5 owns = -1 }',
+      '  trigger = { owns = $province$ owns = 5075.5 owns = -1.5 }',
       '}',
     ].join('\n');
     expect(found(text)).toEqual([]);

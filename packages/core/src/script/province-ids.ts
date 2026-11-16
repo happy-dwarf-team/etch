@@ -62,6 +62,18 @@ export const PROVINCE_ID_KEYS: ReadonlyMap<string, ProvinceIdKeyKind> = new Map<
 ]);
 
 /**
+ * Members of block triggers whose integer value is a province id, by the block's key. The game
+ * reads `province_distance`'s `who` with `sscanf` and logs only ids below 1, and
+ * `trading_policy_in_node`'s `node` with `atoi`, taking ids below 2 for the scope's province; a
+ * larger id indexes the province table unchecked (the lab's `docs/script-unchecked-indexes.md`,
+ * 16.11.2026).
+ */
+export const PROVINCE_ID_MEMBERS: ReadonlyMap<string, ReadonlySet<string>> = new Map([
+  ['province_distance', new Set(['who'])],
+  ['trading_policy_in_node', new Set(['node'])],
+]);
+
+/**
  * Blocks whose integer keys are not provinces: `random_list`'s weights. A `trigger_switch`'s keys
  * are values of its `on_trigger`, provinces only when that is one of `PROVINCE_ID_KEYS`. Every other
  * `<integer> = { … }` in a trigger or an effect is a province scope.
@@ -167,7 +179,9 @@ function walk(
     const key = entry.key.text.toLowerCase();
     const value = entry.value;
     if (value?.kind === 'scalar') {
-      if (PROVINCE_ID_KEYS.has(key)) checkScalar(value, key, ids, found);
+      if (PROVINCE_ID_KEYS.has(key) || PROVINCE_ID_MEMBERS.get(parent.key)?.has(key) === true) {
+        checkScalar(value, key, ids, found, true);
+      }
       continue;
     }
     if (value?.kind !== 'block') continue;
@@ -194,13 +208,19 @@ function scopesIn(key: string, block: BlockNode): boolean {
   return false;
 }
 
+/**
+ * Checks a scalar that is a province id when it is an integer. `signed` takes a leading `-` too:
+ * the game reads a key's value with `atoi`, which keeps the sign, so `owns = -1` indexes before
+ * the province table; how it reads a `-1 = { … }` scope's key is not known, so keys stay unsigned.
+ */
 function checkScalar(
   scalar: ScalarNode,
   key: string,
   ids: ProvinceIds,
   found: ProvinceIdDiagnostic[],
+  signed = false,
 ): void {
-  if (!/^\d+$/.test(scalar.text)) return;
+  if (!(signed ? /^-?\d+$/ : /^\d+$/).test(scalar.text)) return;
   const id = Number(scalar.text);
   const problem = provinceIdProblem(id, ids);
   if (problem === undefined) return;

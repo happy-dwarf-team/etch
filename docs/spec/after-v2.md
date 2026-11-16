@@ -163,10 +163,21 @@ refresh is a step of the 3.0.0 release.
   vanilla, Anbennar (its own map, 7039 provinces), Extended Timeline and the
   other Workshop items on the lab's disk (66, each against its own map,
   vanilla's or Anbennar's for its submods) it warns only about one mod that
-  uses provinces 5152 and 8042 on the vanilla map. Not checked: a trigger that
-  takes a province id inside a block (`province_distance`), the map's own
+  uses provinces 5152 and 8042 on the vanilla map. Not checked: the map's own
   files (`area.txt`, `positions.txt`) and the other id lists a mod can change
   (trade nodes, colonial regions).
+
+  A static reading of the game's trigger and effect code (EU4 engine lab,
+  `docs/script-unchecked-indexes.md`, 16 November 2026) found the cause: the
+  game has a checked province accessor that logs an out-of-range id, but the
+  triggers and effects index the province table directly, after reading the
+  value with `atoi`, which keeps a sign. Etch therefore also flags a negative
+  id (`owns = -1`; a `-1 = { … }` key stays unchecked, its parsing not being
+  known) and the two block members the game reads as province ids:
+  `province_distance`'s `who` (the game logs only ids below 1) and
+  `trading_policy_in_node`'s `node` (ids below 2 silently mean the scope's
+  province). Vanilla and the 66 Workshop items have no negative value on these
+  keys, and the members add no warning over them.
 
 - **A warning for a `replace_path` the game mishandles.** A `replace_path` on a
   subfolder of a folder the game lists recursively (`interface/assets`,

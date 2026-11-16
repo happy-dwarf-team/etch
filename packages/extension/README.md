@@ -202,7 +202,9 @@ game's `error.log`, and the game may crash when it reads that province. Etch
 warns about such ids in the script files you open (events, decisions,
 missions, `common` and `history`): the province triggers and effects (`owns`,
 `owns_core_province`, `province_id`, `add_core`, `add_permanent_claim`,
-`set_capital` and more), province scopes, and ids such as an event's `goto`.
+`set_capital` and more), province scopes, ids such as an event's `goto`, and
+`who` of `province_distance` and `node` of `trading_policy_in_node`. A
+negative id such as `owns = -1` is flagged too: the game keeps the sign.
 The map is your playset's: `max_provinces` of `map/default.map`, a mod's when
 it has its own, and the provinces its `map/definition.csv` lists. An id written
 as a tag, a scope or a variable is not checked. **Etch: Check Province IDs in
