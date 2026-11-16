@@ -2,6 +2,9 @@
 // SHA-256 and licences, and stages the files the VSIX carries under game/ (the private install's
 // layout, with game/manifest.json) together with the game plugin's build, then writes
 // THIRD-PARTY-NOTICES.md. package.mts packages what this leaves behind.
+//
+// With --check (`pnpm pins:check`) it runs the same checks on the pinned builds alone and writes
+// nothing: a pin change can be checked without building the plugin, which only staging needs.
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import {
@@ -24,6 +27,11 @@ const CACHE = 'node_modules/.cache/etch-pins';
 // etch#45: the plugin's CMake build installs an Anvil plugin folder here.
 const PLUGIN_SOURCE = '../../plugin/CMakeLists.txt';
 const PLUGIN_BUILD = '../../plugin/dist/etch';
+
+const args = process.argv.slice(2);
+const unknown = args.filter((arg) => arg !== '--check');
+if (unknown.length > 0) throw new Error(`unknown arguments: ${unknown.join(' ')}`);
+const checkOnly = args.includes('--check');
 
 const parsed = parsePins(JSON.parse(readFileSync(PINS_FILE, 'utf8')) as unknown);
 if (parsed.pins === undefined) {
@@ -79,10 +87,11 @@ for (const build of pins.builds) {
 
 // Once the plugin's sources exist its build is required; before etch#45 the slot stays empty.
 const hasPlugin = existsSync(PLUGIN_SOURCE);
-if (hasPlugin) {
+if (hasPlugin && !checkOnly) {
   if (!existsSync(join(PLUGIN_BUILD, 'plugin.toml'))) {
     problems.push(
-      `etch: no plugin build at plugin/dist/etch/ (build and install the plugin first)`,
+      'etch: no plugin build at plugin/dist/etch/: build and install the plugin first ' +
+        '(CONTRIBUTING.md, "The plugin"), or run `pnpm pins:check` to check the pins alone',
     );
   } else {
     for (const path of filesUnder(PLUGIN_BUILD)) {
@@ -97,17 +106,26 @@ if (hasPlugin) {
 
 problems.push(...clashingPaths(files).map((clash) => `two builds install ${clash}`));
 if (problems.length > 0) {
-  throw new Error(`the game-side builds cannot be packaged:\n  ${problems.join('\n  ')}`);
+  const what = checkOnly
+    ? 'the pinned builds fail their checks'
+    : 'the game-side builds cannot be packaged';
+  throw new Error(`${what}:\n  ${problems.join('\n  ')}`);
 }
 
-rmSync('game', { recursive: true, force: true });
-for (const file of files) {
-  const target = join('game', file.path);
-  mkdirSync(dirname(target), { recursive: true });
-  writeFileSync(target, file.data);
+const manifestJson = `${JSON.stringify(gameManifest(pins, files), null, 2)}\n`;
+const notices = renderNotices(pins, manifest.version, hasPlugin);
+const builds = pins.builds.map((b) => `${b.name} ${b.tag}`);
+if (checkOnly) {
+  console.log(`pins: ${builds.join(', ')} checked (${String(files.length)} files); nothing staged`);
+} else {
+  rmSync('game', { recursive: true, force: true });
+  for (const file of files) {
+    const target = join('game', file.path);
+    mkdirSync(dirname(target), { recursive: true });
+    writeFileSync(target, file.data);
+  }
+  writeFileSync('game/manifest.json', manifestJson);
+  writeFileSync('THIRD-PARTY-NOTICES.md', notices);
+  if (hasPlugin) builds.push('plugin');
+  console.log(`game/: ${String(files.length)} files from ${builds.join(', ')}; notices written`);
 }
-writeFileSync('game/manifest.json', `${JSON.stringify(gameManifest(pins, files), null, 2)}\n`);
-writeFileSync('THIRD-PARTY-NOTICES.md', renderNotices(pins, manifest.version, hasPlugin));
-
-const builds = [...pins.builds.map((b) => `${b.name} ${b.tag}`), ...(hasPlugin ? ['plugin'] : [])];
-console.log(`game/: ${String(files.length)} files from ${builds.join(', ')}; notices written`);

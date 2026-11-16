@@ -69,11 +69,17 @@ of the `windows` job:
 `package.mts` then checks that the VSIX holds exactly the bundles, the
 documents and the staged files.
 
+`pnpm pins:check` runs steps 1 to 3 and the clash check of step 5 on the
+pinned builds alone and writes nothing, so a pin change can be checked
+without building the plugin. It does not replace `pnpm pins` before
+packaging.
+
 ## Changing a pin
 
 A pinned build changes only through a hand-written `build(deps)` pull request
 (scope `pins`), which releases a patch (ADR 0004). Change `tag`, `url` and
 `sha256` together, check the new release's licence files and its archive
-layout against `files` and `licenses`, run `pnpm pins`, and say in the pull
+layout against `files` and `licenses`, run `pnpm pins` (or `pnpm pins:check`
+without a plugin build; the `windows` job runs the full check), and say in the pull
 request what changed in the notices. A new Anvil release also means building
 the plugin against that release's SDK.
