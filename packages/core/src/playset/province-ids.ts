@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises';
+import { decodeGameText } from '../game-text.ts';
 import { parseScript } from '../script/parse.ts';
 import {
   checkDefaultMap,
@@ -19,7 +20,10 @@ export interface PlaysetProvinceIds extends ProvinceIds {
   readonly definitionFile: GameFile | undefined;
 }
 
-const DECODER = new TextDecoder('windows-1252');
+/** A script file's text as the game reads it: Windows-1252, without a leading UTF-8 BOM. */
+function decode(bytes: Uint8Array): string {
+  return decodeGameText(bytes, 'interface').text;
+}
 
 /**
  * The province ids of the playset's map: `max_provinces` of the winning `map/default.map`, a mod's
@@ -30,13 +34,13 @@ const DECODER = new TextDecoder('windows-1252');
 export async function loadProvinceIds(files: GameFiles): Promise<PlaysetProvinceIds | undefined> {
   const mapFile = await files.find('map/default.map');
   if (mapFile === undefined) return undefined;
-  const map = parseDefaultMap(DECODER.decode(await readFile(mapFile.absolutePath)));
+  const map = parseDefaultMap(decode(await readFile(mapFile.absolutePath)));
   if (map.maxProvinces === undefined) return undefined;
   const definitionFile = await files.find(`map/${map.definitions}`);
   const defined =
     definitionFile === undefined
       ? undefined
-      : parseProvinceDefinitions(DECODER.decode(await readFile(definitionFile.absolutePath)));
+      : parseProvinceDefinitions(decode(await readFile(definitionFile.absolutePath)));
   return {
     maxProvinces: map.maxProvinces,
     maxSource: describe(mapFile),
@@ -56,7 +60,7 @@ function describe(file: GameFile): string {
 /** A file of the playset with province ids its map does not have. */
 export interface ProvinceIdFinding {
   readonly file: GameFile;
-  /** The file's text as the game reads it (Windows-1252), which the ranges index. */
+  /** The file's text as the game reads it (Windows-1252, no BOM), which the ranges index. */
   readonly text: string;
   readonly diagnostics: readonly ProvinceIdDiagnostic[];
 }
@@ -83,16 +87,19 @@ export async function findProvinceIdProblems(
   const findings: ProvinceIdFinding[] = [];
   for (let i = 0; i < checked.length; i += READ_AHEAD) {
     const batch = checked.slice(i, i + READ_AHEAD);
-    const texts = await Promise.all(batch.map((file) => readFile(file.absolutePath)));
+    // A file deleted or locked since the listing is skipped, as the game would not read it either.
+    const texts = await Promise.all(
+      batch.map((file) => readFile(file.absolutePath).catch(() => undefined)),
+    );
     batch.forEach((file, j) => {
       const bytes = texts[j];
       if (bytes === undefined) return;
-      const text = DECODER.decode(bytes);
+      const text = decode(bytes);
       const diagnostics = checkProvinceIds(parseScript(text), ids, file.path);
       if (diagnostics.length > 0) findings.push({ file, text, diagnostics });
     });
   }
-  const mapText = DECODER.decode(await readFile(ids.mapFile.absolutePath));
+  const mapText = decode(await readFile(ids.mapFile.absolutePath));
   const mapDiagnostics = checkDefaultMap(parseScript(mapText), definedIds(ids));
   if (mapDiagnostics.length > 0) {
     findings.push({ file: ids.mapFile, text: mapText, diagnostics: mapDiagnostics });

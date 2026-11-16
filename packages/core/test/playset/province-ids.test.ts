@@ -6,7 +6,7 @@ import {
   loadProvinceIds,
   type GameFilesLayer,
 } from '../../src/playset/index.ts';
-import { makeTree, removeTree } from './fixture.ts';
+import { addFiles, makeTree, removeTree } from './fixture.ts';
 
 const GAME_MAP = 'max_provinces = 10\nsea_starts = { 8 9 }\n';
 const GAME_DEFINITIONS = 'province;red;green;blue;x;x\n1;1;1;1;A;x\n2;2;2;2;B;x\n9;9;9;9;I;x\n';
@@ -107,6 +107,19 @@ describe('province ids of a playset', () => {
     const other = findings.find((finding) => finding.file.path === 'events/other.txt');
     const first = other?.diagnostics[0];
     expect(other?.text.slice(first?.start, first?.end)).toBe('12');
+  });
+
+  it('reads a file with a UTF-8 byte order mark, as the game does', async () => {
+    await addFiles(root, {
+      'bom/history/countries/X.txt': '\uFEFFcapital = 50\n',
+    });
+    const files = playset({ name: 'Bom', root: join(root, 'bom'), replacePaths: [] });
+    const ids = await loadProvinceIds(files);
+    if (ids === undefined) throw new Error('no map');
+    const { findings } = await findProvinceIdProblems(files, ids);
+    const bom = findings.find((finding) => finding.file.path === 'history/countries/X.txt');
+    expect(bom?.diagnostics.map((d) => `${d.key} ${String(d.id)}`)).toEqual(['capital 50']);
+    expect(bom?.text.slice(bom.diagnostics[0]?.start, bom.diagnostics[0]?.end)).toBe('50');
   });
 
   it("checks against a map mod's default.map, and its own lists", async () => {

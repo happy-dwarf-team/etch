@@ -8,6 +8,7 @@ import * as vscode from 'vscode';
 import {
   checkDefaultMap,
   checkProvinceIds,
+  decodeGameText,
   isProvinceIdScriptPath,
   parseScript,
   type ProvinceIdDiagnostic,
@@ -26,8 +27,6 @@ export const CHECK_PROVINCE_IDS = 'etch.checkProvinceIds';
 
 /** Diagnostics are not on the preview's path to pixels; a short debounce spares bursts of typing. */
 const DEBOUNCE_MS = 150;
-
-const DECODER = new TextDecoder('windows-1252');
 
 /** The workspace's playset and its map's province ids; `ids` is `undefined` without a map. */
 interface PlaysetMap {
@@ -74,10 +73,18 @@ export class ProvinceIdDiagnostics implements vscode.Disposable {
     for (const document of vscode.workspace.textDocuments) this.schedule(document);
   }
 
-  /** Reads the playset and its map again, and checks the open documents again. */
+  /**
+   * Reads the playset and its map again, and checks again the open documents and the closed files
+   * the last playset check put warnings on.
+   */
   refresh(): void {
     this.map = undefined;
     for (const document of vscode.workspace.textDocuments) this.schedule(document);
+    for (const key of this.checked) {
+      if (!vscode.workspace.textDocuments.some((open) => open.uri.toString() === key)) {
+        void this.fromDisk(vscode.Uri.parse(key));
+      }
+    }
   }
 
   private playsetMap(): Promise<PlaysetMap | undefined> {
@@ -109,11 +116,19 @@ export class ProvinceIdDiagnostics implements vscode.Disposable {
 
   private async update(document: vscode.TextDocument): Promise<void> {
     const { version } = document;
-    const map = await this.playsetMap();
+    const pending = this.playsetMap();
+    const map = await pending;
     if (this.disposed || document.isClosed || document.version !== version) return;
-    if (map?.ids === undefined) return;
-    const found = diagnose(document.getText(), document.uri.fsPath, map.files, map.ids);
-    if (found === undefined) return;
+    // A refresh during the wait scheduled a newer update against the new map.
+    if (this.map !== pending) return;
+    const found =
+      map?.ids === undefined
+        ? undefined
+        : diagnose(document.getText(), document.uri.fsPath, map.files, map.ids);
+    if (found === undefined) {
+      this.collection.delete(document.uri);
+      return;
+    }
     this.collection.set(
       document.uri,
       found.map((d) => toDiagnostic(d, document)),
@@ -129,11 +144,21 @@ export class ProvinceIdDiagnostics implements vscode.Disposable {
       this.collection.delete(uri);
       return;
     }
-    const map = await this.playsetMap();
+    await this.fromDisk(uri);
+  }
+
+  /** Checks a file that is not open from its text on disk, as the playset check does. */
+  private async fromDisk(uri: vscode.Uri): Promise<void> {
+    const pending = this.playsetMap();
+    const map = await pending;
     const text = await readFile(uri.fsPath).then(
-      (bytes) => DECODER.decode(bytes),
+      (bytes) => decodeGameText(bytes, 'interface').text,
       () => undefined,
     );
+    if (this.disposed || this.map !== pending) return;
+    if (vscode.workspace.textDocuments.some((open) => open.uri.toString() === uri.toString())) {
+      return; // Opened meanwhile: its editor text is checked instead.
+    }
     if (map?.ids === undefined || text === undefined) {
       this.collection.delete(uri);
       return;
