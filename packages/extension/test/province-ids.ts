@@ -1,6 +1,6 @@
-// Province id warnings in a real VS Code (anvil#426): an open event file against the game folder's
-// map, and Etch: Check Province IDs in the Playset on a file that is not open (no workspace folder
-// is open in the test, so the playset is the game folder that etch.gamePath names).
+// Province id and name warnings in a real VS Code (anvil#426): an open event file against the game
+// folder's map, and Etch: Check Province IDs and Names in the Playset on files that are not open (no
+// workspace folder is open in the test, so the playset is the game folder that etch.gamePath names).
 import * as assert from 'node:assert/strict';
 import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';

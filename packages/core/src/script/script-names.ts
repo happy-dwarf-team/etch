@@ -55,7 +55,7 @@ const IDEA_GROUP_MEMBERS: ReadonlySet<string> = new Set([
 
 /**
  * Adds the idea groups and ideas of one `common/ideas` file: each top-level block is an idea group
- * (the game keeps its name as written), and each of its blocks other than `start`, `bonus`,
+ * (the game keeps its name as written and compares it byte for byte), and each of its blocks other than `start`, `bonus`,
  * `trigger` and `ai_will_do` is an idea.
  */
 export function readIdeaNames(

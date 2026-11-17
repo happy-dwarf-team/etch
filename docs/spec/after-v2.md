@@ -193,7 +193,8 @@ refresh is a step of the 3.0.0 release.
   safe. Etch warns (`unknown-idea-group`, `unknown-idea`) about a value of
   these effects that the top-level blocks of the playset's winning
   `common/ideas` files, or their ideas, do not name, compared
-  case-sensitively as the game's lookup does; a value with `$` (a scripted
+  case-sensitively as the game's lookup does (a hash of the bytes and a
+  `memcmp`, read in its code, not tried in the game); a value with `$` (a scripted
   effect's argument) is skipped. The warnings share the province id check's
   files, live diagnostics and playset command, renamed **Etch: Check
   Province IDs and Names in the Playset**. Over vanilla (555 idea groups,

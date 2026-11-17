@@ -99,18 +99,29 @@ export class ProvinceIdDiagnostics implements vscode.Disposable {
     this.map ??= (async () => {
       const linked = await linkedFiles();
       if (linked === undefined) return undefined;
+      // Each part fails on its own: unreadable ideas leave the province ids checked, and back.
       const [ids, names] = await Promise.all([
-        loadProvinceIds(linked.files),
-        loadScriptNames(linked.files),
+        loadProvinceIds(linked.files).catch((error: unknown) => {
+          this.unread('map', error);
+          return undefined;
+        }),
+        loadScriptNames(linked.files).catch((error: unknown) => {
+          this.unread('names', error);
+          return undefined;
+        }),
       ]);
       return { files: linked.files, ids, names };
     })().catch((error: unknown) => {
-      this.output.warn(
-        `Province ids and names: the playset's map or ideas could not be read: ${error instanceof Error ? error.message : String(error)}`,
-      );
+      this.unread('playset', error);
       return undefined;
     });
     return this.map;
+  }
+
+  private unread(what: string, error: unknown): void {
+    this.output.warn(
+      `Province ids and names: the playset's ${what} could not be read: ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
 
   private schedule(document: vscode.TextDocument): void {
@@ -253,7 +264,7 @@ export class ProvinceIdDiagnostics implements vscode.Disposable {
     }
     const mods = new Set(findings.map((finding) => finding.file.layer.name));
     void vscode.window.showWarningMessage(
-      `${String(warnings)} province ${warnings === 1 ? 'id or name' : 'ids or names'} the playset does not have, in ${String(findings.length)} ${findings.length === 1 ? 'file' : 'files'} of ${[...mods].map((m) => (m === 'game' ? 'the game' : m)).join(', ')}: see Problems.`,
+      `${String(warnings)} ${warnings === 1 ? 'id or name' : 'ids or names'} the playset does not have, in ${String(findings.length)} ${findings.length === 1 ? 'file' : 'files'} of ${[...mods].map((m) => (m === 'game' ? 'the game' : m)).join(', ')}: see Problems.`,
     );
     await vscode.commands.executeCommand('workbench.actions.view.problems');
   }
