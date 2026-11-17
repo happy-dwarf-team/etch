@@ -292,7 +292,15 @@ refresh is a step of the 3.0.0 release.
   read of `0x0`), after its "Invalid idea" line in `error.log`. Etch now warns
   about `has_idea` too, naming that log line, since the line does not say the
   game will crash. `has_spawned_rebels`' warning says it was tried; only
-  `remove_idea` and `has_not_spawned_rebels` stay read in the code.
+  `remove_idea` and `has_not_spawned_rebels` stay read in the code. Over the
+  68 Workshop items on the lab's disk the `has_idea` warning finds 16 names,
+  all of which the game also logs as "Invalid idea": Anbennar replaces
+  `common/ideas` but keeps vanilla's `00_scripted_triggers.txt`, whose
+  colonial triggers name 14 vanilla ideas (`pioneer_spirit`,
+  `manifest_destiny`, `AUS_outback_stations`, …), and its submods inherit
+  them; Capitals Expanded (2043210489, and its continuation 3487893094) names
+  `formalized_officer_corps` and `audit_checks` in a triggered modifier,
+  ideas EU4 1.37.5 no longer has. Vanilla has none.
 
   A fourth run (`ideagrp-r6`) tried those two: `has_not_spawned_rebels` ran
   three days in a shown decision without a crash, and the hover crashed the
