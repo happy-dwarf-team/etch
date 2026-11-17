@@ -230,7 +230,9 @@ refresh is a step of the 3.0.0 release.
   would flag are in Anbennar's `has_orthodox_religious_icon_trigger` (and a
   submod's copy of it), which still names the five vanilla icons that
   Anbennar's religions no longer define; that trigger sits in a
-  `custom_trigger_tooltip`, so it is skipped.
+  `custom_trigger_tooltip`, so it is skipped. It flags one name: an event
+  option of Challenger's Flavour Bonanza Mod (438503893) has
+  `enable_religion = hussitism`, while the mod's religion is `hussite`.
 
 - **A warning for a `replace_path` the game mishandles.** A `replace_path` on a
   subfolder of a folder the game lists recursively (`interface/assets`,
