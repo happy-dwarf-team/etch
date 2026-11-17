@@ -294,6 +294,16 @@ refresh is a step of the 3.0.0 release.
   game will crash. `has_spawned_rebels`' warning says it was tried; only
   `remove_idea` and `has_not_spawned_rebels` stay read in the code.
 
+  A fourth run (`ideagrp-r6`) tried those two: `has_not_spawned_rebels` ran
+  three days in a shown decision without a crash, and the hover crashed the
+  game where `has_spawned_rebels` does (`eu4.exe+0xA91163`); hovering an event
+  option with `remove_idea = <unknown>` crashed it in
+  `CRemoveIdeaEffect::GetDesc` (`eu4.exe+0x68E453`, a read of `0x0`). Every
+  key Etch checks has now crashed the game in a test, and every warning says
+  so. The effect keys' text says that running the effect or showing its
+  tooltip crashes the game: the idea group effects crashed when they ran,
+  `remove_idea` when its description was shown.
+
 - **A warning for a `replace_path` the game mishandles.** A `replace_path` on a
   subfolder of a folder the game lists recursively (`interface/assets`,
   `gfx/entities`, `localisation/english`) makes EU4 1.37.5 skip the files

@@ -235,9 +235,7 @@ skipping them inside a `custom_trigger_tooltip`, which shows its own text:
 is evaluated, for a decision's `allow` on the first day of the game, so Etch
 checks them inside a `custom_trigger_tooltip` too.
 
-Most of these crashes were tried in the game. `remove_idea` and
-`has_not_spawned_rebels` were only read in its code, and their warnings say
-so.
+Every one of these crashes was tried in the game.
 
 **Etch: Check Province IDs and Names in the Playset** checks every script file
 the playset loads, from all its mods, and lists the lines in the Problems
