@@ -1,10 +1,10 @@
 // Script values the game uses unchecked and the playset does not have (anvil#426): a warning on
 // `owns = 5075`, a `5075 = { … }` scope and the other keys `PROVINCE_ID_KEYS` lists, against the
 // `max_provinces` of the playset's `map/default.map` (a mod's when it has one) and its
-// `map/definition.csv`, and on the names `SCRIPT_NAME_KEYS` lists (`add_idea_group = …`) that the
-// playset does not define, in the open script files. Etch: Check Province IDs and Names in the
-// Playset checks every script file the playset loads, so that a player can find which mod has
-// such a line.
+// `map/definition.csv`, and on the names `SCRIPT_NAME_KEYS` and `SCRIPT_NAME_MEMBERS` list
+// (`add_idea_group = …`, `has_active_policy = …`) that the playset does not define, in the open
+// script files. Etch: Check Province IDs and Names in the Playset checks every script file the
+// playset loads, so that a player can find which mod has such a line.
 import { readFile } from 'node:fs/promises';
 import * as vscode from 'vscode';
 import {
@@ -29,12 +29,16 @@ import { linkedFiles } from './script-profile-view.ts';
 
 export const CHECK_PROVINCE_IDS = 'etch.checkProvinceIds';
 
+/** Files whose saving can change the map's province ids or the playset's names. */
+const NAME_OR_MAP_FILE =
+  /[\\/](?:map|common[\\/](?:ideas|religions|policies|rebel_types|disasters))[\\/][^\\/]+$/i;
+
 /** Diagnostics are not on the preview's path to pixels; a short debounce spares bursts of typing. */
 const DEBOUNCE_MS = 150;
 
 /**
  * The workspace's playset, its map's province ids and the names it defines; `ids` is `undefined`
- * without a map, `names` without `common/ideas`.
+ * without a map, `names` without any of the folders that define names.
  */
 export interface PlaysetMap {
   readonly files: GameFiles;
@@ -66,9 +70,9 @@ export class ProvinceIdDiagnostics implements vscode.Disposable {
       vscode.workspace.onDidCloseTextDocument((document) => {
         void this.closed(document.uri);
       }),
-      // A saved map or ideas file can change the ids or names; so can the playset's settings.
+      // A saved map or name file can change the ids or names; so can the playset's settings.
       vscode.workspace.onDidSaveTextDocument((document) => {
-        if (/[\\/](?:map|common[\\/]ideas)[\\/][^\\/]+$/i.test(document.uri.fsPath)) this.refresh();
+        if (NAME_OR_MAP_FILE.test(document.uri.fsPath)) this.refresh();
       }),
       vscode.workspace.onDidChangeConfiguration((event) => {
         if (
@@ -204,7 +208,7 @@ export class ProvinceIdDiagnostics implements vscode.Disposable {
     const { ids, names } = map;
     if (ids === undefined && names === undefined) {
       void vscode.window.showWarningMessage(
-        'The playset has no map/default.map with max_provinces and no common/ideas, so Etch cannot check province ids or names.',
+        'The playset has no map/default.map with max_provinces and no files that define names, so Etch cannot check province ids or names.',
       );
       return;
     }
@@ -241,8 +245,8 @@ export class ProvinceIdDiagnostics implements vscode.Disposable {
         ? 'no map'
         : `${ids.maxSource} (max_provinces = ${String(ids.maxProvinces)})`,
       names === undefined
-        ? 'no ideas'
-        : `${String(names.ideaGroups.size)} idea groups and ${String(names.ideas.size)} ideas`,
+        ? 'no names'
+        : `names (${[...names.byKind].map(([kind, set]) => `${String(set.size)} ${kind}`).join(', ')})`,
     ].join(' and ');
     this.output.info(
       `Province ids and names: ${String(filesChecked)} files checked in ${String(Date.now() - started)} ms against ${against}; ${String(warnings)} values the playset lacks in ${String(findings.length)} files`,

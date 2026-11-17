@@ -11,8 +11,12 @@ import {
 import {
   checkScriptNames,
   readIdeaNames,
+  readReligionNames,
+  readTopLevelNames,
   type ScriptNameDiagnostic,
+  type ScriptNameKind,
   type ScriptNames,
+  type ScriptNameSets,
 } from '../script/script-names.ts';
 import type { ParsedScript } from '../script/tree.ts';
 import type { GameFile, GameFiles } from './game-files.ts';
@@ -49,20 +53,43 @@ export function checkScriptValues(
   return found.sort((a, b) => a.start - b.start);
 }
 
+/** Reads a file's top-level blocks as names of a kind. */
+function topLevel(kind: ScriptNameKind): (parsed: ParsedScript, into: ScriptNameSets) => void {
+  return (parsed, into) => {
+    readTopLevelNames(parsed, kind, into);
+  };
+}
+
+/** Where each kind of name is defined: a `common` folder and how its files are read. */
+const NAME_FOLDERS: readonly {
+  readonly folder: string;
+  readonly read: (parsed: ParsedScript, into: ScriptNameSets) => void;
+}[] = [
+  { folder: 'common/ideas', read: readIdeaNames },
+  { folder: 'common/religions', read: readReligionNames },
+  { folder: 'common/policies', read: topLevel('policy') },
+  { folder: 'common/rebel_types', read: topLevel('rebel-type') },
+  { folder: 'common/disasters', read: topLevel('disaster') },
+];
+
 /**
- * The idea groups and ideas of the playset: the top-level blocks of the winning `common/ideas`
- * files and their ideas. `undefined` when no layer has a file there.
+ * The names the playset defines: idea groups and ideas (`common/ideas`), religions and orthodox
+ * icons (`common/religions`), policies, rebel types and disasters, each from the winning `.txt`
+ * files directly in its folder. A folder no layer has a file in adds no kind, so its names are not
+ * checked; `undefined` when no folder has one.
  */
 export async function loadScriptNames(files: GameFiles): Promise<ScriptNames | undefined> {
-  const ideaFiles = await files.list('common/ideas', '.txt');
-  if (ideaFiles.length === 0) return undefined;
-  const ideaGroups = new Set<string>();
-  const ideas = new Set<string>();
-  for (const file of ideaFiles) {
-    const bytes = await readFile(file.absolutePath).catch(() => undefined);
-    if (bytes !== undefined) readIdeaNames(parseScript(decode(bytes)), { ideaGroups, ideas });
+  const byKind: ScriptNameSets = new Map();
+  for (const { folder, read } of NAME_FOLDERS) {
+    const found = await files.list(folder, '.txt');
+    const texts = await Promise.all(
+      found.map((file) => readFile(file.absolutePath).catch(() => undefined)),
+    );
+    for (const bytes of texts) {
+      if (bytes !== undefined) read(parseScript(decode(bytes)), byKind);
+    }
   }
-  return { ideaGroups, ideas, source: 'common/ideas of the playset' };
+  return byKind.size === 0 ? undefined : { byKind };
 }
 
 /** A file of the playset with script values it does not have. */

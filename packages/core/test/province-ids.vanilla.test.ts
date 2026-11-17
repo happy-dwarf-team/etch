@@ -21,8 +21,21 @@ describe.skipIf(gamePath === undefined)('province ids and names of the installed
     expect(ids?.maxProvinces).toBe(4942);
     expect(ids?.defined?.size).toBe(4941);
     const names = await loadScriptNames(files);
-    expect(names?.ideaGroups.size).toBe(555);
-    expect(names?.ideas.size).toBe(3788);
+    const sizes = Object.fromEntries(
+      [...(names?.byKind ?? new Map<string, ReadonlySet<string>>())].map(([kind, set]) => [
+        kind,
+        set.size,
+      ]),
+    );
+    expect(sizes).toEqual({
+      'idea-group': 555,
+      idea: 3788,
+      religion: 28,
+      icon: 5,
+      policy: 203,
+      'rebel-type': 50,
+      disaster: 55,
+    });
     if (ids === undefined) return;
     const { findings, filesChecked } = await findScriptValueProblems(files, { ids, names });
     expect(filesChecked).toBeGreaterThan(7000);
