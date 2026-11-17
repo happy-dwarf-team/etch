@@ -213,8 +213,10 @@ A few effects crash the game the same silent way on a name the playset does
 not define: `add_idea_group` and `remove_idea_group` on an idea group, and
 `remove_idea` on an idea. Etch warns about such a name against the idea
 groups and ideas of your playset's `common/ideas`; names are case-sensitive,
-as in the game. A scripted effect's `$argument$` is not checked, nor are
-triggers such as `has_idea_group`, which the game reports in `error.log`.
+as in the game. A scripted effect's `$argument$` is not checked, nor is
+`has_idea_group`, which the game reports in `error.log`. `has_idea` is: the
+game logs "Invalid idea" for it, but keeps the missing idea and crashes when
+its tooltip is shown.
 
 For some triggers and effects the game crashes on a missing name only when it
 builds their tooltip, for example when you hover over a decision or an event
@@ -233,9 +235,9 @@ skipping them inside a `custom_trigger_tooltip`, which shows its own text:
 is evaluated, for a decision's `allow` on the first day of the game, so Etch
 checks them inside a `custom_trigger_tooltip` too.
 
-Most of these crashes were tried in the game. `remove_idea`,
-`has_spawned_rebels` and `has_not_spawned_rebels` were only read in its code,
-and their warnings say so.
+Most of these crashes were tried in the game. `remove_idea` and
+`has_not_spawned_rebels` were only read in its code, and their warnings say
+so.
 
 **Etch: Check Province IDs and Names in the Playset** checks every script file
 the playset loads, from all its mods, and lists the lines in the Problems
