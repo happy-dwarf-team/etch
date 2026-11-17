@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
   SCRIPT_NAME_KEYS,
+  SCRIPT_NAME_MEMBERS,
   checkScriptNames,
   parseScript,
   readIdeaNames,
+  readReligionNames,
+  readTopLevelNames,
+  type ScriptNameSets,
   type ScriptNames,
 } from '../src/index.ts';
 
@@ -23,23 +27,52 @@ const IDEAS = [
   '}',
 ].join('\n');
 
+const RELIGIONS = [
+  'christian = {',
+  '  center_of_religion = 118',
+  '  flag_emblem_index_range = { 1 57 }',
+  '  catholic = { color = { 1 1 0 } icon = 1 papacy = { x = 1 } }',
+  '  orthodox = {',
+  '    icon = 3',
+  '    orthodox_icons = { icon_michael = { discipline = 0.05 } icon_eleusa = { x = 1 } }',
+  '  }',
+  '}',
+  'muslim = {',
+  '  religious_schools = { hanafi_school = { x = 1 } }',
+  '  sunni = { icon = 7 }',
+  '}',
+].join('\n');
+
 function names(): ScriptNames {
-  const ideaGroups = new Set<string>();
-  const ideas = new Set<string>();
-  readIdeaNames(parseScript(IDEAS), { ideaGroups, ideas });
-  return { ideaGroups, ideas, source: 'common/ideas of the playset' };
+  const byKind: ScriptNameSets = new Map();
+  readIdeaNames(parseScript(IDEAS), byKind);
+  readReligionNames(parseScript(RELIGIONS), byKind);
+  readTopLevelNames(parseScript('the_combination_act = { x = 1 }'), 'policy', byKind);
+  readTopLevelNames(parseScript('nationalist_rebels = { x = 1 }'), 'rebel-type', byKind);
+  readTopLevelNames(parseScript('civil_war = { x = 1 }'), 'disaster', byKind);
+  return { byKind };
 }
 
 /** The names a text's warnings are about, as `key name code`. */
-function found(text: string): string[] {
-  return checkScriptNames(parseScript(text), names()).map((d) => `${d.key} ${d.name} ${d.code}`);
+function found(text: string, known: ScriptNames = names()): string[] {
+  return checkScriptNames(parseScript(text), known).map((d) => `${d.key} ${d.name} ${d.code}`);
 }
 
-describe('readIdeaNames', () => {
+describe('reading names', () => {
   it('takes the top-level blocks as idea groups and their other blocks as ideas', () => {
-    const { ideaGroups, ideas } = names();
-    expect([...ideaGroups]).toEqual(['aristocracy_ideas', 'SWE_ideas']);
-    expect([...ideas]).toEqual(['noble_knights', 'serfdom', 'smaland_proverb']);
+    const { byKind } = names();
+    expect([...(byKind.get('idea-group') ?? [])]).toEqual(['aristocracy_ideas', 'SWE_ideas']);
+    expect([...(byKind.get('idea') ?? [])]).toEqual([
+      'noble_knights',
+      'serfdom',
+      'smaland_proverb',
+    ]);
+  });
+
+  it('takes the blocks of a religion group that set an icon as religions, and their icons', () => {
+    const { byKind } = names();
+    expect([...(byKind.get('religion') ?? [])]).toEqual(['catholic', 'orthodox', 'sunni']);
+    expect([...(byKind.get('icon') ?? [])]).toEqual(['icon_michael', 'icon_eleusa']);
   });
 });
 
@@ -64,38 +97,104 @@ describe('checkScriptNames', () => {
     ]);
   });
 
+  it('flags the names of the triggers and effects whose tooltip crashes', () => {
+    const text = [
+      'd = {',
+      '  allow = {',
+      '    has_active_policy = the_combination_act',
+      '    has_active_policy = the_combinaton_act',
+      '    had_active_policy = { policy = no_policy days = 10 }',
+      '    likely_rebels = nationalist_rebels',
+      '    likely_rebels = nationalists_rebels',
+      '    has_disaster_progress = { disaster = civil_war value = 5 }',
+      '    has_disaster_progress = { disaster = civl_war value = 5 }',
+      '    current_icon = icon_michael',
+      '    current_icon = icon_nicholas',
+      '    num_of_religion = { religion = sunni value = 1 }',
+      '    num_of_religion = { religion = protestant value = 1 }',
+      '    num_of_religion = { secondary = yes value = 1 }',
+      '  }',
+      '  effect = { enable_religion = catholic enable_religion = anglican }',
+      '}',
+    ].join('\n');
+    expect(found(text)).toEqual([
+      'has_active_policy the_combinaton_act unknown-policy',
+      'policy no_policy unknown-policy',
+      'likely_rebels nationalists_rebels unknown-rebel-type',
+      'disaster civl_war unknown-disaster',
+      'current_icon icon_nicholas unknown-icon',
+      'religion protestant unknown-religion',
+      'enable_religion anglican unknown-religion',
+    ]);
+  });
+
+  it('reads a block member only inside its block', () => {
+    expect(found('e = { trigger = { religion = protestant policy = no_policy } }')).toEqual([]);
+  });
+
   it('compares names case-sensitively, as the game does', () => {
     expect(found('e = { immediate = { add_idea_group = swe_ideas } }')).toEqual([
       'add_idea_group swe_ideas unknown-idea-group',
     ]);
   });
 
-  it('skips the triggers that log an unknown name, and arguments of a scripted effect', () => {
+  it('skips arguments of a scripted effect, prefixed scopes and religion scopes', () => {
     const text = [
       'fx = {',
       '  add_idea_group = $group$',
       '  remove_idea = $idea$',
+      '  likely_rebels = event_target:rebels',
+      '  num_of_religion = { religion = ROOT value = 1 }',
+      '  num_of_religion = { religion = FROM value = 1 }',
+      '  num_of_religion = { religion = PREVPREV value = 1 }',
+      '  num_of_religion = { religion = TUR value = 1 }',
       '}',
-      'e = { trigger = { has_idea_group = no_such_ideas has_idea = no_such_idea } }',
     ].join('\n');
     expect(found(text)).toEqual([]);
   });
 
-  it('gives the range of the name and a message naming the source', () => {
-    const text = 'e = { immediate = { add_idea_group = "quantity_idea" } }';
-    const [diagnostic] = checkScriptNames(parseScript(text), names());
-    expect(text.slice(diagnostic?.start, diagnostic?.end)).toBe('"quantity_idea"');
-    expect(diagnostic?.message).toMatch(
-      /^No idea group 'quantity_idea' in common\/ideas of the playset \(names are case-sensitive\)\. The game does not check add_idea_group's idea group or report it in error\.log/,
-    );
-    expect(diagnostic?.severity).toBe('warning');
+  it('skips the triggers that log an unknown name', () => {
+    const text = 'e = { trigger = { has_idea_group = no_such_ideas has_idea = no_such_idea } }';
+    expect(found(text)).toEqual([]);
   });
 
-  it('knows only effects', () => {
+  it('does not check a kind the playset has no files for', () => {
+    const byKind: ScriptNameSets = new Map();
+    readIdeaNames(parseScript(IDEAS), byKind);
+    const text = 'e = { trigger = { likely_rebels = any_rebels } effect = { remove_idea = x } }';
+    expect(found(text, { byKind })).toEqual(['remove_idea x unknown-idea']);
+  });
+
+  it('gives the range of the name and a message naming the folder and the crash', () => {
+    const text = 'e = { immediate = { add_idea_group = "quantity_idea" } }';
+    const [effect] = checkScriptNames(parseScript(text), names());
+    expect(text.slice(effect?.start, effect?.end)).toBe('"quantity_idea"');
+    expect(effect?.message).toBe(
+      "No idea group 'quantity_idea' in common/ideas of the playset (names are case-sensitive). " +
+        "The game does not check add_idea_group's idea group or report it in error.log: it " +
+        'crashes when the effect runs or its tooltip is shown.',
+    );
+    expect(effect?.severity).toBe('warning');
+    const [tooltip] = checkScriptNames(parseScript('t = { current_icon = x }'), names());
+    expect(tooltip?.message).toMatch(
+      /^No orthodox icon 'x' in common\/religions of the playset .*: it crashes if it builds the tooltip/,
+    );
+  });
+
+  it('knows these keys and block members', () => {
     expect([...SCRIPT_NAME_KEYS.keys()]).toEqual([
       'add_idea_group',
       'remove_idea_group',
       'remove_idea',
+      'has_active_policy',
+      'enable_religion',
+      'likely_rebels',
+      'current_icon',
+    ]);
+    expect([...SCRIPT_NAME_MEMBERS.keys()]).toEqual([
+      'had_active_policy',
+      'has_disaster_progress',
+      'num_of_religion',
     ]);
   });
 });

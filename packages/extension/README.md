@@ -216,6 +216,15 @@ groups and ideas of your playset's `common/ideas`; names are case-sensitive,
 as in the game. A scripted effect's `$argument$` is not checked, nor are
 triggers such as `has_idea_group`, which the game reports in `error.log`.
 
+Some triggers and effects crash only when the game builds their tooltip, for
+example when you hover over a decision or an event option that uses them.
+Etch warns about their names too: `has_active_policy` and
+`had_active_policy`'s `policy` (`common/policies`), `enable_religion` and
+`num_of_religion`'s `religion` (`common/religions`), `likely_rebels`
+(`common/rebel_types`), `has_disaster_progress`'s `disaster`
+(`common/disasters`) and `current_icon` (the orthodox icons of
+`common/religions`).
+
 **Etch: Check Province IDs and Names in the Playset** checks every script file
 the playset loads, from all its mods, and lists the lines in the Problems
 panel, so you can find which mod has one.

@@ -49,15 +49,24 @@ describe('script values of a playset', () => {
 
   it('reads the idea groups and ideas of the winning common/ideas files', async () => {
     const names = await loadScriptNames(playset());
-    expect([...(names?.ideaGroups ?? [])].sort()).toEqual([
+    expect([...(names?.byKind.get('idea-group') ?? [])].sort()).toEqual([
       'XYZ_ideas',
       'mod_ideas',
       'quantity_ideas',
     ]);
-    expect([...(names?.ideas ?? [])].sort()).toEqual(['levee_en_masse', 'mod_idea', 'xyz_idea']);
+    expect([...(names?.byKind.get('idea') ?? [])].sort()).toEqual([
+      'levee_en_masse',
+      'mod_idea',
+      'xyz_idea',
+    ]);
   });
 
-  it('is undefined without common/ideas', async () => {
+  it('reads only the kinds the playset has files for', async () => {
+    const names = await loadScriptNames(playset());
+    expect([...(names?.byKind.keys() ?? [])]).toEqual(['idea-group', 'idea']);
+  });
+
+  it('is undefined without any file that defines names', async () => {
     const files = new GameFiles([{ name: 'game', root: join(root, 'none'), replacePaths: [] }]);
     expect(await loadScriptNames(files)).toBeUndefined();
   });

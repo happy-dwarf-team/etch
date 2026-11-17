@@ -203,7 +203,32 @@ refresh is a step of the 3.0.0 release.
   The same reading found tooltip-only crashes on unknown names of
   `has_active_policy`, `had_active_policy`, `enable_religion`,
   `likely_rebels`, `has_disaster_progress`, `current_icon` and
-  `num_of_religion`; they are not checked yet.
+  `num_of_religion`; the next item checks them.
+
+- **Names whose tooltip crashes the game.** A reading of the game's trigger
+  and effect code (EU4 engine lab, 17 November 2026) found more keys that
+  keep an unknown name's lookup unchecked: their `PostValidate` looks the
+  name up again but logs nothing, and the validation passes ignore what it
+  returns. Where their run was read, it only compares or checks the
+  pointer, but building their tooltip or description reads through it: `has_active_policy` and
+  `had_active_policy`'s `policy` (`common/policies`), `enable_religion` and
+  `num_of_religion`'s `religion` (the religions of `common/religions`: the
+  blocks of a religion group that set `icon`), `likely_rebels`
+  (`common/rebel_types`), `has_disaster_progress`'s `disaster`
+  (`common/disasters`) and `current_icon` (the `orthodox_icons` of those
+  religions). Etch warns about these names too (`unknown-policy`,
+  `unknown-religion`, `unknown-rebel-type`, `unknown-disaster`,
+  `unknown-icon`), each kind only when the playset has files in its folder;
+  `num_of_religion`'s `religion` may be a scope (`ROOT`, `FROM`, a tag),
+  which is skipped. The tooltip path was read in the code, not run in the
+  game. Over vanilla (203 policies, 28 religions, 5 icons, 50 rebel types,
+  55 disasters) it warns about nothing; over the 67 Workshop items on the
+  lab's disk, each with the game and Anbennar for its submods, it warns only
+  about Anbennar's `has_orthodox_religious_icon_trigger` (and a submod's copy
+  of it), which still names the five vanilla icons that Anbennar's religions
+  no longer define. That trigger sits in a `custom_trigger_tooltip`, which
+  shows its own text, so the name can never match but the tooltip likely
+  never builds.
 
 - **A warning for a `replace_path` the game mishandles.** A `replace_path` on a
   subfolder of a folder the game lists recursively (`interface/assets`,
