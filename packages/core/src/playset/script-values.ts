@@ -70,6 +70,8 @@ const NAME_FOLDERS: readonly {
   { folder: 'common/policies', read: topLevel('policy') },
   { folder: 'common/rebel_types', read: topLevel('rebel-type') },
   { folder: 'common/disasters', read: topLevel('disaster') },
+  { folder: 'common/institutions', read: topLevel('institution') },
+  { folder: 'common/estate_agendas', read: topLevel('estate-agenda') },
 ];
 
 /**

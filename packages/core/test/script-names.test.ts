@@ -50,6 +50,8 @@ function names(): ScriptNames {
   readTopLevelNames(parseScript('the_combination_act = { x = 1 }'), 'policy', byKind);
   readTopLevelNames(parseScript('nationalist_rebels = { x = 1 }'), 'rebel-type', byKind);
   readTopLevelNames(parseScript('civil_war = { x = 1 }'), 'disaster', byKind);
+  readTopLevelNames(parseScript('feudalism = { x = 1 }'), 'institution', byKind);
+  readTopLevelNames(parseScript('estate_nobles_hire_advisor = { x = 1 }'), 'estate-agenda', byKind);
   return { byKind };
 }
 
@@ -126,6 +128,36 @@ describe('checkScriptNames', () => {
       'religion protestant unknown-religion',
       'enable_religion anglican unknown-religion',
     ]);
+  });
+
+  it('flags the rebel types, estate agendas and institutions of the keys found later', () => {
+    const text = [
+      't = {',
+      '  has_spawned_rebels = nationalist_rebels',
+      '  has_spawned_rebels = nationalist_rebel',
+      '  has_not_spawned_rebels = noble_rebels',
+      '  has_active_estate_agenda = estate_nobles_hire_advisor',
+      '  has_active_estate_agenda = estate_nobles_hire_adviser',
+      '  provincial_institution_progress = { which = feudalism value = 1 }',
+      '  provincial_institution_progress = { which = feudalsim value = 1 }',
+      '  custom_trigger_tooltip = {',
+      '    tooltip = x',
+      '    provincial_institution_progress = { which = renaissance value = 1 }',
+      '  }',
+      '}',
+    ].join('\n');
+    expect(found(text)).toEqual([
+      'has_spawned_rebels nationalist_rebel unknown-rebel-type',
+      'has_not_spawned_rebels noble_rebels unknown-rebel-type',
+      'has_active_estate_agenda estate_nobles_hire_adviser unknown-estate-agenda',
+      'which feudalsim unknown-institution',
+      'which renaissance unknown-institution',
+    ]);
+    const [trigger] = checkScriptNames(
+      parseScript('t = { provincial_institution_progress = { which = x value = 1 } }'),
+      names(),
+    );
+    expect(trigger?.message).toMatch(/: evaluating the trigger in a province reads through/);
   });
 
   it('skips the tooltip keys inside a custom_trigger_tooltip, not the effects', () => {
@@ -221,11 +253,15 @@ describe('checkScriptNames', () => {
       'enable_religion',
       'likely_rebels',
       'current_icon',
+      'has_spawned_rebels',
+      'has_not_spawned_rebels',
+      'has_active_estate_agenda',
     ]);
     expect([...SCRIPT_NAME_MEMBERS.keys()]).toEqual([
       'had_active_policy',
       'has_disaster_progress',
       'num_of_religion',
+      'provincial_institution_progress',
     ]);
   });
 });

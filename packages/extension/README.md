@@ -224,8 +224,15 @@ inside a `custom_trigger_tooltip`, which shows its own text: `has_active_policy`
 `had_active_policy`'s `policy` (`common/policies`), `enable_religion` and
 `num_of_religion`'s `religion` (`common/religions`), `likely_rebels`
 (`common/rebel_types`), `has_disaster_progress`'s `disaster`
-(`common/disasters`) and `current_icon` (the orthodox icons of
-`common/religions`).
+(`common/disasters`), `current_icon` (the orthodox icons of
+`common/religions`), `has_spawned_rebels` and `has_not_spawned_rebels`
+(`common/rebel_types`) and `has_active_estate_agenda`
+(`common/estate_agendas`).
+
+`provincial_institution_progress`'s `which` (`common/institutions`) is worse:
+the game's code reads through a missing institution whenever the trigger is
+evaluated in a province, so Etch checks it inside a `custom_trigger_tooltip`
+too.
 
 **Etch: Check Province IDs and Names in the Playset** checks every script file
 the playset loads, from all its mods, and lists the lines in the Problems
