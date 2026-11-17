@@ -220,22 +220,22 @@ For some triggers and effects the game crashes on a missing name only when it
 builds their tooltip, for example when you hover over a decision or an event
 option that uses them. Etch warns about their names too, ignoring case and
 skipping them inside a `custom_trigger_tooltip`, which shows its own text:
-`has_active_policy` and `had_active_policy`'s `policy` (`common/policies`),
-`enable_religion` (`common/religions`), `likely_rebels`
+`has_active_policy` (`common/policies`), `enable_religion` (`common/religions`), `likely_rebels`
 (`common/rebel_types`), `has_disaster_progress`'s `disaster`
 (`common/disasters`), `current_icon` (the orthodox icons of
 `common/religions`), `has_spawned_rebels` and `has_not_spawned_rebels`
 (`common/rebel_types`) and `has_active_estate_agenda`
 (`common/estate_agendas`).
 
-`provincial_institution_progress`'s `which` (`common/institutions`) and
-`num_of_religion`'s `religion` (`common/religions`) are worse: the game crashes
-whenever the trigger is evaluated, so Etch checks them inside a
-`custom_trigger_tooltip` too.
+`provincial_institution_progress`'s `which` (`common/institutions`),
+`num_of_religion`'s `religion` (`common/religions`) and `had_active_policy`'s
+`policy` (`common/policies`) are worse: the game crashes whenever the trigger
+is evaluated, for a decision's `allow` on the first day of the game, so Etch
+checks them inside a `custom_trigger_tooltip` too.
 
 Most of these crashes were tried in the game. `remove_idea`,
-`had_active_policy`, `has_spawned_rebels` and `has_not_spawned_rebels` were
-only read in its code, and their warnings say so.
+`has_spawned_rebels` and `has_not_spawned_rebels` were only read in its code,
+and their warnings say so.
 
 **Etch: Check Province IDs and Names in the Playset** checks every script file
 the playset loads, from all its mods, and lists the lines in the Problems

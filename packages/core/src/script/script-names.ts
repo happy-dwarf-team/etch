@@ -6,8 +6,9 @@
  *
  * - `add_idea_group`, `remove_idea_group` and `remove_idea` crash when the effect runs or its
  *   tooltip is built.
- * - `provincial_institution_progress`'s `which` and `num_of_religion`'s `religion` crash when the
- *   trigger is evaluated.
+ * - `provincial_institution_progress`'s `which`, `num_of_religion`'s `religion` and
+ *   `had_active_policy`'s `policy` crash when the trigger is evaluated: a decision's `allow` with
+ *   one of them crashed the game on the first day, though no country met its `potential`.
  * - The others crash only when their tooltip or description is built, for example when a player
  *   hovers over a decision, a mission or an event option that uses them: the game's
  *   `PostValidate` of these keys looks the name up again but logs nothing, and the validation
@@ -17,7 +18,7 @@
  *
  * Each key was read in the game's code, and most were tried in a running game on 17.11.2026 (EU4
  * engine lab, `docs/script-unchecked-indexes.md`): `seenInGame` tells which, and the message says
- * so. The decisions that held the tooltip keys in `allow` were evaluated every day without a
+ * so. The decisions that held the tooltip keys in `allow` showed whether it held without a
  * crash, until a hover over the tooltip.
  *
  * Keys whose unknown name the game reports (`has_idea_group`'s "Invalid idea group") or replaces
@@ -75,7 +76,7 @@ function member(
 /** Members of block triggers whose value is a name, by the block's key and then the member's. */
 export const SCRIPT_NAME_MEMBERS: ReadonlyMap<string, ReadonlyMap<string, ScriptNameKey>> = new Map(
   [
-    ['had_active_policy', member('policy', 'policy', 'tooltip', false)],
+    ['had_active_policy', member('policy', 'policy', 'trigger', true)],
     ['has_disaster_progress', member('disaster', 'disaster', 'tooltip', true)],
     ['num_of_religion', member('religion', 'religion', 'trigger', true)],
     ['provincial_institution_progress', member('which', 'institution', 'trigger', true)],
