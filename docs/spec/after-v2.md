@@ -234,6 +234,24 @@ refresh is a step of the 3.0.0 release.
   option of Challenger's Flavour Bonanza Mod (438503893) has
   `enable_religion = hussitism`, while the mod's religion is `hussite`.
 
+- **More names the game keeps unchecked.** A second reading (EU4 engine lab,
+  17 November 2026) traced each trigger keyword through the EXE's token
+  table to the class the game builds for it, and found four more keys with
+  the same unchecked lookup. `has_spawned_rebels` and
+  `has_not_spawned_rebels` share `likely_rebels`' reading
+  (`common/rebel_types`), and `has_active_estate_agenda`
+  (`common/estate_agendas`) only compares the pointer when it runs: their
+  tooltips read through it (`unknown-rebel-type`, `unknown-estate-agenda`).
+  `provincial_institution_progress = { which = … }` (`common/institutions`)
+  reads through the missing institution whenever it is evaluated in a
+  province scope, so its warning (`unknown-institution`) also applies inside
+  a `custom_trigger_tooltip`. All four were read in the code, not run in the
+  game. The same reading found the estate privilege, age, opinion, casus
+  belli, reform, mission, edict and modifier keys safe (they log or check),
+  and `has_idea` logs "Invalid idea" but keeps the null pointer, so its
+  tooltip likely crashes after the log line; Etch leaves it out, as the log
+  names it.
+
 - **A warning for a `replace_path` the game mishandles.** A `replace_path` on a
   subfolder of a folder the game lists recursively (`interface/assets`,
   `gfx/entities`, `localisation/english`) makes EU4 1.37.5 skip the files

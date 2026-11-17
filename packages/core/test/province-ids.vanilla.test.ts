@@ -35,6 +35,8 @@ describe.skipIf(gamePath === undefined)('province ids and names of the installed
       policy: 203,
       'rebel-type': 50,
       disaster: 55,
+      institution: 8,
+      'estate-agenda': 322,
     });
     if (ids === undefined) return;
     const { findings, filesChecked } = await findScriptValueProblems(files, { ids, names });
