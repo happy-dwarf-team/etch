@@ -250,7 +250,14 @@ refresh is a step of the 3.0.0 release.
   belli, reform, mission, edict and modifier keys safe (they log or check),
   and `has_idea` logs "Invalid idea" but keeps the null pointer, so its
   tooltip likely crashes after the log line; Etch leaves it out, as the log
-  names it.
+  names it. Over vanilla (8 institutions, 322 estate agendas) the
+  new keys warn about nothing. Over the Workshop items on the lab's disk they
+  find two real mistakes: Anbennar replaces `common/rebel_types` without
+  `lollard_rebels` but its `estate_lowercastes_crush_religious_revolts`
+  agenda still tests `has_spawned_rebels = lollard_rebels` (its `can_select`,
+  which the game evaluates but likely never shows as a tooltip), and
+  3379313816 comments out the `estate_jains_build_trade_building_in_y` agenda
+  but keeps vanilla's scripted trigger that names it.
 
 - **A warning for a `replace_path` the game mishandles.** A `replace_path` on a
   subfolder of a folder the game lists recursively (`interface/assets`,
