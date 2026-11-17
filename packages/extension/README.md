@@ -216,23 +216,26 @@ groups and ideas of your playset's `common/ideas`; names are case-sensitive,
 as in the game. A scripted effect's `$argument$` is not checked, nor are
 triggers such as `has_idea_group`, which the game reports in `error.log`.
 
-For some triggers and effects the game's code reads through a missing name
-only when it builds their tooltip, for example when you hover over a decision
-or an event option that uses them (read in the code, not yet tried in the
-game). Etch warns about their names too, ignoring case and skipping them
-inside a `custom_trigger_tooltip`, which shows its own text: `has_active_policy` and
-`had_active_policy`'s `policy` (`common/policies`), `enable_religion` and
-`num_of_religion`'s `religion` (`common/religions`), `likely_rebels`
+For some triggers and effects the game crashes on a missing name only when it
+builds their tooltip, for example when you hover over a decision or an event
+option that uses them. Etch warns about their names too, ignoring case and
+skipping them inside a `custom_trigger_tooltip`, which shows its own text:
+`has_active_policy` and `had_active_policy`'s `policy` (`common/policies`),
+`enable_religion` (`common/religions`), `likely_rebels`
 (`common/rebel_types`), `has_disaster_progress`'s `disaster`
 (`common/disasters`), `current_icon` (the orthodox icons of
 `common/religions`), `has_spawned_rebels` and `has_not_spawned_rebels`
 (`common/rebel_types`) and `has_active_estate_agenda`
 (`common/estate_agendas`).
 
-`provincial_institution_progress`'s `which` (`common/institutions`) is worse:
-the game's code reads through a missing institution whenever the trigger is
-evaluated in a province, so Etch checks it inside a `custom_trigger_tooltip`
-too.
+`provincial_institution_progress`'s `which` (`common/institutions`) and
+`num_of_religion`'s `religion` (`common/religions`) are worse: the game crashes
+whenever the trigger is evaluated, so Etch checks them inside a
+`custom_trigger_tooltip` too.
+
+Most of these crashes were tried in the game. `remove_idea`,
+`had_active_policy`, `has_spawned_rebels` and `has_not_spawned_rebels` were
+only read in its code, and their warnings say so.
 
 **Etch: Check Province IDs and Names in the Playset** checks every script file
 the playset loads, from all its mods, and lists the lines in the Problems

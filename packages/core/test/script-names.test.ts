@@ -157,7 +157,7 @@ describe('checkScriptNames', () => {
       parseScript('t = { provincial_institution_progress = { which = x value = 1 } }'),
       names(),
     );
-    expect(trigger?.message).toMatch(/: evaluating the trigger in a province reads through/);
+    expect(trigger?.message).toMatch(/: evaluating the trigger crashes the game \(tried in the/);
   });
 
   it('skips the tooltip keys inside a custom_trigger_tooltip, not the effects', () => {
@@ -171,7 +171,10 @@ describe('checkScriptNames', () => {
       '  effect = { custom_trigger_tooltip = { remove_idea = serfdon } }',
       '}',
     ].join('\n');
-    expect(found(text)).toEqual(['remove_idea serfdon unknown-idea']);
+    expect(found(text)).toEqual([
+      'religion y unknown-religion',
+      'remove_idea serfdon unknown-idea',
+    ]);
   });
 
   it('compares the tooltip kinds ignoring case', () => {
@@ -231,17 +234,36 @@ describe('checkScriptNames', () => {
     expect(text.slice(effect?.start, effect?.end)).toBe('"quantity_idea"');
     expect(effect?.message).toBe(
       "No idea group 'quantity_idea' in common/ideas of the playset (names are case-sensitive). " +
-        "The game does not check add_idea_group's idea group or report it in error.log: it " +
-        'crashes when the effect runs or its tooltip is shown.',
+        "The game does not check add_idea_group's idea group or report it in error.log: " +
+        'running the effect crashes the game (tried in the game), and so does showing its tooltip.',
     );
     expect(effect?.severity).toBe('warning');
     const [tooltip] = checkScriptNames(parseScript('t = { current_icon = x }'), names());
     expect(tooltip?.message).toBe(
       "No orthodox icon 'x' in common/religions of the playset. The game does not check " +
-        "current_icon's orthodox icon or report it in error.log: building the tooltip reads " +
-        'through the missing name, for example when a player hovers over the decision, mission ' +
-        "or option that uses it (read in the game's code, not tried in the game).",
+        "current_icon's orthodox icon or report it in error.log: showing the tooltip crashes " +
+        'the game, for example when a player hovers over the decision, mission or option that ' +
+        'uses it (tried in the game).',
     );
+    const [read] = checkScriptNames(parseScript('t = { has_spawned_rebels = x }'), names());
+    expect(read?.message).toMatch(
+      /: showing the tooltip reads through the missing name, .*\(read in the game's code, not tried in the game\)\.$/,
+    );
+  });
+
+  it('says which crashes were only read in the code', () => {
+    const read = [
+      ...[...SCRIPT_NAME_KEYS].filter(([, key]) => !key.seenInGame).map(([name]) => name),
+      ...[...SCRIPT_NAME_MEMBERS].flatMap(([block, members]) =>
+        [...members].filter(([, key]) => !key.seenInGame).map(([name]) => `${block}.${name}`),
+      ),
+    ];
+    expect(read).toEqual([
+      'remove_idea',
+      'has_spawned_rebels',
+      'has_not_spawned_rebels',
+      'had_active_policy.policy',
+    ]);
   });
 
   it('knows these keys and block members', () => {

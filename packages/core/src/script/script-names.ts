@@ -5,16 +5,20 @@
  * `error.log`.
  *
  * - `add_idea_group`, `remove_idea_group` and `remove_idea` crash when the effect runs or its
- *   tooltip is built (the two idea group effects checked in the game on 17.11.2026, `remove_idea`
- *   read in the game's code).
- * - `provincial_institution_progress`'s `which` crashes when the trigger is evaluated in a
- *   province (read in the game's code, not run).
+ *   tooltip is built.
+ * - `provincial_institution_progress`'s `which` and `num_of_religion`'s `religion` crash when the
+ *   trigger is evaluated.
  * - The others crash only when their tooltip or description is built, for example when a player
- *   hovers over a decision, a mission or an event option that uses them (read in the game's code,
- *   not run): the game's `PostValidate` of these keys looks the name up again but logs nothing,
- *   and the validation passes ignore what it returns. Inside a `custom_trigger_tooltip`, which
- *   shows its own text, they are not checked. Their names are compared ignoring case, because
- *   whether these lookups are case-sensitive was not read.
+ *   hovers over a decision, a mission or an event option that uses them: the game's
+ *   `PostValidate` of these keys looks the name up again but logs nothing, and the validation
+ *   passes ignore what it returns. Inside a `custom_trigger_tooltip`, which shows its own text,
+ *   they are not checked. Their names are compared ignoring case, because whether these lookups
+ *   are case-sensitive was not read.
+ *
+ * Each key was read in the game's code, and most were tried in a running game on 17.11.2026 (EU4
+ * engine lab, `docs/script-unchecked-indexes.md`): `seenInGame` tells which, and the message says
+ * so. The decisions that held the tooltip keys in `allow` were evaluated every day without a
+ * crash, until a hover over the tooltip.
  *
  * Keys whose unknown name the game reports (`has_idea_group`'s "Invalid idea group") or replaces
  * with a fallback (`add_idea`'s null idea) are left out.
@@ -40,37 +44,41 @@ export type ScriptNameCrash = 'effect' | 'trigger' | 'tooltip';
 export interface ScriptNameKey {
   readonly kind: ScriptNameKind;
   readonly crash: ScriptNameCrash;
+  /** Whether the crash was seen in a running game, not only read in its code. */
+  readonly seenInGame: boolean;
 }
 
 /** Keys whose value is a name, by key. */
 export const SCRIPT_NAME_KEYS: ReadonlyMap<string, ScriptNameKey> = new Map<string, ScriptNameKey>([
-  ['add_idea_group', { kind: 'idea-group', crash: 'effect' }],
-  ['remove_idea_group', { kind: 'idea-group', crash: 'effect' }],
-  ['remove_idea', { kind: 'idea', crash: 'effect' }],
-  ['has_active_policy', { kind: 'policy', crash: 'tooltip' }],
-  ['enable_religion', { kind: 'religion', crash: 'tooltip' }],
-  ['likely_rebels', { kind: 'rebel-type', crash: 'tooltip' }],
-  ['current_icon', { kind: 'icon', crash: 'tooltip' }],
-  ['has_spawned_rebels', { kind: 'rebel-type', crash: 'tooltip' }],
-  ['has_not_spawned_rebels', { kind: 'rebel-type', crash: 'tooltip' }],
-  ['has_active_estate_agenda', { kind: 'estate-agenda', crash: 'tooltip' }],
+  ['add_idea_group', { kind: 'idea-group', crash: 'effect', seenInGame: true }],
+  ['remove_idea_group', { kind: 'idea-group', crash: 'effect', seenInGame: true }],
+  ['remove_idea', { kind: 'idea', crash: 'effect', seenInGame: false }],
+  ['has_active_policy', { kind: 'policy', crash: 'tooltip', seenInGame: true }],
+  ['enable_religion', { kind: 'religion', crash: 'tooltip', seenInGame: true }],
+  ['likely_rebels', { kind: 'rebel-type', crash: 'tooltip', seenInGame: true }],
+  ['current_icon', { kind: 'icon', crash: 'tooltip', seenInGame: true }],
+  ['has_spawned_rebels', { kind: 'rebel-type', crash: 'tooltip', seenInGame: false }],
+  ['has_not_spawned_rebels', { kind: 'rebel-type', crash: 'tooltip', seenInGame: false }],
+  ['has_active_estate_agenda', { kind: 'estate-agenda', crash: 'tooltip', seenInGame: true }],
 ]);
 
-/** A block member that is a name whose tooltip crashes, by the member's key. */
-function tooltipMember(member: string, kind: ScriptNameKind): ReadonlyMap<string, ScriptNameKey> {
-  return new Map<string, ScriptNameKey>([[member, { kind, crash: 'tooltip' }]]);
+/** A block member that is a name, by the member's key. */
+function member(
+  key: string,
+  kind: ScriptNameKind,
+  crash: ScriptNameCrash,
+  seenInGame: boolean,
+): ReadonlyMap<string, ScriptNameKey> {
+  return new Map<string, ScriptNameKey>([[key, { kind, crash, seenInGame }]]);
 }
 
 /** Members of block triggers whose value is a name, by the block's key and then the member's. */
 export const SCRIPT_NAME_MEMBERS: ReadonlyMap<string, ReadonlyMap<string, ScriptNameKey>> = new Map(
   [
-    ['had_active_policy', tooltipMember('policy', 'policy')],
-    ['has_disaster_progress', tooltipMember('disaster', 'disaster')],
-    ['num_of_religion', tooltipMember('religion', 'religion')],
-    [
-      'provincial_institution_progress',
-      new Map<string, ScriptNameKey>([['which', { kind: 'institution', crash: 'trigger' }]]),
-    ],
+    ['had_active_policy', member('policy', 'policy', 'tooltip', false)],
+    ['has_disaster_progress', member('disaster', 'disaster', 'tooltip', true)],
+    ['num_of_religion', member('religion', 'religion', 'trigger', true)],
+    ['provincial_institution_progress', member('which', 'institution', 'trigger', true)],
   ],
 );
 
@@ -251,13 +259,23 @@ function walk(
   }
 }
 
-/** What the message says happens, by when the name crashes the game. */
-const CRASH_TEXT: Readonly<Record<ScriptNameCrash, string>> = {
-  effect: 'it crashes when the effect runs or its tooltip is shown',
-  trigger:
-    "evaluating the trigger in a province reads through the missing name, and so does its tooltip (read in the game's code, not tried in the game)",
-  tooltip:
-    "building the tooltip reads through the missing name, for example when a player hovers over the decision, mission or option that uses it (read in the game's code, not tried in the game)",
+/**
+ * What the message says happens, by when the name crashes the game and by whether that was seen
+ * in a running game or only read in its code.
+ */
+const CRASH_TEXT: Readonly<Record<ScriptNameCrash, { seen: string; read: string }>> = {
+  effect: {
+    seen: 'running the effect crashes the game (tried in the game), and so does showing its tooltip',
+    read: "running the effect or showing its tooltip reads through the missing name (read in the game's code, not tried in the game)",
+  },
+  trigger: {
+    seen: 'evaluating the trigger crashes the game (tried in the game), and so does showing its tooltip',
+    read: "evaluating the trigger reads through the missing name, and so does showing its tooltip (read in the game's code, not tried in the game)",
+  },
+  tooltip: {
+    seen: 'showing the tooltip crashes the game, for example when a player hovers over the decision, mission or option that uses it (tried in the game)',
+    read: "showing the tooltip reads through the missing name, for example when a player hovers over the decision, mission or option that uses it (read in the game's code, not tried in the game)",
+  },
 };
 
 const lowerCased = new WeakMap<ReadonlySet<string>, ReadonlySet<string>>();
@@ -275,7 +293,7 @@ function lowerCase(set: ReadonlySet<string>): ReadonlySet<string> {
 function check(
   scalar: ScalarNode,
   key: string,
-  { kind, crash }: ScriptNameKey,
+  { kind, crash, seenInGame }: ScriptNameKey,
   names: ScriptNames,
 ): ScriptNameDiagnostic | undefined {
   const name = scalar.text;
@@ -288,7 +306,7 @@ function check(
     caseSensitive: false,
   };
   if (!caseSensitive && lowerCase(known).has(name.toLowerCase())) return undefined;
-  const when = CRASH_TEXT[crash];
+  const when = seenInGame ? CRASH_TEXT[crash].seen : CRASH_TEXT[crash].read;
   return {
     severity: 'warning',
     code: `unknown-${kind}`,
