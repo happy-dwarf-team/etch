@@ -16,9 +16,9 @@
  *   they are not checked. Their names are compared ignoring case, because whether these lookups
  *   are case-sensitive was not read.
  *
- * Each key was read in the game's code, and most were tried in a running game on 17.11.2026 (EU4
- * engine lab, `docs/script-unchecked-indexes.md`): `seenInGame` tells which, and the message says
- * so. The decisions that held the tooltip keys in `allow` showed whether it held without a
+ * Each key was read in the game's code and crashed a running game on 17.11.2026 (EU4 engine lab,
+ * `docs/script-unchecked-indexes.md`); `seenInGame` keeps a key added from a reading alone apart,
+ * and its message says so. The decisions that held the tooltip keys in `allow` showed whether it held without a
  * crash, until a hover over the tooltip.
  *
  * `has_idea` logs "Invalid idea" when the file is read but keeps the missing idea, and building
@@ -57,13 +57,13 @@ export interface ScriptNameKey {
 export const SCRIPT_NAME_KEYS: ReadonlyMap<string, ScriptNameKey> = new Map<string, ScriptNameKey>([
   ['add_idea_group', { kind: 'idea-group', crash: 'effect', seenInGame: true }],
   ['remove_idea_group', { kind: 'idea-group', crash: 'effect', seenInGame: true }],
-  ['remove_idea', { kind: 'idea', crash: 'effect', seenInGame: false }],
+  ['remove_idea', { kind: 'idea', crash: 'effect', seenInGame: true }],
   ['has_active_policy', { kind: 'policy', crash: 'tooltip', seenInGame: true }],
   ['enable_religion', { kind: 'religion', crash: 'tooltip', seenInGame: true }],
   ['likely_rebels', { kind: 'rebel-type', crash: 'tooltip', seenInGame: true }],
   ['current_icon', { kind: 'icon', crash: 'tooltip', seenInGame: true }],
   ['has_spawned_rebels', { kind: 'rebel-type', crash: 'tooltip', seenInGame: true }],
-  ['has_not_spawned_rebels', { kind: 'rebel-type', crash: 'tooltip', seenInGame: false }],
+  ['has_not_spawned_rebels', { kind: 'rebel-type', crash: 'tooltip', seenInGame: true }],
   ['has_active_estate_agenda', { kind: 'estate-agenda', crash: 'tooltip', seenInGame: true }],
   ['has_idea', { kind: 'idea', crash: 'tooltip', seenInGame: true, logged: 'Invalid idea' }],
 ]);
@@ -271,7 +271,7 @@ function walk(
  */
 const CRASH_TEXT: Readonly<Record<ScriptNameCrash, { seen: string; read: string }>> = {
   effect: {
-    seen: 'running the effect crashes the game (tried in the game), and so does showing its tooltip',
+    seen: 'running the effect or showing its tooltip crashes the game (tried in the game)',
     read: "running the effect or showing its tooltip reads through the missing name (read in the game's code, not tried in the game)",
   },
   trigger: {

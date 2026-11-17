@@ -244,7 +244,7 @@ describe('checkScriptNames', () => {
     expect(effect?.message).toBe(
       "No idea group 'quantity_idea' in common/ideas of the playset (names are case-sensitive). " +
         "The game does not check add_idea_group's idea group or report it in error.log: " +
-        'running the effect crashes the game (tried in the game), and so does showing its tooltip.',
+        'running the effect or showing its tooltip crashes the game (tried in the game).',
     );
     expect(effect?.severity).toBe('warning');
     const [tooltip] = checkScriptNames(parseScript('t = { current_icon = x }'), names());
@@ -254,20 +254,16 @@ describe('checkScriptNames', () => {
         'the game, for example when a player hovers over the decision, mission or option that ' +
         'uses it (tried in the game).',
     );
-    const [read] = checkScriptNames(parseScript('t = { has_not_spawned_rebels = x }'), names());
-    expect(read?.message).toMatch(
-      /: showing the tooltip reads through the missing name, .*\(read in the game's code, not tried in the game\)\.$/,
-    );
   });
 
-  it('says which crashes were only read in the code', () => {
+  it('has every crash tried in the game', () => {
     const read = [
       ...[...SCRIPT_NAME_KEYS].filter(([, key]) => !key.seenInGame).map(([name]) => name),
       ...[...SCRIPT_NAME_MEMBERS].flatMap(([block, members]) =>
         [...members].filter(([, key]) => !key.seenInGame).map(([name]) => `${block}.${name}`),
       ),
     ];
-    expect(read).toEqual(['remove_idea', 'has_not_spawned_rebels']);
+    expect(read).toEqual([]);
   });
 
   it('knows these keys and block members', () => {
