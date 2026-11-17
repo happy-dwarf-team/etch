@@ -179,6 +179,31 @@ refresh is a step of the 3.0.0 release.
   province). Vanilla and the 66 Workshop items have no negative value on these
   keys, and the members add no warning over them.
 
+- **Names that crash the game (anvil#426 follow-up).** EU4 1.37.5 looks up
+  the idea group of `add_idea_group` and `remove_idea_group` once, when it
+  reads the file, and keeps the result without a check; the effect, run or
+  shown in a tooltip, then calls into a null pointer. In the lab's game
+  (17 November 2026, Russia 1719 save, a test event fired from the console)
+  `add_idea_group = maritime_ideas` ran, `add_idea_group` and
+  `remove_idea_group` with an undefined group crashed with an access
+  violation at address 0, and `error.log` had no line for either, while
+  `has_idea_group` with the same name logged `Invalid idea group for
+  idea_group trigger`. `remove_idea` keeps an unknown idea the same way (read
+  in the game's code, not run); `add_idea` falls back to a null idea and is
+  safe. Etch warns (`unknown-idea-group`, `unknown-idea`) about a value of
+  these effects that the top-level blocks of the playset's winning
+  `common/ideas` files, or their ideas, do not name, compared
+  case-sensitively as the game's lookup does; a value with `$` (a scripted
+  effect's argument) is skipped. The warnings share the province id check's
+  files, live diagnostics and playset command, renamed **Etch: Check
+  Province IDs and Names in the Playset**. Over vanilla (555 idea groups,
+  3788 ideas; no file uses the three effects) and the 67 Workshop items on
+  the lab's disk (25 uses, 21 of them in Anbennar) it warns about nothing.
+  The same reading found tooltip-only crashes on unknown names of
+  `has_active_policy`, `had_active_policy`, `enable_religion`,
+  `likely_rebels`, `has_disaster_progress`, `current_icon` and
+  `num_of_religion`; they are not checked yet.
+
 - **A warning for a `replace_path` the game mishandles.** A `replace_path` on a
   subfolder of a folder the game lists recursively (`interface/assets`,
   `gfx/entities`, `localisation/english`) makes EU4 1.37.5 skip the files

@@ -1,0 +1,135 @@
+import { readFile } from 'node:fs/promises';
+import { decodeGameText } from '../game-text.ts';
+import { parseScript } from '../script/parse.ts';
+import {
+  checkDefaultMap,
+  checkProvinceIds,
+  isProvinceIdScriptPath,
+  type ProvinceIdDiagnostic,
+  type ProvinceIds,
+} from '../script/province-ids.ts';
+import {
+  checkScriptNames,
+  readIdeaNames,
+  type ScriptNameDiagnostic,
+  type ScriptNames,
+} from '../script/script-names.ts';
+import type { ParsedScript } from '../script/tree.ts';
+import type { GameFile, GameFiles } from './game-files.ts';
+import { definedIds, type PlaysetProvinceIds } from './province-ids.ts';
+
+/** A script value the game uses unchecked and the playset does not have. */
+export type ScriptValueDiagnostic = ProvinceIdDiagnostic | ScriptNameDiagnostic;
+
+/** What script values are checked against; a check without its part is skipped. */
+export interface ScriptValues {
+  /** The map's province ids, when the playset has a map. */
+  readonly ids?: ProvinceIds | undefined;
+  /** The names the playset defines, when it has them. */
+  readonly names?: ScriptNames | undefined;
+}
+
+/** A script file's text as the game reads it: Windows-1252, without a leading UTF-8 BOM. */
+function decode(bytes: Uint8Array): string {
+  return decodeGameText(bytes, 'interface').text;
+}
+
+/**
+ * The province ids and names in a parsed script file that the playset does not have, in text
+ * order. `path` is the file's game-relative path (see `checkProvinceIds`).
+ */
+export function checkScriptValues(
+  parsed: ParsedScript,
+  values: ScriptValues,
+  path?: string,
+): ScriptValueDiagnostic[] {
+  const found: ScriptValueDiagnostic[] = [];
+  if (values.ids !== undefined) found.push(...checkProvinceIds(parsed, values.ids, path));
+  if (values.names !== undefined) found.push(...checkScriptNames(parsed, values.names));
+  return found.sort((a, b) => a.start - b.start);
+}
+
+/**
+ * The idea groups and ideas of the playset: the top-level blocks of the winning `common/ideas`
+ * files and their ideas. `undefined` when no layer has a file there.
+ */
+export async function loadScriptNames(files: GameFiles): Promise<ScriptNames | undefined> {
+  const ideaFiles = await files.list('common/ideas', '.txt');
+  if (ideaFiles.length === 0) return undefined;
+  const ideaGroups = new Set<string>();
+  const ideas = new Set<string>();
+  for (const file of ideaFiles) {
+    const bytes = await readFile(file.absolutePath).catch(() => undefined);
+    if (bytes !== undefined) readIdeaNames(parseScript(decode(bytes)), { ideaGroups, ideas });
+  }
+  return { ideaGroups, ideas, source: 'common/ideas of the playset' };
+}
+
+/** A file of the playset with script values it does not have. */
+export interface ScriptValueFinding {
+  readonly file: GameFile;
+  /** The file's text as the game reads it (Windows-1252, no BOM), which the ranges index. */
+  readonly text: string;
+  readonly diagnostics: readonly ScriptValueDiagnostic[];
+}
+
+/** The folders whose `.txt` files, subfolders included, the playset check reads. */
+const SCRIPT_FOLDERS: readonly string[] = ['common', 'events', 'decisions', 'missions', 'history'];
+
+/** How many files are read at once. */
+const READ_AHEAD = 16;
+
+/**
+ * Every province id and name in the script files the playset loads (the winning copy of each file
+ * under `common`, `events`, `decisions`, `missions` and `history`) and every province id in the
+ * lists of its `map/default.map` that the playset does not have, by file in path order. Files a
+ * later layer overrides or a `replace_path` hides are not read: the game does not load them.
+ */
+export async function findScriptValueProblems(
+  files: GameFiles,
+  values: {
+    readonly ids?: PlaysetProvinceIds | undefined;
+    readonly names?: ScriptNames | undefined;
+  },
+): Promise<{ findings: ScriptValueFinding[]; filesChecked: number }> {
+  const scripts: GameFile[] = [];
+  for (const folder of SCRIPT_FOLDERS) scripts.push(...(await filesUnder(files, folder)));
+  const checked = scripts.filter((file) => isProvinceIdScriptPath(file.path));
+  const findings: ScriptValueFinding[] = [];
+  for (let i = 0; i < checked.length; i += READ_AHEAD) {
+    const batch = checked.slice(i, i + READ_AHEAD);
+    // A file deleted or locked since the listing is skipped, as the game would not read it either.
+    const texts = await Promise.all(
+      batch.map((file) => readFile(file.absolutePath).catch(() => undefined)),
+    );
+    batch.forEach((file, j) => {
+      const bytes = texts[j];
+      if (bytes === undefined) return;
+      const text = decode(bytes);
+      const diagnostics = checkScriptValues(parseScript(text), values, file.path);
+      if (diagnostics.length > 0) findings.push({ file, text, diagnostics });
+    });
+  }
+  let filesChecked = checked.length;
+  if (values.ids !== undefined) {
+    const mapText = decode(await readFile(values.ids.mapFile.absolutePath));
+    const mapDiagnostics = checkDefaultMap(parseScript(mapText), definedIds(values.ids));
+    if (mapDiagnostics.length > 0) {
+      findings.push({ file: values.ids.mapFile, text: mapText, diagnostics: mapDiagnostics });
+    }
+    filesChecked++;
+  }
+  findings.sort((a, b) => compareText(a.file.path.toLowerCase(), b.file.path.toLowerCase()));
+  return { findings, filesChecked };
+}
+
+/** The `.txt` files of a folder and its subfolders, as the playset wins them. */
+async function filesUnder(files: GameFiles, folder: string): Promise<GameFile[]> {
+  const found = await files.list(folder, '.txt');
+  for (const sub of await files.folders(folder)) found.push(...(await filesUnder(files, sub)));
+  return found;
+}
+
+function compareText(a: string, b: string): number {
+  return a < b ? -1 : a > b ? 1 : 0;
+}
