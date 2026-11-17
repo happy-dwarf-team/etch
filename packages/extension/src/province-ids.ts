@@ -2,9 +2,9 @@
 // `owns = 5075`, a `5075 = { … }` scope and the other keys `PROVINCE_ID_KEYS` lists, against the
 // `max_provinces` of the playset's `map/default.map` (a mod's when it has one) and its
 // `map/definition.csv`, and on the names `SCRIPT_NAME_KEYS` and `SCRIPT_NAME_MEMBERS` list
-// (`add_idea_group = …`, `has_active_policy = …`) that the playset does not define, in the open script files. Etch: Check Province IDs and Names in the
-// Playset checks every script file the playset loads, so that a player can find which mod has
-// such a line.
+// (`add_idea_group = …`, `has_active_policy = …`) that the playset does not define, in the open
+// script files. Etch: Check Province IDs and Names in the Playset checks every script file the
+// playset loads, so that a player can find which mod has such a line.
 import { readFile } from 'node:fs/promises';
 import * as vscode from 'vscode';
 import {
@@ -245,8 +245,8 @@ export class ProvinceIdDiagnostics implements vscode.Disposable {
         ? 'no map'
         : `${ids.maxSource} (max_provinces = ${String(ids.maxProvinces)})`,
       names === undefined
-        ? 'no ideas'
-        : `${String([...names.byKind.values()].reduce((sum, set) => sum + set.size, 0))} names`,
+        ? 'no names'
+        : `names (${[...names.byKind].map(([kind, set]) => `${String(set.size)} ${kind}`).join(', ')})`,
     ].join(' and ');
     this.output.info(
       `Province ids and names: ${String(filesChecked)} files checked in ${String(Date.now() - started)} ms against ${against}; ${String(warnings)} values the playset lacks in ${String(findings.length)} files`,

@@ -10,7 +10,9 @@
  * - The others crash only when their tooltip or description is built, for example when a player
  *   hovers over a decision, a mission or an event option that uses them (read in the game's code,
  *   not run): the game's `PostValidate` of these keys looks the name up again but logs nothing,
- *   and the validation passes ignore what it returns.
+ *   and the validation passes ignore what it returns. Inside a `custom_trigger_tooltip`, which
+ *   shows its own text, they are not checked. Their names are compared ignoring case, because
+ *   whether these lookups are case-sensitive was not read.
  *
  * Keys whose unknown name the game reports (`has_idea_group`'s "Invalid idea group") or replaces
  * with a fallback (`add_idea`'s null idea) are left out.
@@ -55,19 +57,25 @@ export const SCRIPT_NAME_MEMBERS: ReadonlyMap<string, ReadonlyMap<string, Script
   ],
 );
 
-/** What a kind is called in messages, and the folder under `common` that defines it. */
+/**
+ * What a kind is called in messages, the folder under `common` that defines it, and whether the
+ * game's lookup was read to be case-sensitive (the others are compared ignoring case).
+ */
 export const SCRIPT_NAME_KINDS: ReadonlyMap<
   ScriptNameKind,
-  { readonly what: string; readonly folder: string }
+  { readonly what: string; readonly folder: string; readonly caseSensitive: boolean }
 > = new Map([
-  ['idea-group', { what: 'idea group', folder: 'common/ideas' }],
-  ['idea', { what: 'idea', folder: 'common/ideas' }],
-  ['policy', { what: 'policy', folder: 'common/policies' }],
-  ['religion', { what: 'religion', folder: 'common/religions' }],
-  ['rebel-type', { what: 'rebel type', folder: 'common/rebel_types' }],
-  ['disaster', { what: 'disaster', folder: 'common/disasters' }],
-  ['icon', { what: 'orthodox icon', folder: 'common/religions' }],
+  ['idea-group', { what: 'idea group', folder: 'common/ideas', caseSensitive: true }],
+  ['idea', { what: 'idea', folder: 'common/ideas', caseSensitive: true }],
+  ['policy', { what: 'policy', folder: 'common/policies', caseSensitive: false }],
+  ['religion', { what: 'religion', folder: 'common/religions', caseSensitive: false }],
+  ['rebel-type', { what: 'rebel type', folder: 'common/rebel_types', caseSensitive: false }],
+  ['disaster', { what: 'disaster', folder: 'common/disasters', caseSensitive: false }],
+  ['icon', { what: 'orthodox icon', folder: 'common/religions', caseSensitive: false }],
 ]);
+
+/** Keys whose block shows its own tooltip instead of its triggers'. */
+const OWN_TOOLTIP_KEYS: ReadonlySet<string> = new Set(['custom_trigger_tooltip']);
 
 /** The names the playset defines, by kind; a kind the playset has no files for is absent. */
 export interface ScriptNames {
@@ -135,8 +143,8 @@ export function readIdeaNames(parsed: ParsedScript, into: ScriptNameSets): void 
 
 /**
  * Adds the religions and orthodox icons of one `common/religions` file: a religion is a block of a
- * top-level religion group that sets `icon`, and an icon is a block of a religion's
- * `orthodox_icons`.
+ * top-level religion group that sets `icon` (every religion of the game and of the Workshop mods
+ * on the lab's disk does), and an icon is a block of a religion's `orthodox_icons`.
  */
 export function readReligionNames(parsed: ParsedScript, into: ScriptNameSets): void {
   const religions = setOf(into, 'religion');
@@ -175,7 +183,7 @@ function isScopeOrVariable(name: string, kind: ScriptNameKind): boolean {
   if (/[$:@[]/.test(name)) return true;
   if (kind !== 'religion') return false;
   return (
-    /^(?:root|this|from+|(?:prev)+|owner|controller|emperor|capital)$/i.test(name) ||
+    /^(?:root|this|(?:prev|from)+|owner|controller|emperor|capital)$/i.test(name) ||
     /^[A-Z][A-Z0-9]{2}$/.test(name)
   );
 }
@@ -186,34 +194,48 @@ function isScopeOrVariable(name: string, kind: ScriptNameKind): boolean {
  */
 export function checkScriptNames(parsed: ParsedScript, names: ScriptNames): ScriptNameDiagnostic[] {
   const found: ScriptNameDiagnostic[] = [];
-  walk(parsed.entries, undefined, names, found);
+  walk(parsed.entries, undefined, false, names, found);
   return found;
 }
 
 function walk(
   entries: readonly EntryNode[],
   members: ReadonlyMap<string, ScriptNameKey> | undefined,
+  ownTooltip: boolean,
   names: ScriptNames,
   found: ScriptNameDiagnostic[],
 ): void {
   for (const entry of entries) {
     if (entry.kind === 'block') {
-      walk(entry.entries, undefined, names, found);
+      walk(entry.entries, undefined, ownTooltip, names, found);
       continue;
     }
     if (entry.kind !== 'property') continue;
     const key = entry.key.text.toLowerCase();
     const value = entry.value;
     if (value?.kind === 'block') {
-      walk(value.entries, SCRIPT_NAME_MEMBERS.get(key), names, found);
+      const inner = ownTooltip || OWN_TOOLTIP_KEYS.has(key);
+      walk(value.entries, SCRIPT_NAME_MEMBERS.get(key), inner, names, found);
       continue;
     }
     if (value?.kind !== 'scalar') continue;
     const nameKey = members?.get(key) ?? SCRIPT_NAME_KEYS.get(key);
-    if (nameKey === undefined) continue;
+    if (nameKey === undefined || (ownTooltip && nameKey.crash === 'tooltip')) continue;
     const problem = check(value, key, nameKey, names);
     if (problem !== undefined) found.push(problem);
   }
+}
+
+const lowerCased = new WeakMap<ReadonlySet<string>, ReadonlySet<string>>();
+
+/** A set's names in lower case, made once per set. */
+function lowerCase(set: ReadonlySet<string>): ReadonlySet<string> {
+  let lower = lowerCased.get(set);
+  if (lower === undefined) {
+    lower = new Set([...set].map((name) => name.toLowerCase()));
+    lowerCased.set(set, lower);
+  }
+  return lower;
 }
 
 function check(
@@ -226,17 +248,22 @@ function check(
   if (name === '' || isScopeOrVariable(name, kind)) return undefined;
   const known = names.byKind.get(kind);
   if (known === undefined || known.has(name)) return undefined;
-  const { what, folder } = SCRIPT_NAME_KINDS.get(kind) ?? { what: kind, folder: 'common' };
+  const { what, folder, caseSensitive } = SCRIPT_NAME_KINDS.get(kind) ?? {
+    what: kind,
+    folder: 'common',
+    caseSensitive: false,
+  };
+  if (!caseSensitive && lowerCase(known).has(name.toLowerCase())) return undefined;
   const when =
     crash === 'effect'
       ? 'it crashes when the effect runs or its tooltip is shown'
-      : 'it crashes if it builds the tooltip, for example when a player hovers over the decision, mission or option that uses it (a custom_trigger_tooltip around it shows its own text instead)';
+      : "building the tooltip reads through the missing name, for example when a player hovers over the decision, mission or option that uses it (read in the game's code, not tried in the game)";
   return {
     severity: 'warning',
     code: `unknown-${kind}`,
     message:
-      `No ${what} '${name}' in ${folder} of the playset (names are case-sensitive). The game ` +
-      `does not check ${key}'s ${what} or report it in error.log: ${when}.`,
+      `No ${what} '${name}' in ${folder} of the playset${caseSensitive ? ' (names are case-sensitive)' : ''}. ` +
+      `The game does not check ${key}'s ${what} or report it in error.log: ${when}.`,
     name,
     key,
     start: scalar.start,

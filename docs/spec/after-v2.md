@@ -221,14 +221,16 @@ refresh is a step of the 3.0.0 release.
   `unknown-icon`), each kind only when the playset has files in its folder;
   `num_of_religion`'s `religion` may be a scope (`ROOT`, `FROM`, a tag),
   which is skipped. The tooltip path was read in the code, not run in the
-  game. Over vanilla (203 policies, 28 religions, 5 icons, 50 rebel types,
-  55 disasters) it warns about nothing; over the 67 Workshop items on the
-  lab's disk, each with the game and Anbennar for its submods, it warns only
-  about Anbennar's `has_orthodox_religious_icon_trigger` (and a submod's copy
-  of it), which still names the five vanilla icons that Anbennar's religions
-  no longer define. That trigger sits in a `custom_trigger_tooltip`, which
-  shows its own text, so the name can never match but the tooltip likely
-  never builds.
+  game, and whether these lookups are case-sensitive was not read, so these
+  names are compared ignoring case. Inside a `custom_trigger_tooltip`, which
+  shows its own text instead of its triggers', they are not checked. Over
+  vanilla (203 policies, 28 religions, 5 icons, 50 rebel types, 55
+  disasters) it warns about nothing. Over the 67 Workshop items on the lab's
+  disk, each with the game and Anbennar for its submods, the only names it
+  would flag are in Anbennar's `has_orthodox_religious_icon_trigger` (and a
+  submod's copy of it), which still names the five vanilla icons that
+  Anbennar's religions no longer define; that trigger sits in a
+  `custom_trigger_tooltip`, so it is skipped.
 
 - **A warning for a `replace_path` the game mishandles.** A `replace_path` on a
   subfolder of a folder the game lists recursively (`interface/assets`,

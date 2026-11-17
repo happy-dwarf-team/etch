@@ -128,6 +128,32 @@ describe('checkScriptNames', () => {
     ]);
   });
 
+  it('skips the tooltip keys inside a custom_trigger_tooltip, not the effects', () => {
+    const text = [
+      't = {',
+      '  custom_trigger_tooltip = {',
+      '    tooltip = my_tt',
+      '    OR = { current_icon = icon_nicholas has_active_policy = no_policy }',
+      '  }',
+      '  custom_trigger_tooltip = { tooltip = x num_of_religion = { religion = y value = 1 } }',
+      '  effect = { custom_trigger_tooltip = { remove_idea = serfdon } }',
+      '}',
+    ].join('\n');
+    expect(found(text)).toEqual(['remove_idea serfdon unknown-idea']);
+  });
+
+  it('compares the tooltip kinds ignoring case', () => {
+    expect(found('t = { enable_religion = Catholic likely_rebels = Nationalist_Rebels }')).toEqual(
+      [],
+    );
+  });
+
+  it('does not take a religion group block without an icon as a religion', () => {
+    expect(found('t = { enable_religion = flag_emblem_index_range }')).toEqual([
+      'enable_religion flag_emblem_index_range unknown-religion',
+    ]);
+  });
+
   it('reads a block member only inside its block', () => {
     expect(found('e = { trigger = { religion = protestant policy = no_policy } }')).toEqual([]);
   });
@@ -147,6 +173,8 @@ describe('checkScriptNames', () => {
       '  num_of_religion = { religion = ROOT value = 1 }',
       '  num_of_religion = { religion = FROM value = 1 }',
       '  num_of_religion = { religion = PREVPREV value = 1 }',
+      '  num_of_religion = { religion = FROMFROM value = 1 }',
+      '  enable_religion = PREVFROM',
       '  num_of_religion = { religion = TUR value = 1 }',
       '}',
     ].join('\n');
@@ -176,8 +204,11 @@ describe('checkScriptNames', () => {
     );
     expect(effect?.severity).toBe('warning');
     const [tooltip] = checkScriptNames(parseScript('t = { current_icon = x }'), names());
-    expect(tooltip?.message).toMatch(
-      /^No orthodox icon 'x' in common\/religions of the playset .*: it crashes if it builds the tooltip/,
+    expect(tooltip?.message).toBe(
+      "No orthodox icon 'x' in common/religions of the playset. The game does not check " +
+        "current_icon's orthodox icon or report it in error.log: building the tooltip reads " +
+        'through the missing name, for example when a player hovers over the decision, mission ' +
+        "or option that uses it (read in the game's code, not tried in the game).",
     );
   });
 
