@@ -285,6 +285,15 @@ refresh is a step of the 3.0.0 release.
   and its warning says the game crashes. The same run confirmed that
   `num_of_religion`'s crash is in `CNumOfReligionTrigger::Evaluate`.
 
+  A third run (`ideagrp-r5`) ran three days with `has_spawned_rebels` and
+  `has_idea` in shown decisions without a crash, then hovered each: both
+  crashed the game, `has_spawned_rebels` where `likely_rebels` does
+  (`eu4.exe+0xA91163`) and `has_idea` in its tooltip (`eu4.exe+0xC0EB2D`, a
+  read of `0x0`), after its "Invalid idea" line in `error.log`. Etch now warns
+  about `has_idea` too, naming that log line, since the line does not say the
+  game will crash. `has_spawned_rebels`' warning says it was tried; only
+  `remove_idea` and `has_not_spawned_rebels` stay read in the code.
+
 - **A warning for a `replace_path` the game mishandles.** A `replace_path` on a
   subfolder of a folder the game lists recursively (`interface/assets`,
   `gfx/entities`, `localisation/english`) makes EU4 1.37.5 skip the files

@@ -21,8 +21,10 @@
  * so. The decisions that held the tooltip keys in `allow` showed whether it held without a
  * crash, until a hover over the tooltip.
  *
- * Keys whose unknown name the game reports (`has_idea_group`'s "Invalid idea group") or replaces
- * with a fallback (`add_idea`'s null idea) are left out.
+ * `has_idea` logs "Invalid idea" when the file is read but keeps the missing idea, and building
+ * its tooltip crashes the game: its warning names the log line. Keys whose unknown name the game
+ * reports and then handles (`has_idea_group`'s "Invalid idea group") or replaces with a fallback
+ * (`add_idea`'s null idea) are left out.
  */
 import type { EntryNode, ParsedScript, ScalarNode, SourceRange } from './tree.ts';
 
@@ -47,6 +49,8 @@ export interface ScriptNameKey {
   readonly crash: ScriptNameCrash;
   /** Whether the crash was seen in a running game, not only read in its code. */
   readonly seenInGame: boolean;
+  /** What the game logs in error.log for the missing name before it crashes, if anything. */
+  readonly logged?: string;
 }
 
 /** Keys whose value is a name, by key. */
@@ -58,9 +62,10 @@ export const SCRIPT_NAME_KEYS: ReadonlyMap<string, ScriptNameKey> = new Map<stri
   ['enable_religion', { kind: 'religion', crash: 'tooltip', seenInGame: true }],
   ['likely_rebels', { kind: 'rebel-type', crash: 'tooltip', seenInGame: true }],
   ['current_icon', { kind: 'icon', crash: 'tooltip', seenInGame: true }],
-  ['has_spawned_rebels', { kind: 'rebel-type', crash: 'tooltip', seenInGame: false }],
+  ['has_spawned_rebels', { kind: 'rebel-type', crash: 'tooltip', seenInGame: true }],
   ['has_not_spawned_rebels', { kind: 'rebel-type', crash: 'tooltip', seenInGame: false }],
   ['has_active_estate_agenda', { kind: 'estate-agenda', crash: 'tooltip', seenInGame: true }],
+  ['has_idea', { kind: 'idea', crash: 'tooltip', seenInGame: true, logged: 'Invalid idea' }],
 ]);
 
 /** A block member that is a name, by the member's key. */
@@ -294,7 +299,7 @@ function lowerCase(set: ReadonlySet<string>): ReadonlySet<string> {
 function check(
   scalar: ScalarNode,
   key: string,
-  { kind, crash, seenInGame }: ScriptNameKey,
+  { kind, crash, seenInGame, logged }: ScriptNameKey,
   names: ScriptNames,
 ): ScriptNameDiagnostic | undefined {
   const name = scalar.text;
@@ -313,7 +318,9 @@ function check(
     code: `unknown-${kind}`,
     message:
       `No ${what} '${name}' in ${folder} of the playset${caseSensitive ? ' (names are case-sensitive)' : ''}. ` +
-      `The game does not check ${key}'s ${what} or report it in error.log: ${when}.`,
+      (logged === undefined
+        ? `The game does not check ${key}'s ${what} or report it in error.log: ${when}.`
+        : `The game logs "${logged}" in error.log for ${key}'s ${what} but keeps the missing name: ${when}.`),
     name,
     key,
     start: scalar.start,

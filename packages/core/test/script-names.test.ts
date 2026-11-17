@@ -218,9 +218,16 @@ describe('checkScriptNames', () => {
     expect(found(text)).toEqual([]);
   });
 
-  it('skips the triggers that log an unknown name', () => {
+  it('skips has_idea_group, which logs an unknown name, and names the log line of has_idea', () => {
     const text = 'e = { trigger = { has_idea_group = no_such_ideas has_idea = no_such_idea } }';
-    expect(found(text)).toEqual([]);
+    expect(found(text)).toEqual(['has_idea no_such_idea unknown-idea']);
+    const [logged] = checkScriptNames(parseScript(text), names());
+    expect(logged?.message).toBe(
+      "No idea 'no_such_idea' in common/ideas of the playset (names are case-sensitive). The " +
+        'game logs "Invalid idea" in error.log for has_idea\'s idea but keeps the missing name: ' +
+        'showing the tooltip crashes the game, for example when a player hovers over the ' +
+        'decision, mission or option that uses it (tried in the game).',
+    );
   });
 
   it('does not check a kind the playset has no files for', () => {
@@ -247,7 +254,7 @@ describe('checkScriptNames', () => {
         'the game, for example when a player hovers over the decision, mission or option that ' +
         'uses it (tried in the game).',
     );
-    const [read] = checkScriptNames(parseScript('t = { has_spawned_rebels = x }'), names());
+    const [read] = checkScriptNames(parseScript('t = { has_not_spawned_rebels = x }'), names());
     expect(read?.message).toMatch(
       /: showing the tooltip reads through the missing name, .*\(read in the game's code, not tried in the game\)\.$/,
     );
@@ -260,7 +267,7 @@ describe('checkScriptNames', () => {
         [...members].filter(([, key]) => !key.seenInGame).map(([name]) => `${block}.${name}`),
       ),
     ];
-    expect(read).toEqual(['remove_idea', 'has_spawned_rebels', 'has_not_spawned_rebels']);
+    expect(read).toEqual(['remove_idea', 'has_not_spawned_rebels']);
   });
 
   it('knows these keys and block members', () => {
@@ -275,6 +282,7 @@ describe('checkScriptNames', () => {
       'has_spawned_rebels',
       'has_not_spawned_rebels',
       'has_active_estate_agenda',
+      'has_idea',
     ]);
     expect([...SCRIPT_NAME_MEMBERS.keys()]).toEqual([
       'had_active_policy',
