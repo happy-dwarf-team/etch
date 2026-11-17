@@ -168,11 +168,13 @@ describe('checkScriptNames', () => {
       '    OR = { current_icon = icon_nicholas has_active_policy = no_policy }',
       '  }',
       '  custom_trigger_tooltip = { tooltip = x num_of_religion = { religion = y value = 1 } }',
+      '  custom_trigger_tooltip = { tooltip = x had_active_policy = { policy = z days = 1 } }',
       '  effect = { custom_trigger_tooltip = { remove_idea = serfdon } }',
       '}',
     ].join('\n');
     expect(found(text)).toEqual([
       'religion y unknown-religion',
+      'policy z unknown-policy',
       'remove_idea serfdon unknown-idea',
     ]);
   });
@@ -258,12 +260,7 @@ describe('checkScriptNames', () => {
         [...members].filter(([, key]) => !key.seenInGame).map(([name]) => `${block}.${name}`),
       ),
     ];
-    expect(read).toEqual([
-      'remove_idea',
-      'has_spawned_rebels',
-      'has_not_spawned_rebels',
-      'had_active_policy.policy',
-    ]);
+    expect(read).toEqual(['remove_idea', 'has_spawned_rebels', 'has_not_spawned_rebels']);
   });
 
   it('knows these keys and block members', () => {

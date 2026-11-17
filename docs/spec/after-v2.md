@@ -263,11 +263,12 @@ refresh is a step of the 3.0.0 release.
   each kind in a running EU4 1.37.5 on 17 November 2026 (a test mod on the
   Russia save of 17 March 1719, Anvil with Tongs; `docs/script-unchecked-indexes.md`
   in the lab has the crash addresses). Each country decision held one unknown
-  name in `allow`, so the game evaluated it every day, and a hover over the
-  decision's tooltip built it. Every key tried crashed the game with nothing in
-  `error.log`: `has_active_policy`, `likely_rebels`, `has_disaster_progress`'s
-  `disaster`, `current_icon` and `has_active_estate_agenda` on the hover, after
-  days of evaluation without a crash; `enable_religion` on a hover over the
+  name in `allow`, which the decisions view evaluates while it shows the
+  decision, and a hover over the decision's tooltip built it. Every key tried
+  crashed the game with nothing in `error.log`: `has_active_policy`,
+  `likely_rebels`, `has_disaster_progress`'s `disaster`, `current_icon` and
+  `has_active_estate_agenda` on the hover, after the view had shown whether
+  `allow` held without a crash; `enable_religion` on a hover over the
   event option; `add_idea_group`, `remove_idea_group` and
   `provincial_institution_progress`'s `which` when they ran. `num_of_religion`'s
   `religion` crashed on evaluation, before any hover, so it moves to the
@@ -275,6 +276,14 @@ refresh is a step of the 3.0.0 release.
   warnings of the keys tried now say the game crashes; `remove_idea`,
   `had_active_policy`, `has_spawned_rebels` and `has_not_spawned_rebels` were
   not tried, and their warnings still say they were only read in the code.
+
+  A second run that day let the game run a day and found one more:
+  `had_active_policy`'s `policy` crashed the game in
+  `CHadActivePolicyTrigger::Evaluate` on the first day, in a decision's `allow`
+  that no country could take (its `potential` needs a flag no country had), so
+  the game evaluates such an `allow` every day. It moves to the trigger keys,
+  and its warning says the game crashes. The same run confirmed that
+  `num_of_religion`'s crash is in `CNumOfReligionTrigger::Evaluate`.
 
 - **A warning for a `replace_path` the game mishandles.** A `replace_path` on a
   subfolder of a folder the game lists recursively (`interface/assets`,
