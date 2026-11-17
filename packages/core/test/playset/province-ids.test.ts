@@ -2,7 +2,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   GameFiles,
-  findProvinceIdProblems,
+  findScriptValueProblems,
   loadProvinceIds,
   type GameFilesLayer,
 } from '../../src/playset/index.ts';
@@ -79,11 +79,11 @@ describe('province ids of a playset', () => {
     const files = playset(otherMod());
     const ids = await loadProvinceIds(files);
     if (ids === undefined) throw new Error('no map');
-    const { findings, filesChecked } = await findProvinceIdProblems(files, ids);
+    const { findings, filesChecked } = await findScriptValueProblems(files, { ids });
     const summary = findings.map((finding) => [
       finding.file.layer.name,
       finding.file.path,
-      finding.diagnostics.map((d) => `${d.key} ${String(d.id)} ${d.code}`),
+      finding.diagnostics.map((d) => `${d.key} ${String('id' in d ? d.id : d.name)} ${d.code}`),
     ]);
     expect(summary).toEqual([
       ['Other', 'common/scripted_effects/fx.txt', ['fx 25 province-id-out-of-range']],
@@ -116,9 +116,11 @@ describe('province ids of a playset', () => {
     const files = playset({ name: 'Bom', root: join(root, 'bom'), replacePaths: [] });
     const ids = await loadProvinceIds(files);
     if (ids === undefined) throw new Error('no map');
-    const { findings } = await findProvinceIdProblems(files, ids);
+    const { findings } = await findScriptValueProblems(files, { ids });
     const bom = findings.find((finding) => finding.file.path === 'history/countries/X.txt');
-    expect(bom?.diagnostics.map((d) => `${d.key} ${String(d.id)}`)).toEqual(['capital 50']);
+    expect(bom?.diagnostics.map((d) => `${d.key} ${String('id' in d ? d.id : d.name)}`)).toEqual([
+      'capital 50',
+    ]);
     expect(bom?.text.slice(bom.diagnostics[0]?.start, bom.diagnostics[0]?.end)).toBe('50');
   });
 
@@ -126,10 +128,10 @@ describe('province ids of a playset', () => {
     const files = playset(mapMod(), otherMod());
     const ids = await loadProvinceIds(files);
     if (ids === undefined) throw new Error('no map');
-    const { findings } = await findProvinceIdProblems(files, ids);
+    const { findings } = await findScriptValueProblems(files, { ids });
     const summary = findings.map((finding) => [
       finding.file.path,
-      finding.diagnostics.map((d) => `${d.key} ${String(d.id)} ${d.code}`),
+      finding.diagnostics.map((d) => `${d.key} ${String('id' in d ? d.id : d.name)} ${d.code}`),
     ]);
     expect(summary).toEqual([
       ['common/scripted_effects/fx.txt', ['fx 25 province-id-out-of-range']],

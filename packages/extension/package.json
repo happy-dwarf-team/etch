@@ -187,7 +187,7 @@
       },
       {
         "command": "etch.checkProvinceIds",
-        "title": "Check Province IDs in the Playset",
+        "title": "Check Province IDs and Names in the Playset",
         "category": "Etch"
       },
       {

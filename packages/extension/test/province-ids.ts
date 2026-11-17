@@ -1,6 +1,6 @@
-// Province id warnings in a real VS Code (anvil#426): an open event file against the game folder's
-// map, and Etch: Check Province IDs in the Playset on a file that is not open (no workspace folder
-// is open in the test, so the playset is the game folder that etch.gamePath names).
+// Province id and name warnings in a real VS Code (anvil#426): an open event file against the game
+// folder's map, and Etch: Check Province IDs and Names in the Playset on files that are not open (no
+// workspace folder is open in the test, so the playset is the game folder that etch.gamePath names).
 import * as assert from 'node:assert/strict';
 import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -52,6 +52,12 @@ export async function testProvinceIds(): Promise<void> {
     'common/scripted_effects/fx.txt',
     'fx = {\n\t3 = { add_core = ROOT }\n}\n',
   );
+  await write(game, 'common/ideas/ideas.txt', 'quantity_ideas = {\n\tlevee_en_masse = { }\n}\n');
+  const ideas = await write(
+    game,
+    'events/ideas.txt',
+    'e = {\n\timmediate = { add_idea_group = quantity_idea remove_idea = levee_en_masse }\n}\n',
+  );
 
   const settings = vscode.workspace.getConfiguration('etch');
   await settings.update('gamePath', game, vscode.ConfigurationTarget.Global);
@@ -100,6 +106,12 @@ export async function testProvinceIds(): Promise<void> {
       (found) => found.length > 0,
     );
     assert.match(lake?.message ?? '', /^Province 4 is not in map\/definition\.csv/);
+    // An idea group the playset does not define, from the same check.
+    const [group, ...rest] = await diagnosticsOf(ideas, (found) => found.length > 0);
+    assert.deepEqual(rest, []);
+    assert.equal(group?.code, 'unknown-idea-group');
+    assert.deepEqual([group.range.start.line, group.range.start.character], [1, 32]);
+    assert.match(group.message, /^No idea group 'quantity_idea' in common\/ideas of the playset/);
   } finally {
     await vscode.commands.executeCommand('workbench.action.files.revert');
     await settings.update('gamePath', undefined, vscode.ConfigurationTarget.Global);

@@ -194,7 +194,7 @@ owner gives its triggers' and effects' time and calls (a scripted trigger's
 from all its uses), and opens the profile. **Etch: Hide the Script Profile in
 Script Files** takes them away.
 
-## Province IDs
+## Province IDs and names
 
 A script that names a province the map does not have, such as `owns = 5075`
 or `5075 = { … }` on the 4941 provinces of EU4 1.37.5, gets no line in the
@@ -207,9 +207,18 @@ missions, `common` and `history`): the province triggers and effects (`owns`,
 negative id such as `owns = -1` is flagged too: the game keeps the sign.
 The map is your playset's: `max_provinces` of `map/default.map`, a mod's when
 it has its own, and the provinces its `map/definition.csv` lists. An id written
-as a tag, a scope or a variable is not checked. **Etch: Check Province IDs in
-the Playset** checks every script file the playset loads, from all its mods,
-and lists the lines in the Problems panel, so you can find which mod has one.
+as a tag, a scope or a variable is not checked.
+
+A few effects crash the game the same silent way on a name the playset does
+not define: `add_idea_group` and `remove_idea_group` on an idea group, and
+`remove_idea` on an idea. Etch warns about such a name against the idea
+groups and ideas of your playset's `common/ideas`; names are case-sensitive,
+as in the game. A scripted effect's `$argument$` is not checked, nor are
+triggers such as `has_idea_group`, which the game reports in `error.log`.
+
+**Etch: Check Province IDs and Names in the Playset** checks every script file
+the playset loads, from all its mods, and lists the lines in the Problems
+panel, so you can find which mod has one.
 
 ## Etch 1.x
 
