@@ -246,6 +246,16 @@ lines, as the game reads it.
 the playset loads, from all its mods, and lists the lines in the Problems
 panel, so you can find which mod has one.
 
+## Encoding
+
+The game reads interface files and the script files of `common`, `events`,
+`decisions`, `missions` and `history` as Windows-1252, and localisation as
+UTF-8 with BOM. Where the next save would make the game read other characters
+than the editor shows, such as a leader's name `é` saved as UTF-8, which the
+game shows as `Ã©`, Etch warns and offers to reopen the file in the encoding
+the game expects. A script file's comments are skipped: the game does not read
+them.
+
 ## Etch 1.x
 
 Etch 2.0.0 replaced 1.x's game host and its diff view with the live game. To

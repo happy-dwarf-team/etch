@@ -5,8 +5,12 @@
 
 import { decodeWindows1252, encodeWindows1252 } from './windows-1252.ts';
 
-/** Interface files are read as Windows-1252, localisation as UTF-8. */
-export type GameTextKind = 'interface' | 'localisation';
+/**
+ * Interface and script files are read as Windows-1252, localisation as UTF-8.
+ * `script` is a `.txt` file of `common`, `events`, `decisions`, `missions` or
+ * `history`, whose names and texts the game shows as it reads them.
+ */
+export type GameTextKind = 'interface' | 'localisation' | 'script';
 
 /**
  * Which kind of game text a file holds, by its path: `.gui`, `.gfx` and `.fnt`
@@ -21,6 +25,32 @@ export function gameTextKind(path: string): GameTextKind | undefined {
   }
   if (name.endsWith('.yml') && segments.includes('localisation')) {
     return 'localisation';
+  }
+  return undefined;
+}
+
+/** The folders whose `.txt` files are script files. */
+const SCRIPT_FOLDERS: ReadonlySet<string> = new Set([
+  'common',
+  'events',
+  'decisions',
+  'missions',
+  'history',
+]);
+
+/**
+ * Which kind of game text Etch checks the encoding of, by a file's path: the
+ * kinds of {@link gameTextKind}, and `script` for a `.txt` file inside a
+ * `common`, `events`, `decisions`, `missions` or `history` folder. The
+ * preview reads only the kinds of `gameTextKind`.
+ */
+export function checkedTextKind(path: string): GameTextKind | undefined {
+  const kind = gameTextKind(path);
+  if (kind !== undefined) return kind;
+  const segments = path.toLowerCase().split(/[\\/]/);
+  const name = segments.pop() ?? '';
+  if (name.endsWith('.txt') && segments.some((segment) => SCRIPT_FOLDERS.has(segment))) {
+    return 'script';
   }
   return undefined;
 }
@@ -46,7 +76,7 @@ export function decodeGameText(bytes: Uint8Array, kind: GameTextKind): GameText 
 }
 
 function decode(bytes: Uint8Array, kind: GameTextKind): string {
-  return kind === 'interface' ? decodeWindows1252(bytes) : UTF8.decode(bytes);
+  return kind === 'localisation' ? UTF8.decode(bytes) : decodeWindows1252(bytes);
 }
 
 /** How the next save from the editor writes a document. */
@@ -224,7 +254,15 @@ export function diagnoseGameText(
     });
   }
 
+  const comments = kind === 'script' ? commentRanges(text) : [];
+  let comment = 0;
   for (const range of nonAsciiRuns(text)) {
+    // The game skips a script file's comments, so what it reads there does not matter.
+    while ((comments[comment]?.end ?? Infinity) <= range.start) comment++;
+    const inComment = comments[comment];
+    if (inComment !== undefined && inComment.start <= range.start && range.end <= inComment.end) {
+      continue;
+    }
     const editor = text.slice(range.start, range.end);
     // Not decodeGameText: a U+FEFF inside the text is no byte order mark.
     const game = decode(encoding.encode(editor), kind);
@@ -243,6 +281,35 @@ export function diagnoseGameText(
     }
   }
   return diagnostics;
+}
+
+/**
+ * The comments of a script file: from a `#` outside a quoted string to the
+ * line end. A quoted string runs to the next quote, across lines, as the
+ * game reads it, and a `#` inside one starts no comment.
+ */
+function commentRanges(text: string): TextRange[] {
+  const ranges: TextRange[] = [];
+  for (let i = 0; i < text.length; i++) {
+    const c = text.charCodeAt(i);
+    if (c === 0x22) {
+      // One that never closes ends at its line end, as the parser reads it.
+      const close = text.indexOf('"', i + 1);
+      i = close >= 0 ? close : lineEnd(text, i);
+    } else if (c === 0x23) {
+      const end = lineEnd(text, i);
+      ranges.push({ start: i, end });
+      i = end;
+    }
+  }
+  return ranges;
+}
+
+/** The offset of the line break that ends the line of an offset, or the text's length. */
+function lineEnd(text: string, from: number): number {
+  let end = from;
+  while (end < text.length && text[end] !== '\n' && text[end] !== '\r') end++;
+  return end;
 }
 
 /**

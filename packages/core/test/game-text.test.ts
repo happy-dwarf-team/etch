@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   builtInSaveEncoding,
+  checkedTextKind,
   decodeGameText,
   diagnoseGameText,
   encodeForSave,
@@ -33,6 +34,19 @@ describe('gameTextKind', () => {
     expect(gameTextKind('/mod/Localisation/replace/x_l_english.yml')).toBe('localisation');
     expect(gameTextKind('/mod/.github/workflows/build.yml')).toBeUndefined();
     expect(gameTextKind('/mod/common/ideas/00_ideas.txt')).toBeUndefined();
+  });
+});
+
+describe('checkedTextKind', () => {
+  it('adds script files to the kinds the preview reads', () => {
+    expect(checkedTextKind('C:\\mod\\interface\\topbar.gui')).toBe('interface');
+    expect(checkedTextKind('/mod/localisation/mod_l_english.yml')).toBe('localisation');
+    expect(checkedTextKind('/mod/common/countries/Sweden.txt')).toBe('script');
+    expect(checkedTextKind('C:\\mod\\History\\provinces\\1 - Uppland.TXT')).toBe('script');
+    expect(checkedTextKind('/mod/events/flavor.txt')).toBe('script');
+    expect(checkedTextKind('/mod/notes/readme.txt')).toBeUndefined();
+    expect(checkedTextKind('/mod/common/ideas/00_ideas.yml')).toBeUndefined();
+    expect(gameTextKind('/mod/common/countries/Sweden.txt')).toBeUndefined();
   });
 });
 
@@ -170,6 +184,33 @@ describe('diagnoseGameText', () => {
     const [diagnostic] = diagnoseGameText('\ufffd', 'localisation', encoding('utf8bom'));
     expect(diagnostic?.code).toBe('replacement-character');
     expect(diagnostic?.message).not.toContain('the game reads');
+  });
+
+  it('reads a script file as Windows-1252 and skips its comments', () => {
+    // A country file saved as UTF-8: the leader's name shows as the game reads it.
+    const text = '# Göran\nleader_names = { "Göran" Åke } # Åke\n';
+    const found = diagnoseGameText(text, 'script', encoding('utf8'));
+    expect(found.map((d) => [d.code, text.slice(d.range.start, d.range.end), d.message])).toEqual([
+      ['game-text-differs', 'ö', 'Saved as UTF-8; the game reads "Ã¶".'],
+      ['game-text-differs', 'Å', 'Saved as UTF-8; the game reads "Ã…".'],
+    ]);
+    expect(diagnoseGameText(text, 'script', encoding('windows1252'))).toEqual([]);
+    expect(decodeGameText(bytes(0x47, 0xf6), 'script').text).toBe('Gö');
+  });
+
+  it('takes a # inside a script string, also over several lines, for text', () => {
+    const text = 'a = "x #\n é"\nb = 1 # é';
+    const found = diagnoseGameText(text, 'script', encoding('utf8'));
+    expect(found.map((d) => d.range.start)).toEqual([text.indexOf('é')]);
+    // A string that never closes ends at its line end.
+    const open = 'a = "x\n# é';
+    expect(diagnoseGameText(open, 'script', encoding('utf8'))).toEqual([]);
+  });
+
+  it('keeps U+FFFD in script text an error, but not in a comment', () => {
+    const text = 'name = "x�y" # z�';
+    const found = diagnoseGameText(text, 'script', encoding('utf8'));
+    expect(found.map((d) => [d.code, d.range.start])).toEqual([['replacement-character', 9]]);
   });
 
   it('warns about a BOM in an interface file', () => {
