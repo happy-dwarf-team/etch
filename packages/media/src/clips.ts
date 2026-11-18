@@ -994,14 +994,27 @@ export const CLIPS: readonly Clip[] = [
       });
       const rest = await startTake(context, { focus: false });
       take.mark('start');
-      await pointTo(context, await centre(link), 900);
+      const target = await centre(link);
+      await pointTo(context, target, 900);
       await sleep(300);
       // The drawn pointer is where the page's own hover is: the click's row.
-      const hovered = await page.evaluate(
-        () => document.querySelector('a:hover')?.textContent ?? '',
-      );
-      if (hovered.trim() !== PROFILED) {
-        throw new Error(`the pointer hovers "${hovered}", not ${PROFILED}`);
+      const hovered = (): Promise<string> =>
+        page.evaluate(() => document.querySelector('a:hover')?.textContent?.trim() ?? '');
+      if ((await hovered()) !== PROFILED) {
+        const frame = await (await page.frameElement()).boundingBox();
+        const under = await page.evaluate(
+          ({ x, y }) => {
+            const element = document.elementFromPoint(x, y);
+            return `${element?.tagName ?? 'nothing'} "${(element?.textContent ?? '').trim().slice(0, 40)}", scrolled ${scrollY}`;
+          },
+          { x: target.x - (frame?.x ?? 0), y: target.y - (frame?.y ?? 0) },
+        );
+        const box = await link.boundingBox();
+        throw new Error(
+          `the pointer hovers "${await hovered()}", not ${PROFILED}: at ${target.x},${target.y} ` +
+            `(the frame at ${frame?.x},${frame?.y}, the link now at ${box?.x},${box?.y}) ` +
+            `the page has ${under}`,
+        );
       }
       take.mark('clicking');
       take.click();
