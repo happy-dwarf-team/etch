@@ -279,6 +279,15 @@ A file Etch cannot read names its format or defect instead, such as a DDS cube
 map or a BC7 texture. To open a texture as text or with another viewer, use
 **Reopen Editor With…**.
 
+In `.gfx` and `.asset` files, a texture, mesh or animation path is a link
+(Ctrl+click) to the file your playset loads: the mod's file over the game's,
+and a `.tga` path that exists only as `.dds` to the `.dds`, as the game does.
+Hovering a texture path shows the texture with its size and format and says
+where it comes from; a path the playset does not have says so. A bare file
+name (`texture_diffuse = "tower_diffuse.dds"` in a `pdxmesh`, an animation's
+`file = "eagle_idle.anim"` in an `.asset` file) is looked up beside the mesh
+or the `.asset` file, where vanilla keeps them.
+
 ## Etch 1.x
 
 Etch 2.0.0 replaced 1.x's game host and its diff view with the live game. To
