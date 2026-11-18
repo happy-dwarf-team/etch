@@ -10,13 +10,16 @@ import {
   parseCorpusManifest,
   readCorpusManifest,
   readSurveyConfig,
+  rectOrigins,
   snapshotOf,
   surveyManifest,
   textAgreement,
   viewSignature,
   type CapturedWidget,
   type CrawlFile,
+  type RectMismatch,
   type TreeWidget,
+  type WidgetRect,
 } from '../../src/corpus/index.ts';
 import {
   candidateStep,
@@ -284,5 +287,38 @@ describe('the coverage measures', () => {
       adopted: (path) => (path === 'w' ? [{ name: 'b', rect: [5, 0, 5, 5], text: 'Two' }] : []),
     });
     expect(adopted).toEqual({ shown: 2, taken: 2, missing: [] });
+  });
+
+  it('traces rect mismatches to the ancestor they move with', () => {
+    const at = (x: number, y: number, w = 10, h = 10): WidgetRect => ({ x, y, w, h });
+    const off = (path: string, dx: number, dy: number, size = 10): RectMismatch => ({
+      path,
+      game: at(0, 0),
+      layout: at(dx, dy, size, size),
+    });
+    const mismatches: RectMismatch[] = [
+      off('w/a', 10, 0), // before its parent in the list
+      off('w', 10, 0),
+      off('w/a/x', 10, 0), // two levels below its origin
+      off('w/b', 3, 0), // its own origin, inside a window off by another amount
+      off('W/B/y', 3, 0), // paths compare without case
+      off('w/c/d', 10, 0), // w/c matches, so the chain to w is broken
+      off('v', 0, 0, 20), // the size differs, nothing moves
+      off('v/z', 0, 0, 20),
+      { path: 'u', game: at(0, 0) }, // the layout puts both off screen
+      { path: 'u/q', game: at(0, 0) },
+    ];
+    const summary = rectOrigins(mismatches).map(
+      (o) => `${o.origin.path} ${o.delta} ${String(o.moved)}`,
+    );
+    expect(summary).toEqual([
+      'w 10,0 2',
+      'w/b 3,0 1',
+      'w/c/d 10,0 0',
+      'v 0,0 0',
+      'v/z 0,0 0',
+      'u off screen 1',
+    ]);
+    expect(rectOrigins([])).toEqual([]);
   });
 });
