@@ -856,11 +856,12 @@ export const CLIPS: readonly Clip[] = [
       const covers = rectOf(eventOf(log, 'covers'));
       const windowPanel = still('vscode', frames.right, area);
       const SAVE = 'Sample data from a save: Russia, 1719';
-      // Each press of Province… is cut a frame after the click, before the quick pick shows its
-      // whole list over the window, and the take goes on once the name is typed and its row alone.
+      // Each press of Province… is cut at its click: the quick pick shows a frame later, its whole
+      // list over the toolbar and the window. The take goes on once the name is typed and its row
+      // alone.
       const spans = [
-        { s0: eventOf(log, 'start').t - LEAD, end: (presses[0] as TakeEvent).t + 0.05 },
-        { s0: (typed[0] as TakeEvent).t, end: (presses[1] as TakeEvent).t + 0.05 },
+        { s0: eventOf(log, 'start').t - LEAD, end: (presses[0] as TakeEvent).t },
+        { s0: (typed[0] as TakeEvent).t, end: (presses[1] as TakeEvent).t },
         { s0: (typed[1] as TakeEvent).t, end: eventOf(log, 'end').t + 0.4 },
       ];
       const parts: Part[] = spans.map((span, i) => {
