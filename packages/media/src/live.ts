@@ -22,6 +22,7 @@ import {
   PRE_ROLL_MS,
   POST_ROLL_MS,
   SAMPLE_PROVINCE,
+  SNAPSHOT_VALUES,
   START_FILE,
   TAIL,
   TEXT_FADE,
@@ -75,12 +76,22 @@ export const RELOAD_EDIT = {
 export const RELOAD_WIDGET = 'provinceview//tradenode_button';
 /** The province the game shows: the sample data's, Kaluga (`SAMPLE_PROVINCE`). */
 const LIVE_PROVINCE = 296;
-/** What `pick` hovers, a number, an icon and the button it then clicks, all in the trade section. */
-const HOVERED = [
-  'provinceview//tradevalue_value',
-  'provinceview//resource_icon',
-  RELOAD_WIDGET,
-] as const;
+/**
+ * What `pick` hovers, in the trade section, the last the button it then clicks, and where the
+ * pointer goes across each (0 its left edge, 1 its right; its middle unless given). The game shows
+ * its own tooltips in pick mode, at once and beside the pointer, under pick mode's label: the loop
+ * hovers widgets without one, and the button at its right end, so its tooltip ("Go to trade node
+ * interface") starts past the button instead of covering it.
+ */
+interface Hover {
+  readonly selector: string;
+  readonly across?: number;
+}
+const HOVERED: readonly [Hover, ...Hover[]] = [
+  { selector: 'provinceview//tradevalue_value' },
+  { selector: 'provinceview//resource_icon' },
+  { selector: RELOAD_WIDGET, across: 0.93 },
+];
 
 const HOLD_MS = 2400;
 /** The height of `pick`'s game band over the definition, in output pixels. */
@@ -425,37 +436,43 @@ export async function takeLive(options: ShootOptions & { save: string }): Promis
     await pointerAt(rest, 'before pick');
     take.mark('pick.start');
     if (!(await desktop.focus(game.hwnd))) throw new Error('the game could not be brought forward');
+    // Where the pointer goes on a widget, in the client area: `across` its width, at its middle.
+    const pointOn = (widget: TongsWidget, across = 0.5): Point => ({
+      x: Math.round(widget.rect.x + widget.rect.w * across),
+      y: widget.click_point.y,
+    });
     const [first, ...others] = HOVERED;
-    let target = await live.widget(first);
-    await desktop.movePointer(screen(target.click_point), 650);
+    let target = await live.widget(first.selector);
+    let point = pointOn(target, first.across);
+    await desktop.movePointer(screen(point), 650);
     await sleep(500);
     const picked = await wb.cursor();
     take.mark('pick.on');
     await desktop.keys(SCAN.ctrl, SCAN.shift, SCAN.e);
     // Pick mode labels the widget under the pointer once the pointer moves.
-    const nudge = screen(target.click_point);
-    await desktop.movePointer({ x: nudge.x + 2, y: nudge.y }, 50);
+    point = { x: point.x + 2, y: point.y };
+    await desktop.movePointer(screen(point), 50);
     await sleep(400);
     take.mark('pick.hover', {
       source: 'game',
       rect: rectOfWidget(target),
-      label: first,
+      label: first.selector,
       point: await desktop.cursor(),
     });
     await sleep(1600);
-    for (const selector of others) {
-      const widget = await live.widget(selector);
-      const to = screen(widget.click_point);
-      await desktop.movePointer(to, 0);
+    for (const hover of others) {
+      const widget = await live.widget(hover.selector);
+      point = pointOn(widget, hover.across);
+      await desktop.movePointer(screen(point), 0);
       await sleep(150);
       take.mark('pick.hover', {
         source: 'game',
         rect: rectOfWidget(widget),
-        label: selector,
+        label: hover.selector,
         point: await desktop.cursor(),
       });
       await sleep(1300);
-      await pointerAt(to, `hovering ${selector}`);
+      await pointerAt(screen(point), `hovering ${hover.selector}`);
       target = widget;
     }
     const before = await wb.cursor();
@@ -465,7 +482,7 @@ export async function takeLive(options: ShootOptions & { save: string }): Promis
         `the editor moved to line ${String(before.line)} before the click: something picked`,
       );
     }
-    take.mark('pick.click', { source: 'game', point: target.click_point });
+    take.mark('pick.click', { source: 'game', point });
     const snapshot = wb
       .paint(() => desktop.click())
       .then(
@@ -562,9 +579,10 @@ export const LIVE_CLIPS: readonly Pick<Clip, 'id' | 'edit'>[] = [
           keys: [RELOAD_EDIT.key],
           text: `x = ${String(RELOAD_EDIT.to)}`,
         },
-        { from: save - 0.05, to: at(t(moved)) + 0.1, keys: ['Ctrl', 'S'] },
+        { from: save - 0.05, to: at(t(moved)) - 0.2, keys: ['Ctrl', 'S'] },
         {
-          from: at(t(moved)) + 0.3,
+          // Tongs sees the button moved a poll after the frame that shows it.
+          from: at(t(moved)),
           to: undo - 0.2,
           text: `Saved: the game reloads the window (${String(ms)} ms in this take)`,
         },
@@ -714,12 +732,16 @@ export const LIVE_CLIPS: readonly Pick<Clip, 'id' | 'edit'>[] = [
       const painted = log.events.find((event) => event.kind === 'pick.snapshot');
       const snapshot = painted === undefined ? click + 0.3 : at(painted.t);
       const end = at(t(eventOf(log, 'pick.end')));
-      const scale = STAGE.h / VALUES_AREA.h;
+      // As large as two panels side by side allow, at most 3×.
+      const scale = Math.min(3, (STAGE.w - GUTTER) / 2 / VALUES_AREA.w, STAGE.h / VALUES_AREA.h);
       const preview = onScreen(rectOf(eventOf(log, 'screen')), VALUES_AREA);
       const game = inGame(log, VALUES_AREA);
-      const frames = pair({ w: preview.w * scale, h: STAGE.h }, { w: game.w * scale, h: STAGE.h });
-      // The tax, production and total: the first values the snapshot changes.
-      const values = onScreen(rectOf(eventOf(log, 'screen')), { x: 10, y: 470, w: 120, h: 72 });
+      const frames = pair(
+        { w: preview.w * scale, h: preview.h * scale },
+        { w: game.w * scale, h: game.h * scale },
+      );
+      // The military and trade values, which the snapshot changes from generated ones.
+      const values = SNAPSHOT_VALUES.map((rect) => onScreen(rectOf(eventOf(log, 'screen')), rect));
       return {
         id: 'snapshot',
         sources,
@@ -741,19 +763,26 @@ export const LIVE_CLIPS: readonly Pick<Clip, 'id' | 'edit'>[] = [
                 keys: cameraKeys([{ at: 0, frame: frames.right, view: game }]),
               },
             ],
+            // The second caption comes with the click, before the preview repaints: the cause on
+            // screen when the values change.
             captions: [
               {
                 from: 0.3,
-                to: click - 0.2,
+                to: click - 0.3,
                 text: 'The preview (left): the save, values generated',
               },
               {
-                from: snapshot + 0.1,
+                from: click - 0.1,
                 to: end - 0.3,
                 text: "A pick in the game: its live snapshot, the game's own values",
               },
             ],
-            highlights: [{ from: snapshot + 0.4, to: end - 0.1, panel: 0, rect: values }],
+            highlights: values.map((rect) => ({
+              from: snapshot + 0.3,
+              to: end - 0.1,
+              panel: 0,
+              rect,
+            })),
           },
         ],
       } satisfies EditSpec;

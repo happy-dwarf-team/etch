@@ -114,11 +114,22 @@ export const TRADE_AREA: Rect = { x: -6, y: 467, w: 472, h: 433 };
  * `Data ▾` covers its top right (screen x 390 and right, down to y 339): `data` holds the window's
  * panel on its last frame before the menu opened until the menu closes.
  */
-const HEADER_AREA: Rect = { x: -10, y: 194, w: 498, h: 398 };
+const HEADER_AREA: Rect = { x: -10, y: 194, w: 498, h: 401 };
 /** The buildings panel, whose background `problems` misspells. */
 const BUILDINGS_AREA: Rect = { x: 480, y: 440, w: 330, h: 460 };
-/** The window's values, from its demographics down to its trade (`snapshot`). */
-export const VALUES_AREA: Rect = { x: -4, y: 400, w: 490, h: 500 };
+/**
+ * `snapshot`: the window's military and trade rows from its left edge to the general's box, left
+ * of the province's picture and the trade node's circle, shield and button. Every value there comes
+ * from a snapshot, and its icons are drawn the same in the preview and the game: elsewhere icons the
+ * game sets in its code (the unrest and religion icons, the trade node's colour, the owner's shield,
+ * the great projects) stay Etch's placeholders after a snapshot, and would read as a snapshot that
+ * did not take. The two boxes of values, which the loop rings.
+ */
+export const VALUES_AREA: Rect = { x: 0, y: 680, w: 230, h: 215 };
+export const SNAPSHOT_VALUES: readonly Rect[] = [
+  { x: 25, y: 717, w: 148, h: 61 },
+  { x: 25, y: 815, w: 148, h: 62 },
+];
 /**
  * `zoom`'s part of the screen, and the point it zooms around: above the second tab, where no
  * widget is (a tip there would cover the zoom), the tabs, names and painting around it. The part
@@ -136,8 +147,11 @@ const TYPED = ['3', '0', '0'];
 const TYPED_X = ['3', '30', '300'];
 const KEY_S = 1.1;
 
-/** `data`: the save's second province, with other names, culture, region and development. */
-const SECOND_PROVINCE = 'Astrakhan';
+/**
+ * `data`: the save's second province, with other names, area, region, culture, religion and
+ * development: Bali, Hindu and Balinese (`nusa_tenggara`), which the save's Russia holds.
+ */
+const SECOND_PROVINCE = 'Bali';
 
 /**
  * `outline`: game-screen points of the widgets it hovers, a text, a button and an icon in one band
@@ -770,7 +784,8 @@ export const CLIPS: readonly Clip[] = [
           hasText: new RegExp(`^${name}#`),
         });
       take.mark('screen', { source: 'vscode', rect: await wb.screenRect() });
-      // The menu's button, and open, the layers above the save's and the save's own, measured
+      // The menu's button, and open, every layer down to the generated text's lengths, the last
+      // layer's actions (the lists the game fills, under them, are not the loop's), measured
       // before the take; then the province quick pick's input and row with a name typed in it.
       take.mark('button', { source: 'vscode', rect: await wb.box(button) });
       await wb.openMenu('data');
@@ -778,8 +793,8 @@ export const CLIPS: readonly Clip[] = [
         source: 'vscode',
         rect: union(
           await wb.box(button),
-          await wb.box(popup.locator('h4')),
-          await wb.box(popup.locator('.actions').nth(1)),
+          await wb.box(popup.locator('h4').first()),
+          await wb.box(popup.locator('.actions').last()),
         ),
       });
       take.mark('covers', { source: 'vscode', rect: await wb.box(popup) });
@@ -823,9 +838,9 @@ export const CLIPS: readonly Clip[] = [
         take.mark('picked', { label: name });
         await painted;
         if (!(await popup.isVisible())) throw new Error('Data ▾ closed with the quick pick');
-        // The menu's save line names the province for a moment; then Escape closes the menu, and
-        // the edit shows the window's new header from there.
-        await sleep(450);
+        // Escape closes the menu at once: while it is open the window's panel holds its frame from
+        // before, so a menu naming the new province beside the old header would contradict it.
+        await sleep(100);
         await wb.closeMenus();
         take.mark('closed', { label: name });
         await sleep(name === SECOND_PROVINCE ? 1500 : 300);
@@ -834,20 +849,21 @@ export const CLIPS: readonly Clip[] = [
       await endTake(context, rest);
     },
     edit(log, sources) {
-      // The menu down to the save's actions: the warning under them is not the loop's.
+      // The menu down to its last layer, every layer whole; as large as the stage's height allows.
       const menu = menuViews(rectOf(eventOf(log, 'button')), rectOf(eventOf(log, 'popup')), 5);
+      const menuScale = Math.min(UI_SCALE, STAGE.h / menu.open.h);
       const area = onScreen(rectOf(eventOf(log, 'screen')), HEADER_AREA);
-      const frames = pair(sized(menu.open, UI_SCALE), sized(area, STAGE.h / area.h));
+      const frames = pair(sized(menu.open, menuScale), sized(area, STAGE.h / area.h));
       const { unfolded, folded } = menuFrames(menu, frames.left);
       // The quick pick's input and the typed name's row, at the menu panel's top, its left part.
       const typing = rectOf(eventOf(log, 'typing'));
       const typingView = {
         x: typing.x - 10,
         y: typing.y - 10,
-        w: frames.left.w / UI_SCALE,
+        w: frames.left.w / menuScale,
         h: typing.h + 20,
       };
-      const typingFrame = { ...unfolded, h: typingView.h * UI_SCALE };
+      const typingFrame = { ...unfolded, h: typingView.h * menuScale };
       const opens = eventsOf(log, 'open', 2);
       const presses = eventsOf(log, 'press', 2);
       const typed = eventsOf(log, 'typed', 2);
@@ -953,11 +969,10 @@ export const CLIPS: readonly Clip[] = [
         take.mark('zoom', { label: ((await level.textContent()) ?? '').trim() });
         await sleep(1100);
       }
-      await sleep(300);
       // Straight up over the empty screen above the window to the toolbar, then along it.
       const target = await centre(level);
-      await pointTo(context, { x: point.x, y: target.y }, 450);
-      await pointTo(context, target, 450);
+      await pointTo(context, { x: point.x, y: target.y }, 350);
+      await pointTo(context, target, 350);
       await sleep(150);
       take.click();
       await level.click();
@@ -968,14 +983,18 @@ export const CLIPS: readonly Clip[] = [
       await endTake(context, rest);
     },
     edit(log, sources) {
-      const s0 = eventOf(log, 'start').t - LEAD;
+      // From the pointer at rest on its point, to a second after the fit: the pointer's ways there
+      // and home again are still frames of the same fitted window, so the loop leaves them out and
+      // dissolves from the pointer on the level to the pointer on its point.
+      const s0 = eventOf(log, 'at').t - 0.9;
       const at = (t: number): number => t - s0;
       const level = grow(rectOf(eventOf(log, 'level')), 14);
       const area = onScreen(rectOf(eventOf(log, 'screen')), ZOOM_AREA);
       const frames = pair(sized(level, 3.2), sized(area, STAGE.h / area.h));
       const zooms = eventsOf(log, 'zoom', ZOOM_TICKS);
       const fit = eventOf(log, 'fit');
-      const end = at(eventOf(log, 'end').t) + 0.4;
+      const FADE = 0.5;
+      const end = at(fit.t) + 1.3 + FADE;
       return single(
         'zoom',
         log,
@@ -983,6 +1002,7 @@ export const CLIPS: readonly Clip[] = [
         { s0, end: s0 + end },
         [still('vscode', frames.left, level), still('vscode', frames.right, area)],
         {
+          loopFade: FADE,
           captions: sequence(
             [
               ...zooms.map((zoom) => ({
@@ -992,7 +1012,7 @@ export const CLIPS: readonly Clip[] = [
               })),
               { from: at(fit.t) - 0.05, text: `A click on the level: ${fit.label ?? ''}` },
             ],
-            end - 0.5,
+            end - FADE - 0.1,
           ),
           highlights: [
             { from: at(fit.t), to: at(fit.t) + 1.0, panel: 0, rect: rectOf(eventOf(log, 'level')) },
@@ -1014,6 +1034,7 @@ export const CLIPS: readonly Clip[] = [
         .locator('.part.sidebar .pane-header[aria-expanded="true"]', { hasText: 'Widget Outline' })
         .waitFor();
       await wb.fitPreview();
+      take.mark('screen', { source: 'vscode', rect: await wb.screenRect() });
       await wb.focusEditor();
       // The cursor outside every widget (parkCursor): the preview outlines nothing before the click.
       await wb.highlightCleared();
@@ -1073,7 +1094,10 @@ export const CLIPS: readonly Clip[] = [
       // Close on the band of hovered widgets and their tips, the tips' text large enough to read
       // on the site, unless the band is wider.
       const hoverScale = Math.min(2.5, STAGE.w / (band.w + 60), STAGE.h / (band.h + 60));
-      const hoverView = viewAt(band, hoverScale, STAGE, source);
+      // From the screen's left edge, where the window's labels start (centred on the band, the
+      // view cut them: "oduction", "onomy"), unless the band and its tips need it further right.
+      const centred = viewAt(band, hoverScale, STAGE, source);
+      const hoverView = { ...centred, x: Math.min(centred.x, rectOf(eventOf(log, 'screen')).x) };
       const picked = eventOf(log, 'picked');
       const row = rectOf(eventOf(log, 'row'));
       const returned = eventOf(log, 'returned');
@@ -1349,7 +1373,9 @@ export const CLIPS: readonly Clip[] = [
         0.3,
       );
       const clicking = at(eventOf(log, 'clicking').t);
-      const opened = at(eventOf(log, 'opened').t);
+      // The file once its lens is drawn (the take marks it 0.3 s after the lens shows): before,
+      // the lens line pops in over the block and pushes its code down a line.
+      const opened = at(eventOf(log, 'lens').t) - 0.25;
       const closing = at(eventOf(log, 'closing').t);
       // The page back, drawn: a frame of its blank webview before.
       const shown = Math.max(at(eventOf(log, 'shown').t), at(eventOf(log, 'closed').t) + 0.15);
@@ -1366,23 +1392,30 @@ export const CLIPS: readonly Clip[] = [
             // between them reads as a scroll of either.
             shots: [
               { at: 0, frame: STAGE, view: shownTable },
-              { at: opened + 0.05, frame: STAGE, view: blockView, move: 0 },
+              { at: opened, frame: STAGE, view: blockView, move: 0 },
               { at: shown + 0.05, frame: STAGE, view: shownTable, move: 0 },
             ],
           },
         ],
         {
+          // From the click until the file's lens is drawn, the page as it was clicked; from Ctrl+W
+          // until the page is drawn again, the file as it was: VS Code draws an empty editor
+          // between them.
+          holds: [
+            { from: clicking + 0.1, to: opened, panel: 0, at: s0 + clicking + 0.05 },
+            { from: closing, to: shown + 0.05, panel: 0, at: s0 + closing - 0.05 },
+          ],
           captions: sequence(
             [
               { from: 0.2, text: 'The newest script profile, the slowest first' },
-              { from: opened + 0.3, text: 'A name opens its block, its time in the lens above' },
+              { from: opened + 0.1, text: 'A name opens its block, its time in the lens above' },
               { from: closing - 0.05, keys: ['Ctrl', 'W'] },
             ],
             end - 0.4,
           ),
           highlights: [
             {
-              from: opened + 0.6,
+              from: opened + 0.4,
               to: closing - 0.1,
               panel: 0,
               rect: { ...lens, w: Math.min(lens.w, 900) },
@@ -1516,7 +1549,8 @@ export const CLIPS: readonly Clip[] = [
 /**
  * The hero's trailer: the cores of other clips' cuts, one after another (their panels and captions
  * are in the cuts), each fading in from the background and out into it, so a seam is a short dip,
- * not a cut. The loop's end dissolves into its first frame.
+ * not a cut. The loop's end is a dip too: the last part fades out into the background, and the
+ * loop's own dissolve brings the first frame in from it.
  */
 export function heroEdit(
   sources: Readonly<Record<string, Source>>,
@@ -1527,9 +1561,12 @@ export function heroEdit(
   const segments: Segment[] = parts.map((part, i) => {
     const length = editLength(part).seconds;
     const core = part.core ?? { from: 0, to: length };
-    const duration = core.to - core.from;
-    const first = i === 0;
+    // Never into a part's own dissolve into its first frame: the hero would show three shots.
+    const to = Math.min(core.to, length - (part.loopFade ?? 0) - 0.05);
     const last = i === parts.length - 1;
+    // The last part runs on a dip longer, faded out, for the loop's dissolve.
+    const duration = to - core.from + (last ? DIP : 0);
+    const out = last ? duration - DIP : duration;
     return {
       duration,
       panels: [
@@ -1537,10 +1574,11 @@ export function heroEdit(
           source: part.id,
           start: core.from,
           keys: [
-            { at: 0, frame: full, view: full, opacity: first ? 1 : 0 },
+            { at: 0, frame: full, view: full, opacity: i === 0 ? 1 : 0 },
             { at: DIP, frame: full, view: full, opacity: 1 },
-            { at: duration - DIP, frame: full, view: full, opacity: 1 },
-            { at: duration, frame: full, view: full, opacity: last ? 1 : 0 },
+            { at: out - DIP, frame: full, view: full, opacity: 1 },
+            { at: out, frame: full, view: full, opacity: 0 },
+            ...(last ? [{ at: duration, frame: full, view: full, opacity: 0 }] : []),
           ],
         },
       ],
@@ -1548,5 +1586,5 @@ export function heroEdit(
       highlights: [],
     };
   });
-  return { id: 'hero', sources, segments, loopFade: 0.5 };
+  return { id: 'hero', sources, segments, loopFade: DIP };
 }
