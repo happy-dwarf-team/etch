@@ -169,8 +169,19 @@ refresh is a step of the 3.0.0 release.
   other Workshop items on the lab's disk (66, each against its own map,
   vanilla's or Anbennar's for its submods) it warns only about one mod that
   uses provinces 5152 and 8042 on the vanilla map. Not checked: the map's own
-  files (`area.txt`, `positions.txt`) and the other id lists a mod can change
-  (trade nodes, colonial regions).
+  files (`area.txt`, `positions.txt`) and a trade node's `outgoing` paths.
+
+  The province lists of `common/colonial_regions` and `common/trade_companies`
+  (`provinces = { … }`) and of `common/tradenodes` (`members = { … }`) are
+  checked since 18 November 2026: the game reads them as integers with no
+  range check (it logs only an id listed twice) and indexes the province table
+  with every id, for a colonial region's center point while the file is read
+  and for its name, for each trade company region's provinces when the game
+  starts, and for a trade node's members, whose provinces it writes the node
+  into (EU4 engine lab, `CColonialRegionDefinition`,
+  `CTradeNodeDatabase::InitTradeCompanyRegions` and `InitializeProvinces`).
+  Vanilla lists 3290 ids in the regions and 3369 in the trade nodes, all on its
+  map; a trade node's `location` was already checked.
 
   A static reading of the game's trigger and effect code (EU4 engine lab,
   `docs/script-unchecked-indexes.md`, 16 November 2026) found the cause: the
