@@ -289,7 +289,9 @@ name (`texture_diffuse = "tower_diffuse.dds"` in a `pdxmesh`, an animation's
 `file = "eagle_idle.anim"` in an `.asset` file) is looked up beside the mesh
 or the `.asset` file, where vanilla keeps them. Hovering a mesh path lists its
 shapes, vertices, triangles and bones, its shaders and the textures its
-materials name; an animation path gives its frames, speed and joints.
+materials name, and draws the mesh with those textures, as they are found
+beside it (a part whose texture is missing is grey); an animation path gives
+its frames, speed and joints.
 
 In `.gui` files, hovering a sprite name (`spriteType`, `quadTextureSprite`, a
 list's `background`) shows the sprite the game draws: its kind and frames, the
