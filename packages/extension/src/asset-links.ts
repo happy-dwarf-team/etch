@@ -157,7 +157,7 @@ function references(
 }
 
 /** The game-relative folder of a file inside one of the playset's layers, last layer first. */
-function layerFolder(files: GameFiles, file: string): string | undefined {
+export function layerFolder(files: GameFiles, file: string): string | undefined {
   for (const layer of [...files.layers].reverse()) {
     const relative = path.relative(layer.root, path.dirname(file));
     if (relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative))) {

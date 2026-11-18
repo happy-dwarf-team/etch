@@ -302,6 +302,30 @@ mission's `icon` and an estate privilege's `icon`. A script name with no
 sprite says so in its hover; Etch does not read the game's DLC archives,
 which define many vanilla event pictures.
 
+## Meshes
+
+A `.mesh` file opens in the **Etch Mesh Preview**: the model drawn with its
+diffuse textures and a plain light, the way you would turn it in your hand, not
+as the game lights it on the map. The bar above lists its shapes, vertices,
+triangles, bones and shaders, and where each texture came from: the textures a
+mesh's materials name are looked up in its folder through your playset (the
+mod's over the game's, `.tga` falling back to `.dds`), or beside the file when
+it is in no folder of the playset. Collision shapes are hidden.
+
+- Drag to turn the model, Shift+drag or right-drag to move it, and scroll to
+  zoom; **Reset view** frames it again.
+- **Wire** shows the triangle edges.
+- If the mesh has a skeleton, the list offers the `.anim` files beside it that
+  name its bones, the mesh's own first (`carrack_idle.anim` for
+  `carrack.mesh`); **Play** runs the one you pick in a loop.
+- When the mesh, a texture or an animation beside it changes on disk, the
+  preview shows the new one.
+
+Normal and specular maps, the country colour of a unit, the `.gfx` entity
+around a mesh (its attachments, scale and state animations) and the game's
+lighting are not drawn. To open a mesh with another viewer, use **Reopen
+Editor With…**.
+
 ## Etch 1.x
 
 Etch 2.0.0 replaced 1.x's game host and its diff view with the live game. To
