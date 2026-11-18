@@ -97,10 +97,11 @@ export async function readSteamLibraries(
   const root = parseVdf(text)['libraryfolders'];
   if (typeof root !== 'object') return [];
   const libraries: { path: string; hasEu4: boolean }[] = [];
-  for (const entry of Object.values(root)) {
-    // Old files map an index straight to a path; current ones hold an object with "path" and "apps".
+  for (const [key, entry] of Object.entries(root)) {
+    // Old files map an index straight to a path; current ones hold an object with "path" and "apps",
+    // beside other values such as "contentstatsid", which are not libraries.
     if (typeof entry === 'string') {
-      libraries.push({ path: entry, hasEu4: false });
+      if (/^\d+$/.test(key)) libraries.push({ path: entry, hasEu4: false });
     } else if (typeof entry['path'] === 'string') {
       const apps = entry['apps'];
       libraries.push({
