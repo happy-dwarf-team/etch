@@ -22,7 +22,7 @@ export const MASTER = {
 export const LIVE_GAME_RESOLUTION = { width: 2560, height: 1440 } as const;
 
 /** `etch.previewResolution`: one game pixel is one master pixel when the preview is not scaled. */
-export const PREVIEW_RESOLUTION = { width: 1280, height: 720 } as const;
+export const PREVIEW_RESOLUTION = { width: 1440, height: 900 } as const;
 
 /** The editor font size. */
 export const EDITOR_FONT_SIZE = 18;
