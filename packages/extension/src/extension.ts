@@ -11,6 +11,7 @@ import { registerPreview, type PreviewApi } from './preview/index.ts';
 import { registerProvinceIds } from './province-ids.ts';
 import { registerScriptProfile } from './script-profile-view.ts';
 import { registerTexturePreview, type TexturePreviewApi } from './texture-preview.ts';
+import { registerMeshPreview, type MeshPreviewApi } from './mesh-preview.ts';
 
 /** What `activate` returns: for Etch's own tests, not a stable API for other extensions. */
 export interface EtchApi {
@@ -19,6 +20,7 @@ export interface EtchApi {
   readonly liveGame: LiveGame;
   readonly pickMode: PickMode;
   readonly texturePreview: TexturePreviewApi;
+  readonly meshPreview: MeshPreviewApi;
   readonly assetLinks: AssetLinks;
 }
 
@@ -54,6 +56,7 @@ export function activate(context: vscode.ExtensionContext): EtchApi {
     liveGame: live.game,
     pickMode: live.pick,
     texturePreview: registerTexturePreview(context, output),
+    meshPreview: registerMeshPreview(context, output),
     assetLinks: registerAssetLinks(context, output),
   };
 }

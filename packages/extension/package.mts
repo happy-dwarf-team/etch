@@ -43,6 +43,7 @@ const expected = [
   'dist/extension.js',
   'dist/webview.js',
   'dist/texture-webview.js',
+  'dist/mesh-webview.js',
   ...profiles,
   'media/icon.png',
   'package.json',

@@ -13,7 +13,7 @@ const TIMEOUT_MS = Number(process.env['ETCH_TEST_TIMEOUT_MS'] ?? 5_000);
 const COLD_TIMEOUT_MS = 30_000;
 
 /** An A8R8G8B8 DDS file without a mip chain, every texel the same BGRA. */
-function dds(width: number, height: number, bgra: readonly number[]): Uint8Array {
+export function dds(width: number, height: number, bgra: readonly number[]): Uint8Array {
   const bytes = new Uint8Array(128 + width * height * 4);
   const view = new DataView(bytes.buffer);
   view.setUint32(0, 0x20534444, true);

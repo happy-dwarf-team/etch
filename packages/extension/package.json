@@ -41,6 +41,7 @@
   "activationEvents": [
     "onWebviewPanel:etch.preview",
     "onCustomEditor:etch.texturePreview",
+    "onCustomEditor:etch.meshPreview",
     "workspaceContains:**/*.gui",
     "workspaceContains:**/*.gfx",
     "workspaceContains:**/localisation/**/*.yml",
@@ -60,6 +61,16 @@
           },
           {
             "filenamePattern": "*.tga"
+          }
+        ],
+        "priority": "default"
+      },
+      {
+        "viewType": "etch.meshPreview",
+        "displayName": "Etch Mesh Preview",
+        "selector": [
+          {
+            "filenamePattern": "*.mesh"
           }
         ],
         "priority": "default"
