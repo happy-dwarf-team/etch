@@ -349,8 +349,9 @@ function cuts(
 
 /**
  * The veils of a panel over the part `covered` of its view `view` while a menu is open, its
- * `spans` (segment times) cut to the segment's `duration`: the menu, open over the window in the
- * master, shows whole in the menu's own panel.
+ * `spans` in segment times, those that reach into the segment's `duration`: the menu, open over
+ * the window in the master, shows whole in the menu's own panel. A span open at the segment's
+ * start or past its end is not cut there, so the veil does not fade at a cut.
  */
 function menuVeils(
   panel: number,
@@ -365,9 +366,8 @@ function menuVeils(
   const h = Math.min(view.y + view.h, covered.y + covered.h) - y;
   if (w <= 0 || h <= 0) return [];
   return spans
-    .map(({ opens, closes }) => ({ from: Math.max(0, opens), to: Math.min(duration, closes) }))
-    .filter(({ from, to }) => to > from)
-    .map(({ from, to }) => ({ from, to, panel, rect: { x, y, w, h } }));
+    .filter(({ opens, closes }) => closes > 0 && opens < duration)
+    .map(({ opens, closes }) => ({ from: opens, to: closes, panel, rect: { x, y, w, h } }));
 }
 
 /** A one-segment edit from `s0` to `end` (take times): its panels, captions and highlights. */
@@ -695,7 +695,7 @@ export const CLIPS: readonly Clip[] = [
         area,
         rectOf(eventOf(log, 'covers')),
         opens.map((open, i) => ({
-          opens: at(open.t) - 0.2,
+          opens: at(open.t) - 0.12,
           closes: at((closes[i] as TakeEvent).t) + 0.15,
         })),
         end,
@@ -710,7 +710,7 @@ export const CLIPS: readonly Clip[] = [
             menu,
             frames.left,
             opens.map((open, i) => ({
-              opens: at(open.t) - 0.1,
+              opens: at(open.t) + 0.02,
               closes: at((closes[i] as TakeEvent).t) - 0.05,
             })),
           ),
@@ -845,7 +845,7 @@ export const CLIPS: readonly Clip[] = [
         // The quick pick hides on Enter: the menu again, then folded once the click closes it.
         add(local(enters[i - 1]) + 0.05, unfolded, menu.open, 0);
         add(local(closes[i - 1]) - 0.05, folded, menu.folded, UNFOLD);
-        add(local(opens[i]) - 0.1, unfolded, menu.open, UNFOLD);
+        add(local(opens[i]) + 0.02, unfolded, menu.open, UNFOLD);
         const name = i === 0 ? undefined : i === 1 ? SECOND_PROVINCE : SAMPLE_PROVINCE;
         const chosen = local(enters[i - 1]) + 0.1;
         const next = local(opens[i]) - 0.1;
@@ -858,7 +858,7 @@ export const CLIPS: readonly Clip[] = [
             area,
             covers,
             opens.map((open, k) => ({
-              opens: local(open) - 0.2,
+              opens: local(open) - 0.12,
               closes: local(closes[k]) + 0.15,
             })),
             span.end - span.s0,
