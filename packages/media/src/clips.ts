@@ -26,6 +26,7 @@ import {
   type Rect,
   type Segment,
   type Source,
+  type Veil,
 } from './edit.ts';
 import type { PaintResult } from './paint.ts';
 import {
@@ -84,6 +85,16 @@ export const TAIL = 1.0;
 export const CODE_SCALE = 1.5;
 export const UI_SCALE = 2.2;
 export const DETAIL_SCALE = 2;
+/** The demo mod's event in `names`: its lines are short, so its code is larger (14.6 px there). */
+const NAMES_CODE_SCALE = 2.4;
+
+/**
+ * Output height of the Problems panel `panel` (master pixels) shown at `UI_SCALE` down to the row
+ * `last`: no empty panel under its rows.
+ */
+function problemsHeight(panel: Rect, last: Rect): number {
+  return Math.round((last.y + last.h + 12 - panel.y) * UI_SCALE);
+}
 
 /**
  * Parts of the game screen in game pixels, where the large layout (1440 × 900) draws the province
@@ -100,7 +111,7 @@ export const TRADE_AREA: Rect = { x: -6, y: 467, w: 472, h: 433 };
 /**
  * The window's header and demographics, where a province's names are: its tabs, names, area and
  * region, development, culture and religion, from the window's left border to its right. The open
- * `Data ▾` covers its top right (screen x 390 and right, down to y 339): `data` closes it.
+ * `Data ▾` covers its top right (screen x 390 and right, down to y 339): `data` veils it there.
  */
 const HEADER_AREA: Rect = { x: -10, y: 194, w: 498, h: 398 };
 /** The buildings panel, whose background `problems` misspells. */
@@ -303,6 +314,7 @@ interface Part {
   readonly tracks: readonly Track[];
   readonly captions?: Caption[];
   readonly highlights?: Highlight[];
+  readonly veils?: Veil[];
 }
 
 /** An edit of parts of the take one after another, with a cut between each and the next. */
@@ -330,8 +342,32 @@ function cuts(
       })),
       captions: part.captions ?? [],
       highlights: part.highlights ?? [],
+      ...(part.veils === undefined ? {} : { veils: part.veils }),
     })),
   };
+}
+
+/**
+ * The veils of a panel over the part `covered` of its view `view` while a menu is open, its
+ * `spans` (segment times) cut to the segment's `duration`: the menu, open over the window in the
+ * master, shows whole in the menu's own panel.
+ */
+function menuVeils(
+  panel: number,
+  view: Rect,
+  covered: Rect,
+  spans: readonly { opens: number; closes: number }[],
+  duration: number,
+): Veil[] {
+  const x = Math.max(view.x, covered.x);
+  const y = Math.max(view.y, covered.y);
+  const w = Math.min(view.x + view.w, covered.x + covered.w) - x;
+  const h = Math.min(view.y + view.h, covered.y + covered.h) - y;
+  if (w <= 0 || h <= 0) return [];
+  return spans
+    .map(({ opens, closes }) => ({ from: Math.max(0, opens), to: Math.min(duration, closes) }))
+    .filter(({ from, to }) => to > from)
+    .map(({ from, to }) => ({ from, to, panel, rect: { x, y, w, h } }));
 }
 
 /** A one-segment edit from `s0` to `end` (take times): its panels, captions and highlights. */
@@ -344,6 +380,7 @@ function single(
   extras: {
     captions?: Caption[];
     highlights?: Highlight[];
+    veils?: Veil[];
     core?: { from: number; to: number };
     loopFade?: number;
   } = {},
@@ -358,6 +395,7 @@ function single(
         tracks,
         ...(extras.captions === undefined ? {} : { captions: extras.captions }),
         ...(extras.highlights === undefined ? {} : { highlights: extras.highlights }),
+        ...(extras.veils === undefined ? {} : { veils: extras.veils }),
       },
     ],
     extras,
@@ -614,11 +652,15 @@ export const CLIPS: readonly Clip[] = [
         source: 'vscode',
         rect: union(await wb.box(menu), await wb.box(items.first()), await wb.box(items.last())),
       });
+      take.mark('covers', {
+        source: 'vscode',
+        rect: await wb.box(wb.frame.locator('#view-popup')),
+      });
       await wb.closeMenus();
       const rest = await startTake(context);
       take.mark('start');
       // The menu's selectors, under its views, cover the window's top right while it is open: it
-      // is open for little more than a second each time.
+      // is open for little more than a second each time, and the edit veils it there.
       for (const label of ['Foreign province', 'Own province']) {
         await clickOn(context, menu);
         await wb.frame.locator('#view-popup:not([hidden])').waitFor();
@@ -632,7 +674,7 @@ export const CLIPS: readonly Clip[] = [
         await wb.closeMenus();
         take.mark('closed', { label });
         await pointTo(context, await centre(menu), 350);
-        await sleep(label === 'Own province' ? 300 : 1200);
+        if (label !== 'Own province') await sleep(1200);
       }
       await viaToolbar(context);
       await endTake(context, rest);
@@ -647,6 +689,17 @@ export const CLIPS: readonly Clip[] = [
       const opens = eventsOf(log, 'open', 2);
       const closes = eventsOf(log, 'closed', 2);
       const end = at(eventOf(log, 'end').t) + 0.4;
+      // While the menu is open, its part over the window is veiled: the menu's panel shows it.
+      const covered = menuVeils(
+        1,
+        area,
+        rectOf(eventOf(log, 'covers')),
+        opens.map((open, i) => ({
+          opens: at(open.t) - 0.2,
+          closes: at((closes[i] as TakeEvent).t) + 0.15,
+        })),
+        end,
+      );
       return single(
         'views',
         log,
@@ -664,6 +717,7 @@ export const CLIPS: readonly Clip[] = [
           still('vscode', frames.right, area),
         ],
         {
+          veils: covered,
           captions: sequence(
             views.map((view) => ({ from: at(view.t) - 0.05, text: `View: ${view.label ?? ''}` })),
             end - 0.4,
@@ -700,6 +754,7 @@ export const CLIPS: readonly Clip[] = [
           await wb.box(popup.locator('.actions').nth(1)),
         ),
       });
+      take.mark('covers', { source: 'vscode', rect: await wb.box(popup) });
       await province.click();
       await quick.locator('input').waitFor();
       await wb.page.keyboard.type(SAMPLE_PROVINCE);
@@ -715,7 +770,7 @@ export const CLIPS: readonly Clip[] = [
       // The loop starts and ends on the closed menu, the pointer at rest.
       const rest = await startTake(context);
       take.mark('start');
-      await sleep(1200);
+      await sleep(500);
       for (const name of [SECOND_PROVINCE, SAMPLE_PROVINCE]) {
         // Up through the editor and along the toolbar: the straight way crosses the window.
         if (name === SECOND_PROVINCE) await toToolbar(context, await centre(button));
@@ -743,7 +798,7 @@ export const CLIPS: readonly Clip[] = [
         await clickOn(context, button, { ms: 300 });
         await popup.waitFor({ state: 'hidden' });
         take.mark('closed', { label: name });
-        await sleep(name === SECOND_PROVINCE ? 1900 : 700);
+        await sleep(name === SECOND_PROVINCE ? 1500 : 300);
       }
       await viaToolbar(context);
       await endTake(context, rest);
@@ -768,6 +823,7 @@ export const CLIPS: readonly Clip[] = [
       const typed = eventsOf(log, 'typed', 2);
       const enters = eventsOf(log, 'enter', 2);
       const closes = eventsOf(log, 'closed', 2);
+      const covers = rectOf(eventOf(log, 'covers'));
       const windowPanel = still('vscode', frames.right, area);
       const SAVE = 'Sample data from a save: Russia, 1719';
       // Each press of Province… is cut a frame after the click, before the quick pick shows its
@@ -796,6 +852,17 @@ export const CLIPS: readonly Clip[] = [
         return {
           span,
           tracks: [{ source: 'vscode', shots }, windowPanel],
+          // The open menu covers the header's top right: veiled there, the menu's panel shows it.
+          veils: menuVeils(
+            1,
+            area,
+            covers,
+            opens.map((open, k) => ({
+              opens: local(open) - 0.2,
+              closes: local(closes[k]) + 0.15,
+            })),
+            span.end - span.s0,
+          ),
           captions: sequence(
             [
               ...(name === undefined
@@ -927,12 +994,13 @@ export const CLIPS: readonly Clip[] = [
         .locator('.monaco-list-row.selected');
       const rest = await startTake(context);
       take.mark('start');
-      // Every widget on the way shows its tip, the window's own included: the pointer comes in from
-      // left of the window and moves between the widgets quickly, so only theirs stay up.
-      const first = OUTLINE_HOVERS[0];
-      await pointTo(context, await wb.screenPoint({ x: -14, y: first.point.y }), 700);
-      for (const { point, widget } of OUTLINE_HOVERS) {
-        await pointTo(context, await wb.screenPoint(point), 180);
+      // Every widget on the way shows its tip, the window's own included, and every way into the
+      // window crosses some: the pointer appears on the first widget, then moves between the
+      // widgets quickly, so only theirs stay up.
+      await sleep(500);
+      await pointTo(context, rest, 0);
+      for (const [i, { point, widget }] of OUTLINE_HOVERS.entries()) {
+        await pointTo(context, await wb.screenPoint(point), i === 0 ? 0 : 180);
         take.mark('hover', { source: 'vscode', rect: await expectTip(wb, widget), label: widget });
         await sleep(900);
       }
@@ -1106,14 +1174,13 @@ export const CLIPS: readonly Clip[] = [
         { w: STAGE.w - GUTTER - area.w * (STAGE.h / area.h), h: STAGE.h },
         sized(area, STAGE.h / area.h),
       );
-      const left = rows(outer.left, 500);
-      const code = codeView(rectOf(eventOf(log, 'line')), left.top, source, CODE_SCALE, 0.45);
-      const problems = viewAt(rectOf(eventOf(log, 'panel')), UI_SCALE, left.bottom, source, {
-        x: 0,
-        y: 0,
-      });
       const keys = eventsOf(log, 'key', 2);
       const problem = eventOf(log, 'problem');
+      // Problems down to its warning, the code above it.
+      const panel = rectOf(eventOf(log, 'panel'));
+      const left = rows(outer.left, outer.left.h - GUTTER - problemsHeight(panel, rectOf(problem)));
+      const code = codeView(rectOf(eventOf(log, 'line')), left.top, source, CODE_SCALE, 0.45);
+      const problems = viewAt(panel, UI_SCALE, left.bottom, source, { x: 0, y: 0 });
       // The row spans the panel; its message is at its left, the ring ending at the fade.
       const row = {
         ...rectOf(problem),
@@ -1218,6 +1285,14 @@ export const CLIPS: readonly Clip[] = [
       await wb.press('Control+W');
       await wb.page.locator('.tab.active', { hasText: 'Script profile' }).waitFor();
       take.mark('closed');
+      // The page's webview draws again a moment after its tab is back.
+      await (
+        await wb.markdownPreview('Script profile')
+      )
+        .locator('a', { hasText: new RegExp(`^${PROFILED}$`) })
+        .first()
+        .waitFor();
+      take.mark('shown');
       await sleep(400);
       await endTake(context, rest, { focus: false });
     },
@@ -1247,7 +1322,8 @@ export const CLIPS: readonly Clip[] = [
       const clicking = at(eventOf(log, 'clicking').t);
       const opened = at(eventOf(log, 'opened').t);
       const closing = at(eventOf(log, 'closing').t);
-      const closed = at(eventOf(log, 'closed').t);
+      // The page back, drawn: a frame of its blank webview before.
+      const shown = Math.max(at(eventOf(log, 'shown').t), at(eventOf(log, 'closed').t) + 0.15);
       const end = at(eventOf(log, 'end').t) + 0.4;
       return single(
         'profile',
@@ -1257,10 +1333,12 @@ export const CLIPS: readonly Clip[] = [
         [
           {
             source: 'vscode',
+            // Cuts, not moves: the page and the file are different documents, and a move
+            // between them reads as a scroll of either.
             shots: [
               { at: 0, frame: STAGE, view: shownTable },
-              { at: opened - 0.05, frame: STAGE, view: blockView, move: 0.5 },
-              { at: closed - 0.05, frame: STAGE, view: shownTable, move: 0.5 },
+              { at: opened + 0.05, frame: STAGE, view: blockView, move: 0 },
+              { at: shown + 0.05, frame: STAGE, view: shownTable, move: 0 },
             ],
           },
         ],
@@ -1341,17 +1419,16 @@ export const CLIPS: readonly Clip[] = [
       const source = sources['vscode'] as Source;
       const s0 = eventOf(log, 'start').t - LEAD;
       const at = (t: number): number => t - s0;
-      const panels = rows(STAGE, 500);
-      // The editor alone across the stage, without its scroll bar or the preview beside it.
-      const line = rectOf(eventOf(log, 'line'));
-      const code = codeView(line, panels.top, source, panels.top.w / (line.w - 40), 0.25);
-      const problems = viewAt(rectOf(eventOf(log, 'panel')), UI_SCALE, panels.bottom, source, {
-        x: 0,
-        y: 0,
-      });
       const keys = eventsOf(log, 'key', 2);
       const province = eventOf(log, 'province');
       const idea = eventOf(log, 'idea');
+      // Problems down to its second warning, the code above it: the event's lines are short, so
+      // the editor's left part, its lines larger, its right part fading out.
+      const panel = rectOf(eventOf(log, 'panel'));
+      const panels = rows(STAGE, STAGE.h - GUTTER - problemsHeight(panel, rectOf(idea)));
+      const line = rectOf(eventOf(log, 'line'));
+      const code = codeView(line, panels.top, source, NAMES_CODE_SCALE, 0.25);
+      const problems = viewAt(panel, UI_SCALE, panels.bottom, source, { x: 0, y: 0 });
       const undos = eventsOf(log, 'undo', 2);
       const walk = at(eventOf(log, 'walk').t);
       const end = at(eventOf(log, 'end').t) + 0.4;

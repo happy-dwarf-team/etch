@@ -144,11 +144,24 @@ export interface Highlight {
   readonly rect: Rect;
 }
 
+/**
+ * A rect of a panel's source veiled from `from` to `to`: frosted over, so that what covers it in
+ * the master there and another panel shows whole (a preview menu open over the window) does not
+ * show cut off at the panel's edge.
+ */
+export interface Veil {
+  readonly from: number;
+  readonly to: number;
+  readonly panel: number;
+  readonly rect: Rect;
+}
+
 export interface Segment {
   readonly duration: number;
   readonly panels: readonly Panel[];
   readonly captions: readonly Caption[];
   readonly highlights: readonly Highlight[];
+  readonly veils?: readonly Veil[];
 }
 
 export interface EditSpec {

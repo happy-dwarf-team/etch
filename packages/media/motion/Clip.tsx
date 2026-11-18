@@ -30,6 +30,7 @@ import {
   type Panel,
   type PanelState,
   type Segment,
+  type Veil,
 } from '../src/edit.ts';
 
 const COLOURS = {
@@ -44,6 +45,8 @@ const SANS = '"IBM Plex Sans Variable", sans-serif';
 const MONO = '"JetBrains Mono Variable", monospace';
 /** How long captions and highlights fade in and out. */
 const FADE = 0.2;
+/** How long a veil fades in and out: as long as a menu's panel takes to unfold (`UNFOLD`). */
+const VEIL_FADE = 0.12;
 
 export function Clip({ spec }: { spec: EditSpec }) {
   const [handle] = useState(() => delayRender('fonts'));
@@ -99,6 +102,7 @@ function SegmentView({ spec, segment }: { spec: EditSpec; segment: Segment }) {
           spec={spec}
           panel={segment.panels[i] as Panel}
           state={states[i] as PanelState}
+          veils={(segment.veils ?? []).filter((veil) => veil.panel === i)}
           t={t}
         />
       ))}
@@ -121,11 +125,13 @@ function PanelView({
   spec,
   panel,
   state,
+  veils,
   t,
 }: {
   spec: EditSpec;
   panel: Panel;
   state: PanelState;
+  veils: readonly Veil[];
   t: number;
 }) {
   const source = spec.sources[panel.source];
@@ -180,6 +186,30 @@ function PanelView({
           since={click === undefined ? undefined : sourceTime - click}
         />
       )}
+      {veils.map((veil, i) => {
+        const opacity = Math.max(
+          0,
+          Math.min(1, (t - veil.from) / VEIL_FADE, (veil.to - t) / VEIL_FADE),
+        );
+        if (opacity <= 0) return null;
+        return (
+          <div
+            key={i}
+            style={{
+              position: 'absolute',
+              left: (veil.rect.x - view.x) * scale,
+              top: (veil.rect.y - view.y) * scale,
+              width: veil.rect.w * scale,
+              height: veil.rect.h * scale,
+              opacity,
+              backdropFilter: 'blur(18px) brightness(0.5) saturate(0.4)',
+              background: 'rgb(31 32 36 / 0.35)',
+              border: '1px solid rgb(255 255 255 / 0.08)',
+              borderRadius: 8,
+            }}
+          />
+        );
+      })}
     </div>
   );
 }
