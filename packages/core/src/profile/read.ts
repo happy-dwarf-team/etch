@@ -134,7 +134,7 @@ export function readProfile(text: string, origin: ProfileOrigin): ReadProfile {
 
   let window: string;
   try {
-    window = text$(required(root, 'window'), 'window');
+    window = text$(required(root, 'window'), '"window"');
   } catch (error) {
     fault(error);
     return { file: undefined, diagnostics };
@@ -151,7 +151,7 @@ export function readProfile(text: string, origin: ProfileOrigin): ReadProfile {
   let defaultView: ProfileFile['defaultView'];
   try {
     const node = member(root, 'checkedWith');
-    if (node !== undefined) checkedWith = text$(node.value, 'checkedWith');
+    if (node !== undefined) checkedWith = text$(node.value, '"checkedWith"');
   } catch (error) {
     fault(error);
   }
@@ -164,7 +164,7 @@ export function readProfile(text: string, origin: ProfileOrigin): ReadProfile {
   try {
     const node = member(root, 'defaultView');
     if (node !== undefined)
-      defaultView = { id: text$(node.value, 'defaultView'), range: node.value };
+      defaultView = { id: text$(node.value, '"defaultView"'), range: node.value };
   } catch (error) {
     fault(error);
   }
@@ -355,9 +355,11 @@ function readContent(
 ): Content {
   const props = object(node, `the content of "${key.key}"`, [...SOURCE_KEYS, 'sizedBy', 'note']);
   optionalText(props.get('note'), 'note');
-  const sizedBy = optionalText(props.get('sizedBy'), '"sizedBy"');
-  if (sizedBy === '')
-    throw new Faulty('"sizedBy" is a localisation key.', props.get('sizedBy') ?? node);
+  const sizedByNode = props.get('sizedBy');
+  if (sizedByNode !== undefined && (sizedByNode.kind !== 'string' || sizedByNode.value === '')) {
+    throw new Faulty('"sizedBy" is a localisation key.', sizedByNode);
+  }
+  const sizedBy = optionalText(sizedByNode, 'sizedBy');
   return {
     id,
     path: pathKey(key),
@@ -647,7 +649,7 @@ function readSelector(
   ]);
   const kindNode = props.get('kind');
   if (kindNode === undefined) throw new Faulty(`Selector "${id}" has no "kind".`, node);
-  const kind = text$(kindNode, 'kind');
+  const kind = text$(kindNode, '"kind"');
   if (!(SELECTOR_KINDS as readonly string[]).includes(kind)) {
     throw new Faulty(`"kind" is one of ${SELECTOR_KINDS.join(', ')}, not "${kind}".`, kindNode);
   }
@@ -740,7 +742,7 @@ function readGroup(
   return {
     id,
     ...(label === undefined ? {} : { label }),
-    selector: text$(selectorNode, 'selector'),
+    selector: text$(selectorNode, '"selector"'),
     members: membersNode.members.map((entry) => ({ value: entry.key, ...pathOf(entry.value) })),
     none: noneNode?.kind === 'boolean' && noneNode.value,
     ...written,
