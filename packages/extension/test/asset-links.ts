@@ -9,7 +9,7 @@ import * as path from 'node:path';
 import * as vscode from 'vscode';
 
 /** An A8R8G8B8 DDS file of one colour, without a mip chain. */
-function dds(width: number, height: number, bgra: readonly number[]): Uint8Array {
+export function dds(width: number, height: number, bgra: readonly number[]): Uint8Array {
   const bytes = new Uint8Array(128 + width * height * 4);
   const view = new DataView(bytes.buffer);
   view.setUint32(0, 0x20534444, true);
@@ -75,7 +75,7 @@ async function fixtureGame(): Promise<string> {
   return root;
 }
 
-function markdownOf(hovers: vscode.Hover[]): string {
+export function markdownOf(hovers: vscode.Hover[]): string {
   return hovers
     .flatMap((hover) => hover.contents)
     .map((content) =>
@@ -88,7 +88,7 @@ function markdownOf(hovers: vscode.Hover[]): string {
     .join('\n');
 }
 
-function positionOf(document: vscode.TextDocument, text: string): vscode.Position {
+export function positionOf(document: vscode.TextDocument, text: string): vscode.Position {
   const offset = document.getText().indexOf(text);
   assert.ok(offset >= 0, `the fixture has ${text}`);
   return document.positionAt(offset + 2);

@@ -4,6 +4,7 @@ import * as assert from 'node:assert/strict';
 import * as vscode from 'vscode';
 import type { EtchApi } from '../src/extension.ts';
 import { testAssetLinks } from './asset-links.ts';
+import { testSpriteLinks } from './sprite-links.ts';
 import { testBuildCheck } from './build-check.ts';
 import { testData } from './data.ts';
 import { testGameText } from './game-text.ts';
@@ -85,4 +86,5 @@ export async function run(): Promise<void> {
   await testScriptedSkeleton(api);
   await testTexturePreview(api);
   await testAssetLinks();
+  await testSpriteLinks();
 }

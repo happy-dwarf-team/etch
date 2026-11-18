@@ -9,20 +9,14 @@ import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { assetReferences, parseScript, type AssetReference } from '@etch/core';
 import type { GameFiles } from '@etch/core/playset';
-import { inspectTexture } from '@etch/renderer/inspect';
-import { encodePng, thumbnail } from './png.ts';
 import { linkedFiles } from './script-profile-view.ts';
+import { TextureThumbnails } from './texture-thumbnail.ts';
 
 /** The files whose asset paths get links and hovers. */
 export const ASSET_SELECTOR: vscode.DocumentSelector = [
   { scheme: 'file', pattern: '**/*.gfx' },
   { scheme: 'file', pattern: '**/*.asset' },
 ];
-
-/** The thumbnail's longest side in a hover, in pixels. */
-const THUMBNAIL_SIZE = 128;
-/** Thumbnails kept, by file and modification time. */
-const CACHE_SIZE = 32;
 
 /** Where an asset path leads: the file on disk and the layer of the playset it comes from. */
 export interface ResolvedAsset {
@@ -35,7 +29,7 @@ export interface ResolvedAsset {
 
 export class AssetLinks implements vscode.DocumentLinkProvider, vscode.HoverProvider {
   private files: Promise<GameFiles | undefined> | undefined;
-  private readonly thumbnails = new Map<string, Promise<string>>();
+  private readonly thumbnails = new TextureThumbnails();
   private readonly output: vscode.LogOutputChannel;
 
   constructor(output: vscode.LogOutputChannel) {
@@ -80,7 +74,7 @@ export class AssetLinks implements vscode.DocumentLinkProvider, vscode.HoverProv
     markdown.appendMarkdown(`\`${resolved.path}\` — ${resolved.source}`);
     if (reference.kind === 'texture') {
       try {
-        markdown.appendMarkdown(`\n\n${await this.thumbnail(resolved.absolutePath)}`);
+        markdown.appendMarkdown(`\n\n${await this.thumbnails.markdown(resolved.absolutePath)}`);
       } catch (error) {
         markdown.appendMarkdown(`\n\nEtch cannot show it: ${messageOf(error)}.`);
       }
@@ -126,37 +120,6 @@ export class AssetLinks implements vscode.DocumentLinkProvider, vscode.HoverProv
       },
     );
     return this.files;
-  }
-
-  /** The thumbnail's Markdown: a line of facts and the image, cached by file and time. */
-  private async thumbnail(absolutePath: string): Promise<string> {
-    const info = await stat(absolutePath);
-    const key = `${absolutePath}|${String(info.mtimeMs)}|${String(info.size)}`;
-    let entry = this.thumbnails.get(key);
-    if (entry === undefined) {
-      entry = (async () => {
-        const bytes = await vscode.workspace.fs.readFile(vscode.Uri.file(absolutePath));
-        const { summary, rgba } = inspectTexture(absolutePath, Uint8Array.from(bytes));
-        const small = thumbnail(summary.width, summary.height, rgba, THUMBNAIL_SIZE);
-        const png = Buffer.from(encodePng(small.width, small.height, small.rgba)).toString(
-          'base64',
-        );
-        const facts = [
-          `${String(summary.width)} × ${String(summary.height)}`,
-          `${summary.container} ${summary.format}${summary.dx10 ? ' (DX10 header)' : ''}`,
-          summary.mipLevels === 1 ? 'no mip chain' : `${String(summary.mipLevels)} mip levels`,
-          summary.hasAlpha ? 'alpha used' : 'opaque',
-        ];
-        return `${facts.join(' · ')}\n\n![${path.basename(absolutePath)}](data:image/png;base64,${png})`;
-      })();
-      this.thumbnails.set(key, entry);
-      entry.catch(() => this.thumbnails.delete(key));
-      if (this.thumbnails.size > CACHE_SIZE) {
-        const oldest = this.thumbnails.keys().next().value;
-        if (oldest !== undefined) this.thumbnails.delete(oldest);
-      }
-    }
-    return entry;
   }
 }
 

@@ -71,6 +71,31 @@ export function guiDiagnostics(
   return out.sort((a, b) => a.start - b.start);
 }
 
+/** A sprite a `.gui` file names: the value node and its text. */
+export interface SpriteReference {
+  readonly node: ScalarNode;
+  readonly name: string;
+}
+
+/**
+ * The sprite names of a `.gui` file, the ones `guiDiagnostics` checks: `spriteType`,
+ * `quadTextureSprite` and a list's `background`, including those inside `if_resolution` blocks.
+ */
+export function spriteReferences(file: GuiFile): SpriteReference[] {
+  const out: SpriteReference[] = [];
+  for (const { widget } of allWidgets(file)) {
+    for (const property of referenceProperties(widget)) {
+      const value = property.value;
+      if (value?.kind !== 'scalar') continue;
+      const key = keyOf(property);
+      if (!SPRITE_KEYS.has(key) && !(key === 'background' && isList(widget))) continue;
+      const name = scalarText(value, file.constants);
+      if (name !== undefined && name !== '') out.push({ node: value, name });
+    }
+  }
+  return out.sort((a, b) => a.node.start - b.node.start);
+}
+
 /** A widget's properties including those of every `if_resolution` block, whichever applies. */
 function* referenceProperties(widget: Widget): Generator<PropertyNode> {
   for (const property of widget.properties) {

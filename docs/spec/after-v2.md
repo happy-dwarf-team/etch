@@ -546,8 +546,12 @@ refresh is a step of the 3.0.0 release.
   `pdxmesh`'s `meshsettings` is in its mesh's folder, any other bare name in
   the naming file's folder: over EU4 1.37.5 all 7,730 asset paths of
   `interface/*.gfx` and `gfx/**/*.asset` resolve so but 30 textures vanilla
-  itself lacks (`packages/core/test/asset-paths.vanilla.test.ts`). A `.mesh`
-  viewer is not done.
+  itself lacks (`packages/core/test/asset-paths.vanilla.test.ts`). In `.gui`
+  files a sprite name's hover shows the sprite the playset's `InterfaceIndex`
+  resolves (the last definition), its frames, its `.gfx` file and layer and its
+  texture's thumbnail (the first frame of a strip), and Go to Definition opens
+  the `.gfx` file at its name. Sprite names in scripts (an event's `picture`, a
+  decision's icon) and a `.mesh` viewer are not done.
 
 ## Open issues
 
