@@ -172,7 +172,9 @@ export function registerScriptProfile(
         }
         output.info(`Script profile: ${latest.path}`);
         await mkdir(storage.fsPath, { recursive: true });
-        await writeFile(page.fsPath, await pageText(latest.path, page, output), 'utf8');
+        // With a BOM, which VS Code reads as UTF-8 whatever `files.encoding` says: modders often set
+        // it to the game files' windows1252, which shows the page's µ and · as Âµ and Â·.
+        await writeFile(page.fsPath, `\ufeff${await pageText(latest.path, page, output)}`, 'utf8');
         await vscode.commands.executeCommand('markdown.showPreview', page);
         // The same numbers above the measured blocks of the script files.
         try {

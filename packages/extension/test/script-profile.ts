@@ -44,6 +44,9 @@ export async function testScriptProfile(): Promise<void> {
 
   const settings = vscode.workspace.getConfiguration('etch');
   await settings.update('gamePath', game, vscode.ConfigurationTarget.Global);
+  // The game files' encoding, as modders set it: the page is still read as UTF-8.
+  const files = vscode.workspace.getConfiguration('files');
+  await files.update('encoding', 'windows1252', vscode.ConfigurationTarget.Global);
   try {
     const shown = await vscode.commands.executeCommand<vscode.Uri | undefined>(SHOW_SCRIPT_PROFILE);
     assert.ok(shown !== undefined, 'the command answers the page');
@@ -51,6 +54,7 @@ export async function testScriptProfile(): Promise<void> {
     const document = await vscode.workspace.openTextDocument(shown);
     const page = document.getText();
     assert.match(page, /# Script profile/);
+    assert.ok(page.includes('| Mean (µs) | Max (µs) |'), 'µ reads as µ under windows1252');
     assert.match(page, /30 days \(1444\.11\.11 to 1444\.12\.11\)/);
     assert.match(page, /\*\*Interrupted\*\* \(interrupted_session\)/);
     const link = pageLink(
@@ -115,6 +119,7 @@ export async function testScriptProfile(): Promise<void> {
     assert.deepEqual(await lensesOf(), [], 'no lens after hiding');
   } finally {
     await settings.update('gamePath', undefined, vscode.ConfigurationTarget.Global);
+    await files.update('encoding', undefined, vscode.ConfigurationTarget.Global);
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
     // Windows can still hold the folder of a file the editor just closed.
     await rm(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
