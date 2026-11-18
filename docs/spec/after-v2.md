@@ -550,8 +550,18 @@ refresh is a step of the 3.0.0 release.
   files a sprite name's hover shows the sprite the playset's `InterfaceIndex`
   resolves (the last definition), its frames, its `.gfx` file and layer and its
   texture's thumbnail (the first frame of a strip), and Go to Definition opens
-  the `.gfx` file at its name. Sprite names in scripts (an event's `picture`, a
-  decision's icon) are not done. Core `@etch/core/asset` reads the game's
+  the `.gfx` file at its name. The same hover and Go to Definition work on the
+  sprite names of script files: an event's `picture` (plain or conditional), a
+  mission's `icon` and an estate privilege's `icon`
+  (`scriptSpriteReferences`). Over EU4 1.37.5 all 4,813 mission and 426
+  privilege icons resolve, and 4,729 of 6,573 event pictures
+  (`packages/core/test/script-sprites.vanilla.test.ts`): of the 358 picture
+  names that do not, 302 are defined only in the DLC archives (`dlc/*/*.zip`,
+  `builtin_dlc`), which Etch's `GameFiles` does not read, and 56 by no `.gfx`
+  file of the game. Reading the archives of the DLCs the player has on, in the
+  game's search order (mods, then DLC, then the game folder), is not done;
+  until then a script name without a sprite gets a hover, not a diagnostic.
+  Core `@etch/core/asset` reads the game's
   asset container in both encodings (binary `@@b@`, text `@@t@`): meshes
   (shapes, vertices, normals, UVs, triangles, materials, skin, skeleton with
   inverse bind matrices) and animations (per-joint sampled channels,
