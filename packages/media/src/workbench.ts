@@ -520,11 +520,14 @@ export class Workbench {
   /**
    * Moves Playwright's mouse to a point of the page (CSS pixels) in eased steps over `ms`, as a
    * hand would, calling `step` with each position in master pixels: the drawn pointer's path.
+   * With `hover: false` the mouse moves at the last step only: the drawn pointer still glides, and
+   * the page hovers nothing on the way (the preview would outline every widget it crosses).
    */
   async glide(
     to: { x: number; y: number },
     ms: number,
     step: (at: { x: number; y: number }) => void,
+    options: { hover?: boolean } = {},
   ): Promise<void> {
     const from = this.mouse ?? to;
     const steps = Math.max(1, Math.round(ms / 16));
@@ -532,7 +535,7 @@ export class Workbench {
       const p = i / steps;
       const e = p < 0.5 ? 4 * p * p * p : 1 - (-2 * p + 2) ** 3 / 2;
       const at = { x: from.x + (to.x - from.x) * e, y: from.y + (to.y - from.y) * e };
-      await this.page.mouse.move(at.x, at.y);
+      if (options.hover !== false || i === steps) await this.page.mouse.move(at.x, at.y);
       step({ x: at.x * DEVICE_SCALE, y: at.y * DEVICE_SCALE });
       await sleep(ms / steps);
     }

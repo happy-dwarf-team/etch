@@ -449,6 +449,25 @@ async function pointTo(
   });
 }
 
+/**
+ * As `pointTo`, but Playwright's mouse reaches `at` at the end only: the drawn pointer glides
+ * there, and the preview outlines no widget on the way, its window and panels included.
+ */
+async function glideOver(
+  { wb, take }: ClipContext,
+  at: { x: number; y: number },
+  ms: number,
+): Promise<void> {
+  await wb.glide(
+    at,
+    ms,
+    (point) => {
+      take.pointerAt(point);
+    },
+    { hover: false },
+  );
+}
+
 /** Points at a locator and clicks it, as a hand would; `paint` waits for the preview's paint. */
 async function clickOn(
   context: ClipContext,
@@ -994,13 +1013,11 @@ export const CLIPS: readonly Clip[] = [
         .locator('.monaco-list-row.selected');
       const rest = await startTake(context);
       take.mark('start');
-      // Every widget on the way shows its tip, the window's own included, and every way into the
-      // window crosses some: the pointer appears on the first widget, then moves between the
-      // widgets quickly, so only theirs stay up.
-      await sleep(500);
-      await pointTo(context, rest, 0);
+      // Every widget on the way would show its tip, the window's own and its panels' included, and
+      // every way crosses some: the drawn pointer glides to each widget, and Playwright's mouse
+      // reaches it at the end only, so only the hovered widgets' tips show.
       for (const [i, { point, widget }] of OUTLINE_HOVERS.entries()) {
-        await pointTo(context, await wb.screenPoint(point), i === 0 ? 0 : 180);
+        await glideOver(context, await wb.screenPoint(point), i === 0 ? 700 : 350);
         take.mark('hover', { source: 'vscode', rect: await expectTip(wb, widget), label: widget });
         await sleep(900);
       }
