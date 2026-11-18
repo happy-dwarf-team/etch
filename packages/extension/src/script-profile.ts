@@ -284,6 +284,31 @@ function figure(value: number, decimals: number): string {
   });
 }
 
+/**
+ * A link from the page, a Markdown file in `pageFolder`, to `target`, both the paths of `file:`
+ * URIs (`/c:/Users/…`), with an optional fragment (`L116`). VS Code's Markdown preview renders no
+ * `file:` link: its markdown-it rejects the scheme, and the whole `[…](…)` stays text. It opens a
+ * link without a scheme itself, joined to the page's folder, at the line its `#L<n>` names. So the
+ * link climbs from the page's folder to the root, one `..` per folder, and goes down to the
+ * target, which may be on another drive: `../../d%3A/SteamLibrary/…`. Each part is encoded, so a
+ * drive's colon does not read as a scheme. `undefined` when either path is not absolute.
+ */
+export function pageLink(
+  pageFolder: string,
+  target: string,
+  fragment?: string,
+): string | undefined {
+  if (!pageFolder.startsWith('/') || !target.startsWith('/')) return undefined;
+  const up = pageFolder.split('/').filter((part) => part !== '').length;
+  const down = target
+    .split('/')
+    .filter((part) => part !== '')
+    .map((part) => encodeURIComponent(part));
+  if (down.length === 0) return undefined;
+  const hash = fragment === undefined ? '' : `#${encodeURIComponent(fragment)}`;
+  return `${'../'.repeat(up)}${down.join('/')}${hash}`;
+}
+
 /** A row's link to where its owner is written: a URI the page can open, and its tooltip. */
 export interface ScriptProfileLink {
   readonly uri: string;

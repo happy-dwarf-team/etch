@@ -1,14 +1,51 @@
 import { mkdtemp, mkdir, rm, utimes, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, posix } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
   findLatestScriptProfile,
+  pageLink,
   parseScriptProfile,
   rowLabel,
   scriptProfileMarkdown,
   type ScriptProfileRow,
 } from '../src/script-profile.ts';
+
+describe('pageLink', () => {
+  const folder = '/c:/Users/me/AppData/Roaming/Code/User/globalStorage/happy-dwarf.etch';
+
+  it('climbs to the root and goes down to the file, on any drive', () => {
+    const up = '../'.repeat(9);
+    expect(
+      pageLink(
+        folder,
+        '/c:/Program Files (x86)/Steam/steamapps/common/Europa Universalis IV/events/a.txt',
+        'L116',
+      ),
+    ).toBe(
+      `${up}c%3A/Program%20Files%20(x86)/Steam/steamapps/common/Europa%20Universalis%20IV/events/a.txt#L116`,
+    );
+    expect(pageLink(folder, '/d:/mods/x #1/b.txt')).toBe(`${up}d%3A/mods/x%20%231/b.txt`);
+    // Linux and macOS paths have no drive.
+    expect(pageLink('/home/me/.config', '/home/me/mod/c.txt', 'L2')).toBe(
+      '../../../home/me/mod/c.txt#L2',
+    );
+  });
+
+  it('resolves, joined to the page folder as the preview joins it, to the target', () => {
+    const target = '/d:/SteamLibrary/steamapps/workshop/content/236850/1/events/e.txt';
+    const link = pageLink(folder, target);
+    if (link === undefined) throw new Error('no link');
+    // vscode-uri's joinPath, which the Markdown language service uses, is a POSIX join.
+    expect(posix.join(folder, decodeURIComponent(link))).toBe(target);
+  });
+
+  it('gives no link for a path that is not absolute', () => {
+    expect(pageLink(folder, 'events/a.txt')).toBeUndefined();
+    expect(pageLink('relative', '/c:/a.txt')).toBeUndefined();
+    expect(pageLink(folder, '/')).toBeUndefined();
+  });
+});
 
 /** The row at an index, which the test expects to be there. */
 function at(rows: readonly ScriptProfileRow[], index: number): ScriptProfileRow {
