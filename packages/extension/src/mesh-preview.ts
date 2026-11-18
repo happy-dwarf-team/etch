@@ -84,7 +84,11 @@ async function texturesOf(mesh: PdxMesh, folder: string): Promise<Record<string,
 }
 
 /** The `.anim` files beside the mesh whose joints name at least half of a skinned shape's bones. */
-async function animationsOf(mesh: PdxMesh, folder: string): Promise<MeshAnimationEntry[]> {
+async function animationsOf(
+  mesh: PdxMesh,
+  folder: string,
+  stem: string,
+): Promise<MeshAnimationEntry[]> {
   const skeletons = mesh.shapes.filter((shape) => shape.skeleton.length > 0);
   if (skeletons.length === 0) return [];
   let entries: [string, vscode.FileType][];
@@ -107,7 +111,11 @@ async function animationsOf(mesh: PdxMesh, folder: string): Promise<MeshAnimatio
       // An animation Etch cannot read is not offered.
     }
   }
-  return found.sort((a, b) => a.name.localeCompare(b.name));
+  // The mesh's own animations first (`carrack_idle.anim` for `carrack.mesh`): ships and units
+  // share bone names, so other meshes' animations beside it fit as well.
+  const own = (entry: MeshAnimationEntry): number =>
+    entry.name.toLowerCase().startsWith(`${stem.toLowerCase()}_`) ? 0 : 1;
+  return found.sort((a, b) => own(a) - own(b) || a.name.localeCompare(b.name));
 }
 
 class MeshPreviewProvider implements vscode.CustomReadonlyEditorProvider<MeshDocument> {
@@ -157,7 +165,7 @@ class MeshPreviewProvider implements vscode.CustomReadonlyEditorProvider<MeshDoc
         name,
         bytes,
         textures: await texturesOf(mesh, folder),
-        animations: await animationsOf(mesh, folder),
+        animations: await animationsOf(mesh, folder, path.basename(file, path.extname(file))),
       };
       await webview.postMessage(message);
     };
