@@ -638,7 +638,9 @@ export const LIVE_CLIPS: readonly Pick<Clip, 'id' | 'edit'>[] = [
       // Etch's part in it.
       const s0 = t(hovers[0] as TakeEvent);
       const at = (time: number): number => time - s0;
-      const click = at(t(eventOf(log, 'pick.click')));
+      const clickEvent = eventOf(log, 'pick.click');
+      const click = at(t(clickEvent));
+      const clickAt = { t: t(clickEvent), ...(clickEvent.point ?? { x: 0, y: 0 }) };
       const jump = eventOf(log, 'pick.jump');
       const end = at(t(eventOf(log, 'pick.end')));
       // The hovered widgets at 2×, the labels and tips beside them in view.
@@ -683,6 +685,12 @@ export const LIVE_CLIPS: readonly Pick<Clip, 'id' | 'edit'>[] = [
                   { at: 0, frame: STAGE, view: hovered },
                   { at: split, frame: top, view: gameSide, move: 0.6 },
                 ]),
+                // The click's ring at the game's own pointer, which its master records.
+                pointer: {
+                  points: [{ t: clickAt.t, x: clickAt.x, y: clickAt.y }],
+                  clicks: [clickAt.t],
+                  arrow: false,
+                },
               },
               {
                 source: 'vscode',

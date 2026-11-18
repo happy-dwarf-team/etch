@@ -113,6 +113,11 @@ export interface PointerPath {
   readonly points: readonly (Point & { readonly t: number })[];
   /** Source times of clicks. */
   readonly clicks: readonly number[];
+  /**
+   * False for a master that records its own pointer (the game's): only a click's ring is drawn,
+   * over the recorded pointer, never a second arrow.
+   */
+  readonly arrow?: boolean;
 }
 
 export interface Panel {

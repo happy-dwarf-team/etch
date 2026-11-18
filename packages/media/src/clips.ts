@@ -98,21 +98,18 @@ function problemsHeight(panel: Rect, last: Rect): number {
 
 /**
  * Parts of the game screen in game pixels, where the large layout (1440 × 900) draws the province
- * view; the live game draws the same at 2560 × 1440, `LIVE_SHIFT` lower.
+ * view, as the live game does at the preview's resolution.
  *
- * The province view whole, the window and the buildings panel beside it.
- */
-export const WINDOW_AREA: Rect = { x: -6, y: 190, w: 816, h: 710 };
-/**
  * The window's lower part, where the trade node button is, about as tall as the stage at 2×: from
  * the gap above the tax rows, so no widget is cut at its top, to the window's bottom edge.
  */
 export const TRADE_AREA: Rect = { x: -6, y: 467, w: 472, h: 433 };
 /**
  * The window's header and demographics, where a province's names are: its tabs, names, area and
- * region, development, culture and religion, from the window's left border to its right. The open
- * `Data ▾` covers its top right (screen x 390 and right, down to y 339): `data` holds the window's
- * panel on its last frame before the menu opened until the menu closes.
+ * region, development, culture and religion, from the window's left border to its right, down to
+ * the autonomy row; where a foreign province's view differs too (`views`). The open `Data ▾` covers
+ * its top right (screen x 390 and right, down to y 339): `data` holds the window's panel on its
+ * last frame before the menu opened until the menu closes.
  */
 const HEADER_AREA: Rect = { x: -10, y: 194, w: 498, h: 401 };
 /** The buildings panel, whose background `problems` misspells. */
@@ -726,8 +723,12 @@ export const CLIPS: readonly Clip[] = [
     edit(log, sources) {
       const s0 = eventOf(log, 'start').t - LEAD;
       const at = (t: number): number => t - s0;
-      const menu = menuViews(rectOf(eventOf(log, 'button')), rectOf(eventOf(log, 'menu')));
-      const area = onScreen(rectOf(eventOf(log, 'screen')), WINDOW_AREA);
+      // The menu to just under its last view: 12 px took in the rule over the selectors under
+      // them, which read as a menu cut off.
+      const menu = menuViews(rectOf(eventOf(log, 'button')), rectOf(eventOf(log, 'menu')), 6);
+      // The window's upper half, where a foreign province's view differs (the banner, the owner's
+      // shield, Diplomacy), twice as large as the whole window with its buildings panel would be.
+      const area = onScreen(rectOf(eventOf(log, 'screen')), HEADER_AREA);
       const frames = pair(sized(menu.open, UI_SCALE), sized(area, STAGE.h / area.h));
       const views = eventsOf(log, 'view', 2);
       const opens = eventsOf(log, 'open', 2);

@@ -187,6 +187,7 @@ function PanelView({
           y={(pointer.y - view.y) * scale}
           scale={scale}
           since={click === undefined ? undefined : sourceTime - click}
+          arrow={panel.pointer?.arrow !== false}
         />
       )}
     </div>
@@ -202,11 +203,13 @@ function PointerView({
   y,
   scale,
   since,
+  arrow,
 }: {
   x: number;
   y: number;
   scale: number;
   since: number | undefined;
+  arrow: boolean;
 }) {
   const size = 22 * scale;
   const ripple = since !== undefined && since < 0.5 ? since / 0.5 : undefined;
@@ -226,20 +229,22 @@ function PointerView({
           }}
         />
       )}
-      <svg
-        viewBox="0 0 24 24"
-        width={size}
-        height={size}
-        style={{ position: 'absolute', left: x - size * 0.12, top: y - size * 0.06 }}
-      >
-        <path
-          d="M3 2 L3 19 L7.5 15 L10.5 22 L13.5 20.7 L10.6 14 L17 14 Z"
-          fill="#fff"
-          stroke="#111"
-          strokeWidth="1.4"
-          strokeLinejoin="round"
-        />
-      </svg>
+      {arrow && (
+        <svg
+          viewBox="0 0 24 24"
+          width={size}
+          height={size}
+          style={{ position: 'absolute', left: x - size * 0.12, top: y - size * 0.06 }}
+        >
+          <path
+            d="M3 2 L3 19 L7.5 15 L10.5 22 L13.5 20.7 L10.6 14 L17 14 Z"
+            fill="#fff"
+            stroke="#111"
+            strokeWidth="1.4"
+            strokeLinejoin="round"
+          />
+        </svg>
+      )}
     </>
   );
 }
