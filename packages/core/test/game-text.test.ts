@@ -75,6 +75,10 @@ describe('Windows-1252', () => {
     expect(inWindows1252('\u069e')).toBe(false);
     expect(inWindows1252('ą')).toBe(false);
     expect(inWindows1252('')).toBe(true);
+    // The five bytes the code page leaves undefined are kept as their C1 controls; U+0080 is not
+    // one of them (0x80 is €).
+    expect(inWindows1252('\u0081\u008d\u008f\u0090\u009d')).toBe(true);
+    expect(inWindows1252('\u0080')).toBe(false);
   });
 
   it('round-trips every defined character', () => {

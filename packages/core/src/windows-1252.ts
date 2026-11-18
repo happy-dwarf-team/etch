@@ -65,17 +65,3 @@ export function inWindows1252(text: string): boolean {
   }
   return true;
 }
-
-/**
- * Encodes game text back into the bytes it was decoded from, the inverse of
- * {@link decodeWindows1252}: unlike a save, the five undefined bytes, kept as
- * C1 controls, come back as themselves. Anything else outside the code page
- * becomes `?`, as a save would write it.
- */
-export function encodeDecodedWindows1252(text: string): Uint8Array {
-  const bytes = new Uint8Array(text.length);
-  for (let i = 0; i < text.length; i++) {
-    bytes[i] = ENCODE_DECODED[text.charCodeAt(i)] as number;
-  }
-  return bytes;
-}
