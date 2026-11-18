@@ -5,7 +5,8 @@
  * `error.log`.
  *
  * - `add_idea_group`, `remove_idea_group` and `remove_idea` crash when the effect runs or its
- *   tooltip is built.
+ *   tooltip is built. So does `change_graphical_culture`, whose value is a graphical culture
+ *   unless it is a country tag or a scope.
  * - `provincial_institution_progress`'s `which`, `num_of_religion`'s `religion` and
  *   `had_active_policy`'s `policy` crash when the trigger is evaluated: a decision's `allow` with
  *   one of them crashed the game on the first day, though no country met its `potential`.
@@ -17,9 +18,12 @@
  *   are case-sensitive was not read.
  *
  * Each key was read in the game's code and crashed a running game on 17.11.2026 (EU4 engine lab,
- * `docs/script-unchecked-indexes.md`); `seenInGame` keeps a key added from a reading alone apart,
- * and its message says so. The decisions that held the tooltip keys in `allow` showed whether it held without a
- * crash, until a hover over the tooltip.
+ * `docs/script-unchecked-indexes.md`), `advisor` and `change_graphical_culture` on 18.11.2026;
+ * `seenInGame` keeps a key added from a reading alone apart, and its message says so. The
+ * decisions that held the tooltip keys in `allow` were shown without a crash, until a hover over
+ * the tooltip. `ruler_has_personality`, `heir_has_personality`, `consort_has_personality`,
+ * `has_institution` and `is_institution_enabled` with an unknown name were tested the same way and
+ * only show an empty tooltip: they are left out.
  *
  * `has_idea` logs "Invalid idea" when the file is read but keeps the missing idea, and building
  * its tooltip crashes the game: its warning names the log line. Keys whose unknown name the game
@@ -38,7 +42,9 @@ export type ScriptNameKind =
   | 'disaster'
   | 'icon'
   | 'institution'
-  | 'estate-agenda';
+  | 'estate-agenda'
+  | 'advisor-type'
+  | 'graphical-culture';
 
 /** When an unknown name crashes the game. */
 export type ScriptNameCrash = 'effect' | 'trigger' | 'tooltip';
@@ -66,6 +72,8 @@ export const SCRIPT_NAME_KEYS: ReadonlyMap<string, ScriptNameKey> = new Map<stri
   ['has_not_spawned_rebels', { kind: 'rebel-type', crash: 'tooltip', seenInGame: true }],
   ['has_active_estate_agenda', { kind: 'estate-agenda', crash: 'tooltip', seenInGame: true }],
   ['has_idea', { kind: 'idea', crash: 'tooltip', seenInGame: true, logged: 'Invalid idea' }],
+  ['advisor', { kind: 'advisor-type', crash: 'tooltip', seenInGame: true }],
+  ['change_graphical_culture', { kind: 'graphical-culture', crash: 'effect', seenInGame: true }],
 ]);
 
 /** A block member that is a name, by the member's key. */
@@ -108,6 +116,15 @@ export const SCRIPT_NAME_KINDS: ReadonlyMap<
     'estate-agenda',
     { what: 'estate agenda', folder: 'common/estate_agendas', caseSensitive: false },
   ],
+  ['advisor-type', { what: 'advisor type', folder: 'common/advisortypes', caseSensitive: false }],
+  [
+    'graphical-culture',
+    {
+      what: 'graphical culture',
+      folder: 'common/graphicalculturetype.txt',
+      caseSensitive: false,
+    },
+  ],
 ]);
 
 /** Keys whose block shows its own tooltip instead of its triggers'. */
@@ -116,6 +133,14 @@ const OWN_TOOLTIP_KEYS: ReadonlySet<string> = new Set(['custom_trigger_tooltip']
 /** The names the playset defines, by kind; a kind the playset has no files for is absent. */
 export interface ScriptNames {
   readonly byKind: ReadonlyMap<ScriptNameKind, ReadonlySet<string>>;
+  /**
+   * The playset's scripted effects and triggers, in lower case. A block under one of these keys,
+   * below a file's top level, is a call, and its members are the call's arguments
+   * (`my_effect = { advisor = yes }` gives `$advisor$` the text `yes`), not triggers or effects,
+   * so they are not checked. At the top level of `common/scripted_triggers` the same key is the
+   * definition, which is checked.
+   */
+  readonly scripted?: ReadonlySet<string>;
 }
 
 export type ScriptNameDiagnosticCode = `unknown-${ScriptNameKind}`;
@@ -202,7 +227,7 @@ export function readReligionNames(parsed: ParsedScript, into: ScriptNameSets): v
 
 /**
  * Adds the top-level blocks of a file as names of a kind (policies, rebel types, disasters,
- * institutions, estate agendas).
+ * institutions, estate agendas, advisor types).
  */
 export function readTopLevelNames(
   parsed: ParsedScript,
@@ -213,14 +238,25 @@ export function readTopLevelNames(
   for (const block of blocks(parsed.entries)) names.add(block.key);
 }
 
+/** Adds the bare words of a file that is only a list as names of a kind (graphical cultures). */
+export function readBareNames(
+  parsed: ParsedScript,
+  kind: ScriptNameKind,
+  into: ScriptNameSets,
+): void {
+  const names = setOf(into, kind);
+  for (const entry of parsed.entries) if (entry.kind === 'scalar') names.add(entry.text);
+}
+
 /**
  * Values that are not names but a scope or a variable: a scripted effect's `$argument$`, an
- * `event_target:` or other prefixed scope, and the scope keywords and country tags a religion can
- * be given as (`num_of_religion = { religion = ROOT }`).
+ * `event_target:` or other prefixed scope, and the scope keywords and country tags a religion
+ * (`num_of_religion = { religion = ROOT }`) or a graphical culture (`change_graphical_culture =
+ * FRA`, which takes that country's) can be given as.
  */
 function isScopeOrVariable(name: string, kind: ScriptNameKind): boolean {
   if (/[$:@[]/.test(name)) return true;
-  if (kind !== 'religion') return false;
+  if (kind !== 'religion' && kind !== 'graphical-culture') return false;
   return (
     /^(?:root|this|(?:prev|from)+|owner|controller|emperor|capital)$/i.test(name) ||
     /^[A-Z][A-Z0-9]{2}$/.test(name)
@@ -231,14 +267,17 @@ function isScopeOrVariable(name: string, kind: ScriptNameKind): boolean {
  * The names in a parsed script file that the playset does not define, in text order. A kind the
  * playset has no files for is not checked. `ownTooltip` reads the text as inside a block that
  * shows its own tooltip, such as a string argument written inside a `custom_trigger_tooltip`.
+ * `body` reads the text as the inside of a trigger or an effect, such as a string argument's
+ * script, whose top level can call a scripted effect; otherwise it is a whole file's.
  */
 export function checkScriptNames(
   parsed: ParsedScript,
   names: ScriptNames,
   ownTooltip = false,
+  body = false,
 ): ScriptNameDiagnostic[] {
   const found: ScriptNameDiagnostic[] = [];
-  walk(parsed.entries, undefined, ownTooltip, names, found);
+  walk(parsed.entries, undefined, ownTooltip, !body, names, found);
   return found;
 }
 
@@ -251,20 +290,22 @@ function walk(
   entries: readonly EntryNode[],
   members: ReadonlyMap<string, ScriptNameKey> | undefined,
   ownTooltip: boolean,
+  top: boolean,
   names: ScriptNames,
   found: ScriptNameDiagnostic[],
 ): void {
   for (const entry of entries) {
     if (entry.kind === 'block') {
-      walk(entry.entries, undefined, ownTooltip, names, found);
+      walk(entry.entries, undefined, ownTooltip, false, names, found);
       continue;
     }
     if (entry.kind !== 'property') continue;
     const key = entry.key.text.toLowerCase();
     const value = entry.value;
     if (value?.kind === 'block') {
+      if (!top && names.scripted?.has(key) === true) continue;
       const inner = ownTooltip || OWN_TOOLTIP_KEYS.has(key);
-      walk(value.entries, SCRIPT_NAME_MEMBERS.get(key), inner, names, found);
+      walk(value.entries, SCRIPT_NAME_MEMBERS.get(key), inner, false, names, found);
       continue;
     }
     if (value?.kind !== 'scalar') continue;

@@ -217,7 +217,10 @@ groups and ideas of your playset's `common/ideas`; names are case-sensitive,
 as in the game. A scripted effect's `$argument$` is not checked, nor is
 `has_idea_group`, which the game reports in `error.log`. `has_idea` is: the
 game logs "Invalid idea" for it, but keeps the missing idea and crashes when
-its tooltip is shown.
+its tooltip is shown. `change_graphical_culture` crashes the same way on a
+graphical culture its playset's `common/graphicalculturetype.txt` does not
+list, ignoring case; a country tag or a scope there is not checked. The
+arguments of a call to a scripted effect or trigger are not checked either.
 
 For some triggers and effects the game crashes on a missing name only when it
 builds their tooltip, for example when you hover over a decision or an event
@@ -227,8 +230,8 @@ skipping them inside a `custom_trigger_tooltip`, which shows its own text:
 (`common/rebel_types`), `has_disaster_progress`'s `disaster`
 (`common/disasters`), `current_icon` (the orthodox icons of
 `common/religions`), `has_spawned_rebels` and `has_not_spawned_rebels`
-(`common/rebel_types`) and `has_active_estate_agenda`
-(`common/estate_agendas`).
+(`common/rebel_types`), `has_active_estate_agenda`
+(`common/estate_agendas`) and `advisor` (`common/advisortypes`).
 
 `provincial_institution_progress`'s `which` (`common/institutions`),
 `num_of_religion`'s `religion` (`common/religions`) and `had_active_policy`'s

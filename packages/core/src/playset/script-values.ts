@@ -11,6 +11,7 @@ import {
 import {
   checkScriptNames,
   showsOwnTooltip,
+  readBareNames,
   readIdeaNames,
   readReligionNames,
   readTopLevelNames,
@@ -67,7 +68,7 @@ export function checkScriptValues(
       found.push(...checkProvinceIds(inner, values.ids, undefined, true).map(shifted));
     }
     if (values.names !== undefined) {
-      found.push(...checkScriptNames(inner, values.names, ownTooltip).map(shifted));
+      found.push(...checkScriptNames(inner, values.names, ownTooltip, true).map(shifted));
     }
   }
   return found.sort((a, b) => a.start - b.start);
@@ -122,13 +123,23 @@ const NAME_FOLDERS: readonly {
   { folder: 'common/disasters', read: topLevel('disaster') },
   { folder: 'common/institutions', read: topLevel('institution') },
   { folder: 'common/estate_agendas', read: topLevel('estate-agenda') },
+  { folder: 'common/advisortypes', read: topLevel('advisor-type') },
 ];
+
+/** Files directly in `common` whose bare words are names: the graphical cultures. */
+const NAME_FILES: readonly { readonly path: string; readonly kind: ScriptNameKind }[] = [
+  { path: 'common/graphicalculturetype.txt', kind: 'graphical-culture' },
+];
+
+/** The folders whose top-level blocks are scripted effects and triggers, which script calls. */
+const SCRIPTED_FOLDERS: readonly string[] = ['common/scripted_effects', 'common/scripted_triggers'];
 
 /**
  * The names the playset defines: idea groups and ideas (`common/ideas`), religions and orthodox
  * icons (`common/religions`), policies, rebel types and disasters, each from the winning `.txt`
  * files directly in its folder. A folder no layer has a file in adds no kind, so its names are not
- * checked; `undefined` when no folder has one.
+ * checked; `undefined` when no folder has one. With them, the scripted effects and triggers, whose
+ * calls' arguments are not checked.
  */
 export async function loadScriptNames(files: GameFiles): Promise<ScriptNames | undefined> {
   const byKind: ScriptNameSets = new Map();
@@ -141,7 +152,28 @@ export async function loadScriptNames(files: GameFiles): Promise<ScriptNames | u
       if (bytes !== undefined) read(parseScript(decode(bytes), { script: true }), byKind);
     }
   }
-  return byKind.size === 0 ? undefined : { byKind };
+  for (const { path, kind } of NAME_FILES) {
+    const bytes = await files.read(path).catch(() => undefined);
+    if (bytes !== undefined)
+      readBareNames(parseScript(decode(bytes), { script: true }), kind, byKind);
+  }
+  if (byKind.size === 0) return undefined;
+  const scripted = new Set<string>();
+  for (const folder of SCRIPTED_FOLDERS) {
+    const found = await files.list(folder, '.txt');
+    const texts = await Promise.all(
+      found.map((file) => readFile(file.absolutePath).catch(() => undefined)),
+    );
+    for (const bytes of texts) {
+      if (bytes === undefined) continue;
+      for (const entry of parseScript(decode(bytes), { script: true }).entries) {
+        if (entry.kind === 'property' && entry.value?.kind === 'block') {
+          scripted.add(entry.key.text.toLowerCase());
+        }
+      }
+    }
+  }
+  return { byKind, scripted };
 }
 
 /** A file of the playset with script values it does not have. */

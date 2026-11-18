@@ -4,6 +4,7 @@ import {
   SCRIPT_NAME_MEMBERS,
   checkScriptNames,
   parseScript,
+  readBareNames,
   readIdeaNames,
   readReligionNames,
   readTopLevelNames,
@@ -52,6 +53,12 @@ function names(): ScriptNames {
   readTopLevelNames(parseScript('civil_war = { x = 1 }'), 'disaster', byKind);
   readTopLevelNames(parseScript('feudalism = { x = 1 }'), 'institution', byKind);
   readTopLevelNames(parseScript('estate_nobles_hire_advisor = { x = 1 }'), 'estate-agenda', byKind);
+  readTopLevelNames(
+    parseScript('philosopher = { monarch_power = ADM } court_mage = { monarch_power = ADM }'),
+    'advisor-type',
+    byKind,
+  );
+  readBareNames(parseScript('westerngfx\neasterngfx\n'), 'graphical-culture', byKind);
   return { byKind };
 }
 
@@ -158,6 +165,70 @@ describe('checkScriptNames', () => {
       names(),
     );
     expect(trigger?.message).toMatch(/: evaluating the trigger crashes the game \(tried in the/);
+  });
+
+  it("flags advisor's advisor type, ignoring case, but not inside a custom_trigger_tooltip", () => {
+    const text = [
+      'd = {',
+      '  allow = {',
+      '    advisor = philosopher',
+      '    advisor = Court_Mage',
+      '    advisor = philosoper',
+      '    employed_advisor = { type = no_such_type }',
+      '    custom_trigger_tooltip = { tooltip = x advisor = no_such_type }',
+      '  }',
+      '}',
+    ].join('\n');
+    expect(found(text)).toEqual(['advisor philosoper unknown-advisor-type']);
+    const [warning] = checkScriptNames(parseScript('t = { advisor = x }'), names());
+    expect(warning?.message).toBe(
+      "No advisor type 'x' in common/advisortypes of the playset. The game does not check " +
+        "advisor's advisor type or report it in error.log: showing the tooltip crashes the " +
+        'game, for example when a player hovers over the decision, mission or option that uses ' +
+        'it (tried in the game).',
+    );
+  });
+
+  it('takes the bare words of a list file as names', () => {
+    const { byKind } = names();
+    expect([...(byKind.get('graphical-culture') ?? [])]).toEqual(['westerngfx', 'easterngfx']);
+  });
+
+  it("flags change_graphical_culture's graphical culture, but not a tag or a scope", () => {
+    const text = [
+      'e = {',
+      '  option = {',
+      '    change_graphical_culture = westerngfx',
+      '    change_graphical_culture = WesternGFX',
+      '    change_graphical_culture = FRA',
+      '    change_graphical_culture = ROOT',
+      '    change_graphical_culture = event_target:old_owner',
+      '    change_graphical_culture = westerngf',
+      '  }',
+      '}',
+    ].join('\n');
+    expect(found(text)).toEqual(['change_graphical_culture westerngf unknown-graphical-culture']);
+    const [warning] = checkScriptNames(
+      parseScript('e = { change_graphical_culture = x }'),
+      names(),
+    );
+    expect(warning?.message).toMatch(
+      /^No graphical culture 'x' in common\/graphicalculturetype\.txt of the playset\. .*\(tried in the game\)\.$/,
+    );
+  });
+
+  it("skips the arguments of a scripted effect's or trigger's call", () => {
+    const known = { ...names(), scripted: new Set(['determine_outcome', 'has_good_advisor']) };
+    const text = [
+      'e = {',
+      '  option = {',
+      '    determine_outcome = { fighter = advisor Advisor = yes }',
+      '    trigger = { has_good_advisor = { advisor = no_such_type } }',
+      '    other_block = { advisor = no_such_type }',
+      '  }',
+      '}',
+    ].join('\n');
+    expect(found(text, known)).toEqual(['advisor no_such_type unknown-advisor-type']);
   });
 
   it('skips the tooltip keys inside a custom_trigger_tooltip, not the effects', () => {
@@ -279,6 +350,8 @@ describe('checkScriptNames', () => {
       'has_not_spawned_rebels',
       'has_active_estate_agenda',
       'has_idea',
+      'advisor',
+      'change_graphical_culture',
     ]);
     expect([...SCRIPT_NAME_MEMBERS.keys()]).toEqual([
       'had_active_policy',

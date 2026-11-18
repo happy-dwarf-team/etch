@@ -312,6 +312,21 @@ refresh is a step of the 3.0.0 release.
   tooltip crashes the game: the idea group effects crashed when they ran,
   `remove_idea` when its description was shown.
 
+  A fifth run (`advtest-r1`, 18.11.2026) tried the keys a static scan of the
+  game's name lookups had left: `advisor` with an unknown advisor type
+  crashed on the hover over the decision's `allow` (`eu4.exe+0xC111DD`, in
+  `CAdvisorTypeTrigger`'s tooltip, a read of `0x0`), and
+  `change_graphical_culture` with an unknown graphical culture on the hover
+  over the decision's effect (`eu4.exe+0x69139E`, in
+  `CChangeGraphicalCultureEffect::GetDesc`). Etch checks both, the second
+  against `common/graphicalculturetype.txt` and not when its value is a tag
+  or a scope. `ruler_has_personality`, `heir_has_personality`,
+  `consort_has_personality`, `has_institution` and `is_institution_enabled`
+  with an unknown name logged nothing and showed an empty tooltip without a
+  crash, so Etch leaves them out. The same change skips the members of a
+  scripted effect's or trigger's call, which are its arguments: Anbennar's
+  `Advisor = yes` is not an advisor type.
+
 - **A warning for a `replace_path` the game mishandles.** A `replace_path` on a
   subfolder of a folder the game lists recursively (`interface/assets`,
   `gfx/entities`, `localisation/english`) makes EU4 1.37.5 skip the files
