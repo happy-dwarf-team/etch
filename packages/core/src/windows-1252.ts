@@ -57,6 +57,15 @@ export function encodeWindows1252(text: string): Uint8Array {
   return bytes;
 }
 
+/** Whether Windows-1252 has a byte for every character of the text. */
+export function inWindows1252(text: string): boolean {
+  for (let i = 0; i < text.length; i++) {
+    const unit = text.charCodeAt(i);
+    if (unit !== 0x3f && (ENCODE_DECODED[unit] as number) === 0x3f) return false;
+  }
+  return true;
+}
+
 /**
  * Encodes game text back into the bytes it was decoded from, the inverse of
  * {@link decodeWindows1252}: unlike a save, the five undefined bytes, kept as

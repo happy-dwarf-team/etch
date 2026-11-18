@@ -9,7 +9,7 @@ import {
   nonAsciiRuns,
   type SaveEncoding,
 } from '../src/index.ts';
-import { decodeWindows1252, encodeWindows1252 } from '../src/windows-1252.ts';
+import { decodeWindows1252, encodeWindows1252, inWindows1252 } from '../src/windows-1252.ts';
 
 function encoding(id: string): SaveEncoding {
   const found = builtInSaveEncoding(id);
@@ -67,6 +67,13 @@ describe('Windows-1252', () => {
     expect([...encodeWindows1252('A€åą😀\u0081\ufffd')]).toEqual([
       0x41, 0x80, 0xe5, 0x3f, 0x3f, 0x3f, 0x3f, 0x9d,
     ]);
+  });
+
+  it('knows which texts it has a byte for every character of', () => {
+    expect(inWindows1252('abc? é€’šŸ')).toBe(true);
+    expect(inWindows1252('\u069e')).toBe(false);
+    expect(inWindows1252('ą')).toBe(false);
+    expect(inWindows1252('')).toBe(true);
   });
 
   it('round-trips every defined character', () => {
@@ -184,6 +191,34 @@ describe('diagnoseGameText', () => {
     const [diagnostic] = diagnoseGameText('\ufffd', 'localisation', encoding('utf8bom'));
     expect(diagnostic?.code).toBe('replacement-character');
     expect(diagnostic?.message).not.toContain('the game reads');
+  });
+
+  it('takes UTF-8 sequences in a file it misread for text only when Windows-1252 has them', () => {
+    // A Windows-1252 file opened as UTF-8: "Jihomoravský" has a byte no UTF-8 reads, and the
+    // bytes DA 9E of "Úžina" form a valid sequence, "ڞ", which the game shows as "Úž", as written.
+    const misread = 'a = "Jihomoravsk�" b = "ڞina"';
+    expect(diagnoseGameText(misread, 'script', encoding('utf8')).map((d) => d.code)).toEqual([
+      'replacement-character',
+    ]);
+    // A mixed file: a name saved as UTF-8 among Windows-1252 bytes is still reported.
+    const mixed = 'a = "�ed" b = "Dáire"';
+    expect(diagnoseGameText(mixed, 'script', encoding('utf8')).map((d) => d.code)).toEqual([
+      'replacement-character',
+      'game-text-differs',
+    ]);
+    // A three-byte sequence is no chance: a stray "∂" before a comment with a Windows-1252 "ö".
+    const stray = '\u2202 # B\ufffdttger';
+    expect(diagnoseGameText(stray, 'script', encoding('utf8')).map((d) => d.message)).toEqual([
+      'Saved as UTF-8; the game reads "âˆ‚".',
+    ]);
+    // Without U+FFFD the file is UTF-8, and every character the game reads otherwise is reported.
+    expect(diagnoseGameText('b = "ڞina"', 'script', encoding('utf8'))[0]?.message).toBe(
+      'Saved as UTF-8; the game reads "Úž".',
+    );
+    // A file saved as Windows-1252 writes "?" for "ą", whatever else it holds.
+    expect(
+      diagnoseGameText('� ą', 'interface', encoding('windows1252')).map((d) => d.code),
+    ).toEqual(['replacement-character', 'game-text-differs']);
   });
 
   it('reads a script file as Windows-1252 and skips its comments', () => {

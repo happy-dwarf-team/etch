@@ -3,7 +3,7 @@
 // them. Core takes bytes and decodes them itself; the extension supplies the
 // bytes of an open document through a SaveEncoding.
 
-import { decodeWindows1252, encodeWindows1252 } from './windows-1252.ts';
+import { decodeWindows1252, encodeWindows1252, inWindows1252 } from './windows-1252.ts';
 
 /**
  * Interface and script files are read as Windows-1252, localisation as UTF-8.
@@ -255,6 +255,12 @@ export function diagnoseGameText(
   }
 
   const comments = kind === 'script' ? commentRanges(text) : [];
+  // A file the editor read as UTF-8 and shows U+FFFD in holds bytes of another encoding. Two of
+  // them can still form a valid UTF-8 sequence by chance (`DA 9E`, the "Úž" of a Windows-1252
+  // file, reads as "ڞ"), and the game shows them as written. Such a pair is taken for text saved
+  // as UTF-8 only when it gives a character Windows-1252 has (a mixed file's "á"); a longer
+  // sequence (a stray "∂") is too unlikely to be chance.
+  const misread = (encoding.id === 'utf8' || encoding.id === 'utf8bom') && text.includes('\ufffd');
   let comment = 0;
   for (const range of nonAsciiRuns(text)) {
     // The game skips a script file's comments, so what it reads there does not matter.
@@ -276,11 +282,17 @@ export function diagnoseGameText(
           'The editor shows U+FFFD: the file was read with the wrong encoding, and saving ' +
           `destroys its original bytes.${game === editor ? '' : ` ${reads}`}`,
       });
-    } else if (game !== editor) {
+    } else if (game !== editor && !(misread && byChance(editor))) {
       diagnostics.push({ code: 'game-text-differs', severity: 'warning', range, message: reads });
     }
   }
   return diagnostics;
+}
+
+/** Whether a run is only characters of two-byte UTF-8 sequences, one of them not in Windows-1252. */
+function byChance(run: string): boolean {
+  for (const char of run) if ((char.codePointAt(0) ?? 0) >= 0x800) return false;
+  return !inWindows1252(run);
 }
 
 /**
