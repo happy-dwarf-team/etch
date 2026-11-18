@@ -222,12 +222,14 @@ describe('reading content, repeaters and links', () => {
     ['engine false', '{ "engine": false }', /engine/],
     ['an unknown kind', '{ "generated": "colour" }', /"generated" is one of/],
     ['decimals of a text', '{ "save": "meta.date", "decimals": 2 }', /number or a percentage/],
-    ['an empty sizedBy', '{ "engine": true, "sizedBy": "" }', /localisation key/],
+    ['an empty sizedBy', '{ "engine": true, "sizedBy": "" }', /^"sizedBy" is a localisation key.$/],
   ])('refuses %s', (_name, entry, message) => {
     const { diagnostics } = profileOf(
       `{ "formatVersion": 1, "window": "provinceview", "content": { "provinceview/title": ${entry} } }`,
     );
-    expect(diagnostics).toMatchObject([{ code: 'profile-format', message }]);
+    expect(diagnostics).toMatchObject([
+      { code: 'profile-format', message: expect.stringMatching(message) as unknown },
+    ]);
   });
 });
 
