@@ -82,9 +82,24 @@ export interface ParseOptions {
    * (etch#15).
    */
   readonly save?: boolean;
+  /**
+   * Read the text as a script file's (`common`, `events`, `decisions`, `missions`, `history`): a
+   * quoted string runs to the next quote, across lines, as the game reads it. Vanilla's
+   * government mechanics hold an `effect = "` whose script runs over the next lines, and
+   * Anbennar's parliament issues an `effect = "add_country_modifier = {` closed by `}"` lines
+   * later; cut at the line end, its braces would close the wrong block. No escapes, as in
+   * interface files. A string that never closes is cut at its line end, so that the rest of the
+   * file still parses.
+   */
+  readonly script?: boolean;
 }
 
-function tokenize(text: string, diagnostics: SyntaxDiagnostic[], save: boolean): Tokens {
+function tokenize(
+  text: string,
+  diagnostics: SyntaxDiagnostic[],
+  save: boolean,
+  script: boolean,
+): Tokens {
   const n = text.length;
   // Vanilla interface files average about one token per 7 characters.
   const tokens = new Tokens(Math.max(16, n >> 3));
@@ -126,14 +141,31 @@ function tokenize(text: string, diagnostics: SyntaxDiagnostic[], save: boolean):
       }
     } else if (c === QUOTE) {
       // No escapes: vanilla writes paths as "gfx\interface\x.dds" and "gfx\\interface\\x.dds",
-      // and no interface file has \". No string spans lines, so one that does not close on its
-      // line is cut at the line end and the rest of the file still parses.
+      // and no interface file has \". No interface string spans lines, so one that does not close
+      // on its line is cut at the line end and the rest of the file still parses. A script file's
+      // string runs to the next quote (`ParseOptions.script`).
       let j = i + 1;
       for (; j < n; j++) {
         const d = text.charCodeAt(j);
-        if (d === QUOTE || d === LF || d === CR) break;
+        if (d === QUOTE || (!script && (d === LF || d === CR))) break;
       }
-      if (j < n && text.charCodeAt(j) === QUOTE) {
+      if (script && j >= n) {
+        // Never closed: cut at the line end, as an interface file's string is.
+        for (j = i + 1; j < n; j++) {
+          const d = text.charCodeAt(j);
+          if (d === LF || d === CR) break;
+        }
+        diagnostics.push(
+          diagnostic(
+            'unterminated-string',
+            i,
+            j,
+            'This string is never closed; it ends at its line end.',
+          ),
+        );
+        tokens.push(STRING, i, j);
+        i = j;
+      } else if (j < n && text.charCodeAt(j) === QUOTE) {
         tokens.push(STRING, i, j + 1);
         i = j + 1;
       } else {
@@ -184,7 +216,7 @@ interface Frame {
 export function parseScript(text: string, options: ParseOptions = {}): ParsedScript {
   const save = options.save === true;
   const diagnostics: SyntaxDiagnostic[] = [];
-  const tokens = tokenize(text, diagnostics, save);
+  const tokens = tokenize(text, diagnostics, save, options.script === true);
   const { count, kinds, starts, ends } = tokens;
 
   const scalar = (t: number): ScalarNode => {

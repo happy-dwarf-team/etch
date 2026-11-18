@@ -229,12 +229,22 @@ function isScopeOrVariable(name: string, kind: ScriptNameKind): boolean {
 
 /**
  * The names in a parsed script file that the playset does not define, in text order. A kind the
- * playset has no files for is not checked.
+ * playset has no files for is not checked. `ownTooltip` reads the text as inside a block that
+ * shows its own tooltip, such as a string argument written inside a `custom_trigger_tooltip`.
  */
-export function checkScriptNames(parsed: ParsedScript, names: ScriptNames): ScriptNameDiagnostic[] {
+export function checkScriptNames(
+  parsed: ParsedScript,
+  names: ScriptNames,
+  ownTooltip = false,
+): ScriptNameDiagnostic[] {
   const found: ScriptNameDiagnostic[] = [];
-  walk(parsed.entries, undefined, false, names, found);
+  walk(parsed.entries, undefined, ownTooltip, names, found);
   return found;
+}
+
+/** Whether a block of this key shows its own tooltip instead of its triggers'. */
+export function showsOwnTooltip(key: string): boolean {
+  return OWN_TOOLTIP_KEYS.has(key.toLowerCase());
 }
 
 function walk(

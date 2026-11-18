@@ -7,7 +7,7 @@ import {
   loadProvinceIds,
   loadScriptNames,
 } from '../../src/playset/index.ts';
-import { parseScript } from '../../src/script/index.ts';
+import { parseScript, type ScriptNames } from '../../src/script/index.ts';
 import { makeTree, removeTree } from './fixture.ts';
 
 describe('script values of a playset', () => {
@@ -104,5 +104,50 @@ describe('script values of a playset', () => {
     expect(codes({ names })).toEqual(['unknown-idea-group']);
     expect(codes({ ids })).toEqual(['province-id-out-of-range']);
     expect(codes({})).toEqual([]);
+  });
+
+  it("checks the script of a scripted effect's string arguments", async () => {
+    // Vanilla's missions pass script to simple_dynamic_effect in strings, over several lines.
+    const text = [
+      'm = {',
+      '  effect = {',
+      '    simple_dynamic_effect = {',
+      '      first_limit = "owns = 12"',
+      '      first_effect = "',
+      '        11 = { add_core = ROOT }',
+      '        add_idea_group = no_ideas',
+      '        3 = { add_core = ROOT }',
+      '      "',
+      '      first_custom_tooltip = "a = b"',
+      '    }',
+      '  }',
+      '}',
+    ].join('\n');
+    const files = playset();
+    const ids = await loadProvinceIds(files);
+    const names = await loadScriptNames(files);
+    const found = checkScriptValues(parseScript(text, { script: true }), { ids, names });
+    expect(found.map((d) => `${d.key} ${text.slice(d.start, d.end)} ${d.code}`)).toEqual([
+      'owns 12 province-id-out-of-range',
+      ' 11 province-id-out-of-range',
+      'add_idea_group no_ideas unknown-idea-group',
+    ]);
+  });
+
+  it("skips a tooltip key in a string inside a custom_trigger_tooltip, as the block's own", () => {
+    const names: ScriptNames = { byKind: new Map([['policy', new Set(['a_policy'])]]) };
+    const inside = 'c = { custom_trigger_tooltip = { s = { t = "has_active_policy = none" } } }';
+    const outside = 'c = { s = { t = "has_active_policy = none" } }';
+    const codes = (text: string): string[] =>
+      checkScriptValues(parseScript(text, { script: true }), { names }).map((d) => d.code);
+    expect(codes(inside)).toEqual([]);
+    expect(codes(outside)).toEqual(['unknown-policy']);
+  });
+
+  it('leaves a quoted value without script alone', async () => {
+    const files = playset();
+    const ids = await loadProvinceIds(files);
+    const text = 'e = { title = "12 = {" desc = "owns 12" }';
+    expect(checkScriptValues(parseScript(text, { script: true }), { ids })).toEqual([]);
   });
 });

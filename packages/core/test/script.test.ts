@@ -241,4 +241,60 @@ guiTypes = {
       }
     });
   });
+
+  describe('reads a script file as the game does', () => {
+    function parseAsScript(text: string) {
+      const parsed = parseScript(text, { script: true });
+      expect(rangeProblems(text, parsed)).toEqual([]);
+      return parsed;
+    }
+
+    it('lets a quoted string run across lines to its closing quote', () => {
+      // Vanilla's 01_feudal_theocracy.txt and Anbennar's anb_sun_cult.txt write script in a string.
+      const text = 'a = {\n\teffect = "add_modifier = {\n\t\tname = x\n\t}"\n\tb = 1\n}';
+      const parsed = parseAsScript(text);
+      expect(parsed.diagnostics).toEqual([]);
+      expect(shape(parsed.entries)).toEqual([
+        { a: [{ effect: '"add_modifier = {\n\t\tname = x\n\t}"' }, { b: '1' }] },
+      ]);
+    });
+
+    it('closes the wrong block when the same text is read as an interface file', () => {
+      const text = 'a = {\n\teffect = "add_modifier = {\n\t\tname = x\n\t}"\n\tb = 1\n}';
+      expect(codes(text)).toEqual([
+        'unterminated-string',
+        'unterminated-string',
+        'unmatched-close',
+      ]);
+    });
+
+    it('cuts a string that never closes at its line end', () => {
+      const text = 'a = "x"\nb = "open\nc = 2';
+      const parsed = parseAsScript(text);
+      expect(parsed.diagnostics).toMatchObject([
+        { code: 'unterminated-string', start: 12, end: 17 },
+      ]);
+      expect(shape(parsed.entries)).toEqual([{ a: '"x"' }, { b: '"open"' }, { c: '2' }]);
+    });
+
+    it('keeps backslashes, which a script string does not escape', () => {
+      const [entry] = parseAsScript('a = "x\\"\nb = 1').entries;
+      expect(entry).toMatchObject({ value: { text: 'x\\', quoted: true } });
+    });
+
+    it('never throws and keeps ranges consistent on random input', () => {
+      let seed = 11;
+      const random = (n: number): number => {
+        seed = (seed * 1103515245 + 12345) % 2147483648;
+        return seed % n;
+      };
+      const pieces = ['a', '"s\nt"', '"', '=', '{', '}', '#c\n', ' ', '\n', '\r\n'];
+      for (let run = 0; run < 500; run++) {
+        let text = '';
+        const length = random(60);
+        for (let i = 0; i < length; i++) text += pieces[random(pieces.length)] ?? '';
+        parseAsScript(text);
+      }
+    });
+  });
 });
