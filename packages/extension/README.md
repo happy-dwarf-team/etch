@@ -255,7 +255,9 @@ UTF-8 with BOM. Where the next save would make the game read other characters
 than the editor shows, such as a leader's name `é` saved as UTF-8, which the
 game shows as `Ã©`, Etch warns and offers to reopen the file in the encoding
 the game expects. A script file's comments are skipped: the game does not read
-them.
+them. In a file VS Code could not read as UTF-8 (it shows `�`), bytes that only
+happen to form a UTF-8 character of another script, such as `ڞ` for the `Úž`
+of a Windows-1252 file, are not taken for text saved as UTF-8.
 
 ## Textures
 
