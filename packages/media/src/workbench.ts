@@ -663,6 +663,50 @@ export class Workbench {
     await this.frame.locator('#title').hover();
   }
 
+  /**
+   * Gives the preview a save's sample data, as **Data ▾ → Choose save… → Choose a save file**
+   * does, with the file dialog answering `file`. A take does it before it records: the quick pick
+   * lists the player's own saves, which no master shows.
+   */
+  async chooseSave(file: string): Promise<void> {
+    await this.app.evaluate(({ dialog }: { dialog: Record<string, unknown> }, chosen: string) => {
+      dialog['showOpenDialog'] = () => Promise.resolve({ canceled: false, filePaths: [chosen] });
+    }, file);
+    await this.openMenu('data');
+    await this.frame.locator('#data-popup button', { hasText: 'Choose save' }).click();
+    await this.page.locator('.quick-input-widget input').waitFor();
+    await this.page.keyboard.type('Choose a save file');
+    await this.page
+      .locator('.quick-input-list .monaco-list-row.focused', { hasText: 'Choose a save file' })
+      .waitFor();
+    await this.page.keyboard.press('Enter');
+    await this.quickInputClosed();
+    // Etch reads the save in the background: the menu names it once its data is in.
+    const menu = this.frame.locator('#data-menu');
+    for (let i = 0; i < 240; i++) {
+      const text = (await menu.textContent()) ?? '';
+      if (!text.includes('reading') && !text.includes('generated')) return;
+      await sleep(500);
+    }
+    throw new Error(`the save was not read: Data ▾ reads "${(await menu.textContent()) ?? ''}"`);
+  }
+
+  /**
+   * Picks the sample data's province by its name in **Data ▾ → Province…**, `typeDelayMs` between
+   * the name's keys, and waits for the preview's paint.
+   */
+  async chooseProvince(name: string, typeDelayMs = 0): Promise<void> {
+    if (!(await this.frame.locator('#data-popup').isVisible())) await this.openMenu('data');
+    await this.frame.locator('#data-popup button', { hasText: 'Province' }).click();
+    await this.page.locator('.quick-input-widget input').waitFor();
+    await this.page.keyboard.type(name, { delay: typeDelayMs });
+    await this.page
+      .locator('.quick-input-list .monaco-list-row.focused', { hasText: new RegExp(`^${name}#`) })
+      .waitFor();
+    await this.paint(() => this.page.keyboard.press('Enter'));
+    await this.quickInputClosed();
+  }
+
   /** Presses a generated text length in the open `Data ▾` and waits for the preview. */
   async chooseTextLength(length: 'short' | 'typical' | 'long' | 'overflow'): Promise<void> {
     const button = this.frame.locator('#data-popup .actions button', { hasText: length });

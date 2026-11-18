@@ -1,11 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import {
   cameraKeys,
+  CAPTION_BAND,
+  columns,
   editLength,
   focus,
+  GUTTER,
+  OUTPUT,
   panelState,
   pointerAt,
+  rows,
+  STAGE,
   toOutput,
+  viewAt,
   whole,
   type Panel,
 } from '../src/edit.ts';
@@ -61,6 +68,39 @@ describe('the edit model', () => {
     expect(pointerAt(path, 0.5)).toBeUndefined();
     expect(pointerAt(path, 1.5)).toEqual({ x: 50, y: 25 });
     expect(pointerAt(path, 5)).toEqual({ t: 2, x: 100, y: 50 });
+  });
+
+  it('keeps the panels above the caption band, two of them side by side or one above the other', () => {
+    expect(STAGE).toEqual({ x: 24, y: 24, w: 1872, h: 882 });
+    expect(STAGE.y + STAGE.h + GUTTER).toBe(OUTPUT.height - CAPTION_BAND);
+    expect(columns(600)).toEqual({
+      left: { x: 24, y: 24, w: 600, h: 882 },
+      right: { x: 648, y: 24, w: 1248, h: 882 },
+    });
+    expect(rows(STAGE, 500).bottom).toEqual({ x: 24, y: 548, w: 1872, h: 358 });
+  });
+
+  it('shows a part of a source at a scale, centred or anchored, inside the source', () => {
+    const frame = { x: 0, y: 0, w: 900, h: 600 };
+    expect(viewAt({ x: 1000, y: 700, w: 100, h: 20 }, 1.5, frame, SOURCE)).toEqual({
+      x: 750,
+      y: 510,
+      w: 600,
+      h: 400,
+    });
+    // The line's left edge at the view's, a third of the way down.
+    expect(viewAt({ x: 40, y: 300, w: 900, h: 24 }, 2, frame, SOURCE, { x: 0, y: 1 / 3 })).toEqual({
+      x: 40,
+      y: 200,
+      w: 450,
+      h: 300,
+    });
+    expect(viewAt({ x: 2500, y: 1400, w: 40, h: 20 }, 1, frame, SOURCE)).toEqual({
+      x: 1660,
+      y: 840,
+      w: 900,
+      h: 600,
+    });
   });
 
   it('counts the clip in whole output frames', () => {

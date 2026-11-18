@@ -7,9 +7,10 @@
 //
 // --clip takes the clip ids (hero, preview, views, data, zoom, outline, problems, profile, names,
 // reload, pick, snapshot), also separated by commas; all of them by default. profile shows --profile,
-// a CSV of Anvil's script profiler, as the newest profile. reload, pick and snapshot share one
-// take that starts EU4 and plays --save, a non-ironman save of the base game, copied into the run
-// first. hero is cut from the preview, reload and pick clips. --reedit edits and renders the clips
+// a CSV of Anvil's script profiler, as the newest profile. --save is a non-ironman save of the base
+// game: every take's preview shows its province Kaluga as sample data (the Russia save of 17 March
+// 1719), and reload, pick and snapshot share one take that starts EU4 and plays it, copied into the
+// run first. hero is cut from the preview, reload and pick clips. --reedit edits and renders the clips
 // again from their takes' logs and masters, without new takes. --ffmpeg is FFmpeg 8.1 or newer
 // (default: ffmpeg on the PATH; ffprobe beside it). --game sets etch.gamePath (default: found
 // through Steam, or $env:ETCH_GAME_PATH). --work is the short folder for VS Code and its profiles
@@ -29,7 +30,7 @@ import { parseArgs } from 'node:util';
 import { findGameInSteam, systemEnvironment } from '@etch/core/playset';
 import { capture } from './capture.ts';
 import { MEDIA_BUCKET } from './config.ts';
-import { CLIP_IDS, LIVE_CLIP_IDS, type ClipId } from './manifest.ts';
+import { CLIP_IDS, type ClipId } from './manifest.ts';
 import { credentials, publish, r2Bucket } from './publish.ts';
 
 const repository = path.join(import.meta.dirname, '..', '..', '..');
@@ -121,12 +122,10 @@ if (step !== 'capture') {
 }
 const clips = clipIds(values.clip);
 const chosen = clips.length === 0 ? [...CLIP_IDS] : clips;
-if (
-  !values.reedit &&
-  LIVE_CLIP_IDS.some((id) => chosen.includes(id)) &&
-  values.save === undefined
-) {
-  fail('The live clips play a save: pass --save PATH (a base-game save, not ironman).');
+if (!values.reedit && values.save === undefined) {
+  fail(
+    "The takes show a save's province and the live clips play it: pass --save PATH (a base-game save, not ironman).",
+  );
 }
 if (!values.reedit && chosen.includes('profile') && values.profile === undefined) {
   fail(

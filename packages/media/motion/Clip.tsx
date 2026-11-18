@@ -1,5 +1,6 @@
 // Draws one clip's edit (src/edit.ts): its segments cut one after another, each panel a part of
-// its master moved by its camera, the drawn pointer, highlights and key captions. The look follows
+// its master moved by its camera, the drawn pointer, highlights, and key captions in the caption
+// band at the bottom, which no panel enters. The look follows
 // the Etch site (etch-website DESIGN.md): the Forge neutrals, the verdigris accent, IBM Plex Sans and
 // JetBrains Mono.
 import '@fontsource-variable/ibm-plex-sans';
@@ -16,6 +17,7 @@ import {
   useCurrentFrame,
 } from 'remotion';
 import {
+  CAPTION_BAND,
   editLength,
   FULL_FRAME,
   OUTPUT,
@@ -259,6 +261,7 @@ function HighlightView({
   );
 }
 
+/** A caption in the caption band, under every panel: it never covers what a panel shows. */
 function CaptionView({ caption, t }: { caption: Caption; t: number }) {
   const opacity = fade(t, caption.from, caption.to);
   if (opacity <= 0) return null;
@@ -268,11 +271,12 @@ function CaptionView({ caption, t }: { caption: Caption; t: number }) {
         position: 'absolute',
         left: 0,
         right: 0,
-        bottom: 56,
+        top: OUTPUT.height - CAPTION_BAND,
+        height: CAPTION_BAND,
         display: 'flex',
+        alignItems: 'center',
         justifyContent: 'center',
         opacity,
-        transform: `translateY(${String((1 - opacity) * 12)}px)`,
       }}
     >
       <div
@@ -280,11 +284,6 @@ function CaptionView({ caption, t }: { caption: Caption; t: number }) {
           display: 'flex',
           alignItems: 'center',
           gap: 22,
-          padding: '16px 30px',
-          borderRadius: 18,
-          background: 'rgb(22 23 26 / 0.9)',
-          border: '1px solid rgb(255 255 255 / 0.12)',
-          boxShadow: '0 18px 40px -18px rgb(0 0 0 / 0.9)',
           fontFamily: SANS,
           fontSize: 40,
           fontWeight: 500,

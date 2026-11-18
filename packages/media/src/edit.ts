@@ -21,6 +21,73 @@ export interface Rect {
 export const OUTPUT = { width: 1920, height: 1080, fps: 30 } as const;
 export const FULL_FRAME: Rect = { x: 0, y: 0, w: OUTPUT.width, h: OUTPUT.height };
 
+/**
+ * The caption band: the output's bottom, opaque, where captions are and no panel goes, so a
+ * caption never covers what a panel shows.
+ */
+export const CAPTION_BAND = 150;
+/** The space between panels, and between a panel and the stage's edges. */
+export const GUTTER = 24;
+/** Where panels go: the output above the caption band, inside its gutter. */
+export const STAGE: Rect = {
+  x: GUTTER,
+  y: GUTTER,
+  w: OUTPUT.width - 2 * GUTTER,
+  h: OUTPUT.height - CAPTION_BAND - 2 * GUTTER,
+};
+
+/** Two panels side by side on the stage, the left one `leftWidth` wide. */
+export function columns(leftWidth: number): { left: Rect; right: Rect } {
+  return {
+    left: { x: STAGE.x, y: STAGE.y, w: leftWidth, h: STAGE.h },
+    right: {
+      x: STAGE.x + leftWidth + GUTTER,
+      y: STAGE.y,
+      w: STAGE.w - leftWidth - GUTTER,
+      h: STAGE.h,
+    },
+  };
+}
+
+/** Two panels one above the other on a `frame`, the top one `topHeight` tall. */
+export function rows(frame: Rect, topHeight: number): { top: Rect; bottom: Rect } {
+  return {
+    top: { x: frame.x, y: frame.y, w: frame.w, h: topHeight },
+    bottom: {
+      x: frame.x,
+      y: frame.y + topHeight + GUTTER,
+      w: frame.w,
+      h: frame.h - topHeight - GUTTER,
+    },
+  };
+}
+
+/**
+ * The part of a source a `frame` shows at `scale` (output pixels per source pixel): centred on
+ * `rect`'s centre, or with `rect`'s top left corner at `anchor` (fractions of the view) when
+ * given, and kept inside the source where it fits.
+ */
+export function viewAt(
+  rect: Rect,
+  scale: number,
+  frame: Rect,
+  source: { width: number; height: number },
+  anchor?: Point,
+): Rect {
+  const w = frame.w / scale;
+  const h = frame.h / scale;
+  let x = anchor === undefined ? rect.x + rect.w / 2 - w / 2 : rect.x - anchor.x * w;
+  let y = anchor === undefined ? rect.y + rect.h / 2 - h / 2 : rect.y - anchor.y * h;
+  if (w <= source.width) x = Math.min(Math.max(x, 0), source.width - w);
+  if (h <= source.height) y = Math.min(Math.max(y, 0), source.height - h);
+  return { x, y, w, h };
+}
+
+/** A rect grown by `by` on every side. */
+export function grow(rect: Rect, by: number): Rect {
+  return { x: rect.x - by, y: rect.y - by, w: rect.w + 2 * by, h: rect.h + 2 * by };
+}
+
 /** A master, as the composition loads it: a file of its public folder. */
 export interface Source {
   readonly file: string;
