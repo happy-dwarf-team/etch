@@ -45,6 +45,7 @@
     "workspaceContains:**/localisation/**/*.yml",
     "workspaceContains:descriptor.mod",
     "workspaceContains:events/*.txt",
+    "workspaceContains:common/*/*.txt",
     "workspaceContains:map/default.map"
   ],
   "contributes": {

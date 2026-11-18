@@ -74,10 +74,11 @@ _Avoid_: first load, startup
 ## Files
 
 **Game text**:
-The characters the game reads from an interface or localisation file: the
-file's bytes, as they are on disk or as the next save from the editor would
-write them, read the way the game reads them (Windows-1252 for interface files,
-UTF-8 for localisation).
+The characters the game reads from an interface, localisation or script file:
+the file's bytes, as they are on disk or as the next save from the editor would
+write them, read the way the game reads them (Windows-1252 for interface files
+and the `.txt` script files of `common`, `events`, `decisions`, `missions` and
+`history`, UTF-8 for localisation).
 _Avoid_: decoded text, buffer text
 
 ## The live game

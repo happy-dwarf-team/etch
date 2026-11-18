@@ -91,6 +91,35 @@ export async function testGameText(): Promise<void> {
   const [noBom] = await diagnosticsOf(yml, (found) => found.length > 0);
   assert.equal(noBom?.code, 'localisation-encoding');
 
+  // A script file saved as UTF-8: the game reads its names as Windows-1252; comments are skipped.
+  const utf8Script = await fixture(root, 'common/countries/Test.txt', [
+    ...ascii('# '),
+    0xc3,
+    0xa9,
+    ...ascii('\nleader_names = { "'),
+    0xc3,
+    0xa9,
+    ...ascii('" }\n'),
+  ]);
+  await vscode.workspace.openTextDocument(utf8Script);
+  const scriptFound = await diagnosticsOf(utf8Script, (found) => found.length > 0);
+  assert.deepEqual(
+    scriptFound.map((d) => [d.code, d.range.start.line, d.message]),
+    [['game-text-differs', 1, 'Saved as UTF-8; the game reads "Ã©".']],
+  );
+  const scriptActions = await vscode.commands.executeCommand<vscode.CodeAction[]>(
+    'vscode.executeCodeActionProvider',
+    utf8Script,
+    scriptFound[0]?.range ?? new vscode.Range(0, 0, 0, 0),
+  );
+  const scriptTitles = scriptActions.map((action) => action.title);
+  assert.ok(scriptTitles.includes('Reopen as Windows 1252'), scriptTitles.join(', '));
+  // A .txt outside the script folders gets none.
+  const notes = await fixture(root, 'notes/readme.txt', [0xc3, 0xa9]);
+  await vscode.workspace.openTextDocument(notes);
+  await new Promise((resolve) => setTimeout(resolve, 200));
+  assert.deepEqual(vscode.languages.getDiagnostics(notes), []);
+
   // A file that is not open is read from disk.
   const onDisk = await fixture(root, 'interface/disk.gui', [0xef, 0xbb, 0xbf, 0xe5]);
   assert.deepEqual(await readGameText(onDisk), { text: 'å', bom: true });

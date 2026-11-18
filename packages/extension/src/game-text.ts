@@ -10,6 +10,7 @@ import {
   diagnoseGameText,
   encodeForSave,
   encodingLabel,
+  checkedTextKind,
   gameTextKind,
   nonAsciiRuns,
   type GameText,
@@ -31,6 +32,7 @@ const DEBOUNCE_MS = 30;
 const EXPECTED_ENCODING: Readonly<Record<GameTextKind, string>> = {
   interface: 'windows1252',
   localisation: 'utf8bom',
+  script: 'windows1252',
 };
 
 /**
@@ -99,7 +101,7 @@ export async function saveEncodingOf(
   };
 }
 
-/** Keeps the game text diagnostics of open interface and localisation documents. */
+/** Keeps the game text diagnostics of open interface, localisation and script documents. */
 class GameTextDiagnostics implements vscode.Disposable {
   private readonly collection = vscode.languages.createDiagnosticCollection('etch-game-text');
   private readonly timers = new Map<string, ReturnType<typeof setTimeout>>();
@@ -125,7 +127,7 @@ class GameTextDiagnostics implements vscode.Disposable {
   }
 
   private schedule(document: vscode.TextDocument): void {
-    const kind = gameTextKind(document.uri.path);
+    const kind = checkedTextKind(document.uri.path);
     if (!kind) {
       return;
     }
@@ -213,7 +215,7 @@ class GameTextFixes implements vscode.CodeActionProvider {
     _range: vscode.Range,
     context: vscode.CodeActionContext,
   ): vscode.CodeAction[] {
-    const kind = gameTextKind(document.uri.path);
+    const kind = checkedTextKind(document.uri.path);
     const ours = context.diagnostics.filter(
       (diagnostic) =>
         diagnostic.source === 'Etch' &&
@@ -271,7 +273,7 @@ export function registerGameText(): vscode.Disposable {
   return vscode.Disposable.from(
     new GameTextDiagnostics(),
     vscode.languages.registerCodeActionsProvider(
-      { pattern: '**/*.{gui,gfx,fnt,yml}' },
+      { pattern: '**/*.{gui,gfx,fnt,yml,txt}' },
       new GameTextFixes(),
       GameTextFixes.metadata,
     ),
