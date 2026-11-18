@@ -201,7 +201,9 @@ A script that names a province the map does not have, such as `owns = 5075`
 or `5075 = { … }` on the 4941 provinces of EU4 1.37.5, gets no line in the
 game's `error.log`, and the game may crash when it reads that province. Etch
 warns about such ids in the script files you open (events, decisions,
-missions, `common` and `history`): the province triggers and effects (`owns`,
+missions, `common`, `history` and the triggers of `customizable_localization`,
+which the game evaluates when it shows a text that names them): the province
+triggers and effects (`owns`,
 `owns_core_province`, `province_id`, `add_core`, `add_permanent_claim`,
 `set_capital` and more), province scopes, ids such as an event's `goto`, and
 `who` of `province_distance` and `node` of `trading_policy_in_node`. So are
