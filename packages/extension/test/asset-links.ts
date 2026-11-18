@@ -7,6 +7,7 @@ import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
+import { ANIM, binary, MESH } from '../../core/test/fixtures/pdx-asset.ts';
 
 /** An A8R8G8B8 DDS file of one colour, without a mip chain. */
 export function dds(width: number, height: number, bgra: readonly number[]): Uint8Array {
@@ -62,9 +63,9 @@ async function fixtureGame(): Promise<string> {
     'interface/etch_assets.gfx': GFX,
     // The .tga the sprite names exists only as .dds, as for 584 vanilla sprites.
     'gfx/interface/etch_badge.dds': dds(48, 24, [0, 128, 255, 255]),
-    'gfx/models/etch/etch_tower.mesh': '@@b@',
+    'gfx/models/etch/etch_tower.mesh': binary(MESH),
     'gfx/models/etch/etch_tower_diffuse.dds': dds(8, 8, [255, 0, 0, 255]),
-    'gfx/models/etch/etch_tower_idle.anim': '@@b@',
+    'gfx/models/etch/etch_tower_idle.anim': binary(ANIM),
     'gfx/models/etch/etch_tower.asset': ASSET,
   };
   for (const [name, content] of Object.entries(files)) {
@@ -145,6 +146,21 @@ export async function testAssetLinks(): Promise<void> {
     );
     assert.match(missing, /Not in the playset/, 'a missing texture is named');
 
+    const mesh = markdownOf(
+      await vscode.commands.executeCommand<vscode.Hover[]>(
+        'vscode.executeHoverProvider',
+        gfx.uri,
+        positionOf(gfx, 'gfx/models/etch/etch_tower.mesh'),
+      ),
+    );
+    assert.match(
+      mesh,
+      /1 shape · 4 vertices · 2 triangles · 2 bones · 1 collision shape/,
+      'a mesh path hovers with its size and skeleton',
+    );
+    assert.match(mesh, /Shaders: PdxMeshStandardSkinned/, 'its shaders');
+    assert.match(mesh, /Textures: `flag_diffuse\.dds`/, 'and the textures its materials name');
+
     const asset = await vscode.workspace.openTextDocument(
       vscode.Uri.file(path.join(game, 'gfx', 'models', 'etch', 'etch_tower.asset')),
     );
@@ -157,6 +173,18 @@ export async function testAssetLinks(): Promise<void> {
       assetLinks.map((link) => link.target && path.relative(game, link.target.fsPath)),
       [path.join('gfx', 'models', 'etch', 'etch_tower_idle.anim')],
       'a bare animation name links to the file beside the .asset file',
+    );
+    const animation = markdownOf(
+      await vscode.commands.executeCommand<vscode.Hover[]>(
+        'vscode.executeHoverProvider',
+        asset.uri,
+        positionOf(asset, 'etch_tower_idle.anim'),
+      ),
+    );
+    assert.match(
+      animation,
+      /2 frames at 15 fps \(0\.1 s\) · 2 joints/,
+      'an animation path hovers with its frames and joints',
     );
   } finally {
     await settings.update('gamePath', undefined, vscode.ConfigurationTarget.Global);

@@ -4,10 +4,11 @@
 // the playset it comes from. Paths resolve as `assetReferences` (core) says; the playset is the
 // one the script profile and the province id check use (`linkedFiles`).
 
-import { stat } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { assetReferences, parseScript, type AssetReference } from '@etch/core';
+import { animationFacts, meshFacts, readAnimation, readMesh } from '@etch/core/asset';
 import type { GameFiles } from '@etch/core/playset';
 import { linkedFiles } from './script-profile-view.ts';
 import { TextureThumbnails } from './texture-thumbnail.ts';
@@ -78,6 +79,12 @@ export class AssetLinks implements vscode.DocumentLinkProvider, vscode.HoverProv
       } catch (error) {
         markdown.appendMarkdown(`\n\nEtch cannot show it: ${messageOf(error)}.`);
       }
+    } else {
+      try {
+        markdown.appendMarkdown(`\n\n${await assetFacts(resolved.absolutePath, reference.kind)}`);
+      } catch (error) {
+        markdown.appendMarkdown(`\n\nEtch cannot read it: ${messageOf(error)}.`);
+      }
     }
     return new vscode.Hover(markdown, range);
   }
@@ -121,6 +128,17 @@ export class AssetLinks implements vscode.DocumentLinkProvider, vscode.HoverProv
     );
     return this.files;
   }
+}
+
+/** The facts of a mesh (size, skeleton, shaders, textures) or an animation (frames, joints). */
+async function assetFacts(absolutePath: string, kind: 'mesh' | 'animation'): Promise<string> {
+  const bytes = await readFile(absolutePath);
+  if (kind === 'animation') return animationFacts(readAnimation(bytes));
+  const { summary, shaders, textures } = meshFacts(readMesh(bytes));
+  const lines = [summary];
+  if (shaders.length > 0) lines.push(`Shaders: ${shaders.join(', ')}`);
+  if (textures.length > 0) lines.push(`Textures: ${textures.map((t) => `\`${t}\``).join(', ')}`);
+  return lines.join('\n\n');
 }
 
 /** The asset paths of a document with their ranges inside the quotes. */
