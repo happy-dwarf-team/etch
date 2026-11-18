@@ -540,7 +540,14 @@ refresh is a step of the 3.0.0 release.
   mouse, shown again when the file changes on disk. Over EU4 1.37.5 every
   `.dds` and `.tga` under `gfx` (8,031 and 1,354 files) and every level of the
   1,736 DDS mip chains read (`ETCH_EU4_DIR`, `packages/renderer/test/vanilla.test.ts`).
-  A sprite's texture on hover and a `.mesh` viewer are not done.
+  Asset paths in `.gfx` and `.asset` files (textures, meshes, animations)
+  link to the file the playset resolves (`.tga` falling back to `.dds`), and
+  a texture path's hover shows a thumbnail with its facts. A bare name in a
+  `pdxmesh`'s `meshsettings` is in its mesh's folder, any other bare name in
+  the naming file's folder: over EU4 1.37.5 all 7,730 asset paths of
+  `interface/*.gfx` and `gfx/**/*.asset` resolve so but 30 textures vanilla
+  itself lacks (`packages/core/test/asset-paths.vanilla.test.ts`). A `.mesh`
+  viewer is not done.
 
 ## Open issues
 
