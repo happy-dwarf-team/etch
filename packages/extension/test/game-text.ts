@@ -33,6 +33,29 @@ async function diagnosticsOf(
   });
 }
 
+/**
+ * The titles of the code actions at a range once they include `wanted`. The command takes the
+ * diagnostics from VS Code's marker service, which the extension host's diagnostics reach a moment
+ * later than `onDidChangeDiagnostics` fires, so a first query can see none of Etch's.
+ */
+async function actionTitles(
+  uri: vscode.Uri,
+  range: vscode.Range,
+  wanted: string,
+): Promise<string[]> {
+  const deadline = Date.now() + TIMEOUT_MS;
+  for (;;) {
+    const actions = await vscode.commands.executeCommand<vscode.CodeAction[]>(
+      'vscode.executeCodeActionProvider',
+      uri,
+      range,
+    );
+    const titles = actions.map((action) => action.title);
+    if (titles.includes(wanted) || Date.now() > deadline) return titles;
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+}
+
 async function fixture(root: string, name: string, bytes: number[]): Promise<vscode.Uri> {
   const file = path.join(root, name);
   await mkdir(path.dirname(file), { recursive: true });
@@ -62,12 +85,7 @@ export async function testGameText(): Promise<void> {
   assert.deepEqual([differs.range.start.character, differs.range.end.character], [8, 9]);
   assert.equal((await gameTextOfDocument(document, 'interface')).text, 'text = "Ã©"\n');
 
-  const actions = await vscode.commands.executeCommand<vscode.CodeAction[]>(
-    'vscode.executeCodeActionProvider',
-    utf8Gui,
-    differs.range,
-  );
-  const titles = actions.map((action) => action.title);
+  const titles = await actionTitles(utf8Gui, differs.range, 'Reopen as Windows 1252');
   assert.ok(titles.includes('Reopen as Windows 1252'), titles.join(', '));
   assert.ok(titles.includes('Save with Encoding…'), titles.join(', '));
 
@@ -107,12 +125,11 @@ export async function testGameText(): Promise<void> {
     scriptFound.map((d) => [d.code, d.range.start.line, d.message]),
     [['game-text-differs', 1, 'Saved as UTF-8; the game reads "Ã©".']],
   );
-  const scriptActions = await vscode.commands.executeCommand<vscode.CodeAction[]>(
-    'vscode.executeCodeActionProvider',
+  const scriptTitles = await actionTitles(
     utf8Script,
     scriptFound[0]?.range ?? new vscode.Range(0, 0, 0, 0),
+    'Reopen as Windows 1252',
   );
-  const scriptTitles = scriptActions.map((action) => action.title);
   assert.ok(scriptTitles.includes('Reopen as Windows 1252'), scriptTitles.join(', '));
   // A .txt outside the script folders gets none.
   const notes = await fixture(root, 'notes/readme.txt', [0xc3, 0xa9]);
