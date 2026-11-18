@@ -6,7 +6,7 @@ import { MEDIA_TYPES } from './config.ts';
 
 /**
  * The clip ids, the same in bucket keys, file names and the manifest (spec section 8.5): the hero's
- * trailer, the offline preview's six features and the live game's three. Every clip is a loop with
+ * trailer, the offline preview's six features, the scripts' two and the live game's three. Every clip is a loop with
  * its poster.
  */
 export const CLIP_IDS = [
@@ -17,6 +17,8 @@ export const CLIP_IDS = [
   'zoom',
   'outline',
   'problems',
+  'profile',
+  'names',
   'reload',
   'pick',
   'snapshot',
@@ -32,6 +34,8 @@ export const OFFLINE_CLIP_IDS = [
   'zoom',
   'outline',
   'problems',
+  'profile',
+  'names',
 ] as const satisfies readonly ClipId[];
 
 export interface DraftSource {

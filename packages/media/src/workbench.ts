@@ -36,6 +36,8 @@ export interface LaunchOptions {
   readonly extensionPath: string;
   /** The repository's demo mod; the workspace is a fresh copy, so no edit reaches the repository. */
   readonly demoMod: string;
+  /** The demo mod's top-level files or folders left out of the copy. */
+  readonly excluded?: readonly string[];
   /**
    * Base-game files copied into the workspace before it opens, relative to the game folder, as
    * **Override in my mod** would: the copy lives only in the throwaway run folder.
@@ -184,7 +186,13 @@ export class Workbench {
     const run = path.join(options.work, 'run');
     await rm(run, { recursive: true, force: true });
     const workspace = path.join(run, WORKSPACE_NAME);
-    await cp(options.demoMod, workspace, { recursive: true });
+    const excluded = new Set(
+      (options.excluded ?? []).map((name) => path.join(options.demoMod, name)),
+    );
+    await cp(options.demoMod, workspace, {
+      recursive: true,
+      filter: (source) => !excluded.has(path.normalize(source)),
+    });
     for (const file of options.overrides) {
       const parts = file.split('/');
       await mkdir(path.join(workspace, ...parts.slice(0, -1)), { recursive: true });
@@ -315,14 +323,41 @@ export class Workbench {
   }
 
   /** Runs a command through the command palette, by its title. */
-  async command(title: string, options: { keepsQuickInput?: boolean } = {}): Promise<void> {
+  async command(
+    title: string,
+    options: {
+      keepsQuickInput?: boolean;
+      /** Types the title a key at a time, this far apart, for a take that shows the palette. */
+      typeDelayMs?: number;
+      /** Called with the palette's box (master pixels) once the command is listed, before Enter. */
+      onShown?: (box: Rect) => Promise<void>;
+    } = {},
+  ): Promise<void> {
     await this.openQuickInput('F1');
-    await this.page.keyboard.type(title);
+    await this.page.keyboard.type(title, { delay: options.typeDelayMs ?? 0 });
     await this.page
       .locator('.quick-input-list .monaco-list-row.focused', { hasText: title })
       .waitFor();
+    if (options.onShown !== undefined) {
+      await options.onShown(await this.box(this.page.locator('.quick-input-widget')));
+    }
     await this.page.keyboard.press('Enter');
     if (options.keepsQuickInput !== true) await this.quickInputClosed();
+  }
+
+  /** The frame of an open Markdown preview whose first heading is `heading`. */
+  async markdownPreview(heading: string): Promise<Frame> {
+    for (let i = 0; i < 300; i++) {
+      for (const frame of this.page.frames()) {
+        if (frame === this.previewFrame) continue;
+        const found = await frame
+          .evaluate((text) => document.querySelector('h1')?.textContent.trim() === text, heading)
+          .catch(() => false);
+        if (found) return frame;
+      }
+      await sleep(100);
+    }
+    throw new Error(`no Markdown preview with the heading "${heading}" appeared`);
   }
 
   /** Opens a workspace file through Quick Open, by its file name, in the editor's group. */

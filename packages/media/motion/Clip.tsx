@@ -279,14 +279,15 @@ function CaptionView({ caption, t }: { caption: Caption; t: number }) {
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: 18,
-          padding: '14px 24px',
-          borderRadius: 16,
+          gap: 22,
+          padding: '16px 30px',
+          borderRadius: 18,
           background: 'rgb(22 23 26 / 0.9)',
           border: '1px solid rgb(255 255 255 / 0.12)',
           boxShadow: '0 18px 40px -18px rgb(0 0 0 / 0.9)',
           fontFamily: SANS,
-          fontSize: 30,
+          fontSize: 40,
+          fontWeight: 500,
           color: COLOURS.text,
         }}
       >
@@ -298,8 +299,8 @@ function CaptionView({ caption, t }: { caption: Caption; t: number }) {
                 <kbd
                   style={{
                     fontFamily: MONO,
-                    fontSize: 26,
-                    padding: '4px 12px',
+                    fontSize: 34,
+                    padding: '4px 14px',
                     borderRadius: 8,
                     background: COLOURS.key,
                     borderBottom: '3px solid #0d0e10',

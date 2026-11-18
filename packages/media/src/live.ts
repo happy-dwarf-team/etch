@@ -168,6 +168,10 @@ export async function takeLive(options: ShootOptions & { save: string }): Promis
     work: options.work,
     extensionPath: options.extension,
     demoMod: path.join(options.repository, 'packages', 'media', 'demo-mod'),
+    // Without the demo mod's event file (the `names` clip's, which the live clips do not show):
+    // with it, three takes waited 4–10 minutes for the save and the game never reached it; the
+    // take without it loaded at once (2026-11-18). Why is not known.
+    excluded: ['events'],
     overrides: OVERRIDES,
     open: START_FILE,
     gamePath: options.gamePath,
@@ -197,10 +201,20 @@ export async function takeLive(options: ShootOptions & { save: string }): Promis
     await wb.page.keyboard.press('Enter');
     tongs = await Tongs.connect(600_000);
     const live = tongs;
+    let logged = 0;
     await until(
       'the save to load',
-      async () => (await live.send<{ in_game?: boolean }>('state')).in_game === true,
-      600_000,
+      async () => {
+        const state = await live.send<{ in_game?: boolean }>('state');
+        if (state.in_game === true) return true;
+        // While it waits, the game's state every 30 s: a load that never ends says why in it.
+        if (Date.now() - logged > 30_000) {
+          logged = Date.now();
+          console.log(`Waiting for the save: ${JSON.stringify(state)}`);
+        }
+        return false;
+      },
+      240_000,
       1_000,
     );
     await live.send('frames timeout=120', 130_000);

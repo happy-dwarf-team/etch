@@ -3,6 +3,8 @@
 // `interface/provinceview.gui` open beside Etch's preview, logging events; its edit turns the log
 // into the camera, captions and highlights the composition renders (edit.ts). Every clip starts and
 // ends on the same wide shot of the same state, so it loops without a seam.
+import { copyFile, mkdir } from 'node:fs/promises';
+import * as path from 'node:path';
 import type { Locator } from '@playwright/test';
 import {
   cameraKeys,
@@ -47,6 +49,8 @@ export interface ClipContext {
   readonly take: Take;
   /** Starts recording VS Code's window; the steps before it are not in the masters. */
   readonly record: () => Promise<void>;
+  /** The script profile `profile` shows: a CSV of Anvil's script profiler (`--profile`). */
+  readonly profile?: string;
 }
 
 export interface Clip {
@@ -61,6 +65,8 @@ export const POST_ROLL_MS = 2000;
 /** The wide shot before the first move and after the last: the loop's seam. */
 const LEAD = 2.2;
 const TAIL = 1.4;
+/** The wide shot before the first menu of `views` and `data`, whose pointer is on its way to it. */
+const MENU_LEAD = 1.2;
 
 const ASPECT = OUTPUT.width / OUTPUT.height;
 
@@ -91,7 +97,7 @@ const INSET: Rect = { x: 1060, y: 40, w: 820, h: 200 };
 const PREVIEW_INSET: Rect = { x: 1392, y: 40, w: 488, h: 274 };
 
 /** The views `views` shows, the first two the menu lists besides the current one. */
-const VIEWS = ['Foreign province', 'Build army', 'Build navy', 'State'];
+const VIEWS = ['Build army', 'State tab', 'Foreign province', 'Build navy'];
 
 /** Game-screen points at 1280 × 720, in the own province view with the buildings side panel. */
 const PROVINCE_HEADER = { x: 150, y: 120 };
@@ -106,6 +112,18 @@ const ZOOM_TICKS = 2;
 /** `problems`: a sprite of the province view, and the typo swapping its `ui`. */
 const SPRITE = '"GFX_provinceview_building_bg"';
 const TYPO = 'biulding';
+
+/**
+ * `names`: the demo mod's event (its own text), where one keystroke makes a province id the map
+ * does not have and two more an idea group the playset does not define.
+ */
+const EVENTS_FILE = 'etch_demo_events.txt';
+const OWNS = 'owns = 151';
+const IDEA_GROUP = 'economic_ideas';
+const IDEA_TYPO = 'al';
+
+/** `profile`: the row of the profile page whose name link it follows, a base-game decision. */
+const PROFILED = 'expel_foreign_traders';
 
 /** The province view's header in the preview, in master pixels. */
 async function headerRect(wb: Workbench): Promise<Rect> {
@@ -283,6 +301,10 @@ async function backToRest(context: ClipContext, rest: { x: number; y: number }):
 /** Back to the rest, then the post-roll. */
 async function endTake(context: ClipContext, rest: { x: number; y: number }): Promise<void> {
   await backToRest(context, rest);
+  // As at the start, so that the loop's last frame matches its first: the keyboard in the editor
+  // (a preview button keeps no focus ring) and the mouse off the preview (no widget stays hovered).
+  await context.wb.focusEditor();
+  await context.wb.parkMouse();
   context.take.mark('end');
   await context.take.until(context.take.t() + POST_ROLL_MS / 1000);
 }
@@ -354,7 +376,6 @@ export const CLIPS: readonly Clip[] = [
       const rest = await startTake(context);
       take.mark('start');
       const menu = wb.frame.locator('#view-menu');
-      const popup = wb.frame.locator('#view-popup');
       const current = /View: (.+?)(?: ·.*)? ▾/.exec((await menu.textContent()) ?? '')?.[1];
       let chosen: string[] | undefined;
       // Each view: the menu, the item, the menu closed, and a look at the window.
@@ -374,23 +395,26 @@ export const CLIPS: readonly Clip[] = [
           chosen = [...chosen.slice(0, 2), current];
         }
         const label = chosen[i] as string;
+        // The close-up holds the menu's button and its list of views, not the selectors below.
+        const items = wb.frame.locator('#view-popup .item', { hasText: /^[○●]/ });
         take.mark('menu', {
           source: 'vscode',
-          rect: union(await wb.box(menu), await wb.box(popup)),
+          rect: union(await wb.box(menu), await wb.box(items.first()), await wb.box(items.last())),
         });
-        await sleep(450);
-        await clickOn(context, viewItem(wb, label), { ms: 600, paint: true });
+        await sleep(300);
+        await clickOn(context, viewItem(wb, label), { ms: 500, paint: true });
         await wb.frame.locator('#view-menu', { hasText: `View: ${label}` }).waitFor();
         await wb.closeMenus();
         take.mark('view', { label });
-        await backToRest(context, rest);
-        await sleep(i === 2 ? 600 : 1700);
+        // The pointer stays by the menu between views; it goes back to its rest after the last.
+        if (i === 2) await backToRest(context, rest);
+        await sleep(i === 2 ? 300 : 1100);
       }
       await endTake(context, rest);
     },
     edit(log, sources) {
       const source = sources['vscode'] as Source;
-      const s0 = eventOf(log, 'start').t - LEAD;
+      const s0 = eventOf(log, 'start').t - MENU_LEAD;
       const at = (t: number): number => t - s0;
       const screen = focus(rectOf(eventOf(log, 'screen')), source, ASPECT, { margin: 0 });
       const inset = insetOf(rectOf(eventOf(log, 'line')), source);
@@ -401,8 +425,12 @@ export const CLIPS: readonly Clip[] = [
       for (const [i, menu] of menus.entries()) {
         const view = views[i] as TakeEvent;
         steps.push(
-          { at: at(menu.t) - 0.7, view: focus(rectOf(menu), source, ASPECT, { minWidth: 1280 }) },
-          { at: at(view.t) + 0.05, view: screen, inset },
+          {
+            at: at(menu.t) - 0.6,
+            view: focus(rectOf(menu), source, ASPECT, { margin: 60, minWidth: 900 }),
+          },
+          // Off the menu as it closes: the closed menu's empty close-up shows nothing.
+          { at: at(view.t) - 0.25, view: screen, inset },
         );
         const next = menus[i + 1];
         captions.push({
@@ -412,8 +440,8 @@ export const CLIPS: readonly Clip[] = [
         });
       }
       const last = views[views.length - 1] as TakeEvent;
-      steps.push({ at: at(last.t) + 1.2, view: whole(source, ASPECT) });
-      return vscodeEdit('views', log, sources, { s0, end: eventOf(log, 'end').t + TAIL }, steps, {
+      steps.push({ at: at(last.t) + 0.9, view: whole(source, ASPECT) });
+      return vscodeEdit('views', log, sources, { s0, end: eventOf(log, 'end').t + 0.6 }, steps, {
         captions,
       });
     },
@@ -429,11 +457,12 @@ export const CLIPS: readonly Clip[] = [
       for (const length of ['long', 'typical'] as const) {
         await clickOn(context, menu);
         await wb.frame.locator('#data-popup:not([hidden])').waitFor();
+        // The close-up holds the generated text's lengths, the buttons the take presses.
         take.mark('menu', {
           source: 'vscode',
-          rect: union(await wb.box(menu), await wb.box(wb.frame.locator('#data-popup'))),
+          rect: await wb.box(wb.frame.locator('#data-popup .actions')),
         });
-        await sleep(450);
+        await sleep(300);
         const button = wb.frame.locator('#data-popup .actions button', { hasText: length });
         await clickOn(context, button, { ms: 600, paint: true });
         await wb.frame
@@ -445,13 +474,13 @@ export const CLIPS: readonly Clip[] = [
         take.mark('closed', { label: length });
         await backToRest(context, rest);
         // The long texts held close up; the typical ones only long enough to see them back.
-        await sleep(length === 'long' ? 2600 : 600);
+        await sleep(length === 'long' ? 2000 : 200);
       }
       await endTake(context, rest);
     },
     edit(log, sources) {
       const source = sources['vscode'] as Source;
-      const s0 = eventOf(log, 'start').t - LEAD;
+      const s0 = eventOf(log, 'start').t - MENU_LEAD;
       const at = (t: number): number => t - s0;
       const header = focus(rectOf(eventOf(log, 'header')), source, ASPECT, {
         margin: 40,
@@ -460,21 +489,19 @@ export const CLIPS: readonly Clip[] = [
       const inset = insetOf(rectOf(eventOf(log, 'line')), source);
       const menus = eventsOf(log, 'menu', 2);
       const menuView = (i: number): Rect =>
-        focus(rectOf(menus[i] as TakeEvent), source, ASPECT, { minWidth: 1280 });
-      const closings = eventsOf(log, 'closed', 2);
-      const longClosed = closings[0] as { t: number };
-      const typicalClosed = closings[1] as { t: number };
+        focus(rectOf(menus[i] as TakeEvent), source, ASPECT, { margin: 140, minWidth: 820 });
       const lengths = eventsOf(log, 'length', 2);
       return vscodeEdit(
         'data',
         log,
         sources,
-        { s0, end: eventOf(log, 'end').t + TAIL },
+        { s0, end: eventOf(log, 'end').t + 0.6 },
         [
-          { at: at((menus[0] as TakeEvent).t) - 0.7, view: menuView(0) },
-          { at: at(longClosed.t) + 0.1, view: header, inset },
-          { at: at((menus[1] as TakeEvent).t) - 0.7, view: menuView(1) },
-          { at: at(typicalClosed.t) + 0.3, view: whole(source, ASPECT) },
+          { at: at((menus[0] as TakeEvent).t) - 0.6, view: menuView(0) },
+          // Off the menu once a length is pressed: it closes half a second later, empty.
+          { at: at((lengths[0] as { t: number }).t) + 0.2, view: header, inset },
+          { at: at((menus[1] as TakeEvent).t) - 0.6, view: menuView(1) },
+          { at: at((lengths[1] as { t: number }).t) + 0.2, view: whole(source, ASPECT) },
         ],
         {
           captions: [
@@ -497,6 +524,7 @@ export const CLIPS: readonly Clip[] = [
         source: 'vscode',
         rect: union(await wb.screenRect(), await wb.box(level)),
       });
+      take.mark('level', { source: 'vscode', rect: await wb.box(level) });
       const rest = await startTake(context);
       take.mark('start');
       const initial = ((await level.textContent()) ?? '').trim();
@@ -545,6 +573,10 @@ export const CLIPS: readonly Clip[] = [
             },
             { from: fit - 0.5, to: fit + 0.6, text: 'A click on the level: fitted again' },
           ],
+          // The level is a small button at the toolbar's right: a ring shows where the click is.
+          highlights: [
+            { from: fit - 1.1, to: fit + 0.4, panel: 0, rect: rectOf(eventOf(log, 'level')) },
+          ],
         },
       );
     },
@@ -572,7 +604,14 @@ export const CLIPS: readonly Clip[] = [
       for (const point of HOVERED) {
         await pointTo(context, await wb.screenPoint(point), 750);
         await wb.frame.locator('#tip:not([hidden])').waitFor();
-        take.mark('hover', { source: 'vscode', rect: await wb.box(wb.frame.locator('#hover')) });
+        // The hovered widget and its tip: the camera moves in on both.
+        take.mark('hover', {
+          source: 'vscode',
+          rect: union(
+            await wb.box(wb.frame.locator('#hover')),
+            await wb.box(wb.frame.locator('#tip')),
+          ),
+        });
         await sleep(1000);
       }
       await pointTo(context, await wb.screenPoint(FIRST_BUILDING), 600);
@@ -605,9 +644,20 @@ export const CLIPS: readonly Clip[] = [
       const at = (t: number): number => t - s0;
       const screen = focus(rectOf(eventOf(log, 'screen')), source, ASPECT, { margin: 40 });
       const pick = eventOf(log, 'picked');
-      const code = focus(rectOf(pick), source, ASPECT, { margin: 80, minWidth: 1280 });
+      const code = focus(rectOf(pick), source, ASPECT, { margin: 60, minWidth: 1000 });
       const screenRect = rectOf(eventOf(log, 'screen'));
       const hovers = eventsOf(log, 'hover', HOVERED.length);
+      // Each tip is a line of small text: the camera moves in on the hovered widgets and their
+      // tips, once for all three (a move for each made the loop restless and larger).
+      const hoverSteps: Step[] = [
+        {
+          at: at((hovers[0] as TakeEvent).t) - 0.5,
+          view: focus(union(...hovers.map(rectOf)), source, ASPECT, { margin: 40, minWidth: 900 }),
+          inset: insetOf(rectOf(eventOf(log, 'line')), source),
+          // At the right's middle, over the buildings panel: at the top it hid the first tip.
+          insetFrame: { ...INSET, y: 440 },
+        },
+      ];
       const picked = at(pick.t);
       const back = at(eventOf(log, 'back').t);
       return vscodeEdit(
@@ -617,6 +667,7 @@ export const CLIPS: readonly Clip[] = [
         { s0, end: eventOf(log, 'end').t + TAIL },
         [
           { at: LEAD - 0.4, view: screen, inset: insetOf(rectOf(eventOf(log, 'line')), source) },
+          ...hoverSteps,
           { at: picked - 0.2, view: code, ...previewInset(screenRect, source) },
           { at: back + 0.1, view: whole(source, ASPECT) },
         ],
@@ -697,7 +748,7 @@ export const CLIPS: readonly Clip[] = [
       const preview = previewInset(screenRect, source);
       const problem = eventOf(log, 'problem');
       // The row spans the panel; its message is at its left.
-      const row = { ...rectOf(problem), w: Math.min(rectOf(problem).w, 1000) };
+      const row = { ...rectOf(problem), w: Math.min(rectOf(problem).w, 760) };
       const undo = at(eventOf(log, 'undo').t);
       const fixed = at(eventOf(log, 'fixed').t);
       return vscodeEdit(
@@ -713,11 +764,13 @@ export const CLIPS: readonly Clip[] = [
           },
           {
             at: at(problem.t) + 0.1,
-            view: focus(row, source, ASPECT, { margin: 60, minWidth: 1280 }),
+            view: focus(row, source, ASPECT, { margin: 30, minWidth: 820 }),
             ...preview,
           },
           { at: at(problem.t) + 2.0, view: screen, inset: insetOf(line, source) },
-          { at: undo - 0.2, view: whole(source, ASPECT) },
+          // The preview stays in view while the undo draws the panel's background again; then the
+          // whole window, as at the start.
+          { at: fixed + 0.3, view: whole(source, ASPECT) },
         ],
         {
           captions: [
@@ -734,6 +787,233 @@ export const CLIPS: readonly Clip[] = [
             { from: undo - 0.1, to: fixed + 0.8, keys: ['Ctrl', 'Z'] },
           ],
           highlights: [{ from: at(problem.t) + 0.4, to: at(problem.t) + 1.9, panel: 0, rect: row }],
+        },
+      );
+    },
+  },
+  {
+    id: 'profile',
+    async run(context) {
+      const { wb, take, profile } = context;
+      if (profile === undefined) {
+        throw new Error('the profile clip needs a script profile: pass --profile');
+      }
+      // The live game's private profile, in the run's throwaway user data: the command searches
+      // the player's own profile first, which this copy outdates (its time is now).
+      const logs = path.join(
+        path.dirname(wb.workspace),
+        'user-data',
+        'User',
+        'globalStorage',
+        'happy-dwarf-team.etch',
+        'private-install',
+        'profile',
+        'logs',
+      );
+      await mkdir(logs, { recursive: true });
+      await copyFile(profile, path.join(logs, path.basename(profile)));
+      const rest = await startTake(context);
+      take.mark('start');
+      await wb.command('Etch: Show Latest Script Profile', {
+        typeDelayMs: 35,
+        onShown: async (box) => {
+          take.mark('palette', { source: 'vscode', rect: box });
+          await sleep(700);
+        },
+      });
+      const page = await wb.markdownPreview('Script profile');
+      const link = page.locator('a', { hasText: new RegExp(`^${PROFILED}$`) }).first();
+      await link.waitFor();
+      const heading = await wb.box(page.locator('h1').first());
+      const row = await wb.box(link.locator('xpath=ancestor::tr[1]'));
+      take.mark('page', { source: 'vscode', rect: union(heading, row) });
+      await sleep(2600);
+      await clickOn(context, link, { ms: 800 });
+      // The file has a lens above every measured block; the one in view is the clicked name's.
+      const lens = wb.page
+        .locator('.part.editor .codelens-decoration', { hasText: 'Script profile:' })
+        .filter({ visible: true })
+        .first();
+      await lens.waitFor();
+      await wb.page.locator('.tab.active', { hasText: '.txt' }).waitFor();
+      await sleep(300);
+      // The lens, the block's name under it and the line the link opened.
+      take.mark('lens', { source: 'vscode', rect: union(await wb.box(lens), await wb.lineRect()) });
+      await backToRest(context, rest);
+      await sleep(2600);
+      // Back to the start: the decision's file and the profile closed, provinceview.gui shown.
+      await wb.press('Control+W');
+      await wb.page.locator('.tab.active', { hasText: 'Script profile' }).waitFor();
+      await wb.press('Control+W');
+      await wb.page.locator('.tab.active', { hasText: 'provinceview.gui' }).waitFor();
+      take.mark('closed');
+      await endTake(context, rest);
+    },
+    edit(log, sources) {
+      const source = sources['vscode'] as Source;
+      const s0 = eventOf(log, 'start').t - LEAD;
+      const at = (t: number): number => t - s0;
+      const palette = eventOf(log, 'palette');
+      const page = eventOf(log, 'page');
+      const lens = eventOf(log, 'lens');
+      const closed = at(eventOf(log, 'closed').t);
+      // The lens spans the editor; its text is at its left, the block's first line below it.
+      const lensRect = rectOf(lens);
+      const block = { ...lensRect, w: Math.min(lensRect.w, 760), h: lensRect.h * 4 };
+      return vscodeEdit(
+        'profile',
+        log,
+        sources,
+        { s0, end: eventOf(log, 'end').t + 0.6 },
+        [
+          {
+            at: at(palette.t) - 0.4,
+            view: focus(rectOf(palette), source, ASPECT, { margin: 40, minWidth: 1000 }),
+          },
+          {
+            at: at(page.t) - 0.1,
+            view: focus(rectOf(page), source, ASPECT, { margin: 40, minWidth: 1280 }),
+          },
+          {
+            at: at(lens.t) - 0.1,
+            // Close: the lens is a line of small text, the loop's point.
+            view: focus(block, source, ASPECT, { margin: 40, minWidth: 820 }),
+          },
+          { at: closed - 0.6, view: whole(source, ASPECT) },
+        ],
+        {
+          captions: [
+            {
+              from: at(page.t) + 0.2,
+              to: at(lens.t) - 0.5,
+              text: 'The newest script profile: the slowest triggers and effects',
+            },
+            {
+              from: at(lens.t) + 0.3,
+              to: closed - 0.7,
+              text: 'Its name opens the block, with its time above it',
+            },
+          ],
+          highlights: [
+            {
+              from: at(lens.t) + 0.4,
+              to: closed - 0.7,
+              panel: 0,
+              rect: { ...lensRect, w: Math.min(lensRect.w, 760) },
+            },
+          ],
+        },
+      );
+    },
+  },
+  {
+    id: 'names',
+    async run(context) {
+      const { wb, take } = context;
+      await wb.quickOpen(EVENTS_FILE);
+      await wb.page.keyboard.press('Control+Shift+M');
+      await wb.page.locator('.markers-panel').waitFor();
+      // Problems shows only the event's: the base game's provinceview.gui has problems of its own.
+      const filter = wb.page
+        .locator('.markers-panel-action-filter input, .viewpane-filter input')
+        .first();
+      await filter.click();
+      await filter.fill(`**/${EVENTS_FILE}`);
+      await wb.page
+        .locator('.markers-panel .monaco-list-row', { hasText: 'provinceview' })
+        .first()
+        .waitFor({ state: 'detached' });
+      await wb.focusEditor();
+      await wb.fitPreview();
+      const idea = await wb.find(IDEA_GROUP);
+      const ideaAt = { line: idea.line, column: idea.start + IDEA_GROUP.indexOf('_ideas') };
+      await wb.walkCursorTo(ideaAt, 0);
+      const ideaLine = await wb.lineRect();
+      const owns = await wb.find(OWNS);
+      const home = { line: owns.line, column: owns.start + 'owns = '.length };
+      await wb.walkCursorTo(home, 0);
+      take.mark('code', { source: 'vscode', rect: union(await wb.lineRect(), ideaLine) });
+      take.mark('panel', { source: 'vscode', rect: await wb.box(wb.page.locator('.part.panel')) });
+      const rows = wb.page.locator('.markers-panel .monaco-list-row');
+      const rest = await startTake(context);
+      take.mark('start');
+      take.mark('key', { label: '5' });
+      await wb.type('5');
+      const province = rows.filter({ hasText: 'Province 5151' });
+      await province.first().waitFor();
+      take.mark('province', { source: 'vscode', rect: await wb.box(province) });
+      await sleep(2200);
+      take.mark('walk');
+      await wb.walkCursorTo(ideaAt, 60);
+      await sleep(250);
+      take.mark('key', { label: IDEA_TYPO });
+      await wb.page.keyboard.type(IDEA_TYPO, { delay: 160 });
+      const named = rows.filter({ hasText: `economical_ideas` });
+      await named.first().waitFor();
+      take.mark('idea', {
+        source: 'vscode',
+        rect: union(await wb.box(province), await wb.box(named)),
+      });
+      await sleep(2600);
+      take.mark('undo');
+      for (let i = 0; i < 4 && (await wb.dirty()); i++) await wb.press('Control+Z');
+      if (await wb.dirty()) throw new Error('the loop does not close: the file is still unsaved');
+      await rows.filter({ hasText: 'Etch' }).first().waitFor({ state: 'detached' });
+      take.mark('fixed');
+      await wb.walkCursorTo(home, 0);
+      await endTake(context, rest);
+    },
+    edit(log, sources) {
+      const source = sources['vscode'] as Source;
+      const s0 = eventOf(log, 'start').t - LEAD;
+      const at = (t: number): number => t - s0;
+      // Closer than the other clips' close-ups: the site shows the loop at about a third of its
+      // size, and the code and the rows' messages are what this loop shows.
+      const code = focus(lineStart(rectOf(eventOf(log, 'code'))), source, ASPECT, {
+        margin: 120,
+        minWidth: 960,
+      });
+      const province = eventOf(log, 'province');
+      const idea = eventOf(log, 'idea');
+      // The rows span the panel; their messages start at their left, and the view keeps the
+      // start of each message.
+      const left = (rect: Rect): Rect => ({ ...rect, w: Math.min(rect.w, 760) });
+      const rowView = (rect: Rect): Rect =>
+        focus(left(rect), source, ASPECT, { margin: 30, minWidth: 820 });
+      const walk = at(eventOf(log, 'walk').t);
+      const undo = at(eventOf(log, 'undo').t);
+      const fixed = at(eventOf(log, 'fixed').t);
+      return vscodeEdit(
+        'names',
+        log,
+        sources,
+        { s0, end: eventOf(log, 'end').t + TAIL },
+        [
+          { at: LEAD - 0.9, view: code },
+          { at: at(province.t) + 0.1, view: rowView(rectOf(province)) },
+          { at: walk - 0.2, view: code },
+          { at: at(idea.t) + 0.1, view: rowView(rectOf(idea)) },
+          // The rows stay in view while the undo removes them; then the whole window, as at the start.
+          { at: fixed + 0.3, view: whole(source, ASPECT) },
+        ],
+        {
+          captions: [
+            {
+              from: at(province.t) + 0.1,
+              to: walk - 0.3,
+              text: 'Province 5151 is not on the map, and the game would not log it',
+            },
+            {
+              from: at(idea.t) + 0.1,
+              to: undo - 0.3,
+              text: 'No such idea group: add_idea_group crashes the game on it',
+            },
+            { from: undo - 0.1, to: fixed + 0.8, keys: ['Ctrl', 'Z'] },
+          ],
+          highlights: [
+            { from: at(province.t) + 0.4, to: walk - 0.3, panel: 0, rect: left(rectOf(province)) },
+            { from: at(idea.t) + 0.4, to: undo - 0.3, panel: 0, rect: left(rectOf(idea)) },
+          ],
         },
       );
     },

@@ -220,6 +220,47 @@ describe('publishing', () => {
     expect(await siteFiles()).toEqual([]);
   });
 
+  it("keeps a loop the site shows, with its Etch version, when the new capture's is not published", async () => {
+    const bucket = new FakeBucket();
+    const first = await publish({ capture, site, bucket, log });
+    const next = path.join(root, 'out', 'v0.4.0');
+    await mkdir(next);
+    const text = await readFile(path.join(capture, 'media.draft.json'), 'utf8');
+    const draft = JSON.parse(text) as { etch: string; loops: Record<string, unknown> };
+    const others = Object.fromEntries(
+      Object.entries(draft.loops).filter(([id]) => id !== 'snapshot'),
+    );
+    await writeFile(
+      path.join(next, 'media.draft.json'),
+      JSON.stringify({ ...draft, etch: '0.4.0', loops: others }),
+    );
+    for (const id of CLIP_IDS.filter((clip) => clip !== 'snapshot')) {
+      for (const ext of ['webm', 'mp4', 'png']) {
+        await writeFile(
+          path.join(next, `${id}.${ext}`),
+          await readFile(path.join(capture, `${id}.${ext}`)),
+        );
+      }
+    }
+    lines.length = 0;
+    bucket.calls.length = 0;
+
+    const manifest = await publish({ capture: next, site, bucket, keep: ['snapshot'], log });
+
+    expect(manifest.etch).toBe('0.4.0');
+    expect(Object.keys(manifest.loops)).toEqual([...CLIP_IDS]);
+    expect(manifest.loops.snapshot).toEqual({ etch: '0.3.0', ...first.loops.snapshot });
+    expect(manifest.loops.hero.sources[0].src).toContain('/etch/v0.4.0/hero.');
+    expect(bucket.calls.filter((call) => call.startsWith('put ')).join()).not.toContain('snapshot');
+    expect(lines).toContain("Kept the site's snapshot loop of Etch 0.3.0.");
+
+    // A kept loop's file must still read back from the bucket.
+    bucket.objects.delete(first.loops.snapshot.sources[1].src.split('.dev/')[1] ?? '');
+    await expect(publish({ capture: next, site, bucket, keep: ['snapshot'], log })).rejects.toThrow(
+      /kept snapshot loop's .*reads back as nothing/,
+    );
+  });
+
   it('refuses a draft whose version is not its folder', async () => {
     const other = path.join(root, 'out', 'v0.4.0');
     await mkdir(other);

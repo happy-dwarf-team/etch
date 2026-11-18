@@ -24,6 +24,8 @@ export interface ShootOptions {
   readonly renderer: Renderer;
   /** Encodes a rendered cut into `<id>.webm` and `<id>.mp4`. */
   readonly encode: (id: string, cut: string) => Promise<void>;
+  /** The script profile the `profile` clip shows. */
+  readonly profile?: string;
 }
 
 /** Records a clip's take; returns its log, written beside the masters. */
@@ -51,6 +53,7 @@ export async function takeClip(clip: Clip, options: ShootOptions): Promise<TakeL
       clip.run({
         wb,
         take,
+        ...(options.profile === undefined ? {} : { profile: options.profile }),
         record: () =>
           take.record('vscode', wb.hwnd, path.join(options.masters, `${clip.id}.vscode.mkv`), {
             nudge: () => wb.nudge(),

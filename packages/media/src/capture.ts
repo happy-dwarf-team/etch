@@ -32,6 +32,8 @@ export interface CaptureOptions {
   readonly gamePath: string;
   /** The save the live take's game plays; needed for the live clips. */
   readonly save?: string;
+  /** The script profile the `profile` clip shows: a CSV of Anvil's script profiler. */
+  readonly profile?: string;
   /** Edit the clips again from their takes' logs and masters, without new takes. */
   readonly reedit?: boolean;
 }
