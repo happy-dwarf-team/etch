@@ -1,9 +1,8 @@
-import { readDds } from './dds.ts';
 import { uploadTexture, textureSupport } from './gpu.ts';
 import type { GpuTexture, TextureSupport } from './gpu.ts';
 import { TextureReadError } from './image.ts';
-import type { TextureErrorCode, TextureImage } from './image.ts';
-import { readTga } from './tga.ts';
+import type { TextureErrorCode } from './image.ts';
+import { readTexture } from './read.ts';
 
 /**
  * Why a texture could not be loaded, for the extension to turn into a
@@ -18,15 +17,6 @@ export interface TextureProblem {
 export type TextureResult =
   | { readonly ok: true; readonly texture: GpuTexture }
   | { readonly ok: false; readonly problem: TextureProblem };
-
-/** Reads a DDS or TGA file, chosen by the extension of `name` (case-insensitive). */
-export function readTexture(name: string, bytes: Uint8Array): TextureImage {
-  const cut = name.search(/[?#]/);
-  const path = (cut < 0 ? name : name.slice(0, cut)).toLowerCase();
-  if (path.endsWith('.dds')) return readDds(bytes);
-  if (path.endsWith('.tga')) return readTga(bytes);
-  throw new TextureReadError('unsupported', `texture file type of ${name}`);
-}
 
 /**
  * Textures of one WebGL2 context, fetched once per URL (webview URIs, ADR

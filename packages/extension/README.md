@@ -256,6 +256,29 @@ game shows as `Ã©`, Etch warns and offers to reopen the file in the encoding
 the game expects. A script file's comments are skipped: the game does not read
 them.
 
+## Textures
+
+VS Code cannot open `.dds` and `.tga` files; with Etch they open in the
+**Etch Texture Preview**, which reads them with the same code the preview
+draws with. It lists the size, the format (DXT1, DXT3, DXT5, BGRA8 and the
+other DDS layouts, with or without the DX10 header; TGA at 16, 24 or 32 bits,
+raw, run-length or colour-mapped), the mip levels and whether the alpha is
+used, and shows the image over a checkerboard. A DXT image whose size is not a
+multiple of 4 says the size the game draws it at: its whole 4 × 4 blocks.
+
+- **RGBA**, **RGB** and **A** show the colour with its alpha, the colour
+  alone, or the alpha as grey.
+- **Mip** picks a level of a DDS file's mip chain, down to 1 × 1.
+- **Fit** shrinks a large texture into the panel (never above 100 %), **1:1**
+  shows one texel per screen pixel, **−** and **+** or Ctrl+mouse wheel zoom.
+- The texel under the mouse and its RGBA values show at the bottom.
+- When the file changes on disk, for example a new export from your image
+  editor, the preview shows it at once.
+
+A file Etch cannot read names its format or defect instead, such as a DDS cube
+map or a BC7 texture. To open a texture as text or with another viewer, use
+**Reopen Editor With…**.
+
 ## Etch 1.x
 
 Etch 2.0.0 replaced 1.x's game host and its diff view with the live game. To

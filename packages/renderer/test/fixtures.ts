@@ -16,6 +16,8 @@ export interface DdsOptions {
   /** Sets DDSD_PITCH with this row pitch. */
   pitch?: number;
   caps2?: number;
+  /** Sets DDSD_MIPMAPCOUNT with this count. */
+  mipLevels?: number;
 }
 
 export function dds(options: DdsOptions): Uint8Array {
@@ -29,10 +31,16 @@ export function dds(options: DdsOptions): Uint8Array {
   const masks = options.masks ?? [0, 0, 0, 0];
   put(0, 0x20534444);
   put(4, 124);
-  put(8, 0x1007 | (options.pitch === undefined ? 0 : 0x8));
+  put(
+    8,
+    0x1007 |
+      (options.pitch === undefined ? 0 : 0x8) |
+      (options.mipLevels === undefined ? 0 : 0x20000),
+  );
   put(12, options.height);
   put(16, options.width);
   put(20, options.pitch ?? 0);
+  put(28, options.mipLevels ?? 0);
   put(76, 32);
   const alphaPixels = options.alphaPixels ?? masks[3] !== 0;
   put(80, fourCC === undefined ? 0x40 | (alphaPixels ? 0x1 : 0) : 0x4);

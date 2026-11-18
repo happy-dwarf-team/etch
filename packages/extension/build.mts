@@ -1,4 +1,4 @@
-// Bundles the extension, the preview's webview script and the VS Code test suite, and copies the
+// Bundles the extension, the preview's and the texture preview's webview scripts and the VS Code test suite, and copies the
 // window profiles Etch ships and their JSON Schema (ADR 0006). Workspace packages are bundled in,
 // so the VSIX has no node_modules and no runtime dependencies. The build's stamp (version, commit,
 // time) goes into the bundle and into dist/build.json, which the running extension compares with
@@ -48,6 +48,16 @@ await Promise.all([
   esbuild.build({
     entryPoints: ['webview/main.ts'],
     outfile: 'dist/webview.js',
+    bundle: true,
+    format: 'iife',
+    platform: 'browser',
+    target: 'chrome120',
+    sourcemap: true,
+    logLevel: 'warning',
+  }),
+  esbuild.build({
+    entryPoints: ['webview/texture.ts'],
+    outfile: 'dist/texture-webview.js',
     bundle: true,
     format: 'iife',
     platform: 'browser',

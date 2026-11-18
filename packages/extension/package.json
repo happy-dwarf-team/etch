@@ -40,6 +40,7 @@
   "main": "./dist/extension.js",
   "activationEvents": [
     "onWebviewPanel:etch.preview",
+    "onCustomEditor:etch.texturePreview",
     "workspaceContains:**/*.gui",
     "workspaceContains:**/*.gfx",
     "workspaceContains:**/localisation/**/*.yml",
@@ -49,6 +50,21 @@
     "workspaceContains:map/default.map"
   ],
   "contributes": {
+    "customEditors": [
+      {
+        "viewType": "etch.texturePreview",
+        "displayName": "Etch Texture Preview",
+        "selector": [
+          {
+            "filenamePattern": "*.dds"
+          },
+          {
+            "filenamePattern": "*.tga"
+          }
+        ],
+        "priority": "default"
+      }
+    ],
     "views": {
       "explorer": [
         {

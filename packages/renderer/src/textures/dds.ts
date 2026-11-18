@@ -48,12 +48,12 @@ const DXGI_FORMATS = new Map<number, DxtFormat | TexelLayout>([
 ]);
 
 /**
- * Reads the first mip level of a DDS file: DXT1/3/5 blocks as stored, or
- * 32-bit and 24-bit RGB texels (BGRA8, BGRX8, RGBA8, RGB8), under the classic
- * header or the DX10 one. Anything else throws a {@link TextureReadError}
- * naming the format.
+ * Reads one mip level of a DDS file, the first unless `level` says otherwise: DXT1/3/5 blocks as
+ * stored, or 32-bit and 24-bit RGB texels (BGRA8, BGRX8, RGBA8, RGB8), under the classic header
+ * or the DX10 one. Anything else throws a {@link TextureReadError} naming the format. The levels
+ * after the first halve the size, at least 1, and their rows are tight.
  */
-export function readDds(bytes: Uint8Array): TextureImage {
+export function readDds(bytes: Uint8Array, level = 0): TextureImage {
   if (bytes.byteLength < 4 + HEADER_SIZE) {
     const other = otherImageKind(bytes);
     throw other === undefined || other === 'DDS'
@@ -127,29 +127,42 @@ export function readDds(bytes: Uint8Array): TextureImage {
     throw new TextureReadError('unsupported', `DDS format ${describe(pfFlags, bitCount, masks)}`);
   }
 
+  // Some writers pad the first level's rows; the pitch then says so. Without the flag the rows
+  // are tight, as Microsoft's documentation asks.
+  const texelBytes = format === 'bgr' ? 3 : 4;
+  const firstStride =
+    (flags & DDSD_PITCH) !== 0 && pitch > width * texelBytes ? pitch : width * texelBytes;
+  let levelWidth = width;
+  let levelHeight = height;
+  for (let skipped = 0; skipped < level; skipped++) {
+    dataOffset += isDxt(format)
+      ? dxtLevelBytes(format, levelWidth, levelHeight)
+      : (skipped === 0 ? firstStride : levelWidth * texelBytes) * levelHeight;
+    levelWidth = Math.max(1, levelWidth >> 1);
+    levelHeight = Math.max(1, levelHeight >> 1);
+  }
+
   if (isDxt(format)) {
-    const length = dxtLevelBytes(format, width, height);
+    const length = dxtLevelBytes(format, levelWidth, levelHeight);
     // Verified in etch#44: the game draws a DXT image whose size is not a multiple of 4 at the
     // size of its whole blocks, padding texels included.
     return {
       kind: 'dxt',
-      width: Math.ceil(width / 4) * 4,
-      height: Math.ceil(height / 4) * 4,
+      width: Math.ceil(levelWidth / 4) * 4,
+      height: Math.ceil(levelHeight / 4) * 4,
       format,
       data: slice(bytes, dataOffset, length, `DDS ${format}`),
     };
   }
-  const rowBytes = width * (format === 'bgr' ? 3 : 4);
-  // Some writers pad rows; the pitch then says so. Without the flag the rows
-  // are tight, as Microsoft's documentation asks.
-  const stride = (flags & DDSD_PITCH) !== 0 && pitch > rowBytes ? pitch : rowBytes;
-  const stored = slice(bytes, dataOffset, stride * (height - 1) + rowBytes, `DDS ${format}`);
+  const rowBytes = levelWidth * texelBytes;
+  const stride = level === 0 ? firstStride : rowBytes;
+  const stored = slice(bytes, dataOffset, stride * (levelHeight - 1) + rowBytes, `DDS ${format}`);
   return {
     kind: 'pixels',
-    width,
-    height,
+    width: levelWidth,
+    height: levelHeight,
     layout: format,
-    data: packRows(stored, rowBytes, stride, height),
+    data: packRows(stored, rowBytes, stride, levelHeight),
   };
 }
 
