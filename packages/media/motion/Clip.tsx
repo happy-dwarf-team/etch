@@ -179,7 +179,10 @@ function PanelView({
   );
 }
 
-/** An arrow pointer, drawn the size a pointer has at the master's device scale (2). */
+/**
+ * An arrow pointer, drawn the size Windows draws its pointer at the master's device scale (1): the
+ * arrow about 13 × 19 px, so it covers no more of a tip beside it than the real one does.
+ */
 function PointerView({
   x,
   y,
@@ -191,7 +194,7 @@ function PointerView({
   scale: number;
   since: number | undefined;
 }) {
-  const size = 34 * scale;
+  const size = 22 * scale;
   const ripple = since !== undefined && since < 0.5 ? since / 0.5 : undefined;
   return (
     <>
@@ -199,12 +202,12 @@ function PointerView({
         <div
           style={{
             position: 'absolute',
-            left: x - 30 * scale * ripple,
-            top: y - 30 * scale * ripple,
-            width: 60 * scale * ripple,
-            height: 60 * scale * ripple,
+            left: x - 20 * scale * ripple,
+            top: y - 20 * scale * ripple,
+            width: 40 * scale * ripple,
+            height: 40 * scale * ripple,
             borderRadius: '50%',
-            border: `${String(3 * scale)}px solid ${COLOURS.accent}`,
+            border: `${String(2 * scale)}px solid ${COLOURS.accent}`,
             opacity: 1 - ripple,
           }}
         />
