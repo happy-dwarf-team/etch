@@ -121,6 +121,11 @@ export interface Panel {
   readonly start: number;
   readonly keys: readonly PanelKey[];
   readonly pointer?: PointerPath;
+  /**
+   * Output px at the panel's right edge over which it fades out: a panel of text lines longer than
+   * it (code, Problems) ends them in a fade, not halfway through a word.
+   */
+  readonly fadeRight?: number;
 }
 
 /** A caption over the output: keys pressed (`['Ctrl', 'S']`) and/or a line of text. */

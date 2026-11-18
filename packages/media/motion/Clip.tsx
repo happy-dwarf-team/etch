@@ -148,6 +148,11 @@ function PanelView({
     borderRadius: full ? 0 : 14,
     boxShadow: full ? 'none' : '0 24px 60px -24px rgb(0 0 0 / 0.8)',
     background: COLOURS.surface,
+    ...(panel.fadeRight === undefined
+      ? {}
+      : {
+          maskImage: `linear-gradient(to right, #000 calc(100% - ${String(panel.fadeRight)}px), transparent)`,
+        }),
   };
   const sourceTime = panel.start + t;
   const pointer = panel.pointer === undefined ? undefined : pointerAt(panel.pointer, sourceTime);

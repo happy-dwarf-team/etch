@@ -98,21 +98,21 @@ export const WINDOW_AREA: Rect = { x: -6, y: 190, w: 816, h: 710 };
  */
 export const TRADE_AREA: Rect = { x: -6, y: 467, w: 472, h: 433 };
 /**
- * The window's header and demographics, where a province's names are: its tabs, names,
- * development, culture and religion. It ends left of the open `Data ▾` (screen x 390 and right,
- * down to y 339), so the menu never covers it.
+ * The window's header and demographics, where a province's names are: its tabs, names, area and
+ * region, development, culture and religion, from the window's left border to its right. The open
+ * `Data ▾` covers its top right (screen x 390 and right, down to y 339): `data` closes it.
  */
-const HEADER_AREA: Rect = { x: -6, y: 186, w: 392, h: 360 };
+const HEADER_AREA: Rect = { x: -10, y: 194, w: 498, h: 398 };
 /** The buildings panel, whose background `problems` misspells. */
 const BUILDINGS_AREA: Rect = { x: 480, y: 440, w: 330, h: 460 };
 /** The window's values, from its demographics down to its trade (`snapshot`). */
 export const VALUES_AREA: Rect = { x: -4, y: 400, w: 490, h: 500 };
 /**
  * `zoom`'s part of the screen, and the point it zooms around: above the second tab, where no
- * widget is (a tip there would cover the zoom), the tabs, names and painting around it. It starts
- * 20 px left of the screen, right of the preview's edge, where VS Code draws its focus line.
+ * widget is (a tip there would cover the zoom), the tabs, names and painting around it. The part
+ * is the window's upper half, from just above its tabs, with little of the empty screen around.
  */
-const ZOOM_AREA: Rect = { x: -20, y: 100, w: 840, h: 522 };
+const ZOOM_AREA: Rect = { x: -10, y: 160, w: 499, h: 360 };
 const ZOOM_POINT = { x: 300, y: 185 };
 /** Ctrl+wheel steps in `zoom`. */
 const ZOOM_TICKS = 2;
@@ -144,11 +144,13 @@ const TYPO = 'biulding';
 
 /**
  * `names`: the demo mod's event (its own text), where one keystroke makes a province id the map
- * does not have and two more an idea group the playset does not define.
+ * does not have and another an idea group the playset does not define.
  */
 const EVENTS_FILE = 'etch_demo_events.txt';
 const OWNS = 'owns = 151';
 const IDEA_GROUP = 'economic_ideas';
+/** Typed before the idea group's `_ideas`: `economics_ideas`, which the playset does not define. */
+const IDEA_KEY = 's';
 
 /** `profile`: the row of the profile page whose name link it follows, a base-game decision. */
 const PROFILED = 'expel_foreign_traders';
@@ -185,6 +187,64 @@ export function pair(
   return {
     left: { x, y: middle - left.h / 2, w: left.w, h: left.h },
     right: { x: x + left.w + GUTTER, y: middle - right.h / 2, w: right.w, h: right.h },
+  };
+}
+
+/** How long a menu's panel takes to unfold or fold. */
+const UNFOLD = 0.12;
+
+/**
+ * A toolbar menu's views: open, its button and the menu under it; folded, the button's row alone.
+ * Both start a little left of the button, so nothing left of it is cut by the panel's edge.
+ */
+function menuViews(button: Rect, menu: Rect, below = 12): { open: Rect; folded: Rect } {
+  const x = Math.min(button.x, menu.x) - 6;
+  const y = button.y - 12;
+  const open = {
+    x,
+    y,
+    w: Math.max(button.x + button.w, menu.x + menu.w) + 12 - x,
+    h: Math.max(button.y + button.h, menu.y + menu.h) + below - y,
+  };
+  return { open, folded: { ...open, h: button.h + 24 } };
+}
+
+/**
+ * The frames of a menu's panel: unfolded, the open menu's frame `open` (from `pair`) with its top
+ * where the folded row sits in the stage's middle; folded, that row alone.
+ */
+function menuFrames(
+  views: { open: Rect; folded: Rect },
+  open: Rect,
+): { unfolded: Rect; folded: Rect } {
+  const scale = open.w / views.open.w;
+  const foldedH = views.folded.h * scale;
+  const top = Math.min(STAGE.y + STAGE.h / 2 - foldedH / 2, STAGE.y + STAGE.h - open.h);
+  const unfolded = { ...open, y: top };
+  return { unfolded, folded: { ...unfolded, h: foldedH } };
+}
+
+/**
+ * A menu's panel in VS Code's master, folded to the button's row while the menu is closed and
+ * unfolding with it while it is open (`spans`, edit times), so the panel never stands empty. It
+ * takes the open menu's frame `open` (from `pair`), its top where the folded row sits in the
+ * stage's middle.
+ */
+function menuTrack(
+  views: { open: Rect; folded: Rect },
+  open: Rect,
+  spans: readonly { opens: number; closes: number }[],
+): Track {
+  const { unfolded, folded } = menuFrames(views, open);
+  return {
+    source: 'vscode',
+    shots: [
+      { at: 0, frame: folded, view: views.folded },
+      ...spans.flatMap(({ opens, closes }) => [
+        { at: opens, frame: unfolded, view: views.open, move: UNFOLD },
+        { at: closes, frame: folded, view: views.folded, move: UNFOLD },
+      ]),
+    ],
   };
 }
 
@@ -227,7 +287,12 @@ interface Shot {
 interface Track {
   readonly source: string;
   readonly shots: readonly Shot[];
+  /** Output px over which the panel fades out at its right edge (`Panel.fadeRight`). */
+  readonly fade?: number;
 }
+
+/** The fade at the right edge of a panel whose text lines run past it. */
+export const TEXT_FADE = 120;
 
 /**
  * A part of a cut edit: a span of the take (take times), and its panels, captions and highlights
@@ -261,6 +326,7 @@ function cuts(
         keys: cameraKeys(track.shots),
         // The drawn pointer belongs to VS Code's master; the game's records its own.
         ...(track.source === 'vscode' ? { pointer: pointerOf(log) } : {}),
+        ...(track.fade === undefined ? {} : { fadeRight: track.fade }),
       })),
       captions: part.captions ?? [],
       highlights: part.highlights ?? [],
@@ -299,8 +365,8 @@ function single(
 }
 
 /** A panel that stays where it is through the clip. */
-function still(source: string, frame: Rect, view: Rect): Track {
-  return { source, shots: [{ at: 0, frame, view }] };
+function still(source: string, frame: Rect, view: Rect, fade?: number): Track {
+  return { source, shots: [{ at: 0, frame, view }], ...(fade === undefined ? {} : { fade }) };
 }
 
 /**
@@ -428,6 +494,17 @@ async function viaToolbar(context: ClipContext): Promise<void> {
 }
 
 /**
+ * From the rest up through the editor to the preview's toolbar, at `target`'s height: the way's
+ * last leg, along the toolbar, is the click's (`clickOn`). The straight way would cross the
+ * preview's screen and hover its widgets.
+ */
+async function toToolbar(context: ClipContext, target: { x: number; y: number }): Promise<void> {
+  const editor = await context.wb.page.locator('.part.editor .monaco-editor').first().boundingBox();
+  if (editor === null) throw new Error('the editor is not shown');
+  await pointTo(context, { x: editor.x + editor.width - 40, y: target.y }, 500);
+}
+
+/**
  * Back to the rest, then the post-roll. As at the start, so that the loop's last frame matches its
  * first: the keyboard in the editor (a preview button keeps no focus ring; `focus: false` for a
  * page) and Playwright's mouse off the preview, so no widget stays hovered.
@@ -501,7 +578,7 @@ export const CLIPS: readonly Clip[] = [
         log,
         sources,
         { s0, end: s0 + end },
-        [still('vscode', frames.left, code), still('vscode', frames.right, area)],
+        [still('vscode', frames.left, code, TEXT_FADE), still('vscode', frames.right, area)],
         {
           captions: sequence(
             [
@@ -530,6 +607,7 @@ export const CLIPS: readonly Clip[] = [
       const menu = wb.frame.locator('#view-menu');
       take.mark('screen', { source: 'vscode', rect: await wb.screenRect() });
       // The menu's button and its list of views, measured open before the take.
+      take.mark('button', { source: 'vscode', rect: await wb.box(menu) });
       await wb.openMenu('view');
       const items = wb.frame.locator('#view-popup .item', { hasText: /^[○●]/ });
       take.mark('menu', {
@@ -539,12 +617,14 @@ export const CLIPS: readonly Clip[] = [
       await wb.closeMenus();
       const rest = await startTake(context);
       take.mark('start');
+      // The menu's selectors, under its views, cover the window's top right while it is open: it
+      // is open for little more than a second each time.
       for (const label of ['Foreign province', 'Own province']) {
         await clickOn(context, menu);
         await wb.frame.locator('#view-popup:not([hidden])').waitFor();
         take.mark('open');
-        await sleep(600);
-        await clickOn(context, viewItem(wb, label), { ms: 500, paint: true });
+        await sleep(300);
+        await clickOn(context, viewItem(wb, label), { ms: 350, paint: true });
         await wb.frame.locator('#view-menu', { hasText: `View: ${label}` }).waitFor();
         take.mark('view', { label });
         // The menu closes at once, so it covers the redrawn window for a moment only; the pointer
@@ -560,17 +640,29 @@ export const CLIPS: readonly Clip[] = [
     edit(log, sources) {
       const s0 = eventOf(log, 'start').t - LEAD;
       const at = (t: number): number => t - s0;
-      const menu = grow(rectOf(eventOf(log, 'menu')), 12);
+      const menu = menuViews(rectOf(eventOf(log, 'button')), rectOf(eventOf(log, 'menu')));
       const area = onScreen(rectOf(eventOf(log, 'screen')), WINDOW_AREA);
-      const frames = pair(sized(menu, UI_SCALE), sized(area, STAGE.h / area.h));
+      const frames = pair(sized(menu.open, UI_SCALE), sized(area, STAGE.h / area.h));
       const views = eventsOf(log, 'view', 2);
+      const opens = eventsOf(log, 'open', 2);
+      const closes = eventsOf(log, 'closed', 2);
       const end = at(eventOf(log, 'end').t) + 0.4;
       return single(
         'views',
         log,
         sources,
         { s0, end: s0 + end },
-        [still('vscode', frames.left, menu), still('vscode', frames.right, area)],
+        [
+          menuTrack(
+            menu,
+            frames.left,
+            opens.map((open, i) => ({
+              opens: at(open.t) - 0.1,
+              closes: at((closes[i] as TakeEvent).t) - 0.05,
+            })),
+          ),
+          still('vscode', frames.right, area),
+        ],
         {
           captions: sequence(
             views.map((view) => ({ from: at(view.t) - 0.05, text: `View: ${view.label ?? ''}` })),
@@ -581,12 +673,13 @@ export const CLIPS: readonly Clip[] = [
     },
   },
   {
-    // Data ▾ → Province…: the save's second province, its names and values, then Kaluga again. The
-    // menu is open through the loop, the pointer on its Province… button; the province quick pick
-    // is shown once a name is typed in it, its whole list cut.
+    // Data ▾ → Province…: the save's second province, its names, culture, religion and development,
+    // then Kaluga again. The menu opens for each choice and closes after it, so the window's header
+    // shows whole; the province quick pick is shown once a name is typed in it, its whole list cut.
     id: 'data',
     async run(context) {
       const { wb, take } = context;
+      const button = wb.frame.locator('#data-menu');
       const popup = wb.frame.locator('#data-popup');
       const province = popup.locator('button', { hasText: 'Province' });
       const quick = wb.page.locator('.quick-input-widget');
@@ -595,13 +688,14 @@ export const CLIPS: readonly Clip[] = [
           hasText: new RegExp(`^${name}#`),
         });
       take.mark('screen', { source: 'vscode', rect: await wb.screenRect() });
-      // The menu's button, the layers above the save's and the save's own, measured open before
-      // the take, and the province quick pick's place with a name typed in it.
+      // The menu's button, and open, the layers above the save's and the save's own, measured
+      // before the take; then the province quick pick's input and row with a name typed in it.
+      take.mark('button', { source: 'vscode', rect: await wb.box(button) });
       await wb.openMenu('data');
       take.mark('popup', {
         source: 'vscode',
         rect: union(
-          await wb.box(wb.frame.locator('#data-menu')),
+          await wb.box(button),
           await wb.box(popup.locator('h4')),
           await wb.box(popup.locator('.actions').nth(1)),
         ),
@@ -610,19 +704,27 @@ export const CLIPS: readonly Clip[] = [
       await quick.locator('input').waitFor();
       await wb.page.keyboard.type(SAMPLE_PROVINCE);
       await typedRow(SAMPLE_PROVINCE).waitFor();
-      take.mark('quick', { source: 'vscode', rect: await wb.box(quick) });
+      take.mark('typing', {
+        source: 'vscode',
+        rect: union(await wb.box(quick.locator('input')), await wb.box(typedRow(SAMPLE_PROVINCE))),
+      });
       await wb.page.keyboard.press('Escape');
       await quick.waitFor({ state: 'hidden' });
-      if (!(await popup.isVisible())) await wb.openMenu('data');
+      if (await popup.isVisible()) await wb.closeMenus();
 
-      // The loop starts and ends on the open menu, the pointer on Province….
-      await pointTo(context, await centre(province), 16);
-      await context.record();
-      await take.until(take.t() + PRE_ROLL_MS / 1000);
+      // The loop starts and ends on the closed menu, the pointer at rest.
+      const rest = await startTake(context);
       take.mark('start');
-      await sleep(1500);
+      await sleep(1200);
       for (const name of [SECOND_PROVINCE, SAMPLE_PROVINCE]) {
-        await pointTo(context, await centre(province), 200);
+        // Up through the editor and along the toolbar: the straight way crosses the window.
+        if (name === SECOND_PROVINCE) await toToolbar(context, await centre(button));
+        await clickOn(context, button, { ms: 250 });
+        await popup.waitFor();
+        take.mark('open', { label: name });
+        await sleep(350);
+        await pointTo(context, await centre(province), 300);
+        await sleep(150);
         take.click();
         take.mark('press', { label: name });
         await province.click();
@@ -631,73 +733,91 @@ export const CLIPS: readonly Clip[] = [
         await typedRow(name).waitFor();
         await sleep(150);
         take.mark('typed', { label: name });
-        await sleep(900);
+        await sleep(700);
+        take.mark('enter', { label: name });
         await wb.paint(() => wb.page.keyboard.press('Enter'));
         await quick.waitFor({ state: 'hidden' });
-        take.mark('chosen', { label: name });
-        await sleep(name === SAMPLE_PROVINCE ? 1300 : 2000);
+        if (!(await popup.isVisible())) throw new Error('Data ▾ closed with the quick pick');
+        // The menu's save line names the province; then a click on the button closes the menu.
+        await sleep(700);
+        await clickOn(context, button, { ms: 300 });
+        await popup.waitFor({ state: 'hidden' });
+        take.mark('closed', { label: name });
+        await sleep(name === SECOND_PROVINCE ? 1900 : 700);
       }
-      if (!(await popup.isVisible())) throw new Error('the loop does not close: Data ▾ closed');
-      take.mark('end');
-      await take.until(take.t() + POST_ROLL_MS / 1000);
+      await viaToolbar(context);
+      await endTake(context, rest);
     },
     edit(log, sources) {
-      const source = sources['vscode'] as Source;
-      const measured = rectOf(eventOf(log, 'popup'));
-      // The menu, its last line the save's actions: the warning under them is not the loop's.
-      const popup = { ...grow(measured, 12), h: measured.h + 16 };
-      const quick = rectOf(eventOf(log, 'quick'));
+      // The menu down to the save's actions: the warning under them is not the loop's.
+      const menu = menuViews(rectOf(eventOf(log, 'button')), rectOf(eventOf(log, 'popup')), 5);
       const area = onScreen(rectOf(eventOf(log, 'screen')), HEADER_AREA);
-      const frames = pair(sized(popup, UI_SCALE), sized(area, STAGE.h / area.h));
-      // The quick pick in the same frame: its input and the typed name's row, at its top left.
-      const typingView = viewAt(grow(quick, 8), UI_SCALE, frames.left, source, { x: 0, y: 0 });
-      const press = eventsOf(log, 'press', 2);
+      const frames = pair(sized(menu.open, UI_SCALE), sized(area, STAGE.h / area.h));
+      const { unfolded, folded } = menuFrames(menu, frames.left);
+      // The quick pick's input and the typed name's row, at the menu panel's top, its left part.
+      const typing = rectOf(eventOf(log, 'typing'));
+      const typingView = {
+        x: typing.x - 10,
+        y: typing.y - 10,
+        w: frames.left.w / UI_SCALE,
+        h: typing.h + 20,
+      };
+      const typingFrame = { ...unfolded, h: typingView.h * UI_SCALE };
+      const opens = eventsOf(log, 'open', 2);
+      const presses = eventsOf(log, 'press', 2);
       const typed = eventsOf(log, 'typed', 2);
-      const chosen = eventsOf(log, 'chosen', 2);
+      const enters = eventsOf(log, 'enter', 2);
+      const closes = eventsOf(log, 'closed', 2);
       const windowPanel = still('vscode', frames.right, area);
       const SAVE = 'Sample data from a save: Russia, 1719';
-      // The cut right after the press, before the quick pick shows its whole list over the screen.
-      const cutAt = (event: TakeEvent): number => event.t + 0.1;
-      const first = { s0: eventOf(log, 'start').t - LEAD, end: cutAt(press[0] as TakeEvent) };
-      const parts: Part[] = [
-        {
-          span: first,
-          tracks: [still('vscode', frames.left, popup), windowPanel],
-          captions: sequence([{ from: -0.3, text: SAVE }], first.end - first.s0),
-        },
+      // Each press of Province… is cut a frame after the click, before the quick pick shows its
+      // whole list over the window, and the take goes on once the name is typed and its row alone.
+      const spans = [
+        { s0: eventOf(log, 'start').t - LEAD, end: (presses[0] as TakeEvent).t + 0.05 },
+        { s0: (typed[0] as TakeEvent).t, end: (presses[1] as TakeEvent).t + 0.05 },
+        { s0: (typed[1] as TakeEvent).t, end: eventOf(log, 'end').t + 0.4 },
       ];
-      for (const [i, name] of [SECOND_PROVINCE, SAMPLE_PROVINCE].entries()) {
-        const s0 = (typed[i] as TakeEvent).t - 0.3;
-        const next = press[i + 1];
-        const end = next === undefined ? eventOf(log, 'end').t + 0.4 : cutAt(next);
-        const done = (chosen[i] as TakeEvent).t - s0;
-        parts.push({
-          span: { s0, end },
-          tracks: [
-            {
-              source: 'vscode',
-              shots: [
-                { at: 0, frame: frames.left, view: typingView },
-                { at: done + 0.05, frame: frames.left, view: popup, move: 0.4 },
-              ],
-            },
-            windowPanel,
-          ],
+      const parts: Part[] = spans.map((span, i) => {
+        const local = (event: TakeEvent | undefined): number =>
+          event === undefined ? Infinity : event.t - span.s0;
+        const shots: Shot[] = [];
+        const add = (at: number, frame: Rect, view: Rect, move: number): void => {
+          if (at >= 0 && at < span.end - span.s0) shots.push({ at, frame, view, move });
+        };
+        if (i === 0) shots.push({ at: 0, frame: folded, view: menu.folded });
+        else shots.push({ at: 0, frame: typingFrame, view: typingView });
+        // The quick pick hides on Enter: the menu again, then folded once the click closes it.
+        add(local(enters[i - 1]) + 0.05, unfolded, menu.open, 0);
+        add(local(closes[i - 1]) - 0.05, folded, menu.folded, UNFOLD);
+        add(local(opens[i]) - 0.1, unfolded, menu.open, UNFOLD);
+        const name = i === 0 ? undefined : i === 1 ? SECOND_PROVINCE : SAMPLE_PROVINCE;
+        const chosen = local(enters[i - 1]) + 0.1;
+        const next = local(opens[i]) - 0.1;
+        return {
+          span,
+          tracks: [{ source: 'vscode', shots }, windowPanel],
           captions: sequence(
             [
-              { from: 0, text: `Province… ${name}` },
-              {
-                from: done + 0.1,
-                text:
-                  name === SAMPLE_PROVINCE
-                    ? SAVE
-                    : `${name}: its names, culture and development from the save`,
-              },
+              ...(name === undefined
+                ? [{ from: 0, text: SAVE }]
+                : [
+                    { from: 0, text: `Province… ${name}` },
+                    {
+                      from: chosen,
+                      text:
+                        name === SAMPLE_PROVINCE
+                          ? SAVE
+                          : `${name} from the save: its names, culture, religion and development`,
+                    },
+                  ]),
+              ...(Number.isFinite(next) && i > 0
+                ? [{ from: next, text: `Province… ${SAMPLE_PROVINCE}` }]
+                : []),
             ],
-            end - s0,
+            span.end - span.s0,
           ),
-        });
-      }
+        };
+      });
       return cuts('data', log, sources, parts);
     },
   },
@@ -754,7 +874,7 @@ export const CLIPS: readonly Clip[] = [
       const at = (t: number): number => t - s0;
       const level = grow(rectOf(eventOf(log, 'level')), 14);
       const area = onScreen(rectOf(eventOf(log, 'screen')), ZOOM_AREA);
-      const frames = pair(sized(level, 2.6), sized(area, STAGE.h / area.h));
+      const frames = pair(sized(level, 3.2), sized(area, STAGE.h / area.h));
       const zooms = eventsOf(log, 'zoom', ZOOM_TICKS);
       const fit = eventOf(log, 'fit');
       const end = at(eventOf(log, 'end').t) + 0.4;
@@ -807,8 +927,12 @@ export const CLIPS: readonly Clip[] = [
         .locator('.monaco-list-row.selected');
       const rest = await startTake(context);
       take.mark('start');
-      for (const [i, { point, widget }] of OUTLINE_HOVERS.entries()) {
-        await pointTo(context, await wb.screenPoint(point), i === 0 ? 800 : 420);
+      // Every widget on the way shows its tip, the window's own included: the pointer comes in from
+      // left of the window and moves between the widgets quickly, so only theirs stay up.
+      const first = OUTLINE_HOVERS[0];
+      await pointTo(context, await wb.screenPoint({ x: -14, y: first.point.y }), 700);
+      for (const { point, widget } of OUTLINE_HOVERS) {
+        await pointTo(context, await wb.screenPoint(point), 180);
         take.mark('hover', { source: 'vscode', rect: await expectTip(wb, widget), label: widget });
         await sleep(900);
       }
@@ -990,8 +1114,11 @@ export const CLIPS: readonly Clip[] = [
       });
       const keys = eventsOf(log, 'key', 2);
       const problem = eventOf(log, 'problem');
-      // The row spans the panel; its message is at its left.
-      const row = { ...rectOf(problem), w: Math.min(rectOf(problem).w, problems.w - 20) };
+      // The row spans the panel; its message is at its left, the ring ending at the fade.
+      const row = {
+        ...rectOf(problem),
+        w: Math.min(rectOf(problem).w, problems.w - TEXT_FADE / UI_SCALE - 8),
+      };
       const undo = at(eventOf(log, 'undo').t);
       const end = at(eventOf(log, 'end').t) + 0.4;
       return single(
@@ -1000,8 +1127,8 @@ export const CLIPS: readonly Clip[] = [
         sources,
         { s0, end: s0 + end },
         [
-          still('vscode', left.top, code),
-          still('vscode', left.bottom, problems),
+          still('vscode', left.top, code, TEXT_FADE),
+          still('vscode', left.bottom, problems, TEXT_FADE),
           still('vscode', outer.right, area),
         ],
         {
@@ -1017,7 +1144,7 @@ export const CLIPS: readonly Clip[] = [
                 from: Math.max(at(problem.t), at((keys[keys.length - 1] as TakeEvent).t) + 0.9),
                 text: 'No such sprite: in Problems as you type, the rest still draws',
               },
-              { from: undo - 0.05, keys: ['Ctrl', 'Z'] },
+              { from: undo - 0.05, keys: ['Ctrl', 'Z'], text: 'back to building' },
             ],
             end - 0.4,
           ),
@@ -1109,7 +1236,14 @@ export const CLIPS: readonly Clip[] = [
           : tableView;
       const lens = rectOf(eventOf(log, 'lens'));
       const block = rectOf(eventOf(log, 'block'));
-      const blockView = codeView({ ...block, y: lens.y }, STAGE, source, 1.8, 0.3);
+      // The editor across the stage, without its scroll bar or the preview's edge beside it.
+      const blockView = codeView(
+        { ...block, y: lens.y },
+        STAGE,
+        source,
+        STAGE.w / (block.w - 40),
+        0.3,
+      );
       const clicking = at(eventOf(log, 'clicking').t);
       const opened = at(eventOf(log, 'opened').t);
       const closing = at(eventOf(log, 'closing').t);
@@ -1182,12 +1316,9 @@ export const CLIPS: readonly Clip[] = [
       take.mark('walk');
       await wb.walkCursorTo(ideaAt, 60);
       await sleep(300);
-      for (const key of ['a', 'l']) {
-        take.mark('key', { label: key });
-        await wb.page.keyboard.type(key);
-        await sleep(220);
-      }
-      const named = listed.filter({ hasText: 'economical_ideas' });
+      take.mark('key', { label: IDEA_KEY });
+      await wb.page.keyboard.type(IDEA_KEY);
+      const named = listed.filter({ hasText: `economic${IDEA_KEY}_ideas` });
       await named.first().waitFor();
       take.mark('idea', { source: 'vscode', rect: await wb.box(named) });
       await sleep(2600);
@@ -1218,14 +1349,17 @@ export const CLIPS: readonly Clip[] = [
         x: 0,
         y: 0,
       });
-      const keys = eventsOf(log, 'key', 3);
+      const keys = eventsOf(log, 'key', 2);
       const province = eventOf(log, 'province');
       const idea = eventOf(log, 'idea');
       const undos = eventsOf(log, 'undo', 2);
       const walk = at(eventOf(log, 'walk').t);
       const end = at(eventOf(log, 'end').t) + 0.4;
-      // The rows span the panel; their messages start at their left.
-      const left = (rect: Rect): Rect => ({ ...rect, w: Math.min(rect.w, problems.w - 20) });
+      // The rows span the panel; their messages start at their left, the ring ending at the fade.
+      const left = (rect: Rect): Rect => ({
+        ...rect,
+        w: Math.min(rect.w, problems.w - TEXT_FADE / UI_SCALE - 8),
+      });
       const firstUndo = at((undos[0] as TakeEvent).t);
       const secondUndo = at((undos[1] as TakeEvent).t);
       return single(
@@ -1233,23 +1367,27 @@ export const CLIPS: readonly Clip[] = [
         log,
         sources,
         { s0, end: s0 + end },
-        [still('vscode', panels.top, code), still('vscode', panels.bottom, problems)],
+        [
+          still('vscode', panels.top, code, TEXT_FADE),
+          still('vscode', panels.bottom, problems, TEXT_FADE),
+        ],
         {
+          // Each keystroke's keycap with what it does: the warning follows it within a third of a
+          // second, too soon for a keycap of its own.
           captions: sequence(
             [
-              { from: at((keys[0] as TakeEvent).t) - 0.05, keys: ['5'] },
               {
-                from: at(province.t),
+                from: at((keys[0] as TakeEvent).t) - 0.05,
+                keys: ['5'],
                 text: 'No province 5151 on the map, and the game says nothing',
               },
-              { from: at((keys[1] as TakeEvent).t) - 0.05, keys: ['a'] },
-              { from: at((keys[2] as TakeEvent).t) - 0.05, keys: ['l'] },
               {
-                from: at(idea.t),
+                from: at((keys[1] as TakeEvent).t) - 0.05,
+                keys: [IDEA_KEY],
                 text: 'No such idea group: add_idea_group crashes the game on it',
               },
-              { from: firstUndo - 0.05, keys: ['Ctrl', 'Z'] },
-              { from: secondUndo - 0.05, keys: ['Ctrl', 'Z'] },
+              { from: firstUndo - 0.05, keys: ['Ctrl', 'Z'], text: 'economic_ideas again' },
+              { from: secondUndo - 0.05, keys: ['Ctrl', 'Z'], text: 'province 151 again' },
             ],
             end - 0.4,
           ),

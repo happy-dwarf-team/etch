@@ -23,6 +23,7 @@ import {
   SAMPLE_PROVINCE,
   START_FILE,
   TAIL,
+  TEXT_FADE,
   TRADE_AREA,
   TRADE_NODE_POSITION,
   VALUES_AREA,
@@ -521,6 +522,7 @@ export const LIVE_CLIPS: readonly Pick<Clip, 'id' | 'edit'>[] = [
                     view: codeView(rectOf(eventOf(log, 'line')), frames.left, code),
                   },
                 ]),
+                fadeRight: TEXT_FADE,
               },
               {
                 source: 'game',
@@ -584,6 +586,7 @@ export const LIVE_CLIPS: readonly Pick<Clip, 'id' | 'edit'>[] = [
                   { at: 0, frame: frames.right, view: definition, opacity: 0 },
                   { at: split, frame: frames.right, view: definition, opacity: 1, move: 0.6 },
                 ]),
+                fadeRight: TEXT_FADE,
               },
             ],
             captions: [
