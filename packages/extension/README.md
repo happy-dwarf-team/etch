@@ -204,7 +204,12 @@ warns about such ids in the script files you open (events, decisions,
 missions, `common` and `history`): the province triggers and effects (`owns`,
 `owns_core_province`, `province_id`, `add_core`, `add_permanent_claim`,
 `set_capital` and more), province scopes, ids such as an event's `goto`, and
-`who` of `province_distance` and `node` of `trading_policy_in_node`. A
+`who` of `province_distance` and `node` of `trading_policy_in_node`. So are
+the arguments of a call to a scripted effect or trigger that its body uses as
+a province, as in vanilla's `create_colony_mission_reward = { province = 1104 }`,
+whose effect scopes to `$province$`; Etch reads that from the playset's
+`common/scripted_effects` and `common/scripted_triggers`, following arguments
+passed on to other calls. A
 negative id such as `owns = -1` is flagged too: the game keeps the sign.
 The map is your playset's: `max_provinces` of `map/default.map`, a mod's when
 it has its own, and the provinces its `map/definition.csv` lists. An id written

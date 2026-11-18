@@ -27,8 +27,9 @@ describe('province ids of a playset', () => {
       'map/events/overridden.txt': 'e = { immediate = { 13 = { add_core = ROOT } } }',
       // A mod for the vanilla map in the same playset.
       'other/events/other.txt':
-        'e = {\n  trigger = { owns = 12 owns = 5 }\n  immediate = { add_core = 30 }\n}\n',
-      'other/common/scripted_effects/fx.txt': 'fx = { 25 = { add_core = ROOT } }',
+        'e = {\n  trigger = { owns = 12 owns = 5 }\n  immediate = { add_core = 30 claim = { where = 40 } }\n}\n',
+      'other/common/scripted_effects/fx.txt':
+        'fx = { 25 = { add_core = ROOT } }\nclaim = { add_claim = $where$ }',
       'other/common/province_names/names.txt': '25 = "Far"',
       'other/decisions/shown.txt': 'd = { x = { allow = { owns = 99 } } }',
     });
@@ -59,6 +60,12 @@ describe('province ids of a playset', () => {
     expect(ids?.maxSource).toBe('map/default.map of the game');
     expect([...(ids?.defined ?? [])]).toEqual([1, 2, 9]);
     expect(ids?.definedSource).toBe('map/definition.csv of the game');
+    expect([...(ids?.calls ?? [])]).toEqual([]);
+  });
+
+  it('reads the arguments its scripted effects use as province ids', async () => {
+    const ids = await loadProvinceIds(playset(otherMod()));
+    expect([...(ids?.calls ?? [])]).toEqual([['claim', new Set(['where'])]]);
   });
 
   it("takes a mod's default.map and the definition file it names", async () => {
@@ -97,6 +104,8 @@ describe('province ids of a playset', () => {
           'owns 12 province-id-out-of-range',
           'owns 5 province-id-not-defined',
           'add_core 30 province-id-out-of-range',
+          // The scripted effect `claim` uses its `where` as a province id.
+          'where 40 province-id-out-of-range',
         ],
       ],
       ['game', 'events/overridden.txt', ['owns 13 province-id-out-of-range']],
@@ -139,7 +148,11 @@ describe('province ids of a playset', () => {
       // 12 is on the big map; events/overridden.txt is the map mod's copy, and 13 is defined.
       [
         'events/other.txt',
-        ['owns 5 province-id-not-defined', 'add_core 30 province-id-out-of-range'],
+        [
+          'owns 5 province-id-not-defined',
+          'add_core 30 province-id-out-of-range',
+          'where 40 province-id-out-of-range',
+        ],
       ],
       [
         'map/default.map',
