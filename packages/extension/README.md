@@ -258,7 +258,8 @@ panel, so you can find which mod has one.
 ## Encoding
 
 The game reads interface files and the script files of `common`, `events`,
-`decisions`, `missions` and `history` as Windows-1252, and localisation as
+`decisions`, `missions`, `history` and `customizable_localization` as
+Windows-1252, and localisation as
 UTF-8 with BOM. Where the next save would make the game read other characters
 than the editor shows, such as a leader's name `é` saved as UTF-8, which the
 game shows as `Ã©`, Etch warns and offers to reopen the file in the encoding

@@ -44,6 +44,7 @@ describe('checkedTextKind', () => {
     expect(checkedTextKind('/mod/common/countries/Sweden.txt')).toBe('script');
     expect(checkedTextKind('C:\\mod\\History\\provinces\\1 - Uppland.TXT')).toBe('script');
     expect(checkedTextKind('/mod/events/flavor.txt')).toBe('script');
+    expect(checkedTextKind('/mod/customizable_localization/00_texts.txt')).toBe('script');
     expect(checkedTextKind('/mod/notes/readme.txt')).toBeUndefined();
     expect(checkedTextKind('/mod/common/ideas/00_ideas.yml')).toBeUndefined();
     expect(gameTextKind('/mod/common/countries/Sweden.txt')).toBeUndefined();
