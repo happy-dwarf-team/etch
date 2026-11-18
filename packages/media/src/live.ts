@@ -37,9 +37,6 @@ const GAME_REST: Point = { x: 1200, y: 1000 };
 
 /** The edit `reload` saves: the buildings side panel's x, 480, becomes 580 with one keystroke. */
 export const RELOAD_EDIT = { text: 'x=480 y=13', offset: 2, key: '5', from: 480, to: 580 } as const;
-/** The game's notice that achievements cannot be earned, which holds a save's load. */
-const ACHIEVEMENTS_NOTICE = 'DefaultConfirm/AgreeButton';
-
 /** The edited window, as Tongs finds it in the game. */
 export const RELOAD_WIDGET = 'provinceview//buildings_window';
 /**
@@ -171,6 +168,10 @@ export async function takeLive(options: ShootOptions & { save: string }): Promis
     work: options.work,
     extensionPath: options.extension,
     demoMod: path.join(options.repository, 'packages', 'media', 'demo-mod'),
+    // Without the demo mod's event file (the `names` clip's, which the live clips do not show):
+    // with it, three takes waited 4–10 minutes for the save and the game never reached it; the
+    // take without it loaded at once (2026-11-18). Why is not known.
+    excluded: ['events'],
     overrides: OVERRIDES,
     open: START_FILE,
     gamePath: options.gamePath,
@@ -200,9 +201,6 @@ export async function takeLive(options: ShootOptions & { save: string }): Promis
     await wb.page.keyboard.press('Enter');
     tongs = await Tongs.connect(600_000);
     const live = tongs;
-    // The demo mod's event file turns achievements off, and the game then asks before the save
-    // loads; Etch answers that notice only for Anbennar. The take answers it as a player would.
-    let noticeAnswered = false;
     let logged = 0;
     await until(
       'the save to load',
@@ -213,16 +211,6 @@ export async function takeLive(options: ShootOptions & { save: string }): Promis
         if (Date.now() - logged > 30_000) {
           logged = Date.now();
           console.log(`Waiting for the save: ${JSON.stringify(state)}`);
-        }
-        if (!noticeAnswered) {
-          const found = await live
-            .send<{ matches: TongsWidget[] }>(`ui find ${ACHIEVEMENTS_NOTICE}`)
-            .catch(() => ({ matches: [] as TongsWidget[] }));
-          if (found.matches.some((m) => m.visible)) {
-            await live.send(`ui click ${ACHIEVEMENTS_NOTICE} timeout=10`, 20_000);
-            console.log('Answered the achievements notice before the save loaded.');
-            noticeAnswered = true;
-          }
         }
         return false;
       },

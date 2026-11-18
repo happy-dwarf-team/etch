@@ -36,6 +36,8 @@ export interface LaunchOptions {
   readonly extensionPath: string;
   /** The repository's demo mod; the workspace is a fresh copy, so no edit reaches the repository. */
   readonly demoMod: string;
+  /** The demo mod's top-level files or folders left out of the copy. */
+  readonly excluded?: readonly string[];
   /**
    * Base-game files copied into the workspace before it opens, relative to the game folder, as
    * **Override in my mod** would: the copy lives only in the throwaway run folder.
@@ -184,7 +186,13 @@ export class Workbench {
     const run = path.join(options.work, 'run');
     await rm(run, { recursive: true, force: true });
     const workspace = path.join(run, WORKSPACE_NAME);
-    await cp(options.demoMod, workspace, { recursive: true });
+    const excluded = new Set(
+      (options.excluded ?? []).map((name) => path.join(options.demoMod, name)),
+    );
+    await cp(options.demoMod, workspace, {
+      recursive: true,
+      filter: (source) => !excluded.has(path.normalize(source)),
+    });
     for (const file of options.overrides) {
       const parts = file.split('/');
       await mkdir(path.join(workspace, ...parts.slice(0, -1)), { recursive: true });

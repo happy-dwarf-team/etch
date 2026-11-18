@@ -142,10 +142,13 @@ The run starts VS Code as for the other takes, with one more extension loaded be
 `activate` returns (an API for Etch's own tools, not a stable one), it gives the live game the
 run's player profile, answers the two first-use confirmations, and turns on Tongs' pipe, with
 input, in the run's private install, which lives in the throwaway profile: the user's private
-install, profile and saves are never touched. Then the take runs as a user would: **Etch: Open
+install, profile and saves are never touched. The live take's copy of the demo mod leaves out
+`events/` (the `names` clip's file, which the live clips do not show): with it, three takes on
+2026-11-18 waited 4–10 minutes and the save never loaded, and without it the save loaded at once;
+why is not known. Then the take runs as a user would: **Etch: Open
 Preview**, **Etch: Start the Live Game** and the save in its quick pick. Through Tongs' pipe it
-waits until the save is loaded (answering the game's achievements notice, which the demo mod's
-event file brings and which holds the load, as a player would), opens the province view of the player's capital and reads where
+waits until the save is loaded (logging the game's state every 30 s while it waits), opens the
+province view of the player's capital and reads where
 the buildings panel is. The real pointer waits over the game's interface, since anywhere outside
 the client area the game scrolls its map.
 
