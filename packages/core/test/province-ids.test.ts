@@ -7,6 +7,7 @@ import {
   parseDefaultMap,
   parseProvinceDefinitions,
   parseScript,
+  readScriptedProvinceArguments,
   type ProvinceIds,
 } from '../src/index.ts';
 
@@ -149,6 +150,38 @@ describe('checkProvinceIds', () => {
     );
   });
 
+  it("checks a scripted call's arguments that its body uses as province ids", () => {
+    const ids: ProvinceIds = {
+      ...VANILLA,
+      calls: new Map([['give_claims', new Set(['id', 'province'])]]),
+    };
+    const text = [
+      'e = {',
+      '  immediate = {',
+      '    give_claims = { id = 5075 }',
+      '    Give_Claims = { Province = 6000 tag = ROOT }',
+      '    give_claims = { id = 151 region = 5075 }',
+      '    give_claims = { id = $province$ }',
+      '    other_effect = { id = 5075 }',
+      '  }',
+      '}',
+    ].join('\n');
+    expect(found(text, ids)).toEqual([
+      'id 5075 province-id-out-of-range',
+      'province 6000 province-id-out-of-range',
+    ]);
+    // A top-level block with a scripted effect's name is its definition, or a database entry.
+    expect(found('give_claims = { id = 5075 }', ids, 'common/scripted_effects/x.txt')).toEqual([]);
+    // In a string's script, a body, the top level holds calls.
+    const string = checkProvinceIds(
+      parseScript('give_claims = { id = 5075 }'),
+      ids,
+      undefined,
+      true,
+    );
+    expect(string.map((d) => `${d.key} ${String(d.id)}`)).toEqual(['id 5075']);
+  });
+
   it('knows the keys the vanilla survey found, by kind', () => {
     expect(PROVINCE_ID_KEYS.get('owns')).toBe('trigger');
     expect(PROVINCE_ID_KEYS.get('province_id')).toBe('trigger');
@@ -156,6 +189,58 @@ describe('checkProvinceIds', () => {
     expect(PROVINCE_ID_KEYS.get('home_province')).toBe('property');
     expect(PROVINCE_ID_KEYS.has('start')).toBe(false);
     expect(PROVINCE_ID_KEYS.has('random')).toBe(false);
+  });
+});
+
+describe('readScriptedProvinceArguments', () => {
+  /** The province arguments of scripted effect files, as `name: args`. */
+  function args(...texts: string[]): string[] {
+    return [...readScriptedProvinceArguments(texts.map((t) => parseScript(t)))].map(
+      ([name, set]) => `${name}: ${[...set].join(' ')}`,
+    );
+  }
+
+  it('takes an argument used as a province scope or as a province key’s value', () => {
+    const text = [
+      'colony_reward = {',
+      '  if = { limit = { $Province$ = { is_empty = yes } } $province$ = { add_base_tax = 1 } }',
+      '}',
+      'claim_province = { if = { limit = { NOT = { is_core = $where$ } } add_permanent_claim = $where$ } }',
+      'distance_check = { province_distance = { who = $target$ distance = $distance$ } }',
+      'default_value = { owns = $place|151$ }',
+      'country_effect = { $country$ = { add_prestige = $amount$ } }',
+    ].join('\n');
+    expect(args(text)).toEqual([
+      'colony_reward: province',
+      'claim_province: where',
+      'distance_check: target',
+      'default_value: place',
+      // A tag or a scope at the call is not an integer, so a country scope's argument costs nothing.
+      'country_effect: country',
+    ]);
+  });
+
+  it("leaves random_list's weights and a trigger_switch's values alone", () => {
+    const text = [
+      'weights = { random_list = { $chance$ = { add_prestige = 1 } 10 = { } } }',
+      'switch = { trigger_switch = { on_trigger = num_of_cities $count$ = { } } }',
+    ].join('\n');
+    expect(args(text)).toEqual([]);
+  });
+
+  it('follows an argument passed on to another call, through a chain, in any file order', () => {
+    const outer = 'outer = { middle = { place = $where$ } }';
+    const middle = 'middle = { inner = { province = $place$ } not_a_call = { x = $place$ } }';
+    const inner = 'inner = { $province$ = { add_core = ROOT } }';
+    expect(args(outer, middle, inner)).toEqual([
+      'outer: where',
+      'middle: place',
+      'inner: province',
+    ]);
+  });
+
+  it('joins the arguments of two definitions of one name', () => {
+    expect(args('Twice = { owns = $a$ }', 'twice = { controls = $b$ }')).toEqual(['twice: a b']);
   });
 });
 

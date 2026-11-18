@@ -110,6 +110,96 @@ export interface ProvinceIds {
   readonly defined?: ReadonlySet<number> | undefined;
   /** Where `defined` came from, for messages, such as `map/definition.csv of My Mod`. */
   readonly definedSource?: string | undefined;
+  /**
+   * The arguments of the playset's scripted effects and triggers that their bodies use as province
+   * ids, by the scripted effect's or trigger's name in lower case (`readScriptedProvinceArguments`).
+   * A call's integer value of such an argument is checked like `owns = 151`.
+   */
+  readonly calls?: ProvinceArguments | undefined;
+}
+
+/** Argument names in lower case, by the scripted effect's or trigger's name in lower case. */
+export type ProvinceArguments = ReadonlyMap<string, ReadonlySet<string>>;
+
+/** A whole scalar that is one `$argument$`, with or without a `|default`; group 1 is the name. */
+const ARGUMENT = /^\$([^$|]+)(?:\|[^$]*)?\$$/;
+
+/** What one scripted effect's or trigger's body does with its arguments. */
+interface ScriptedBody {
+  /** Arguments it uses as province ids itself, in lower case. */
+  readonly direct: Set<string>;
+  /** Arguments it passes on to a call (`other = { member = $arg$ }`), all in lower case. */
+  readonly passed: { readonly callee: string; readonly member: string; readonly arg: string }[];
+}
+
+/**
+ * The scripted effects and triggers of `common/scripted_effects` and `common/scripted_triggers`
+ * files, read for the arguments their bodies use as province ids: an argument that is a province
+ * scope's key (`$province$ = { … }`), the value of one of `PROVINCE_ID_KEYS` (`owns = $province$`)
+ * or a member of `PROVINCE_ID_MEMBERS`, or that is passed on to another scripted call's argument
+ * of that kind (vanilla's `mal_determine_offer_acceptance` passes `$province$` to
+ * `mal_will_accept_offer`). The game puts the call's text in place of the argument, so
+ * `create_colony_mission_reward = { province = 1104 }` scopes to province 1104 unchecked. When
+ * two files define the same name, the arguments of both count: which one the game keeps was not
+ * read.
+ */
+export function readScriptedProvinceArguments(files: readonly ParsedScript[]): ProvinceArguments {
+  const bodies = new Map<string, ScriptedBody>();
+  for (const parsed of files) {
+    for (const entry of parsed.entries) {
+      if (entry.kind !== 'property' || entry.value?.kind !== 'block') continue;
+      const name = entry.key.text.toLowerCase();
+      const body = bodies.get(name) ?? { direct: new Set<string>(), passed: [] };
+      readBody(entry.value.entries, { key: '', scopes: true }, body);
+      bodies.set(name, body);
+    }
+  }
+  const found = new Map<string, Set<string>>();
+  for (const [name, body] of bodies) found.set(name, new Set(body.direct));
+  // Passing an argument on makes it a province argument when the callee's member is one; repeat
+  // until nothing changes, for chains of calls.
+  for (let changed = true; changed;) {
+    changed = false;
+    for (const [name, body] of bodies) {
+      const own = found.get(name);
+      if (own === undefined) continue;
+      for (const { callee, member, arg } of body.passed) {
+        if (!own.has(arg) && found.get(callee)?.has(member) === true) {
+          own.add(arg);
+          changed = true;
+        }
+      }
+    }
+  }
+  return new Map([...found].filter(([, args]) => args.size > 0));
+}
+
+function readBody(entries: readonly EntryNode[], parent: Parent, body: ScriptedBody): void {
+  for (const entry of entries) {
+    if (entry.kind === 'block') {
+      readBody(entry.entries, parent, body);
+      continue;
+    }
+    if (entry.kind !== 'property') continue;
+    const key = entry.key.text.toLowerCase();
+    const value = entry.value;
+    if (value?.kind === 'scalar') {
+      const arg = ARGUMENT.exec(value.text)?.[1]?.toLowerCase();
+      if (arg === undefined) continue;
+      if (PROVINCE_ID_KEYS.has(key) || PROVINCE_ID_MEMBERS.get(parent.key)?.has(key) === true) {
+        body.direct.add(arg);
+      } else if (parent.key !== '') {
+        body.passed.push({ callee: parent.key, member: key, arg });
+      }
+      continue;
+    }
+    if (value?.kind !== 'block') continue;
+    if (parent.scopes && !entry.key.quoted) {
+      const arg = ARGUMENT.exec(entry.key.text)?.[1]?.toLowerCase();
+      if (arg !== undefined) body.direct.add(arg);
+    }
+    readBody(value.entries, { key, scopes: scopesIn(key, value) }, body);
+  }
 }
 
 export type ProvinceIdDiagnosticCode =
@@ -160,10 +250,14 @@ export function checkProvinceIds(
   return found.sort((a, b) => a.start - b.start);
 }
 
-/** The block a walk is in: its key, and whether its integer keys are province scopes. */
+/**
+ * The block a walk is in: its key, whether its integer keys are province scopes, and whether it
+ * can be a call to a scripted effect or trigger, whose members are its arguments.
+ */
 interface Parent {
   readonly key: string;
   readonly scopes: boolean;
+  readonly call?: boolean;
 }
 
 function walk(
@@ -183,7 +277,11 @@ function walk(
     const key = entry.key.text.toLowerCase();
     const value = entry.value;
     if (value?.kind === 'scalar') {
-      if (PROVINCE_ID_KEYS.has(key) || PROVINCE_ID_MEMBERS.get(parent.key)?.has(key) === true) {
+      if (
+        PROVINCE_ID_KEYS.has(key) ||
+        PROVINCE_ID_MEMBERS.get(parent.key)?.has(key) === true ||
+        (parent.call && ids.calls?.get(parent.key)?.has(key) === true)
+      ) {
         checkScalar(value, key, ids, found, true);
       }
       continue;
@@ -192,7 +290,17 @@ function walk(
     if (parent.scopes && depth >= scopeDepth && !entry.key.quoted) {
       checkScalar(entry.key, parent.key, ids, found);
     }
-    walk(value.entries, { key, scopes: scopesIn(key, value) }, depth + 1, scopeDepth, ids, found);
+    // A top-level block of a file is a definition or a database entry, not a call; in a string's
+    // script, which is a body, it is one.
+    const call = depth >= Math.min(scopeDepth, 1);
+    walk(
+      value.entries,
+      { key, scopes: scopesIn(key, value), call },
+      depth + 1,
+      scopeDepth,
+      ids,
+      found,
+    );
   }
 }
 

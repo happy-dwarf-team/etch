@@ -179,6 +179,23 @@ refresh is a step of the 3.0.0 release.
   province). Vanilla and the 66 Workshop items have no negative value on these
   keys, and the members add no warning over them.
 
+  A province id can also reach the game through a scripted effect's or
+  trigger's argument: vanilla's `create_colony_mission_reward = { province =
+  1104 }` runs `$province$ = { … }` with the text of the call in its place,
+  which is the same unchecked scope. `loadProvinceIds` now reads the playset's
+  `common/scripted_effects` and `common/scripted_triggers` and keeps, for each
+  definition, the arguments its body uses where a province id goes (a province
+  scope's key, the value of a key in `PROVINCE_ID_KEYS` or `PROVINCE_ID_MEMBERS`,
+  or an argument of that kind of another call it passes them to, followed
+  through chains); the call's integer value of such an argument is checked like
+  `owns = 151`. Vanilla has 38 such definitions; the arguments that are
+  countries or scopes cost nothing, as only an integer at the call is checked.
+  Over vanilla the check reads 125 more ids (`province` and `give_claims`' `id`),
+  all on the map; over Anbennar, whose 210 definitions take
+  such arguments (`$order$ = { … }` in its racial interface, `capital_id`,
+  `node_id`), 916 more, also all on its map. None of the 68 Workshop items on
+  the lab's disk, each on the game alone, gains a warning.
+
 - **Names that crash the game (anvil#426 follow-up).** EU4 1.37.5 looks up
   the idea group of `add_idea_group` and `remove_idea_group` once, when it
   reads the file, and keeps the result without a check; the effect, run or

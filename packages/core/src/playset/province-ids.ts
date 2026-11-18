@@ -1,10 +1,14 @@
 import { readFile } from 'node:fs/promises';
 import { decodeGameText } from '../game-text.ts';
+import { parseScript } from '../script/parse.ts';
 import {
   parseDefaultMap,
   parseProvinceDefinitions,
+  readScriptedProvinceArguments,
+  type ProvinceArguments,
   type ProvinceIds,
 } from '../script/province-ids.ts';
+import type { ParsedScript } from '../script/tree.ts';
 import type { GameFile, GameFiles } from './game-files.ts';
 
 /** The playset's province ids, and the files they came from. */
@@ -41,9 +45,32 @@ export async function loadProvinceIds(files: GameFiles): Promise<PlaysetProvince
     maxSource: describe(mapFile),
     defined,
     definedSource: definitionFile === undefined ? undefined : describe(definitionFile),
+    calls: await loadScriptedProvinceArguments(files),
     mapFile,
     definitionFile,
   };
+}
+
+/** The folders of the scripted effects and triggers, whose arguments can be province ids. */
+const SCRIPTED_FOLDERS: readonly string[] = ['common/scripted_effects', 'common/scripted_triggers'];
+
+/**
+ * The arguments the playset's scripted effects and triggers use as province ids, read from the
+ * winning `.txt` files of `common/scripted_effects` and `common/scripted_triggers` in path order
+ * (`readScriptedProvinceArguments`). A file that cannot be read is skipped.
+ */
+export async function loadScriptedProvinceArguments(files: GameFiles): Promise<ProvinceArguments> {
+  const parsed: ParsedScript[] = [];
+  for (const folder of SCRIPTED_FOLDERS) {
+    const found = await files.list(folder, '.txt');
+    const texts = await Promise.all(
+      found.map((file) => readFile(file.absolutePath).catch(() => undefined)),
+    );
+    for (const bytes of texts) {
+      if (bytes !== undefined) parsed.push(parseScript(decode(bytes), { script: true }));
+    }
+  }
+  return readScriptedProvinceArguments(parsed);
 }
 
 function describe(file: GameFile): string {
