@@ -22,8 +22,12 @@ describe('province ids of a playset', () => {
       'game/events/overridden.txt': 'e = { trigger = { owns = 13 } }',
       'game/decisions/hidden.txt': 'd = { x = { allow = { owns = 14 } } }',
       // A map mod: more provinces, its own definition file under another name.
-      'map/map/default.map': 'max_provinces = 20\ndefinitions = "big.csv"\nlakes = { 2 15 25 }\n',
+      'map/map/default.map':
+        'max_provinces = 20\ndefinitions = "big.csv"\nclimate = "big_climate.txt"\nlakes = { 2 15 25 }\n',
       'map/map/big.csv': '1;1;1;1;A;x\n2;2;2;2;B;x\n12;1;1;1;L;x\n13;1;1;1;M;x\n',
+      'game/map/climate.txt': 'tropical = { 1 2 }\narid = { 9 }\n',
+      // The map mod's climate file, under the name its default.map gives.
+      'map/map/big_climate.txt': 'arctic = { 12 14 30 }\n',
       'map/events/overridden.txt': 'e = { immediate = { 13 = { add_core = ROOT } } }',
       // A mod for the vanilla map in the same playset.
       'other/events/other.txt':
@@ -75,6 +79,8 @@ describe('province ids of a playset', () => {
     expect([...(ids?.defined ?? [])]).toEqual([1, 2, 12, 13]);
     expect(ids?.definitionFile?.path).toBe('map/big.csv');
     expect(ids?.definedSource).toBe('map/big.csv of Big Map');
+    expect(ids?.climateFile?.path).toBe('map/big_climate.txt');
+    expect((await loadProvinceIds(playset()))?.climateFile?.path).toBe('map/climate.txt');
   });
 
   it('is undefined without a default.map', async () => {
@@ -111,8 +117,8 @@ describe('province ids of a playset', () => {
       ['game', 'events/overridden.txt', ['owns 13 province-id-out-of-range']],
       ['game', 'map/default.map', ['sea_starts 8 province-id-not-defined']],
     ]);
-    // Five script files and default.map; common/province_names is not read.
-    expect(filesChecked).toBe(6);
+    // Five script files, default.map and climate.txt; common/province_names is not read.
+    expect(filesChecked).toBe(7);
     const other = findings.find((finding) => finding.file.path === 'events/other.txt');
     const first = other?.diagnostics[0];
     expect(other?.text.slice(first?.start, first?.end)).toBe('12');
@@ -155,10 +161,15 @@ describe('province ids of a playset', () => {
         ],
       ],
       [
+        'map/big_climate.txt',
+        ['arctic 14 province-id-not-defined', 'arctic 30 province-id-out-of-range'],
+      ],
+      [
         'map/default.map',
         ['lakes 15 province-id-not-defined', 'lakes 25 province-id-out-of-range'],
       ],
     ]);
     expect(findings.at(-1)?.file.layer.name).toBe('Big Map');
+    expect(findings.at(-2)?.file.layer.name).toBe('Big Map');
   });
 });
