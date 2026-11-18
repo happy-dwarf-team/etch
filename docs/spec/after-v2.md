@@ -567,8 +567,15 @@ refresh is a step of the 3.0.0 release.
   inverse bind matrices) and animations (per-joint sampled channels,
   frame-major samples). Over EU4 1.37.5 it reads all 476 meshes and 152
   animations (`packages/core/test/asset.vanilla.test.ts`); a mesh or animation
-  path's hover gives their facts. A `.mesh` viewer with animation playback is
-  a prototype on `prototype/mesh-preview`.
+  path's hover gives their facts. Etch Mesh Preview (`etch.meshPreview`)
+  draws a `.mesh` with WebGL2 (diffuse textures through the playset, one
+  directional light, collision shapes hidden) and plays an `.anim` beside it
+  that names its bones, skinned on the CPU (`@etch/core/asset`'s
+  `skinningMatrices`, `skinPart`); posing the 151 animations vanilla's
+  `.asset` files use on the skinned meshes beside them keeps all 444 pairs
+  within 0.5–2× of their bind size. Not drawn: normal and specular maps, the
+  country colour of `PdxMeshColor`, the `.gfx` entity (attachments, scale,
+  state animations), LODs and the game's lighting.
 
 ## Open issues
 

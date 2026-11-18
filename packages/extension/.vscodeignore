@@ -5,6 +5,7 @@
 !dist/extension.js
 !dist/webview.js
 !dist/texture-webview.js
+!dist/mesh-webview.js
 !dist/build.json
 !dist/profiles/**
 !media/icon.png

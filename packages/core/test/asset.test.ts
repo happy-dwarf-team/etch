@@ -3,10 +3,13 @@ import {
   animationFacts,
   meshFacts,
   jointPose,
+  jointsOfBones,
   PdxAssetError,
   readAnimation,
   readMesh,
   readPdxAsset,
+  skinningMatrices,
+  skinPart,
 } from '../src/asset/index.ts';
 import { ANIM, binary, floats, half, ints, MESH, obj, text } from './fixtures/pdx-asset.ts';
 
@@ -110,5 +113,37 @@ describe('meshFacts and animationFacts', () => {
     expect(animationFacts(readAnimation(binary(ANIM)))).toBe(
       '2 frames at 15 fps (0.1 s) · 2 joints',
     );
+  });
+});
+
+describe('skinning', () => {
+  it('bends the vertices of the tip bone with the animation', () => {
+    const mesh = readMesh(text(MESH));
+    const animation = readAnimation(text(ANIM));
+    const shape = mesh.shapes[0];
+    const part = shape?.parts[0];
+    if (shape === undefined || part === undefined) throw new Error('no shape');
+    expect(jointsOfBones(shape.skeleton, animation)).toEqual([0, 1]);
+    // Frame 0 is the bind pose: nothing moves.
+    const still = skinPart(part, skinningMatrices(shape.skeleton, animation, 0));
+    expect(Array.from(still.positions).map((v) => Math.round(v * 1e5) / 1e5)).toEqual(
+      Array.from(part.positions),
+    );
+    // Frame 1 turns the tip 90 degrees about Z at x = 1: (2, 0) goes to (1, 1), (2, 1) to (0, 1).
+    const bent = skinPart(part, skinningMatrices(shape.skeleton, animation, 1));
+    const round = (v: number): number => Math.round(v * 1e5) / 1e5 + 0;
+    expect(Array.from(bent.positions.subarray(3, 6)).map(round)).toEqual([1, 1, 0]);
+    expect(Array.from(bent.positions.subarray(9, 12)).map(round)).toEqual([0, 1, 0]);
+    // Vertices on the root bone stay.
+    expect(Array.from(bent.positions.subarray(0, 3)).map(round)).toEqual([0, 0, 0]);
+  });
+
+  it('matches a joint named by its path to the bone of its last name', () => {
+    const renamed = ANIM.map((item) =>
+      'object' in item && item.object === 'tip' ? obj(2, 'root|tip') : item,
+    );
+    const mesh = readMesh(binary(MESH));
+    const skeleton = mesh.shapes[0]?.skeleton ?? [];
+    expect(jointsOfBones(skeleton, readAnimation(binary(renamed)))).toEqual([0, 1]);
   });
 });

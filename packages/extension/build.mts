@@ -65,6 +65,16 @@ await Promise.all([
     sourcemap: true,
     logLevel: 'warning',
   }),
+  esbuild.build({
+    entryPoints: ['webview/mesh.ts'],
+    outfile: 'dist/mesh-webview.js',
+    bundle: true,
+    format: 'iife',
+    platform: 'browser',
+    target: 'chrome120',
+    sourcemap: true,
+    logLevel: 'warning',
+  }),
   esbuild.build({ ...common, entryPoints: ['test/suite.ts'], outfile: 'dist-test/suite.js' }),
 ]);
 
