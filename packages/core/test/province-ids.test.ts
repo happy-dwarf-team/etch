@@ -271,6 +271,7 @@ describe('isProvinceIdScriptPath', () => {
     expect(isProvinceIdScriptPath('history/countries/RUS - Russia.txt')).toBe(true);
     expect(isProvinceIdScriptPath('missions/a.txt')).toBe(true);
     expect(isProvinceIdScriptPath('decisions/a.txt')).toBe(true);
+    expect(isProvinceIdScriptPath('customizable_localization/00_a.txt')).toBe(true);
     expect(isProvinceIdScriptPath('common/province_names/english.txt')).toBe(false);
     expect(isProvinceIdScriptPath('map/area.txt')).toBe(false);
     expect(isProvinceIdScriptPath('interface/a.gui')).toBe(false);

@@ -201,6 +201,14 @@ refresh is a step of the 3.0.0 release.
   `node_id`), 916 more, also all on its map. None of the 68 Workshop items on
   the lab's disk, each on the game alone, gains a warning.
 
+  The checks (province ids and the names below) also read
+  `customizable_localization`: its `defined_text` entries hold triggers the
+  game evaluates when it shows a text that names them, such as vanilla's
+  `owns = 310` and `province_id = 400`. Vanilla's six files give 14 more ids
+  and two scopes, all on the map; the 13 Workshop items on the lab's disk with
+  such files give 223 ids and 382 scopes, and none of the 68 items gains a
+  warning.
+
 - **Names that crash the game (anvil#426 follow-up).** EU4 1.37.5 looks up
   the idea group of `add_idea_group` and `remove_idea_group` once, when it
   reads the file, and keeps the result without a check; the effect, run or

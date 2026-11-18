@@ -34,6 +34,14 @@ describe('script values of a playset', () => {
         '  }',
         '}',
       ].join('\n'),
+      // Triggers of a defined_text, which the game evaluates when it shows the text.
+      'mod/customizable_localization/mod_texts.txt': [
+        'defined_text = {',
+        '  name = GetModText',
+        '  text = { localisation_key = a trigger = { owns = 11 has_idea = no_idea } }',
+        '  text = { localisation_key = b trigger = { 4 = { has_idea = mod_idea } } }',
+        '}',
+      ].join('\n'),
     });
   });
 
@@ -128,6 +136,10 @@ describe('script values of a playset', () => {
     ]);
     expect(summary).toEqual([
       [
+        'customizable_localization/mod_texts.txt',
+        ['owns 11 province-id-out-of-range', 'has_idea no_idea unknown-idea'],
+      ],
+      [
         'events/mod.txt',
         [
           'remove_idea smaland_proverb unknown-idea',
@@ -136,8 +148,8 @@ describe('script values of a playset', () => {
         ],
       ],
     ]);
-    // Three ideas files, two event files and default.map.
-    expect(filesChecked).toBe(6);
+    // Three ideas files, two event files, a customizable localisation file and default.map.
+    expect(filesChecked).toBe(7);
   });
 
   it('checks names without a map, and ids without names', async () => {

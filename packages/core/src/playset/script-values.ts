@@ -185,14 +185,22 @@ export interface ScriptValueFinding {
 }
 
 /** The folders whose `.txt` files, subfolders included, the playset check reads. */
-const SCRIPT_FOLDERS: readonly string[] = ['common', 'events', 'decisions', 'missions', 'history'];
+const SCRIPT_FOLDERS: readonly string[] = [
+  'common',
+  'events',
+  'decisions',
+  'missions',
+  'history',
+  'customizable_localization',
+];
 
 /** How many files are read at once. */
 const READ_AHEAD = 16;
 
 /**
  * Every province id and name in the script files the playset loads (the winning copy of each file
- * under `common`, `events`, `decisions`, `missions` and `history`) and every province id in the
+ * under `common`, `events`, `decisions`, `missions`, `history` and `customizable_localization`)
+ * and every province id in the
  * lists of its `map/default.map` that the playset does not have, by file in path order. Files a
  * later layer overrides or a `replace_path` hides are not read: the game does not load them.
  */

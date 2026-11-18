@@ -235,14 +235,17 @@ export interface ProvinceIdDiagnostic extends SourceRange {
 
 /**
  * Whether a game-relative path is a script file whose triggers and effects this check reads:
- * `.txt` under `common`, `events`, `decisions`, `missions` or `history`. `common/province_names`
- * is left out: its keys are province ids, but with names as values, not scopes.
+ * `.txt` under `common`, `events`, `decisions`, `missions`, `history` or
+ * `customizable_localization`, whose `defined_text` entries hold triggers the game evaluates when
+ * it shows a text that names them (vanilla's `owns = 310`, `province_id = 400`).
+ * `common/province_names` is left out: its keys are province ids, but with names as values, not
+ * scopes.
  */
 export function isProvinceIdScriptPath(path: string): boolean {
   const lower = path.toLowerCase().replace(/\\/g, '/');
   if (!lower.endsWith('.txt')) return false;
   if (lower.startsWith('common/province_names/')) return false;
-  return /^(?:common|events|decisions|missions|history)\//.test(lower);
+  return /^(?:common|events|decisions|missions|history|customizable_localization)\//.test(lower);
 }
 
 /**
