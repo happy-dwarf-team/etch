@@ -148,9 +148,14 @@ refresh is a step of the 3.0.0 release.
   names (`definitions`, `definition.csv` by default) does not list. It reads
   the `.txt` files under `common` (but `province_names`), `events`,
   `decisions`, `missions` and `history`: the integer values of the keys in
-  `PROVINCE_ID_KEYS` (30 triggers, effects and properties such as `owns`,
-  `add_core`, `goto`, `home_province`; each one vanilla uses with integers
-  only of its provinces, checked over 7811 files) and the integer keys of
+  `PROVINCE_ID_KEYS` (36 triggers, effects and properties such as `owns`,
+  `add_core`, `goto`, `home_province`; 30 that vanilla uses with integers
+  only of its provinces, checked over 7811 files, and six that only mods give
+  integers: `owns_or_subject_of`, the name that replaced `owns_or_vassal_of`
+  in 1.20 and the one mods use 2256 times, `is_state_core`,
+  `is_territorial_core`, `subject_owns`, `add_territorial_core` and
+  `undiscover_province`, whose classes index the province table the same
+  unchecked way) and the integer keys of
   blocks, which are province scopes except `random_list`'s weights, a
   `trigger_switch`'s values when its `on_trigger` is not one of those keys,
   the top level, and the properties of a database entry in the other `common`
