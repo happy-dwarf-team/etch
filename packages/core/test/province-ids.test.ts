@@ -77,6 +77,19 @@ describe('checkProvinceIds', () => {
     ]);
   });
 
+  it("checks a war goal's province in a war's history", () => {
+    const text = [
+      'name = "Test War"',
+      '1444.11.11 = { add_attacker = SWE add_defender = DAN }',
+      'war_goal = { type = take_claim casus_belli = cb_claim province = 5075 }',
+      'war_goal = { type = take_claim casus_belli = cb_claim province = 12 }',
+      'war_goal = { type = superiority casus_belli = cb_insult tag = DAN }',
+    ].join('\n');
+    expect(found(text, VANILLA, 'history/wars/test.txt')).toEqual([
+      'province 5075 province-id-out-of-range',
+    ]);
+  });
+
   it('reads keys without regard to case', () => {
     expect(found('e = { trigger = { OWNS = 5075 } }')).toEqual([
       'owns 5075 province-id-out-of-range',

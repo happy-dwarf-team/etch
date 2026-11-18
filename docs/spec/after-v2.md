@@ -184,6 +184,14 @@ refresh is a step of the 3.0.0 release.
   province). Vanilla and the 66 Workshop items have no negative value on these
   keys, and the members add no warning over them.
 
+  A war goal's `province` (`war_goal = { type = take_claim casus_belli =
+  cb_claim province = 518 }` in `history/wars`, and in saves) is a third such
+  member (EU4 engine lab, 18 November 2026): the game reads it with `atoi`
+  and keeps it, and the war goal's name, description and controller index
+  the province table with it, checking only that it is not negative. Vanilla
+  gives it 233 ids and the 68 Workshop items on the lab's disk 416, all on
+  their maps, so it adds no warning there.
+
   A province id can also reach the game through a scripted effect's or
   trigger's argument: vanilla's `create_colony_mission_reward = { province =
   1104 }` runs `$province$ = { … }` with the text of the call in its place,

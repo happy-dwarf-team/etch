@@ -80,11 +80,15 @@ export const PROVINCE_ID_KEYS: ReadonlyMap<string, ProvinceIdKeyKind> = new Map<
  * reads `province_distance`'s `who` with `sscanf` and logs only ids below 1, and
  * `trading_policy_in_node`'s `node` with `atoi`, taking ids below 2 for the scope's province; a
  * larger id indexes the province table unchecked (the lab's `docs/script-unchecked-indexes.md`,
- * 16.11.2026).
+ * 16.11.2026). A war goal's `province` (`history/wars`, and saves) is read with `atoi` and kept;
+ * the war goal's name, description and controller index the province table with it, checking only
+ * that it is not negative (the EU4 engine lab, `CWarGoal`, 18.11.2026). Vanilla gives it 233
+ * integers, all on its map.
  */
 export const PROVINCE_ID_MEMBERS: ReadonlyMap<string, ReadonlySet<string>> = new Map([
   ['province_distance', new Set(['who'])],
   ['trading_policy_in_node', new Set(['node'])],
+  ['war_goal', new Set(['province'])],
 ]);
 
 /**
