@@ -167,6 +167,9 @@ describe('planCaptures', () => {
     expect(() => planCaptures(manifest, { playsets: ['nope'], resolutions: ['1x1'] })).toThrow(
       'The manifest has no playset "nope", resolution 1x1.',
     );
+    expect(() => planCaptures(manifest, { views: ['ledger', 'nowhere'] })).toThrow(
+      'The manifest has no view "nowhere".',
+    );
   });
 
   it('leaves out report playsets unless every capture is asked for', async () => {
