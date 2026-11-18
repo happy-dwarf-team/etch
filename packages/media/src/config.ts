@@ -25,7 +25,7 @@ export const LIVE_GAME_RESOLUTION = { width: 2560, height: 1440 } as const;
 export const PREVIEW_RESOLUTION = { width: 1280, height: 720 } as const;
 
 /** The editor font size. */
-export const EDITOR_FONT_SIZE = 16;
+export const EDITOR_FONT_SIZE = 18;
 
 /** How long the preview must stay without a new paint before a step counts as done. */
 export const QUIET_MS = 300;

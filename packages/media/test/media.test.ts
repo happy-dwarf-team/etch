@@ -43,7 +43,7 @@ describe('VS Code', () => {
     const settings = workbenchSettings(undefined);
     expect(settings).toMatchObject({
       'workbench.colorTheme': 'Default Dark Modern',
-      'editor.fontSize': 16,
+      'editor.fontSize': 18,
       'window.zoomLevel': 0,
       'editor.minimap.enabled': false,
       'breadcrumbs.enabled': false,

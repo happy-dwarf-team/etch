@@ -22,7 +22,7 @@ end lists every step.
 ## Before capturing
 
 - Windows 11 with display scaling at 100 %, on a visible, unlocked desktop with the display
-  awake. A take opens a VS Code window of 2560 × 1440 pixels (device scale 1, editor font 14, as
+  awake. A take opens a VS Code window of 2560 × 1440 pixels (device scale 1, editor font 18, as
   on an ordinary monitor) at the top left of the primary monitor; do not touch it, cover it with another always-on-top window or minimise it
   while a take runs.
 - EU4 1.37.5 from Steam (found through Steam, or pass `--game`). Only the live take starts the
@@ -41,7 +41,7 @@ end lists every step.
 ## Capturing
 
 ```powershell
-pnpm media capture --save <file.eu4>      # every clip; the live clips play the save
+pnpm media capture --save <file.eu4> --profile <file.csv> # every clip
 pnpm media capture --clip views           # one clip; --clip views,data for several
 pnpm media capture --clip reload,pick,snapshot --save <file.eu4> # the live take
 pnpm media capture --clip hero            # the trailer, from the rendered preview, reload and pick
@@ -50,8 +50,9 @@ pnpm media capture --clip data --reedit   # edit and render again from the take,
 
 | Option     | Default                    | Meaning                                                                                                               |
 | ---------- | -------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `--clip`   | all                        | clip ids: `hero`, `preview`, `views`, `data`, `zoom`, `outline`, `problems`, `reload`, `pick`, `snapshot`             |
+| `--clip`   | all                        | clip ids: `hero`, `preview`, `views`, `data`, `zoom`, `outline`, `problems`, `profile`, `names`, `reload`, `pick`, `snapshot` |
 | `--save`   | none                       | the live take's save: a base-game save, not ironman, copied into the run; needed for `reload`, `pick` and `snapshot` |
+| `--profile` | none                      | the script profile `profile` shows: a CSV of Anvil's script profiler measured in a base game; needed for `profile` |
 | `--reedit` | off                        | edit, render and encode the clips again from their takes' logs and masters                                            |
 | `--ffmpeg` | `ffmpeg` on the `PATH`     | FFmpeg; `ffprobe` is taken from beside it                                                                             |
 | `--game`   | `ETCH_GAME_PATH`, or Steam | the EU4 folder: `etch.gamePath`, and where the overridden file is copied from                                         |
@@ -97,6 +98,25 @@ A run of every clip takes about fifteen minutes. It writes into `packages/media/
 
 `--reedit` turns the same take into a new edit: change a camera move or a caption in
 `clips.ts` or `live.ts` and render again without recording.
+
+## The scripts' takes
+
+`profile` and `names` show Etch's work on script files (the Etch site specification's section
+3.2.3). Their close-ups show VS Code alone, without game art; their wide shots show the preview
+as the other offline loops do.
+
+- **`profile`** copies the CSV given with `--profile` into the run's throwaway private profile
+  (`<work>/run/user-data/User/globalStorage/happy-dwarf-team.etch/private-install/profile/logs/`),
+  where **Etch: Show Latest Script Profile** finds it as the newest (your own profile's `logs`
+  folder is searched first, so a profile you measured later than the copy would win). The take
+  types the command in the palette, waits for the page, clicks a decision's name
+  (`expel_foreign_traders`) and waits for its file to open with the profile's line above the
+  block. The page shows the CSV's path: pass a `--work` outside your user folder (for example
+  `C:\etch-media`). Use a profile measured in a base game, so the names link into the take's
+  playset; the CSV is not committed (its `caller_rva` column holds addresses in `eu4.exe`).
+- **`names`** opens `events/etch_demo_events.txt` of the demo mod, filters Problems to it, types a
+  `5` before `owns = 151` (province 5151, not on the map) and `al` into `economic_ideas` (an idea
+  group the playset does not define), and undoes both.
 
 ## The live take
 
@@ -178,7 +198,7 @@ endpoint are in `packages/media/src/config.ts`.
 
 The command:
 
-1. Reads `media.draft.json` of the capture and checks that it is complete: all ten loops with
+1. Reads `media.draft.json` of the capture and checks that it is complete: all twelve loops with
    their posters, every poster a 1920 × 1080 PNG, every loop file the size the draft says. It
    checks that `--site` is an etch-website checkout.
 2. Uploads each loop file with `PutObject` and `If-None-Match: *`, so it never overwrites a key.
@@ -224,7 +244,8 @@ generated sample data; no save is read (the live take's save is the game's, not 
 
 `packages/media/demo-mod` is the **Etch demo mod** (MIT, not on the Steam Workshop, not playable):
 a descriptor, `interface/etch_demo.gui` with a dialog in the style of an event and a small panel,
-`interface/etch_demo.gfx` and `localisation/etch_demo_l_english.yml`. Its files are our own text;
+`interface/etch_demo.gfx`, `localisation/etch_demo_l_english.yml`, and `events/etch_demo_events.txt`
+with one event that is never fired (`is_triggered_only`), which `names` edits. Its files are our own text;
 they name base-game EU4 1.37.5 sprites, textures and fonts, so the preview looks like EU4 while no
 game file enters the repository. No DLC-only art, no other mod, no textures of our own, English
 only.

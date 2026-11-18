@@ -1,0 +1,23 @@
+namespace = etch_demo
+
+# The smiths ask for more ore. Written for Etch's media to edit on camera; never fired.
+country_event = {
+	id = etch_demo.1
+	title = ETCH_DEMO_TITLE
+	desc = ETCH_DEMO_DESC
+	is_triggered_only = yes
+
+	trigger = {
+		owns = 151
+	}
+
+	option = {
+		name = ETCH_DEMO_OPTION_STRIKE
+		add_core = 151
+		add_idea_group = economic_ideas
+	}
+	option = {
+		name = ETCH_DEMO_OPTION_REST
+		add_prestige = 5
+	}
+}

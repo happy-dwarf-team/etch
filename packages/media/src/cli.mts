@@ -1,12 +1,13 @@
 // `pnpm media <step>`: the Etch website's media pipeline (etch-website docs/spec.md section 8,
 // docs/media.md). Local only, on the maintainer's Windows machine with EU4 1.37.5 installed.
 //
-//   pnpm media capture [--clip ID]... [--save PATH] [--reedit] [--ffmpeg PATH] [--game PATH]
-//                      [--work DIR]
+//   pnpm media capture [--clip ID]... [--save PATH] [--profile PATH] [--reedit] [--ffmpeg PATH]
+//                      [--game PATH] [--work DIR]
 //   pnpm media publish --site PATH [--etch VERSION]
 //
-// --clip takes the clip ids (hero, preview, views, data, zoom, outline, problems, reload, pick,
-// snapshot), also separated by commas; all of them by default. reload, pick and snapshot share one
+// --clip takes the clip ids (hero, preview, views, data, zoom, outline, problems, profile, names,
+// reload, pick, snapshot), also separated by commas; all of them by default. profile shows --profile,
+// a CSV of Anvil's script profiler, as the newest profile. reload, pick and snapshot share one
 // take that starts EU4 and plays --save, a non-ironman save of the base game, copied into the run
 // first. hero is cut from the preview, reload and pick clips. --reedit edits and renders the clips
 // again from their takes' logs and masters, without new takes. --ffmpeg is FFmpeg 8.1 or newer
@@ -49,6 +50,7 @@ const { positionals, values } = parseArgs({
     site: { type: 'string' },
     etch: { type: 'string' },
     save: { type: 'string' },
+    profile: { type: 'string' },
   },
 });
 
@@ -92,7 +94,7 @@ if (step === 'publish') {
 }
 if (step !== 'capture') {
   fail(
-    'Usage: pnpm media capture [--clip ID]... [--save PATH] [--reedit]\n' +
+    'Usage: pnpm media capture [--clip ID]... [--save PATH] [--profile PATH] [--reedit]\n' +
       '       pnpm media publish --site PATH [--etch VERSION]',
   );
 }
@@ -113,6 +115,11 @@ if (
   values.save === undefined
 ) {
   fail('The live clips play a save: pass --save PATH (a base-game save, not ironman).');
+}
+if (!values.reedit && chosen.includes('profile') && values.profile === undefined) {
+  fail(
+    "The profile clip shows a script profile: pass --profile PATH (a CSV of Anvil's script profiler).",
+  );
 }
 const ffmpeg = values.ffmpeg ?? 'ffmpeg';
 const ffprobe =
@@ -137,5 +144,6 @@ const out = await capture({
   gamePath: game,
   reedit: values.reedit,
   ...(values.save === undefined ? {} : { save: path.resolve(typedIn, values.save) }),
+  ...(values.profile === undefined ? {} : { profile: path.resolve(typedIn, values.profile) }),
 });
 console.log(`Done: ${out}. Look at every frame before anything is published.`);
