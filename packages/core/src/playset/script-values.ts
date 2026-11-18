@@ -18,7 +18,7 @@ import {
   type ScriptNames,
   type ScriptNameSets,
 } from '../script/script-names.ts';
-import type { ParsedScript } from '../script/tree.ts';
+import type { EntryNode, ParsedScript, ScalarNode } from '../script/tree.ts';
 import type { GameFile, GameFiles } from './game-files.ts';
 import { definedIds, type PlaysetProvinceIds } from './province-ids.ts';
 
@@ -50,7 +50,52 @@ export function checkScriptValues(
   const found: ScriptValueDiagnostic[] = [];
   if (values.ids !== undefined) found.push(...checkProvinceIds(parsed, values.ids, path));
   if (values.names !== undefined) found.push(...checkScriptNames(parsed, values.names));
+  for (const string of scriptStrings(parsed.entries)) {
+    // The string's script starts after its opening quote; script strings have no escapes, so
+    // offsets in it map one to one.
+    const inner = parseScript(string.text, { script: true });
+    // A string that does not parse cleanly is text, not script: a title such as "12 = {".
+    if (inner.diagnostics.length > 0) continue;
+    const offset = string.start + 1;
+    const shifted = (d: ScriptValueDiagnostic): ScriptValueDiagnostic => ({
+      ...d,
+      start: d.start + offset,
+      end: d.end + offset,
+    });
+    if (values.ids !== undefined) {
+      found.push(...checkProvinceIds(inner, values.ids, undefined, true).map(shifted));
+    }
+    if (values.names !== undefined) {
+      found.push(...checkScriptNames(inner, values.names).map(shifted));
+    }
+  }
   return found.sort((a, b) => a.start - b.start);
+}
+
+/**
+ * Quoted values that hold script: a scripted effect's or trigger's argument such as vanilla's
+ * `first_effect = "…"` of `simple_dynamic_effect`, which the game puts in place of `$first_effect$`
+ * and runs. A quoted value with an `=` in it that parses without a syntax error is taken for
+ * script; the game runs it as a trigger or an effect, so its integer keys are province scopes from
+ * its top level on.
+ */
+function scriptStrings(entries: readonly EntryNode[]): ScalarNode[] {
+  const found: ScalarNode[] = [];
+  const visit = (list: readonly EntryNode[]): void => {
+    for (const entry of list) {
+      if (entry.kind === 'block') {
+        visit(entry.entries);
+      } else if (entry.kind === 'property') {
+        const value = entry.value;
+        if (value?.kind === 'block') visit(value.entries);
+        else if (value?.kind === 'scalar' && value.quoted && value.text.includes('=')) {
+          found.push(value);
+        }
+      }
+    }
+  };
+  visit(entries);
+  return found;
 }
 
 /** Reads a file's top-level blocks as names of a kind. */
@@ -88,7 +133,7 @@ export async function loadScriptNames(files: GameFiles): Promise<ScriptNames | u
       found.map((file) => readFile(file.absolutePath).catch(() => undefined)),
     );
     for (const bytes of texts) {
-      if (bytes !== undefined) read(parseScript(decode(bytes)), byKind);
+      if (bytes !== undefined) read(parseScript(decode(bytes), { script: true }), byKind);
     }
   }
   return byKind.size === 0 ? undefined : { byKind };
@@ -135,14 +180,17 @@ export async function findScriptValueProblems(
       const bytes = texts[j];
       if (bytes === undefined) return;
       const text = decode(bytes);
-      const diagnostics = checkScriptValues(parseScript(text), values, file.path);
+      const diagnostics = checkScriptValues(parseScript(text, { script: true }), values, file.path);
       if (diagnostics.length > 0) findings.push({ file, text, diagnostics });
     });
   }
   let filesChecked = checked.length;
   if (values.ids !== undefined) {
     const mapText = decode(await readFile(values.ids.mapFile.absolutePath));
-    const mapDiagnostics = checkDefaultMap(parseScript(mapText), definedIds(values.ids));
+    const mapDiagnostics = checkDefaultMap(
+      parseScript(mapText, { script: true }),
+      definedIds(values.ids),
+    );
     if (mapDiagnostics.length > 0) {
       findings.push({ file: values.ids.mapFile, text: mapText, diagnostics: mapDiagnostics });
     }

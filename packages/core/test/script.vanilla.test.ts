@@ -32,6 +32,22 @@ describe.skipIf(gamePath === undefined)('parseScript on the installed game', () 
     }
   });
 
+  it('parses every vanilla script file as a script file without syntax errors', () => {
+    // Read with interface rules, 60 of them have errors: their strings span lines.
+    const files = ['common', 'events', 'decisions', 'missions', 'history'].flatMap((name) =>
+      readdirSync(join(gamePath ?? '', name), { recursive: true, encoding: 'utf8' })
+        .filter((file) => /\.txt$/i.test(file))
+        .map((file) => join(gamePath ?? '', name, file)),
+    );
+    expect(files.length).toBeGreaterThan(7000);
+    for (const file of files) {
+      const text = decoder.decode(readFileSync(file)).replace(/^ï»¿/, '');
+      const parsed = parseScript(text, { script: true });
+      expect({ file, diagnostics: parsed.diagnostics }).toEqual({ file, diagnostics: [] });
+      expect({ file, problems: rangeProblems(text, parsed) }).toEqual({ file, problems: [] });
+    }
+  });
+
   it('parses countrydiplomacyview.gui well within the warm reload budget', () => {
     const text = decoder.decode(readFileSync(join(folder, 'countrydiplomacyview.gui')));
     for (let i = 0; i < 20; i++) parseScript(text); // warm up the JIT

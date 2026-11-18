@@ -144,15 +144,19 @@ export function isProvinceIdScriptPath(path: string): boolean {
 /**
  * The province ids in a parsed script file that the map does not have, in text order. `path`, the
  * file's game-relative path, tells how deep its province scopes start (`firstScopeDepth`); without
- * it they start in the top-level blocks.
+ * it they start in the top-level blocks. `body` reads the text as the body of a trigger or an
+ * effect, such as a scripted effect's string argument, whose own top-level integer keys are
+ * province scopes.
  */
 export function checkProvinceIds(
   parsed: ParsedScript,
   ids: ProvinceIds,
   path?: string,
+  body = false,
 ): ProvinceIdDiagnostic[] {
   const found: ProvinceIdDiagnostic[] = [];
-  walk(parsed.entries, { key: '', scopes: false }, 0, firstScopeDepth(path), ids, found);
+  const root = { key: '', scopes: body };
+  walk(parsed.entries, root, 0, body ? 0 : firstScopeDepth(path), ids, found);
   return found.sort((a, b) => a.start - b.start);
 }
 
@@ -274,7 +278,7 @@ export interface DefaultMap {
 
 /** Reads `map/default.map`'s text; the last `max_provinces` and `definitions` win. */
 export function parseDefaultMap(text: string): DefaultMap {
-  return readDefaultMap(parseScript(text));
+  return readDefaultMap(parseScript(text, { script: true }));
 }
 
 function readDefaultMap(parsed: ParsedScript): DefaultMap {

@@ -237,6 +237,11 @@ checks them inside a `custom_trigger_tooltip` too.
 
 Every one of these crashes was tried in the game.
 
+Script passed in a string is checked too, such as the `first_effect = "…"` of
+vanilla's `simple_dynamic_effect`, which the game runs in place of the
+scripted effect's `$first_effect$`. A quoted string may run over several
+lines, as the game reads it.
+
 **Etch: Check Province IDs and Names in the Playset** checks every script file
 the playset loads, from all its mods, and lists the lines in the Problems
 panel, so you can find which mod has one.

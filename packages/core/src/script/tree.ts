@@ -59,7 +59,10 @@ export type SyntaxDiagnosticCode =
   | 'unclosed-block'
   /** A `}` with no open block; it is skipped. */
   | 'unmatched-close'
-  /** A quoted string without its closing quote on the same line; it ends at the line end. */
+  /**
+   * A quoted string without its closing quote on the same line, or in a script file anywhere after
+   * it (`ParseOptions.script`); it ends at the line end.
+   */
   | 'unterminated-string'
   /** An operator with nothing after it, or followed by `}` or by the next property. */
   | 'missing-value'

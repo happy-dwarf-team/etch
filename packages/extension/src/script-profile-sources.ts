@@ -186,7 +186,7 @@ export async function findScriptSources(
       if (next !== undefined) pending.push(read(next));
       const text = await pending[index];
       if (text === undefined || !test.test(text)) continue;
-      const { entries } = parseScript(text);
+      const { entries } = parseScript(text, { script: true });
       for (const kind of kinds) {
         for (const [name, owner] of ownersOf(entries, kind)) {
           const key = name.toLowerCase();
@@ -324,7 +324,7 @@ export function scriptProfileLenses(
   }
   const kinds = new Set(owners.map((owner) => OWNER_FOLDERS[owner]?.kind));
   const lenses: ScriptProfileLens[] = [];
-  const { entries } = parseScript(text);
+  const { entries } = parseScript(text, { script: true });
   for (const kind of kinds) {
     if (kind === undefined) continue;
     for (const [name, owner] of ownersOf(entries, kind)) {

@@ -297,10 +297,12 @@ export function diagnose(
   const path = gamePathOf(file, files);
   if (path === undefined) return undefined;
   if (path.toLowerCase() === 'map/default.map') {
-    return ids === undefined ? undefined : checkDefaultMap(parseScript(text), definedIds(ids));
+    return ids === undefined
+      ? undefined
+      : checkDefaultMap(parseScript(text, { script: true }), definedIds(ids));
   }
   if (!isProvinceIdScriptPath(path)) return undefined;
-  return checkScriptValues(parseScript(text), { ids, names }, path);
+  return checkScriptValues(parseScript(text, { script: true }), { ids, names }, path);
 }
 
 function toDiagnostic(

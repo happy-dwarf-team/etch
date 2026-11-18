@@ -65,7 +65,7 @@ export interface ScriptedWidget {
 /** The mechanics of one `common/government_mechanics` file. */
 export function readGovernmentMechanics(text: string): GovernmentMechanic[] {
   const mechanics: GovernmentMechanic[] = [];
-  for (const entry of parseScript(text).entries) {
+  for (const entry of parseScript(text, { script: true }).entries) {
     if (entry.kind !== 'property' || entry.value?.kind !== 'block') continue;
     const body = entry.value;
     mechanics.push({
@@ -96,7 +96,7 @@ export function readGovernmentMechanics(text: string): GovernmentMechanic[] {
  */
 export function readBasicAbilities(text: string): string[] {
   const abilities: string[] = [];
-  for (const entry of parseScript(text).entries) {
+  for (const entry of parseScript(text, { script: true }).entries) {
     if (entry.kind !== 'property' || entry.value?.kind !== 'block') continue;
     if (scalar(entry.value, 'basic_reform') !== 'yes') continue;
     for (const ability of block(entry.value, 'government_abilities')?.entries ?? []) {
@@ -109,7 +109,7 @@ export function readBasicAbilities(text: string): string[] {
 /** The `scripted` widgets of one `common/custom_gui` file. */
 export function readScriptedWidgets(text: string): ScriptedWidget[] {
   const widgets: ScriptedWidget[] = [];
-  for (const entry of parseScript(text).entries) {
+  for (const entry of parseScript(text, { script: true }).entries) {
     if (entry.kind !== 'property' || entry.value?.kind !== 'block') continue;
     if (!entry.key.text.toLowerCase().startsWith('custom_')) continue;
     const name = scalar(entry.value, 'name');

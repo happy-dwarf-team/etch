@@ -105,4 +105,39 @@ describe('script values of a playset', () => {
     expect(codes({ ids })).toEqual(['province-id-out-of-range']);
     expect(codes({})).toEqual([]);
   });
+
+  it("checks the script of a scripted effect's string arguments", async () => {
+    // Vanilla's missions pass script to simple_dynamic_effect in strings, over several lines.
+    const text = [
+      'm = {',
+      '  effect = {',
+      '    simple_dynamic_effect = {',
+      '      first_limit = "owns = 12"',
+      '      first_effect = "',
+      '        11 = { add_core = ROOT }',
+      '        add_idea_group = no_ideas',
+      '        3 = { add_core = ROOT }',
+      '      "',
+      '      first_custom_tooltip = "a = b"',
+      '    }',
+      '  }',
+      '}',
+    ].join('\n');
+    const files = playset();
+    const ids = await loadProvinceIds(files);
+    const names = await loadScriptNames(files);
+    const found = checkScriptValues(parseScript(text, { script: true }), { ids, names });
+    expect(found.map((d) => `${d.key} ${text.slice(d.start, d.end)} ${d.code}`)).toEqual([
+      'owns 12 province-id-out-of-range',
+      ' 11 province-id-out-of-range',
+      'add_idea_group no_ideas unknown-idea-group',
+    ]);
+  });
+
+  it('leaves a quoted value without script alone', async () => {
+    const files = playset();
+    const ids = await loadProvinceIds(files);
+    const text = 'e = { title = "12 = {" desc = "owns 12" }';
+    expect(checkScriptValues(parseScript(text, { script: true }), { ids })).toEqual([]);
+  });
 });
