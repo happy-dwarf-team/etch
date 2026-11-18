@@ -216,7 +216,10 @@ passed on to other calls. A
 negative id such as `owns = -1` is flagged too: the game keeps the sign.
 The province lists of colonial regions, trade company regions and trade nodes
 (`provinces` in `common/colonial_regions` and `common/trade_companies`,
-`members` in `common/tradenodes`) are checked too.
+`members` in `common/tradenodes`) are checked too. A `history/provinces` file
+whose name does not start with a province of the map (`4999 - Past.txt` on
+4941 provinces, or `Uppland.txt`) gets a warning at its first line: the game
+skips it without a word.
 The map is your playset's: `max_provinces` of `map/default.map`, a mod's when
 it has its own, and the provinces its `map/definition.csv` lists. An id written
 as a tag, a scope or a variable is not checked.

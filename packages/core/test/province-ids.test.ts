@@ -109,6 +109,43 @@ describe('checkProvinceIds', () => {
     expect(found('provinces = { 5075 }', VANILLA, 'common/colonial_regions/x.txt')).toEqual([]);
   });
 
+  it('flags a province history file whose name gives no province of the map', () => {
+    const text = 'owner = SWE\n1500.1.1 = { controller = DAN }';
+    const at = (path: string): string[] => found(text, VANILLA, path);
+    expect(at('history/provinces/1 - Uppland.txt')).toEqual([]);
+    expect(at('history/provinces/4941-Last.txt')).toEqual([]);
+    expect(at('History\\Provinces\\4942 - Past.txt')).toEqual([
+      'history/provinces 4942 province-history-not-read',
+    ]);
+    expect(at('history/provinces/0 - Nothing.txt')).toEqual([
+      'history/provinces 0 province-history-not-read',
+    ]);
+    // `atoi` of a name without a leading number is 0.
+    expect(at('history/provinces/Uppland.txt')).toEqual([
+      'history/provinces 0 province-history-not-read',
+    ]);
+    // Not names the game reads: subfolders, other history, a body, no path.
+    expect(at('history/provinces/old/9999.txt')).toEqual([]);
+    expect(at('history/countries/9999 - X.txt')).toEqual([]);
+    expect(
+      checkProvinceIds(parseScript(text), VANILLA, 'history/provinces/9999.txt', true),
+    ).toEqual([]);
+    const [warning] = checkProvinceIds(
+      parseScript(text),
+      VANILLA,
+      'history/provinces/4999 - A.txt',
+    );
+    expect(warning).toMatchObject({ start: 0, end: 0, id: 4999, severity: 'warning' });
+    expect(warning?.message).toBe(
+      'The game never reads this province history: its file name gives province 4999, and the ' +
+        'game reads only the files of provinces 1 to 4941 (map/default.map of the game sets ' +
+        'max_provinces = 4942). It skips the file without a line in error.log.',
+    );
+    expect(
+      checkProvinceIds(parseScript(text), VANILLA, 'history/provinces/x.txt')[0]?.message,
+    ).toMatch(/^The game never reads this province history: its file name does not start with a/);
+  });
+
   it("checks a trade node's members and location, not its paths", () => {
     const text = [
       'test_node = {',

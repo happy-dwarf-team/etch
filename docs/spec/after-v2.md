@@ -183,6 +183,16 @@ refresh is a step of the 3.0.0 release.
   Vanilla lists 3290 ids in the regions and 3369 in the trade nodes, all on its
   map; a trade node's `location` was already checked.
 
+  A `history/provinces` file's province comes from its name: the game takes
+  it with `atoi` (`123 - Name.txt` is 123, a name without a leading number 0)
+  and reads only the files of provinces from 1 to `max_provinces - 1`,
+  skipping the others without a line in `error.log` (EU4 engine lab,
+  `CLoadProvinces`, 18 November 2026). Etch warns about such a file
+  (`province-history-not-read`, an empty range at the file's start). Vanilla's
+  3923 files all give provinces of its map. Of the 68 Workshop items on the
+  lab's disk, one total conversion has 47 files for provinces 4952 to 4998 on
+  its map of `max_provinces = 4952`, which the game never reads.
+
   A static reading of the game's trigger and effect code (EU4 engine lab,
   `docs/script-unchecked-indexes.md`, 16 November 2026) found the cause: the
   game has a checked province accessor that logs an out-of-range id, but the
