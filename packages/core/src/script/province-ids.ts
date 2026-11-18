@@ -596,7 +596,10 @@ export function checkContinents(parsed: ParsedScript, ids: ProvinceIds): Provinc
     if (entry.kind !== 'property' || entry.value?.kind !== 'block') continue;
     const key = entry.key.text.toLowerCase();
     for (const scalar of bareScalars(entry.value)) {
-      if (/^-\d*[1-9]\d*$/.test(scalar.text)) checkScalar(scalar, key, ids, found, true);
+      // `-0` is province 0; a linear pattern, then the sign (CodeQL js/polynomial-redos).
+      if (/^-\d+$/.test(scalar.text) && Number(scalar.text) < 0) {
+        checkScalar(scalar, key, ids, found, true);
+      }
     }
   }
   return found.sort((a, b) => a.start - b.start);

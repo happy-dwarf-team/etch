@@ -401,6 +401,14 @@ describe('continent file', () => {
     ]);
     expect(text.slice(diagnostics[0]?.start, diagnostics[0]?.end)).toBe('-5');
   });
+
+  it('runs in time linear in a long value that is almost a negative id', () => {
+    const started = performance.now();
+    expect(checkContinents(parseScript(`europe = { -${'1'.repeat(100_000)}x }`), VANILLA)).toEqual(
+      [],
+    );
+    expect(performance.now() - started).toBeLessThan(250);
+  });
 });
 
 describe('climate file', () => {
