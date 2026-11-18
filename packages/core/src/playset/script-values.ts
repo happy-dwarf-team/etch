@@ -10,6 +10,7 @@ import {
 } from '../script/province-ids.ts';
 import {
   checkScriptNames,
+  showsOwnTooltip,
   readIdeaNames,
   readReligionNames,
   readTopLevelNames,
@@ -50,7 +51,7 @@ export function checkScriptValues(
   const found: ScriptValueDiagnostic[] = [];
   if (values.ids !== undefined) found.push(...checkProvinceIds(parsed, values.ids, path));
   if (values.names !== undefined) found.push(...checkScriptNames(parsed, values.names));
-  for (const string of scriptStrings(parsed.entries)) {
+  for (const { string, ownTooltip } of scriptStrings(parsed.entries)) {
     // The string's script starts after its opening quote; script strings have no escapes, so
     // offsets in it map one to one.
     const inner = parseScript(string.text, { script: true });
@@ -66,7 +67,7 @@ export function checkScriptValues(
       found.push(...checkProvinceIds(inner, values.ids, undefined, true).map(shifted));
     }
     if (values.names !== undefined) {
-      found.push(...checkScriptNames(inner, values.names).map(shifted));
+      found.push(...checkScriptNames(inner, values.names, ownTooltip).map(shifted));
     }
   }
   return found.sort((a, b) => a.start - b.start);
@@ -77,24 +78,28 @@ export function checkScriptValues(
  * `first_effect = "…"` of `simple_dynamic_effect`, which the game puts in place of `$first_effect$`
  * and runs. A quoted value with an `=` in it that parses without a syntax error is taken for
  * script; the game runs it as a trigger or an effect, so its integer keys are province scopes from
- * its top level on.
+ * its top level on. `ownTooltip` is whether the string is inside a block that shows its own
+ * tooltip (`custom_trigger_tooltip`).
  */
-function scriptStrings(entries: readonly EntryNode[]): ScalarNode[] {
-  const found: ScalarNode[] = [];
-  const visit = (list: readonly EntryNode[]): void => {
+function scriptStrings(
+  entries: readonly EntryNode[],
+): { string: ScalarNode; ownTooltip: boolean }[] {
+  const found: { string: ScalarNode; ownTooltip: boolean }[] = [];
+  const visit = (list: readonly EntryNode[], ownTooltip: boolean): void => {
     for (const entry of list) {
       if (entry.kind === 'block') {
-        visit(entry.entries);
+        visit(entry.entries, ownTooltip);
       } else if (entry.kind === 'property') {
         const value = entry.value;
-        if (value?.kind === 'block') visit(value.entries);
-        else if (value?.kind === 'scalar' && value.quoted && value.text.includes('=')) {
-          found.push(value);
+        if (value?.kind === 'block') {
+          visit(value.entries, ownTooltip || showsOwnTooltip(entry.key.text));
+        } else if (value?.kind === 'scalar' && value.quoted && value.text.includes('=')) {
+          found.push({ string: value, ownTooltip });
         }
       }
     }
   };
-  visit(entries);
+  visit(entries, false);
   return found;
 }
 

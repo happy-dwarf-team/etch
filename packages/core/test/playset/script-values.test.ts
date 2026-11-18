@@ -7,7 +7,7 @@ import {
   loadProvinceIds,
   loadScriptNames,
 } from '../../src/playset/index.ts';
-import { parseScript } from '../../src/script/index.ts';
+import { parseScript, type ScriptNames } from '../../src/script/index.ts';
 import { makeTree, removeTree } from './fixture.ts';
 
 describe('script values of a playset', () => {
@@ -132,6 +132,16 @@ describe('script values of a playset', () => {
       ' 11 province-id-out-of-range',
       'add_idea_group no_ideas unknown-idea-group',
     ]);
+  });
+
+  it("skips a tooltip key in a string inside a custom_trigger_tooltip, as the block's own", () => {
+    const names: ScriptNames = { byKind: new Map([['policy', new Set(['a_policy'])]]) };
+    const inside = 'c = { custom_trigger_tooltip = { s = { t = "has_active_policy = none" } } }';
+    const outside = 'c = { s = { t = "has_active_policy = none" } }';
+    const codes = (text: string): string[] =>
+      checkScriptValues(parseScript(text, { script: true }), { names }).map((d) => d.code);
+    expect(codes(inside)).toEqual([]);
+    expect(codes(outside)).toEqual(['unknown-policy']);
   });
 
   it('leaves a quoted value without script alone', async () => {
