@@ -11,7 +11,9 @@ import {
   enterGameLock,
   gameScript,
   interruptHandler,
+  runGameScript,
   withGameLock,
+  type GameLock,
   type GameScript,
 } from '../../src/corpus/driver/game-script.ts';
 import { makeTree, removeTree } from '../playset/fixture.ts';
@@ -183,6 +185,38 @@ describe.runIf(process.platform === 'win32')('the game lock of a capture run', (
     expect(process.env[GAME_LOCK_VARIABLE]).toBeUndefined();
   }, 30_000);
 
+  it("stops a start by its record, with the start's Anvil crash reports", async () => {
+    const { script, calls } = await fixture();
+    const crashes = join(script.hostDir, 'game', 'anvil', 'crashes');
+    await mkdir(crashes, { recursive: true });
+    await writeFile(join(crashes, 'crash-1.txt'), 'a crash');
+    // A FILETIME (100 ns since 1601) a minute before the report.
+    const since = BigInt(Date.now() - 60_000) * 10_000n + 116_444_736_000_000_000n;
+    const record = {
+      pid: 4_000_000,
+      imagePath: join(script.hostDir, 'game', 'eu4.exe'),
+      creationFileTimeUtc: since.toString(),
+      creationUnixMs: 0,
+    };
+
+    const result = await gameScript(script).stop(record);
+
+    expect(result).toMatchObject({
+      ok: true,
+      outcome: 'terminated',
+      openError: null,
+      anvilCrashes: ['crash-1.txt'],
+    });
+    expect((await calls()).map((c) => c.call)).toEqual(['Open-VerifiedSession']);
+  }, 30_000);
+
+  it("fails with game.ps1's message when an action fails", async () => {
+    const { script } = await fixture();
+    await expect(runGameScript(script, ['-Action', 'Nothing'])).rejects.toThrow(
+      /^game\.ps1 -Action Nothing failed: .*Nothing/s,
+    );
+  }, 30_000);
+
   it('stops before anything starts when another session holds the lock', async () => {
     const { script, lockFile, calls } = await fixture();
     const held = JSON.stringify({
@@ -231,4 +265,63 @@ describe.runIf(process.platform === 'win32')('the game lock of a capture run', (
     expect(await exists(lockFile)).toBe(true);
     expect(process.env[GAME_LOCK_VARIABLE]).toBe(token);
   }, 30_000);
+});
+
+describe('Ctrl+C in a capture run', () => {
+  /** A lock that only records its releases, or throws on them. */
+  function lock(inherited: boolean, steps: string[], fails = false): GameLock {
+    return {
+      token: 'a'.repeat(32),
+      owner: 'etch corpus test',
+      inherited,
+      expiresAt: new Date(0),
+      release: () => Promise.resolve(),
+      releaseSync: () => {
+        if (fails) throw new Error('pwsh is gone');
+        steps.push('unlock');
+      },
+    };
+  }
+
+  function run(options: {
+    mouseFails?: boolean;
+    lock?: (steps: string[]) => GameLock | undefined;
+  }): string[] {
+    const steps: string[] = [];
+    interruptHandler({
+      releaseMouse: () => {
+        if (options.mouseFails === true) throw new Error('no cursor');
+        steps.push('mouse');
+      },
+      lock: () => options.lock?.(steps),
+      exit: (code) => steps.push(`exit ${String(code)}`),
+      print: (line) => steps.push(line),
+    })('SIGTERM');
+    return steps;
+  }
+
+  it('tells how to free a mouse it could not release, and still exits', () => {
+    expect(run({ mouseFails: true })).toEqual([
+      'SIGTERM: the mouse could not be released; press Ctrl+Alt+Del.',
+      'exit 130',
+    ]);
+  });
+
+  it("leaves a batch's lock to the batch without saying it is released", () => {
+    expect(run({ lock: (steps) => lock(true, steps) })).toEqual([
+      'mouse',
+      'SIGTERM: the mouse is released.',
+      'unlock',
+      'exit 130',
+    ]);
+  });
+
+  it('says the lab drops a lock it could not release', () => {
+    expect(run({ lock: (steps) => lock(false, steps, true) })).toEqual([
+      'mouse',
+      'SIGTERM: the mouse is released.',
+      'SIGTERM: the game lock could not be released; the lab drops it with this process.',
+      'exit 130',
+    ]);
+  });
 });
