@@ -671,15 +671,11 @@ export const CLIPS: readonly Clip[] = [
         source: 'vscode',
         rect: union(await wb.box(menu), await wb.box(items.first()), await wb.box(items.last())),
       });
-      take.mark('covers', {
-        source: 'vscode',
-        rect: await wb.box(wb.frame.locator('#view-popup')),
-      });
       await wb.closeMenus();
       const rest = await startTake(context);
       take.mark('start');
       // The menu's selectors, under its views, cover the window's top right while it is open: it
-      // is open for little more than a second each time, and the edit veils it there.
+      // is open for little more than a second each time.
       for (const label of ['Foreign province', 'Own province']) {
         await clickOn(context, menu);
         await wb.frame.locator('#view-popup:not([hidden])').waitFor();
@@ -708,17 +704,6 @@ export const CLIPS: readonly Clip[] = [
       const opens = eventsOf(log, 'open', 2);
       const closes = eventsOf(log, 'closed', 2);
       const end = at(eventOf(log, 'end').t) + 0.4;
-      // While the menu is open, its part over the window is veiled: the menu's panel shows it.
-      const covered = menuVeils(
-        1,
-        area,
-        rectOf(eventOf(log, 'covers')),
-        opens.map((open, i) => ({
-          opens: at(open.t) - 0.12,
-          closes: at((closes[i] as TakeEvent).t) + 0.15,
-        })),
-        end,
-      );
       return single(
         'views',
         log,
@@ -736,7 +721,6 @@ export const CLIPS: readonly Clip[] = [
           still('vscode', frames.right, area),
         ],
         {
-          veils: covered,
           captions: sequence(
             views.map((view) => ({ from: at(view.t) - 0.05, text: `View: ${view.label ?? ''}` })),
             end - 0.4,
