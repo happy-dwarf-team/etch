@@ -145,15 +145,15 @@ export interface Highlight {
 }
 
 /**
- * A rect of a panel's source veiled from `from` to `to`: frosted over, so that what covers it in
- * the master there and another panel shows whole (a preview menu open over the window) does not
- * show cut off at the panel's edge.
+ * A panel held from `from` to `to` (segment times) on its source's frame at `at` (a source time):
+ * a preview menu open over the window in the master, which another panel shows whole, does not
+ * show there cut off at the panel's edge; the window shows as it was before the menu opened.
  */
-export interface Veil {
+export interface Hold {
   readonly from: number;
   readonly to: number;
   readonly panel: number;
-  readonly rect: Rect;
+  readonly at: number;
 }
 
 export interface Segment {
@@ -161,7 +161,7 @@ export interface Segment {
   readonly panels: readonly Panel[];
   readonly captions: readonly Caption[];
   readonly highlights: readonly Highlight[];
-  readonly veils?: readonly Veil[];
+  readonly holds?: readonly Hold[];
 }
 
 export interface EditSpec {

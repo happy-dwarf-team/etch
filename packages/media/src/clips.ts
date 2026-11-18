@@ -26,7 +26,7 @@ import {
   type Rect,
   type Segment,
   type Source,
-  type Veil,
+  type Hold,
 } from './edit.ts';
 import type { PaintResult } from './paint.ts';
 import {
@@ -111,7 +111,8 @@ export const TRADE_AREA: Rect = { x: -6, y: 467, w: 472, h: 433 };
 /**
  * The window's header and demographics, where a province's names are: its tabs, names, area and
  * region, development, culture and religion, from the window's left border to its right. The open
- * `Data ▾` covers its top right (screen x 390 and right, down to y 339): `data` veils it there.
+ * `Data ▾` covers its top right (screen x 390 and right, down to y 339): `data` holds the window's
+ * panel on its last frame before the menu opened until the menu closes.
  */
 const HEADER_AREA: Rect = { x: -10, y: 194, w: 498, h: 398 };
 /** The buildings panel, whose background `problems` misspells. */
@@ -314,7 +315,7 @@ interface Part {
   readonly tracks: readonly Track[];
   readonly captions?: Caption[];
   readonly highlights?: Highlight[];
-  readonly veils?: Veil[];
+  readonly holds?: Hold[];
 }
 
 /** An edit of parts of the take one after another, with a cut between each and the next. */
@@ -342,32 +343,42 @@ function cuts(
       })),
       captions: part.captions ?? [],
       highlights: part.highlights ?? [],
-      ...(part.veils === undefined ? {} : { veils: part.veils }),
+      ...(part.holds === undefined ? {} : { holds: part.holds }),
     })),
   };
 }
 
+/** How long before a menu's `open` mark its panel's hold starts: the click comes a frame before. */
+const HOLD_BEFORE = 0.15;
+/** How long after a menu's `closed` mark its hold ends: the window's first frame without it. */
+const HOLD_AFTER = 0.1;
+/** The frame a hold shows, before the menu's `open` mark: the pointer is still on its way. */
+const HOLD_FRAME = 0.3;
+
 /**
- * The veils of a panel over the part `covered` of its view `view` while a menu is open, its
- * `spans` in segment times, those that reach into the segment's `duration`: the menu, open over
- * the window in the master, shows whole in the menu's own panel. A span open at the segment's
- * start or past its end is not cut there, so the veil does not fade at a cut.
+ * The holds of a panel whose view `view` the open menu's rect `covered` reaches into, one for each
+ * time it is open, `opens` and `closes` (take times), those that reach into the part from `s0` to
+ * `end`: the window shows as it was before the menu opened, and the menu whole in its own panel.
+ * A hold that runs over a cut goes on in the next part on the same frame.
  */
-function menuVeils(
+function menuHolds(
   panel: number,
   view: Rect,
   covered: Rect,
   spans: readonly { opens: number; closes: number }[],
-  duration: number,
-): Veil[] {
-  const x = Math.max(view.x, covered.x);
-  const y = Math.max(view.y, covered.y);
-  const w = Math.min(view.x + view.w, covered.x + covered.w) - x;
-  const h = Math.min(view.y + view.h, covered.y + covered.h) - y;
+  part: { s0: number; end: number },
+): Hold[] {
+  const w = Math.min(view.x + view.w, covered.x + covered.w) - Math.max(view.x, covered.x);
+  const h = Math.min(view.y + view.h, covered.y + covered.h) - Math.max(view.y, covered.y);
   if (w <= 0 || h <= 0) return [];
   return spans
-    .filter(({ opens, closes }) => closes > 0 && opens < duration)
-    .map(({ opens, closes }) => ({ from: opens, to: closes, panel, rect: { x, y, w, h } }));
+    .map(({ opens, closes }) => ({
+      from: opens - HOLD_BEFORE - part.s0,
+      to: closes + HOLD_AFTER - part.s0,
+      panel,
+      at: opens - HOLD_FRAME,
+    }))
+    .filter(({ from, to }) => to > 0 && from < part.end - part.s0);
 }
 
 /** A one-segment edit from `s0` to `end` (take times): its panels, captions and highlights. */
@@ -380,7 +391,7 @@ function single(
   extras: {
     captions?: Caption[];
     highlights?: Highlight[];
-    veils?: Veil[];
+    holds?: Hold[];
     core?: { from: number; to: number };
     loopFade?: number;
   } = {},
@@ -395,7 +406,7 @@ function single(
         tracks,
         ...(extras.captions === undefined ? {} : { captions: extras.captions }),
         ...(extras.highlights === undefined ? {} : { highlights: extras.highlights }),
-        ...(extras.veils === undefined ? {} : { veils: extras.veils }),
+        ...(extras.holds === undefined ? {} : { holds: extras.holds }),
       },
     ],
     extras,
@@ -671,11 +682,15 @@ export const CLIPS: readonly Clip[] = [
         source: 'vscode',
         rect: union(await wb.box(menu), await wb.box(items.first()), await wb.box(items.last())),
       });
+      take.mark('covers', {
+        source: 'vscode',
+        rect: await wb.box(wb.frame.locator('#view-popup')),
+      });
       await wb.closeMenus();
       const rest = await startTake(context);
       take.mark('start');
       // The menu's selectors, under its views, cover the window's top right while it is open: it
-      // is open for little more than a second each time.
+      // is open for little more than a second each time, and the edit holds the window's panel.
       for (const label of ['Foreign province', 'Own province']) {
         await clickOn(context, menu);
         await wb.frame.locator('#view-popup:not([hidden])').waitFor();
@@ -704,6 +719,15 @@ export const CLIPS: readonly Clip[] = [
       const opens = eventsOf(log, 'open', 2);
       const closes = eventsOf(log, 'closed', 2);
       const end = at(eventOf(log, 'end').t) + 0.4;
+      // While the menu is open, the window's panel holds its frame from before: the menu's panel
+      // shows the menu, and the window its new view once the menu has closed.
+      const holds = menuHolds(
+        1,
+        area,
+        rectOf(eventOf(log, 'covers')),
+        opens.map((open, i) => ({ opens: open.t, closes: (closes[i] as TakeEvent).t })),
+        { s0, end: s0 + end },
+      );
       return single(
         'views',
         log,
@@ -721,6 +745,7 @@ export const CLIPS: readonly Clip[] = [
           still('vscode', frames.right, area),
         ],
         {
+          holds,
           captions: sequence(
             views.map((view) => ({ from: at(view.t) - 0.05, text: `View: ${view.label ?? ''}` })),
             end - 0.4,
@@ -793,13 +818,15 @@ export const CLIPS: readonly Clip[] = [
         take.mark('typed', { label: name });
         await sleep(700);
         take.mark('enter', { label: name });
-        await wb.paint(() => wb.page.keyboard.press('Enter'));
+        const painted = wb.paint(() => wb.page.keyboard.press('Enter'));
         await quick.waitFor({ state: 'hidden' });
+        take.mark('picked', { label: name });
+        await painted;
         if (!(await popup.isVisible())) throw new Error('Data ▾ closed with the quick pick');
-        // The menu's save line names the province; then a click on the button closes the menu.
-        await sleep(700);
-        await clickOn(context, button, { ms: 300 });
-        await popup.waitFor({ state: 'hidden' });
+        // The menu's save line names the province for a moment; then Escape closes the menu, and
+        // the edit shows the window's new header from there.
+        await sleep(450);
+        await wb.closeMenus();
         take.mark('closed', { label: name });
         await sleep(name === SECOND_PROVINCE ? 1500 : 300);
       }
@@ -824,7 +851,7 @@ export const CLIPS: readonly Clip[] = [
       const opens = eventsOf(log, 'open', 2);
       const presses = eventsOf(log, 'press', 2);
       const typed = eventsOf(log, 'typed', 2);
-      const enters = eventsOf(log, 'enter', 2);
+      const picks = eventsOf(log, 'picked', 2);
       const closes = eventsOf(log, 'closed', 2);
       const covers = rectOf(eventOf(log, 'covers'));
       const windowPanel = still('vscode', frames.right, area);
@@ -845,26 +872,26 @@ export const CLIPS: readonly Clip[] = [
         };
         if (i === 0) shots.push({ at: 0, frame: folded, view: menu.folded });
         else shots.push({ at: 0, frame: typingFrame, view: typingView });
-        // The quick pick hides on Enter: the menu again, then folded once the click closes it.
-        add(local(enters[i - 1]) + 0.05, unfolded, menu.open, 0);
+        // The quick pick hides on Enter, a frame before its `picked` mark: the menu again, then
+        // folded once Escape closes it.
+        add(local(picks[i - 1]) + 1 / 30, unfolded, menu.open, 0);
         add(local(closes[i - 1]) - 0.05, folded, menu.folded, UNFOLD);
         add(local(opens[i]) + 0.02, unfolded, menu.open, UNFOLD);
         const name = i === 0 ? undefined : i === 1 ? SECOND_PROVINCE : SAMPLE_PROVINCE;
-        const chosen = local(enters[i - 1]) + 0.1;
+        // The window's header shows the province once the menu is closed and its hold ends.
+        const chosen = local(closes[i - 1]);
         const next = local(opens[i]) - 0.1;
         return {
           span,
           tracks: [{ source: 'vscode', shots }, windowPanel],
-          // The open menu covers the header's top right: veiled there, the menu's panel shows it.
-          veils: menuVeils(
+          // The open menu covers the header's top right: the window's panel holds its frame from
+          // before, and the menu's panel shows the menu.
+          holds: menuHolds(
             1,
             area,
             covers,
-            opens.map((open, k) => ({
-              opens: local(open) - 0.12,
-              closes: local(closes[k]) + 0.15,
-            })),
-            span.end - span.s0,
+            opens.map((open, k) => ({ opens: open.t, closes: (closes[k] as TakeEvent).t })),
+            span,
           ),
           captions: sequence(
             [

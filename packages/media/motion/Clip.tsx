@@ -30,7 +30,7 @@ import {
   type Panel,
   type PanelState,
   type Segment,
-  type Veil,
+  type Hold,
 } from '../src/edit.ts';
 
 const COLOURS = {
@@ -40,16 +40,11 @@ const COLOURS = {
   muted: '#a9abb3',
   accent: '#4fc9a8',
   key: '#2b2d33',
-  /** The preview's menus (View ▾, Data ▾) in VS Code's dark theme, for a veil over one. */
-  menu: '#1f1f1f',
-  menuBorder: '#454545',
 } as const;
 const SANS = '"IBM Plex Sans Variable", sans-serif';
 const MONO = '"JetBrains Mono Variable", monospace';
 /** How long captions and highlights fade in and out. */
 const FADE = 0.2;
-/** How long a veil fades in and out: as long as a menu's panel takes to unfold (`UNFOLD`). */
-const VEIL_FADE = 0.12;
 
 export function Clip({ spec }: { spec: EditSpec }) {
   const [handle] = useState(() => delayRender('fonts'));
@@ -105,7 +100,7 @@ function SegmentView({ spec, segment }: { spec: EditSpec; segment: Segment }) {
           spec={spec}
           panel={segment.panels[i] as Panel}
           state={states[i] as PanelState}
-          veils={(segment.veils ?? []).filter((veil) => veil.panel === i)}
+          holds={(segment.holds ?? []).filter((hold) => hold.panel === i)}
           t={t}
         />
       ))}
@@ -128,13 +123,13 @@ function PanelView({
   spec,
   panel,
   state,
-  veils,
+  holds,
   t,
 }: {
   spec: EditSpec;
   panel: Panel;
   state: PanelState;
-  veils: readonly Veil[];
+  holds: readonly Hold[];
   t: number;
 }) {
   const source = spec.sources[panel.source];
@@ -166,21 +161,26 @@ function PanelView({
   const sourceTime = panel.start + t;
   const pointer = panel.pointer === undefined ? undefined : pointerAt(panel.pointer, sourceTime);
   const click = panel.pointer?.clicks.findLast((at) => at <= sourceTime);
+  // A held panel shows its source's frame at the hold's time, frozen, until the hold ends.
+  const hold = holds.find((h) => t >= h.from && t < h.to);
+  const video = (from: number) => (
+    <OffthreadVideo
+      src={staticFile(source.file)}
+      muted
+      trimBefore={Math.round(from * OUTPUT.fps)}
+      style={{
+        position: 'absolute',
+        left: -view.x * scale,
+        top: -view.y * scale,
+        width: source.width * scale,
+        height: source.height * scale,
+        maxWidth: 'none',
+      }}
+    />
+  );
   return (
     <div style={box}>
-      <OffthreadVideo
-        src={staticFile(source.file)}
-        muted
-        trimBefore={Math.round(panel.start * OUTPUT.fps)}
-        style={{
-          position: 'absolute',
-          left: -view.x * scale,
-          top: -view.y * scale,
-          width: source.width * scale,
-          height: source.height * scale,
-          maxWidth: 'none',
-        }}
-      />
+      {hold === undefined ? video(panel.start) : <Freeze frame={0}>{video(hold.at)}</Freeze>}
       {pointer !== undefined && (
         <PointerView
           x={(pointer.x - view.x) * scale}
@@ -189,31 +189,6 @@ function PanelView({
           since={click === undefined ? undefined : sourceTime - click}
         />
       )}
-      {veils.map((veil, i) => {
-        const opacity = Math.max(
-          0,
-          Math.min(1, (t - veil.from) / VEIL_FADE, (veil.to - t) / VEIL_FADE),
-        );
-        if (opacity <= 0) return null;
-        return (
-          <div
-            key={i}
-            style={{
-              position: 'absolute',
-              left: (veil.rect.x - view.x) * scale,
-              top: (veil.rect.y - view.y) * scale,
-              width: veil.rect.w * scale,
-              height: veil.rect.h * scale,
-              opacity,
-              // A blank menu: the menu's own colours, its text left to the menu's panel.
-              background: COLOURS.menu,
-              border: `1px solid ${COLOURS.menuBorder}`,
-              borderRadius: 4,
-              boxShadow: '0 6px 18px rgb(0 0 0 / 0.55)',
-            }}
-          />
-        );
-      })}
     </div>
   );
 }
