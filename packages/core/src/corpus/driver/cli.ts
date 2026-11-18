@@ -39,8 +39,7 @@ import {
 } from './game-script.ts';
 import { runCaptures } from './run.ts';
 import { connectTongs } from './tongs.ts';
-import { DEFAULT_AWAY, type AwayPoint } from './view.ts';
-import type { RecipeStart } from '../manifest.ts';
+import { away, list, lockMinutes, parseArgs, required, size } from './cli-args.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = resolve(here, '..', '..', '..', '..', '..');
@@ -51,43 +50,6 @@ const DEFAULTS = {
   workshop: 'C:/Program Files (x86)/Steam/steamapps/workshop/content/236850',
   playerProfile: join(homedir(), 'Documents', ...EU4.split('/')),
 };
-
-function parseArgs(argv: readonly string[]): { command: string; flags: Map<string, string> } {
-  const [command = 'help', ...rest] = argv;
-  const flags = new Map<string, string>();
-  for (let i = 0; i < rest.length; i++) {
-    const arg = rest[i] ?? '';
-    if (!arg.startsWith('--')) throw new Error(`Unexpected argument: ${arg}`);
-    const next = rest[i + 1];
-    if (next === undefined || next.startsWith('--')) flags.set(arg.slice(2), 'true');
-    else {
-      flags.set(arg.slice(2), next);
-      i++;
-    }
-  }
-  return { command, flags };
-}
-
-function list(value: string | undefined): string[] | undefined {
-  return value === undefined
-    ? undefined
-    : value
-        .split(',')
-        .map((s) => s.trim())
-        .filter((s) => s !== '');
-}
-
-function size(value: string, what: string): { width: number; height: number } {
-  const match = /^(\d+)x(\d+)$/.exec(value);
-  if (match === null) throw new Error(`${what} must be WxH, such as 3440x1440.`);
-  return { width: Number(match[1]), height: Number(match[2]) };
-}
-
-function required(flags: Map<string, string>, name: string): string {
-  const value = flags.get(name);
-  if (value === undefined || value === 'true') throw new Error(`--${name} is required.`);
-  return value;
-}
 
 /**
  * Ctrl+C ends Node before any `finally` runs, and the clip and the lock outlive the process:
@@ -106,21 +68,6 @@ function releaseOnSignal(script: GameScript, lock: GameLock): void {
     },
   });
   for (const signal of ['SIGINT', 'SIGTERM', 'SIGBREAK'] as const) process.once(signal, handler);
-}
-
-/** `--away-menu x,y` as fractions of the client area, `--away-save` as a widget pattern. */
-function away(flags: Map<string, string>): Record<RecipeStart, AwayPoint> {
-  const menu = flags.get('away-menu');
-  let fraction = DEFAULT_AWAY['main-menu'];
-  if (menu !== undefined) {
-    const [x, y] = menu.split(',').map(Number);
-    if (x === undefined || y === undefined || !(x >= 0 && x <= 1 && y >= 0 && y <= 1)) {
-      throw new Error('--away-menu must be two fractions of the client area, such as 1,1.');
-    }
-    fraction = { fraction: { x, y } };
-  }
-  const save = flags.get('away-save');
-  return { 'main-menu': fraction, save: save !== undefined ? { widget: save } : DEFAULT_AWAY.save };
 }
 
 async function main(): Promise<void> {
@@ -166,17 +113,14 @@ async function main(): Promise<void> {
     console.log(line);
   };
   const script: GameScript = { lab, hostDir };
-  const lockMinutes = Number(flags.get('lock-minutes') ?? '240');
-  if (!Number.isInteger(lockMinutes) || lockMinutes < 1 || lockMinutes > 240) {
-    throw new Error('--lock-minutes must be a whole number of minutes from 1 to 240.');
-  }
+  const minutes = lockMinutes(flags);
   const prettier = await import('prettier');
   // The lab's game lock for the whole run, so that no other session starts a game between this
   // run's games (corpus/README.md); a run started under a batch's lock keeps that one.
   const report = await withGameLock(
     script,
     `etch corpus run (PID ${String(process.pid)})`,
-    lockMinutes,
+    minutes,
     (lock) => {
       print(
         lock.inherited
@@ -301,7 +245,7 @@ async function survey(command: string, flags: Map<string, string>): Promise<void
   const hostDir = resolve(required(flags, 'host'));
   const playerProfile = resolve(flags.get('player-profile') ?? DEFAULTS.playerProfile);
   const script: GameScript = { lab, hostDir };
-  const lockMinutes = Number(flags.get('lock-minutes') ?? '240');
+  const minutes = lockMinutes(flags);
   const wanted = list(flags.get('playset'));
   const starts = list(flags.get('start')) ?? config.starts;
   const resolution = manifest.resolutions.find((r) => resolutionKey(r) === config.resolution);
@@ -313,7 +257,7 @@ async function survey(command: string, flags: Map<string, string>): Promise<void
   await withGameLock(
     script,
     `etch coverage crawl (PID ${String(process.pid)})`,
-    lockMinutes,
+    minutes,
     async (lock) => {
       print(`game lock until ${lock.expiresAt.toISOString()}`);
       releaseOnSignal(script, lock);
