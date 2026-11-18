@@ -551,7 +551,14 @@ refresh is a step of the 3.0.0 release.
   resolves (the last definition), its frames, its `.gfx` file and layer and its
   texture's thumbnail (the first frame of a strip), and Go to Definition opens
   the `.gfx` file at its name. Sprite names in scripts (an event's `picture`, a
-  decision's icon) and a `.mesh` viewer are not done.
+  decision's icon) are not done. Core `@etch/core/asset` reads the game's
+  asset container in both encodings (binary `@@b@`, text `@@t@`): meshes
+  (shapes, vertices, normals, UVs, triangles, materials, skin, skeleton with
+  inverse bind matrices) and animations (per-joint sampled channels,
+  frame-major samples). Over EU4 1.37.5 it reads all 476 meshes and 152
+  animations (`packages/core/test/asset.vanilla.test.ts`); a mesh or animation
+  path's hover gives their facts. A `.mesh` viewer with animation playback is
+  a prototype on `prototype/mesh-preview`.
 
 ## Open issues
 

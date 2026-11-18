@@ -12,7 +12,8 @@
     "./corpus": "./src/corpus/index.ts",
     "./profile": "./src/profile/index.ts",
     "./save": "./src/save/index.ts",
-    "./pipe": "./src/pipe/index.ts"
+    "./pipe": "./src/pipe/index.ts",
+    "./asset": "./src/asset/index.ts"
   },
   "scripts": {
     "typecheck": "tsc -p ."

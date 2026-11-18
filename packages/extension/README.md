@@ -287,7 +287,9 @@ Hovering a texture path shows the texture with its size and format and says
 where it comes from; a path the playset does not have says so. A bare file
 name (`texture_diffuse = "tower_diffuse.dds"` in a `pdxmesh`, an animation's
 `file = "eagle_idle.anim"` in an `.asset` file) is looked up beside the mesh
-or the `.asset` file, where vanilla keeps them.
+or the `.asset` file, where vanilla keeps them. Hovering a mesh path lists its
+shapes, vertices, triangles and bones, its shaders and the textures its
+materials name; an animation path gives its frames, speed and joints.
 
 In `.gui` files, hovering a sprite name (`spriteType`, `quadTextureSprite`, a
 list's `background`) shows the sprite the game draws: its kind and frames, the
