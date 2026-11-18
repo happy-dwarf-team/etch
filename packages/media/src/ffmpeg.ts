@@ -141,11 +141,12 @@ export class GfxCapture {
       stdio: ['pipe', 'ignore', 'pipe'],
     });
     const exited = new Promise<number | null>((resolve) => child.on('exit', resolve));
-    let started = false;
+    // Set once the first frame is written (or FFmpeg fails): a holder the loop below reads.
+    const first = { written: false };
     const nudging = (async () => {
-      while (!started && nudge !== undefined) {
+      while (!first.written && nudge !== undefined) {
         await new Promise((resolve) => setTimeout(resolve, 500));
-        if (!started) await nudge().catch(() => undefined);
+        await nudge().catch(() => undefined);
       }
     })();
     let log = '';
@@ -166,7 +167,7 @@ export class GfxCapture {
         reject(new Error(`gfxcapture exited with ${String(code)}: ${log.slice(-1000)}`));
       });
     }).finally(() => {
-      started = true;
+      first.written = true;
     });
     await nudging;
     return new GfxCapture(child, exited);

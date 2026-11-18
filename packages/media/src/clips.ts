@@ -92,19 +92,27 @@ export const DETAIL_SCALE = 2;
  * The province view whole, the window and the buildings panel beside it.
  */
 export const WINDOW_AREA: Rect = { x: -6, y: 190, w: 816, h: 710 };
-/** The window's lower part, where the trade node button is, as tall as the stage at 2×. */
-export const TRADE_AREA: Rect = { x: -6, y: 459, w: 472, h: 441 };
-/** The window's header and demographics, where a province's names are, at 2×. */
-const HEADER_AREA: Rect = { x: -6, y: 190, w: 506, h: 441 };
+/**
+ * The window's lower part, where the trade node button is, about as tall as the stage at 2×: from
+ * the gap above the tax rows, so no widget is cut at its top, to the window's bottom edge.
+ */
+export const TRADE_AREA: Rect = { x: -6, y: 467, w: 472, h: 433 };
+/**
+ * The window's header and demographics, where a province's names are: its tabs, names,
+ * development, culture and religion. It ends left of the open `Data ▾` (screen x 390 and right,
+ * down to y 339), so the menu never covers it.
+ */
+const HEADER_AREA: Rect = { x: -6, y: 186, w: 392, h: 360 };
 /** The buildings panel, whose background `problems` misspells. */
 const BUILDINGS_AREA: Rect = { x: 480, y: 440, w: 330, h: 460 };
 /** The window's values, from its demographics down to its trade (`snapshot`). */
 export const VALUES_AREA: Rect = { x: -4, y: 400, w: 490, h: 500 };
 /**
  * `zoom`'s part of the screen, and the point it zooms around: above the second tab, where no
- * widget is (a tip there would cover the zoom), the tabs, names and painting around it.
+ * widget is (a tip there would cover the zoom), the tabs, names and painting around it. It starts
+ * 20 px left of the screen, right of the preview's edge, where VS Code draws its focus line.
  */
-const ZOOM_AREA: Rect = { x: -40, y: 100, w: 840, h: 522 };
+const ZOOM_AREA: Rect = { x: -20, y: 100, w: 840, h: 522 };
 const ZOOM_POINT = { x: 300, y: 185 };
 /** Ctrl+wheel steps in `zoom`. */
 const ZOOM_TICKS = 2;
@@ -120,13 +128,14 @@ const KEY_S = 1.1;
 const SECOND_PROVINCE = 'Astrakhan';
 
 /**
- * `outline`: game-screen points of the widgets it hovers, a text, an icon and a button in one band
- * of the demographics, the button the one it then clicks. The tip's first line names each.
+ * `outline`: game-screen points of the widgets it hovers, a text, a button and an icon in one band
+ * of the demographics, the icon the one it then clicks: its name fits the outline's row beside the
+ * row's buttons, where `build_landunit_button` is cut. The tip's first line names each.
  */
 const OUTLINE_HOVERS = [
   { point: { x: 175, y: 531 }, widget: 'culture' },
-  { point: { x: 270, y: 570 }, widget: 'religion_icon' },
   { point: { x: 330, y: 571 }, widget: 'build_landunit_button' },
+  { point: { x: 270, y: 570 }, widget: 'religion_icon' },
 ] as const;
 
 /** `problems`: a sprite of the province view, and the typo swapping its `ui`. */
@@ -220,6 +229,45 @@ interface Track {
   readonly shots: readonly Shot[];
 }
 
+/**
+ * A part of a cut edit: a span of the take (take times), and its panels, captions and highlights
+ * in the part's own time, from 0 at `span.s0`.
+ */
+interface Part {
+  readonly span: { readonly s0: number; readonly end: number };
+  readonly tracks: readonly Track[];
+  readonly captions?: Caption[];
+  readonly highlights?: Highlight[];
+}
+
+/** An edit of parts of the take one after another, with a cut between each and the next. */
+function cuts(
+  id: string,
+  log: TakeLog,
+  sources: Readonly<Record<string, Source>>,
+  parts: readonly Part[],
+  extras: { core?: { from: number; to: number }; loopFade?: number } = {},
+): EditSpec {
+  return {
+    id,
+    sources,
+    ...(extras.core === undefined ? {} : { core: extras.core }),
+    ...(extras.loopFade === undefined ? {} : { loopFade: extras.loopFade }),
+    segments: parts.map((part) => ({
+      duration: part.span.end - part.span.s0,
+      panels: part.tracks.map((track) => ({
+        source: track.source,
+        start: part.span.s0,
+        keys: cameraKeys(track.shots),
+        // The drawn pointer belongs to VS Code's master; the game's records its own.
+        ...(track.source === 'vscode' ? { pointer: pointerOf(log) } : {}),
+      })),
+      captions: part.captions ?? [],
+      highlights: part.highlights ?? [],
+    })),
+  };
+}
+
 /** A one-segment edit from `s0` to `end` (take times): its panels, captions and highlights. */
 function single(
   id: string,
@@ -234,26 +282,20 @@ function single(
     loopFade?: number;
   } = {},
 ): EditSpec {
-  return {
+  return cuts(
     id,
+    log,
     sources,
-    ...(extras.core === undefined ? {} : { core: extras.core }),
-    ...(extras.loopFade === undefined ? {} : { loopFade: extras.loopFade }),
-    segments: [
+    [
       {
-        duration: span.end - span.s0,
-        panels: tracks.map((track) => ({
-          source: track.source,
-          start: span.s0,
-          keys: cameraKeys(track.shots),
-          // The drawn pointer belongs to VS Code's master; the game's records its own.
-          ...(track.source === 'vscode' ? { pointer: pointerOf(log) } : {}),
-        })),
-        captions: extras.captions ?? [],
-        highlights: extras.highlights ?? [],
+        span,
+        tracks,
+        ...(extras.captions === undefined ? {} : { captions: extras.captions }),
+        ...(extras.highlights === undefined ? {} : { highlights: extras.highlights }),
       },
     ],
-  };
+    extras,
+  );
 }
 
 /** A panel that stays where it is through the clip. */
@@ -505,13 +547,12 @@ export const CLIPS: readonly Clip[] = [
         await clickOn(context, viewItem(wb, label), { ms: 500, paint: true });
         await wb.frame.locator('#view-menu', { hasText: `View: ${label}` }).waitFor();
         take.mark('view', { label });
-        await sleep(300);
-        // Back to the menu's button over the open menu, then the menu closed: the pointer waits on
-        // the toolbar, over no widget of the preview.
-        await pointTo(context, await centre(menu), 350);
+        // The menu closes at once, so it covers the redrawn window for a moment only; the pointer
+        // then waits on the menu's button, over no widget of the preview.
         await wb.closeMenus();
         take.mark('closed', { label });
-        await sleep(label === 'Own province' ? 500 : 2200);
+        await pointTo(context, await centre(menu), 350);
+        await sleep(label === 'Own province' ? 300 : 1200);
       }
       await viaToolbar(context);
       await endTake(context, rest);
@@ -540,117 +581,124 @@ export const CLIPS: readonly Clip[] = [
     },
   },
   {
-    // Data ▾ → Province…: the save's second province, its names and values, then Kaluga again.
+    // Data ▾ → Province…: the save's second province, its names and values, then Kaluga again. The
+    // menu is open through the loop, the pointer on its Province… button; the province quick pick
+    // is shown once a name is typed in it, its whole list cut.
     id: 'data',
     async run(context) {
       const { wb, take } = context;
-      const menu = wb.frame.locator('#data-menu');
       const popup = wb.frame.locator('#data-popup');
       const province = popup.locator('button', { hasText: 'Province' });
+      const quick = wb.page.locator('.quick-input-widget');
+      const typedRow = (name: string): Locator =>
+        wb.page.locator('.quick-input-list .monaco-list-row.focused', {
+          hasText: new RegExp(`^${name}#`),
+        });
       take.mark('screen', { source: 'vscode', rect: await wb.screenRect() });
       // The menu's button, the layers above the save's and the save's own, measured open before
-      // the take, and the province quick pick's place.
+      // the take, and the province quick pick's place with a name typed in it.
       await wb.openMenu('data');
       take.mark('popup', {
         source: 'vscode',
         rect: union(
-          await wb.box(menu),
+          await wb.box(wb.frame.locator('#data-menu')),
           await wb.box(popup.locator('h4')),
           await wb.box(popup.locator('.actions').nth(1)),
         ),
       });
       await province.click();
-      await wb.page.locator('.quick-input-widget input').waitFor();
-      take.mark('quick', {
-        source: 'vscode',
-        rect: await wb.box(wb.page.locator('.quick-input-widget')),
-      });
+      await quick.locator('input').waitFor();
+      await wb.page.keyboard.type(SAMPLE_PROVINCE);
+      await typedRow(SAMPLE_PROVINCE).waitFor();
+      take.mark('quick', { source: 'vscode', rect: await wb.box(quick) });
       await wb.page.keyboard.press('Escape');
-      await wb.page.locator('.quick-input-widget').waitFor({ state: 'hidden' });
-      await wb.closeMenus().catch(() => undefined);
-      await wb.focusEditor();
+      await quick.waitFor({ state: 'hidden' });
+      if (!(await popup.isVisible())) await wb.openMenu('data');
 
-      const rest = await startTake(context);
+      // The loop starts and ends on the open menu, the pointer on Province….
+      await pointTo(context, await centre(province), 16);
+      await context.record();
+      await take.until(take.t() + PRE_ROLL_MS / 1000);
       take.mark('start');
-      await clickOn(context, menu);
-      await wb.frame.locator('#data-popup:not([hidden])').waitFor();
-      take.mark('open');
-      await sleep(1600);
+      await sleep(1500);
       for (const name of [SECOND_PROVINCE, SAMPLE_PROVINCE]) {
-        if (!(await popup.isVisible())) {
-          await clickOn(context, menu, { ms: 400 });
-          await wb.frame.locator('#data-popup:not([hidden])').waitFor();
-          await sleep(400);
-        }
-        await clickOn(context, province, { ms: 500 });
-        await wb.page.locator('.quick-input-widget input').waitFor();
-        take.mark('typing', { label: name });
-        await sleep(300);
-        await wb.page.keyboard.type(name, { delay: 100 });
-        await wb.page
-          .locator('.quick-input-list .monaco-list-row.focused', {
-            hasText: new RegExp(`^${name}#`),
-          })
-          .waitFor();
-        await sleep(400);
+        await pointTo(context, await centre(province), 200);
+        take.click();
+        take.mark('press', { label: name });
+        await province.click();
+        await quick.locator('input').waitFor();
+        await wb.page.keyboard.type(name);
+        await typedRow(name).waitFor();
+        await sleep(150);
+        take.mark('typed', { label: name });
+        await sleep(900);
         await wb.paint(() => wb.page.keyboard.press('Enter'));
-        await wb.page.locator('.quick-input-widget').waitFor({ state: 'hidden' });
+        await quick.waitFor({ state: 'hidden' });
         take.mark('chosen', { label: name });
-        await sleep(name === SAMPLE_PROVINCE ? 900 : 2800);
+        await sleep(name === SAMPLE_PROVINCE ? 1300 : 2000);
       }
-      await pointTo(context, await centre(menu), 400);
-      if (await popup.isVisible()) await wb.closeMenus();
-      take.mark('closed');
-      await viaToolbar(context);
-      await endTake(context, rest);
+      if (!(await popup.isVisible())) throw new Error('the loop does not close: Data ▾ closed');
+      take.mark('end');
+      await take.until(take.t() + POST_ROLL_MS / 1000);
     },
     edit(log, sources) {
       const source = sources['vscode'] as Source;
-      const s0 = eventOf(log, 'start').t - LEAD;
-      const at = (t: number): number => t - s0;
-      const popup = grow(rectOf(eventOf(log, 'popup')), 12);
+      const measured = rectOf(eventOf(log, 'popup'));
+      // The menu, its last line the save's actions: the warning under them is not the loop's.
+      const popup = { ...grow(measured, 12), h: measured.h + 16 };
       const quick = rectOf(eventOf(log, 'quick'));
       const area = onScreen(rectOf(eventOf(log, 'screen')), HEADER_AREA);
-      const frames = pair(sized(popup, UI_SCALE), sized(area, DETAIL_SCALE));
-      // The quick pick in the same frame: its input and the names' start, at its top left.
+      const frames = pair(sized(popup, UI_SCALE), sized(area, STAGE.h / area.h));
+      // The quick pick in the same frame: its input and the typed name's row, at its top left.
       const typingView = viewAt(grow(quick, 8), UI_SCALE, frames.left, source, { x: 0, y: 0 });
-      const typing = eventsOf(log, 'typing', 2);
+      const press = eventsOf(log, 'press', 2);
+      const typed = eventsOf(log, 'typed', 2);
       const chosen = eventsOf(log, 'chosen', 2);
-      const end = at(eventOf(log, 'end').t) + 0.4;
-      const leftShots: Shot[] = [{ at: 0, frame: frames.left, view: popup }];
-      for (const [i, start] of typing.entries()) {
-        leftShots.push(
-          { at: at(start.t) - 0.1, frame: frames.left, view: typingView, move: 0.5 },
-          {
-            at: at((chosen[i] as TakeEvent).t) + 0.1,
-            frame: frames.left,
-            view: popup,
-            move: 0.5,
-          },
-        );
-      }
-      return single(
-        'data',
-        log,
-        sources,
-        { s0, end: s0 + end },
-        [{ source: 'vscode', shots: leftShots }, still('vscode', frames.right, area)],
+      const windowPanel = still('vscode', frames.right, area);
+      const SAVE = 'Sample data from a save: Russia, 1719';
+      // The cut right after the press, before the quick pick shows its whole list over the screen.
+      const cutAt = (event: TakeEvent): number => event.t + 0.1;
+      const first = { s0: eventOf(log, 'start').t - LEAD, end: cutAt(press[0] as TakeEvent) };
+      const parts: Part[] = [
         {
+          span: first,
+          tracks: [still('vscode', frames.left, popup), windowPanel],
+          captions: sequence([{ from: -0.3, text: SAVE }], first.end - first.s0),
+        },
+      ];
+      for (const [i, name] of [SECOND_PROVINCE, SAMPLE_PROVINCE].entries()) {
+        const s0 = (typed[i] as TakeEvent).t - 0.3;
+        const next = press[i + 1];
+        const end = next === undefined ? eventOf(log, 'end').t + 0.4 : cutAt(next);
+        const done = (chosen[i] as TakeEvent).t - s0;
+        parts.push({
+          span: { s0, end },
+          tracks: [
+            {
+              source: 'vscode',
+              shots: [
+                { at: 0, frame: frames.left, view: typingView },
+                { at: done + 0.05, frame: frames.left, view: popup, move: 0.4 },
+              ],
+            },
+            windowPanel,
+          ],
           captions: sequence(
             [
-              { from: at(eventOf(log, 'open').t), text: 'Sample data from a save: Russia, 1719' },
-              { from: at((typing[0] as TakeEvent).t), text: 'Province…' },
+              { from: 0, text: `Province… ${name}` },
               {
-                from: at((chosen[0] as TakeEvent).t) + 0.1,
-                text: `${SECOND_PROVINCE}: its names, culture and development from the save`,
+                from: done + 0.1,
+                text:
+                  name === SAMPLE_PROVINCE
+                    ? SAVE
+                    : `${name}: its names, culture and development from the save`,
               },
-              { from: at((typing[1] as TakeEvent).t), text: 'Province…' },
-              { from: at((chosen[1] as TakeEvent).t) + 0.1, text: SAMPLE_PROVINCE },
             ],
-            end - 0.4,
+            end - s0,
           ),
-        },
-      );
+        });
+      }
+      return cuts('data', log, sources, parts);
     },
   },
   {
@@ -665,7 +713,12 @@ export const CLIPS: readonly Clip[] = [
       take.mark('start');
       const initial = ((await level.textContent()) ?? '').trim();
       const point = await wb.screenPoint(ZOOM_POINT);
-      await pointTo(context, point, 800);
+      // Up through the editor, then right over the empty screen above the window, then down to
+      // the point: the straight way crosses the window, whose widgets would show their tips.
+      const above = await wb.screenPoint({ x: ZOOM_POINT.x, y: 120 });
+      await pointTo(context, { x: rest.x, y: above.y }, 450);
+      await pointTo(context, above, 450);
+      await pointTo(context, point, 250);
       await sleep(350);
       const tip = wb.frame.locator('#tip:not([hidden])');
       if (await tip.isVisible()) {
@@ -680,9 +733,9 @@ export const CLIPS: readonly Clip[] = [
         await wb.page.keyboard.up('Control');
         await wb.frame.locator('#zoom-level', { hasNotText: before }).waitFor({ timeout: 2_000 });
         take.mark('zoom', { label: ((await level.textContent()) ?? '').trim() });
-        await sleep(1200);
+        await sleep(1100);
       }
-      await sleep(800);
+      await sleep(300);
       // Straight up over the empty screen above the window to the toolbar, then along it.
       const target = await centre(level);
       await pointTo(context, { x: point.x, y: target.y }, 450);
@@ -692,7 +745,7 @@ export const CLIPS: readonly Clip[] = [
       await level.click();
       await wb.frame.locator('#zoom-level', { hasText: initial }).waitFor({ timeout: 2_000 });
       take.mark('fit', { label: ((await level.textContent()) ?? '').trim() });
-      await sleep(900);
+      await sleep(600);
       await viaToolbar(context);
       await endTake(context, rest);
     },
@@ -757,9 +810,9 @@ export const CLIPS: readonly Clip[] = [
       for (const [i, { point, widget }] of OUTLINE_HOVERS.entries()) {
         await pointTo(context, await wb.screenPoint(point), i === 0 ? 800 : 420);
         take.mark('hover', { source: 'vscode', rect: await expectTip(wb, widget), label: widget });
-        await sleep(1100);
+        await sleep(900);
       }
-      // The last hovered widget is the button: the pointer is on it, and clicks it.
+      // The last hovered widget is the icon: the pointer is on it, and clicks it.
       await sleep(200);
       take.click();
       const clicked = OUTLINE_HOVERS[OUTLINE_HOVERS.length - 1];
@@ -775,7 +828,7 @@ export const CLIPS: readonly Clip[] = [
       // Home while the preview is out of view: the way crosses its widgets, whose tips show.
       await pointTo(context, rest, 700);
       await wb.restMouse();
-      await sleep(2300);
+      await sleep(1600);
       // Back to where the cursor was, as Go Back takes it. The keys go to the editor: after the
       // preview's click the keyboard may still be in the preview.
       await wb.focusEditor();
@@ -785,7 +838,7 @@ export const CLIPS: readonly Clip[] = [
         .locator('[id="status.editor.selection"]', { hasText: `Ln ${String(home.line)},` })
         .waitFor();
       take.mark('returned', { source: 'vscode', rect: await editorLine(wb) });
-      await sleep(2000);
+      await sleep(1400);
       take.mark('leaving');
       await sleep(800);
       await endTake(context, rest);
@@ -796,24 +849,35 @@ export const CLIPS: readonly Clip[] = [
       const at = (t: number): number => t - s0;
       const hovers = eventsOf(log, 'hover', OUTLINE_HOVERS.length);
       const band = union(...hovers.map(rectOf));
-      // Close on the band of hovered widgets and their tips, 2× unless the band is wider.
-      const hoverScale = Math.min(DETAIL_SCALE, STAGE.w / (band.w + 60), STAGE.h / (band.h + 60));
+      // Close on the band of hovered widgets and their tips, the tips' text large enough to read
+      // on the site, unless the band is wider.
+      const hoverScale = Math.min(2.5, STAGE.w / (band.w + 60), STAGE.h / (band.h + 60));
       const hoverView = viewAt(band, hoverScale, STAGE, source);
       const picked = eventOf(log, 'picked');
       const row = rectOf(eventOf(log, 'row'));
       const returned = eventOf(log, 'returned');
-      const frames = pair({ w: 640, h: STAGE.h }, { w: STAGE.w - GUTTER - 640, h: STAGE.h });
-      // The outline from the sidebar's left edge, the row in the middle.
-      const rowView = viewAt(row, UI_SCALE, frames.left, source, { x: 0, y: 0.45 });
+      // The outline's rows only, from the sidebar's left edge to its right, the row in the middle;
+      // the editor beside it is the right panel's.
+      const sidebar = (row.w + 10) * UI_SCALE;
+      const frames = pair(
+        { w: sidebar, h: STAGE.h },
+        { w: STAGE.w - GUTTER - sidebar, h: STAGE.h },
+      );
+      const rowView = viewAt(row, UI_SCALE, frames.left, source, { x: 5 / (row.w + 10), y: 0.45 });
       const definition = rectOf(picked);
+      // The editor across the right panel, without its scroll bar or the preview beside it.
+      const codeScale = Math.max(CODE_SCALE, (STAGE.w - GUTTER - sidebar) / (definition.w - 40));
       const back = at(eventOf(log, 'back').t);
       const leaving = at(eventOf(log, 'leaving').t);
       const end = at(eventOf(log, 'end').t) + 0.4;
+      // The close-up and the split change through the background, never blended: one fades out,
+      // then the other in.
+      const DIP = 0.25;
       const split = at(picked.t) - 0.1;
       const shown = (frame: Rect, view: Rect): Shot[] => [
         { at: 0, frame, view, opacity: 0 },
-        { at: split, frame, view, opacity: 1, move: 0.5 },
-        { at: leaving, frame, view, opacity: 0, move: 0.6 },
+        { at: split + DIP, frame, view, opacity: 1, move: DIP },
+        { at: leaving, frame, view, opacity: 0, move: DIP },
       ];
       return single(
         'outline',
@@ -825,20 +889,20 @@ export const CLIPS: readonly Clip[] = [
             source: 'vscode',
             shots: [
               { at: 0, frame: STAGE, view: hoverView },
-              { at: split, frame: STAGE, view: hoverView, opacity: 0, move: 0.5 },
-              { at: leaving, frame: STAGE, view: hoverView, opacity: 1, move: 0.6 },
+              { at: split, frame: STAGE, view: hoverView, opacity: 0, move: DIP },
+              { at: leaving + DIP, frame: STAGE, view: hoverView, opacity: 1, move: DIP },
             ],
           },
           { source: 'vscode', shots: shown(frames.left, rowView) },
           {
             source: 'vscode',
             shots: [
-              ...shown(frames.right, codeView(definition, frames.right, source)),
+              ...shown(frames.right, codeView(definition, frames.right, source, codeScale)),
               // Go Back reveals the cursor's line where it was, maybe elsewhere in the editor.
               {
                 at: at(returned.t),
                 frame: frames.right,
-                view: codeView(rectOf(returned), frames.right, source),
+                view: codeView(rectOf(returned), frames.right, source, codeScale),
                 move: 0.4,
               },
             ].sort((a, b) => a.at - b.at),
@@ -943,9 +1007,14 @@ export const CLIPS: readonly Clip[] = [
         {
           captions: sequence(
             [
-              ...keys.map((key) => ({ from: at(key.t) - 0.05, keys: [key.label ?? ''] })),
+              // The keys over the selected `ui`, the second naming what they did.
+              ...keys.map((key, i) => ({
+                from: at(key.t) - 0.05,
+                keys: [key.label ?? ''],
+                ...(i === keys.length - 1 ? { text: `Two letters swapped: ${TYPO}` } : {}),
+              })),
               {
-                from: at(problem.t),
+                from: Math.max(at(problem.t), at((keys[keys.length - 1] as TakeEvent).t) + 0.9),
                 text: 'No such sprite: in Problems as you type, the rest still draws',
               },
               { from: undo - 0.05, keys: ['Ctrl', 'Z'] },
@@ -999,23 +1068,9 @@ export const CLIPS: readonly Clip[] = [
       await sleep(300);
       // The drawn pointer is where the page's own hover is: the click's row.
       const hovered = (): Promise<string> =>
-        page.evaluate(() => document.querySelector('a:hover')?.textContent?.trim() ?? '');
-      if ((await hovered()) !== PROFILED) {
-        const frame = await (await page.frameElement()).boundingBox();
-        const under = await page.evaluate(
-          ({ x, y }) => {
-            const element = document.elementFromPoint(x, y);
-            return `${element?.tagName ?? 'nothing'} "${(element?.textContent ?? '').trim().slice(0, 40)}", scrolled ${scrollY}`;
-          },
-          { x: target.x - (frame?.x ?? 0), y: target.y - (frame?.y ?? 0) },
-        );
-        const box = await link.boundingBox();
-        throw new Error(
-          `the pointer hovers "${await hovered()}", not ${PROFILED}: at ${target.x},${target.y} ` +
-            `(the frame at ${frame?.x},${frame?.y}, the link now at ${box?.x},${box?.y}) ` +
-            `the page has ${under}`,
-        );
-      }
+        page.evaluate(() => document.querySelector('a:hover')?.textContent.trim() ?? '');
+      const hover = await hovered();
+      if (hover !== PROFILED) throw new Error(`the pointer hovers "${hover}", not ${PROFILED}`);
       take.mark('clicking');
       take.click();
       await link.click();
@@ -1156,7 +1211,9 @@ export const CLIPS: readonly Clip[] = [
       const s0 = eventOf(log, 'start').t - LEAD;
       const at = (t: number): number => t - s0;
       const panels = rows(STAGE, 500);
-      const code = codeView(rectOf(eventOf(log, 'line')), panels.top, source, 1.6, 0.25);
+      // The editor alone across the stage, without its scroll bar or the preview beside it.
+      const line = rectOf(eventOf(log, 'line'));
+      const code = codeView(line, panels.top, source, panels.top.w / (line.w - 40), 0.25);
       const problems = viewAt(rectOf(eventOf(log, 'panel')), UI_SCALE, panels.bottom, source, {
         x: 0,
         y: 0,
