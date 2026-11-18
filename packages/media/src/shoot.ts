@@ -2,7 +2,7 @@
 // the edit, its render and the published encodes, all into the capture folder.
 import { writeFile } from 'node:fs/promises';
 import * as path from 'node:path';
-import { OVERRIDES, START_FILE, WINDOW_NAME, type Clip } from './clips.ts';
+import { OVERRIDES, parkCursor, START_FILE, WINDOW_NAME, type Clip } from './clips.ts';
 import type { EditSpec, Source } from './edit.ts';
 import { posterArgs, run, videoSize } from './ffmpeg.ts';
 import type { Renderer } from './render.ts';
@@ -46,6 +46,7 @@ export async function takeClip(clip: Clip, options: ShootOptions): Promise<TakeL
     await wb.openPreview();
     await wb.expectPreviewed(WINDOW_NAME);
     await wb.fitPreview();
+    await parkCursor(wb);
     await wb.checkFrame();
     // A step that waits on nothing would hang the run without a trace: the take has a limit.
     let timer: NodeJS.Timeout | undefined;
