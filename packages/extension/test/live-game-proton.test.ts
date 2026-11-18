@@ -39,8 +39,12 @@ describe('the compatibility tool of EU4', () => {
   });
 });
 
-// Steam's Linux layout on a POSIX file system: Proton only starts the game there.
-describe.skipIf(process.platform === 'win32')('findProton and protonCommand', () => {
+/** A path as Steam writes it in a VDF string, where a backslash starts an escape. */
+const vdf = (path: string): string => path.replaceAll('\\', '\\\\');
+
+// Steam's Linux layout. Proton only starts the game on Linux, but finding it reads only files, so
+// the layout runs on any file system, Windows CI's too.
+describe('findProton and protonCommand', () => {
   let root: string;
   let home: string;
   let game: string;
@@ -60,7 +64,7 @@ describe.skipIf(process.platform === 'win32')('findProton and protonCommand', ()
     await write(join(steam, 'config', 'config.vdf'), CONFIG('my-proton-slr'));
     await write(
       join(steam, 'steamapps', 'libraryfolders.vdf'),
-      `"libraryfolders" { "0" { "path" "${steam}" } "1" { "path" "${library}" "apps" { "236850" "1" } } }`,
+      `"libraryfolders" { "0" { "path" "${vdf(steam)}" } "1" { "path" "${vdf(library)}" "apps" { "236850" "1" } } }`,
     );
     await write(join(steam, 'compatibilitytools.d', 'my-proton-slr', 'proton'), '#!/bin/sh\n');
     await write(
@@ -159,6 +163,45 @@ describe.skipIf(process.platform === 'win32')('findProton and protonCommand', ()
     await expect(findProton(game, { env: {}, homedir: home })).rejects.toThrow(
       /start the game once from Steam/,
     );
+  });
+
+  it('says which tool or runtime is missing, and when Steam maps no tool', async () => {
+    const steam = join(home, '.local', 'share', 'Steam');
+    await rm(join(steam, 'steamapps', 'common', 'SteamLinuxRuntime_sniper'), { recursive: true });
+    await expect(findProton(game, { env: {}, homedir: home })).rejects.toThrow(
+      'The Steam Linux Runtime (app 4183110) the tool needs was not found.',
+    );
+    await rm(join(steam, 'compatibilitytools.d'), { recursive: true });
+    await expect(findProton(game, { env: {}, homedir: home })).rejects.toThrow(
+      'The compatibility tool my-proton-slr was not found (set ETCH_PROTON to its folder).',
+    );
+    await write(join(steam, 'config', 'config.vdf'), '"InstallConfigStore" { }');
+    await expect(findProton(game, { env: {}, homedir: home })).rejects.toThrow(
+      'Steam has no compatibility tool for EU4.',
+    );
+  });
+
+  it('takes the tool from ETCH_PROTON first, and the tool in a library', async () => {
+    const own = join(root, 'own-proton');
+    await write(join(own, 'proton'), '#!/bin/sh\n');
+    const env = { ETCH_PROTON: own };
+    expect((await findProton(game, { env, homedir: home })).protonScript).toBe(join(own, 'proton'));
+    // An empty override is no override; a tool Steam installed sits in a library's steamapps/common.
+    const steam = join(home, '.local', 'share', 'Steam');
+    await rm(join(steam, 'compatibilitytools.d'), { recursive: true });
+    const installed = join(root, 'lib', 'steamapps', 'common', 'my-proton-slr');
+    await write(join(installed, 'proton'), '#!/bin/sh\n');
+    const setup = await findProton(game, { env: { ETCH_PROTON: '' }, homedir: home });
+    expect(setup.protonScript).toBe(join(installed, 'proton'));
+    expect(setup.entryPoint).toBeUndefined();
+  });
+
+  it("finds the prefix in another library when the game's has none", async () => {
+    const steam = join(home, '.local', 'share', 'Steam');
+    await rm(join(root, 'lib', 'steamapps', 'compatdata'), { recursive: true });
+    await mkdir(join(steam, 'steamapps', 'compatdata', '236850', 'pfx'), { recursive: true });
+    const setup = await findProton(game, { env: {}, homedir: home });
+    expect(setup.compatData).toBe(join(setup.steamRoot, 'steamapps', 'compatdata', '236850'));
   });
 
   it('writes a unix path as the game sees it', () => {
