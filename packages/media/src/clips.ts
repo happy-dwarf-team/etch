@@ -868,7 +868,7 @@ export const CLIPS: readonly Clip[] = [
       const opens = eventsOf(log, 'open', 2);
       const presses = eventsOf(log, 'press', 2);
       const typed = eventsOf(log, 'typed', 2);
-      const picks = eventsOf(log, 'picked', 2);
+      const enters = eventsOf(log, 'enter', 2);
       const closes = eventsOf(log, 'closed', 2);
       const covers = rectOf(eventOf(log, 'covers'));
       const windowPanel = still('vscode', frames.right, area);
@@ -890,11 +890,24 @@ export const CLIPS: readonly Clip[] = [
         };
         if (i === 0) shots.push({ at: 0, frame: folded, view: menu.folded });
         else shots.push({ at: 0, frame: typingFrame, view: typingView });
-        // The quick pick hides on Enter, a frame before its `picked` mark: the menu again, then
-        // folded once Escape closes it.
-        add(local(picks[i - 1]) + 1 / 30, unfolded, menu.open, 0);
-        add(local(closes[i - 1]) - 0.05, folded, menu.folded, UNFOLD);
+        // The quick pick hides on Enter and the menu shows again, naming the new province, until
+        // Escape closes it, while the window's panel still holds the old header: the menu's panel
+        // holds the quick pick's last frame instead, then cuts to the folded row as the header
+        // changes.
+        add(local(closes[i - 1]) - 0.05, folded, menu.folded, 0);
         add(local(opens[i]) + 0.02, unfolded, menu.open, UNFOLD);
+        const enter = enters[i - 1];
+        const typingHold =
+          enter === undefined
+            ? []
+            : [
+                {
+                  from: local(enter),
+                  to: local(closes[i - 1]) - 0.05,
+                  panel: 0,
+                  at: enter.t - 0.03,
+                },
+              ];
         const name = i === 0 ? undefined : i === 1 ? SECOND_PROVINCE : SAMPLE_PROVINCE;
         // The window's header shows the province once the menu is closed and its hold ends.
         const chosen = local(closes[i - 1]);
@@ -904,13 +917,16 @@ export const CLIPS: readonly Clip[] = [
           tracks: [{ source: 'vscode', shots }, windowPanel],
           // The open menu covers the header's top right: the window's panel holds its frame from
           // before, and the menu's panel shows the menu.
-          holds: menuHolds(
-            1,
-            area,
-            covers,
-            opens.map((open, k) => ({ opens: open.t, closes: (closes[k] as TakeEvent).t })),
-            span,
-          ),
+          holds: [
+            ...typingHold,
+            ...menuHolds(
+              1,
+              area,
+              covers,
+              opens.map((open, k) => ({ opens: open.t, closes: (closes[k] as TakeEvent).t })),
+              span,
+            ),
+          ],
           captions: sequence(
             [
               ...(name === undefined
