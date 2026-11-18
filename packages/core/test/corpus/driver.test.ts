@@ -180,6 +180,46 @@ describe('planCaptures', () => {
       'anbennar 3440x1440 from save: hud, esc-menu, message-settings, court, diplomacy, diplomacy-dialog, province, province-foreign, ledger, settings, macro-builder, estates',
     );
   });
+
+  it('skips, with the reason, a view without roots, a save view without a save and an unpinned mod', async () => {
+    type Mutable<T> = { -readonly [K in keyof T]: Mutable<T[K]> };
+    const manifest = structuredClone(await corpusManifest()) as Mutable<CorpusManifest>;
+    const view = manifest.windows.flatMap((w) => w.views).find((v) => v.id === 'ledger');
+    if (view === undefined) throw new Error('no ledger view');
+    view.roots = [];
+    const vanilla = manifest.playsets.find((p) => p.id === 'vanilla');
+    if (vanilla === undefined) throw new Error('no vanilla playset');
+    delete vanilla.save;
+    const anbennar = manifest.playsets.find((p) => p.id === 'anbennar');
+    const mod = anbennar?.mods[0];
+    if (mod === undefined) throw new Error('no Anbennar mod');
+    delete mod.sha256;
+    const plan = planCaptures(manifest, {
+      gating: false,
+      playsets: ['vanilla', 'anbennar'],
+      resolutions: ['3440x1440'],
+      views: ['main-menu', 'ledger', 'court'],
+    });
+    const skip = (playset: string, view: string, reason: string) => ({
+      playset,
+      resolution: '3440x1440',
+      view,
+      reason,
+    });
+    const unpinned = 'The playset "anbennar" has a mod without a Workshop item or a pin.';
+    expect(plan.skipped).toEqual([
+      skip('vanilla', 'court', 'The playset "vanilla" has no save.'),
+      skip('vanilla', 'ledger', 'The recipe names no roots to read.'),
+      skip('anbennar', 'main-menu', unpinned),
+      skip('anbennar', 'court', unpinned),
+      // The roots are checked first.
+      skip('anbennar', 'ledger', 'The recipe names no roots to read.'),
+    ]);
+    // Only vanilla's main menu needs neither a save nor the mod.
+    expect(plan.sessions.map(describeSession)).toEqual([
+      'vanilla 3440x1440 from main-menu: main-menu',
+    ]);
+  });
 });
 
 describe('the playset profile', () => {
