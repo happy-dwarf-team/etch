@@ -210,6 +210,17 @@ The command:
 4. Only then copies the posters to the site's `src/assets/media/<clip>.png` and writes
    `src/data/media.json`. The manifest never names a key that is not in the bucket.
 
+`--keep <clip>` (repeatable, or ids separated by commas) keeps a loop the site already shows
+instead of the capture's: when a new take shows an Etch bug, the loop is not published, and the
+bug is reported rather than worked around on camera. The capture need not have that clip. The
+command takes the loop from the site's `src/data/media.json` and its poster as they are, checks
+that its files still read back from the bucket, and writes it with `etch`, the version it was
+captured for, which is also its keys' prefix (etch-website spec section 5.2).
+
+```powershell
+pnpm media publish --site ..\etch-website --keep snapshot
+```
+
 A failure in steps 1–3 leaves the site's checkout untouched. The command does not commit, push or
 open a pull request: the site's change goes through the team's pull request process like any
 other.

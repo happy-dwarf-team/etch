@@ -121,6 +121,8 @@ export interface PublishedSource {
 }
 
 export interface PublishedLoop {
+  /** A loop kept from an earlier set: the Etch version it was captured for, its keys' prefix. */
+  readonly etch?: string;
   readonly width: number;
   readonly height: number;
   readonly duration: number;
@@ -142,11 +144,16 @@ export interface PublishOptions {
   /** The etch-website checkout that receives the manifest, posters and stills. */
   readonly site: string;
   readonly bucket: Bucket;
+  /**
+   * Clips whose loop stays the one the site already shows, with the Etch version it was captured
+   * for: a new take that shows an Etch bug is not published (etch-website spec section 8.8).
+   */
+  readonly keep?: readonly ClipId[];
   readonly log?: (line: string) => void;
 }
 
 /** Reads the capture's draft manifest and checks it describes a whole set of files. */
-async function readDraft(capture: string): Promise<DraftManifest> {
+async function readDraft(capture: string, keep: readonly ClipId[]): Promise<DraftManifest> {
   const file = path.join(capture, 'media.draft.json');
   const text = await readFile(file, 'utf8').catch(() => undefined);
   if (text === undefined) {
@@ -160,7 +167,7 @@ async function readDraft(capture: string): Promise<DraftManifest> {
   if (path.basename(capture) !== `v${draft.etch}`) {
     throw new Error(`${file} is for Etch ${draft.etch}, not the folder ${path.basename(capture)}.`);
   }
-  const missing = CLIP_IDS.filter((id) => draft.loops[id] === undefined);
+  const missing = CLIP_IDS.filter((id) => !keep.includes(id) && draft.loops[id] === undefined);
   if (missing.length > 0) {
     throw new Error(
       `The capture lacks ${missing.join(', ')}; the site needs every clip. ` +
@@ -243,14 +250,59 @@ function describe(stored: StoredObject | undefined): string {
 }
 
 /**
+ * The site's current loops of the clips to keep, each with the Etch version it was captured for;
+ * every one must be in the site's manifest, with its poster, and read back from the bucket.
+ */
+async function keptLoops(
+  site: string,
+  keep: readonly ClipId[],
+  bucket: Bucket,
+): Promise<Map<ClipId, PublishedLoop>> {
+  const kept = new Map<ClipId, PublishedLoop>();
+  if (keep.length === 0) return kept;
+  const file = path.join(site, 'src', 'data', 'media.json');
+  const text = await readFile(file, 'utf8').catch(() => undefined);
+  if (text === undefined) throw new Error(`${file} does not exist: there is no loop to keep.`);
+  const current = JSON.parse(text) as Partial<MediaManifest>;
+  for (const id of keep) {
+    const loop = current.loops?.[id];
+    if (current.etch === undefined || loop === undefined) {
+      throw new Error(`The site's media manifest has no ${id} loop to keep.`);
+    }
+    const poster = await readFile(path.join(site, 'src', 'assets', 'media', loop.poster)).catch(
+      () => undefined,
+    );
+    if (poster === undefined)
+      throw new Error(`The kept ${id} loop's poster ${loop.poster} is missing.`);
+    for (const source of loop.sources) {
+      const key = source.src.slice(`${MEDIA_BUCKET.origin}/`.length);
+      if (!source.src.startsWith(`${MEDIA_BUCKET.origin}/`)) {
+        throw new Error(`The kept ${id} loop's ${source.src} is not in the media bucket.`);
+      }
+      const stored = await bucket.head(key);
+      if (!matches(stored, source.bytes, mediaType(source.type))) {
+        throw new Error(`The kept ${id} loop's ${key} reads back as ${describe(stored)}.`);
+      }
+    }
+    const { etch, ...rest } = loop;
+    kept.set(id, { etch: etch ?? current.etch, ...rest });
+  }
+  return kept;
+}
+
+/**
  * Publishes one capture: uploads its loops, checks each with `HeadObject`, and then writes the
  * posters, stills and `src/data/media.json` into the site. Returns the manifest written.
  */
 export async function publish(options: PublishOptions): Promise<MediaManifest> {
   const log = options.log ?? console.log;
-  const draft = await readDraft(options.capture);
+  const keep = options.keep ?? [];
+  const draft = await readDraft(options.capture, keep);
   await checkSite(options.site);
-  const loops = CLIP_IDS.map((id) => [id, draft.loops[id] as DraftLoop] as const);
+  const kept = await keptLoops(options.site, keep, options.bucket);
+  const loops = CLIP_IDS.filter((id) => !keep.includes(id)).map(
+    (id) => [id, draft.loops[id] as DraftLoop] as const,
+  );
   const images = loops.map(([, loop]) => loop.poster);
   await checkImages(options.capture, images);
 
@@ -269,7 +321,7 @@ export async function publish(options: PublishOptions): Promise<MediaManifest> {
       key: mediaKey(draft.etch, id, hash8(body), source.file),
     };
   };
-  const sets = [];
+  const sets: { id: ClipId; loop: DraftLoop; files: readonly [LoopFile, LoopFile] }[] = [];
   for (const [id, loop] of loops) {
     const [webm, mp4] = loop.sources;
     sets.push({ id, loop, files: [await read(id, webm), await read(id, mp4)] as const });
@@ -299,16 +351,23 @@ export async function publish(options: PublishOptions): Promise<MediaManifest> {
     schemaVersion: 2,
     etch: draft.etch,
     loops: byId(
-      sets.map(({ id, loop, files: [webm, mp4] }) => [
-        id,
-        {
-          width: loop.width,
-          height: loop.height,
-          duration: loop.duration,
-          poster: loop.poster,
-          sources: [published(webm), published(mp4)],
-        },
-      ]),
+      CLIP_IDS.map((id): readonly [ClipId, PublishedLoop] => {
+        const old = kept.get(id);
+        if (old !== undefined) return [id, old];
+        const set = sets.find((entry) => entry.id === id);
+        if (set === undefined) throw new Error(`${id} has no loop`);
+        const [webm, mp4] = set.files;
+        return [
+          id,
+          {
+            width: set.loop.width,
+            height: set.loop.height,
+            duration: set.loop.duration,
+            poster: set.loop.poster,
+            sources: [published(webm), published(mp4)],
+          },
+        ];
+      }),
     ),
   };
 
@@ -319,6 +378,8 @@ export async function publish(options: PublishOptions): Promise<MediaManifest> {
   for (const image of images)
     await copyFile(path.join(options.capture, image), path.join(assets, image));
   await writeFile(path.join(data, 'media.json'), `${JSON.stringify(manifest, null, '\t')}\n`);
+  for (const [id, loop] of kept)
+    log(`Kept the site's ${id} loop of Etch ${loop.etch ?? draft.etch}.`);
   log(`Wrote ${String(images.length)} posters and src/data/media.json into ${options.site}.`);
   return manifest;
 }

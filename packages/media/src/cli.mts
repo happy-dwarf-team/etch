@@ -3,7 +3,7 @@
 //
 //   pnpm media capture [--clip ID]... [--save PATH] [--profile PATH] [--reedit] [--ffmpeg PATH]
 //                      [--game PATH] [--work DIR]
-//   pnpm media publish --site PATH [--etch VERSION]
+//   pnpm media publish --site PATH [--etch VERSION] [--keep ID]...
 //
 // --clip takes the clip ids (hero, preview, views, data, zoom, outline, problems, profile, names,
 // reload, pick, snapshot), also separated by commas; all of them by default. profile shows --profile,
@@ -17,7 +17,9 @@
 //
 // publish uploads the loops of packages/media/out/v<version>/ to the media bucket and then writes
 // the posters and src/data/media.json into the etch-website checkout at --site. --etch picks the
-// capture folder (default: the extension's current version). The upload token comes from the user
+// capture folder (default: the extension's current version). --keep takes clip ids whose loop
+// stays the one the site shows, with the Etch version it was captured for (a new take that shows
+// an Etch bug); the capture need not have them. The upload token comes from the user
 // environment variables HAPPYDWARF_MEDIA_ACCESS_KEY_ID and HAPPYDWARF_MEDIA_SECRET_ACCESS_KEY.
 import { S3Client } from '@aws-sdk/client-s3';
 import { readFile } from 'node:fs/promises';
@@ -43,6 +45,7 @@ const { positionals, values } = parseArgs({
   allowPositionals: true,
   options: {
     clip: { type: 'string', multiple: true },
+    keep: { type: 'string', multiple: true },
     reedit: { type: 'boolean', default: false },
     ffmpeg: { type: 'string' },
     game: { type: 'string' },
@@ -54,9 +57,26 @@ const { positionals, values } = parseArgs({
   },
 });
 
+/** Clip ids, separated by commas or spaces: PowerShell passes `--clip a,b` as one argument `a b`. */
+function clipIds(values: readonly string[] | undefined): ClipId[] {
+  const ids = (values ?? [])
+    .flatMap((value) => value.split(/[\s,]+/))
+    .map((value) => value.trim())
+    .filter(Boolean);
+  for (const id of ids) {
+    if (!CLIP_IDS.includes(id as ClipId)) {
+      fail(`Unknown clip "${id}"; the clips are ${CLIP_IDS.join(', ')}.`);
+    }
+  }
+  return ids as ClipId[];
+}
+
 const [step] = positionals;
 if (step === 'publish') {
-  if (values.site === undefined) fail('Usage: pnpm media publish --site PATH [--etch VERSION]');
+  if (values.site === undefined) {
+    fail('Usage: pnpm media publish --site PATH [--etch VERSION] [--keep ID]...');
+  }
+  const keep = clipIds(values.keep);
   const version =
     values.etch ??
     (
@@ -81,6 +101,7 @@ if (step === 'publish') {
       capture: path.join(repository, 'packages', 'media', 'out', `v${version}`),
       site: path.resolve(typedIn, values.site),
       bucket: r2Bucket(client),
+      keep,
     });
   } catch (error) {
     fail(`Publishing stopped: ${(error as Error).message}`);
@@ -95,20 +116,11 @@ if (step === 'publish') {
 if (step !== 'capture') {
   fail(
     'Usage: pnpm media capture [--clip ID]... [--save PATH] [--profile PATH] [--reedit]\n' +
-      '       pnpm media publish --site PATH [--etch VERSION]',
+      '       pnpm media publish --site PATH [--etch VERSION] [--keep ID]...',
   );
 }
-// Commas or spaces: PowerShell passes `--clip a,b` as one argument `a b`.
-const clips = (values.clip ?? [])
-  .flatMap((value) => value.split(/[\s,]+/))
-  .map((value) => value.trim())
-  .filter(Boolean);
-for (const clip of clips) {
-  if (!CLIP_IDS.includes(clip as ClipId)) {
-    fail(`Unknown clip "${clip}"; the clips are ${CLIP_IDS.join(', ')}.`);
-  }
-}
-const chosen = clips.length === 0 ? [...CLIP_IDS] : (clips as ClipId[]);
+const clips = clipIds(values.clip);
+const chosen = clips.length === 0 ? [...CLIP_IDS] : clips;
 if (
   !values.reedit &&
   LIVE_CLIP_IDS.some((id) => chosen.includes(id)) &&
