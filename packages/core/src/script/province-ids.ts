@@ -224,9 +224,11 @@ export type ProvinceIdDiagnosticCode =
   /** A province id of 0 or at least `max_provinces`: no province of the map has it. */
   | 'province-id-out-of-range'
   /** A province id below `max_provinces` that `map/definition.csv` does not list. */
-  | 'province-id-not-defined';
+  | 'province-id-not-defined'
+  /** A `history/provinces` file whose name gives no province of the map: the game skips it. */
+  | 'province-history-not-read';
 
-/** A province id the map does not have; the range is the id's scalar. */
+/** A province id the map does not have; the range is the id's scalar (empty, at the start, for a file name). */
 export interface ProvinceIdDiagnostic extends SourceRange {
   readonly severity: 'warning';
   readonly code: ProvinceIdDiagnosticCode;
@@ -279,7 +281,43 @@ export function checkProvinceIds(
       }
     }
   }
+  if (!body && path !== undefined) {
+    const skipped = provinceHistoryNotRead(path, ids);
+    if (skipped !== undefined) found.push(skipped);
+  }
   return found.sort((a, b) => a.start - b.start);
+}
+
+/**
+ * A warning for a `history/provinces` file the game never reads, at the start of the file. The game
+ * takes a file's province from its name with `atoi` (`123 - Name.txt` is province 123, a name without
+ * a leading number province 0) and reads only the files of provinces from 1 to `max_provinces - 1`;
+ * the others it skips without a line in `error.log` (`CLoadProvinces`, the EU4 engine lab,
+ * 18.11.2026). Files in folders below `history/provinces` are not names it reads.
+ */
+export function provinceHistoryNotRead(
+  path: string,
+  ids: ProvinceIds,
+): ProvinceIdDiagnostic | undefined {
+  const match = /^history\/provinces\/([^/]+)\.txt$/i.exec(path.replace(/\\/g, '/'));
+  if (match === null) return undefined;
+  const name = match[1] ?? '';
+  const id = Number(/^\s*([+-]?\d+)/.exec(name)?.[1] ?? 0);
+  const last = ids.maxProvinces - 1;
+  if (id >= 1 && id <= last) return undefined;
+  const given = id === 0 ? 'does not start with a province id' : `gives province ${String(id)}`;
+  return {
+    severity: 'warning',
+    code: 'province-history-not-read',
+    message:
+      `The game never reads this province history: its file name ${given}, and the game reads ` +
+      `only the files of provinces 1 to ${String(last)} (${ids.maxSource} sets max_provinces = ` +
+      `${String(ids.maxProvinces)}). It skips the file without a line in error.log.`,
+    id,
+    key: 'history/provinces',
+    start: 0,
+    end: 0,
+  };
 }
 
 /**

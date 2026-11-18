@@ -255,9 +255,12 @@ export class ProvinceIdDiagnostics implements vscode.Disposable {
       const layer = finding.file.layer.name === 'game' ? 'the game' : finding.file.layer.name;
       for (const d of finding.diagnostics) {
         const line = lineOf(finding.text, d.start);
-        this.output.info(
-          `  ${layer}: ${finding.file.path}:${String(line)}: ${d.key} = ${finding.text.slice(d.start, d.end)}`,
-        );
+        // A warning about the file itself (its name) has no text of its own: an empty range.
+        const what =
+          d.code === 'province-history-not-read'
+            ? `${d.key} file name, province ${String(d.id)}`
+            : `${d.key} = ${finding.text.slice(d.start, d.end)}`;
+        this.output.info(`  ${layer}: ${finding.file.path}:${String(line)}: ${what}`);
       }
     }
     if (warnings === 0) {
