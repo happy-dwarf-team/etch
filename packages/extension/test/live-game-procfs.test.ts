@@ -1,5 +1,14 @@
+import { spawn } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { flatpakProc, parseSnapshot, type ProcSource } from '../src/live-game/procfs.ts';
+import { isFlatpak } from '../src/live-game/host.ts';
+import {
+  defaultProc,
+  flatpakProc,
+  nativeProc,
+  parseSnapshot,
+  type ProcSource,
+} from '../src/live-game/procfs.ts';
 import {
   posixChildProcesses,
   posixProcessIdentity,
@@ -217,5 +226,72 @@ describe('the host snapshot of a Flatpak sandbox', () => {
     const found = await posixProcessesNamed('eu4.exe', proc);
     expect(found).toHaveLength(1);
     expect(runs).toBe(1);
+  });
+
+  it('reads an empty stat as a process that is gone, and serves btime and exe', async () => {
+    const proc = flatpakProc(() =>
+      Promise.resolve(['B 1700000000', 'P 400', 'S ', 'C ', 'E /usr/bin/x', ''].join('\n')),
+    );
+    expect(await proc.stat(400)).toBeUndefined();
+    expect(await proc.stat(999)).toBeUndefined();
+    expect(await proc.cmdline(999)).toBe('');
+    expect(await proc.exe(400)).toBe('/usr/bin/x');
+    expect(await proc.btime()).toBe(1_700_000_000);
+  });
+
+  it('kills on the host by a whole PID and takes a new snapshot afterwards', async () => {
+    const scripts: string[] = [];
+    const proc = flatpakProc((script) => {
+      scripts.push(script);
+      return Promise.resolve(output);
+    });
+    expect(await proc.stat(200)).toBeDefined();
+    expect(await proc.kill(200.7)).toBe(true);
+    expect(scripts[1]).toBe('kill -KILL 200 2>/dev/null; true');
+    await proc.stat(200);
+    expect(scripts).toHaveLength(3);
+  });
+
+  it('runs the host script again after a snapshot that failed', async () => {
+    let runs = 0;
+    const proc = flatpakProc(() => {
+      runs++;
+      return runs === 1 ? Promise.reject(new Error('no host')) : Promise.resolve(output);
+    });
+    await expect(proc.btime()).rejects.toThrow('no host');
+    expect(await proc.btime()).toBe(1_700_000_000);
+    expect(runs).toBe(2);
+  });
+});
+
+describe('the process source of this machine', () => {
+  it('is the native one outside a sandbox, and the same each time', () => {
+    if (isFlatpak()) return;
+    expect(defaultProc()).toBe(defaultProc());
+  });
+
+  // Windows has no /proc: the native source then finds nothing, as the helper expects there.
+  describe.runIf(!existsSync('/proc'))('without /proc', () => {
+    it('lists no process and reads none', async () => {
+      const proc = nativeProc();
+      expect(await proc.pids()).toEqual([]);
+      expect(await proc.stat(process.pid)).toBeUndefined();
+      expect(await proc.cmdline(process.pid)).toBe('');
+      expect(await proc.exe(process.pid)).toBeUndefined();
+      await expect(proc.btime()).rejects.toThrow();
+    });
+  });
+
+  it('kills a process it is told about, and says when there was none', async () => {
+    const child = spawn(process.execPath, ['-e', 'setTimeout(() => {}, 60000)'], {
+      stdio: 'ignore',
+    });
+    const exited = new Promise((resolve) => child.once('exit', resolve));
+    const pid = child.pid;
+    if (pid === undefined) throw new Error('the child did not start');
+    const proc = nativeProc();
+    expect(await proc.kill(pid)).toBe(true);
+    await exited;
+    expect(await proc.kill(pid)).toBe(false);
   });
 });
