@@ -11,6 +11,7 @@ import { copyFile, mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises
 import * as path from 'node:path';
 import { findProfileFolder, systemEnvironment } from '@etch/core/playset';
 import {
+  CODE_SCALE,
   codeView,
   DETAIL_SCALE,
   editorLine,
@@ -485,8 +486,10 @@ export async function takeLive(options: ShootOptions & { save: string }): Promis
     take.mark('pick.end');
     // The preview after the snapshot, for the take's review.
     await wb.screenshot(path.join(options.masters, 'live.after-pick.png'));
-    await desktop.movePointer(rest, 600);
     await take.until(take.t() + POST_ROLL_MS / 1000);
+    // Away from the game's edges again once the loops' frames are recorded: on its way, pick
+    // mode, still on, labels every widget it crosses.
+    await desktop.movePointer(rest, 600);
   } catch (error) {
     await wb.screenshot(path.join(options.masters, 'live.failed.png')).catch(() => undefined);
     throw error;
@@ -637,17 +640,23 @@ export const LIVE_CLIPS: readonly Pick<Clip, 'id' | 'edit'>[] = [
         w: hovered.w,
         h: bandHeight,
       };
-      const definition = codeView(rectOf(jump), bottom, code);
+      // The definition across the stage at the scale that fills it with the editor's lines and no
+      // more: at 1.5× the panel took in a strip of the preview beside the editor.
+      const line = rectOf(jump);
+      const definition = codeView(line, bottom, code, Math.max(CODE_SCALE, bottom.w / line.w));
       const split = at(t(jump)) - 0.1;
       return {
         id: 'pick',
         sources,
-        // The trailer's part: the last hover, the click and the definition.
-        core: { from: at(t(hovers[hovers.length - 1] as TakeEvent)) - 0.6, to: end },
+        // The trailer's part: the last hover, the click and the definition. It opens on the
+        // button's label: earlier, the icon before it shows with the game's long tip.
+        core: { from: at(t(hovers[hovers.length - 1] as TakeEvent)), to: end },
         loopFade: 0.6,
         segments: [
           {
-            duration: end + TAIL,
+            // To `pick.end`: then the real pointer goes back to rest, pick mode labelling every
+            // widget on its way.
+            duration: end,
             panels: [
               {
                 source: 'game',
@@ -676,7 +685,7 @@ export const LIVE_CLIPS: readonly Pick<Clip, 'id' | 'edit'>[] = [
               },
               {
                 from: split + 0.2,
-                to: end + TAIL - 0.3,
+                to: end - 0.3,
                 text: 'A click opens its definition; the game does not take it',
               },
             ],
@@ -695,7 +704,8 @@ export const LIVE_CLIPS: readonly Pick<Clip, 'id' | 'edit'>[] = [
   },
   {
     // The preview beside the game, the same part of the window in both: the preview's values are
-    // generated until a pick gives it the game's live snapshot.
+    // generated until a pick gives it the game's live snapshot. The game, paused, holds its frame
+    // from before pick mode: pick mode's labels beside the pointer run past the panel's edge.
     id: 'snapshot',
     edit(log, sources) {
       const s0 = t(eventOf(log, 'pick.click')) - 3.0;
@@ -717,7 +727,8 @@ export const LIVE_CLIPS: readonly Pick<Clip, 'id' | 'edit'>[] = [
         loopFade: 0.6,
         segments: [
           {
-            duration: end + TAIL,
+            duration: end,
+            holds: [{ from: 0, to: end, panel: 1, at: t(eventOf(log, 'pick.start')) - 0.2 }],
             panels: [
               {
                 source: 'vscode',
@@ -738,7 +749,7 @@ export const LIVE_CLIPS: readonly Pick<Clip, 'id' | 'edit'>[] = [
               },
               {
                 from: snapshot + 0.1,
-                to: end + TAIL - 0.3,
+                to: end - 0.3,
                 text: "A pick in the game: its live snapshot, the game's own values",
               },
             ],
