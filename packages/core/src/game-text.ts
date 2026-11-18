@@ -7,8 +7,9 @@ import { decodeWindows1252, encodeWindows1252, inWindows1252 } from './windows-1
 
 /**
  * Interface and script files are read as Windows-1252, localisation as UTF-8.
- * `script` is a `.txt` file of `common`, `events`, `decisions`, `missions` or
- * `history`, whose names and texts the game shows as it reads them.
+ * `script` is a `.txt` file of `common`, `events`, `decisions`, `missions`,
+ * `history` or `customizable_localization`, whose names and texts the game
+ * shows as it reads them.
  */
 export type GameTextKind = 'interface' | 'localisation' | 'script';
 
@@ -36,12 +37,14 @@ const SCRIPT_FOLDERS: ReadonlySet<string> = new Set([
   'decisions',
   'missions',
   'history',
+  'customizable_localization',
 ]);
 
 /**
  * Which kind of game text Etch checks the encoding of, by a file's path: the
  * kinds of {@link gameTextKind}, and `script` for a `.txt` file inside a
- * `common`, `events`, `decisions`, `missions` or `history` folder. The
+ * `common`, `events`, `decisions`, `missions`, `history` or
+ * `customizable_localization` folder. The
  * preview reads only the kinds of `gameTextKind`.
  */
 export function checkedTextKind(path: string): GameTextKind | undefined {
