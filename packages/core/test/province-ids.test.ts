@@ -90,6 +90,40 @@ describe('checkProvinceIds', () => {
     ]);
   });
 
+  it('checks the provinces lists of colonial regions and trade company regions', () => {
+    const text = [
+      'colonial_test = {',
+      '  color = { 200 100 50 }',
+      '  provinces = { 12 5075 0 }',
+      '  culture = { 1 = 5 }',
+      '}',
+    ].join('\n');
+    const lists = [
+      'provinces 5075 province-id-out-of-range',
+      'provinces 0 province-id-out-of-range',
+    ];
+    expect(found(text, VANILLA, 'common/colonial_regions/00_test.txt')).toEqual(lists);
+    expect(found(text, VANILLA, 'Common\\Trade_Companies\\00_test.txt')).toEqual(lists);
+    // Elsewhere a `provinces` block's bare integers are not province ids Etch knows of.
+    expect(found(text, VANILLA, 'common/ideas/00_test.txt')).toEqual([]);
+    expect(found('provinces = { 5075 }', VANILLA, 'common/colonial_regions/x.txt')).toEqual([]);
+  });
+
+  it("checks a trade node's members and location, not its paths", () => {
+    const text = [
+      'test_node = {',
+      '  location = 4943',
+      '  outgoing = { name = "other" path = { 9000 } control = { 3351.0 607.0 } }',
+      '  members = { 4064 4942 }',
+      '  provinces = { 9001 }',
+      '}',
+    ].join('\n');
+    expect(found(text, VANILLA, 'common/tradenodes/00_tradenodes.txt')).toEqual([
+      'location 4943 province-id-out-of-range',
+      'members 4942 province-id-out-of-range',
+    ]);
+  });
+
   it('reads keys without regard to case', () => {
     expect(found('e = { trigger = { OWNS = 5075 } }')).toEqual([
       'owns 5075 province-id-out-of-range',

@@ -268,7 +268,38 @@ export function checkProvinceIds(
   const found: ProvinceIdDiagnostic[] = [];
   const root = { key: '', scopes: body };
   walk(parsed.entries, root, 0, body ? 0 : firstScopeDepth(path), ids, found);
+  const listKey = body || path === undefined ? undefined : provinceListKey(path);
+  if (listKey !== undefined) {
+    for (const entry of parsed.entries) {
+      if (entry.kind !== 'property' || entry.value?.kind !== 'block') continue;
+      for (const member of entry.value.entries) {
+        if (member.kind !== 'property' || member.key.text.toLowerCase() !== listKey) continue;
+        if (member.value?.kind !== 'block') continue;
+        for (const scalar of bareScalars(member.value)) checkScalar(scalar, listKey, ids, found);
+      }
+    }
+  }
   return found.sort((a, b) => a.start - b.start);
+}
+
+/**
+ * Folders whose entries list their provinces in a block of bare ids, with that block's key. The game
+ * reads each list as integers with no range check (it logs only an id listed twice) and then indexes
+ * the province table with every id: a colonial region's center point while the file is read and its
+ * name, each trade company region's provinces when the game starts (`InitTradeCompanyRegions`), and
+ * a trade node's `members`, whose provinces it writes its node into (`InitializeProvinces`; the EU4
+ * engine lab, 18.11.2026). A trade node's `location` is a `PROVINCE_ID_KEYS` property. Vanilla lists
+ * 3290 ids in the regions and 3369 in the trade nodes, all on its map.
+ */
+const PROVINCE_LISTS: readonly (readonly [folder: string, key: string])[] = [
+  ['common/colonial_regions/', 'provinces'],
+  ['common/trade_companies/', 'provinces'],
+  ['common/tradenodes/', 'members'],
+];
+
+function provinceListKey(path: string): string | undefined {
+  const lower = path.toLowerCase().replace(/\\/g, '/');
+  return PROVINCE_LISTS.find(([folder]) => lower.startsWith(folder))?.[1];
 }
 
 /**

@@ -214,6 +214,9 @@ whose effect scopes to `$province$`; Etch reads that from the playset's
 `common/scripted_effects` and `common/scripted_triggers`, following arguments
 passed on to other calls. A
 negative id such as `owns = -1` is flagged too: the game keeps the sign.
+The province lists of colonial regions, trade company regions and trade nodes
+(`provinces` in `common/colonial_regions` and `common/trade_companies`,
+`members` in `common/tradenodes`) are checked too.
 The map is your playset's: `max_provinces` of `map/default.map`, a mod's when
 it has its own, and the provinces its `map/definition.csv` lists. An id written
 as a tag, a scope or a variable is not checked.
