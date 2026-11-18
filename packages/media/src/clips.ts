@@ -76,6 +76,19 @@ async function cursorIn(wb: Workbench, text: string, offset: number): Promise<Cu
   return { line: match.line, column: match.start + offset };
 }
 
+/**
+ * Puts the cursor on the blank line above the previewed window's `windowType =`, inside no widget:
+ * the preview keeps the window it showed last and outlines nothing. On the window's name the
+ * preview would outline the window's declared rect (430 × 580) through every loop, a frame that
+ * fits none of its art and belongs to no loop's point.
+ */
+export async function parkCursor(wb: Workbench): Promise<void> {
+  const name = await wb.find(`"${WINDOW_NAME}"`);
+  await wb.walkCursorTo({ line: name.line - 3, column: 1 }, 0);
+  await wb.highlightCleared();
+  await wb.expectPreviewed(WINDOW_NAME);
+}
+
 /** The output rect of a source rect under a full-frame view of the whole source. */
 function underWide(rect: Rect, source: Source): Rect {
   const scale = OUTPUT.width / whole(source, ASPECT).w;
@@ -96,16 +109,41 @@ const INSET: Rect = { x: 1060, y: 40, w: 820, h: 200 };
 /** Where the preview's inset sits over a close-up of the code: top right, over the editor's end. */
 const PREVIEW_INSET: Rect = { x: 1392, y: 40, w: 488, h: 274 };
 
-/** The views `views` shows, the first two the menu lists besides the current one. */
-const VIEWS = ['Build army', 'State tab', 'Foreign province', 'Build navy'];
+/**
+ * The views `views` shows, the first two the menu lists besides the current one: a foreign
+ * province, the site's own example of a view, then the state tab, which changes the window most.
+ */
+const VIEWS = ['Foreign province', 'State tab', 'Build army', 'Build navy'];
 
-/** Game-screen points at 1280 × 720, in the own province view with the buildings side panel. */
-const PROVINCE_HEADER = { x: 150, y: 120 };
-const FIRST_BUILDING = { x: 545, y: 225 };
-/** The widgets `outline` hovers before it clicks the first building. */
-const HOVERED = [PROVINCE_HEADER, { x: 120, y: 330 }, { x: 330, y: 470 }];
-/** The province view's header on the game screen, where long names show first. */
-const HEADER = { x: 0, y: 50, w: 600, h: 190 };
+/**
+ * Game-screen points at 1280 × 720, in the own province view with the buildings side panel.
+ *
+ * Where `zoom` zooms: the culture's label (`culture_title`), in the window's middle. Near the
+ * screen's top edge the preview stops at the edge instead of keeping the point under the pointer
+ * (at 150, 120 the pointer ends 70 px lower, on another widget), so the loop would not show a zoom
+ * around the pointer.
+ */
+const ZOOM_POINT = { x: 200, y: 330 };
+/**
+ * The button `outline` clicks: `build_landunit_button` (42 × 41 at 309, 372), a widget of the
+ * province view itself. A building (`building`, a button of `building_progress_entry`, another
+ * top-level window of the file that the game puts in the buildings panel) is outlined on hover,
+ * but a click on it opens nothing: the preview's click looks for the widget in the previewed
+ * window only (the lab doc, round 4).
+ */
+const CLICKED = { x: 330, y: 392 };
+/**
+ * The widgets `outline` hovers: a text (`culture_title`, 80 × 22), an icon (`naval_amount_icon`,
+ * 40 × 40) and the button it then clicks. Each one's rect is its art's, so the hover's dashed box
+ * fits what it outlines; a window's declared rect does not.
+ */
+const HOVERED = [{ x: 183, y: 334 }, { x: 408, y: 297 }, CLICKED];
+/**
+ * The province view's header on the game screen, where long names show first, with the top of
+ * Demographics (the culture's and the tax's texts). The window's top is at y 137 (`y = -583` from
+ * the screen's bottom, `LOWER_LEFT`).
+ */
+const HEADER = { x: 0, y: 125, w: 600, h: 200 };
 /** Ctrl+wheel steps in `zoom`: 100 % to 300 % and back. */
 const ZOOM_TICKS = 2;
 
@@ -265,6 +303,15 @@ function insetOf(line: Rect, source: Source): Rect {
   return focus(lineStart(line), source, INSET.w / INSET.h, { margin: 16, minWidth: 440 });
 }
 
+/**
+ * The code inset of a loop whose cursor is parked (`parkCursor`): the previewed window's
+ * `windowType =`, `{` and `name = "provinceview"`, the three lines below the cursor's blank line.
+ */
+function windowInset(log: TakeLog, source: Source): Rect {
+  const line = rectOf(eventOf(log, 'line'));
+  return insetOf({ ...line, y: line.y + 3 * line.h }, source);
+}
+
 /** The start of a line, where indented code is; a line's rect spans the whole text area. */
 function lineStart(line: Rect): Rect {
   return { ...line, w: Math.min(line.w, 420) };
@@ -296,6 +343,47 @@ async function startTake(context: ClipContext): Promise<{ x: number; y: number }
 async function backToRest(context: ClipContext, rest: { x: number; y: number }): Promise<void> {
   await pointTo(context, rest, 700);
   await context.wb.restMouse();
+}
+
+/**
+ * From the preview's toolbar left along it into the editor, the first leg of the way home; the
+ * take's end (`endTake`) then goes down through the editor to the rest. The straight way crosses
+ * the preview's screen and hovers its widgets, whose tips would show for a moment.
+ */
+async function viaToolbar(context: ClipContext): Promise<void> {
+  const lines = await context.wb.page
+    .locator('.part.editor .monaco-editor .view-lines')
+    .first()
+    .boundingBox();
+  if (lines === null) throw new Error('the editor is not shown');
+  const bar = await centre(context.wb.frame.locator('#view-menu'));
+  await pointTo(context, { x: lines.x + lines.width - 40, y: bar.y }, 500);
+}
+
+/** The editor's scroll from its top, in pixels, and its line's height. */
+async function editorScroll(wb: Workbench): Promise<{ top: number; line: number }> {
+  return wb.page
+    .locator('.part.editor .monaco-editor .lines-content')
+    .first()
+    .evaluate((element) => {
+      const line = element.querySelector('.view-line');
+      return {
+        top: -Number.parseFloat((element as HTMLElement).style.top),
+        line: line instanceof HTMLElement ? line.offsetHeight : 0,
+      };
+    });
+}
+
+/**
+ * Scrolls the editor back to `top` a line at a time (Ctrl+Up/Down; the cursor stays): Go Back
+ * centres the line it returns to, a few lines from where it was.
+ */
+async function scrollEditorTo(wb: Workbench, top: number): Promise<void> {
+  const now = await editorScroll(wb);
+  if (now.line === 0) throw new Error('the editor shows no line');
+  const lines = Math.round((now.top - top) / now.line);
+  if (lines > 0) await wb.press('Control+ArrowUp', lines);
+  if (lines < 0) await wb.press('Control+ArrowDown', -lines);
 }
 
 /** Back to the rest, then the post-roll. */
@@ -404,12 +492,14 @@ export const CLIPS: readonly Clip[] = [
         await sleep(300);
         await clickOn(context, viewItem(wb, label), { ms: 500, paint: true });
         await wb.frame.locator('#view-menu', { hasText: `View: ${label}` }).waitFor();
+        // Back to the menu's button over the open menu, then the menu closed: the pointer waits on
+        // the toolbar between views, over no widget of the preview, and goes home after the last.
+        await pointTo(context, await centre(menu), 350);
         await wb.closeMenus();
         take.mark('view', { label });
-        // The pointer stays by the menu between views; it goes back to its rest after the last.
-        if (i === 2) await backToRest(context, rest);
-        await sleep(i === 2 ? 300 : 1100);
+        if (i < 2) await sleep(1100);
       }
+      await viaToolbar(context);
       await endTake(context, rest);
     },
     edit(log, sources) {
@@ -417,7 +507,7 @@ export const CLIPS: readonly Clip[] = [
       const s0 = eventOf(log, 'start').t - MENU_LEAD;
       const at = (t: number): number => t - s0;
       const screen = focus(rectOf(eventOf(log, 'screen')), source, ASPECT, { margin: 0 });
-      const inset = insetOf(rectOf(eventOf(log, 'line')), source);
+      const inset = windowInset(log, source);
       const menus = eventsOf(log, 'menu', 3);
       const views = eventsOf(log, 'view', 3);
       const steps: Step[] = [];
@@ -470,12 +560,16 @@ export const CLIPS: readonly Clip[] = [
           .waitFor();
         take.mark('length', { label: length });
         await sleep(500);
+        // Back to the menu's button over the open menu, then the menu closed: the pointer waits on
+        // the toolbar while the long texts are held close up. On its way back to the rest, or left
+        // where the menu was, it would hover a widget of the preview and show its tip.
+        await pointTo(context, await centre(menu), 400);
         await wb.closeMenus();
         take.mark('closed', { label: length });
-        await backToRest(context, rest);
-        // The long texts held close up; the typical ones only long enough to see them back.
-        await sleep(length === 'long' ? 2000 : 200);
+        // The long texts held close up; the typical ones are seen back on the way home.
+        if (length === 'long') await sleep(2700);
       }
+      await viaToolbar(context);
       await endTake(context, rest);
     },
     edit(log, sources) {
@@ -484,13 +578,14 @@ export const CLIPS: readonly Clip[] = [
       const at = (t: number): number => t - s0;
       const header = focus(rectOf(eventOf(log, 'header')), source, ASPECT, {
         margin: 40,
-        minWidth: 1280,
+        minWidth: 1100,
       });
-      const inset = insetOf(rectOf(eventOf(log, 'line')), source);
+      const inset = windowInset(log, source);
       const menus = eventsOf(log, 'menu', 2);
       const menuView = (i: number): Rect =>
         focus(rectOf(menus[i] as TakeEvent), source, ASPECT, { margin: 140, minWidth: 820 });
       const lengths = eventsOf(log, 'length', 2);
+      const closed = eventsOf(log, 'closed', 2);
       return vscodeEdit(
         'data',
         log,
@@ -498,10 +593,10 @@ export const CLIPS: readonly Clip[] = [
         { s0, end: eventOf(log, 'end').t + 0.6 },
         [
           { at: at((menus[0] as TakeEvent).t) - 0.6, view: menuView(0) },
-          // Off the menu once a length is pressed: it closes half a second later, empty.
-          { at: at((lengths[0] as { t: number }).t) + 0.2, view: header, inset },
+          // Off the menu as it closes, once the pointer is back on its button.
+          { at: at((closed[0] as { t: number }).t) - 0.15, view: header, inset },
           { at: at((menus[1] as TakeEvent).t) - 0.6, view: menuView(1) },
-          { at: at((lengths[1] as { t: number }).t) + 0.2, view: whole(source, ASPECT) },
+          { at: at((closed[1] as { t: number }).t) - 0.15, view: whole(source, ASPECT) },
         ],
         {
           captions: [
@@ -528,7 +623,7 @@ export const CLIPS: readonly Clip[] = [
       const rest = await startTake(context);
       take.mark('start');
       const initial = ((await level.textContent()) ?? '').trim();
-      await pointTo(context, await wb.screenPoint(PROVINCE_HEADER), 800);
+      await pointTo(context, await wb.screenPoint(ZOOM_POINT), 800);
       await sleep(400);
       for (let tick = 0; tick < ZOOM_TICKS; tick++) {
         const before = ((await level.textContent()) ?? '').trim();
@@ -544,7 +639,8 @@ export const CLIPS: readonly Clip[] = [
       await clickOn(context, level);
       await wb.frame.locator('#zoom-level', { hasText: initial }).waitFor({ timeout: 2_000 });
       take.mark('fit');
-      await sleep(600);
+      await sleep(200);
+      await viaToolbar(context);
       await endTake(context, rest);
     },
     edit(log, sources) {
@@ -560,7 +656,7 @@ export const CLIPS: readonly Clip[] = [
         sources,
         { s0, end: eventOf(log, 'end').t + TAIL },
         [
-          { at: LEAD - 0.6, view: screen, inset: insetOf(rectOf(eventOf(log, 'line')), source) },
+          { at: LEAD - 0.6, view: screen, inset: windowInset(log, source) },
           { at: fit + 0.5, view: whole(source, ASPECT) },
         ],
         {
@@ -586,10 +682,24 @@ export const CLIPS: readonly Clip[] = [
     async run(context) {
       const { wb, take } = context;
       await wb.command('Explorer: Focus on Widget Outline View');
+      // The Explorer's file tree collapsed, so the outline has the sidebar and its selected row is
+      // the one the close-up shows; the files' own selected row is not the outline's.
+      const folders = wb.page.locator('.part.sidebar .pane-header').first();
+      if ((await folders.getAttribute('aria-expanded')) === 'true') await folders.click();
+      await wb.page
+        .locator('.part.sidebar .pane-header[aria-expanded="true"]', { hasText: 'Widget Outline' })
+        .waitFor();
       await wb.fitPreview();
       await wb.focusEditor();
-      await wb.highlightSettled();
+      // The cursor outside every widget (shoot.ts): the preview outlines nothing before the click.
+      await wb.highlightCleared();
       const home = await wb.cursor();
+      const homeScroll = (await editorScroll(wb)).top;
+      const outlineRow = wb.page
+        .locator('.part.sidebar .pane', {
+          has: wb.page.locator('.pane-header', { hasText: 'Widget Outline' }),
+        })
+        .locator('.monaco-list-row.selected');
       take.mark('screen', { source: 'vscode', rect: await wb.screenRect() });
       take.mark('sidebar', {
         source: 'vscode',
@@ -601,8 +711,10 @@ export const CLIPS: readonly Clip[] = [
       });
       const rest = await startTake(context);
       take.mark('start');
-      for (const point of HOVERED) {
-        await pointTo(context, await wb.screenPoint(point), 750);
+      for (const [i, point] of HOVERED.entries()) {
+        // Quick between widgets: the tip follows the pointer at once, and a slow glide would
+        // show the tips of the windows it crosses (progress_bar_window, queue_window).
+        await pointTo(context, await wb.screenPoint(point), i === 0 ? 750 : 380);
         await wb.frame.locator('#tip:not([hidden])').waitFor();
         // The hovered widget and its tip: the camera moves in on both.
         take.mark('hover', {
@@ -614,28 +726,51 @@ export const CLIPS: readonly Clip[] = [
         });
         await sleep(1000);
       }
-      await pointTo(context, await wb.screenPoint(FIRST_BUILDING), 600);
+      // The last hovered widget is the button: the pointer is on it, and clicks it.
       await sleep(300);
       take.click();
-      await wb.clickScreen(FIRST_BUILDING);
-      await wb.page.locator('.part.sidebar .monaco-list-row.selected').first().waitFor();
+      await wb.clickScreen(CLICKED);
       await wb.page
         .locator('[id="status.editor.selection"]', { hasNotText: `Ln ${String(home.line)},` })
         .waitFor();
+      await outlineRow.first().waitFor();
+      await wb.highlightSettled();
+      const line = await wb.lineRect();
+      // The outline's row and the definition's line, with the lines below it: the caption sits at
+      // the frame's bottom, under the view, never over the line.
       take.mark('picked', {
         source: 'vscode',
-        rect: union(
-          await wb.box(wb.page.locator('.part.sidebar .monaco-list-row.selected')),
-          lineStart(await wb.lineRect()),
-        ),
+        rect: union(await wb.box(outlineRow), lineStart({ ...line, h: line.h * 8 })),
       });
+      take.mark('definition', { source: 'vscode', rect: lineStart(line) });
+      take.mark('row', { source: 'vscode', rect: await wb.box(outlineRow) });
+      // Playwright's mouse off the button: its tip would stay in the wide shot after the close-up.
+      await wb.restMouse();
       await sleep(2400);
-      // Back to where the cursor was, as Go Back takes it.
+      // The camera leaves the close-up before the editor goes back.
+      take.mark('leaving');
+      await sleep(MOVE * 1000);
+      // Back to where the cursor was, as Go Back takes it, and to the start's scroll. The keys go
+      // to the editor: after the preview's click the keyboard may still be in the preview.
+      await wb.focusEditor();
       await wb.press('Alt+ArrowLeft');
       await wb.page
         .locator('[id="status.editor.selection"]', { hasText: `Ln ${String(home.line)},` })
         .waitFor();
       take.mark('back');
+      await scrollEditorTo(wb, homeScroll);
+      // The outline as at the start: the click expanded the button's window and selected its row.
+      // A click on the window's twistie collapses it (the list's keyboard focus is not on the
+      // selected row, so Left does not), and Escape in the list clears the selection.
+      const expanded = wb.page
+        .locator('.part.sidebar .pane', {
+          has: wb.page.locator('.pane-header', { hasText: 'Widget Outline' }),
+        })
+        .locator('.monaco-list-row[aria-expanded="true"]', { hasText: 'province_window' });
+      await expanded.locator('.monaco-tl-twistie').click();
+      await expanded.waitFor({ state: 'detached' });
+      await wb.press('Escape');
+      await outlineRow.waitFor({ state: 'detached' });
       await endTake(context, rest);
     },
     edit(log, sources) {
@@ -645,6 +780,8 @@ export const CLIPS: readonly Clip[] = [
       const screen = focus(rectOf(eventOf(log, 'screen')), source, ASPECT, { margin: 40 });
       const pick = eventOf(log, 'picked');
       const code = focus(rectOf(pick), source, ASPECT, { margin: 60, minWidth: 1000 });
+      const definition = rectOf(eventOf(log, 'definition'));
+      const row = rectOf(eventOf(log, 'row'));
       const screenRect = rectOf(eventOf(log, 'screen'));
       const hovers = eventsOf(log, 'hover', HOVERED.length);
       // Each tip is a line of small text: the camera moves in on the hovered widgets and their
@@ -653,23 +790,23 @@ export const CLIPS: readonly Clip[] = [
         {
           at: at((hovers[0] as TakeEvent).t) - 0.5,
           view: focus(union(...hovers.map(rectOf)), source, ASPECT, { margin: 40, minWidth: 900 }),
-          inset: insetOf(rectOf(eventOf(log, 'line')), source),
-          // At the right's middle, over the buildings panel: at the top it hid the first tip.
-          insetFrame: { ...INSET, y: 440 },
+          // The three widgets are in one band across the window's middle: the inset's top right
+          // place is above it.
+          inset: windowInset(log, source),
         },
       ];
       const picked = at(pick.t);
-      const back = at(eventOf(log, 'back').t);
+      const leaving = at(eventOf(log, 'leaving').t);
       return vscodeEdit(
         'outline',
         log,
         sources,
         { s0, end: eventOf(log, 'end').t + TAIL },
         [
-          { at: LEAD - 0.4, view: screen, inset: insetOf(rectOf(eventOf(log, 'line')), source) },
+          { at: LEAD - 0.4, view: screen, inset: windowInset(log, source) },
           ...hoverSteps,
           { at: picked - 0.2, view: code, ...previewInset(screenRect, source) },
-          { at: back + 0.1, view: whole(source, ASPECT) },
+          { at: leaving, view: whole(source, ASPECT) },
         ],
         {
           captions: [
@@ -678,7 +815,16 @@ export const CLIPS: readonly Clip[] = [
               to: picked - 0.6,
               text: 'Hover a widget: its path and rect',
             },
-            { from: picked, to: back, text: 'Click: its definition and its place in the outline' },
+            {
+              from: picked,
+              to: leaving + 0.2,
+              text: 'Click: its definition and its place in the outline',
+            },
+          ],
+          // The definition's line and the outline's row, both selected by the click.
+          highlights: [
+            { from: picked + 0.5, to: leaving, panel: 0, rect: definition },
+            { from: picked + 0.5, to: leaving, panel: 0, rect: row },
           ],
         },
       );
@@ -812,8 +958,17 @@ export const CLIPS: readonly Clip[] = [
       );
       await mkdir(logs, { recursive: true });
       await copyFile(profile, path.join(logs, path.basename(profile)));
+      // A first call before the take: it reads the game's script files to link the names, which
+      // takes about 4 s while they are not in the system's file cache (round 4 of the lab's
+      // review); in the take the page then opens as it does on any later call.
+      await wb.command('Etch: Show Latest Script Profile');
+      await wb.markdownPreview('Script profile');
+      await wb.press('Control+W');
+      await wb.page.locator('.tab.active', { hasText: 'provinceview.gui' }).waitFor();
       const rest = await startTake(context);
       take.mark('start');
+      // The palette opens now; its box is known once it lists the command (`palette`).
+      take.mark('typing');
       await wb.command('Etch: Show Latest Script Profile', {
         typeDelayMs: 35,
         onShown: async (box) => {
@@ -827,15 +982,18 @@ export const CLIPS: readonly Clip[] = [
       const heading = await wb.box(page.locator('h1').first());
       const row = await wb.box(link.locator('xpath=ancestor::tr[1]'));
       take.mark('page', { source: 'vscode', rect: union(heading, row) });
+      take.mark('row', { source: 'vscode', rect: row });
       await sleep(2600);
+      take.mark('clicking');
       await clickOn(context, link, { ms: 800 });
       // The file has a lens above every measured block; the one in view is the clicked name's.
+      await wb.page.locator('.tab.active', { hasText: '.txt' }).waitFor();
+      take.mark('opened');
       const lens = wb.page
         .locator('.part.editor .codelens-decoration', { hasText: 'Script profile:' })
         .filter({ visible: true })
         .first();
       await lens.waitFor();
-      await wb.page.locator('.tab.active', { hasText: '.txt' }).waitFor();
       await sleep(300);
       // The lens, the block's name under it and the line the link opened.
       take.mark('lens', { source: 'vscode', rect: union(await wb.box(lens), await wb.lineRect()) });
@@ -853,8 +1011,12 @@ export const CLIPS: readonly Clip[] = [
       const source = sources['vscode'] as Source;
       const s0 = eventOf(log, 'start').t - LEAD;
       const at = (t: number): number => t - s0;
+      const typing = eventOf(log, 'typing');
       const palette = eventOf(log, 'palette');
       const page = eventOf(log, 'page');
+      const row = rectOf(eventOf(log, 'row'));
+      const clicking = at(eventOf(log, 'clicking').t);
+      const opened = at(eventOf(log, 'opened').t);
       const lens = eventOf(log, 'lens');
       const closed = at(eventOf(log, 'closed').t);
       // The lens spans the editor; its text is at its left, the block's first line below it.
@@ -866,8 +1028,9 @@ export const CLIPS: readonly Clip[] = [
         sources,
         { s0, end: eventOf(log, 'end').t + 0.6 },
         [
+          // On the palette as it opens: the title is typed in the close-up, not in the wide shot.
           {
-            at: at(palette.t) - 0.4,
+            at: at(typing.t) - 0.5,
             view: focus(rectOf(palette), source, ASPECT, { margin: 40, minWidth: 1000 }),
           },
           {
@@ -875,7 +1038,8 @@ export const CLIPS: readonly Clip[] = [
             view: focus(rectOf(page), source, ASPECT, { margin: 40, minWidth: 1280 }),
           },
           {
-            at: at(lens.t) - 0.1,
+            // On the block as soon as its file opens: the file's other code is not the point.
+            at: opened - 0.1,
             // Close: the lens is a line of small text, the loop's point.
             view: focus(block, source, ASPECT, { margin: 40, minWidth: 820 }),
           },
@@ -885,7 +1049,8 @@ export const CLIPS: readonly Clip[] = [
           captions: [
             {
               from: at(page.t) + 0.2,
-              to: at(lens.t) - 0.5,
+              // Gone before the camera leaves the page for the block.
+              to: opened - 0.2,
               text: 'The newest script profile: the slowest triggers and effects',
             },
             {
@@ -895,6 +1060,9 @@ export const CLIPS: readonly Clip[] = [
             },
           ],
           highlights: [
+            // The row whose name the pointer clicks, its time and calls the lens repeats.
+            // The pointer glides 0.8 s to the name, then clicks.
+            { from: clicking - 0.6, to: clicking + 1.1, panel: 0, rect: row },
             {
               from: at(lens.t) + 0.4,
               to: closed - 0.7,

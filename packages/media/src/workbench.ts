@@ -607,6 +607,11 @@ export class Workbench {
     );
   }
 
+  /** Waits until the preview outlines no widget at the cursor. */
+  async highlightCleared(): Promise<void> {
+    await this.frame.locator('#selected').waitFor({ state: 'hidden', timeout: PAINT_TIMEOUT_MS });
+  }
+
   /** Moves the focus in the open quick pick down to the item whose label starts with `label`. */
   async focusQuickPickItem(label: string): Promise<void> {
     const focused = this.page.locator('.quick-input-list .monaco-list-row.focused');

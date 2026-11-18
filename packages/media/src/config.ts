@@ -75,6 +75,8 @@ export function workbenchSettings(gamePath: string | undefined): Record<string, 
     'workbench.layoutControl.enabled': false,
     'workbench.editor.enablePreview': false,
     'workbench.editor.empty.hint': 'hidden',
+    // No "recently used" in the palette: a call before the take (`profile`) would show in it.
+    'workbench.commandPalette.history': 0,
     'workbench.statusBar.visible': true,
     'workbench.activityBar.location': 'default',
     'workbench.panel.defaultLocation': 'bottom',
