@@ -288,6 +288,12 @@ name (`texture_diffuse = "tower_diffuse.dds"` in a `pdxmesh`, an animation's
 `file = "eagle_idle.anim"` in an `.asset` file) is looked up beside the mesh
 or the `.asset` file, where vanilla keeps them.
 
+In `.gui` files, hovering a sprite name (`spriteType`, `quadTextureSprite`, a
+list's `background`) shows the sprite the game draws: its kind and frames, the
+`.gfx` file and mod that define it (the last definition wins, as in the game),
+and its texture with a thumbnail, the first frame of a strip. **Go to
+Definition** (F12 or Ctrl+click) opens that `.gfx` file at the sprite's name.
+
 ## Etch 1.x
 
 Etch 2.0.0 replaced 1.x's game host and its diff view with the live game. To

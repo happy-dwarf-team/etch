@@ -10,6 +10,7 @@ import {
   parseScript,
   readGfxFile,
   readGuiFile,
+  spriteReferences,
   textureCandidates,
   widgetPathAt,
   widgetProperties,
@@ -398,6 +399,20 @@ bitmapfonts = {
       'information duplicate-sprite "GFX_ok"',
       'warning missing-texture "gfx/interface/none.dds"',
       'warning missing-font-file "gfx/fonts/none"',
+    ]);
+  });
+
+  it('lists the sprite names a .gui file references, in file order', () => {
+    expect(
+      spriteReferences(file).map((r) => `${r.name} ${guiText.slice(r.node.start, r.node.end)}`),
+    ).toEqual([
+      'GFX_ok "GFX_ok"',
+      'GFX_none "GFX_none"',
+      'GFX_also_none "GFX_also_none"',
+      'gfx_OK "gfx_OK"',
+      'GFX_broken "GFX_broken"',
+      'GFX_ok "GFX_ok"',
+      'GFX_ok "GFX_ok"',
     ]);
   });
 

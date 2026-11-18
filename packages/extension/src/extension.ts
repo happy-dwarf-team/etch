@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { SUPPORTED_GAME_VERSION } from '@etch/core';
 import { registerAssetLinks, type AssetLinks } from './asset-links.ts';
+import { registerSpriteLinks, type SpriteLinks } from './sprite-links.ts';
 import { BuildCheck } from './build-check.ts';
 import { RUNNING_BUILD } from './build-stamp.ts';
 import { registerLiveGame, type LiveGame, type PickMode } from './live-game/index.ts';
@@ -20,6 +21,7 @@ export interface EtchApi {
   readonly pickMode: PickMode;
   readonly texturePreview: TexturePreviewApi;
   readonly assetLinks: AssetLinks;
+  readonly spriteLinks: SpriteLinks;
 }
 
 let liveGame: LiveGame | undefined;
@@ -55,6 +57,7 @@ export function activate(context: vscode.ExtensionContext): EtchApi {
     pickMode: live.pick,
     texturePreview: registerTexturePreview(context, output),
     assetLinks: registerAssetLinks(context, output),
+    spriteLinks: registerSpriteLinks(context, output),
   };
 }
 
