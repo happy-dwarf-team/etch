@@ -161,6 +161,27 @@ describe('checkProvinceIds', () => {
     ]);
   });
 
+  it("checks a great project's start province, not other folders' start", () => {
+    const text = [
+      'test_monument = {',
+      '  start = 4942',
+      '  date = 1.01.01',
+      '  build_trigger = { owns = 151 }',
+      '}',
+      'other_monument = { start = -1 }',
+      'built_later = { start = 151 start_tier = 1 }',
+    ].join('\n');
+    expect(found(text, VANILLA, 'common/great_projects/01_monuments.txt')).toEqual([
+      'start 4942 province-id-out-of-range',
+      'start -1 province-id-out-of-range',
+    ]);
+    // A year elsewhere, and a `start` below the entry's level.
+    expect(found(text, VANILLA, 'common/advisortypes/00_test.txt')).toEqual([]);
+    expect(
+      found('m = { keep_trigger = { start = 9999 } }', VANILLA, 'common/great_projects/x.txt'),
+    ).toEqual([]);
+  });
+
   it('reads keys without regard to case', () => {
     expect(found('e = { trigger = { OWNS = 5075 } }')).toEqual([
       'owns 5075 province-id-out-of-range',

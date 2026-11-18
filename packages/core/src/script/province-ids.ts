@@ -270,14 +270,19 @@ export function checkProvinceIds(
   const found: ProvinceIdDiagnostic[] = [];
   const root = { key: '', scopes: body };
   walk(parsed.entries, root, 0, body ? 0 : firstScopeDepth(path), ids, found);
-  const listKey = body || path === undefined ? undefined : provinceListKey(path);
-  if (listKey !== undefined) {
+  const member = body || path === undefined ? undefined : provinceEntryMember(path);
+  if (member !== undefined) {
     for (const entry of parsed.entries) {
       if (entry.kind !== 'property' || entry.value?.kind !== 'block') continue;
-      for (const member of entry.value.entries) {
-        if (member.kind !== 'property' || member.key.text.toLowerCase() !== listKey) continue;
-        if (member.value?.kind !== 'block') continue;
-        for (const scalar of bareScalars(member.value)) checkScalar(scalar, listKey, ids, found);
+      for (const property of entry.value.entries) {
+        if (property.kind !== 'property' || property.key.text.toLowerCase() !== member.key)
+          continue;
+        const value = property.value;
+        if (member.list && value?.kind === 'block') {
+          for (const scalar of bareScalars(value)) checkScalar(scalar, member.key, ids, found);
+        } else if (!member.list && value?.kind === 'scalar') {
+          checkScalar(value, member.key, ids, found, true);
+        }
       }
     }
   }
@@ -321,23 +326,32 @@ export function provinceHistoryNotRead(
 }
 
 /**
- * Folders whose entries list their provinces in a block of bare ids, with that block's key. The game
- * reads each list as integers with no range check (it logs only an id listed twice) and then indexes
- * the province table with every id: a colonial region's center point while the file is read and its
- * name, each trade company region's provinces when the game starts (`InitTradeCompanyRegions`), and
- * a trade node's `members`, whose provinces it writes its node into (`InitializeProvinces`; the EU4
- * engine lab, 18.11.2026). A trade node's `location` is a `PROVINCE_ID_KEYS` property. Vanilla lists
+ * Folders whose entries list their provinces in a block of bare ids, with that block's key, or give
+ * their province in a property. The game reads each list as integers with no range check (it logs
+ * only an id listed twice) and then indexes the province table with every id: a colonial region's
+ * center point while the file is read and its name, each trade company region's provinces when the
+ * game starts (`InitTradeCompanyRegions`), and a trade node's `members`, whose provinces it writes
+ * its node into (`InitializeProvinces`; the EU4 engine lab, 18.11.2026). A trade node's `location` is a `PROVINCE_ID_KEYS` property. Vanilla lists
  * 3290 ids in the regions and 3369 in the trade nodes, all on its map.
+ *
+ * A great project's (a monument's) `start` is its province, a property of a key that other folders
+ * use for years. The game reads it as an integer with no range check, and when a new game starts it
+ * looks up every project the start date has built in the province table at that index, unchecked
+ * (`CCurrentGameState::InitGreatProjects`), and `CGreatProjectType::OnCreated` writes the project
+ * into that province (the EU4 engine lab, 18.11.2026). Vanilla gives 138 ids, all on its map.
  */
-const PROVINCE_LISTS: readonly (readonly [folder: string, key: string])[] = [
-  ['common/colonial_regions/', 'provinces'],
-  ['common/trade_companies/', 'provinces'],
-  ['common/tradenodes/', 'members'],
+const PROVINCE_ENTRY_MEMBERS: readonly (readonly [folder: string, key: string, list: boolean])[] = [
+  ['common/colonial_regions/', 'provinces', true],
+  ['common/trade_companies/', 'provinces', true],
+  ['common/tradenodes/', 'members', true],
+  ['common/great_projects/', 'start', false],
 ];
 
-function provinceListKey(path: string): string | undefined {
+/** The member of a folder's entries that holds province ids: a list of them, or a single one. */
+function provinceEntryMember(path: string): { key: string; list: boolean } | undefined {
   const lower = path.toLowerCase().replace(/\\/g, '/');
-  return PROVINCE_LISTS.find(([folder]) => lower.startsWith(folder))?.[1];
+  const found = PROVINCE_ENTRY_MEMBERS.find(([folder]) => lower.startsWith(folder));
+  return found === undefined ? undefined : { key: found[1], list: found[2] };
 }
 
 /**
