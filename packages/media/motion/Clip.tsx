@@ -40,6 +40,9 @@ const COLOURS = {
   muted: '#a9abb3',
   accent: '#4fc9a8',
   key: '#2b2d33',
+  /** The preview's menus (View ▾, Data ▾) in VS Code's dark theme, for a veil over one. */
+  menu: '#1f1f1f',
+  menuBorder: '#454545',
 } as const;
 const SANS = '"IBM Plex Sans Variable", sans-serif';
 const MONO = '"JetBrains Mono Variable", monospace';
@@ -202,10 +205,11 @@ function PanelView({
               width: veil.rect.w * scale,
               height: veil.rect.h * scale,
               opacity,
-              backdropFilter: 'blur(18px) brightness(0.5) saturate(0.4)',
-              background: 'rgb(31 32 36 / 0.35)',
-              border: '1px solid rgb(255 255 255 / 0.08)',
-              borderRadius: 8,
+              // A blank menu: the menu's own colours, its text left to the menu's panel.
+              background: COLOURS.menu,
+              border: `1px solid ${COLOURS.menuBorder}`,
+              borderRadius: 4,
+              boxShadow: '0 6px 18px rgb(0 0 0 / 0.55)',
             }}
           />
         );
