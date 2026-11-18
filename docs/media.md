@@ -69,17 +69,27 @@ file is kept after the run. The steps drive VS Code with the keyboard and Playwr
 every step that changes the preview waits for Etch's paint marker (below). FFmpeg's `gfxcapture`
 records the window into a lossless master against the take's clock, and each step logs an event
 on that clock with the rects the edit needs: the cursor's line, the preview's widget outline, a
-menu, a Problems row. Before the take the script checks the framing: the preview at 1280 × 720
-shown unscaled (one game pixel, one device pixel), no preview notice, toast, Find widget, hover,
+menu, a Problems row. Before the take the script checks the framing: the preview at 1440 × 900
+(the large layout the game draws at that height) shown unscaled (one game pixel, one device
+pixel), no preview notice, toast, Find widget, hover,
 suggestion or unexpected quick pick. Any failure stops the run and leaves
 `masters/<clip>.failed.png`.
 
-**The edit.** From the log alone, `clips.ts` builds the clip's edit (`packages/media/src/edit.ts`):
-a camera over the master that opens and closes on the wide shot of the whole window (the loop's
-seam) and eases to close-ups of what each step changes; an inset of the editor whenever a
-close-up leaves it out, so every frame shows the editor and the preview together; captions with
-the keys pressed or what happens; rings around what changed; and a drawn pointer where
-Playwright's mouse moved (the master has none: Playwright's mouse is not the system pointer).
+**The edit.** From the log alone, `clips.ts` builds the clip's edit (`packages/media/src/edit.ts`)
+for the site, where a loop is about 650 px wide: panels cut from the master, mostly a split with
+the control on the left (the code, a menu of the preview, the Widget Outline, Problems) and its
+effect on the right (the preview or the game), each at a scale that still reads at the site's size
+(code at 1.5× or more, the preview's menus at 2.2×). The camera moves only between steps; the loop
+opens and closes on the same shot (its seam). A menu's panel is folded to its button's row while
+the menu is closed and unfolds with it. While a menu of the preview is open over the window, the
+window's panel holds its frame from before the menu opened and shows the window's new state from
+the frame the menu closes, so the menu shows whole in its own panel and never cut off at the
+window panel's edge. Where the pointer crosses other widgets between two it hovers (`outline`),
+the drawn pointer glides while Playwright's mouse moves at the end only, so the preview outlines
+no widget on the way. Panels of text lines longer than they are (code, Problems)
+fade out at their right edge rather than cut a word. Captions give the keys pressed and what they
+do, rings mark what changed once it has, and a pointer is drawn where Playwright's mouse moved (the
+master has none: Playwright's mouse is not the system pointer).
 
 **The render.** The Remotion composition in `packages/media/motion/` draws the edit at
 1920 × 1080, 30 fps, from H.264 proxies of the masters, into a ProRes 4444 cut, whose first frame
@@ -102,8 +112,7 @@ A run of every clip takes about fifteen minutes. It writes into `packages/media/
 ## The scripts' takes
 
 `profile` and `names` show Etch's work on script files (the Etch site specification's section
-3.2.3). Their close-ups show VS Code alone, without game art; their wide shots show the preview
-as the other offline loops do.
+3.2.3). They show VS Code alone: no preview and no game art.
 
 - **`profile`** copies the CSV given with `--profile` into the run's throwaway private profile
   (`<work>/run/user-data/User/globalStorage/happy-dwarf-team.etch/private-install/profile/logs/`),
@@ -131,9 +140,12 @@ specification's section 8.5). It is the only take that starts EU4, and it needs:
 - A base-game save, not ironman, passed with `--save`. The run copies it into its own player
   profile and never opens the original.
 - Your `settings.txt` and `pdx_settings.txt` (with `game_ui_scale=1.000`). The run copies them
-  into its player profile and sets the game windowed at 2560 × 1440; your own files are not
-  changed.
-- A second monitor of at least 2560 × 1440 right of a 3440-pixel-wide primary, both at 100 %:
+  into its player profile and sets the game windowed at the preview's 1440 × 900
+  (`LIVE_GAME_RESOLUTION` in `packages/media/src/config.ts`); your own files are not changed. A
+  live snapshot carries the game's positions, which the preview draws as they are: from a game at
+  2560 × 1440 the province view, anchored at the screen's bottom, was drawn 540 px lower, off the
+  preview's canvas.
+- A second monitor of at least 1440 × 900 right of a 3440-pixel-wide primary, both at 100 %:
   VS Code fills the primary as in the other takes, the game's client area goes to the second
   monitor's top left corner (`GAME_ORIGIN` in `packages/media/src/live.ts`).
 
@@ -147,16 +159,19 @@ install, profile and saves are never touched. The live take's copy of the demo m
 2026-11-18 waited 4–10 minutes and the save never loaded, and without it the save loaded at once;
 why is not known. Then the take runs as a user would: **Etch: Open
 Preview**, **Etch: Start the Live Game** and the save in its quick pick. Through Tongs' pipe it
-waits until the save is loaded (logging the game's state every 30 s while it waits), opens the
-province view of the player's capital and reads where
-the buildings panel is. The real pointer waits over the game's interface, since anywhere outside
-the client area the game scrolls its map.
+waits until the save is loaded (logging the game's state every 30 s while it waits), moves the
+camera to Kaluga (296, the sample data's province), opens its province view and reads where the
+trade node button is. The real pointer waits over the map right of the buildings panel, away from
+the screen's edges (anywhere near or outside them the game scrolls its map) and outside every part
+of the window the edits show.
 
 It runs one reload unrecorded (the first reload of a freshly opened province view blanks the
 province's name, `docs/live-game.md`, and the start state is then the end's), then records both
 windows, each by its own `gfxcapture` (the game's with its pointer) on the take's clock: the
-reload (one keystroke, Ctrl+S, the panel moves, Ctrl+Z, Ctrl+S), then pick mode (Ctrl+Shift+E in
-the game, three widgets hovered, a click on the buildings panel). Closing VS Code stops the live
+reload (one keystroke, Ctrl+S, the button moves, Ctrl+Z, Ctrl+S), then pick mode: the pointer
+goes to the first widget, Ctrl+Shift+E in the game, and the pointer jumps from widget to widget
+(three hovered, the last one the trade node button, then clicked), so pick mode outlines no widget
+on the way. Closing VS Code stops the live
 game: it is saved into the run's private profile and closed after its identity checks. The take
 needs the plugin's build and the pinned game-side builds staged under
 `packages/extension/game/` (`pnpm pins`, CONTRIBUTING.md); without them it stops at once.
@@ -267,7 +282,7 @@ only.
 
 The demo mod is the workspace (its descriptor names the mod); the 0.x scenes edited its dialog,
 which no clip uses since 2.0.0. The takes find their edits by text in the game's file
-(`packages/media/src/clips.ts` and `live.ts`, e.g. the buildings panel's `x=480 y=13`), so a game
+(`packages/media/src/clips.ts` and `live.ts`, e.g. the trade node button's `x = 251 y = 551`), so a game
 patch that changes those texts fails the run.
 
 ## The paint marker

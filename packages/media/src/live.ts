@@ -35,6 +35,7 @@ import { Desktop, SCAN, type Point, type WindowInfo } from './desktop.ts';
 import {
   cameraKeys,
   GUTTER,
+  rows,
   STAGE,
   union,
   viewAt,
@@ -52,8 +53,11 @@ import { Workbench } from './workbench.ts';
 
 /** Where the game's client area goes: the top left corner of the monitor right of the primary. */
 export const GAME_ORIGIN: Point = { x: 3440, y: 0 };
-/** Where the real pointer waits, in the game's client area: over the ornament right of the province view. */
-const GAME_REST: Point = { x: 1200, y: 1000 };
+/**
+ * Where the real pointer waits, in the game's client area: over the map right of the buildings
+ * panel, away from the screen's edges and outside every part of the window the edits show.
+ */
+const GAME_REST: Point = { x: 1050, y: 460 };
 
 /**
  * The edit `reload` saves: the trade node button's x, 251, becomes 151 with one keystroke on its
@@ -78,6 +82,8 @@ const HOVERED = [
 ] as const;
 
 const HOLD_MS = 2400;
+/** The height of `pick`'s game band over the definition, in output pixels. */
+const PICK_BAND = 340;
 
 /** The player's `settings.txt`, windowed at `size` (the engine reads `graphics.size`). */
 export function windowedSettings(
@@ -272,7 +278,9 @@ export async function takeLive(options: ShootOptions & { save: string }): Promis
     const rest = screen(GAME_REST);
     await desktop.movePointer(rest, 300);
 
-    // The sample data's province, as a click on the map opens it.
+    // The sample data's province, as a click on the map opens it: the camera on it, so the map
+    // beside the window is its own.
+    await live.send(`province goto ${String(LIVE_PROVINCE)}`);
     await live.send(`province open ${String(LIVE_PROVINCE)}`);
     await until(
       'the province view',
@@ -376,25 +384,34 @@ export async function takeLive(options: ShootOptions & { save: string }): Promis
     if (await wb.dirty()) throw new Error('reload does not close: the file is still unsaved');
     take.mark('reload.end');
 
-    // pick: pick mode on in the game, a number, an icon and the trade node button hovered, the
-    // button clicked; the pick opens its definition in VS Code and gives the preview a live
-    // snapshot, which repaints it.
+    // pick: the pointer on the first widget, pick mode on in the game; a number, an icon and the
+    // trade node button hovered, the button clicked; the pick opens its definition in VS Code and
+    // gives the preview a live snapshot, which repaints it. Pick mode outlines and labels every
+    // widget under the pointer, so the pointer goes to the first one before it is on and jumps
+    // from one to the next: gliding, it would cross others.
     await sleep(800);
     take.mark('pick.start');
     if (!(await desktop.focus(game.hwnd))) throw new Error('the game could not be brought forward');
+    const [first, ...others] = HOVERED;
+    let target = await live.widget(first);
+    await desktop.movePointer(screen(target.click_point), 650);
     await sleep(500);
     take.mark('pick.on');
     await desktop.keys(SCAN.ctrl, SCAN.shift, SCAN.e);
-    await sleep(900);
-    let target: TongsWidget | undefined;
-    for (const selector of HOVERED) {
+    // Pick mode labels the widget under the pointer once the pointer moves.
+    const nudge = screen(target.click_point);
+    await desktop.movePointer({ x: nudge.x + 2, y: nudge.y }, 50);
+    await sleep(400);
+    take.mark('pick.hover', { source: 'game', rect: rectOfWidget(target), label: first });
+    await sleep(1600);
+    for (const selector of others) {
       const widget = await live.widget(selector);
-      await desktop.movePointer(screen(widget.click_point), 650);
+      await desktop.movePointer(screen(widget.click_point), 0);
+      await sleep(150);
       take.mark('pick.hover', { source: 'game', rect: rectOfWidget(widget), label: selector });
       await sleep(1300);
       target = widget;
     }
-    if (target === undefined) throw new Error('pick hovers nothing');
     const before = await wb.cursor();
     take.mark('pick.click', { source: 'game', point: target.click_point });
     const snapshot = wb
@@ -539,27 +556,37 @@ export const LIVE_CLIPS: readonly Pick<Clip, 'id' | 'edit'>[] = [
   },
   {
     // Pick mode in the game: three widgets hovered, the button clicked; its definition opens in
-    // VS Code beside the game, which shows the province view still: the click did not reach it.
+    // VS Code under the game, which shows the province view still: the click did not reach it.
     id: 'pick',
     edit(log, sources) {
       const code = sources['vscode'] as Source;
       const game = sources['game'] as Source;
-      const s0 = t(eventOf(log, 'pick.on')) - LEAD;
-      const at = (time: number): number => time - s0;
-      const on = at(t(eventOf(log, 'pick.on')));
       const hovers = eventsOf(log, 'pick.hover', HOVERED.length);
+      // The loop opens on pick mode's label of the first widget: no frame shows the game without
+      // Etch's part in it.
+      const s0 = t(hovers[0] as TakeEvent);
+      const at = (time: number): number => time - s0;
       const click = at(t(eventOf(log, 'pick.click')));
       const jump = eventOf(log, 'pick.jump');
       const end = at(t(eventOf(log, 'pick.end')));
-      // The hovered widgets at 2×, the tips the game draws beside them in view.
+      // The hovered widgets at 2×, the labels and tips beside them in view.
       const hovered = viewAt(union(...hovers.map(rectOf)), DETAIL_SCALE, STAGE, game, {
         x: 0.3,
         y: 0.55,
       });
-      const frames = pair({ w: 900, h: STAGE.h }, { w: STAGE.w - GUTTER - 900, h: STAGE.h });
+      // After the click, the game's row of the button on top at 2×, with pick mode's label above
+      // it and the game's own tip beside it (about 490 game px wide, wider than half the stage
+      // at 2×), and the definition under it across the stage.
+      const { top, bottom } = rows(STAGE, PICK_BAND);
       const button = rectOf(hovers[hovers.length - 1] as TakeEvent);
-      const gameSide = viewAt(button, DETAIL_SCALE, frames.left, game, { x: 0.25, y: 0.6 });
-      const definition = codeView(rectOf(jump), frames.right, code);
+      const bandHeight = top.h / DETAIL_SCALE;
+      const gameSide = {
+        x: hovered.x,
+        y: Math.max(0, Math.min(game.height - bandHeight, button.y - 0.6 * bandHeight)),
+        w: hovered.w,
+        h: bandHeight,
+      };
+      const definition = codeView(rectOf(jump), bottom, code);
       const split = at(t(jump)) - 0.1;
       return {
         id: 'pick',
@@ -576,30 +603,25 @@ export const LIVE_CLIPS: readonly Pick<Clip, 'id' | 'edit'>[] = [
                 start: s0,
                 keys: cameraKeys([
                   { at: 0, frame: STAGE, view: hovered },
-                  { at: split, frame: frames.left, view: gameSide, move: 0.6 },
+                  { at: split, frame: top, view: gameSide, move: 0.6 },
                 ]),
               },
               {
                 source: 'vscode',
                 start: s0,
                 keys: cameraKeys([
-                  { at: 0, frame: frames.right, view: definition, opacity: 0 },
-                  { at: split, frame: frames.right, view: definition, opacity: 1, move: 0.6 },
+                  { at: 0, frame: bottom, view: definition, opacity: 0 },
+                  { at: split, frame: bottom, view: definition, opacity: 1, move: 0.6 },
                 ]),
                 fadeRight: TEXT_FADE,
               },
             ],
             captions: [
               {
-                from: on - 0.05,
-                to: at(t(hovers[0] as TakeEvent)) - 0.2,
-                keys: ['Ctrl', 'Shift', 'E'],
-                text: 'pick mode, in the game',
-              },
-              {
-                from: at(t(hovers[0] as TakeEvent)),
+                from: 0,
                 to: click - 0.2,
-                text: 'Each widget: its name, kind, size and file',
+                keys: ['Ctrl', 'Shift', 'E'],
+                text: "pick mode in the game: each widget's name, kind, size and file",
               },
               {
                 from: split + 0.2,
