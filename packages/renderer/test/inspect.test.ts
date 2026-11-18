@@ -91,6 +91,22 @@ describe('inspectTexture', () => {
     const { summary, rgba } = inspectTexture('a.dds', file, 1);
     expect(summary).toMatchObject({ width: 4, height: 4, drawnWidth: 4 });
     expect(Array.from(rgba.subarray(0, 4))).toEqual([255, 0, 0, 255]);
+
+    // 6 × 6, then 3 × 3 in one block: a later level names no padded size.
+    const odd = dds({
+      width: 6,
+      height: 6,
+      fourCC: 'DXT1',
+      mipLevels: 2,
+      data: concat(green, green, green, green, red),
+    });
+    expect(inspectTexture('a.dds', odd, 0).summary).toMatchObject({ width: 6, drawnWidth: 8 });
+    expect(inspectTexture('a.dds', odd, 1).summary).toMatchObject({
+      width: 3,
+      height: 3,
+      drawnWidth: 3,
+      drawnHeight: 3,
+    });
   });
 
   it('shows a DXT image at its header size and names the size the game draws', () => {

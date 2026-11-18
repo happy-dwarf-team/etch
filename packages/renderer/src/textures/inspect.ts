@@ -18,8 +18,9 @@ export interface TextureSummary {
   readonly width: number;
   readonly height: number;
   /**
-   * The size the game draws, when it differs from the header's: a DXT image whose size is not a
-   * multiple of 4 is drawn with its whole blocks, padding texels included (etch#44).
+   * The size the game draws the first level at, when it differs from the header's: a DXT image
+   * whose size is not a multiple of 4 is drawn with its whole blocks, padding texels included
+   * (etch#44). The shown level's size for a later level.
    */
   readonly drawnWidth: number;
   readonly drawnHeight: number;
@@ -72,8 +73,9 @@ export function inspectTexture(name: string, bytes: Uint8Array, level = 0): Insp
         level,
         width,
         height,
-        drawnWidth: image.width,
-        drawnHeight: image.height,
+        // The interface draws the first level only; a later level is shown at its own size.
+        drawnWidth: level === 0 ? image.width : width,
+        drawnHeight: level === 0 ? image.height : height,
         format: image.kind === 'dxt' ? image.format : LAYOUT_NAMES[image.layout],
         dx10,
         mipLevels,
