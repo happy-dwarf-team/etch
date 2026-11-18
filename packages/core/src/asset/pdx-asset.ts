@@ -150,7 +150,9 @@ function readText(text: string): PdxNode {
         if (more === undefined) throw new PdxAssetError(`object "${name}" has no closing ]`);
         name += ` ${more.text}`;
       }
-      open(stack, depth, name.replace(/\]+$/, ''));
+      let end = name.length;
+      while (end > 0 && name[end - 1] === ']') end--;
+      open(stack, depth, name.slice(0, end));
       continue;
     }
     const name = token.text;
