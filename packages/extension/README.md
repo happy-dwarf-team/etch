@@ -188,7 +188,8 @@ it is written (an event, a decision, a mission, an `on_action`, a casus belli,
 a triggered modifier, a church aspect or a scripted trigger), at the block the
 row measured, such as an option's `ai_chance`: in the playset of your
 workspace, or the game folder without one, so a profile from another playset
-may not find every name. While a profile is shown, the script files show its
+may not find every name. The page is a Markdown file in Etch's storage folder,
+written again each time it opens. While a profile is shown, the script files show its
 numbers too: a line above each measured event, option, decision and other
 owner gives its triggers' and effects' time and calls (a scripted trigger's
 from all its uses), and opens the profile. **Etch: Hide the Script Profile in

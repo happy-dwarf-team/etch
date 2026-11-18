@@ -39,7 +39,7 @@ export function activate(context: vscode.ExtensionContext): EtchApi {
   context.subscriptions.push(navigation);
   const live = registerLiveGame(context, output);
   liveGame = live.game;
-  context.subscriptions.push(registerScriptProfile(live.game, output));
+  context.subscriptions.push(registerScriptProfile(live.game, output, context.globalStorageUri));
   context.subscriptions.push(registerProvinceIds(output));
   if (RUNNING_BUILD !== undefined) {
     const build = new BuildCheck(RUNNING_BUILD, context.extensionUri, output);
