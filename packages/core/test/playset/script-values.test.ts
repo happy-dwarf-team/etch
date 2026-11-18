@@ -1,3 +1,4 @@
+import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
@@ -64,6 +65,51 @@ describe('script values of a playset', () => {
   it('reads only the kinds the playset has files for', async () => {
     const names = await loadScriptNames(playset());
     expect([...(names?.byKind.keys() ?? [])]).toEqual(['idea-group', 'idea']);
+  });
+
+  it('reads the scripted effects and triggers, whose calls take arguments', async () => {
+    const files = new GameFiles([
+      { name: 'game', root: join(root, 'game'), replacePaths: [] },
+      { name: 'Calls', root: join(root, 'calls'), replacePaths: [] },
+    ]);
+    await mkdir(join(root, 'calls', 'common', 'scripted_effects'), { recursive: true });
+    await mkdir(join(root, 'calls', 'common', 'scripted_triggers'), { recursive: true });
+    await writeFile(
+      join(root, 'calls', 'common', 'scripted_effects', 'fx.txt'),
+      'pick_ideas = { add_idea_group = $group$ }\n',
+    );
+    const triggers = 'Has_Ideas = { has_idea = no_idea }\nflag = yes\n';
+    await writeFile(join(root, 'calls', 'common', 'scripted_triggers', 't.txt'), triggers);
+    const names = await loadScriptNames(files);
+    expect([...(names?.scripted ?? [])].sort()).toEqual(['has_ideas', 'pick_ideas']);
+    if (names === undefined) return;
+    const codes = (text: string): string[] =>
+      checkScriptValues(parseScript(text, { script: true }), { names }).map(
+        (d) => `${d.key} ${d.code}`,
+      );
+    // A call's arguments are not checked, in a file and in a string's script.
+    expect(codes('e = { immediate = { pick_ideas = { add_idea_group = no_ideas } } }')).toEqual([]);
+    expect(
+      codes('e = { effect = { first_effect = "pick_ideas = { add_idea_group = no_ideas }" } }'),
+    ).toEqual([]);
+    // The scripted trigger's definition, at the top level of its file, is.
+    expect(codes(triggers)).toEqual(['has_idea unknown-idea']);
+  });
+
+  it('reads the graphical cultures of the winning common/graphicalculturetype.txt', async () => {
+    const files = new GameFiles([
+      { name: 'game', root: join(root, 'game'), replacePaths: [] },
+      { name: 'Cultures', root: join(root, 'cultures'), replacePaths: [] },
+    ]);
+    await mkdir(join(root, 'game', 'common'), { recursive: true });
+    await writeFile(join(root, 'game', 'common', 'graphicalculturetype.txt'), 'westerngfx\n');
+    await mkdir(join(root, 'cultures', 'common'), { recursive: true });
+    await writeFile(
+      join(root, 'cultures', 'common', 'graphicalculturetype.txt'),
+      'westerngfx\nelvengfx # a comment\n',
+    );
+    const names = await loadScriptNames(files);
+    expect([...(names?.byKind.get('graphical-culture') ?? [])]).toEqual(['westerngfx', 'elvengfx']);
   });
 
   it('is undefined without any file that defines names', async () => {

@@ -31,7 +31,7 @@ export const CHECK_PROVINCE_IDS = 'etch.checkProvinceIds';
 
 /** Files whose saving can change the map's province ids or the playset's names. */
 const NAME_OR_MAP_FILE =
-  /[\\/](?:map|common[\\/](?:ideas|religions|policies|rebel_types|disasters|institutions|estate_agendas))[\\/][^\\/]+$/i;
+  /[\\/](?:(?:map|common[\\/](?:ideas|religions|policies|rebel_types|disasters|institutions|estate_agendas|advisortypes|scripted_effects|scripted_triggers))[\\/][^\\/]+|common[\\/]graphicalculturetype\.txt)$/i;
 
 /** Diagnostics are not on the preview's path to pixels; a short debounce spares bursts of typing. */
 const DEBOUNCE_MS = 150;
