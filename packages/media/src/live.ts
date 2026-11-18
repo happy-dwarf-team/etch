@@ -311,14 +311,15 @@ export async function takeLive(options: ShootOptions & { save: string }): Promis
       throw new Error(`province ${String(LIVE_PROVINCE)} shows a great project`);
     }
 
-    // The button's x as the game counts it: its left edge less the x in the file.
+    // The button's x as the game counts it: its left edge less the x in the file. Within a
+    // pixel: at 1440 × 900 the game drew x 151 one pixel right of 251 less 100.
     const base = (await live.widget(RELOAD_WIDGET)).rect.x - RELOAD_EDIT.from;
     const buttonAt = async (x: number): Promise<TongsWidget> => {
       let widget: TongsWidget | undefined;
       try {
         await until(
           `the trade node button at x ${String(x)}`,
-          async () => (widget = await live.widget(RELOAD_WIDGET)).rect.x - base === x,
+          async () => Math.abs((widget = await live.widget(RELOAD_WIDGET)).rect.x - base - x) <= 1,
           10_000,
         );
       } catch (error) {
