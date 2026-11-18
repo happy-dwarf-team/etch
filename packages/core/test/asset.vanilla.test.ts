@@ -10,6 +10,7 @@ import {
   jointsOfBones,
   readAnimation,
   readMesh,
+  renderMeshThumbnail,
   skinningMatrices,
   skinPart,
   type PdxMesh,
@@ -130,5 +131,24 @@ describe.skipIf(gamePath === undefined)('meshes and animations of the installed 
       }
     }
     expect(posed).toEqual({ animations: 151, pairs: 444, sane: 444, odd: [] });
+  });
+
+  it('renders a thumbnail of every mesh that draws something', () => {
+    const root = join(gamePath ?? '', 'gfx');
+    const rendered = { meshes: 0, empty: [] as string[], slowestMs: 0 };
+    for (const file of files(root, '.mesh')) {
+      const mesh = readMesh(readFileSync(file));
+      if (mesh.bounds === undefined) continue;
+      const started = performance.now();
+      const image = renderMeshThumbnail(mesh, new Map(), 128);
+      rendered.slowestMs = Math.max(rendered.slowestMs, performance.now() - started);
+      rendered.meshes++;
+      if (!image.rgba.some((value, i) => i % 4 === 3 && value > 0)) {
+        rendered.empty.push(relative(root, file));
+      }
+    }
+    console.log(rendered);
+    expect(rendered.empty).toEqual([]);
+    expect(rendered.meshes).toBe(476);
   });
 });

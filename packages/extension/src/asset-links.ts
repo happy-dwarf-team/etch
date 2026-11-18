@@ -1,15 +1,25 @@
 // Links and hovers on the asset paths of `.gfx` and `.asset` files: a texture, mesh or animation
 // path is a link to the file the playset resolves it to (a texture opens in Etch Texture
 // Preview), and hovering a texture path shows the texture, its size and format, and which layer of
-// the playset it comes from. Paths resolve as `assetReferences` (core) says; the playset is the
+// the playset it comes from; a mesh path's hover shows the mesh's facts and a small render of it
+// with its textures. Paths resolve as `assetReferences` (core) says; the playset is the
 // one the script profile and the province id check use (`linkedFiles`).
 
 import { readFile, stat } from 'node:fs/promises';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
-import { assetReferences, parseScript, type AssetReference } from '@etch/core';
-import { animationFacts, meshFacts, readAnimation, readMesh } from '@etch/core/asset';
+import { assetReferences, parseScript, textureCandidates, type AssetReference } from '@etch/core';
+import {
+  animationFacts,
+  meshFacts,
+  readAnimation,
+  readMesh,
+  renderMeshThumbnail,
+  type RgbaImage,
+} from '@etch/core/asset';
 import type { GameFiles } from '@etch/core/playset';
+import { inspectTexture } from '@etch/renderer/inspect';
+import { encodePng } from './png.ts';
 import { linkedFiles } from './script-profile-view.ts';
 import { TextureThumbnails } from './texture-thumbnail.ts';
 
@@ -31,6 +41,8 @@ export interface ResolvedAsset {
 export class AssetLinks implements vscode.DocumentLinkProvider, vscode.HoverProvider {
   private files: Promise<GameFiles | undefined> | undefined;
   private readonly thumbnails = new TextureThumbnails();
+  /** Mesh renders by the mesh's and its textures' paths, times and sizes. */
+  private readonly meshRenders = new Map<string, Promise<string>>();
   private readonly output: vscode.LogOutputChannel;
 
   constructor(output: vscode.LogOutputChannel) {
@@ -82,6 +94,9 @@ export class AssetLinks implements vscode.DocumentLinkProvider, vscode.HoverProv
     } else {
       try {
         markdown.appendMarkdown(`\n\n${await assetFacts(resolved.absolutePath, reference.kind)}`);
+        if (reference.kind === 'mesh') {
+          markdown.appendMarkdown(`\n\n${await this.meshThumbnail(resolved.absolutePath)}`);
+        }
       } catch (error) {
         markdown.appendMarkdown(`\n\nEtch cannot read it: ${messageOf(error)}.`);
       }
@@ -89,10 +104,42 @@ export class AssetLinks implements vscode.DocumentLinkProvider, vscode.HoverProv
     return new vscode.Hover(markdown, range);
   }
 
+  /**
+   * A mesh drawn with its diffuse textures, as Markdown: each texture its material names is looked
+   * up in the mesh's folder as a bare asset name is (through the playset, else beside the mesh); one
+   * that is missing or unreadable leaves its part grey.
+   */
+  async meshThumbnail(absolutePath: string): Promise<string> {
+    const mesh = readMesh(await readFile(absolutePath));
+    const textures: [string, string][] = [];
+    const keys = [await statKey(absolutePath)];
+    for (const name of meshFacts(mesh).textures) {
+      const found = await this.resolve(vscode.Uri.file(absolutePath), {
+        folder: 'document',
+        candidates: textureCandidates(name),
+      });
+      if (found === undefined) continue;
+      textures.push([name, found.absolutePath]);
+      keys.push(await statKey(found.absolutePath));
+    }
+    const key = keys.join('\n');
+    let entry = this.meshRenders.get(key);
+    if (entry === undefined) {
+      entry = renderMesh(absolutePath, mesh, textures);
+      this.meshRenders.set(key, entry);
+      entry.catch(() => this.meshRenders.delete(key));
+      if (this.meshRenders.size > MESH_RENDERS) {
+        const oldest = this.meshRenders.keys().next().value;
+        if (oldest !== undefined) this.meshRenders.delete(oldest);
+      }
+    }
+    return entry;
+  }
+
   /** The file an asset path leads to, or `undefined` when the playset has none. */
   async resolve(
     document: vscode.Uri,
-    reference: AssetReference,
+    reference: Pick<AssetReference, 'folder' | 'candidates'>,
   ): Promise<ResolvedAsset | undefined> {
     const files = await this.playset();
     if (reference.folder === 'game') {
@@ -128,6 +175,34 @@ export class AssetLinks implements vscode.DocumentLinkProvider, vscode.HoverProv
     );
     return this.files;
   }
+}
+
+/** The side of a mesh's render in a hover, in pixels, and the renders kept. */
+const MESH_THUMBNAIL_SIZE = 128;
+const MESH_RENDERS = 16;
+
+async function statKey(file: string): Promise<string> {
+  const info = await stat(file);
+  return `${file}|${String(info.mtimeMs)}|${String(info.size)}`;
+}
+
+async function renderMesh(
+  absolutePath: string,
+  mesh: ReturnType<typeof readMesh>,
+  textures: readonly [string, string][],
+): Promise<string> {
+  const decoded = new Map<string, RgbaImage>();
+  for (const [name, file] of textures) {
+    try {
+      const { summary, rgba } = inspectTexture(file, await readFile(file));
+      decoded.set(name, { width: summary.width, height: summary.height, rgba });
+    } catch {
+      // A texture Etch cannot read leaves its part grey; its own hover says why.
+    }
+  }
+  const image = renderMeshThumbnail(mesh, decoded, MESH_THUMBNAIL_SIZE);
+  const png = Buffer.from(encodePng(image.width, image.height, image.rgba)).toString('base64');
+  return `![${path.basename(absolutePath)}](data:image/png;base64,${png})`;
 }
 
 /** The facts of a mesh (size, skeleton, shaders, textures) or an animation (frames, joints). */

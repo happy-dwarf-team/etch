@@ -6,3 +6,4 @@ export * from './mesh.ts';
 export * from './anim.ts';
 export * from './facts.ts';
 export * from './skin.ts';
+export * from './render.ts';

@@ -6,6 +6,7 @@ import * as assert from 'node:assert/strict';
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import * as path from 'node:path';
+import { inflateSync } from 'node:zlib';
 import * as vscode from 'vscode';
 import { ANIM, binary, MESH } from '../../core/test/fixtures/pdx-asset.ts';
 
@@ -66,6 +67,7 @@ async function fixtureGame(): Promise<string> {
     'gfx/models/etch/etch_tower.mesh': binary(MESH),
     'gfx/models/etch/etch_tower_diffuse.dds': dds(8, 8, [255, 0, 0, 255]),
     'gfx/models/etch/etch_tower_idle.anim': binary(ANIM),
+    'gfx/models/etch/flag_diffuse.dds': dds(4, 4, [0, 200, 0, 255]),
     'gfx/models/etch/etch_tower.asset': ASSET,
   };
   for (const [name, content] of Object.entries(files)) {
@@ -160,6 +162,13 @@ export async function testAssetLinks(): Promise<void> {
     );
     assert.match(mesh, /Shaders: PdxMeshStandardSkinned/, 'its shaders');
     assert.match(mesh, /Textures: `flag_diffuse\.dds`/, 'and the textures its materials name');
+    const render = /!\[etch_tower\.mesh\]\(data:image\/png;base64,([A-Za-z0-9+/=]+)\)/.exec(mesh);
+    assert.ok(render?.[1] !== undefined, 'a mesh path hovers with a render of the mesh');
+    const pixels = pngPixels(Buffer.from(render[1], 'base64'));
+    assert.ok(
+      pixels.some(([r, g, b, a]) => a === 255 && g > 100 && r < 40 && b < 40),
+      'drawn with the green texture beside it',
+    );
 
     const asset = await vscode.workspace.openTextDocument(
       vscode.Uri.file(path.join(game, 'gfx', 'models', 'etch', 'etch_tower.asset')),
@@ -189,4 +198,28 @@ export async function testAssetLinks(): Promise<void> {
   } finally {
     await settings.update('gamePath', undefined, vscode.ConfigurationTarget.Global);
   }
+}
+
+/** The RGBA pixels of a PNG as `png.ts` writes it: one IDAT, 8-bit RGBA, no filter. */
+function pngPixels(png: Buffer): [number, number, number, number][] {
+  const width = png.readUInt32BE(16);
+  let at = 8;
+  let data: Buffer | undefined;
+  while (at < png.length) {
+    const length = png.readUInt32BE(at);
+    if (png.toString('latin1', at + 4, at + 8) === 'IDAT')
+      data = png.subarray(at + 8, at + 8 + length);
+    at += 12 + length;
+  }
+  assert.ok(data !== undefined, 'the PNG has its image data');
+  const raw = inflateSync(data);
+  const stride = 1 + width * 4;
+  const pixels: [number, number, number, number][] = [];
+  for (let row = 0; row * stride < raw.length; row++) {
+    for (let x = 0; x < width; x++) {
+      const i = row * stride + 1 + x * 4;
+      pixels.push([raw[i] ?? 0, raw[i + 1] ?? 0, raw[i + 2] ?? 0, raw[i + 3] ?? 0]);
+    }
+  }
+  return pixels;
 }
