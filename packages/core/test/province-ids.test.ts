@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   PROVINCE_ID_KEYS,
   checkClimate,
+  checkContinents,
   checkDefaultMap,
   checkProvinceIds,
   isProvinceIdScriptPath,
@@ -385,6 +386,23 @@ describe('isProvinceIdScriptPath', () => {
   });
 });
 
+describe('continent file', () => {
+  it('flags the negative ids of every list, which the game does not skip', () => {
+    const text = [
+      'europe = { 1 -5 9999 0 -0 }',
+      'island_check_provinces = { -1 }',
+      'new_world = { }',
+      'equator = 3',
+    ].join('\n');
+    const diagnostics = checkContinents(parseScript(text), VANILLA);
+    expect(diagnostics.map((d) => `${d.key} ${String(d.id)} ${d.code}`)).toEqual([
+      'europe -5 province-id-out-of-range',
+      'island_check_provinces -1 province-id-out-of-range',
+    ]);
+    expect(text.slice(diagnostics[0]?.start, diagnostics[0]?.end)).toBe('-5');
+  });
+});
+
 describe('climate file', () => {
   it('checks every list of provinces, not the equator', () => {
     const text = [
@@ -439,6 +457,8 @@ describe('default.map', () => {
     expect(parseDefaultMap('width = 1').definitions).toBe('definition.csv');
     expect(parseDefaultMap('width = 1').climate).toBe('climate.txt');
     expect(parseDefaultMap('climate = "my_climate.txt"').climate).toBe('my_climate.txt');
+    expect(parseDefaultMap('width = 1').continent).toBe('continent.txt');
+    expect(parseDefaultMap('continent = "lands.txt"').continent).toBe('lands.txt');
   });
 
   it("checks its own lists against its max_provinces and the definition file's ids", () => {

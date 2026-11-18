@@ -486,6 +486,8 @@ export interface DefaultMap {
   readonly definitions: string;
   /** `climate`: the climate file's name in `map/`, `climate.txt` by default. */
   readonly climate: string;
+  /** `continent`: the continent file's name in `map/`, `continent.txt` by default. */
+  readonly continent: string;
   /** The lists of province ids (`sea_starts`, `lakes`, …), each id with its range. */
   readonly idLists: readonly { readonly key: string; readonly ids: readonly ScalarNode[] }[];
 }
@@ -499,6 +501,7 @@ function readDefaultMap(parsed: ParsedScript): DefaultMap {
   let maxProvinces: number | undefined;
   let definitions = 'definition.csv';
   let climate = 'climate.txt';
+  let continent = 'continent.txt';
   const idLists: { key: string; ids: ScalarNode[] }[] = [];
   for (const entry of parsed.entries) {
     if (entry.kind !== 'property') continue;
@@ -510,11 +513,13 @@ function readDefaultMap(parsed: ParsedScript): DefaultMap {
       definitions = value.text;
     } else if (key === 'climate' && value?.kind === 'scalar' && value.text !== '') {
       climate = value.text;
+    } else if (key === 'continent' && value?.kind === 'scalar' && value.text !== '') {
+      continent = value.text;
     } else if (DEFAULT_MAP_ID_LISTS.includes(key) && value?.kind === 'block') {
       idLists.push({ key, ids: bareScalars(value) });
     }
   }
-  return { maxProvinces, definitions, climate, idLists };
+  return { maxProvinces, definitions, climate, continent, idLists };
 }
 
 function bareScalars(block: BlockNode): ScalarNode[] {
@@ -573,6 +578,26 @@ export function checkClimate(parsed: ParsedScript, ids: ProvinceIds): ProvinceId
     const key = entry.key.text.toLowerCase();
     if (!CLIMATE_ID_LISTS.includes(key)) continue;
     for (const scalar of bareScalars(entry.value)) checkScalar(scalar, key, ids, found, true);
+  }
+  return found.sort((a, b) => a.start - b.start);
+}
+
+/**
+ * The negative province ids in the continent file (`map/continent.txt`, as `map/default.map`'s
+ * `continent` names it), whose every top-level block lists a continent's provinces. The game reads
+ * each id with `atoi` (`CContinent::Read`), and `CMap::ApplyContinents` skips an id at or past the
+ * end of the province table but not a negative one: it reads and writes the continent of the
+ * "province" before the table (the EU4 engine lab, 18.11.2026). Ids past the map are left alone,
+ * since the game skips them.
+ */
+export function checkContinents(parsed: ParsedScript, ids: ProvinceIds): ProvinceIdDiagnostic[] {
+  const found: ProvinceIdDiagnostic[] = [];
+  for (const entry of parsed.entries) {
+    if (entry.kind !== 'property' || entry.value?.kind !== 'block') continue;
+    const key = entry.key.text.toLowerCase();
+    for (const scalar of bareScalars(entry.value)) {
+      if (/^-\d*[1-9]\d*$/.test(scalar.text)) checkScalar(scalar, key, ids, found, true);
+    }
   }
   return found.sort((a, b) => a.start - b.start);
 }
