@@ -639,9 +639,14 @@ export class Workbench {
     await this.frame.locator(`#${menu}-popup:not([hidden])`).waitFor();
   }
 
-  /** Closes the preview's menus, as Escape does. */
+  /**
+   * Closes the preview's menus through its own Escape handler, on the document: Escape pressed on
+   * a toolbar button would leave the button focused, its focus ring in the recording.
+   */
   async closeMenus(): Promise<void> {
-    await this.frame.locator('#view-menu').press('Escape');
+    await this.frame.locator('body').evaluate(() => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    });
     await this.frame.locator('#view-popup').waitFor({ state: 'hidden' });
     await this.frame.locator('#data-popup').waitFor({ state: 'hidden' });
   }
