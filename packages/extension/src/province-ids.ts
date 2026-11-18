@@ -8,6 +8,7 @@
 import { readFile } from 'node:fs/promises';
 import * as vscode from 'vscode';
 import {
+  checkClimate,
   checkDefaultMap,
   decodeGameText,
   isProvinceIdScriptPath,
@@ -287,7 +288,8 @@ export class ProvinceIdDiagnostics implements vscode.Disposable {
 
 /**
  * The province id and name warnings of a file's text by its game path in the playset (the path
- * below the layer that holds it): a script file's, `map/default.map`'s own lists, `undefined` for
+ * below the layer that holds it): a script file's, `map/default.map`'s own lists, the climate
+ * file's lists, `undefined` for
  * any other file, one outside the playset's folders, or a playset with neither a map nor ideas.
  */
 export function diagnose(
@@ -303,6 +305,9 @@ export function diagnose(
     return ids === undefined
       ? undefined
       : checkDefaultMap(parseScript(text, { script: true }), definedIds(ids));
+  }
+  if (ids?.climateFile !== undefined && path.toLowerCase() === ids.climateFile.path.toLowerCase()) {
+    return checkClimate(parseScript(text, { script: true }), ids);
   }
   if (!isProvinceIdScriptPath(path)) return undefined;
   return checkScriptValues(parseScript(text, { script: true }), { ids, names }, path);

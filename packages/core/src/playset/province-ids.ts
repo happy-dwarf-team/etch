@@ -17,6 +17,8 @@ export interface PlaysetProvinceIds extends ProvinceIds {
   readonly mapFile: GameFile;
   /** The winning definition file `map/default.map` names, when a layer has it. */
   readonly definitionFile: GameFile | undefined;
+  /** The winning climate file `map/default.map` names (`climate`), when a layer has it. */
+  readonly climateFile?: GameFile | undefined;
 }
 
 /** A script file's text as the game reads it: Windows-1252, without a leading UTF-8 BOM. */
@@ -27,7 +29,7 @@ function decode(bytes: Uint8Array): string {
 /**
  * The province ids of the playset's map: `max_provinces` of the winning `map/default.map`, a mod's
  * when it has one, and the ids of the winning definition file it names (`definitions`,
- * `map/definition.csv` by default). `undefined` when no layer has `map/default.map` or it sets no
+ * `map/definition.csv` by default), and its climate file. `undefined` when no layer has `map/default.map` or it sets no
  * `max_provinces`.
  */
 export async function loadProvinceIds(files: GameFiles): Promise<PlaysetProvinceIds | undefined> {
@@ -48,6 +50,7 @@ export async function loadProvinceIds(files: GameFiles): Promise<PlaysetProvince
     calls: await loadScriptedProvinceArguments(files),
     mapFile,
     definitionFile,
+    climateFile: await files.find(`map/${map.climate}`),
   };
 }
 

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   PROVINCE_ID_KEYS,
+  checkClimate,
   checkDefaultMap,
   checkProvinceIds,
   isProvinceIdScriptPath,
@@ -384,6 +385,38 @@ describe('isProvinceIdScriptPath', () => {
   });
 });
 
+describe('climate file', () => {
+  it('checks every list of provinces, not the equator', () => {
+    const text = [
+      'tropical = { 151 4942 }',
+      'arid = { -1 }',
+      'arctic = { 1 }',
+      'mild_winter = { 2 } normal_winter = { 3 } SEVERE_WINTER = { 70000 }',
+      'impassable = { 5000 }',
+      'mild_monsoon = { 4 } normal_monsoon = { 5 } severe_monsoon = { 9999 }',
+      'equator_y_on_province_image = 9999',
+      'other = { 9999 }',
+    ].join('\n');
+    const diagnostics = checkClimate(parseScript(text), {
+      ...VANILLA,
+      defined: new Set([1, 2, 3, 4, 5, 151]),
+      definedSource: 'map/definition.csv of the game',
+    });
+    expect(diagnostics.map((d) => `${d.key} ${String(d.id)} ${d.code}`)).toEqual([
+      'tropical 4942 province-id-out-of-range',
+      'arid -1 province-id-out-of-range',
+      'severe_winter 70000 province-id-out-of-range',
+      'impassable 5000 province-id-out-of-range',
+      'severe_monsoon 9999 province-id-out-of-range',
+    ]);
+    const first = diagnostics[0];
+    expect(text.slice(first?.start, first?.end)).toBe('4942');
+    expect(
+      checkClimate(parseScript('arctic = { 7 }'), { ...VANILLA, defined: new Set([1]) })[0]?.code,
+    ).toBe('province-id-not-defined');
+  });
+});
+
 describe('default.map', () => {
   const map = [
     'width = 5632',
@@ -404,6 +437,8 @@ describe('default.map', () => {
     ]);
     expect(parseDefaultMap('width = 1').maxProvinces).toBeUndefined();
     expect(parseDefaultMap('width = 1').definitions).toBe('definition.csv');
+    expect(parseDefaultMap('width = 1').climate).toBe('climate.txt');
+    expect(parseDefaultMap('climate = "my_climate.txt"').climate).toBe('my_climate.txt');
   });
 
   it("checks its own lists against its max_provinces and the definition file's ids", () => {

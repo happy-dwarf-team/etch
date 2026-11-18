@@ -484,6 +484,8 @@ export interface DefaultMap {
   readonly maxProvinces: number | undefined;
   /** `definitions`: the province definition file's name in `map/`, `definition.csv` by default. */
   readonly definitions: string;
+  /** `climate`: the climate file's name in `map/`, `climate.txt` by default. */
+  readonly climate: string;
   /** The lists of province ids (`sea_starts`, `lakes`, …), each id with its range. */
   readonly idLists: readonly { readonly key: string; readonly ids: readonly ScalarNode[] }[];
 }
@@ -496,6 +498,7 @@ export function parseDefaultMap(text: string): DefaultMap {
 function readDefaultMap(parsed: ParsedScript): DefaultMap {
   let maxProvinces: number | undefined;
   let definitions = 'definition.csv';
+  let climate = 'climate.txt';
   const idLists: { key: string; ids: ScalarNode[] }[] = [];
   for (const entry of parsed.entries) {
     if (entry.kind !== 'property') continue;
@@ -505,11 +508,13 @@ function readDefaultMap(parsed: ParsedScript): DefaultMap {
       maxProvinces = Number(value.text);
     } else if (key === 'definitions' && value?.kind === 'scalar' && value.text !== '') {
       definitions = value.text;
+    } else if (key === 'climate' && value?.kind === 'scalar' && value.text !== '') {
+      climate = value.text;
     } else if (DEFAULT_MAP_ID_LISTS.includes(key) && value?.kind === 'block') {
       idLists.push({ key, ids: bareScalars(value) });
     }
   }
-  return { maxProvinces, definitions, idLists };
+  return { maxProvinces, definitions, climate, idLists };
 }
 
 function bareScalars(block: BlockNode): ScalarNode[] {
@@ -536,6 +541,38 @@ export function checkDefaultMap(
   const found: ProvinceIdDiagnostic[] = [];
   for (const list of map.idLists) {
     for (const scalar of list.ids) checkScalar(scalar, list.key, ids, found);
+  }
+  return found.sort((a, b) => a.start - b.start);
+}
+
+/**
+ * The lists of province ids in the climate file (`map/climate.txt`, as `map/default.map`'s `climate`
+ * names it). The game reads each as integers and marks every province's template in it, at
+ * `templates + id × 0x230`, with no range check and no `error.log` line (`CMap::ReadClimate`, the
+ * EU4 engine lab, 18.11.2026): an id past the map writes past the table while the map loads. It
+ * also keeps only the id's low 16 bits. Vanilla 1.37.5 lists 3675 ids, all on its map.
+ */
+export const CLIMATE_ID_LISTS: readonly string[] = [
+  'tropical',
+  'arid',
+  'arctic',
+  'mild_winter',
+  'normal_winter',
+  'severe_winter',
+  'impassable',
+  'mild_monsoon',
+  'normal_monsoon',
+  'severe_monsoon',
+];
+
+/** The province ids in a climate file's lists (`CLIMATE_ID_LISTS`) that the map does not have. */
+export function checkClimate(parsed: ParsedScript, ids: ProvinceIds): ProvinceIdDiagnostic[] {
+  const found: ProvinceIdDiagnostic[] = [];
+  for (const entry of parsed.entries) {
+    if (entry.kind !== 'property' || entry.value?.kind !== 'block') continue;
+    const key = entry.key.text.toLowerCase();
+    if (!CLIMATE_ID_LISTS.includes(key)) continue;
+    for (const scalar of bareScalars(entry.value)) checkScalar(scalar, key, ids, found, true);
   }
   return found.sort((a, b) => a.start - b.start);
 }

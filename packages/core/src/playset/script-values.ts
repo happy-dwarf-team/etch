@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { decodeGameText } from '../game-text.ts';
 import { parseScript } from '../script/parse.ts';
 import {
+  checkClimate,
   checkDefaultMap,
   checkProvinceIds,
   isProvinceIdScriptPath,
@@ -201,7 +202,7 @@ const READ_AHEAD = 16;
  * Every province id and name in the script files the playset loads (the winning copy of each file
  * under `common`, `events`, `decisions`, `missions`, `history` and `customizable_localization`)
  * and every province id in the
- * lists of its `map/default.map` that the playset does not have, by file in path order. Files a
+ * lists of its `map/default.map` and its climate file that the playset does not have, by file in path order. Files a
  * later layer overrides or a `replace_path` hides are not read: the game does not load them.
  */
 export async function findScriptValueProblems(
@@ -240,6 +241,13 @@ export async function findScriptValueProblems(
       findings.push({ file: values.ids.mapFile, text: mapText, diagnostics: mapDiagnostics });
     }
     filesChecked++;
+    const climate = values.ids.climateFile;
+    if (climate !== undefined) {
+      const text = decode(await readFile(climate.absolutePath));
+      const diagnostics = checkClimate(parseScript(text, { script: true }), values.ids);
+      if (diagnostics.length > 0) findings.push({ file: climate, text, diagnostics });
+      filesChecked++;
+    }
   }
   findings.sort((a, b) => compareText(a.file.path.toLowerCase(), b.file.path.toLowerCase()));
   return { findings, filesChecked };
