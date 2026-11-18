@@ -154,10 +154,16 @@ export interface ProfileMod {
 
 /**
  * Where a code-filled widget's text comes from (spec section 5): a path of the chosen save, a
- * localisation key of the playset, the engine (only a live snapshot knows it), or nothing but
- * generated text. Whatever the source, a value it lacks falls through to the generated layer.
+ * localisation key of the playset, the area or region of the chosen province on the playset's
+ * map, the engine (only a live snapshot knows it), or nothing but generated text. Whatever the
+ * source, a value it lacks falls through to the generated layer.
  */
-export type ContentSourceKind = 'save' | 'loc' | 'engine' | 'generated';
+export type ContentSourceKind = 'save' | 'loc' | 'map' | 'engine' | 'generated';
+
+/** What a `map` source names of the chosen province: its area or its area's region. */
+export type MapSource = 'area' | 'region';
+
+export const MAP_SOURCES: readonly MapSource[] = ['area', 'region'];
 
 /**
  * What the generated layer writes: a text, a number, a whole number (a level, a count), a
@@ -201,6 +207,8 @@ export interface ContentSource {
   readonly decimals?: number;
   /** For a `loc` source: the localisation key. */
   readonly loc?: string;
+  /** For a `map` source: the chosen province's area or region, shown localised. */
+  readonly map?: MapSource;
   /** What the generated layer fills the text with. */
   readonly generated: GeneratedKind;
 }

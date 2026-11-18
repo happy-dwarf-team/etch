@@ -27,6 +27,7 @@ export { findPlayset, type FindPlaysetOptions, type Playset } from './playset.ts
 export { parseVdf, type VdfObject } from './vdf.ts';
 export { hostPathFromWindows, isWindowsDrivePath, winePrefixOf } from './wine.ts';
 export { definedIds, loadProvinceIds, type PlaysetProvinceIds } from './province-ids.ts';
+export { loadMapAreas } from './map-areas.ts';
 export {
   checkScriptValues,
   findScriptValueProblems,

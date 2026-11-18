@@ -860,6 +860,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
     const choiceOfSave = this.data.choice;
     const sampleInput = (name: string): SampleInput => ({
       ...(choiceOfSave === undefined ? {} : { save: choiceOfSave }),
+      ...(session.map === undefined ? {} : { map: session.map }),
       localise: localiseKey,
       length: this.data.length,
       hand: this.data.handTexts(name),

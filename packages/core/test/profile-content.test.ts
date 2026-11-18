@@ -215,6 +215,13 @@ describe('reading content, repeaters and links', () => {
 
   it.each([
     ['two sources', '{ "save": "provinces.{province}.name", "loc": "X" }', /one source/],
+    ['a map and a loc', '{ "map": "area", "loc": "X" }', /one source: "save", "loc", "map"/],
+    [
+      'an unknown map',
+      '{ "map": "continent" }',
+      /^"map" is one of area, region, not "continent".$/,
+    ],
+    ['a map with a format', '{ "map": "area", "format": "number" }', /go with a "save"/],
     ['no source', '{ "format": "number" }', /has a source/],
     ['several paths without sum', '{ "save": ["meta.date", "meta.player"] }', /"sum"/],
     ['sum of one path', '{ "save": "meta.date", "transform": "sum" }', /array/],
@@ -272,6 +279,18 @@ describe('the load checks of sample data', () => {
       ['profile-unknown-path', /starts with the template's name/],
       // Without "from" there is no entry to read.
       ['profile-unknown-source', /entry\.key/],
+    ]);
+  });
+
+  it("refuses a map source in a repeater's field: it names the chosen province's", () => {
+    const { diagnostics } = profileOf(`{ "formatVersion": 1, "window": "provinceview",
+      "repeaters": { "provinceview/building_list": { "template": "building_entry",
+        "fields": { "building_entry/builder": { "map": "area" } } } } }`);
+    expect(diagnostics).toMatchObject([
+      {
+        code: 'profile-format',
+        message: expect.stringMatching(/^Unknown property "map" in field/) as unknown,
+      },
     ]);
   });
 
@@ -412,6 +431,73 @@ describe('sampleData', () => {
     expect(text('country_name')?.text).toBe('monarchy');
     // Three buildings: a localised name from the save and a generated builder each.
     expect(sample.counts).toEqual({ hand: 0, live: 0, save: 6 + 3, files: 1, generated: 1 + 3 });
+  });
+
+  it("fills a map source with the chosen province's area or region, localised", async () => {
+    const { profile, diagnostics } = profileOf(`{ "formatVersion": 1, "window": "provinceview",
+      "content": {
+        "provinceview/title": { "map": "area" },
+        "provinceview/label_without_source": { "map": "region" },
+        "provinceview/culture": { "map": "region" }
+      } }`);
+    expect(diagnostics).toEqual([]);
+    expect(profile.content.find((c) => c.id === 'provinceview/title')).toMatchObject({
+      source: 'map',
+      map: 'area',
+      generated: 'text',
+    });
+    const map = {
+      area: new Map([
+        [1, 'uppland_area'],
+        [2, 'gotland_area'],
+      ]),
+      region: new Map([['uppland_area', 'scandinavia_region']]),
+    };
+    const loc: Record<string, string> = {
+      uppland_area: 'Uppland',
+      scandinavia_region: 'Scandinavia',
+    };
+    const at = async (province: number, overrides: Partial<SampleInput> = {}) => {
+      const sample = sampleData(
+        profile,
+        WINDOW,
+        undefined,
+        input({
+          save: new SaveChoice(await save(), 'SWE', province),
+          map,
+          localise: (key) => loc[key],
+          ...overrides,
+        }),
+      );
+      return (name: string) => sample.text(named(name));
+    };
+    const stockholm = await at(1);
+    expect(stockholm('title')).toEqual({
+      text: 'Uppland',
+      layer: 'files',
+      detail: 'area uppland_area',
+    });
+    expect(stockholm('label_without_source')).toEqual({
+      text: 'Scandinavia',
+      layer: 'files',
+      detail: 'region scandinavia_region',
+    });
+    // An area without its localisation shows its key; one without a region falls through.
+    const gotland = await at(2);
+    expect(gotland('title')).toMatchObject({ text: 'gotland_area', layer: 'files' });
+    expect(gotland('culture')).toMatchObject({ text: 'Northmarch', layer: 'generated' });
+    // A province the map does not place, or no map, falls through too.
+    expect((await at(3))('title')).toMatchObject({ layer: 'generated' });
+    const noMap = sampleData(
+      profile,
+      WINDOW,
+      undefined,
+      input({ save: new SaveChoice(await save(), 'SWE', 1) }),
+    );
+    expect(noMap.text(named('title'))).toMatchObject({ layer: 'generated' });
+    // Without a save there is no province.
+    const none = sampleData(profile, WINDOW, undefined, input({ map }));
+    expect(none.text(named('title'))).toMatchObject({ layer: 'generated' });
   });
 
   it('lets a value the save lacks fall through to the generated layer', async () => {

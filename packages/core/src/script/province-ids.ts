@@ -488,6 +488,10 @@ export interface DefaultMap {
   readonly climate: string;
   /** `continent`: the continent file's name in `map/`, `continent.txt` by default. */
   readonly continent: string;
+  /** `area`: the area file's name in `map/`, `area.txt` by default. */
+  readonly area: string;
+  /** `region`: the region file's name in `map/`, `region.txt` by default. */
+  readonly region: string;
   /** The lists of province ids (`sea_starts`, `lakes`, …), each id with its range. */
   readonly idLists: readonly { readonly key: string; readonly ids: readonly ScalarNode[] }[];
 }
@@ -502,6 +506,8 @@ function readDefaultMap(parsed: ParsedScript): DefaultMap {
   let definitions = 'definition.csv';
   let climate = 'climate.txt';
   let continent = 'continent.txt';
+  let area = 'area.txt';
+  let region = 'region.txt';
   const idLists: { key: string; ids: ScalarNode[] }[] = [];
   for (const entry of parsed.entries) {
     if (entry.kind !== 'property') continue;
@@ -515,11 +521,15 @@ function readDefaultMap(parsed: ParsedScript): DefaultMap {
       climate = value.text;
     } else if (key === 'continent' && value?.kind === 'scalar' && value.text !== '') {
       continent = value.text;
+    } else if (key === 'area' && value?.kind === 'scalar' && value.text !== '') {
+      area = value.text;
+    } else if (key === 'region' && value?.kind === 'scalar' && value.text !== '') {
+      region = value.text;
     } else if (DEFAULT_MAP_ID_LISTS.includes(key) && value?.kind === 'block') {
       idLists.push({ key, ids: bareScalars(value) });
     }
   }
-  return { maxProvinces, definitions, climate, continent, idLists };
+  return { maxProvinces, definitions, climate, continent, area, region, idLists };
 }
 
 function bareScalars(block: BlockNode): ScalarNode[] {

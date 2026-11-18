@@ -9,6 +9,7 @@ import type { SourceRange } from '../script/tree.ts';
 import { factNamed } from './facts.ts';
 import {
   GENERATED_KINDS,
+  MAP_SOURCES,
   PROFILE_FORMAT_VERSION,
   SELECTOR_KINDS,
   VALUE_FORMATS,
@@ -19,6 +20,7 @@ import {
   type ContentTransform,
   type GeneratedKind,
   type Group,
+  type MapSource,
   type Link,
   type PlacePoint,
   type Placement,
@@ -226,16 +228,19 @@ export function pathId(path: string): string {
   return path.trim().toLowerCase();
 }
 
-const SOURCE_KEYS = ['save', 'loc', 'engine', 'generated', 'transform', 'format', 'decimals'];
+/** The keys of a repeater field's source; a content entry's take `map` too. */
+const FIELD_SOURCE_KEYS = ['save', 'loc', 'engine', 'generated', 'transform', 'format', 'decimals'];
+const SOURCE_KEYS = [...FIELD_SOURCE_KEYS, 'map'];
 
 /** The source of a text, from the properties of a content entry or a repeater's field. */
 function readSource(node: JsonNode, props: Map<string, JsonNode>, what: string): ContentSource {
   const saveNode = props.get('save');
   const locNode = props.get('loc');
+  const mapNode = props.get('map');
   const engineNode = props.get('engine');
-  const sources = [saveNode, locNode, engineNode].filter((n) => n !== undefined);
+  const sources = [saveNode, locNode, mapNode, engineNode].filter((n) => n !== undefined);
   if (sources.length > 1) {
-    throw new Faulty(`${capitalise(what)} has one source: "save", "loc" or "engine".`, node);
+    throw new Faulty(`${capitalise(what)} has one source: "save", "loc", "map" or "engine".`, node);
   }
   const generatedNode = props.get('generated');
   let generated: GeneratedKind | undefined;
@@ -251,7 +256,7 @@ function readSource(node: JsonNode, props: Map<string, JsonNode>, what: string):
   }
   if (sources.length === 0 && generated === undefined) {
     throw new Faulty(
-      `${capitalise(what)} has a source: "save", "loc", "engine" or "generated".`,
+      `${capitalise(what)} has a source: "save", "loc", "map", "engine" or "generated".`,
       node,
     );
   }
@@ -324,6 +329,14 @@ function readSource(node: JsonNode, props: Map<string, JsonNode>, what: string):
   }
   let loc: string | undefined;
   if (locNode !== undefined) loc = text$(locNode, '"loc"');
+  let map: MapSource | undefined;
+  if (mapNode !== undefined) {
+    const name = text$(mapNode, '"map"');
+    if (!(MAP_SOURCES as readonly string[]).includes(name)) {
+      throw new Faulty(`"map" is one of ${MAP_SOURCES.join(', ')}, not "${name}".`, mapNode);
+    }
+    map = name as MapSource;
+  }
   if (engineNode !== undefined && (engineNode.kind !== 'boolean' || !engineNode.value)) {
     throw new Faulty('"engine" is true: only a live snapshot knows the value.', engineNode);
   }
@@ -333,9 +346,11 @@ function readSource(node: JsonNode, props: Map<string, JsonNode>, what: string):
       ? 'save'
       : locNode !== undefined
         ? 'loc'
-        : engineNode !== undefined
-          ? 'engine'
-          : 'generated';
+        : mapNode !== undefined
+          ? 'map'
+          : engineNode !== undefined
+            ? 'engine'
+            : 'generated';
   return {
     source,
     save,
@@ -343,6 +358,7 @@ function readSource(node: JsonNode, props: Map<string, JsonNode>, what: string):
     format,
     ...(decimals === undefined ? {} : { decimals }),
     ...(loc === undefined ? {} : { loc }),
+    ...(map === undefined ? {} : { map }),
     generated: generated ?? (format === 'text' ? 'text' : format),
   };
 }
@@ -415,7 +431,7 @@ function readRepeater(
     }
     for (const entry of fieldsNode.members) {
       const field = `field "${entry.key}"`;
-      const fieldProps = object(entry.value, field, SOURCE_KEYS);
+      const fieldProps = object(entry.value, field, FIELD_SOURCE_KEYS);
       fields.push({ path: pathKey(entry), ...readSource(entry.value, fieldProps, field) });
     }
   }

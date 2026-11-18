@@ -1,5 +1,6 @@
 // The playset one preview draws with (spec sections 2 and 8): the game, the mods, their interface
-// files, the texture sizes and fonts layout has read, and the localisation in `etch.language`.
+// files, the texture sizes and fonts layout has read, the localisation in `etch.language`, and the
+// map's areas and regions, read once per session, for sample data.
 // It also holds the player's `settings.txt`, read once per session, for the default preview
 // resolution (spec section 6). Loading it is the bulk of a cold open; a warm reload only updates
 // the files that changed.
@@ -10,6 +11,7 @@ import {
   type GovernmentMechanic,
   type GuiFile,
   type Localisation,
+  type MapAreas,
   type Widget,
 } from '@etch/core';
 import {
@@ -17,6 +19,7 @@ import {
   PlaysetInterface,
   findPlayset,
   loadGovernmentMechanics,
+  loadMapAreas,
   loadPlaysetLocalisation,
   readPlayerSettings,
   type Playset,
@@ -58,6 +61,8 @@ export class PreviewSession {
   readonly player: PlayerSettings | undefined;
   /** The government mechanics, read once per session: `common` files change little. */
   readonly mechanics: PlaysetMechanics;
+  /** The map's areas and regions, read once per session; `undefined` when they could not be. */
+  readonly map: MapAreas | undefined;
   readonly notices: readonly Notice[];
 
   private constructor(
@@ -68,6 +73,7 @@ export class PreviewSession {
     localisation: Localisation | undefined,
     player: PlayerSettings | undefined,
     mechanics: PlaysetMechanics,
+    map: MapAreas | undefined,
     notices: readonly Notice[],
   ) {
     this.settings = settings;
@@ -78,6 +84,7 @@ export class PreviewSession {
     this.localisation = localisation;
     this.player = player;
     this.mechanics = mechanics;
+    this.map = map;
     this.notices = notices;
   }
 
@@ -97,7 +104,7 @@ export class PreviewSession {
       severity: found.severity,
       message: found.path === undefined ? found.message : `${found.message} (${found.path})`,
     }));
-    const [ui, localisation, player, mechanics] = await Promise.all([
+    const [ui, localisation, player, mechanics, map] = await Promise.all([
       PlaysetInterface.load(playset.files),
       loadPlaysetLocalisation(playset.files, settings.language).catch((error: unknown) => {
         notices.push({
@@ -113,6 +120,13 @@ export class PreviewSession {
           message: `The government mechanics could not be read: ${messageOf(error)}`,
         });
         return { mechanics: [], basic: [], scripted: [] };
+      }),
+      loadMapAreas(playset.files).catch((error: unknown) => {
+        notices.push({
+          severity: 'error',
+          message: `The map's areas and regions could not be read: ${messageOf(error)}`,
+        });
+        return undefined;
       }),
     ]);
     if (player?.uiScale !== undefined && player.uiScale !== 1) {
@@ -131,6 +145,7 @@ export class PreviewSession {
       localisation,
       player,
       mechanics,
+      map,
       notices,
     );
   }
