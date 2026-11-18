@@ -1,5 +1,5 @@
 import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { homedir, tmpdir } from 'node:os';
 import { join, resolve, sep } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
@@ -7,7 +7,9 @@ import {
   findProfileFolder,
   findSteamFolders,
   pathKey,
+  readSteamLibraries,
   samePath,
+  systemEnvironment,
 } from '../../src/playset/locate.ts';
 import type { DiscoveryEnvironment } from '../../src/playset/locate.ts';
 
@@ -154,5 +156,66 @@ describe('discovery on Linux', () => {
 
   it('falls back to Documents when neither exists', async () => {
     expect(await findProfileFolder(undefined, linux)).toBe(join(home, 'Documents', leaf()));
+  });
+});
+
+describe('readSteamLibraries', () => {
+  let steam: string;
+  beforeEach(async () => {
+    steam = await mkdtemp(join(tmpdir(), 'etch-steam-'));
+    await mkdir(join(steam, 'steamapps'));
+  });
+  afterEach(() => rm(steam, { recursive: true, force: true }));
+  const write = (text: string) => writeFile(join(steam, 'steamapps', 'libraryfolders.vdf'), text);
+
+  it('reads old files that map an index to a path, and current ones with apps, nothing else', async () => {
+    await write(
+      '"libraryfolders" { "contentstatsid" "-1" "1" "D:\\\\Games" ' +
+        '"2" { "path" "E:\\\\Steam" "apps" { "236850" "1" } } "3" { "label" "" } }',
+    );
+    expect(await readSteamLibraries(steam)).toEqual([
+      { path: 'D:\\Games', hasEu4: false },
+      { path: 'E:\\Steam', hasEu4: true },
+    ]);
+  });
+
+  it('gives no library without the file or its libraryfolders block', async () => {
+    expect(await readSteamLibraries(steam)).toEqual([]);
+    await write('"libraryfolders" "none"');
+    expect(await readSteamLibraries(steam)).toEqual([]);
+    await write('"other" { "1" "D:\\\\Games" }');
+    expect(await readSteamLibraries(steam)).toEqual([]);
+  });
+});
+
+describe('systemEnvironment', () => {
+  it("is the process's environment and home folder", () => {
+    const environment = systemEnvironment();
+    expect(environment.env).toBe(process.env);
+    expect(environment.homedir).toBe(homedir());
+    expect(environment.platform).toBeUndefined();
+  });
+
+  // Every Windows has this key; reg.exe prints its REG_SZ values.
+  const currentVersion = 'HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion';
+  it.runIf(process.platform === 'win32')(
+    'reads a registry value with reg.exe, its name without regard to case',
+    async () => {
+      const environment = systemEnvironment();
+      const read = (key: string, value: string) => environment.readRegistryValue(key, value);
+      expect(await read(currentVersion, 'ProductName')).toMatch(/^Windows /);
+      expect(await read(currentVersion, 'productname')).toMatch(/^Windows /);
+      expect(await read(currentVersion, 'EtchNoSuchValue')).toBeUndefined();
+      // A REG_DWORD is not a path.
+      expect(await read(currentVersion, 'CurrentMajorVersionNumber')).toBeUndefined();
+      expect(await read('HKCU\\Software\\EtchNoSuchKey', 'SteamPath')).toBeUndefined();
+    },
+    20_000,
+  );
+
+  it.skipIf(process.platform === 'win32')('reads no registry off Windows', async () => {
+    expect(await systemEnvironment().readRegistryValue(currentVersion, 'ProductName')).toBe(
+      undefined,
+    );
   });
 });
