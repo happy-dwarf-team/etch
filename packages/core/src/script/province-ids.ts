@@ -18,6 +18,14 @@ export type ProvinceIdKeyKind = 'trigger' | 'effect' | 'property';
  * key that also takes a tag, a scope or a name (`add_core = FRA`, `capital = yes`) is only checked
  * when its value is an integer. Keys whose integers vanilla uses for other things (`start`, a year;
  * `random`, a chance) are left out.
+ *
+ * Vanilla gives no integer to six more keys that mods use with province ids (18.11.2026, the 68
+ * Workshop items of the EU4 engine lab): `owns_or_subject_of` (2256 uses), the name that replaced
+ * `owns_or_vassal_of` in 1.20, which the game still maps to it, `is_state_core`,
+ * `is_territorial_core`, `subject_owns`, `add_territorial_core` and `undiscover_province`. Their
+ * classes read the id with `atoi` and index the province table without a range check, as `owns`
+ * does (the lab's `docs/script-unchecked-indexes.md`); that these keywords name those classes is
+ * read from the class names, the game's keyword strings and the 1.20 patch notes.
  */
 export const PROVINCE_ID_KEYS: ReadonlyMap<string, ProvinceIdKeyKind> = new Map<
   string,
@@ -38,6 +46,10 @@ export const PROVINCE_ID_KEYS: ReadonlyMap<string, ProvinceIdKeyKind> = new Map<
   ['higher_development_than', 'trigger'],
   ['is_neighbor_of_province', 'trigger'],
   ['same_trade_node_as', 'trigger'],
+  ['owns_or_subject_of', 'trigger'],
+  ['is_state_core', 'trigger'],
+  ['is_territorial_core', 'trigger'],
+  ['subject_owns', 'trigger'],
   // Effects.
   ['add_core', 'effect'],
   ['remove_core', 'effect'],
@@ -47,6 +59,8 @@ export const PROVINCE_ID_KEYS: ReadonlyMap<string, ProvinceIdKeyKind> = new Map<
   ['set_capital', 'effect'],
   ['discover_province', 'effect'],
   ['war_goal_province', 'effect'],
+  ['add_territorial_core', 'effect'],
+  ['undiscover_province', 'effect'],
   // Properties of database entries and blocks: an event's `goto`, a decision's `do_not_core`, an
   // advisor's or trade node's `location`, a mercenary company's `home_province`, a bookmark's
   // `center`, an institution's `historical_start_province`, a religion's `center_of_religion` and

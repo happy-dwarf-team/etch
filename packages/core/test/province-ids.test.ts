@@ -182,6 +182,26 @@ describe('checkProvinceIds', () => {
     expect(string.map((d) => `${d.key} ${String(d.id)}`)).toEqual(['id 5075']);
   });
 
+  it('checks the keys mods give province ids that vanilla does not', () => {
+    const text = [
+      'e = {',
+      '  trigger = {',
+      '    owns_or_subject_of = 5075 is_state_core = 5076 is_territorial_core = 5077',
+      '    subject_owns = 5078 is_state_core = FRA owns_or_subject_of = 151',
+      '  }',
+      '  immediate = { add_territorial_core = 5079 undiscover_province = 5080 }',
+      '}',
+    ].join('\n');
+    expect(found(text).map((line) => line.split(' ').slice(0, 2).join(' '))).toEqual([
+      'owns_or_subject_of 5075',
+      'is_state_core 5076',
+      'is_territorial_core 5077',
+      'subject_owns 5078',
+      'add_territorial_core 5079',
+      'undiscover_province 5080',
+    ]);
+  });
+
   it('knows the keys the vanilla survey found, by kind', () => {
     expect(PROVINCE_ID_KEYS.get('owns')).toBe('trigger');
     expect(PROVINCE_ID_KEYS.get('province_id')).toBe('trigger');
