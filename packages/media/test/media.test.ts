@@ -47,6 +47,7 @@ describe('VS Code', () => {
       'window.zoomLevel': 0,
       'editor.minimap.enabled': false,
       'breadcrumbs.enabled': false,
+      'files.encoding': 'windows1252',
       'etch.previewResolution': '1440x900',
     });
     expect(settings).not.toHaveProperty('etch.gamePath');

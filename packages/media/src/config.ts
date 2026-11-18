@@ -104,6 +104,11 @@ export function workbenchSettings(gamePath: string | undefined): Record<string, 
     'editor.parameterHints.enabled': false,
     'editor.inlineSuggest.enabled': false,
     'files.autoSave': 'off',
+    // The game reads its script and interface files as Windows-1252, and the base game's
+    // provinceview.gui holds bytes that differ in UTF-8: opened as UTF-8 it shows Etch's encoding
+    // warnings in Problems, which no loop is about. Opened in the game's encoding, as Etch offers
+    // to reopen it (README, "Encoding"), it has none.
+    'files.encoding': 'windows1252',
     'git.enabled': false,
     'extensions.ignoreRecommendations': true,
     'extensions.autoCheckUpdates': false,
