@@ -399,7 +399,8 @@ describe('the JSON Schema', () => {
     expect(keys('view')).toEqual(['label', 'set', 'toggles']);
     const source = ['decimals', 'engine', 'format', 'generated', 'loc', 'save', 'transform'];
     expect(keys('source')).toEqual(source);
-    expect(keys('content')).toEqual([...source, 'note', 'sizedBy'].sort());
+    // A content entry also takes a map source; a repeater's field does not.
+    expect(keys('content')).toEqual([...source, 'map', 'note', 'sizedBy'].sort());
     expect(keys('repeater')).toEqual([
       'count',
       'fields',

@@ -5,7 +5,8 @@
  * 0. **hand**: a text the user typed for a widget, by its path, any text of the window;
  * 1. **live**: a live snapshot (M9), by widget path, when it is on;
  * 2. **save**: the chosen save, country and province, through the profile's `save` sources;
- * 3. **files**: the playset's localisation, for `loc` sources and the `localise` transform;
+ * 3. **files**: the playset's localisation, for `loc` sources and the `localise` transform, and
+ *    its map, for `map` sources (the chosen province's area and region);
  * 4. **generated**: text, numbers, percentages and dates of a chosen length.
  *
  * A value a layer lacks falls through to the next; Etch never computes one the way the engine
@@ -16,6 +17,7 @@
 import type { LayoutContent } from '../layout/window.ts';
 import type { GuiFile, Widget } from '../model/gui.ts';
 import { scalarIn, valueIn } from '../save/save.ts';
+import { mapAreaOf, type MapAreas } from '../script/map-areas.ts';
 import type { ContentSource, GeneratedKind, Link, Placement, WindowProfile } from './format.ts';
 import { entryPath, widgetsAt, windowPaths } from './paths.ts';
 import { readSavePath, type RepeaterEntry, type SaveChoice } from './save-paths.ts';
@@ -103,6 +105,8 @@ export interface SampleInput {
   readonly save?: SaveChoice;
   /** The playset's localisation of a key; `undefined` when it has none. */
   readonly localise: (key: string) => string | undefined;
+  /** The playset's areas and regions, for `map` sources; without them those fall through. */
+  readonly map?: MapAreas;
   readonly length: TextLength;
   /** A live snapshot, when one is on (M9). */
   readonly live?: LiveTexts;
@@ -385,6 +389,12 @@ function resolve(
   if (source.source === 'loc' && source.loc !== undefined) {
     const text = input.localise(source.loc);
     if (text !== undefined) return { text, layer: 'files', detail: source.loc };
+  }
+  const province = input.save?.province;
+  if (source.source === 'map' && source.map !== undefined && province !== undefined) {
+    const key = input.map === undefined ? undefined : mapAreaOf(input.map, province, source.map);
+    if (key !== undefined)
+      return { text: input.localise(key) ?? key, layer: 'files', detail: `${source.map} ${key}` };
   }
   return {
     text: generatedText(source.generated, input.length),

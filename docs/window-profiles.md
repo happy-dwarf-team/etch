@@ -168,6 +168,7 @@ data** there (spec section 5). Each entry has one source:
 | --- | --- | --- |
 | `save` | `{ "save": "provinces.{province}.base_tax", "format": "number" }` | the value in the save chosen in `Data ▾` |
 | `loc` | `{ "loc": "PROVINCE_VIEW_TITLE" }` | the playset's localisation of the key |
+| `map` | `{ "map": "area" }` | the area (`area`) or region (`region`) of the province chosen in `Data ▾`, localised |
 | `engine` | `{ "engine": true, "generated": "number" }` | only a live snapshot knows it (income, unrest, supply) |
 | `generated` | `{ "generated": "percent" }` | generated text only |
 
@@ -181,6 +182,11 @@ format) at the length chosen in `Data ▾`. A save source takes:
 - `transform`: `sum` adds up several save paths (`"save": [ … ]`, a number), `localise`
   shows the localisation of the value (`culture=swedish` shows "Swedish", `owner="SWE"` shows
   "Sweden"). These are the only transforms: Etch never works a value out as the engine would.
+
+A `map` source reads the playset's map files once per session: the area file and the region file
+that the winning `map/default.map` names (`area.txt` and `region.txt` by default). The province
+view's `area_name` and `states_tab_button` show the chosen province's area ("Oka" for Kaluga),
+and `region_name` its area's region ("Russia"). A repeater's field has no `map` source.
 
 Any entry may also take `sizedBy`, a localisation key, for a fixed-size text box (`fixedsize`) the
 game's code first sets to that text with its height left open (`ChangeString` with `true`): the

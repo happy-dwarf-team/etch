@@ -162,12 +162,20 @@
   },
   // Sample data (spec section 5): the save's values where a province block holds them (etch#154),
   // engine values (income, unrest, supply, modifiers) only from a live snapshot, generated text
-  // under everything. Area and region names need the map files, which Etch does not read.
+  // under everything. The area and region come from the playset's map; the tabs show the
+  // province's name and its area's, and the trade node button the node's name (every province
+  // view of the corpus: Macedonia, Macedonia, Balkans and Ragusa for province 148 in vanilla).
   "content": {
     "provinceview/top_section_window/provincename": { "save": "provinces.{province}.name" },
     "provinceview/top_section_window/capitalname": { "save": "provinces.{province}.capital" },
-    "provinceview/top_section_window/area_name": { "generated": "text" },
-    "provinceview/top_section_window/region_name": { "generated": "text" },
+    "provinceview/top_section_window/area_name": { "map": "area" },
+    "provinceview/top_section_window/region_name": { "map": "region" },
+    "provinceview/top_section_window/province_tab_button": { "save": "provinces.{province}.name" },
+    "provinceview/top_section_window/states_tab_button": { "map": "area" },
+    "provinceview/province_window/tradenode_button": {
+      "save": "provinces.{province}.trade",
+      "transform": "localise",
+    },
     "provinceview/province_window/tax_base_value": {
       "save": "provinces.{province}.base_tax",
       "format": "number",

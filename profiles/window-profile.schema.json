@@ -328,6 +328,7 @@
       "anyOf": [
         { "required": ["save"] },
         { "required": ["loc"] },
+        { "required": ["map"] },
         { "required": ["engine"] },
         { "required": ["generated"] }
       ],
@@ -342,6 +343,10 @@
         "loc": {
           "description": "A localisation key of the playset.",
           "$ref": "#/definitions/text"
+        },
+        "map": {
+          "description": "The area or region of the province chosen in Data, from the playset's map files (map/area.txt, map/region.txt), localised.",
+          "enum": ["area", "region"]
         },
         "engine": {
           "description": "The engine works the value out (income, unrest, supply): only a live snapshot fills it.",

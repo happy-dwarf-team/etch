@@ -58,6 +58,17 @@ refresh is a step of the 3.0.0 release.
 
 ## Done since 2.0.0
 
+- **Area and region names in sample data.** A profile's `content` takes a `map`
+  source, `area` or `region`: the chosen province's area, or its area's region,
+  from the playset's map files (the area and region files the winning
+  `map/default.map` names), localised, in the `files` layer of `Data ▾`. The
+  map is read once per session. The vanilla province view shows them in
+  `area_name`, `region_name` and the state tab (`states_tab_button`), the
+  province's name on its own tab (`province_tab_button`, from the save) and
+  the trade node's name on `tradenode_button` (the save's `trade`, localised),
+  as every province view of the corpus shows them in the game. The state
+  window's `state_name` stays generated: no capture shows it.
+
 - **Scripted selectors from `common/custom_gui` (a profile skeleton).**
   **Etch: Add Scripted Selectors to the Window Profile** reads the playset's
   `common/custom_gui` and, for each widget of the previewed window (below its
