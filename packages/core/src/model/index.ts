@@ -5,3 +5,4 @@ export * from './interface-index.ts';
 export * from './properties.ts';
 export * from './references.ts';
 export * from './asset-paths.ts';
+export * from './script-sprites.ts';

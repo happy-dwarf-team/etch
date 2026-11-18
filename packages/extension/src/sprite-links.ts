@@ -1,5 +1,6 @@
 // Hovers and Go to Definition on the sprite names of `.gui` files (`spriteType`,
-// `quadTextureSprite`, a list's `background`): the hover names the sprite's kind, frames and the
+// `quadTextureSprite`, a list's `background`) and of script files (an event's `picture`, a
+// mission's and an estate privilege's `icon`): the hover names the sprite's kind, frames and the
 // `.gfx` file and playset layer that define it, then its texture with its facts and a thumbnail
 // (the first frame of a strip); Go to Definition (F12, Ctrl+click) opens that `.gfx` file at the
 // sprite's name. The sprite is the one the game draws: the last definition in load order
@@ -10,7 +11,9 @@ import * as vscode from 'vscode';
 import {
   decodeGameText,
   parseScript,
+  isSpriteScriptPath,
   readGuiFile,
+  scriptSpriteReferences,
   spriteReferences,
   textureCandidates,
   type Located,
@@ -22,6 +25,13 @@ import { linkedFiles } from './script-profile-view.ts';
 import { TextureThumbnails } from './texture-thumbnail.ts';
 
 export const GUI_SELECTOR: vscode.DocumentSelector = [{ scheme: 'file', pattern: '**/*.gui' }];
+
+/** The script files that name sprites; the folders in the file's path decide which key. */
+export const SPRITE_SCRIPT_SELECTOR: vscode.DocumentSelector = [
+  { scheme: 'file', pattern: '**/events/**/*.txt' },
+  { scheme: 'file', pattern: '**/missions/**/*.txt' },
+  { scheme: 'file', pattern: '**/common/estate_privileges/**/*.txt' },
+];
 
 interface Loaded {
   readonly files: GameFiles;
@@ -49,8 +59,21 @@ export class SpriteLinks implements vscode.HoverProvider, vscode.DefinitionProvi
     const found = referenceAt(document, position);
     if (found === undefined) return undefined;
     const loaded = await this.playset();
-    const sprite = loaded?.ui.index.sprite(found.reference.name);
-    if (loaded === undefined || sprite === undefined) return undefined;
+    if (loaded === undefined) return undefined;
+    const sprite = loaded.ui.index.sprite(found.reference.name);
+    if (sprite === undefined) {
+      // A `.gui` file's diagnostics report a missing sprite; a script file has none.
+      if (found.script) {
+        return new vscode.Hover(
+          new vscode.MarkdownString(
+            `**${found.reference.name}** · no sprite of that name in the playset's \`.gfx\` files. ` +
+              'Etch does not read the DLC archives, which define many event pictures.',
+          ),
+          found.range,
+        );
+      }
+      return undefined;
+    }
     const definitions = loaded.ui.index.spriteDefinitions(found.reference.name).length;
     const { item } = sprite;
     const markdown = new vscode.MarkdownString();
@@ -87,8 +110,9 @@ export class SpriteLinks implements vscode.HoverProvider, vscode.DefinitionProvi
     const found = referenceAt(document, position);
     if (found === undefined) return undefined;
     const loaded = await this.playset();
-    const sprite = loaded?.ui.index.sprite(found.reference.name);
-    if (loaded === undefined || sprite === undefined) return undefined;
+    if (loaded === undefined) return undefined;
+    const sprite = loaded.ui.index.sprite(found.reference.name);
+    if (sprite === undefined) return undefined;
     return this.locationOf(loaded.files, sprite);
   }
 
@@ -124,15 +148,42 @@ export class SpriteLinks implements vscode.HoverProvider, vscode.DefinitionProvi
   }
 }
 
-/** The sprite reference under the cursor, with its range inside the quotes. */
+/**
+ * The game path of a script file that names sprites, from the folders in its file name: from the
+ * last `events`, `missions` or `common/estate_privileges` folder on, as a mod or the game folder
+ * holds them at its root.
+ */
+export function spriteScriptPath(fileName: string): string | undefined {
+  const slashed = fileName.replace(/\\/g, '/');
+  const lower = slashed.toLowerCase();
+  let at = -1;
+  for (const folder of ['/events/', '/missions/', '/common/estate_privileges/']) {
+    at = Math.max(at, lower.lastIndexOf(folder));
+  }
+  if (at < 0) return undefined;
+  const path = slashed.slice(at + 1);
+  return isSpriteScriptPath(path) ? path : undefined;
+}
+
+/**
+ * The sprite reference under the cursor, with its range inside the quotes: in a `.gui` file, or
+ * in a script file whose folder names sprites (`scriptSpriteReferences`).
+ */
 function referenceAt(
   document: vscode.TextDocument,
   position: vscode.Position,
-): { reference: SpriteReference; range: vscode.Range } | undefined {
+): { reference: SpriteReference; range: vscode.Range; script: boolean } | undefined {
   const offset = document.offsetAt(position);
-  const reference = spriteReferences(readGuiFile(parseScript(document.getText()))).find(
-    ({ node }) => node.start <= offset && offset <= node.end,
-  );
+  const script = !/\.gui$/i.test(document.fileName);
+  let references: SpriteReference[];
+  if (script) {
+    const path = spriteScriptPath(document.fileName);
+    if (path === undefined) return undefined;
+    references = scriptSpriteReferences(path, parseScript(document.getText(), { script: true }));
+  } else {
+    references = spriteReferences(readGuiFile(parseScript(document.getText())));
+  }
+  const reference = references.find(({ node }) => node.start <= offset && offset <= node.end);
   if (reference === undefined) return undefined;
   const { node } = reference;
   const start = node.quoted ? node.start + 1 : node.start;
@@ -140,6 +191,7 @@ function referenceAt(
   return {
     reference,
     range: new vscode.Range(document.positionAt(start), document.positionAt(end)),
+    script,
   };
 }
 
@@ -179,6 +231,8 @@ export function registerSpriteLinks(
   context.subscriptions.push(
     vscode.languages.registerHoverProvider(GUI_SELECTOR, links),
     vscode.languages.registerDefinitionProvider(GUI_SELECTOR, links),
+    vscode.languages.registerHoverProvider(SPRITE_SCRIPT_SELECTOR, links),
+    vscode.languages.registerDefinitionProvider(SPRITE_SCRIPT_SELECTOR, links),
     vscode.workspace.onDidChangeConfiguration((event) => {
       if (
         event.affectsConfiguration('etch.gamePath') ||

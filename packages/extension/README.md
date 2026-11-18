@@ -296,6 +296,11 @@ list's `background`) shows the sprite the game draws: its kind and frames, the
 `.gfx` file and mod that define it (the last definition wins, as in the game),
 and its texture with a thumbnail, the first frame of a strip. **Go to
 Definition** (F12 or Ctrl+click) opens that `.gfx` file at the sprite's name.
+The same works on the sprite names of script files: an event's `picture`
+(also inside a conditional `picture = { trigger = { … } picture = … }`), a
+mission's `icon` and an estate privilege's `icon`. A script name with no
+sprite says so in its hover; Etch does not read the game's DLC archives,
+which define many vanilla event pictures.
 
 ## Etch 1.x
 
