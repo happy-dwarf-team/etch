@@ -203,10 +203,17 @@ export async function takeLive(options: ShootOptions & { save: string }): Promis
     // The demo mod's event file turns achievements off, and the game then asks before the save
     // loads; Etch answers that notice only for Anbennar. The take answers it as a player would.
     let noticeAnswered = false;
+    let logged = 0;
     await until(
       'the save to load',
       async () => {
-        if ((await live.send<{ in_game?: boolean }>('state')).in_game === true) return true;
+        const state = await live.send<{ in_game?: boolean }>('state');
+        if (state.in_game === true) return true;
+        // While it waits, the game's state every 30 s: a load that never ends says why in it.
+        if (Date.now() - logged > 30_000) {
+          logged = Date.now();
+          console.log(`Waiting for the save: ${JSON.stringify(state)}`);
+        }
         if (!noticeAnswered) {
           const found = await live
             .send<{ matches: TongsWidget[] }>(`ui find ${ACHIEVEMENTS_NOTICE}`)
@@ -219,7 +226,7 @@ export async function takeLive(options: ShootOptions & { save: string }): Promis
         }
         return false;
       },
-      600_000,
+      240_000,
       1_000,
     );
     await live.send('frames timeout=120', 130_000);

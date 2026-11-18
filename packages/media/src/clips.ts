@@ -490,9 +490,6 @@ export const CLIPS: readonly Clip[] = [
       const menus = eventsOf(log, 'menu', 2);
       const menuView = (i: number): Rect =>
         focus(rectOf(menus[i] as TakeEvent), source, ASPECT, { margin: 140, minWidth: 820 });
-      const closings = eventsOf(log, 'closed', 2);
-      const longClosed = closings[0] as { t: number };
-      const typicalClosed = closings[1] as { t: number };
       const lengths = eventsOf(log, 'length', 2);
       return vscodeEdit(
         'data',
@@ -501,9 +498,10 @@ export const CLIPS: readonly Clip[] = [
         { s0, end: eventOf(log, 'end').t + 0.6 },
         [
           { at: at((menus[0] as TakeEvent).t) - 0.6, view: menuView(0) },
-          { at: at(longClosed.t) - 0.2, view: header, inset },
+          // Off the menu once a length is pressed: it closes half a second later, empty.
+          { at: at((lengths[0] as { t: number }).t) + 0.2, view: header, inset },
           { at: at((menus[1] as TakeEvent).t) - 0.6, view: menuView(1) },
-          { at: at(typicalClosed.t) - 0.1, view: whole(source, ASPECT) },
+          { at: at((lengths[1] as { t: number }).t) + 0.2, view: whole(source, ASPECT) },
         ],
         {
           captions: [
@@ -656,6 +654,8 @@ export const CLIPS: readonly Clip[] = [
           at: at((hovers[0] as TakeEvent).t) - 0.5,
           view: focus(union(...hovers.map(rectOf)), source, ASPECT, { margin: 40, minWidth: 900 }),
           inset: insetOf(rectOf(eventOf(log, 'line')), source),
+          // At the right's middle, over the buildings panel: at the top it hid the first tip.
+          insetFrame: { ...INSET, y: 440 },
         },
       ];
       const picked = at(pick.t);
