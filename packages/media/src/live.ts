@@ -277,6 +277,21 @@ export async function takeLive(options: ShootOptions & { save: string }): Promis
     // scrolls its map, as at a window's edge.
     const rest = screen(GAME_REST);
     await desktop.movePointer(rest, 300);
+    // Only the take moves the real pointer: one moved by anything else scrolls the map, and a
+    // click in pick mode picks. Checked before each recorded part, with where the game's client
+    // area is (a window that moved makes every point here wrong).
+    const pointerAt = async (where: Point, what: string): Promise<void> => {
+      const at = await desktop.cursor();
+      const now = (await desktop.windowOf(pid))?.client;
+      const moved = now === undefined || now.left !== client.left || now.top !== client.top;
+      if (moved || Math.abs(at.x - where.x) > 3 || Math.abs(at.y - where.y) > 3) {
+        throw new Error(
+          `${what}: the pointer is at ${JSON.stringify(at)}, not ${JSON.stringify(where)}, ` +
+            `the game's client area at ${JSON.stringify(now)}, placed at ${JSON.stringify(client)}; ` +
+            'keep the mouse still during the take',
+        );
+      }
+    };
 
     // The sample data's province, as a click on the map opens it: the camera on it, so the map
     // beside the window is its own.
@@ -350,6 +365,9 @@ export async function takeLive(options: ShootOptions & { save: string }): Promis
     // game: where the game draws the province view in its master (`inGame`).
     take.mark('preview.button', { source: 'vscode', rect: await wb.selectedRect() });
     take.mark('button', { source: 'game', rect: rectOfWidget(await live.widget(RELOAD_WIDGET)) });
+    await desktop.movePointer(rest, 300);
+    await sleep(300);
+    await pointerAt(rest, 'before the recording');
     await take.record('vscode', wb.hwnd, path.join(options.masters, 'live.vscode.mkv'), {
       nudge: () => wb.nudge(),
     });
@@ -390,29 +408,49 @@ export async function takeLive(options: ShootOptions & { save: string }): Promis
     // widget under the pointer, so the pointer goes to the first one before it is on and jumps
     // from one to the next: gliding, it would cross others.
     await sleep(800);
+    await pointerAt(rest, 'before pick');
     take.mark('pick.start');
     if (!(await desktop.focus(game.hwnd))) throw new Error('the game could not be brought forward');
     const [first, ...others] = HOVERED;
     let target = await live.widget(first);
     await desktop.movePointer(screen(target.click_point), 650);
     await sleep(500);
+    const picked = await wb.cursor();
     take.mark('pick.on');
     await desktop.keys(SCAN.ctrl, SCAN.shift, SCAN.e);
     // Pick mode labels the widget under the pointer once the pointer moves.
     const nudge = screen(target.click_point);
     await desktop.movePointer({ x: nudge.x + 2, y: nudge.y }, 50);
     await sleep(400);
-    take.mark('pick.hover', { source: 'game', rect: rectOfWidget(target), label: first });
+    take.mark('pick.hover', {
+      source: 'game',
+      rect: rectOfWidget(target),
+      label: first,
+      point: await desktop.cursor(),
+    });
     await sleep(1600);
     for (const selector of others) {
       const widget = await live.widget(selector);
-      await desktop.movePointer(screen(widget.click_point), 0);
+      const to = screen(widget.click_point);
+      await desktop.movePointer(to, 0);
       await sleep(150);
-      take.mark('pick.hover', { source: 'game', rect: rectOfWidget(widget), label: selector });
+      take.mark('pick.hover', {
+        source: 'game',
+        rect: rectOfWidget(widget),
+        label: selector,
+        point: await desktop.cursor(),
+      });
       await sleep(1300);
+      await pointerAt(to, `hovering ${selector}`);
       target = widget;
     }
     const before = await wb.cursor();
+    // Nothing is picked before the click: the editor still where pick mode found it.
+    if (before.line !== picked.line) {
+      throw new Error(
+        `the editor moved to line ${String(before.line)} before the click: something picked`,
+      );
+    }
     take.mark('pick.click', { source: 'game', point: target.click_point });
     const snapshot = wb
       .paint(() => desktop.click())
