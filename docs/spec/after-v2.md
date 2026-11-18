@@ -617,6 +617,14 @@ refresh is a step of the 3.0.0 release.
   window to its text (`codeSized`: laid out at the size the game shows it). With
   `compare --gpu` (ANGLE on Direct3D 11, 2026-11-02) all 16 of its gating
   captures pass, taken with Tongs 0.14.1 (corpus/README.md).
+- **A pick selects the widget's keyword.** A pick opened the file with the
+  cursor at the start of the line the game reports, the `{` that opens the
+  widget's block (H2). Where a block is written `iconType =` and `{` on the next
+  line, as vanilla's `provinceview_building_bg`, that is a line with a lone
+  brace. The pick now selects the keyword (`iconType`), as a click in the
+  preview does, and **Override in my mod** opens the copy with it selected; the
+  game's line still finds the widget. A widget not found in the file opens at
+  the line as before.
 - **The texture preview.** `.dds` and `.tga` files open in a read-only
   custom editor, `etch.texturePreview`, which reads them with the renderer's
   DDS and TGA readers and shows one mip level on a 2D canvas: the header's

@@ -209,8 +209,9 @@ export class PickMode implements vscode.Disposable {
       `${what}: ${where}${note}.`,
       ...buttons,
     );
-    if (chosen === override) await this.overridePath(target.open.path, target.open.line);
-    else if (chosen === template && target.template !== undefined) await show(target.template);
+    if (chosen === override) {
+      await this.overridePath(target.open.path, target.open.line, target.open.key);
+    } else if (chosen === template && target.template !== undefined) await show(target.template);
     else if (chosen === sprite && target.sprite !== undefined) {
       const found = await spriteLocation(
         target.sprite,
@@ -254,7 +255,7 @@ export class PickMode implements vscode.Disposable {
     await this.overridePath(path, line);
   }
 
-  private async overridePath(path: string, line: number): Promise<void> {
+  private async overridePath(path: string, line: number, key?: PickLocation['key']): Promise<void> {
     const files = this.game.files;
     if (files === undefined) return;
     const result = await overrideInMod(path, files, this.game.editedRoot);
@@ -273,11 +274,7 @@ export class PickMode implements vscode.Disposable {
         : `${path} is your mod's already.`,
     );
     const document = await vscode.workspace.openTextDocument(vscode.Uri.file(result.absolutePath));
-    const position = new vscode.Position(Math.min(line, document.lineCount - 1), 0);
-    await vscode.window.showTextDocument(document, {
-      selection: new vscode.Range(position, position),
-      preview: false,
-    });
+    await reveal(document, line, key);
   }
 }
 
@@ -293,13 +290,27 @@ async function textOf(absolutePath: string): Promise<string | undefined> {
   );
 }
 
+/**
+ * Shows a document with the widget's keyword selected, as a click in the preview selects it, or
+ * the cursor at the start of `line` without one.
+ */
+async function reveal(
+  document: vscode.TextDocument,
+  line: number,
+  key: PickLocation['key'],
+): Promise<void> {
+  const at = Math.min(line, document.lineCount - 1);
+  const selection =
+    key !== undefined && key.line < document.lineCount
+      ? new vscode.Range(key.line, key.start, key.line, key.end)
+      : new vscode.Range(at, 0, at, 0);
+  const editor = await vscode.window.showTextDocument(document, { selection, preview: false });
+  editor.revealRange(selection, vscode.TextEditorRevealType.InCenterIfOutsideViewport);
+}
+
 /** Opens a location; a file not of the edited mod is made read-only for the session. */
 async function show(location: PickLocation): Promise<void> {
   const document = await vscode.workspace.openTextDocument(vscode.Uri.file(location.absolutePath));
-  const position = new vscode.Position(Math.min(location.line, document.lineCount - 1), 0);
-  await vscode.window.showTextDocument(document, {
-    selection: new vscode.Range(position, position),
-    preview: false,
-  });
+  await reveal(document, location.line, location.key);
   if (location.readOnly) await vscode.commands.executeCommand(READ_ONLY);
 }

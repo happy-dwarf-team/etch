@@ -179,6 +179,22 @@ describe('resolvePick', () => {
     expect(target.match).toBe('line');
   });
 
+  it("selects the widget's keyword, also when its brace is on the next line", async () => {
+    const window = await resolved([widget('panel', 'interface/panel.gui', 3)]);
+    expect(window.open.key).toEqual({ line: 1, start: 1, end: 11 });
+    const button = await resolved([
+      widget('tax_button', 'interface/panel.gui', 5),
+      widget('panel', 'interface/panel.gui', 3),
+    ]);
+    expect(button.open.key).toEqual({ line: 4, start: 2, end: 15 });
+  });
+
+  it('selects no keyword when the widget is not in the file', async () => {
+    const target = await resolved([widget('gone', 'interface/panel.gui', 13)]);
+    expect(target.match).toBe('file');
+    expect(target.open.key).toBeUndefined();
+  });
+
   it('walks the names when the buffer changed since the game read the file', async () => {
     const edited = join(mine, 'interface', 'mine.gui');
     buffers.set(edited, `# a new comment\n# and another\n${PANEL}`);

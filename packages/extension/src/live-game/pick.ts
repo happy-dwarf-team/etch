@@ -20,6 +20,13 @@ export interface PickLocation {
   readonly layer: string;
   /** 0-based line; 0 when the file is opened without a line. */
   readonly line: number;
+  /**
+   * The widget's keyword (`iconType`, `windowType`), selected when the location opens, as a click
+   * in the preview selects it: its 0-based line and columns. `line` is the `{` the game reports,
+   * which in `iconType =` written over two lines is a line of its own. Absent when the widget was
+   * not found in the file: it then opens at `line`.
+   */
+  readonly key?: { readonly line: number; readonly start: number; readonly end: number };
   /** The file is not the edited mod's: it opens read-only, with **Override in my mod**. */
   readonly readOnly: boolean;
   /** The widget's name, for the notices. */
@@ -120,8 +127,18 @@ async function locate(
   if (found === undefined) {
     return { location: { ...base, line: fallbackLine }, match: 'file', sprite: undefined };
   }
+  const keyLine = lineOf(lines, found.widget.node.key.start);
+  const lineStart = lines[keyLine] ?? 0;
   return {
-    location: { ...base, line: lineOf(lines, braceOf(found.widget)) },
+    location: {
+      ...base,
+      line: lineOf(lines, braceOf(found.widget)),
+      key: {
+        line: keyLine,
+        start: found.widget.node.key.start - lineStart,
+        end: found.widget.node.key.end - lineStart,
+      },
+    },
     match: found.match,
     sprite: spriteOf(found.widget),
   };
