@@ -6,7 +6,8 @@
   "license": "MIT",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./inspect": "./src/textures/inspect.ts"
   },
   "scripts": {
     "build": "node build.mts",

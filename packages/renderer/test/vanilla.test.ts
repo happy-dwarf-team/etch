@@ -3,7 +3,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { decodeDxt, readTexture, TextureReadError } from '../src/index.ts';
+import { decodeDxt, inspectTexture, readTexture, TextureReadError } from '../src/index.ts';
 
 const gameDir = process.env['ETCH_EU4_DIR'];
 
@@ -31,6 +31,31 @@ describe.runIf(gameDir !== undefined)('vanilla textures', () => {
           if (!(error instanceof TextureReadError)) throw error;
           failures.push(`${path.slice(root.length)}: ${error.message}`);
         }
+      }
+    }
+    console.log(Object.fromEntries(formats));
+    expect(failures).toEqual([]);
+  });
+
+  it('shows every texture under gfx in the texture preview', { timeout: 600_000 }, () => {
+    const root = gameDir ?? '';
+    const failures: string[] = [];
+    const formats = new Map<string, number>();
+    for (const path of textures(join(root, 'gfx'))) {
+      try {
+        const bytes = readFileSync(path);
+        const { summary, rgba } = inspectTexture(path, bytes);
+        expect(rgba.length).toBe(summary.width * summary.height * 4);
+        // Every level of the mip chain, down to 1 × 1.
+        for (let level = 1; level < summary.mipLevels; level++) {
+          const mip = inspectTexture(path, bytes, level);
+          expect(mip.rgba.length).toBe(mip.summary.width * mip.summary.height * 4);
+        }
+        const key = `${summary.container} ${summary.format}${summary.mipLevels > 1 ? ' mips' : ''}`;
+        formats.set(key, (formats.get(key) ?? 0) + 1);
+      } catch (error) {
+        if (!(error instanceof TextureReadError)) throw error;
+        failures.push(`${path.slice(root.length)}: ${error.message}`);
       }
     }
     console.log(Object.fromEntries(formats));

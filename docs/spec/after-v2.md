@@ -532,6 +532,15 @@ refresh is a step of the 3.0.0 release.
   window to its text (`codeSized`: laid out at the size the game shows it). With
   `compare --gpu` (ANGLE on Direct3D 11, 2026-11-02) all 16 of its gating
   captures pass, taken with Tongs 0.14.1 (corpus/README.md).
+- **The texture preview.** `.dds` and `.tga` files open in a read-only
+  custom editor, `etch.texturePreview`, which reads them with the renderer's
+  DDS and TGA readers and shows one mip level on a 2D canvas: the header's
+  size, format and mip count, whether the alpha is used, the RGBA, RGB and
+  alpha channels, any mip level of a DDS chain, zoom and the texel under the
+  mouse, shown again when the file changes on disk. Over EU4 1.37.5 every
+  `.dds` and `.tga` under `gfx` (8,031 and 1,354 files) and every level of the
+  1,736 DDS mip chains read (`ETCH_EU4_DIR`, `packages/renderer/test/vanilla.test.ts`).
+  A sprite's texture on hover and a `.mesh` viewer are not done.
 
 ## Open issues
 
