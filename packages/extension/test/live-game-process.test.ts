@@ -12,6 +12,7 @@ import {
   LiveGameProcess,
   HostBusyError,
   HostCrashedError,
+  NotTheLiveGameError,
   acquireLock,
   closeOrphan,
   gameEnvironment,
@@ -570,6 +571,101 @@ windows('LiveGameProcess', () => {
       } finally {
         await host.stop();
       }
+    },
+    TIMEOUT,
+  );
+
+  it(
+    'is not the live game when no session pipe comes up, and closes it',
+    async () => {
+      const lock: LockOptions = { path: join(temp, 'game-host.lock'), owner: await self() };
+      const log: string[] = [];
+      const start = LiveGameProcess.start({
+        launcher: 'direct',
+        install: { ...install([]), arguments: ['-e', 'setTimeout(() => {}, 60000)'] },
+        originalGameFolder: temp,
+        lock,
+        pipeTimeoutMs: 1_000,
+        log: (message) => log.push(message),
+      });
+      await expect(start).rejects.toBeInstanceOf(NotTheLiveGameError);
+      await expect(start).rejects.toThrow(/serves no session pipe after 1000 ms/);
+      const pid = Number(/^Live game started: PID (\d+)/.exec(log[0] ?? '')?.[1]);
+      expect(log).toContain(`Live game PID ${String(pid)}: terminated.`);
+      expect(await processIdentity(pid)).toBeUndefined();
+      expect(await readLock(lock.path)).toBeUndefined();
+    },
+    TIMEOUT,
+  );
+
+  // Exit to Main Menu (H6): the game starts a new process of itself, which the extension adopts.
+  it(
+    'adopts the process a live game started of itself, after checking its image',
+    async () => {
+      const lock: LockOptions = { path: join(temp, 'game-host.lock'), owner: await self() };
+      const session = newSessionId();
+      await acquireLock(lock, session);
+      const restarted = spawn(process.execPath, [FAKE_GAME, lock.path, '200'], {
+        env: { ...process.env, ETCH_HOST_SESSION: session },
+        stdio: 'ignore',
+      });
+      children.push(restarted);
+      await new Promise((resolve) => restarted.once('spawn', resolve));
+      const identity = await processIdentity(restarted.pid ?? 0);
+      if (identity === undefined) throw new Error('the restarted game did not start');
+      const log: string[] = [];
+      const host = await LiveGameProcess.adopt(
+        {
+          launcher: 'direct',
+          install: install([]),
+          originalGameFolder: temp,
+          lock,
+          log: (message) => log.push(message),
+        },
+        session,
+        identity,
+      );
+      try {
+        expect(host.identity).toEqual(identity);
+        expect(host.hello.pid).toBe(identity.pid);
+        expect(host.startOptions.lock).toBe(lock);
+        expect((await readLock(lock.path))?.game).toEqual(identity);
+        expect(log[0]).toBe(
+          `Live game restarted itself: PID ${String(identity.pid)}, session ${session}.`,
+        );
+        // The fake game starts no process of itself: it did not restart.
+        expect(await host.restartedAs(300)).toBeUndefined();
+      } finally {
+        await host.stop();
+      }
+      await exited(restarted);
+      expect(await readLock(lock.path)).toBeUndefined();
+    },
+    TIMEOUT,
+  );
+
+  it(
+    "closes a process to adopt whose image is not the live game's, and releases the lock",
+    async () => {
+      const lock: LockOptions = { path: join(temp, 'game-host.lock'), owner: await self() };
+      const session = newSessionId();
+      await acquireLock(lock, session);
+      const other = await sleeper();
+      const adopt = LiveGameProcess.adopt(
+        {
+          launcher: 'direct',
+          install: { ...install([]), exe: FAKE_GAME },
+          originalGameFolder: temp,
+          lock,
+        },
+        session,
+        other.identity,
+      );
+      await expect(adopt).rejects.toThrow(
+        `PID ${String(other.identity.pid)} is ${other.identity.imagePath}, not the live game.`,
+      );
+      await exited(other.child);
+      expect(await readLock(lock.path)).toBeUndefined();
     },
     TIMEOUT,
   );
