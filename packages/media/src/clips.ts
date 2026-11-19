@@ -218,15 +218,17 @@ const UNFOLD = 0.12;
 
 /**
  * A toolbar menu's views: open, its button and the menu under it; folded, the button's row alone.
- * Both start a little left of the button, so nothing left of it is cut by the panel's edge.
+ * Both start `side` px left of the button and the menu and end as far right of them, so nothing at
+ * their edges is cut by the panel's; a menu over the preview's canvas takes 0, so no strip of the
+ * canvas shows beside it.
  */
-function menuViews(button: Rect, menu: Rect, below = 12): { open: Rect; folded: Rect } {
-  const x = Math.min(button.x, menu.x) - 6;
+function menuViews(button: Rect, menu: Rect, below = 12, side = 6): { open: Rect; folded: Rect } {
+  const x = Math.min(button.x, menu.x) - side;
   const y = button.y - 12;
   const open = {
     x,
     y,
-    w: Math.max(button.x + button.w, menu.x + menu.w) + 12 - x,
+    w: Math.max(button.x + button.w, menu.x + menu.w) + side - x,
     h: Math.max(button.y + button.h, menu.y + menu.h) + below - y,
   };
   return { open, folded: { ...open, h: button.h + 24 } };
@@ -851,18 +853,28 @@ export const CLIPS: readonly Clip[] = [
     },
     edit(log, sources) {
       // The menu down to its last layer, every layer whole; as large as the stage's height allows.
-      const menu = menuViews(rectOf(eventOf(log, 'button')), rectOf(eventOf(log, 'popup')), 5);
+      // Its sides are the menu's own: beside it is the preview's canvas.
+      const covers = rectOf(eventOf(log, 'covers'));
+      const popup = rectOf(eventOf(log, 'popup'));
+      const menu = menuViews(
+        rectOf(eventOf(log, 'button')),
+        { ...popup, x: covers.x, w: covers.w },
+        5,
+        0,
+      );
       const menuScale = Math.min(UI_SCALE, STAGE.h / menu.open.h);
       const area = onScreen(rectOf(eventOf(log, 'screen')), HEADER_AREA);
       const frames = pair(sized(menu.open, menuScale), sized(area, STAGE.h / area.h));
       const { unfolded, folded } = menuFrames(menu, frames.left);
-      // The quick pick's input and the typed name's row, at the menu panel's top, its left part.
+      // The quick pick's input and the typed name's row, at the menu panel's top, its left part. It
+      // ends 3 px under the row, above the next row's text: another name may match too (Bali's
+      // list also has Balikul).
       const typing = rectOf(eventOf(log, 'typing'));
       const typingView = {
         x: typing.x - 10,
         y: typing.y - 10,
         w: frames.left.w / menuScale,
-        h: typing.h + 20,
+        h: typing.h + 13,
       };
       const typingFrame = { ...unfolded, h: typingView.h * menuScale };
       const opens = eventsOf(log, 'open', 2);
@@ -870,7 +882,6 @@ export const CLIPS: readonly Clip[] = [
       const typed = eventsOf(log, 'typed', 2);
       const enters = eventsOf(log, 'enter', 2);
       const closes = eventsOf(log, 'closed', 2);
-      const covers = rectOf(eventOf(log, 'covers'));
       const windowPanel = still('vscode', frames.right, area);
       const SAVE = 'Sample data from a save: Russia, 1719';
       // Each press of Province… is cut at its click: the quick pick shows a frame later, its whole
