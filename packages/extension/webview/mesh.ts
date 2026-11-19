@@ -14,7 +14,10 @@
 // the specular map's alpha times 2 and added; for `PdxMeshColor`, the specular map's R, G and B
 // mask the country's three colours; for `PdxMeshTextureAtlas` (a ship's sails, a map flag), the
 // diffuse map's alpha blends in the diffuse colour times the country's flag, sampled with the
-// second texture coordinates (`u1`). The light comes from the vanilla `LIGHT_DIRECTION` of
+// second texture coordinates (`u1`); for `PdxMeshAlphaBlend` (and its `NoZWrite` variant, which
+// does not write depth), the colour is blended over what is behind it by the diffuse map's alpha
+// (`SRC_ALPHA`, `INV_SRC_ALPHA`), after the opaque parts. The light comes from the vanilla
+// `LIGHT_DIRECTION` of
 // `common/defines.lua` (-1, -1, 0.5, pointing away from the light). The map's fog of war, terra
 // incognita, snow and distance fog are left out.
 //
@@ -144,7 +147,8 @@ uniform vec3 tertiary;
 uniform bool atlas;
 uniform bool flagFromColours;
 uniform sampler2D flagMap;
-uniform bool alphaTest;
+// PdxMeshAlphaBlend: the diffuse alpha is the output's, for blending.
+uniform bool blended;
 // Drawn as the map's tree shader: alpha cut out, no highlight.
 uniform bool tree;
 uniform bool lines;
@@ -155,7 +159,7 @@ out vec4 colour;
 void main() {
   if (lines) { colour = vec4(0.1, 0.9, 1.0, 1.0); return; }
   vec4 base = textured ? texture(diffuse, vUv) : vec4(0.72, 0.72, 0.72, 1.0);
-  if ((alphaTest || tree) && base.a < 0.5) discard;
+  if (tree && base.a < 0.5) discard;
   vec3 n = normalize(vNormal);
   if (normalMapped) {
     vec3 s = normalize(texture(normalMap, vUv).rgb - 0.5);
@@ -182,7 +186,7 @@ void main() {
   float highlight = tree
     ? 0.0
     : clamp(pow(clamp(dot(h, n), 0.0, 1.0), 10.0) * 2.0, 0.0, 1.0) * spec.a * 2.0;
-  colour = vec4(clamp(c + highlight, 0.0, 1.0), 1.0);
+  colour = vec4(clamp(c + highlight, 0.0, 1.0), blended ? base.a : 1.0);
 }`;
 
 interface DrawnPart {
@@ -205,7 +209,8 @@ interface DrawnPart {
   readonly countryColours: boolean;
   /** A `PdxMeshTextureAtlas` part with second UVs: the flag is drawn on it. */
   readonly atlas: boolean;
-  readonly alphaTest: boolean;
+  /** `PdxMeshAlphaBlend` parts are blended; `PdxMeshAlphaBlendNoZWrite` ones write no depth. */
+  readonly blend: 'none' | 'blend' | 'noDepthWrite';
 }
 
 /** One drawn mesh: the mesh preview's only one, or an entity's or one of its attachments. */
@@ -445,7 +450,11 @@ function upload(
         specularMap: named(part.material.specular, part),
         countryColours: /^PdxMeshColor/.test(part.material.shader),
         atlas: /^PdxMeshTextureAtlas/.test(part.material.shader) && part.uvs1 !== undefined,
-        alphaTest: /alpha/i.test(part.material.shader),
+        blend: /^PdxMeshAlphaBlendNoZWrite/.test(part.material.shader)
+          ? 'noDepthWrite'
+          : /^PdxMeshAlphaBlend/.test(part.material.shader)
+            ? 'blend'
+            : 'none',
       });
     }
   }
@@ -637,34 +646,49 @@ function draw(now: number): void {
   gl.activeTexture(gl.TEXTURE3);
   gl.bindTexture(gl.TEXTURE_2D, flag?.texture ?? null);
   const lines = uniform('lines');
-  for (const instance of instances) {
+  // Opaque parts first, then the blended ones over them, as the game draws its alpha-blended
+  // effects after the opaque ones. A map tree is drawn by the tree shader, which does not blend.
+  const items = instances.flatMap((instance) =>
+    drawnParts(instance).map((item) => ({
+      instance,
+      item,
+      blend: tree === undefined ? item.blend : 'none',
+    })),
+  );
+  const opaque = items.filter((entry) => entry.blend === 'none');
+  const blended = items.filter((entry) => entry.blend !== 'none');
+  gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ZERO, gl.ONE);
+  for (const { instance, item, blend } of [...opaque, ...blended]) {
     gl.uniformMatrix4fv(uniform('model'), false, instance.model);
-    for (const item of drawnParts(instance)) {
-      gl.bindVertexArray(item.vao);
-      gl.uniform1i(lines, 0);
-      const normalMap = maps ? item.normalMap : undefined;
-      const specularMap = maps ? item.specularMap : undefined;
-      gl.uniform1i(uniform('textured'), item.texture === undefined ? 0 : 1);
-      gl.uniform1i(uniform('normalMapped'), normalMap === undefined ? 0 : 1);
-      gl.uniform1i(uniform('specularMapped'), specularMap === undefined ? 0 : 1);
-      gl.uniform1i(uniform('countryColours'), item.countryColours && tree === undefined ? 1 : 0);
-      gl.uniform1i(uniform('atlas'), item.atlas && tree === undefined ? 1 : 0);
-      gl.uniform1i(uniform('alphaTest'), item.alphaTest ? 1 : 0);
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, item.texture ?? null);
-      gl.activeTexture(gl.TEXTURE1);
-      gl.bindTexture(gl.TEXTURE_2D, specularMap ?? null);
-      gl.activeTexture(gl.TEXTURE2);
-      gl.bindTexture(gl.TEXTURE_2D, normalMap ?? null);
-      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, item.triangles);
-      gl.drawElements(gl.TRIANGLES, item.triangleCount, gl.UNSIGNED_INT, 0);
-      if (wireframe) {
-        gl.uniform1i(lines, 1);
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, item.edges);
-        gl.drawElements(gl.LINES, item.edgeCount, gl.UNSIGNED_INT, 0);
-      }
+    if (blend === 'none') gl.disable(gl.BLEND);
+    else gl.enable(gl.BLEND);
+    gl.depthMask(blend !== 'noDepthWrite');
+    gl.uniform1i(uniform('blended'), blend === 'none' ? 0 : 1);
+    gl.bindVertexArray(item.vao);
+    gl.uniform1i(lines, 0);
+    const normalMap = maps ? item.normalMap : undefined;
+    const specularMap = maps ? item.specularMap : undefined;
+    gl.uniform1i(uniform('textured'), item.texture === undefined ? 0 : 1);
+    gl.uniform1i(uniform('normalMapped'), normalMap === undefined ? 0 : 1);
+    gl.uniform1i(uniform('specularMapped'), specularMap === undefined ? 0 : 1);
+    gl.uniform1i(uniform('countryColours'), item.countryColours && tree === undefined ? 1 : 0);
+    gl.uniform1i(uniform('atlas'), item.atlas && tree === undefined ? 1 : 0);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, item.texture ?? null);
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, specularMap ?? null);
+    gl.activeTexture(gl.TEXTURE2);
+    gl.bindTexture(gl.TEXTURE_2D, normalMap ?? null);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, item.triangles);
+    gl.drawElements(gl.TRIANGLES, item.triangleCount, gl.UNSIGNED_INT, 0);
+    if (wireframe) {
+      gl.uniform1i(lines, 1);
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, item.edges);
+      gl.drawElements(gl.LINES, item.edgeCount, gl.UNSIGNED_INT, 0);
     }
   }
+  gl.disable(gl.BLEND);
+  gl.depthMask(true);
   gl.bindVertexArray(null);
   if (playing) requestAnimationFrame(draw);
 }
@@ -695,6 +719,8 @@ function summary(): MeshSummary {
   const levels = [...new Set(instances.flatMap(levelsOf))].sort((a, b) => a - b);
   if (levels.length > 0) base = { ...base, lod: { level: lodLevel, levels } };
   if (tree !== undefined) base = { ...base, tree };
+  const blendedParts = tree === undefined ? parts.filter((d) => d.blend !== 'none').length : 0;
+  if (blendedParts > 0) base = { ...base, blended: blendedParts };
   if (entity === undefined) return base;
   return {
     ...base,

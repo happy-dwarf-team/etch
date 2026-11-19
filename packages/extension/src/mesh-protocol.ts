@@ -35,6 +35,8 @@ export interface MeshSummary {
    * shader draws it.
    */
   readonly tree?: string;
+  /** Drawn `PdxMeshAlphaBlend` parts, blended by their diffuse alpha after the opaque ones. */
+  readonly blended?: number;
 }
 
 export interface FlagSummary {

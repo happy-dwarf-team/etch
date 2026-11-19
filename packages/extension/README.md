@@ -360,6 +360,9 @@ it is in no folder of the playset. Collision shapes are hidden.
   as the game's tree shader draws it: texels with a diffuse alpha under one
   half are cut out, with no highlight. The map's tint and season colours are
   not applied.
+- A `PdxMeshAlphaBlend` part (vanilla's African buildings, a unit's selection
+  ring) is blended over what is behind it by its diffuse map's alpha, as the
+  game blends it, rather than cut.
 - If the mesh has a skeleton, the list offers the `.anim` files beside it that
   name its bones, the mesh's own first (`carrack_idle.anim` for
   `carrack.mesh`); **Play** runs the one you pick in a loop.
