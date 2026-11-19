@@ -83,6 +83,13 @@ describe('fitText', () => {
     expect(fit('§Rab§!cdefgh', { width: 30 })).toBe('§Rab§! ...');
   });
 
+  it('gives a "{" and the three characters after it 8 pixels, and no glyph of its own', () => {
+    // "{ADM" is 8 wide and "abc" 15: "d" overflows 25, with fewer than five glyphs so far.
+    expect(fit('{ADMabcdefghij', { width: 25 })).toBe('{ADMabc');
+    // With ignore_special_chars "{" is a character (none in this font) and "ADM" three letters.
+    expect(fit('{ADMabcdefghij', { width: 25, specialChars: false })).toBe('{A ...');
+  });
+
   it('measures inline icons by their texture, font icons by 16 and flags by 18', () => {
     const iconWidth = (key: string): number => (key === 'gold' ? 30 : 0);
     expect(fit('£gold£abcdef', { width: 55, iconWidth })).toBe('£gold£a ...');
