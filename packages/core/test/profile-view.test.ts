@@ -266,6 +266,26 @@ describe('Save as view', () => {
       withView('{ "formatVersion": 1 "window": 2 }', 'provinceview', 'x', view),
     ).toThrow();
   });
+
+  it('fills an empty views object, and refuses a file or views that are no object', () => {
+    const empty = withView(
+      '{ "formatVersion": 1, "window": "provinceview", "views": {} }',
+      'provinceview',
+      'mine',
+      view,
+    );
+    const { file, diagnostics } = readProfile(empty, {
+      layer: 2,
+      source: 'mod project',
+      file: 'p',
+    });
+    expect(diagnostics).toEqual([]);
+    expect(file?.views.map((v) => v.id)).toEqual(['mine']);
+    expect(() => withView('[]', 'provinceview', 'x', view)).toThrow('The file is not an object.');
+    expect(() =>
+      withView('{ "formatVersion": 1, "views": [] }', 'provinceview', 'x', view),
+    ).toThrow('"views" is not an object.');
+  });
 });
 
 describe('profileVisibility', () => {
