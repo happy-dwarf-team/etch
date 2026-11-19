@@ -3,6 +3,7 @@ import {
   PROVINCE_ID_KEYS,
   checkClimate,
   checkAdjacencies,
+  checkDefinitions,
   checkPositions,
   checkProvinceGroups,
   checkTradeWinds,
@@ -524,6 +525,34 @@ describe('adjacencies file', () => {
     expect(checkAdjacencies('1;7;sea;3', { ...VANILLA, defined: new Set([1, 3]) })).toMatchObject([
       { key: 'to', id: 7, code: 'province-id-not-defined' },
     ]);
+  });
+});
+
+describe('definition file', () => {
+  it('checks the ids and colours of the rows the game reads, which it stores unchecked', () => {
+    const ids: ProvinceIds = { ...VANILLA, maxProvinces: 8 };
+    const text = [
+      'province;red;green;blue;x;x',
+      '1;128;34;64;Stockholm;x',
+      '-2;0;36;128;Negative;x',
+      '9;1;2;3;Past the table;x',
+      '8;256; -1 ;+7;Colours;x',
+      '7;x;;;Not numbers read as 0;x',
+      '',
+      '2;1;1;1;The eighth row, the last one read;x',
+      '3;300;0;0;Not read;x',
+      '-1;-1;-1;-1;not read either',
+    ].join('\r\n');
+    const diagnostics = checkDefinitions(text, ids);
+    expect(diagnostics.map((d) => `${d.key} ${String(d.id)} ${d.code}`)).toEqual([
+      'province -2 province-id-out-of-range',
+      'province 9 province-id-out-of-range',
+      'red 8 province-colour-out-of-range',
+      'green 8 province-colour-out-of-range',
+    ]);
+    expect(diagnostics.map((d) => text.slice(d.start, d.end))).toEqual(['-2', '9', '256', '-1']);
+    expect(diagnostics[1]?.message).toContain('a table of 9 entries');
+    expect(diagnostics[2]?.message).toContain('A red of 256 is outside 0 to 255.');
   });
 });
 

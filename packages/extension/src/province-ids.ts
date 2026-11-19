@@ -9,6 +9,7 @@ import { readFile } from 'node:fs/promises';
 import * as vscode from 'vscode';
 import {
   checkAdjacencies,
+  checkDefinitions,
   checkClimate,
   checkPositions,
   checkProvinceGroups,
@@ -311,6 +312,12 @@ export function diagnose(
     return ids === undefined
       ? undefined
       : checkDefaultMap(parseScript(text, { script: true }), definedIds(ids));
+  }
+  if (
+    ids?.definitionFile !== undefined &&
+    path.toLowerCase() === ids.definitionFile.path.toLowerCase()
+  ) {
+    return checkDefinitions(text, ids);
   }
   if (ids?.climateFile !== undefined && path.toLowerCase() === ids.climateFile.path.toLowerCase()) {
     return checkClimate(parseScript(text, { script: true }), ids);

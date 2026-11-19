@@ -41,7 +41,11 @@ export async function testProvinceIds(): Promise<void> {
   const root = await mkdtemp(path.join(tmpdir(), 'etch-province-ids-'));
   const game = path.join(root, 'game');
   await write(game, 'map/default.map', 'max_provinces = 10\nlakes = { 4 }\n');
-  await write(game, 'map/definition.csv', 'province;r;g;b;x;x\n1;1;1;1;A;x\n2;2;2;2;B;x\n');
+  const definitions = await write(
+    game,
+    'map/definition.csv',
+    'province;r;g;b;x;x\n1;1;1;1;A;x\n2;2;300;2;B;x\n',
+  );
   const open = await write(
     game,
     'events/open.txt',
@@ -95,6 +99,15 @@ export async function testProvinceIds(): Promise<void> {
     assert.deepEqual(
       [link.range.start.line, link.range.start.character, link.range.end.character],
       [1, 0, 2],
+    );
+    // The definition file: a green of 300 is past the game's colour table.
+    await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(definitions));
+    const [colour, ...otherColours] = await diagnosticsOf(definitions, (found) => found.length > 0);
+    assert.deepEqual(otherColours, []);
+    assert.equal(colour?.code, 'province-colour-out-of-range');
+    assert.deepEqual(
+      [colour.range.start.line, colour.range.start.character, colour.range.end.character],
+      [2, 4, 7],
     );
     await vscode.window.showTextDocument(document);
 

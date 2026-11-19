@@ -233,7 +233,9 @@ export type ProvinceIdDiagnosticCode =
   /** A province id below `max_provinces` that `map/definition.csv` does not list. */
   | 'province-id-not-defined'
   /** A `history/provinces` file whose name gives no province of the map: the game skips it. */
-  | 'province-history-not-read';
+  | 'province-history-not-read'
+  /** A colour of `map/definition.csv` with a red, green or blue outside 0 to 255. */
+  | 'province-colour-out-of-range';
 
 /** A province id the map does not have; the range is the id's scalar (empty, at the start, for a file name). */
 export interface ProvinceIdDiagnostic extends SourceRange {
@@ -733,6 +735,70 @@ export function checkAdjacencies(text: string, ids: ProvinceIds): ProvinceIdDiag
     check(fields[0], 'from');
     check(fields[1], 'to');
     if (fields[2]?.text === 'sea') check(fields[3], 'through');
+  }
+  return found;
+}
+
+const COLOUR_KEYS = ['red', 'green', 'blue'] as const;
+
+/**
+ * The rows of the map's definition file (`map/definition.csv`) that would write outside the
+ * game's tables. `CMap::GenerateColorSpace` reads the first `max_provinces` rows, the header
+ * among them, and no more (Anbennar's file runs to 8000 on 7039); it takes each field with `atoi`
+ * and checks nothing: it stores the row's colour at index id of a table of `max_provinces + 1`
+ * entries, and the id at index `red × 65536 + green × 256 + blue` of a table of 2²⁴ entries (the
+ * EU4 engine lab, 19.11.2026). An id below 0 or past `max_provinces`, or a red, green or blue
+ * outside 0 to 255, writes elsewhere or gives the province another province's colour. Vanilla
+ * and the lab's mods with their own file have none.
+ */
+export function checkDefinitions(text: string, ids: ProvinceIds): ProvinceIdDiagnostic[] {
+  const found: ProvinceIdDiagnostic[] = [];
+  const atoi = (
+    field: CsvField | undefined,
+  ): { value: number; start: number; end: number } | undefined => {
+    const match = field === undefined ? null : /^[ \t]*([+-]?\d+)/.exec(field.text);
+    if (field === undefined || match?.[1] === undefined) return undefined;
+    const start = field.start + match[0].length - match[1].length;
+    return { value: Number(match[1]), start, end: start + match[1].length };
+  };
+  let at = 0;
+  for (let row = 0; row < ids.maxProvinces && at < text.length; row++) {
+    const newline = text.indexOf('\n', at);
+    const end = newline < 0 ? text.length : newline;
+    const fields = csvFields(text, at, end);
+    at = end + 1;
+    const id = atoi(fields[0]);
+    if (id !== undefined && (id.value < 0 || id.value > ids.maxProvinces)) {
+      found.push({
+        severity: 'warning',
+        code: 'province-id-out-of-range',
+        message:
+          `Province ${String(id.value)} is not on the map: ${ids.maxSource} sets max_provinces = ` +
+          `${String(ids.maxProvinces)}. The game stores each row's colour by its id in a table ` +
+          `of ${String(ids.maxProvinces + 1)} entries without a check, so this row writes past ` +
+          'it, which can crash the game.',
+        id: id.value,
+        key: 'province',
+        start: id.start,
+        end: id.end,
+      });
+    }
+    COLOUR_KEYS.forEach((key, i) => {
+      const colour = atoi(fields[i + 1]);
+      if (colour === undefined || (colour.value >= 0 && colour.value <= 255)) return;
+      found.push({
+        severity: 'warning',
+        code: 'province-colour-out-of-range',
+        message:
+          `A ${key} of ${String(colour.value)} is outside 0 to 255. The game indexes its table of ` +
+          'colours with red × 65536 + green × 256 + blue without a check, so the province gets ' +
+          "another colour's place or a write past the table, which can crash the game.",
+        id: id?.value ?? 0,
+        key,
+        start: colour.start,
+        end: colour.end,
+      });
+    });
   }
   return found;
 }
