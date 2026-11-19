@@ -393,6 +393,7 @@ export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): str
   #facts { display: flex; flex-wrap: wrap; gap: 4px 12px; }
   #facts span { white-space: nowrap; }
   .spacer { flex: 1; }
+  #snow-amount { width: 6em; vertical-align: middle; }
   input[type="color"] { width: 24px; height: 20px; padding: 0; border: none; background: none; vertical-align: middle; }
   #flag-tag { width: 4em; font: inherit; color: var(--vscode-input-foreground); background: var(--vscode-input-background); border: 1px solid var(--vscode-input-border, transparent); padding: 1px 4px; text-transform: uppercase; }
   button, select {
@@ -426,6 +427,9 @@ export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): str
   </span>
   <label id="flag" title="The flag a PdxMeshTextureAtlas part (a ship's sails) shows: a country tag's gfx/flags flag, or with no tag the three country colours as stripes" hidden>
     Flag <input id="flag-tag" size="4" maxlength="3" spellcheck="false" placeholder="TAG" aria-label="Country tag of the flag">
+  </label>
+  <label id="snow" title="Snow on PdxMeshSnow parts and map trees, as the game puts it on them in winter: the game takes the amount from the map, here from 0 (none) to 1" hidden>
+    Snow <input type="range" id="snow-amount" min="0" max="1" step="0.05" value="0" aria-label="Snow amount">
   </label>
   <button id="maps" aria-pressed="true" title="Draw the normal and specular maps">Maps</button>
   <button id="wireframe" aria-pressed="false" title="Show the triangle edges">Wire</button>

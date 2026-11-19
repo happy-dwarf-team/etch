@@ -701,8 +701,11 @@ refresh is a step of the 3.0.0 release.
   random height and turn are not followed. `PdxMeshAlphaBlend` parts (16 African
   buildings and, without depth writes, `Mapitems/selection.mesh`) are blended by
   their diffuse alpha after the opaque parts, as the game's blend state does,
-  where the preview cut them at 0.5 before. Not drawn: the map's fog of war,
-  snow and distance fog.
+  where the preview cut them at 0.5 before. Snow follows the game's
+  `ApplySnowMesh` on `PdxMeshSnow` parts (110 of vanilla's drawn parts, all
+  city buildings, ports and forts) and `ApplySnowTree` on map trees, with the
+  amount the game reads from the map at the mesh's place taken from a Snow
+  slider instead. Not drawn: the map's fog of war and distance fog.
 
 ## Open issues
 

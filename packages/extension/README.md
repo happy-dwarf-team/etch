@@ -363,13 +363,16 @@ it is in no folder of the playset. Collision shapes are hidden.
 - A `PdxMeshAlphaBlend` part (vanilla's African buildings, a unit's selection
   ring) is blended over what is behind it by its diffuse map's alpha, as the
   game blends it, rather than cut.
+- **Snow** (shown for `PdxMeshSnow` parts, vanilla's city buildings and forts,
+  and for map trees) puts snow on the mesh as the game does in winter: from 0,
+  none, to 1. The game takes the amount from the map at the mesh's place.
 - If the mesh has a skeleton, the list offers the `.anim` files beside it that
   name its bones, the mesh's own first (`carrack_idle.anim` for
   `carrack.mesh`); **Play** runs the one you pick in a loop.
 - When the mesh, a texture or an animation beside it changes on disk, the
   preview shows the new one.
 
-Snow is not drawn. To open a mesh with another viewer, use **Reopen Editor
+To open a mesh with another viewer, use **Reopen Editor
 With…**.
 
 ### Entities
