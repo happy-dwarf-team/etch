@@ -625,6 +625,28 @@ refresh is a step of the 3.0.0 release.
   preview does, and **Override in my mod** opens the copy with it selected; the
   game's line still finds the widget. A widget not found in the file opens at
   the line as before.
+- **Pick mode hides the game's tooltips.** v2 section 7 kept the game's hover
+  and tooltips in pick mode. In the game (2026-11-19, Etch 2.12.0, EU4 1.37.5
+  windowed at 1440×900) every widget of the province view's trade section has
+  a tooltip, shown at once at the pointer's bottom right, where pick mode's
+  label also stands (the pointer + 24 px), so the two read as one box; the
+  longer ones grow over and around the label about 0.7 s later, and on
+  `tradenode_button` pointed at its left end the tooltip covers the button, so
+  the outline, drawn over the finished frame, seems to frame the tooltip.
+  Placing the label elsewhere (above the pointer, say) would part the two boxes
+  only where the game leaves its tooltip at the bottom right: the game moves a
+  tooltip that does not fit the screen, and a tooltip over the widget would
+  still hide what the outline frames. Decision: while pick mode is on the game
+  shows no tooltip, the map's included. Hover keeps working (the game's
+  highlight and the hovered widget pick mode reads), and the tooltips come back
+  the frame pick mode is left. A tooltip is not a widget to pick (the game
+  reports none over one) and no part of a live snapshot, so pick mode loses
+  nothing it shows. The plugin hooks the call of the game's tooltip controller
+  that shows the tooltip for the pointer (`0x1415390`), which only its update
+  makes, once a frame (`0x1414EF0`); in pick mode it calls the controller's own
+  hide (`0x1415340`) instead, as the update does when the game shows no
+  tooltip. Interface code only: `affects_gameplay = false` stays true.
+  Checked in the game: docs/pick-mode-checks.md, "The game's tooltips".
 - **The texture preview.** `.dds` and `.tga` files open in a read-only
   custom editor, `etch.texturePreview`, which reads them with the renderer's
   DDS and TGA readers and shows one mip level on a 2D canvas: the header's
