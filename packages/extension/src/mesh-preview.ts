@@ -6,7 +6,8 @@
 // `.tga` name also tries `.dds`), and lists the `.anim` files beside it whose joints name the mesh's
 // bones. A `PdxMeshTextureAtlas` part (a ship's sails) shows a country's flag: the webview asks
 // for a tag's `gfx/flags/<TAG>.tga` and the host decodes it through the playset. For a map tree
-// the host also sends the playset's tint map (`map/terrain/Tree_tint.bmp`). The webview script
+// the host also sends the playset's tint and season maps (`map/terrain/Tree_tint.bmp`,
+// `Tree_season.bmp`). The webview script
 // (`dist/mesh-webview.js`, from `webview/mesh.ts`) parses the mesh with `@etch/core/asset`, draws
 // it with WebGL2 and plays an animation the user picks, skinned on the CPU.
 
@@ -160,11 +161,13 @@ export async function flagTexture(tag: string, files: GameFiles | undefined): Pr
 
 /** The map's tint map of its trees, which `gfx/FX/tree.shader` takes as `TintMap`. */
 export const TREE_TINT = 'map/terrain/Tree_tint.bmp';
+/** The map's season map of its trees, which `gfx/FX/tree.shader` takes as `SeasonMap`. */
+export const TREE_SEASON = 'map/terrain/Tree_season.bmp';
 
-/** The playset's tree tint map, decoded. */
-export async function treeTint(files: GameFiles | undefined): Promise<MeshTexture> {
-  const found = files === undefined ? undefined : await files.find(TREE_TINT);
-  if (found === undefined) return { ok: false, message: `no ${TREE_TINT} in the playset` };
+/** One of the playset's tree maps (`TREE_TINT`, `TREE_SEASON`), decoded. */
+export async function treeMap(files: GameFiles | undefined, file: string): Promise<MeshTexture> {
+  const found = files === undefined ? undefined : await files.find(file);
+  if (found === undefined) return { ok: false, message: `no ${file} in the playset` };
   try {
     const image = readBmp(await read(found.absolutePath));
     return {
@@ -177,7 +180,7 @@ export async function treeTint(files: GameFiles | undefined): Promise<MeshTextur
   } catch (error) {
     return {
       ok: false,
-      message: `${TREE_TINT}: ${error instanceof Error ? error.message : String(error)}`,
+      message: `${file}: ${error instanceof Error ? error.message : String(error)}`,
     };
   }
 }
@@ -310,7 +313,8 @@ class MeshPreviewProvider implements vscode.CustomReadonlyEditorProvider<MeshDoc
         textures: await texturesOf(mesh, file, await this.playset()),
         animations: await animationsOf(mesh, folder, path.basename(file, path.extname(file))),
         tree,
-        tint: tree === undefined ? undefined : await treeTint(await this.playset()),
+        tint: tree === undefined ? undefined : await treeMap(await this.playset(), TREE_TINT),
+        season: tree === undefined ? undefined : await treeMap(await this.playset(), TREE_SEASON),
       };
       await webview.postMessage(message);
     };
@@ -421,7 +425,7 @@ export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): str
   #facts { display: flex; flex-wrap: wrap; gap: 4px 12px; }
   #facts span { white-space: nowrap; }
   .spacer { flex: 1; }
-  #snow-amount, #tint-turn { width: 6em; vertical-align: middle; }
+  #snow-amount, #tint-turn, #season-time, #season-north { width: 6em; vertical-align: middle; }
   input[type="color"] { width: 24px; height: 20px; padding: 0; border: none; background: none; vertical-align: middle; }
   #flag-tag { width: 4em; font: inherit; color: var(--vscode-input-foreground); background: var(--vscode-input-background); border: 1px solid var(--vscode-input-border, transparent); padding: 1px 4px; text-transform: uppercase; }
   button, select {
@@ -464,6 +468,10 @@ export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): str
   </label>
   <label id="ground" title="A map tree's ground colour: the game lays the map's colour map at the tree's place over it at one quarter; grey (#808080) changes nothing" hidden>
     Ground <input type="color" id="ground-colour" value="#808080" aria-label="Map colour under the tree">
+  </label>
+  <label id="season" title="A map tree's season colour from map/terrain/Tree_season.bmp: Season picks the place in its eight columns the game takes from the date, North how much of it the tree takes (the game adds it only in the map's northern half, from none at the middle to all of it at nine tenths of the height)" hidden>
+    Season <input type="range" id="season-time" min="0" max="1" step="0.0625" value="0" aria-label="Place in the season map">
+    North <input type="range" id="season-north" min="0" max="1" step="0.05" value="0" aria-label="How far north the tree stands">
   </label>
   <button id="maps" aria-pressed="true" title="Draw the normal and specular maps">Maps</button>
   <button id="wireframe" aria-pressed="false" title="Show the triangle edges">Wire</button>

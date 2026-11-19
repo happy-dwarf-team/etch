@@ -19,7 +19,9 @@ import type { EtchApi } from '../src/extension.ts';
 import {
   flagTexture,
   MESH_PREVIEW_VIEW_TYPE,
-  treeTint,
+  treeMap,
+  TREE_SEASON,
+  TREE_TINT,
   type MeshShown,
 } from '../src/mesh-preview.ts';
 import { linkedFiles } from '../src/script-profile-view.ts';
@@ -206,6 +208,7 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
   tint.set([20, 120, 60, 200, 150, 100], 54);
   await mkdir(path.join(game, 'map', 'terrain'), { recursive: true });
   await writeFile(path.join(game, 'map', 'terrain', 'Tree_tint.bmp'), tint);
+  await writeFile(path.join(game, 'map', 'terrain', 'Tree_season.bmp'), tint);
   const settings = vscode.workspace.getConfiguration('etch');
   await settings.update('gamePath', game, vscode.ConfigurationTarget.Global);
   try {
@@ -230,6 +233,12 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
     assert.equal(inGame.summary.tint, undefined, 'another mesh takes no tint');
     assert.equal(tree.summary.ground, '#808080', 'the Ground colour starts at the neutral grey');
     assert.equal(inGame.summary.ground, undefined, 'another mesh has no ground colour');
+    assert.deepEqual(
+      tree.summary.season,
+      { source: 'the game', time: 0, north: 0 },
+      "a map tree takes the playset's season map, North at 0",
+    );
+    assert.equal(inGame.summary.season, undefined, 'another mesh takes no season map');
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
     const bare = await open(
       api,
@@ -253,15 +262,15 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
     assert.ok(!notATag.ok, 'only a country tag is looked up');
 
     // The tint map, decoded through the playset: RGBA, top row first.
-    const decoded = await treeTint(files);
+    const decoded = await treeMap(files, TREE_TINT);
     assert.ok(decoded.ok, `the tint map is read: ${decoded.ok ? '' : decoded.message}`);
     assert.deepEqual(
       [decoded.width, decoded.height, decoded.source, Array.from(decoded.rgba)],
       [2, 1, 'the game', [60, 120, 20, 255, 100, 150, 200, 255]],
     );
-    assert.deepEqual(await treeTint(undefined), {
+    assert.deepEqual(await treeMap(undefined, TREE_SEASON), {
       ok: false,
-      message: 'no map/terrain/Tree_tint.bmp in the playset',
+      message: 'no map/terrain/Tree_season.bmp in the playset',
     });
   } finally {
     await settings.update('gamePath', undefined, vscode.ConfigurationTarget.Global);

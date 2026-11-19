@@ -369,7 +369,10 @@ it is in no folder of the playset. Collision shapes are hidden.
   map, and **Turn** stands in for that turn, from 0 to 1 of a full one. The
   game then lays the map's colour map at the tree's place over it at one
   quarter; **Ground** stands in for that colour (grey, `#808080`, changes
-  nothing). The map's season colours are not applied.
+  nothing). Last it adds a season colour from `map/terrain/Tree_season.bmp`,
+  only in the map's northern half: **Season** picks the place in that map the
+  game takes from the date, and **North** how much of it the tree takes, from
+  0 (the map's middle and south, no change) to 1 (its far north).
 - A `PdxMeshAlphaBlend` part (vanilla's African buildings, a unit's selection
   ring) is blended over what is behind it by its diffuse map's alpha, as the
   game blends it, rather than cut.

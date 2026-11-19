@@ -29,8 +29,13 @@
 // (`GetOverlay`), sampled at the second UVs (`u1`) shifted along u by the tree's turn: the game
 // turns each tree by a random angle and shifts by that angle over a full turn, the preview by its
 // Turn slider (0 by default). The map's colour map at the tree's place is laid over that at 0.25,
-// the preview's Ground colour standing in for it (grey, #808080, changes nothing). The season
-// colours, and the random height and turn of the mesh itself, are left out; its snow is below.
+// the preview's Ground colour standing in for it (grey, #808080, changes nothing). Then the
+// season colour: the season map (the playset's `map/terrain/Tree_season.bmp`, eight columns) at u
+// `season / 8 + 1/16` (the game's season value, from the date) and v the u1's v, less 0.5, is added,
+// times a fade that is 0 in the map's southern half and rises to 1 at nine tenths of its height.
+// The preview takes the column from its Season slider (0 to 1 over the eight) and the fade from
+// its North slider (0 by default, which changes nothing). The random height and turn of the mesh
+// itself are left out; its snow is below.
 //
 // Snow, as the game puts it on `PdxMeshSnow` parts (`ApplySnowMesh` in pdxmesh.shader) and map
 // trees (`ApplySnowTree` in tree.shader) before the light: the game takes the amount from the map
@@ -107,6 +112,9 @@ const tintLabel = element('tint');
 const tintInput = element('tint-turn') as HTMLInputElement;
 const groundLabel = element('ground');
 const groundInput = element('ground-colour') as HTMLInputElement;
+const seasonLabel = element('season');
+const seasonTimeInput = element('season-time') as HTMLInputElement;
+const seasonNorthInput = element('season-north') as HTMLInputElement;
 
 const gl = canvas.getContext('webgl2', { antialias: true });
 
@@ -176,6 +184,12 @@ uniform bool tinted;
 uniform float turn;
 // The Ground colour: the map's colour map under a map tree.
 uniform vec3 ground;
+// A map tree's season map; the Season slider (its column, 0 to 1 over its width) and the North
+// slider (how much of it the tree takes).
+uniform sampler2D seasonMap;
+uniform bool seasoned;
+uniform float seasonTime;
+uniform float north;
 uniform bool lines;
 // Towards the light.
 uniform vec3 light;
@@ -201,6 +215,9 @@ void main() {
   vec3 c = base.rgb;
   if (tree && tinted) c = overlay(c, texture(tintMap, vec2(vUv1.x + turn, vUv1.y)).rgb, 0.5);
   if (tree) c = overlay(c, ground, 0.25);
+  if (tree && seasoned) {
+    c += (texture(seasonMap, vec2(seasonTime + 1.0 / 16.0, vUv1.y)).rgb - 0.5) * north;
+  }
   if (snowy && tree) {
     float fade = clamp(
       clamp(n.y - clamp(1.0 - snow, 0.0, 1.0), 0.0, 1.0) * snow * 5.5 * clamp((n.y - 0.6) * 1000.0, 0.0, 1.0),
@@ -307,6 +324,14 @@ let tintProblem: string | undefined;
 let turn = 0;
 /** The Ground colour box, as `#rrggbb`: the map's colour map under a map tree. */
 let ground = '#808080';
+/** Mesh preview of a map tree: its season map, uploaded, and where it came from. */
+let seasonMap: { texture: WebGLTexture; source: string } | undefined;
+/** Why a map tree's season map is not drawn. */
+let seasonProblem: string | undefined;
+/** The Season slider: the place in the season map's columns, 0 to 1 over its width. */
+let seasonTime = 0;
+/** The North slider: how much of the season colour a tree takes, 0 (the map's south) to 1. */
+let north = 0;
 /** What plays: an animation's file name (mesh) or a state (entity); `undefined` for the bind pose. */
 let playingKey: string | undefined;
 let playing = false;
@@ -537,7 +562,7 @@ function showWarnings(warnings: ReadonlySet<string>, problems: readonly string[]
 }
 
 function showErrorBox(): void {
-  const lines = [warningLines, flagProblem ?? [], tintProblem ?? []].flat();
+  const lines = [warningLines, flagProblem ?? [], tintProblem ?? [], seasonProblem ?? []].flat();
   errorBox.hidden = lines.length === 0;
   errorBox.textContent = lines.join('\n');
 }
@@ -714,6 +739,12 @@ function draw(now: number): void {
   gl.uniform1i(uniform('tinted'), tree !== undefined && tint !== undefined ? 1 : 0);
   gl.uniform1f(uniform('turn'), turn);
   vector('ground', hexColour(ground));
+  gl.uniform1i(uniform('seasonMap'), 5);
+  gl.uniform1i(uniform('seasoned'), tree !== undefined && seasonMap !== undefined ? 1 : 0);
+  gl.uniform1f(uniform('seasonTime'), seasonTime);
+  gl.uniform1f(uniform('north'), north);
+  gl.activeTexture(gl.TEXTURE5);
+  gl.bindTexture(gl.TEXTURE_2D, seasonMap?.texture ?? null);
   gl.activeTexture(gl.TEXTURE4);
   gl.bindTexture(gl.TEXTURE_2D, tint?.texture ?? null);
   gl.activeTexture(gl.TEXTURE3);
@@ -797,7 +828,14 @@ function summary(): MeshSummary {
   if (blendedParts > 0) base = { ...base, blended: blendedParts };
   const snowyParts = parts.filter((d) => d.snow || tree !== undefined).length;
   if (snowyParts > 0) base = { ...base, snow: { parts: snowyParts, amount: snowAmount } };
-  if (tree !== undefined) base = { ...base, tint: { source: tint?.source, turn }, ground };
+  if (tree !== undefined) {
+    base = {
+      ...base,
+      tint: { source: tint?.source, turn },
+      ground,
+      season: { source: seasonMap?.source, time: seasonTime, north },
+    };
+  }
   if (entity === undefined) return base;
   return {
     ...base,
@@ -847,6 +885,9 @@ function showFacts(): void {
   }
   if (s.collisionShapes > 0) items.push(`${String(s.collisionShapes)} collision (hidden)`);
   if (tree !== undefined && tint !== undefined) items.push(`Tree_tint.bmp (${tint.source})`);
+  if (tree !== undefined && seasonMap !== undefined) {
+    items.push(`Tree_season.bmp (${seasonMap.source})`);
+  }
   for (const [name, source] of Object.entries(s.textures)) items.push(`${name} (${source})`);
   facts.replaceChildren(
     ...items.map((text) => {
@@ -907,6 +948,7 @@ function show(
   snowLabel.hidden = tree === undefined && !instances.some((i) => i.parts.some((d) => d.snow));
   tintLabel.hidden = tree === undefined || tint === undefined;
   groundLabel.hidden = tree === undefined;
+  seasonLabel.hidden = tree === undefined || seasonMap === undefined;
   offerLevels();
   pose(context, 0);
 }
@@ -927,6 +969,15 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
         if (texture !== undefined) tint = { texture, source: message.tint.source };
       } else if (message.tint !== undefined) {
         tintProblem = `Tree tint: ${message.tint.message}`;
+      }
+      if (seasonMap !== undefined) gl.deleteTexture(seasonMap.texture);
+      seasonMap = undefined;
+      seasonProblem = undefined;
+      if (message.season?.ok === true) {
+        const texture = textureOf(gl, message.season);
+        if (texture !== undefined) seasonMap = { texture, source: message.season.source };
+      } else if (message.season !== undefined) {
+        seasonProblem = `Tree season: ${message.season.message}`;
       }
       const keep = playingKey;
       playing = false;
@@ -1028,6 +1079,7 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
       };
       tree = undefined;
       tintProblem = undefined;
+      seasonProblem = undefined;
       offered = [];
       show(gl, nodes, meshes, problems);
       animationSelect.replaceChildren(
@@ -1082,6 +1134,16 @@ groundInput.addEventListener('input', () => {
 groundInput.addEventListener('change', () => {
   vscode.postMessage({ type: 'shown', summary: summary() });
 });
+for (const input of [seasonTimeInput, seasonNorthInput]) {
+  input.addEventListener('input', () => {
+    seasonTime = Number(seasonTimeInput.value);
+    north = Number(seasonNorthInput.value);
+    redraw();
+  });
+  input.addEventListener('change', () => {
+    vscode.postMessage({ type: 'shown', summary: summary() });
+  });
+}
 
 lodSelect.addEventListener('change', () => {
   lodLevel = Number(lodSelect.value);
