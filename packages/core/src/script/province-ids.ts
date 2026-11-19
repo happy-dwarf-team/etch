@@ -6,7 +6,14 @@
  * `max_provinces` of `map/default.map`, and, when it is read, those that `map/definition.csv` lists.
  */
 import { parseScript } from './parse.ts';
-import type { BlockNode, EntryNode, ParsedScript, ScalarNode, SourceRange } from './tree.ts';
+import type {
+  BlockNode,
+  EntryNode,
+  ParsedScript,
+  PropertyNode,
+  ScalarNode,
+  SourceRange,
+} from './tree.ts';
 
 /** What a script key's integer value is to the game. */
 export type ProvinceIdKeyKind = 'trigger' | 'effect' | 'property';
@@ -272,17 +279,15 @@ export function checkProvinceIds(
   walk(parsed.entries, root, 0, body ? 0 : firstScopeDepth(path), ids, found);
   const member = body || path === undefined ? undefined : provinceEntryMember(path);
   if (member !== undefined) {
-    for (const entry of parsed.entries) {
-      if (entry.kind !== 'property' || entry.value?.kind !== 'block') continue;
-      for (const property of entry.value.entries) {
-        if (property.kind !== 'property' || property.key.text.toLowerCase() !== member.key)
-          continue;
-        const value = property.value;
-        if (member.list && value?.kind === 'block') {
-          for (const scalar of bareScalars(value)) checkScalar(scalar, member.key, ids, found);
-        } else if (!member.list && value?.kind === 'scalar') {
-          checkScalar(value, member.key, ids, found, true);
+    for (const property of membersAt(parsed.entries, member.depth)) {
+      if (property.key.text.toLowerCase() !== member.key) continue;
+      const value = property.value;
+      if (member.list && value?.kind === 'block') {
+        for (const scalar of bareScalars(value)) {
+          checkScalar(scalar, member.key, ids, found, member.signed);
         }
+      } else if (!member.list && value?.kind === 'scalar') {
+        checkScalar(value, member.key, ids, found, true);
       }
     }
   }
@@ -341,19 +346,47 @@ export function provinceHistoryNotRead(
  * into that province (the EU4 engine lab, 18.11.2026). A new game from the 1444 bookmark with
  * Stonehenge's `start = 30000000` crashed there, in `CGreatProjectType::ExecuteBuiltEffect`
  * (19.11.2026). Vanilla gives 138 ids, all on its map.
+ *
+ * A religion's `holy_sites`, a member of the religion inside its group, lists the provinces whose
+ * owners its blessings and religion view show. The game reads it as a list of integers
+ * (`CReligion::ReadMember`), and the religion tab of a country of that religion
+ * (`CCountryReligionView::Update`) and the blessings window (`CBlessingsView::Show`) index the
+ * province table with each id, unchecked, a negative one too (the EU4 engine lab, 19.11.2026).
+ * Vanilla gives the Coptic and Zoroastrian religions 10 ids, all on its map.
  */
-const PROVINCE_ENTRY_MEMBERS: readonly (readonly [folder: string, key: string, list: boolean])[] = [
-  ['common/colonial_regions/', 'provinces', true],
-  ['common/trade_companies/', 'provinces', true],
-  ['common/tradenodes/', 'members', true],
-  ['common/great_projects/', 'start', false],
+const PROVINCE_ENTRY_MEMBERS: readonly ProvinceEntryMember[] = [
+  { folder: 'common/colonial_regions/', key: 'provinces', list: true, depth: 1 },
+  { folder: 'common/trade_companies/', key: 'provinces', list: true, depth: 1 },
+  { folder: 'common/tradenodes/', key: 'members', list: true, depth: 1 },
+  { folder: 'common/great_projects/', key: 'start', list: false, depth: 1 },
+  { folder: 'common/religions/', key: 'holy_sites', list: true, depth: 2, signed: true },
 ];
 
-/** The member of a folder's entries that holds province ids: a list of them, or a single one. */
-function provinceEntryMember(path: string): { key: string; list: boolean } | undefined {
+/**
+ * The member of a folder's entries that holds province ids: a list of them or a single one, in
+ * the blocks `depth` levels down (1: the file's top-level entries), and whether a list's negative
+ * ids are checked too (a single id's always are).
+ */
+interface ProvinceEntryMember {
+  readonly folder: string;
+  readonly key: string;
+  readonly list: boolean;
+  readonly depth: number;
+  readonly signed?: boolean;
+}
+
+function provinceEntryMember(path: string): ProvinceEntryMember | undefined {
   const lower = path.toLowerCase().replace(/\\/g, '/');
-  const found = PROVINCE_ENTRY_MEMBERS.find(([folder]) => lower.startsWith(folder));
-  return found === undefined ? undefined : { key: found[1], list: found[2] };
+  return PROVINCE_ENTRY_MEMBERS.find(({ folder }) => lower.startsWith(folder));
+}
+
+/** The properties of the blocks `depth` levels down: 0 for the entries themselves. */
+function membersAt(entries: readonly EntryNode[], depth: number): PropertyNode[] {
+  const properties = entries.filter((entry): entry is PropertyNode => entry.kind === 'property');
+  if (depth === 0) return properties;
+  return properties.flatMap((property) =>
+    property.value?.kind === 'block' ? membersAt(property.value.entries, depth - 1) : [],
+  );
 }
 
 /**
