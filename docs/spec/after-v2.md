@@ -692,7 +692,14 @@ refresh is a step of the 3.0.0 release.
   with one, `asset.vanilla.test.ts`); the preview draws one level, the most
   detailed unless the LOD box picks another, where it drew them all on top of
   each other before. Which level the game draws at which distance is not
-  known. Not drawn: the map's fog of war, snow and distance fog.
+  known. A mesh a `mapobject_<n>` pdxmesh of the playset names is one of the
+  map's trees (the tree layer places type n where `map/trees.bmp` has palette
+  index n: 21 types over 17 meshes in vanilla, `entity.vanilla.test.ts`); the
+  game draws those with `gfx/FX/tree.shader`, not their materials' shader, so
+  the preview cuts out texels with a diffuse alpha under 0.5 and adds no
+  highlight. The tree shader's tint, colour and season maps and each tree's
+  random height and turn are not followed. Not drawn: the map's fog of war,
+  snow and distance fog.
 
 ## Open issues
 

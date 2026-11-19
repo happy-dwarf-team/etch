@@ -30,6 +30,11 @@ export interface MeshSummary {
    * the levels offered. Only the picked level's shapes are drawn and counted.
    */
   readonly lod?: { readonly level: number; readonly levels: readonly number[] };
+  /**
+   * The map tree type (`mapobject_<n>`) that draws the mesh: it is drawn as the game's tree
+   * shader draws it.
+   */
+  readonly tree?: string;
 }
 
 export interface FlagSummary {
@@ -104,6 +109,11 @@ export type MeshHostMessage =
       /** By the file name a material's `diff`, `n` or `spec` gives. */
       readonly textures: Readonly<Record<string, MeshTexture>>;
       readonly animations: readonly MeshAnimationEntry[];
+      /**
+       * The map tree type (`mapobject_<n>`) of the playset that names this mesh: the game draws
+       * it with its tree shader (`gfx/FX/tree.shader`), not the shader its materials name.
+       */
+      readonly tree: string | undefined;
     }
   | { readonly type: 'animation'; readonly name: string; readonly bytes: Uint8Array }
   | { readonly type: 'flag'; readonly tag: string; readonly texture: MeshTexture }

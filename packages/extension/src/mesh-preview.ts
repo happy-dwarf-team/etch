@@ -13,8 +13,15 @@ import { randomBytes } from 'node:crypto';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { textureCandidates } from '@etch/core';
-import { jointsOfBones, readAnimation, readMesh, type PdxMesh } from '@etch/core/asset';
-import type { GameFiles } from '@etch/core/playset';
+import {
+  jointsOfBones,
+  mapTreeOf,
+  readAnimation,
+  readMesh,
+  type PdxMesh,
+  type PdxMeshType,
+} from '@etch/core/asset';
+import { loadPdxMeshTypes, type GameFiles } from '@etch/core/playset';
 import { inspectTexture } from '@etch/renderer/inspect';
 import { layerFolder } from './asset-links.ts';
 import type {
@@ -189,6 +196,7 @@ class MeshPreviewProvider implements vscode.CustomReadonlyEditorProvider<MeshDoc
   private readonly extensionUri: vscode.Uri;
   private readonly output: vscode.LogOutputChannel;
   private files: Promise<GameFiles | undefined> | undefined;
+  private types: Promise<PdxMeshType[]> | undefined;
 
   constructor(extensionUri: vscode.Uri, output: vscode.LogOutputChannel) {
     this.extensionUri = extensionUri;
@@ -198,6 +206,27 @@ class MeshPreviewProvider implements vscode.CustomReadonlyEditorProvider<MeshDoc
   /** Forgets the playset: after a setting or the workspace folders change. */
   reset(): void {
     this.files = undefined;
+    this.types = undefined;
+  }
+
+  /** The map tree type (`mapobject_<n>`) that draws a mesh of the playset, if one does. */
+  private async treeOf(file: string): Promise<string | undefined> {
+    const files = await this.playset();
+    const folder = files === undefined ? undefined : layerFolder(files, file);
+    if (files === undefined || folder === undefined) return undefined;
+    this.types ??= loadPdxMeshTypes(files).then(
+      (types) => types.flat(),
+      (error: unknown) => {
+        this.output.warn(
+          `Mesh preview: the .gfx files could not be read, no mesh is drawn as a map tree: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+        return [];
+      },
+    );
+    const name = path.basename(file);
+    return mapTreeOf(await this.types, folder === '' ? name : `${folder}/${name}`)?.name;
   }
 
   private playset(): Promise<GameFiles | undefined> {
@@ -253,6 +282,7 @@ class MeshPreviewProvider implements vscode.CustomReadonlyEditorProvider<MeshDoc
         bytes,
         textures: await texturesOf(mesh, file, await this.playset()),
         animations: await animationsOf(mesh, folder, path.basename(file, path.extname(file))),
+        tree: await this.treeOf(file),
       };
       await webview.postMessage(message);
     };

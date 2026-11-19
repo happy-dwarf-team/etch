@@ -118,6 +118,24 @@ export function readPdxMeshTypes(parsed: ParsedScript, path: string): PdxMeshTyp
   return found;
 }
 
+/**
+ * The name the map's tree layer gives a tree type: `mapobject_<n>`, where `n` is a palette index of
+ * `map/trees.bmp`. In vanilla 1.37.5 the 21 such pdxmeshes of `interface/assets/mapitems.gfx` name
+ * 17 meshes of `gfx/models/Mapitems/Trees/`, and every index `trees.bmp` uses but 0 is one of
+ * them. The game draws them with `gfx/FX/tree.shader` (its `tree` effect), not with the shader
+ * their materials name.
+ */
+export const MAP_TREE_NAME = /^mapobject_\d+$/;
+
+/** The first map tree type (`mapobject_<n>`) that draws the mesh at a game-relative path. */
+export function mapTreeOf(types: Iterable<PdxMeshType>, meshPath: string): PdxMeshType | undefined {
+  const wanted = normaliseGamePath(meshPath).toLowerCase();
+  for (const type of types) {
+    if (MAP_TREE_NAME.test(type.name) && type.file?.toLowerCase() === wanted) return type;
+  }
+  return undefined;
+}
+
 /** The entities and animations of a parsed `.asset` file at a game-relative path. */
 export function readAssetFile(
   parsed: ParsedScript,

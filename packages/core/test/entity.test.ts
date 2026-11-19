@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { EntityIndex, readAssetFile, readPdxMeshTypes, resolveEntity } from '../src/asset/index.ts';
+import {
+  EntityIndex,
+  mapTreeOf,
+  readAssetFile,
+  readPdxMeshTypes,
+  resolveEntity,
+} from '../src/asset/index.ts';
 import { parseScript } from '../src/index.ts';
 
 const GFX = `objectTypes = {
@@ -77,6 +83,28 @@ describe('readPdxMeshTypes and readAssetFile', () => {
       ['soldier_idle_animation', 'gfx/models/units/animation/soldier_idle.anim'],
       ['soldier_walk_animation', 'gfx/models/other/walk.anim'],
     ]);
+  });
+});
+
+describe('mapTreeOf', () => {
+  const TREES = `objectTypes = {
+    pdxmesh = { name = "mapobject_2" file = "gfx/models/Mapitems/Trees/Pine_01.mesh" }
+    pdxmesh = { name = "mapobject_12" file = "gfx\\\\models\\\\Mapitems\\\\Trees\\\\Palms_02.mesh" }
+    pdxmesh = { name = "mapobject_x" file = "gfx/models/Mapitems/rock.mesh" }
+    pdxmesh = { name = "big_mapobject_3" file = "gfx/models/Mapitems/rock.mesh" }
+  }`;
+  const types = readPdxMeshTypes(parseScript(TREES), 'interface/assets/mapitems.gfx');
+
+  it('finds the mapobject_<n> type of a mesh path, in any case and separator', () => {
+    expect(mapTreeOf(types, 'gfx/models/mapitems/trees/pine_01.mesh')?.name).toBe('mapobject_2');
+    expect(mapTreeOf(types, 'gfx\\models\\Mapitems\\Trees\\Palms_02.mesh')?.name).toBe(
+      'mapobject_12',
+    );
+  });
+
+  it('takes only mapobject_ and a number as a tree type', () => {
+    expect(mapTreeOf(types, 'gfx/models/Mapitems/rock.mesh')).toBeUndefined();
+    expect(mapTreeOf(types, 'gfx/models/units/soldier.mesh')).toBeUndefined();
   });
 });
 
