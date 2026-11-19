@@ -28,7 +28,7 @@ const UNITS = `entity = {
   pdxmesh = "soldier_mesh"
   state = { name = "idle" animation = "idle" }
   state = { name = "walk" animation = "walk" }
-  state = { name = "death" }
+  state = { name = "death" event = { time = 0.25 node = "muzzle" particle = "musket_smoke" } event = { particle = "dust" } }
   attach = { name = "weapon" Right_hand_node = "spear" }
   attach = { Back_node = "flag" }
 }
@@ -117,9 +117,23 @@ describe('resolveEntity', () => {
     expect(soldier?.mesh).toBe('gfx/models/units/soldier.mesh');
     expect(soldier?.scale).toBe(0.5);
     expect(soldier?.states).toEqual([
-      { name: 'idle', file: 'gfx/models/units/animation/soldier_idle.anim', problem: undefined },
-      { name: 'walk', file: 'gfx/models/other/walk.anim', problem: undefined },
-      { name: 'death', file: undefined, problem: undefined },
+      {
+        name: 'idle',
+        file: 'gfx/models/units/animation/soldier_idle.anim',
+        problem: undefined,
+        events: [],
+      },
+      { name: 'walk', file: 'gfx/models/other/walk.anim', problem: undefined, events: [] },
+      {
+        name: 'death',
+        file: undefined,
+        problem: undefined,
+        // A state's particle events, with or without a time and a bone.
+        events: [
+          { time: 0.25, node: 'muzzle', particle: 'musket_smoke' },
+          { time: undefined, node: undefined, particle: 'dust' },
+        ],
+      },
     ]);
     expect(
       soldier?.attachments.map((a) => [a.group, a.bone, a.entity.name, a.entity.mesh]),

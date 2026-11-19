@@ -42,6 +42,19 @@ export interface EntityState {
   readonly name: string;
   /** An animation `id` of the entity's pdxmesh. */
   readonly animation: string | undefined;
+  /** The state's `event` blocks: a particle effect started on a bone, seconds into the state. */
+  readonly events: readonly EntityEvent[];
+}
+
+/**
+ * An `event` of an entity state, as vanilla writes them (209 in 1.37.5: artillery muzzle flashes,
+ * siege smoke): `event = { time = 0.0 node = "cannon_muzzle" particle = "artillery_cannon" }`.
+ */
+export interface EntityEvent {
+  readonly time: number | undefined;
+  /** The bone it starts on; `undefined` for the entity's origin. */
+  readonly node: string | undefined;
+  readonly particle: string | undefined;
 }
 
 export interface AttachGroup {
@@ -150,7 +163,17 @@ export function readAssetFile(
       const stateName = scalarOf(state, 'name')?.text;
       return stateName === undefined
         ? []
-        : [{ name: stateName, animation: scalarOf(state, 'animation')?.text }];
+        : [
+            {
+              name: stateName,
+              animation: scalarOf(state, 'animation')?.text,
+              events: blocksOf(state, 'event').map((event) => ({
+                time: numberOf(event, 'time'),
+                node: scalarOf(event, 'node')?.text,
+                particle: scalarOf(event, 'particle')?.text,
+              })),
+            },
+          ];
     });
     const attach: AttachGroup[] = blocksOf(block, 'attach').map((group) => ({
       name: scalarOf(group, 'name')?.text,
@@ -216,6 +239,7 @@ export interface ResolvedState {
   readonly file: string | undefined;
   /** Why `file` is missing, for a state that names an animation. */
   readonly problem: string | undefined;
+  readonly events: readonly EntityEvent[];
 }
 
 /** An entity with its clone applied, its mesh and states resolved, and its attachments. */
@@ -311,14 +335,16 @@ function resolve(index: EntityIndex, name: string, path: readonly string[]): Res
     problems.push(`pdxmesh "${pdxmesh.name}" has no file`);
   }
   const states: ResolvedState[] = [...own.states.values()].map((state) => {
+    const { events } = state;
     if (state.animation === undefined)
-      return { name: state.name, file: undefined, problem: undefined };
+      return { name: state.name, file: undefined, problem: undefined, events };
     const type = pdxmesh?.animations.get(state.animation);
     if (type === undefined) {
       return {
         name: state.name,
         file: undefined,
         problem: `pdxmesh "${own.pdxmesh ?? ''}" has no animation id "${state.animation}"`,
+        events,
       };
     }
     const animation = index.animations.get(type);
@@ -327,9 +353,10 @@ function resolve(index: EntityIndex, name: string, path: readonly string[]): Res
         name: state.name,
         file: undefined,
         problem: `no animation "${type}" in the .asset files`,
+        events,
       };
     }
-    return { name: state.name, file: animation.file, problem: undefined };
+    return { name: state.name, file: animation.file, problem: undefined, events };
   });
   const attachments: ResolvedEntity['attachments'][number][] = [];
   for (const group of own.attach) {

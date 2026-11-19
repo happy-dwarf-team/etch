@@ -65,6 +65,8 @@ export interface EntitySummary {
   readonly state: string | undefined;
   /** What the host could not resolve or read. */
   readonly problems: readonly string[];
+  /** The particle effects the shown state starts, which are not drawn. */
+  readonly particles: readonly string[];
 }
 
 /** A texture the host decoded, or why it could not. */
@@ -145,4 +147,9 @@ export type MeshHostMessage =
       /** The state shown first: the entity's `default_state`, else `idle` when it has one. */
       readonly state: string | undefined;
       readonly problems: readonly string[];
+      /**
+       * The particle effects each state's `event`s start, by state name, in words: Etch does not
+       * draw particles, so the preview names them.
+       */
+      readonly particles: Readonly<Record<string, readonly string[]>>;
     };

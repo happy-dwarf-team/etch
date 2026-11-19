@@ -680,7 +680,11 @@ refresh is a step of the 3.0.0 release.
   its parent's bone at its own scale, not multiplied by the parent's (a Russian
   line infantryman's musket in the game keeps the proportion this gives). Over
   EU4 1.37.5 all 1,523 entities resolve with no problem and all 1,411 attach
-  bones are in their parent's skeleton (`entity.vanilla.test.ts`). A
+  bones are in their parent's skeleton (`entity.vanilla.test.ts`). An
+  attachment that repeats an entity above it is not followed but named. A
+  state's `event` blocks (209 in vanilla, `time`, `node` and `particle`:
+  artillery muzzle flashes, siege smoke) start particle effects, which Etch
+  does not draw; the status line names them while the state plays. A
   `PdxMeshTextureAtlas` part blends in its country's flag where the diffuse
   alpha marks it, sampled with the mesh's `u1` (`MeshPart.uvs1`; all 21 such
   parts of vanilla have it, `asset.vanilla.test.ts`): a tag's `gfx/flags` flag
