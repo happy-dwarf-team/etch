@@ -1,10 +1,11 @@
 // The webview script of the mesh preview (src/mesh-preview.ts) and the entity preview
 // (src/entity-preview.ts): parses the posted `.mesh` files with `@etch/core/asset`, draws their
 // shapes with WebGL2 under an orbit camera (collision shapes skipped, one level of detail of a mesh
-// that has several), and plays an animation, skinned on the CPU each frame. A mesh preview draws one mesh and plays the animation the user
-// picks. An entity preview draws the entity's mesh and its attachments, each on its parent's bone
-// as the bone moves, and plays the state the user picks on all of them. The game's files are
-// left-handed with Y up: Z is mirrored so a mesh does not show mirrored.
+// that has several), and plays an animation, skinned on the CPU each frame. A mesh preview draws
+// one mesh and plays the animation the user picks. An entity preview draws the entity's mesh and
+// its attachments, each on its parent's bone as the bone moves, and plays the state the user picks
+// on all of them. The game's files are left-handed with Y up: Z is mirrored so a mesh does not
+// show mirrored.
 //
 // The shading follows the game's mesh shader (`gfx/FX/pdxmesh.shader` and
 // `standardfuncsgfx.fxh` of EU4 1.37.5, read, not copied): a squared half-Lambert term with
