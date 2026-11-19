@@ -1043,6 +1043,30 @@ describe('runCaptures', () => {
     expect((await readdir(join(profile, 'save games'))).sort()).toEqual(['a.eu4', 'event.eu4']);
   });
 
+  it('starts no game over a profile whose settings a session before did not put back', async () => {
+    const { started, options } = await runFixture();
+    const once = await runCaptures(options);
+    expect(once.sessions.every((s) => s.baselinesRestored)).toBe(true);
+    const runs = started.length;
+    const { profile } = playsetProfile(options.hostDir, 'vanilla');
+
+    await writeFile(join(profile, 'settings.txt'), 'left over');
+    const settings = await runCaptures(options);
+    const settingsFile = join(profile, 'settings.txt');
+    expect(settings.stopped).toBe(
+      `${settingsFile} is not its baseline; put the baseline back first.`,
+    );
+    expect(settings.sessions.map((s) => s.error)).toEqual([settings.stopped]);
+
+    await writeFile(settingsFile, SETTINGS);
+    await writeFile(join(profile, 'pdx_settings.txt'), 'left over');
+    const pdx = await runCaptures(options);
+    expect(pdx.stopped).toBe(
+      `${join(profile, 'pdx_settings.txt')} is not its baseline; put the baseline back first.`,
+    );
+    expect(started).toHaveLength(runs);
+  });
+
   it('pauses when the user takes the mouse back, and goes on in a fresh start once resumed', async () => {
     const { root, started, stopped, games, mouse, options } = await runFixture();
     const lines: string[] = [];
