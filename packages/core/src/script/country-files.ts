@@ -114,6 +114,101 @@ export function countryTagsMissing(missing: readonly string[]): CountryTagsMissi
   };
 }
 
+/**
+ * What the game logs about a country file a tag names, once it has read them all
+ * (`CCountryDataBase`, `0x283D20`, `countrydatabase.cpp` lines 0x10A to 0x113; `bmtest-r42`):
+ * a file without `color`, without `monarch_names` entries, or with fewer than 10 `leader_names`
+ * or `ship_names`. The game goes on; its random leaders and ships draw from the lists it has.
+ */
+export interface CountryContentDiagnostic extends SourceRange {
+  readonly severity: 'warning';
+  readonly code: 'country-file-content';
+  readonly message: string;
+  /** The first tag that names the file. */
+  readonly key: string;
+  /** What the file lacks: `color`, `monarch_names`, `leader_names` or `ship_names`. */
+  readonly name: string;
+}
+
+/** The names a country file's lists must hold at least, or the game logs that it has fewer. */
+const RANDOM_NAMES = 10;
+
+/**
+ * What the game logs in `error.log` about a country file that `tags` name (in the order the game
+ * reads them): no `color`, no `monarch_names` entries, fewer than 10 `leader_names` or
+ * `ship_names`. One diagnostic each, at the list's last key or, for one the file does not have,
+ * at the start of the file. The game logs it for every tag but the first two it reads
+ * (`loadCountryFileTags` leaves those out).
+ */
+export function checkCountryContent(
+  parsed: ParsedScript,
+  tags: readonly string[],
+): CountryContentDiagnostic[] {
+  const tag = tags[0];
+  if (tag === undefined) return [];
+  const more = tags.length - 1;
+  const others =
+    more === 0
+      ? ''
+      : more === 1
+        ? ' (and for the other tag that names this file)'
+        : ` (and for the ${String(more)} other tags that name this file)`;
+  const found: CountryContentDiagnostic[] = [];
+  const lists = (key: string): { key: ScalarNode | undefined; count: number } => {
+    let last: ScalarNode | undefined;
+    let count = 0;
+    for (const entry of parsed.entries) {
+      if (entry.kind !== 'property' || entry.key.text.toLowerCase() !== key) continue;
+      last = entry.key;
+      if (entry.value?.kind !== 'block') continue;
+      for (const item of entry.value.entries) {
+        if (key === 'monarch_names' ? item.kind === 'property' : item.kind === 'scalar') count++;
+      }
+    }
+    return { key: last, count };
+  };
+  const report = (name: string, at: ScalarNode | undefined, logged: string, why: string): void => {
+    found.push({
+      severity: 'warning',
+      code: 'country-file-content',
+      message: `${why}: the game logs "${tag} ${logged}" in error.log${others}.`,
+      key: tag,
+      name,
+      start: at?.start ?? 0,
+      end: at?.end ?? 0,
+    });
+  };
+  const color = parsed.entries.some(
+    (entry) => entry.kind === 'property' && entry.key.text.toLowerCase() === 'color',
+  );
+  if (!color) report('color', undefined, 'has no color defined.', 'This file has no color');
+  const monarchs = lists('monarch_names');
+  if (monarchs.count === 0) {
+    report(
+      'monarch_names',
+      monarchs.key,
+      'has no monarch names',
+      monarchs.key === undefined ? 'This file has no monarch_names' : 'monarch_names is empty',
+    );
+  }
+  for (const [key, what] of [
+    ['leader_names', 'leader'],
+    ['ship_names', 'ship'],
+  ] as const) {
+    const names = lists(key);
+    if (names.count >= RANDOM_NAMES) continue;
+    report(
+      key,
+      names.key,
+      `has less than 10 random ${what} names`,
+      names.key === undefined
+        ? `This file has no ${key}`
+        : `${key} has ${String(names.count)} name${names.count === 1 ? '' : 's'}, fewer than 10`,
+    );
+  }
+  return found.sort((a, b) => a.start - b.start);
+}
+
 /** Whether a path is a file of `common/country_tags`. */
 export function isCountryTagsPath(path: string): boolean {
   return /^common\/country_tags\/[^/]+\.txt$/i.test(path.replace(/\\/g, '/'));

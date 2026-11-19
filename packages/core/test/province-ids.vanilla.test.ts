@@ -52,6 +52,10 @@ describe.skipIf(gamePath === undefined)('province ids and names of the installed
     const countryTags = names?.countryTags ?? new Map<string, string>();
     expect(countryTags.size).toBeGreaterThan(900);
     expect(names?.countryTagsMissing).toBeUndefined();
+    // Every tag's file is checked but REB's and PIR's, the first two the game reads.
+    const fileTags = [...(names?.countryFileTags ?? new Map<string, string[]>()).values()].flat();
+    expect(fileTags.length).toBe(countryTags.size - 2);
+    expect(fileTags).not.toContain('REB');
     expect(new Set(countryTags.values())).toEqual(
       new Set(['common/country_tags/00_countries.txt']),
     );

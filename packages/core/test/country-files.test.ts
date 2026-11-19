@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  checkCountryContent,
   checkCountryFiles,
   checkCountryHistory,
   countryFilePath,
@@ -19,6 +20,83 @@ dynamic_tags = yes
 LONG = "countries/Long.txt"
 XYZ = "countries/NoExtension"
 `;
+
+describe("what the game logs about a country file's content", () => {
+  const ten = 'a b c d e f g h i j';
+  const full =
+    `color = { 1 2 3 }\nmonarch_names = { "Erik #0" = 10 }\n` +
+    `leader_names = { ${ten} }\nship_names = { ${ten} }\n`;
+  const check = (text: string, tags: readonly string[] = ['ZZE']) =>
+    checkCountryContent(parseScript(text, { script: true }), tags).map((d) => [
+      d.name,
+      d.message,
+      text.slice(d.start, d.end),
+    ]);
+
+  it("reports each line of bmtest-r42's error.log for an empty file, at the file's start", () => {
+    expect(check('')).toEqual([
+      [
+        'color',
+        'This file has no color: the game logs "ZZE has no color defined." in error.log.',
+        '',
+      ],
+      [
+        'monarch_names',
+        'This file has no monarch_names: the game logs "ZZE has no monarch names" in error.log.',
+        '',
+      ],
+      [
+        'leader_names',
+        'This file has no leader_names: the game logs "ZZE has less than 10 random leader ' +
+          'names" in error.log.',
+        '',
+      ],
+      [
+        'ship_names',
+        'This file has no ship_names: the game logs "ZZE has less than 10 random ship names" ' +
+          'in error.log.',
+        '',
+      ],
+    ]);
+  });
+
+  it('takes ten names and one monarch, and counts the lists at their last key', () => {
+    expect(check(full)).toEqual([]);
+    // Ten names over two lists of one key, as the game appends them.
+    expect(
+      check(
+        full.replace(
+          `ship_names = { ${ten} }`,
+          'ship_names = { a b c d e }\nship_names = { f g h i "j k" }',
+        ),
+      ),
+    ).toEqual([]);
+    const short = check(
+      full
+        .replace(`leader_names = { ${ten} }`, 'leader_names = { "One Name" }')
+        .replace('monarch_names = { "Erik #0" = 10 }', 'monarch_names = { }'),
+      ['ZZE', 'ZZF', 'ZZG'],
+    );
+    expect(short).toEqual([
+      [
+        'monarch_names',
+        'monarch_names is empty: the game logs "ZZE has no monarch names" in error.log (and for ' +
+          'the 2 other tags that name this file).',
+        'monarch_names',
+      ],
+      [
+        'leader_names',
+        'leader_names has 1 name, fewer than 10: the game logs "ZZE has less than 10 random ' +
+          'leader names" in error.log (and for the 2 other tags that name this file).',
+        'leader_names',
+      ],
+    ]);
+  });
+
+  it('checks nothing for a file no checked tag names', () => {
+    expect(check('', [])).toEqual([]);
+  });
+});
 
 describe('the tags the game needs', () => {
   it('names each missing tag and the first that the game logs', () => {

@@ -164,6 +164,11 @@ export interface ScriptNames {
    */
   readonly countryHistories?: ReadonlyMap<string, readonly CountryHistoryFile[]>;
   /**
+   * The tags whose country file the game checks, by the file's game path in lower case, in the
+   * order the game reads them (`checkCountryContent`).
+   */
+  readonly countryFileTags?: ReadonlyMap<string, readonly string[]>;
+  /**
    * Whether a layer has each technology table `common/technology.txt` names, by game path in lower
    * case (`checkTechnologyTables`).
    */
