@@ -402,6 +402,42 @@ describe('parseCorpusManifest', () => {
     ]);
   });
 
+  it('names a value of the wrong type wherever an object or a list belongs', () => {
+    expect(parseCorpusManifest('manifest').problems.map((p) => `${p.at}: ${p.message}`)).toEqual([
+      ': Expected an object.',
+    ]);
+    expect(
+      problemsOf((m) => {
+        set(m, 'resolutions.0', 7);
+        set(m, 'resolutions.1.width', 0);
+        set(m, 'notCovered.0', 7);
+        set(m, 'playsets.0.save', 7);
+        set(m, 'playsets.0.disabledDlcs', [7]);
+        set(m, 'playsets.0.windows', ['frontend', 'court', 'court']);
+        set(m, 'playsets.1.mods.0', 7);
+        set(m, 'windows.0.views.0.recipe', 7);
+        set(m, 'windows.1.views.0.recipe.steps', [7, { map: 7 }, { point: 7 }, { wheel: 7 }]);
+        set(m, 'windows.1.views.0.data', { country: 'swe' });
+        set(m, 'knownDeviations', [7]);
+      }),
+    ).toEqual([
+      'resolutions[0]: Expected an object.',
+      'resolutions[1]: A side is out of range.',
+      'notCovered[0]: Expected an object.',
+      'windows[0].views[0].recipe: Expected an object.',
+      'windows[1].views[0].recipe.steps[0]: Expected an object.',
+      'windows[1].views[0].recipe.steps[1].map: Expected an object.',
+      'windows[1].views[0].recipe.steps[2].point: Expected an object.',
+      'windows[1].views[0].recipe.steps[3].wheel: Expected an object.',
+      'windows[1].views[0].data.country: "swe" is not a country tag.',
+      'playsets[0].save: Expected an object.',
+      'playsets[0].disabledDlcs[0]: Expected a non-empty string.',
+      'playsets[0].windows: The window "court" occurs more than once.',
+      'playsets[1].mods[0]: Expected an object.',
+      'knownDeviations[0]: Expected an object.',
+    ]);
+  });
+
   it('rejects other format versions and UI scales', () => {
     expect(
       problemsOf((m) => {
@@ -507,5 +543,20 @@ describe('the corpus helpers', () => {
     expect(
       deviationCovers(deviation, { ...key, view: 'main-menu' }, 'a/close', 'guiButtonType'),
     ).toBe(false);
+    // Its playsets and resolutions narrow it too.
+    const scoped = { ...deviation, playsets: ['big-mod'], resolutions: ['1920x1080'] };
+    expect(deviationCovers(scoped, key, 'countrycourtview/close', 'guiButtonType')).toBe(false);
+    const inPlayset = { ...key, playset: 'big-mod' };
+    expect(deviationCovers(scoped, inPlayset, 'countrycourtview/close', 'guiButtonType')).toBe(
+      false,
+    );
+    expect(
+      deviationCovers(
+        scoped,
+        { ...inPlayset, resolution: { width: 1920, height: 1080 } },
+        'countrycourtview/close',
+        'guiButtonType',
+      ),
+    ).toBe(true);
   });
 });
