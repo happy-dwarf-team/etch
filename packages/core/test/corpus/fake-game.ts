@@ -208,6 +208,50 @@ export class FakeGame implements Tongs {
 
 const FREE: ScreenRect = { left: 0, top: 0, right: 6000, bottom: 1440 };
 
+/**
+ * The fake game, with what the crawler reads besides it: the visible tree (`ui tree depth=N`),
+ * the buttons of the open windows, the player and provinces by id.
+ */
+export class CrawlGame extends FakeGame {
+  readonly provinces = new Map<number, TongsAnswer>();
+
+  override call(command: string): Promise<TongsAnswer> {
+    if (command.startsWith('ui tree depth=') && !command.startsWith('ui tree depth=0')) {
+      this.calls.push(command);
+      const widgets = this.open.map((name) => ({
+        name,
+        path: name,
+        type: 'window',
+        visible: true,
+      }));
+      return Promise.resolve({ ok: true, truncated: false, widgets });
+    }
+    if (command.startsWith('ui find //[type=')) {
+      this.calls.push(command);
+      const matches = command.startsWith('ui find //[type=button]')
+        ? this.open.flatMap((name) =>
+            (this.windows.find((w) => w.name === name)?.children ?? []).map((child) => ({
+              path: `${name}/${child}`,
+              enabled: child !== 'greyed',
+            })),
+          )
+        : [];
+      return Promise.resolve({ ok: true, count: matches.length, matches });
+    }
+    if (command === 'player') {
+      this.calls.push(command);
+      return Promise.resolve({ ok: true, tag: 'RUS' });
+    }
+    const province = /^province (\d+)$/.exec(command);
+    if (province !== null) {
+      this.calls.push(command);
+      const answer = this.provinces.get(Number(province[1]));
+      return Promise.resolve(answer ?? { ok: false, error: 'no_province' });
+    }
+    return super.call(command);
+  }
+}
+
 /** The real mouse cursor as Windows keeps it: `pin` confines it to one pixel, `release` frees it. */
 export class FakeMouse implements MouseCursor {
   x = 2000;
