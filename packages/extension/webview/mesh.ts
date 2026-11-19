@@ -14,7 +14,9 @@
 // the specular map's alpha times 2 and added; for `PdxMeshColor`, the specular map's R, G and B
 // mask the country's three colours; for `PdxMeshTextureAtlas` (a ship's sails, a map flag), the
 // diffuse map's alpha blends in the diffuse colour times the country's flag, sampled with the
-// second texture coordinates (`u1`); for `PdxMeshAlphaBlend` (and its `NoZWrite` variant, which
+// second texture coordinates (`u1`). A colonial nation's region colour (the Region box), as the
+// game's `AtlasHalfColor`, takes the flag's far half (u1's u over 0.5) and the tertiary colour's
+// place; for `PdxMeshAlphaBlend` (and its `NoZWrite` variant, which
 // does not write depth), the colour is blended over what is behind it by the diffuse map's alpha
 // (`SRC_ALPHA`, `INV_SRC_ALPHA`), after the opaque parts. The light comes from the vanilla
 // `LIGHT_DIRECTION` of
@@ -114,6 +116,9 @@ const colourInputs = (['primary', 'secondary', 'tertiary'] as const).map(
 );
 const resetButton = element('reset') as HTMLButtonElement;
 const flagLabel = element('flag');
+const regionLabel = element('region');
+const regionOn = element('region-on') as HTMLInputElement;
+const regionInput = element('region-colour') as HTMLInputElement;
 const flagInput = element('flag-tag') as HTMLInputElement;
 const snowLabel = element('snow');
 const snowInput = element('snow-amount') as HTMLInputElement;
@@ -182,6 +187,8 @@ uniform vec3 tertiary;
 // PdxMeshTextureAtlas: the flag through the second UVs, or the country colours as stripes.
 uniform bool atlas;
 uniform bool flagFromColours;
+// A colonial nation's region colour; alpha 0 when off.
+uniform vec4 region;
 uniform sampler2D flagMap;
 // PdxMeshAlphaBlend: the diffuse alpha is the output's, for blending.
 uniform bool blended;
@@ -242,15 +249,17 @@ void main() {
     n = normalize(n + vec3(0.0, isSnow, 0.0));
   }
   if (atlas && textured) {
-    vec3 flag = flagFromColours
-      ? (vUv1.x < 1.0 / 3.0 ? primary : vUv1.x < 2.0 / 3.0 ? secondary : tertiary)
-      : texture(flagMap, vUv1).rgb;
+    vec3 flag = region.a > 0.0 && vUv1.x > 0.5
+      ? region.rgb
+      : flagFromColours
+        ? (vUv1.x < 1.0 / 3.0 ? primary : vUv1.x < 2.0 / 3.0 ? secondary : tertiary)
+        : texture(flagMap, vUv1).rgb;
     c = mix(c, flag * c, base.a);
   }
   if (countryColours) {
     c = mix(c, c * spec.r * primary, spec.r);
     c = mix(c, c * spec.g * secondary, spec.g);
-    c = mix(c, c * spec.b * tertiary, spec.b);
+    c = mix(c, c * spec.b * (region.a > 0.0 ? region.rgb : tertiary), spec.b);
   }
   float halfLambert = dot(n, light) * 0.5 + 0.5;
   halfLambert = 0.2 + 0.8 * halfLambert * halfLambert;
@@ -393,6 +402,8 @@ const LIGHT = normalise([1, 1, 0.5]);
 
 /** The orbit camera: angles in radians, distance from the target. */
 let camera: OrbitCamera = { yaw: FRAMED_YAW, pitch: FRAMED_PITCH, distance: 10, target: [0, 0, 0] };
+/** The Region box, as `#rrggbb`: a colonial nation's region colour; `undefined` when off. */
+let region: string | undefined;
 /** The flag on `PdxMeshTextureAtlas` parts: a tag's, or none for the country colours' stripes. */
 let flag: { tag: string; texture: WebGLTexture; source: string } | undefined;
 
@@ -822,6 +833,8 @@ function render(now: number): void {
   gl.uniform1i(uniform('normalMap'), 2);
   gl.uniform1i(uniform('flagMap'), 3);
   gl.uniform1i(uniform('flagFromColours'), flag === undefined ? 1 : 0);
+  const [rr, rg, rb] = region === undefined ? [0, 0, 0] : hexColour(region);
+  gl.uniform4f(uniform('region'), rr ?? 0, rg ?? 0, rb ?? 0, region === undefined ? 0 : 1);
   gl.uniform1i(uniform('tree'), tree === undefined ? 0 : 1);
   gl.uniform1f(uniform('snow'), snowAmount);
   gl.uniform1i(uniform('tintMap'), 4);
@@ -909,6 +922,8 @@ function summary(): MeshSummary {
   };
   const atlasParts = parts.filter((d) => d.atlas).length;
   if (atlasParts > 0) base = { ...base, flag: { parts: atlasParts, tag: flag?.tag } };
+  const regionParts = parts.filter((d) => d.atlas || d.countryColours).length;
+  if (regionParts > 0 && region !== undefined && tree === undefined) base = { ...base, region };
   const levels = [...new Set(instances.flatMap(levelsOf))].sort((a, b) => a - b);
   if (levels.length > 0) base = { ...base, lod: { level: lodLevel, levels } };
   if (tree !== undefined) base = { ...base, tree };
@@ -1053,6 +1068,7 @@ function show(
   showWarnings(warnings, problems);
   colours.hidden = !instances.some((i) => i.parts.some((d) => d.countryColours || d.atlas));
   flagLabel.hidden = !instances.some((i) => i.parts.some((d) => d.atlas));
+  regionLabel.hidden = colours.hidden;
   snowLabel.hidden = tree === undefined && !instances.some((i) => i.parts.some((d) => d.snow));
   tintLabel.hidden = tree === undefined || tint === undefined;
   placeLabel.hidden = tree === undefined;
@@ -1144,6 +1160,7 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
     } else if (message.type === 'controls') {
       const {
         maps: mapsOn,
+        region: regionColour,
         colours: countryColours,
         snow,
         turn: turned,
@@ -1157,6 +1174,11 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
       if (mapsOn !== undefined) {
         maps = mapsOn;
         mapsButton.setAttribute('aria-pressed', String(maps));
+      }
+      if (regionColour !== undefined) {
+        region = regionColour ?? undefined;
+        regionOn.checked = regionColour !== null;
+        if (regionColour !== null) regionInput.value = regionColour;
       }
       for (const [key, input] of colourInputs) {
         const value = countryColours?.[key];
@@ -1453,6 +1475,17 @@ for (const [key, input] of colourInputs) {
   input.addEventListener('input', () => {
     country[key] = hexColour(input.value);
     redraw();
+  });
+}
+
+for (const input of [regionOn, regionInput]) {
+  input.addEventListener('input', () => {
+    if (input === regionInput) regionOn.checked = true;
+    region = regionOn.checked ? regionInput.value : undefined;
+    redraw();
+  });
+  input.addEventListener('change', () => {
+    vscode.postMessage({ type: 'shown', summary: summary() });
   });
 }
 

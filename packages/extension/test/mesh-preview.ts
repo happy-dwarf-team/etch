@@ -193,6 +193,45 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
     blue.mean[2] > 4 * blue.mean[0] && blue.mean[2] > 4 * blue.mean[1],
     `blue primary: ${String(blue.mean)}`,
   );
+  // A region colour takes the tertiary colour's place only: the primary mask is not touched.
+  assert.deepEqual(await measure(api, coloured, { region: '#ff0000' }), blue);
+  await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+  // The same quad with a specular map that masks the tertiary colour (B) everywhere.
+  await writeFile(path.join(folder, 'tertiary_mask.dds'), dds(2, 2, [255, 0, 0, 0]));
+  const third = vscode.Uri.file(path.join(folder, 'etch_third.mesh'));
+  await writeFile(
+    third.fsPath,
+    binary(
+      MESH.flatMap((item) => {
+        if (!('name' in item)) return [item];
+        if (item.name === 'shader' && item.values[0] === 'PdxMeshStandardSkinned') {
+          return [strs('shader', 'PdxMeshColor')];
+        }
+        if (item.name === 'diff')
+          return [strs('diff', 'white.dds'), strs('spec', 'tertiary_mask.dds')];
+        return [item];
+      }),
+    ),
+  );
+  assert.ok((await open(api, third)).ok, 'the tertiary part shows');
+  const tertiaryBlue = await measure(api, third, {
+    region: null,
+    colours: { tertiary: '#0000ff' },
+  });
+  assert.ok(
+    tertiaryBlue.mean[2] > 4 * tertiaryBlue.mean[0],
+    `blue tertiary: ${String(tertiaryBlue.mean)}`,
+  );
+  const regionRed = await controlled(api, third, { region: '#ff0000' });
+  assert.equal(regionRed.region, '#ff0000', 'the region colour is shown');
+  assert.ok(regionRed.drawn !== undefined);
+  assert.ok(
+    regionRed.drawn.mean[0] > 4 * regionRed.drawn.mean[2],
+    `the region colour in the tertiary's place: ${String(regionRed.drawn.mean)}`,
+  );
+  const regionOff = await controlled(api, third, { region: null });
+  assert.equal(regionOff.region, undefined, 'off: no region colour');
+  assert.deepEqual(regionOff.drawn, tertiaryBlue);
   await vscode.commands.executeCommand('workbench.action.closeAllEditors');
   const stripes = vscode.Uri.file(path.join(folder, 'etch_white_sails.mesh'));
   await writeFile(stripes.fsPath, white('PdxMeshTextureAtlas'));
@@ -203,6 +242,23 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
   assert.ok(
     green.mean[1] > 4 * green.mean[0] && green.mean[1] > 4 * green.mean[2],
     `green stripes: ${String(green.mean)}`,
+  );
+  // A red region colour takes the flag's far half: red rises and green falls.
+  const halfRed = await measure(api, stripes, { region: '#ff0000' });
+  assert.ok(
+    halfRed.mean[0] > green.mean[0] + 20 && halfRed.mean[1] < green.mean[1] - 20,
+    `the far half red: ${String(halfRed.mean)}, ${String(green.mean)} without`,
+  );
+  assert.deepEqual(await measure(api, stripes, { region: null }), green);
+  // Which half: with red, green and blue stripes, a black region colour leaves the red third
+  // and half the green one (u under 0.5), so red stays and blue goes.
+  const nearHalf = await measure(api, stripes, {
+    region: '#000000',
+    colours: { primary: '#ff0000', secondary: '#00ff00', tertiary: '#0000ff' },
+  });
+  assert.ok(
+    nearHalf.mean[0] > 4 * nearHalf.mean[2],
+    `the far half (u over 0.5) takes the region colour: ${String(nearHalf.mean)}`,
   );
   await vscode.commands.executeCommand('workbench.action.closeAllEditors');
 

@@ -368,6 +368,9 @@ it is in no folder of the playset. Collision shapes are hidden.
   second texture coordinates, as the game does. Type a tag in **Flag** for that
   country's `gfx/flags/<TAG>.tga` from your playset; with no tag the three
   colour boxes show as stripes in its place.
+- **Region** shows a colonial nation's region colour as the game shows it: the
+  far half of the flag (its overlord's) in that colour, and the colour in
+  place of the tertiary one on `PdxMeshColor` parts.
 - A mesh with levels of detail (shapes named `lodShape0`, `Lod1Shape`, as on
   vanilla's map trees) shows its most detailed level; **LOD** picks another.
 - A map tree (a mesh a `mapobject_<n>` pdxmesh of your playset names) is drawn

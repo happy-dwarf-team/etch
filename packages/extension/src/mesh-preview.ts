@@ -650,6 +650,9 @@ export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): str
   <label id="flag" title="The flag a PdxMeshTextureAtlas part (a ship's sails) shows: a country tag's gfx/flags flag, or with no tag the three country colours as stripes" hidden>
     Flag <input id="flag-tag" size="4" maxlength="3" spellcheck="false" placeholder="TAG" aria-label="Country tag of the flag">
   </label>
+  <label id="region" title="A colonial nation's region colour: the game draws its overlord's flag with the far half (where the flag's u is over 0.5) in this colour, and puts it in place of the tertiary colour on PdxMeshColor parts; off for other countries" hidden>
+    Region <input type="checkbox" id="region-on" aria-label="Show a colonial region colour"> <input type="color" id="region-colour" value="#3f8f4f" aria-label="Colonial region colour">
+  </label>
   <label id="snow" title="Snow on PdxMeshSnow parts and map trees, as the game puts it on them in winter: the game takes the amount from the map, here from 0 (none) to 1" hidden>
     Snow <input type="range" id="snow-amount" min="0" max="1" step="0.05" value="0" aria-label="Snow amount">
   </label>
