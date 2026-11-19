@@ -3,13 +3,14 @@
 // the pdxmesh's animation id, and carries a second entity on its `tip` bone; a clone of it
 // replaces the attachment group. The CodeLens names each entity, and the webview reports the
 // meshes it drew, the states and what it could not resolve, a particle no `.asset` file defines
-// among it.
+// among it. The attached entity is drawn: its red texture reddens what the preview draws, which the
+// webview reads back from its canvas (`EntityPreviewApi.control`).
 import * as assert from 'node:assert/strict';
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
-import { ANIM, binary, MESH } from '../../core/test/fixtures/pdx-asset.ts';
+import { ANIM, binary, MESH, strs } from '../../core/test/fixtures/pdx-asset.ts';
 import type { EtchApi } from '../src/extension.ts';
 import { PREVIEW_ENTITY_COMMAND, type EntityShown } from '../src/entity-preview.ts';
 import { dds } from './asset-links.ts';
@@ -50,6 +51,26 @@ animation = { name = "etch_wave_animation" file = "etch_wave.anim" }
 const PARTICLES = `particle = { name = "etch_sparks" subsystem = { max_amount = 10 } }
 `;
 
+type Drawn = NonNullable<Extract<EntityShown, { ok: true }>['summary']['drawn']>;
+
+/** The colour the open preview of an entity draws, read back after a frame. */
+async function measure(api: EtchApi, uri: vscode.Uri, name: string): Promise<Drawn> {
+  const drawn = new Promise<Drawn>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      subscription.dispose();
+      reject(new Error(`no drawn colour of ${name} within ${String(COLD_TIMEOUT_MS)} ms`));
+    }, COLD_TIMEOUT_MS);
+    const subscription = api.entityPreview.onDidShow((result) => {
+      if (result.name !== name || !result.ok || result.summary.drawn === undefined) return;
+      clearTimeout(timer);
+      subscription.dispose();
+      resolve(result.summary.drawn);
+    });
+  });
+  assert.ok(await api.entityPreview.control(uri, name, {}), `a preview of ${name} is open`);
+  return drawn;
+}
+
 function open(api: EtchApi, uri: vscode.Uri, name: string): Promise<EntityShown> {
   const shown = new Promise<EntityShown>((resolve, reject) => {
     const timer = setTimeout(() => {
@@ -77,7 +98,16 @@ export async function testEntityPreview(api: EtchApi): Promise<void> {
   await writeFile(path.join(game, 'eu4.exe'), 'not the game');
   await writeFile(path.join(game, 'interface', 'etch_units.gfx'), GFX);
   await writeFile(path.join(models, 'etch_flag.mesh'), binary(MESH));
-  await writeFile(path.join(models, 'etch_knob.mesh'), binary(MESH));
+  // The knob: the fixture quad with a red texture of its own.
+  await writeFile(
+    path.join(models, 'etch_knob.mesh'),
+    binary(
+      MESH.map((item) =>
+        'name' in item && item.name === 'diff' ? strs('diff', 'knob_diffuse.dds') : item,
+      ),
+    ),
+  );
+  await writeFile(path.join(models, 'knob_diffuse.dds'), dds(2, 2, [0, 0, 255, 255]));
   await writeFile(path.join(models, 'flag_diffuse.dds'), dds(2, 2, [30, 20, 10, 255]));
   await writeFile(path.join(entities, 'etch_wave.anim'), binary(ANIM));
   await mkdir(path.join(game, 'gfx', 'particles'));
@@ -122,6 +152,7 @@ export async function testEntityPreview(api: EtchApi): Promise<void> {
     });
     assert.equal(shown.summary.shapes, 2, 'the flag and the knob, collision shapes apart');
     assert.equal(shown.summary.textured, 2, 'both textured through the playset');
+    const knobbed = await measure(api, asset, 'etch_flag');
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
 
     const bare = await open(api, asset, 'etch_flag_bare');
@@ -132,6 +163,12 @@ export async function testEntityPreview(api: EtchApi): Promise<void> {
         'etch_flag_bare: no entity "etch_missing" to attach to tip',
       ),
       `the missing attachment is named: ${JSON.stringify(bare.summary.entity.problems)}`,
+    );
+    // Without the knob only the flag's dark blue-grey texture is drawn.
+    const plain = await measure(api, asset, 'etch_flag_bare');
+    assert.ok(
+      knobbed.mean[0] > plain.mean[0] + 15 && knobbed.mean[0] > knobbed.mean[2],
+      `the red knob is drawn: ${String(knobbed.mean)} with it, ${String(plain.mean)} without`,
     );
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
   } finally {

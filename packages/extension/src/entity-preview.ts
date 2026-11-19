@@ -22,6 +22,7 @@ import { layerFolder } from './asset-links.ts';
 import { flagTexture, meshHtml, read, texturesOf } from './mesh-preview.ts';
 import type {
   EntityNode,
+  MeshControls,
   MeshHostMessage,
   MeshSummary,
   MeshWebviewMessage,
@@ -38,6 +39,11 @@ export type EntityShown =
 export interface EntityPreviewApi {
   /** Fires each time an entity preview has drawn an entity (or a new state) or failed to. */
   readonly onDidShow: vscode.Event<EntityShown>;
+  /**
+   * Sets the controls of the open previews of entity `name` of `uri` as a user would; each then
+   * fires `onDidShow` with the colour it drew (`MeshSummary.drawn`). False when none is open.
+   */
+  control(uri: vscode.Uri, name: string, controls: MeshControls): Promise<boolean>;
 }
 
 /** The entities of an `.asset` file's text: each `entity = { name = … }` at the top level. */
@@ -175,12 +181,19 @@ async function entityMessage(
   };
 }
 
+/** The key of an entity's previews: its `.asset` file and its name. */
+function viewKey(uri: vscode.Uri, name: string): string {
+  return `${uri.toString()}#${name}`;
+}
+
 class EntityPreviews {
   readonly shown = new vscode.EventEmitter<EntityShown>();
   private readonly extensionUri: vscode.Uri;
   private readonly output: vscode.LogOutputChannel;
   private index: Promise<{ files: GameFiles; index: EntityIndex } | undefined> | undefined;
   private readonly panels = new Set<() => Promise<void>>();
+  /** The open previews' webviews, by `.asset` file and entity (`viewKey`). */
+  private readonly views = new Map<string, Set<vscode.Webview>>();
 
   constructor(extensionUri: vscode.Uri, output: vscode.LogOutputChannel) {
     this.extensionUri = extensionUri;
@@ -267,6 +280,10 @@ class EntityPreviews {
       }
     };
     this.panels.add(post);
+    const key = viewKey(uri, name);
+    const views = this.views.get(key) ?? new Set<vscode.Webview>();
+    views.add(webview);
+    this.views.set(key, views);
     const subscriptions = [
       webview.onDidReceiveMessage(async (message: MeshWebviewMessage) => {
         if (message.type === 'ready') {
@@ -288,8 +305,18 @@ class EntityPreviews {
     ];
     panel.onDidDispose(() => {
       this.panels.delete(post);
+      views.delete(webview);
+      if (views.size === 0) this.views.delete(key);
       for (const subscription of subscriptions) subscription.dispose();
     });
+  }
+
+  /** Sets the controls of the open previews of an entity; see `EntityPreviewApi.control`. */
+  async control(uri: vscode.Uri, name: string, controls: MeshControls): Promise<boolean> {
+    const views = [...(this.views.get(viewKey(uri, name)) ?? [])];
+    const message: MeshHostMessage = { type: 'controls', controls };
+    for (const view of views) await view.postMessage(message);
+    return views.length > 0;
   }
 
   private report(shown: EntityShown): void {
@@ -344,5 +371,8 @@ export function registerEntityPreview(
       previews.reset();
     }),
   );
-  return { onDidShow: previews.shown.event };
+  return {
+    onDidShow: previews.shown.event,
+    control: (uri, name, controls) => previews.control(uri, name, controls),
+  };
 }
