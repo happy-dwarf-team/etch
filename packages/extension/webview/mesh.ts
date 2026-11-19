@@ -18,6 +18,13 @@
 // `common/defines.lua` (-1, -1, 0.5, pointing away from the light). The map's fog of war, terra
 // incognita, snow and distance fog are left out.
 //
+// A mesh the playset names as a map tree (`mapobject_<n>`) is drawn as the game's tree shader
+// (`gfx/FX/tree.shader`, read, not copied) draws it, whatever shader its materials name: texels
+// with a diffuse alpha under 0.5 are cut out, the same light, and no highlight. Its normal map
+// reads the same (green not flipped, bitangent `cross(t, n) * ta.w`: the two signs cancel). Its
+// tint map, the map's colour map and season colours, the random height and turn of each tree,
+// and snow are left out.
+//
 // An attachment's scale: its own pdxmesh and entity scale, not multiplied by its parent's (the
 // bone's position is). Vanilla gives a soldier and the weapon in its hand the same scale (0.5).
 
@@ -138,6 +145,8 @@ uniform bool atlas;
 uniform bool flagFromColours;
 uniform sampler2D flagMap;
 uniform bool alphaTest;
+// Drawn as the map's tree shader: alpha cut out, no highlight.
+uniform bool tree;
 uniform bool lines;
 // Towards the light.
 uniform vec3 light;
@@ -146,7 +155,7 @@ out vec4 colour;
 void main() {
   if (lines) { colour = vec4(0.1, 0.9, 1.0, 1.0); return; }
   vec4 base = textured ? texture(diffuse, vUv) : vec4(0.72, 0.72, 0.72, 1.0);
-  if (alphaTest && base.a < 0.5) discard;
+  if ((alphaTest || tree) && base.a < 0.5) discard;
   vec3 n = normalize(vNormal);
   if (normalMapped) {
     vec3 s = normalize(texture(normalMap, vUv).rgb - 0.5);
@@ -170,7 +179,9 @@ void main() {
   halfLambert = 0.2 + 0.8 * halfLambert * halfLambert;
   c = clamp(halfLambert * c * 1.2, 0.0, 1.0);
   vec3 h = normalize(normalize(eye - vPosition) + light);
-  float highlight = clamp(pow(clamp(dot(h, n), 0.0, 1.0), 10.0) * 2.0, 0.0, 1.0) * spec.a * 2.0;
+  float highlight = tree
+    ? 0.0
+    : clamp(pow(clamp(dot(h, n), 0.0, 1.0), 10.0) * 2.0, 0.0, 1.0) * spec.a * 2.0;
   colour = vec4(clamp(c + highlight, 0.0, 1.0), 1.0);
 }`;
 
@@ -226,6 +237,8 @@ let offered: string[] = [];
 const animations = new Map<string, PdxAnimation>();
 /** Entity preview: its name, states and what could not be resolved. */
 let entity: { name: string; states: string[]; problems: string[] } | undefined;
+/** Mesh preview: the map tree type (`mapobject_<n>`) that draws the mesh, if one does. */
+let tree: string | undefined;
 /** What plays: an animation's file name (mesh) or a state (entity); `undefined` for the bind pose. */
 let playingKey: string | undefined;
 let playing = false;
@@ -620,6 +633,7 @@ function draw(now: number): void {
   gl.uniform1i(uniform('normalMap'), 2);
   gl.uniform1i(uniform('flagMap'), 3);
   gl.uniform1i(uniform('flagFromColours'), flag === undefined ? 1 : 0);
+  gl.uniform1i(uniform('tree'), tree === undefined ? 0 : 1);
   gl.activeTexture(gl.TEXTURE3);
   gl.bindTexture(gl.TEXTURE_2D, flag?.texture ?? null);
   const lines = uniform('lines');
@@ -633,8 +647,8 @@ function draw(now: number): void {
       gl.uniform1i(uniform('textured'), item.texture === undefined ? 0 : 1);
       gl.uniform1i(uniform('normalMapped'), normalMap === undefined ? 0 : 1);
       gl.uniform1i(uniform('specularMapped'), specularMap === undefined ? 0 : 1);
-      gl.uniform1i(uniform('countryColours'), item.countryColours ? 1 : 0);
-      gl.uniform1i(uniform('atlas'), item.atlas ? 1 : 0);
+      gl.uniform1i(uniform('countryColours'), item.countryColours && tree === undefined ? 1 : 0);
+      gl.uniform1i(uniform('atlas'), item.atlas && tree === undefined ? 1 : 0);
       gl.uniform1i(uniform('alphaTest'), item.alphaTest ? 1 : 0);
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, item.texture ?? null);
@@ -680,6 +694,7 @@ function summary(): MeshSummary {
   if (atlasParts > 0) base = { ...base, flag: { parts: atlasParts, tag: flag?.tag } };
   const levels = [...new Set(instances.flatMap(levelsOf))].sort((a, b) => a - b);
   if (levels.length > 0) base = { ...base, lod: { level: lodLevel, levels } };
+  if (tree !== undefined) base = { ...base, tree };
   if (entity === undefined) return base;
   return {
     ...base,
@@ -711,7 +726,9 @@ function showFacts(): void {
     s.bones > 0 ? `${String(s.bones)} bones` : 'no skeleton',
     `${String(s.textured)} of ${String(parts.length)} parts textured`,
     `${String(s.normalMapped)} with normal maps, ${String(s.specularMapped)} with specular maps`,
-    shaders.join(', '),
+    tree === undefined
+      ? shaders.join(', ')
+      : `${tree}: the map's tree shader${shaders.length > 0 ? `, not ${shaders.join(', ')}` : ''}`,
   );
   if (instances[0] !== undefined && instances[0].scale !== 1) {
     items.push(`scale ${String(instances[0].scale)}`);
@@ -793,6 +810,7 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
     if (message.type === 'mesh') {
       title = message.name;
       entity = undefined;
+      tree = message.tree;
       const keep = playingKey;
       playing = false;
       playingKey = undefined;
@@ -886,6 +904,7 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
         }
       }
       entity = { name: message.name, states: [...message.states], problems };
+      tree = undefined;
       offered = [];
       show(gl, nodes, meshes, problems);
       animationSelect.replaceChildren(

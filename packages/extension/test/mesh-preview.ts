@@ -5,7 +5,8 @@
 // through the playset, one without its texture is drawn untextured, and a file Etch cannot read is
 // reported instead of shown. A `PdxMeshTextureAtlas` part reports its flag (the country colours
 // until a tag is asked for), and a tag's flag comes from `gfx/flags` through the playset. A mesh
-// with levels of detail draws and counts only its most detailed level.
+// with levels of detail draws and counts only its most detailed level, and a mesh a playset's
+// `mapobject_<n>` pdxmesh names is drawn as a map tree.
 import * as assert from 'node:assert/strict';
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -141,6 +142,15 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
   // dds() takes its bytes as BGRA: a red flag.
   await writeFile(path.join(game, 'gfx', 'flags', 'ETC.dds'), dds(2, 2, [40, 40, 200, 255]));
   await writeFile(path.join(game, 'gfx', 'models', 'bare', 'etch_bare.mesh'), binary(MESH));
+  // A map tree: a pdxmesh named mapobject_<n> in a .gfx file of the playset names the mesh.
+  const trees = path.join(game, 'gfx', 'models', 'Mapitems', 'Trees');
+  await mkdir(trees, { recursive: true });
+  await writeFile(path.join(trees, 'etch_tree.mesh'), binary(MESH));
+  await mkdir(path.join(game, 'interface'));
+  await writeFile(
+    path.join(game, 'interface', 'etch_trees.gfx'),
+    'objectTypes = {\n  pdxmesh = { name = "mapobject_3" file = "gfx/models/Mapitems/Trees/etch_tree.mesh" }\n}\n',
+  );
   const settings = vscode.workspace.getConfiguration('etch');
   await settings.update('gamePath', game, vscode.ConfigurationTarget.Global);
   try {
@@ -151,6 +161,11 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
       { 'flag_diffuse.dds': 'the game' },
       'a mesh in the game folder takes its texture through the playset',
     );
+    assert.equal(inGame.summary.tree, undefined, 'a mesh no mapobject_<n> names is not a tree');
+    await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+    const tree = await open(api, vscode.Uri.file(path.join(trees, 'etch_tree.mesh')));
+    assert.ok(tree.ok, `the map tree shows: ${tree.ok ? '' : tree.message}`);
+    assert.equal(tree.summary.tree, 'mapobject_3', 'drawn as the map tree that names it');
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
     const bare = await open(
       api,

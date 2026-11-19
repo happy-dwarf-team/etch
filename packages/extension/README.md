@@ -356,6 +356,10 @@ it is in no folder of the playset. Collision shapes are hidden.
   colour boxes show as stripes in its place.
 - A mesh with levels of detail (shapes named `lodShape0`, `Lod1Shape`, as on
   vanilla's map trees) shows its most detailed level; **LOD** picks another.
+- A map tree (a mesh a `mapobject_<n>` pdxmesh of your playset names) is drawn
+  as the game's tree shader draws it: texels with a diffuse alpha under one
+  half are cut out, with no highlight. The map's tint and season colours are
+  not applied.
 - If the mesh has a skeleton, the list offers the `.anim` files beside it that
   name its bones, the mesh's own first (`carrack_idle.anim` for
   `carrack.mesh`); **Play** runs the one you pick in a loop.

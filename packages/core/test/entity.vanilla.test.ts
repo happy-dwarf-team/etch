@@ -6,8 +6,15 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { readMesh, resolveEntity, type PdxMesh, type ResolvedEntity } from '../src/asset/index.ts';
-import { GameFiles, loadEntityIndex } from '../src/playset/index.ts';
+import {
+  MAP_TREE_NAME,
+  mapTreeOf,
+  readMesh,
+  resolveEntity,
+  type PdxMesh,
+  type ResolvedEntity,
+} from '../src/asset/index.ts';
+import { GameFiles, loadEntityIndex, loadPdxMeshTypes } from '../src/playset/index.ts';
 
 const gamePath = process.env['ETCH_GAME_PATH'];
 
@@ -76,5 +83,23 @@ describe.skipIf(gamePath === undefined)('entities of the installed game', () => 
       bonesFound: 1411,
       problems: 0,
     });
+  });
+
+  it('names the map trees mapobject_<n>, each a mesh of Mapitems/Trees', async () => {
+    const root = gamePath ?? '';
+    const types = (
+      await loadPdxMeshTypes(new GameFiles([{ name: 'game', root, replacePaths: [] }]))
+    ).flat();
+    const trees = types.filter((t) => MAP_TREE_NAME.test(t.name));
+    const meshes = new Set(trees.map((t) => t.file));
+    // EU4 1.37.5: 21 tree types in interface/assets/mapitems.gfx over 17 meshes, all read.
+    expect([trees.length, meshes.size]).toEqual([21, 17]);
+    expect(trees.every((t) => t.at.path === 'interface/assets/mapitems.gfx')).toBe(true);
+    expect([...meshes].every((file) => file?.startsWith('gfx/models/Mapitems/Trees/'))).toBe(true);
+    const shapes = [...meshes].map(
+      (file) => readMesh(readFileSync(join(root, file ?? ''))).shapes.length,
+    );
+    expect(shapes.every((count) => count > 0)).toBe(true);
+    expect(mapTreeOf(types, 'gfx/models/Mapitems/Trees/Pine_01.mesh')?.name).toBe('mapobject_2');
   });
 });
