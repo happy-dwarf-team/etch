@@ -1108,6 +1108,34 @@ describe('the ready wait', () => {
     expect(left.report.sessions[1]?.error).toBe('The game left the save before it was ready.');
   });
 
+  it('stops at once when Tongs answers from another game than the one it started', async () => {
+    // Another session's game on the pipe, in both sessions: another pid, or the same pid of a later
+    // process. The session ends before it asks the game anything else.
+    const other = await readyRun({ version: '0.19.0', session: 1 }, (game) => {
+      game.pid = 9999;
+    });
+    expect(other.report.sessions.map((s) => s.error)).toEqual([
+      'Tongs answers from pid 9999, not the started game.',
+      'Tongs answers from pid 9999, not the started game.',
+    ]);
+    expect(other.games[0]?.calls).toEqual(['ping', 'close']);
+
+    const later = await readyRun({ version: '0.19.0', session: 1 }, (game) => {
+      game.processStartMs = 1000 + 2001;
+    });
+    expect(later.report.sessions.map((s) => s.error)).toEqual([
+      'Tongs answers from a process with another start time.',
+      'Tongs answers from a process with another start time.',
+    ]);
+    expect(later.games[0]?.calls).toEqual(['ping', 'close']);
+
+    // Within 2 s of the launcher's record, it is the started game.
+    const same = await readyRun({ version: '0.19.0', session: 1 }, (game) => {
+      game.processStartMs = 1000 + 2000;
+    });
+    expect(same.report.sessions[0]?.error).toBeUndefined();
+  });
+
   it('knows which Tongs releases have sessions', () => {
     expect(['0.18.0', '0.19.0', '0.20.1', '1.0.0', 'unknown'].map(hasSessions)).toEqual([
       false,
