@@ -177,6 +177,27 @@ describe('script values of a playset', () => {
     ]);
   });
 
+  it('warns about a tag an earlier country_tags file of the playset defines', async () => {
+    await addFiles(root, {
+      'game/common/country_tags/00_countries.txt': 'SWE = "countries/Sweden.txt"\n',
+      'game/common/countries/Sweden.txt': 'graphical_culture = westerngfx\n',
+      'mod/common/country_tags/zz_mod.txt':
+        'XYZ = "countries/Sweden.txt"\nSWE = "countries/Lost.txt"\n',
+    });
+    const files = playset();
+    const names = await loadScriptNames(files);
+    expect([...(names?.countryTags ?? [])]).toEqual([
+      ['SWE', 'common/country_tags/00_countries.txt'],
+      ['XYZ', 'common/country_tags/zz_mod.txt'],
+    ]);
+    const { findings } = await findScriptValueProblems(files, { names });
+    const tags = findings.find((finding) => finding.file.path === 'common/country_tags/zz_mod.txt');
+    // The game keeps the game's SWE and does not read Lost.txt: not a missing file.
+    expect(tags?.diagnostics.map((d) => `${d.key} ${d.code}`)).toEqual([
+      'SWE country-tag-duplicate',
+    ]);
+  });
+
   it('warns about a table of the winning common/technology.txt that no layer has', async () => {
     await addFiles(root, {
       'game/common/technology.txt': 'tables = { adm_tech = "technologies/adm.txt" }\n',
