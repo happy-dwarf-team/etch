@@ -27,6 +27,8 @@ export class FakeGame implements Tongs {
   paused = true;
   gameCalls = 0;
   pid = 4242;
+  /** The process start the game answers `ping` with, in Unix milliseconds. */
+  processStartMs = 1000;
   /** The Tongs release the game answers `ping` with. */
   version = '0.14.1';
   /** The session in the state of a game, from Tongs 0.19. */
@@ -124,7 +126,7 @@ export class FakeGame implements Tongs {
     const ok = (fields: Record<string, unknown> = {}): TongsAnswer => ({ ok: true, ...fields });
     const [verb = '', ...rest] = command.split(' ');
     if (command === 'ping')
-      return ok({ version: this.version, pid: this.pid, process_start_ms: 1000 });
+      return ok({ version: this.version, pid: this.pid, process_start_ms: this.processStartMs });
     if (command === 'state') return ok(this.state());
     if (command === 'window') {
       return ok({ ...this.size, screen_x: 0, screen_y: 0, dpi: 96, minimized: false });
