@@ -309,6 +309,57 @@ describe('crawlGame', () => {
     });
   });
 
+  it('gives up a view whose click step Tongs answers without clicking', async () => {
+    const windows: FakeWindow[] = [{ name: 'menu', children: [] }];
+    const game = new CrawlGame(windows, ['menu'], '.');
+    const call = game.call.bind(game);
+    game.call = (command) =>
+      command === 'ui click menu/stale timeout=10'
+        ? Promise.resolve({ ok: true, clicked: false })
+        : call(command);
+    const crawl = newCrawlFile('vanilla', '640x360', 'main-menu');
+    crawl.states.push(
+      { id: 's0', steps: [], signature: 'menu', roots: ['menu'], depth: 0, explored: true },
+      {
+        id: 's1',
+        steps: [{ click: 'menu/stale' }],
+        signature: 'menu\nstale',
+        roots: ['stale'],
+        depth: 1,
+        explored: false,
+      },
+    );
+    const { restart } = await crawlOnce(context(game, 'main-menu', ['menu']), RULES, crawl);
+    expect(restart).toBe(false);
+    expect(crawl.done).toBe(true);
+    expect(crawl.states[1]).toMatchObject({
+      explored: true,
+      unreproducible: '"ui click menu/stale timeout=10" did not click.',
+    });
+  });
+
+  it('reads the visible tree less deep while Tongs cuts it, and fails when even one level is cut', async () => {
+    const windows: FakeWindow[] = [{ name: 'menu', children: [] }];
+    const game = new CrawlGame(windows, ['menu'], '.');
+    const call = game.call.bind(game);
+    let cutBelow = 2;
+    game.call = (command) => {
+      const depth = /^ui tree depth=(\d+) /.exec(command);
+      if (depth !== null && Number(depth[1]) >= cutBelow) {
+        return Promise.resolve({ ok: true, truncated: true, widgets: [] });
+      }
+      return call(command);
+    };
+    const { crawl } = await crawlOnce(context(game, 'main-menu', ['menu']), RULES);
+    expect(crawl.states[0]?.signature).toBe('menu');
+    expect(game.calls.filter((c) => c.startsWith('ui tree depth=1 '))).not.toEqual([]);
+
+    cutBelow = 1;
+    await expect(crawlOnce(context(game, 'main-menu', ['menu']), RULES)).rejects.toThrow(
+      'The visible tree has more than 5000 widgets even one level deep.',
+    );
+  });
+
   it('ends at the session time and leaves the rest for the next start', async () => {
     const windows: FakeWindow[] = [{ name: 'menu', children: ['a', 'b'] }];
     const game = new CrawlGame(windows, ['menu'], '.');

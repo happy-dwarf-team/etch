@@ -7,6 +7,7 @@ import {
   isMaskedShader,
   isSpriteShader,
   layoutText,
+  moveDraw,
   packGlyphs,
   parseBmFont,
   type DrawList,
@@ -24,6 +25,66 @@ describe('effectName', () => {
   it('names the default shader when there is no effectFile', () => {
     expect(effectName(undefined)).toBe('default');
     expect(effectName('  ')).toBe('default');
+  });
+});
+
+describe('moveDraw', () => {
+  const by = { x: 3, y: -2 };
+  const glyphs = [10, 20, 6, 8, 1, 2, 0xffffffff, 16, 20, 6, 8, 7, 2, 0xffffffff];
+  const movedGlyphs = [13, 18, 6, 8, 1, 2, 0xffffffff, 19, 18, 6, 8, 7, 2, 0xffffffff];
+  const rect = { x: 5, y: 5, width: 40, height: 20, sx: 0, sy: 0, sw: 40, sh: 20, source: 7 };
+
+  it("moves a text draw's glyphs and leaves their size and atlas rect", () => {
+    const text = { kind: 'text', texture: 1, glyphs, source: 7 } as const;
+    expect(moveDraw(text, by)).toEqual({ ...text, glyphs: movedGlyphs });
+    expect(text.glyphs[0]).toBe(10);
+  });
+
+  it("moves a sprite's rect and the glyphs of its baked text", () => {
+    const sprite = {
+      ...rect,
+      kind: 'sprite',
+      texture: 0,
+      shader: 'default',
+      text: { texture: 1, glyphs },
+    } as const;
+    expect(moveDraw(sprite, by)).toEqual({
+      ...sprite,
+      x: 8,
+      y: 3,
+      text: { texture: 1, glyphs: movedGlyphs },
+    });
+  });
+
+  it('moves the rect of a sprite without text, a masked draw and a progress bar', () => {
+    const sprite = { ...rect, kind: 'sprite', texture: 0, shader: 'default' } as const;
+    expect(moveDraw(sprite, by)).toEqual({ ...sprite, x: 8, y: 3 });
+    const masked = {
+      ...rect,
+      kind: 'masked',
+      texture: 0,
+      mask: 1,
+      maskRect: { sx: 0, sy: 0, sw: 8, sh: 8 },
+      shader: 'maskedflag',
+    } as const;
+    expect(moveDraw(masked, by)).toEqual({ ...masked, x: 8, y: 3 });
+    const progress = {
+      kind: 'progress',
+      first: { colour: 0xff00ff00 },
+      second: { texture: 0 },
+      value: 0.5,
+      x: 5,
+      y: 5,
+      width: 100,
+      height: 10,
+      source: 7,
+    } as const;
+    expect(moveDraw(progress, by)).toEqual({ ...progress, x: 8, y: 3 });
+  });
+
+  it('leaves a trailing partial glyph alone', () => {
+    const text = { kind: 'text', texture: 1, glyphs: [10], source: 7 } as const;
+    expect(moveDraw(text, by)).toEqual(text);
   });
 });
 

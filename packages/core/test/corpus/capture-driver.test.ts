@@ -32,6 +32,8 @@ import {
 } from '../../src/corpus/driver/run.ts';
 import {
   captureView,
+  holdCursor,
+  MouseReleased,
   pinCursor,
   startWindows,
   stepCommand,
@@ -394,6 +396,59 @@ describe('captureView', () => {
     await expect(startWindows(crowded)).rejects.toThrow('More than 5000 top-level windows.');
   });
 
+  it('fails a view on a game state, window or tree that Tongs answers oddly', async () => {
+    const folder = await makeTree({});
+    trees.push(folder);
+    const manifest = testManifest(await sha(SAVE_TEXT));
+    const run = async (
+      prefix: string,
+      edit: (answer: TongsAnswer) => TongsAnswer,
+    ): Promise<string> => {
+      const game = new FakeGame(WINDOWS, ['country_selection_panel'], folder, SIZE);
+      const ctx = context(game, manifest, 'main-menu', await startWindows(game));
+      const call = game.call.bind(game);
+      game.call = async (command) => {
+        const answer = await call(command);
+        return command.startsWith(prefix) ? edit(answer) : answer;
+      };
+      const outcome = await captureView(ctx, viewOf(manifest, 'lobby'));
+      return outcome.ok ? 'ok' : outcome.reason;
+    };
+    const tree = 'ui tree lobby ';
+    const first = (answer: TongsAnswer): Record<string, unknown> =>
+      ((answer['widgets'] ?? []) as Record<string, unknown>[])[0] ?? {};
+    const cases: [string, (answer: TongsAnswer) => TongsAnswer, string][] = [
+      ['state', (a) => ({ ...a, pid: 7 }), "The game's process changed (pid 7)."],
+      [
+        'state',
+        (a) => ({ ...a, in_game: true }),
+        'A game is loaded; the view opens from the main menu.',
+      ],
+      ['window', (a) => ({ ...a, minimized: true }), 'The game window is minimised.'],
+      [
+        'window',
+        (a) => ({ ...a, dpi: undefined }),
+        'Tongs answered window without width, height and dpi.',
+      ],
+      [tree, () => ({ ok: false, error: 'not_found' }), 'ui tree lobby: not_found.'],
+      [tree, (a) => ({ ...a, truncated: true }), 'The tree of lobby has more than 5000 widgets.'],
+      [tree, (a) => ({ ...a, widgets: {} }), 'Tongs answered without a widget list.'],
+      [
+        tree,
+        (a) => ({ ...a, widgets: [{ ...first(a), stale: true }] }),
+        'lobby is stale: the tree was read after a reload.',
+      ],
+      [
+        tree,
+        (a) => ({ ...a, widgets: [{ ...first(a), children_count: 3 }] }),
+        'The tree of lobby was cut.',
+      ],
+    ];
+    for (const [prefix, edit, reason] of cases) {
+      expect(await run(prefix, edit)).toBe(reason);
+    }
+  });
+
   it('pins the cursor inside the margin and pins it again only for a moved window', async () => {
     const folder = await makeTree({});
     trees.push(folder);
@@ -411,6 +466,42 @@ describe('captureView', () => {
     mouse.clip = { left: 50, top: 50, right: 51, bottom: 51 };
     game.open.splice(1);
     expect(await captureView(ctx, viewOf(manifest, 'ledger'))).toMatchObject({ ok: true });
+    expect(mouse.pins).toEqual(['100,100', '100,100']);
+  });
+
+  it('gives the mouse back when Windows refuses a pin or does not confine the cursor', async () => {
+    const folder = await makeTree({});
+    trees.push(folder);
+    const manifest = testManifest(await sha(SAVE_TEXT));
+    const game = new FakeGame(WINDOWS, ['topbar'], folder, SIZE, true);
+    const mouse = new FakeMouse();
+    const ctx = { ...context(game, manifest, 'save', await startWindows(game)), mouse };
+    const window = { width: SIZE.width, height: SIZE.height };
+    const locked =
+      'The mouse cursor cannot be read or pinned: the screen is locked ' +
+      '(SetCursorPos failed: Win32 error 203).';
+
+    // Win+L: Windows refuses the pin.
+    mouse.locked = true;
+    await expect(pinCursor(ctx)).rejects.toThrow(new MouseReleased(locked));
+    await expect(holdCursor(ctx, window)).rejects.toThrow(
+      new MouseReleased(locked.replace('SetCursorPos', 'GetCursorPos')),
+    );
+    mouse.locked = false;
+
+    // Windows takes the pin but keeps another clip.
+    const pin = mouse.pin.bind(mouse);
+    mouse.pin = async (x, y) => {
+      await pin(x, y);
+      mouse.clip = { left: 0, top: 0, right: 2, bottom: 2 };
+      return mouse.read();
+    };
+    await expect(pinCursor(ctx)).rejects.toThrow(
+      new MouseReleased('Windows did not confine the mouse cursor to 100,100.'),
+    );
+    // A one-pixel clip of a moved window, pinned again without the clip taking.
+    mouse.clip = { left: 50, top: 50, right: 51, bottom: 51 };
+    await expect(holdCursor(ctx, window)).rejects.toThrow(MouseReleased);
     expect(mouse.pins).toEqual(['100,100', '100,100']);
   });
 
@@ -549,6 +640,17 @@ describe('captureView', () => {
     expect(await captureView(ctx, province)).toMatchObject({
       ok: false,
       reason: 'province open 286: provinceview is covered by "menu/menu".',
+    });
+    game.provinceCover = null;
+    // An answer for another province than the one asked for.
+    const call = game.call.bind(game);
+    game.call = async (command) => {
+      const answer = await call(command);
+      return command === 'province open 286' ? { ...answer, province: 287 } : answer;
+    };
+    expect(await captureView(ctx, province)).toMatchObject({
+      ok: false,
+      reason: 'province open 286 answered for province 287.',
     });
   });
 });
