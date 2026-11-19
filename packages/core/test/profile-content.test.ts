@@ -414,6 +414,39 @@ describe("a rule that reaches a repeater's entries", () => {
 });
 
 describe('sampleData', () => {
+  it('takes no sum of a value that is not a number, and a text format as the save has it', async () => {
+    const { profile, diagnostics } = profileOf(`{ "formatVersion": 1, "window": "provinceview",
+      "content": {
+        "provinceview/development_value": {
+          "save": ["provinces.{province}.base_tax", "provinces.{province}.name"], "transform": "sum"
+        },
+        "provinceview/tax_value": { "save": "provinces.{province}.base_tax", "format": "text" },
+        "provinceview/autonomy_value": { "save": "provinces.{province}.culture", "format": "number" }
+      } }`);
+    expect(diagnostics).toEqual([]);
+    const choice = new SaveChoice(await save(), 'SWE', 1);
+    const view = evaluateView(profile, WINDOW, { width: 1920, height: 1080 }, {});
+    const sample = sampleData(profile, WINDOW, view, input({ save: choice }));
+    const text = (name: string) => sample.text(named(name));
+    // The sum of a name is none: the generated layer fills the box.
+    expect(text('development_value')).toEqual({
+      text: '12.3',
+      layer: 'generated',
+      detail: 'number, typical',
+    });
+    expect(text('tax_value')).toEqual({
+      text: '5.000',
+      layer: 'save',
+      detail: 'provinces.{province}.base_tax',
+    });
+    // A number format on a value that is no number keeps the value.
+    expect(text('autonomy_value')).toEqual({
+      text: 'swedish',
+      layer: 'save',
+      detail: 'provinces.{province}.culture',
+    });
+  });
+
   it('fills texts from the save, the files and the generated layer, and counts them', async () => {
     const { profile } = profileOf(PROFILE);
     const choice = new SaveChoice(await save(), 'SWE', 1);
