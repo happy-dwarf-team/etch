@@ -44,6 +44,10 @@ describe.skipIf(gamePath === undefined)('province ids and names of the installed
       'advisor-type': 21,
       'graphical-culture': 12,
     });
+    // Every tag's country file, each one there.
+    const countryFiles = [...(names?.countryFiles ?? new Map<string, boolean>())];
+    expect(countryFiles.length).toBeGreaterThan(900);
+    expect(countryFiles.filter(([, present]) => !present)).toEqual([]);
     if (ids === undefined) return;
     const { findings, filesChecked } = await findScriptValueProblems(files, { ids, names });
     expect(filesChecked).toBeGreaterThan(7000);

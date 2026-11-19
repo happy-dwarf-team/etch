@@ -1,6 +1,13 @@
 import { readFile } from 'node:fs/promises';
 import { decodeGameText } from '../game-text.ts';
 import { checkCanals, type CanalDiagnostic } from '../script/canals.ts';
+import {
+  checkCountryFiles,
+  countryFilePath,
+  isCountryTagsPath,
+  readCountryFiles,
+  type CountryFileDiagnostic,
+} from '../script/country-files.ts';
 import { checkMapFiles, type MapFileDiagnostic } from '../script/map-files.ts';
 import { parseScript } from '../script/parse.ts';
 import {
@@ -38,7 +45,11 @@ import { definedIds, type PlaysetProvinceIds } from './province-ids.ts';
  * `map/default.map` the game cannot load or build, or a map file it names that the playset lacks.
  */
 export type ScriptValueDiagnostic =
-  ProvinceIdDiagnostic | ScriptNameDiagnostic | CanalDiagnostic | MapFileDiagnostic;
+  | ProvinceIdDiagnostic
+  | ScriptNameDiagnostic
+  | CanalDiagnostic
+  | MapFileDiagnostic
+  | CountryFileDiagnostic;
 
 /** What script values are checked against; a check without its part is skipped. */
 export interface ScriptValues {
@@ -65,6 +76,10 @@ export function checkScriptValues(
   const found: ScriptValueDiagnostic[] = [];
   if (values.ids !== undefined) found.push(...checkProvinceIds(parsed, values.ids, path));
   if (values.names !== undefined) found.push(...checkScriptNames(parsed, values.names));
+  const countryFiles = values.names?.countryFiles;
+  if (countryFiles !== undefined && path !== undefined && isCountryTagsPath(path)) {
+    found.push(...checkCountryFiles(parsed, countryFiles));
+  }
   for (const { string, ownTooltip } of scriptStrings(parsed.entries)) {
     // The string's script starts after its opening quote; script strings have no escapes, so
     // offsets in it map one to one.
@@ -186,7 +201,25 @@ export async function loadScriptNames(files: GameFiles): Promise<ScriptNames | u
       }
     }
   }
-  return { byKind, scripted };
+  return { byKind, scripted, countryFiles: await loadCountryFiles(files) };
+}
+
+/**
+ * Whether a layer has each country file the playset's `common/country_tags` files name, by game
+ * path in lower case; a path Etch does not check (`countryFilePath`) is left out.
+ */
+export async function loadCountryFiles(files: GameFiles): Promise<Map<string, boolean>> {
+  const present = new Map<string, boolean>();
+  for (const file of await files.list('common/country_tags', '.txt')) {
+    const bytes = await readFile(file.absolutePath).catch(() => undefined);
+    if (bytes === undefined) continue;
+    for (const { file: name } of readCountryFiles(parseScript(decode(bytes), { script: true }))) {
+      const path = countryFilePath(name.text);
+      if (path === undefined || present.has(path.toLowerCase())) continue;
+      present.set(path.toLowerCase(), (await files.find(path)) !== undefined);
+    }
+  }
+  return present;
 }
 
 /** A file of the playset with script values it does not have. */
