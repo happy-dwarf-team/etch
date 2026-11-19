@@ -339,6 +339,34 @@ describe('load checks', () => {
     ]);
   });
 
+  it("skips a group of an unknown selector, a selector without its default, a view's faulty toggle", () => {
+    const { profile, diagnostics } = check(`{ "formatVersion": 1, "window": "provinceview",
+      "selectors": { "sub": { "kind": "ui", "default": "ledger", "values": { "none": "None" } } },
+      "groups": { "orphan": { "selector": "gone", "members": { "a": "provinceview/bg" } } },
+      "views": {
+        "toggled": { "toggles": { "provinceview/nothing": false } },
+        "deep": { "toggles": { "provinceview/**/**/bg": true } }
+      } }`);
+    expect(profile.selectors).toEqual([]);
+    expect(profile.groups).toEqual([]);
+    expect(profile.views).toEqual([]);
+    expect(diagnostics.map((d) => [d.code, d.message])).toEqual([
+      ['profile-unknown-value', 'Selector "sub" has no value "ledger" for its default.'],
+      ['profile-unknown-name', 'No selector "gone" is defined, or it failed its check.'],
+      ['profile-unknown-path', expect.stringContaining('provinceview/nothing') as unknown],
+      ['profile-unknown-path', '"provinceview/**/**/bg" has "**" twice in a row.'],
+    ]);
+  });
+
+  it("refuses a profile of another window: the caller picks the files by the window's name", () => {
+    const other = layerProfiles('stateview', [
+      read('{ "formatVersion": 1, "window": "stateview" }'),
+    ]);
+    expect(() => checkProfile(other, { window: WINDOW, positionType: () => false })).toThrow(
+      'profile of stateview checked against provinceview',
+    );
+  });
+
   it('reports a default view no layer defines', () => {
     const { profile, diagnostics } = check(
       BASE,

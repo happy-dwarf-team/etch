@@ -282,6 +282,23 @@ describe('the load checks of sample data', () => {
     ]);
   });
 
+  it("checks a placed repeater: the bar it goes along, its positionTypes and the table's headings", () => {
+    expect(
+      check(`"repeaters": { "provinceview/building_list": { "template": "building_entry",
+        "place": { "start": "first_pos", "step": "next_pos", "along": { "bar": "bar", "at": [0.5] } } } }`),
+    ).toMatchObject([
+      ['profile-unknown-path', /has no child "bar" for the entries to go along/],
+      ['profile-unknown-name', /no positionType "first_pos"/],
+      ['profile-unknown-name', /no positionType "next_pos"/],
+    ]);
+    expect(
+      check(`"repeaters": { "provinceview/building_list": { "template": "building_entry",
+        "place": { "table": { "weights": [1, 2], "label": "heading_row" } } } }`),
+    ).toMatchObject([
+      ['profile-unknown-source', /no top-level "heading_row" for the table's headings/],
+    ]);
+  });
+
   it("refuses a map source in a repeater's field: it names the chosen province's", () => {
     const { diagnostics } = profileOf(`{ "formatVersion": 1, "window": "provinceview",
       "repeaters": { "provinceview/building_list": { "template": "building_entry",
