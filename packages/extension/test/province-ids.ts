@@ -62,6 +62,13 @@ export async function testProvinceIds(): Promise<void> {
     'fx = {\n\t3 = { add_core = ROOT }\n}\n',
   );
   await write(game, 'common/ideas/ideas.txt', 'quantity_ideas = {\n\tlevee_en_masse = { }\n}\n');
+  // A tag whose country file no layer has, next to one whose file is there.
+  const tags = await write(
+    game,
+    'common/country_tags/00_countries.txt',
+    'SWE = "countries/Sweden.txt"\nLST = "countries/Lost.txt"\n',
+  );
+  await write(game, 'common/countries/Sweden.txt', 'graphical_culture = westerngfx\n');
   // Written before the playset's map is read: the map keeps the map files it found then.
   const links = await write(
     game,
@@ -153,6 +160,18 @@ export async function testProvinceIds(): Promise<void> {
     assert.equal(group?.code, 'unknown-idea-group');
     assert.deepEqual([group.range.start.line, group.range.start.character], [1, 32]);
     assert.match(group.message, /^No idea group 'quantity_idea' in common\/ideas of the playset/);
+    // The country file a tag names that the playset does not have.
+    const [country, ...otherTags] = await diagnosticsOf(tags, (found) => found.length > 0);
+    assert.deepEqual(otherTags, []);
+    assert.equal(country?.code, 'country-file-missing');
+    assert.deepEqual(
+      [country.range.start.line, country.range.start.character, country.range.end.character],
+      [1, 6, 26],
+    );
+    assert.match(
+      country.message,
+      /^The playset has no common\/countries\/Lost\.txt, which LST names/,
+    );
   } finally {
     await vscode.commands.executeCommand('workbench.action.files.revert');
     await settings.update('gamePath', undefined, vscode.ConfigurationTarget.Global);
