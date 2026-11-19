@@ -721,9 +721,14 @@ refresh is a step of the 3.0.0 release.
   (`map/terrain/Tree_season.bmp`, eight columns, at the column the game's
   season value picks and the row of the tree's `u1` v, less 0.5) is added
   times a fade that is 0 in the map's southern half and 1 from nine tenths of
-  its height; Season and North sliders stand in for the column and the fade,
-  North at 0 by default. How the game's season value follows the date is not
-  known. Each tree's random height and turn are not followed. `PdxMeshAlphaBlend` parts (16 African
+  its height. The season value follows the date through the eight `tree_*`
+  blocks of `map/seasons.txt` (`tree_winter` to `tree_autumn2`, a start and an
+  end date each, in the order of the columns): inside a block it is the
+  block's index, in the gap after one it runs to the next index by the day,
+  and after the last it runs from 7 towards 8, which the repeated map takes
+  back to the first column (`treeSeasonAt` in `@etch/core/asset`). A Date
+  slider (1 July by default) and a North slider (0 by default) stand in for
+  the game's date and the fade. Each tree's random height and turn are not followed. `PdxMeshAlphaBlend` parts (16 African
   buildings and, without depth writes, `Mapitems/selection.mesh`) are blended by
   their diffuse alpha after the opaque parts, as the game's blend state does,
   where the preview cut them at 0.5 before. Snow follows the game's

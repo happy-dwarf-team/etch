@@ -50,12 +50,16 @@ export interface MeshSummary {
    */
   readonly ground?: string;
   /**
-   * A map tree's season map (`map/terrain/Tree_season.bmp`): where it came from, or `undefined`
-   * when it was not found or read, and the Season and North sliders' values.
+   * A map tree's season colour: where its season map (`map/terrain/Tree_season.bmp`) and its
+   * tree seasons (`map/seasons.txt`) came from (`undefined` when not found or read), the Date
+   * slider's day of the year (0 for 1 January), the season value the game takes for that day
+   * (`undefined` without the tree seasons) and the North slider's value.
    */
   readonly season?: {
     readonly source: string | undefined;
-    readonly time: number;
+    readonly seasons: string | undefined;
+    readonly day: number;
+    readonly value: number | undefined;
     readonly north: number;
   };
   /**
@@ -67,8 +71,23 @@ export interface MeshSummary {
 }
 
 /**
- * The preview's controls, set as a user would set them: Snow, Turn, Ground (`#rrggbb`), Season,
- * North, the Maps button and the three country colours (`#rrggbb`). Etch's tests set them
+ * The tree blocks of the playset's `map/seasons.txt` (`tree_winter` to `tree_autumn2`) as days of
+ * the year, by column of the season map (`null` for a block that is missing or unreadable), with
+ * what could not be read; or why the file was not read.
+ */
+export type MeshTreeSeasons =
+  | {
+      readonly ok: true;
+      readonly spans: readonly ({ readonly start: number; readonly end: number } | null)[];
+      readonly source: string;
+      readonly problems: readonly string[];
+    }
+  | { readonly ok: false; readonly message: string };
+
+/**
+ * The preview's controls, set as a user would set them: Snow, Turn, Ground (`#rrggbb`), Date
+ * (a day of the year, 0 for 1 January), North, the Maps button and the three country colours
+ * (`#rrggbb`). Etch's tests set them
  * through `MeshPreviewApi.control`.
  */
 export interface MeshControls {
@@ -81,7 +100,7 @@ export interface MeshControls {
   readonly snow?: number;
   readonly turn?: number;
   readonly ground?: string;
-  readonly season?: number;
+  readonly day?: number;
   readonly north?: number;
 }
 
@@ -168,6 +187,8 @@ export type MeshHostMessage =
       readonly tint: MeshTexture | undefined;
       /** For a map tree: the playset's season map, decoded; `undefined` for another mesh. */
       readonly season: MeshTexture | undefined;
+      /** For a map tree: the playset's tree seasons; `undefined` for another mesh. */
+      readonly seasons: MeshTreeSeasons | undefined;
     }
   | { readonly type: 'animation'; readonly name: string; readonly bytes: Uint8Array }
   | { readonly type: 'flag'; readonly tag: string; readonly texture: MeshTexture }
