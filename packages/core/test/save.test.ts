@@ -371,6 +371,15 @@ describe('parseScript of a save', () => {
     expect(parseScript(text).diagnostics.map((d) => d.code)).toContain('unterminated-string');
   });
 
+  it('reads a string a save never closes to the end of the text', () => {
+    const text = 'name="a \\"b\\"\nnext=1';
+    const save = parseScript(text, { save: true });
+    expect(save.diagnostics.map((d) => [d.code, d.start, d.end])).toEqual([
+      ['unterminated-string', 5, text.length],
+    ]);
+    expect(save.entries).toHaveLength(1);
+  });
+
   it('keeps a backslash that escapes nothing, as in a path', () => {
     const save = parseScript('path="gfx\\interface\\x.dds"', { save: true });
     expect(save.entries[0]).toMatchObject({ value: { text: 'gfx\\interface\\x.dds' } });
