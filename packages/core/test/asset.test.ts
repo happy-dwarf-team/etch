@@ -4,7 +4,6 @@ import {
   meshFacts,
   jointPose,
   jointsOfBones,
-  lodOf,
   PdxAssetError,
   readAnimation,
   readMesh,
@@ -12,7 +11,7 @@ import {
   skinningMatrices,
   skinPart,
 } from '../src/asset/index.ts';
-import { ANIM, binary, floats, half, ints, MESH, obj, text } from './fixtures/pdx-asset.ts';
+import { ANIM, binary, floats, half, ints, MESH, obj, strs, text } from './fixtures/pdx-asset.ts';
 
 describe('readPdxAsset', () => {
   it('reads the same tree from the binary and the text encoding', () => {
@@ -69,17 +68,39 @@ describe('readMesh', () => {
     expect(mesh.bounds).toEqual({ min: [0, 0, 0], max: [2, 1, 0] });
   });
 
-  it('reads the level of detail from the shape name', () => {
-    // The spellings of vanilla's map trees.
-    expect(['lodShape0', 'Lod0Shape', 'LodShape2', 'lod0Shape', 'lodShape4'].map(lodOf)).toEqual([
-      0, 0, 2, 0, 4,
+  it("reads each shape's level of detail from its lod property, not its name", () => {
+    const shape = (name: string, lod?: number) => [
+      obj(2, name),
+      ...(lod === undefined ? [] : [ints('lod', lod)]),
+      obj(3, 'mesh'),
+      floats('p', 0, 0, 0, 1, 0, 0, 0, 1, 0),
+      ints('tri', 0, 1, 2),
+      obj(4, 'material'),
+      strs('shader', 'PdxMeshStandard'),
+    ];
+    const mesh = readMesh(
+      binary([
+        ints('pdxasset', 1, 0),
+        obj(1, 'object'),
+        floats('loddist', 0, 20, 50),
+        // As vanilla's Mapitems trees and savanna trees name them.
+        ...shape('HighShape', 0),
+        ...shape('LodShape2', 1),
+        ...shape('lodShape3', 2),
+        // A name alone gives no level, and a negative level is every distance.
+        ...shape('lodShape1'),
+        ...shape('bannerShape', -1),
+      ]),
+    );
+    expect(mesh.shapes.map((s) => [s.name, s.lod])).toEqual([
+      ['HighShape', 0],
+      ['LodShape2', 1],
+      ['lodShape3', 2],
+      ['lodShape1', undefined],
+      ['bannerShape', undefined],
     ]);
-    expect(['flagShape', 'LodShape', 'lodgeShape1', 'lodShape1x'].map(lodOf)).toEqual([
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-    ]);
+    expect(mesh.lodDistances).toEqual([0, 20, 50]);
+    expect(readMesh(binary(MESH)).lodDistances).toBeUndefined();
   });
 
   it('refuses a triangle index past the vertices', () => {

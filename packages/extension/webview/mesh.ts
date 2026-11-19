@@ -925,7 +925,12 @@ function summary(): MeshSummary {
   const regionParts = parts.filter((d) => d.atlas || d.countryColours).length;
   if (regionParts > 0 && region !== undefined && tree === undefined) base = { ...base, region };
   const levels = [...new Set(instances.flatMap(levelsOf))].sort((a, b) => a - b);
-  if (levels.length > 0) base = { ...base, lod: { level: lodLevel, levels } };
+  if (levels.length > 0) {
+    const from = instances
+      .map((i) => i.mesh.lodDistances?.[shownLevel(levelsOf(i), lodLevel) ?? -1])
+      .find((distance) => distance !== undefined);
+    base = { ...base, lod: { level: lodLevel, levels, ...(from === undefined ? {} : { from }) } };
+  }
   if (tree !== undefined) base = { ...base, tree };
   const blendedParts = tree === undefined ? parts.filter((d) => d.blend !== 'none').length : 0;
   if (blendedParts > 0) base = { ...base, blended: blendedParts };
@@ -996,7 +1001,8 @@ function showFacts(): void {
     );
   }
   if (s.lod !== undefined && s.lod.levels.length > 1) {
-    items.push(`LOD ${String(s.lod.level)} of ${s.lod.levels.join(', ')}`);
+    const from = s.lod.from === undefined ? '' : ` (from ${String(s.lod.from)})`;
+    items.push(`LOD ${String(s.lod.level)} of ${s.lod.levels.join(', ')}${from}`);
   }
   if (s.collisionShapes > 0) items.push(`${String(s.collisionShapes)} collision (hidden)`);
   if (tree !== undefined && tint !== undefined) items.push(`Tree_tint.bmp (${tint.source})`);

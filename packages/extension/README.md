@@ -376,8 +376,9 @@ the bar says where (`by name: <path>`). Collision shapes are hidden.
 - **Region** shows a colonial nation's region colour as the game shows it: the
   far half of the flag (its overlord's) in that colour, and the colour in
   place of the tertiary one on `PdxMeshColor` parts.
-- A mesh with levels of detail (shapes named `lodShape0`, `Lod1Shape`, as on
-  vanilla's map trees) shows its most detailed level; **LOD** picks another.
+- A mesh with levels of detail (shapes with a `lod` property, as on vanilla's
+  map trees) shows its most detailed level; **LOD** picks another, and the bar
+  gives the camera distance the mesh's `loddist` starts that level at.
 - A map tree (a mesh a `mapobject_<n>` pdxmesh of your playset names) is drawn
   as the game's tree shader draws it: texels with a diffuse alpha under one
   half are cut out, with no highlight. Its tint map
