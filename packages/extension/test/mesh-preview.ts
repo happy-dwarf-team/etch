@@ -23,12 +23,13 @@ import {
   flagTexture,
   MESH_PREVIEW_VIEW_TYPE,
   treeMap,
+  treePlace,
   treeSeasons,
   TREE_SEASON,
   TREE_TINT,
   type MeshShown,
 } from '../src/mesh-preview.ts';
-import type { MeshControls } from '../src/mesh-protocol.ts';
+import type { MeshControls, MeshSummary } from '../src/mesh-protocol.ts';
 import { linkedFiles } from '../src/script-profile-view.ts';
 import { dds } from './asset-links.ts';
 
@@ -63,7 +64,18 @@ const spread = (drawn: Drawn): number => Math.max(...drawn.mean) - Math.min(...d
 
 /** Sets an open preview's controls and waits for the colour it then draws. */
 async function measure(api: EtchApi, file: vscode.Uri, controls: MeshControls): Promise<Drawn> {
-  const drawn = new Promise<Drawn>((resolve, reject) => {
+  const shown = await controlled(api, file, controls);
+  assert.ok(shown.drawn !== undefined);
+  return shown.drawn;
+}
+
+/** Sets the controls of the open preview of `file` and answers its summary with what is drawn. */
+async function controlled(
+  api: EtchApi,
+  file: vscode.Uri,
+  controls: MeshControls,
+): Promise<MeshSummary> {
+  const drawn = new Promise<MeshSummary>((resolve, reject) => {
     const timer = setTimeout(() => {
       subscription.dispose();
       reject(new Error(`no drawn colour of ${file.fsPath} within ${String(COLD_TIMEOUT_MS)} ms`));
@@ -73,7 +85,7 @@ async function measure(api: EtchApi, file: vscode.Uri, controls: MeshControls): 
       if (result.summary.drawn === undefined) return;
       clearTimeout(timer);
       subscription.dispose();
-      resolve(result.summary.drawn);
+      resolve(result.summary);
     });
   });
   assert.ok(await api.meshPreview.control(file, controls), `a preview of ${file.fsPath} is open`);
@@ -298,10 +310,15 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
   await mkdir(path.join(game, 'map', 'terrain'), { recursive: true });
   await writeFile(path.join(game, 'map', 'terrain', 'Tree_tint.bmp'), tint);
   await writeFile(path.join(game, 'map', 'terrain', 'Tree_season.bmp'), tint);
-  // The tree seasons: eight blocks of the fixture's own; 1 July falls in tree_summer2 (column 5).
+  // The seasons: four map seasons and eight tree blocks of the fixture's own; 1 July falls in
+  // summer and in tree_summer2 (column 5).
   await writeFile(
     path.join(game, 'map', 'seasons.txt'),
     [
+      'winter = { start_date = 00.12.01 end_date = 00.02.28 }',
+      'spring = { start_date = 00.04.01 end_date = 00.05.15 }',
+      'summer = { start_date = 00.06.01 end_date = 00.08.31 }',
+      'autumn = { start_date = 00.10.01 end_date = 00.10.31 }',
       'tree_winter = { start_date = 00.11.20 end_date = 00.11.30 }',
       'tree_winter2 = { start_date = 00.12.20 end_date = 00.01.10 }',
       'tree_spring = { start_date = 00.02.01 end_date = 00.02.10 }',
@@ -313,6 +330,31 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
       '',
     ].join('\n'),
   );
+  // A map of 64 x 32 with two provinces, one in the far north and one in the south, and a colour
+  // map of one colour per map season (BGRA).
+  await writeFile(
+    path.join(game, 'map', 'default.map'),
+    'width = 64\nheight = 32\npositions = "positions.txt"\n',
+  );
+  await writeFile(
+    path.join(game, 'map', 'positions.txt'),
+    '1 = { position = { 10.000 30.000 11.000 29.000 } }\n2 = { position = { 40.000 4.000 } }\n',
+  );
+  const colourMaps = {
+    winter: [200, 100, 50, 255],
+    spring: [0, 200, 0, 255],
+    summer: [40, 40, 200, 255],
+    autumn: [0, 160, 240, 255],
+  };
+  for (const [season, bgra] of Object.entries(colourMaps)) {
+    await writeFile(path.join(game, 'map', 'terrain', `colormap_${season}.dds`), dds(2, 2, bgra));
+  }
+  // Summer's colour map is 1 x 8, red in its top half and blue in its bottom half. Province 1, at
+  // y 30 of 32, is read at v = 1.5 / 32, 1 / 8 of a texel above row 0's centre: seven eighths of
+  // row 0 and, the map repeating, one eighth of row 7.
+  const summer = dds(1, 8, colourMaps.summer);
+  for (let row = 4; row < 8; row++) summer.set([255, 0, 0, 255], 128 + row * 4);
+  await writeFile(path.join(game, 'map', 'terrain', 'colormap_summer.dds'), summer);
   const settings = vscode.workspace.getConfiguration('etch');
   await settings.update('gamePath', game, vscode.ConfigurationTarget.Global);
   try {
@@ -367,6 +409,48 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
       `the date moves the column: ${String(summer.mean)} on 1 May, ${String(north.mean)} on 20 November`,
     );
     assert.deepEqual(await measure(api, treeUri, { north: 0 }), plain);
+    // A place gives Ground and North: province 1 lies in the far north (North 1), and on 1 July
+    // (summer) summer's colour map gives mostly its red there (175, 35, 66.875). The tree is drawn
+    // as with those set by hand.
+    const byHand = await measure(api, treeUri, { day: 181, ground: '#af2343', north: 1 });
+    const placed = await controlled(api, treeUri, { day: 181, place: 1 });
+    assert.deepEqual(placed.place, {
+      province: 1,
+      source: 'the game',
+      ground: '#af2343',
+      north: 1,
+    });
+    assert.equal(placed.ground, '#af2343', 'Ground follows the place');
+    // Within 2 of the mean colour: the place's line in the list of facts can wrap the bar, and
+    // the smaller canvas has fewer edge pixels.
+    const close = (a: readonly number[] | undefined, b: readonly number[]): boolean =>
+      a !== undefined && b.every((v, k) => Math.abs((a[k] ?? 0) - v) <= 2);
+    assert.ok(
+      close(placed.drawn?.mean, byHand.mean),
+      `drawn as with Ground and North set by hand: ${String(placed.drawn?.mean)}, ${String(byHand.mean)}`,
+    );
+    assert.notDeepEqual(byHand, plain);
+    // 16 September: 16 days into the 31 between summer and autumn.
+    const september = await controlled(api, treeUri, { day: 258 });
+    assert.equal(september.place?.ground, '#d16420', 'the date mixes the next colour map in');
+    // A province without a position gives no place and is named.
+    const nowhere = await controlled(api, treeUri, { place: 99 });
+    assert.equal(nowhere.place, undefined, 'no place without a position');
+    // Province 2 lies in the south: North 0.
+    const south = await controlled(api, treeUri, { place: 2 });
+    assert.equal(south.place?.north, 0);
+    // An empty box clears the place; Ground and North given with it are the user's again.
+    const cleared = await controlled(api, treeUri, {
+      place: null,
+      day: 181,
+      ground: '#808080',
+      north: 0,
+    });
+    assert.equal(cleared.place, undefined);
+    assert.ok(
+      close(cleared.drawn?.mean, plain.mean),
+      `the tree is drawn as before the place: ${String(cleared.drawn?.mean)}`,
+    );
     // The turn moves the tint map's place, which differs along u in the fixture.
     const turned = await measure(api, treeUri, { turn: 0.5 });
     assert.notDeepEqual(turned.mean, plain.mean, 'the turn shifts the tint');
@@ -415,6 +499,34 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
       [seasons.source, seasons.problems, seasons.spans.length, seasons.spans[1]],
       ['the game', [], 8, { start: 353, end: 9 }],
     );
+    assert.ok(seasons.ok);
+    assert.deepEqual(seasons.mapSpans[0], { start: 334, end: 58 }, 'winter over the year end');
+    // A place, through the playset: the province's position, each colour map's colour there,
+    // North from how far north it is.
+    assert.deepEqual(await treePlace(1, files), {
+      ok: true,
+      province: 1,
+      x: 10,
+      y: 30,
+      colours: [
+        [50, 100, 200],
+        [0, 200, 0],
+        [175, 35, 66.875],
+        [240, 160, 0],
+      ],
+      north: 1,
+      source: 'the game',
+    });
+    const southern = await treePlace(2, files);
+    assert.ok(southern.ok && southern.north === 0, 'the south takes no season colour');
+    assert.deepEqual(await treePlace(99, files), {
+      ok: false,
+      message: 'map/positions.txt: no position for province 99',
+    });
+    assert.deepEqual(await treePlace(1, undefined), {
+      ok: false,
+      message: 'a place comes from the playset: set etch.gamePath',
+    });
     assert.deepEqual(await treeSeasons(undefined), {
       ok: false,
       message: 'no map/seasons.txt in the playset',

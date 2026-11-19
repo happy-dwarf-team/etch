@@ -34,8 +34,10 @@
 // `season / 8 + 1/16` and v the u1's v, less 0.5, is added, times a fade that is 0 in the map's
 // southern half and rises to 1 at nine tenths of its height. The season value comes from the date
 // and the playset's `map/seasons.txt`: the index of its `tree_*` block the date falls in, or how far
-// it is through the gap after one (`treeSeasonAt`). The preview takes the date from its Date slider
+// it is through the gap after one (`seasonAt`). The preview takes the date from its Date slider
 // (1 July by default) and the fade from its North slider (0 by default, which changes nothing).
+// A province in the Place box sets both Ground and North (`applyPlace`): the host reads the
+// colour maps at its position, and Ground mixes them for the date (`colourMapAt`).
 // The random height and turn of the mesh itself are left out; its snow is below.
 //
 // Snow, as the game puts it on `PdxMeshSnow` parts (`ApplySnowMesh` in pdxmesh.shader) and map
@@ -49,20 +51,21 @@
 
 import {
   boneWorldMatrices,
+  colourMapAt,
   dayName,
   jointsOfBones,
   readAnimation,
   readMesh,
+  seasonAt,
   skinningMatrices,
   skinPart,
   TREE_SEASONS,
-  treeSeasonAt,
   type MeshPart,
   type MeshShape,
   type PdxAnimation,
   type PdxMesh,
-  type TreeSeasonSpan,
-  type TreeSeasonValue,
+  type SeasonSpan,
+  type SeasonValue,
 } from '@etch/core/asset';
 import type {
   EntityNode,
@@ -116,6 +119,8 @@ const snowLabel = element('snow');
 const snowInput = element('snow-amount') as HTMLInputElement;
 const tintLabel = element('tint');
 const tintInput = element('tint-turn') as HTMLInputElement;
+const placeLabel = element('place');
+const placeInput = element('place-province') as HTMLInputElement;
 const groundLabel = element('ground');
 const groundInput = element('ground-colour') as HTMLInputElement;
 const seasonLabel = element('season');
@@ -335,14 +340,37 @@ let ground = '#808080';
 let seasonMap: { texture: WebGLTexture; source: string } | undefined;
 /** Why a map tree's season map is not drawn. */
 let seasonProblem: string | undefined;
-/** The playset's tree seasons (`map/seasons.txt`) by column, and where they came from. */
-let treeSeasons: { spans: (TreeSeasonSpan | undefined)[]; source: string } | undefined;
+/**
+ * The playset's seasons (`map/seasons.txt`): the tree seasons by column, the map seasons, and
+ * where they came from.
+ */
+let treeSeasons:
+  | { spans: (SeasonSpan | undefined)[]; mapSpans: (SeasonSpan | undefined)[]; source: string }
+  | undefined;
 /** Why the tree seasons are not used, or what of them could not be read. */
 let treeSeasonsProblem: string | undefined;
 /** The Date slider: the day of the year, 0 for 1 January. */
 let seasonDay = 181;
 /** The North slider: how much of the season colour a tree takes, 0 (the map's south) to 1. */
 let north = 0;
+/**
+ * The Place box's province, as the host found it: its position, the colour of each map season's
+ * colour map there, and its North value. While it is set it gives Ground and North.
+ */
+let place:
+  | {
+      province: number;
+      x: number;
+      y: number;
+      colours: readonly (readonly number[])[];
+      north: number;
+      source: string;
+    }
+  | undefined;
+/** Why the Place box's province gives no place. */
+let placeProblem: string | undefined;
+/** Whether a `controls` message waits for the Place box's answer before it answers. */
+let placeControls = false;
 /** What plays: an animation's file name (mesh) or a state (entity); `undefined` for the bind pose. */
 let playingKey: string | undefined;
 let playing = false;
@@ -579,6 +607,7 @@ function showErrorBox(): void {
     tintProblem ?? [],
     seasonProblem ?? [],
     treeSeasonsProblem ?? [],
+    placeProblem ?? [],
   ].flat();
   errorBox.hidden = lines.length === 0;
   errorBox.textContent = lines.join('\n');
@@ -900,6 +929,12 @@ function summary(): MeshSummary {
         north,
       },
     };
+    if (place !== undefined) {
+      base = {
+        ...base,
+        place: { province: place.province, source: place.source, ground, north },
+      };
+    }
   }
   if (entity === undefined) return base;
   return {
@@ -955,6 +990,11 @@ function showFacts(): void {
   }
   if (tree !== undefined && treeSeasons !== undefined) {
     items.push(`seasons.txt (${treeSeasons.source})`);
+  }
+  if (tree !== undefined && place !== undefined) {
+    items.push(
+      `province ${String(place.province)} at ${String(place.x)}, ${String(place.y)}: colormap_*.dds (${place.source})`,
+    );
   }
   for (const [name, source] of Object.entries(s.textures)) items.push(`${name} (${source})`);
   facts.replaceChildren(
@@ -1015,6 +1055,7 @@ function show(
   flagLabel.hidden = !instances.some((i) => i.parts.some((d) => d.atlas));
   snowLabel.hidden = tree === undefined && !instances.some((i) => i.parts.some((d) => d.snow));
   tintLabel.hidden = tree === undefined || tint === undefined;
+  placeLabel.hidden = tree === undefined;
   groundLabel.hidden = tree === undefined;
   seasonLabel.hidden = tree === undefined || seasonMap === undefined;
   offerLevels();
@@ -1052,6 +1093,7 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
       if (message.seasons?.ok === true) {
         treeSeasons = {
           spans: message.seasons.spans.map((span) => span ?? undefined),
+          mapSpans: message.seasons.mapSpans.map((span) => span ?? undefined),
           source: message.seasons.source,
         };
         if (message.seasons.problems.length > 0) {
@@ -1061,6 +1103,7 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
         treeSeasonsProblem = `Tree seasons: ${message.seasons.message}`;
       }
       showSeasonDate();
+      applyPlace();
       const keep = playingKey;
       playing = false;
       playingKey = undefined;
@@ -1107,7 +1150,10 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
         ground: groundColour,
         day,
         north: northward,
+        place: province,
       } = message.controls;
+      // An empty Place box first, so that Ground and North below are the user's again.
+      if (province === null) askPlace('');
       if (mapsOn !== undefined) {
         maps = mapsOn;
         mapsButton.setAttribute('aria-pressed', String(maps));
@@ -1139,8 +1185,30 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
         north = northward;
         seasonNorthInput.value = String(northward);
       }
+      applyPlace();
+      if (typeof province === 'number' && askPlace(String(province))) {
+        // The answer comes with the host's reply.
+        placeControls = true;
+        return;
+      }
       render(performance.now());
       vscode.postMessage({ type: 'shown', summary: { ...summary(), drawn: drawnColour(gl) } });
+    } else if (message.type === 'place') {
+      // Only the province still asked for: a reply to an earlier one is dropped.
+      if (String(message.province) !== placeInput.value) return;
+      const found = message.place;
+      place = found.ok
+        ? {
+            province: found.province,
+            x: found.x,
+            y: found.y,
+            colours: found.colours,
+            north: found.north,
+            source: found.source,
+          }
+        : undefined;
+      placeProblem = found.ok ? undefined : `Place ${String(message.province)}: ${found.message}`;
+      placeShown();
     } else if (message.type === 'flag') {
       // Only the tag still asked for: a reply to an earlier one is dropped.
       if (message.tag !== flagInput.value.trim().toUpperCase()) return;
@@ -1252,6 +1320,67 @@ tintInput.addEventListener('input', () => {
 tintInput.addEventListener('change', () => {
   vscode.postMessage({ type: 'shown', summary: summary() });
 });
+/** A colour from 0 to 255 per channel as `#rrggbb`. */
+function hexOf(rgb: readonly number[]): string {
+  return `#${rgb.map((v) => Math.round(v).toString(16).padStart(2, '0')).join('')}`;
+}
+
+/**
+ * With a place set, Ground and North follow it: Ground the colour of the map seasons' colour
+ * maps there, mixed for the Date slider's day, North its value. Without one, both are the
+ * user's to set.
+ */
+function applyPlace(): void {
+  groundInput.disabled = place !== undefined;
+  seasonNorthInput.disabled = place !== undefined;
+  if (place === undefined) return;
+  const season = treeSeasons === undefined ? undefined : seasonAt(treeSeasons.mapSpans, seasonDay);
+  const colour = colourMapAt(place.colours, season);
+  if (colour !== undefined) {
+    ground = hexOf(colour);
+    groundInput.value = ground;
+  }
+  north = place.north;
+  seasonNorthInput.value = String(north);
+}
+
+/**
+ * Takes the Place box's text: asks the host for a province's place and answers `true`, or
+ * clears the place (an empty box) or names what is wrong with the text and answers `false`.
+ */
+function askPlace(text: string): boolean {
+  placeInput.value = text;
+  if (/^[1-9][0-9]*$/.test(text)) {
+    vscode.postMessage({ type: 'place', province: Number(text) });
+    return true;
+  }
+  place = undefined;
+  placeProblem = text === '' ? undefined : `Place ${text}: a province ID is a whole number from 1`;
+  applyPlace();
+  showErrorBox();
+  showFacts();
+  return false;
+}
+
+/** After the Place box changed: draws, and answers a waiting `controls` message or the host. */
+function placeShown(): void {
+  applyPlace();
+  showErrorBox();
+  showFacts();
+  if (gl !== null && placeControls) {
+    placeControls = false;
+    render(performance.now());
+    vscode.postMessage({ type: 'shown', summary: { ...summary(), drawn: drawnColour(gl) } });
+    return;
+  }
+  redraw();
+  vscode.postMessage({ type: 'shown', summary: summary() });
+}
+
+placeInput.addEventListener('change', () => {
+  if (!askPlace(placeInput.value.trim())) placeShown();
+});
+
 groundInput.addEventListener('input', () => {
   ground = groundInput.value;
   redraw();
@@ -1260,8 +1389,8 @@ groundInput.addEventListener('change', () => {
   vscode.postMessage({ type: 'shown', summary: summary() });
 });
 /** The season value the game takes for the Date slider's day, from the tree seasons. */
-function seasonValue(): TreeSeasonValue | undefined {
-  return treeSeasons === undefined ? undefined : treeSeasonAt(treeSeasons.spans, seasonDay);
+function seasonValue(): SeasonValue | undefined {
+  return treeSeasons === undefined ? undefined : seasonAt(treeSeasons.spans, seasonDay);
 }
 
 /** Shows the Date slider's day and the tree season it falls in, or between which two. */
@@ -1283,6 +1412,7 @@ for (const input of [seasonDayInput, seasonNorthInput]) {
     seasonDay = Number(seasonDayInput.value);
     showSeasonDate();
     north = Number(seasonNorthInput.value);
+    applyPlace();
     redraw();
   });
   input.addEventListener('change', () => {
