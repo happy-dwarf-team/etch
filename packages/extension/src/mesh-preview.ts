@@ -462,6 +462,9 @@ export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): str
   <label id="tint" title="A map tree's tint: the game shifts each tree's place in map/terrain/Tree_tint.bmp by the tree's random turn on the map, here from 0 to 1 of a full turn" hidden>
     Turn <input type="range" id="tint-turn" min="0" max="1" step="0.05" value="0" aria-label="Tree turn for the tint">
   </label>
+  <label id="ground" title="A map tree's ground colour: the game lays the map's colour map at the tree's place over it at one quarter; grey (#808080) changes nothing" hidden>
+    Ground <input type="color" id="ground-colour" value="#808080" aria-label="Map colour under the tree">
+  </label>
   <button id="maps" aria-pressed="true" title="Draw the normal and specular maps">Maps</button>
   <button id="wireframe" aria-pressed="false" title="Show the triangle edges">Wire</button>
   <button id="reset" title="Frame the whole mesh">Reset view</button>

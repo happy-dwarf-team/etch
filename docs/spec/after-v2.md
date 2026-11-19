@@ -704,8 +704,11 @@ refresh is a step of the 3.0.0 release.
   angle and shifts by that angle over a full turn, the preview by a Turn
   slider. The BMP reader (`readBmp` in `@etch/core/asset`) takes uncompressed
   24- and 32-bit files only and is not a texture format of the renderer. The
-  colour and season maps and each tree's random height and turn are not
-  followed. `PdxMeshAlphaBlend` parts (16 African
+  map's colour map (`map/terrain/colormap_*`, between two seasons) at the
+  tree's place is laid over that at 0.25; a Ground colour box stands in for it,
+  `#808080` by default, which leaves the colour as it is. The season colours
+  (only in the map's northern half) and each tree's random height and turn are
+  not followed. `PdxMeshAlphaBlend` parts (16 African
   buildings and, without depth writes, `Mapitems/selection.mesh`) are blended by
   their diffuse alpha after the opaque parts, as the game's blend state does,
   where the preview cut them at 0.5 before. Snow follows the game's
