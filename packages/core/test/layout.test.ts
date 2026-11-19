@@ -154,7 +154,7 @@ describe('layoutWindow: placement', () => {
     expect(rectOf(l, 'cd')).toEqual([700, 100, 20, 10]);
     expect(rectOf(l, 'inner')).toEqual([600, 60, 100, 100]);
     expect(rectOf(l, 'inner_icon')).toEqual([680, 60, 20, 10]);
-    expect(l.drawList).toMatchObject({ version: 2, width: 800, height: 600 });
+    expect(l.drawList).toMatchObject({ version: 3, width: 800, height: 600 });
     expect(l.diagnostics).toEqual([]);
   });
 
@@ -1009,6 +1009,91 @@ describe('layoutWindow: sample data', () => {
     expect(overlay).toMatchObject({ kind: 'sprite', x: 50, y: 50, width: 16, height: 16 });
     expect(rectOf(l, 'shield')).toEqual([50, 50, 16, 16]);
     expect(only(drawsOf(l, 'rebels'))).toMatchObject({ kind: 'sprite', width: 32 });
+  });
+
+  it('draws the texture, rebels and pie slices a live snapshot says the game drew', () => {
+    const { file, input } = setUp(`guiTypes = { windowType = { name = "w" size = { x = 200 y = 100 }
+      iconType = { name = "modifier" spriteType = "GFX_plain" }
+      iconType = { name = "lost" spriteType = "GFX_plain" position = { x = 0 y = 20 } }
+      iconType = { name = "other" spriteType = "GFX_plain" position = { x = 0 y = 40 } }
+      iconType = { name = "rebels" spriteType = "GFX_small_shield" position = { x = 50 y = 0 } }
+      iconType = { name = "unknown" spriteType = "GFX_small_shield" position = { x = 90 y = 0 } }
+      iconType = { name = "odd" spriteType = "GFX_small_shield" position = { x = 130 y = 0 } }
+      iconType = { name = "pie" spriteType = "GFX_pie_round" position = { x = 30 y = 60 } }
+    } }`);
+    const window = file.definitions[0] as Widget;
+    const files: Record<string, TextureSize> = {
+      'gfx/interface/unrest.dds': { width: 24, height: 24 },
+      'gfx/flags/anti_tax_rebels.tga': { width: 128, height: 128 },
+      'gfx/flags/reb.tga': { width: 64, height: 64 },
+    };
+    const drawn = new Map<string, Record<string, unknown>>([
+      // A modifier icon keeps its sprite and draws the texture the game's code gave it.
+      ['modifier', { sprite: 'GFX_plain', texture: 'gfx/interface/unrest.dds' }],
+      // A texture the playset lacks: the sprite's own.
+      ['lost', { sprite: 'GFX_plain', texture: 'gfx/interface/gone.dds' }],
+      // A texture given with a sprite the preview does not draw: not this sprite's.
+      ['other', { sprite: 'GFX_missing', texture: 'gfx/interface/unrest.dds' }],
+      ['rebels', { sprite: 'GFX_small_shield', rebels: 'anti_tax_rebels' }],
+      // A rebel type without a flag file: the rebels' own.
+      ['unknown', { sprite: 'GFX_small_shield', rebels: 'nationalist_rebels' }],
+      ['odd', { sprite: 'GFX_small_shield', rebels: '../x' }],
+      [
+        'pie',
+        {
+          sprite: 'GFX_pie_round',
+          slices: [
+            { percent: 46, color: '#b0516fff' },
+            { percent: 54, color: '#60835080' },
+            { percent: 0, color: '#ffffffff' },
+            { percent: 5, color: 'red' },
+          ],
+        },
+      ],
+    ]);
+    const l = layoutWindow(window, {
+      ...input,
+      exists: (path) => path.toLowerCase() in files || input.exists(path),
+      assets: {
+        ...input.assets,
+        textureSize: (path) => files[path.toLowerCase()] ?? input.assets.textureSize(path),
+      },
+      content: {
+        text: () => undefined,
+        rows: () => undefined,
+        state: (w) => {
+          const own = drawn.get(w.name ?? '');
+          return own && { visible: true, enabled: true, checked: false, ...own };
+        },
+      },
+    });
+    const textures = l.drawList.textures;
+    const textureOf = (name: string, i = 0): string | undefined =>
+      textures[(drawsOf(l, name)[i] as { texture: number }).texture];
+    // Drawn whole over the size of the sprite's own texture (eu4.exe 1.37.5, Kaluga's winter).
+    expect(textureOf('modifier')).toBe('gfx/interface/unrest.dds');
+    expect(only(drawsOf(l, 'modifier'))).toMatchObject({ width: 20, height: 10, sw: 24, sh: 24 });
+    expect(rectOf(l, 'modifier')).toEqual([0, 0, 20, 10]);
+    expect(textureOf('lost')).toBe('gfx/interface/plain.dds');
+    expect(textureOf('other')).toBe('gfx/interface/plain.dds');
+    expect(textureOf('rebels')).toBe('gfx/flags/anti_tax_rebels.tga');
+    expect(drawsOf(l, 'rebels')[0]).toMatchObject({ kind: 'masked', x: 54, y: 4, width: 24 });
+    expect(textureOf('unknown')).toBe('gfx/flags/REB.tga');
+    expect(drawsOf(l, 'odd')).toHaveLength(1);
+    // eu4.exe 1.37.5: the circle around the widget's bottom-left corner, the size its radii.
+    expect(only(drawsOf(l, 'pie'))).toEqual({
+      kind: 'pie',
+      source: expect.any(Number) as number,
+      x: 13,
+      y: 60,
+      width: 34,
+      height: 34,
+      slices: [
+        { percent: 46, colour: 0xffb0516f },
+        { percent: 54, colour: 0x80608350 },
+      ],
+    });
+    expect(rectOf(l, 'pie')).toEqual([30, 60, 17, 17]);
   });
 
   it("places a view's rows at named positionTypes, and none along a bar the window lacks", () => {

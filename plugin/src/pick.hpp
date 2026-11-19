@@ -20,6 +20,12 @@
 
 namespace etch {
 
+// One slice a pie chart draws: its share in percent and its colour, 0xAARRGGBB.
+struct UiSlice {
+    int percent = 0;
+    std::uint32_t color = 0;
+};
+
 // A widget as tongs.ui visited it, copied (its strings live only for the visit).
 struct UiWidget {
     std::uint64_t id = 0;
@@ -39,6 +45,12 @@ struct UiWidget {
     std::string sprite;
     int frame = 0;
     std::string flag;
+    // What the game's code draws there instead of the sprite's own picture, from a Tongs that
+    // gives it: a texture file of its own (a modifier icon), the rebel type a shield shows and a
+    // pie chart's slices, in its order; empty when Tongs gives none.
+    std::string texture;
+    std::string rebels;
+    std::vector<UiSlice> slices;
 
     bool Visible() const { return (flags & 0x1u) != 0; }
     bool Enabled() const { return (flags & 0x2u) != 0; }

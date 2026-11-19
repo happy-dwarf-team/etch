@@ -56,6 +56,12 @@ export function generatedText(kind: GeneratedKind, length: TextLength): string {
   return GENERATED[kind][length];
 }
 
+/** One slice a pie chart drew in the game: its share in percent and its colour (`#rrggbbaa`). */
+export interface LiveSlice {
+  readonly percent: number;
+  readonly color: string;
+}
+
 /** What the game showed of a widget in a live snapshot. */
 export interface LiveState {
   readonly visible: boolean;
@@ -69,6 +75,13 @@ export interface LiveState {
   readonly sprite?: string;
   readonly frame?: number;
   readonly flag?: string;
+  /**
+   * What the game's code drew there instead of the sprite's own picture: the texture file it gave
+   * the sprite (a modifier icon), the rebel type a shield shows, and a pie chart's slices.
+   */
+  readonly texture?: string;
+  readonly rebels?: string;
+  readonly slices?: readonly LiveSlice[];
 }
 
 /**

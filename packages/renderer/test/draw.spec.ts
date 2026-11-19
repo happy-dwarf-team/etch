@@ -296,6 +296,37 @@ test('fills progress bars from the left, and vertical ones from the bottom', asy
   expect(row(painted, 2).slice(0, 4)).toEqual([RED, RED, BLUE, BLUE]);
 });
 
+test('draws a pie counter-clockwise from the right, a triangle per percent', async ({ page }) => {
+  await open(page, {});
+  const pie: Draw = {
+    kind: 'pie',
+    source: 0,
+    x: 0,
+    y: 0,
+    width: 40,
+    height: 40,
+    slices: [
+      { percent: 25, colour: 0xffff0000 },
+      { percent: 50, colour: 0xff00ff00 },
+      { percent: 25, colour: 0x800000ff },
+    ],
+  };
+  const painted = await paint(page, list(40, 40, [], [pie]));
+  // The first quarter from 3 o'clock to 12, the second half over the left, the last quarter
+  // from 6 o'clock back to 3; nothing outside the circle.
+  expect(pixel(painted, 30, 10)).toEqual(RED);
+  expect(pixel(painted, 10, 10)).toEqual(GREEN);
+  expect(pixel(painted, 10, 30)).toEqual(GREEN);
+  expect(pixel(painted, 30, 30)).toEqual([0, 0, 255, 128]);
+  expect(pixel(painted, 1, 1)).toEqual(CLEAR);
+  // A pie with no whole percent draws nothing.
+  const empty = await paint(
+    page,
+    list(4, 4, [], [{ ...pie, width: 4, height: 4, slices: [{ percent: 0, colour: 0xffff0000 }] }]),
+  );
+  expect(pixel(empty, 2, 2)).toEqual(CLEAR);
+});
+
 test('draws glyph runs tinted, with a border and linear magnification', async ({ page }) => {
   await open(page, {
     'font.dds': image(4, [

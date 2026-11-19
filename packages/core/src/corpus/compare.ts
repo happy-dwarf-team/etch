@@ -1023,6 +1023,8 @@ function remapTextures(draw: Draw, remap: readonly number[]): Draw {
         'texture' in f ? { texture: t(f.texture) } : f;
       return { ...draw, first: fill(draw.first), second: fill(draw.second) };
     }
+    case 'pie':
+      return draw;
   }
 }
 

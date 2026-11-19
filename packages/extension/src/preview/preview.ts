@@ -62,6 +62,7 @@ import {
   liveDifferences,
   liveMatch,
   liveSelectors,
+  liveTextures,
   liveView,
   sampleData,
   screenLayoutView,
@@ -798,6 +799,11 @@ export class Preview implements PreviewApi, vscode.Disposable {
         : await this.snapshots.get(sessionPlaysetKey(session), window.name);
     if (panel !== this.panel) return;
     const live = snapshot !== undefined && this.data.live ? snapshot : undefined;
+    // The texture files the game's code put on sprites, which no interface file names.
+    if (live !== undefined) {
+      await session.ui.lookUpTextures(liveTextures(live));
+      if (panel !== this.panel) return;
+    }
 
     // Several events can answer one change (an edit also moves the selection).
     const key = [
@@ -2184,12 +2190,14 @@ export class Preview implements PreviewApi, vscode.Disposable {
       const sources = new Set<number>();
       for (const draw of render.drawList.draws) {
         const uses =
-          draw.kind === 'progress'
-            ? ('texture' in draw.first && draw.first.texture === texture) ||
-              ('texture' in draw.second && draw.second.texture === texture)
-            : draw.texture === texture ||
-              (draw.kind === 'masked' && draw.mask === texture) ||
-              (draw.kind === 'sprite' && draw.text?.texture === texture);
+          draw.kind === 'pie'
+            ? false
+            : draw.kind === 'progress'
+              ? ('texture' in draw.first && draw.first.texture === texture) ||
+                ('texture' in draw.second && draw.second.texture === texture)
+              : draw.texture === texture ||
+                (draw.kind === 'masked' && draw.mask === texture) ||
+                (draw.kind === 'sprite' && draw.text?.texture === texture);
         if (uses) sources.add(draw.source);
       }
       for (const source of sources) {

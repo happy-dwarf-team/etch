@@ -187,6 +187,11 @@ void TestSnapshot() {
     tree[5].sprite = "GFX_shield_small";
     tree[5].frame = 1;
     tree[5].flag = "RUS";
+    // And what it drew instead of a sprite's picture: a modifier icon's texture, a pie's slices.
+    tree[3].texture = "gfx/interface/ideas_EU4/local_unrest.dds";
+    tree[3].slices = {{46, 0xFFB0516Fu}, {54, 0x80608350u}};
+    tree[5].rebels = "anti_tax_rebels";
+    tree[4].texture = "ignored.dds";  // no sprite: none of them
     for (UiWidget& w : tree) w.path = w.name;
     const etch::Snapshot snapshot = etch::SnapshotOf(tree, 1, 1920, 1080, etch::GameDate{1444, 11, 11}, 6.5);
     assert(snapshot.widgets == 5 && snapshot.stale == 1);
@@ -213,6 +218,14 @@ void TestSnapshot() {
     assert(widgets[4].Find("sprite")->AsString() == "GFX_shield_small" && widgets[4].Find("flag")->AsString() == "RUS");
     // A widget Tongs gave no sprite has none of the three.
     assert(widgets[0].Find("sprite") == nullptr && widgets[0].Find("frame") == nullptr);
+    assert(widgets[2].Find("texture")->AsString() == "gfx/interface/ideas_EU4/local_unrest.dds" &&
+           widgets[2].Find("rebels") == nullptr);
+    const auto& slices = *widgets[2].Find("slices")->AsArray();
+    assert(slices.size() == 2 && slices[0].Find("percent")->AsUint() == 46u &&
+           slices[0].Find("color")->AsString() == "#b0516fff" && slices[1].Find("percent")->AsUint() == 54u &&
+           slices[1].Find("color")->AsString() == "#60835080");
+    assert(widgets[4].Find("rebels")->AsString() == "anti_tax_rebels" && widgets[4].Find("slices") == nullptr);
+    assert(widgets[3].Find("texture") == nullptr && widgets[3].Find("sprite") == nullptr);
 
     bool stale = true;
     assert(etch::FindRoot(tree, "ProvinceView", stale) == 1u && !stale);

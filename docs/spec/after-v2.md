@@ -54,11 +54,11 @@ refresh is a step of the 3.0.0 release.
   construction and the locked slot; a live snapshot had only the fields of
   `tongs.ui` version 1, so the preview drawn from it differed there (v2
   section 7, "Not in v2"). Seen in both trial runs against the game, on
-  `cffbf88` and `c2cf182`. A snapshot now carries the sprite, frame and flag
-  ("Code-set sprites, frames and flags from a snapshot" below); left: the pie
-  charts, the flags the game makes, textures the code puts on a sprite,
-  building slots the snapshot calls hidden and the sprites of widgets from
-  other definitions.
+  `cffbf88` and `c2cf182`. A snapshot now carries the sprite, frame and flag,
+  and the texture files, rebels and pie charts too ("Code-set sprites, frames
+  and flags from a snapshot" below); left: the flags the game makes, building
+  slots the snapshot calls hidden and the sprites of widgets from other
+  definitions.
 
 ## Done since 2.0.0
 
@@ -541,6 +541,9 @@ refresh is a step of the 3.0.0 release.
   | the sprite: the terrain picture, a building's icon, the locked building slot, a province modifier's icon | the widget's render node's object type (`CGraphicalObject::_pObjectType`), whose `_Name` is the `.gfx` name | drawn as named when it is neither the `.gui`'s sprite nor one of its size variants, over a profile's |
   | the frame: the religion's icon, the province view's selected tab | the node's `_nSuperState`, which `SetFrame` writes, from 1 | over the view's frame and the ticked check box's second |
   | a shield's flag: the trade node's owner, a core | `CShieldObject::_TagIndex`, the country whose own tag the country database holds | `gfx/flags/<tag>.tga` in the mask, under the overlay |
+  | a texture file on the sprite: a province modifier's icon, whose sprite stays `GFX_idea_unknown` | the texture file the game's code gave the render node (`texture`) | that file, whole, over the size of the sprite's own texture |
+  | a shield's rebels: the likely rebels (`unrest`) | the rebel type the shield's custom value names (`rebels`) | `gfx/flags/<name>.tga` in the mask (`REB.tga` when the playset has none), under the overlay |
+  | a pie chart's slices: the trade node's colour, the trade node window's power charts | the chart's slices, each a percent and a colour (`slices`) | a new `pie` draw (draw list version 3): a triangle per percent with `color.shader`, counter-clockwise from 3 o'clock, around the widget's bottom-left corner with its size as radii |
 
   Checked in the game on 19.11.2026 (Kaluga, as above, Tongs and Etch from
   this change): the snapshot gave `GFX_combat_terrain_woods`,
@@ -559,19 +562,30 @@ refresh is a step of the 3.0.0 release.
   playset does not define, a tag without a flag file and a snapshot from an
   older Tongs draw as before.
 
+  The texture files, the rebels and the pie charts came later, with `texture`,
+  `rebels` and `slices` from Tongs (tongs#239). A texture file no interface
+  file names (the game's code picks a modifier's icon from
+  `gfx/interface/ideas_EU4/`) is looked up when a preview is drawn from the
+  snapshot. Checked in the game on 19.11.2026 (Kaluga, as above, Tongs and
+  Etch from those changes, the snapshot drawn headless by the compare
+  package): the snapshot gave Kaluga's first two modifiers
+  `gfx/interface/ideas_EU4/local_unrest.dds` and `winter_severe.dds`, the
+  likely rebels' shield `anti_tax_rebels`, `trade_pie` one slice of 100
+  percent `#a53a3aff`, and the trade node window's `income_sharing_power`
+  five slices (1, 46, 1, 2 and 50 percent). The preview drawn from it showed
+  the unrest and winter icons, the anti-tax rebels' red flag and the red
+  disc, and the five slices where the game drew them; Etch before drew `?`,
+  an empty shield and grey discs. The game drew the 32-pixel
+  `winter_severe.dds` in the same 35-pixel slot as the 64-pixel
+  `local_unrest.dds`, so a texture file takes the size of the sprite's own
+  texture. The pie chart's direction and centre are as Tongs'
+  `docs/design.md` ("Sprites and frames") records them.
+
   Not carried, and why:
-  - **Pie charts** (the trade node's colour, `trade_pie`): the slices, each a
-    size, a colour and an id, are in the chart (`C2dPieChart`), which Tongs
-    could read, but the preview draws no pie chart yet; both are a later step.
   - **Flags the game makes**: a colonial nation's (`RenderCustomFlag`, with
     its overlord's colours) and a custom nation's name a tag that `gfx/flags`
     has no file of, so their shields keep the overlay alone; nor the client
-    state symbols of `textureFile3`. The likely rebels' shield (`unrest`) has
-    no country either: the game draws the rebels' own picture into it.
-  - **Textures the game's code puts on a sprite**: two of Kaluga's three
-    modifier icons kept `GFX_idea_unknown` as their object type while the game
-    drew another picture, so the texture is set on the node, not by a sprite
-    name, and the preview keeps the `?`.
+    state symbols of `textureFile3`.
   - **Building slots the snapshot calls hidden**: Tongs reports Kaluga's five
     buildings (`building_progress_entry[1..5]`) hidden, with the right
     sprites, while the game draws them, so the preview hides them; how the

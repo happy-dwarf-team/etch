@@ -16,8 +16,11 @@ export interface SamplerState {
   readonly wrap: boolean;
 }
 
-/** Every shader the renderer draws with: the sprite and masked shaders, `progress` and `text`. */
-export type ShaderName = SpriteShader | MaskedShader | 'progress' | 'text';
+/**
+ * Every shader the renderer draws with: the sprite and masked shaders, `progress`, `text` and
+ * `color` (a pie chart's).
+ */
+export type ShaderName = SpriteShader | MaskedShader | 'progress' | 'text' | 'color';
 
 const POINT_CLAMP: SamplerState = { min: 'point', mag: 'point', wrap: false };
 const POINT_WRAP: SamplerState = { min: 'point', mag: 'point', wrap: true };
@@ -42,6 +45,8 @@ export const SHADER_SAMPLERS: Readonly<Record<ShaderName, readonly SamplerState[
   maskedflag_greydown: [POINT_WRAP, POINT_WRAP],
   progress: [POINT_WRAP, POINT_WRAP],
   text: [{ min: 'point', mag: 'linear', wrap: true }],
+  // The vertex colour alone.
+  color: [],
 };
 
 /**

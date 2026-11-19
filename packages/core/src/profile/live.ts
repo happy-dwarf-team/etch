@@ -9,7 +9,7 @@
 import type { LayoutContent, LayoutView } from '../layout/window.ts';
 import type { Screen, Widget } from '../model/gui.ts';
 import type { WindowProfile } from './format.ts';
-import type { LiveAdopted, LiveState, LiveTexts } from './sample.ts';
+import type { LiveAdopted, LiveSlice, LiveState, LiveTexts } from './sample.ts';
 import { widgetsAt, windowPaths } from './paths.ts';
 import { evaluateView, fitsScreen, screenLayoutView, type ViewChoice } from './view.ts';
 
@@ -34,6 +34,15 @@ export interface LiveWidget {
   readonly sprite?: string;
   readonly frame?: number;
   readonly flag?: string;
+  /**
+   * What the game's code drew there instead of the sprite's own picture, from a Tongs that reads
+   * it: the texture file it gave the sprite (a modifier icon, whose sprite stays
+   * `GFX_idea_unknown`), the rebel type a shield shows instead of a country (`anti_tax_rebels`,
+   * whose flag fills its mask), and a pie chart's slices in its order.
+   */
+  readonly texture?: string;
+  readonly rebels?: string;
+  readonly slices?: readonly LiveSlice[];
   /**
    * The path as the game names it, when {@link path} names a list's row by position instead
    * (`…/listbox/entry[3]` for `…/listbox/row[2]`): Compare with Live Game pairs the game's
@@ -80,6 +89,9 @@ export interface PluginWidget {
   readonly sprite?: string;
   readonly frame?: number;
   readonly flag?: string;
+  readonly texture?: string;
+  readonly rebels?: string;
+  readonly slices?: readonly LiveSlice[];
 }
 
 /**
@@ -127,8 +139,32 @@ export function liveWidgetsOf(widgets: readonly PluginWidget[]): LiveWidget[] {
       ...(w.sprite === undefined ? {} : { sprite: w.sprite }),
       ...(w.frame === undefined ? {} : { frame: w.frame }),
       ...(w.flag === undefined ? {} : { flag: w.flag }),
+      ...drawnInstead(w),
     };
   });
+}
+
+/** A widget's `texture`, `rebels` and `slices`, the ones it has. */
+function drawnInstead(w: PluginWidget | LiveWidget): {
+  texture?: string;
+  rebels?: string;
+  slices?: readonly LiveSlice[];
+} {
+  return {
+    ...(w.texture === undefined ? {} : { texture: w.texture }),
+    ...(w.rebels === undefined ? {} : { rebels: w.rebels }),
+    ...(w.slices === undefined || w.slices.length === 0 ? {} : { slices: w.slices }),
+  };
+}
+
+/**
+ * The texture files a snapshot says the game's code gave sprites, which no interface file names:
+ * the playset looks them up before a preview is drawn from it.
+ */
+export function liveTextures(snapshot: LiveSnapshot): string[] {
+  return [
+    ...new Set(snapshot.widgets.flatMap((w) => (w.texture === undefined ? [] : [w.texture]))),
+  ];
 }
 
 /** Reads a stored snapshot; `undefined` when it is not one this Etch reads. */
@@ -224,6 +260,7 @@ export function liveMatch(
       ...(w.sprite === undefined ? {} : { sprite: w.sprite }),
       ...(w.frame === undefined ? {} : { frame: w.frame }),
       ...(w.flag === undefined ? {} : { flag: w.flag }),
+      ...drawnInstead(w),
     });
     // A row's widgets come from its template: the list box must still be there.
     const row = /^(.*?)\/row\[(\d+)\](?:\/|$)/.exec(path);

@@ -214,6 +214,13 @@ export interface SnapshotWidget {
   readonly sprite?: string;
   readonly frame?: number;
   readonly flag?: string;
+  /**
+   * What the game's code drew there instead of the sprite's own picture: a texture file of its own
+   * (a modifier icon), the rebel type a shield shows and a pie chart's slices (`#rrggbbaa`).
+   */
+  readonly texture?: string;
+  readonly rebels?: string;
+  readonly slices?: readonly { readonly percent: number; readonly color: string }[];
 }
 
 /** A live snapshot of a top-level window as the plugin sends it (`snapshot`). */
@@ -350,20 +357,39 @@ export function readSnapshot(line: Record<string, unknown>): SnapshotAnswer {
   };
 }
 
-/** A snapshot widget's `sprite`, `frame` and `flag`, the ones it has. */
+/** A snapshot widget's `sprite`, `frame`, `flag`, `texture`, `rebels` and `slices`, the ones it has. */
 function drawnOf(w: Record<string, unknown>): {
   sprite?: string;
   frame?: number;
   flag?: string;
+  texture?: string;
+  rebels?: string;
+  slices?: { percent: number; color: string }[];
 } {
-  const sprite = typeof w['sprite'] === 'string' && w['sprite'] !== '' ? w['sprite'] : undefined;
+  const text = (key: string): string | undefined => {
+    const value = w[key];
+    return typeof value === 'string' && value !== '' ? value : undefined;
+  };
+  const sprite = text('sprite');
   if (sprite === undefined) return {};
   const frame = Number(w['frame']);
-  const flag = typeof w['flag'] === 'string' && w['flag'] !== '' ? w['flag'] : undefined;
+  const flag = text('flag');
+  const texture = text('texture');
+  const rebels = text('rebels');
+  const slices = (Array.isArray(w['slices']) ? (w['slices'] as unknown[]) : []).flatMap((s) => {
+    if (typeof s !== 'object' || s === null) return [];
+    const slice = s as Record<string, unknown>;
+    const percent = Number(slice['percent']);
+    const color = slice['color'];
+    return Number.isInteger(percent) && typeof color === 'string' ? [{ percent, color }] : [];
+  });
   return {
     sprite,
     ...(Number.isInteger(frame) && frame > 0 ? { frame } : {}),
     ...(flag === undefined ? {} : { flag }),
+    ...(texture === undefined ? {} : { texture }),
+    ...(rebels === undefined ? {} : { rebels }),
+    ...(slices.length === 0 ? {} : { slices }),
   };
 }
 

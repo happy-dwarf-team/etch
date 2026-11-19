@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cstdio>
 
 namespace etch {
 namespace {
@@ -24,6 +25,21 @@ bool EqualsIgnoringCase(std::string_view a, std::string_view b) { return Lower(a
 std::string Rect(const UiWidget& w) {
     return "[" + std::to_string(w.x) + "," + std::to_string(w.y) + "," + std::to_string(w.width) + "," +
            std::to_string(w.height) + "]";
+}
+
+// A pie chart's slices as the snapshot gives them: [{"percent":46,"color":"#rrggbbaa"},...].
+std::string Slices(const std::vector<UiSlice>& slices) {
+    std::string out = "[";
+    for (const UiSlice& s : slices) {
+        char color[10];
+        std::snprintf(color, sizeof color, "#%02x%02x%02x%02x", static_cast<unsigned>((s.color >> 16) & 0xFF),
+                      static_cast<unsigned>((s.color >> 8) & 0xFF), static_cast<unsigned>(s.color & 0xFF),
+                      static_cast<unsigned>(s.color >> 24));
+        json::Writer w;
+        out += (out.size() > 1 ? "," : "") +
+               w.Uint("percent", static_cast<std::uint64_t>(std::max(s.percent, 0))).Str("color", color).Finish();
+    }
+    return out + "]";
 }
 
 std::string Screen(int width, int height) {
@@ -334,6 +350,9 @@ Snapshot SnapshotOf(const std::vector<UiWidget>& widgets, std::size_t root, int 
             item.Str("sprite", w.sprite);
             if (w.frame > 0) item.Uint("frame", static_cast<std::uint64_t>(w.frame));
             if (!w.flag.empty()) item.Str("flag", w.flag);
+            if (!w.texture.empty()) item.Str("texture", w.texture);
+            if (!w.rebels.empty()) item.Str("rebels", w.rebels);
+            if (!w.slices.empty()) item.Raw("slices", Slices(w.slices));
         }
         item.Raw("rect", Rect(w));
         items += (items.size() > 1 ? "," : "") + item.Finish();

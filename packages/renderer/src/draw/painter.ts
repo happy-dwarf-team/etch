@@ -6,6 +6,7 @@ import {
   type DrawList,
   type MaskedDraw,
   type MaskedShader,
+  type PieDraw,
   type ProgressFill,
   type SpriteDraw,
   type SpriteShader,
@@ -201,6 +202,9 @@ export class Painter {
         case 'text':
           offset = putGlyphs(vertices, offset, draw.glyphs, 0, 0, 1, 1);
           break;
+        case 'pie':
+          offset = putPie(vertices, offset, draw);
+          break;
       }
     });
 
@@ -346,7 +350,11 @@ export class Painter {
   private setDraw(draw: Draw, textures: readonly (GpuTexture | undefined)[]): void {
     const gl = this.gl;
     const shader: ShaderName =
-      draw.kind === 'progress' || draw.kind === 'text' ? draw.kind : passOf(draw).shader;
+      draw.kind === 'progress' || draw.kind === 'text'
+        ? draw.kind
+        : draw.kind === 'pie'
+          ? 'color'
+          : passOf(draw).shader;
     const samplers = SHADER_SAMPLERS[shader];
     const units: (GpuTexture | undefined)[] = [];
     let op: number = OP.plain;
@@ -378,6 +386,8 @@ export class Painter {
       case 'text':
         units.push(textures[draw.texture]);
         gl.uniform4f(this.at('border'), ...unpackColour(draw.border ?? 0));
+        break;
+      case 'pie':
         break;
     }
 
@@ -535,7 +545,62 @@ function isColour(fill: ProgressFill): number {
 }
 
 function quadCount(draw: Draw): number {
+  if (draw.kind === 'pie') return pieTriangles(draw);
   return draw.kind === 'text' ? Math.floor(draw.glyphs.length / GLYPH_STRIDE) : 1;
+}
+
+/** A hundredth of the circle per triangle, as the game's pie render steps. */
+const PIE_STEPS = 100;
+
+/** The triangles a pie draws: one per whole percent of its slices, a whole circle at most. */
+function pieTriangles(draw: PieDraw): number {
+  let total = 0;
+  for (const slice of draw.slices) {
+    if (Number.isInteger(slice.percent) && slice.percent > 0) total += slice.percent;
+  }
+  return Math.min(total, PIE_STEPS);
+}
+
+/**
+ * Writes a pie's triangles at `offset`, each as a quad whose fourth corner repeats its third, so
+ * that the second triangle of the quad is empty; returns the offset after them. The circle is the
+ * rect's ellipse, drawn from the right and counter-clockwise on screen (y runs down).
+ */
+function putPie(out: Float32Array, offset: number, draw: PieDraw): number {
+  const rx = draw.width / 2;
+  const ry = draw.height / 2;
+  const cx = draw.x + rx;
+  const cy = draw.y + ry;
+  const point = (step: number): readonly [number, number] => {
+    const angle = (step * 2 * Math.PI) / PIE_STEPS;
+    return [cx + rx * Math.cos(angle), cy - ry * Math.sin(angle)];
+  };
+  let at = offset;
+  let step = 0;
+  for (const slice of draw.slices) {
+    if (!Number.isInteger(slice.percent) || slice.percent <= 0) continue;
+    const colour = unpackColour(slice.colour);
+    for (let i = 0; i < slice.percent && step < PIE_STEPS; i++, step++) {
+      const [ax, ay] = point(step);
+      const [bx, by] = point(step + 1);
+      for (const [x, y] of [
+        [cx, cy],
+        [ax, ay],
+        [bx, by],
+        [bx, by],
+      ] as const) {
+        out[at++] = x;
+        out[at++] = y;
+        out.fill(0, at, at + 4);
+        at += 4;
+        out[at++] = colour[0];
+        out[at++] = colour[1];
+        out[at++] = colour[2];
+        out[at++] = colour[3];
+      }
+    }
+  }
+  return at;
 }
 
 /** Whether every texture the draw samples is loaded. */
@@ -549,6 +614,8 @@ function usable(draw: Draw, textures: readonly (GpuTexture | undefined)[]): bool
       return has(draw.texture) && has(draw.mask);
     case 'progress':
       return [draw.first, draw.second].every((fill) => !('texture' in fill) || has(fill.texture));
+    case 'pie':
+      return true;
   }
 }
 

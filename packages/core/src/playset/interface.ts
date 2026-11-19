@@ -115,6 +115,15 @@ export class PlaysetInterface {
     return [];
   }
 
+  /**
+   * Looks up texture files no loaded file names, such as those a live snapshot says the game's
+   * code put on a sprite (a modifier icon's `gfx/interface/ideas_EU4/<modifier>.dds`), each as
+   * {@link textureCandidates} tries it, so that {@link exists} knows them.
+   */
+  async lookUpTextures(paths: Iterable<string>): Promise<void> {
+    await this.lookUp([...paths].flatMap((path) => textureCandidates(path)));
+  }
+
   private async lookUp(paths: Iterable<string>): Promise<void> {
     const missing = new Set<string>();
     for (const path of paths) {

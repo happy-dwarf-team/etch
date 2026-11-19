@@ -19,7 +19,7 @@
 import type { PlacedGlyph } from './text/layout.ts';
 
 /** Changes whenever a draw list of the old shape would be drawn wrongly. */
-export const DRAW_LIST_VERSION = 2;
+export const DRAW_LIST_VERSION = 3;
 
 export interface DrawList {
   readonly version: typeof DRAW_LIST_VERSION;
@@ -35,7 +35,7 @@ export interface DrawList {
   readonly draws: readonly Draw[];
 }
 
-export type Draw = SpriteDraw | MaskedDraw | ProgressDraw | TextDraw;
+export type Draw = SpriteDraw | MaskedDraw | ProgressDraw | TextDraw | PieDraw;
 
 /** A screen rect, in pixels. */
 export interface DrawRect {
@@ -148,6 +148,24 @@ export interface ProgressDraw extends DrawBase, DrawRect {
   readonly value: number;
   /** Fill from the bottom up instead of from the left. */
   readonly vertical?: boolean;
+}
+
+/** One slice of a {@link PieDraw}: its share of the circle in whole percent, and its colour. */
+export interface PieSlice {
+  readonly percent: number;
+  readonly colour: number;
+}
+
+/**
+ * A `PieChartType` the game's code filled, drawn as its render draws it (eu4.exe 1.37.5, with
+ * `color.shader`: the vertex colour, no texture): one triangle from the centre per percent, a
+ * hundredth of the circle each, the slices in order from the right (3 o'clock) and
+ * counter-clockwise on screen. The rect is the circle's bounding box: its centre is the circle's
+ * centre and its half sizes the radii.
+ */
+export interface PieDraw extends DrawBase, DrawRect {
+  readonly kind: 'pie';
+  readonly slices: readonly PieSlice[];
 }
 
 /** Numbers per glyph in {@link TextDraw.glyphs}. */
