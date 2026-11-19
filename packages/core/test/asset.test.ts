@@ -90,6 +90,21 @@ describe('readMesh', () => {
     );
     expect(() => readMesh(binary(broken))).toThrow(/out of range/);
   });
+
+  it('refuses a bone index outside the skeleton or given twice', () => {
+    // The skeleton's second bone, `tip`, has ix 1 (the skin's ix has 16 values).
+    const tipIndex = (index: number): typeof MESH =>
+      MESH.map((item) =>
+        'name' in item && item.name === 'ix' && item.values.length === 1 && item.values[0] === 1
+          ? ints('ix', index)
+          : item,
+      );
+    // A mutated file once gave ix 1258291209: a sparse skeleton that long took 27 s to walk.
+    expect(() => readMesh(binary(tipIndex(1258291209)))).toThrow(/not one of 0 to 1 once/);
+    expect(() => readMesh(binary(tipIndex(-1)))).toThrow(PdxAssetError);
+    expect(() => readMesh(binary(tipIndex(0)))).toThrow(/"tip" has ix 0/);
+    expect(readMesh(binary(tipIndex(1))).shapes[0]?.skeleton).toHaveLength(2);
+  });
 });
 
 describe('readAnimation', () => {

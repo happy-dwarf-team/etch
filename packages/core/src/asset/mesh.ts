@@ -168,6 +168,13 @@ function skeletonOf(shape: PdxNode): SkeletonBone[] {
     if (index === undefined || tx?.length !== 12) {
       throw new PdxAssetError(`bone "${bone.name}" has no ix or a tx of 12 floats`);
     }
+    // Vanilla numbers a skeleton's n bones 0 to n - 1, each once. A larger ix would make
+    // `bones` a sparse array that long, which every walk over the skeleton then crosses.
+    if (index < 0 || index >= skeleton.children.length || index in bones) {
+      throw new PdxAssetError(
+        `bone "${bone.name}" has ix ${String(index)}, not one of 0 to ${String(skeleton.children.length - 1)} once`,
+      );
+    }
     const m = new Float32Array(16);
     for (let column = 0; column < 4; column++) {
       for (let row = 0; row < 3; row++) m[column * 4 + row] = tx[column * 3 + row] ?? 0;
