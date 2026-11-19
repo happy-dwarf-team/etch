@@ -32,6 +32,11 @@ export interface MeshSkin {
 export interface MeshPart {
   readonly positions: Float32Array;
   readonly normals: Float32Array | undefined;
+  /**
+   * Tangents, 4 per vertex: the direction of +u in xyz and in w the sign (±1) of the bitangent,
+   * which is `cross(normal, tangent.xyz) × w`, as the game's mesh shader builds it.
+   */
+  readonly tangents: Float32Array | undefined;
   readonly uvs: Float32Array | undefined;
   readonly indices: Uint32Array;
   readonly material: MeshMaterial;
@@ -93,6 +98,7 @@ export function readMesh(bytes: Uint8Array): PdxMesh {
       parts.push({
         positions,
         normals: sized(floats(mesh, 'n'), 3),
+        tangents: sized(floats(mesh, 'ta'), 4),
         uvs: sized(floats(mesh, 'u0'), 2),
         indices: Uint32Array.from(triangles),
         material: {

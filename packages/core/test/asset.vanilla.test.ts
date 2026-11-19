@@ -44,7 +44,15 @@ function diagonal(sets: readonly Float32Array[]): number {
 describe.skipIf(gamePath === undefined)('meshes and animations of the installed game', () => {
   it('reads every mesh and animation, binary and text', () => {
     const root = join(gamePath ?? '', 'gfx');
-    const stats = { meshes: 0, parts: 0, vertices: 0, triangles: 0, skinned: 0, collision: 0 };
+    const stats = {
+      meshes: 0,
+      parts: 0,
+      vertices: 0,
+      triangles: 0,
+      skinned: 0,
+      collision: 0,
+      tangents: 0,
+    };
     const failed: string[] = [];
     for (const file of files(root, '.mesh')) {
       try {
@@ -57,6 +65,7 @@ describe.skipIf(gamePath === undefined)('meshes and animations of the installed 
             stats.vertices += part.positions.length / 3;
             stats.triangles += part.indices.length / 3;
             if (part.skin !== undefined) stats.skinned++;
+            if (part.tangents !== undefined) stats.tangents++;
           }
         }
       } catch (error) {
@@ -82,6 +91,8 @@ describe.skipIf(gamePath === undefined)('meshes and animations of the installed 
       triangles: 636_463,
       skinned: 221,
       collision: 40,
+      // Every part but the collision shapes' carries tangents for its normal map.
+      tangents: 604,
     });
     expect(animation).toEqual({ files: 152, joints: 3_116, text: 3 });
   });
