@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   PROVINCE_ID_KEYS,
   checkClimate,
+  checkTradeWinds,
   checkContinents,
   checkDefaultMap,
   checkProvinceIds,
@@ -443,6 +444,31 @@ describe('climate file', () => {
   });
 });
 
+describe('trade winds file', () => {
+  it('checks every key, with its sign, and leaves comments and quoted keys alone', () => {
+    const text = [
+      '# province id = rotation in degrees',
+      '1571 = 0',
+      '-1 = 30',
+      '4942 = -30',
+      '"9999" = 10',
+      '0 = 5',
+      'name = 7',
+    ].join('\n');
+    const diagnostics = checkTradeWinds(parseScript(text), VANILLA);
+    expect(diagnostics.map((d) => `${d.key} ${String(d.id)} ${d.code}`)).toEqual([
+      'trade_winds -1 province-id-out-of-range',
+      'trade_winds 4942 province-id-out-of-range',
+      'trade_winds 0 province-id-out-of-range',
+    ]);
+    const first = diagnostics[0];
+    expect(text.slice(first?.start, first?.end)).toBe('-1');
+    expect(
+      checkTradeWinds(parseScript('7 = 0'), { ...VANILLA, defined: new Set([1]) })[0]?.code,
+    ).toBe('province-id-not-defined');
+  });
+});
+
 describe('default.map', () => {
   const map = [
     'width = 5632',
@@ -465,6 +491,8 @@ describe('default.map', () => {
     expect(parseDefaultMap('width = 1').definitions).toBe('definition.csv');
     expect(parseDefaultMap('width = 1').climate).toBe('climate.txt');
     expect(parseDefaultMap('climate = "my_climate.txt"').climate).toBe('my_climate.txt');
+    expect(parseDefaultMap('width = 1').tradeWinds).toBe('trade_winds.txt');
+    expect(parseDefaultMap('trade_winds = "winds.txt"').tradeWinds).toBe('winds.txt');
     expect(parseDefaultMap('width = 1').continent).toBe('continent.txt');
     expect(parseDefaultMap('continent = "lands.txt"').continent).toBe('lands.txt');
   });

@@ -3,6 +3,7 @@ import { decodeGameText } from '../game-text.ts';
 import { parseScript } from '../script/parse.ts';
 import {
   checkClimate,
+  checkTradeWinds,
   checkContinents,
   checkDefaultMap,
   checkProvinceIds,
@@ -245,6 +246,7 @@ export async function findScriptValueProblems(
     const mapLists = [
       [values.ids.climateFile, checkClimate],
       [values.ids.continentFile, checkContinents],
+      [values.ids.tradeWindsFile, checkTradeWinds],
     ] as const;
     for (const [file, check] of mapLists) {
       if (file === undefined) continue;
