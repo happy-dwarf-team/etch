@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   PROVINCE_ID_KEYS,
   checkClimate,
+  checkPositions,
   checkTradeWinds,
   checkContinents,
   checkDefaultMap,
@@ -469,6 +470,28 @@ describe('trade winds file', () => {
   });
 });
 
+describe('positions file', () => {
+  it('checks the negative keys only, which the game does not skip', () => {
+    const text = [
+      '#Stockholm',
+      '1 = { position = { 3085.000 1723.000 } rotation = { 0.000 } }',
+      '-1 = { position = { 1.000 2.000 } }',
+      '4942 = { }',
+      '0 = { }',
+      '-0 = { }',
+      '"-5" = { }',
+      '-30000 = { }',
+    ].join('\n');
+    const diagnostics = checkPositions(parseScript(text), VANILLA);
+    expect(diagnostics.map((d) => `${d.key} ${String(d.id)} ${d.code}`)).toEqual([
+      'positions -1 province-id-out-of-range',
+      'positions -30000 province-id-out-of-range',
+    ]);
+    const first = diagnostics[0];
+    expect(text.slice(first?.start, first?.end)).toBe('-1');
+  });
+});
+
 describe('default.map', () => {
   const map = [
     'width = 5632',
@@ -493,6 +516,8 @@ describe('default.map', () => {
     expect(parseDefaultMap('climate = "my_climate.txt"').climate).toBe('my_climate.txt');
     expect(parseDefaultMap('width = 1').tradeWinds).toBe('trade_winds.txt');
     expect(parseDefaultMap('trade_winds = "winds.txt"').tradeWinds).toBe('winds.txt');
+    expect(parseDefaultMap('width = 1').positions).toBe('positions.txt');
+    expect(parseDefaultMap('positions = "places.txt"').positions).toBe('places.txt');
     expect(parseDefaultMap('width = 1').continent).toBe('continent.txt');
     expect(parseDefaultMap('continent = "lands.txt"').continent).toBe('lands.txt');
   });

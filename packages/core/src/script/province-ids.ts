@@ -490,6 +490,8 @@ export interface DefaultMap {
   readonly continent: string;
   /** `trade_winds`: the trade winds file's name in `map/`, `trade_winds.txt` by default. */
   readonly tradeWinds: string;
+  /** `positions`: the positions file's name in `map/`, `positions.txt` by default. */
+  readonly positions: string;
   /** `area`: the area file's name in `map/`, `area.txt` by default. */
   readonly area: string;
   /** `region`: the region file's name in `map/`, `region.txt` by default. */
@@ -509,6 +511,7 @@ function readDefaultMap(parsed: ParsedScript): DefaultMap {
   let climate = 'climate.txt';
   let continent = 'continent.txt';
   let tradeWinds = 'trade_winds.txt';
+  let positions = 'positions.txt';
   let area = 'area.txt';
   let region = 'region.txt';
   const idLists: { key: string; ids: ScalarNode[] }[] = [];
@@ -526,6 +529,8 @@ function readDefaultMap(parsed: ParsedScript): DefaultMap {
       continent = value.text;
     } else if (key === 'trade_winds' && value?.kind === 'scalar' && value.text !== '') {
       tradeWinds = value.text;
+    } else if (key === 'positions' && value?.kind === 'scalar' && value.text !== '') {
+      positions = value.text;
     } else if (key === 'area' && value?.kind === 'scalar' && value.text !== '') {
       area = value.text;
     } else if (key === 'region' && value?.kind === 'scalar' && value.text !== '') {
@@ -534,7 +539,17 @@ function readDefaultMap(parsed: ParsedScript): DefaultMap {
       idLists.push({ key, ids: bareScalars(value) });
     }
   }
-  return { maxProvinces, definitions, climate, continent, tradeWinds, area, region, idLists };
+  return {
+    maxProvinces,
+    definitions,
+    climate,
+    continent,
+    tradeWinds,
+    positions,
+    area,
+    region,
+    idLists,
+  };
 }
 
 function bareScalars(block: BlockNode): ScalarNode[] {
@@ -610,6 +625,26 @@ export function checkTradeWinds(parsed: ParsedScript, ids: ProvinceIds): Provinc
   for (const entry of parsed.entries) {
     if (entry.kind !== 'property' || entry.key.quoted) continue;
     checkScalar(entry.key, 'trade_winds', ids, found, true);
+  }
+  return found.sort((a, b) => a.start - b.start);
+}
+
+/**
+ * The negative province ids of the positions file (`map/positions.txt`, as `map/default.map`'s
+ * `positions` names it), whose every top-level key is a province id with the places of its city,
+ * units and text as its value (`1 = { position = { … } … }`). The game reads each key with `atoi`
+ * and skips `0` and an id at or past the end of its province graphics, but not a negative one: it
+ * reads that "province" before the table and calls through it (`CEU3GraphicalMap::ReadPositions`,
+ * the EU4 engine lab, 19.11.2026). Ids past the map are left alone, since the game skips them.
+ */
+export function checkPositions(parsed: ParsedScript, ids: ProvinceIds): ProvinceIdDiagnostic[] {
+  const found: ProvinceIdDiagnostic[] = [];
+  for (const entry of parsed.entries) {
+    if (entry.kind !== 'property' || entry.key.quoted) continue;
+    // `-0` is province 0; a linear pattern, then the sign (CodeQL js/polynomial-redos).
+    if (/^-\d+$/.test(entry.key.text) && Number(entry.key.text) < 0) {
+      checkScalar(entry.key, 'positions', ids, found, true);
+    }
   }
   return found.sort((a, b) => a.start - b.start);
 }
