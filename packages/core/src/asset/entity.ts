@@ -243,7 +243,7 @@ const MAX_DEPTH = 6;
 
 /** The entity of that name with everything it draws, or `undefined` when no entity has it. */
 export function resolveEntity(index: EntityIndex, name: string): ResolvedEntity | undefined {
-  return index.entities.has(name) ? resolve(index, name, 0) : undefined;
+  return index.entities.has(name) ? resolve(index, name, [name]) : undefined;
 }
 
 interface Merged {
@@ -297,7 +297,8 @@ function merged(index: EntityIndex, name: string, seen: Set<string>, problems: s
   };
 }
 
-function resolve(index: EntityIndex, name: string, depth: number): ResolvedEntity {
+/** `path`: the entities from the root down to this one, which an attachment may not repeat. */
+function resolve(index: EntityIndex, name: string, path: readonly string[]): ResolvedEntity {
   const problems: string[] = [];
   const definition = index.entities.get(name);
   const own = merged(index, name, new Set([name]), problems);
@@ -333,7 +334,7 @@ function resolve(index: EntityIndex, name: string, depth: number): ResolvedEntit
   const attachments: ResolvedEntity['attachments'][number][] = [];
   for (const group of own.attach) {
     for (const node of group.nodes) {
-      if (depth + 1 > MAX_DEPTH) {
+      if (path.length > MAX_DEPTH) {
         problems.push(`attachments deeper than ${String(MAX_DEPTH)} are not drawn`);
         break;
       }
@@ -341,10 +342,18 @@ function resolve(index: EntityIndex, name: string, depth: number): ResolvedEntit
         problems.push(`no entity "${node.entity}" to attach to ${node.bone}`);
         continue;
       }
+      // An entity under itself would repeat to MAX_DEPTH, and branch: one attaching itself on
+      // eight bones gave 299,593 entities to draw.
+      if (path.includes(node.entity)) {
+        problems.push(
+          `"${node.entity}" on ${node.bone} is not drawn: it would attach itself again`,
+        );
+        continue;
+      }
       attachments.push({
         group: group.name,
         bone: node.bone,
-        entity: resolve(index, node.entity, depth + 1),
+        entity: resolve(index, node.entity, [...path, node.entity]),
       });
     }
   }
