@@ -208,6 +208,61 @@ describe('the survey manifest', () => {
   });
 });
 
+describe('the survey configuration and manifest, on what they leave out', () => {
+  it('rejects another format version, and a playset that is neither crawled nor fed', () => {
+    expect(() => readSurveyConfig('{ "formatVersion": 2, "playsets": [] }')).toThrow(
+      'coverage/survey.json: formatVersion must be 1.',
+    );
+    expect(() =>
+      readSurveyConfig('{ "formatVersion": 1, "playsets": [{ "id": "lost", "crawl": false }] }'),
+    ).toThrow('coverage/survey.json: the playset "lost" needs crawl or viewsOf.');
+  });
+
+  it('skips a crawl at another size and a state with no roots, and puts last a view Escape keeps', async () => {
+    const { manifest } = await readCorpusManifest(join(REPOSITORY, 'corpus', 'manifest.json'));
+    if (manifest === undefined) throw new Error('No corpus manifest.');
+    const config = readSurveyConfig(
+      await readFile(join(REPOSITORY, 'coverage', 'survey.json'), 'utf8'),
+    );
+    const state = (id: string, roots: string[], more: object = {}) => ({
+      id,
+      steps: [{ key: 'f1' }],
+      signature: roots.join('\n'),
+      roots,
+      depth: 1,
+      explored: true,
+      ...more,
+    });
+    const crawl = (resolution: string, states: CrawlFile['states']): CrawlFile => ({
+      formatVersion: 1,
+      playset: 'vanilla',
+      resolution,
+      start: 'main-menu',
+      states,
+      tried: {},
+      skipped: {},
+      starts: 1,
+      done: true,
+    });
+    const out = surveyManifest(manifest, config, [
+      crawl(config.resolution, [
+        state('s0', ['kept_open'], { escapeFails: 'the view stayed' }),
+        state('s1', []),
+        state('s2', ['frontend']),
+      ]),
+      crawl('1280x720', [state('s3', ['elsewhere'])]),
+    ]);
+    // The main menu's views are named `menu`; with no file of its own, a view's window is unknown.
+    expect(out.windows.map((w) => [w.id, w.files, w.views[0]?.note])).toEqual([
+      ['vanilla-menu-s2', ['interface/unknown.gui'], undefined],
+      ['vanilla-menu-s0', ['interface/unknown.gui'], 'Escape does not close it: the view stayed'],
+    ]);
+    expect(() =>
+      surveyManifest(manifest, { ...config, playsets: [{ id: 'nowhere', crawl: true }] }, []),
+    ).toThrow('The corpus has no playset "nowhere".');
+  });
+});
+
 describe('the coverage measures', () => {
   it('reads the constructs of a widget without its content', () => {
     const file = readGuiFile(

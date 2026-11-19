@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { hashModFolder, readCorpusManifest, type CorpusManifest } from '../../src/corpus/index.ts';
@@ -282,6 +282,29 @@ describe('the playset profile', () => {
     expect(await readFile(join(baselines, 'settings-baseline.txt'), 'utf8')).toBe(SETTINGS);
     expect(await readFile(join(profile, 'save games', 'a.eu4'), 'utf8')).toBe('EU4txt');
 
+    // A changed copy of the save in the profile stops it, and so does one in the player's folder
+    // for a profile that has none yet.
+    await writeFile(join(profile, 'save games', 'a.eu4'), 'EU4txt changed');
+    await expect(prepareProfile(host, playset, options)).rejects.toThrow(
+      "The profile's copy of a.eu4 is not the save the manifest pins.",
+    );
+    const other = await makeTree({});
+    trees.push(other);
+    await writeFile(join(sources, 'saves', 'a.eu4'), 'EU4txt changed');
+    await expect(prepareProfile(other, playset, options)).rejects.toThrow(
+      `${join(sources, 'saves', 'a.eu4')} is not the save the manifest pins.`,
+    );
+    // Without a save, only the mods.
+    const { save, ...withoutSave } = playset;
+    expect(save.file).toBe('a.eu4');
+    expect(await prepareProfile(other, withoutSave, options)).toEqual({
+      mods: [{ name: 'A mod', sha256: pin }],
+    });
+    // A mod without a Workshop item or pin cannot be captured.
+    await expect(
+      prepareProfile(other, { ...playset, mods: [{ name: 'Local mod' }] }, options),
+    ).rejects.toThrow('"Local mod" has no Workshop item or pin; the playset cannot be captured.');
+
     // A mod that no longer matches its pin stops the profile.
     await writeFile(join(sources, 'workshop', '123', 'interface', 'a.gui'), 'changed');
     await expect(prepareProfile(host, playset, options)).rejects.toThrow('the manifest pins');
@@ -295,9 +318,13 @@ describe('the playset profile', () => {
     await writeFile(join(root, 'a.txt'), 'aa');
     await writeFile(join(root, 'c.txt'), 'c');
     await writeFile(join(root, 'cache', 'big.bin'), 'yy');
+    await rm(join(root, 'logs', 'b.txt'));
     expect(snapshotChanges(before, await snapshotFolder(root))).toEqual([
       'added c.txt',
       'changed a.txt',
+      'removed logs/b.txt',
     ]);
+    // A folder that is not there has no files.
+    expect(await snapshotFolder(join(root, 'missing'))).toEqual(new Map());
   });
 });
