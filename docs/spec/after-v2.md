@@ -664,14 +664,16 @@ refresh is a step of the 3.0.0 release.
   of the mesh with its diffuse textures (a software rasteriser in
   `@etch/core/asset`; every vanilla mesh that draws something renders, in
   `asset.vanilla.test.ts`). Etch Mesh Preview (`etch.meshPreview`)
-  draws a `.mesh` with WebGL2 (diffuse textures through the playset, one
-  directional light, collision shapes hidden) and plays an `.anim` beside it
+  draws a `.mesh` with WebGL2 (diffuse, normal and specular textures through
+  the playset, collision shapes hidden; the light, normal map, highlight and
+  `PdxMeshColor` country colours follow the game's `pdxmesh.shader`, the
+  light direction is vanilla's `LIGHT_DIRECTION`) and plays an `.anim` beside it
   that names its bones, skinned on the CPU (`@etch/core/asset`'s
   `skinningMatrices`, `skinPart`); posing the 151 animations vanilla's
   `.asset` files use on the skinned meshes beside them keeps all 444 pairs
-  within 0.5–2× of their bind size. Not drawn: normal and specular maps, the
-  country colour of `PdxMeshColor`, the `.gfx` entity (attachments, scale,
-  state animations), LODs and the game's lighting.
+  within 0.5–2× of their bind size. Not drawn: the `.gfx` entity
+  (attachments, scale, state animations), LODs, the flag of
+  `PdxMeshTextureAtlas`, and the map's fog of war, snow and distance fog.
 
 ## Open issues
 

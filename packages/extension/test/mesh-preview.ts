@@ -1,7 +1,7 @@
-// The mesh preview end to end in a real VS Code: a skinned `.mesh` with its diffuse texture and
-// two `.anim` files beside it opens in Etch's custom editor; the webview parses and draws it with
-// WebGL2, skips the collision shape, textures the part and is offered only the animation that
-// names the mesh's bones. A mesh in the game folder (`etch.gamePath`, a fixture) takes its texture
+// The mesh preview end to end in a real VS Code: a skinned `.mesh` with its diffuse, normal and
+// specular textures and two `.anim` files beside it opens in Etch's custom editor; the webview
+// parses and draws it with WebGL2, skips the collision shape, textures the part with all three
+// maps and is offered only the animation that names the mesh's bones. A mesh in the game folder (`etch.gamePath`, a fixture) takes its texture
 // through the playset, one without its texture is drawn untextured, and a file Etch cannot read is
 // reported instead of shown.
 import * as assert from 'node:assert/strict';
@@ -9,7 +9,7 @@ import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
-import { ANIM, binary, MESH, obj } from '../../core/test/fixtures/pdx-asset.ts';
+import { ANIM, binary, MESH, obj, strs } from '../../core/test/fixtures/pdx-asset.ts';
 import type { EtchApi } from '../src/extension.ts';
 import { MESH_PREVIEW_VIEW_TYPE, type MeshShown } from '../src/mesh-preview.ts';
 import { dds } from './asset-links.ts';
@@ -36,8 +36,16 @@ function open(api: EtchApi, file: vscode.Uri): Promise<MeshShown> {
 export async function testMeshPreview(api: EtchApi): Promise<void> {
   const folder = await mkdtemp(path.join(tmpdir(), 'etch-meshes-'));
   const mesh = vscode.Uri.file(path.join(folder, 'etch_flag.mesh'));
-  await writeFile(mesh.fsPath, binary(MESH));
+  // The fixture mesh with a normal and a specular map named after its diffuse texture.
+  const mapped = MESH.flatMap((item) =>
+    'name' in item && item.name === 'diff'
+      ? [item, strs('n', 'flag_normal.dds'), strs('spec', 'flag_spec.dds')]
+      : [item],
+  );
+  await writeFile(mesh.fsPath, binary(mapped));
   await writeFile(path.join(folder, 'flag_diffuse.dds'), dds(2, 2, [10, 20, 30, 255]));
+  await writeFile(path.join(folder, 'flag_normal.dds'), dds(2, 2, [255, 128, 128, 255]));
+  await writeFile(path.join(folder, 'flag_spec.dds'), dds(2, 2, [0, 0, 0, 128]));
   await writeFile(path.join(folder, 'flag_wave.anim'), binary(ANIM));
   // An animation of another skeleton: not offered.
   const other = ANIM.map((item) =>
@@ -57,8 +65,14 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
     triangles: 2,
     bones: 2,
     textured: 1,
+    normalMapped: 1,
+    specularMapped: 1,
     animations: ['flag_wave.anim'],
-    textures: { 'flag_diffuse.dds': 'beside the mesh' },
+    textures: {
+      'flag_diffuse.dds': 'beside the mesh',
+      'flag_normal.dds': 'beside the mesh',
+      'flag_spec.dds': 'beside the mesh',
+    },
   });
   await vscode.commands.executeCommand('workbench.action.closeAllEditors');
 
@@ -88,6 +102,7 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
     );
     assert.ok(bare.ok, `a mesh without its texture shows: ${bare.ok ? '' : bare.message}`);
     assert.equal(bare.summary.textured, 0, 'untextured');
+    assert.equal(bare.summary.normalMapped, 0, 'no normal map named');
     assert.deepEqual(bare.summary.textures, { 'flag_diffuse.dds': 'not found' });
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
   } finally {

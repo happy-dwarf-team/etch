@@ -121,18 +121,24 @@ function identity(): Float32Array {
   return m;
 }
 
-/** A part's vertices (and normals) posed by the skinning matrices. */
+/** A part's vertices (and normals and tangents) posed by the skinning matrices. */
 export function skinPart(
   part: MeshPart,
   matrices: readonly Float32Array[],
   positions = new Float32Array(part.positions.length),
   normals: Float32Array | undefined = part.normals && new Float32Array(part.normals.length),
-): { positions: Float32Array; normals: Float32Array | undefined } {
+  tangents: Float32Array | undefined = part.tangents && new Float32Array(part.tangents.length),
+): {
+  positions: Float32Array;
+  normals: Float32Array | undefined;
+  tangents: Float32Array | undefined;
+} {
   const { skin } = part;
   if (skin === undefined) {
     positions.set(part.positions);
     if (normals !== undefined && part.normals !== undefined) normals.set(part.normals);
-    return { positions, normals };
+    if (tangents !== undefined && part.tangents !== undefined) tangents.set(part.tangents);
+    return { positions, normals, tangents };
   }
   const vertices = part.positions.length / 3;
   for (let v = 0; v < vertices; v++) {
@@ -148,6 +154,12 @@ export function skinPart(
     let mx = 0;
     let my = 0;
     let mz = 0;
+    const tx = part.tangents?.[v * 4] ?? 0;
+    const ty = part.tangents?.[v * 4 + 1] ?? 0;
+    const tz = part.tangents?.[v * 4 + 2] ?? 0;
+    let ux = 0;
+    let uy = 0;
+    let uz = 0;
     let total = 0;
     for (let k = 0; k < 4; k++) {
       const bone = skin.bones[v * 4 + k] ?? -1;
@@ -161,6 +173,9 @@ export function skinPart(
       mx += weight * ((m[0] ?? 0) * nx + (m[4] ?? 0) * ny + (m[8] ?? 0) * nz);
       my += weight * ((m[1] ?? 0) * nx + (m[5] ?? 0) * ny + (m[9] ?? 0) * nz);
       mz += weight * ((m[2] ?? 0) * nx + (m[6] ?? 0) * ny + (m[10] ?? 0) * nz);
+      ux += weight * ((m[0] ?? 0) * tx + (m[4] ?? 0) * ty + (m[8] ?? 0) * tz);
+      uy += weight * ((m[1] ?? 0) * tx + (m[5] ?? 0) * ty + (m[9] ?? 0) * tz);
+      uz += weight * ((m[2] ?? 0) * tx + (m[6] ?? 0) * ty + (m[10] ?? 0) * tz);
     }
     if (total === 0) {
       x = px;
@@ -169,6 +184,9 @@ export function skinPart(
       mx = nx;
       my = ny;
       mz = nz;
+      ux = tx;
+      uy = ty;
+      uz = tz;
       total = 1;
     }
     positions[v * 3] = x / total;
@@ -180,6 +198,13 @@ export function skinPart(
       normals[v * 3 + 1] = my / length;
       normals[v * 3 + 2] = mz / length;
     }
+    if (tangents !== undefined) {
+      const length = Math.hypot(ux, uy, uz) || 1;
+      tangents[v * 4] = ux / length;
+      tangents[v * 4 + 1] = uy / length;
+      tangents[v * 4 + 2] = uz / length;
+      tangents[v * 4 + 3] = part.tangents?.[v * 4 + 3] ?? 1;
+    }
   }
-  return { positions, normals };
+  return { positions, normals, tangents };
 }

@@ -9,14 +9,20 @@ export interface MeshSummary {
   readonly triangles: number;
   readonly bones: number;
   readonly textured: number;
+  /** Drawn parts with a normal map (and tangents), and with a specular map. */
+  readonly normalMapped: number;
+  readonly specularMapped: number;
   readonly animation: string | undefined;
   /** The animations offered: the `.anim` files beside the mesh that name its bones. */
   readonly animations: readonly string[];
-  /** Where each material's diffuse texture came from (`the game`, a mod, `beside the mesh`), or why not. */
+  /**
+   * Where each texture a material names (diffuse, normal, specular) came from (`the game`, a mod,
+   * `beside the mesh`), or `not found`.
+   */
   readonly textures: Readonly<Record<string, string>>;
 }
 
-/** A diffuse texture the host decoded, or why it could not. */
+/** A texture the host decoded, or why it could not. */
 export type MeshTexture =
   | {
       readonly ok: true;
@@ -48,7 +54,7 @@ export type MeshHostMessage =
       readonly type: 'mesh';
       readonly name: string;
       readonly bytes: Uint8Array;
-      /** By the material's `diff` name. */
+      /** By the file name a material's `diff`, `n` or `spec` gives. */
       readonly textures: Readonly<Record<string, MeshTexture>>;
       readonly animations: readonly MeshAnimationEntry[];
     }

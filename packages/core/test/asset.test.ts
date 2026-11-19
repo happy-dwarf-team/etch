@@ -53,6 +53,7 @@ describe('readMesh', () => {
       specular: undefined,
     });
     expect(part?.uvs?.length).toBe(8);
+    expect(Array.from(part?.tangents?.subarray(0, 4) ?? [])).toEqual([1, 0, 0, 1]);
     expect(part?.skin?.influences).toBe(1);
     expect(flag?.skeleton.map((b) => [b.name, b.parent])).toEqual([
       ['root', undefined],
@@ -136,6 +137,10 @@ describe('skinning', () => {
     expect(Array.from(bent.positions.subarray(9, 12)).map(round)).toEqual([0, 1, 0]);
     // Vertices on the root bone stay.
     expect(Array.from(bent.positions.subarray(0, 3)).map(round)).toEqual([0, 0, 0]);
+    // Tangents turn with the bone and keep their bitangent sign; normals along Z stay.
+    expect(Array.from(bent.tangents?.subarray(4, 8) ?? []).map(round)).toEqual([0, 1, 0, 1]);
+    expect(Array.from(bent.tangents?.subarray(0, 4) ?? []).map(round)).toEqual([1, 0, 0, 1]);
+    expect(Array.from(bent.normals?.subarray(3, 6) ?? []).map(round)).toEqual([0, 0, -1]);
   });
 
   it('matches a joint named by its path to the bone of its last name', () => {

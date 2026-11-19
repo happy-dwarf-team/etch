@@ -1,5 +1,6 @@
 // The mesh preview (etch.meshPreview): a read-only custom editor for `.mesh` files. The extension
-// reads the mesh, decodes the diffuse textures its materials name with `@etch/renderer`'s readers
+// reads the mesh, decodes the diffuse, normal and specular textures its materials name with
+// `@etch/renderer`'s readers
 // (a bare name is in the mesh's folder, as vanilla keeps them: through the playset when the mesh is
 // in one of its layers, so a mod's texture wins over the game's, else on disk beside the mesh; a
 // `.tga` name also tries `.dds`), and lists the `.anim` files beside it whose joints name the mesh's
@@ -79,38 +80,38 @@ async function findTexture(
   return undefined;
 }
 
-/** The diffuse textures of a mesh's drawn parts, decoded, by material name. */
+/** The diffuse, normal and specular textures of a mesh's drawn parts, decoded, by file name. */
 async function texturesOf(
   mesh: PdxMesh,
   meshFile: string,
   files: GameFiles | undefined,
 ): Promise<Record<string, MeshTexture>> {
   const textures: Record<string, MeshTexture> = {};
-  for (const shape of mesh.shapes) {
-    if (shape.collision) continue;
-    for (const part of shape.parts) {
-      const name = part.material.diffuse;
-      if (name === undefined || name in textures) continue;
-      const found = await findTexture(name, meshFile, files);
-      if (found === undefined) {
-        textures[name] = { ok: false, message: `not found: ${textureCandidates(name).join(', ')}` };
-        continue;
-      }
-      try {
-        const { summary, rgba } = inspectTexture(found.file, await read(found.file));
-        textures[name] = {
-          ok: true,
-          width: summary.width,
-          height: summary.height,
-          rgba,
-          source: found.source,
-        };
-      } catch (error) {
-        textures[name] = {
-          ok: false,
-          message: error instanceof Error ? error.message : String(error),
-        };
-      }
+  const names = mesh.shapes
+    .filter((shape) => !shape.collision)
+    .flatMap((shape) => shape.parts)
+    .flatMap(({ material }) => [material.diffuse, material.normal, material.specular]);
+  for (const name of names) {
+    if (name === undefined || name in textures) continue;
+    const found = await findTexture(name, meshFile, files);
+    if (found === undefined) {
+      textures[name] = { ok: false, message: `not found: ${textureCandidates(name).join(', ')}` };
+      continue;
+    }
+    try {
+      const { summary, rgba } = inspectTexture(found.file, await read(found.file));
+      textures[name] = {
+        ok: true,
+        width: summary.width,
+        height: summary.height,
+        rgba,
+        source: found.source,
+      };
+    } catch (error) {
+      textures[name] = {
+        ok: false,
+        message: error instanceof Error ? error.message : String(error),
+      };
     }
   }
   return textures;
@@ -323,6 +324,7 @@ function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): string {
   #facts { display: flex; flex-wrap: wrap; gap: 4px 12px; }
   #facts span { white-space: nowrap; }
   .spacer { flex: 1; }
+  input[type="color"] { width: 24px; height: 20px; padding: 0; border: none; background: none; vertical-align: middle; }
   button, select {
     font: inherit; color: var(--vscode-foreground);
     background: var(--vscode-dropdown-background); border: 1px solid var(--vscode-dropdown-border, transparent);
@@ -346,6 +348,12 @@ function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): string {
   <div class="spacer"></div>
   <select id="animation" title="Animation beside the mesh" aria-label="Animation" hidden></select>
   <button id="play" aria-pressed="false" title="Play or pause the animation" hidden>Play</button>
+  <span id="colours" title="The country colours a PdxMeshColor part shows (the specular map's R, G and B mask them)" hidden>
+    <input type="color" id="primary" value="#bf291f" aria-label="Primary country colour">
+    <input type="color" id="secondary" value="#ebe0bf" aria-label="Secondary country colour">
+    <input type="color" id="tertiary" value="#264d99" aria-label="Tertiary country colour">
+  </span>
+  <button id="maps" aria-pressed="true" title="Draw the normal and specular maps">Maps</button>
   <button id="wireframe" aria-pressed="false" title="Show the triangle edges">Wire</button>
   <button id="reset" title="Frame the whole mesh">Reset view</button>
 </header>

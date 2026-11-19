@@ -1,8 +1,16 @@
 // The mesh preview's webview script (src/mesh-preview.ts): parses the posted `.mesh`
-// with `@etch/core/asset`, draws its shapes with WebGL2 (diffuse texture and a plain directional
-// light; collision shapes skipped) under an orbit camera, and plays an animation the user picks,
-// skinned on the CPU each frame. The game's files are left-handed with Y up: Z is mirrored so a
-// mesh does not show mirrored.
+// with `@etch/core/asset`, draws its shapes with WebGL2 under an orbit camera (collision shapes
+// skipped), and plays an animation the user picks, skinned on the CPU each frame. The game's files
+// are left-handed with Y up: Z is mirrored so a mesh does not show mirrored.
+//
+// The shading follows the game's mesh shader (`gfx/FX/pdxmesh.shader` and
+// `standardfuncsgfx.fxh` of EU4 1.37.5, read, not copied): a squared half-Lambert term with
+// ambient 0.2 and intensity 1.2; the normal map in tangent space (RGB - 0.5, green flipped,
+// bitangent `cross(n, ta.xyz) * ta.w`); a Blinn-Phong highlight (exponent 10, times 2) scaled by
+// the specular map's alpha times 2 and added; for `PdxMeshColor`, the specular map's R, G and B
+// mask the country's three colours. The light comes from the vanilla `LIGHT_DIRECTION` of
+// `common/defines.lua` (-1, -1, 0.5, pointing away from the light). The map's fog of war, terra
+// incognita, snow and distance fog are left out.
 
 import {
   jointsOfBones,
@@ -37,6 +45,11 @@ const errorBox = element('error');
 const animationSelect = element('animation') as HTMLSelectElement;
 const playButton = element('play') as HTMLButtonElement;
 const wireButton = element('wireframe') as HTMLButtonElement;
+const mapsButton = element('maps') as HTMLButtonElement;
+const colours = element('colours');
+const colourInputs = (['primary', 'secondary', 'tertiary'] as const).map(
+  (key) => [key, element(key) as HTMLInputElement] as const,
+);
 const resetButton = element('reset') as HTMLButtonElement;
 
 const gl = canvas.getContext('webgl2', { antialias: true });
@@ -45,33 +58,71 @@ const VERTEX = `#version 300 es
 in vec3 position;
 in vec3 normal;
 in vec2 uv;
+in vec4 tangent;
 uniform mat4 viewProjection;
+out vec3 vPosition;
 out vec3 vNormal;
+out vec3 vTangent;
+out vec3 vBitangent;
 out vec2 vUv;
 void main() {
-  // Left-handed to right-handed: mirror Z.
-  vec3 p = vec3(position.xy, -position.z);
-  vNormal = vec3(normal.xy, -normal.z);
+  // The bitangent in the file's space, then everything left-handed to right-handed: mirror Z.
+  vec3 b = cross(normal, tangent.xyz) * tangent.w;
+  vec3 mirror = vec3(1.0, 1.0, -1.0);
+  vPosition = position * mirror;
+  vNormal = normal * mirror;
+  vTangent = tangent.xyz * mirror;
+  vBitangent = b * mirror;
   vUv = uv;
-  gl_Position = viewProjection * vec4(p, 1.0);
+  gl_Position = viewProjection * vec4(vPosition, 1.0);
 }`;
 
 const FRAGMENT = `#version 300 es
 precision highp float;
+in vec3 vPosition;
 in vec3 vNormal;
+in vec3 vTangent;
+in vec3 vBitangent;
 in vec2 vUv;
 uniform sampler2D diffuse;
+uniform sampler2D specularMap;
+uniform sampler2D normalMap;
 uniform bool textured;
+uniform bool normalMapped;
+uniform bool specularMapped;
+uniform bool countryColours;
+uniform vec3 primary;
+uniform vec3 secondary;
+uniform vec3 tertiary;
 uniform bool alphaTest;
 uniform bool lines;
+// Towards the light.
 uniform vec3 light;
+uniform vec3 eye;
 out vec4 colour;
 void main() {
   if (lines) { colour = vec4(0.1, 0.9, 1.0, 1.0); return; }
   vec4 base = textured ? texture(diffuse, vUv) : vec4(0.72, 0.72, 0.72, 1.0);
   if (alphaTest && base.a < 0.5) discard;
-  float lit = 0.35 + 0.65 * abs(dot(normalize(vNormal), light));
-  colour = vec4(base.rgb * lit, 1.0);
+  vec3 n = normalize(vNormal);
+  if (normalMapped) {
+    vec3 s = normalize(texture(normalMap, vUv).rgb - 0.5);
+    s.g = -s.g;
+    n = normalize(s.x * normalize(vTangent) + s.y * normalize(vBitangent) + s.z * n);
+  }
+  vec4 spec = specularMapped ? texture(specularMap, vUv) : vec4(0.0);
+  vec3 c = base.rgb;
+  if (countryColours) {
+    c = mix(c, c * spec.r * primary, spec.r);
+    c = mix(c, c * spec.g * secondary, spec.g);
+    c = mix(c, c * spec.b * tertiary, spec.b);
+  }
+  float halfLambert = dot(n, light) * 0.5 + 0.5;
+  halfLambert = 0.2 + 0.8 * halfLambert * halfLambert;
+  c = clamp(halfLambert * c * 1.2, 0.0, 1.0);
+  vec3 h = normalize(normalize(eye - vPosition) + light);
+  float highlight = clamp(pow(clamp(dot(h, n), 0.0, 1.0), 10.0) * 2.0, 0.0, 1.0) * spec.a * 2.0;
+  colour = vec4(clamp(c + highlight, 0.0, 1.0), 1.0);
 }`;
 
 interface DrawnPart {
@@ -80,16 +131,22 @@ interface DrawnPart {
   readonly vao: WebGLVertexArrayObject;
   readonly positions: WebGLBuffer;
   readonly normals: WebGLBuffer;
+  readonly tangents: WebGLBuffer;
   readonly triangles: WebGLBuffer;
   readonly triangleCount: number;
   readonly edges: WebGLBuffer;
   readonly edgeCount: number;
   readonly texture: WebGLTexture | undefined;
+  readonly normalMap: WebGLTexture | undefined;
+  readonly specularMap: WebGLTexture | undefined;
+  readonly countryColours: boolean;
   readonly alphaTest: boolean;
 }
 
 let program: WebGLProgram | undefined;
 let drawn: DrawnPart[] = [];
+/** The uploaded textures by file name, shared by the parts that name them. */
+let uploaded = new Map<string, WebGLTexture | undefined>();
 let mesh: PdxMesh | undefined;
 let meshName = '';
 let textured = 0;
@@ -100,6 +157,20 @@ let animation: { name: string; data: PdxAnimation } | undefined;
 let playing = false;
 let started = 0;
 let wireframe = false;
+/** Whether normal and specular maps are drawn (the Maps button). */
+let maps = true;
+/** The country colours `PdxMeshColor` parts are drawn with, 0-1. */
+const country = {
+  primary: [0.75, 0.16, 0.12],
+  secondary: [0.92, 0.88, 0.75],
+  tertiary: [0.15, 0.3, 0.6],
+};
+
+/**
+ * Towards the light, in the drawn space: the opposite of the vanilla `LIGHT_DIRECTION`
+ * (-1, -1, 0.5) with Z mirrored.
+ */
+const LIGHT = normalise([1, 1, 0.5]);
 
 /** The orbit camera: angles in radians, distance from the target. */
 const camera = { yaw: 0.6, pitch: 0.35, distance: 10, target: [0, 0, 0] as number[] };
@@ -127,6 +198,7 @@ function compile(context: WebGL2RenderingContext): WebGLProgram {
   context.bindAttribLocation(linked, 0, 'position');
   context.bindAttribLocation(linked, 1, 'normal');
   context.bindAttribLocation(linked, 2, 'uv');
+  context.bindAttribLocation(linked, 3, 'tangent');
   context.linkProgram(linked);
   if (context.getProgramParameter(linked, context.LINK_STATUS) !== true) {
     throw new Error(context.getProgramInfoLog(linked) ?? 'link error');
@@ -202,13 +274,29 @@ function upload(
 ): void {
   for (const old of drawn) {
     context.deleteVertexArray(old.vao);
-    for (const b of [old.positions, old.normals, old.triangles, old.edges]) context.deleteBuffer(b);
-    if (old.texture !== undefined) context.deleteTexture(old.texture);
+    for (const b of [old.positions, old.normals, old.tangents, old.triangles, old.edges]) {
+      context.deleteBuffer(b);
+    }
+  }
+  for (const texture of uploaded.values()) {
+    if (texture !== undefined) context.deleteTexture(texture);
   }
   drawn = [];
+  uploaded = new Map();
   textured = 0;
   textureSources = {};
-  const warnings: string[] = [];
+  const warnings = new Set<string>();
+  /** The texture a material names, uploaded once; notes where it came from or why it is missing. */
+  const named = (name: string | undefined, part: MeshPart): WebGLTexture | undefined => {
+    if (name === undefined) return undefined;
+    const source = textures[name];
+    if (source === undefined) return undefined;
+    textureSources[name] = source.ok ? source.source : 'not found';
+    if (!source.ok) warnings.add(`${name}: ${source.message}`);
+    if (part.uvs === undefined) return undefined;
+    if (!uploaded.has(name)) uploaded.set(name, textureOf(context, source));
+    return uploaded.get(name);
+  };
   for (const shape of loaded.shapes) {
     if (shape.collision) continue;
     for (const part of shape.parts) {
@@ -233,6 +321,14 @@ function upload(
       );
       context.enableVertexAttribArray(2);
       context.vertexAttribPointer(2, 2, context.FLOAT, false, 0, 0);
+      const tangents = buffer(
+        context,
+        context.ARRAY_BUFFER,
+        part.tangents ?? new Float32Array((part.positions.length / 3) * 4),
+        context.DYNAMIC_DRAW,
+      );
+      context.enableVertexAttribArray(3);
+      context.vertexAttribPointer(3, 4, context.FLOAT, false, 0, 0);
       const triangles = buffer(
         context,
         context.ELEMENT_ARRAY_BUFFER,
@@ -242,33 +338,30 @@ function upload(
       context.bindVertexArray(null);
       const edgeList = edgesOf(part.indices);
       const edges = buffer(context, context.ELEMENT_ARRAY_BUFFER, edgeList, context.STATIC_DRAW);
-      const name = part.material.diffuse;
-      const source = name === undefined ? undefined : textures[name];
-      if (name !== undefined && source !== undefined) {
-        textureSources[name] = source.ok ? source.source : 'not found';
-      }
-      const texture =
-        source === undefined || part.uvs === undefined ? undefined : textureOf(context, source);
+      const texture = named(part.material.diffuse, part);
       if (texture !== undefined) textured++;
-      else if (source !== undefined && !source.ok)
-        warnings.push(`${name ?? ''}: ${source.message}`);
       drawn.push({
         part,
         shape,
         vao,
         positions,
         normals,
+        tangents,
         triangles,
         triangleCount: part.indices.length,
         edges,
         edgeCount: edgeList.length,
         texture,
+        normalMap: part.tangents === undefined ? undefined : named(part.material.normal, part),
+        specularMap: named(part.material.specular, part),
+        countryColours: /^PdxMeshColor/.test(part.material.shader),
         alphaTest: /alpha/i.test(part.material.shader),
       });
     }
   }
-  errorBox.hidden = warnings.length === 0;
-  errorBox.textContent = warnings.length === 0 ? '' : `Textures not shown:\n${warnings.join('\n')}`;
+  errorBox.hidden = warnings.size === 0;
+  errorBox.textContent =
+    warnings.size === 0 ? '' : `Textures not shown:\n${[...warnings].join('\n')}`;
 }
 
 function frameView(): void {
@@ -282,15 +375,22 @@ function frameView(): void {
   camera.pitch = 0.35;
 }
 
-/** Perspective × look-at, by columns. */
-function viewProjection(aspect: number): Float32Array {
+/** The camera's position, in the drawn (Z mirrored) space. */
+function eyeOf(): number[] {
   const { yaw, pitch, distance, target } = camera;
   const [tx = 0, ty = 0, tz = 0] = target;
-  const eye = [
+  return [
     tx + distance * Math.cos(pitch) * Math.sin(yaw),
     ty + distance * Math.sin(pitch),
     tz + distance * Math.cos(pitch) * Math.cos(yaw),
   ];
+}
+
+/** Perspective × look-at, by columns. */
+function viewProjection(aspect: number): Float32Array {
+  const { distance, target } = camera;
+  const [tx = 0, ty = 0, tz = 0] = target;
+  const eye = eyeOf();
   const f = normalise([tx - (eye[0] ?? 0), ty - (eye[1] ?? 0), tz - (eye[2] ?? 0)]);
   const s = normalise(cross(f, [0, 1, 0]));
   const u = cross(s, f);
@@ -362,9 +462,14 @@ function pose(context: WebGL2RenderingContext, frame: number): void {
   const matrices = new Map<MeshShape, Float32Array[]>();
   for (const item of drawn) {
     if (item.part.skin === undefined) continue;
-    let posed: { positions: Float32Array; normals: Float32Array | undefined };
+    let posed: {
+      positions: Float32Array;
+      normals: Float32Array | undefined;
+      tangents: Float32Array | undefined;
+    };
     if (animation === undefined) {
-      posed = { positions: item.part.positions, normals: item.part.normals };
+      const { positions, normals, tangents } = item.part;
+      posed = { positions, normals, tangents };
     } else {
       let shapeMatrices = matrices.get(item.shape);
       if (shapeMatrices === undefined) {
@@ -379,6 +484,10 @@ function pose(context: WebGL2RenderingContext, frame: number): void {
     if (posed.normals !== undefined) {
       context.bindBuffer(context.ARRAY_BUFFER, item.normals);
       context.bufferSubData(context.ARRAY_BUFFER, 0, posed.normals);
+    }
+    if (posed.tangents !== undefined) {
+      context.bindBuffer(context.ARRAY_BUFFER, item.tangents);
+      context.bufferSubData(context.ARRAY_BUFFER, 0, posed.tangents);
     }
   }
 }
@@ -409,22 +518,36 @@ function draw(now: number): void {
     false,
     viewProjection(width / height),
   );
-  const light = normalise([0.4, 0.8, 0.45]);
-  gl.uniform3f(
-    gl.getUniformLocation(program, 'light'),
-    light[0] ?? 0,
-    light[1] ?? 0,
-    light[2] ?? 0,
-  );
-  gl.uniform1i(gl.getUniformLocation(program, 'diffuse'), 0);
-  const lines = gl.getUniformLocation(program, 'lines');
+  const uniform = (name: string): WebGLUniformLocation | null =>
+    gl.getUniformLocation(program as WebGLProgram, name);
+  const vector = (name: string, v: readonly number[]): void => {
+    gl.uniform3f(uniform(name), v[0] ?? 0, v[1] ?? 0, v[2] ?? 0);
+  };
+  vector('light', LIGHT);
+  vector('eye', eyeOf());
+  vector('primary', country.primary);
+  vector('secondary', country.secondary);
+  vector('tertiary', country.tertiary);
+  gl.uniform1i(uniform('diffuse'), 0);
+  gl.uniform1i(uniform('specularMap'), 1);
+  gl.uniform1i(uniform('normalMap'), 2);
+  const lines = uniform('lines');
   for (const item of drawn) {
     gl.bindVertexArray(item.vao);
     gl.uniform1i(lines, 0);
-    gl.uniform1i(gl.getUniformLocation(program, 'textured'), item.texture === undefined ? 0 : 1);
-    gl.uniform1i(gl.getUniformLocation(program, 'alphaTest'), item.alphaTest ? 1 : 0);
+    const normalMap = maps ? item.normalMap : undefined;
+    const specularMap = maps ? item.specularMap : undefined;
+    gl.uniform1i(uniform('textured'), item.texture === undefined ? 0 : 1);
+    gl.uniform1i(uniform('normalMapped'), normalMap === undefined ? 0 : 1);
+    gl.uniform1i(uniform('specularMapped'), specularMap === undefined ? 0 : 1);
+    gl.uniform1i(uniform('countryColours'), item.countryColours ? 1 : 0);
+    gl.uniform1i(uniform('alphaTest'), item.alphaTest ? 1 : 0);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, item.texture ?? null);
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, specularMap ?? null);
+    gl.activeTexture(gl.TEXTURE2);
+    gl.bindTexture(gl.TEXTURE_2D, normalMap ?? null);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, item.triangles);
     gl.drawElements(gl.TRIANGLES, item.triangleCount, gl.UNSIGNED_INT, 0);
     if (wireframe) {
@@ -451,6 +574,8 @@ function summary(): MeshSummary {
     triangles: parts.reduce((sum, p) => sum + p.indices.length / 3, 0),
     bones: shapes.reduce((sum, s) => sum + s.skeleton.length, 0),
     textured,
+    normalMapped: drawn.filter((d) => d.normalMap !== undefined).length,
+    specularMapped: drawn.filter((d) => d.specularMap !== undefined).length,
     animation: animation?.name,
     animations: offered,
     textures: textureSources,
@@ -467,6 +592,7 @@ function showFacts(): void {
     `${s.triangles.toLocaleString('en')} triangles`,
     s.bones > 0 ? `${String(s.bones)} bones` : 'no skeleton',
     `${String(s.textured)} of ${String(drawn.length)} parts textured`,
+    `${String(s.normalMapped)} with normal maps, ${String(s.specularMapped)} with specular maps`,
     shaders.join(', '),
   ];
   if (s.collisionShapes > 0) items.push(`${String(s.collisionShapes)} collision (hidden)`);
@@ -504,6 +630,7 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
       offered = message.animations.map((a) => a.name);
       animationSelect.hidden = message.animations.length === 0;
       playButton.hidden = true;
+      colours.hidden = !drawn.some((d) => d.countryColours);
       showFacts();
       status.textContent = '';
       if (keep !== undefined && message.animations.some((a) => a.name === keep)) {
@@ -550,6 +677,20 @@ playButton.addEventListener('click', () => {
     requestAnimationFrame(draw);
   }
 });
+
+mapsButton.addEventListener('click', () => {
+  maps = !maps;
+  mapsButton.setAttribute('aria-pressed', String(maps));
+  redraw();
+});
+
+for (const [key, input] of colourInputs) {
+  input.addEventListener('input', () => {
+    const hex = input.value.replace('#', '');
+    country[key] = [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+    redraw();
+  });
+}
 
 wireButton.addEventListener('click', () => {
   wireframe = !wireframe;
