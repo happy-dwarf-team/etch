@@ -36,4 +36,4 @@ export {
   type ScriptValueFinding,
   type ScriptValues,
 } from './script-values.ts';
-export { loadEntityIndex, loadPdxMeshTypes } from './entities.ts';
+export { loadEntityIndex, loadPdxMeshTypes, loadTexturesByName } from './entities.ts';
