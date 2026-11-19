@@ -44,7 +44,10 @@ entity = { name = "spear" pdxmesh = "spear_mesh" }
 entity = { name = "flag" pdxmesh = "flag_mesh" }
 entity = { name = "lost" pdxmesh = "no_such_mesh" attach = { node = "nobody" } }
 entity = { name = "loop_a" clone = "loop_b" }
-entity = { name = "loop_b" clone = "loop_a" }`;
+entity = { name = "loop_b" clone = "loop_a" }
+entity = { name = "swarm" pdxmesh = "spear_mesh" attach = { a_node = "swarm" b_node = "swarm" } }
+entity = { name = "ring_a" pdxmesh = "spear_mesh" attach = { a_node = "ring_b" } }
+entity = { name = "ring_b" pdxmesh = "flag_mesh" attach = { b_node = "ring_a" c_node = "flag" } }`;
 
 const ANIMATIONS = `animation = { name = "soldier_idle_animation" file = "soldier_idle.anim" }
 animation = { name = "soldier_walk_animation" file = "gfx/models/other/walk.anim" }`;
@@ -153,5 +156,23 @@ describe('resolveEntity', () => {
       '"loop_b" clones "loop_a", which clones it back',
       '"loop_a" names no pdxmesh',
     ]);
+  });
+
+  it('does not attach an entity under itself', () => {
+    const swarm = resolveEntity(index(), 'swarm');
+    expect(swarm?.attachments).toEqual([]);
+    expect(swarm?.problems).toEqual([
+      '"swarm" on a_node is not drawn: it would attach itself again',
+      '"swarm" on b_node is not drawn: it would attach itself again',
+    ]);
+    const ring = resolveEntity(index(), 'ring_a');
+    const ringB = ring?.attachments[0]?.entity;
+    expect(ringB?.name).toBe('ring_b');
+    expect(ringB?.attachments.map((a) => [a.bone, a.entity.name])).toEqual([['c_node', 'flag']]);
+    expect(ringB?.problems).toEqual([
+      '"ring_a" on b_node is not drawn: it would attach itself again',
+    ]);
+    // From ring_b the loop is the other way round.
+    expect(resolveEntity(index(), 'ring_b')?.attachments[0]?.entity.attachments).toEqual([]);
   });
 });
