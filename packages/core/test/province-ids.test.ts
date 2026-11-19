@@ -538,7 +538,7 @@ describe('definition file', () => {
       '9;1;2;3;Past the table;x',
       '8;256; -1 ;+7;Colours;x',
       '7;x;;;Not numbers read as 0;x',
-      '',
+      '4;5;6;7;D;x',
       '2;1;1;1;The eighth row, the last one read;x',
       '3;300;0;0;Not read;x',
       '-1;-1;-1;-1;not read either',
