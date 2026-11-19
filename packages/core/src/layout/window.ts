@@ -1047,8 +1047,8 @@ class Layout {
   }
 
   /**
-   * The sprite a live snapshot says the game drew in place of the `.gui`'s (the religion's icon,
-   * a great project's picture, a building's icon): one the playset defines that is neither the
+   * The sprite a live snapshot says the game drew in place of the `.gui`'s (the terrain picture,
+   * a building's icon, the locked building slot): one the playset defines that is neither the
    * `.gui`'s sprite nor one of its size variants, which the preview picks for its own screen.
    */
   private liveSprite(widget: Widget, written: string | undefined): string | undefined {
