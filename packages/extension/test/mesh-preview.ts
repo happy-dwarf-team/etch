@@ -5,7 +5,8 @@
 // through the playset, one without its texture is drawn untextured, and a file Etch cannot read is
 // reported instead of shown. A `PdxMeshTextureAtlas` part reports its flag (the country colours
 // until a tag is asked for), and a tag's flag comes from `gfx/flags` through the playset. A
-// `PdxMeshAlphaBlendNoZWrite` part (a selection ring) is reported as blended. A mesh
+// `PdxMeshAlphaBlendNoZWrite` part (a selection ring) is reported as blended, and a `PdxMeshSnow`
+// part and a map tree as taking snow. A mesh
 // with levels of detail draws and counts only its most detailed level, and a mesh a playset's
 // `mapobject_<n>` pdxmesh names is drawn as a map tree.
 import * as assert from 'node:assert/strict';
@@ -118,6 +119,24 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
   const blended = await open(api, ring);
   assert.ok(blended.ok, `the ring shows: ${blended.ok ? '' : blended.message}`);
   assert.equal(blended.summary.blended, 1, 'one part blended by its diffuse alpha');
+  assert.equal(blended.summary.snow, undefined, 'no snow offered');
+  await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+
+  // A building: the fixture quad as a PdxMeshSnow part takes snow, none until the slider moves.
+  const building = vscode.Uri.file(path.join(folder, 'etch_building.mesh'));
+  await writeFile(
+    building.fsPath,
+    binary(
+      MESH.map((item) =>
+        'name' in item && item.name === 'shader' && item.values[0] === 'PdxMeshStandardSkinned'
+          ? strs('shader', 'PdxMeshSnow')
+          : item,
+      ),
+    ),
+  );
+  const snowy = await open(api, building);
+  assert.ok(snowy.ok, `the building shows: ${snowy.ok ? '' : snowy.message}`);
+  assert.deepEqual(snowy.summary.snow, { parts: 1, amount: 0 }, 'snow offered, none by default');
   await vscode.commands.executeCommand('workbench.action.closeAllEditors');
 
   // A map tree's levels of detail: a quad at level 0 and a triangle at level 1, as two shapes.
@@ -185,6 +204,7 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
     const tree = await open(api, vscode.Uri.file(path.join(trees, 'etch_tree.mesh')));
     assert.ok(tree.ok, `the map tree shows: ${tree.ok ? '' : tree.message}`);
     assert.equal(tree.summary.tree, 'mapobject_3', 'drawn as the map tree that names it');
+    assert.deepEqual(tree.summary.snow, { parts: 1, amount: 0 }, 'a map tree takes snow');
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
     const bare = await open(
       api,

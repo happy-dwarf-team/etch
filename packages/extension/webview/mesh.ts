@@ -25,8 +25,14 @@
 // (`gfx/FX/tree.shader`, read, not copied) draws it, whatever shader its materials name: texels
 // with a diffuse alpha under 0.5 are cut out, the same light, and no highlight. Its normal map
 // reads the same (green not flipped, bitangent `cross(t, n) * ta.w`: the two signs cancel). Its
-// tint map, the map's colour map and season colours, the random height and turn of each tree,
-// and snow are left out.
+// tint map, the map's colour map and season colours, and the random height and turn of each
+// tree are left out; its snow is below.
+//
+// Snow, as the game puts it on `PdxMeshSnow` parts (`ApplySnowMesh` in pdxmesh.shader) and map
+// trees (`ApplySnowTree` in tree.shader) before the light: the game takes the amount from the map
+// at the mesh's place and season, the preview from its Snow slider (0 by default). A mesh part
+// blends to the snow colour (0.7 grey) where its normal points up and turns its normal up with it;
+// a tree only where the normal points steeply up, more of it the more snow.
 //
 // An attachment's scale: its own pdxmesh and entity scale, not multiplied by its parent's (the
 // bone's position is). Vanilla gives a soldier and the weapon in its hand the same scale (0.5).
@@ -91,6 +97,8 @@ const colourInputs = (['primary', 'secondary', 'tertiary'] as const).map(
 const resetButton = element('reset') as HTMLButtonElement;
 const flagLabel = element('flag');
 const flagInput = element('flag-tag') as HTMLInputElement;
+const snowLabel = element('snow');
+const snowInput = element('snow-amount') as HTMLInputElement;
 
 const gl = canvas.getContext('webgl2', { antialias: true });
 
@@ -151,6 +159,9 @@ uniform sampler2D flagMap;
 uniform bool blended;
 // Drawn as the map's tree shader: alpha cut out, no highlight.
 uniform bool tree;
+// The Snow slider's amount, and whether this part takes snow (PdxMeshSnow, or a map tree).
+uniform float snow;
+uniform bool snowy;
 uniform bool lines;
 // Towards the light.
 uniform vec3 light;
@@ -168,6 +179,17 @@ void main() {
   }
   vec4 spec = specularMapped ? texture(specularMap, vUv) : vec4(0.0);
   vec3 c = base.rgb;
+  if (snowy && tree) {
+    float fade = clamp(
+      clamp(n.y - clamp(1.0 - snow, 0.0, 1.0), 0.0, 1.0) * snow * 5.5 * clamp((n.y - 0.6) * 1000.0, 0.0, 1.0),
+      0.0, 1.0);
+    c = mix(c, vec3(0.7), fade);
+    n = normalize(n + vec3(0.0, fade, 0.0));
+  } else if (snowy) {
+    float isSnow = snow * clamp((n.y - 0.1) * 100.0, 0.0, 1.0);
+    c = mix(c, vec3(0.7), clamp(clamp(isSnow - 0.1, 0.0, 1.0) * 3.5, 0.0, 1.0));
+    n = normalize(n + vec3(0.0, isSnow, 0.0));
+  }
   if (atlas && textured) {
     vec3 flag = flagFromColours
       ? (vUv1.x < 1.0 / 3.0 ? primary : vUv1.x < 2.0 / 3.0 ? secondary : tertiary)
@@ -207,6 +229,8 @@ interface DrawnPart {
   readonly normalMap: WebGLTexture | undefined;
   readonly specularMap: WebGLTexture | undefined;
   readonly countryColours: boolean;
+  /** A `PdxMeshSnow` part: the game puts snow on it. */
+  readonly snow: boolean;
   /** A `PdxMeshTextureAtlas` part with second UVs: the flag is drawn on it. */
   readonly atlas: boolean;
   /** `PdxMeshAlphaBlend` parts are blended; `PdxMeshAlphaBlendNoZWrite` ones write no depth. */
@@ -244,6 +268,8 @@ const animations = new Map<string, PdxAnimation>();
 let entity: { name: string; states: string[]; problems: string[] } | undefined;
 /** Mesh preview: the map tree type (`mapobject_<n>`) that draws the mesh, if one does. */
 let tree: string | undefined;
+/** The Snow slider: how much snow `PdxMeshSnow` parts and map trees take, 0 to 1. */
+let snowAmount = 0;
 /** What plays: an animation's file name (mesh) or a state (entity); `undefined` for the bind pose. */
 let playingKey: string | undefined;
 let playing = false;
@@ -449,6 +475,7 @@ function upload(
         normalMap: part.tangents === undefined ? undefined : named(part.material.normal, part),
         specularMap: named(part.material.specular, part),
         countryColours: /^PdxMeshColor/.test(part.material.shader),
+        snow: /^PdxMeshSnow/.test(part.material.shader),
         atlas: /^PdxMeshTextureAtlas/.test(part.material.shader) && part.uvs1 !== undefined,
         blend: /^PdxMeshAlphaBlendNoZWrite/.test(part.material.shader)
           ? 'noDepthWrite'
@@ -643,6 +670,7 @@ function draw(now: number): void {
   gl.uniform1i(uniform('flagMap'), 3);
   gl.uniform1i(uniform('flagFromColours'), flag === undefined ? 1 : 0);
   gl.uniform1i(uniform('tree'), tree === undefined ? 0 : 1);
+  gl.uniform1f(uniform('snow'), snowAmount);
   gl.activeTexture(gl.TEXTURE3);
   gl.bindTexture(gl.TEXTURE_2D, flag?.texture ?? null);
   const lines = uniform('lines');
@@ -664,6 +692,7 @@ function draw(now: number): void {
     else gl.enable(gl.BLEND);
     gl.depthMask(blend !== 'noDepthWrite');
     gl.uniform1i(uniform('blended'), blend === 'none' ? 0 : 1);
+    gl.uniform1i(uniform('snowy'), item.snow || tree !== undefined ? 1 : 0);
     gl.bindVertexArray(item.vao);
     gl.uniform1i(lines, 0);
     const normalMap = maps ? item.normalMap : undefined;
@@ -721,6 +750,8 @@ function summary(): MeshSummary {
   if (tree !== undefined) base = { ...base, tree };
   const blendedParts = tree === undefined ? parts.filter((d) => d.blend !== 'none').length : 0;
   if (blendedParts > 0) base = { ...base, blended: blendedParts };
+  const snowyParts = parts.filter((d) => d.snow || tree !== undefined).length;
+  if (snowyParts > 0) base = { ...base, snow: { parts: snowyParts, amount: snowAmount } };
   if (entity === undefined) return base;
   return {
     ...base,
@@ -825,6 +856,7 @@ function show(
   showWarnings(warnings, problems);
   colours.hidden = !instances.some((i) => i.parts.some((d) => d.countryColours || d.atlas));
   flagLabel.hidden = !instances.some((i) => i.parts.some((d) => d.atlas));
+  snowLabel.hidden = tree === undefined && !instances.some((i) => i.parts.some((d) => d.snow));
   offerLevels();
   pose(context, 0);
 }
@@ -962,6 +994,14 @@ animationSelect.addEventListener('change', () => {
     return;
   }
   vscode.postMessage({ type: 'animation', name: key });
+});
+
+snowInput.addEventListener('input', () => {
+  snowAmount = Number(snowInput.value);
+  redraw();
+});
+snowInput.addEventListener('change', () => {
+  vscode.postMessage({ type: 'shown', summary: summary() });
 });
 
 lodSelect.addEventListener('change', () => {

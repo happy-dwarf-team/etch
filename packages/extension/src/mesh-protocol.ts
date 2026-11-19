@@ -37,6 +37,8 @@ export interface MeshSummary {
   readonly tree?: string;
   /** Drawn `PdxMeshAlphaBlend` parts, blended by their diffuse alpha after the opaque ones. */
   readonly blended?: number;
+  /** Drawn parts that take snow (`PdxMeshSnow`, or a map tree's), and the Snow slider's amount. */
+  readonly snow?: { readonly parts: number; readonly amount: number };
 }
 
 export interface FlagSummary {
