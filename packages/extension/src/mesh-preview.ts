@@ -611,7 +611,9 @@ export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): str
     display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 4px 8px;
     border-bottom: 1px solid var(--vscode-panel-border, transparent);
   }
-  #facts { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+  /* The facts scroll past a fifth of the height and the error box past a sixth, so that a short view
+     keeps its controls and most of its canvas. */
+  #facts { display: flex; flex-wrap: wrap; gap: 4px 12px; max-height: 20vh; overflow-y: auto; }
   #facts span { white-space: nowrap; }
   .spacer { flex: 1; }
   #snow-amount, #tint-turn, #season-day, #season-north { width: 6em; vertical-align: middle; }
@@ -628,6 +630,7 @@ export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): str
   #error {
     margin: 8px; padding: 4px 8px; white-space: pre-wrap;
     border-left: 3px solid var(--vscode-notificationsErrorIcon-foreground);
+    max-height: 15vh; overflow-y: auto;
   }
   main { flex: 1; position: relative; min-height: 0; }
   canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; }
