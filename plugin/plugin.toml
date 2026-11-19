@@ -28,7 +28,8 @@ id = "anvil-game"
 version = "^1"
 
 # tongs.ui version 1, the widget tree: the stale-window check after a reload,
-# pick mode and live snapshots (from 0.22, each text with its colour codes);
+# pick mode and live snapshots (from 0.22, each text with its colour codes;
+# from 0.37, the sprite, frame and flag a button, icon or check box draws);
 # tongs.navigation version 1 (from 0.24): the province view selected again after
 # a restart or a reload (H8). The private install pins Tongs and keeps it at
 # enabled = false (no pipe). A caret on 0.x takes one minor version only, so

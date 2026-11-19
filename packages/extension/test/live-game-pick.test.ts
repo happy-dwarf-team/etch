@@ -374,6 +374,21 @@ describe('readEvent', () => {
       kind: 'snapshot',
       snapshot: { date: '1444.11.11', stale: 1, widgets: [{ text: 'Svea' }] },
     });
+    // What a widget drew, from a Tongs that reads it; an empty sprite, a frame of 0 and an
+    // empty flag are none.
+    const drawn = readSnapshot({
+      window: 'panel',
+      widgets: [
+        { path: 'panel/shield', sprite: 'GFX_shield_small', frame: 1, flag: 'RUS' },
+        { path: 'panel/icon', sprite: 'GFX_icon_religion_small', frame: 0, flag: '' },
+        { path: 'panel/none', sprite: '', frame: 3, flag: 'RUS' },
+      ],
+    }).widgets;
+    expect(drawn[0]).toMatchObject({ sprite: 'GFX_shield_small', frame: 1, flag: 'RUS' });
+    expect(drawn[1]).toMatchObject({ sprite: 'GFX_icon_religion_small' });
+    expect(drawn[1]).not.toHaveProperty('frame');
+    expect(drawn[1]).not.toHaveProperty('flag');
+    for (const field of ['sprite', 'frame', 'flag']) expect(drawn[2]).not.toHaveProperty(field);
     // The main menu (`null`), and a plugin built before Anvil 1.6.0 (no member).
     for (const date of [{ date: null }, {}]) {
       expect(readSnapshot({ window: 'panel', widgets: [], ...date }).date).toBeUndefined();

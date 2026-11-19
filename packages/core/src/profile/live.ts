@@ -27,6 +27,14 @@ export interface LiveWidget {
   readonly markup?: string;
   readonly rect: readonly [number, number, number, number];
   /**
+   * What a button, icon or check box drew, from a Tongs that reads it (0.37): its sprite by its
+   * `.gfx` name (the `.gui`'s, the size variant the game took, or one the game's code set), that
+   * sprite's frame from 1, and a shield's country tag (`RUS`), whose flag fills its mask.
+   */
+  readonly sprite?: string;
+  readonly frame?: number;
+  readonly flag?: string;
+  /**
    * The path as the game names it, when {@link path} names a list's row by position instead
    * (`…/listbox/entry[3]` for `…/listbox/row[2]`): Compare with Live Game pairs the game's
    * widgets with the layout's by it, as the survey pairs a capture's. Left out by snapshots of
@@ -69,6 +77,9 @@ export interface PluginWidget {
   readonly text: string | undefined;
   readonly markup?: string;
   readonly rect: readonly [number, number, number, number];
+  readonly sprite?: string;
+  readonly frame?: number;
+  readonly flag?: string;
 }
 
 /**
@@ -113,6 +124,9 @@ export function liveWidgetsOf(widgets: readonly PluginWidget[]): LiveWidget[] {
       ...(w.text === undefined ? {} : { text: w.text }),
       ...(w.markup === undefined || w.markup === w.text ? {} : { markup: w.markup }),
       rect: w.rect,
+      ...(w.sprite === undefined ? {} : { sprite: w.sprite }),
+      ...(w.frame === undefined ? {} : { frame: w.frame }),
+      ...(w.flag === undefined ? {} : { flag: w.flag }),
     };
   });
 }
@@ -207,6 +221,9 @@ export function liveMatch(
       enabled: w.enabled,
       checked: w.checked,
       rect: w.rect,
+      ...(w.sprite === undefined ? {} : { sprite: w.sprite }),
+      ...(w.frame === undefined ? {} : { frame: w.frame }),
+      ...(w.flag === undefined ? {} : { flag: w.flag }),
     });
     // A row's widgets come from its template: the list box must still be there.
     const row = /^(.*?)\/row\[(\d+)\](?:\/|$)/.exec(path);

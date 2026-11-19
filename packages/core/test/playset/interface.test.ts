@@ -18,6 +18,8 @@ describe('PlaysetInterface', () => {
       'interface/sub/extra.gfx':
         'spriteTypes = { spriteType = { name = "GFX_a" textureFile = "gfx/interface/late.dds" } }',
       'gfx/interface/a.dds': 'dds',
+      'gfx/flags/RUS.tga': 'tga',
+      'gfx/flags/readme.txt': 'txt',
       'gfx/fonts/vic_18.fnt': 'fnt',
       'gfx/fonts/vic_18.dds': 'dds',
     });
@@ -79,6 +81,9 @@ describe('PlaysetInterface', () => {
       'missing-texture',
     ]);
     expect(loaded.diagnostics('interface/unknown.gui')).toEqual([]);
+    // The flags, which no interface file names, for the shields of a live snapshot.
+    expect(loaded.exists('gfx/flags/rus.tga')).toBe(true);
+    expect(loaded.exists('gfx/flags/readme.txt')).toBe(false);
   });
 
   it('updates one file from its game text and looks up the new paths', async () => {

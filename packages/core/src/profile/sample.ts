@@ -65,6 +65,10 @@ export interface LiveState {
   readonly checked: boolean;
   /** Where the game showed it, in client pixels (`x`, `y`, `w`, `h`), as the snapshot holds it. */
   readonly rect?: readonly [number, number, number, number];
+  /** The sprite it drew by its `.gfx` name, that sprite's frame from 1, and a shield's country tag. */
+  readonly sprite?: string;
+  readonly frame?: number;
+  readonly flag?: string;
 }
 
 /**

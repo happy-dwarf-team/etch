@@ -20,11 +20,14 @@ import type { GameFile, GameFiles } from './game-files.ts';
 
 /** The folder the game reads `.gui` and `.gfx` files from, subfolders included. */
 const INTERFACE_FOLDER = 'interface';
+/** The folder of the countries' flags, `<tag>.tga`. */
+const FLAGS_FOLDER = 'gfx/flags';
 
 /**
  * The playset's interface: every `.gfx` and `.gui` file of `interface/` and its subfolders, read
  * from the winning layer and modelled, the {@link InterfaceIndex} over them, and the texture and
- * font files they name, looked up once so that checks run without touching the disk.
+ * font files they name and the flags of `gfx/flags`, looked up once so that checks run without
+ * touching the disk.
  *
  * An edited file is given to {@link update} with its game text (the unsaved buffer, etch#15).
  * Files that appear on disk after loading are not seen until the playset is loaded again.
@@ -63,6 +66,11 @@ export class PlaysetInterface {
       ...gfx.flatMap((f) => [...gfxPaths(f.file)]),
       ...gui.flatMap((f) => [...guiPaths(f.file)]),
     ]);
+    // The countries' flags, which no interface file names: a shield draws the one a live
+    // snapshot names (`gfx/flags/<tag>.tga`).
+    for (const flag of await files.list(FLAGS_FOLDER, '.tga')) {
+      loaded.found.set(cacheKey(flag.path), flag);
+    }
     return loaded;
   }
 

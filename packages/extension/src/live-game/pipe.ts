@@ -206,6 +206,14 @@ export interface SnapshotWidget {
   /** The text with the game's colour codes (`§G…§!`), when it has some. */
   readonly markup?: string;
   readonly rect: readonly [number, number, number, number];
+  /**
+   * What a button, icon or check box drew, from a Tongs that reads it (0.37): its sprite by its
+   * `.gfx` name (the `.gui`'s, the size variant the game took, or one the game's code set), that
+   * sprite's frame from 1, and a shield's country tag (`RUS`), whose flag fills its mask.
+   */
+  readonly sprite?: string;
+  readonly frame?: number;
+  readonly flag?: string;
 }
 
 /** A live snapshot of a top-level window as the plugin sends it (`snapshot`). */
@@ -335,9 +343,27 @@ export function readSnapshot(line: Record<string, unknown>): SnapshotAnswer {
       text: typeof w['text'] === 'string' ? w['text'] : undefined,
       ...(typeof w['markup'] === 'string' ? { markup: w['markup'] } : {}),
       rect: rectOf(w['rect']),
+      ...drawnOf(w),
     })),
     stale: Number(line['stale'] ?? 0),
     readMs: Number(line['read_ms'] ?? 0),
+  };
+}
+
+/** A snapshot widget's `sprite`, `frame` and `flag`, the ones it has. */
+function drawnOf(w: Record<string, unknown>): {
+  sprite?: string;
+  frame?: number;
+  flag?: string;
+} {
+  const sprite = typeof w['sprite'] === 'string' && w['sprite'] !== '' ? w['sprite'] : undefined;
+  if (sprite === undefined) return {};
+  const frame = Number(w['frame']);
+  const flag = typeof w['flag'] === 'string' && w['flag'] !== '' ? w['flag'] : undefined;
+  return {
+    sprite,
+    ...(Number.isInteger(frame) && frame > 0 ? { frame } : {}),
+    ...(flag === undefined ? {} : { flag }),
   };
 }
 

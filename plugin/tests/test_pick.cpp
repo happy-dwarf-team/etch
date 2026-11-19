@@ -181,6 +181,12 @@ void TestSnapshot() {
     tree[2].has_text = true;
     tree[2].text = tree[2].markup = "plain";
     tree[5].flags = kEnabled | kChecked;
+    // What the game's code drew: a religion icon's frame, a shield's country.
+    tree[3].sprite = "GFX_icon_religion_small";
+    tree[3].frame = 3;
+    tree[5].sprite = "GFX_shield_small";
+    tree[5].frame = 1;
+    tree[5].flag = "RUS";
     for (UiWidget& w : tree) w.path = w.name;
     const etch::Snapshot snapshot = etch::SnapshotOf(tree, 1, 1920, 1080, etch::GameDate{1444, 11, 11}, 6.5);
     assert(snapshot.widgets == 5 && snapshot.stale == 1);
@@ -202,6 +208,11 @@ void TestSnapshot() {
     assert(widgets[2].Find("text")->kind() == Value::Kind::Null);
     assert(widgets[4].Find("visible")->AsBool() == false && widgets[4].Find("checked")->AsBool() == true);
     assert(widgets[0].Find("rect")->AsArray()->size() == 4);
+    assert(widgets[2].Find("sprite")->AsString() == "GFX_icon_religion_small" &&
+           widgets[2].Find("frame")->AsUint() == 3u && widgets[2].Find("flag") == nullptr);
+    assert(widgets[4].Find("sprite")->AsString() == "GFX_shield_small" && widgets[4].Find("flag")->AsString() == "RUS");
+    // A widget Tongs gave no sprite has none of the three.
+    assert(widgets[0].Find("sprite") == nullptr && widgets[0].Find("frame") == nullptr);
 
     bool stale = true;
     assert(etch::FindRoot(tree, "ProvinceView", stale) == 1u && !stale);

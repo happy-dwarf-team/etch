@@ -51,10 +51,14 @@ refresh is a step of the 3.0.0 release.
 
 - **Code-set sprites and frames.** The game's code sets the terrain picture,
   the shields' flags, the trade goods, the frame of a building under
-  construction and the locked slot; a live snapshot has only the fields of
-  `tongs.ui` version 1, so the preview drawn from it differs there (v2
+  construction and the locked slot; a live snapshot had only the fields of
+  `tongs.ui` version 1, so the preview drawn from it differed there (v2
   section 7, "Not in v2"). Seen in both trial runs against the game, on
-  `cffbf88` and `c2cf182`.
+  `cffbf88` and `c2cf182`. A snapshot now carries the sprite, frame and flag
+  ("Code-set sprites, frames and flags from a snapshot" below); left: the pie
+  charts, the flags the game makes, textures the code puts on a sprite,
+  building slots the snapshot calls hidden and the sprites of widgets from
+  other definitions.
 
 ## Done since 2.0.0
 
@@ -521,6 +525,59 @@ refresh is a step of the 3.0.0 release.
   went from 32 to 12; what is left is a view caught between the province and
   state tabs, vanilla's `fort` (`fort_number` shown empty without a fort) and
   the main menu's `page` (the continue button follows the saves).
+- **Code-set sprites, frames and flags from a snapshot** (left open by the
+  2.0.0 trial; seen again on the Etch website's `snapshot` loop with Etch
+  2.12.0, in the province view of Kaluga in the Russia save of 1719: the
+  texts matched, but the terrain picture, the religion icon, the owner's and
+  the core's shields, the unrest shield, the trade node's colour, the province
+  modifiers' icons (`? ? ?`) and the building slots were the `.gui`'s
+  placeholders). A snapshot's buttons, icons and check boxes carry `sprite`,
+  `frame` and `flag` from a Tongs whose `tongs.ui` reads them (0.37: new
+  members at the end of `TongsUiWidget` within version 1, Tongs ADR 0002), and
+  the preview drawn from it takes them. Read in `eu4.exe` 1.37.5, Steam and GOG:
+
+  | What the game's code sets | The game state Tongs reads | In the preview |
+  | --- | --- | --- |
+  | the sprite: the terrain picture, a building's icon, the locked building slot, a province modifier's icon | the widget's render node's object type (`CGraphicalObject::_pObjectType`), whose `_Name` is the `.gfx` name | drawn as named when it is neither the `.gui`'s sprite nor one of its size variants, over a profile's |
+  | the frame: the religion's icon, the province view's selected tab | the node's `_nSuperState`, which `SetFrame` writes, from 1 | over the view's frame and the ticked check box's second |
+  | a shield's flag: the trade node's owner, a core | `CShieldObject::_TagIndex`, the country whose own tag the country database holds | `gfx/flags/<tag>.tga` in the mask, under the overlay |
+
+  Checked in the game on 19.11.2026 (Kaluga, as above, Tongs and Etch from
+  this change): the snapshot gave `GFX_combat_terrain_woods`,
+  `GFX_icon_religion_small` frame 4 (Orthodox), `RUS` on the trade and core
+  shields, `GFX_hostile_attrition` for the third modifier and
+  `GFX_locked_building_slot`, and the preview drawn from it showed them as the
+  game did; Etch 2.12.0 drew hills, the Catholic cross, empty shields, `?` and
+  a building.
+
+  Verified in `CMaskedSpriteType::InitForDevice` and `CShieldObject::Render`:
+  the flag is drawn whole into a quad the size of the mask (`textureFile2`),
+  half the difference of the overlay's and the mask's sizes in from the
+  overlay's corner, and the overlay (`textureFile1`) over it; vanilla's small
+  shield is a 24-pixel mask in a 32-pixel overlay. The playset's interface
+  lists `gfx/flags` for it, as no interface file names the flags. A sprite the
+  playset does not define, a tag without a flag file and a snapshot from an
+  older Tongs draw as before.
+
+  Not carried, and why:
+  - **Pie charts** (the trade node's colour, `trade_pie`): the slices, each a
+    size, a colour and an id, are in the chart (`C2dPieChart`), which Tongs
+    could read, but the preview draws no pie chart yet; both are a later step.
+  - **Flags the game makes**: a colonial nation's (`RenderCustomFlag`, with
+    its overlord's colours) and a custom nation's name a tag that `gfx/flags`
+    has no file of, so their shields keep the overlay alone; nor the client
+    state symbols of `textureFile3`. The likely rebels' shield (`unrest`) has
+    no country either: the game draws the rebels' own picture into it.
+  - **Textures the game's code puts on a sprite**: two of Kaluga's three
+    modifier icons kept `GFX_idea_unknown` as their object type while the game
+    drew another picture, so the texture is set on the node, not by a sprite
+    name, and the preview keeps the `?`.
+  - **Building slots the snapshot calls hidden**: Tongs reports Kaluga's five
+    buildings (`building_progress_entry[1..5]`) hidden, with the right
+    sprites, while the game draws them, so the preview hides them; how the
+    game shows them is a question for `tongs.ui`'s visibility.
+  - **Widgets from other definitions** (etch#256) take their text and rect
+    from the snapshot, not yet its sprite.
 - **Widgets the game builds from other definitions, from a snapshot**
   (etch#256, from the coverage survey). A widget the snapshot shows right
   under one the window has, but which the window's `.gui` lacks, is a copy the

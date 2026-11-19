@@ -34,6 +34,11 @@ struct UiWidget {
     bool has_text = false;
     std::string file;        // the definition's game path; empty when stale or unknown
     std::uint32_t line = 0;  // the line of the `{` that opens the definition (H2), 0 when unknown
+    // What the widget draws, from a Tongs that gives it: its sprite by its .gfx name, the frame
+    // (from 1) and a shield's country tag; empty and 0 when Tongs gives none.
+    std::string sprite;
+    int frame = 0;
+    std::string flag;
 
     bool Visible() const { return (flags & 0x1u) != 0; }
     bool Enabled() const { return (flags & 0x2u) != 0; }
