@@ -31,11 +31,12 @@
 // Turn slider (0 by default). The map's colour map at the tree's place is laid over that at 0.25,
 // the preview's Ground colour standing in for it (grey, #808080, changes nothing). Then the
 // season colour: the season map (the playset's `map/terrain/Tree_season.bmp`, eight columns) at u
-// `season / 8 + 1/16` (the game's season value, from the date) and v the u1's v, less 0.5, is added,
-// times a fade that is 0 in the map's southern half and rises to 1 at nine tenths of its height.
-// The preview takes the column from its Season slider (0 to 1 over the eight) and the fade from
-// its North slider (0 by default, which changes nothing). The random height and turn of the mesh
-// itself are left out; its snow is below.
+// `season / 8 + 1/16` and v the u1's v, less 0.5, is added, times a fade that is 0 in the map's
+// southern half and rises to 1 at nine tenths of its height. The season value comes from the date
+// and the playset's `map/seasons.txt`: the index of its `tree_*` block the date falls in, or how far
+// it is through the gap after one (`treeSeasonAt`). The preview takes the date from its Date slider
+// (1 July by default) and the fade from its North slider (0 by default, which changes nothing).
+// The random height and turn of the mesh itself are left out; its snow is below.
 //
 // Snow, as the game puts it on `PdxMeshSnow` parts (`ApplySnowMesh` in pdxmesh.shader) and map
 // trees (`ApplySnowTree` in tree.shader) before the light: the game takes the amount from the map
@@ -48,15 +49,20 @@
 
 import {
   boneWorldMatrices,
+  dayName,
   jointsOfBones,
   readAnimation,
   readMesh,
   skinningMatrices,
   skinPart,
+  TREE_SEASONS,
+  treeSeasonAt,
   type MeshPart,
   type MeshShape,
   type PdxAnimation,
   type PdxMesh,
+  type TreeSeasonSpan,
+  type TreeSeasonValue,
 } from '@etch/core/asset';
 import type {
   EntityNode,
@@ -113,7 +119,8 @@ const tintInput = element('tint-turn') as HTMLInputElement;
 const groundLabel = element('ground');
 const groundInput = element('ground-colour') as HTMLInputElement;
 const seasonLabel = element('season');
-const seasonTimeInput = element('season-time') as HTMLInputElement;
+const seasonDayInput = element('season-day') as HTMLInputElement;
+const seasonDateOutput = element('season-date');
 const seasonNorthInput = element('season-north') as HTMLInputElement;
 
 const gl = canvas.getContext('webgl2', { antialias: true });
@@ -328,8 +335,12 @@ let ground = '#808080';
 let seasonMap: { texture: WebGLTexture; source: string } | undefined;
 /** Why a map tree's season map is not drawn. */
 let seasonProblem: string | undefined;
-/** The Season slider: the place in the season map's columns, 0 to 1 over its width. */
-let seasonTime = 0;
+/** The playset's tree seasons (`map/seasons.txt`) by column, and where they came from. */
+let treeSeasons: { spans: (TreeSeasonSpan | undefined)[]; source: string } | undefined;
+/** Why the tree seasons are not used, or what of them could not be read. */
+let treeSeasonsProblem: string | undefined;
+/** The Date slider: the day of the year, 0 for 1 January. */
+let seasonDay = 181;
 /** The North slider: how much of the season colour a tree takes, 0 (the map's south) to 1. */
 let north = 0;
 /** What plays: an animation's file name (mesh) or a state (entity); `undefined` for the bind pose. */
@@ -562,7 +573,13 @@ function showWarnings(warnings: ReadonlySet<string>, problems: readonly string[]
 }
 
 function showErrorBox(): void {
-  const lines = [warningLines, flagProblem ?? [], tintProblem ?? [], seasonProblem ?? []].flat();
+  const lines = [
+    warningLines,
+    flagProblem ?? [],
+    tintProblem ?? [],
+    seasonProblem ?? [],
+    treeSeasonsProblem ?? [],
+  ].flat();
   errorBox.hidden = lines.length === 0;
   errorBox.textContent = lines.join('\n');
 }
@@ -784,7 +801,7 @@ function render(now: number): void {
   vector('ground', hexColour(ground));
   gl.uniform1i(uniform('seasonMap'), 5);
   gl.uniform1i(uniform('seasoned'), tree !== undefined && seasonMap !== undefined ? 1 : 0);
-  gl.uniform1f(uniform('seasonTime'), seasonTime);
+  gl.uniform1f(uniform('seasonTime'), (seasonValue()?.value ?? 0) / 8);
   gl.uniform1f(uniform('north'), north);
   gl.activeTexture(gl.TEXTURE5);
   gl.bindTexture(gl.TEXTURE_2D, seasonMap?.texture ?? null);
@@ -875,7 +892,13 @@ function summary(): MeshSummary {
       ...base,
       tint: { source: tint?.source, turn },
       ground,
-      season: { source: seasonMap?.source, time: seasonTime, north },
+      season: {
+        source: seasonMap?.source,
+        seasons: treeSeasons?.source,
+        day: seasonDay,
+        value: seasonValue()?.value,
+        north,
+      },
     };
   }
   if (entity === undefined) return base;
@@ -929,6 +952,9 @@ function showFacts(): void {
   if (tree !== undefined && tint !== undefined) items.push(`Tree_tint.bmp (${tint.source})`);
   if (tree !== undefined && seasonMap !== undefined) {
     items.push(`Tree_season.bmp (${seasonMap.source})`);
+  }
+  if (tree !== undefined && treeSeasons !== undefined) {
+    items.push(`seasons.txt (${treeSeasons.source})`);
   }
   for (const [name, source] of Object.entries(s.textures)) items.push(`${name} (${source})`);
   facts.replaceChildren(
@@ -1021,6 +1047,20 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
       } else if (message.season !== undefined) {
         seasonProblem = `Tree season: ${message.season.message}`;
       }
+      treeSeasons = undefined;
+      treeSeasonsProblem = undefined;
+      if (message.seasons?.ok === true) {
+        treeSeasons = {
+          spans: message.seasons.spans.map((span) => span ?? undefined),
+          source: message.seasons.source,
+        };
+        if (message.seasons.problems.length > 0) {
+          treeSeasonsProblem = `Tree seasons: map/seasons.txt: ${message.seasons.problems.join('; ')}`;
+        }
+      } else if (message.seasons !== undefined) {
+        treeSeasonsProblem = `Tree seasons: ${message.seasons.message}`;
+      }
+      showSeasonDate();
       const keep = playingKey;
       playing = false;
       playingKey = undefined;
@@ -1065,7 +1105,7 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
         snow,
         turn: turned,
         ground: groundColour,
-        season,
+        day,
         north: northward,
       } = message.controls;
       if (mapsOn !== undefined) {
@@ -1090,9 +1130,10 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
         ground = groundColour;
         groundInput.value = groundColour;
       }
-      if (season !== undefined) {
-        seasonTime = season;
-        seasonTimeInput.value = String(season);
+      if (day !== undefined) {
+        seasonDay = day;
+        seasonDayInput.value = String(day);
+        showSeasonDate();
       }
       if (northward !== undefined) {
         north = northward;
@@ -1218,9 +1259,29 @@ groundInput.addEventListener('input', () => {
 groundInput.addEventListener('change', () => {
   vscode.postMessage({ type: 'shown', summary: summary() });
 });
-for (const input of [seasonTimeInput, seasonNorthInput]) {
+/** The season value the game takes for the Date slider's day, from the tree seasons. */
+function seasonValue(): TreeSeasonValue | undefined {
+  return treeSeasons === undefined ? undefined : treeSeasonAt(treeSeasons.spans, seasonDay);
+}
+
+/** Shows the Date slider's day and the tree season it falls in, or between which two. */
+function showSeasonDate(): void {
+  const value = seasonValue();
+  const at =
+    value === undefined
+      ? 'no tree season'
+      : value.lerp === 0
+        ? (TREE_SEASONS[value.first] ?? '')
+        : `${TREE_SEASONS[value.first] ?? ''} to ${TREE_SEASONS[value.second] ?? ''}, ${String(Math.round(value.lerp * 100))}%`;
+  seasonDateOutput.textContent = dayName(seasonDay);
+  seasonDateOutput.title = at;
+  seasonDayInput.setAttribute('aria-valuetext', `${dayName(seasonDay)}, ${at}`);
+}
+
+for (const input of [seasonDayInput, seasonNorthInput]) {
   input.addEventListener('input', () => {
-    seasonTime = Number(seasonTimeInput.value);
+    seasonDay = Number(seasonDayInput.value);
+    showSeasonDate();
     north = Number(seasonNorthInput.value);
     redraw();
   });

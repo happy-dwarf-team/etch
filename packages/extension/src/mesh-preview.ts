@@ -14,11 +14,12 @@
 import { randomBytes } from 'node:crypto';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
-import { textureCandidates } from '@etch/core';
+import { parseScript, textureCandidates } from '@etch/core';
 import {
   jointsOfBones,
   mapTreeOf,
   readBmp,
+  readTreeSeasons,
   readAnimation,
   readMesh,
   type PdxMesh,
@@ -33,6 +34,7 @@ import type {
   MeshHostMessage,
   MeshSummary,
   MeshTexture,
+  MeshTreeSeasons,
   MeshWebviewMessage,
 } from './mesh-protocol.ts';
 import { linkedFiles } from './script-profile-view.ts';
@@ -191,6 +193,30 @@ export async function treeMap(files: GameFiles | undefined, file: string): Promi
   }
 }
 
+/** The map's seasons, whose `tree_*` blocks give the season map's column for a date. */
+export const TREE_SEASONS_FILE = 'map/seasons.txt';
+
+/** The playset's tree seasons (`TREE_SEASONS_FILE`), read. */
+export async function treeSeasons(files: GameFiles | undefined): Promise<MeshTreeSeasons> {
+  const found = files === undefined ? undefined : await files.find(TREE_SEASONS_FILE);
+  if (found === undefined) return { ok: false, message: `no ${TREE_SEASONS_FILE} in the playset` };
+  try {
+    const text = new TextDecoder('windows-1252').decode(await read(found.absolutePath));
+    const { spans, problems } = readTreeSeasons(parseScript(text));
+    return {
+      ok: true,
+      spans: spans.map((span) => span ?? null),
+      source: found.layer.name === 'game' ? 'the game' : found.layer.name,
+      problems,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      message: `${TREE_SEASONS_FILE}: ${error instanceof Error ? error.message : String(error)}`,
+    };
+  }
+}
+
 /** The `.anim` files beside the mesh whose joints name at least half of a skinned shape's bones. */
 async function animationsOf(
   mesh: PdxMesh,
@@ -335,6 +361,7 @@ class MeshPreviewProvider implements vscode.CustomReadonlyEditorProvider<MeshDoc
         tree,
         tint: tree === undefined ? undefined : await treeMap(await this.playset(), TREE_TINT),
         season: tree === undefined ? undefined : await treeMap(await this.playset(), TREE_SEASON),
+        seasons: tree === undefined ? undefined : await treeSeasons(await this.playset()),
       };
       await webview.postMessage(message);
     };
@@ -450,7 +477,8 @@ export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): str
   #facts { display: flex; flex-wrap: wrap; gap: 4px 12px; }
   #facts span { white-space: nowrap; }
   .spacer { flex: 1; }
-  #snow-amount, #tint-turn, #season-time, #season-north { width: 6em; vertical-align: middle; }
+  #snow-amount, #tint-turn, #season-day, #season-north { width: 6em; vertical-align: middle; }
+  #season-date { display: inline-block; min-width: 3.6em; margin-right: 0.5em; }
   input[type="color"] { width: 24px; height: 20px; padding: 0; border: none; background: none; vertical-align: middle; }
   #flag-tag { width: 4em; font: inherit; color: var(--vscode-input-foreground); background: var(--vscode-input-background); border: 1px solid var(--vscode-input-border, transparent); padding: 1px 4px; text-transform: uppercase; }
   button, select {
@@ -494,8 +522,8 @@ export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): str
   <label id="ground" title="A map tree's ground colour: the game lays the map's colour map at the tree's place over it at one quarter; grey (#808080) changes nothing" hidden>
     Ground <input type="color" id="ground-colour" value="#808080" aria-label="Map colour under the tree">
   </label>
-  <label id="season" title="A map tree's season colour from map/terrain/Tree_season.bmp: Season picks the place in its eight columns the game takes from the date, North how much of it the tree takes (the game adds it only in the map's northern half, from none at the middle to all of it at nine tenths of the height)" hidden>
-    Season <input type="range" id="season-time" min="0" max="1" step="0.0625" value="0" aria-label="Place in the season map">
+  <label id="season" title="A map tree's season colour from map/terrain/Tree_season.bmp: Date is the day of the year, whose tree season in map/seasons.txt picks the season map's column as the game picks it, North how much of it the tree takes (the game adds it only in the map's northern half, from none at the middle to all of it at nine tenths of the height)" hidden>
+    Date <input type="range" id="season-day" min="0" max="364" step="1" value="181" aria-label="Day of the year"> <output id="season-date">1 Jul</output>
     North <input type="range" id="season-north" min="0" max="1" step="0.05" value="0" aria-label="How far north the tree stands">
   </label>
   <button id="maps" aria-pressed="true" title="Draw the normal and specular maps">Maps</button>

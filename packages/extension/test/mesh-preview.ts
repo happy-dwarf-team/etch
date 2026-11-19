@@ -23,6 +23,7 @@ import {
   flagTexture,
   MESH_PREVIEW_VIEW_TYPE,
   treeMap,
+  treeSeasons,
   TREE_SEASON,
   TREE_TINT,
   type MeshShown,
@@ -297,6 +298,21 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
   await mkdir(path.join(game, 'map', 'terrain'), { recursive: true });
   await writeFile(path.join(game, 'map', 'terrain', 'Tree_tint.bmp'), tint);
   await writeFile(path.join(game, 'map', 'terrain', 'Tree_season.bmp'), tint);
+  // The tree seasons: eight blocks of the fixture's own; 1 July falls in tree_summer2 (column 5).
+  await writeFile(
+    path.join(game, 'map', 'seasons.txt'),
+    [
+      'tree_winter = { start_date = 00.11.20 end_date = 00.11.30 }',
+      'tree_winter2 = { start_date = 00.12.20 end_date = 00.01.10 }',
+      'tree_spring = { start_date = 00.02.01 end_date = 00.02.10 }',
+      'tree_spring2 = { start_date = 00.03.01 end_date = 00.04.10 }',
+      'tree_summer = { start_date = 00.05.01 end_date = 00.05.31 }',
+      'tree_summer2 = { start_date = 00.06.10 end_date = 00.09.01 }',
+      'tree_autumn = { start_date = 00.10.01 end_date = 00.10.10 }',
+      'tree_autumn2 = { start_date = 00.10.21 end_date = 00.11.01 }',
+      '',
+    ].join('\n'),
+  );
   const settings = vscode.workspace.getConfiguration('etch');
   await settings.update('gamePath', game, vscode.ConfigurationTarget.Global);
   try {
@@ -323,8 +339,8 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
     assert.equal(inGame.summary.ground, undefined, 'another mesh has no ground colour');
     assert.deepEqual(
       tree.summary.season,
-      { source: 'the game', time: 0, north: 0 },
-      "a map tree takes the playset's season map, North at 0",
+      { source: 'the game', seasons: 'the game', day: 181, value: 5, north: 0 },
+      "a map tree takes the playset's season map and tree seasons, 1 July, North at 0",
     );
     assert.equal(inGame.summary.season, undefined, 'another mesh takes no season map');
     // What the tree shader draws follows the controls (the canvas read back, mean colour).
@@ -339,11 +355,17 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
     );
     assert.ok(red.mean[1] < plain.mean[1] - 5 && red.mean[2] < plain.mean[2] - 5);
     assert.deepEqual(await measure(api, treeUri, { ground: '#808080' }), plain);
-    // North 1 adds the season map's texel less grey; the fixture's texels are below grey in red
-    // and blue. North 0 changes nothing.
-    const north = await measure(api, treeUri, { season: 0, north: 1 });
+    // North 1 adds the season map's texel less grey. On 20 November (tree_winter, column 0) the
+    // fixture's map is below grey in red and blue; on 1 May (tree_summer, column 4) it takes more
+    // of the second texel, whose blue is above grey. North 0 changes nothing.
+    const north = await measure(api, treeUri, { day: 323, north: 1 });
     assert.ok(north.mean[0] < plain.mean[0] - 10, `the season colour: ${String(north.mean)}`);
     assert.ok(north.mean[2] < plain.mean[2] - 10);
+    const summer = await measure(api, treeUri, { day: 120 });
+    assert.ok(
+      summer.mean[2] > north.mean[2] + 10,
+      `the date moves the column: ${String(summer.mean)} on 1 May, ${String(north.mean)} on 20 November`,
+    );
     assert.deepEqual(await measure(api, treeUri, { north: 0 }), plain);
     // The turn moves the tint map's place, which differs along u in the fixture.
     const turned = await measure(api, treeUri, { turn: 0.5 });
@@ -385,6 +407,17 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
     assert.deepEqual(await treeMap(undefined, TREE_SEASON), {
       ok: false,
       message: 'no map/terrain/Tree_season.bmp in the playset',
+    });
+    // The tree seasons, read through the playset: days of the year by column.
+    const seasons = await treeSeasons(files);
+    assert.ok(seasons.ok, `the tree seasons are read: ${seasons.ok ? '' : seasons.message}`);
+    assert.deepEqual(
+      [seasons.source, seasons.problems, seasons.spans.length, seasons.spans[1]],
+      ['the game', [], 8, { start: 353, end: 9 }],
+    );
+    assert.deepEqual(await treeSeasons(undefined), {
+      ok: false,
+      message: 'no map/seasons.txt in the playset',
     });
   } finally {
     await settings.update('gamePath', undefined, vscode.ConfigurationTarget.Global);
