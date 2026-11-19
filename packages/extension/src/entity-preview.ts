@@ -100,6 +100,7 @@ async function entityMessage(
   const nodes: EntityNode[] = [];
   const problems: string[] = [];
   const animationPaths = new Set<string>();
+  const particles: Record<string, string[]> = {};
   const visit = async (
     node: ResolvedEntity,
     parent: number | undefined,
@@ -126,6 +127,12 @@ async function entityMessage(
     const states: Record<string, string | undefined> = {};
     for (const state of node.states) {
       states[state.name] = state.file;
+      for (const event of state.events) {
+        if (event.particle === undefined) continue;
+        const where = event.node === undefined ? '' : ` on ${event.node}`;
+        const when = event.time === undefined ? '' : ` at ${String(event.time)} s`;
+        (particles[state.name] ??= []).push(`${node.name}: ${event.particle}${where}${when}`);
+      }
       if (state.file !== undefined) animationPaths.add(state.file);
       if (state.problem !== undefined)
         problems.push(`${node.name}: state ${state.name}: ${state.problem}`);
@@ -164,6 +171,7 @@ async function entityMessage(
     states,
     state: entity.defaultState ?? (states.includes('idle') ? 'idle' : undefined),
     problems: [...new Set(problems)],
+    particles,
   };
 }
 

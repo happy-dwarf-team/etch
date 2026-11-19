@@ -29,7 +29,7 @@ const GFX = `objectTypes = {
 const ASSET = `entity = {
   name = "etch_flag"
   pdxmesh = "etch_flag_mesh"
-  state = { name = "idle" animation = "idle" }
+  state = { name = "idle" animation = "idle" event = { time = 0.5 node = "tip" particle = "etch_sparks" } }
   state = { name = "walk" animation = "walk" }
   attach = { name = "top" tip = "etch_knob" }
 }
@@ -107,6 +107,8 @@ export async function testEntityPreview(api: EtchApi): Promise<void> {
       states: ['idle', 'walk'],
       state: 'idle',
       problems: ['etch_flag: state walk: pdxmesh "etch_flag_mesh" has no animation id "walk"'],
+      // The idle state's particle event, named since particles are not drawn.
+      particles: ['etch_flag: etch_sparks on tip at 0.5 s'],
     });
     assert.equal(shown.summary.shapes, 2, 'the flag and the knob, collision shapes apart');
     assert.equal(shown.summary.textured, 2, 'both textured through the playset');

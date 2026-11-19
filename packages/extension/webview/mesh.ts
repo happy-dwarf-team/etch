@@ -286,8 +286,15 @@ let textureSources: Record<string, string> = {};
 let offered: string[] = [];
 /** The animations that can play, by key: a file name (mesh) or a game path (entity). */
 const animations = new Map<string, PdxAnimation>();
-/** Entity preview: its name, states and what could not be resolved. */
-let entity: { name: string; states: string[]; problems: string[] } | undefined;
+/** Entity preview: its name, states, what could not be resolved and the particles of each state. */
+let entity:
+  | {
+      name: string;
+      states: string[];
+      problems: string[];
+      particles: Readonly<Record<string, readonly string[]>>;
+    }
+  | undefined;
 /** Mesh preview: the map tree type (`mapobject_<n>`) that draws the mesh, if one does. */
 let tree: string | undefined;
 /** The Snow slider: how much snow `PdxMeshSnow` parts and map trees take, 0 to 1. */
@@ -660,7 +667,9 @@ function showStatus(seconds: number): void {
     animation === undefined
       ? 'no animation on the root mesh'
       : `frame ${frameOf(animation, seconds).toFixed(1).padStart(5)} of ${String(animation.frames)} at ${String(Number(animation.fps.toFixed(2)))} fps`;
-  status.textContent = `${entity === undefined ? '' : 'State '}${playingKey}: ${where}`;
+  const particles = entity?.particles[playingKey] ?? [];
+  const notDrawn = particles.length === 0 ? '' : ` · particles not drawn: ${particles.join(', ')}`;
+  status.textContent = `${entity === undefined ? '' : 'State '}${playingKey}: ${where}${notDrawn}`;
 }
 
 function draw(now: number): void {
@@ -798,6 +807,7 @@ function summary(): MeshSummary {
       states: entity.states,
       state: playingKey,
       problems: entity.problems,
+      particles: playingKey === undefined ? [] : [...(entity.particles[playingKey] ?? [])],
     },
   };
 }
@@ -1010,7 +1020,12 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
           nodes.push({ ...node, textures: {} });
         }
       }
-      entity = { name: message.name, states: [...message.states], problems };
+      entity = {
+        name: message.name,
+        states: [...message.states],
+        problems,
+        particles: message.particles,
+      };
       tree = undefined;
       tintProblem = undefined;
       offered = [];

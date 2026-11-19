@@ -393,8 +393,11 @@ entity's states (`idle`, `walk`, …) through the pdxmesh's animation ids and th
 leaves them on their bone as it moves. It resolves through your playset (`.gfx`
 and `.asset` files of the game and your mods, with the open file's unsaved
 text), so set `etch.gamePath`. What it cannot resolve (a missing pdxmesh,
-animation or attached entity, a clone loop) is listed under the bar; hover the
-bar's first line for the attachments and their bones.
+animation or attached entity, a clone loop, an entity attached under itself)
+is listed under the bar; hover the bar's first line for the attachments and
+their bones. Particle effects a state's `event`s start (an artillery piece's
+muzzle flash) are not drawn: the status line names them while the state
+plays.
 
 ## Etch 1.x
 
