@@ -641,6 +641,17 @@ describe('captureView', () => {
       ok: false,
       reason: 'province open 286: provinceview is covered by "menu/menu".',
     });
+    game.provinceCover = null;
+    // An answer for another province than the one asked for.
+    const call = game.call.bind(game);
+    game.call = async (command) => {
+      const answer = await call(command);
+      return command === 'province open 286' ? { ...answer, province: 287 } : answer;
+    };
+    expect(await captureView(ctx, province)).toMatchObject({
+      ok: false,
+      reason: 'province open 286 answered for province 287.',
+    });
   });
 });
 
