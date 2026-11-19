@@ -32,6 +32,8 @@ import {
 } from '../../src/corpus/driver/run.ts';
 import {
   captureView,
+  holdCursor,
+  MouseReleased,
   pinCursor,
   startWindows,
   stepCommand,
@@ -411,6 +413,42 @@ describe('captureView', () => {
     mouse.clip = { left: 50, top: 50, right: 51, bottom: 51 };
     game.open.splice(1);
     expect(await captureView(ctx, viewOf(manifest, 'ledger'))).toMatchObject({ ok: true });
+    expect(mouse.pins).toEqual(['100,100', '100,100']);
+  });
+
+  it('gives the mouse back when Windows refuses a pin or does not confine the cursor', async () => {
+    const folder = await makeTree({});
+    trees.push(folder);
+    const manifest = testManifest(await sha(SAVE_TEXT));
+    const game = new FakeGame(WINDOWS, ['topbar'], folder, SIZE, true);
+    const mouse = new FakeMouse();
+    const ctx = { ...context(game, manifest, 'save', await startWindows(game)), mouse };
+    const window = { width: SIZE.width, height: SIZE.height };
+    const locked =
+      'The mouse cursor cannot be read or pinned: the screen is locked ' +
+      '(SetCursorPos failed: Win32 error 203).';
+
+    // Win+L: Windows refuses the pin.
+    mouse.locked = true;
+    await expect(pinCursor(ctx)).rejects.toThrow(new MouseReleased(locked));
+    await expect(holdCursor(ctx, window)).rejects.toThrow(
+      new MouseReleased(locked.replace('SetCursorPos', 'GetCursorPos')),
+    );
+    mouse.locked = false;
+
+    // Windows takes the pin but keeps another clip.
+    const pin = mouse.pin.bind(mouse);
+    mouse.pin = async (x, y) => {
+      await pin(x, y);
+      mouse.clip = { left: 0, top: 0, right: 2, bottom: 2 };
+      return mouse.read();
+    };
+    await expect(pinCursor(ctx)).rejects.toThrow(
+      new MouseReleased('Windows did not confine the mouse cursor to 100,100.'),
+    );
+    // A one-pixel clip of a moved window, pinned again without the clip taking.
+    mouse.clip = { left: 50, top: 50, right: 51, bottom: 51 };
+    await expect(holdCursor(ctx, window)).rejects.toThrow(MouseReleased);
     expect(mouse.pins).toEqual(['100,100', '100,100']);
   });
 
