@@ -197,7 +197,86 @@ describe('parseCaptureRecord', () => {
   });
 });
 
+describe('parseCaptureRecord on values of the wrong type', () => {
+  it('names each, down to the widgets', () => {
+    expect(parseCaptureRecord('record').problems.map((p) => `${p.at}: ${p.message}`)).toEqual([
+      ': Expected an object.',
+    ]);
+    expect(
+      problemsOf((r) => {
+        r['formatVersion'] = 2;
+        set(r, 'mods.0', 7);
+        set(r, 'widgets.0.children.0.path', 'countrycourtview//close');
+        set(r, 'widgets.0.children.0.name', 7);
+        set(r, 'widgets.0.children.1.text', 7);
+      }),
+    ).toEqual([
+      'formatVersion: Expected 1.',
+      'mods[0]: Expected an object.',
+      'widgets[0].children[0].path: "countrycourtview//close" is not a widget path.',
+      'widgets[0].children[0].path: "countrycourtview//close" is not a child of "countrycourtview".',
+      'widgets[0].children[0].name: Expected a string.',
+      'widgets[0].children[1].text: Expected a string.',
+    ]);
+  });
+});
+
+/** The test manifest with a second resolution and its playset edited. */
+function withPlayset(edit: (playset: Record<string, unknown>) => void): CorpusManifest {
+  const json = JSON.parse(JSON.stringify(manifest)) as {
+    resolutions: unknown[];
+    playsets: Record<string, unknown>[];
+    windows: Record<string, unknown>[];
+  };
+  // A second resolution and a second window, which a playset can capture instead.
+  json.resolutions.push({ width: 1920, height: 1080, confirmed: false, evidence: 'etch#18' });
+  const views = json.windows[0]?.['views'] as Record<string, unknown>[];
+  json.windows.push({
+    ...json.windows[0],
+    id: 'other',
+    title: 'Other',
+    views: views.map((v) => ({ ...v, id: 'other' })),
+  });
+  const [playset] = json.playsets;
+  if (playset === undefined) throw new Error('no playset');
+  edit(playset);
+  const { manifest: edited, problems } = parseCorpusManifest(json);
+  expect(problems).toEqual([]);
+  return edited as CorpusManifest;
+}
+
 describe('captureProblems', () => {
+  it("checks the capture against its playset's resolutions, windows, save and mods", () => {
+    const of = (m: CorpusManifest, capture = parsed()): string[] =>
+      captureProblems(m, capture).map((p) => `${p.at}: ${p.message}`);
+    expect(
+      of(
+        withPlayset((p) => {
+          p['resolutions'] = ['1920x1080'];
+        }),
+      ),
+    ).toEqual(['resolution: The playset "modded" is not captured at 3440x1440.']);
+    expect(
+      of(
+        withPlayset((p) => {
+          p['windows'] = ['other'];
+        }),
+      ),
+    ).toEqual(['view: The playset "modded" does not capture the window "court".']);
+    expect(
+      of(
+        withPlayset((p) => {
+          p['gate'] = 'report';
+          delete p['save'];
+          p['mods'] = [{ name: 'Another mod' }];
+        }),
+      ),
+    ).toEqual([
+      'save: The playset "modded" pins no save for a view opened from one.',
+      'mods: The mods or their order differ from the playset.',
+    ]);
+  });
+
   it('finds nothing in a capture that matches the manifest', () => {
     expect(captureProblems(manifest, parsed())).toEqual([]);
   });
