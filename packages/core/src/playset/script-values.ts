@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { decodeGameText } from '../game-text.ts';
 import { checkCanals, type CanalDiagnostic } from '../script/canals.ts';
+import { checkMapFiles, type MapFileDiagnostic } from '../script/map-files.ts';
 import { parseScript } from '../script/parse.ts';
 import {
   checkAdjacencies,
@@ -33,10 +34,11 @@ import type { GameFile, GameFiles } from './game-files.ts';
 import { definedIds, type PlaysetProvinceIds } from './province-ids.ts';
 
 /**
- * A script value the game uses unchecked and the playset does not have, or a canal of
- * `map/default.map` the game cannot load or build.
+ * A script value the game uses unchecked and the playset does not have, a canal of
+ * `map/default.map` the game cannot load or build, or a map file it names that the playset lacks.
  */
-export type ScriptValueDiagnostic = ProvinceIdDiagnostic | ScriptNameDiagnostic | CanalDiagnostic;
+export type ScriptValueDiagnostic =
+  ProvinceIdDiagnostic | ScriptNameDiagnostic | CanalDiagnostic | MapFileDiagnostic;
 
 /** What script values are checked against; a check without its part is skipped. */
 export interface ScriptValues {
@@ -250,8 +252,11 @@ export async function findScriptValueProblems(
     );
     if (values.ids.canalBitmaps !== undefined) {
       mapDiagnostics.push(...checkCanals(mapParsed, values.ids.canalBitmaps));
-      mapDiagnostics.sort((a, b) => a.start - b.start);
     }
+    if (values.ids.mapFiles !== undefined) {
+      mapDiagnostics.push(...checkMapFiles(mapParsed, values.ids.mapFiles));
+    }
+    mapDiagnostics.sort((a, b) => a.start - b.start);
     if (mapDiagnostics.length > 0) {
       findings.push({ file: values.ids.mapFile, text: mapText, diagnostics: mapDiagnostics });
     }

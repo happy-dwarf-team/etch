@@ -16,6 +16,7 @@ import {
   checkTradeWinds,
   checkContinents,
   checkCanals,
+  checkMapFiles,
   checkDefaultMap,
   decodeGameText,
   isProvinceIdScriptPath,
@@ -314,6 +315,7 @@ export function diagnose(
     const parsed = parseScript(text, { script: true });
     const found: ScriptValueDiagnostic[] = checkDefaultMap(parsed, definedIds(ids));
     if (ids.canalBitmaps !== undefined) found.push(...checkCanals(parsed, ids.canalBitmaps));
+    if (ids.mapFiles !== undefined) found.push(...checkMapFiles(parsed, ids.mapFiles));
     return found.sort((a, b) => a.start - b.start);
   }
   if (
