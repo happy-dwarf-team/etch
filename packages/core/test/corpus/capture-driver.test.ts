@@ -9,6 +9,13 @@ import {
   type CorpusManifest,
   type CorpusView,
 } from '../../src/corpus/index.ts';
+import {
+  newCrawlFile,
+  readCrawlFile,
+  runCrawl,
+  writeCrawlFile,
+  type CrawlRunOptions,
+} from '../../src/corpus/driver/crawl.ts';
 import { planCaptures } from '../../src/corpus/driver/plan.ts';
 import { playsetProfile } from '../../src/corpus/driver/profile.ts';
 import {
@@ -31,7 +38,7 @@ import {
   type ViewContext,
 } from '../../src/corpus/driver/view.ts';
 import { makeTree, removeTree } from '../playset/fixture.ts';
-import { FakeGame, FakeMouse, type FakeWindow } from './fake-game.ts';
+import { CrawlGame, FakeGame, FakeMouse, type FakeWindow } from './fake-game.ts';
 
 const SIZE = { width: 640, height: 360 };
 const EXE = '9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A';
@@ -1109,5 +1116,102 @@ describe('the ready wait', () => {
       true,
       false,
     ]);
+  });
+});
+
+/** A crawl of the main menu session on the run fixture, whose games answer the crawler's reads. */
+async function crawlFixture(): Promise<{
+  root: string;
+  started: string[];
+  options: CrawlRunOptions;
+}> {
+  const { root, started, games, options } = await runFixture();
+  const { sessions, ...run } = options;
+  const session = sessions.find((s) => s.start === 'main-menu');
+  if (session === undefined) throw new Error('no main menu session');
+  return {
+    root,
+    started,
+    options: {
+      ...run,
+      session,
+      rules: { maxDepth: 1, keys: [], provinces: [], never: [], sessionMinutes: 30 },
+      file: join(root, 'local', 'crawl.json'),
+      maxStarts: 3,
+      launcher: {
+        ...run.launcher,
+        async start(profile, save) {
+          const record = await run.launcher.start(profile, save);
+          games[games.length - 1] = new CrawlGame(
+            WINDOWS,
+            ['country_selection_panel'],
+            join(root, 'shots'),
+            SIZE,
+          );
+          return record;
+        },
+      },
+    },
+  };
+}
+
+describe('runCrawl', () => {
+  it('starts the game until the crawl is done and keeps the crawl file and the report', async () => {
+    const { root, started, options } = await crawlFixture();
+    const printed: string[] = [];
+    const result = await runCrawl({ ...options, print: (line) => printed.push(line) });
+
+    expect(result.stopped).toBeUndefined();
+    expect(result.crawl.done).toBe(true);
+    expect(started.length).toBe(result.sessions.length);
+    expect(started.every((save) => save === 'menu')).toBe(true);
+    expect(await readCrawlFile(options.file)).toEqual(result.crawl);
+    const [run] = await readdir(join(root, 'local', 'runs'));
+    expect(run).toMatch(/^crawl-\d{8}T\d{6}Z$/);
+    const report = JSON.parse(
+      await readFile(join(root, 'local', 'runs', run ?? '', 'report.json'), 'utf8'),
+    ) as unknown[];
+    expect(report).toHaveLength(result.sessions.length);
+    expect(printed[0]).toBe('crawl vanilla 640x360 main-menu: start 1');
+    expect(printed).toContainEqual(
+      expect.stringMatching(/^ {2}\d+ views, \d+ explored, \d+ candidates tried$/),
+    );
+
+    // A crawl that is done starts no game.
+    started.length = 0;
+    const again = await runCrawl(options);
+    expect(again).toEqual({ crawl: result.crawl, sessions: [] });
+    expect(started).toEqual([]);
+  });
+
+  it('starts no game with too little of the game lock left, nor after a fatal session', async () => {
+    const { started, options } = await crawlFixture();
+    const clock = new Date('2026-11-19T04:00:00Z');
+    const soon = await runCrawl({
+      ...options,
+      now: () => clock,
+      lockExpiresAt: new Date(clock.getTime() + LOCK_START_MARGIN_MS - 1000),
+    });
+    expect(soon.stopped).toBe("The lab's game lock ends too soon to start a game.");
+    expect(soon.sessions).toEqual([]);
+    expect(started).toEqual([]);
+    expect(await readCrawlFile(options.file)).toBeUndefined();
+
+    // Another copy of the game: the first session fails and the crawl stops there.
+    const other = await runCrawl({
+      ...options,
+      launcher: { ...options.launcher, check: () => Promise.resolve('OTHER') },
+    });
+    expect(other.sessions).toHaveLength(1);
+    expect(other.stopped).toBe(`The copy's eu4.exe is OTHER; the manifest pins ${EXE}.`);
+    expect(started).toEqual([]);
+  });
+
+  it('goes on from the crawl file a run before it left', async () => {
+    const { started, options } = await crawlFixture();
+    const done = { ...newCrawlFile('vanilla', '640x360', 'main-menu'), done: true };
+    await writeCrawlFile(options.file, done);
+    expect(await runCrawl(options)).toEqual({ crawl: done, sessions: [] });
+    expect(started).toEqual([]);
   });
 });
