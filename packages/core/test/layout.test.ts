@@ -928,6 +928,43 @@ describe('layoutWindow: sample data', () => {
     expect(l.widgets.filter((w) => w.widget.name === 'part').map((w) => w.row)).toEqual([0]);
   });
 
+  it("places a view's rows at named positionTypes, and none along a bar the window lacks", () => {
+    const { file, input } = setUp(`guiTypes = {
+      positionType = { name = "first" position = { x = 10 y = 40 } }
+      positionType = { name = "gap" position = { x = 0 y = 25 } }
+      windowType = { name = "w" size = { x = 200 y = 100 } }
+      windowType = { name = "entry" size = { x = 40 y = 20 }
+        iconType = { name = "part" spriteType = "GFX_plain" }
+      }
+    }`);
+    const window = file.definitions[2] as Widget;
+    const entry = file.definitions[3] as Widget;
+    const parts = (place: {
+      start: string;
+      step?: string;
+      along?: { bar: string; at: number[] };
+    }): [number, number][] =>
+      layoutWindow(window, {
+        ...input,
+        content: {
+          text: () => undefined,
+          rows: (w) => (w === window ? { template: entry, file, count: 2, place } : undefined),
+        },
+      })
+        .widgets.filter((w) => w.widget.name === 'part')
+        .map((w) => [w.x, w.y]);
+    expect(parts({ start: 'first', step: 'gap' })).toEqual([
+      [10, 40],
+      [10, 65],
+    ]);
+    // A name no positionType has: the first row at the window's corner, one entry apart.
+    expect(parts({ start: 'nowhere', step: 'GAP' })).toEqual([
+      [0, 0],
+      [0, 25],
+    ]);
+    expect(parts({ start: 'first', along: { bar: 'bar', at: [0.5, 1] } })).toEqual([]);
+  });
+
   it("moves what a live snapshot showed elsewhere, at the layout's size, with its children", () => {
     const { file, input } = setUp(`guiTypes = {
       windowType = { name = "w" size = { x = 200 y = 100 } position = { x = 0 y = 140 }
