@@ -4,7 +4,8 @@
  * `common/` through the game's lexer while the game starts, with no test that the file exists, as
  * `CCountryDataBase::ReadCountryFiles` does for country files: a missing one leaves
  * `CLexer failed to load file common/technologies/<name>` in `error.log`, and the game crashes
- * before the main menu (GAME_RUN). Vanilla and the lab's mods with their own
+ * about 12 s after it starts, before the main menu (an access violation in `CPersistent::Read`; the
+ * EU4 engine lab, `bmtest-r37`, 19.11.2026). Vanilla and the lab's mods with their own
  * `common/technology.txt` name only the three files they have.
  */
 import { countryFilePath } from './country-files.ts';
