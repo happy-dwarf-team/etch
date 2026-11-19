@@ -338,7 +338,9 @@ export function provinceHistoryNotRead(
  * use for years. The game reads it as an integer with no range check, and when a new game starts it
  * looks up every project the start date has built in the province table at that index, unchecked
  * (`CCurrentGameState::InitGreatProjects`), and `CGreatProjectType::OnCreated` writes the project
- * into that province (the EU4 engine lab, 18.11.2026). Vanilla gives 138 ids, all on its map.
+ * into that province (the EU4 engine lab, 18.11.2026). A new game from the 1444 bookmark with
+ * Stonehenge's `start = 30000000` crashed there, in `CGreatProjectType::ExecuteBuiltEffect`
+ * (19.11.2026). Vanilla gives 138 ids, all on its map.
  */
 const PROVINCE_ENTRY_MEMBERS: readonly (readonly [folder: string, key: string, list: boolean])[] = [
   ['common/colonial_regions/', 'provinces', true],
