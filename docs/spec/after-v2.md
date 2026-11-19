@@ -697,8 +697,15 @@ refresh is a step of the 3.0.0 release.
   index n: 21 types over 17 meshes in vanilla, `entity.vanilla.test.ts`); the
   game draws those with `gfx/FX/tree.shader`, not their materials' shader, so
   the preview cuts out texels with a diffuse alpha under 0.5 and adds no
-  highlight. The tree shader's tint, colour and season maps and each tree's
-  random height and turn are not followed. `PdxMeshAlphaBlend` parts (16 African
+  highlight. Its tint map (`map/terrain/Tree_tint.bmp`, 16 × 16, 24-bit) is
+  laid over the diffuse colour at 0.5 with the game's `GetOverlay`, sampled at
+  the mesh's second UVs (every vanilla tree mesh has them, one point per crown)
+  shifted along u by the tree's turn: the game turns each tree by a random
+  angle and shifts by that angle over a full turn, the preview by a Turn
+  slider. The BMP reader (`readBmp` in `@etch/core/asset`) takes uncompressed
+  24- and 32-bit files only and is not a texture format of the renderer. The
+  colour and season maps and each tree's random height and turn are not
+  followed. `PdxMeshAlphaBlend` parts (16 African
   buildings and, without depth writes, `Mapitems/selection.mesh`) are blended by
   their diffuse alpha after the opaque parts, as the game's blend state does,
   where the preview cut them at 0.5 before. Snow follows the game's
