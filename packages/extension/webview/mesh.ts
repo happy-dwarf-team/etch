@@ -25,8 +25,8 @@
 // (`gfx/FX/tree.shader`, read, not copied) draws it, whatever shader its materials name: texels
 // with a diffuse alpha under 0.5 are cut out, the same light, and no highlight. Its normal map
 // reads the same (green not flipped, bitangent `cross(t, n) * ta.w`: the two signs cancel). Its
-// tint map, the map's colour map and season colours, the random height and turn of each tree,
-// and snow are left out.
+// tint map, the map's colour map and season colours, and the random height and turn of each
+// tree are left out; its snow is below.
 //
 // Snow, as the game puts it on `PdxMeshSnow` parts (`ApplySnowMesh` in pdxmesh.shader) and map
 // trees (`ApplySnowTree` in tree.shader) before the light: the game takes the amount from the map
