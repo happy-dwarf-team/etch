@@ -1060,12 +1060,24 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
       vscode.postMessage({ type: 'shown', summary: summary() });
     } else if (message.type === 'controls') {
       const {
+        maps: mapsOn,
+        colours: countryColours,
         snow,
         turn: turned,
         ground: groundColour,
         season,
         north: northward,
       } = message.controls;
+      if (mapsOn !== undefined) {
+        maps = mapsOn;
+        mapsButton.setAttribute('aria-pressed', String(maps));
+      }
+      for (const [key, input] of colourInputs) {
+        const value = countryColours?.[key];
+        if (value === undefined) continue;
+        input.value = value;
+        country[key] = hexColour(value);
+      }
       if (snow !== undefined) {
         snowAmount = snow;
         snowInput.value = String(snow);
