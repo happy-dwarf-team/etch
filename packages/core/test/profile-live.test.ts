@@ -153,6 +153,24 @@ describe('liveMatch', () => {
     const [plain] = liveWidgetsOf([w('x', true, { text: 'Svea', markup: 'Svea' })]);
     expect(plain).not.toHaveProperty('markup');
   });
+
+  it('gives the sprite, frame and flag the game drew as the widget’s state', () => {
+    const shield = { type: 'icon', sprite: 'GFX_shield_small', frame: 1, flag: 'RUS' };
+    const widgets = liveWidgetsOf([
+      w('provinceview', true),
+      w('provinceview/province_window', true),
+      w('provinceview/province_window/culture', true, shield),
+    ]);
+    expect(widgets[2]).toMatchObject(shield);
+    expect(widgets[1]).not.toHaveProperty('sprite');
+    const match = liveMatch(snapshot(widgets), WINDOW);
+    expect(match.texts.state?.('provinceview/province_window/culture')).toMatchObject({
+      sprite: 'GFX_shield_small',
+      frame: 1,
+      flag: 'RUS',
+    });
+    expect(match.texts.state?.('provinceview/province_window')).not.toHaveProperty('sprite');
+  });
 });
 
 describe('liveMatch with the profile', () => {

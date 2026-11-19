@@ -330,6 +330,11 @@ Snapshot SnapshotOf(const std::vector<UiWidget>& widgets, std::size_t root, int 
         } else {
             item.Null("text");
         }
+        if (!w.sprite.empty()) {
+            item.Str("sprite", w.sprite);
+            if (w.frame > 0) item.Uint("frame", static_cast<std::uint64_t>(w.frame));
+            if (!w.flag.empty()) item.Str("flag", w.flag);
+        }
         item.Raw("rect", Rect(w));
         items += (items.size() > 1 ? "," : "") + item.Finish();
         ++out.widgets;

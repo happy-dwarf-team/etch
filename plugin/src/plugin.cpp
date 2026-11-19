@@ -390,6 +390,12 @@ etch::UiWidget Copy(const TongsUiWidget* w) {
         out.file = w->definition_file;
         if (TONGS_UI_WIDGET_HAS(w, definition_line)) out.line = w->definition_line;
     }
+    // The sprite the game's code set, its frame and a shield's country, from a Tongs that gives them.
+    if (!stale && TONGS_UI_WIDGET_HAS(w, frame) && w->sprite != nullptr) {
+        out.sprite = w->sprite;
+        out.frame = w->frame;
+        if (w->flag != nullptr) out.flag = w->flag;
+    }
     return out;
 }
 

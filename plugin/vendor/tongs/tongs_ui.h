@@ -37,7 +37,7 @@
  * Selectors and widget paths are those of Tongs' pipe (docs/design.md,
  * "Widget tree"): `a/b`, `a//b`, `//b`, names ignoring case with * and ?,
  * and the filters [n], [type=...], [text=...], [text~=...], [text^=...],
- * [enabled], [disabled], [checked], [unchecked]. A filter added within
+ * [enabled], [disabled], [checked], [unchecked], [visible], [hidden]. A filter added within
  * version 1 only turns ANVIL_ERROR_INVALID_ARGUMENT into an answer; a changed
  * meaning of a selector, a path or a field comes as version 2, registered
  * next to version 1.
@@ -109,6 +109,16 @@ typedef struct TongsUiWidget {
                                   * line guibounds shows); 0 under the same rule as definition_file */
     const char *markup;          /* the text as the game holds it, UTF-8 with its colour codes kept: § (U+00A7)
                                   * and the code's character, as in "§G0.45§!"; NULL when `text` is NULL */
+    const char *sprite;          /* buttons, icons and check boxes: the sprite the widget draws, by its name in the
+                                  * .gfx files ("GFX_icon_religion_small"): the .gui's own, the _large or _huge
+                                  * variant the game took for it, or one the game's code set; NULL for other widgets,
+                                  * a stale widget, and when it draws no sprite Tongs reads */
+    const char *flag;            /* a widget whose sprite is a maskedShieldType: the tag of the country whose flag it
+                                  * shows ("RUS"); NULL otherwise, and when the shield names no valid country (a
+                                  * custom flag the game draws by itself, a shield its code has not set yet) */
+    int32_t frame;               /* the frame of `sprite` the widget draws, from 1 as the .gui's `frame` (an iconType
+                                  * without one draws 1); what the game's code set, as for the religion icon; 0 when
+                                  * `sprite` is NULL */
 } TongsUiWidget;
 
 /* Nonzero when `widget` (a const TongsUiWidget*) carries `field`. */

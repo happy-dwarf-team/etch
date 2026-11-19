@@ -38,6 +38,10 @@ spriteTypes = {
     name = "GFX_shield" textureFile1 = "gfx/interface/shield_frame.dds" textureFile2 = "gfx/interface/shield_mask.dds"
     effectFile = "gfx/FX/maskedflag.lua"
   }
+  maskedShieldType = {
+    name = "GFX_small_shield" textureFile1 = "gfx/interface/small_overlay.dds"
+    textureFile2 = "gfx/interface/small_mask.tga" effectFile = "gfx/FX/maskedflag.lua"
+  }
   PieChartType = { name = "GFX_pie" size = { x = 20 y = 20 } }
   PieChartType = { name = "GFX_pie_round" size = 17 }
   spriteType = { name = "GFX_text_gold" texturefile = "gfx/interface/gold.dds" }
@@ -61,6 +65,8 @@ const TEXTURES: Record<string, TextureSize> = {
   'gfx/interface/bar_green.dds': { width: 4, height: 4 },
   'gfx/interface/shield_frame.dds': { width: 24, height: 26 },
   'gfx/interface/shield_mask.dds': { width: 24, height: 26 },
+  'gfx/interface/small_overlay.dds': { width: 32, height: 32 },
+  'gfx/interface/small_mask.tga': { width: 24, height: 24 },
   'gfx/interface/gold.dds': { width: 8, height: 8 },
   'gfx/interface/panel.dds': { width: 30, height: 20 },
   'gfx/interface/panel_large.dds': { width: 30, height: 40 },
@@ -926,6 +932,82 @@ describe('layoutWindow: sample data', () => {
     expect(only(drawsOf(l, 'off'))).toMatchObject({ shader: 'buttonstate', effect: 'disable' });
     expect(only(drawsOf(l, 'tick'))).toMatchObject({ sx: 16 });
     expect(l.widgets.filter((w) => w.widget.name === 'part').map((w) => w.row)).toEqual([0]);
+  });
+
+  it('draws the sprite, frame and flag a live snapshot says the game drew', () => {
+    const { file, input } = setUp(`guiTypes = { windowType = { name = "w" size = { x = 200 y = 100 }
+      iconType = { name = "religion" spriteType = "GFX_strip" }
+      iconType = { name = "project" spriteType = "GFX_plain" position = { x = 0 y = 20 } }
+      iconType = { name = "panel" spriteType = "GFX_panel_standard" position = { x = 80 y = 0 } }
+      checkboxType = { name = "tick" spriteType = "GFX_strip" position = { x = 30 y = 0 } }
+      iconType = { name = "shield" spriteType = "GFX_small_shield" position = { x = 50 y = 50 } scale = 0.5 }
+      guiButtonType = { name = "rebels" quadTextureSprite = "GFX_small_shield" position = { x = 100 y = 50 } }
+    } }`);
+    const window = file.definitions[0] as Widget;
+    const flag = 'gfx/flags/RUS.tga';
+    const drawn = new Map<string, { sprite: string; frame?: number; flag?: string }>([
+      ['religion', { sprite: 'GFX_strip', frame: 3 }],
+      // A sprite the game's code set, drawn as named.
+      ['project', { sprite: 'GFX_crest', frame: 1 }],
+      // A size variant of the `.gui`'s: the preview picks its own for its screen.
+      ['panel', { sprite: 'GFX_panel_large', frame: 1 }],
+      // The frame the game drew, over the ticked box's second.
+      ['tick', { sprite: 'GFX_strip', frame: 1 }],
+      ['shield', { sprite: 'GFX_small_shield', frame: 1, flag: 'RUS' }],
+      // A tag without a flag file: the overlay alone.
+      ['rebels', { sprite: 'GFX_small_shield', flag: 'ZZZ' }],
+    ]);
+    const l = layoutWindow(window, {
+      ...input,
+      exists: (path) => path === flag || input.exists(path),
+      assets: {
+        ...input.assets,
+        textureSize: (path) =>
+          path === flag ? { width: 128, height: 128 } : input.assets.textureSize(path),
+      },
+      content: {
+        text: () => undefined,
+        rows: () => undefined,
+        state: (w) => {
+          const own = drawn.get(w.name ?? '');
+          return own && { visible: true, enabled: true, checked: w.name === 'tick', ...own };
+        },
+      },
+    });
+    const plain = layoutWindow(window, input);
+    expect(only(drawsOf(l, 'religion'))).toMatchObject({ sx: 32, sw: 16 });
+    const project = only(drawsOf(l, 'project'));
+    expect(l.drawList.textures[(project as { texture: number }).texture]).toBe(
+      'gfx/interface/panel.dds',
+    );
+    expect(rectOf(l, 'project')).toEqual([0, 20, 30, 20]);
+    expect(drawsOf(l, 'panel')).toEqual(drawsOf(plain, 'panel'));
+    expect(only(drawsOf(l, 'tick'))).toMatchObject({ sx: 0 });
+    // eu4.exe 1.37.5: the flag fills the mask's size, half the size difference in from the
+    // overlay's corner, under the overlay.
+    const [masked, overlay] = drawsOf(l, 'shield');
+    expect(masked).toMatchObject({
+      kind: 'masked',
+      x: 52,
+      y: 52,
+      width: 12,
+      height: 12,
+      sx: 0,
+      sy: 0,
+      sw: 128,
+      sh: 128,
+      maskRect: { sx: 0, sy: 0, sw: 24, sh: 24 },
+      shader: 'maskedflag',
+    });
+    const textures = l.drawList.textures;
+    const flagDraw = masked as { texture: number; mask: number };
+    expect([textures[flagDraw.texture], textures[flagDraw.mask]]).toEqual([
+      flag,
+      'gfx/interface/small_mask.tga',
+    ]);
+    expect(overlay).toMatchObject({ kind: 'sprite', x: 50, y: 50, width: 16, height: 16 });
+    expect(rectOf(l, 'shield')).toEqual([50, 50, 16, 16]);
+    expect(only(drawsOf(l, 'rebels'))).toMatchObject({ kind: 'sprite', width: 32 });
   });
 
   it("places a view's rows at named positionTypes, and none along a bar the window lacks", () => {

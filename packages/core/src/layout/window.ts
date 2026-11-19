@@ -16,6 +16,7 @@
 import {
   DRAW_LIST_VERSION,
   effectName,
+  isMaskedShader,
   isSpriteShader,
   moveDraw,
   packGlyphs,
@@ -107,6 +108,15 @@ export interface LayoutContent {
         readonly checked: boolean;
         /** Where the game showed it: `x`, `y`, `w`, `h` in client pixels. */
         readonly rect?: readonly [number, number, number, number];
+        /**
+         * The sprite it drew by its `.gfx` name: one that is neither the `.gui`'s nor one of its
+         * size variants is drawn in its place, as a sprite the game's code set.
+         */
+        readonly sprite?: string;
+        /** That sprite's frame, from 1: over the `.gui`'s and the view's. */
+        readonly frame?: number;
+        /** A `maskedShieldType`'s country tag: its flag, `gfx/flags/<tag>.tga`, fills the mask. */
+        readonly flag?: string;
       }
     | undefined;
   /**
@@ -376,8 +386,10 @@ class Layout {
           : axis === 'y'
             ? { x: written.x, y: moved.y }
             : moved;
-    // Hypothesis: a ticked check box draws its sprite's second frame, as the game's do.
+    // The frame a live snapshot says the game drew, over the view's. Without one, hypothesis: a
+    // ticked check box draws its sprite's second frame, as the game's do.
     const frame =
+      (SPRITE_WIDGETS.has(widget.kind) ? state?.frame : undefined) ??
       view?.frame(widget) ??
       (widget.kind === 'checkboxType' && state?.checked === true ? 2 : undefined);
     const stepped = view?.stepped?.(widget);
@@ -1019,17 +1031,35 @@ class Layout {
     frame: number | undefined,
   ): Extent | undefined {
     const key = props.has('spritetype') ? 'spritetype' : 'quadtexturesprite';
+    const written = props.text(key);
     const set =
       this.current === undefined
         ? undefined
-        : (this.input.content?.sprite?.(this.current, this.row) ??
+        : (this.liveSprite(this.current, written) ??
+          this.input.content?.sprite?.(this.current, this.row) ??
           this.input.view?.sprite?.(this.current));
-    const name = set ?? props.text(key);
+    const name = set ?? written;
     if (name === undefined || name === '') return undefined;
     // A sprite the game's code sets is drawn as named: the size variants are the `.gui`'s.
     const sprite =
       variantTop === undefined || set !== undefined ? name : this.sizedSprite(name, variantTop);
     return this.drawSprite(sprite, props.scalar(key), props, x, y, source, fill, frame);
+  }
+
+  /**
+   * The sprite a live snapshot says the game drew in place of the `.gui`'s (the religion's icon,
+   * a great project's picture, a building's icon): one the playset defines that is neither the
+   * `.gui`'s sprite nor one of its size variants, which the preview picks for its own screen.
+   */
+  private liveSprite(widget: Widget, written: string | undefined): string | undefined {
+    const drawn = this.input.content?.state?.(widget, this.row)?.sprite;
+    if (drawn === undefined || this.input.index.sprite(drawn) === undefined) return undefined;
+    if (written !== undefined) {
+      const base = written.replace(/_standard$/i, '').toLowerCase();
+      const own = new Set([written.toLowerCase(), base, `${base}_large`, `${base}_huge`]);
+      if (own.has(drawn.toLowerCase())) return undefined;
+    }
+    return drawn;
   }
 
   /**
@@ -1307,8 +1337,13 @@ class Layout {
   }
 
   /**
-   * A `maskedShieldType` without its flag, which code picks: only the overlay, `textureFile1`, at
-   * its own size times `scale` (hypothesis). The renderer's masked draw is for when a flag is known.
+   * A `maskedShieldType`: the overlay, `textureFile1`, at its own size times `scale` (hypothesis),
+   * over the flag of the country code picks, when a live snapshot names it.
+   *
+   * Verified in eu4.exe 1.37.5 (`CMaskedSpriteType::InitForDevice`, `CShieldObject::Render`): the
+   * flag is drawn whole into a quad the size of the mask, `textureFile2`, which keeps the mask's
+   * alpha, half the difference of the overlay's and the mask's sizes in from the overlay's corner;
+   * the overlay is drawn over it. A shield without a known flag draws only its overlay.
    */
   private drawShield(
     sprite: Sprite,
@@ -1323,6 +1358,7 @@ class Layout {
     const scale = props.number('scale') ?? 1;
     const width = texture.size.width * scale;
     const height = texture.size.height * scale;
+    this.drawFlag(sprite, reference, texture.size, scale, x, y, source);
     this.draws.push({
       kind: 'sprite',
       source,
@@ -1338,6 +1374,46 @@ class Layout {
       shader: 'default',
     });
     return { width, height };
+  }
+
+  /**
+   * The flag a live snapshot names for the current shield (`gfx/flags/<tag>.tga`), with the
+   * mask's alpha, under its overlay of `overlay` texels. Nothing without a tag, a mask or the flag.
+   */
+  private drawFlag(
+    sprite: Sprite,
+    reference: SourceRange | undefined,
+    overlay: TextureSize,
+    scale: number,
+    x: number,
+    y: number,
+    source: number,
+  ): void {
+    const tag =
+      this.current === undefined
+        ? undefined
+        : this.input.content?.state?.(this.current, this.row)?.flag;
+    if (tag === undefined || !/^[A-Z0-9]{3}$/.test(tag)) return;
+    const mask = this.texture(sprite, 'texturefile2', reference);
+    const flag = this.textureAt(`gfx/flags/${tag}.tga`, reference);
+    if (mask === undefined || flag === undefined) return;
+    const name = effectName(sprite.effectFile);
+    this.draws.push({
+      kind: 'masked',
+      source,
+      texture: flag.index,
+      mask: mask.index,
+      x: x + ((overlay.width - mask.size.width) / 2) * scale,
+      y: y + ((overlay.height - mask.size.height) / 2) * scale,
+      width: mask.size.width * scale,
+      height: mask.size.height * scale,
+      sx: 0,
+      sy: 0,
+      sw: flag.size.width,
+      sh: flag.size.height,
+      maskRect: { sx: 0, sy: 0, sw: mask.size.width, sh: mask.size.height },
+      shader: isMaskedShader(name) ? name : 'maskedflag',
+    });
   }
 
   /** The sprite's shader; one the renderer does not port draws with `default` and is reported. */
@@ -1360,8 +1436,15 @@ class Layout {
     reference: SourceRange | undefined,
   ): { index: number; size: TextureSize } | undefined {
     const written = sprite.textures.find((t) => t.key === key);
-    if (written === undefined) return undefined;
-    const path = resolveTexture(written.path, this.input.exists);
+    return written === undefined ? undefined : this.textureAt(written.path, reference);
+  }
+
+  /** A texture by its game path: resolved, sized and given its index in the draw list. */
+  private textureAt(
+    written: string,
+    reference: SourceRange | undefined,
+  ): { index: number; size: TextureSize } | undefined {
+    const path = resolveTexture(written, this.input.exists);
     if (path === undefined) return undefined;
     const size = this.input.assets.textureSize(path);
     if (size === undefined) {
