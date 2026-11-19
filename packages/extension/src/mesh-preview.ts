@@ -36,7 +36,7 @@ import {
 } from '@etch/core/asset';
 import { loadPdxMeshTypes, type GameFiles } from '@etch/core/playset';
 import { inspectTexture } from '@etch/renderer/inspect';
-import { layerFolder } from './asset-links.ts';
+import { layerFolder, textureByName } from './asset-links.ts';
 import type {
   MeshAnimationEntry,
   MeshControls,
@@ -88,7 +88,11 @@ async function exists(file: string): Promise<boolean> {
   }
 }
 
-/** The file a material's bare texture name leads to, and where it came from. */
+/**
+ * The file a material's bare texture name leads to, and where it came from: the mesh's folder
+ * through the playset, else beside the mesh, else the playset's file of that name in another
+ * folder.
+ */
 async function findTexture(
   name: string,
   meshFile: string,
@@ -106,7 +110,11 @@ async function findTexture(
     const beside = path.join(path.dirname(meshFile), candidate);
     if (await exists(beside)) return { file: beside, source: 'beside the mesh' };
   }
-  return undefined;
+  if (files === undefined) return undefined;
+  const elsewhere = await textureByName(name, files);
+  if (elsewhere === undefined) return undefined;
+  const layer = elsewhere.layer.name === 'game' ? 'the game' : elsewhere.layer.name;
+  return { file: elsewhere.absolutePath, source: `${layer}, by name: ${elsewhere.path}` };
 }
 
 /** The diffuse, normal and specular textures of a mesh's drawn parts, decoded, by file name. */

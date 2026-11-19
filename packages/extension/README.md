@@ -332,8 +332,9 @@ name (`texture_diffuse = "tower_diffuse.dds"` in a `pdxmesh`, an animation's
 or the `.asset` file, where vanilla keeps them. Hovering a mesh path lists its
 shapes, vertices, triangles and bones, its shaders and the textures its
 materials name, and draws the mesh with those textures, as they are found
-beside it (a part whose texture is missing is grey); an animation path gives
-its frames, speed and joints.
+beside it or, like the game, by file name in another folder of the playset's
+`gfx/` (a part whose texture is missing is grey); an animation path gives its
+frames, speed and joints.
 
 In `.gui` files, hovering a sprite name (`spriteType`, `quadTextureSprite`, a
 list's `background`) shows the sprite the game draws: its kind and frames, the
@@ -356,7 +357,9 @@ left out. The bar above lists its shapes, vertices,
 triangles, bones and shaders, and where each texture came from: the textures a
 mesh's materials name are looked up in its folder through your playset (the
 mod's over the game's, `.tga` falling back to `.dds`), or beside the file when
-it is in no folder of the playset. Collision shapes are hidden.
+it is in no folder of the playset. A texture that is in neither place is found
+by its file name anywhere under the playset's `gfx/`, as the game finds it, and
+the bar says where (`by name: <path>`). Collision shapes are hidden.
 
 - Drag to turn the model, Shift+drag or right-drag to move it, and scroll to
   zoom; **Reset view** frames it again.
