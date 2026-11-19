@@ -21,7 +21,15 @@ import {
   type CapturedWidget,
   type CaptureRecord,
 } from '../../src/corpus/index.ts';
-import type { LiveSnapshot } from '../../src/profile/index.ts';
+import type { LayoutView } from '../../src/layout/window.ts';
+import {
+  evaluateView,
+  layerProfiles,
+  layoutViewOf,
+  readProfile,
+  type LiveSnapshot,
+  type WindowProfile,
+} from '../../src/profile/index.ts';
 import { LIVE_SNAPSHOT_FORMAT, liveWidgetsOf } from '../../src/profile/live.ts';
 
 const REPOSITORY = join(import.meta.dirname, '..', '..', '..', '..');
@@ -45,8 +53,11 @@ guiTypes = {
   }
 }`;
 
-function laidOut(): { layout: WindowLayout; window: Widget } {
-  const file = readGuiFile(parseScript(GUI));
+function laidOut(
+  view?: (window: Widget) => LayoutView,
+  gui = GUI,
+): { layout: WindowLayout; window: Widget } {
+  const file = readGuiFile(parseScript(gui));
   const index = InterfaceIndex.of(
     [{ path: 'interface/test.gfx', file: readGfxFile(parseScript(GFX)) }],
     [{ path: 'interface/test.gui', file }],
@@ -59,8 +70,31 @@ function laidOut(): { layout: WindowLayout; window: Widget } {
     exists: (path) => path.toLowerCase() in TEXTURES,
     assets: { textureSize: (path) => TEXTURES[path], font: () => undefined },
     screen: SCREEN,
+    ...(view === undefined ? {} : { view: view(window) }),
   });
   return { layout, window };
+}
+
+/**
+ * The panel's profile: a `tab` selector shows `a` or `b`, and an `owner` fact hides `c` for the
+ * owner and `d` for anyone else, so a snapshot that shows both fits no value of `owner`.
+ */
+function panelProfile(): WindowProfile {
+  const { file, diagnostics } = readProfile(
+    `{ "formatVersion": 1, "window": "panel",
+      "selectors": {
+        "tab": { "kind": "ui", "values": { "a": "A", "b": "B" } },
+        "owner": { "kind": "data", "fact": "province.ownedByPlayer" }
+      },
+      "groups": { "tab": { "selector": "tab", "members": { "a": "panel/a", "b": "panel/b" } } },
+      "rules": {
+        "own": { "when": { "owner": "yes" }, "hide": ["panel/c"] },
+        "foreign": { "when": { "owner": "no" }, "hide": ["panel/d"] }
+      } }`,
+    { layer: 0, source: 'vanilla', file: 'panel.jsonc' },
+  );
+  expect(diagnostics).toEqual([]);
+  return layerProfiles('panel', file === undefined ? [] : [file]);
 }
 
 function first<T>(items: readonly T[]): T | undefined {
@@ -72,7 +106,15 @@ const widget = (
   type: string,
   rect: readonly [number, number, number, number],
   visible = true,
-) => ({ path, type, visible, enabled: true, checked: false, text: undefined, rect });
+) => ({
+  path,
+  type,
+  visible,
+  enabled: true,
+  checked: false,
+  text: undefined as string | undefined,
+  rect,
+});
 
 function snapshot(widgets: ReturnType<typeof widget>[]): LiveSnapshot {
   return {
@@ -132,6 +174,7 @@ describe('Compare with Live Game', () => {
     const live = snapshot([
       widget('panel', 'window', [10, 20, 100, 50]),
       widget('panel/a', 'icon', [15, 25, 10, 10], false),
+      { ...widget('panel/b', 'text', [30, 25, 10, 10]), text: 'Moskva' },
     ]);
     const layers = offlinePreviewLayers({
       window,
@@ -141,6 +184,129 @@ describe('Compare with Live Game', () => {
     });
     expect(layers.view).toBeUndefined();
     expect(layers.content.state?.(window.children[0] ?? window, undefined)).toBeUndefined();
+    expect(layers.content.text(window.children[1] ?? window, undefined)).toBe('Moskva');
+    expect(layers.unknownSelectors).toEqual([]);
+  });
+
+  it('sets the selectors a snapshot fits and names those it fits with no value', () => {
+    const { window } = laidOut();
+    const live = snapshot([
+      widget('panel', 'window', [10, 20, 100, 50]),
+      widget('panel/a', 'icon', [15, 25, 10, 10], false),
+      widget('panel/b', 'icon', [30, 25, 10, 10]),
+      widget('panel/c', 'icon', [50, 25, 10, 10]),
+      widget('panel/d', 'icon', [70, 25, 10, 10]),
+    ]);
+    const layers = offlinePreviewLayers({
+      window,
+      screen: SCREEN,
+      snapshot: live,
+      profile: panelProfile(),
+      localise: () => undefined,
+      template: () => undefined,
+    });
+    const [a, b] = window.children;
+    if (a === undefined || b === undefined) throw new Error('no icons');
+    // `tab` = b: the game shows b and hides a. No value of `owner` shows both c and d.
+    expect(layers.view?.shows(a)).toBe(false);
+    expect(layers.view?.shows(b)).toBe(true);
+    expect(layers.unknownSelectors).toEqual(['owner']);
+  });
+
+  it('lists a widget the preview draws and the game lacks, and one only the game shows', () => {
+    const profile = panelProfile();
+    // The preview's view: tab = b and owner = yes, so a and c are hidden.
+    const { layout, window } = laidOut((w) =>
+      layoutViewOf(evaluateView(profile, w, SCREEN, { set: { tab: 'b', owner: 'yes' } })),
+    );
+    const live = snapshot([
+      widget('panel', 'window', [10, 20, 100, 50]),
+      // The game shows a, which the view hides, at the .gui's place.
+      widget('panel/a', 'icon', [15, 25, 10, 10]),
+      widget('panel/b', 'icon', [30, 25, 10, 10]),
+      // The game did not create d.
+    ]);
+    const result = compareLive(planSnapshot(live, { layout }), true, window);
+    const kinds = result.differences.map((d) => `${d.kind} ${d.path}`).sort();
+    expect(kinds).toEqual(['previewOnly panel/d', 'shown panel/a']);
+    const shown = result.differences.find((d) => d.kind === 'shown');
+    expect(shown?.kind === 'shown' ? shown.widget : undefined).toBe(window.children[0]);
+    expect(shown?.kind === 'shown' ? shown.game : undefined).toEqual({
+      x: 15,
+      y: 25,
+      w: 10,
+      h: 10,
+    });
+    const only = result.differences.find((d) => d.kind === 'previewOnly');
+    expect(only?.kind === 'previewOnly' ? only.preview : undefined).toEqual({
+      x: 70,
+      y: 25,
+      w: 10,
+      h: 10,
+    });
+  });
+
+  it('names the steps Tongs writes by position after the definition’s children', () => {
+    const { window } = laidOut(
+      undefined,
+      `guiTypes = {
+        windowType = {
+          name = "panel" position = { x = 10 y = 20 } size = { x = 100 y = 50 }
+          iconType = { name = "a" spriteType = "GFX_icon" }
+          iconType = { name = "first icon" spriteType = "GFX_icon" }
+          iconType = { name = "second icon" spriteType = "GFX_icon" }
+        }
+      }`,
+    );
+    const live = snapshot([
+      widget('panel', 'window', [10, 20, 100, 50]),
+      widget('panel/a', 'icon', [10, 20, 10, 10]),
+      // The game's own positions, not the .gui's.
+      widget('panel/[46]', 'icon', [10, 20, 10, 10]),
+      widget('panel/[47]', 'icon', [10, 20, 10, 10]),
+      widget('panel/[48]', 'icon', [10, 20, 10, 10]),
+      widget('panel/unknown', 'icon', [10, 20, 10, 10]),
+    ]);
+    const [root] = snapshotTree(live, window);
+    expect(root?.name).toBe('panel');
+    expect(root?.children?.map((c) => c.name)).toEqual([
+      'a',
+      'first icon',
+      'second icon',
+      // More steps by position than the definition has children: no name.
+      '',
+      'unknown',
+    ]);
+  });
+
+  it('keeps a snapshot’s tree without names when its root is not the window', () => {
+    const { window } = laidOut();
+    const live = snapshot([
+      widget('other', 'window', [0, 0, 10, 10]),
+      widget('other/[3]', 'mystery', [0, 0, 1, 1]),
+    ]);
+    expect(snapshotTree(live, window)).toEqual([
+      {
+        path: 'other',
+        name: 'other',
+        type: 'window',
+        visible: true,
+        rect: { x: 0, y: 0, w: 10, h: 10 },
+        enabled: true,
+        checked: false,
+        children: [
+          {
+            path: 'other/[3]',
+            name: '',
+            type: 'other',
+            visible: true,
+            rect: { x: 0, y: 0, w: 1, h: 1 },
+            enabled: true,
+            checked: false,
+          },
+        ],
+      },
+    ]);
   });
 
   it('gives back the game tree of every committed capture from its live snapshot', async () => {
