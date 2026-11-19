@@ -177,6 +177,30 @@ describe('script values of a playset', () => {
     ]);
   });
 
+  it('warns about a table of the winning common/technology.txt that no layer has', async () => {
+    await addFiles(root, {
+      'game/common/technology.txt': 'tables = { adm_tech = "technologies/adm.txt" }\n',
+      'game/common/technologies/adm.txt': 'monarch_power = ADM\n',
+      'mod/common/technology.txt':
+        'tables = {\n  adm_tech = "technologies/adm.txt"\n  dip_tech = "technologies/dip.txt"\n}\n',
+    });
+    const files = playset();
+    const names = await loadScriptNames(files);
+    // The game's file for adm_tech; the mod's technology.txt, which replaces the game's, adds one
+    // no layer has.
+    expect(names?.technologyTables).toEqual(
+      new Map([
+        ['common/technologies/adm.txt', true],
+        ['common/technologies/dip.txt', false],
+      ]),
+    );
+    const { findings } = await findScriptValueProblems(files, { names });
+    const technology = findings.find((finding) => finding.file.path === 'common/technology.txt');
+    expect(technology?.diagnostics.map((d) => `${d.key} ${d.code}`)).toEqual([
+      'dip_tech technology-table-missing',
+    ]);
+  });
+
   it('checks names without a map, and ids without names', async () => {
     const text = 'e = { immediate = { add_idea_group = no_ideas owns = 12 } }';
     const files = playset();

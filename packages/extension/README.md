@@ -236,7 +236,9 @@ without a check when the canal is built). So does a map file that
 `adjacencies` and the other files): the game crashes or stops loading the map
 without it. So does a tag in `common/country_tags` whose country file
 (`SWE = "countries/Sweden.txt"`) no layer has: the game reads every tag's file
-while it starts and crashes without it. A `history/provinces` file
+while it starts and crashes without it, and so does a table of
+`common/technology.txt` (`adm_tech = "technologies/adm.txt"`) whose file no
+layer has. A `history/provinces` file
 whose name does not start with a province of the map (`4999 - Past.txt` on
 4941 provinces, or `Uppland.txt`) gets a warning at its first line: the game
 skips it without a word.

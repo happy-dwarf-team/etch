@@ -9,6 +9,12 @@ import {
   type CountryFileDiagnostic,
 } from '../script/country-files.ts';
 import { checkMapFiles, type MapFileDiagnostic } from '../script/map-files.ts';
+import {
+  checkTechnologyTables,
+  isTechnologyPath,
+  readTechnologyTables,
+  type TechnologyTableDiagnostic,
+} from '../script/technology-tables.ts';
 import { parseScript } from '../script/parse.ts';
 import {
   checkAdjacencies,
@@ -49,7 +55,8 @@ export type ScriptValueDiagnostic =
   | ScriptNameDiagnostic
   | CanalDiagnostic
   | MapFileDiagnostic
-  | CountryFileDiagnostic;
+  | CountryFileDiagnostic
+  | TechnologyTableDiagnostic;
 
 /** What script values are checked against; a check without its part is skipped. */
 export interface ScriptValues {
@@ -79,6 +86,10 @@ export function checkScriptValues(
   const countryFiles = values.names?.countryFiles;
   if (countryFiles !== undefined && path !== undefined && isCountryTagsPath(path)) {
     found.push(...checkCountryFiles(parsed, countryFiles));
+  }
+  const tables = values.names?.technologyTables;
+  if (tables !== undefined && path !== undefined && isTechnologyPath(path)) {
+    found.push(...checkTechnologyTables(parsed, tables));
   }
   for (const { string, ownTooltip } of scriptStrings(parsed.entries)) {
     // The string's script starts after its opening quote; script strings have no escapes, so
@@ -201,7 +212,30 @@ export async function loadScriptNames(files: GameFiles): Promise<ScriptNames | u
       }
     }
   }
-  return { byKind, scripted, countryFiles: await loadCountryFiles(files) };
+  return {
+    byKind,
+    scripted,
+    countryFiles: await loadCountryFiles(files),
+    technologyTables: await loadTechnologyTables(files),
+  };
+}
+
+/**
+ * Whether a layer has each technology table the playset's `common/technology.txt` names, by game
+ * path in lower case; a path Etch does not check (`countryFilePath`) is left out.
+ */
+export async function loadTechnologyTables(files: GameFiles): Promise<Map<string, boolean>> {
+  const present = new Map<string, boolean>();
+  const file = await files.find('common/technology.txt');
+  const bytes =
+    file === undefined ? undefined : await readFile(file.absolutePath).catch(() => undefined);
+  if (bytes === undefined) return present;
+  for (const { file: name } of readTechnologyTables(parseScript(decode(bytes), { script: true }))) {
+    const path = countryFilePath(name.text);
+    if (path === undefined || present.has(path.toLowerCase())) continue;
+    present.set(path.toLowerCase(), (await files.find(path)) !== undefined);
+  }
+  return present;
 }
 
 /**
