@@ -188,6 +188,29 @@ describe('checkProvinceIds', () => {
     ).toEqual([]);
   });
 
+  it("checks a religion's holy sites, a member of the religion in its group", () => {
+    const text = [
+      'christian = {',
+      '  holy_sites = { 4942 }',
+      '  coptic = {',
+      '    color = { 0.6 0.6 0.8 }',
+      '    holy_sites = { 358 4942 -1 0 }',
+      '    blessings = { legitimacy }',
+      '  }',
+      '}',
+    ].join('\n');
+    expect(found(text, VANILLA, 'common/religions/00_religion.txt')).toEqual([
+      'holy_sites 4942 province-id-out-of-range',
+      'holy_sites -1 province-id-out-of-range',
+      'holy_sites 0 province-id-out-of-range',
+    ]);
+    // Another folder's `holy_sites`, and one below the religion's level.
+    expect(found(text, VANILLA, 'common/ideas/00_test.txt')).toEqual([]);
+    expect(
+      found('g = { r = { x = { holy_sites = { 9999 } } } }', VANILLA, 'common/religions/x.txt'),
+    ).toEqual([]);
+  });
+
   it('reads keys without regard to case', () => {
     expect(found('e = { trigger = { OWNS = 5075 } }')).toEqual([
       'owns 5075 province-id-out-of-range',

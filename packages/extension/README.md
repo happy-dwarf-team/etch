@@ -216,8 +216,9 @@ passed on to other calls. A
 negative id such as `owns = -1` is flagged too: the game keeps the sign.
 The province lists of colonial regions, trade company regions and trade nodes
 (`provinces` in `common/colonial_regions` and `common/trade_companies`,
-`members` in `common/tradenodes`) are checked too, and so is a great project's
-`start`, which crashes a new game. So are the map's own files: the lists of
+`members` in `common/tradenodes`) are checked too, and so are a great project's
+`start`, which crashes a new game, and a religion's `holy_sites`, which its
+religion tab reads. So are the map's own files: the lists of
 `map/default.map` (`sea_starts`, `lakes` and the others), the climate file's
 lists, the trade winds file's ids, `From` and `To` of each line of
 `map/adjacencies.csv` and `Through` of a `sea` link, and the negative ids of
