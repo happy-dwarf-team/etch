@@ -2,7 +2,8 @@
 // `.asset` file's entity names a `.gfx` pdxmesh (the skinned fixture quad), plays a state through
 // the pdxmesh's animation id, and carries a second entity on its `tip` bone; a clone of it
 // replaces the attachment group. The CodeLens names each entity, and the webview reports the
-// meshes it drew, the states and what it could not resolve.
+// meshes it drew, the states and what it could not resolve, a particle no `.asset` file defines
+// among it.
 import * as assert from 'node:assert/strict';
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -30,7 +31,7 @@ const ASSET = `entity = {
   name = "etch_flag"
   pdxmesh = "etch_flag_mesh"
   state = { name = "idle" animation = "idle" event = { time = 0.5 node = "tip" particle = "etch_sparks" } }
-  state = { name = "walk" animation = "walk" }
+  state = { name = "walk" animation = "walk" event = { particle = "etch_dust" } }
   attach = { name = "top" tip = "etch_knob" }
 }
 
@@ -43,6 +44,10 @@ entity = {
 entity = { name = "etch_knob" pdxmesh = "etch_knob_mesh" }
 
 animation = { name = "etch_wave_animation" file = "etch_wave.anim" }
+`;
+
+// The particle systems: etch_sparks only, so the walk state's etch_dust is defined nowhere.
+const PARTICLES = `particle = { name = "etch_sparks" subsystem = { max_amount = 10 } }
 `;
 
 function open(api: EtchApi, uri: vscode.Uri, name: string): Promise<EntityShown> {
@@ -75,6 +80,8 @@ export async function testEntityPreview(api: EtchApi): Promise<void> {
   await writeFile(path.join(models, 'etch_knob.mesh'), binary(MESH));
   await writeFile(path.join(models, 'flag_diffuse.dds'), dds(2, 2, [30, 20, 10, 255]));
   await writeFile(path.join(entities, 'etch_wave.anim'), binary(ANIM));
+  await mkdir(path.join(game, 'gfx', 'particles'));
+  await writeFile(path.join(game, 'gfx', 'particles', 'etch_sparks.asset'), PARTICLES);
   const asset = vscode.Uri.file(path.join(entities, 'etch_units.asset'));
   await writeFile(asset.fsPath, ASSET);
 
@@ -106,7 +113,10 @@ export async function testEntityPreview(api: EtchApi): Promise<void> {
       nodes: ['etch_flag', 'etch_knob on tip'],
       states: ['idle', 'walk'],
       state: 'idle',
-      problems: ['etch_flag: state walk: pdxmesh "etch_flag_mesh" has no animation id "walk"'],
+      problems: [
+        'etch_flag: state walk: no particle "etch_dust" in the .asset files',
+        'etch_flag: state walk: pdxmesh "etch_flag_mesh" has no animation id "walk"',
+      ],
       // The idle state's particle event, named since particles are not drawn.
       particles: ['etch_flag: etch_sparks on tip at 0.5 s'],
     });

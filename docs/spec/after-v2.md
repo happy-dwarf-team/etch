@@ -684,7 +684,14 @@ refresh is a step of the 3.0.0 release.
   attachment that repeats an entity above it is not followed but named. A
   state's `event` blocks (209 in vanilla, `time`, `node` and `particle`:
   artillery muzzle flashes, siege smoke) start particle effects, which Etch
-  does not draw; the status line names them while the state plays. A
+  does not draw; the status line names them while the state plays. The
+  index reads the names of the `particle` blocks of the `.asset` files
+  (vanilla's 9, in `gfx/particles`), and a state event naming another is a
+  problem of the entity: vanilla names two (`devastation_smoke_particle` in
+  two states of `westerngfx_city_0` and its 32 clones, `siege_cannon` in
+  the siege cannon's idle state); whether a DLC archive defines them is not
+  known, since Etch does not read the archives. The particle systems
+  themselves are not read. A
   `PdxMeshTextureAtlas` part blends in its country's flag where the diffuse
   alpha marks it, sampled with the mesh's `u1` (`MeshPart.uvs1`; all 21 such
   parts of vanilla have it, `asset.vanilla.test.ts`): a tag's `gfx/flags` flag

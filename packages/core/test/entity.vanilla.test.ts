@@ -70,10 +70,18 @@ describe.skipIf(gamePath === undefined)('entities of the installed game', () => 
       const entity = resolveEntity(index, name);
       if (entity !== undefined) walk(entity, true);
     }
-    expect(Object.fromEntries(problems)).toEqual({});
+    // EU4 1.37.5 names two particles no .asset file of the game folder defines:
+    // "devastation_smoke_particle" in two devastation states of "westerngfx_city_0" and the 32
+    // entities that clone it, and "siege_cannon" in the siege cannon's idle state.
+    expect(Object.fromEntries(problems)).toEqual({
+      'state devastation_4: no particle … in the .asset files': 33,
+      'state devastation_5: no particle … in the .asset files': 33,
+      'state idle: no particle … in the .asset files': 1,
+    });
     expect([...missingBones].slice(0, 10)).toEqual([]);
     // EU4 1.37.5: every entity has a mesh once its clone is applied, every state animation
-    // resolves to an .anim, and every attachment's bone is in the mesh's skeleton.
+    // resolves to an .anim, and every attachment's bone is in the mesh's skeleton; the only
+    // problems are the particles above.
     expect(stats).toEqual({
       entities: 1523,
       withMesh: 1523,
@@ -81,7 +89,7 @@ describe.skipIf(gamePath === undefined)('entities of the installed game', () => 
       statesWithAnimation: 4601,
       attachments: 1411,
       bonesFound: 1411,
-      problems: 0,
+      problems: 67,
     });
   });
 

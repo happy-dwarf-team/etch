@@ -408,7 +408,8 @@ animation or attached entity, a clone loop, an entity attached under itself)
 is listed under the bar; hover the bar's first line for the attachments and
 their bones. Particle effects a state's `event`s start (an artillery piece's
 muzzle flash) are not drawn: the status line names them while the state
-plays.
+plays, and a particle no `.asset` file defines (`particle = { name = … }`,
+the game's are in `gfx/particles`) is listed under the bar.
 
 ## Etch 1.x
 
