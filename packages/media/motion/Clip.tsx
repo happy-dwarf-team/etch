@@ -1,5 +1,6 @@
 // Draws one clip's edit (src/edit.ts): its segments cut one after another, each panel a part of
-// its master moved by its camera, the drawn pointer, highlights and key captions. The look follows
+// its master moved by its camera, the drawn pointer, highlights, and key captions in the caption
+// band at the bottom, which no panel enters. The look follows
 // the Etch site (etch-website DESIGN.md): the Forge neutrals, the verdigris accent, IBM Plex Sans and
 // JetBrains Mono.
 import '@fontsource-variable/ibm-plex-sans';
@@ -16,6 +17,7 @@ import {
   useCurrentFrame,
 } from 'remotion';
 import {
+  CAPTION_BAND,
   editLength,
   FULL_FRAME,
   OUTPUT,
@@ -28,6 +30,7 @@ import {
   type Panel,
   type PanelState,
   type Segment,
+  type Hold,
 } from '../src/edit.ts';
 
 const COLOURS = {
@@ -97,6 +100,7 @@ function SegmentView({ spec, segment }: { spec: EditSpec; segment: Segment }) {
           spec={spec}
           panel={segment.panels[i] as Panel}
           state={states[i] as PanelState}
+          holds={(segment.holds ?? []).filter((hold) => hold.panel === i)}
           t={t}
         />
       ))}
@@ -119,11 +123,13 @@ function PanelView({
   spec,
   panel,
   state,
+  holds,
   t,
 }: {
   spec: EditSpec;
   panel: Panel;
   state: PanelState;
+  holds: readonly Hold[];
   t: number;
 }) {
   const source = spec.sources[panel.source];
@@ -146,50 +152,66 @@ function PanelView({
     borderRadius: full ? 0 : 14,
     boxShadow: full ? 'none' : '0 24px 60px -24px rgb(0 0 0 / 0.8)',
     background: COLOURS.surface,
+    ...(panel.fadeRight === undefined
+      ? {}
+      : {
+          maskImage: `linear-gradient(to right, #000 calc(100% - ${String(panel.fadeRight)}px), transparent)`,
+        }),
   };
   const sourceTime = panel.start + t;
   const pointer = panel.pointer === undefined ? undefined : pointerAt(panel.pointer, sourceTime);
   const click = panel.pointer?.clicks.findLast((at) => at <= sourceTime);
+  // A held panel shows its source's frame at the hold's time, frozen, until the hold ends.
+  const hold = holds.find((h) => t >= h.from && t < h.to);
+  const video = (from: number) => (
+    <OffthreadVideo
+      src={staticFile(source.file)}
+      muted
+      trimBefore={Math.round(from * OUTPUT.fps)}
+      style={{
+        position: 'absolute',
+        left: -view.x * scale,
+        top: -view.y * scale,
+        width: source.width * scale,
+        height: source.height * scale,
+        maxWidth: 'none',
+      }}
+    />
+  );
   return (
     <div style={box}>
-      <OffthreadVideo
-        src={staticFile(source.file)}
-        muted
-        trimBefore={Math.round(panel.start * OUTPUT.fps)}
-        style={{
-          position: 'absolute',
-          left: -view.x * scale,
-          top: -view.y * scale,
-          width: source.width * scale,
-          height: source.height * scale,
-          maxWidth: 'none',
-        }}
-      />
+      {hold === undefined ? video(panel.start) : <Freeze frame={0}>{video(hold.at)}</Freeze>}
       {pointer !== undefined && (
         <PointerView
           x={(pointer.x - view.x) * scale}
           y={(pointer.y - view.y) * scale}
           scale={scale}
           since={click === undefined ? undefined : sourceTime - click}
+          arrow={panel.pointer?.arrow !== false}
         />
       )}
     </div>
   );
 }
 
-/** An arrow pointer, drawn the size a pointer has at the master's device scale (2). */
+/**
+ * An arrow pointer, drawn the size Windows draws its pointer at the master's device scale (1): the
+ * arrow about 13 × 19 px, so it covers no more of a tip beside it than the real one does.
+ */
 function PointerView({
   x,
   y,
   scale,
   since,
+  arrow,
 }: {
   x: number;
   y: number;
   scale: number;
   since: number | undefined;
+  arrow: boolean;
 }) {
-  const size = 34 * scale;
+  const size = 22 * scale;
   const ripple = since !== undefined && since < 0.5 ? since / 0.5 : undefined;
   return (
     <>
@@ -197,30 +219,32 @@ function PointerView({
         <div
           style={{
             position: 'absolute',
-            left: x - 30 * scale * ripple,
-            top: y - 30 * scale * ripple,
-            width: 60 * scale * ripple,
-            height: 60 * scale * ripple,
+            left: x - 20 * scale * ripple,
+            top: y - 20 * scale * ripple,
+            width: 40 * scale * ripple,
+            height: 40 * scale * ripple,
             borderRadius: '50%',
-            border: `${String(3 * scale)}px solid ${COLOURS.accent}`,
+            border: `${String(2 * scale)}px solid ${COLOURS.accent}`,
             opacity: 1 - ripple,
           }}
         />
       )}
-      <svg
-        viewBox="0 0 24 24"
-        width={size}
-        height={size}
-        style={{ position: 'absolute', left: x - size * 0.12, top: y - size * 0.06 }}
-      >
-        <path
-          d="M3 2 L3 19 L7.5 15 L10.5 22 L13.5 20.7 L10.6 14 L17 14 Z"
-          fill="#fff"
-          stroke="#111"
-          strokeWidth="1.4"
-          strokeLinejoin="round"
-        />
-      </svg>
+      {arrow && (
+        <svg
+          viewBox="0 0 24 24"
+          width={size}
+          height={size}
+          style={{ position: 'absolute', left: x - size * 0.12, top: y - size * 0.06 }}
+        >
+          <path
+            d="M3 2 L3 19 L7.5 15 L10.5 22 L13.5 20.7 L10.6 14 L17 14 Z"
+            fill="#fff"
+            stroke="#111"
+            strokeWidth="1.4"
+            strokeLinejoin="round"
+          />
+        </svg>
+      )}
     </>
   );
 }
@@ -259,6 +283,7 @@ function HighlightView({
   );
 }
 
+/** A caption in the caption band, under every panel: it never covers what a panel shows. */
 function CaptionView({ caption, t }: { caption: Caption; t: number }) {
   const opacity = fade(t, caption.from, caption.to);
   if (opacity <= 0) return null;
@@ -268,11 +293,12 @@ function CaptionView({ caption, t }: { caption: Caption; t: number }) {
         position: 'absolute',
         left: 0,
         right: 0,
-        bottom: 56,
+        top: OUTPUT.height - CAPTION_BAND,
+        height: CAPTION_BAND,
         display: 'flex',
+        alignItems: 'center',
         justifyContent: 'center',
         opacity,
-        transform: `translateY(${String((1 - opacity) * 12)}px)`,
       }}
     >
       <div
@@ -280,11 +306,6 @@ function CaptionView({ caption, t }: { caption: Caption; t: number }) {
           display: 'flex',
           alignItems: 'center',
           gap: 22,
-          padding: '16px 30px',
-          borderRadius: 18,
-          background: 'rgb(22 23 26 / 0.9)',
-          border: '1px solid rgb(255 255 255 / 0.12)',
-          boxShadow: '0 18px 40px -18px rgb(0 0 0 / 0.9)',
           fontFamily: SANS,
           fontSize: 40,
           fontWeight: 500,

@@ -122,10 +122,13 @@ export class Take {
     file: string,
     options: { cursor?: boolean; nudge?: () => Promise<void> } = {},
   ): Promise<void> {
-    const capture = await GfxCapture.start(this.ffmpeg, hwnd, file, {
-      epochUs: Math.round(this.epochMs * 1000),
-      cursor: options.cursor === true,
-    });
+    const capture = await GfxCapture.start(
+      this.ffmpeg,
+      hwnd,
+      file,
+      { epochUs: Math.round(this.epochMs * 1000), cursor: options.cursor === true },
+      options.nudge,
+    );
     this.recordings.push({ name, file, capture, nudge: options.nudge });
   }
 

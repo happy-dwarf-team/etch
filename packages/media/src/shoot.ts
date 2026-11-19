@@ -2,7 +2,14 @@
 // the edit, its render and the published encodes, all into the capture folder.
 import { writeFile } from 'node:fs/promises';
 import * as path from 'node:path';
-import { OVERRIDES, parkCursor, START_FILE, WINDOW_NAME, type Clip } from './clips.ts';
+import {
+  OVERRIDES,
+  parkCursor,
+  SAMPLE_PROVINCE,
+  START_FILE,
+  WINDOW_NAME,
+  type Clip,
+} from './clips.ts';
 import type { EditSpec, Source } from './edit.ts';
 import { posterArgs, run, videoSize } from './ffmpeg.ts';
 import type { Renderer } from './render.ts';
@@ -26,6 +33,8 @@ export interface ShootOptions {
   readonly encode: (id: string, cut: string) => Promise<void>;
   /** The script profile the `profile` clip shows. */
   readonly profile?: string;
+  /** The save whose province the preview shows (`SAMPLE_PROVINCE`), which the live game plays. */
+  readonly save?: string;
 }
 
 /** Records a clip's take; returns its log, written beside the masters. */
@@ -46,6 +55,13 @@ export async function takeClip(clip: Clip, options: ShootOptions): Promise<TakeL
     await wb.openPreview();
     await wb.expectPreviewed(WINDOW_NAME);
     await wb.fitPreview();
+    // The save's data before the take: its quick pick lists the player's own saves.
+    if (options.save === undefined) throw new Error("the clips need a save's data: pass --save");
+    await wb.chooseSave(options.save);
+    await wb.chooseProvince(SAMPLE_PROVINCE);
+    await wb.closeMenus().catch(() => undefined);
+    await wb.restMouse();
+    await wb.focusEditor();
     await parkCursor(wb);
     await wb.checkFrame();
     // A step that waits on nothing would hang the run without a trace: the take has a limit.

@@ -125,17 +125,30 @@ export class GfxCapture {
     this.exited = exited;
   }
 
-  /** Starts recording and resolves once FFmpeg has written its first frame. */
+  /**
+   * Starts recording and resolves once FFmpeg has written its first frame. `gfxcapture` gives one
+   * only when the window draws, and a window with no blinking cursor (a Markdown page) may not draw
+   * for long, so `nudge` makes it draw every half second until then.
+   */
   static async start(
     ffmpeg: string,
     hwnd: string,
     master: string,
     options: GfxCaptureOptions = {},
+    nudge?: () => Promise<void>,
   ): Promise<GfxCapture> {
     const child = spawn(ffmpeg, gfxcaptureArgs(hwnd, master, options), {
       stdio: ['pipe', 'ignore', 'pipe'],
     });
     const exited = new Promise<number | null>((resolve) => child.on('exit', resolve));
+    // Set once the first frame is written (or FFmpeg fails): a holder the loop below reads.
+    const first = { written: false };
+    const nudging = (async () => {
+      while (!first.written && nudge !== undefined) {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        await nudge().catch(() => undefined);
+      }
+    })();
     let log = '';
     await new Promise<void>((resolve, reject) => {
       const timer = setTimeout(() => {
@@ -153,7 +166,10 @@ export class GfxCapture {
         clearTimeout(timer);
         reject(new Error(`gfxcapture exited with ${String(code)}: ${log.slice(-1000)}`));
       });
+    }).finally(() => {
+      first.written = true;
     });
+    await nudging;
     return new GfxCapture(child, exited);
   }
 

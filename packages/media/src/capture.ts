@@ -30,7 +30,10 @@ export interface CaptureOptions {
   readonly work: string;
   /** The game folder: `etch.gamePath`, and where the overridden base-game files come from. */
   readonly gamePath: string;
-  /** The save the live take's game plays; needed for the live clips. */
+  /**
+   * The save whose province (`SAMPLE_PROVINCE`) the preview's sample data shows in every take, and
+   * the live take's game plays.
+   */
   readonly save?: string;
   /** The script profile the `profile` clip shows: a CSV of Anvil's script profiler. */
   readonly profile?: string;
@@ -52,6 +55,9 @@ export async function capture(options: CaptureOptions): Promise<string> {
   const version = (
     JSON.parse(await readFile(path.join(extension, 'package.json'), 'utf8')) as { version: string }
   ).version;
+  if (options.reedit !== true && options.save === undefined) {
+    throw new Error("the takes need a save for the preview's data and the live game: pass --save");
+  }
   const out = path.join(options.repository, 'packages', 'media', 'out', `v${version}`);
   const masters = path.join(out, 'masters');
   await mkdir(masters, { recursive: true });

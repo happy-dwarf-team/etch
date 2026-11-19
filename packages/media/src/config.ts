@@ -15,14 +15,17 @@ export const MASTER = {
   height: WINDOW.height * DEVICE_SCALE,
 } as const;
 
-/**
- * The live take's game (section 8.4): windowed at a corpus resolution as big as VS Code's master,
- * on the monitor right of VS Code's (live.ts, `GAME_ORIGIN`).
- */
-export const LIVE_GAME_RESOLUTION = { width: 2560, height: 1440 } as const;
-
 /** `etch.previewResolution`: one game pixel is one master pixel when the preview is not scaled. */
-export const PREVIEW_RESOLUTION = { width: 1280, height: 720 } as const;
+export const PREVIEW_RESOLUTION = { width: 1440, height: 900 } as const;
+
+/**
+ * The live take's game (section 8.4), windowed on the monitor right of VS Code's (live.ts,
+ * `GAME_ORIGIN`): at the preview's resolution, as for a user whose preview follows the game's
+ * `settings.txt`. A live snapshot carries the game's positions, which the preview draws as they
+ * are: at 2560 × 1440 the province view, anchored at the screen's bottom, was drawn 540 px lower,
+ * off the preview's canvas.
+ */
+export const LIVE_GAME_RESOLUTION = PREVIEW_RESOLUTION;
 
 /** The editor font size. */
 export const EDITOR_FONT_SIZE = 18;
@@ -104,6 +107,11 @@ export function workbenchSettings(gamePath: string | undefined): Record<string, 
     'editor.parameterHints.enabled': false,
     'editor.inlineSuggest.enabled': false,
     'files.autoSave': 'off',
+    // The game reads its script and interface files as Windows-1252, and the base game's
+    // provinceview.gui holds bytes that differ in UTF-8: opened as UTF-8 it shows Etch's encoding
+    // warnings in Problems, which no loop is about. Opened in the game's encoding, as Etch offers
+    // to reopen it (README, "Encoding"), it has none.
+    'files.encoding': 'windows1252',
     'git.enabled': false,
     'extensions.ignoreRecommendations': true,
     'extensions.autoCheckUpdates': false,

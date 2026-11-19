@@ -520,11 +520,14 @@ export class Workbench {
   /**
    * Moves Playwright's mouse to a point of the page (CSS pixels) in eased steps over `ms`, as a
    * hand would, calling `step` with each position in master pixels: the drawn pointer's path.
+   * With `hover: false` the mouse moves at the last step only: the drawn pointer still glides, and
+   * the page hovers nothing on the way (the preview would outline every widget it crosses).
    */
   async glide(
     to: { x: number; y: number },
     ms: number,
     step: (at: { x: number; y: number }) => void,
+    options: { hover?: boolean } = {},
   ): Promise<void> {
     const from = this.mouse ?? to;
     const steps = Math.max(1, Math.round(ms / 16));
@@ -532,7 +535,7 @@ export class Workbench {
       const p = i / steps;
       const e = p < 0.5 ? 4 * p * p * p : 1 - (-2 * p + 2) ** 3 / 2;
       const at = { x: from.x + (to.x - from.x) * e, y: from.y + (to.y - from.y) * e };
-      await this.page.mouse.move(at.x, at.y);
+      if (options.hover !== false || i === steps) await this.page.mouse.move(at.x, at.y);
       step({ x: at.x * DEVICE_SCALE, y: at.y * DEVICE_SCALE });
       await sleep(ms / steps);
     }
@@ -636,9 +639,14 @@ export class Workbench {
     await this.frame.locator(`#${menu}-popup:not([hidden])`).waitFor();
   }
 
-  /** Closes the preview's menus, as Escape does. */
+  /**
+   * Closes the preview's menus through its own Escape handler, on the document: Escape pressed on
+   * a toolbar button would leave the button focused, its focus ring in the recording.
+   */
   async closeMenus(): Promise<void> {
-    await this.frame.locator('#view-menu').press('Escape');
+    await this.frame.locator('body').evaluate(() => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    });
     await this.frame.locator('#view-popup').waitFor({ state: 'hidden' });
     await this.frame.locator('#data-popup').waitFor({ state: 'hidden' });
   }
@@ -661,6 +669,50 @@ export class Workbench {
    */
   async restMouse(): Promise<void> {
     await this.frame.locator('#title').hover();
+  }
+
+  /**
+   * Gives the preview a save's sample data, as **Data ▾ → Choose save… → Choose a save file**
+   * does, with the file dialog answering `file`. A take does it before it records: the quick pick
+   * lists the player's own saves, which no master shows.
+   */
+  async chooseSave(file: string): Promise<void> {
+    await this.app.evaluate(({ dialog }: { dialog: Record<string, unknown> }, chosen: string) => {
+      dialog['showOpenDialog'] = () => Promise.resolve({ canceled: false, filePaths: [chosen] });
+    }, file);
+    await this.openMenu('data');
+    await this.frame.locator('#data-popup button', { hasText: 'Choose save' }).click();
+    await this.page.locator('.quick-input-widget input').waitFor();
+    await this.page.keyboard.type('Choose a save file');
+    await this.page
+      .locator('.quick-input-list .monaco-list-row.focused', { hasText: 'Choose a save file' })
+      .waitFor();
+    await this.page.keyboard.press('Enter');
+    await this.quickInputClosed();
+    // Etch reads the save in the background: the menu names it once its data is in.
+    const menu = this.frame.locator('#data-menu');
+    for (let i = 0; i < 240; i++) {
+      const text = (await menu.textContent()) ?? '';
+      if (!text.includes('reading') && !text.includes('generated')) return;
+      await sleep(500);
+    }
+    throw new Error(`the save was not read: Data ▾ reads "${(await menu.textContent()) ?? ''}"`);
+  }
+
+  /**
+   * Picks the sample data's province by its name in **Data ▾ → Province…**, `typeDelayMs` between
+   * the name's keys, and waits for the preview's paint.
+   */
+  async chooseProvince(name: string, typeDelayMs = 0): Promise<void> {
+    if (!(await this.frame.locator('#data-popup').isVisible())) await this.openMenu('data');
+    await this.frame.locator('#data-popup button', { hasText: 'Province' }).click();
+    await this.page.locator('.quick-input-widget input').waitFor();
+    await this.page.keyboard.type(name, { delay: typeDelayMs });
+    await this.page
+      .locator('.quick-input-list .monaco-list-row.focused', { hasText: new RegExp(`^${name}#`) })
+      .waitFor();
+    await this.paint(() => this.page.keyboard.press('Enter'));
+    await this.quickInputClosed();
   }
 
   /** Presses a generated text length in the open `Data ▾` and waits for the preview. */

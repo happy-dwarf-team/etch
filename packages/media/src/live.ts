@@ -2,22 +2,45 @@
 // for the three live clips. VS Code fills the primary monitor as in the offline takes, with the
 // preview open; the game runs windowed at a corpus resolution on the monitor right of it, from the
 // run's private install with the run's own copies of the player's settings and of one save, through
-// the media helper (live-helper/). Both windows are recorded against the take's clock. The take
-// first saves an edit that the game reloads (`reload`), then turns pick mode on in the game, hovers
-// a few widgets and clicks one (`pick`), which also gives the preview a live snapshot (`snapshot`).
+// the media helper (live-helper/), on the province whose sample data the preview shows. Both windows
+// are recorded against the take's clock. The take first saves an edit that the game reloads
+// (`reload`), then turns pick mode on in the game, hovers a few widgets and clicks one (`pick`),
+// which also gives the preview a live snapshot (`snapshot`). The edits compose the clips as the
+// offline ones (clips.ts): the control left, its effect right, the captions under both.
 import { copyFile, mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import * as path from 'node:path';
 import { findProfileFolder, systemEnvironment } from '@etch/core/playset';
-import { OVERRIDES, START_FILE, WINDOW_NAME, type Clip } from './clips.ts';
+import {
+  CODE_SCALE,
+  codeView,
+  DETAIL_SCALE,
+  editorLine,
+  LEAD,
+  onScreen,
+  OVERRIDES,
+  pair,
+  PRE_ROLL_MS,
+  POST_ROLL_MS,
+  SAMPLE_PROVINCE,
+  SNAPSHOT_VALUES,
+  START_FILE,
+  TAIL,
+  TEXT_FADE,
+  TRADE_AREA,
+  TRADE_NODE_POSITION,
+  VALUES_AREA,
+  WINDOW_NAME,
+  type Clip,
+} from './clips.ts';
 import { LIVE_GAME_RESOLUTION } from './config.ts';
 import { Desktop, SCAN, type Point, type WindowInfo } from './desktop.ts';
 import {
   cameraKeys,
-  focus,
-  FULL_FRAME,
-  MOVE,
+  GUTTER,
+  rows,
+  STAGE,
   union,
-  whole,
+  viewAt,
   type Caption,
   type EditSpec,
   type Highlight,
@@ -32,31 +55,49 @@ import { Workbench } from './workbench.ts';
 
 /** Where the game's client area goes: the top left corner of the monitor right of the primary. */
 export const GAME_ORIGIN: Point = { x: 3440, y: 0 };
-/** Where the real pointer waits, in the game's client area: over the ornament right of the province view. */
-const GAME_REST: Point = { x: 1200, y: 1000 };
-
-/** The edit `reload` saves: the buildings side panel's x, 480, becomes 580 with one keystroke. */
-export const RELOAD_EDIT = { text: 'x=480 y=13', offset: 2, key: '5', from: 480, to: 580 } as const;
-/** The edited window, as Tongs finds it in the game. */
-export const RELOAD_WIDGET = 'provinceview//buildings_window';
 /**
- * The panel the edited window shows, which the clips frame, ring and click: the window also holds
- * the great projects' panel, hidden (an empty strip) in a province without one.
+ * Where the real pointer waits, in the game's client area: over the map right of the buildings
+ * panel, away from the screen's edges and outside every part of the window the edits show.
  */
-const PANEL_WIDGET = 'provinceview//general_buildings_window';
-/** Widgets `pick` hovers, where the game shows them, before it clicks the buildings panel. */
-const HOVERED = [
-  'provinceview//military_header',
-  'provinceview//trade_header',
-  'provinceview//province_name',
+const GAME_REST: Point = { x: 1050, y: 460 };
+
+/**
+ * The edit `reload` saves: the trade node button's x, 251, becomes 151 with one keystroke on its
+ * first digit, the button `preview` moves too.
+ */
+export const RELOAD_EDIT = {
+  text: TRADE_NODE_POSITION,
+  offset: 'x = '.length,
+  key: '1',
+  from: 251,
+  to: 151,
+} as const;
+/** The edited button, as Tongs finds it in the game. */
+export const RELOAD_WIDGET = 'provinceview//tradenode_button';
+/** The province the game shows: the sample data's, Kaluga (`SAMPLE_PROVINCE`). */
+const LIVE_PROVINCE = 296;
+/** A widget `pick` hovers, and where the pointer goes across it: 0 its left edge, 1 its right. */
+interface Hover {
+  readonly selector: string;
+  readonly across?: number;
+}
+/**
+ * What `pick` hovers, in the trade section, the last the button it then clicks. The game shows its
+ * own tooltip in pick mode at once, beside the pointer and under pick mode's label, and every
+ * widget of the section has one: the loop hovers the widgets with a one-line tooltip (the
+ * section's numbers and their labels have tooltips of ten lines, which cover the label), and the
+ * button at its right end, so its tooltip ("Go to trade node interface") starts past the button;
+ * at its left end the tooltip covers the button, and pick mode's outline seems to frame it.
+ */
+const HOVERED: readonly [Hover, ...Hover[]] = [
+  { selector: 'provinceview//trade_shield' },
+  { selector: 'provinceview//tradepost_button' },
+  { selector: RELOAD_WIDGET, across: 0.93 },
 ];
 
-const PRE_ROLL_MS = 2500;
-const POST_ROLL_MS = 2000;
-const HOLD_MS = 2200;
-/** The wide shot before the first move and after the last. */
-const LEAD = 2.2;
-const TAIL = 1.4;
+const HOLD_MS = 2400;
+/** The height of `pick`'s game band over the definition, in output pixels. */
+const PICK_BAND = 340;
 
 /** The player's `settings.txt`, windowed at `size` (the engine reads `graphics.size`). */
 export function windowedSettings(
@@ -190,6 +231,11 @@ export async function takeLive(options: ShootOptions & { save: string }): Promis
     await wb.openPreview();
     await wb.expectPreviewed(WINDOW_NAME);
     await wb.fitPreview();
+    // The preview shows the save's province, as the offline takes do, until the game's snapshot.
+    await wb.chooseSave(options.save);
+    await wb.chooseProvince(SAMPLE_PROVINCE);
+    await wb.closeMenus().catch(() => undefined);
+    await wb.restMouse();
 
     // The live game, as a user starts it: the command, then the save in its quick pick.
     await wb.command('Etch: Start the Live Game', { keepsQuickInput: true });
@@ -245,46 +291,60 @@ export async function takeLive(options: ShootOptions & { save: string }): Promis
     // scrolls its map, as at a window's edge.
     const rest = screen(GAME_REST);
     await desktop.movePointer(rest, 300);
-
-    // An own province's view, as a click on the map opens it: the capital's, or the next one
-    // without a great project. Its picture is DLC art, which the preview's playset (the base
-    // game and the demo mod) does not have, so the snapshot would draw its placeholder.
-    const tag = (await live.send<{ tag: string }>('player')).tag;
-    const country = await live.send<{ capital: number | null; provinces: number[] }>(
-      `country ${tag}`,
-    );
-    const candidates = [
-      ...(country.capital === null ? [] : [country.capital]),
-      ...country.provinces.filter((id) => id !== country.capital),
-    ].slice(0, 20);
-    let opened: number | undefined;
-    for (const id of candidates) {
-      await live.send(`province open ${String(id)}`);
-      await until(
-        'the province view',
-        async () => (await live.send<{ view: { visible: boolean } }>('selection')).view.visible,
-        30_000,
-        200,
-      );
-      await live.send('frames timeout=5', 10_000);
-      const projects = await live
-        .send<{ matches: TongsWidget[] }>('ui find provinceview//great_projects_window')
-        .catch(() => ({ matches: [] }));
-      if (!projects.matches.some((match) => match.visible)) {
-        opened = id;
-        break;
+    // Only the take moves the real pointer: one moved by anything else scrolls the map, and a
+    // click in pick mode picks. Checked before each recorded part, with where the game's client
+    // area is (a window that moved makes every point here wrong).
+    const pointerAt = async (where: Point, what: string): Promise<void> => {
+      const at = await desktop.cursor();
+      const now = (await desktop.windowOf(pid))?.client;
+      const moved = now === undefined || now.left !== client.left || now.top !== client.top;
+      if (moved || Math.abs(at.x - where.x) > 3 || Math.abs(at.y - where.y) > 3) {
+        throw new Error(
+          `${what}: the pointer is at ${JSON.stringify(at)}, not ${JSON.stringify(where)}, ` +
+            `the game's client area at ${JSON.stringify(now)}, placed at ${JSON.stringify(client)}; ` +
+            'keep the mouse still during the take',
+        );
       }
-    }
-    if (opened === undefined) throw new Error(`no province of ${tag} without a great project`);
-    take.mark('province', { label: String(opened) });
+    };
 
-    // The panel's x as the game counts it: its left edge less the x in the file.
-    const base = (await live.widget(RELOAD_WIDGET)).rect.x - RELOAD_EDIT.from;
-    const panelAt = async (x: number): Promise<TongsWidget> => {
+    // The sample data's province, as a click on the map opens it: the camera on it, so the map
+    // beside the window is its own.
+    await live.send(`province goto ${String(LIVE_PROVINCE)}`);
+    await live.send(`province open ${String(LIVE_PROVINCE)}`);
+    await until(
+      'the province view',
+      async () => (await live.send<{ view: { visible: boolean } }>('selection')).view.visible,
+      30_000,
+      200,
+    );
+    await live.send('frames timeout=5', 10_000);
+    const projects = await live
+      .send<{ matches: TongsWidget[] }>('ui find provinceview//great_projects_window')
+      .catch(() => ({ matches: [] }));
+    if (projects.matches.some((match) => match.visible)) {
+      throw new Error(`province ${String(LIVE_PROVINCE)} shows a great project`);
+    }
+
+    // The button's x as the game counts it: its left edge less the x in the file, read once the
+    // province view has slid in (read during its slide, it was 1 and 18 px short).
+    let left = Number.NaN;
+    await until(
+      'the province view at rest',
+      async () => {
+        const now = (await live.widget(RELOAD_WIDGET)).rect.x;
+        const still = now === left;
+        left = now;
+        return still;
+      },
+      10_000,
+      500,
+    );
+    const base = left - RELOAD_EDIT.from;
+    const buttonAt = async (x: number): Promise<TongsWidget> => {
       let widget: TongsWidget | undefined;
       try {
         await until(
-          `the buildings panel at x ${String(x)}`,
+          `the trade node button at x ${String(x)}`,
           async () => (widget = await live.widget(RELOAD_WIDGET)).rect.x - base === x,
           10_000,
         );
@@ -306,8 +366,6 @@ export async function takeLive(options: ShootOptions & { save: string }): Promis
     };
     // The game took the front when it started; the editor's keys need VS Code there.
     if (!(await desktop.focus(wb.hwnd))) throw new Error('VS Code could not be brought forward');
-    const panelRect = async (): Promise<Rect> =>
-      rectOfWidget(await live.widget(PANEL_WIDGET).catch(() => live.widget(RELOAD_WIDGET)));
     const edit = await wb.find(RELOAD_EDIT.text);
     const at = { line: edit.line, column: edit.start + RELOAD_EDIT.offset };
     await wb.focusEditor();
@@ -319,18 +377,24 @@ export async function takeLive(options: ShootOptions & { save: string }): Promis
     // (docs/live-game.md), and the start state is then the end's.
     await wb.type(RELOAD_EDIT.key);
     await wb.press('Control+S');
-    await panelAt(RELOAD_EDIT.to);
+    await buttonAt(RELOAD_EDIT.to);
     await wb.press('Control+Z');
     await wb.press('Control+S');
-    await panelAt(RELOAD_EDIT.from);
+    await buttonAt(RELOAD_EDIT.from);
     await wb.selectionIs(1);
     await wb.command('Notifications: Clear All Notifications');
     await wb.focusEditor();
     await wb.highlightSettled();
 
-    take.mark('line', { source: 'vscode', rect: await wb.lineRect() });
+    take.mark('line', { source: 'vscode', rect: await editorLine(wb) });
     take.mark('screen', { source: 'vscode', rect: await wb.screenRect() });
-    take.mark('panel', { source: 'game', rect: await panelRect() });
+    // The same button in the preview, which outlines it (the cursor is in its block), and in the
+    // game: where the game draws the province view in its master (`inGame`).
+    take.mark('preview.button', { source: 'vscode', rect: await wb.selectedRect() });
+    take.mark('button', { source: 'game', rect: rectOfWidget(await live.widget(RELOAD_WIDGET)) });
+    await desktop.movePointer(rest, 300);
+    await sleep(300);
+    await pointerAt(rest, 'before the recording');
     await take.record('vscode', wb.hwnd, path.join(options.masters, 'live.vscode.mkv'), {
       nudge: () => wb.nudge(),
     });
@@ -342,60 +406,109 @@ export async function takeLive(options: ShootOptions & { save: string }): Promis
 
     // reload: the edit, saved, reloaded by the game; then undone and saved again.
     take.mark('reload.start');
-    await wb.type(RELOAD_EDIT.key);
     take.mark('reload.key');
-    await sleep(700);
+    await wb.type(RELOAD_EDIT.key);
+    await sleep(1000);
     take.mark('reload.save');
     await wb.press('Control+S');
-    await panelAt(RELOAD_EDIT.to);
-    take.mark('reload.moved', { source: 'game', rect: await panelRect() });
+    take.mark('reload.moved', {
+      source: 'game',
+      rect: rectOfWidget(await buttonAt(RELOAD_EDIT.to)),
+    });
     await sleep(HOLD_MS);
     take.mark('reload.undo');
     await wb.press('Control+Z');
-    await sleep(500);
+    await sleep(700);
     take.mark('reload.resave');
     await wb.press('Control+S');
-    await panelAt(RELOAD_EDIT.from);
-    take.mark('reload.back', { source: 'game', rect: await panelRect() });
+    take.mark('reload.back', {
+      source: 'game',
+      rect: rectOfWidget(await buttonAt(RELOAD_EDIT.from)),
+    });
     await sleep(1500);
     if (await wb.dirty()) throw new Error('reload does not close: the file is still unsaved');
     take.mark('reload.end');
 
-    // pick: pick mode on in the game, a few widgets hovered, the buildings panel clicked; the
-    // pick opens its definition in VS Code and gives the preview a live snapshot.
+    // pick: the pointer on the first widget, pick mode on in the game; a number, an icon and the
+    // trade node button hovered, the button clicked; the pick opens its definition in VS Code and
+    // gives the preview a live snapshot, which repaints it. Pick mode outlines and labels every
+    // widget under the pointer, so the pointer goes to the first one before it is on and jumps
+    // from one to the next: gliding, it would cross others.
     await sleep(800);
+    await pointerAt(rest, 'before pick');
     take.mark('pick.start');
     if (!(await desktop.focus(game.hwnd))) throw new Error('the game could not be brought forward');
+    // Where the pointer goes on a widget, in the client area: `across` its width, at its middle.
+    const pointOn = (widget: TongsWidget, across = 0.5): Point => ({
+      x: Math.round(widget.rect.x + widget.rect.w * across),
+      y: widget.click_point.y,
+    });
+    const [first, ...others] = HOVERED;
+    let target = await live.widget(first.selector);
+    let point = pointOn(target, first.across);
+    await desktop.movePointer(screen(point), 650);
     await sleep(500);
+    const picked = await wb.cursor();
     take.mark('pick.on');
     await desktop.keys(SCAN.ctrl, SCAN.shift, SCAN.e);
-    await sleep(900);
-    for (const selector of HOVERED) {
-      const widget = await live.widget(selector).catch(() => undefined);
-      if (widget === undefined) continue;
-      await desktop.movePointer(screen(widget.click_point), 650);
-      take.mark('pick.hover', { source: 'game', rect: rectOfWidget(widget), label: selector });
-      await sleep(1000);
+    // Pick mode labels the widget under the pointer once the pointer moves.
+    point = { x: point.x + 2, y: point.y };
+    await desktop.movePointer(screen(point), 50);
+    await sleep(400);
+    take.mark('pick.hover', {
+      source: 'game',
+      rect: rectOfWidget(target),
+      label: first.selector,
+      point: await desktop.cursor(),
+    });
+    await sleep(1600);
+    for (const hover of others) {
+      const widget = await live.widget(hover.selector);
+      point = pointOn(widget, hover.across);
+      await desktop.movePointer(screen(point), 0);
+      await sleep(150);
+      take.mark('pick.hover', {
+        source: 'game',
+        rect: rectOfWidget(widget),
+        label: hover.selector,
+        point: await desktop.cursor(),
+      });
+      await sleep(1300);
+      await pointerAt(screen(point), `hovering ${hover.selector}`);
+      target = widget;
     }
-    const target = await live.widget(PANEL_WIDGET).catch(() => live.widget(RELOAD_WIDGET));
-    const point = target.click_point;
-    await desktop.movePointer(screen(point), 650);
-    take.mark('pick.hover', { source: 'game', rect: rectOfWidget(target), label: PANEL_WIDGET });
-    await sleep(700);
     const before = await wb.cursor();
+    // Nothing is picked before the click: the editor still where pick mode found it.
+    if (before.line !== picked.line) {
+      throw new Error(
+        `the editor moved to line ${String(before.line)} before the click: something picked`,
+      );
+    }
     take.mark('pick.click', { source: 'game', point });
-    await desktop.click();
+    const snapshot = wb
+      .paint(() => desktop.click())
+      .then(
+        () => take.mark('pick.snapshot'),
+        (error: unknown) => {
+          console.log(`The pick's snapshot did not repaint the preview: ${String(error)}`);
+        },
+      );
     await until(
       'the pick in the editor',
       async () => (await wb.cursor()).line !== before.line,
       10_000,
       25,
     );
-    take.mark('pick.jump', { source: 'vscode', rect: await wb.lineRect() });
-    await sleep(2500);
+    take.mark('pick.jump', { source: 'vscode', rect: await editorLine(wb) });
+    await snapshot;
+    await sleep(3000);
     take.mark('pick.end');
-    await desktop.movePointer(rest, 600);
+    // The preview after the snapshot, for the take's review.
+    await wb.screenshot(path.join(options.masters, 'live.after-pick.png'));
     await take.until(take.t() + POST_ROLL_MS / 1000);
+    // Away from the game's edges again once the loops' frames are recorded: on its way, pick
+    // mode, still on, labels every widget it crosses.
+    await desktop.movePointer(rest, 600);
   } catch (error) {
     await wb.screenshot(path.join(options.masters, 'live.failed.png')).catch(() => undefined);
     throw error;
@@ -423,91 +536,89 @@ export async function takeLive(options: ShootOptions & { save: string }): Promis
   return log;
 }
 
-// The live clips' layouts in the 1920 × 1080 output: side by side, both 16:9 (the wide shot and the
-// loop's seam), and tall, each half of the frame.
-const SIDE_CODE: Rect = { x: 24, y: 280, w: 924, h: 520 };
-const SIDE_GAME: Rect = { x: 972, y: 280, w: 924, h: 520 };
-const TALL_CODE: Rect = { x: 24, y: 24, w: 924, h: 1032 };
-const TALL_GAME: Rect = { x: 972, y: 24, w: 924, h: 1032 };
-/** A small inset of the other window over a full-frame one. */
-const INSET: Rect = { x: 1392, y: 40, w: 488, h: 274 };
-const TALL = TALL_CODE.w / TALL_CODE.h;
-const WIDE = FULL_FRAME.w / FULL_FRAME.h;
-
 const t = (event: TakeEvent): number => event.t;
 
-/** The two panels' sources, and their wide views in a 16:9 frame. */
-function liveSources(sources: Readonly<Record<string, Source>>) {
-  const code = sources['vscode'] as Source;
-  const game = sources['game'] as Source;
-  return { code, game, codeWide: whole(code, WIDE), gameWide: whole(game, WIDE) };
+/**
+ * An area of the preview's game screen (1440 × 900) in the game's master: the live game draws the
+ * province view as the preview does, lower on its taller screen, and its master may hold the
+ * window's frame (`clientInFrame`). The trade node button, in both, gives the shift.
+ */
+function inGame(log: TakeLog, area: Rect): Rect {
+  const screen = rectOf(eventOf(log, 'screen'));
+  const preview = rectOf(eventOf(log, 'preview.button'));
+  const game = rectOf(eventOf(log, 'button'));
+  const dx = game.x + game.w / 2 - (preview.x + preview.w / 2 - screen.x);
+  const dy = game.y + game.h / 2 - (preview.y + preview.h / 2 - screen.y);
+  return { x: area.x + dx, y: area.y + dy, w: area.w, h: area.h };
 }
 
 export const LIVE_CLIPS: readonly Pick<Clip, 'id' | 'edit'>[] = [
   {
+    // The trade node button's x retyped and saved: the game reloads the window and the button
+    // moves; undone and saved, it moves back. The code left, the game's window right.
     id: 'reload',
     edit(log, sources) {
-      const { code, game, codeWide, gameWide } = liveSources(sources);
-      const s0 = t(eventOf(log, 'reload.start')) - LEAD;
+      const code = sources['vscode'] as Source;
+      const s0 = t(eventOf(log, 'reload.key')) - LEAD;
       const at = (time: number): number => time - s0;
-      const save = t(eventOf(log, 'reload.save'));
+      const key = at(t(eventOf(log, 'reload.key')));
+      const save = at(t(eventOf(log, 'reload.save')));
       const moved = eventOf(log, 'reload.moved');
-      const resave = t(eventOf(log, 'reload.resave'));
-      const back = eventOf(log, 'reload.back');
-      const zoomIn = LEAD - 0.5;
-      const zoomOut = at(t(back)) + 0.6;
-      const lineView = focus(rectOf(eventOf(log, 'line')), code, TALL, {
-        margin: 30,
-        minWidth: 520,
-      });
-      const panelView = focus(union(rectOf(eventOf(log, 'panel')), rectOf(moved)), game, TALL, {
-        margin: 60,
-        minWidth: 640,
-      });
-      const ms = Math.round((t(moved) - save) * 1000);
+      const undo = at(t(eventOf(log, 'reload.undo')));
+      const resave = at(t(eventOf(log, 'reload.resave')));
+      const back = at(t(eventOf(log, 'reload.back')));
+      const end = back + TAIL + 0.4;
+      const area = inGame(log, TRADE_AREA);
+      const frames = pair(
+        { w: STAGE.w - GUTTER - area.w * DETAIL_SCALE, h: STAGE.h },
+        { w: area.w * DETAIL_SCALE, h: area.h * DETAIL_SCALE },
+      );
+      const ms = Math.round((t(moved) - (save + s0)) * 1000);
       const captions: Caption[] = [
-        { from: at(save) - 0.15, to: at(t(moved)) + 0.3, keys: ['Ctrl', 'S'] },
         {
-          from: at(t(moved)) + 0.3,
-          to: at(t(moved)) + 2.0,
-          text: `Saved, and the game reloads it (${String(ms)} ms in this take)`,
+          from: key - 0.05,
+          to: save - 0.2,
+          keys: [RELOAD_EDIT.key],
+          text: `x = ${String(RELOAD_EDIT.to)}`,
         },
+        { from: save - 0.05, to: at(t(moved)) - 0.2, keys: ['Ctrl', 'S'] },
         {
-          from: at(t(eventOf(log, 'reload.undo'))) - 0.15,
-          to: at(resave) - 0.05,
-          keys: ['Ctrl', 'Z'],
+          // Tongs sees the button moved a poll after the frame that shows it.
+          from: at(t(moved)),
+          to: undo - 0.2,
+          text: `Saved: the game reloads the window (${String(ms)} ms in this take)`,
         },
-        { from: at(resave) - 0.05, to: at(t(back)) + 0.5, keys: ['Ctrl', 'S'] },
+        { from: undo - 0.05, to: resave - 0.2, keys: ['Ctrl', 'Z'], text: 'x = 251' },
+        { from: resave - 0.05, to: back + 0.8, keys: ['Ctrl', 'S'] },
       ];
       const highlights: Highlight[] = [
-        { from: at(t(moved)), to: at(t(moved)) + 1.8, panel: 1, rect: rectOf(moved) },
+        { from: at(t(moved)) + 0.1, to: undo - 0.2, panel: 1, rect: rectOf(moved) },
       ];
       return {
         id: 'reload',
         sources,
-        // The trailer's part: the save and the panel moving, not the undo.
-        core: { from: zoomIn, to: at(t(moved)) + 2.0 },
+        // The trailer's part: the key, the save and the button moving, not the undo.
+        core: { from: key - 0.5, to: at(t(moved)) + 1.6 },
         segments: [
           {
-            duration: zoomOut + MOVE + TAIL,
+            duration: end,
             panels: [
               {
                 source: 'vscode',
                 start: s0,
                 keys: cameraKeys([
-                  { at: 0, frame: SIDE_CODE, view: codeWide },
-                  { at: zoomIn, frame: TALL_CODE, view: lineView },
-                  { at: zoomOut, frame: SIDE_CODE, view: codeWide },
+                  {
+                    at: 0,
+                    frame: frames.left,
+                    view: codeView(rectOf(eventOf(log, 'line')), frames.left, code),
+                  },
                 ]),
+                fadeRight: TEXT_FADE,
               },
               {
                 source: 'game',
                 start: s0,
-                keys: cameraKeys([
-                  { at: 0, frame: SIDE_GAME, view: gameWide },
-                  { at: zoomIn, frame: TALL_GAME, view: panelView },
-                  { at: zoomOut, frame: SIDE_GAME, view: gameWide },
-                ]),
+                keys: cameraKeys([{ at: 0, frame: frames.right, view: area }]),
               },
             ],
             captions,
@@ -518,133 +629,170 @@ export const LIVE_CLIPS: readonly Pick<Clip, 'id' | 'edit'>[] = [
     },
   },
   {
+    // Pick mode in the game: three widgets hovered, the button clicked; its definition opens in
+    // VS Code under the game, which shows the province view still: the click did not reach it.
     id: 'pick',
     edit(log, sources) {
-      const { code, game, codeWide, gameWide } = liveSources(sources);
-      const s0 = t(eventOf(log, 'pick.start')) - LEAD;
+      const code = sources['vscode'] as Source;
+      const game = sources['game'] as Source;
+      const hovers = eventsOf(log, 'pick.hover', HOVERED.length);
+      // The loop opens on pick mode's label of the first widget: no frame shows the game without
+      // Etch's part in it.
+      const s0 = t(hovers[0] as TakeEvent);
       const at = (time: number): number => time - s0;
-      const on = at(t(eventOf(log, 'pick.on')));
-      const hovers = eventsOf(log, 'pick.hover');
-      const click = at(t(eventOf(log, 'pick.click')));
+      const clickEvent = eventOf(log, 'pick.click');
+      const click = at(t(clickEvent));
+      const clickAt = { t: t(clickEvent), ...(clickEvent.point ?? { x: 0, y: 0 }) };
       const jump = eventOf(log, 'pick.jump');
       const end = at(t(eventOf(log, 'pick.end')));
-      const hovered = focus(union(...hovers.map(rectOf)), game, WIDE, {
-        margin: 160,
-        minWidth: 1280,
+      // The hovered widgets at 2×, the labels and tips beside them in view.
+      const hovered = viewAt(union(...hovers.map(rectOf)), DETAIL_SCALE, STAGE, game, {
+        x: 0.3,
+        y: 0.55,
       });
-      const lineView = focus(rectOf(jump), code, WIDE, { margin: 60, minWidth: 1280 });
-      // While the game fills the frame, the editor stays in it as an inset: the frame is the
-      // editor and the game's window together (etch-website docs/spec.md section 1.1).
-      const codeInset = {
-        frame: INSET,
-        view: focus(rectOf(eventOf(log, 'line')), code, WIDE, { margin: 40, minWidth: 1100 }),
+      // After the click, the game's row of the button on top at 2×, with pick mode's label above
+      // it and the game's own tip beside it (about 490 game px wide, wider than half the stage
+      // at 2×), and the definition under it across the stage.
+      const { top, bottom } = rows(STAGE, PICK_BAND);
+      const button = rectOf(hovers[hovers.length - 1] as TakeEvent);
+      const bandHeight = top.h / DETAIL_SCALE;
+      const gameSide = {
+        x: hovered.x,
+        y: Math.max(0, Math.min(game.height - bandHeight, button.y - 0.6 * bandHeight)),
+        w: hovered.w,
+        h: bandHeight,
       };
+      // The definition across the stage at the scale that fills it with the editor's lines and no
+      // more: at 1.5× the panel took in a strip of the preview beside the editor.
+      const line = rectOf(jump);
+      const definition = codeView(line, bottom, code, Math.max(CODE_SCALE, bottom.w / line.w));
+      const split = at(t(jump)) - 0.1;
       return {
         id: 'pick',
         sources,
-        // The trailer's part: the last hover, the click and the definition.
-        core: { from: at(t(hovers[hovers.length - 1] as TakeEvent)) - 0.6, to: end },
-        loopFade: 0.5,
+        // The trailer's part: the last hover, the click and the definition. It opens on the
+        // button's label: earlier, the icon before it shows with the game's long tip.
+        core: { from: at(t(hovers[hovers.length - 1] as TakeEvent)), to: end },
+        loopFade: 0.6,
         segments: [
           {
-            duration: end + MOVE + TAIL,
+            // To `pick.end`: then the real pointer goes back to rest, pick mode labelling every
+            // widget on its way.
+            duration: end,
             panels: [
-              {
-                source: 'vscode',
-                start: s0,
-                keys: cameraKeys([
-                  { at: 0, frame: SIDE_CODE, view: codeWide },
-                  { at: on - 0.4, ...codeInset },
-                  { at: click + 0.2, frame: FULL_FRAME, view: lineView, opacity: 1 },
-                  { at: end, frame: SIDE_CODE, view: codeWide },
-                ]),
-              },
               {
                 source: 'game',
                 start: s0,
                 keys: cameraKeys([
-                  { at: 0, frame: SIDE_GAME, view: gameWide },
-                  { at: on - 0.4, frame: FULL_FRAME, view: hovered },
-                  { at: click + 0.2, frame: INSET, view: hovered },
-                  { at: end, frame: SIDE_GAME, view: gameWide },
+                  { at: 0, frame: STAGE, view: hovered },
+                  { at: split, frame: top, view: gameSide, move: 0.6 },
                 ]),
+                // The click's ring at the game's own pointer, which its master records.
+                pointer: {
+                  points: [{ t: clickAt.t, x: clickAt.x, y: clickAt.y }],
+                  clicks: [clickAt.t],
+                  arrow: false,
+                },
+              },
+              {
+                source: 'vscode',
+                start: s0,
+                keys: cameraKeys([
+                  { at: 0, frame: bottom, view: definition, opacity: 0 },
+                  { at: split, frame: bottom, view: definition, opacity: 1, move: 0.6 },
+                ]),
+                fadeRight: TEXT_FADE,
               },
             ],
             captions: [
               {
-                from: on - 0.1,
-                to: on + 1.4,
+                from: 0,
+                to: click - 0.2,
                 keys: ['Ctrl', 'Shift', 'E'],
-                text: 'pick mode, in the game',
+                text: "pick mode in the game: each widget's name, kind, size and file",
               },
               {
-                from: at(t(hovers[0] as TakeEvent)) - 0.1,
-                to: click,
-                text: 'Each widget: its name, kind, size and file',
+                from: split + 0.2,
+                to: end - 0.3,
+                text: 'A click opens its definition; the game does not take it',
               },
-              { from: click + 0.5, to: end, text: 'A click opens its definition at its line' },
             ],
-            highlights: [{ from: click + 0.9, to: end - 0.2, panel: 0, rect: rectOf(jump) }],
+            highlights: [
+              {
+                from: split + 0.7,
+                to: end - 0.1,
+                panel: 1,
+                rect: { ...rectOf(jump), w: Math.min(rectOf(jump).w, 600), h: rectOf(jump).h * 2 },
+              },
+            ],
           },
         ],
       } satisfies EditSpec;
     },
   },
   {
+    // The preview beside the game, the same part of the window in both: the preview's values are
+    // generated until a pick gives it the game's live snapshot. The game, paused, holds its frame
+    // from before pick mode: pick mode's labels beside the pointer run past the panel's edge.
     id: 'snapshot',
     edit(log, sources) {
-      const { code, codeWide, gameWide } = liveSources(sources);
-      const clickTime = t(eventOf(log, 'pick.click'));
-      const s0 = clickTime - 3.2;
+      const s0 = t(eventOf(log, 'pick.click')) - 3.0;
       const at = (time: number): number => time - s0;
-      const click = at(clickTime);
+      const click = at(t(eventOf(log, 'pick.click')));
+      const painted = log.events.find((event) => event.kind === 'pick.snapshot');
+      const snapshot = painted === undefined ? click + 0.3 : at(painted.t);
       const end = at(t(eventOf(log, 'pick.end')));
-      // The preview with the editor's right edge beside it: the editor stays in the frame.
-      const screen = rectOf(eventOf(log, 'screen'));
-      const preview = focus(
-        union(screen, { x: screen.x - 420, y: screen.y, w: 1, h: screen.h }),
-        code,
-        WIDE,
-        { margin: 30 },
+      // As large as two panels side by side allow, at most 3×.
+      const scale = Math.min(3, (STAGE.w - GUTTER) / 2 / VALUES_AREA.w, STAGE.h / VALUES_AREA.h);
+      const preview = onScreen(rectOf(eventOf(log, 'screen')), VALUES_AREA);
+      const game = inGame(log, VALUES_AREA);
+      const frames = pair(
+        { w: preview.w * scale, h: preview.h * scale },
+        { w: game.w * scale, h: game.h * scale },
       );
-      const zoomIn = LEAD - 0.5;
+      // The military and trade values, which the snapshot changes from generated ones.
+      const values = SNAPSHOT_VALUES.map((rect) => onScreen(rectOf(eventOf(log, 'screen')), rect));
       return {
         id: 'snapshot',
         sources,
-        core: { from: zoomIn, to: end },
-        loopFade: 0.5,
+        core: { from: click - 1.0, to: end },
+        loopFade: 0.6,
         segments: [
           {
-            duration: end + MOVE + TAIL,
+            duration: end,
+            holds: [{ from: 0, to: end, panel: 1, at: t(eventOf(log, 'pick.start')) - 0.2 }],
             panels: [
               {
                 source: 'vscode',
                 start: s0,
-                keys: cameraKeys([
-                  { at: 0, frame: SIDE_CODE, view: codeWide },
-                  { at: zoomIn, frame: FULL_FRAME, view: preview },
-                  { at: end, frame: SIDE_CODE, view: codeWide },
-                ]),
+                keys: cameraKeys([{ at: 0, frame: frames.left, view: preview }]),
               },
               {
                 source: 'game',
                 start: s0,
-                keys: cameraKeys([
-                  { at: 0, frame: SIDE_GAME, view: gameWide },
-                  { at: zoomIn, frame: INSET, view: gameWide },
-                  { at: end, frame: SIDE_GAME, view: gameWide },
-                ]),
+                keys: cameraKeys([{ at: 0, frame: frames.right, view: game }]),
               },
             ],
+            // The second caption comes with the click, before the preview repaints: the cause on
+            // screen when the values change.
             captions: [
-              { from: zoomIn + 0.4, to: click - 0.1, text: 'The preview, with sample data' },
               {
-                from: click + 0.6,
-                to: end,
-                text: "A pick in the game: a live snapshot, the game's own texts",
+                from: 0.3,
+                to: click - 0.3,
+                text: 'The preview (left): the save, values generated',
+              },
+              {
+                from: click - 0.1,
+                to: end - 0.3,
+                text: "A pick in the game: its live snapshot, the game's own values",
               },
             ],
-            highlights: [],
+            highlights: values.map((rect) => ({
+              from: snapshot + 0.3,
+              to: end - 0.1,
+              panel: 0,
+              rect,
+            })),
           },
         ],
       } satisfies EditSpec;
