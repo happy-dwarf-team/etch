@@ -240,7 +240,9 @@ while it starts and crashes without it. A tag that an earlier line or
 `common/country_tags` file already defines gets a warning instead: the game
 keeps the first, leaves the later one out and does not read its file. So does a
 key of other than three characters that names a country file (`ZZEX =
-"countries/Zzex.txt"`): the game leaves it out without a word. So does a table of
+"countries/Zzex.txt"`): the game leaves it out without a word. A mod's
+`common/country_tags` file that leaves the playset without `PIR`, `NAT` or
+`REB` gets a warning at its start: the game stops while it starts without them. So does a table of
 `common/technology.txt` (`adm_tech = "technologies/adm.txt"`) whose file no
 layer has. A `history/provinces` file
 whose name does not start with a province of the map (`4999 - Past.txt` on

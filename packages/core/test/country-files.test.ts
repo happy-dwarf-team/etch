@@ -3,6 +3,7 @@ import {
   checkCountryFiles,
   checkCountryHistory,
   countryFilePath,
+  countryTagsMissing,
   countryHistoryTag,
   firstCountryTags,
   isCountryTagsPath,
@@ -18,6 +19,18 @@ dynamic_tags = yes
 LONG = "countries/Long.txt"
 XYZ = "countries/NoExtension"
 `;
+
+describe('the tags the game needs', () => {
+  it('names each missing tag and the first that the game logs', () => {
+    expect(countryTagsMissing(['PIR', 'REB'])).toMatchObject({
+      code: 'country-tags-required',
+      name: 'PIR, REB',
+      message:
+        'No common/country_tags file of the playset defines PIR, REB: the game needs them and ' +
+        'stops while it starts, after "Missing PIR country tag" in error.log.',
+    });
+  });
+});
 
 describe('history/countries files of one tag', () => {
   it("takes a file's tag from the first three characters of its name", () => {

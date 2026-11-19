@@ -177,6 +177,42 @@ describe('script values of a playset', () => {
     ]);
   });
 
+  it("warns at a mod's first country_tags file when the playset lacks a tag the game needs", async () => {
+    await addFiles(root, {
+      'game/common/country_tags/00_countries.txt':
+        'REB = "countries/Rebels.txt"\nPIR = "countries/Pirates.txt"\nNAT = "countries/Natives.txt"\n',
+      // The mod's file of the same name replaces the game's, without REB.
+      'mod/common/country_tags/00_countries.txt':
+        'PIR = "countries/Pirates.txt"\nNAT = "countries/Natives.txt"\n',
+      'mod/common/country_tags/zz_mod.txt': 'SWE = "countries/Sweden.txt"\n',
+    });
+    const files = playset();
+    const names = await loadScriptNames(files);
+    expect(names?.countryTagsMissing).toEqual({
+      path: 'common/country_tags/00_countries.txt',
+      tags: ['REB'],
+    });
+    const { findings } = await findScriptValueProblems(files, { names });
+    const required = findings.flatMap((finding) =>
+      finding.diagnostics
+        .filter((d) => d.code === 'country-tags-required')
+        .map((d) => [finding.file.path, finding.file.layer.name, d.message, d.start]),
+    );
+    expect(required).toEqual([
+      [
+        'common/country_tags/00_countries.txt',
+        'Mod',
+        'No common/country_tags file of the playset defines REB: the game needs it and stops ' +
+          'while it starts, after "Missing REB country tag" in error.log.',
+        0,
+      ],
+    ]);
+
+    // The game's own files are not checked: they define the three.
+    const game = new GameFiles([{ name: 'game', root: join(root, 'game'), replacePaths: [] }]);
+    expect((await loadScriptNames(game))?.countryTagsMissing).toBeUndefined();
+  });
+
   it('warns about a tag an earlier country_tags file of the playset defines', async () => {
     await addFiles(root, {
       'game/common/country_tags/00_countries.txt': 'SWE = "countries/Sweden.txt"\n',

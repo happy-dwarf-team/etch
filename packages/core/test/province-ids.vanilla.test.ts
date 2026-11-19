@@ -51,6 +51,7 @@ describe.skipIf(gamePath === undefined)('province ids and names of the installed
     // Every tag once, in vanilla's one country_tags file.
     const countryTags = names?.countryTags ?? new Map<string, string>();
     expect(countryTags.size).toBeGreaterThan(900);
+    expect(names?.countryTagsMissing).toBeUndefined();
     expect(new Set(countryTags.values())).toEqual(
       new Set(['common/country_tags/00_countries.txt']),
     );
