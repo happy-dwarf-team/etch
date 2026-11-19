@@ -63,6 +63,12 @@ export interface MeshShape {
   /** Indexed by `SkeletonBone.index`; empty for a shape that is not skinned. */
   readonly skeleton: readonly SkeletonBone[];
   readonly collision: boolean;
+  /**
+   * The level of detail the shape's name gives (`lodShape0`, `Lod1Shape`), 0 the most detailed;
+   * `undefined` for a shape without one, drawn at every distance. Vanilla's map trees carry up to
+   * five levels as shapes of one mesh, each a whole copy of the trees.
+   */
+  readonly lod: number | undefined;
 }
 
 export interface PdxMesh {
@@ -131,12 +137,25 @@ export function readMesh(bytes: Uint8Array): PdxMesh {
         }
       }
     }
-    shapes.push({ name: shape.name, parts, skeleton: skeletonOf(shape), collision });
+    shapes.push({
+      name: shape.name,
+      parts,
+      skeleton: skeletonOf(shape),
+      collision,
+      lod: lodOf(shape.name),
+    });
   }
   return {
     shapes,
     bounds: (min[0] ?? Infinity) <= (max[0] ?? -Infinity) ? { min, max } : undefined,
   };
+}
+
+/** The level of detail in a shape name such as `lodShape2` or `Lod2Shape`; `undefined` without one. */
+export function lodOf(shapeName: string): number | undefined {
+  const match = /^lod(\d*)shape(\d*)$/i.exec(shapeName);
+  const digits = match === null ? '' : match[1] || match[2] || '';
+  return digits === '' ? undefined : Number(digits);
 }
 
 function skeletonOf(shape: PdxNode): SkeletonBone[] {

@@ -4,13 +4,14 @@
 // maps and is offered only the animation that names the mesh's bones. A mesh in the game folder (`etch.gamePath`, a fixture) takes its texture
 // through the playset, one without its texture is drawn untextured, and a file Etch cannot read is
 // reported instead of shown. A `PdxMeshTextureAtlas` part reports its flag (the country colours
-// until a tag is asked for), and a tag's flag comes from `gfx/flags` through the playset.
+// until a tag is asked for), and a tag's flag comes from `gfx/flags` through the playset. A mesh
+// with levels of detail draws and counts only its most detailed level.
 import * as assert from 'node:assert/strict';
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
-import { ANIM, binary, MESH, obj, strs } from '../../core/test/fixtures/pdx-asset.ts';
+import { ANIM, binary, floats, ints, MESH, obj, strs } from '../../core/test/fixtures/pdx-asset.ts';
 import type { EtchApi } from '../src/extension.ts';
 import { flagTexture, MESH_PREVIEW_VIEW_TYPE, type MeshShown } from '../src/mesh-preview.ts';
 import { linkedFiles } from '../src/script-profile-view.ts';
@@ -96,6 +97,35 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
     atlas.summary.flag,
     { parts: 1 },
     'one flag part, in the country colours until a tag is asked for',
+  );
+  await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+
+  // A map tree's levels of detail: a quad at level 0 and a triangle at level 1, as two shapes.
+  const tree = vscode.Uri.file(path.join(folder, 'etch_tree.mesh'));
+  const level = (name: string, p: number[], tri: number[]) => [
+    obj(2, name),
+    obj(3, 'mesh'),
+    floats('p', ...p),
+    ints('tri', ...tri),
+    obj(4, 'material'),
+    strs('shader', 'PdxMeshStandard'),
+  ];
+  await writeFile(
+    tree.fsPath,
+    binary([
+      ints('pdxasset', 1, 0),
+      obj(1, 'object'),
+      ...level('lodShape0', [0, 0, 0, 2, 0, 0, 0, 1, 0, 2, 1, 0], [0, 1, 2, 1, 3, 2]),
+      ...level('lodShape1', [0, 0, 0, 2, 0, 0, 0, 1, 0], [0, 1, 2]),
+    ]),
+  );
+  const lod = await open(api, tree);
+  assert.ok(lod.ok, `the tree shows: ${lod.ok ? '' : lod.message}`);
+  assert.deepEqual(lod.summary.lod, { level: 0, levels: [0, 1] }, 'level 0 of 0 and 1');
+  assert.deepEqual(
+    [lod.summary.shapes, lod.summary.vertices, lod.summary.triangles],
+    [1, 4, 2],
+    'only level 0 is drawn and counted',
   );
   await vscode.commands.executeCommand('workbench.action.closeAllEditors');
 

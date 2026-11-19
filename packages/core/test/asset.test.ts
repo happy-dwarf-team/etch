@@ -4,6 +4,7 @@ import {
   meshFacts,
   jointPose,
   jointsOfBones,
+  lodOf,
   PdxAssetError,
   readAnimation,
   readMesh,
@@ -40,9 +41,9 @@ describe('readPdxAsset', () => {
 describe('readMesh', () => {
   it('reads the parts, material, skin and skeleton and keeps collision shapes apart', () => {
     const mesh = readMesh(binary(MESH));
-    expect(mesh.shapes.map((s) => [s.name, s.collision])).toEqual([
-      ['flagShape', false],
-      ['pickShape', true],
+    expect(mesh.shapes.map((s) => [s.name, s.collision, s.lod])).toEqual([
+      ['flagShape', false, undefined],
+      ['pickShape', true, undefined],
     ]);
     const [flag] = mesh.shapes;
     const part = flag?.parts[0];
@@ -66,6 +67,19 @@ describe('readMesh', () => {
     ]);
     // The bounds leave out the collision box.
     expect(mesh.bounds).toEqual({ min: [0, 0, 0], max: [2, 1, 0] });
+  });
+
+  it('reads the level of detail from the shape name', () => {
+    // The spellings of vanilla's map trees.
+    expect(['lodShape0', 'Lod0Shape', 'LodShape2', 'lod0Shape', 'lodShape4'].map(lodOf)).toEqual([
+      0, 0, 2, 0, 4,
+    ]);
+    expect(['flagShape', 'LodShape', 'lodgeShape1', 'lodShape1x'].map(lodOf)).toEqual([
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    ]);
   });
 
   it('refuses a triangle index past the vertices', () => {
