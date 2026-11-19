@@ -9,7 +9,7 @@ import {
 import { addFiles, makeTree, removeTree } from './fixture.ts';
 
 const GAME_MAP = 'max_provinces = 10\nsea_starts = { 8 9 }\n';
-const GAME_DEFINITIONS = 'province;red;green;blue;x;x\n1;1;1;1;A;x\n2;2;2;2;B;x\n9;9;9;9;I;x\n';
+const GAME_DEFINITIONS = 'province;red;green;blue;x;x\n1;1;1;1;A;x\n2;2;2;2;B;x\n9;256;9;9;I;x\n';
 
 describe('province ids of a playset', () => {
   let root: string;
@@ -24,7 +24,7 @@ describe('province ids of a playset', () => {
       // A map mod: more provinces, its own definition file under another name.
       'map/map/default.map':
         'max_provinces = 20\ndefinitions = "big.csv"\nclimate = "big_climate.txt"\nlakes = { 2 15 25 }\n',
-      'map/map/big.csv': '1;1;1;1;A;x\n2;2;2;2;B;x\n12;1;1;1;L;x\n13;1;1;1;M;x\n',
+      'map/map/big.csv': '1;1;1;1;A;x\n2;2;2;2;B;x\n12;1;1;1;L;x\n13;1;1;1;M;x\n-3;1;1;1;N;x\n',
       'game/map/climate.txt': 'tropical = { 1 2 }\narid = { 9 }\n',
       'game/map/continent.txt': 'europe = { 1 -3 50 }\n',
       'game/map/trade_winds.txt': '# direction\n1 = 0\n-1 = 30\n12 = -15\n',
@@ -134,6 +134,7 @@ describe('province ids of a playset', () => {
       // 50 is past the map, which the game skips in a continent; -3 it does not.
       ['game', 'map/continent.txt', ['europe -3 province-id-out-of-range']],
       ['game', 'map/default.map', ['sea_starts 8 province-id-not-defined']],
+      ['game', 'map/definition.csv', ['red 9 province-colour-out-of-range']],
       // 50 is past the map, which the game skips in the positions file; -2 it does not.
       ['game', 'map/positions.txt', ['positions -2 province-id-out-of-range']],
       // 50 is past the map, which the game skips in a province group; -4 it does not.
@@ -144,9 +145,9 @@ describe('province ids of a playset', () => {
         ['trade_winds -1 province-id-out-of-range', 'trade_winds 12 province-id-out-of-range'],
       ],
     ]);
-    // Five script files, default.map, climate.txt, continent.txt, trade_winds.txt,
+    // Five script files, default.map, definition.csv, climate.txt, continent.txt, trade_winds.txt,
     // positions.txt, adjacencies.csv and provincegroup.txt; common/province_names is not read.
-    expect(filesChecked).toBe(12);
+    expect(filesChecked).toBe(13);
     const other = findings.find((finding) => finding.file.path === 'events/other.txt');
     const first = other?.diagnostics[0];
     expect(other?.text.slice(first?.start, first?.end)).toBe('12');
@@ -190,6 +191,8 @@ describe('province ids of a playset', () => {
       ],
       // The game's adjacencies file: 9 is not in the big map's definitions.
       ['map/adjacencies.csv', ['to 9 province-id-not-defined']],
+      // The map mod's definition file, under the name its default.map gives.
+      ['map/big.csv', ['province -3 province-id-out-of-range']],
       [
         'map/big_climate.txt',
         ['arctic 14 province-id-not-defined', 'arctic 30 province-id-out-of-range'],

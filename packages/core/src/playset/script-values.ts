@@ -3,6 +3,7 @@ import { decodeGameText } from '../game-text.ts';
 import { parseScript } from '../script/parse.ts';
 import {
   checkAdjacencies,
+  checkDefinitions,
   checkClimate,
   checkPositions,
   checkProvinceGroups,
@@ -251,6 +252,7 @@ export async function findScriptValueProblems(
       (text: string, ids: ProvinceIds): ProvinceIdDiagnostic[] =>
         check(parseScript(text, { script: true }), ids);
     const mapLists = [
+      [values.ids.definitionFile, checkDefinitions],
       [values.ids.climateFile, script(checkClimate)],
       [values.ids.continentFile, script(checkContinents)],
       [values.ids.tradeWindsFile, script(checkTradeWinds)],
