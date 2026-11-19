@@ -363,7 +363,9 @@ it is in no folder of the playset. Collision shapes are hidden.
   (`map/terrain/Tree_tint.bmp` of your playset) is laid over it as the game
   lays it; the game shifts each tree's tint by the tree's random turn on the
   map, and **Turn** stands in for that turn, from 0 to 1 of a full one. The
-  map's colour map and season colours are not applied.
+  game then lays the map's colour map at the tree's place over it at one
+  quarter; **Ground** stands in for that colour (grey, `#808080`, changes
+  nothing). The map's season colours are not applied.
 - A `PdxMeshAlphaBlend` part (vanilla's African buildings, a unit's selection
   ring) is blended over what is behind it by its diffuse map's alpha, as the
   game blends it, rather than cut.

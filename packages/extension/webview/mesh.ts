@@ -28,8 +28,9 @@
 // tint map (the playset's `map/terrain/Tree_tint.bmp`) is laid over the diffuse colour at 0.5
 // (`GetOverlay`), sampled at the second UVs (`u1`) shifted along u by the tree's turn: the game
 // turns each tree by a random angle and shifts by that angle over a full turn, the preview by its
-// Turn slider (0 by default). The map's colour map and season colours, and the random height and
-// turn of the mesh itself, are left out; its snow is below.
+// Turn slider (0 by default). The map's colour map at the tree's place is laid over that at 0.25,
+// the preview's Ground colour standing in for it (grey, #808080, changes nothing). The season
+// colours, and the random height and turn of the mesh itself, are left out; its snow is below.
 //
 // Snow, as the game puts it on `PdxMeshSnow` parts (`ApplySnowMesh` in pdxmesh.shader) and map
 // trees (`ApplySnowTree` in tree.shader) before the light: the game takes the amount from the map
@@ -104,6 +105,8 @@ const snowLabel = element('snow');
 const snowInput = element('snow-amount') as HTMLInputElement;
 const tintLabel = element('tint');
 const tintInput = element('tint-turn') as HTMLInputElement;
+const groundLabel = element('ground');
+const groundInput = element('ground-colour') as HTMLInputElement;
 
 const gl = canvas.getContext('webgl2', { antialias: true });
 
@@ -171,6 +174,8 @@ uniform bool snowy;
 uniform sampler2D tintMap;
 uniform bool tinted;
 uniform float turn;
+// The Ground colour: the map's colour map under a map tree.
+uniform vec3 ground;
 uniform bool lines;
 // Towards the light.
 uniform vec3 light;
@@ -195,6 +200,7 @@ void main() {
   vec4 spec = specularMapped ? texture(specularMap, vUv) : vec4(0.0);
   vec3 c = base.rgb;
   if (tree && tinted) c = overlay(c, texture(tintMap, vec2(vUv1.x + turn, vUv1.y)).rgb, 0.5);
+  if (tree) c = overlay(c, ground, 0.25);
   if (snowy && tree) {
     float fade = clamp(
       clamp(n.y - clamp(1.0 - snow, 0.0, 1.0), 0.0, 1.0) * snow * 5.5 * clamp((n.y - 0.6) * 1000.0, 0.0, 1.0),
@@ -292,6 +298,8 @@ let tint: { texture: WebGLTexture; source: string } | undefined;
 let tintProblem: string | undefined;
 /** The Turn slider: the tree's turn the tint is shifted by, 0 to 1 of a full turn. */
 let turn = 0;
+/** The Ground colour box, as `#rrggbb`: the map's colour map under a map tree. */
+let ground = '#808080';
 /** What plays: an animation's file name (mesh) or a state (entity); `undefined` for the bind pose. */
 let playingKey: string | undefined;
 let playing = false;
@@ -696,6 +704,7 @@ function draw(now: number): void {
   gl.uniform1i(uniform('tintMap'), 4);
   gl.uniform1i(uniform('tinted'), tree !== undefined && tint !== undefined ? 1 : 0);
   gl.uniform1f(uniform('turn'), turn);
+  vector('ground', hexColour(ground));
   gl.activeTexture(gl.TEXTURE4);
   gl.bindTexture(gl.TEXTURE_2D, tint?.texture ?? null);
   gl.activeTexture(gl.TEXTURE3);
@@ -779,7 +788,7 @@ function summary(): MeshSummary {
   if (blendedParts > 0) base = { ...base, blended: blendedParts };
   const snowyParts = parts.filter((d) => d.snow || tree !== undefined).length;
   if (snowyParts > 0) base = { ...base, snow: { parts: snowyParts, amount: snowAmount } };
-  if (tree !== undefined) base = { ...base, tint: { source: tint?.source, turn } };
+  if (tree !== undefined) base = { ...base, tint: { source: tint?.source, turn }, ground };
   if (entity === undefined) return base;
   return {
     ...base,
@@ -887,6 +896,7 @@ function show(
   flagLabel.hidden = !instances.some((i) => i.parts.some((d) => d.atlas));
   snowLabel.hidden = tree === undefined && !instances.some((i) => i.parts.some((d) => d.snow));
   tintLabel.hidden = tree === undefined || tint === undefined;
+  groundLabel.hidden = tree === undefined;
   offerLevels();
   pose(context, 0);
 }
@@ -1050,6 +1060,13 @@ tintInput.addEventListener('input', () => {
 tintInput.addEventListener('change', () => {
   vscode.postMessage({ type: 'shown', summary: summary() });
 });
+groundInput.addEventListener('input', () => {
+  ground = groundInput.value;
+  redraw();
+});
+groundInput.addEventListener('change', () => {
+  vscode.postMessage({ type: 'shown', summary: summary() });
+});
 
 lodSelect.addEventListener('change', () => {
   lodLevel = Number(lodSelect.value);
@@ -1074,10 +1091,15 @@ mapsButton.addEventListener('click', () => {
   redraw();
 });
 
+/** A colour box's `#rrggbb` as red, green and blue from 0 to 1. */
+function hexColour(value: string): number[] {
+  const hex = value.replace('#', '');
+  return [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+}
+
 for (const [key, input] of colourInputs) {
   input.addEventListener('input', () => {
-    const hex = input.value.replace('#', '');
-    country[key] = [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+    country[key] = hexColour(input.value);
     redraw();
   });
 }

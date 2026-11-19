@@ -44,6 +44,11 @@ export interface MeshSummary {
    * `undefined` when it was not found or read, and the Turn slider's value.
    */
   readonly tint?: { readonly source: string | undefined; readonly turn: number };
+  /**
+   * A map tree: the Ground colour (`#rrggbb`) standing in for the map's colour map at the tree's
+   * place, which the game lays over it at 0.25; `#808080` changes nothing.
+   */
+  readonly ground?: string;
 }
 
 export interface FlagSummary {

@@ -228,6 +228,8 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
       "a map tree takes the playset's tint map",
     );
     assert.equal(inGame.summary.tint, undefined, 'another mesh takes no tint');
+    assert.equal(tree.summary.ground, '#808080', 'the Ground colour starts at the neutral grey');
+    assert.equal(inGame.summary.ground, undefined, 'another mesh has no ground colour');
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
     const bare = await open(
       api,
