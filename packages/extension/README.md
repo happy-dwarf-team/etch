@@ -227,7 +227,11 @@ the map in those three, but not negative ones). In `map/definition.csv`
 itself, a row the game reads whose id is negative or at least `max_provinces`,
 or whose red, green or blue is outside 0 to 255, gets a warning: the game
 stores both without a check, and the map's borders look up such an id in the
-province table, which crashes the map load. A `history/provinces` file
+province table, which crashes the map load. In `map/default.map`, a
+`canal_definition` whose `map/<name>_river.bmp` the playset does not have gets
+a warning (the game's map load stops without it), and so does one whose bitmap
+does not fit in the river map at its `x` and `y` (the game copies it there
+without a check when the canal is built). A `history/provinces` file
 whose name does not start with a province of the map (`4999 - Past.txt` on
 4941 provinces, or `Uppland.txt`) gets a warning at its first line: the game
 skips it without a word.

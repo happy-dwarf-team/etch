@@ -40,7 +40,11 @@ export async function testProvinceIds(): Promise<void> {
 
   const root = await mkdtemp(path.join(tmpdir(), 'etch-province-ids-'));
   const game = path.join(root, 'game');
-  await write(game, 'map/default.map', 'max_provinces = 10\nlakes = { 4 }\n');
+  await write(
+    game,
+    'map/default.map',
+    'max_provinces = 10\nlakes = { 4 }\ncanal_definition = { name = "lost" x = 1 y = 1 }\n',
+  );
   const definitions = await write(
     game,
     'map/definition.csv',
@@ -131,11 +135,14 @@ export async function testProvinceIds(): Promise<void> {
     const [scope] = await diagnosticsOf(closed, (found) => found.length > 0);
     assert.equal(scope?.code, 'province-id-not-defined');
     assert.deepEqual([scope.range.start.line, scope.range.start.character], [1, 1]);
-    const [lake] = await diagnosticsOf(
+    const [lake, canal] = await diagnosticsOf(
       vscode.Uri.file(path.join(game, 'map', 'default.map')),
       (found) => found.length > 0,
     );
     assert.match(lake?.message ?? '', /^Province 4 is not in map\/definition\.csv/);
+    // A canal whose bitmap the playset does not have, from the same file.
+    assert.equal(canal?.code, 'canal-bitmap-missing');
+    assert.deepEqual([canal.range.start.line, canal.range.start.character], [2, 28]);
     // An idea group the playset does not define, from the same check.
     const [group, ...rest] = await diagnosticsOf(ideas, (found) => found.length > 0);
     assert.deepEqual(rest, []);

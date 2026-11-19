@@ -9,6 +9,16 @@ import {
 import { addFiles, makeTree, removeTree } from './fixture.ts';
 
 const GAME_MAP = 'max_provinces = 10\nsea_starts = { 8 9 }\n';
+
+/** The first 26 bytes of a BMP file of the given size, all the canal check reads. */
+function bmpHeader(width: number, height: number): Uint8Array {
+  const bytes = new Uint8Array(26);
+  bytes.set([0x42, 0x4d]);
+  const view = new DataView(bytes.buffer);
+  view.setInt32(18, width, true);
+  view.setInt32(22, height, true);
+  return bytes;
+}
 const GAME_DEFINITIONS = 'province;red;green;blue;x;x\n1;1;1;1;A;x\n2;2;2;2;B;x\n9;256;9;9;I;x\n';
 
 describe('province ids of a playset', () => {
@@ -166,6 +176,46 @@ describe('province ids of a playset', () => {
       'capital 50',
     ]);
     expect(bom?.text.slice(bom.diagnostics[0]?.start, bom.diagnostics[0]?.end)).toBe('50');
+  });
+
+  it("checks a map's canals against its own river map and the playset's canal bitmaps", async () => {
+    await addFiles(root, {
+      'game/map/rivers.bmp': bmpHeader(100, 50),
+      'game/map/suez_canal_river.bmp': bmpHeader(16, 16),
+      'canals/map/default.map':
+        'max_provinces = 10\nrivers = "my_rivers.bmp"\n' +
+        'canal_definition = { name = "suez_canal" x = 90 y = 10 }\n' +
+        'canal_definition = { name = "mine" x = 1 y = 1 }\n' +
+        'canal_definition = { name = "lost" x = 1 y = 1 }\n',
+      'canals/map/my_rivers.bmp': bmpHeader(200, 50),
+      'canals/map/mine_river.bmp': bmpHeader(8, 64),
+    });
+    const files = playset({ name: 'Canals', root: join(root, 'canals'), replacePaths: [] });
+    const ids = await loadProvinceIds(files);
+    expect(ids?.canalBitmaps).toEqual({
+      rivers: { width: 200, height: 50 },
+      riversPath: 'map/my_rivers.bmp',
+      canals: new Map([
+        ['suez_canal', { width: 16, height: 16 }],
+        ['mine', { width: 8, height: 64 }],
+        ['lost', null],
+      ]),
+    });
+    if (ids === undefined) throw new Error('no map');
+    const { findings } = await findScriptValueProblems(files, { ids });
+    const map = findings.find((finding) => finding.file.path === 'map/default.map');
+    // Suez fits the mod's wider river map; the mod's own canal is taller than it.
+    expect(map?.diagnostics.map((d) => `${d.key} ${d.code}`)).toEqual([
+      'y canal-outside-map',
+      'name canal-bitmap-missing',
+    ]);
+    // The game's own default.map has no canals.
+    const game = await loadProvinceIds(playset());
+    expect(game?.canalBitmaps).toEqual({
+      rivers: { width: 100, height: 50 },
+      riversPath: 'map/rivers.bmp',
+      canals: new Map(),
+    });
   });
 
   it("checks against a map mod's default.map, and its own lists", async () => {
