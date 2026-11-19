@@ -396,6 +396,59 @@ describe('captureView', () => {
     await expect(startWindows(crowded)).rejects.toThrow('More than 5000 top-level windows.');
   });
 
+  it('fails a view on a game state, window or tree that Tongs answers oddly', async () => {
+    const folder = await makeTree({});
+    trees.push(folder);
+    const manifest = testManifest(await sha(SAVE_TEXT));
+    const run = async (
+      prefix: string,
+      edit: (answer: TongsAnswer) => TongsAnswer,
+    ): Promise<string> => {
+      const game = new FakeGame(WINDOWS, ['country_selection_panel'], folder, SIZE);
+      const ctx = context(game, manifest, 'main-menu', await startWindows(game));
+      const call = game.call.bind(game);
+      game.call = async (command) => {
+        const answer = await call(command);
+        return command.startsWith(prefix) ? edit(answer) : answer;
+      };
+      const outcome = await captureView(ctx, viewOf(manifest, 'lobby'));
+      return outcome.ok ? 'ok' : outcome.reason;
+    };
+    const tree = 'ui tree lobby ';
+    const first = (answer: TongsAnswer): Record<string, unknown> =>
+      ((answer['widgets'] ?? []) as Record<string, unknown>[])[0] ?? {};
+    const cases: [string, (answer: TongsAnswer) => TongsAnswer, string][] = [
+      ['state', (a) => ({ ...a, pid: 7 }), "The game's process changed (pid 7)."],
+      [
+        'state',
+        (a) => ({ ...a, in_game: true }),
+        'A game is loaded; the view opens from the main menu.',
+      ],
+      ['window', (a) => ({ ...a, minimized: true }), 'The game window is minimised.'],
+      [
+        'window',
+        (a) => ({ ...a, dpi: undefined }),
+        'Tongs answered window without width, height and dpi.',
+      ],
+      [tree, () => ({ ok: false, error: 'not_found' }), 'ui tree lobby: not_found.'],
+      [tree, (a) => ({ ...a, truncated: true }), 'The tree of lobby has more than 5000 widgets.'],
+      [tree, (a) => ({ ...a, widgets: {} }), 'Tongs answered without a widget list.'],
+      [
+        tree,
+        (a) => ({ ...a, widgets: [{ ...first(a), stale: true }] }),
+        'lobby is stale: the tree was read after a reload.',
+      ],
+      [
+        tree,
+        (a) => ({ ...a, widgets: [{ ...first(a), children_count: 3 }] }),
+        'The tree of lobby was cut.',
+      ],
+    ];
+    for (const [prefix, edit, reason] of cases) {
+      expect(await run(prefix, edit)).toBe(reason);
+    }
+  });
+
   it('pins the cursor inside the margin and pins it again only for a moved window', async () => {
     const folder = await makeTree({});
     trees.push(folder);
