@@ -23,7 +23,6 @@
 import {
   boneWorldMatrices,
   jointsOfBones,
-  multiply,
   readAnimation,
   readMesh,
   skinningMatrices,
@@ -40,6 +39,21 @@ import type {
   MeshTexture,
   MeshWebviewMessage,
 } from '../src/mesh-protocol.ts';
+import {
+  edgesOf,
+  eyeOf,
+  FRAMED_PITCH,
+  FRAMED_YAW,
+  frameOf,
+  framing,
+  normalise,
+  placedBounds,
+  placement,
+  scaling,
+  viewProjection,
+  type Bounds,
+  type OrbitCamera,
+} from './view-math.ts';
 
 declare function acquireVsCodeApi(): { postMessage(message: MeshWebviewMessage): void };
 const vscode = acquireVsCodeApi();
@@ -231,7 +245,7 @@ const country = {
 const LIGHT = normalise([1, 1, 0.5]);
 
 /** The orbit camera: angles in radians, distance from the target. */
-const camera = { yaw: 0.6, pitch: 0.35, distance: 10, target: [0, 0, 0] as number[] };
+let camera: OrbitCamera = { yaw: FRAMED_YAW, pitch: FRAMED_PITCH, distance: 10, target: [0, 0, 0] };
 /** The flag on `PdxMeshTextureAtlas` parts: a tag's, or none for the country colours' stripes. */
 let flag: { tag: string; texture: WebGLTexture; source: string } | undefined;
 
@@ -280,27 +294,6 @@ function buffer(
   context.bindBuffer(target, created);
   context.bufferData(target, data as ArrayBufferView<ArrayBuffer>, usage);
   return created;
-}
-
-/** Each triangle edge once, as line pairs. */
-function edgesOf(indices: Uint32Array): Uint32Array {
-  const seen = new Set<string>();
-  const out: number[] = [];
-  for (let i = 0; i + 2 < indices.length; i += 3) {
-    for (const [a, b] of [
-      [indices[i], indices[i + 1]],
-      [indices[i + 1], indices[i + 2]],
-      [indices[i + 2], indices[i]],
-    ] as const) {
-      const lo = Math.min(a ?? 0, b ?? 0);
-      const hi = Math.max(a ?? 0, b ?? 0);
-      const key = `${String(lo)},${String(hi)}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      out.push(lo, hi);
-    }
-  }
-  return Uint32Array.from(out);
 }
 
 function textureOf(context: WebGL2RenderingContext, source: MeshTexture): WebGLTexture | undefined {
@@ -463,24 +456,11 @@ function showErrorBox(): void {
   errorBox.textContent = lines.join('\n');
 }
 
-function scaling(factor: number): Float32Array {
-  const m = new Float32Array(16);
-  m[0] = m[5] = m[10] = factor;
-  m[15] = 1;
-  return m;
-}
-
 /** The animation an instance plays now, if any. */
 function animationOf(instance: Instance): PdxAnimation | undefined {
   if (playingKey === undefined) return undefined;
   const key = entity === undefined ? playingKey : instance.states[playingKey];
   return key === undefined ? undefined : animations.get(key);
-}
-
-/** The animation's frame `seconds` into playing it. */
-function frameOf(animation: PdxAnimation | undefined, seconds: number): number {
-  if (animation === undefined || animation.frames <= 0) return 0;
-  return (seconds * animation.fps) % animation.frames;
 }
 
 /**
@@ -520,13 +500,7 @@ function pose(context: WebGL2RenderingContext, seconds: number): void {
       parent === undefined || instance.bone === undefined
         ? undefined
         : worlds.get(parent)?.get(instance.bone);
-    instance.model =
-      parent === undefined
-        ? scaling(instance.scale)
-        : multiply(
-            multiply(parent.model, bone ?? scaling(1)),
-            scaling(instance.scale / (parent.scale || 1)),
-          );
+    instance.model = placement(instance.scale, parent, bone);
     for (const item of instance.parts) {
       if (item.part.skin === undefined) continue;
       const shapeMatrices = matrices.get(item.shape);
@@ -554,122 +528,19 @@ function pose(context: WebGL2RenderingContext, seconds: number): void {
 }
 
 /** The bounds of every drawn vertex as placed now, in the drawn (Z mirrored) space. */
-function boundsOf(): { min: number[]; max: number[] } | undefined {
-  const min = [Infinity, Infinity, Infinity];
-  const max = [-Infinity, -Infinity, -Infinity];
-  for (const instance of instances) {
-    const m = instance.model;
-    for (const item of instance.parts) {
-      const p = item.posed;
-      for (let v = 0; v + 2 < p.length; v += 3) {
-        const x = p[v] ?? 0;
-        const y = p[v + 1] ?? 0;
-        const z = p[v + 2] ?? 0;
-        const placed = [
-          (m[0] ?? 0) * x + (m[4] ?? 0) * y + (m[8] ?? 0) * z + (m[12] ?? 0),
-          (m[1] ?? 0) * x + (m[5] ?? 0) * y + (m[9] ?? 0) * z + (m[13] ?? 0),
-          -((m[2] ?? 0) * x + (m[6] ?? 0) * y + (m[10] ?? 0) * z + (m[14] ?? 0)),
-        ];
-        for (let axis = 0; axis < 3; axis++) {
-          const value = placed[axis] ?? 0;
-          if (value < (min[axis] ?? 0)) min[axis] = value;
-          if (value > (max[axis] ?? 0)) max[axis] = value;
-        }
-      }
-    }
-  }
-  return (min[0] ?? Infinity) <= (max[0] ?? -Infinity) ? { min, max } : undefined;
+function boundsOf(): Bounds | undefined {
+  return placedBounds(
+    instances.flatMap((instance) =>
+      instance.parts.map((item) => ({ model: instance.model, positions: item.posed })),
+    ),
+  );
 }
 
 function frameView(): void {
   const bounds = boundsOf();
   if (bounds === undefined) return;
-  const [x0 = 0, y0 = 0, z0 = 0] = bounds.min;
-  const [x1 = 0, y1 = 0, z1 = 0] = bounds.max;
-  camera.target = [(x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2];
-  // The bounding box's sphere, a little inside the narrower of the two view angles (40° tall, as
-  // wide as the canvas lets): a box seen at an angle rarely fills its sphere.
-  const radius = Math.max(Math.hypot(x1 - x0, y1 - y0, z1 - z0), 0.01) / 2;
-  const aspect = canvas.clientHeight > 0 ? canvas.clientWidth / canvas.clientHeight : 1;
-  const half = Math.atan(Math.tan((20 * Math.PI) / 180) * Math.min(1, aspect));
-  camera.distance = (radius / Math.sin(half)) * 0.85;
-  camera.yaw = 0.6;
-  camera.pitch = 0.35;
+  camera = framing(bounds, canvas.clientHeight > 0 ? canvas.clientWidth / canvas.clientHeight : 1);
   framed = true;
-}
-
-/** The camera's position, in the drawn (Z mirrored) space. */
-function eyeOf(): number[] {
-  const { yaw, pitch, distance, target } = camera;
-  const [tx = 0, ty = 0, tz = 0] = target;
-  return [
-    tx + distance * Math.cos(pitch) * Math.sin(yaw),
-    ty + distance * Math.sin(pitch),
-    tz + distance * Math.cos(pitch) * Math.cos(yaw),
-  ];
-}
-
-/** Perspective × look-at, by columns. */
-function viewProjection(aspect: number): Float32Array {
-  const { distance, target } = camera;
-  const [tx = 0, ty = 0, tz = 0] = target;
-  const eye = eyeOf();
-  const f = normalise([tx - (eye[0] ?? 0), ty - (eye[1] ?? 0), tz - (eye[2] ?? 0)]);
-  const s = normalise(cross(f, [0, 1, 0]));
-  const u = cross(s, f);
-  const view = new Float32Array([
-    s[0] ?? 0,
-    u[0] ?? 0,
-    -(f[0] ?? 0),
-    0,
-    s[1] ?? 0,
-    u[1] ?? 0,
-    -(f[1] ?? 0),
-    0,
-    s[2] ?? 0,
-    u[2] ?? 0,
-    -(f[2] ?? 0),
-    0,
-    -dot(s, eye),
-    -dot(u, eye),
-    dot(f, eye),
-    1,
-  ]);
-  const near = distance / 100;
-  const far = distance * 10;
-  const t = 1 / Math.tan((40 * Math.PI) / 360);
-  const projection = new Float32Array([
-    t / aspect,
-    0,
-    0,
-    0,
-    0,
-    t,
-    0,
-    0,
-    0,
-    0,
-    (far + near) / (near - far),
-    -1,
-    0,
-    0,
-    (2 * far * near) / (near - far),
-    0,
-  ]);
-  return multiply(projection, view);
-}
-
-function cross(a: readonly number[], b: readonly number[]): number[] {
-  const [ax = 0, ay = 0, az = 0] = a;
-  const [bx = 0, by = 0, bz = 0] = b;
-  return [ay * bz - az * by, az * bx - ax * bz, ax * by - ay * bx];
-}
-function dot(a: readonly number[], b: readonly number[]): number {
-  return a.reduce((sum, v, i) => sum + v * (b[i] ?? 0), 0);
-}
-function normalise(v: readonly number[]): number[] {
-  const length = Math.hypot(...v) || 1;
-  return v.map((x) => x / length);
 }
 
 /** The status line: what plays and where it is. */
@@ -712,9 +583,9 @@ function draw(now: number): void {
   const vector = (name: string, v: readonly number[]): void => {
     gl.uniform3f(uniform(name), v[0] ?? 0, v[1] ?? 0, v[2] ?? 0);
   };
-  gl.uniformMatrix4fv(uniform('viewProjection'), false, viewProjection(width / height));
+  gl.uniformMatrix4fv(uniform('viewProjection'), false, viewProjection(camera, width / height));
   vector('light', LIGHT);
-  vector('eye', eyeOf());
+  vector('eye', eyeOf(camera));
   vector('primary', country.primary);
   vector('secondary', country.secondary);
   vector('tertiary', country.tertiary);
