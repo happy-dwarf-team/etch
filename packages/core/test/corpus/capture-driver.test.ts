@@ -294,6 +294,40 @@ describe('captureView', () => {
     });
   });
 
+  it('fails a view whose widget trees or game window change while the shots are taken', async () => {
+    const folder = await makeTree({});
+    trees.push(folder);
+    const manifest = testManifest(await sha(SAVE_TEXT));
+    // The lobby gains a child during the shots: a tooltip's or an animation's.
+    const kids: string[] = [];
+    const windows = WINDOWS.map((w) => (w.name === 'lobby' ? { ...w, children: kids } : w));
+    const game = new FakeGame(windows, ['country_selection_panel'], folder, SIZE);
+    const ctx = context(game, manifest, 'main-menu', await startWindows(game));
+    game.onCall = (command) => {
+      if (command.startsWith('screenshot')) kids.push('flash');
+    };
+    expect(await captureView(ctx, viewOf(manifest, 'lobby'))).toEqual({
+      view: 'lobby',
+      ok: false,
+      reason: 'The widget trees changed while the screenshots were taken.',
+      lost: false,
+    });
+
+    // The window is resized after the shots: the second `window` of the view answers otherwise.
+    const resized = new FakeGame(WINDOWS, ['country_selection_panel'], folder, SIZE);
+    const resizedCtx = context(resized, manifest, 'main-menu', await startWindows(resized));
+    let windowCalls = 0;
+    resized.onCall = (command) => {
+      if (command === 'window' && ++windowCalls === 2) {
+        Object.assign(resized, { size: { width: 800, height: 600 } });
+      }
+    };
+    expect(await captureView(resizedCtx, viewOf(manifest, 'lobby'))).toMatchObject({
+      ok: false,
+      reason: 'The game window changed while the screenshots were taken.',
+    });
+  });
+
   it('presses no Escape when a window of the start state is gone', async () => {
     const folder = await makeTree({});
     trees.push(folder);
