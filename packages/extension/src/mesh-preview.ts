@@ -29,6 +29,7 @@ import { inspectTexture } from '@etch/renderer/inspect';
 import { layerFolder } from './asset-links.ts';
 import type {
   MeshAnimationEntry,
+  MeshControls,
   MeshHostMessage,
   MeshSummary,
   MeshTexture,
@@ -45,6 +46,11 @@ export type MeshShown =
 export interface MeshPreviewApi {
   /** Fires each time a mesh preview has drawn a file (or a new animation) or failed to. */
   readonly onDidShow: vscode.Event<MeshShown>;
+  /**
+   * Sets the controls of the open previews of `uri` as a user would; each then fires `onDidShow`
+   * with a summary that has `drawn`. False when no preview of `uri` is open.
+   */
+  control(uri: vscode.Uri, controls: MeshControls): Promise<boolean>;
 }
 
 class MeshDocument implements vscode.CustomDocument {
@@ -226,6 +232,8 @@ class MeshPreviewProvider implements vscode.CustomReadonlyEditorProvider<MeshDoc
   private readonly output: vscode.LogOutputChannel;
   private files: Promise<GameFiles | undefined> | undefined;
   private types: Promise<PdxMeshType[]> | undefined;
+  /** The open previews' webviews, by the mesh's URI. */
+  private readonly views = new Map<string, Set<vscode.Webview>>();
 
   constructor(extensionUri: vscode.Uri, output: vscode.LogOutputChannel) {
     this.extensionUri = extensionUri;
@@ -273,6 +281,14 @@ class MeshPreviewProvider implements vscode.CustomReadonlyEditorProvider<MeshDoc
     return this.files;
   }
 
+  /** Sets the controls of the open previews of `uri`; see `MeshPreviewApi.control`. */
+  async control(uri: vscode.Uri, controls: MeshControls): Promise<boolean> {
+    const views = [...(this.views.get(uri.toString()) ?? [])];
+    const message: MeshHostMessage = { type: 'controls', controls };
+    for (const view of views) await view.postMessage(message);
+    return views.length > 0;
+  }
+
   openCustomDocument(uri: vscode.Uri): MeshDocument {
     return new MeshDocument(uri);
   }
@@ -285,6 +301,10 @@ class MeshPreviewProvider implements vscode.CustomReadonlyEditorProvider<MeshDoc
     };
     webview.html = meshHtml(webview, this.extensionUri);
     const uri = document.uri;
+    const key = uri.toString();
+    const views = this.views.get(key) ?? new Set<vscode.Webview>();
+    views.add(webview);
+    this.views.set(key, views);
     const file = uri.fsPath;
     const folder = path.dirname(file);
     const name = path.basename(file);
@@ -362,6 +382,8 @@ class MeshPreviewProvider implements vscode.CustomReadonlyEditorProvider<MeshDoc
     ];
     panel.onDidDispose(() => {
       for (const subscription of subscriptions) subscription.dispose();
+      views.delete(webview);
+      if (views.size === 0) this.views.delete(key);
     });
   }
 
@@ -394,7 +416,10 @@ export function registerMeshPreview(
       provider.reset();
     }),
   );
-  return { onDidShow: provider.shown.event };
+  return {
+    onDidShow: provider.shown.event,
+    control: (uri, controls) => provider.control(uri, controls),
+  };
 }
 
 export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): string {
