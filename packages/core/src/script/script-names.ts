@@ -141,6 +141,11 @@ export interface ScriptNames {
    * definition, which is checked.
    */
   readonly scripted?: ReadonlySet<string>;
+  /**
+   * Whether a layer has each country file `common/country_tags` names, by game path in lower case
+   * (`checkCountryFiles`).
+   */
+  readonly countryFiles?: ReadonlyMap<string, boolean>;
 }
 
 export type ScriptNameDiagnosticCode = `unknown-${ScriptNameKind}`;

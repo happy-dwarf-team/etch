@@ -9,7 +9,7 @@ import {
   loadScriptNames,
 } from '../../src/playset/index.ts';
 import { parseScript, type ScriptNames } from '../../src/script/index.ts';
-import { makeTree, removeTree } from './fixture.ts';
+import { addFiles, makeTree, removeTree } from './fixture.ts';
 
 describe('script values of a playset', () => {
   let root: string;
@@ -150,6 +150,31 @@ describe('script values of a playset', () => {
     ]);
     // Three ideas files, two event files, a customizable localisation file and default.map.
     expect(filesChecked).toBe(7);
+  });
+
+  it("warns about a country_tags file's tag whose country file no layer has", async () => {
+    await addFiles(root, {
+      'game/common/country_tags/00_countries.txt': 'SWE = "countries/Sweden.txt"\n',
+      'game/common/countries/Sweden.txt': 'graphical_culture = westerngfx\n',
+      'mod/common/country_tags/01_mod.txt':
+        'XYZ = "countries/Xyz.txt"\nLST = "countries/Lost.txt"\nSW2 = "countries/sweden.txt"\n',
+      'mod/common/countries/Xyz.txt': 'graphical_culture = westerngfx\n',
+    });
+    const files = playset();
+    const names = await loadScriptNames(files);
+    // The mod's own file, the game's in another case, and one no layer has.
+    expect(names?.countryFiles).toEqual(
+      new Map([
+        ['common/countries/sweden.txt', true],
+        ['common/countries/xyz.txt', true],
+        ['common/countries/lost.txt', false],
+      ]),
+    );
+    const { findings } = await findScriptValueProblems(files, { names });
+    const tags = findings.find((finding) => finding.file.path === 'common/country_tags/01_mod.txt');
+    expect(tags?.diagnostics.map((d) => `${d.key} ${d.code}`)).toEqual([
+      'LST country-file-missing',
+    ]);
   });
 
   it('checks names without a map, and ids without names', async () => {

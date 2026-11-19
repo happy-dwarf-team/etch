@@ -234,7 +234,9 @@ does not fit in the river map at its `x` and `y` (the game copies it there
 without a check when the canal is built). So does a map file that
 `map/default.map` names and no layer of the playset has (`climate`, `region`,
 `adjacencies` and the other files): the game crashes or stops loading the map
-without it. A `history/provinces` file
+without it. So does a tag in `common/country_tags` whose country file
+(`SWE = "countries/Sweden.txt"`) no layer has: the game reads every tag's file
+while it starts and crashes without it. A `history/provinces` file
 whose name does not start with a province of the map (`4999 - Past.txt` on
 4941 provinces, or `Uppland.txt`) gets a warning at its first line: the game
 skips it without a word.
