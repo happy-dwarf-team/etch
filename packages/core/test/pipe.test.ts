@@ -119,6 +119,31 @@ describe('the pipe sockets', () => {
     expect(['ECONNREFUSED', 'ETIMEDOUT']).toContain(stale);
   });
 
+  it('rejects a path that is no pipe, a state file without port and token, and an answer with no line', async () => {
+    await expect(openPipe('/tmp/x', linux())).rejects.toMatchObject({ code: 'EINVAL' });
+    await writeFile(join(dir, 'bridge.json'), JSON.stringify({ port: String(port), token: 1 }));
+    await expect(openPipe('\\\\.\\pipe\\tongs', linux())).rejects.toMatchObject({
+      code: 'EINVAL',
+    });
+    // A socket that answers the RELAY line with more than 256 bytes and no line break.
+    const mute = createServer((client: Socket) => {
+      client.on('data', () => client.write('x'.repeat(300)));
+    });
+    await new Promise<void>((resolve) => mute.listen(0, '127.0.0.1', resolve));
+    try {
+      const mutePort = (mute.address() as { port: number }).port;
+      await writeFile(
+        join(dir, 'bridge.json'),
+        JSON.stringify({ port: mutePort, token: 'secret' }),
+      );
+      await expect(openPipe('\\\\.\\pipe\\tongs', linux())).rejects.toMatchObject({
+        code: 'EPROTO',
+      });
+    } finally {
+      mute.close();
+    }
+  });
+
   it('knows the pipe name of a path and where the state files live', () => {
     const linuxEnv = (env: Record<string, string>) => ({
       env,
