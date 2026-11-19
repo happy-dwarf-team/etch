@@ -67,10 +67,17 @@ export interface MeshSummary {
 }
 
 /**
- * The preview's controls, set as a user would set them: Snow, Turn, Ground (`#rrggbb`), Season
- * and North. Etch's tests set them through `MeshPreviewApi.control`.
+ * The preview's controls, set as a user would set them: Snow, Turn, Ground (`#rrggbb`), Season,
+ * North, the Maps button and the three country colours (`#rrggbb`). Etch's tests set them
+ * through `MeshPreviewApi.control`.
  */
 export interface MeshControls {
+  readonly maps?: boolean;
+  readonly colours?: {
+    readonly primary?: string;
+    readonly secondary?: string;
+    readonly tertiary?: string;
+  };
   readonly snow?: number;
   readonly turn?: number;
   readonly ground?: string;

@@ -9,7 +9,8 @@
 // part and a map tree as taking snow, and a map tree takes the playset's tint map. A mesh
 // with levels of detail draws and counts only its most detailed level, and a mesh a playset's
 // `mapobject_<n>` pdxmesh names is drawn as a map tree. What the shaders draw is read back from the
-// canvas (`MeshPreviewApi.control`): full snow greys a building and a tree whose normals point
+// canvas (`MeshPreviewApi.control`): the Maps button changes it, the country colours colour a
+// white PdxMeshColor part and white sails, full snow greys a building and a tree whose normals point
 // up, and a map tree's colour follows the Ground colour, the Season and North sliders and the Turn.
 import * as assert from 'node:assert/strict';
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
@@ -100,6 +101,12 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
 
   const shown = await open(api, mesh);
   assert.ok(shown.ok, `the mesh shows: ${shown.ok ? '' : shown.message}`);
+  // The normal map (tilted along x) and the specular map's highlight change what is drawn.
+  const withMaps = await measure(api, mesh, {});
+  assert.ok(withMaps.pixels > 0, 'the mesh is drawn');
+  const withoutMaps = await measure(api, mesh, { maps: false });
+  assert.notDeepEqual(withoutMaps.mean, withMaps.mean, `Maps off: ${String(withoutMaps.mean)}`);
+  assert.deepEqual(await measure(api, mesh, { maps: true }), withMaps);
   // The webview posts no `animation` key before one plays: postMessage drops `undefined`.
   const { animation, ...rest } = shown.summary;
   assert.equal(animation, undefined);
@@ -141,6 +148,49 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
     'one flag part, in the country colours until a tag is asked for',
   );
   assert.equal(atlas.summary.blended, undefined, 'nothing blended');
+  await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+
+  // A white quad drawn with the country colours: as a PdxMeshColor part whose specular map
+  // masks the primary colour everywhere (R; the fixture DDS is BGRA) and gives no highlight (A),
+  // and as sails whose stripes are the three colours.
+  await writeFile(path.join(folder, 'white.dds'), dds(2, 2, [255, 255, 255, 255]));
+  await writeFile(path.join(folder, 'primary_mask.dds'), dds(2, 2, [0, 0, 255, 0]));
+  const white = (shader: string) =>
+    binary(
+      MESH.flatMap((item) => {
+        if (!('name' in item)) return [item];
+        if (item.name === 'shader' && item.values[0] === 'PdxMeshStandardSkinned') {
+          return [strs('shader', shader)];
+        }
+        if (item.name === 'diff')
+          return [strs('diff', 'white.dds'), strs('spec', 'primary_mask.dds')];
+        return [item];
+      }),
+    );
+  const coloured = vscode.Uri.file(path.join(folder, 'etch_coloured.mesh'));
+  await writeFile(coloured.fsPath, white('PdxMeshColor'));
+  assert.ok((await open(api, coloured)).ok, 'the coloured part shows');
+  const red = await measure(api, coloured, { colours: { primary: '#ff0000' } });
+  assert.ok(
+    red.mean[0] > 4 * red.mean[1] && red.mean[0] > 4 * red.mean[2],
+    `red primary: ${String(red.mean)}`,
+  );
+  const blue = await measure(api, coloured, { colours: { primary: '#0000ff' } });
+  assert.ok(
+    blue.mean[2] > 4 * blue.mean[0] && blue.mean[2] > 4 * blue.mean[1],
+    `blue primary: ${String(blue.mean)}`,
+  );
+  await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+  const stripes = vscode.Uri.file(path.join(folder, 'etch_white_sails.mesh'));
+  await writeFile(stripes.fsPath, white('PdxMeshTextureAtlas'));
+  assert.ok((await open(api, stripes)).ok, 'the white sails show');
+  const green = await measure(api, stripes, {
+    colours: { primary: '#00ff00', secondary: '#00ff00', tertiary: '#00ff00' },
+  });
+  assert.ok(
+    green.mean[1] > 4 * green.mean[0] && green.mean[1] > 4 * green.mean[2],
+    `green stripes: ${String(green.mean)}`,
+  );
   await vscode.commands.executeCommand('workbench.action.closeAllEditors');
 
   // A unit's selection ring: the fixture quad as a PdxMeshAlphaBlendNoZWrite part.
