@@ -705,12 +705,18 @@ refresh is a step of the 3.0.0 release.
   maps a flag through the country colours (`AtlasCutoff.x < 0`) for flags it
   makes itself (revolutionary countries, custom nations and some dynamic
   tags), out of its custom flag textures; the preview's stripes stand in for
-  that. Levels of detail are shapes named `lodShape0`, `Lod1Shape` and so
-  on (`MeshShape.lod`: 16 map trees with up to five levels and the map flag
-  with one, `asset.vanilla.test.ts`); the preview draws one level, the most
-  detailed unless the LOD box picks another, where it drew them all on top of
-  each other before. Which level the game draws at which distance is not
-  known. A mesh a `mapobject_<n>` pdxmesh of the playset names is one of the
+  that. A shape's level of detail is its `lod` property, as the game reads it
+  (`MeshShape.lod`; a shape without one, or with a negative one, is drawn at
+  every distance). The shapes' names do not count: vanilla's `HighShape` and
+  `LowShape` are levels 0 and 1, and its savanna trees number `LodShape2`
+  level 1. 28 vanilla meshes have levels: 17 trees in `Mapitems/Trees` with
+  up to five, and 11 in `Mapitems` (`asset.vanilla.test.ts`). The preview
+  draws one level, the most detailed unless the LOD box picks another, where
+  it drew them all on top of each other before. The object's `loddist` gives
+  each level's camera distance (a pine's `[0, 20, 50, 100, 200]`,
+  `PdxMesh.lodDistances`), which the bar shows. The game squares those values
+  when it loads the mesh and compares them with squared camera distances. How
+  far the camera is in the preview's units is not matched to the game's. A mesh a `mapobject_<n>` pdxmesh of the playset names is one of the
   map's trees (the tree layer places type n where `map/trees.bmp` has palette
   index n: 21 types over 17 meshes in vanilla, `entity.vanilla.test.ts`); the
   game draws those with `gfx/FX/tree.shader`, not their materials' shader, so

@@ -107,9 +107,11 @@ describe.skipIf(gamePath === undefined)('meshes and animations of the installed 
       uvs1: 157,
       // Every PdxMeshTextureAtlas part (ships, the map flag) has the UVs its flag is drawn with.
       atlasWithUvs1: 21,
-      // The map's trees (16, up to five levels each) and the map flag (one level).
-      lodMeshes: 17,
-      lodShapes: 66,
+      // The shapes with a lod property: the map's trees in Mapitems/Trees (17, up to five levels
+      // each) and in Mapitems (11, a HighShape and most a LowShape). The map flag's Lod0Shape
+      // has none, so it is drawn at every distance.
+      lodMeshes: 28,
+      lodShapes: 89,
     });
     expect(animation).toEqual({ files: 152, joints: 3_116, text: 3 });
   });

@@ -303,10 +303,12 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
   assert.ok(spread(snowed) <= 3, `full snow greys the building: ${String(snowed.mean)}`);
   await vscode.commands.executeCommand('workbench.action.closeAllEditors');
 
-  // A map tree's levels of detail: a quad at level 0 and a triangle at level 1, as two shapes.
+  // A map tree's levels of detail: a quad at level 0 and a triangle at level 1, as two shapes
+  // whose lod property gives the level, as vanilla's HighShape and LowShape do.
   const tree = vscode.Uri.file(path.join(folder, 'etch_tree.mesh'));
-  const level = (name: string, p: number[], tri: number[]) => [
+  const level = (name: string, lod: number, p: number[], tri: number[]) => [
     obj(2, name),
+    ints('lod', lod),
     obj(3, 'mesh'),
     floats('p', ...p),
     ints('tri', ...tri),
@@ -318,13 +320,18 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
     binary([
       ints('pdxasset', 1, 0),
       obj(1, 'object'),
-      ...level('lodShape0', [0, 0, 0, 2, 0, 0, 0, 1, 0, 2, 1, 0], [0, 1, 2, 1, 3, 2]),
-      ...level('lodShape1', [0, 0, 0, 2, 0, 0, 0, 1, 0], [0, 1, 2]),
+      floats('loddist', 0, 30),
+      ...level('HighShape', 0, [0, 0, 0, 2, 0, 0, 0, 1, 0, 2, 1, 0], [0, 1, 2, 1, 3, 2]),
+      ...level('LowShape', 1, [0, 0, 0, 2, 0, 0, 0, 1, 0], [0, 1, 2]),
     ]),
   );
   const lod = await open(api, tree);
   assert.ok(lod.ok, `the tree shows: ${lod.ok ? '' : lod.message}`);
-  assert.deepEqual(lod.summary.lod, { level: 0, levels: [0, 1] }, 'level 0 of 0 and 1');
+  assert.deepEqual(
+    lod.summary.lod,
+    { level: 0, levels: [0, 1], from: 0 },
+    'level 0 of 0 and 1, from distance 0',
+  );
   assert.deepEqual(
     [lod.summary.shapes, lod.summary.vertices, lod.summary.triangles],
     [1, 4, 2],
