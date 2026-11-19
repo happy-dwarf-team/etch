@@ -45,8 +45,10 @@ function sample(image: RgbaImage, u: number, v: number): [number, number, number
 }
 
 /**
- * Renders the mesh's drawn shapes, `size` × `size` pixels. `textures` holds the decoded diffuse
- * textures by the material's `diff` name; a part without one is drawn grey.
+ * Renders the mesh's drawn shapes, `size` × `size` pixels: of a mesh with levels of detail, only
+ * the most detailed level and the shapes without one, as the mesh preview first shows it.
+ * `textures` holds the decoded diffuse textures by the material's `diff` name; a part without one
+ * is drawn grey.
  */
 export function renderMeshThumbnail(
   mesh: PdxMesh,
@@ -83,8 +85,10 @@ export function renderMeshThumbnail(
   // and their view depth.
   const projected: { part: MeshPart; sx: Float32Array; sy: Float32Array; sz: Float32Array }[] = [];
   let [minX, minY, maxX, maxY] = [Infinity, Infinity, -Infinity, -Infinity];
+  const levels = mesh.shapes.flatMap((s) => (s.collision || s.lod === undefined ? [] : [s.lod]));
+  const level = levels.length === 0 ? undefined : Math.min(...levels);
   for (const shape of mesh.shapes) {
-    if (shape.collision) continue;
+    if (shape.collision || (shape.lod !== undefined && shape.lod !== level)) continue;
     for (const part of shape.parts) {
       const count = part.positions.length / 3;
       const sx = new Float32Array(count);

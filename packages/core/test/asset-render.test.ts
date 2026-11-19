@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readMesh, renderMeshThumbnail, type RgbaImage } from '../src/asset/index.ts';
-import { binary, MESH, strs } from './fixtures/pdx-asset.ts';
+import { binary, floats, ints, MESH, obj, strs } from './fixtures/pdx-asset.ts';
 
 /** 2 × 2 texels: red, blue on the top row (v = 0), green, white below. */
 const QUADRANTS: RgbaImage = {
@@ -84,6 +84,50 @@ describe('renderMeshThumbnail', () => {
     );
     const empty = renderMeshThumbnail(readMesh(binary(onlyCollision)), new Map(), 16);
     expect(empty.rgba.every((v) => v === 0)).toBe(true);
+  });
+
+  it('draws only the most detailed level of a mesh with levels of detail', () => {
+    // Two levels in one place, as a map tree carries them: level 0 red, level 1 blue.
+    const level = (name: string, lod: number, texture: string) => [
+      obj(2, name),
+      ints('lod', lod),
+      obj(3, 'mesh'),
+      floats('p', 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0),
+      floats('n', 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1),
+      floats('u0', 0, 1, 1, 1, 0, 0, 1, 0),
+      ints('tri', 0, 2, 1, 1, 2, 3),
+      obj(4, 'material'),
+      strs('shader', 'PdxMeshStandard'),
+      strs('diff', texture),
+    ];
+    const one = (r: number, g: number, b: number): RgbaImage => ({
+      width: 1,
+      height: 1,
+      rgba: new Uint8Array([r, g, b, 255]),
+    });
+    const textures = new Map([
+      ['red.dds', one(255, 0, 0)],
+      ['blue.dds', one(0, 0, 255)],
+    ]);
+    const tree = (first: number, second: number) =>
+      readMesh(
+        binary([
+          ints('pdxasset', 1, 0),
+          obj(1, 'object'),
+          ...level('LowShape', second, 'blue.dds'),
+          ...level('HighShape', first, 'red.dds'),
+        ]),
+      );
+    const opaque = (image: RgbaImage) =>
+      Array.from({ length: image.width * image.height }, (_, i) =>
+        Array.from(image.rgba.subarray(i * 4, i * 4 + 4)),
+      ).filter((p) => p[3] === 255);
+    const high = opaque(renderMeshThumbnail(tree(0, 1), textures, 32));
+    expect(high.length).toBeGreaterThan(50);
+    expect(new Set(high.map(hue))).toEqual(new Set(['red']));
+    // The levels the other way round: the blue shape is now the detailed one.
+    const swapped = opaque(renderMeshThumbnail(tree(1, 0), textures, 32));
+    expect(new Set(swapped.map(hue))).toEqual(new Set(['blue']));
   });
 
   it("drops an alpha-tested shader's transparent texels", () => {

@@ -236,12 +236,19 @@ without a check when the canal is built). So does a map file that
 `adjacencies` and the other files): the game crashes or stops loading the map
 without it. So does a tag in `common/country_tags` whose country file
 (`SWE = "countries/Sweden.txt"`) no layer has: the game reads every tag's file
-while it starts and crashes without it, and so does a table of
+while it starts and crashes without it. A tag that an earlier line or
+`common/country_tags` file already defines gets a warning instead: the game
+keeps the first, leaves the later one out and does not read its file. So does a
+key of other than three characters that names a country file (`ZZEX =
+"countries/Zzex.txt"`): the game leaves it out without a word. So does a table of
 `common/technology.txt` (`adm_tech = "technologies/adm.txt"`) whose file no
 layer has. A `history/provinces` file
 whose name does not start with a province of the map (`4999 - Past.txt` on
 4941 provinces, or `Uppland.txt`) gets a warning at its first line: the game
-skips it without a word.
+skips it without a word. A mod's `history/countries` file whose tag also has a
+file of the game's under another name (`SWE - My Sweden.txt` beside `SWE -
+Sweden.txt`) gets a warning there too: it does not replace the game's file, and
+the game reads both into the country's history.
 The map is your playset's: `max_provinces` of `map/default.map`, a mod's when
 it has its own, and the provinces its `map/definition.csv` lists. An id written
 as a tag, a scope or a variable is not checked.
@@ -331,7 +338,8 @@ name (`texture_diffuse = "tower_diffuse.dds"` in a `pdxmesh`, an animation's
 `file = "eagle_idle.anim"` in an `.asset` file) is looked up beside the mesh
 or the `.asset` file, where vanilla keeps them. Hovering a mesh path lists its
 shapes, vertices, triangles and bones, its shaders and the textures its
-materials name, and draws the mesh with those textures, as they are found
+materials name, and draws the mesh (of a mesh with levels of detail, its most
+detailed level) with those textures, as they are found
 beside it or, like the game, by file name in another folder of the playset's
 `gfx/` (a part whose texture is missing is grey); an animation path gives its
 frames, speed and joints.
