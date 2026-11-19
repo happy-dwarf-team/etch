@@ -7,3 +7,4 @@ export * from './anim.ts';
 export * from './facts.ts';
 export * from './skin.ts';
 export * from './render.ts';
+export * from './entity.ts';

@@ -1,7 +1,10 @@
-// The mesh preview's webview script (src/mesh-preview.ts): parses the posted `.mesh`
-// with `@etch/core/asset`, draws its shapes with WebGL2 under an orbit camera (collision shapes
-// skipped), and plays an animation the user picks, skinned on the CPU each frame. The game's files
-// are left-handed with Y up: Z is mirrored so a mesh does not show mirrored.
+// The webview script of the mesh preview (src/mesh-preview.ts) and the entity preview
+// (src/entity-preview.ts): parses the posted `.mesh` files with `@etch/core/asset`, draws their
+// shapes with WebGL2 under an orbit camera (collision shapes skipped), and plays an animation,
+// skinned on the CPU each frame. A mesh preview draws one mesh and plays the animation the user
+// picks. An entity preview draws the entity's mesh and its attachments, each on its parent's bone
+// as the bone moves, and plays the state the user picks on all of them. The game's files are
+// left-handed with Y up: Z is mirrored so a mesh does not show mirrored.
 //
 // The shading follows the game's mesh shader (`gfx/FX/pdxmesh.shader` and
 // `standardfuncsgfx.fxh` of EU4 1.37.5, read, not copied): a squared half-Lambert term with
@@ -11,9 +14,14 @@
 // mask the country's three colours. The light comes from the vanilla `LIGHT_DIRECTION` of
 // `common/defines.lua` (-1, -1, 0.5, pointing away from the light). The map's fog of war, terra
 // incognita, snow and distance fog are left out.
+//
+// An attachment's scale: its own pdxmesh and entity scale, not multiplied by its parent's (the
+// bone's position is). Vanilla gives a soldier and the weapon in its hand the same scale (0.5).
 
 import {
+  boneWorldMatrices,
   jointsOfBones,
+  multiply,
   readAnimation,
   readMesh,
   skinningMatrices,
@@ -24,6 +32,7 @@ import {
   type PdxMesh,
 } from '@etch/core/asset';
 import type {
+  EntityNode,
   MeshHostMessage,
   MeshSummary,
   MeshTexture,
@@ -60,18 +69,23 @@ in vec3 normal;
 in vec2 uv;
 in vec4 tangent;
 uniform mat4 viewProjection;
+uniform mat4 model;
 out vec3 vPosition;
 out vec3 vNormal;
 out vec3 vTangent;
 out vec3 vBitangent;
 out vec2 vUv;
 void main() {
-  // The bitangent in the file's space, then everything left-handed to right-handed: mirror Z.
-  vec3 b = cross(normal, tangent.xyz) * tangent.w;
+  // Placed in the file's space (rotation and uniform scale), the bitangent built there, then
+  // everything left-handed to right-handed: mirror Z.
+  mat3 turn = mat3(model);
+  vec3 n = normalize(turn * normal);
+  vec3 t = normalize(turn * tangent.xyz);
+  vec3 b = cross(n, t) * tangent.w;
   vec3 mirror = vec3(1.0, 1.0, -1.0);
-  vPosition = position * mirror;
-  vNormal = normal * mirror;
-  vTangent = tangent.xyz * mirror;
+  vPosition = (model * vec4(position, 1.0)).xyz * mirror;
+  vNormal = n * mirror;
+  vTangent = t * mirror;
   vBitangent = b * mirror;
   vUv = uv;
   gl_Position = viewProjection * vec4(vPosition, 1.0);
@@ -129,7 +143,10 @@ interface DrawnPart {
   readonly part: MeshPart;
   readonly shape: MeshShape;
   readonly vao: WebGLVertexArrayObject;
+  readonly buffers: readonly WebGLBuffer[];
   readonly positions: WebGLBuffer;
+  /** The positions as drawn now: skinned into the current frame, or the mesh's own. */
+  posed: Float32Array;
   readonly normals: WebGLBuffer;
   readonly tangents: WebGLBuffer;
   readonly triangles: WebGLBuffer;
@@ -143,17 +160,38 @@ interface DrawnPart {
   readonly alphaTest: boolean;
 }
 
+/** One drawn mesh: the mesh preview's only one, or an entity's or one of its attachments. */
+interface Instance {
+  readonly name: string;
+  readonly meshName: string;
+  readonly mesh: PdxMesh;
+  readonly parts: readonly DrawnPart[];
+  readonly parent: Instance | undefined;
+  readonly bone: string | undefined;
+  readonly scale: number;
+  /** What it plays in each state, by key of `animations` (entity) or file name (mesh). */
+  readonly states: Readonly<Record<string, string | undefined>>;
+  /** Where it is drawn, in the file's space; set by `pose`. */
+  model: Float32Array;
+}
+
 let program: WebGLProgram | undefined;
-let drawn: DrawnPart[] = [];
-/** The uploaded textures by file name, shared by the parts that name them. */
-let uploaded = new Map<string, WebGLTexture | undefined>();
-let mesh: PdxMesh | undefined;
-let meshName = '';
+let instances: Instance[] = [];
+/** The uploaded textures, shared by the parts of a mesh that name them. */
+let uploaded: WebGLTexture[] = [];
+/** The mesh preview's file name, or the entity's name. */
+let title = '';
 let textured = 0;
-/** Where each material's diffuse texture came from, or why it is missing. */
+/** Where each texture came from, or why it is missing. */
 let textureSources: Record<string, string> = {};
+/** Mesh preview: the animations beside the mesh. */
 let offered: string[] = [];
-let animation: { name: string; data: PdxAnimation } | undefined;
+/** The animations that can play, by key: a file name (mesh) or a game path (entity). */
+const animations = new Map<string, PdxAnimation>();
+/** Entity preview: its name, states and what could not be resolved. */
+let entity: { name: string; states: string[]; problems: string[] } | undefined;
+/** What plays: an animation's file name (mesh) or a state (entity); `undefined` for the bind pose. */
+let playingKey: string | undefined;
 let playing = false;
 let started = 0;
 let wireframe = false;
@@ -174,6 +212,8 @@ const LIGHT = normalise([1, 1, 0.5]);
 
 /** The orbit camera: angles in radians, distance from the target. */
 const camera = { yaw: 0.6, pitch: 0.35, distance: 10, target: [0, 0, 0] as number[] };
+/** Whether the camera has framed a mesh yet: a reload keeps the user's view. */
+let framed = false;
 
 function fail(message: string): void {
   errorBox.textContent = message;
@@ -267,25 +307,29 @@ function textureOf(context: WebGL2RenderingContext, source: MeshTexture): WebGLT
   return texture;
 }
 
+/** Frees every instance's buffers and textures. */
+function clear(context: WebGL2RenderingContext): void {
+  for (const instance of instances) {
+    for (const old of instance.parts) {
+      context.deleteVertexArray(old.vao);
+      for (const b of old.buffers) context.deleteBuffer(b);
+    }
+  }
+  for (const texture of uploaded) context.deleteTexture(texture);
+  instances = [];
+  uploaded = [];
+  textured = 0;
+  textureSources = {};
+}
+
+/** Uploads a mesh's drawn parts; notes texture sources and adds missing textures to `warnings`. */
 function upload(
   context: WebGL2RenderingContext,
   loaded: PdxMesh,
   textures: Readonly<Record<string, MeshTexture>>,
-): void {
-  for (const old of drawn) {
-    context.deleteVertexArray(old.vao);
-    for (const b of [old.positions, old.normals, old.tangents, old.triangles, old.edges]) {
-      context.deleteBuffer(b);
-    }
-  }
-  for (const texture of uploaded.values()) {
-    if (texture !== undefined) context.deleteTexture(texture);
-  }
-  drawn = [];
-  uploaded = new Map();
-  textured = 0;
-  textureSources = {};
-  const warnings = new Set<string>();
+  warnings: Set<string>,
+): DrawnPart[] {
+  const shared = new Map<string, WebGLTexture | undefined>();
   /** The texture a material names, uploaded once; notes where it came from or why it is missing. */
   const named = (name: string | undefined, part: MeshPart): WebGLTexture | undefined => {
     if (name === undefined) return undefined;
@@ -294,9 +338,14 @@ function upload(
     textureSources[name] = source.ok ? source.source : 'not found';
     if (!source.ok) warnings.add(`${name}: ${source.message}`);
     if (part.uvs === undefined) return undefined;
-    if (!uploaded.has(name)) uploaded.set(name, textureOf(context, source));
-    return uploaded.get(name);
+    if (!shared.has(name)) {
+      const texture = textureOf(context, source);
+      shared.set(name, texture);
+      if (texture !== undefined) uploaded.push(texture);
+    }
+    return shared.get(name);
   };
+  const parts: DrawnPart[] = [];
   for (const shape of loaded.shapes) {
     if (shape.collision) continue;
     for (const part of shape.parts) {
@@ -313,7 +362,7 @@ function upload(
       );
       context.enableVertexAttribArray(1);
       context.vertexAttribPointer(1, 3, context.FLOAT, false, 0, 0);
-      buffer(
+      const uvs = buffer(
         context,
         context.ARRAY_BUFFER,
         part.uvs ?? new Float32Array((part.positions.length / 3) * 2),
@@ -340,11 +389,13 @@ function upload(
       const edges = buffer(context, context.ELEMENT_ARRAY_BUFFER, edgeList, context.STATIC_DRAW);
       const texture = named(part.material.diffuse, part);
       if (texture !== undefined) textured++;
-      drawn.push({
+      parts.push({
         part,
         shape,
         vao,
+        buffers: [positions, normals, uvs, tangents, triangles, edges],
         positions,
+        posed: part.positions,
         normals,
         tangents,
         triangles,
@@ -359,20 +410,150 @@ function upload(
       });
     }
   }
-  errorBox.hidden = warnings.size === 0;
-  errorBox.textContent =
-    warnings.size === 0 ? '' : `Textures not shown:\n${[...warnings].join('\n')}`;
+  return parts;
+}
+
+function showWarnings(warnings: ReadonlySet<string>, problems: readonly string[] = []): void {
+  const lines: string[] = [];
+  if (problems.length > 0) lines.push('Not resolved:', ...problems);
+  if (warnings.size > 0) lines.push('Textures not shown:', ...warnings);
+  errorBox.hidden = lines.length === 0;
+  errorBox.textContent = lines.join('\n');
+}
+
+function scaling(factor: number): Float32Array {
+  const m = new Float32Array(16);
+  m[0] = m[5] = m[10] = factor;
+  m[15] = 1;
+  return m;
+}
+
+/** The animation an instance plays now, if any. */
+function animationOf(instance: Instance): PdxAnimation | undefined {
+  if (playingKey === undefined) return undefined;
+  const key = entity === undefined ? playingKey : instance.states[playingKey];
+  return key === undefined ? undefined : animations.get(key);
+}
+
+/** The animation's frame `seconds` into playing it. */
+function frameOf(animation: PdxAnimation | undefined, seconds: number): number {
+  if (animation === undefined || animation.frames <= 0) return 0;
+  return (seconds * animation.fps) % animation.frames;
+}
+
+/**
+ * Poses every instance `seconds` into the animation: skins its parts and places it, the root at
+ * its scale and an attachment on its parent's bone (parents come first).
+ */
+function pose(context: WebGL2RenderingContext, seconds: number): void {
+  const worlds = new Map<Instance, Map<string, Float32Array>>();
+  for (const instance of instances) {
+    const animation = animationOf(instance);
+    const frame = frameOf(animation, seconds);
+    // Bone matrices in the mesh's space, by bone name, for the attachments on it.
+    const bones = new Map<string, Float32Array>();
+    const matrices = new Map<MeshShape, Float32Array[]>();
+    for (const shape of instance.mesh.shapes) {
+      if (shape.skeleton.length === 0) continue;
+      const world = boneWorldMatrices(shape.skeleton, animation, frame);
+      for (const [index, bone] of shape.skeleton.entries()) {
+        const matrix = world[index];
+        if (matrix !== undefined && !bones.has(bone.name)) bones.set(bone.name, matrix);
+      }
+      if (animation !== undefined) {
+        matrices.set(
+          shape,
+          skinningMatrices(
+            shape.skeleton,
+            animation,
+            frame,
+            jointsOfBones(shape.skeleton, animation),
+          ),
+        );
+      }
+    }
+    worlds.set(instance, bones);
+    const parent = instance.parent;
+    const bone =
+      parent === undefined || instance.bone === undefined
+        ? undefined
+        : worlds.get(parent)?.get(instance.bone);
+    instance.model =
+      parent === undefined
+        ? scaling(instance.scale)
+        : multiply(
+            multiply(parent.model, bone ?? scaling(1)),
+            scaling(instance.scale / (parent.scale || 1)),
+          );
+    for (const item of instance.parts) {
+      if (item.part.skin === undefined) continue;
+      const shapeMatrices = matrices.get(item.shape);
+      const posed =
+        shapeMatrices === undefined
+          ? {
+              positions: item.part.positions,
+              normals: item.part.normals,
+              tangents: item.part.tangents,
+            }
+          : skinPart(item.part, shapeMatrices);
+      item.posed = posed.positions;
+      context.bindBuffer(context.ARRAY_BUFFER, item.positions);
+      context.bufferSubData(context.ARRAY_BUFFER, 0, posed.positions);
+      if (posed.normals !== undefined) {
+        context.bindBuffer(context.ARRAY_BUFFER, item.normals);
+        context.bufferSubData(context.ARRAY_BUFFER, 0, posed.normals);
+      }
+      if (posed.tangents !== undefined) {
+        context.bindBuffer(context.ARRAY_BUFFER, item.tangents);
+        context.bufferSubData(context.ARRAY_BUFFER, 0, posed.tangents);
+      }
+    }
+  }
+}
+
+/** The bounds of every drawn vertex as placed now, in the drawn (Z mirrored) space. */
+function boundsOf(): { min: number[]; max: number[] } | undefined {
+  const min = [Infinity, Infinity, Infinity];
+  const max = [-Infinity, -Infinity, -Infinity];
+  for (const instance of instances) {
+    const m = instance.model;
+    for (const item of instance.parts) {
+      const p = item.posed;
+      for (let v = 0; v + 2 < p.length; v += 3) {
+        const x = p[v] ?? 0;
+        const y = p[v + 1] ?? 0;
+        const z = p[v + 2] ?? 0;
+        const placed = [
+          (m[0] ?? 0) * x + (m[4] ?? 0) * y + (m[8] ?? 0) * z + (m[12] ?? 0),
+          (m[1] ?? 0) * x + (m[5] ?? 0) * y + (m[9] ?? 0) * z + (m[13] ?? 0),
+          -((m[2] ?? 0) * x + (m[6] ?? 0) * y + (m[10] ?? 0) * z + (m[14] ?? 0)),
+        ];
+        for (let axis = 0; axis < 3; axis++) {
+          const value = placed[axis] ?? 0;
+          if (value < (min[axis] ?? 0)) min[axis] = value;
+          if (value > (max[axis] ?? 0)) max[axis] = value;
+        }
+      }
+    }
+  }
+  return (min[0] ?? Infinity) <= (max[0] ?? -Infinity) ? { min, max } : undefined;
 }
 
 function frameView(): void {
-  const bounds = mesh?.bounds;
+  const bounds = boundsOf();
   if (bounds === undefined) return;
   const [x0 = 0, y0 = 0, z0 = 0] = bounds.min;
   const [x1 = 0, y1 = 0, z1 = 0] = bounds.max;
-  camera.target = [(x0 + x1) / 2, (y0 + y1) / 2, -(z0 + z1) / 2];
-  camera.distance = Math.max(Math.hypot(x1 - x0, y1 - y0, z1 - z0), 0.01) * 1.1;
+  camera.target = [(x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2];
+  // The bounding box's sphere, a little inside the narrower of the two view angles (40° tall, as
+  // wide as the canvas lets): a box seen at an angle rarely fills its sphere.
+  const radius = Math.max(Math.hypot(x1 - x0, y1 - y0, z1 - z0), 0.01) / 2;
+  const aspect = canvas.clientHeight > 0 ? canvas.clientWidth / canvas.clientHeight : 1;
+  const half = Math.atan(Math.tan((20 * Math.PI) / 180) * Math.min(1, aspect));
+  camera.distance = (radius / Math.sin(half)) * 0.85;
   camera.yaw = 0.6;
   camera.pitch = 0.35;
+  framed = true;
 }
 
 /** The camera's position, in the drawn (Z mirrored) space. */
@@ -433,15 +614,7 @@ function viewProjection(aspect: number): Float32Array {
     (2 * far * near) / (near - far),
     0,
   ]);
-  const out = new Float32Array(16);
-  for (let c = 0; c < 4; c++) {
-    for (let r = 0; r < 4; r++) {
-      let sum = 0;
-      for (let k = 0; k < 4; k++) sum += (projection[k * 4 + r] ?? 0) * (view[c * 4 + k] ?? 0);
-      out[c * 4 + r] = sum;
-    }
-  }
-  return out;
+  return multiply(projection, view);
 }
 
 function cross(a: readonly number[], b: readonly number[]): number[] {
@@ -457,39 +630,19 @@ function normalise(v: readonly number[]): number[] {
   return v.map((x) => x / length);
 }
 
-/** Poses the skinned parts at a frame of the animation (or the bind pose without one). */
-function pose(context: WebGL2RenderingContext, frame: number): void {
-  const matrices = new Map<MeshShape, Float32Array[]>();
-  for (const item of drawn) {
-    if (item.part.skin === undefined) continue;
-    let posed: {
-      positions: Float32Array;
-      normals: Float32Array | undefined;
-      tangents: Float32Array | undefined;
-    };
-    if (animation === undefined) {
-      const { positions, normals, tangents } = item.part;
-      posed = { positions, normals, tangents };
-    } else {
-      let shapeMatrices = matrices.get(item.shape);
-      if (shapeMatrices === undefined) {
-        const joints = jointsOfBones(item.shape.skeleton, animation.data);
-        shapeMatrices = skinningMatrices(item.shape.skeleton, animation.data, frame, joints);
-        matrices.set(item.shape, shapeMatrices);
-      }
-      posed = skinPart(item.part, shapeMatrices);
-    }
-    context.bindBuffer(context.ARRAY_BUFFER, item.positions);
-    context.bufferSubData(context.ARRAY_BUFFER, 0, posed.positions);
-    if (posed.normals !== undefined) {
-      context.bindBuffer(context.ARRAY_BUFFER, item.normals);
-      context.bufferSubData(context.ARRAY_BUFFER, 0, posed.normals);
-    }
-    if (posed.tangents !== undefined) {
-      context.bindBuffer(context.ARRAY_BUFFER, item.tangents);
-      context.bufferSubData(context.ARRAY_BUFFER, 0, posed.tangents);
-    }
+/** The status line: what plays and where it is. */
+function showStatus(seconds: number): void {
+  if (playingKey === undefined) {
+    status.textContent = '';
+    return;
   }
+  const root = instances[0];
+  const animation = root === undefined ? undefined : animationOf(root);
+  const where =
+    animation === undefined
+      ? 'no animation on the root mesh'
+      : `frame ${frameOf(animation, seconds).toFixed(1).padStart(5)} of ${String(animation.frames)} at ${String(Number(animation.fps.toFixed(2)))} fps`;
+  status.textContent = `${entity === undefined ? '' : 'State '}${playingKey}: ${where}`;
 }
 
 function draw(now: number): void {
@@ -501,11 +654,10 @@ function draw(now: number): void {
     canvas.width = width;
     canvas.height = height;
   }
-  let frame: number;
-  if (animation !== undefined && animation.data.frames > 0) {
-    frame = playing ? (((now - started) / 1000) * animation.data.fps) % animation.data.frames : 0;
-    pose(gl, frame);
-    status.textContent = `${animation.name}: frame ${frame.toFixed(1).padStart(5)} of ${String(animation.data.frames)} at ${String(animation.data.fps)} fps`;
+  if (playing) {
+    const seconds = (now - started) / 1000;
+    pose(gl, seconds);
+    showStatus(seconds);
   }
   gl.viewport(0, 0, width, height);
   gl.clearColor(0.16, 0.17, 0.19, 1);
@@ -513,16 +665,12 @@ function draw(now: number): void {
   gl.enable(gl.DEPTH_TEST);
   gl.disable(gl.CULL_FACE);
   gl.useProgram(program);
-  gl.uniformMatrix4fv(
-    gl.getUniformLocation(program, 'viewProjection'),
-    false,
-    viewProjection(width / height),
-  );
   const uniform = (name: string): WebGLUniformLocation | null =>
     gl.getUniformLocation(program as WebGLProgram, name);
   const vector = (name: string, v: readonly number[]): void => {
     gl.uniform3f(uniform(name), v[0] ?? 0, v[1] ?? 0, v[2] ?? 0);
   };
+  gl.uniformMatrix4fv(uniform('viewProjection'), false, viewProjection(width / height));
   vector('light', LIGHT);
   vector('eye', eyeOf());
   vector('primary', country.primary);
@@ -532,28 +680,31 @@ function draw(now: number): void {
   gl.uniform1i(uniform('specularMap'), 1);
   gl.uniform1i(uniform('normalMap'), 2);
   const lines = uniform('lines');
-  for (const item of drawn) {
-    gl.bindVertexArray(item.vao);
-    gl.uniform1i(lines, 0);
-    const normalMap = maps ? item.normalMap : undefined;
-    const specularMap = maps ? item.specularMap : undefined;
-    gl.uniform1i(uniform('textured'), item.texture === undefined ? 0 : 1);
-    gl.uniform1i(uniform('normalMapped'), normalMap === undefined ? 0 : 1);
-    gl.uniform1i(uniform('specularMapped'), specularMap === undefined ? 0 : 1);
-    gl.uniform1i(uniform('countryColours'), item.countryColours ? 1 : 0);
-    gl.uniform1i(uniform('alphaTest'), item.alphaTest ? 1 : 0);
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, item.texture ?? null);
-    gl.activeTexture(gl.TEXTURE1);
-    gl.bindTexture(gl.TEXTURE_2D, specularMap ?? null);
-    gl.activeTexture(gl.TEXTURE2);
-    gl.bindTexture(gl.TEXTURE_2D, normalMap ?? null);
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, item.triangles);
-    gl.drawElements(gl.TRIANGLES, item.triangleCount, gl.UNSIGNED_INT, 0);
-    if (wireframe) {
-      gl.uniform1i(lines, 1);
-      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, item.edges);
-      gl.drawElements(gl.LINES, item.edgeCount, gl.UNSIGNED_INT, 0);
+  for (const instance of instances) {
+    gl.uniformMatrix4fv(uniform('model'), false, instance.model);
+    for (const item of instance.parts) {
+      gl.bindVertexArray(item.vao);
+      gl.uniform1i(lines, 0);
+      const normalMap = maps ? item.normalMap : undefined;
+      const specularMap = maps ? item.specularMap : undefined;
+      gl.uniform1i(uniform('textured'), item.texture === undefined ? 0 : 1);
+      gl.uniform1i(uniform('normalMapped'), normalMap === undefined ? 0 : 1);
+      gl.uniform1i(uniform('specularMapped'), specularMap === undefined ? 0 : 1);
+      gl.uniform1i(uniform('countryColours'), item.countryColours ? 1 : 0);
+      gl.uniform1i(uniform('alphaTest'), item.alphaTest ? 1 : 0);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, item.texture ?? null);
+      gl.activeTexture(gl.TEXTURE1);
+      gl.bindTexture(gl.TEXTURE_2D, specularMap ?? null);
+      gl.activeTexture(gl.TEXTURE2);
+      gl.bindTexture(gl.TEXTURE_2D, normalMap ?? null);
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, item.triangles);
+      gl.drawElements(gl.TRIANGLES, item.triangleCount, gl.UNSIGNED_INT, 0);
+      if (wireframe) {
+        gl.uniform1i(lines, 1);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, item.edges);
+        gl.drawElements(gl.LINES, item.edgeCount, gl.UNSIGNED_INT, 0);
+      }
     }
   }
   gl.bindVertexArray(null);
@@ -565,36 +716,58 @@ function redraw(): void {
 }
 
 function summary(): MeshSummary {
-  const shapes = mesh?.shapes ?? [];
-  const parts = shapes.filter((s) => !s.collision).flatMap((s) => s.parts);
-  return {
+  const shapes = instances.flatMap((i) => i.mesh.shapes);
+  const parts = instances.flatMap((i) => i.parts);
+  const drawnParts = parts.map((d) => d.part);
+  const base: MeshSummary = {
     shapes: shapes.filter((s) => !s.collision).length,
     collisionShapes: shapes.filter((s) => s.collision).length,
-    vertices: parts.reduce((sum, p) => sum + p.positions.length / 3, 0),
-    triangles: parts.reduce((sum, p) => sum + p.indices.length / 3, 0),
+    vertices: drawnParts.reduce((sum, p) => sum + p.positions.length / 3, 0),
+    triangles: drawnParts.reduce((sum, p) => sum + p.indices.length / 3, 0),
     bones: shapes.reduce((sum, s) => sum + s.skeleton.length, 0),
     textured,
-    normalMapped: drawn.filter((d) => d.normalMap !== undefined).length,
-    specularMapped: drawn.filter((d) => d.specularMap !== undefined).length,
-    animation: animation?.name,
+    normalMapped: parts.filter((d) => d.normalMap !== undefined).length,
+    specularMapped: parts.filter((d) => d.specularMap !== undefined).length,
+    animation: entity === undefined ? playingKey : undefined,
     animations: offered,
     textures: textureSources,
+  };
+  if (entity === undefined) return base;
+  return {
+    ...base,
+    entity: {
+      name: entity.name,
+      nodes: instances.map((i) => (i.bone === undefined ? i.name : `${i.name} on ${i.bone}`)),
+      states: entity.states,
+      state: playingKey,
+      problems: entity.problems,
+    },
   };
 }
 
 function showFacts(): void {
   const s = summary();
-  const shaders = [...new Set(drawn.map((d) => d.part.material.shader).filter((x) => x !== ''))];
-  const items = [
-    meshName,
+  const parts = instances.flatMap((i) => i.parts);
+  const shaders = [...new Set(parts.map((d) => d.part.material.shader).filter((x) => x !== ''))];
+  const items = [title];
+  if (s.entity !== undefined) {
+    const attached = s.entity.nodes.length - 1;
+    items.push(
+      `${instances[0]?.meshName ?? ''}${attached > 0 ? ` and ${String(attached)} attached` : ''}`,
+    );
+  }
+  items.push(
     `${String(s.shapes)} shape${s.shapes === 1 ? '' : 's'}`,
     `${s.vertices.toLocaleString('en')} vertices`,
     `${s.triangles.toLocaleString('en')} triangles`,
     s.bones > 0 ? `${String(s.bones)} bones` : 'no skeleton',
-    `${String(s.textured)} of ${String(drawn.length)} parts textured`,
+    `${String(s.textured)} of ${String(parts.length)} parts textured`,
     `${String(s.normalMapped)} with normal maps, ${String(s.specularMapped)} with specular maps`,
     shaders.join(', '),
-  ];
+  );
+  if (instances[0] !== undefined && instances[0].scale !== 1) {
+    items.push(`scale ${String(instances[0].scale)}`);
+  }
   if (s.collisionShapes > 0) items.push(`${String(s.collisionShapes)} collision (hidden)`);
   for (const [name, source] of Object.entries(s.textures)) items.push(`${name} (${source})`);
   facts.replaceChildren(
@@ -604,6 +777,55 @@ function showFacts(): void {
       return span;
     }),
   );
+  if (s.entity !== undefined) {
+    const attached = instances.slice(1).map((i) => `${i.name} on ${i.bone ?? ''} (${i.meshName})`);
+    facts.title = attached.length === 0 ? '' : `Attached:\n${attached.join('\n')}`;
+  } else {
+    facts.title = '';
+  }
+}
+
+/** Starts playing `key` (an animation or a state), or shows the bind pose for `undefined`. */
+function play(key: string | undefined): void {
+  playingKey = key;
+  playing = key !== undefined;
+  playButton.hidden = key === undefined;
+  playButton.setAttribute('aria-pressed', String(playing));
+  playButton.textContent = playing ? 'Pause' : 'Play';
+  started = performance.now();
+  if (gl !== null) pose(gl, 0);
+  showStatus(0);
+  if (playing) requestAnimationFrame(draw);
+  else redraw();
+}
+
+/** Builds the instances of a mesh or an entity and shows them. */
+function show(
+  context: WebGL2RenderingContext,
+  nodes: readonly Omit<EntityNode, 'bytes'>[],
+  meshes: readonly PdxMesh[],
+  problems: readonly string[],
+): void {
+  clear(context);
+  const warnings = new Set<string>();
+  for (const [index, node] of nodes.entries()) {
+    const mesh = meshes[index];
+    if (mesh === undefined) continue;
+    instances.push({
+      name: node.name,
+      meshName: node.meshName,
+      mesh,
+      parts: upload(context, mesh, node.textures, warnings),
+      parent: node.parent === undefined ? undefined : instances[node.parent],
+      bone: node.bone,
+      scale: node.scale,
+      states: node.states,
+      model: scaling(node.scale),
+    });
+  }
+  showWarnings(warnings, problems);
+  colours.hidden = !instances.some((i) => i.parts.some((d) => d.countryColours));
+  pose(context, 0);
 }
 
 window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
@@ -611,16 +833,29 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
   if (gl === null || program === undefined) return;
   try {
     if (message.type === 'mesh') {
-      meshName = message.name;
-      mesh = readMesh(Uint8Array.from(message.bytes));
-      const keep = animation?.name;
-      animation = undefined;
+      title = message.name;
+      entity = undefined;
+      const keep = playingKey;
       playing = false;
-      playButton.setAttribute('aria-pressed', 'false');
-      playButton.textContent = 'Play';
-      upload(gl, mesh, message.textures);
-      const first = camera.distance === 10;
-      if (first) frameView();
+      playingKey = undefined;
+      animations.clear();
+      const mesh = readMesh(Uint8Array.from(message.bytes));
+      show(
+        gl,
+        [
+          {
+            name: message.name,
+            parent: undefined,
+            bone: undefined,
+            meshName: message.name,
+            textures: message.textures,
+            scale: 1,
+            states: {},
+          },
+        ],
+        [mesh],
+        [],
+      );
       animationSelect.replaceChildren(
         new Option('Bind pose', ''),
         ...message.animations.map(
@@ -629,24 +864,59 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
       );
       offered = message.animations.map((a) => a.name);
       animationSelect.hidden = message.animations.length === 0;
-      playButton.hidden = true;
-      colours.hidden = !drawn.some((d) => d.countryColours);
+      play(undefined);
+      if (!framed) frameView();
       showFacts();
-      status.textContent = '';
       if (keep !== undefined && message.animations.some((a) => a.name === keep)) {
         animationSelect.value = keep;
         vscode.postMessage({ type: 'animation', name: keep });
       }
-      redraw();
+      vscode.postMessage({ type: 'shown', summary: summary() });
+    } else if (message.type === 'animation') {
+      animations.set(message.name, readAnimation(Uint8Array.from(message.bytes)));
+      play(message.name);
       vscode.postMessage({ type: 'shown', summary: summary() });
     } else {
-      animation = { name: message.name, data: readAnimation(Uint8Array.from(message.bytes)) };
-      playButton.hidden = false;
-      playing = true;
-      started = performance.now();
-      playButton.setAttribute('aria-pressed', 'true');
-      playButton.textContent = 'Pause';
-      requestAnimationFrame(draw);
+      title = message.name;
+      const keep = playingKey;
+      animations.clear();
+      const problems = [...message.problems];
+      for (const [key, bytes] of Object.entries(message.animations)) {
+        try {
+          animations.set(key, readAnimation(Uint8Array.from(bytes)));
+        } catch (error) {
+          problems.push(`${key}: ${error instanceof Error ? error.message : String(error)}`);
+        }
+      }
+      const meshes: PdxMesh[] = [];
+      const nodes: Omit<EntityNode, 'bytes'>[] = [];
+      for (const node of message.nodes) {
+        try {
+          meshes.push(readMesh(Uint8Array.from(node.bytes)));
+          nodes.push(node);
+        } catch (error) {
+          // A mesh that cannot be read is left out, and so is what hangs on it.
+          problems.push(
+            `${node.meshName}: ${error instanceof Error ? error.message : String(error)}`,
+          );
+          meshes.push(readMesh(EMPTY_MESH));
+          nodes.push({ ...node, textures: {} });
+        }
+      }
+      entity = { name: message.name, states: [...message.states], problems };
+      offered = [];
+      show(gl, nodes, meshes, problems);
+      animationSelect.replaceChildren(
+        new Option('Bind pose', ''),
+        ...message.states.map((state) => new Option(`State: ${state}`, state)),
+      );
+      animationSelect.hidden = message.states.length === 0;
+      const first = keep !== undefined && message.states.includes(keep) ? keep : message.state;
+      animationSelect.value = first ?? '';
+      play(first);
+      // Framed on the state's first frame, which can stand far from the bind pose.
+      if (!framed) frameView();
+      showFacts();
       vscode.postMessage({ type: 'shown', summary: summary() });
     }
   } catch (error) {
@@ -654,18 +924,17 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
   }
 });
 
+/** A mesh with no shapes, standing in for one that cannot be read. */
+const EMPTY_MESH = new TextEncoder().encode('@@t@\n\tpdxasset i 2 1 0\n[object]\n');
+
 animationSelect.addEventListener('change', () => {
-  const name = animationSelect.value;
-  if (name === '') {
-    animation = undefined;
-    playing = false;
-    playButton.hidden = true;
-    status.textContent = '';
-    if (gl !== null) pose(gl, 0);
-    redraw();
+  const key = animationSelect.value === '' ? undefined : animationSelect.value;
+  if (key === undefined || entity !== undefined || animations.has(key)) {
+    play(key);
+    vscode.postMessage({ type: 'shown', summary: summary() });
     return;
   }
-  vscode.postMessage({ type: 'animation', name });
+  vscode.postMessage({ type: 'animation', name: key });
 });
 
 playButton.addEventListener('click', () => {

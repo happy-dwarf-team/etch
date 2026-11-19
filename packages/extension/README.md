@@ -349,9 +349,23 @@ it is in no folder of the playset. Collision shapes are hidden.
 - When the mesh, a texture or an animation beside it changes on disk, the
   preview shows the new one.
 
-The `.gfx` entity around a mesh (its attachments, scale and state
-animations), a `PdxMeshTextureAtlas` part's flag and snow are not drawn. To open a mesh with another viewer, use **Reopen
-Editor With…**.
+A `PdxMeshTextureAtlas` part's flag and snow are not drawn. To open a mesh with
+another viewer, use **Reopen Editor With…**.
+
+### Entities
+
+In an `.asset` file, **Preview entity** above each `entity = { … }` (or
+**Etch: Preview Entity…**) draws the entity the way the game builds a unit or a
+ship from it: the `.gfx` `pdxmesh` it names at that pdxmesh's scale times the
+entity's own, a `clone` it starts from, and every entity its `attach` blocks
+hang on the bones they name, each at its own scale. The list plays the
+entity's states (`idle`, `walk`, …) through the pdxmesh's animation ids and the
+`.asset` animations they name; a state the attachments have no animation for
+leaves them on their bone as it moves. It resolves through your playset (`.gfx`
+and `.asset` files of the game and your mods, with the open file's unsaved
+text), so set `etch.gamePath`. What it cannot resolve (a missing pdxmesh,
+animation or attached entity, a clone loop) is listed under the bar; hover the
+bar's first line for the attachments and their bones.
 
 ## Etch 1.x
 

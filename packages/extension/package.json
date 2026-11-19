@@ -87,6 +87,11 @@
     },
     "commands": [
       {
+        "command": "etch.previewEntity",
+        "title": "Preview Entity…",
+        "category": "Etch"
+      },
+      {
         "command": "etch.openPreview",
         "title": "Open Preview",
         "category": "Etch",
@@ -282,6 +287,10 @@
         }
       ],
       "commandPalette": [
+        {
+          "command": "etch.previewEntity",
+          "when": "resourceExtname =~ /^\\.asset$/i"
+        },
         {
           "command": "etch.togglePreviewPin",
           "when": "etch.previewOpen"

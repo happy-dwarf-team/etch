@@ -15,6 +15,7 @@ import { testSaveBudget } from './save-budget.ts';
 import { testScriptProfile } from './script-profile.ts';
 import { testScriptedSkeleton } from './scripted-skeleton.ts';
 import { testMeshPreview } from './mesh-preview.ts';
+import { testEntityPreview } from './entity-preview.ts';
 import { testTexturePreview } from './texture-preview.ts';
 import { testPreview } from './preview.ts';
 import { testPlaysetWindows } from './playset-windows.ts';
@@ -88,5 +89,6 @@ export async function run(): Promise<void> {
   await testTexturePreview(api);
   await testAssetLinks();
   await testMeshPreview(api);
+  await testEntityPreview(api);
   await testSpriteLinks();
 }

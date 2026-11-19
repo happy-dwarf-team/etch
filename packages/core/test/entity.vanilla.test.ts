@@ -1,0 +1,80 @@
+/// <reference types="node" />
+// Local only: resolves every entity of the installed game's `.asset` files through its `.gfx`
+// pdxmesh types, read in place and read only, and checks that each attachment's bone is a bone
+// of the mesh it hangs on. Runs when ETCH_GAME_PATH names the game folder and is skipped
+// otherwise (CI has no game). Game files never enter the repository.
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { describe, expect, it } from 'vitest';
+import { readMesh, resolveEntity, type PdxMesh, type ResolvedEntity } from '../src/asset/index.ts';
+import { GameFiles, loadEntityIndex } from '../src/playset/index.ts';
+
+const gamePath = process.env['ETCH_GAME_PATH'];
+
+describe.skipIf(gamePath === undefined)('entities of the installed game', () => {
+  it('resolves every entity, its states and its attachments', async () => {
+    const root = gamePath ?? '';
+    const index = await loadEntityIndex(new GameFiles([{ name: 'game', root, replacePaths: [] }]));
+    const meshes = new Map<string, PdxMesh | undefined>();
+    const meshOf = (path: string): PdxMesh | undefined => {
+      if (!meshes.has(path)) {
+        try {
+          meshes.set(path, readMesh(readFileSync(join(root, path))));
+        } catch {
+          meshes.set(path, undefined);
+        }
+      }
+      return meshes.get(path);
+    };
+    const stats = {
+      entities: 0,
+      withMesh: 0,
+      states: 0,
+      statesWithAnimation: 0,
+      attachments: 0,
+      bonesFound: 0,
+      problems: 0,
+    };
+    const missingBones = new Set<string>();
+    const problems = new Map<string, number>();
+    const walk = (entity: ResolvedEntity, top: boolean): void => {
+      if (top) {
+        stats.entities++;
+        if (entity.mesh !== undefined) stats.withMesh++;
+        stats.states += entity.states.length;
+        stats.statesWithAnimation += entity.states.filter((s) => s.file !== undefined).length;
+        for (const problem of entity.problems) {
+          const kind = problem.replace(/"[^"]*"/g, '…');
+          problems.set(kind, (problems.get(kind) ?? 0) + 1);
+        }
+        stats.problems += entity.problems.length;
+      }
+      const mesh = entity.mesh === undefined ? undefined : meshOf(entity.mesh);
+      const bones = new Set(mesh?.shapes.flatMap((s) => s.skeleton.map((b) => b.name)));
+      for (const attachment of entity.attachments) {
+        if (top) {
+          stats.attachments++;
+          if (bones.has(attachment.bone)) stats.bonesFound++;
+          else missingBones.add(`${entity.name}: ${attachment.bone}`);
+        }
+      }
+    };
+    for (const name of index.entities.keys()) {
+      const entity = resolveEntity(index, name);
+      if (entity !== undefined) walk(entity, true);
+    }
+    expect(Object.fromEntries(problems)).toEqual({});
+    expect([...missingBones].slice(0, 10)).toEqual([]);
+    // EU4 1.37.5: every entity has a mesh once its clone is applied, every state animation
+    // resolves to an .anim, and every attachment's bone is in the mesh's skeleton.
+    expect(stats).toEqual({
+      entities: 1523,
+      withMesh: 1523,
+      states: 5060,
+      statesWithAnimation: 4601,
+      attachments: 1411,
+      bonesFound: 1411,
+      problems: 0,
+    });
+  });
+});
