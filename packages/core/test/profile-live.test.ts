@@ -7,6 +7,7 @@ import {
   liveDifferences,
   liveMatch,
   liveSelectors,
+  liveTextures,
   liveView,
   liveWidgetsOf,
   readLiveSnapshot,
@@ -171,6 +172,39 @@ describe('liveMatch', () => {
       flag: 'RUS',
     });
     expect(match.texts.state?.('provinceview/province_window')).not.toHaveProperty('sprite');
+  });
+
+  it('gives the texture, rebels and slices the game drew instead as the widget’s state', () => {
+    const icon = { type: 'icon', sprite: 'GFX_idea_unknown', texture: 'gfx/interface/a.dds' };
+    const shield = { type: 'icon', sprite: 'GFX_shield_small', rebels: 'anti_tax_rebels' };
+    const pie = {
+      type: 'icon',
+      sprite: 'GFX_trade_power_chart_small',
+      slices: [{ percent: 100, color: '#a53a3aff' }],
+    };
+    const plugin = [
+      w('provinceview', true),
+      w('provinceview/province_window', true),
+      w('provinceview/province_window/culture', true, icon),
+      w('provinceview/province_window/religion', true, shield),
+      w('provinceview/province_window/terrain', true, pie),
+      w('provinceview/province_window/trade', true, { slices: [] }),
+    ];
+    const widgets = liveWidgetsOf(plugin);
+    expect(widgets.slice(2, 5)).toMatchObject([icon, shield, pie]);
+    expect(widgets[5]).not.toHaveProperty('slices');
+    const { texts } = liveMatch(snapshot(plugin), WINDOW);
+    expect(texts.state?.('provinceview/province_window/culture')).toMatchObject({
+      texture: 'gfx/interface/a.dds',
+    });
+    expect(texts.state?.('provinceview/province_window/religion')).toMatchObject({
+      rebels: 'anti_tax_rebels',
+    });
+    expect(texts.state?.('provinceview/province_window/terrain')?.slices).toEqual(pie.slices);
+    expect(texts.state?.('provinceview/province_window')).not.toHaveProperty('texture');
+    // The files the playset looks up before it draws the snapshot, each once.
+    const twice = [...plugin, w('provinceview/province_window/owner', true, icon)];
+    expect(liveTextures(snapshot(twice))).toEqual(['gfx/interface/a.dds']);
   });
 });
 

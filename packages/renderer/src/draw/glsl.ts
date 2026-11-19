@@ -1,7 +1,7 @@
 import { TEXTURE_GLSL } from '../textures/gpu.ts';
 
 /** Values of the `kind` uniform. */
-export const KIND = { sprite: 0, masked: 1, progress: 2, text: 3 } as const;
+export const KIND = { sprite: 0, masked: 1, progress: 2, text: 3, pie: 4 } as const;
 
 /** Values of the `op` uniform, one per {@link TexelOp}. */
 export const OP = { plain: 0, brighten: 1, darken: 2, grey: 3 } as const;
@@ -49,6 +49,7 @@ void main() {
  *   textures stay upright and vertical bars fill upwards, is a hypothesis.
  * - text: `text.shader`'s `PixelShaderText` with the font's border colour;
  *   `ModColor` is taken as white.
+ * - pie: `color.shader`'s `PixelColor`, the vertex colour; no texture.
  *
  * Samples use LOD 0, so a sampler's magnification filter applies at 1:1,
  * which is how glyphs are drawn; every shader but `text` uses the same filter
@@ -107,7 +108,9 @@ vec3 applyOp(vec3 rgb) {
 
 void main() {
   vec4 c;
-  if (kind == ${String(KIND.progress)}) {
+  if (kind == ${String(KIND.pie)}) {
+    c = vColour;
+  } else if (kind == ${String(KIND.progress)}) {
     vec4 first = fillIsColour.x ? fillColour0 : sample0(vUv);
     vec4 second = fillIsColour.y ? fillColour1 : sample1(vUv);
     bool filled = vertical ? 1.0 - vUv.y <= progress : vUv.x <= progress;

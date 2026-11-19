@@ -35,6 +35,7 @@ import {
   liveContent,
   liveDifferences,
   liveMatch,
+  liveTextures,
   liveSelectors,
   liveView,
   profileModMatches,
@@ -244,6 +245,7 @@ export class CorpusPlaysetFiles {
     const definition = this.ui.index.guiTypeDefinitions(name)[0];
     const file = this.ui.index.guiFiles.find((f) => f.path === definition?.path)?.file;
     if (definition === undefined || file === undefined) return undefined;
+    await this.ui.lookUpTextures(liveTextures(snapshot));
     const context = { constants: file.constants, index: this.ui.index, screen };
     const windowSize = size === undefined ? {} : { windowSize: size };
     const shaderOf = (widget: Widget): string | undefined => spriteShaderOf(widget, context);

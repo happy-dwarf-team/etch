@@ -18,6 +18,7 @@ describe('PlaysetInterface', () => {
       'interface/sub/extra.gfx':
         'spriteTypes = { spriteType = { name = "GFX_a" textureFile = "gfx/interface/late.dds" } }',
       'gfx/interface/a.dds': 'dds',
+      'gfx/interface/ideas_EU4/local_unrest.dds': 'dds',
       'gfx/flags/RUS.tga': 'tga',
       'gfx/flags/readme.txt': 'txt',
       'gfx/fonts/vic_18.fnt': 'fnt',
@@ -84,6 +85,15 @@ describe('PlaysetInterface', () => {
     // The flags, which no interface file names, for the shields of a live snapshot.
     expect(loaded.exists('gfx/flags/rus.tga')).toBe(true);
     expect(loaded.exists('gfx/flags/readme.txt')).toBe(false);
+  });
+
+  it('looks up the texture files a live snapshot names, which no interface file does', async () => {
+    const loaded = await PlaysetInterface.load(files());
+    const icon = 'gfx/interface/ideas_EU4/local_unrest.dds';
+    expect(loaded.exists(icon)).toBe(false);
+    await loaded.lookUpTextures([icon, 'gfx/interface/ideas_EU4/missing.dds']);
+    expect(loaded.exists(icon)).toBe(true);
+    expect(loaded.exists('gfx/interface/ideas_EU4/missing.dds')).toBe(false);
   });
 
   it('updates one file from its game text and looks up the new paths', async () => {

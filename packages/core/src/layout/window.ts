@@ -23,6 +23,7 @@ import {
   type Draw,
   type DrawList,
   type DrawRect,
+  type PieSlice,
   type ProgressFill,
   type SpriteShader,
 } from '../draw-list.ts';
@@ -125,6 +126,12 @@ export interface LayoutContent {
         readonly frame?: number;
         /** A `maskedShieldType`'s country tag: its flag, `gfx/flags/<tag>.tga`, fills the mask. */
         readonly flag?: string;
+        /** The texture file the game's code gave its sprite (a modifier icon): drawn instead. */
+        readonly texture?: string;
+        /** A shield's rebel type, without a `flag`: its flag, `gfx/flags/<name>.tga`, fills the mask. */
+        readonly rebels?: string;
+        /** A pie chart's slices, in its order, each in whole percent and `#rrggbbaa`. */
+        readonly slices?: readonly { readonly percent: number; readonly color: string }[];
       }
     | undefined;
   /**
@@ -1309,8 +1316,9 @@ class Layout {
       case 'maskedShieldType':
         return this.drawShield(sprite, reference, props, x, y, source);
       case 'PieChartType':
+        return this.drawPie(sprite, x, y, source);
       case 'LineChartType':
-        // Code-filled charts: only their size.
+        // A code-filled chart: only its size.
         return chartSize(sprite.properties);
     }
   }
@@ -1319,6 +1327,11 @@ class Layout {
    * A plain sprite: one horizontal cell of its texture (etch#3), at the cell's size times `scale`.
    * Hypothesis: `frame` counts from 1 (vanilla never writes 0), and no `frame` is the first cell,
    * which also is the state a button or check box is in before code changes it.
+   *
+   * A texture file the game's code gave the sprite ({@link liveTexture}) is drawn instead, over
+   * the size of the sprite's own texture: in the game (19.11.2026) Kaluga's 32-pixel
+   * `winter_severe.dds` filled the same 35-pixel slot (64 × 0.55) as the 64-pixel
+   * `local_unrest.dds` beside it, over `GFX_idea_unknown`'s 64-pixel `unknown.dds`.
    */
   private drawFrame(
     sprite: Sprite,
@@ -1329,9 +1342,13 @@ class Layout {
     source: number,
     frameSet?: number,
   ): Extent | undefined {
-    const texture = this.texture(sprite, 'texturefile', reference);
-    if (texture === undefined) return undefined;
+    const own = this.texture(sprite, 'texturefile', reference);
+    const live = this.liveTexture(sprite);
+    const drawn = (live === undefined ? undefined : this.textureAt(live, reference)) ?? own;
+    const texture = own ?? drawn;
+    if (texture === undefined || drawn === undefined) return undefined;
     const cell = texture.size.width / sprite.frames;
+    const drawnCell = drawn.size.width / sprite.frames;
     const frame = Math.min(
       sprite.frames - 1,
       Math.max(0, Math.floor(frameSet ?? props.number('frame') ?? 1) - 1),
@@ -1344,21 +1361,36 @@ class Layout {
     this.draws.push({
       kind: 'sprite',
       source,
-      texture: texture.index,
+      texture: drawn.index,
       x,
       y: y + Math.floor(height) - height,
       width,
       height,
-      sx: frame * cell,
+      sx: frame * drawnCell,
       sy: 0,
-      sw: cell,
-      sh: texture.size.height,
+      sw: drawnCell,
+      sh: drawn.size.height,
       shader: this.shader(sprite, reference),
     });
     // A texture whose width is no multiple of its frames gives the widget the width of a whole
     // cell, rounded down before the scale: Anbennar's 162-pixel legitimacy strip of 5 frames at a
     // scale of 0.9 makes a widget 28 pixels wide, not 29 (etch#55). It draws as before.
     return { width: Math.floor(Math.floor(cell) * scale), height: Math.floor(height) };
+  }
+
+  /**
+   * The texture file a live snapshot says the game's code gave the current widget's sprite, when
+   * it drew that sprite: a modifier icon keeps `GFX_idea_unknown` and draws the modifier's own
+   * picture (verified on Kaluga's modifiers in the province view, 19.11.2026). Hypothesis: the
+   * file keeps the sprite's frames and shader.
+   */
+  private liveTexture(sprite: Sprite): string | undefined {
+    if (this.current === undefined) return undefined;
+    const state = this.input.content?.state?.(this.current, this.row);
+    if (state?.texture === undefined || state.sprite?.toLowerCase() !== sprite.name.toLowerCase()) {
+      return undefined;
+    }
+    return state.texture;
   }
 
   /**
@@ -1502,8 +1534,10 @@ class Layout {
   }
 
   /**
-   * The flag a live snapshot names for the current shield (`gfx/flags/<tag>.tga`), with the
-   * mask's alpha, under its overlay of `overlay` texels. Nothing without a tag, a mask or the flag.
+   * The flag a live snapshot names for the current shield, with the mask's alpha, under its
+   * overlay of `overlay` texels: a country's, `gfx/flags/<tag>.tga`, or a rebel type's,
+   * `gfx/flags/<name>.tga` (`gfx/flags/REB.tga` when the playset has none, as eu4.exe 1.37.5
+   * falls back). Nothing without either, a mask or the flag.
    */
   private drawFlag(
     sprite: Sprite,
@@ -1514,13 +1548,12 @@ class Layout {
     y: number,
     source: number,
   ): void {
-    const tag =
-      this.current === undefined
-        ? undefined
-        : this.input.content?.state?.(this.current, this.row)?.flag;
-    if (tag === undefined || !/^[A-Z0-9]{3}$/.test(tag)) return;
+    const state =
+      this.current === undefined ? undefined : this.input.content?.state?.(this.current, this.row);
+    const file = shieldFlag(state?.flag, state?.rebels, this.input.exists);
+    if (file === undefined) return;
     const mask = this.texture(sprite, 'texturefile2', reference);
-    const flag = this.textureAt(`gfx/flags/${tag}.tga`, reference);
+    const flag = this.textureAt(file, reference);
     if (mask === undefined || flag === undefined) return;
     const name = effectName(sprite.effectFile);
     this.draws.push({
@@ -1539,6 +1572,39 @@ class Layout {
       maskRect: { sx: 0, sy: 0, sw: mask.size.width, sh: mask.size.height },
       shader: isMaskedShader(name) ? name : 'maskedflag',
     });
+  }
+
+  /**
+   * A `PieChartType`: its size, and with the slices a live snapshot gives, the chart as the game
+   * draws it. Verified in the game (Steam 1.37.5, 19.11.2026: a trade node's five slices of 1, 46,
+   * 1, 2 and 50 percent, and the province view's one): the circle is centred on the widget's
+   * bottom-left corner with the chart's size as its radii, so the widget's rect is its upper right
+   * quarter, and the slices run counter-clockwise from the right.
+   */
+  private drawPie(sprite: Sprite, x: number, y: number, source: number): Extent | undefined {
+    const extent = chartSize(sprite.properties);
+    const live =
+      this.current === undefined
+        ? undefined
+        : this.input.content?.state?.(this.current, this.row)?.slices;
+    if (extent === undefined || live === undefined) return extent;
+    const slices = live.flatMap((s): PieSlice[] => {
+      const colour = hexColour(s.color);
+      const whole = Number.isInteger(s.percent) && s.percent >= 1 && s.percent <= 100;
+      return colour === undefined || !whole ? [] : [{ percent: s.percent, colour }];
+    });
+    if (slices.length > 0) {
+      this.draws.push({
+        kind: 'pie',
+        source,
+        x: x - extent.width,
+        y,
+        width: 2 * extent.width,
+        height: 2 * extent.height,
+        slices,
+      });
+    }
+    return extent;
   }
 
   /** The sprite's shader; one the renderer does not port draws with `default` and is reported. */
@@ -1865,6 +1931,28 @@ function chartSize(properties: Properties): Extent | undefined {
   const side = properties.number('size');
   if (side !== undefined) return { width: side, height: side };
   return pointExtent(properties.point('size'));
+}
+
+/**
+ * The flag file a shield shows: the country's when the snapshot names a tag, else the rebel
+ * type's when the playset has it, else the rebels' own `REB.tga`; `undefined` without either.
+ */
+function shieldFlag(
+  tag: string | undefined,
+  rebels: string | undefined,
+  exists: FileExists,
+): string | undefined {
+  if (tag !== undefined) return /^[A-Z0-9]{3}$/.test(tag) ? `gfx/flags/${tag}.tga` : undefined;
+  if (rebels === undefined || !/^\w{1,128}$/.test(rebels)) return undefined;
+  const own = `gfx/flags/${rebels}.tga`;
+  return resolveTexture(own, exists) === undefined ? 'gfx/flags/REB.tga' : own;
+}
+
+/** `#rrggbbaa` as `0xAARRGGBB`; `undefined` when it is not one. */
+function hexColour(text: string): number | undefined {
+  const match = /^#([0-9a-f]{6})([0-9a-f]{2})$/i.exec(text);
+  if (match === null) return undefined;
+  return (parseInt(match[2] ?? '', 16) * 0x1000000 + parseInt(match[1] ?? '', 16)) >>> 0;
 }
 
 /** `color = { r g b }` with channels 0–1 as an opaque `0xAARRGGBB`; white when malformed. */

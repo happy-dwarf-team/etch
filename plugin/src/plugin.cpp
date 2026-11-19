@@ -395,6 +395,16 @@ etch::UiWidget Copy(const TongsUiWidget* w) {
         out.sprite = w->sprite;
         out.frame = w->frame;
         if (w->flag != nullptr) out.flag = w->flag;
+        // And what it draws instead of the sprite's picture, from a Tongs that gives that too.
+        if (TONGS_UI_WIDGET_HAS(w, slice_count)) {
+            if (w->texture != nullptr) out.texture = w->texture;
+            if (w->rebels != nullptr) out.rebels = w->rebels;
+            if (w->slices != nullptr) {
+                for (std::uint32_t i = 0; i < w->slice_count; ++i) {
+                    out.slices.push_back({w->slices[i].percent, w->slices[i].color});
+                }
+            }
+        }
     }
     return out;
 }

@@ -389,6 +389,26 @@ describe('readEvent', () => {
     expect(drawn[1]).not.toHaveProperty('frame');
     expect(drawn[1]).not.toHaveProperty('flag');
     for (const field of ['sprite', 'frame', 'flag']) expect(drawn[2]).not.toHaveProperty(field);
+    // What the game's code drew instead, from a Tongs that reads it; only with a sprite, and
+    // slices that are not whole numbers with a colour are none.
+    const instead = readSnapshot({
+      window: 'panel',
+      widgets: [
+        { path: 'panel/icon', sprite: 'GFX_idea_unknown', texture: 'gfx/a.dds', rebels: '' },
+        { path: 'panel/shield', sprite: 'GFX_shield_small', rebels: 'anti_tax_rebels' },
+        {
+          path: 'panel/pie',
+          sprite: 'GFX_pie',
+          slices: [{ percent: 46, color: '#b0516fff' }, { percent: 1.5, color: '#000000ff' }, 7],
+        },
+        { path: 'panel/none', sprite: '', texture: 'gfx/a.dds', slices: [] },
+      ],
+    }).widgets;
+    expect(instead[0]).toMatchObject({ texture: 'gfx/a.dds' });
+    expect(instead[0]).not.toHaveProperty('rebels');
+    expect(instead[1]).toMatchObject({ rebels: 'anti_tax_rebels' });
+    expect(instead[2]?.slices).toEqual([{ percent: 46, color: '#b0516fff' }]);
+    for (const field of ['texture', 'slices']) expect(instead[3]).not.toHaveProperty(field);
     // The main menu (`null`), and a plugin built before Anvil 1.6.0 (no member).
     for (const date of [{ date: null }, {}]) {
       expect(readSnapshot({ window: 'panel', widgets: [], ...date }).date).toBeUndefined();
