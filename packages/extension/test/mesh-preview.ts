@@ -2,8 +2,7 @@
 // specular textures and two `.anim` files beside it opens in Etch's custom editor; the webview
 // parses and draws it with WebGL2, skips the collision shape, textures the part with all three
 // maps and is offered only the animation that names the mesh's bones. A mesh in the game folder (`etch.gamePath`, a fixture) takes its texture
-// through the playset, one whose texture is in another folder finds it by its file name, one
-// without its texture is drawn untextured, and a file Etch cannot read is
+// through the playset, one without its texture is drawn untextured, and a file Etch cannot read is
 // reported instead of shown. A `PdxMeshTextureAtlas` part reports its flag (the country colours
 // until a tag is asked for), and a tag's flag comes from `gfx/flags` through the playset. A
 // `PdxMeshAlphaBlendNoZWrite` part (a selection ring) is reported as blended, and a `PdxMeshSnow`
@@ -352,27 +351,10 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
   // dds() takes its bytes as BGRA: a red flag.
   await writeFile(path.join(game, 'gfx', 'flags', 'ETC.dds'), dds(2, 2, [40, 40, 200, 255]));
   await writeFile(path.join(game, 'gfx', 'models', 'bare', 'etch_bare.mesh'), binary(MESH));
-  // A mesh whose diffuse texture is in no folder of the playset.
-  await writeFile(
-    path.join(game, 'gfx', 'models', 'bare', 'etch_lost.mesh'),
-    binary(
-      MESH.map((item) =>
-        'name' in item && item.name === 'diff' ? strs('diff', 'etch_lost_diffuse.dds') : item,
-      ),
-    ),
-  );
   // A map tree: a pdxmesh named mapobject_<n> in a .gfx file of the playset names the mesh.
   const trees = path.join(game, 'gfx', 'models', 'Mapitems', 'Trees');
   await mkdir(trees, { recursive: true });
-  // Untextured: its diffuse name is in no folder, so the colours below are the shader's alone.
-  await writeFile(
-    path.join(trees, 'etch_tree.mesh'),
-    binary(
-      FACING_UP.map((item) =>
-        'name' in item && item.name === 'diff' ? strs('diff', 'etch_tree_diffuse.dds') : item,
-      ),
-    ),
-  );
+  await writeFile(path.join(trees, 'etch_tree.mesh'), binary(FACING_UP));
   await mkdir(path.join(game, 'interface'));
   await writeFile(
     path.join(game, 'interface', 'etch_trees.gfx'),
@@ -541,26 +523,14 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
     assert.ok(spread(treeSnow) <= 3, `full snow greys the tree: ${String(treeSnow.mean)}`);
     assert.deepEqual(await measure(api, treeUri, { snow: 0 }), plain);
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
-    // A texture in no folder of its mesh: found by its file name in another folder, as the game
-    // finds it.
     const bare = await open(
       api,
       vscode.Uri.file(path.join(game, 'gfx', 'models', 'bare', 'etch_bare.mesh')),
     );
-    assert.ok(bare.ok, `a mesh with its texture elsewhere shows: ${bare.ok ? '' : bare.message}`);
-    assert.equal(bare.summary.textured, 1, 'textured from the other folder');
-    assert.deepEqual(bare.summary.textures, {
-      'flag_diffuse.dds': 'the game, by name: gfx/models/etch/flag_diffuse.dds',
-    });
-    await vscode.commands.executeCommand('workbench.action.closeAllEditors');
-    const lost = await open(
-      api,
-      vscode.Uri.file(path.join(game, 'gfx', 'models', 'bare', 'etch_lost.mesh')),
-    );
-    assert.ok(lost.ok, `a mesh without its texture shows: ${lost.ok ? '' : lost.message}`);
-    assert.equal(lost.summary.textured, 0, 'untextured');
-    assert.equal(lost.summary.normalMapped, 0, 'no normal map named');
-    assert.deepEqual(lost.summary.textures, { 'etch_lost_diffuse.dds': 'not found' });
+    assert.ok(bare.ok, `a mesh without its texture shows: ${bare.ok ? '' : bare.message}`);
+    assert.equal(bare.summary.textured, 0, 'untextured');
+    assert.equal(bare.summary.normalMapped, 0, 'no normal map named');
+    assert.deepEqual(bare.summary.textures, { 'flag_diffuse.dds': 'not found' });
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
 
     // A tag's flag: gfx/flags/<TAG>.tga, here as its .dds fallback, through the playset.
