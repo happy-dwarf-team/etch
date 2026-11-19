@@ -1,16 +1,18 @@
 /**
  * The map files `map/default.map` names that no layer of the playset has. The game reads each one
  * while it loads the map, before the main menu, and does not go on without it (the EU4 engine lab,
- * `bmtest-r18` to `r28`, 19.11.2026):
+ * `bmtest-r18` to `r35`, 19.11.2026):
  *
  * - A script file (`climate`, `region`, …) is read through the game's lexer, which writes
  *   `CLexer failed to load file map/<name>` to `error.log`, keeps no file and then reads from it:
  *   the game crashes about 16 s after it starts (an access violation in `CTextLexer::GetTok`).
- * - A table (`definitions`, `adjacencies`) is opened as a file that must exist: `error.log` gets "File exception:
- *   … Could not open file: map/<name>" and the load stops there, without a crash or a main menu.
+ * - A table or a bitmap (`definitions`, `adjacencies`, `rivers`, …) is opened as a file that must
+ *   exist: `error.log` gets "File exception: … Could not open file: map/<name>" and the load stops
+ *   there, without a crash or a main menu.
  *
- * `trade_winds` and `seasons` are left out: the game tests that the file exists and skips it. A key
- * the file leaves unset keeps the game's default name, which the game has.
+ * `trade_winds` and `seasons` are left out: the game tests that the file exists and skips it, and
+ * it starts without `ambient_object`'s file too. A key the file leaves unset keeps the game's
+ * default name, which the game has.
  */
 import type { ParsedScript, ScalarNode, SourceRange } from './tree.ts';
 
@@ -28,7 +30,12 @@ export const MAP_FILE_KEYS: ReadonlyMap<string, MapFileFailure> = new Map<string
   ['climate', 'crash'],
   ['positions', 'crash'],
   ['definitions', 'stops'],
+  ['provinces', 'stops'],
   ['adjacencies', 'stops'],
+  ['terrain', 'stops'],
+  ['rivers', 'stops'],
+  ['heightmap', 'stops'],
+  ['tree_definition', 'stops'],
 ]);
 
 /** A file `map/default.map` names that no layer of the playset has; the range is the name. */
