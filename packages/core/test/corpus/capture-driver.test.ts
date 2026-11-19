@@ -37,6 +37,7 @@ import {
   stepCommand,
   type ViewContext,
 } from '../../src/corpus/driver/view.ts';
+import type { TongsAnswer } from '../../src/corpus/driver/tongs.ts';
 import { makeTree, removeTree } from '../playset/fixture.ts';
 import { CrawlGame, FakeGame, FakeMouse, type FakeWindow } from './fake-game.ts';
 
@@ -359,6 +360,38 @@ describe('captureView', () => {
     const ctx = context(game, manifest, 'main-menu', await startWindows(game));
     expect(await captureView(ctx, viewOf(manifest, 'lobby'))).toMatchObject({ ok: true });
     expect(game.calls.filter((c) => c.startsWith('ui click'))).toHaveLength(3);
+  });
+
+  it('fails a view on a click Tongs did not make or a screenshot without a file', async () => {
+    const folder = await makeTree({});
+    trees.push(folder);
+    const manifest = testManifest(await sha(SAVE_TEXT));
+    const run = async (edit: (command: string, answer: TongsAnswer) => TongsAnswer) => {
+      const game = new FakeGame(WINDOWS, ['country_selection_panel'], folder, SIZE);
+      const ctx = context(game, manifest, 'main-menu', await startWindows(game));
+      const call = game.call.bind(game);
+      game.call = async (command) => edit(command, await call(command));
+      const outcome = await captureView(ctx, viewOf(manifest, 'lobby'));
+      return outcome.ok ? 'ok' : outcome.reason;
+    };
+    expect(
+      await run((command, answer) =>
+        command.startsWith('ui click') ? { ...answer, clicked: false } : answer,
+      ),
+    ).toContain('did not click.');
+    expect(
+      await run((command, answer) =>
+        command.startsWith('screenshot') ? { ...answer, path: undefined } : answer,
+      ),
+    ).toContain('Tongs answered screenshot without a path.');
+    // A start state Tongs cannot list whole is not taken.
+    const crowded = new FakeGame(WINDOWS, ['country_selection_panel'], folder, SIZE);
+    const call = crowded.call.bind(crowded);
+    crowded.call = async (command) => {
+      const answer = await call(command);
+      return command.startsWith('ui tree depth=0') ? { ...answer, truncated: true } : answer;
+    };
+    await expect(startWindows(crowded)).rejects.toThrow('More than 5000 top-level windows.');
   });
 
   it('pins the cursor inside the margin and pins it again only for a moved window', async () => {
