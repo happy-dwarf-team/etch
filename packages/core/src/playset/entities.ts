@@ -8,7 +8,7 @@ import { decodeGameText } from '../game-text.ts';
 import { parseScript } from '../script/parse.ts';
 import type { GameFile, GameFiles } from './game-files.ts';
 
-async function filesUnder(files: GameFiles, root: string, extension?: string): Promise<GameFile[]> {
+async function filesUnder(files: GameFiles, root: string, extension: string): Promise<GameFile[]> {
   const out: GameFile[] = [];
   const walk = async (dir: string): Promise<void> => {
     out.push(...(await files.list(dir, extension)));
@@ -28,23 +28,6 @@ export async function loadPdxMeshTypes(files: GameFiles): Promise<PdxMeshType[][
   return Promise.all(
     gfxFiles.map(async (file) => readPdxMeshTypes(parseScript(await read(file)), file.path)),
   );
-}
-
-/**
- * The playset's texture files under `gfx/`, subfolders included, by file name without regard to
- * case. EU4 1.37.5 finds a mesh material's texture by its file name in an index of texture files
- * it builds at start, wherever the file lies, so a mesh can name a texture of another folder.
- * Which folders the game indexes, and which of two files of one name it keeps, are not known:
- * this takes `gfx/` and keeps the first file in path order (a folder's files before its
- * subfolders).
- */
-export async function loadTexturesByName(files: GameFiles): Promise<Map<string, GameFile>> {
-  const byName = new Map<string, GameFile>();
-  for (const file of await filesUnder(files, 'gfx')) {
-    const name = file.path.slice(file.path.lastIndexOf('/') + 1).toLowerCase();
-    if (/\.(dds|tga)$/.test(name) && !byName.has(name)) byName.set(name, file);
-  }
-  return byName;
 }
 
 /** Reads the playset's `.gfx` pdxmesh types and `.asset` definitions. */

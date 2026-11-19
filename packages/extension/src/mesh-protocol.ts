@@ -179,10 +179,7 @@ export type MeshTexture =
       readonly width: number;
       readonly height: number;
       readonly rgba: Uint8Array;
-      /**
-       * The playset layer it came from (`the game`, a mod's name), `beside the mesh`, or for a
-       * file of another folder found by its name, the layer and `, by name: <path>`.
-       */
+      /** The playset layer it came from (`the game`, a mod's name) or `beside the mesh`. */
       readonly source: string;
     }
   | { readonly ok: false; readonly message: string };

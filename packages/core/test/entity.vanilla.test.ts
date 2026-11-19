@@ -14,12 +14,7 @@ import {
   type PdxMesh,
   type ResolvedEntity,
 } from '../src/asset/index.ts';
-import {
-  GameFiles,
-  loadEntityIndex,
-  loadPdxMeshTypes,
-  loadTexturesByName,
-} from '../src/playset/index.ts';
+import { GameFiles, loadEntityIndex, loadPdxMeshTypes } from '../src/playset/index.ts';
 
 const gamePath = process.env['ETCH_GAME_PATH'];
 
@@ -114,16 +109,5 @@ describe.skipIf(gamePath === undefined)('entities of the installed game', () => 
     );
     expect(shapes.every((count) => count > 0)).toBe(true);
     expect(mapTreeOf(types, 'gfx/models/Mapitems/Trees/Pine_01.mesh')?.name).toBe('mapobject_2');
-  });
-
-  it('finds a texture by name in another folder than its mesh', async () => {
-    const byName = await loadTexturesByName(
-      new GameFiles([{ name: 'game', root: gamePath ?? '', replacePaths: [] }]),
-    );
-    // EU4 1.37.5: the desert forts in gfx/models/Buildings name a specular map that is only in
-    // Buildings/Western.
-    expect(byName.get('cose_fort_02_spec.dds')?.path).toBe(
-      'gfx/models/Buildings/Western/cose_fort_02_spec.dds',
-    );
   });
 });

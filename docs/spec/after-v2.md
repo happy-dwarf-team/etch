@@ -666,8 +666,7 @@ refresh is a step of the 3.0.0 release.
   `@etch/core/asset`; every vanilla mesh that draws something renders, in
   `asset.vanilla.test.ts`). Etch Mesh Preview (`etch.meshPreview`)
   draws a `.mesh` with WebGL2 (diffuse, normal and specular textures through
-  the playset: the mesh's folder, else beside the file, else by file name
-  under the playset's `gfx/`; collision shapes hidden; the light, normal map, highlight and
+  the playset, collision shapes hidden; the light, normal map, highlight and
   `PdxMeshColor` country colours follow the game's `pdxmesh.shader`, the
   light direction is vanilla's `LIGHT_DIRECTION`) and plays an `.anim` beside it
   that names its bones, skinned on the CPU (`@etch/core/asset`'s
@@ -693,14 +692,12 @@ refresh is a step of the 3.0.0 release.
   two states of `westerngfx_city_0` and its 32 clones, `siege_cannon` in
   the siege cannon's idle state); whether a DLC archive defines them is not
   known, since Etch does not read the archives. The particle systems
-  themselves are not read. The game finds a mesh material's texture by its
-  file name (a `.tga` name tried as `.dds` first) in an index of texture files
-  it builds at start, so a mesh can name a texture of another folder: vanilla's
-  three desert forts in `gfx/models/Buildings` name a specular map that only
-  `Buildings/Western` has. Etch keeps the mesh's own folder first and falls
-  back to a file of that name under `gfx/` (`loadTexturesByName`, the first in
-  path order); which folders the game indexes and which of two files of one
-  name it keeps are not known (vanilla's `gfx/models` has 9 such names). A
+  themselves are not read. A mesh material's texture is looked up in the
+  mesh's own folder, as the game does: EU4 1.37.5 has a lookup of textures by
+  file name across folders, but it is switched off, and the game's
+  `error.log` reports vanilla's desert forts' specular map missing from
+  `gfx/models/Buildings` though `Buildings/Western` has a file of that name.
+  Etch lists it under "Textures not shown" in the same way. A
   `PdxMeshTextureAtlas` part blends in its country's flag where the diffuse
   alpha marks it, sampled with the mesh's `u1` (`MeshPart.uvs1`; all 21 such
   parts of vanilla have it, `asset.vanilla.test.ts`): a tag's `gfx/flags` flag
