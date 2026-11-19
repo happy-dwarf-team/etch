@@ -2,7 +2,7 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { parseScript, readGuiFile } from '../../src/index.ts';
+import { DRAW_LIST_VERSION, parseScript, readGuiFile } from '../../src/index.ts';
 import {
   changedRoots,
   constructsOf,
@@ -15,8 +15,12 @@ import {
   surveyManifest,
   textAgreement,
   viewSignature,
+  outlineGeometry,
+  visibilityAgreement,
+  type CapturePlan,
   type CapturedWidget,
   type CrawlFile,
+  type PlannedWidget,
   type RectMismatch,
   type TreeWidget,
   type WidgetRect,
@@ -260,6 +264,101 @@ describe('the survey configuration and manifest, on what they leave out', () => 
     expect(() =>
       surveyManifest(manifest, { ...config, playsets: [{ id: 'nowhere', crawl: true }] }, []),
     ).toThrow('The corpus has no playset "nowhere".');
+  });
+});
+
+describe('the geometry and visibility measures, on a plan made by hand', () => {
+  const rect = { x: 0, y: 0, w: 10, h: 10 };
+  const captured = (path: string, visible = true): CapturedWidget => ({
+    path,
+    name: path.split('/').at(-1) ?? path,
+    type: 'icon',
+    visible,
+    rect,
+    children: [],
+  });
+  // Only whether a widget was laid out counts here, not how.
+  const laidOut = {} as NonNullable<PlannedWidget['laidOut']>;
+  const plan: CapturePlan = {
+    key: { playset: 'vanilla', view: 'panel', resolution: { width: 200, height: 100 } },
+    widgets: [
+      // A window: only its corner is compared.
+      {
+        path: 'w',
+        parent: -1,
+        captured: captured('w'),
+        laidOut,
+        kind: 'windowType',
+        hidden: false,
+        rect: { ...rect, w: 50 },
+      },
+      {
+        path: 'w/code',
+        parent: 0,
+        captured: captured('w/code'),
+        laidOut,
+        hidden: false,
+        codeFilled: 'listboxType',
+      },
+      {
+        path: 'w/unplaced',
+        parent: 0,
+        captured: captured('w/unplaced'),
+        laidOut,
+        hidden: false,
+        unplaced: true,
+      },
+      {
+        path: 'w/off',
+        parent: 0,
+        captured: captured('w/off', false),
+        laidOut,
+        hidden: false,
+        offScreen: true,
+      },
+      { path: 'w/hidden', parent: 0, captured: captured('w/hidden'), laidOut, hidden: true },
+      {
+        path: 'w/hidden/kid',
+        parent: 4,
+        captured: captured('w/hidden/kid'),
+        laidOut,
+        hidden: false,
+        rect,
+      },
+      {
+        path: 'w/filled',
+        parent: 0,
+        captured: captured('w/filled'),
+        hidden: false,
+        codeFilled: 'listboxType',
+      },
+      { path: 'w/neither', parent: 0, captured: captured('w/neither', false), hidden: false },
+    ],
+    drawList: { version: DRAW_LIST_VERSION, width: 200, height: 100, textures: [], draws: [] },
+    drawOwners: [],
+    problems: [],
+  };
+
+  it('counts a window by its corner and skips what the code fills or the layout cannot place', () => {
+    // The child of a hidden widget is still measured; one off screen has no layout rect to match.
+    expect(outlineGeometry(plan)).toEqual({
+      compared: 3,
+      exact: 2,
+      mismatches: [{ path: 'w/off', game: rect }],
+      gameOnly: ['w/neither'],
+      layoutOnly: [],
+      codeFilled: 2,
+    });
+  });
+
+  it('agrees on what neither shows, and skips the children of a hidden widget', () => {
+    // The child of the hidden widget and the code-filled one the layout lacks are left out.
+    expect(visibilityAgreement(plan)).toEqual({
+      compared: 6,
+      agree: 6,
+      drawnHidden: [],
+      shownMissing: [],
+    });
   });
 });
 

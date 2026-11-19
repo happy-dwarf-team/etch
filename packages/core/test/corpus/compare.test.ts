@@ -295,6 +295,23 @@ describe('planCapture', () => {
     expect(byPath.get('panel/target')?.notCovered).toBe('gui_rendertarget shader');
   });
 
+  it('marks a widget kind the corpus does not cover', () => {
+    const window = laidOut();
+    const plan = planCapture({
+      manifest: manifestWith((json) => {
+        json['notCovered'] = [
+          { shader: 'gui_rendertarget', reason: 'a test' },
+          { widgetKind: 'listboxType', reason: 'a test' },
+        ];
+      }),
+      record: recordOf(captureOf(window.layout)),
+      windows: [window],
+    });
+    const byPath = new Map(plan.widgets.map((w) => [w.path, w]));
+    expect(byPath.get('panel/list')?.notCovered).toBe('listboxType');
+    expect(byPath.get('panel/flag')?.notCovered).toBeUndefined();
+  });
+
   it('leaves the widgets the game hides out of the render', () => {
     const window = laidOut();
     const record = recordOf(
@@ -313,6 +330,19 @@ describe('planCapture', () => {
     const plan = planCapture({ manifest: manifestWith(), record, windows: [window] });
     expect(plan.problems).toEqual(['The playset defines no window "other" for the root "other".']);
     expect(plan.drawList.draws).toEqual([]);
+  });
+
+  it('reports a root path the layout does not have, and one that is no widget path', () => {
+    const window = laidOut();
+    const root = captureOf(window.layout);
+    const problems = (path: string) =>
+      planCapture({
+        manifest: manifestWith(),
+        record: recordOf({ ...root, path, children: [] }),
+        windows: [window],
+      }).problems;
+    expect(problems('panel/nosuch')).toEqual(['The layout has no widget "panel/nosuch".']);
+    expect(problems('')).toEqual(['"" is not a widget path.']);
   });
 
   it('pairs a hidden instance with its own empty layout, not with the next one', () => {
