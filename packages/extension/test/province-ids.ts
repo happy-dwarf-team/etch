@@ -53,6 +53,12 @@ export async function testProvinceIds(): Promise<void> {
     'fx = {\n\t3 = { add_core = ROOT }\n}\n',
   );
   await write(game, 'common/ideas/ideas.txt', 'quantity_ideas = {\n\tlevee_en_masse = { }\n}\n');
+  // Written before the playset's map is read: the map keeps the map files it found then.
+  const links = await write(
+    game,
+    'map/adjacencies.csv',
+    'From;To;Type;Through\n12;1;sea;2\n-1;-1;;-1\n',
+  );
   const ideas = await write(
     game,
     'events/ideas.txt',
@@ -82,11 +88,6 @@ export async function testProvinceIds(): Promise<void> {
     );
 
     // The adjacencies file, a .csv: From 12 is past the map.
-    const links = await write(
-      game,
-      'map/adjacencies.csv',
-      'From;To;Type;Through\n12;1;sea;2\n-1;-1;;-1\n',
-    );
     await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(links));
     const [link, ...otherLinks] = await diagnosticsOf(links, (found) => found.length > 0);
     assert.deepEqual(otherLinks, []);
