@@ -23,6 +23,14 @@ export interface MeshSummary {
   readonly textures: Readonly<Record<string, string>>;
   /** For an entity: its meshes in drawing order and the states offered. */
   readonly entity?: EntitySummary;
+  /** When `PdxMeshTextureAtlas` parts are drawn: how many, and the flag on them. */
+  readonly flag?: FlagSummary;
+}
+
+export interface FlagSummary {
+  readonly parts: number;
+  /** The tag whose `gfx/flags` flag is drawn, or `undefined` for the country colours' stripes. */
+  readonly tag: string | undefined;
 }
 
 export interface EntitySummary {
@@ -77,6 +85,8 @@ export interface EntityNode {
 export type MeshWebviewMessage =
   | { readonly type: 'ready' }
   | { readonly type: 'animation'; readonly name: string }
+  /** The flag of a country tag for `PdxMeshTextureAtlas` parts. */
+  | { readonly type: 'flag'; readonly tag: string }
   | { readonly type: 'shown'; readonly summary: MeshSummary }
   | { readonly type: 'failed'; readonly message: string };
 
@@ -91,6 +101,7 @@ export type MeshHostMessage =
       readonly animations: readonly MeshAnimationEntry[];
     }
   | { readonly type: 'animation'; readonly name: string; readonly bytes: Uint8Array }
+  | { readonly type: 'flag'; readonly tag: string; readonly texture: MeshTexture }
   | {
       readonly type: 'entity';
       readonly name: string;

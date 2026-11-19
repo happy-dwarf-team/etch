@@ -3,7 +3,8 @@
 // parses and draws it with WebGL2, skips the collision shape, textures the part with all three
 // maps and is offered only the animation that names the mesh's bones. A mesh in the game folder (`etch.gamePath`, a fixture) takes its texture
 // through the playset, one without its texture is drawn untextured, and a file Etch cannot read is
-// reported instead of shown.
+// reported instead of shown. A `PdxMeshTextureAtlas` part reports its flag (the country colours
+// until a tag is asked for), and a tag's flag comes from `gfx/flags` through the playset.
 import * as assert from 'node:assert/strict';
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -11,7 +12,8 @@ import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { ANIM, binary, MESH, obj, strs } from '../../core/test/fixtures/pdx-asset.ts';
 import type { EtchApi } from '../src/extension.ts';
-import { MESH_PREVIEW_VIEW_TYPE, type MeshShown } from '../src/mesh-preview.ts';
+import { flagTexture, MESH_PREVIEW_VIEW_TYPE, type MeshShown } from '../src/mesh-preview.ts';
+import { linkedFiles } from '../src/script-profile-view.ts';
 import { dds } from './asset-links.ts';
 
 const COLD_TIMEOUT_MS = 30_000;
@@ -76,6 +78,27 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
   });
   await vscode.commands.executeCommand('workbench.action.closeAllEditors');
 
+  // A ship's sails: the fixture quad as a PdxMeshTextureAtlas part, with its second UVs.
+  const sails = vscode.Uri.file(path.join(folder, 'etch_sails.mesh'));
+  await writeFile(
+    sails.fsPath,
+    binary(
+      MESH.map((item) =>
+        'name' in item && item.name === 'shader' && item.values[0] === 'PdxMeshStandardSkinned'
+          ? strs('shader', 'PdxMeshTextureAtlas')
+          : item,
+      ),
+    ),
+  );
+  const atlas = await open(api, sails);
+  assert.ok(atlas.ok, `the sails show: ${atlas.ok ? '' : atlas.message}`);
+  assert.deepEqual(
+    atlas.summary.flag,
+    { parts: 1 },
+    'one flag part, in the country colours until a tag is asked for',
+  );
+  await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+
   // The same mesh in a fixture game folder: its texture comes from the playset's game layer.
   const game = await mkdtemp(path.join(tmpdir(), 'etch-mesh-game-'));
   const models = path.join(game, 'gfx', 'models', 'etch');
@@ -84,6 +107,9 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
   await writeFile(path.join(models, 'etch_flag.mesh'), binary(MESH));
   await writeFile(path.join(models, 'flag_diffuse.dds'), dds(2, 2, [30, 20, 10, 255]));
   await mkdir(path.join(game, 'gfx', 'models', 'bare'));
+  await mkdir(path.join(game, 'gfx', 'flags'));
+  // dds() takes its bytes as BGRA: a red flag.
+  await writeFile(path.join(game, 'gfx', 'flags', 'ETC.dds'), dds(2, 2, [40, 40, 200, 255]));
   await writeFile(path.join(game, 'gfx', 'models', 'bare', 'etch_bare.mesh'), binary(MESH));
   const settings = vscode.workspace.getConfiguration('etch');
   await settings.update('gamePath', game, vscode.ConfigurationTarget.Global);
@@ -105,6 +131,17 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
     assert.equal(bare.summary.normalMapped, 0, 'no normal map named');
     assert.deepEqual(bare.summary.textures, { 'flag_diffuse.dds': 'not found' });
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+
+    // A tag's flag: gfx/flags/<TAG>.tga, here as its .dds fallback, through the playset.
+    const files = (await linkedFiles())?.files;
+    const etc = await flagTexture('ETC', files);
+    assert.ok(etc.ok, `the fixture flag is found: ${etc.ok ? '' : etc.message}`);
+    assert.deepEqual([etc.width, etc.height, etc.source], [2, 2, 'the game']);
+    assert.deepEqual(Array.from(etc.rgba.subarray(0, 4)), [200, 40, 40, 255]);
+    const missing = await flagTexture('XYZ', files);
+    assert.deepEqual(missing, { ok: false, message: 'no gfx/flags/XYZ.tga in the playset' });
+    const notATag = await flagTexture('../x', files);
+    assert.ok(!notATag.ok, 'only a country tag is looked up');
   } finally {
     await settings.update('gamePath', undefined, vscode.ConfigurationTarget.Global);
   }

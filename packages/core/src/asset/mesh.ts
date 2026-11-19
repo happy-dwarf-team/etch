@@ -38,6 +38,11 @@ export interface MeshPart {
    */
   readonly tangents: Float32Array | undefined;
   readonly uvs: Float32Array | undefined;
+  /**
+   * The second texture coordinates (`u1`, 2 per vertex): where a `PdxMeshTextureAtlas` part (a
+   * ship's sails, a map flag) samples its country's flag.
+   */
+  readonly uvs1: Float32Array | undefined;
   readonly indices: Uint32Array;
   readonly material: MeshMaterial;
   readonly skin: MeshSkin | undefined;
@@ -100,6 +105,7 @@ export function readMesh(bytes: Uint8Array): PdxMesh {
         normals: sized(floats(mesh, 'n'), 3),
         tangents: sized(floats(mesh, 'ta'), 4),
         uvs: sized(floats(mesh, 'u0'), 2),
+        uvs1: sized(floats(mesh, 'u1'), 2),
         indices: Uint32Array.from(triangles),
         material: {
           shader: first('shader') ?? '',

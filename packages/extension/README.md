@@ -343,14 +343,19 @@ it is in no folder of the playset. Collision shapes are hidden.
 - A `PdxMeshColor` part (a unit's uniform, a ship's sails) shows a country's
   colours where its specular map's red, green and blue channels mark them;
   the three colour boxes set them.
+- A `PdxMeshTextureAtlas` part (vanilla's ships and the map's flag) shows a
+  country's flag where its diffuse map's alpha marks it, through the mesh's
+  second texture coordinates, as the game does. Type a tag in **Flag** for that
+  country's `gfx/flags/<TAG>.tga` from your playset; with no tag the three
+  colour boxes show as stripes in its place.
 - If the mesh has a skeleton, the list offers the `.anim` files beside it that
   name its bones, the mesh's own first (`carrack_idle.anim` for
   `carrack.mesh`); **Play** runs the one you pick in a loop.
 - When the mesh, a texture or an animation beside it changes on disk, the
   preview shows the new one.
 
-A `PdxMeshTextureAtlas` part's flag and snow are not drawn. To open a mesh with
-another viewer, use **Reopen Editor With…**.
+Snow is not drawn. To open a mesh with another viewer, use **Reopen Editor
+With…**.
 
 ### Entities
 

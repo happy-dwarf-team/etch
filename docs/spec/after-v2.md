@@ -680,9 +680,14 @@ refresh is a step of the 3.0.0 release.
   its parent's bone at its own scale, not multiplied by the parent's (a Russian
   line infantryman's musket in the game keeps the proportion this gives). Over
   EU4 1.37.5 all 1,523 entities resolve with no problem and all 1,411 attach
-  bones are in their parent's skeleton (`entity.vanilla.test.ts`). Not drawn:
-  LODs, the flag of `PdxMeshTextureAtlas`, and the map's fog of war, snow and
-  distance fog.
+  bones are in their parent's skeleton (`entity.vanilla.test.ts`). A
+  `PdxMeshTextureAtlas` part blends in its country's flag where the diffuse
+  alpha marks it, sampled with the mesh's `u1` (`MeshPart.uvs1`; all 21 such
+  parts of vanilla have it, `asset.vanilla.test.ts`): a tag's `gfx/flags` flag
+  through the playset, or the three country colours as stripes. The game picks
+  the flag out of its flag atlas (`TextureAtlasCoords`); its other branches
+  (`AtlasHalfColor`, a flag mapped through the country colours) are not
+  followed. Not drawn: LODs, and the map's fog of war, snow and distance fog.
 
 ## Open issues
 

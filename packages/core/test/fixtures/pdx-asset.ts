@@ -73,6 +73,7 @@ export const MESH: Item[] = [
   floats('n', 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1),
   floats('ta', 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1),
   floats('u0', 0, 1, 1, 1, 0, 0, 1, 0),
+  floats('u1', 0, 0, 1, 0, 0, 1, 1, 1),
   ints('tri', 0, 1, 2, 1, 3, 2),
   obj(4, 'material'),
   strs('shader', 'PdxMeshStandardSkinned'),
