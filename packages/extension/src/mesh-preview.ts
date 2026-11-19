@@ -46,7 +46,7 @@ class MeshDocument implements vscode.CustomDocument {
   dispose(): void {}
 }
 
-async function read(file: string): Promise<Uint8Array> {
+export async function read(file: string): Promise<Uint8Array> {
   return Uint8Array.from(await vscode.workspace.fs.readFile(vscode.Uri.file(file)));
 }
 
@@ -81,7 +81,7 @@ async function findTexture(
 }
 
 /** The diffuse, normal and specular textures of a mesh's drawn parts, decoded, by file name. */
-async function texturesOf(
+export async function texturesOf(
   mesh: PdxMesh,
   meshFile: string,
   files: GameFiles | undefined,
@@ -296,7 +296,7 @@ export function registerMeshPreview(
   return { onDidShow: provider.shown.event };
 }
 
-function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): string {
+export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): string {
   const nonce = randomBytes(16).toString('base64');
   const script = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'dist', 'mesh-webview.js'));
   const csp = [

@@ -671,9 +671,18 @@ refresh is a step of the 3.0.0 release.
   that names its bones, skinned on the CPU (`@etch/core/asset`'s
   `skinningMatrices`, `skinPart`); posing the 151 animations vanilla's
   `.asset` files use on the skinned meshes beside them keeps all 444 pairs
-  within 0.5–2× of their bind size. Not drawn: the `.gfx` entity
-  (attachments, scale, state animations), LODs, the flag of
-  `PdxMeshTextureAtlas`, and the map's fog of war, snow and distance fog.
+  within 0.5–2× of their bind size. The entity preview (`etch.previewEntity`,
+  a CodeLens on each `entity` of an `.asset` file) resolves an entity through
+  the playset's `.gfx` pdxmesh types and `.asset` files (`@etch/core/asset`
+  `resolveEntity`: `clone` first, then the entity's own keys; states by name,
+  `attach` groups by `name`), scales it by pdxmesh scale × entity scale, plays
+  its states through the pdxmesh's animation ids, and draws each attachment on
+  its parent's bone at its own scale, not multiplied by the parent's (a Russian
+  line infantryman's musket in the game keeps the proportion this gives). Over
+  EU4 1.37.5 all 1,523 entities resolve with no problem and all 1,411 attach
+  bones are in their parent's skeleton (`entity.vanilla.test.ts`). Not drawn:
+  LODs, the flag of `PdxMeshTextureAtlas`, and the map's fog of war, snow and
+  distance fog.
 
 ## Open issues
 

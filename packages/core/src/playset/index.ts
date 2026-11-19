@@ -36,3 +36,4 @@ export {
   type ScriptValueFinding,
   type ScriptValues,
 } from './script-values.ts';
+export { loadEntityIndex } from './entities.ts';

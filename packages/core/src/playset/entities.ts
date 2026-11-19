@@ -1,0 +1,36 @@
+// The playset's 3D object definitions: the pdxmesh types of every `.gfx` file under `interface/`
+// and the entities and animations of every `.asset` file under `gfx/`, subfolders included, the
+// folders vanilla EU4 1.37.5 keeps them in. Files are read in path order; a later definition of a
+// name wins (which one the game keeps is not checked).
+import { readFile } from 'node:fs/promises';
+import { readAssetFile, readPdxMeshTypes, EntityIndex } from '../asset/entity.ts';
+import { decodeGameText } from '../game-text.ts';
+import { parseScript } from '../script/parse.ts';
+import type { GameFile, GameFiles } from './game-files.ts';
+
+async function filesUnder(files: GameFiles, root: string, extension: string): Promise<GameFile[]> {
+  const out: GameFile[] = [];
+  const walk = async (dir: string): Promise<void> => {
+    out.push(...(await files.list(dir, extension)));
+    for (const sub of await files.folders(dir)) await walk(sub);
+  };
+  await walk(root);
+  return out;
+}
+
+/** Reads the playset's `.gfx` pdxmesh types and `.asset` definitions. */
+export async function loadEntityIndex(files: GameFiles): Promise<EntityIndex> {
+  const [gfxFiles, assetFiles] = await Promise.all([
+    filesUnder(files, 'interface', '.gfx'),
+    filesUnder(files, 'gfx', '.asset'),
+  ]);
+  const read = async (file: GameFile): Promise<string> =>
+    decodeGameText(await readFile(file.absolutePath), 'script').text;
+  const gfx = await Promise.all(
+    gfxFiles.map(async (file) => readPdxMeshTypes(parseScript(await read(file)), file.path)),
+  );
+  const assets = await Promise.all(
+    assetFiles.map(async (file) => readAssetFile(parseScript(await read(file)), file.path)),
+  );
+  return EntityIndex.of(gfx, assets);
+}

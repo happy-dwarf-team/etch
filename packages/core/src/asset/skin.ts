@@ -88,6 +88,25 @@ export function skinningMatrices(
   frame: number,
   joints: readonly (number | undefined)[] = jointsOfBones(skeleton, animation),
 ): Float32Array[] {
+  const world = boneWorldMatrices(skeleton, animation, frame, joints);
+  return skeleton.map((bone, index) => multiply(world[index] ?? identity(), bone.inverseBind));
+}
+
+/**
+ * The matrix of every bone in the mesh's space at a frame, or in the bind pose without an
+ * animation: where an attachment on that bone (an `.asset` `attach`) is drawn.
+ */
+export function boneWorldMatrices(
+  skeleton: readonly SkeletonBone[],
+  animation: PdxAnimation | undefined,
+  frame = 0,
+  joints: readonly (number | undefined)[] = animation === undefined
+    ? []
+    : jointsOfBones(skeleton, animation),
+): Float32Array[] {
+  if (animation === undefined) {
+    return skeleton.map((bone) => invertAffine(bone.inverseBind));
+  }
   const world: (Float32Array | undefined)[] = [];
   const worldOf = (index: number, depth = 0): Float32Array => {
     const known = world[index];
@@ -112,7 +131,7 @@ export function skinningMatrices(
     world[index] = result;
     return result;
   };
-  return skeleton.map((bone, index) => multiply(worldOf(index), bone.inverseBind));
+  return skeleton.map((_, index) => worldOf(index));
 }
 
 function identity(): Float32Array {

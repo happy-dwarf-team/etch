@@ -1,0 +1,128 @@
+// The entity preview end to end in a real VS Code: in a fixture game folder (`etch.gamePath`), an
+// `.asset` file's entity names a `.gfx` pdxmesh (the skinned fixture quad), plays a state through
+// the pdxmesh's animation id, and carries a second entity on its `tip` bone; a clone of it
+// replaces the attachment group. The CodeLens names each entity, and the webview reports the
+// meshes it drew, the states and what it could not resolve.
+import * as assert from 'node:assert/strict';
+import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import * as path from 'node:path';
+import * as vscode from 'vscode';
+import { ANIM, binary, MESH } from '../../core/test/fixtures/pdx-asset.ts';
+import type { EtchApi } from '../src/extension.ts';
+import { PREVIEW_ENTITY_COMMAND, type EntityShown } from '../src/entity-preview.ts';
+import { dds } from './asset-links.ts';
+
+const COLD_TIMEOUT_MS = 30_000;
+
+const GFX = `objectTypes = {
+  pdxmesh = {
+    name = "etch_flag_mesh"
+    file = "gfx/models/etch/etch_flag.mesh"
+    animation = { id = "idle" type = "etch_wave_animation" }
+    scale = 0.5
+  }
+  pdxmesh = { name = "etch_knob_mesh" file = "gfx/models/etch/etch_knob.mesh" scale = 0.5 }
+}
+`;
+
+const ASSET = `entity = {
+  name = "etch_flag"
+  pdxmesh = "etch_flag_mesh"
+  state = { name = "idle" animation = "idle" }
+  state = { name = "walk" animation = "walk" }
+  attach = { name = "top" tip = "etch_knob" }
+}
+
+entity = {
+  clone = "etch_flag"
+  name = "etch_flag_bare"
+  attach = { name = "top" tip = "etch_missing" }
+}
+
+entity = { name = "etch_knob" pdxmesh = "etch_knob_mesh" }
+
+animation = { name = "etch_wave_animation" file = "etch_wave.anim" }
+`;
+
+function open(api: EtchApi, uri: vscode.Uri, name: string): Promise<EntityShown> {
+  const shown = new Promise<EntityShown>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      subscription.dispose();
+      reject(new Error(`no entity preview of ${name} within ${String(COLD_TIMEOUT_MS)} ms`));
+    }, COLD_TIMEOUT_MS);
+    const subscription = api.entityPreview.onDidShow((result) => {
+      if (result.name !== name) return;
+      clearTimeout(timer);
+      subscription.dispose();
+      resolve(result);
+    });
+  });
+  void vscode.commands.executeCommand(PREVIEW_ENTITY_COMMAND, uri, name);
+  return shown;
+}
+
+export async function testEntityPreview(api: EtchApi): Promise<void> {
+  const game = await mkdtemp(path.join(tmpdir(), 'etch-entity-game-'));
+  const models = path.join(game, 'gfx', 'models', 'etch');
+  const entities = path.join(game, 'gfx', 'entities');
+  await mkdir(models, { recursive: true });
+  await mkdir(entities, { recursive: true });
+  await mkdir(path.join(game, 'interface'), { recursive: true });
+  await writeFile(path.join(game, 'eu4.exe'), 'not the game');
+  await writeFile(path.join(game, 'interface', 'etch_units.gfx'), GFX);
+  await writeFile(path.join(models, 'etch_flag.mesh'), binary(MESH));
+  await writeFile(path.join(models, 'etch_knob.mesh'), binary(MESH));
+  await writeFile(path.join(models, 'flag_diffuse.dds'), dds(2, 2, [30, 20, 10, 255]));
+  await writeFile(path.join(entities, 'etch_wave.anim'), binary(ANIM));
+  const asset = vscode.Uri.file(path.join(entities, 'etch_units.asset'));
+  await writeFile(asset.fsPath, ASSET);
+
+  const settings = vscode.workspace.getConfiguration('etch');
+  await settings.update('gamePath', game, vscode.ConfigurationTarget.Global);
+  try {
+    const document = await vscode.workspace.openTextDocument(asset);
+    await vscode.window.showTextDocument(document);
+    const lenses = await vscode.commands.executeCommand<vscode.CodeLens[]>(
+      'vscode.executeCodeLensProvider',
+      asset,
+    );
+    assert.deepEqual(
+      lenses
+        .filter((lens) => lens.command?.command === PREVIEW_ENTITY_COMMAND)
+        .map((lens) => [lens.range.start.line, String(lens.command?.arguments?.[1])]),
+      [
+        [0, 'etch_flag'],
+        [8, 'etch_flag_bare'],
+        [14, 'etch_knob'],
+      ],
+      'a lens above each entity',
+    );
+
+    const shown = await open(api, asset, 'etch_flag');
+    assert.ok(shown.ok, `the entity shows: ${shown.ok ? '' : shown.message}`);
+    assert.deepEqual(shown.summary.entity, {
+      name: 'etch_flag',
+      nodes: ['etch_flag', 'etch_knob on tip'],
+      states: ['idle', 'walk'],
+      state: 'idle',
+      problems: ['etch_flag: state walk: pdxmesh "etch_flag_mesh" has no animation id "walk"'],
+    });
+    assert.equal(shown.summary.shapes, 2, 'the flag and the knob, collision shapes apart');
+    assert.equal(shown.summary.textured, 2, 'both textured through the playset');
+    await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+
+    const bare = await open(api, asset, 'etch_flag_bare');
+    assert.ok(bare.ok, `the clone shows: ${bare.ok ? '' : bare.message}`);
+    assert.deepEqual(bare.summary.entity?.nodes, ['etch_flag_bare'], 'its group replaced the knob');
+    assert.ok(
+      bare.summary.entity.problems.includes(
+        'etch_flag_bare: no entity "etch_missing" to attach to tip',
+      ),
+      `the missing attachment is named: ${JSON.stringify(bare.summary.entity.problems)}`,
+    );
+    await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+  } finally {
+    await settings.update('gamePath', undefined, vscode.ConfigurationTarget.Global);
+  }
+}
