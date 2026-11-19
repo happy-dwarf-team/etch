@@ -1,3 +1,4 @@
+import { symlink } from 'node:fs/promises';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { GameFiles } from '../../src/playset/index.ts';
@@ -81,5 +82,19 @@ describe('GameFiles', () => {
     expect(await files.find('interface/missing.gui')).toBeUndefined();
     expect(await files.read('interface/missing.gui')).toBeUndefined();
     expect(await files.list('no/such/folder')).toEqual([]);
+    expect(await files.list('../game/interface')).toEqual([]);
+    expect(await files.folders('C:/game')).toEqual([]);
+  });
+
+  it('lists the subfolders of every layer, and follows a linked folder', async () => {
+    expect(await files.folders('')).toEqual(['common', 'interface']);
+    expect(await files.folders('interface')).toEqual(['interface/ideas.gui', 'interface/sub']);
+    // A junction on Windows, a symbolic link elsewhere; the one to a missing folder is neither.
+    await symlink(join(root, 'game', 'interface', 'sub'), join(root, 'top', 'linked'), 'junction');
+    await symlink(join(root, 'nowhere'), join(root, 'top', 'broken'), 'junction');
+    const linked = new GameFiles([{ name: 'Top', root: join(root, 'top'), replacePaths: [] }]);
+    expect(await linked.folders('')).toEqual(['interface', 'linked']);
+    expect((await linked.find('linked/deep.gui'))?.path).toBe('linked/deep.gui');
+    expect(await linked.find('broken')).toBeUndefined();
   });
 });

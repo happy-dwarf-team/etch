@@ -292,6 +292,20 @@ describe('withMembers', () => {
     const { diagnostics } = readProfile(result.text, PROJECT);
     expect(diagnostics).toEqual([]);
   });
+
+  it('starts a blank file, and refuses a file or a section that is no object', () => {
+    const blank = withMembers('  \n', 'provinceview', 'selectors', [
+      ['a', { kind: 'scripted', label: 'A', values: { shown: 'Shown' } }],
+    ]);
+    expect(blank.added).toEqual(['a']);
+    expect(readProfile(blank.text, PROJECT).diagnostics).toEqual([]);
+    expect(() => withMembers('[]', 'provinceview', 'rules', [['r', {}]])).toThrow(
+      'The file is not an object.',
+    );
+    expect(() =>
+      withMembers('{ "formatVersion": 1, "rules": 2 }', 'provinceview', 'rules', [['r', {}]]),
+    ).toThrow('"rules" is not an object.');
+  });
 });
 
 describe('scriptedSkeleton ids', () => {
