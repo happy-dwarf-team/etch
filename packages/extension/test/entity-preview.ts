@@ -17,6 +17,20 @@ import { dds } from './asset-links.ts';
 
 const COLD_TIMEOUT_MS = 30_000;
 
+/**
+ * Fewer drawn pixels than this and the canvas is too short to measure: the bar above it (the
+ * facts, the problems, the particles) takes most of a small window's height, and the mean of a
+ * few edge pixels is mostly the background.
+ */
+const MIN_DRAWN_PIXELS = 2_000;
+
+/** Closes the side bar and the panel, so that the preview beside the editor has the room. */
+async function makeRoom(): Promise<void> {
+  for (const command of ['workbench.action.closeSidebar', 'workbench.action.closePanel']) {
+    await vscode.commands.executeCommand(command);
+  }
+}
+
 const GFX = `objectTypes = {
   pdxmesh = {
     name = "etch_flag_mesh"
@@ -51,7 +65,11 @@ animation = { name = "etch_wave_animation" file = "etch_wave.anim" }
 const PARTICLES = `particle = { name = "etch_sparks" subsystem = { max_amount = 10 } }
 `;
 
-type Drawn = NonNullable<Extract<EntityShown, { ok: true }>['summary']['drawn']>;
+type Summary = Extract<EntityShown, { ok: true }>['summary'];
+type Drawn = NonNullable<Summary['drawn']> & {
+  /** What the frame was drawn from, for a failure's message. */
+  readonly from: string;
+};
 
 /** The colour the open preview of an entity draws, read back after a frame. */
 async function measure(api: EtchApi, uri: vscode.Uri, name: string): Promise<Drawn> {
@@ -64,11 +82,20 @@ async function measure(api: EtchApi, uri: vscode.Uri, name: string): Promise<Dra
       if (result.name !== name || !result.ok || result.summary.drawn === undefined) return;
       clearTimeout(timer);
       subscription.dispose();
-      resolve(result.summary.drawn);
+      const { shapes, textured, textures, entity } = result.summary;
+      resolve({
+        ...result.summary.drawn,
+        from: JSON.stringify({ shapes, textured, textures, nodes: entity?.nodes }),
+      });
     });
   });
   assert.ok(await api.entityPreview.control(uri, name, {}), `a preview of ${name} is open`);
-  return drawn;
+  const result = await drawn;
+  assert.ok(
+    result.pixels >= MIN_DRAWN_PIXELS,
+    `${name} is drawn on a canvas big enough to measure: ${String(result.pixels)} pixels`,
+  );
+  return result;
 }
 
 function open(api: EtchApi, uri: vscode.Uri, name: string): Promise<EntityShown> {
@@ -152,6 +179,9 @@ export async function testEntityPreview(api: EtchApi): Promise<void> {
     });
     assert.equal(shown.summary.shapes, 2, 'the flag and the knob, collision shapes apart');
     assert.equal(shown.summary.textured, 2, 'both textured through the playset');
+    // The default layout leaves the canvas only a few hundred drawn pixels, or none in CI's
+    // smaller window, where the knob then read as background grey.
+    await makeRoom();
     const knobbed = await measure(api, asset, 'etch_flag');
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
 
@@ -168,10 +198,12 @@ export async function testEntityPreview(api: EtchApi): Promise<void> {
     const plain = await measure(api, asset, 'etch_flag_bare');
     assert.ok(
       knobbed.mean[0] > plain.mean[0] + 15 && knobbed.mean[0] > knobbed.mean[2],
-      `the red knob is drawn: ${String(knobbed.mean)} with it, ${String(plain.mean)} without`,
+      `the red knob is drawn: ${String(knobbed.mean)} with it (${String(knobbed.pixels)} pixels of ` +
+        `${knobbed.from}), ${String(plain.mean)} without (${String(plain.pixels)} pixels of ${plain.from})`,
     );
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
   } finally {
+    await vscode.commands.executeCommand('workbench.view.explorer');
     await settings.update('gamePath', undefined, vscode.ConfigurationTarget.Global);
   }
 }
