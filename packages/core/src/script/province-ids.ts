@@ -537,6 +537,8 @@ export interface DefaultMap {
   readonly area: string;
   /** `region`: the region file's name in `map/`, `region.txt` by default. */
   readonly region: string;
+  /** `rivers`: the river map's name in `map/`, `rivers.bmp` by default. */
+  readonly rivers: string;
   /** The lists of province ids (`sea_starts`, `lakes`, …), each id with its range. */
   readonly idLists: readonly { readonly key: string; readonly ids: readonly ScalarNode[] }[];
 }
@@ -557,6 +559,7 @@ function readDefaultMap(parsed: ParsedScript): DefaultMap {
   let provinceGroup = 'provincegroup.txt';
   let area = 'area.txt';
   let region = 'region.txt';
+  let rivers = 'rivers.bmp';
   const idLists: { key: string; ids: ScalarNode[] }[] = [];
   for (const entry of parsed.entries) {
     if (entry.kind !== 'property') continue;
@@ -582,6 +585,8 @@ function readDefaultMap(parsed: ParsedScript): DefaultMap {
       area = value.text;
     } else if (key === 'region' && value?.kind === 'scalar' && value.text !== '') {
       region = value.text;
+    } else if (key === 'rivers' && value?.kind === 'scalar' && value.text !== '') {
+      rivers = value.text;
     } else if (DEFAULT_MAP_ID_LISTS.includes(key) && value?.kind === 'block') {
       idLists.push({ key, ids: bareScalars(value) });
     }
@@ -597,6 +602,7 @@ function readDefaultMap(parsed: ParsedScript): DefaultMap {
     provinceGroup,
     area,
     region,
+    rivers,
     idLists,
   };
 }

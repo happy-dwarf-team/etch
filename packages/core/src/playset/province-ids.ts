@@ -1,5 +1,12 @@
-import { readFile } from 'node:fs/promises';
+import { open, readFile } from 'node:fs/promises';
 import { decodeGameText } from '../game-text.ts';
+import {
+  bmpSize,
+  canalBitmapPath,
+  readCanalDefinitions,
+  type BitmapSize,
+  type CanalBitmaps,
+} from '../script/canals.ts';
 import { parseScript } from '../script/parse.ts';
 import {
   parseDefaultMap,
@@ -29,6 +36,8 @@ export interface PlaysetProvinceIds extends ProvinceIds {
   readonly adjacenciesFile?: GameFile | undefined;
   /** The winning province group file `map/default.map` names (`provincegroup`), when a layer has it. */
   readonly provinceGroupFile?: GameFile | undefined;
+  /** The sizes of the river map and of the canal bitmaps `map/default.map`'s canals name. */
+  readonly canalBitmaps?: CanalBitmaps | undefined;
 }
 
 /** A script file's text as the game reads it: Windows-1252, without a leading UTF-8 BOM. */
@@ -45,7 +54,8 @@ function decode(bytes: Uint8Array): string {
 export async function loadProvinceIds(files: GameFiles): Promise<PlaysetProvinceIds | undefined> {
   const mapFile = await files.find('map/default.map');
   if (mapFile === undefined) return undefined;
-  const map = parseDefaultMap(decode(await readFile(mapFile.absolutePath)));
+  const mapText = decode(await readFile(mapFile.absolutePath));
+  const map = parseDefaultMap(mapText);
   if (map.maxProvinces === undefined) return undefined;
   const definitionFile = await files.find(`map/${map.definitions}`);
   const defined =
@@ -66,7 +76,51 @@ export async function loadProvinceIds(files: GameFiles): Promise<PlaysetProvince
     positionsFile: await files.find(`map/${map.positions}`),
     adjacenciesFile: await files.find(`map/${map.adjacencies}`),
     provinceGroupFile: await files.find(`map/${map.provinceGroup}`),
+    canalBitmaps: await loadCanalBitmaps(files, map.rivers, mapText),
   };
+}
+
+/**
+ * The size of the playset's river map and of each canal's bitmap that `map/default.map` names
+ * (`map/<name>_river.bmp`, `null` when no layer has it), read from their headers.
+ */
+export async function loadCanalBitmaps(
+  files: GameFiles,
+  rivers: string,
+  mapText: string,
+): Promise<CanalBitmaps> {
+  const canals = new Map<string, BitmapSize | null>();
+  for (const canal of readCanalDefinitions(parseScript(mapText, { script: true }))) {
+    const name = canal.name?.text;
+    if (name === undefined || canals.has(name.toLowerCase())) continue;
+    const file = await files.find(canalBitmapPath(name));
+    canals.set(name.toLowerCase(), file === undefined ? null : ((await headerSize(file)) ?? null));
+  }
+  const riversFile = await files.find(`map/${rivers}`);
+  return {
+    rivers: riversFile === undefined ? undefined : await headerSize(riversFile),
+    riversPath: `map/${rivers}`,
+    canals,
+  };
+}
+
+/**
+ * A BMP file's size from its first bytes only (a river map is megabytes); `undefined` when it
+ * cannot be read or is no BMP.
+ */
+async function headerSize(file: GameFile): Promise<BitmapSize | undefined> {
+  try {
+    const handle = await open(file.absolutePath, 'r');
+    try {
+      const bytes = new Uint8Array(26);
+      const { bytesRead } = await handle.read(bytes, 0, bytes.byteLength, 0);
+      return bmpSize(bytes.subarray(0, bytesRead));
+    } finally {
+      await handle.close();
+    }
+  } catch {
+    return undefined;
+  }
 }
 
 /** The folders of the scripted effects and triggers, whose arguments can be province ids. */

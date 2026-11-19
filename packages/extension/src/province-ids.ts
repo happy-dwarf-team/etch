@@ -15,6 +15,7 @@ import {
   checkProvinceGroups,
   checkTradeWinds,
   checkContinents,
+  checkCanals,
   checkDefaultMap,
   decodeGameText,
   isProvinceIdScriptPath,
@@ -309,9 +310,11 @@ export function diagnose(
   const path = gamePathOf(file, files);
   if (path === undefined) return undefined;
   if (path.toLowerCase() === 'map/default.map') {
-    return ids === undefined
-      ? undefined
-      : checkDefaultMap(parseScript(text, { script: true }), definedIds(ids));
+    if (ids === undefined) return undefined;
+    const parsed = parseScript(text, { script: true });
+    const found: ScriptValueDiagnostic[] = checkDefaultMap(parsed, definedIds(ids));
+    if (ids.canalBitmaps !== undefined) found.push(...checkCanals(parsed, ids.canalBitmaps));
+    return found.sort((a, b) => a.start - b.start);
   }
   if (
     ids?.definitionFile !== undefined &&
