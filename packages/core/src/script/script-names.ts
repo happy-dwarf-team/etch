@@ -147,6 +147,11 @@ export interface ScriptNames {
    */
   readonly countryFiles?: ReadonlyMap<string, boolean>;
   /**
+   * The `common/country_tags` file that defines each tag first, by tag, as a game path in lower
+   * case (`firstCountryTags`).
+   */
+  readonly countryTags?: ReadonlyMap<string, string>;
+  /**
    * Whether a layer has each technology table `common/technology.txt` names, by game path in lower
    * case (`checkTechnologyTables`).
    */

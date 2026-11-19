@@ -4,9 +4,11 @@ import { checkCanals, type CanalDiagnostic } from '../script/canals.ts';
 import {
   checkCountryFiles,
   countryFilePath,
+  firstCountryTags,
   isCountryTagsPath,
   readCountryFiles,
   type CountryFileDiagnostic,
+  type CountryTagDiagnostic,
 } from '../script/country-files.ts';
 import { checkMapFiles, type MapFileDiagnostic } from '../script/map-files.ts';
 import {
@@ -56,6 +58,7 @@ export type ScriptValueDiagnostic =
   | CanalDiagnostic
   | MapFileDiagnostic
   | CountryFileDiagnostic
+  | CountryTagDiagnostic
   | TechnologyTableDiagnostic;
 
 /** What script values are checked against; a check without its part is skipped. */
@@ -85,7 +88,14 @@ export function checkScriptValues(
   if (values.names !== undefined) found.push(...checkScriptNames(parsed, values.names));
   const countryFiles = values.names?.countryFiles;
   if (countryFiles !== undefined && path !== undefined && isCountryTagsPath(path)) {
-    found.push(...checkCountryFiles(parsed, countryFiles));
+    const firsts = values.names?.countryTags;
+    found.push(
+      ...checkCountryFiles(
+        parsed,
+        countryFiles,
+        firsts === undefined ? undefined : { path, firsts },
+      ),
+    );
   }
   const tables = values.names?.technologyTables;
   if (tables !== undefined && path !== undefined && isTechnologyPath(path)) {
@@ -216,6 +226,7 @@ export async function loadScriptNames(files: GameFiles): Promise<ScriptNames | u
     byKind,
     scripted,
     countryFiles: await loadCountryFiles(files),
+    countryTags: await loadCountryTags(files),
     technologyTables: await loadTechnologyTables(files),
   };
 }
@@ -254,6 +265,21 @@ export async function loadCountryFiles(files: GameFiles): Promise<Map<string, bo
     }
   }
   return present;
+}
+
+/**
+ * The `common/country_tags` file that defines each tag first, in the order the game reads the
+ * playset's files (`firstCountryTags`).
+ */
+export async function loadCountryTags(files: GameFiles): Promise<Map<string, string>> {
+  const parsed: { path: string; parsed: ParsedScript }[] = [];
+  for (const file of await files.list('common/country_tags', '.txt')) {
+    const bytes = await readFile(file.absolutePath).catch(() => undefined);
+    if (bytes !== undefined) {
+      parsed.push({ path: file.path, parsed: parseScript(decode(bytes), { script: true }) });
+    }
+  }
+  return firstCountryTags(parsed);
 }
 
 /** A file of the playset with script values it does not have. */
