@@ -5,6 +5,7 @@ import {
   checkAdjacencies,
   checkClimate,
   checkPositions,
+  checkProvinceGroups,
   checkTradeWinds,
   checkContinents,
   checkDefaultMap,
@@ -206,8 +207,8 @@ const READ_AHEAD = 16;
  * Every province id and name in the script files the playset loads (the winning copy of each file
  * under `common`, `events`, `decisions`, `missions`, `history` and `customizable_localization`)
  * and every province id in the
- * lists of its `map/default.map` and its climate, continent, trade winds and positions files and
- * the ids of its adjacencies file that the playset does not have, by file in path order. Files a later layer overrides or a `replace_path` hides are not read: the game does not load them.
+ * lists of its `map/default.map` and its climate, continent, trade winds, positions and province group
+ * files and the ids of its adjacencies file that the playset does not have, by file in path order. Files a later layer overrides or a `replace_path` hides are not read: the game does not load them.
  */
 export async function findScriptValueProblems(
   files: GameFiles,
@@ -255,6 +256,7 @@ export async function findScriptValueProblems(
       [values.ids.tradeWindsFile, script(checkTradeWinds)],
       [values.ids.positionsFile, script(checkPositions)],
       [values.ids.adjacenciesFile, checkAdjacencies],
+      [values.ids.provinceGroupFile, script(checkProvinceGroups)],
     ] as const;
     for (const [file, check] of mapLists) {
       if (file === undefined) continue;

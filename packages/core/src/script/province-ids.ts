@@ -496,6 +496,8 @@ export interface DefaultMap {
   readonly positions: string;
   /** `adjacencies`: the adjacencies file's name in `map/`, `adjacencies.csv` by default. */
   readonly adjacencies: string;
+  /** `provincegroup`: the province group file's name in `map/`, `provincegroup.txt` by default. */
+  readonly provinceGroup: string;
   /** `area`: the area file's name in `map/`, `area.txt` by default. */
   readonly area: string;
   /** `region`: the region file's name in `map/`, `region.txt` by default. */
@@ -517,6 +519,7 @@ function readDefaultMap(parsed: ParsedScript): DefaultMap {
   let tradeWinds = 'trade_winds.txt';
   let positions = 'positions.txt';
   let adjacencies = 'adjacencies.csv';
+  let provinceGroup = 'provincegroup.txt';
   let area = 'area.txt';
   let region = 'region.txt';
   const idLists: { key: string; ids: ScalarNode[] }[] = [];
@@ -538,6 +541,8 @@ function readDefaultMap(parsed: ParsedScript): DefaultMap {
       positions = value.text;
     } else if (key === 'adjacencies' && value?.kind === 'scalar' && value.text !== '') {
       adjacencies = value.text;
+    } else if (key === 'provincegroup' && value?.kind === 'scalar' && value.text !== '') {
+      provinceGroup = value.text;
     } else if (key === 'area' && value?.kind === 'scalar' && value.text !== '') {
       area = value.text;
     } else if (key === 'region' && value?.kind === 'scalar' && value.text !== '') {
@@ -554,6 +559,7 @@ function readDefaultMap(parsed: ParsedScript): DefaultMap {
     tradeWinds,
     positions,
     adjacencies,
+    provinceGroup,
     area,
     region,
     idLists,
@@ -724,6 +730,27 @@ function csvFields(text: string, start: number, end: number): CsvField[] {
  * since the game skips them.
  */
 export function checkContinents(parsed: ParsedScript, ids: ProvinceIds): ProvinceIdDiagnostic[] {
+  return negativeBlockIds(parsed, ids);
+}
+
+/**
+ * The negative province ids in the province group file (`map/provincegroup.txt`, as
+ * `map/default.map`'s `provincegroup` names it), whose every top-level block lists a group's
+ * provinces (`group = { 1 2 3 }`), which the `province_group` trigger asks about. The game reads
+ * each value of a block with `atoi` (`CProvinceGroup::Read`), and `CMap::ApplyProvinceGroups`
+ * skips an id at or past the end of the province table but not a negative one: it adds the group
+ * to the list of the "province" before the table (the EU4 engine lab, 19.11.2026). Ids past the
+ * map are left alone, since the game skips them. Vanilla's file has only a commented example.
+ */
+export function checkProvinceGroups(
+  parsed: ParsedScript,
+  ids: ProvinceIds,
+): ProvinceIdDiagnostic[] {
+  return negativeBlockIds(parsed, ids);
+}
+
+/** The negative bare values of every top-level block, keyed by the block's name in lower case. */
+function negativeBlockIds(parsed: ParsedScript, ids: ProvinceIds): ProvinceIdDiagnostic[] {
   const found: ProvinceIdDiagnostic[] = [];
   for (const entry of parsed.entries) {
     if (entry.kind !== 'property' || entry.value?.kind !== 'block') continue;

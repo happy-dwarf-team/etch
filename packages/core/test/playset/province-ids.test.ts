@@ -29,6 +29,7 @@ describe('province ids of a playset', () => {
       'game/map/continent.txt': 'europe = { 1 -3 50 }\n',
       'game/map/trade_winds.txt': '# direction\n1 = 0\n-1 = 30\n12 = -15\n',
       'game/map/positions.txt': '1 = { position = { 1 2 } }\n-2 = { }\n50 = { }\n',
+      'game/map/provincegroup.txt': '#example = { 1 2 3 }\ncoast = { 1 -4 50 }\n',
       'game/map/adjacencies.csv':
         'From;To;Type;Through;start_x;start_y;stop_x;stop_y;Comment\r\n' +
         '1;12;sea;2;-1;-1;-1;-1;Strait\r\n2;9;land;-1;-1;-1;-1;-1;\r\n-1;-1;;-1;-1;-1;-1;-1;\r\n' +
@@ -93,6 +94,7 @@ describe('province ids of a playset', () => {
     expect(ids?.tradeWindsFile?.path).toBe('map/trade_winds.txt');
     expect(ids?.positionsFile?.path).toBe('map/positions.txt');
     expect(ids?.adjacenciesFile?.path).toBe('map/adjacencies.csv');
+    expect(ids?.provinceGroupFile?.path).toBe('map/provincegroup.txt');
   });
 
   it('is undefined without a default.map', async () => {
@@ -134,6 +136,8 @@ describe('province ids of a playset', () => {
       ['game', 'map/default.map', ['sea_starts 8 province-id-not-defined']],
       // 50 is past the map, which the game skips in the positions file; -2 it does not.
       ['game', 'map/positions.txt', ['positions -2 province-id-out-of-range']],
+      // 50 is past the map, which the game skips in a province group; -4 it does not.
+      ['game', 'map/provincegroup.txt', ['coast -4 province-id-out-of-range']],
       [
         'game',
         'map/trade_winds.txt',
@@ -141,8 +145,8 @@ describe('province ids of a playset', () => {
       ],
     ]);
     // Five script files, default.map, climate.txt, continent.txt, trade_winds.txt,
-    // positions.txt and adjacencies.csv; common/province_names is not read.
-    expect(filesChecked).toBe(11);
+    // positions.txt, adjacencies.csv and provincegroup.txt; common/province_names is not read.
+    expect(filesChecked).toBe(12);
     const other = findings.find((finding) => finding.file.path === 'events/other.txt');
     const first = other?.diagnostics[0];
     expect(other?.text.slice(first?.start, first?.end)).toBe('12');
@@ -196,11 +200,13 @@ describe('province ids of a playset', () => {
         ['lakes 15 province-id-not-defined', 'lakes 25 province-id-out-of-range'],
       ],
       ['map/positions.txt', ['positions -2 province-id-out-of-range']],
+      ['map/provincegroup.txt', ['coast -4 province-id-out-of-range']],
       // 12 is on the big map.
       ['map/trade_winds.txt', ['trade_winds -1 province-id-out-of-range']],
     ]);
     expect(findings.at(-1)?.file.layer.name).toBe('game');
     expect(findings.at(-2)?.file.layer.name).toBe('game');
-    expect(findings.at(-3)?.file.layer.name).toBe('Big Map');
+    expect(findings.at(-3)?.file.layer.name).toBe('game');
+    expect(findings.at(-4)?.file.layer.name).toBe('Big Map');
   });
 });

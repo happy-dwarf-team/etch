@@ -27,6 +27,8 @@ export interface PlaysetProvinceIds extends ProvinceIds {
   readonly positionsFile?: GameFile | undefined;
   /** The winning adjacencies file `map/default.map` names (`adjacencies`), when a layer has it. */
   readonly adjacenciesFile?: GameFile | undefined;
+  /** The winning province group file `map/default.map` names (`provincegroup`), when a layer has it. */
+  readonly provinceGroupFile?: GameFile | undefined;
 }
 
 /** A script file's text as the game reads it: Windows-1252, without a leading UTF-8 BOM. */
@@ -37,7 +39,7 @@ function decode(bytes: Uint8Array): string {
 /**
  * The province ids of the playset's map: `max_provinces` of the winning `map/default.map`, a mod's
  * when it has one, and the ids of the winning definition file it names (`definitions`,
- * `map/definition.csv` by default), and its climate, continent, trade winds, positions and adjacencies files.
+ * `map/definition.csv` by default), and its climate, continent, trade winds, positions, adjacencies and province group files.
  * `undefined` when no layer has `map/default.map` or it sets no `max_provinces`.
  */
 export async function loadProvinceIds(files: GameFiles): Promise<PlaysetProvinceIds | undefined> {
@@ -63,6 +65,7 @@ export async function loadProvinceIds(files: GameFiles): Promise<PlaysetProvince
     tradeWindsFile: await files.find(`map/${map.tradeWinds}`),
     positionsFile: await files.find(`map/${map.positions}`),
     adjacenciesFile: await files.find(`map/${map.adjacencies}`),
+    provinceGroupFile: await files.find(`map/${map.provinceGroup}`),
   };
 }
 

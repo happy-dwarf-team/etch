@@ -4,6 +4,7 @@ import {
   checkClimate,
   checkAdjacencies,
   checkPositions,
+  checkProvinceGroups,
   checkTradeWinds,
   checkContinents,
   checkDefaultMap,
@@ -525,6 +526,27 @@ describe('positions file', () => {
   });
 });
 
+describe('province group file', () => {
+  it('checks the negative ids of each group only, which the game does not skip', () => {
+    const text = [
+      '#mytestgroup = {',
+      '#\t1 2 3',
+      '#}',
+      'Golden_Coast = { 1 -1 4942 0 -0 "-5" }',
+      'empty = { }',
+      'far = { -30000 }',
+    ].join('\n');
+    const diagnostics = checkProvinceGroups(parseScript(text), VANILLA);
+    expect(diagnostics.map((d) => `${d.key} ${String(d.id)} ${d.code}`)).toEqual([
+      'golden_coast -1 province-id-out-of-range',
+      // The game reads every value of a group with `atoi`, a quoted one too.
+      'golden_coast -5 province-id-out-of-range',
+      'far -30000 province-id-out-of-range',
+    ]);
+    expect(text.slice(diagnostics[0]?.start, diagnostics[0]?.end)).toBe('-1');
+  });
+});
+
 describe('default.map', () => {
   const map = [
     'width = 5632',
@@ -553,6 +575,8 @@ describe('default.map', () => {
     expect(parseDefaultMap('positions = "places.txt"').positions).toBe('places.txt');
     expect(parseDefaultMap('width = 1').adjacencies).toBe('adjacencies.csv');
     expect(parseDefaultMap('adjacencies = "links.csv"').adjacencies).toBe('links.csv');
+    expect(parseDefaultMap('width = 1').provinceGroup).toBe('provincegroup.txt');
+    expect(parseDefaultMap('provincegroup = "groups.txt"').provinceGroup).toBe('groups.txt');
     expect(parseDefaultMap('width = 1').continent).toBe('continent.txt');
     expect(parseDefaultMap('continent = "lands.txt"').continent).toBe('lands.txt');
   });
