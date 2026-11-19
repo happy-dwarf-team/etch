@@ -81,6 +81,22 @@ export async function testProvinceIds(): Promise<void> {
       /^Province 12 is not on the map: map\/default\.map of the game sets max_provinces = 10/,
     );
 
+    // The adjacencies file, a .csv: From 12 is past the map.
+    const links = await write(
+      game,
+      'map/adjacencies.csv',
+      'From;To;Type;Through\n12;1;sea;2\n-1;-1;;-1\n',
+    );
+    await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(links));
+    const [link, ...otherLinks] = await diagnosticsOf(links, (found) => found.length > 0);
+    assert.deepEqual(otherLinks, []);
+    assert.equal(link?.code, 'province-id-out-of-range');
+    assert.deepEqual(
+      [link.range.start.line, link.range.start.character, link.range.end.character],
+      [1, 0, 2],
+    );
+    await vscode.window.showTextDocument(document);
+
     // An edit is checked as it is typed.
     const editor = vscode.window.activeTextEditor;
     assert.ok(editor);

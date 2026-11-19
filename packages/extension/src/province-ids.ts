@@ -134,7 +134,8 @@ export class ProvinceIdDiagnostics implements vscode.Disposable {
   }
 
   private schedule(document: vscode.TextDocument): void {
-    if (document.uri.scheme !== 'file' || !/\.(?:txt|map)$/i.test(document.uri.fsPath)) return;
+    // `.csv`: the adjacencies file; the others, such as definition.csv, give no diagnostics.
+    if (document.uri.scheme !== 'file' || !/\.(?:txt|map|csv)$/i.test(document.uri.fsPath)) return;
     const key = document.uri.toString();
     clearTimeout(this.timers.get(key));
     this.timers.set(
