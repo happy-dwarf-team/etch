@@ -149,11 +149,15 @@ export function mapTreeOf(types: Iterable<PdxMeshType>, meshPath: string): PdxMe
   return undefined;
 }
 
-/** The entities and animations of a parsed `.asset` file at a game-relative path. */
+/**
+ * The entities, animations and particle systems of a parsed `.asset` file at a game-relative
+ * path. A particle system is named by its block (`particle = { name = "ship_cannon" … }`, vanilla
+ * keeps its 9 in `gfx/particles`); only the name is read.
+ */
 export function readAssetFile(
   parsed: ParsedScript,
   path: string,
-): { entities: EntityDefinition[]; animations: AnimationDefinition[] } {
+): { entities: EntityDefinition[]; animations: AnimationDefinition[]; particles: string[] } {
   const folder = normaliseGamePath(path).split('/').slice(0, -1).join('/');
   const entities: EntityDefinition[] = [];
   for (const block of blocksOf(parsed, 'entity')) {
@@ -205,14 +209,22 @@ export function readAssetFile(
         : `${folder}/${normal}`;
     return [{ name: name.text, file, at: { path, node: name } }];
   });
-  return { entities, animations };
+  const particles = blocksOf(parsed, 'particle').flatMap((block) => {
+    const name = scalarOf(block, 'name')?.text;
+    return name === undefined ? [] : [name];
+  });
+  return { entities, animations, particles };
 }
 
-/** The playset's pdxmesh types, entities and animations by name; a later definition wins. */
+/**
+ * The playset's pdxmesh types, entities and animations by name (a later definition wins), and
+ * the names of its particle systems.
+ */
 export class EntityIndex {
   readonly pdxmeshes = new Map<string, PdxMeshType>();
   readonly entities = new Map<string, EntityDefinition>();
   readonly animations = new Map<string, AnimationDefinition>();
+  readonly particles = new Set<string>();
 
   /** Files in load order: `.gfx` files' pdxmesh types and `.asset` files' definitions. */
   static of(
@@ -220,6 +232,7 @@ export class EntityIndex {
     assets: readonly {
       readonly entities: readonly EntityDefinition[];
       readonly animations: readonly AnimationDefinition[];
+      readonly particles?: readonly string[];
     }[],
   ): EntityIndex {
     const index = new EntityIndex();
@@ -227,6 +240,7 @@ export class EntityIndex {
     for (const file of assets) {
       for (const entity of file.entities) index.entities.set(entity.name, entity);
       for (const animation of file.animations) index.animations.set(animation.name, animation);
+      for (const particle of file.particles ?? []) index.particles.add(particle);
     }
     return index;
   }
@@ -358,6 +372,14 @@ function resolve(index: EntityIndex, name: string, path: readonly string[]): Res
     }
     return { name: state.name, file: animation.file, problem: undefined, events };
   });
+  // A particle no `.asset` file defines: the game has nothing to start (vanilla names three).
+  for (const state of states) {
+    for (const { particle } of state.events) {
+      if (particle === undefined || index.particles.has(particle)) continue;
+      const problem = `state ${state.name}: no particle "${particle}" in the .asset files`;
+      if (!problems.includes(problem)) problems.push(problem);
+    }
+  }
   const attachments: ResolvedEntity['attachments'][number][] = [];
   for (const group of own.attach) {
     for (const node of group.nodes) {

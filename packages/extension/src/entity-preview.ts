@@ -225,6 +225,8 @@ class EntityPreviews {
     for (const [key, value] of index.pdxmeshes) merged.pdxmeshes.set(key, value);
     for (const [key, value] of index.entities) merged.entities.set(key, value);
     for (const [key, value] of index.animations) merged.animations.set(key, value);
+    for (const particle of index.particles) merged.particles.add(particle);
+    for (const particle of own.particles) merged.particles.add(particle);
     for (const entity of own.entities) merged.entities.set(entity.name, entity);
     for (const animation of own.animations) merged.animations.set(animation.name, animation);
     const entity = resolveEntity(merged, name);

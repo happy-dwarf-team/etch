@@ -49,6 +49,8 @@ entity = { name = "swarm" pdxmesh = "spear_mesh" attach = { a_node = "swarm" b_n
 entity = { name = "ring_a" pdxmesh = "spear_mesh" attach = { a_node = "ring_b" } }
 entity = { name = "ring_b" pdxmesh = "flag_mesh" attach = { b_node = "ring_a" c_node = "flag" } }`;
 
+const PARTICLES = `particle = { name = "musket_smoke" subsystem = { max_amount = 10 } }`;
+
 const ANIMATIONS = `animation = { name = "soldier_idle_animation" file = "soldier_idle.anim" }
 animation = { name = "soldier_walk_animation" file = "gfx/models/other/walk.anim" }`;
 
@@ -58,6 +60,7 @@ function index(): EntityIndex {
     [
       readAssetFile(parseScript(UNITS), 'gfx/entities/units.asset'),
       readAssetFile(parseScript(ANIMATIONS), 'gfx/models/units/animation/animation.asset'),
+      readAssetFile(parseScript(PARTICLES), 'gfx/particles/musket_smoke.asset'),
     ],
   );
 }
@@ -86,6 +89,16 @@ describe('readPdxMeshTypes and readAssetFile', () => {
       ['soldier_idle_animation', 'gfx/models/units/animation/soldier_idle.anim'],
       ['soldier_walk_animation', 'gfx/models/other/walk.anim'],
     ]);
+  });
+
+  it("reads the names of a file's particle systems", () => {
+    const { particles } = readAssetFile(
+      parseScript(
+        `${PARTICLES}\nparticle = { subsystem = { } }\nparticle = { name = "dust_cloud" }`,
+      ),
+      'gfx/particles/smoke.asset',
+    );
+    expect(particles).toEqual(['musket_smoke', 'dust_cloud']);
   });
 });
 
@@ -141,7 +154,8 @@ describe('resolveEntity', () => {
       ['weapon', 'Right_hand_node', 'spear', 'gfx/models/units/spear.mesh'],
       [undefined, 'Back_node', 'flag', 'gfx/models/units/flag.mesh'],
     ]);
-    expect(soldier?.problems).toEqual([]);
+    // "musket_smoke" is defined in a particle file, "dust" nowhere.
+    expect(soldier?.problems).toEqual(['state death: no particle "dust" in the .asset files']);
   });
 
   it('applies a clone, then the entity: its mesh, scale, states and attach groups by name', () => {
