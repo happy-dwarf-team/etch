@@ -363,6 +363,10 @@ WNDPROC g_previous_proc = nullptr;
 HWND g_subclassed = nullptr;
 anvil::FunctionHook<SHORT WINAPI(int)> g_async_key_state;
 anvil::FunctionHook<SHORT WINAPI(int)> g_key_state;
+// The game's tooltip for the pointer and the controller's hide, which pick mode calls instead.
+anvil::HookOf<sym::tooltip_show> g_tooltip_show;
+void (*g_tooltip_hide)(void* controller) = nullptr;
+etch::TooltipGate g_tooltips;
 
 etch::UiWidget Copy(const TongsUiWidget* w) {
     etch::UiWidget out;
@@ -625,14 +629,25 @@ bool BlockedButton(int vk) {
 SHORT WINAPI OnAsyncKeyState(int vk) noexcept { return BlockedButton(vk) ? 0 : g_async_key_state.next(vk); }
 SHORT WINAPI OnKeyState(int vk) noexcept { return BlockedButton(vk) ? 0 : g_key_state.next(vk); }
 
+// Once a frame from the game's tooltip controller, on the main thread: in pick
+// mode the controller's own hide runs instead (after-v2.md), so no tooltip
+// stands under the label or over the outlined widget.
+void OnTooltipShow(void* controller, const void* point) noexcept {
+    if (g_tooltips.Pass(Pick().on.load(std::memory_order_relaxed))) {
+        g_tooltip_show.next(controller, point);
+        return;
+    }
+    g_tooltip_hide(controller);
+}
+
 void LogPickStats(PickState& p) {
     anvil::Host{}.info(
         "pick mode left: {} picks; hovered read median {:.3f} ms, p90 {:.3f} ms, max {:.3f} ms over {} frames; "
         "hotkey by GetKeyState {}, by key messages {}; mouse buttons polled {} times; activation clicks {} "
-        "(hover not at the click after {:.0f} ms: {})",
+        "(hover not at the click after {:.0f} ms: {}); game tooltips hidden in {} frames",
         p.picks, Percentile(p.hover_ms, 0.5), Percentile(p.hover_ms, 0.9), Percentile(p.hover_ms, 1.0),
         p.hover_ms.size(), p.by_key_state, p.by_messages, p.button_polls.load(), p.activation_clicks, kActivationWaitMs,
-        p.activation_timeouts);
+        p.activation_timeouts, g_tooltips.TakeHidden());
     p.hover_ms.clear();
 }
 
@@ -931,6 +946,12 @@ struct EtchPlugin : anvil::Plugin {
             etch::overlay::Install(host);
             host.replace_import(g_async_key_state, "USER32.dll", "GetAsyncKeyState", OnAsyncKeyState);
             host.replace_import(g_key_state, "USER32.dll", "GetKeyState", OnKeyState);
+            try {
+                g_tooltip_hide = host.function(sym::tooltip_hide);
+                host.hook(g_tooltip_show, sym::tooltip_show, OnTooltipShow);
+            } catch (const std::exception& e) {
+                host.warn("pick mode leaves the game's tooltips shown: {}", e.what());
+            }
             host.subscribe(ANVIL_GAME_EVENT_READY, [] {
                 Subclass();
                 if (!etch::overlay::EnsureHooked()) anvil::Host{}.warn("pick mode draws no outline: no Present found");

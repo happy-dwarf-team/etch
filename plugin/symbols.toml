@@ -42,3 +42,23 @@ memory = "code"
 values.push_event = { at = 3, rip_relative = 7 }
 values.push_event_slot = { at = 10, rip_relative = 14 }
 note = "SDL 2.0.4 dynapi init: slot 88 = SDL_PushEvent"
+
+# --- The game's tooltips, hidden in pick mode (docs/spec/after-v2.md, "Pick
+# mode hides the game's tooltips"). The tooltip controller's update (0x1414EF0)
+# runs once a frame and is the only caller of the show below; when the game
+# shows no tooltip it calls the hide instead, which the plugin's hook does in
+# pick mode.
+
+[symbol.tooltip_show]
+rva = 0x1415390
+bytes = "48 89 5C 24 08 55 56 57 41 54 41 55 41 56 41 57 48 8D 6C 24 B0 48 81 EC 50 01 00 00 4C 8B E2 48 8B F1"
+memory = "code"
+signature = "void (void* controller, const void* point)"
+note = "tooltip controller: shows the tooltip of the object (or the map) under the point, in window pixels"
+
+[symbol.tooltip_hide]
+rva = 0x1415340
+bytes = "40 53 48 83 EC 20 48 8B D9 48 8B 49 08 48 85 C9 74 09 48 8B 01 FF 90 90 00 00 00"
+memory = "code"
+signature = "void (void* controller)"
+note = "tooltip controller: hides the tooltip window and forgets the object it was for"

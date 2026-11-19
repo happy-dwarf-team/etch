@@ -77,6 +77,20 @@ void TestMouse() {
     assert(!etch::IsMouseMessage(WM_KEYDOWN));
 }
 
+// The game's tooltips (after-v2.md): its own call outside pick mode, hidden in pick mode
+// and counted for the log until the log takes the count.
+void TestTooltips() {
+    etch::TooltipGate gate;
+    assert(gate.Pass(false) && gate.Pass(false));
+    assert(gate.TakeHidden() == 0);
+    assert(!gate.Pass(true) && !gate.Pass(true) && !gate.Pass(true));
+    assert(gate.Pass(false));  // left: the next frame shows the game's tooltip again
+    assert(gate.TakeHidden() == 3);
+    assert(gate.TakeHidden() == 0);
+    assert(!gate.Pass(true));
+    assert(gate.TakeHidden() == 1);
+}
+
 // menubar covers the screen; provinceview holds a button holding its text.
 std::vector<UiWidget> Tree() {
     return {
@@ -285,6 +299,7 @@ void TestProtocol() {
 int main() {
     TestKeys();
     TestMouse();
+    TestTooltips();
     TestStack();
     TestLabel();
     TestPickEvent();

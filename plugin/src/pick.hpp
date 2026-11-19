@@ -2,13 +2,14 @@
 
 // Pick mode (v2 specification section 7, etch#158, docs/pick-mode-checks.md):
 // the parts that do not need the game, so the tests drive them directly. The
-// hotkey, which mouse messages the game window may still see, the stack of
-// widgets under the pointer, the label, and the pick and snapshot that go to
-// Etch over the pipe. plugin.cpp wires them to the window procedure, tongs.ui
-// and the device.
+// hotkey, which mouse messages the game window may still see, the game's
+// tooltips, the stack of widgets under the pointer, the label, and the pick and
+// snapshot that go to Etch over the pipe. plugin.cpp wires them to the window
+// procedure, the game's tooltip controller, tongs.ui and the device.
 
 #include "json.hpp"
 
+#include <atomic>
 #include <cstdint>
 #include <functional>
 #include <map>
@@ -82,6 +83,24 @@ struct MouseFilter {
 // (WM_MOUSEFIRST..WM_MOUSELAST) are asked about.
 MouseFilter FilterMouse(std::uint32_t message, std::uint64_t wparam);
 bool IsMouseMessage(std::uint32_t message);
+
+// The game's tooltips, hidden in pick mode (after-v2.md, "Pick mode hides the
+// game's tooltips"): they stand at the pointer's bottom right with the label
+// and may cover the outlined widget. Once a frame the game's tooltip controller
+// shows the tooltip for the pointer; the plugin's hook of that call asks the
+// gate whether the game's call runs or the controller's own hide does instead,
+// and the gate counts the frames it hid one for the log. Any thread.
+class TooltipGate {
+public:
+    // True outside pick mode: the game shows its tooltip. False in pick mode,
+    // counted: the hook hides it.
+    bool Pass(bool pick_mode) noexcept;
+    // The frames hidden since the last call, which starts the count again.
+    std::uint64_t TakeHidden() noexcept;
+
+private:
+    std::atomic<std::uint64_t> hidden_{0};
+};
 
 // The visible widgets under a point, the one to pick first: the hovered widget,
 // then those inside it (a button's own text), smallest first, then its parents,
