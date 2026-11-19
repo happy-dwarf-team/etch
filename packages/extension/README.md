@@ -331,7 +331,8 @@ name (`texture_diffuse = "tower_diffuse.dds"` in a `pdxmesh`, an animation's
 `file = "eagle_idle.anim"` in an `.asset` file) is looked up beside the mesh
 or the `.asset` file, where vanilla keeps them. Hovering a mesh path lists its
 shapes, vertices, triangles and bones, its shaders and the textures its
-materials name, and draws the mesh with those textures, as they are found
+materials name, and draws the mesh (of a mesh with levels of detail, its most
+detailed level) with those textures, as they are found
 beside it or, like the game, by file name in another folder of the playset's
 `gfx/` (a part whose texture is missing is grey); an animation path gives its
 frames, speed and joints.

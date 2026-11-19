@@ -661,7 +661,8 @@ refresh is a step of the 3.0.0 release.
   frame-major samples). Over EU4 1.37.5 it reads all 476 meshes and 152
   animations (`packages/core/test/asset.vanilla.test.ts`); a mesh or animation
   path's hover gives their facts, and a mesh path's hover a 128-pixel render
-  of the mesh with its diffuse textures (a software rasteriser in
+  of the mesh with its diffuse textures (its most detailed level of detail
+  only) (a software rasteriser in
   `@etch/core/asset`; every vanilla mesh that draws something renders, in
   `asset.vanilla.test.ts`). Etch Mesh Preview (`etch.meshPreview`)
   draws a `.mesh` with WebGL2 (diffuse, normal and specular textures through
