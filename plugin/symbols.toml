@@ -54,7 +54,7 @@ rva = 0x1415390
 bytes = "48 89 5C 24 08 55 56 57 41 54 41 55 41 56 41 57 48 8D 6C 24 B0 48 81 EC 50 01 00 00 4C 8B E2 48 8B F1"
 memory = "code"
 signature = "void (void* controller, const void* point)"
-note = "tooltip controller: shows the tooltip of the object (or the map) under the point, in window pixels"
+note = "tooltip controller: shows the tooltip of the object (or the map) under the point"
 
 [symbol.tooltip_hide]
 rva = 0x1415340
