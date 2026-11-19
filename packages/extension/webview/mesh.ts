@@ -1211,7 +1211,16 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
         day,
         north: northward,
         place: province,
+        lod: lodPick,
+        distance,
       } = message.controls;
+      if (lodPick !== undefined) {
+        lodAuto = lodPick === 'auto' && lodSelect.querySelector('option[value="auto"]') !== null;
+        if (lodPick !== 'auto') lodLevel = lodPick;
+        lodSelect.value = lodAuto ? 'auto' : String(lodLevel);
+      }
+      if (distance !== undefined) camera.distance = distance;
+      if (lodPick !== undefined || distance !== undefined) showFacts();
       // An empty Place box first, so that Ground and North below are the user's again.
       if (province === null) askPlace('');
       if (mapsOn !== undefined) {

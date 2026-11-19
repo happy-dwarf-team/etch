@@ -337,6 +337,16 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
     [1, 4, 2],
     'only level 0 is drawn and counted',
   );
+  // LOD auto: the camera's distance to the mesh's origin picks the level by its loddist, as the
+  // game picks it. The camera orbits the middle of the 2 x 1 quad, about a unit from the origin.
+  const near = await controlled(api, tree, { lod: 'auto', distance: 5 });
+  assert.deepEqual(near.lod, { level: 0, levels: [0, 1], from: 0, auto: true }, 'level 0 near');
+  const far = await controlled(api, tree, { lod: 'auto', distance: 60 });
+  assert.deepEqual(far.lod, { level: 1, levels: [0, 1], from: 30, auto: true }, 'level 1 past 30');
+  assert.equal(far.triangles, 1, 'only level 1 is drawn and counted');
+  // A level picked again leaves Auto.
+  const picked = await controlled(api, tree, { lod: 0 });
+  assert.deepEqual(picked.lod, { level: 0, levels: [0, 1], from: 0 }, 'level 0 picked');
   await vscode.commands.executeCommand('workbench.action.closeAllEditors');
 
   // The same mesh in a fixture game folder: its texture comes from the playset's game layer.

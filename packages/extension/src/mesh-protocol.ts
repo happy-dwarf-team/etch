@@ -154,6 +154,10 @@ export interface MeshControls {
    * clear it. The preview answers once the host has looked the place up.
    */
   readonly place?: number | null;
+  /** The LOD box: a level, or `auto` for the level the camera's distance gives. */
+  readonly lod?: number | 'auto';
+  /** The camera's distance from the point it orbits, in the drawn space's units. */
+  readonly distance?: number;
 }
 
 export interface FlagSummary {
