@@ -721,8 +721,11 @@ refresh is a step of the 3.0.0 release.
   it drew them all on top of each other before. The object's `loddist` gives
   each level's camera distance (a pine's `[0, 20, 50, 100, 200]`,
   `PdxMesh.lodDistances`), which the bar shows. The game squares those values
-  when it loads the mesh and compares them with squared camera distances. How
-  far the camera is in the preview's units is not matched to the game's. A mesh a `mapobject_<n>` pdxmesh of the playset names is one of the
+  when it loads the mesh, and each frame takes the last level whose squared
+  value the squared distance from the camera to the object's origin reaches
+  (the last level when not even the first is). **LOD auto** does the same with
+  the preview's camera (`levelAtDistance`): the drawn space is in the game's
+  units, the pdxmesh scale in the model matrix. A mesh a `mapobject_<n>` pdxmesh of the playset names is one of the
   map's trees (the tree layer places type n where `map/trees.bmp` has palette
   index n: 21 types over 17 meshes in vanilla, `entity.vanilla.test.ts`); the
   game draws those with `gfx/FX/tree.shader`, not their materials' shader, so

@@ -87,6 +87,7 @@ import {
   placedBounds,
   placement,
   scaling,
+  levelAtDistance,
   shownLevel,
   viewProjection,
   type Bounds,
@@ -626,6 +627,11 @@ function showErrorBox(): void {
 
 /** The level of detail picked in the LOD box; each mesh shows its nearest (`shownLevel`). */
 let lodLevel = 0;
+/**
+ * Whether the LOD box is on Auto: each mesh shows the level its `loddist` gives at the camera's
+ * distance to its origin, as the game picks it (`levelAtDistance`).
+ */
+let lodAuto = false;
 
 /** The levels of detail of an instance's mesh, most detailed first; empty without levels. */
 function levelsOf(instance: Instance): number[] {
@@ -633,9 +639,23 @@ function levelsOf(instance: Instance): number[] {
   return [...new Set(levels)].sort((a, b) => a - b);
 }
 
+/** The level of detail an instance shows now: by the camera's distance on Auto, else the pick. */
+function levelShown(instance: Instance): number | undefined {
+  const levels = levelsOf(instance);
+  if (lodAuto) {
+    // The origin in the drawn space mirrors the model's Z, as the camera's space does.
+    const m = instance.model;
+    const [ex = 0, ey = 0, ez = 0] = eyeOf(camera);
+    const distance = Math.hypot(ex - (m[12] ?? 0), ey - (m[13] ?? 0), ez + (m[14] ?? 0));
+    const level = levelAtDistance(distance, instance.mesh.lodDistances ?? []);
+    if (level !== undefined) return shownLevel(levels, level);
+  }
+  return shownLevel(levels, lodLevel);
+}
+
 /** The parts drawn now: those of shapes without a level, and of the level the instance shows. */
 function drawnParts(instance: Instance): DrawnPart[] {
-  const level = shownLevel(levelsOf(instance), lodLevel);
+  const level = levelShown(instance);
   return instance.parts.filter((d) => d.shape.lod === undefined || d.shape.lod === level);
 }
 
@@ -643,10 +663,13 @@ function drawnParts(instance: Instance): DrawnPart[] {
 function offerLevels(): void {
   const levels = [...new Set(instances.flatMap(levelsOf))].sort((a, b) => a - b);
   if (!levels.includes(lodLevel)) lodLevel = levels[0] ?? 0;
+  const distances = instances.some((i) => (i.mesh.lodDistances?.length ?? 0) > 0);
+  if (!distances) lodAuto = false;
   lodSelect.replaceChildren(
+    ...(distances ? [new Option('LOD auto', 'auto')] : []),
     ...levels.map((level) => new Option(`LOD ${String(level)}`, String(level))),
   );
-  lodSelect.value = String(lodLevel);
+  lodSelect.value = lodAuto ? 'auto' : String(lodLevel);
   lodSelect.hidden = levels.length < 2;
 }
 
@@ -900,6 +923,8 @@ function render(now: number): void {
 }
 
 function redraw(): void {
+  // On Auto the level follows the camera, so the bar's level does too.
+  if (lodAuto) showFacts();
   if (!playing) requestAnimationFrame(draw);
 }
 
@@ -927,9 +952,20 @@ function summary(): MeshSummary {
   const levels = [...new Set(instances.flatMap(levelsOf))].sort((a, b) => a - b);
   if (levels.length > 0) {
     const from = instances
-      .map((i) => i.mesh.lodDistances?.[shownLevel(levelsOf(i), lodLevel) ?? -1])
+      .map((i) => i.mesh.lodDistances?.[levelShown(i) ?? -1])
       .find((distance) => distance !== undefined);
-    base = { ...base, lod: { level: lodLevel, levels, ...(from === undefined ? {} : { from }) } };
+    const shown = lodAuto
+      ? (instances.map(levelShown).find((level) => level !== undefined) ?? lodLevel)
+      : lodLevel;
+    base = {
+      ...base,
+      lod: {
+        level: shown,
+        levels,
+        ...(from === undefined ? {} : { from }),
+        ...(lodAuto ? { auto: true } : {}),
+      },
+    };
   }
   if (tree !== undefined) base = { ...base, tree };
   const blendedParts = tree === undefined ? parts.filter((d) => d.blend !== 'none').length : 0;
@@ -1002,7 +1038,8 @@ function showFacts(): void {
   }
   if (s.lod !== undefined && s.lod.levels.length > 1) {
     const from = s.lod.from === undefined ? '' : ` (from ${String(s.lod.from)})`;
-    items.push(`LOD ${String(s.lod.level)} of ${s.lod.levels.join(', ')}${from}`);
+    const auto = s.lod.auto === true ? ' by distance' : '';
+    items.push(`LOD ${String(s.lod.level)}${auto} of ${s.lod.levels.join(', ')}${from}`);
   }
   if (s.collisionShapes > 0) items.push(`${String(s.collisionShapes)} collision (hidden)`);
   if (tree !== undefined && tint !== undefined) items.push(`Tree_tint.bmp (${tint.source})`);
@@ -1449,7 +1486,8 @@ for (const input of [seasonDayInput, seasonNorthInput]) {
 }
 
 lodSelect.addEventListener('change', () => {
-  lodLevel = Number(lodSelect.value);
+  lodAuto = lodSelect.value === 'auto';
+  if (!lodAuto) lodLevel = Number(lodSelect.value);
   showFacts();
   redraw();
   vscode.postMessage({ type: 'shown', summary: summary() });

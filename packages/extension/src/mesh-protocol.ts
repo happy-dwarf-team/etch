@@ -40,6 +40,8 @@ export interface MeshSummary {
     readonly level: number;
     readonly levels: readonly number[];
     readonly from?: number;
+    /** The LOD box is on Auto: `level` is the one the camera's distance gives, as the game. */
+    readonly auto?: boolean;
   };
   /**
    * The map tree type (`mapobject_<n>`) that draws the mesh: it is drawn as the game's tree

@@ -11,6 +11,7 @@ import {
   placedBounds,
   placement,
   scaling,
+  levelAtDistance,
   shownLevel,
   viewProjection,
   type Bounds,
@@ -118,6 +119,19 @@ describe('view math', () => {
     const camera = framing(box, 1);
     const eye = eyeOf(camera);
     expect(Math.hypot(...eye)).toBeGreaterThan(50);
+  });
+
+  it("picks the level of detail the game picks at a camera distance, by the mesh's loddist", () => {
+    // A vanilla pine: each level from its distance on.
+    const pine = [0, 20, 50, 100, 200];
+    expect(levelAtDistance(0, pine)).toBe(0);
+    expect(levelAtDistance(19.9, pine)).toBe(0);
+    expect(levelAtDistance(20, pine)).toBe(1);
+    expect(levelAtDistance(75, pine)).toBe(2);
+    expect(levelAtDistance(5000, pine)).toBe(4);
+    // Nearer than the first distance: the game falls to its last level.
+    expect(levelAtDistance(5, [10, 30])).toBe(1);
+    expect(levelAtDistance(5, [])).toBeUndefined();
   });
 
   it('shows the nearest level of detail a mesh has', () => {

@@ -156,6 +156,23 @@ export function shownLevel(levels: readonly number[], chosen: number): number | 
   return coarser.length > 0 ? coarser[coarser.length - 1] : sorted[0];
 }
 
+/**
+ * The level of detail the game picks at `distance` from the camera to a mesh's origin, by the
+ * mesh's `loddist`: the last level whose distance is reached, or the last level when not even the
+ * first one is; `undefined` without distances.
+ */
+export function levelAtDistance(
+  distance: number,
+  lodDistances: readonly number[],
+): number | undefined {
+  if (lodDistances.length === 0) return undefined;
+  for (let level = lodDistances.length - 1; level >= 0; level--) {
+    const from = lodDistances[level] ?? 0;
+    if (distance * distance >= from * from) return level;
+  }
+  return lodDistances.length - 1;
+}
+
 /** The camera's position, in the drawn space. */
 export function eyeOf(camera: OrbitCamera): number[] {
   const { yaw, pitch, distance, target } = camera;
