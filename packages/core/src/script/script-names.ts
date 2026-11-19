@@ -146,6 +146,11 @@ export interface ScriptNames {
    * (`checkCountryFiles`).
    */
   readonly countryFiles?: ReadonlyMap<string, boolean>;
+  /**
+   * Whether a layer has each technology table `common/technology.txt` names, by game path in lower
+   * case (`checkTechnologyTables`).
+   */
+  readonly technologyTables?: ReadonlyMap<string, boolean>;
 }
 
 export type ScriptNameDiagnosticCode = `unknown-${ScriptNameKind}`;

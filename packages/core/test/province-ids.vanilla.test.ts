@@ -48,6 +48,12 @@ describe.skipIf(gamePath === undefined)('province ids and names of the installed
     const countryFiles = [...(names?.countryFiles ?? new Map<string, boolean>())];
     expect(countryFiles.length).toBeGreaterThan(900);
     expect(countryFiles.filter(([, present]) => !present)).toEqual([]);
+    // The three technology tables, each there.
+    expect([...(names?.technologyTables ?? new Map<string, boolean>())]).toEqual([
+      ['common/technologies/adm.txt', true],
+      ['common/technologies/dip.txt', true],
+      ['common/technologies/mil.txt', true],
+    ]);
     if (ids === undefined) return;
     const { findings, filesChecked } = await findScriptValueProblems(files, { ids, names });
     expect(filesChecked).toBeGreaterThan(7000);
