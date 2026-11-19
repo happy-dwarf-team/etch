@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   checkCountryFiles,
+  checkCountryHistory,
   countryFilePath,
+  countryHistoryTag,
   firstCountryTags,
   isCountryTagsPath,
   parseScript,
@@ -16,6 +18,65 @@ dynamic_tags = yes
 LONG = "countries/Long.txt"
 XYZ = "countries/NoExtension"
 `;
+
+describe('history/countries files of one tag', () => {
+  it("takes a file's tag from the first three characters of its name", () => {
+    expect(countryHistoryTag('history/countries/SWE - Sweden.txt')).toBe('SWE');
+    expect(countryHistoryTag('history\\countries\\ker- Keres.TXT')).toBe('KER');
+    expect(countryHistoryTag('history/countries/AB.txt')).toBeUndefined();
+    expect(countryHistoryTag('history/countries/sub/SWE - Sweden.txt')).toBeUndefined();
+    expect(countryHistoryTag('history/provinces/1 - Uppland.txt')).toBeUndefined();
+  });
+
+  it("warns about a mod's file whose tag has another, and not about the game's", () => {
+    const histories = new Map([
+      [
+        'SWE',
+        [
+          { path: 'history/countries/SWE - Sweden.txt', game: true },
+          { path: 'history/countries/SWE - Mine.txt', game: false },
+        ],
+      ],
+      [
+        'SOF',
+        [
+          { path: 'history/countries/SOF - Segu.txt', game: true },
+          { path: 'history/countries/SOF - Sofala.txt', game: true },
+        ],
+      ],
+      ['DAN', [{ path: 'history/countries/DAN - Denmark.txt', game: false }]],
+      // A mod's own files of one tag, which no file of the game's has.
+      [
+        'X97',
+        [
+          { path: 'history/countries/X97 - Old Ones 3.txt', game: false },
+          { path: 'history/countries/X97 - Old Ones 4.txt', game: false },
+        ],
+      ],
+    ]);
+    const shared = checkCountryHistory('history/countries/swe - mine.txt', histories);
+    expect(shared).toMatchObject({
+      code: 'country-history-shared',
+      key: 'SWE',
+      name: 'history/countries/SWE - Sweden.txt',
+      start: 0,
+      end: 0,
+    });
+    expect(shared?.message).toBe(
+      "This file does not replace the game's history/countries/SWE - Sweden.txt: the game reads " +
+        "every history/countries file whose name starts with a tag into that country's history, " +
+        "so SWE gets both. Only a file of the same name, or replace_path, replaces the game's.",
+    );
+    expect(checkCountryHistory('history/countries/SWE - Sweden.txt', histories)).toBeUndefined();
+    expect(checkCountryHistory('history/countries/SOF - Segu.txt', histories)).toBeUndefined();
+    expect(checkCountryHistory('history/countries/DAN - Denmark.txt', histories)).toBeUndefined();
+    expect(checkCountryHistory('history/countries/NOR - Norway.txt', histories)).toBeUndefined();
+    expect(
+      checkCountryHistory('history/countries/X97 - Old Ones 4.txt', histories),
+    ).toBeUndefined();
+    expect(checkCountryHistory('events/SWE.txt', histories)).toBeUndefined();
+  });
+});
 
 describe('country files of common/country_tags', () => {
   it('reads each tag with the .txt file it names', () => {

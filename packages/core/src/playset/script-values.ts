@@ -3,11 +3,15 @@ import { decodeGameText } from '../game-text.ts';
 import { checkCanals, type CanalDiagnostic } from '../script/canals.ts';
 import {
   checkCountryFiles,
+  checkCountryHistory,
   countryFilePath,
+  countryHistoryTag,
   firstCountryTags,
   isCountryTagsPath,
   readCountryFiles,
   type CountryFileDiagnostic,
+  type CountryHistoryDiagnostic,
+  type CountryHistoryFile,
   type CountryTagDiagnostic,
 } from '../script/country-files.ts';
 import { checkMapFiles, type MapFileDiagnostic } from '../script/map-files.ts';
@@ -45,7 +49,7 @@ import {
   type ScriptNameSets,
 } from '../script/script-names.ts';
 import type { EntryNode, ParsedScript, ScalarNode } from '../script/tree.ts';
-import type { GameFile, GameFiles } from './game-files.ts';
+import { GameFiles, type GameFile } from './game-files.ts';
 import { definedIds, type PlaysetProvinceIds } from './province-ids.ts';
 
 /**
@@ -59,6 +63,7 @@ export type ScriptValueDiagnostic =
   | MapFileDiagnostic
   | CountryFileDiagnostic
   | CountryTagDiagnostic
+  | CountryHistoryDiagnostic
   | TechnologyTableDiagnostic;
 
 /** What script values are checked against; a check without its part is skipped. */
@@ -96,6 +101,11 @@ export function checkScriptValues(
         firsts === undefined ? undefined : { path, firsts },
       ),
     );
+  }
+  const histories = values.names?.countryHistories;
+  if (histories !== undefined && path !== undefined) {
+    const shared = checkCountryHistory(path, histories);
+    if (shared !== undefined) found.push(shared);
   }
   const tables = values.names?.technologyTables;
   if (tables !== undefined && path !== undefined && isTechnologyPath(path)) {
@@ -227,6 +237,7 @@ export async function loadScriptNames(files: GameFiles): Promise<ScriptNames | u
     scripted,
     countryFiles: await loadCountryFiles(files),
     countryTags: await loadCountryTags(files),
+    countryHistories: await loadCountryHistories(files),
     technologyTables: await loadTechnologyTables(files),
   };
 }
@@ -280,6 +291,37 @@ export async function loadCountryTags(files: GameFiles): Promise<Map<string, str
     }
   }
   return firstCountryTags(parsed);
+}
+
+/**
+ * The playset's `history/countries` files by the tag the game reads each for, each with whether it
+ * has the name of a file of the game's (the first layer's) that the playset reads.
+ */
+export async function loadCountryHistories(
+  files: GameFiles,
+): Promise<Map<string, CountryHistoryFile[]>> {
+  const folder = 'history/countries';
+  const [game, ...mods] = files.layers;
+  const replaced = mods.some((layer) =>
+    layer.replacePaths.some(
+      (p) => p.replace(/\\/g, '/').replace(/\/+$/, '').toLowerCase() === folder,
+    ),
+  );
+  const gameNames = new Set<string>();
+  if (game !== undefined && !replaced) {
+    for (const file of await new GameFiles([game]).list(folder, '.txt')) {
+      gameNames.add(file.path.toLowerCase());
+    }
+  }
+  const byTag = new Map<string, CountryHistoryFile[]>();
+  for (const file of await files.list(folder, '.txt')) {
+    const tag = countryHistoryTag(file.path);
+    if (tag === undefined) continue;
+    const list = byTag.get(tag) ?? [];
+    list.push({ path: file.path, game: gameNames.has(file.path.toLowerCase()) });
+    byTag.set(tag, list);
+  }
+  return byTag;
 }
 
 /** A file of the playset with script values it does not have. */
