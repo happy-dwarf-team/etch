@@ -383,7 +383,12 @@ it is in no folder of the playset. Collision shapes are hidden.
   tree season it falls in among the `tree_*` blocks of your playset's
   `map/seasons.txt` (or between two of them) picks the place in that map, as
   the game picks it; **North** sets how much of it the tree takes, from 0 (the
-  map's middle and south, no change) to 1 (its far north).
+  map's middle and south, no change) to 1 (its far north). Type a province ID
+  in **Place** to stand the tree at that province (its position in your
+  playset's `map/positions.txt`): Ground then takes the map's colour maps
+  there (`map/terrain/colormap_*.dds`), mixed between two map seasons for the
+  Date as the game mixes them, and North how far north the place is. Empty the
+  box to set them by hand again.
 - A `PdxMeshAlphaBlend` part (vanilla's African buildings, a unit's selection
   ring) is blended over what is behind it by its diffuse map's alpha, as the
   game blends it, rather than cut.

@@ -63,6 +63,16 @@ export interface MeshSummary {
     readonly north: number;
   };
   /**
+   * A map tree's place (the Place box): the province, where its colour maps came from, and the
+   * Ground colour (`#rrggbb`) and North value it gives on the Date slider's day.
+   */
+  readonly place?: {
+    readonly province: number;
+    readonly source: string;
+    readonly ground: string;
+    readonly north: number;
+  };
+  /**
    * Only in the answer to a `controls` message: the canvas pixels the mesh covers (those not of
    * the background colour) and their mean colour, read back right after a frame drawn with the
    * new controls.
@@ -78,9 +88,31 @@ export interface MeshSummary {
 export type MeshTreeSeasons =
   | {
       readonly ok: true;
+      /** The eight tree seasons, by column of the season map. */
       readonly spans: readonly ({ readonly start: number; readonly end: number } | null)[];
+      /** The four map seasons (winter, spring, summer, autumn), whose colour maps the tree takes. */
+      readonly mapSpans: readonly ({ readonly start: number; readonly end: number } | null)[];
       readonly source: string;
       readonly problems: readonly string[];
+    }
+  | { readonly ok: false; readonly message: string };
+
+/**
+ * A place on the map for a map tree: a province's position (`map/positions.txt`, the first
+ * pair, in map pixels from the map's south-west corner), the colour of each map season's colour
+ * map there (`map/terrain/colormap_<season>.dds`, red, green and blue from 0 to 255, in winter,
+ * spring, summer, autumn order) and how much of the season colour a tree there takes (`north`).
+ */
+export type MeshPlace =
+  | {
+      readonly ok: true;
+      readonly province: number;
+      readonly x: number;
+      readonly y: number;
+      readonly colours: readonly (readonly number[])[];
+      readonly north: number;
+      /** Where the colour maps came from (`the game`, a mod). */
+      readonly source: string;
     }
   | { readonly ok: false; readonly message: string };
 
@@ -102,6 +134,11 @@ export interface MeshControls {
   readonly ground?: string;
   readonly day?: number;
   readonly north?: number;
+  /**
+   * The Place box: a province ID whose place gives Ground (from Date) and North, or `null` to
+   * clear it. The preview answers once the host has looked the place up.
+   */
+  readonly place?: number | null;
 }
 
 export interface FlagSummary {
@@ -166,6 +203,8 @@ export type MeshWebviewMessage =
   | { readonly type: 'animation'; readonly name: string }
   /** The flag of a country tag for `PdxMeshTextureAtlas` parts. */
   | { readonly type: 'flag'; readonly tag: string }
+  /** A map tree's place: the province ID typed in the Place box. */
+  | { readonly type: 'place'; readonly province: number }
   | { readonly type: 'shown'; readonly summary: MeshSummary }
   | { readonly type: 'failed'; readonly message: string };
 
@@ -192,6 +231,7 @@ export type MeshHostMessage =
     }
   | { readonly type: 'animation'; readonly name: string; readonly bytes: Uint8Array }
   | { readonly type: 'flag'; readonly tag: string; readonly texture: MeshTexture }
+  | { readonly type: 'place'; readonly province: number; readonly place: MeshPlace }
   /** Sets the controls, draws a frame and answers `shown` with `drawn` (for Etch's tests). */
   | { readonly type: 'controls'; readonly controls: MeshControls }
   | {

@@ -715,9 +715,18 @@ refresh is a step of the 3.0.0 release.
   angle and shifts by that angle over a full turn, the preview by a Turn
   slider. The BMP reader (`readBmp` in `@etch/core/asset`) takes uncompressed
   24- and 32-bit files only and is not a texture format of the renderer. The
-  map's colour map (`map/terrain/colormap_*`, between two seasons) at the
-  tree's place is laid over that at 0.25; a Ground colour box stands in for it,
-  `#808080` by default, which leaves the colour as it is. The season colour
+  map's colour map at the tree's place is laid over that at 0.25: the game
+  binds the colour maps (`map/terrain/colormap_<season>.dds`) of the date's map
+  season and the next one and mixes them by how far through the gap between
+  the two the date is, walking the four map seasons of `map/seasons.txt`
+  (`winter`, `spring`, `summer`, `autumn`) as it walks the tree seasons below
+  (`readMapSeasons`, `seasonAt` and `colourMapAt` in `@etch/core/asset`). A
+  Ground colour box stands in for it, `#808080` by default, which leaves the
+  colour as it is; a Place box takes a province ID and sets Ground from the
+  colour maps at the province's position in `map/positions.txt` (the file
+  `map/default.map` names, read at `((x + 0.5) / width, 1 - (y + 0.5) /
+  height)` with a linear filter on the full-size level) and North from how far
+  north it is. The season colour
   (`map/terrain/Tree_season.bmp`, eight columns, at the column the game's
   season value picks and the row of the tree's `u1` v, less 0.5) is added
   times a fade that is 0 in the map's southern half and 1 from nine tenths of
@@ -726,9 +735,9 @@ refresh is a step of the 3.0.0 release.
   end date each, in the order of the columns): inside a block it is the
   block's index, in the gap after one it runs to the next index by the day,
   and after the last it runs from 7 towards 8, which the repeated map takes
-  back to the first column (`treeSeasonAt` in `@etch/core/asset`). A Date
-  slider (1 July by default) and a North slider (0 by default) stand in for
-  the game's date and the fade. Each tree's random height and turn are not followed. `PdxMeshAlphaBlend` parts (16 African
+  back to the first column (`seasonAt` in `@etch/core/asset`). A Date
+  slider (1 July by default) and a North slider (0 by default, or the Place's)
+  stand in for the game's date and the fade. Each tree's random height and turn are not followed. `PdxMeshAlphaBlend` parts (16 African
   buildings and, without depth writes, `Mapitems/selection.mesh`) are blended by
   their diffuse alpha after the opaque parts, as the game's blend state does,
   where the preview cut them at 0.5 before. Snow follows the game's

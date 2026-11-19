@@ -14,11 +14,20 @@
 import { randomBytes } from 'node:crypto';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
-import { parseScript, textureCandidates } from '@etch/core';
+import {
+  keyOf,
+  parseScript,
+  textureCandidates,
+  type EntryNode,
+  type ParsedScript,
+  type ValueNode,
+} from '@etch/core';
 import {
   jointsOfBones,
   mapTreeOf,
+  MAP_SEASONS,
   readBmp,
+  readMapSeasons,
   readTreeSeasons,
   readAnimation,
   readMesh,
@@ -32,6 +41,7 @@ import type {
   MeshAnimationEntry,
   MeshControls,
   MeshHostMessage,
+  MeshPlace,
   MeshSummary,
   MeshTexture,
   MeshTreeSeasons,
@@ -202,18 +212,138 @@ export async function treeSeasons(files: GameFiles | undefined): Promise<MeshTre
   if (found === undefined) return { ok: false, message: `no ${TREE_SEASONS_FILE} in the playset` };
   try {
     const text = new TextDecoder('windows-1252').decode(await read(found.absolutePath));
-    const { spans, problems } = readTreeSeasons(parseScript(text));
+    const parsed = parseScript(text);
+    const { spans, problems } = readTreeSeasons(parsed);
+    const map = readMapSeasons(parsed);
     return {
       ok: true,
       spans: spans.map((span) => span ?? null),
+      mapSpans: map.spans.map((span) => span ?? null),
       source: found.layer.name === 'game' ? 'the game' : found.layer.name,
-      problems,
+      problems: [...map.problems, ...problems],
     };
   } catch (error) {
     return {
       ok: false,
       message: `${TREE_SEASONS_FILE}: ${error instanceof Error ? error.message : String(error)}`,
     };
+  }
+}
+
+/** The map's settings, which name its size and its positions file. */
+export const DEFAULT_MAP = 'map/default.map';
+
+async function scriptOf(files: GameFiles, file: string): Promise<ParsedScript | undefined> {
+  const found = await files.find(file);
+  if (found === undefined) return undefined;
+  return parseScript(new TextDecoder('windows-1252').decode(await read(found.absolutePath)));
+}
+
+function valueOf(block: readonly EntryNode[], key: string): ValueNode | undefined {
+  let value: ValueNode | undefined;
+  for (const entry of block) {
+    if (entry.kind === 'property' && keyOf(entry) === key) value = entry.value;
+  }
+  return value;
+}
+
+/**
+ * A texel of a decoded texture as the shader's linear filter reads it at `u`, `v` (0 to 1, from
+ * the top left; the texture repeats): red, green and blue from 0 to 255.
+ */
+export function sampleLinear(
+  image: { width: number; height: number; rgba: Uint8Array },
+  u: number,
+  v: number,
+): number[] {
+  const x = u * image.width - 0.5;
+  const y = v * image.height - 0.5;
+  const x0 = Math.floor(x);
+  const y0 = Math.floor(y);
+  const fx = x - x0;
+  const fy = y - y0;
+  const at = (tx: number, ty: number, c: number): number => {
+    const wx = ((tx % image.width) + image.width) % image.width;
+    const wy = ((ty % image.height) + image.height) % image.height;
+    return image.rgba[(wy * image.width + wx) * 4 + c] ?? 0;
+  };
+  return [0, 1, 2].map((c) => {
+    const top = at(x0, y0, c) * (1 - fx) + at(x0 + 1, y0, c) * fx;
+    const bottom = at(x0, y0 + 1, c) * (1 - fx) + at(x0 + 1, y0 + 1, c) * fx;
+    return top * (1 - fy) + bottom * fy;
+  });
+}
+
+/**
+ * A map tree's place at a province: its position in `map/positions.txt` (the file
+ * `map/default.map` names), the colour of each map season's colour map there, and its North
+ * value, as `gfx/FX/tree.shader` takes them. The shader reads the colour maps at
+ * `((x + 0.5) / width, 1 - (y + 0.5) / height)`, and the season colour fades in with
+ * `saturate(saturate(y / height - 0.5) * 2.5)`, `y` running north from the map's south edge.
+ */
+export async function treePlace(
+  province: number,
+  files: GameFiles | undefined,
+): Promise<MeshPlace> {
+  if (!Number.isInteger(province) || province < 1) {
+    return { ok: false, message: `"${String(province)}" is not a province ID` };
+  }
+  if (files === undefined) {
+    return { ok: false, message: 'a place comes from the playset: set etch.gamePath' };
+  }
+  try {
+    const settings = await scriptOf(files, DEFAULT_MAP);
+    if (settings === undefined) return { ok: false, message: `no ${DEFAULT_MAP} in the playset` };
+    const number = (key: string): number | undefined => {
+      const value = valueOf(settings.entries, key);
+      return value?.kind === 'scalar' ? Number(value.text) : undefined;
+    };
+    const width = number('width');
+    const height = number('height');
+    if (width === undefined || height === undefined || !(width > 0) || !(height > 0)) {
+      return { ok: false, message: `${DEFAULT_MAP}: no width and height` };
+    }
+    const named = valueOf(settings.entries, 'positions');
+    const file = `map/${named?.kind === 'scalar' ? named.text : 'positions.txt'}`;
+    const positions = await scriptOf(files, file);
+    if (positions === undefined) return { ok: false, message: `no ${file} in the playset` };
+    const block = valueOf(positions.entries, String(province));
+    const position = block?.kind === 'block' ? valueOf(block.entries, 'position') : undefined;
+    const pair =
+      position?.kind === 'block'
+        ? position.entries
+            .filter((entry) => entry.kind === 'scalar')
+            .slice(0, 2)
+            .map((entry) => Number(entry.text))
+        : [];
+    const [x, y] = pair;
+    if (x === undefined || y === undefined || !Number.isFinite(x) || !Number.isFinite(y)) {
+      return { ok: false, message: `${file}: no position for province ${String(province)}` };
+    }
+    const u = (x + 0.5) / width;
+    const v = 1 - (y + 0.5) / height;
+    const colours: number[][] = [];
+    const sources = new Set<string>();
+    for (const season of MAP_SEASONS) {
+      const name = `map/terrain/colormap_${season}.dds`;
+      const found = await files.find(name);
+      if (found === undefined) return { ok: false, message: `no ${name} in the playset` };
+      const { rgba, summary } = inspectTexture(found.absolutePath, await read(found.absolutePath));
+      colours.push(sampleLinear({ width: summary.width, height: summary.height, rgba }, u, v));
+      sources.add(found.layer.name === 'game' ? 'the game' : found.layer.name);
+    }
+    const clamp = (value: number): number => Math.min(1, Math.max(0, value));
+    return {
+      ok: true,
+      province,
+      x,
+      y,
+      colours,
+      north: clamp(clamp(y / height - 0.5) * 2.5),
+      source: [...sources].join(', '),
+    };
+  } catch (error) {
+    return { ok: false, message: error instanceof Error ? error.message : String(error) };
   }
 }
 
@@ -393,6 +523,13 @@ class MeshPreviewProvider implements vscode.CustomReadonlyEditorProvider<MeshDoc
               message: `cannot read ${message.name}: ${String(error)}`,
             });
           }
+        } else if (message.type === 'place') {
+          const reply: MeshHostMessage = {
+            type: 'place',
+            province: message.province,
+            place: await treePlace(message.province, await this.playset()),
+          };
+          await webview.postMessage(reply);
         } else if (message.type === 'flag') {
           const reply: MeshHostMessage = {
             type: 'flag',
@@ -480,7 +617,7 @@ export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): str
   #snow-amount, #tint-turn, #season-day, #season-north { width: 6em; vertical-align: middle; }
   #season-date { display: inline-block; min-width: 3.6em; margin-right: 0.5em; }
   input[type="color"] { width: 24px; height: 20px; padding: 0; border: none; background: none; vertical-align: middle; }
-  #flag-tag { width: 4em; font: inherit; color: var(--vscode-input-foreground); background: var(--vscode-input-background); border: 1px solid var(--vscode-input-border, transparent); padding: 1px 4px; text-transform: uppercase; }
+  #flag-tag, #place-province { width: 4em; font: inherit; color: var(--vscode-input-foreground); background: var(--vscode-input-background); border: 1px solid var(--vscode-input-border, transparent); padding: 1px 4px; text-transform: uppercase; }
   button, select {
     font: inherit; color: var(--vscode-foreground);
     background: var(--vscode-dropdown-background); border: 1px solid var(--vscode-dropdown-border, transparent);
@@ -518,6 +655,9 @@ export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): str
   </label>
   <label id="tint" title="A map tree's tint: the game shifts each tree's place in map/terrain/Tree_tint.bmp by the tree's random turn on the map, here from 0 to 1 of a full turn" hidden>
     Turn <input type="range" id="tint-turn" min="0" max="1" step="0.05" value="0" aria-label="Tree turn for the tint">
+  </label>
+  <label id="place" title="A map tree's place: a province ID, whose position in map/positions.txt sets Ground (the map's colour maps there, map/terrain/colormap_*.dds, mixed for the Date as the game mixes them) and North; empty to set them by hand" hidden>
+    Place <input type="text" id="place-province" inputmode="numeric" placeholder="province" aria-label="Province ID of the tree's place">
   </label>
   <label id="ground" title="A map tree's ground colour: the game lays the map's colour map at the tree's place over it at one quarter; grey (#808080) changes nothing" hidden>
     Ground <input type="color" id="ground-colour" value="#808080" aria-label="Map colour under the tree">

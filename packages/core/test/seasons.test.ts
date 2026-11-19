@@ -3,16 +3,23 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
+  colourMapAt,
   dayName,
   dayOfYear,
+  MAP_SEASONS,
+  readMapSeasons,
   readTreeSeasons,
-  treeSeasonAt,
+  seasonAt,
   TREE_SEASONS,
 } from '../src/asset/index.ts';
 import { parseScript } from '../src/script/index.ts';
 
-// Eight blocks of the fixture's own, one a month apart; the second runs over the year's end.
+// Four map seasons and eight tree blocks of the fixture's own; winter and tree_winter2 run over
+// the year's end.
 const SEASONS = `winter = { start_date = 00.12.01 end_date = 00.02.28 hsv_north = { 0 0 1 } }
+spring = { start_date = 00.04.01 end_date = 00.05.15 }
+summer = { start_date = 00.06.01 end_date = 00.08.31 }
+autumn = { start_date = 00.10.01 end_date = 00.10.31 }
 tree_winter = { start_date = 00.11.20 end_date = 00.11.30 }
 tree_winter2 = { start_date = 00.12.20 end_date = 00.01.10 }
 tree_spring = { start_date = 00.02.01 end_date = 00.02.10 }
@@ -24,7 +31,7 @@ tree_autumn2 = { start_date = 00.10.21 end_date = 00.11.01 }
 `;
 
 const spans = readTreeSeasons(parseScript(SEASONS)).spans;
-const at = (month: number, day: number) => treeSeasonAt(spans, dayOfYear(month, day));
+const at = (month: number, day: number) => seasonAt(spans, dayOfYear(month, day));
 
 describe('tree seasons', () => {
   it('counts the days of the game calendar', () => {
@@ -77,7 +84,53 @@ describe('tree seasons', () => {
   });
 
   it('holds no date without the blocks', () => {
-    expect(treeSeasonAt(readTreeSeasons(parseScript('')).spans, 100)).toBeUndefined();
+    expect(seasonAt(readTreeSeasons(parseScript('')).spans, 100)).toBeUndefined();
+  });
+});
+
+describe('map seasons', () => {
+  const map = readMapSeasons(parseScript(SEASONS));
+  const mapAt = (month: number, day: number) => seasonAt(map.spans, dayOfYear(month, day));
+
+  it('reads the four blocks in the order of the season type', () => {
+    expect(map.problems).toEqual([]);
+    expect(map.spans).toHaveLength(MAP_SEASONS.length);
+    expect(map.spans[0]).toEqual({ start: dayOfYear(12, 1), end: dayOfYear(2, 28) });
+    expect(map.spans[3]).toEqual({ start: dayOfYear(10, 1), end: dayOfYear(10, 31) });
+  });
+
+  it('walks them as the tree blocks, autumn back to winter', () => {
+    expect(mapAt(1, 15)).toEqual({ first: 0, second: 0, lerp: 0, value: 0 });
+    // summer ends on 31 August, autumn starts on 1 October: 31 days.
+    expect(mapAt(9, 16)).toEqual({ first: 2, second: 3, lerp: 16 / 31, value: 2 + 16 / 31 });
+    // autumn ends on 31 October, winter starts on 1 December: 31 days.
+    expect(mapAt(11, 1)).toEqual({ first: 3, second: 0, lerp: 1 / 31, value: 3 + 1 / 31 });
+  });
+
+  it('names the map seasons a file without them lacks', () => {
+    expect(readMapSeasons(parseScript('tree_winter = { }\n')).problems).toEqual([
+      'no winter',
+      'no spring',
+      'no summer',
+      'no autumn',
+    ]);
+  });
+
+  it("mixes the colour maps' colours as the tree shader does", () => {
+    const colours = [
+      [0, 40, 80],
+      [100, 100, 100],
+      [200, 0, 0],
+      [0, 0, 200],
+    ];
+    expect(colourMapAt(colours, { first: 1, second: 1, lerp: 0, value: 1 })).toEqual([
+      100, 100, 100,
+    ]);
+    expect(colourMapAt(colours, { first: 3, second: 0, lerp: 0.25, value: 3.25 })).toEqual([
+      0, 10, 170,
+    ]);
+    expect(colourMapAt(colours, undefined)).toBeUndefined();
+    expect(colourMapAt([undefined], { first: 0, second: 0, lerp: 0, value: 0 })).toBeUndefined();
   });
 });
 
@@ -90,9 +143,20 @@ describe.skipIf(gamePath === undefined)('tree seasons of the installed game', ()
     const read = readTreeSeasons(parseScript(text));
     expect(read.problems).toEqual([]);
     for (let day = 0; day < 365; day++) {
-      const value = treeSeasonAt(read.spans, day)?.value;
+      const value = seasonAt(read.spans, day)?.value;
       expect(value, dayName(day)).toBeGreaterThanOrEqual(0);
       expect(value, dayName(day)).toBeLessThan(8);
+    }
+  });
+
+  it('reads the four map seasons and gives every day one', () => {
+    const text = readFileSync(join(gamePath ?? '', 'map', 'seasons.txt'), 'latin1');
+    const read = readMapSeasons(parseScript(text));
+    expect(read.problems).toEqual([]);
+    for (let day = 0; day < 365; day++) {
+      const value = seasonAt(read.spans, day)?.value;
+      expect(value, dayName(day)).toBeGreaterThanOrEqual(0);
+      expect(value, dayName(day)).toBeLessThan(4);
     }
   });
 });
