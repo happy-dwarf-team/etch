@@ -710,9 +710,13 @@ refresh is a step of the 3.0.0 release.
   24- and 32-bit files only and is not a texture format of the renderer. The
   map's colour map (`map/terrain/colormap_*`, between two seasons) at the
   tree's place is laid over that at 0.25; a Ground colour box stands in for it,
-  `#808080` by default, which leaves the colour as it is. The season colours
-  (only in the map's northern half) and each tree's random height and turn are
-  not followed. `PdxMeshAlphaBlend` parts (16 African
+  `#808080` by default, which leaves the colour as it is. The season colour
+  (`map/terrain/Tree_season.bmp`, eight columns, at the column the game's
+  season value picks and the row of the tree's `u1` v, less 0.5) is added
+  times a fade that is 0 in the map's southern half and 1 from nine tenths of
+  its height; Season and North sliders stand in for the column and the fade,
+  North at 0 by default. How the game's season value follows the date is not
+  known. Each tree's random height and turn are not followed. `PdxMeshAlphaBlend` parts (16 African
   buildings and, without depth writes, `Mapitems/selection.mesh`) are blended by
   their diffuse alpha after the opaque parts, as the game's blend state does,
   where the preview cut them at 0.5 before. Snow follows the game's

@@ -49,6 +49,15 @@ export interface MeshSummary {
    * place, which the game lays over it at 0.25; `#808080` changes nothing.
    */
   readonly ground?: string;
+  /**
+   * A map tree's season map (`map/terrain/Tree_season.bmp`): where it came from, or `undefined`
+   * when it was not found or read, and the Season and North sliders' values.
+   */
+  readonly season?: {
+    readonly source: string | undefined;
+    readonly time: number;
+    readonly north: number;
+  };
 }
 
 export interface FlagSummary {
@@ -132,6 +141,8 @@ export type MeshHostMessage =
       readonly tree: string | undefined;
       /** For a map tree: the playset's tint map, decoded; `undefined` for another mesh. */
       readonly tint: MeshTexture | undefined;
+      /** For a map tree: the playset's season map, decoded; `undefined` for another mesh. */
+      readonly season: MeshTexture | undefined;
     }
   | { readonly type: 'animation'; readonly name: string; readonly bytes: Uint8Array }
   | { readonly type: 'flag'; readonly tag: string; readonly texture: MeshTexture }
