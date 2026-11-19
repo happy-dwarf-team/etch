@@ -26,6 +26,12 @@ export interface MeshSummary {
   /** When `PdxMeshTextureAtlas` parts are drawn: how many, and the flag on them. */
   readonly flag?: FlagSummary;
   /**
+   * The Region colour (`#rrggbb`) when it is on and a `PdxMeshColor` or `PdxMeshTextureAtlas`
+   * part shows it: a colonial nation's region colour, which the game draws on the flag's far half
+   * and in place of the tertiary colour.
+   */
+  readonly region?: string;
+  /**
    * When a mesh has levels of detail (shapes named `lodShape0`, `Lod1Shape`): the level picked and
    * the levels offered. Only the picked level's shapes are drawn and counted.
    */
@@ -124,6 +130,8 @@ export type MeshPlace =
  */
 export interface MeshControls {
   readonly maps?: boolean;
+  /** The Region box: a colonial nation's region colour (`#rrggbb`), or `null` for off. */
+  readonly region?: string | null;
   readonly colours?: {
     readonly primary?: string;
     readonly secondary?: string;

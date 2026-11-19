@@ -696,9 +696,16 @@ refresh is a step of the 3.0.0 release.
   alpha marks it, sampled with the mesh's `u1` (`MeshPart.uvs1`; all 21 such
   parts of vanilla have it, `asset.vanilla.test.ts`): a tag's `gfx/flags` flag
   through the playset, or the three country colours as stripes. The game picks
-  the flag out of its flag atlas (`TextureAtlasCoords`); its other branches
-  (`AtlasHalfColor`, a flag mapped through the country colours) are not
-  followed. Levels of detail are shapes named `lodShape0`, `Lod1Shape` and so
+  the flag out of its flag atlas (`TextureAtlasCoords`). Its game code sets
+  `AtlasHalfColor` for a colonial nation: the flag is its overlord's, and the
+  half where `u1`'s u is over 0.5 takes a colour the game reaches through its
+  capital province (on colonial flags, the colonial region's), which also
+  replaces the tertiary colour in `PdxMeshColor`. A
+  Region box (a checkbox and a colour) stands in for that colour. The game
+  maps a flag through the country colours (`AtlasCutoff.x < 0`) for flags it
+  makes itself (revolutionary countries, custom nations and some dynamic
+  tags), out of its custom flag textures; the preview's stripes stand in for
+  that. Levels of detail are shapes named `lodShape0`, `Lod1Shape` and so
   on (`MeshShape.lod`: 16 map trees with up to five levels and the map flag
   with one, `asset.vanilla.test.ts`); the preview draws one level, the most
   detailed unless the LOD box picks another, where it drew them all on top of
