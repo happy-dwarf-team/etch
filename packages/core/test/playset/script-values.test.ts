@@ -177,6 +177,42 @@ describe('script values of a playset', () => {
     ]);
   });
 
+  it("reports what the game logs about a tag's country file, but not for the first two tags", async () => {
+    await addFiles(root, {
+      'game/common/country_tags/00_countries.txt':
+        'REB = "countries/Rebels.txt"\nPIR = "countries/Pirates.txt"\nNAT = "countries/Natives.txt"\n',
+      'game/common/countries/Rebels.txt': '',
+      'game/common/countries/Pirates.txt': '',
+      'game/common/countries/Natives.txt':
+        'color = { 1 2 3 }\nmonarch_names = { "A" = 1 }\n' +
+        'leader_names = { a b c d e f g h i j }\nship_names = { a b c d e f g h i j }\n',
+      'mod/common/country_tags/zz_mod.txt':
+        'NAT = "countries/Empty.txt"\nZZE = "countries/Empty.txt"\nZZF = "countries/Empty.txt"\n',
+      'mod/common/countries/Empty.txt':
+        'monarch_names = { "A" = 1 }\nleader_names = { a b c d e f g h i j }\n' +
+        'ship_names = { a b c d e f g h i j }\n',
+    });
+    const files = playset();
+    const names = await loadScriptNames(files);
+    expect([...(names?.countryFileTags ?? [])]).toEqual([
+      ['common/countries/natives.txt', ['NAT']],
+      ['common/countries/empty.txt', ['ZZE', 'ZZF']],
+    ]);
+    const { findings } = await findScriptValueProblems(files, { names });
+    const content = findings.flatMap((finding) =>
+      finding.diagnostics
+        .filter((d) => d.code === 'country-file-content')
+        .map((d) => [finding.file.path, d.message]),
+    );
+    expect(content).toEqual([
+      [
+        'common/countries/Empty.txt',
+        'This file has no color: the game logs "ZZE has no color defined." in error.log (and ' +
+          'for the other tag that names this file).',
+      ],
+    ]);
+  });
+
   it("warns at a mod's first country_tags file when the playset lacks a tag the game needs", async () => {
     await addFiles(root, {
       'game/common/country_tags/00_countries.txt':

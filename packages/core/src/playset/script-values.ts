@@ -11,6 +11,8 @@ import {
   firstCountryTags,
   isCountryTagsPath,
   readCountryFiles,
+  checkCountryContent,
+  type CountryContentDiagnostic,
   type CountryFileDiagnostic,
   type CountryHistoryDiagnostic,
   type CountryHistoryFile,
@@ -68,6 +70,7 @@ export type ScriptValueDiagnostic =
   | CountryTagDiagnostic
   | CountryHistoryDiagnostic
   | CountryTagsMissingDiagnostic
+  | CountryContentDiagnostic
   | TechnologyTableDiagnostic;
 
 /** What script values are checked against; a check without its part is skipped. */
@@ -115,6 +118,9 @@ export function checkScriptValues(
     const shared = checkCountryHistory(path, histories);
     if (shared !== undefined) found.push(shared);
   }
+  const contentTags =
+    path === undefined ? undefined : values.names?.countryFileTags?.get(path.toLowerCase());
+  if (contentTags !== undefined) found.push(...checkCountryContent(parsed, contentTags));
   const tables = values.names?.technologyTables;
   if (tables !== undefined && path !== undefined && isTechnologyPath(path)) {
     found.push(...checkTechnologyTables(parsed, tables));
@@ -247,6 +253,7 @@ export async function loadScriptNames(files: GameFiles): Promise<ScriptNames | u
     countryTags: await loadCountryTags(files),
     countryTagsMissing: await loadCountryTagsMissing(files),
     countryHistories: await loadCountryHistories(files),
+    countryFileTags: await loadCountryFileTags(files),
     technologyTables: await loadTechnologyTables(files),
   };
 }
@@ -300,6 +307,34 @@ export async function loadCountryTags(files: GameFiles): Promise<Map<string, str
     }
   }
   return firstCountryTags(parsed);
+}
+
+/**
+ * The tags whose country file the game checks after reading them (`checkCountryContent`), by the
+ * file's game path in lower case: every tag of the playset's `common/country_tags` files in the
+ * order the game reads them, without a tag defined before (the game leaves it out) and without
+ * the first two, which the game does not check (vanilla's `REB`, whose file has no ship names).
+ */
+export async function loadCountryFileTags(files: GameFiles): Promise<Map<string, string[]>> {
+  const byFile = new Map<string, string[]>();
+  const seen = new Set<string>();
+  for (const file of await files.list('common/country_tags', '.txt')) {
+    const bytes = await readFile(file.absolutePath).catch(() => undefined);
+    if (bytes === undefined) continue;
+    for (const { tag, file: name } of readCountryFiles(
+      parseScript(decode(bytes), { script: true }),
+    )) {
+      if (seen.has(tag)) continue;
+      seen.add(tag);
+      const path = countryFilePath(name.text);
+      if (seen.size <= 2 || path === undefined) continue;
+      const key = path.toLowerCase();
+      const tags = byFile.get(key) ?? [];
+      tags.push(tag);
+      byFile.set(key, tags);
+    }
+  }
+  return byFile;
 }
 
 /**

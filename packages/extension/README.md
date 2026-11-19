@@ -242,7 +242,11 @@ keeps the first, leaves the later one out and does not read its file. So does a
 key of other than three characters that names a country file (`ZZEX =
 "countries/Zzex.txt"`): the game leaves it out without a word. A mod's
 `common/country_tags` file that leaves the playset without `PIR`, `NAT` or
-`REB` gets a warning at its start: the game stops while it starts without them. So does a table of
+`REB` gets a warning at its start: the game stops while it starts without them.
+A country file that a tag names gets a warning for each line the game logs
+about it in `error.log`: no `color`, no `monarch_names`, or fewer than ten
+`leader_names` or `ship_names` (the game does not check the first two tags it
+reads, vanilla's `REB` and `PIR`). So does a table of
 `common/technology.txt` (`adm_tech = "technologies/adm.txt"`) whose file no
 layer has. A `history/provinces` file
 whose name does not start with a province of the map (`4999 - Past.txt` on
