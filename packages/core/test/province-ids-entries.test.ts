@@ -21,6 +21,7 @@ describe('province ids in entries other than key = value', () => {
       '    FRA 12',
       '    add_core =',
       '    every_owned_province = { limit = { } 700 = { } }',
+      '    trigger_switch = { 800 = { } }',
       '  }',
       '}',
     ].join('\n');
@@ -32,7 +33,7 @@ describe('province ids in entries other than key = value', () => {
     const effects = parseScript(
       [
         'flag = yes',
-        'with_block = { { add_core = $where$ } owner = }',
+        'with_block = { { add_core = $where$ } FRA owner = }',
         'no_province = { set_country_flag = $flag$ }',
         'passes = { with_block = { where = $target$ } no_province = { flag = $x$ } }',
       ].join('\n'),
@@ -50,10 +51,15 @@ describe('province ids in entries other than key = value', () => {
     expect(map.definitions).toBe('definition.csv');
   });
 
-  it('reads a missing or non-numeric To of an adjacency as 0, which it does not check', () => {
-    const text = ['From;To;Type;Through', '5;x;land;-1', '6', '7;;sea;', '8;300;sea;400'].join(
-      '\n',
-    );
+  it('reads a missing, non-numeric or 0 To of an adjacency as the unused province 0', () => {
+    const text = [
+      'From;To;Type;Through',
+      '5;x;land;-1',
+      '6',
+      '7;;sea;',
+      '9;0;land;-1',
+      '8;300;sea;400',
+    ].join('\n');
     expect(checkAdjacencies(text, IDS).map((d) => `${d.key} ${String(d.id)}`)).toEqual([
       'to 300',
       'through 400',
