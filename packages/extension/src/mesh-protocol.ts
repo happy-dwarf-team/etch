@@ -58,6 +58,24 @@ export interface MeshSummary {
     readonly time: number;
     readonly north: number;
   };
+  /**
+   * Only in the answer to a `controls` message: the canvas pixels the mesh covers (those not of
+   * the background colour) and their mean colour, read back right after a frame drawn with the
+   * new controls.
+   */
+  readonly drawn?: { readonly pixels: number; readonly mean: readonly [number, number, number] };
+}
+
+/**
+ * The preview's controls, set as a user would set them: Snow, Turn, Ground (`#rrggbb`), Season
+ * and North. Etch's tests set them through `MeshPreviewApi.control`.
+ */
+export interface MeshControls {
+  readonly snow?: number;
+  readonly turn?: number;
+  readonly ground?: string;
+  readonly season?: number;
+  readonly north?: number;
 }
 
 export interface FlagSummary {
@@ -146,6 +164,8 @@ export type MeshHostMessage =
     }
   | { readonly type: 'animation'; readonly name: string; readonly bytes: Uint8Array }
   | { readonly type: 'flag'; readonly tag: string; readonly texture: MeshTexture }
+  /** Sets the controls, draws a frame and answers `shown` with `drawn` (for Etch's tests). */
+  | { readonly type: 'controls'; readonly controls: MeshControls }
   | {
       readonly type: 'entity';
       readonly name: string;

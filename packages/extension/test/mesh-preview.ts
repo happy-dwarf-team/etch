@@ -8,7 +8,9 @@
 // `PdxMeshAlphaBlendNoZWrite` part (a selection ring) is reported as blended, and a `PdxMeshSnow`
 // part and a map tree as taking snow, and a map tree takes the playset's tint map. A mesh
 // with levels of detail draws and counts only its most detailed level, and a mesh a playset's
-// `mapobject_<n>` pdxmesh names is drawn as a map tree.
+// `mapobject_<n>` pdxmesh names is drawn as a map tree. What the shaders draw is read back from the
+// canvas (`MeshPreviewApi.control`): full snow greys a building and a tree whose normals point
+// up, and a map tree's colour follows the Ground colour, the Season and North sliders and the Turn.
 import * as assert from 'node:assert/strict';
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -24,6 +26,7 @@ import {
   TREE_TINT,
   type MeshShown,
 } from '../src/mesh-preview.ts';
+import type { MeshControls } from '../src/mesh-protocol.ts';
 import { linkedFiles } from '../src/script-profile-view.ts';
 import { dds } from './asset-links.ts';
 
@@ -44,6 +47,35 @@ function open(api: EtchApi, file: vscode.Uri): Promise<MeshShown> {
   });
   void vscode.commands.executeCommand('vscode.openWith', file, MESH_PREVIEW_VIEW_TYPE);
   return shown;
+}
+
+type Drawn = { readonly pixels: number; readonly mean: readonly [number, number, number] };
+
+/** The fixture mesh with its quad's normals turned up (+y), where snow settles. */
+const FACING_UP = MESH.map((item) =>
+  'name' in item && item.name === 'n' ? floats('n', 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0) : item,
+);
+
+/** How far a drawn mean colour is from grey: its largest channel less its smallest. */
+const spread = (drawn: Drawn): number => Math.max(...drawn.mean) - Math.min(...drawn.mean);
+
+/** Sets an open preview's controls and waits for the colour it then draws. */
+async function measure(api: EtchApi, file: vscode.Uri, controls: MeshControls): Promise<Drawn> {
+  const drawn = new Promise<Drawn>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      subscription.dispose();
+      reject(new Error(`no drawn colour of ${file.fsPath} within ${String(COLD_TIMEOUT_MS)} ms`));
+    }, COLD_TIMEOUT_MS);
+    const subscription = api.meshPreview.onDidShow((result) => {
+      if (result.uri.toString() !== file.toString() || !result.ok) return;
+      if (result.summary.drawn === undefined) return;
+      clearTimeout(timer);
+      subscription.dispose();
+      resolve(result.summary.drawn);
+    });
+  });
+  assert.ok(await api.meshPreview.control(file, controls), `a preview of ${file.fsPath} is open`);
+  return drawn;
 }
 
 export async function testMeshPreview(api: EtchApi): Promise<void> {
@@ -129,12 +161,13 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
   assert.equal(blended.summary.snow, undefined, 'no snow offered');
   await vscode.commands.executeCommand('workbench.action.closeAllEditors');
 
-  // A building: the fixture quad as a PdxMeshSnow part takes snow, none until the slider moves.
+  // A building: the fixture quad, facing up, as a PdxMeshSnow part takes snow, none until the
+  // slider moves; at full snow it is drawn in the snow's grey.
   const building = vscode.Uri.file(path.join(folder, 'etch_building.mesh'));
   await writeFile(
     building.fsPath,
     binary(
-      MESH.map((item) =>
+      FACING_UP.map((item) =>
         'name' in item && item.name === 'shader' && item.values[0] === 'PdxMeshStandardSkinned'
           ? strs('shader', 'PdxMeshSnow')
           : item,
@@ -144,6 +177,11 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
   const snowy = await open(api, building);
   assert.ok(snowy.ok, `the building shows: ${snowy.ok ? '' : snowy.message}`);
   assert.deepEqual(snowy.summary.snow, { parts: 1, amount: 0 }, 'snow offered, none by default');
+  const unsnowed = await measure(api, building, {});
+  assert.ok(unsnowed.pixels > 0, 'the building is drawn');
+  const snowed = await measure(api, building, { snow: 1 });
+  assert.ok(spread(unsnowed) > 10, `the building is coloured: ${String(unsnowed.mean)}`);
+  assert.ok(spread(snowed) <= 3, `full snow greys the building: ${String(snowed.mean)}`);
   await vscode.commands.executeCommand('workbench.action.closeAllEditors');
 
   // A map tree's levels of detail: a quad at level 0 and a triangle at level 1, as two shapes.
@@ -190,7 +228,7 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
   // A map tree: a pdxmesh named mapobject_<n> in a .gfx file of the playset names the mesh.
   const trees = path.join(game, 'gfx', 'models', 'Mapitems', 'Trees');
   await mkdir(trees, { recursive: true });
-  await writeFile(path.join(trees, 'etch_tree.mesh'), binary(MESH));
+  await writeFile(path.join(trees, 'etch_tree.mesh'), binary(FACING_UP));
   await mkdir(path.join(game, 'interface'));
   await writeFile(
     path.join(game, 'interface', 'etch_trees.gfx'),
@@ -239,6 +277,32 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
       "a map tree takes the playset's season map, North at 0",
     );
     assert.equal(inGame.summary.season, undefined, 'another mesh takes no season map');
+    // What the tree shader draws follows the controls (the canvas read back, mean colour).
+    const treeUri = vscode.Uri.file(path.join(trees, 'etch_tree.mesh'));
+    const plain = await measure(api, treeUri, {});
+    assert.ok(plain.pixels > 0, 'the tree is drawn');
+    // Ground red, laid over at 0.25: red rises, green and blue fall; grey changes nothing.
+    const red = await measure(api, treeUri, { ground: '#ff0000' });
+    assert.ok(
+      red.mean[0] > plain.mean[0] + 5,
+      `a red ground reddens the tree: ${String(red.mean)}`,
+    );
+    assert.ok(red.mean[1] < plain.mean[1] - 5 && red.mean[2] < plain.mean[2] - 5);
+    assert.deepEqual(await measure(api, treeUri, { ground: '#808080' }), plain);
+    // North 1 adds the season map's texel less grey; the fixture's texels are below grey in red
+    // and blue. North 0 changes nothing.
+    const north = await measure(api, treeUri, { season: 0, north: 1 });
+    assert.ok(north.mean[0] < plain.mean[0] - 10, `the season colour: ${String(north.mean)}`);
+    assert.ok(north.mean[2] < plain.mean[2] - 10);
+    assert.deepEqual(await measure(api, treeUri, { north: 0 }), plain);
+    // The turn moves the tint map's place, which differs along u in the fixture.
+    const turned = await measure(api, treeUri, { turn: 0.5 });
+    assert.notDeepEqual(turned.mean, plain.mean, 'the turn shifts the tint');
+    // Snow on a map tree whose normals point up.
+    const treeSnow = await measure(api, treeUri, { turn: 0, snow: 1 });
+    assert.ok(spread(plain) > 10, `the tree is coloured: ${String(plain.mean)}`);
+    assert.ok(spread(treeSnow) <= 3, `full snow greys the tree: ${String(treeSnow.mean)}`);
+    assert.deepEqual(await measure(api, treeUri, { snow: 0 }), plain);
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
     const bare = await open(
       api,

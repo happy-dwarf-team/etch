@@ -697,7 +697,50 @@ function showStatus(seconds: number): void {
   status.textContent = `${entity === undefined ? '' : 'State '}${playingKey}: ${where}${notDrawn}`;
 }
 
+/** The canvas's clear colour, behind the mesh. */
+const BACKGROUND = [0.16, 0.17, 0.19] as const;
+
+/** Draws a frame and asks for the next while an animation plays. */
 function draw(now: number): void {
+  render(now);
+  if (playing) requestAnimationFrame(draw);
+}
+
+/**
+ * The canvas pixels the mesh covers (those that differ from the background colour) and their
+ * mean colour; read at once after `render`, before the browser shows the frame and clears it.
+ */
+function drawnColour(context: WebGL2RenderingContext): {
+  pixels: number;
+  mean: [number, number, number];
+} {
+  const width = context.drawingBufferWidth;
+  const height = context.drawingBufferHeight;
+  const rgba = new Uint8Array(width * height * 4);
+  context.readPixels(0, 0, width, height, context.RGBA, context.UNSIGNED_BYTE, rgba);
+  const [br, bg, bb] = BACKGROUND.map((v) => Math.round(v * 255)) as [number, number, number];
+  let pixels = 0;
+  let r = 0;
+  let g = 0;
+  let b = 0;
+  for (let i = 0; i < rgba.length; i += 4) {
+    const pr = rgba[i] ?? 0;
+    const pg = rgba[i + 1] ?? 0;
+    const pb = rgba[i + 2] ?? 0;
+    if (Math.abs(pr - br) + Math.abs(pg - bg) + Math.abs(pb - bb) <= 3) continue;
+    pixels++;
+    r += pr;
+    g += pg;
+    b += pb;
+  }
+  if (pixels === 0) return { pixels, mean: [0, 0, 0] };
+  return {
+    pixels,
+    mean: [r / pixels, g / pixels, b / pixels].map(Math.round) as [number, number, number],
+  };
+}
+
+function render(now: number): void {
   if (gl === null || program === undefined) return;
   const ratio = window.devicePixelRatio || 1;
   const width = Math.max(1, Math.round(canvas.clientWidth * ratio));
@@ -712,7 +755,7 @@ function draw(now: number): void {
     showStatus(seconds);
   }
   gl.viewport(0, 0, width, height);
-  gl.clearColor(0.16, 0.17, 0.19, 1);
+  gl.clearColor(...BACKGROUND, 1);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   gl.enable(gl.DEPTH_TEST);
   gl.disable(gl.CULL_FACE);
@@ -795,7 +838,6 @@ function draw(now: number): void {
   gl.disable(gl.BLEND);
   gl.depthMask(true);
   gl.bindVertexArray(null);
-  if (playing) requestAnimationFrame(draw);
 }
 
 function redraw(): void {
@@ -1016,6 +1058,36 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
         vscode.postMessage({ type: 'animation', name: keep });
       }
       vscode.postMessage({ type: 'shown', summary: summary() });
+    } else if (message.type === 'controls') {
+      const {
+        snow,
+        turn: turned,
+        ground: groundColour,
+        season,
+        north: northward,
+      } = message.controls;
+      if (snow !== undefined) {
+        snowAmount = snow;
+        snowInput.value = String(snow);
+      }
+      if (turned !== undefined) {
+        turn = turned;
+        tintInput.value = String(turned);
+      }
+      if (groundColour !== undefined) {
+        ground = groundColour;
+        groundInput.value = groundColour;
+      }
+      if (season !== undefined) {
+        seasonTime = season;
+        seasonTimeInput.value = String(season);
+      }
+      if (northward !== undefined) {
+        north = northward;
+        seasonNorthInput.value = String(northward);
+      }
+      render(performance.now());
+      vscode.postMessage({ type: 'shown', summary: { ...summary(), drawn: drawnColour(gl) } });
     } else if (message.type === 'flag') {
       // Only the tag still asked for: a reply to an earlier one is dropped.
       if (message.tag !== flagInput.value.trim().toUpperCase()) return;
