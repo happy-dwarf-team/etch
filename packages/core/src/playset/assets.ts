@@ -85,6 +85,8 @@ export async function layOutPreview(
     readonly localise?: (text: string) => string;
     readonly view?: LayoutView;
     readonly content?: LayoutContent;
+    /** The client size a live snapshot in {@link content} was read at (`LayoutInput.liveScreen`). */
+    readonly liveScreen?: Screen;
     readonly windowSize?: Screen;
     readonly instance?: { readonly index: number; readonly count: number };
   },

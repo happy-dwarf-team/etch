@@ -17,6 +17,7 @@ import {
   type Widget,
   type WindowLayout,
 } from '../src/index.ts';
+import { liveContent, liveMatch, liveView, type LiveSnapshot } from '../src/profile/index.ts';
 
 const TINY = parseBmFont(
   readFileSync(new URL('./fixtures/tiny.fnt', import.meta.url), 'utf8'),
@@ -1166,6 +1167,94 @@ describe('layoutWindow: sample data', () => {
       x: 70,
       y: 50,
     });
+  });
+
+  it("re-anchors a snapshot taken at 2560×1440 to a 1440×900 preview's screen", () => {
+    const { file, input } = setUp(`guiTypes = {
+      windowType = { name = "pv" orientation = "LOWER_LEFT" position = { x = 0 y = -580 }
+        size = { x = 430 y = 580 }
+        iconType = { name = "moved" spriteType = "GFX_plain" position = { x = 10 y = 20 } }
+        windowType = { name = "side" position = { x = 430 y = 0 } size = { x = 100 y = 580 }
+          iconType = { name = "inner" spriteType = "GFX_plain" position = { x = 5 y = 5 } }
+        }
+      }
+      windowType = { name = "hud" fullscreen = yes
+        iconType = { name = "corner" spriteType = "GFX_plain" orientation = "UPPER_RIGHT"
+          position = { x = -50 y = 10 } }
+      }
+      iconType = { name = "map_bg" spriteType = "GFX_plain" position = { x = 0 y = 0 } }
+    }`);
+    const window = (name: string) => file.definitions.find((w) => w.name === name) as Widget;
+    // As the plugin reads the game at 2560 × 1440: the province view at the screen's bottom, its
+    // rect its children's bounds; the game's code puts `moved` 16 px lower than its `.gui`, a
+    // definition of another file in the view, and the corner 10 px left.
+    const game = { width: 2560, height: 1440 };
+    const at = (path: string, rect: readonly [number, number, number, number]) => ({
+      path,
+      type: 'icon',
+      visible: true,
+      enabled: true,
+      checked: false,
+      rect,
+    });
+    const snapshot: LiveSnapshot = {
+      formatVersion: 1,
+      window: 'pv',
+      takenAt: '2026-11-19T12:00:00Z',
+      screen: game,
+      stale: 0,
+      widgets: [
+        { ...at('pv', [0, 860, 530, 580]), type: 'window' },
+        at('pv/moved', [10, 896, 20, 10]),
+        { ...at('pv/side', [430, 860, 100, 580]), type: 'window' },
+        at('pv/side/inner', [435, 865, 20, 10]),
+        at('pv/map_bg', [40, 1300, 20, 10]),
+      ],
+    };
+    const hud: LiveSnapshot = {
+      ...snapshot,
+      window: 'hud',
+      widgets: [
+        { ...at('hud', [0, 0, 2560, 1440]), type: 'window' },
+        at('hud/corner', [2500, 10, 20, 10]),
+      ],
+    };
+    const preview = { width: 1440, height: 900 };
+    const laidOut = (
+      shown: LiveSnapshot,
+      screen: { width: number; height: number },
+      liveScreen?: { width: number; height: number },
+    ) => {
+      const top = window(shown.window);
+      const texts = liveMatch(shown, top).texts;
+      const l = layoutWindow(top, {
+        ...input,
+        screen,
+        ...(liveScreen === undefined ? {} : { liveScreen }),
+        view: liveView(top, texts, screen),
+        content: liveContent(top, texts),
+      });
+      return (name: string) => {
+        const w = l.widgets.find((x) => x.widget.name === name);
+        return [w?.x, w?.y];
+      };
+    };
+    // Before: the game's pixels as they are, 540 px below where the preview has the view.
+    const before = laidOut(snapshot, preview);
+    expect(before('moved')).toEqual([10, 896]);
+    // At the preview's screen: the view at its bottom, each widget where the game showed it in it.
+    const after = laidOut(snapshot, preview, game);
+    expect(after('pv')).toEqual([0, 320]);
+    expect(after('moved')).toEqual([10, 356]);
+    expect(after('side')).toEqual([430, 320]);
+    expect(after('inner')).toEqual([435, 325]);
+    expect(after('map_bg')).toEqual([40, 760]);
+    // A full-screen window's corner follows the screen's right edge, with the code's 10 px.
+    expect(laidOut(hud, preview, game)('corner')).toEqual([1380, 10]);
+    // At the game's own screen nothing changes.
+    const same = laidOut(snapshot, game, game);
+    expect(same('moved')).toEqual([10, 896]);
+    expect(same('map_bg')).toEqual([40, 1300]);
   });
 
   it("compares a snapshot's rect as Tongs clips it to the screen, where the widget would stand", () => {

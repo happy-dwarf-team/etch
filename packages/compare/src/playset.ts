@@ -256,6 +256,7 @@ export class CorpusPlaysetFiles {
         localise,
         view: liveView(definition.item, matched.texts, screen),
         content: liveContent(definition.item, matched.texts),
+        liveScreen: snapshot.screen,
         ...windowSize,
       });
       return { window: { layout, shaderOf }, texts: matched.texts, unknownSelectors: [] };
@@ -298,6 +299,7 @@ export class CorpusPlaysetFiles {
       localise,
       view: layoutViewOf(view),
       content: layoutContentOf(sample),
+      liveScreen: snapshot.screen,
       ...windowSize,
     });
     return { window: { layout, shaderOf }, texts: matched.texts, unknownSelectors: live.unknown };

@@ -21,9 +21,9 @@ export const PREVIEW_RESOLUTION = { width: 1440, height: 900 } as const;
 /**
  * The live take's game (section 8.4), windowed on the monitor right of VS Code's (live.ts,
  * `GAME_ORIGIN`): at the preview's resolution, as for a user whose preview follows the game's
- * `settings.txt`. A live snapshot carries the game's positions, which the preview draws as they
- * are: at 2560 × 1440 the province view, anchored at the screen's bottom, was drawn 540 px lower,
- * off the preview's canvas.
+ * `settings.txt`. Until Etch 2.12 the preview drew a live snapshot's positions as the game's screen had them: from
+ * 2560 × 1440 the province view, anchored at the screen's bottom, was drawn 540 px lower, off the
+ * preview's canvas; the layout re-anchors them to the preview's screen since.
  */
 export const LIVE_GAME_RESOLUTION = PREVIEW_RESOLUTION;
 

@@ -75,6 +75,14 @@ export interface LayoutInput {
   /** Sample data in code-filled widgets (spec section 5); without it they stay as written. */
   readonly content?: LayoutContent;
   /**
+   * The game window's client size the live snapshot's rects in {@link content} were read at
+   * (`state`, `adopted`). At another size than {@link screen} each rect is re-anchored to the
+   * preview's screen: moved as far as the widget's own place moves between the window laid out at
+   * that size and at the preview's, so a window the game anchors at the screen's bottom stays at
+   * the preview's bottom. Default: the rects are of the preview's screen.
+   */
+  readonly liveScreen?: Screen;
+  /**
    * The window's size in place of its `.gui` size, where the game's code sets it: the event
    * window fits its text (the corpus's `codeSized`, etch#97). Its background takes it too.
    */
@@ -285,10 +293,82 @@ const OPAQUE_WHITE = 0xffffffff;
 
 /** Lays out a window, normally a top-level definition, on the preview screen. */
 export function layoutWindow(window: Widget, input: LayoutInput): WindowLayout {
-  const layout = new Layout(input);
+  const layout = new Layout(input, liveShifts(window, input));
   const { width, height } = input.screen;
   layout.place(window, { x: 0, y: 0, width, height }, -1, undefined);
   return layout.result();
+}
+
+interface Point {
+  readonly x: number;
+  readonly y: number;
+}
+
+/**
+ * How far each widget's own place moves from a layout at the live snapshot's screen to one at the
+ * preview's, by the widget's place in the window ({@link Layout.keys}); `undefined` when the two
+ * screens are the same. Both layouts take the content without the snapshot's rects, so a place
+ * is the `.gui`'s with what the view and sample data change: the window's anchor on the screen,
+ * a full-screen window's corners, `if_resolution`, the size steps. A rect the game showed at
+ * that screen plus this shift is where the widget stands at the preview's (the game's code moves
+ * it by the same pixels at either size).
+ */
+function liveShifts(window: Widget, input: LayoutInput): ReadonlyMap<string, Point> | undefined {
+  const from = input.liveScreen;
+  const content = input.content;
+  if (from === undefined || content === undefined) return undefined;
+  if (from.width === input.screen.width && from.height === input.screen.height) return undefined;
+  const bare: LayoutContent = {
+    ...content,
+    ...(content.state === undefined
+      ? {}
+      : {
+          state: (widget: Widget, row: number | undefined) => {
+            const shown = content.state?.(widget, row);
+            return shown === undefined
+              ? undefined
+              : { visible: shown.visible, enabled: shown.enabled, checked: shown.checked };
+          },
+        }),
+    ...(content.adopted === undefined
+      ? {}
+      : {
+          adopted: (widget: Widget, row: number | undefined) =>
+            (content.adopted?.(widget, row) ?? []).map((entry) =>
+              entry.text === undefined
+                ? { name: entry.name }
+                : { name: entry.name, text: entry.text },
+            ),
+        }),
+  };
+  const places = (screen: Screen): Map<string, Point> => {
+    const layout = new Layout({ ...input, screen, content: bare }, undefined);
+    layout.place(window, { x: 0, y: 0, ...screen }, -1, undefined);
+    return layout.places();
+  };
+  const here = places(input.screen);
+  const there = places(from);
+  const shifts = new Map<string, Point>();
+  for (const [key, at] of here) {
+    const was = there.get(key);
+    if (was !== undefined) {
+      shifts.set(key, { x: Math.round(at.x - was.x), y: Math.round(at.y - was.y) });
+    }
+  }
+  return shifts;
+}
+
+/** A number for each definition, the same in every layout: a step of {@link Layout.keys}. */
+const widgetIds = new WeakMap<Widget, number>();
+let nextWidgetId = 0;
+
+function widgetId(widget: Widget): number {
+  let id = widgetIds.get(widget);
+  if (id === undefined) {
+    id = nextWidgetId++;
+    widgetIds.set(widget, id);
+  }
+  return id;
 }
 
 class Layout {
@@ -315,6 +395,15 @@ class Layout {
     | undefined;
   /** The windows a live snapshot could not move as one (`livePosition`), by their index. */
   private readonly movedByChildren = new Set<number>();
+  /**
+   * Each laid-out widget's place in the window, by its index in {@link widgets}: its parent's
+   * key, the widget's identity and its list entry, so that layouts at two screens name the same
+   * widget alike ({@link liveShifts}).
+   */
+  private readonly keys: string[] = [];
+  /** By index too: how far the live snapshot's rects of a widget move to the preview's screen. */
+  private readonly shiftOf: Point[] = [];
+  private readonly shifts: ReadonlyMap<string, Point> | undefined;
   /** The list entry about to be placed: its template, and the height the game's code gives it. */
   private entry:
     | {
@@ -325,10 +414,33 @@ class Layout {
       }
     | undefined;
 
-  constructor(input: LayoutInput) {
+  constructor(input: LayoutInput, shifts: ReadonlyMap<string, Point> | undefined) {
     this.input = input;
     this.localise = input.localise ?? ((text) => text);
     this.constants = input.file.constants;
+    this.shifts = shifts;
+  }
+
+  /** Where each widget stands, by its key: the first of a key. */
+  places(): Map<string, Point> {
+    const out = new Map<string, Point>();
+    this.widgets.forEach((w, i) => {
+      const key = this.keys[i];
+      if (key !== undefined && !out.has(key)) out.set(key, { x: w.x, y: w.y });
+    });
+    return out;
+  }
+
+  /**
+   * A widget's key under a parent, and how far its snapshot rects move: its own shift, else its
+   * parent's (a widget only one of the two layouts has), else none.
+   */
+  private keyed(widget: Widget, parentIndex: number): { key: string; shift: Point } {
+    const parent = parentIndex === -1 ? '' : (this.keys[parentIndex] ?? '');
+    const key = `${parent}/${String(widgetId(widget))}${this.row === undefined ? '' : `[${String(this.row)}]`}`;
+    const shift = this.shifts?.get(key) ??
+      (parentIndex === -1 ? undefined : this.shiftOf[parentIndex]) ?? { x: 0, y: 0 };
+    return { key, shift };
   }
 
   result(): WindowLayout {
@@ -359,6 +471,7 @@ class Layout {
     if (this.row !== undefined && state !== undefined) {
       if (!state.visible) return;
     } else if (view !== undefined && !view.shows(widget)) return;
+    const keyed = this.keyed(widget, parentIndex);
     const props = widgetProperties(widget, this.constants, this.input.screen);
     this.checkNotApplied(props);
     this.current = widget;
@@ -478,15 +591,18 @@ class Layout {
       const by = Math.trunc((parent.width - rect.width) / 2);
       rect = this.moveTo(rect, { x: rect.x + by, y: rect.y }, drawStart);
     }
-    rect = this.livePosition(rect, state, drawStart, kind, parentIndex);
+    rect = this.livePosition(rect, state, drawStart, kind, parentIndex, keyed.shift);
     // The game's code sizes what it adds (a ledger column's text, the professionalism markers), and
     // the snapshot has that size. What is drawn stays as the definition has it.
     if (this.adopting?.widget === widget) {
       const { width, height } = this.adopting;
-      rect = { ...this.moveTo(rect, this.adopting, drawStart), width, height };
+      const to = { x: this.adopting.x + keyed.shift.x, y: this.adopting.y + keyed.shift.y };
+      rect = { ...this.moveTo(rect, to, drawStart), width, height };
     }
 
     const index = this.widgets.length;
+    this.keys[index] = keyed.key;
+    this.shiftOf[index] = keyed.shift;
     this.widgets.push({
       widget,
       parent: parentIndex,
@@ -878,6 +994,7 @@ class Layout {
    * children are moved one by one instead. Such a child moves at any size, or an icon the game's
    * code sized (an estate's modifier, 32 px against the definition's 48) would stay at the window's
    * place in the `.gui` and stretch the window down to its row; what it draws keeps its size.
+   * The rect is of the game's screen, `shift` away from the preview's ({@link liveShifts}).
    */
   private livePosition(
     rect: Rect,
@@ -887,19 +1004,27 @@ class Layout {
     drawStart: number,
     kind: string,
     parentIndex: number,
+    shift: Point,
   ): Rect {
     const game = state?.rect;
     if (game === undefined || state?.visible !== true || this.row !== undefined) return rect;
-    const [x, y, w, h] = game;
+    // The game's rect, and its client area, where they stand at the preview's screen.
+    const [x, y] = [game[0] + shift.x, game[1] + shift.y];
+    const [w, h] = [game[2], game[3]];
+    const client = this.input.liveScreen ?? this.input.screen;
     // Tongs clips the game's rect to the client area (the military tab's background starts at
     // x = -7): the layout's rect is clipped where it would stand, and an edge the game shows at
     // the screen's edge, where the layout's is beyond it, stays where the layout has it.
-    const { width, height } = this.input.screen;
     const left = Math.round(rect.x);
     const top = Math.round(rect.y);
-    const to = { x: left < 0 && x === 0 ? left : x, y: top < 0 && y === 0 ? top : y };
-    const shownWidth = Math.min(width, to.x + Math.round(rect.width)) - Math.max(0, to.x);
-    const shownHeight = Math.min(height, to.y + Math.round(rect.height)) - Math.max(0, to.y);
+    const to = {
+      x: left < shift.x && x === shift.x ? left : x,
+      y: top < shift.y && y === shift.y ? top : y,
+    };
+    const shownWidth =
+      Math.min(shift.x + client.width, to.x + Math.round(rect.width)) - Math.max(shift.x, to.x);
+    const shownHeight =
+      Math.min(shift.y + client.height, to.y + Math.round(rect.height)) - Math.max(shift.y, to.y);
     if (shownWidth !== w || shownHeight !== h) {
       if (CONTAINERS.has(kind)) {
         this.movedByChildren.add(this.widgets.length);
