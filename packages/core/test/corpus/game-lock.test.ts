@@ -210,6 +210,20 @@ describe.runIf(process.platform === 'win32')('the game lock of a capture run', (
     expect((await calls()).map((c) => c.call)).toEqual(['Open-VerifiedSession']);
   }, 30_000);
 
+  it('reads where the cursor is and its clip, without moving it', async () => {
+    const { script } = await fixture();
+    // Only Cursor: Pin and Release would move and confine the real mouse of the machine.
+    const state = await gameScript(script).mouse.read();
+    if ('unavailable' in state) {
+      // Windows refuses the call while the screen is locked.
+      expect(typeof state.unavailable).toBe('string');
+      return;
+    }
+    expect(Number.isInteger(state.x) && Number.isInteger(state.y)).toBe(true);
+    expect(state.clip.right).toBeGreaterThan(state.clip.left);
+    expect(state.clip.bottom).toBeGreaterThan(state.clip.top);
+  }, 30_000);
+
   it("fails with game.ps1's message when an action fails", async () => {
     const { script } = await fixture();
     await expect(runGameScript(script, ['-Action', 'Nothing'])).rejects.toThrow(
