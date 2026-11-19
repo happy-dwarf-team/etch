@@ -279,6 +279,29 @@ describe('planCapture', () => {
     expect(plan.drawOwners).toHaveLength(plan.drawList.draws.length);
   });
 
+  it('pairs a widget without a name, or with a space in it, by its position as Tongs writes it', () => {
+    const window = laidOut(`
+guiTypes = {
+  windowType = {
+    name = "panel" position = { x = 10 y = 20 } size = { x = 100 y = 50 }
+    iconType = { name = "bg" spriteType = "GFX_bg" }
+    iconType = { spriteType = "GFX_icon" position = { x = 5 y = 5 } }
+    iconType = { name = "two words" spriteType = "GFX_icon" position = { x = 20 y = 5 } }
+  }
+}`);
+    const record = recordOf(
+      editWidget(captureOf(window.layout), 'panel/two words', (w) => ({ ...w, path: 'panel/[3]' })),
+    );
+    const plan = planCapture({ manifest: manifestWith(), record, windows: [window] });
+    expect(plan.problems).toEqual([]);
+    expect(plan.widgets.map((w) => [w.path, w.laidOut?.x, w.captured?.rect.x])).toEqual([
+      ['panel', 10, 10],
+      ['panel/bg', 10, 10],
+      ['panel/[2]', 15, 15],
+      ['panel/[3]', 30, 30],
+    ]);
+  });
+
   it('matches names ignoring case and marks code-filled kinds and not-covered shaders', () => {
     const window = laidOut();
     const record = recordOf(
