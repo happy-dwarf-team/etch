@@ -488,6 +488,8 @@ export interface DefaultMap {
   readonly climate: string;
   /** `continent`: the continent file's name in `map/`, `continent.txt` by default. */
   readonly continent: string;
+  /** `trade_winds`: the trade winds file's name in `map/`, `trade_winds.txt` by default. */
+  readonly tradeWinds: string;
   /** `area`: the area file's name in `map/`, `area.txt` by default. */
   readonly area: string;
   /** `region`: the region file's name in `map/`, `region.txt` by default. */
@@ -506,6 +508,7 @@ function readDefaultMap(parsed: ParsedScript): DefaultMap {
   let definitions = 'definition.csv';
   let climate = 'climate.txt';
   let continent = 'continent.txt';
+  let tradeWinds = 'trade_winds.txt';
   let area = 'area.txt';
   let region = 'region.txt';
   const idLists: { key: string; ids: ScalarNode[] }[] = [];
@@ -521,6 +524,8 @@ function readDefaultMap(parsed: ParsedScript): DefaultMap {
       climate = value.text;
     } else if (key === 'continent' && value?.kind === 'scalar' && value.text !== '') {
       continent = value.text;
+    } else if (key === 'trade_winds' && value?.kind === 'scalar' && value.text !== '') {
+      tradeWinds = value.text;
     } else if (key === 'area' && value?.kind === 'scalar' && value.text !== '') {
       area = value.text;
     } else if (key === 'region' && value?.kind === 'scalar' && value.text !== '') {
@@ -529,7 +534,7 @@ function readDefaultMap(parsed: ParsedScript): DefaultMap {
       idLists.push({ key, ids: bareScalars(value) });
     }
   }
-  return { maxProvinces, definitions, climate, continent, area, region, idLists };
+  return { maxProvinces, definitions, climate, continent, tradeWinds, area, region, idLists };
 }
 
 function bareScalars(block: BlockNode): ScalarNode[] {
@@ -588,6 +593,23 @@ export function checkClimate(parsed: ParsedScript, ids: ProvinceIds): ProvinceId
     const key = entry.key.text.toLowerCase();
     if (!CLIMATE_ID_LISTS.includes(key)) continue;
     for (const scalar of bareScalars(entry.value)) checkScalar(scalar, key, ids, found, true);
+  }
+  return found.sort((a, b) => a.start - b.start);
+}
+
+/**
+ * The province ids of the trade winds file (`map/trade_winds.txt`, as `map/default.map`'s
+ * `trade_winds` names it), whose every top-level key is a province id with the wind's direction as
+ * its value (`1571 = 0`). The game reads each key with `atoi`, keeps its low 16 bits and marks the
+ * province's template at `templates + id × 0x230`, writing the direction there, with no range check
+ * and no `error.log` line (`CMap::ReadTradeWinds`, the EU4 engine lab, 19.11.2026), as it does the
+ * climate file's ids. Vanilla 1.37.5 gives 27 ids, all on its map.
+ */
+export function checkTradeWinds(parsed: ParsedScript, ids: ProvinceIds): ProvinceIdDiagnostic[] {
+  const found: ProvinceIdDiagnostic[] = [];
+  for (const entry of parsed.entries) {
+    if (entry.kind !== 'property' || entry.key.quoted) continue;
+    checkScalar(entry.key, 'trade_winds', ids, found, true);
   }
   return found.sort((a, b) => a.start - b.start);
 }
