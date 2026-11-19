@@ -270,6 +270,22 @@ describe('liveSelectors', () => {
     ).toMatchObject({ 'provinceview/province_window/queue_window': true });
   });
 
+  it('compares only what the snapshot has, under a parent the game showed', () => {
+    const taken = snapshot([
+      w('provinceview', true),
+      w('provinceview/province_window', false),
+      // Its parent is hidden in the game: whatever it says of itself is not compared.
+      w('provinceview/province_window/queue_window', true),
+      w('provinceview/state_window', true),
+    ]);
+    expect(
+      liveDifferences(PROFILE, WINDOW, taken.screen, { live: { owner: 'no' } }, taken),
+    ).toEqual(
+      // The tab group shows the province window and hides the state window; the game had the other.
+      { 'provinceview/province_window': false, 'provinceview/state_window': true },
+    );
+  });
+
   it('says unknown when no value predicts it, and the default when several do', () => {
     const both = FOREIGN.map((x) =>
       x.path.endsWith('queue_window') ? { ...x, visible: true } : x,
@@ -377,6 +393,30 @@ describe('a live snapshot without a profile (etch#255)', () => {
       false,
     );
     expect(unread === undefined ? undefined : content.text(unread, undefined)).toBeUndefined();
+  });
+
+  it('answers only for the window itself, not for a row or another window', () => {
+    const adopted = [{ name: 'extra', text: 'Adopted' }];
+    const content = liveContent(window, {
+      text: (path) => (path === 'w/title' ? 'Title' : undefined),
+      adopted: (path) => (path === 'w/title' ? adopted : []),
+    });
+    const other = readGuiFile(parseScript('guiTypes = { iconType = { name = "x" } }'))
+      .definitions[0] as Widget;
+    if (title === undefined) throw new Error('no title');
+    expect(content.text(title, undefined)).toBe('Title');
+    expect(content.text(title, 0)).toBeUndefined();
+    expect(content.text(other, undefined)).toBeUndefined();
+    // Without the game's states, a widget has none.
+    expect(content.state?.(title, undefined)).toBeUndefined();
+    expect(content.state?.(title, 0)).toBeUndefined();
+    expect(content.rows(title)).toBeUndefined();
+    expect(content.adopted?.(title, undefined)).toEqual(adopted);
+    expect(content.adopted?.(title, 0)).toEqual([]);
+    expect(content.adopted?.(other, undefined)).toEqual([]);
+    // Without adopted widgets at all, none.
+    expect(liveContent(window, { text: () => undefined }).adopted?.(title, undefined)).toEqual([]);
+    expect(liveContent(window, texts).state?.(other, undefined)).toBeUndefined();
   });
 
   it('keeps the half of a _large pair the game does not create undrawn (etch#272)', () => {
