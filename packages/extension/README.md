@@ -359,8 +359,11 @@ it is in no folder of the playset. Collision shapes are hidden.
   vanilla's map trees) shows its most detailed level; **LOD** picks another.
 - A map tree (a mesh a `mapobject_<n>` pdxmesh of your playset names) is drawn
   as the game's tree shader draws it: texels with a diffuse alpha under one
-  half are cut out, with no highlight. The map's tint and season colours are
-  not applied.
+  half are cut out, with no highlight. Its tint map
+  (`map/terrain/Tree_tint.bmp` of your playset) is laid over it as the game
+  lays it; the game shifts each tree's tint by the tree's random turn on the
+  map, and **Turn** stands in for that turn, from 0 to 1 of a full one. The
+  map's colour map and season colours are not applied.
 - A `PdxMeshAlphaBlend` part (vanilla's African buildings, a unit's selection
   ring) is blended over what is behind it by its diffuse map's alpha, as the
   game blends it, rather than cut.

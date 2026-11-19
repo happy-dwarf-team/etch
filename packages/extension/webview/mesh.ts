@@ -25,8 +25,11 @@
 // (`gfx/FX/tree.shader`, read, not copied) draws it, whatever shader its materials name: texels
 // with a diffuse alpha under 0.5 are cut out, the same light, and no highlight. Its normal map
 // reads the same (green not flipped, bitangent `cross(t, n) * ta.w`: the two signs cancel). Its
-// tint map, the map's colour map and season colours, and the random height and turn of each
-// tree are left out; its snow is below.
+// tint map (the playset's `map/terrain/Tree_tint.bmp`) is laid over the diffuse colour at 0.5
+// (`GetOverlay`), sampled at the second UVs (`u1`) shifted along u by the tree's turn: the game
+// turns each tree by a random angle and shifts by that angle over a full turn, the preview by its
+// Turn slider (0 by default). The map's colour map and season colours, and the random height and
+// turn of the mesh itself, are left out; its snow is below.
 //
 // Snow, as the game puts it on `PdxMeshSnow` parts (`ApplySnowMesh` in pdxmesh.shader) and map
 // trees (`ApplySnowTree` in tree.shader) before the light: the game takes the amount from the map
@@ -99,6 +102,8 @@ const flagLabel = element('flag');
 const flagInput = element('flag-tag') as HTMLInputElement;
 const snowLabel = element('snow');
 const snowInput = element('snow-amount') as HTMLInputElement;
+const tintLabel = element('tint');
+const tintInput = element('tint-turn') as HTMLInputElement;
 
 const gl = canvas.getContext('webgl2', { antialias: true });
 
@@ -162,11 +167,21 @@ uniform bool tree;
 // The Snow slider's amount, and whether this part takes snow (PdxMeshSnow, or a map tree).
 uniform float snow;
 uniform bool snowy;
+// A map tree's tint map, and the Turn slider: how far along u the tint is shifted.
+uniform sampler2D tintMap;
+uniform bool tinted;
+uniform float turn;
 uniform bool lines;
 // Towards the light.
 uniform vec3 light;
 uniform vec3 eye;
 out vec4 colour;
+// The game's GetOverlay: multiply where the overlay is dark, screen where it is light, by amount.
+vec3 overlay(vec3 c, vec3 o, float amount) {
+  vec3 low = 2.0 * o * c;
+  vec3 high = 1.0 - 2.0 * (1.0 - o) * (1.0 - c);
+  return mix(c, mix(high, low, vec3(lessThan(o, vec3(0.5)))), amount);
+}
 void main() {
   if (lines) { colour = vec4(0.1, 0.9, 1.0, 1.0); return; }
   vec4 base = textured ? texture(diffuse, vUv) : vec4(0.72, 0.72, 0.72, 1.0);
@@ -179,6 +194,7 @@ void main() {
   }
   vec4 spec = specularMapped ? texture(specularMap, vUv) : vec4(0.0);
   vec3 c = base.rgb;
+  if (tree && tinted) c = overlay(c, texture(tintMap, vec2(vUv1.x + turn, vUv1.y)).rgb, 0.5);
   if (snowy && tree) {
     float fade = clamp(
       clamp(n.y - clamp(1.0 - snow, 0.0, 1.0), 0.0, 1.0) * snow * 5.5 * clamp((n.y - 0.6) * 1000.0, 0.0, 1.0),
@@ -270,6 +286,12 @@ let entity: { name: string; states: string[]; problems: string[] } | undefined;
 let tree: string | undefined;
 /** The Snow slider: how much snow `PdxMeshSnow` parts and map trees take, 0 to 1. */
 let snowAmount = 0;
+/** Mesh preview of a map tree: its tint map, uploaded, and where it came from. */
+let tint: { texture: WebGLTexture; source: string } | undefined;
+/** Why a map tree's tint map is not drawn. */
+let tintProblem: string | undefined;
+/** The Turn slider: the tree's turn the tint is shifted by, 0 to 1 of a full turn. */
+let turn = 0;
 /** What plays: an animation's file name (mesh) or a state (entity); `undefined` for the bind pose. */
 let playingKey: string | undefined;
 let playing = false;
@@ -500,7 +522,7 @@ function showWarnings(warnings: ReadonlySet<string>, problems: readonly string[]
 }
 
 function showErrorBox(): void {
-  const lines = flagProblem === undefined ? warningLines : [...warningLines, flagProblem];
+  const lines = [warningLines, flagProblem ?? [], tintProblem ?? []].flat();
   errorBox.hidden = lines.length === 0;
   errorBox.textContent = lines.join('\n');
 }
@@ -671,6 +693,11 @@ function draw(now: number): void {
   gl.uniform1i(uniform('flagFromColours'), flag === undefined ? 1 : 0);
   gl.uniform1i(uniform('tree'), tree === undefined ? 0 : 1);
   gl.uniform1f(uniform('snow'), snowAmount);
+  gl.uniform1i(uniform('tintMap'), 4);
+  gl.uniform1i(uniform('tinted'), tree !== undefined && tint !== undefined ? 1 : 0);
+  gl.uniform1f(uniform('turn'), turn);
+  gl.activeTexture(gl.TEXTURE4);
+  gl.bindTexture(gl.TEXTURE_2D, tint?.texture ?? null);
   gl.activeTexture(gl.TEXTURE3);
   gl.bindTexture(gl.TEXTURE_2D, flag?.texture ?? null);
   const lines = uniform('lines');
@@ -752,6 +779,7 @@ function summary(): MeshSummary {
   if (blendedParts > 0) base = { ...base, blended: blendedParts };
   const snowyParts = parts.filter((d) => d.snow || tree !== undefined).length;
   if (snowyParts > 0) base = { ...base, snow: { parts: snowyParts, amount: snowAmount } };
+  if (tree !== undefined) base = { ...base, tint: { source: tint?.source, turn } };
   if (entity === undefined) return base;
   return {
     ...base,
@@ -799,6 +827,7 @@ function showFacts(): void {
     items.push(`LOD ${String(s.lod.level)} of ${s.lod.levels.join(', ')}`);
   }
   if (s.collisionShapes > 0) items.push(`${String(s.collisionShapes)} collision (hidden)`);
+  if (tree !== undefined && tint !== undefined) items.push(`Tree_tint.bmp (${tint.source})`);
   for (const [name, source] of Object.entries(s.textures)) items.push(`${name} (${source})`);
   facts.replaceChildren(
     ...items.map((text) => {
@@ -857,6 +886,7 @@ function show(
   colours.hidden = !instances.some((i) => i.parts.some((d) => d.countryColours || d.atlas));
   flagLabel.hidden = !instances.some((i) => i.parts.some((d) => d.atlas));
   snowLabel.hidden = tree === undefined && !instances.some((i) => i.parts.some((d) => d.snow));
+  tintLabel.hidden = tree === undefined || tint === undefined;
   offerLevels();
   pose(context, 0);
 }
@@ -869,6 +899,15 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
       title = message.name;
       entity = undefined;
       tree = message.tree;
+      if (tint !== undefined) gl.deleteTexture(tint.texture);
+      tint = undefined;
+      tintProblem = undefined;
+      if (message.tint?.ok === true) {
+        const texture = textureOf(gl, message.tint);
+        if (texture !== undefined) tint = { texture, source: message.tint.source };
+      } else if (message.tint !== undefined) {
+        tintProblem = `Tree tint: ${message.tint.message}`;
+      }
       const keep = playingKey;
       playing = false;
       playingKey = undefined;
@@ -963,6 +1002,7 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
       }
       entity = { name: message.name, states: [...message.states], problems };
       tree = undefined;
+      tintProblem = undefined;
       offered = [];
       show(gl, nodes, meshes, problems);
       animationSelect.replaceChildren(
@@ -1001,6 +1041,13 @@ snowInput.addEventListener('input', () => {
   redraw();
 });
 snowInput.addEventListener('change', () => {
+  vscode.postMessage({ type: 'shown', summary: summary() });
+});
+tintInput.addEventListener('input', () => {
+  turn = Number(tintInput.value);
+  redraw();
+});
+tintInput.addEventListener('change', () => {
   vscode.postMessage({ type: 'shown', summary: summary() });
 });
 

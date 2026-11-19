@@ -6,7 +6,7 @@
 // reported instead of shown. A `PdxMeshTextureAtlas` part reports its flag (the country colours
 // until a tag is asked for), and a tag's flag comes from `gfx/flags` through the playset. A
 // `PdxMeshAlphaBlendNoZWrite` part (a selection ring) is reported as blended, and a `PdxMeshSnow`
-// part and a map tree as taking snow. A mesh
+// part and a map tree as taking snow, and a map tree takes the playset's tint map. A mesh
 // with levels of detail draws and counts only its most detailed level, and a mesh a playset's
 // `mapobject_<n>` pdxmesh names is drawn as a map tree.
 import * as assert from 'node:assert/strict';
@@ -16,7 +16,12 @@ import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { ANIM, binary, floats, ints, MESH, obj, strs } from '../../core/test/fixtures/pdx-asset.ts';
 import type { EtchApi } from '../src/extension.ts';
-import { flagTexture, MESH_PREVIEW_VIEW_TYPE, type MeshShown } from '../src/mesh-preview.ts';
+import {
+  flagTexture,
+  MESH_PREVIEW_VIEW_TYPE,
+  treeTint,
+  type MeshShown,
+} from '../src/mesh-preview.ts';
 import { linkedFiles } from '../src/script-profile-view.ts';
 import { dds } from './asset-links.ts';
 
@@ -189,6 +194,18 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
     path.join(game, 'interface', 'etch_trees.gfx'),
     'objectTypes = {\n  pdxmesh = { name = "mapobject_3" file = "gfx/models/Mapitems/Trees/etch_tree.mesh" }\n}\n',
   );
+  // The trees' tint map: a 24-bit BMP, 2 x 1, its one row padded to 8 bytes (BGR texels).
+  const tint = new Uint8Array(62);
+  const header = new DataView(tint.buffer);
+  tint.set([0x42, 0x4d]);
+  header.setUint32(10, 54, true);
+  header.setUint32(14, 40, true);
+  header.setInt32(18, 2, true);
+  header.setInt32(22, 1, true);
+  header.setUint16(28, 24, true);
+  tint.set([20, 120, 60, 200, 150, 100], 54);
+  await mkdir(path.join(game, 'map', 'terrain'), { recursive: true });
+  await writeFile(path.join(game, 'map', 'terrain', 'Tree_tint.bmp'), tint);
   const settings = vscode.workspace.getConfiguration('etch');
   await settings.update('gamePath', game, vscode.ConfigurationTarget.Global);
   try {
@@ -205,6 +222,12 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
     assert.ok(tree.ok, `the map tree shows: ${tree.ok ? '' : tree.message}`);
     assert.equal(tree.summary.tree, 'mapobject_3', 'drawn as the map tree that names it');
     assert.deepEqual(tree.summary.snow, { parts: 1, amount: 0 }, 'a map tree takes snow');
+    assert.deepEqual(
+      tree.summary.tint,
+      { source: 'the game', turn: 0 },
+      "a map tree takes the playset's tint map",
+    );
+    assert.equal(inGame.summary.tint, undefined, 'another mesh takes no tint');
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
     const bare = await open(
       api,
@@ -226,6 +249,18 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
     assert.deepEqual(missing, { ok: false, message: 'no gfx/flags/XYZ.tga in the playset' });
     const notATag = await flagTexture('../x', files);
     assert.ok(!notATag.ok, 'only a country tag is looked up');
+
+    // The tint map, decoded through the playset: RGBA, top row first.
+    const decoded = await treeTint(files);
+    assert.ok(decoded.ok, `the tint map is read: ${decoded.ok ? '' : decoded.message}`);
+    assert.deepEqual(
+      [decoded.width, decoded.height, decoded.source, Array.from(decoded.rgba)],
+      [2, 1, 'the game', [60, 120, 20, 255, 100, 150, 200, 255]],
+    );
+    assert.deepEqual(await treeTint(undefined), {
+      ok: false,
+      message: 'no map/terrain/Tree_tint.bmp in the playset',
+    });
   } finally {
     await settings.update('gamePath', undefined, vscode.ConfigurationTarget.Global);
   }

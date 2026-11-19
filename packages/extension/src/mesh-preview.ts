@@ -5,7 +5,8 @@
 // in one of its layers, so a mod's texture wins over the game's, else on disk beside the mesh; a
 // `.tga` name also tries `.dds`), and lists the `.anim` files beside it whose joints name the mesh's
 // bones. A `PdxMeshTextureAtlas` part (a ship's sails) shows a country's flag: the webview asks
-// for a tag's `gfx/flags/<TAG>.tga` and the host decodes it through the playset. The webview script
+// for a tag's `gfx/flags/<TAG>.tga` and the host decodes it through the playset. For a map tree
+// the host also sends the playset's tint map (`map/terrain/Tree_tint.bmp`). The webview script
 // (`dist/mesh-webview.js`, from `webview/mesh.ts`) parses the mesh with `@etch/core/asset`, draws
 // it with WebGL2 and plays an animation the user picks, skinned on the CPU.
 
@@ -16,6 +17,7 @@ import { textureCandidates } from '@etch/core';
 import {
   jointsOfBones,
   mapTreeOf,
+  readBmp,
   readAnimation,
   readMesh,
   type PdxMesh,
@@ -156,6 +158,30 @@ export async function flagTexture(tag: string, files: GameFiles | undefined): Pr
   return { ok: false, message: `no gfx/flags/${tag}.tga in the playset` };
 }
 
+/** The map's tint map of its trees, which `gfx/FX/tree.shader` takes as `TintMap`. */
+export const TREE_TINT = 'map/terrain/Tree_tint.bmp';
+
+/** The playset's tree tint map, decoded. */
+export async function treeTint(files: GameFiles | undefined): Promise<MeshTexture> {
+  const found = files === undefined ? undefined : await files.find(TREE_TINT);
+  if (found === undefined) return { ok: false, message: `no ${TREE_TINT} in the playset` };
+  try {
+    const image = readBmp(await read(found.absolutePath));
+    return {
+      ok: true,
+      width: image.width,
+      height: image.height,
+      rgba: image.rgba,
+      source: found.layer.name === 'game' ? 'the game' : found.layer.name,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      message: `${TREE_TINT}: ${error instanceof Error ? error.message : String(error)}`,
+    };
+  }
+}
+
 /** The `.anim` files beside the mesh whose joints name at least half of a skinned shape's bones. */
 async function animationsOf(
   mesh: PdxMesh,
@@ -276,13 +302,15 @@ class MeshPreviewProvider implements vscode.CustomReadonlyEditorProvider<MeshDoc
         });
         return;
       }
+      const tree = await this.treeOf(file);
       const message: MeshHostMessage = {
         type: 'mesh',
         name,
         bytes,
         textures: await texturesOf(mesh, file, await this.playset()),
         animations: await animationsOf(mesh, folder, path.basename(file, path.extname(file))),
-        tree: await this.treeOf(file),
+        tree,
+        tint: tree === undefined ? undefined : await treeTint(await this.playset()),
       };
       await webview.postMessage(message);
     };
@@ -393,7 +421,7 @@ export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): str
   #facts { display: flex; flex-wrap: wrap; gap: 4px 12px; }
   #facts span { white-space: nowrap; }
   .spacer { flex: 1; }
-  #snow-amount { width: 6em; vertical-align: middle; }
+  #snow-amount, #tint-turn { width: 6em; vertical-align: middle; }
   input[type="color"] { width: 24px; height: 20px; padding: 0; border: none; background: none; vertical-align: middle; }
   #flag-tag { width: 4em; font: inherit; color: var(--vscode-input-foreground); background: var(--vscode-input-background); border: 1px solid var(--vscode-input-border, transparent); padding: 1px 4px; text-transform: uppercase; }
   button, select {
@@ -430,6 +458,9 @@ export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): str
   </label>
   <label id="snow" title="Snow on PdxMeshSnow parts and map trees, as the game puts it on them in winter: the game takes the amount from the map, here from 0 (none) to 1" hidden>
     Snow <input type="range" id="snow-amount" min="0" max="1" step="0.05" value="0" aria-label="Snow amount">
+  </label>
+  <label id="tint" title="A map tree's tint: the game shifts each tree's place in map/terrain/Tree_tint.bmp by the tree's random turn on the map, here from 0 to 1 of a full turn" hidden>
+    Turn <input type="range" id="tint-turn" min="0" max="1" step="0.05" value="0" aria-label="Tree turn for the tint">
   </label>
   <button id="maps" aria-pressed="true" title="Draw the normal and specular maps">Maps</button>
   <button id="wireframe" aria-pressed="false" title="Show the triangle edges">Wire</button>

@@ -39,6 +39,11 @@ export interface MeshSummary {
   readonly blended?: number;
   /** Drawn parts that take snow (`PdxMeshSnow`, or a map tree's), and the Snow slider's amount. */
   readonly snow?: { readonly parts: number; readonly amount: number };
+  /**
+   * A map tree's tint map (`map/terrain/Tree_tint.bmp`): where it came from (`the game`, a mod), or
+   * `undefined` when it was not found or read, and the Turn slider's value.
+   */
+  readonly tint?: { readonly source: string | undefined; readonly turn: number };
 }
 
 export interface FlagSummary {
@@ -118,6 +123,8 @@ export type MeshHostMessage =
        * it with its tree shader (`gfx/FX/tree.shader`), not the shader its materials name.
        */
       readonly tree: string | undefined;
+      /** For a map tree: the playset's tint map, decoded; `undefined` for another mesh. */
+      readonly tint: MeshTexture | undefined;
     }
   | { readonly type: 'animation'; readonly name: string; readonly bytes: Uint8Array }
   | { readonly type: 'flag'; readonly tag: string; readonly texture: MeshTexture }

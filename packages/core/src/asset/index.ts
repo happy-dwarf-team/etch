@@ -8,3 +8,4 @@ export * from './facts.ts';
 export * from './skin.ts';
 export * from './render.ts';
 export * from './entity.ts';
+export * from './bmp.ts';
