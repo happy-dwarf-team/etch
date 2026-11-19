@@ -914,6 +914,8 @@ export class Preview implements PreviewApi, vscode.Disposable {
               localise: session.localise,
               ...(view === undefined ? {} : { view: layoutViewOf(view) }),
               ...(sample === undefined ? {} : { content: layoutContentOf(sample) }),
+              // The snapshot's rects are of the game's screen, which need not be the preview's.
+              ...(live === undefined ? {} : { liveScreen: live.screen }),
               // A window without a profile takes the snapshot's texts, states and visibility
               // alone (etch#255).
               ...(loaded === undefined && matched !== undefined

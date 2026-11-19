@@ -141,10 +141,10 @@ specification's section 8.5). It is the only take that starts EU4, and it needs:
   profile and never opens the original.
 - Your `settings.txt` and `pdx_settings.txt` (with `game_ui_scale=1.000`). The run copies them
   into its player profile and sets the game windowed at the preview's 1440 × 900
-  (`LIVE_GAME_RESOLUTION` in `packages/media/src/config.ts`); your own files are not changed. A
-  live snapshot carries the game's positions, which the preview draws as they are: from a game at
-  2560 × 1440 the province view, anchored at the screen's bottom, was drawn 540 px lower, off the
-  preview's canvas.
+  (`LIVE_GAME_RESOLUTION` in `packages/media/src/config.ts`), as for a player whose preview
+  follows the game's settings; your own files are not changed. (Until Etch 2.12 the preview drew
+  a live snapshot's positions as the game's screen had them, so from a game at 2560 × 1440 the
+  province view was drawn 540 px lower, off the preview's canvas.)
 - A second monitor of at least 1440 × 900 right of a 3440-pixel-wide primary, both at 100 %:
   VS Code fills the primary as in the other takes, the game's client area goes to the second
   monitor's top left corner (`GAME_ORIGIN` in `packages/media/src/live.ts`).

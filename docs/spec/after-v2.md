@@ -574,6 +574,16 @@ refresh is a step of the 3.0.0 release.
   children's bounds. The offline outline, without a snapshot, keeps the
   `.gui` positions; windows without a profile take the snapshot only with
   etch#255.
+- **Positions from a snapshot of another screen size.** A snapshot's rects
+  are of the game's client area, and the preview drew them as they were at
+  its own resolution: from a game at 2560×1440 the province view, anchored at
+  the screen's bottom, was drawn 540 px lower than in a 1440×900 preview, off
+  its canvas, and none of the snapshot's values showed where the window is.
+  The layout now re-anchors each rect to the preview's screen: it lays the
+  window out at both sizes without the snapshot's rects and moves each rect as
+  far as the widget's own place moves between them (the window's anchor, a
+  full-screen window's corners, `if_resolution`, the size steps). The
+  `resolution` selector still takes the game's size (v2 section 8).
 
 - **The coverage survey and the v3 draft.** The grilling of 2 November 2026
   started the [v3 specification draft](v3.md): v3 is to be trusted for every
