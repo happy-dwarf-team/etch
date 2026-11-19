@@ -22,6 +22,7 @@ describe.skipIf(gamePath === undefined)('province ids and names of the installed
     expect(ids?.defined?.size).toBe(4941);
     expect(ids?.tradeWindsFile?.path).toBe('map/trade_winds.txt');
     expect(ids?.positionsFile?.path).toBe('map/positions.txt');
+    expect(ids?.adjacenciesFile?.path).toBe('map/adjacencies.csv');
     const names = await loadScriptNames(files);
     const sizes = Object.fromEntries(
       [...(names?.byKind ?? new Map<string, ReadonlySet<string>>())].map(([kind, set]) => [

@@ -8,6 +8,7 @@
 import { readFile } from 'node:fs/promises';
 import * as vscode from 'vscode';
 import {
+  checkAdjacencies,
   checkClimate,
   checkPositions,
   checkTradeWinds,
@@ -292,7 +293,7 @@ export class ProvinceIdDiagnostics implements vscode.Disposable {
 /**
  * The province id and name warnings of a file's text by its game path in the playset (the path
  * below the layer that holds it): a script file's, `map/default.map`'s own lists, the climate
- * file's lists, the continent file's negative ids, the trade winds file's ids, the positions file's negative ids, `undefined` for
+ * file's lists, the continent file's negative ids, the trade winds file's ids, the positions file's negative ids, the adjacencies file's ids, `undefined` for
  * any other file, one outside the playset's folders, or a playset with neither a map nor ideas.
  */
 export function diagnose(
@@ -329,6 +330,12 @@ export function diagnose(
     path.toLowerCase() === ids.positionsFile.path.toLowerCase()
   ) {
     return checkPositions(parseScript(text, { script: true }), ids);
+  }
+  if (
+    ids?.adjacenciesFile !== undefined &&
+    path.toLowerCase() === ids.adjacenciesFile.path.toLowerCase()
+  ) {
+    return checkAdjacencies(text, ids);
   }
   if (!isProvinceIdScriptPath(path)) return undefined;
   return checkScriptValues(parseScript(text, { script: true }), { ids, names }, path);

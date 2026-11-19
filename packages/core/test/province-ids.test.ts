@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   PROVINCE_ID_KEYS,
   checkClimate,
+  checkAdjacencies,
   checkPositions,
   checkTradeWinds,
   checkContinents,
@@ -470,6 +471,38 @@ describe('trade winds file', () => {
   });
 });
 
+describe('adjacencies file', () => {
+  it("checks From and To of every line up to the first negative From, and a sea link's Through", () => {
+    const text = [
+      'From;To;Type;Through;start_x;start_y;stop_x;stop_y;adjacency_rule_name;Comment',
+      '6;12;sea;1310;-1;-1;-1;-1;;Gotland-Uppland',
+      '4942;-5;sea;5000;-1;-1;-1;-1;;all three',
+      '7; 4950 ;land;-1;-1;-1;-1;-1;;Through is not read on land',
+      '0;9999;sea;9999;;;;;;From 0 is skipped',
+      '# 9999;9999',
+      '8;x;canal;-1',
+      '-1;-1;;-1;-1;-1;-1;-1;;',
+      '9999;9999;sea;9999',
+    ].join('\r\n');
+    const diagnostics = checkAdjacencies(text, VANILLA);
+    expect(diagnostics.map((d) => `${d.key} ${String(d.id)} ${d.code}`)).toEqual([
+      'from 4942 province-id-out-of-range',
+      'to -5 province-id-out-of-range',
+      'through 5000 province-id-out-of-range',
+      'to 4950 province-id-out-of-range',
+    ]);
+    expect(diagnostics.map((d) => text.slice(d.start, d.end))).toEqual([
+      '4942',
+      '-5',
+      '5000',
+      '4950',
+    ]);
+    expect(checkAdjacencies('1;7;sea;3', { ...VANILLA, defined: new Set([1, 3]) })).toMatchObject([
+      { key: 'to', id: 7, code: 'province-id-not-defined' },
+    ]);
+  });
+});
+
 describe('positions file', () => {
   it('checks the negative keys only, which the game does not skip', () => {
     const text = [
@@ -518,6 +551,8 @@ describe('default.map', () => {
     expect(parseDefaultMap('trade_winds = "winds.txt"').tradeWinds).toBe('winds.txt');
     expect(parseDefaultMap('width = 1').positions).toBe('positions.txt');
     expect(parseDefaultMap('positions = "places.txt"').positions).toBe('places.txt');
+    expect(parseDefaultMap('width = 1').adjacencies).toBe('adjacencies.csv');
+    expect(parseDefaultMap('adjacencies = "links.csv"').adjacencies).toBe('links.csv');
     expect(parseDefaultMap('width = 1').continent).toBe('continent.txt');
     expect(parseDefaultMap('continent = "lands.txt"').continent).toBe('lands.txt');
   });
