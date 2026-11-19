@@ -43,7 +43,8 @@ export async function testProvinceIds(): Promise<void> {
   await write(
     game,
     'map/default.map',
-    'max_provinces = 10\nlakes = { 4 }\ncanal_definition = { name = "lost" x = 1 y = 1 }\n',
+    'max_provinces = 10\nlakes = { 4 }\ncanal_definition = { name = "lost" x = 1 y = 1 }\n' +
+      'region = "lost_region.txt"\n',
   );
   const definitions = await write(
     game,
@@ -135,7 +136,7 @@ export async function testProvinceIds(): Promise<void> {
     const [scope] = await diagnosticsOf(closed, (found) => found.length > 0);
     assert.equal(scope?.code, 'province-id-not-defined');
     assert.deepEqual([scope.range.start.line, scope.range.start.character], [1, 1]);
-    const [lake, canal] = await diagnosticsOf(
+    const [lake, canal, file] = await diagnosticsOf(
       vscode.Uri.file(path.join(game, 'map', 'default.map')),
       (found) => found.length > 0,
     );
@@ -143,6 +144,9 @@ export async function testProvinceIds(): Promise<void> {
     // A canal whose bitmap the playset does not have, from the same file.
     assert.equal(canal?.code, 'canal-bitmap-missing');
     assert.deepEqual([canal.range.start.line, canal.range.start.character], [2, 28]);
+    // A region file the playset does not have, from the same file.
+    assert.equal(file?.code, 'map-file-missing');
+    assert.deepEqual([file.range.start.line, file.range.start.character], [3, 9]);
     // An idea group the playset does not define, from the same check.
     const [group, ...rest] = await diagnosticsOf(ideas, (found) => found.length > 0);
     assert.deepEqual(rest, []);

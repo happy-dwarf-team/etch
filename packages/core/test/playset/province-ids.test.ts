@@ -218,6 +218,34 @@ describe('province ids of a playset', () => {
     });
   });
 
+  it('warns about a file default.map names that no layer has', async () => {
+    await addFiles(root, {
+      'files/map/default.map':
+        'max_provinces = 10\nclimate = "Climate.TXT"\nregion = "my_region.txt"\n' +
+        'adjacencies = "lost.csv"\n',
+      'files/map/my_region.txt': 'r = { areas = { a } }\n',
+    });
+    const files = playset({ name: 'Files', root: join(root, 'files'), replacePaths: [] });
+    const ids = await loadProvinceIds(files);
+    // The game's climate.txt in another case, the mod's own region file, and no adjacencies.
+    expect(ids?.mapFiles).toEqual(
+      new Map([
+        ['map/climate.txt', true],
+        ['map/my_region.txt', true],
+        ['map/lost.csv', false],
+      ]),
+    );
+    if (ids === undefined) throw new Error('no map');
+    const { findings } = await findScriptValueProblems(files, { ids });
+    const map = findings.find((finding) => finding.file.path === 'map/default.map');
+    expect(map?.diagnostics.map((d) => `${d.key} ${d.code}`)).toEqual([
+      'adjacencies map-file-missing',
+    ]);
+    // The game's own default.map names no file the game lacks.
+    const game = await loadProvinceIds(playset());
+    expect(game?.mapFiles).toEqual(new Map());
+  });
+
   it("checks against a map mod's default.map, and its own lists", async () => {
     const files = playset(mapMod(), otherMod());
     const ids = await loadProvinceIds(files);

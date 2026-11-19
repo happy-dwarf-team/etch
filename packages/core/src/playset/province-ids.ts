@@ -7,6 +7,7 @@ import {
   type BitmapSize,
   type CanalBitmaps,
 } from '../script/canals.ts';
+import { mapFilePath, readMapFileNames } from '../script/map-files.ts';
 import { parseScript } from '../script/parse.ts';
 import {
   parseDefaultMap,
@@ -38,6 +39,8 @@ export interface PlaysetProvinceIds extends ProvinceIds {
   readonly provinceGroupFile?: GameFile | undefined;
   /** The sizes of the river map and of the canal bitmaps `map/default.map`'s canals name. */
   readonly canalBitmaps?: CanalBitmaps | undefined;
+  /** Whether a layer has each file `map/default.map` names (`MAP_FILE_KEYS`), by game path in lower case. */
+  readonly mapFiles?: ReadonlyMap<string, boolean> | undefined;
 }
 
 /** A script file's text as the game reads it: Windows-1252, without a leading UTF-8 BOM. */
@@ -77,7 +80,21 @@ export async function loadProvinceIds(files: GameFiles): Promise<PlaysetProvince
     adjacenciesFile: await files.find(`map/${map.adjacencies}`),
     provinceGroupFile: await files.find(`map/${map.provinceGroup}`),
     canalBitmaps: await loadCanalBitmaps(files, map.rivers, mapText),
+    mapFiles: await loadMapFiles(files, mapText),
   };
+}
+
+/** Whether a layer has each file `map/default.map` names (`MAP_FILE_KEYS`), by game path in lower case. */
+export async function loadMapFiles(
+  files: GameFiles,
+  mapText: string,
+): Promise<Map<string, boolean>> {
+  const present = new Map<string, boolean>();
+  for (const name of readMapFileNames(parseScript(mapText, { script: true })).values()) {
+    const path = mapFilePath(name.text);
+    present.set(path.toLowerCase(), (await files.find(path)) !== undefined);
+  }
+  return present;
 }
 
 /**

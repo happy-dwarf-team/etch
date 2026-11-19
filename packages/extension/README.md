@@ -231,7 +231,10 @@ province table, which crashes the map load. In `map/default.map`, a
 `canal_definition` whose `map/<name>_river.bmp` the playset does not have gets
 a warning (the game's map load stops without it), and so does one whose bitmap
 does not fit in the river map at its `x` and `y` (the game copies it there
-without a check when the canal is built). A `history/provinces` file
+without a check when the canal is built). So does a map file that
+`map/default.map` names and no layer of the playset has (`climate`, `region`,
+`adjacencies` and the other files): the game crashes or stops loading the map
+without it. A `history/provinces` file
 whose name does not start with a province of the map (`4999 - Past.txt` on
 4941 provinces, or `Uppland.txt`) gets a warning at its first line: the game
 skips it without a word.
