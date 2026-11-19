@@ -245,7 +245,10 @@ key of other than three characters that names a country file (`ZZEX =
 layer has. A `history/provinces` file
 whose name does not start with a province of the map (`4999 - Past.txt` on
 4941 provinces, or `Uppland.txt`) gets a warning at its first line: the game
-skips it without a word.
+skips it without a word. A mod's `history/countries` file whose tag also has a
+file of the game's under another name (`SWE - My Sweden.txt` beside `SWE -
+Sweden.txt`) gets a warning there too: it does not replace the game's file, and
+the game reads both into the country's history.
 The map is your playset's: `max_provinces` of `map/default.map`, a mod's when
 it has its own, and the provinces its `map/definition.csv` lists. An id written
 as a tag, a scope or a variable is not checked.

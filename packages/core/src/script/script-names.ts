@@ -31,6 +31,7 @@
  * (`add_idea`'s null idea) are left out.
  */
 import type { EntryNode, ParsedScript, ScalarNode, SourceRange } from './tree.ts';
+import type { CountryHistoryFile } from './country-files.ts';
 
 /** The kinds of names the check knows, each a database the playset defines. */
 export type ScriptNameKind =
@@ -151,6 +152,11 @@ export interface ScriptNames {
    * case (`firstCountryTags`).
    */
   readonly countryTags?: ReadonlyMap<string, string>;
+  /**
+   * The playset's `history/countries` files by the tag the game reads each for
+   * (`countryHistoryTag`, `checkCountryHistory`).
+   */
+  readonly countryHistories?: ReadonlyMap<string, readonly CountryHistoryFile[]>;
   /**
    * Whether a layer has each technology table `common/technology.txt` names, by game path in lower
    * case (`checkTechnologyTables`).

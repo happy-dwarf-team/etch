@@ -51,6 +51,29 @@ export interface CountryTagDiagnostic extends SourceRange {
   readonly path?: string;
 }
 
+/**
+ * A `history/countries` file of a mod whose tag also has a file of the game's that it does not
+ * replace; the range is the start of the file.
+ */
+export interface CountryHistoryDiagnostic extends SourceRange {
+  readonly severity: 'warning';
+  readonly code: 'country-history-shared';
+  readonly message: string;
+  /** The tag, from the file's name. */
+  readonly key: string;
+  /** The game's history files of the tag that the playset also reads, as game paths. */
+  readonly name: string;
+}
+
+/**
+ * A `history/countries` file of the playset: its game path, and whether it has the name of one of
+ * the game's own files that the playset reads (no layer replaces the folder).
+ */
+export interface CountryHistoryFile {
+  readonly path: string;
+  readonly game: boolean;
+}
+
 /** Whether a path is a file of `common/country_tags`. */
 export function isCountryTagsPath(path: string): boolean {
   return /^common\/country_tags\/[^/]+\.txt$/i.test(path.replace(/\\/g, '/'));
@@ -77,6 +100,51 @@ export function readCountryFiles(
     found.push({ tag: entry.key.text, file: entry.value, key: entry.key });
   }
   return found;
+}
+
+/**
+ * The tag a `history/countries` file is read for: the first three characters of its name, upper
+ * cased, as `CHistoryDataBase::LoadDatabase` looks it up. `undefined` for another path.
+ */
+export function countryHistoryTag(path: string): string | undefined {
+  const match = /^history\/countries\/([^/]+)\.txt$/i.exec(path.replace(/\\/g, '/'));
+  const name = match?.[1];
+  return name === undefined || name.length < 3 ? undefined : name.slice(0, 3).toUpperCase();
+}
+
+/**
+ * A warning for a mod's `history/countries` file whose tag also has one of the game's own history
+ * files (`histories`, by tag). `CHistoryDataBase::LoadDatabase` reads every file of the folder
+ * whose tag is a country into that country's history, so the game reads both: a mod's
+ * `SWE - My Sweden.txt` does not replace vanilla's `SWE - Sweden.txt`, which only a file of the
+ * same name, or `replace_path`, does (`bmtest-r41`). Files with the game's names are not reported
+ * (vanilla itself has `SOF - Segu.txt` and `SOF - Sofala.txt`, which mods copy), nor a mod's own
+ * files of one tag, which the corpus has on purpose.
+ */
+export function checkCountryHistory(
+  path: string,
+  histories: ReadonlyMap<string, readonly CountryHistoryFile[]>,
+): CountryHistoryDiagnostic | undefined {
+  const tag = countryHistoryTag(path);
+  if (tag === undefined) return undefined;
+  const files = histories.get(tag) ?? [];
+  const key = path.replace(/\\/g, '/').toLowerCase();
+  const self = files.find((file) => file.path.toLowerCase() === key);
+  if (self === undefined || self.game) return undefined;
+  const others = files.filter((file) => file.game).map((file) => file.path);
+  if (others.length === 0) return undefined;
+  return {
+    severity: 'warning',
+    code: 'country-history-shared',
+    message:
+      `This file does not replace the game's ${others.join(', ')}: the game reads every ` +
+      `history/countries file whose name starts with a tag into that country's history, so ${tag} ` +
+      "gets both. Only a file of the same name, or replace_path, replaces the game's.",
+    key: tag,
+    name: others.join(', '),
+    start: 0,
+    end: 0,
+  };
 }
 
 /**

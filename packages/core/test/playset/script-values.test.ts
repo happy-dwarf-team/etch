@@ -198,6 +198,40 @@ describe('script values of a playset', () => {
     ]);
   });
 
+  it("warns about a mod's country history that does not replace the game's", async () => {
+    await addFiles(root, {
+      'game/history/countries/SWE - Sweden.txt': 'capital = 1\n',
+      'game/history/countries/DAN - Denmark.txt': 'capital = 12\n',
+      'mod/history/countries/SWE - My Sweden.txt': 'capital = 2\n',
+      // The same name replaces the game's file: one file.
+      'mod/history/countries/dan - denmark.txt': 'capital = 13\n',
+    });
+    const files = playset();
+    const names = await loadScriptNames(files);
+    expect(names?.countryHistories?.get('SWE')?.map((file) => [file.path, file.game])).toEqual([
+      ['history/countries/SWE - My Sweden.txt', false],
+      ['history/countries/SWE - Sweden.txt', true],
+    ]);
+    const { findings } = await findScriptValueProblems(files, { names });
+    expect(
+      findings.flatMap((finding) =>
+        finding.diagnostics
+          .filter((d) => d.code.startsWith('country-'))
+          .map((d) => `${finding.file.path} ${d.key} ${d.code}`),
+      ),
+    ).toEqual(['history/countries/SWE - My Sweden.txt SWE country-history-shared']);
+
+    // A mod that replaces the folder has only its own files.
+    const replacing = new GameFiles([
+      { name: 'game', root: join(root, 'game'), replacePaths: [] },
+      { name: 'Mod', root: join(root, 'mod'), replacePaths: ['history/countries/'] },
+    ]);
+    const own = await loadScriptNames(replacing);
+    expect(own?.countryHistories?.get('SWE')).toEqual([
+      { path: 'history/countries/SWE - My Sweden.txt', game: false },
+    ]);
+  });
+
   it('warns about a table of the winning common/technology.txt that no layer has', async () => {
     await addFiles(root, {
       'game/common/technology.txt': 'tables = { adm_tech = "technologies/adm.txt" }\n',
