@@ -35,8 +35,8 @@
 // southern half and rises to 1 at nine tenths of its height. The season value comes from the date
 // and the playset's `map/seasons.txt`: the index of its `tree_*` block the date falls in, or how far
 // it is through the gap after one (`treeSeasonAt`). The preview takes the date from its Date slider
-// (1 July by default) and the fade from its North slider (0 by default, which changes nothing). The random height and turn of the mesh
-// itself are left out; its snow is below.
+// (1 July by default) and the fade from its North slider (0 by default, which changes nothing).
+// The random height and turn of the mesh itself are left out; its snow is below.
 //
 // Snow, as the game puts it on `PdxMeshSnow` parts (`ApplySnowMesh` in pdxmesh.shader) and map
 // trees (`ApplySnowTree` in tree.shader) before the light: the game takes the amount from the map

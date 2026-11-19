@@ -14,8 +14,7 @@
 import { randomBytes } from 'node:crypto';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
-import { textureCandidates } from '@etch/core';
-import { parseScript } from '@etch/core';
+import { parseScript, textureCandidates } from '@etch/core';
 import {
   jointsOfBones,
   mapTreeOf,
