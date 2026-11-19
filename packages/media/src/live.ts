@@ -76,20 +76,22 @@ export const RELOAD_EDIT = {
 export const RELOAD_WIDGET = 'provinceview//tradenode_button';
 /** The province the game shows: the sample data's, Kaluga (`SAMPLE_PROVINCE`). */
 const LIVE_PROVINCE = 296;
-/**
- * What `pick` hovers, in the trade section, the last the button it then clicks, and where the
- * pointer goes across each (0 its left edge, 1 its right; its middle unless given). The game shows
- * its own tooltips in pick mode, at once and beside the pointer, under pick mode's label: the loop
- * hovers widgets without one, and the button at its right end, so its tooltip ("Go to trade node
- * interface") starts past the button instead of covering it.
- */
+/** A widget `pick` hovers, and where the pointer goes across it: 0 its left edge, 1 its right. */
 interface Hover {
   readonly selector: string;
   readonly across?: number;
 }
+/**
+ * What `pick` hovers, in the trade section, the last the button it then clicks. The game shows its
+ * own tooltip in pick mode at once, beside the pointer and under pick mode's label, and every
+ * widget of the section has one: the loop hovers the widgets with a one-line tooltip (the
+ * section's numbers and their labels have tooltips of ten lines, which cover the label), and the
+ * button at its right end, so its tooltip ("Go to trade node interface") starts past the button;
+ * at its left end the tooltip covers the button, and pick mode's outline seems to frame it.
+ */
 const HOVERED: readonly [Hover, ...Hover[]] = [
-  { selector: 'provinceview//tradevalue_value' },
-  { selector: 'provinceview//resource_icon' },
+  { selector: 'provinceview//trade_shield' },
+  { selector: 'provinceview//tradepost_button' },
   { selector: RELOAD_WIDGET, across: 0.93 },
 ];
 
