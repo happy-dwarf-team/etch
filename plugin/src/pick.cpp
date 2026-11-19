@@ -144,6 +144,14 @@ MouseFilter FilterMouse(std::uint32_t message, std::uint64_t wparam) {
     }
 }
 
+bool TooltipGate::Pass(bool pick_mode) noexcept {
+    if (!pick_mode) return true;
+    hidden_.fetch_add(1, std::memory_order_relaxed);
+    return false;
+}
+
+std::uint64_t TooltipGate::TakeHidden() noexcept { return hidden_.exchange(0, std::memory_order_relaxed); }
+
 std::vector<std::size_t> StackAt(const std::vector<UiWidget>& widgets, int x, int y, int screen_width,
                                  int screen_height, std::uint64_t hovered) {
     std::optional<std::size_t> top;

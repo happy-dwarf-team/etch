@@ -397,3 +397,37 @@ after the move.
 **Not checked:** a hand on a real mouse, and the real VS Code window in place
 of Notepad. With the slow, continuous moves of a real hand, the game also gets
 moves before the click.
+
+## The game's tooltips
+
+Pick mode hides the game's tooltips ([after-v2.md](spec/after-v2.md), "Pick
+mode hides the game's tooltips"). Checked on 2026-11-19, before (the plugin of
+`main` at `72ac39e`, whose plugin code is that of 2.12.0) and after (the plugin
+of this change), one start each:
+
+- **Build and install.** `eu4.exe` 1.37.5 Steam win64, SHA-256
+  `9AD3EFE1…DC4D771A`, started from a junction copy of the game folder with
+  the pinned Anvil 1.24.0 and Tongs 0.36.0 (`input` on) and Etch's plugin, by
+  the EU4 engine lab's launcher under its game lock.
+- **Profile and save.** A private vanilla profile at 3440×1440 borderless, UI
+  scale 1; the lab's Russia save of 17 March 1719, paused, Kaluga's province
+  view (296) opened through Tongs.
+- **Input.** Pick mode turned on and off through the session pipe
+  (`pick_mode`). The real pointer moved with `SetCursorPos` from the map onto
+  the widget; the screen captured 0.3 s and 1.5 s after it arrived.
+
+| Hover | Before | After |
+| --- | --- | --- |
+| `trade_shield` | The game's one-line tooltip at the pointer's right, under pick mode's label, which the screen's bottom edge put above the pointer: the two read as one box | The label alone, the shield outlined |
+| `tradenode_button` at 7 % of its width | Its tooltip ("Go to trade node interface for Kiev") covers the button, so the outline, round the button's rectangle, seems to frame the tooltip | The button in view, outlined, and the label |
+| The map | — | "not a GUI widget", no province tooltip |
+
+With the change and pick mode off, the shield's tooltip and the map's province
+tooltip show as before. Pick mode turned on while the shield's tooltip showed
+hid it by the next capture (0.2 s). The log's stats line when pick mode was
+left: `game tooltips hidden in 1980 frames` over 1980 frames of hovered reads
+(and 43 of 43 in a second, short spell), so the hook hid the tooltip in every
+frame of pick mode. No crash, no warning from the plugin.
+
+**Not checked:** the hotkey (the pipe stood in for it), a window of another
+size, and the tooltips of other windows than the province view.

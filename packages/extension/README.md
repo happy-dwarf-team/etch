@@ -136,7 +136,9 @@ In the live game, **Ctrl+Shift+E** (`etch.liveGame.pickModeKey`) or **Etch:
 Toggle Pick Mode** turns on pick mode: the widget under the pointer is outlined
 with its name, kind, size and file, the wheel steps through the
 widgets under the pointer, and a click opens its definition in VS Code, without
-the game taking the click. A file of the base game or another mod
+the game taking the click. The game shows no tooltips while pick mode is on, so
+none covers the widget you point at; they come back when you leave it. A file of
+the base game or another mod
 opens read-only; **Override in my mod** (also **Etch: Override in My Mod**)
 copies it to the same path in your mod and opens the copy. A pick also pins the
 preview on the picked window and takes a **live snapshot** of it: the texts,
