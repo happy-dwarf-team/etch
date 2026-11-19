@@ -219,9 +219,10 @@ The province lists of colonial regions, trade company regions and trade nodes
 `members` in `common/tradenodes`) are checked too, and so is a great project's
 `start`, which crashes a new game. So are the map's own files: the lists of
 `map/default.map` (`sea_starts`, `lakes` and the others), the climate file's
-lists, the trade winds file's ids, and the negative ids of the continent and
-positions files (the game skips ids past the map in those two, but not
-negative ones). A `history/provinces` file
+lists, the trade winds file's ids, `From` and `To` of each line of
+`map/adjacencies.csv` and `Through` of a `sea` link, and the negative ids of
+the continent and positions files (the game skips ids past the map in those
+two, but not negative ones). A `history/provinces` file
 whose name does not start with a province of the map (`4999 - Past.txt` on
 4941 provinces, or `Uppland.txt`) gets a warning at its first line: the game
 skips it without a word.

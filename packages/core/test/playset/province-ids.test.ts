@@ -29,6 +29,10 @@ describe('province ids of a playset', () => {
       'game/map/continent.txt': 'europe = { 1 -3 50 }\n',
       'game/map/trade_winds.txt': '# direction\n1 = 0\n-1 = 30\n12 = -15\n',
       'game/map/positions.txt': '1 = { position = { 1 2 } }\n-2 = { }\n50 = { }\n',
+      'game/map/adjacencies.csv':
+        'From;To;Type;Through;start_x;start_y;stop_x;stop_y;Comment\r\n' +
+        '1;12;sea;2;-1;-1;-1;-1;Strait\r\n2;9;land;-1;-1;-1;-1;-1;\r\n-1;-1;;-1;-1;-1;-1;-1;\r\n' +
+        '30;31;sea;32;-1;-1;-1;-1;after the end\r\n',
       // The map mod's climate file, under the name its default.map gives.
       'map/map/big_climate.txt': 'arctic = { 12 14 30 }\n',
       'map/events/overridden.txt': 'e = { immediate = { 13 = { add_core = ROOT } } }',
@@ -88,6 +92,7 @@ describe('province ids of a playset', () => {
     expect(ids?.continentFile?.layer.name).toBe('game');
     expect(ids?.tradeWindsFile?.path).toBe('map/trade_winds.txt');
     expect(ids?.positionsFile?.path).toBe('map/positions.txt');
+    expect(ids?.adjacenciesFile?.path).toBe('map/adjacencies.csv');
   });
 
   it('is undefined without a default.map', async () => {
@@ -122,6 +127,8 @@ describe('province ids of a playset', () => {
         ],
       ],
       ['game', 'events/overridden.txt', ['owns 13 province-id-out-of-range']],
+      // The lines after the -1 line are not read.
+      ['game', 'map/adjacencies.csv', ['to 12 province-id-out-of-range']],
       // 50 is past the map, which the game skips in a continent; -3 it does not.
       ['game', 'map/continent.txt', ['europe -3 province-id-out-of-range']],
       ['game', 'map/default.map', ['sea_starts 8 province-id-not-defined']],
@@ -133,9 +140,9 @@ describe('province ids of a playset', () => {
         ['trade_winds -1 province-id-out-of-range', 'trade_winds 12 province-id-out-of-range'],
       ],
     ]);
-    // Five script files, default.map, climate.txt, continent.txt, trade_winds.txt and
-    // positions.txt; common/province_names is not read.
-    expect(filesChecked).toBe(10);
+    // Five script files, default.map, climate.txt, continent.txt, trade_winds.txt,
+    // positions.txt and adjacencies.csv; common/province_names is not read.
+    expect(filesChecked).toBe(11);
     const other = findings.find((finding) => finding.file.path === 'events/other.txt');
     const first = other?.diagnostics[0];
     expect(other?.text.slice(first?.start, first?.end)).toBe('12');
@@ -177,6 +184,8 @@ describe('province ids of a playset', () => {
           'where 40 province-id-out-of-range',
         ],
       ],
+      // The game's adjacencies file: 9 is not in the big map's definitions.
+      ['map/adjacencies.csv', ['to 9 province-id-not-defined']],
       [
         'map/big_climate.txt',
         ['arctic 14 province-id-not-defined', 'arctic 30 province-id-out-of-range'],

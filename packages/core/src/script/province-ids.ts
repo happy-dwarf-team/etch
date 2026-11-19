@@ -494,6 +494,8 @@ export interface DefaultMap {
   readonly tradeWinds: string;
   /** `positions`: the positions file's name in `map/`, `positions.txt` by default. */
   readonly positions: string;
+  /** `adjacencies`: the adjacencies file's name in `map/`, `adjacencies.csv` by default. */
+  readonly adjacencies: string;
   /** `area`: the area file's name in `map/`, `area.txt` by default. */
   readonly area: string;
   /** `region`: the region file's name in `map/`, `region.txt` by default. */
@@ -514,6 +516,7 @@ function readDefaultMap(parsed: ParsedScript): DefaultMap {
   let continent = 'continent.txt';
   let tradeWinds = 'trade_winds.txt';
   let positions = 'positions.txt';
+  let adjacencies = 'adjacencies.csv';
   let area = 'area.txt';
   let region = 'region.txt';
   const idLists: { key: string; ids: ScalarNode[] }[] = [];
@@ -533,6 +536,8 @@ function readDefaultMap(parsed: ParsedScript): DefaultMap {
       tradeWinds = value.text;
     } else if (key === 'positions' && value?.kind === 'scalar' && value.text !== '') {
       positions = value.text;
+    } else if (key === 'adjacencies' && value?.kind === 'scalar' && value.text !== '') {
+      adjacencies = value.text;
     } else if (key === 'area' && value?.kind === 'scalar' && value.text !== '') {
       area = value.text;
     } else if (key === 'region' && value?.kind === 'scalar' && value.text !== '') {
@@ -548,6 +553,7 @@ function readDefaultMap(parsed: ParsedScript): DefaultMap {
     continent,
     tradeWinds,
     positions,
+    adjacencies,
     area,
     region,
     idLists,
@@ -649,6 +655,64 @@ export function checkPositions(parsed: ParsedScript, ids: ProvinceIds): Province
     }
   }
   return found.sort((a, b) => a.start - b.start);
+}
+
+/**
+ * The province ids of the adjacencies file (`map/adjacencies.csv`, as `map/default.map`'s
+ * `adjacencies` names it), whose lines are `From;To;Type;Through;…`: the straits, canals and other
+ * links the map's colours do not give. The game reads each line's fields with `atoi`
+ * (`CMap::InitStraits`): it skips a line whose `From` is 0, such as the header, and stops at the
+ * first negative `From` (vanilla ends with `-1;-1;;-1;…`). Otherwise it indexes the province
+ * templates with `From` and `To`, each cut to 16 bits, with no range check and no `error.log` line,
+ * and with `Through` when the type is `sea`, whose crossing it records there; the other types do
+ * not read it, and mods leave it `-1` (the EU4 engine lab, 19.11.2026). Vanilla 1.37.5 has 110
+ * links, all on its map.
+ */
+export function checkAdjacencies(text: string, ids: ProvinceIds): ProvinceIdDiagnostic[] {
+  const found: ProvinceIdDiagnostic[] = [];
+  const check = (field: CsvField | undefined, key: string): void => {
+    // `atoi`: blanks, a sign and digits; anything else reads as 0, the game's unused province.
+    const match = field === undefined ? null : /^[ \t]*([+-]?\d+)/.exec(field.text);
+    if (field === undefined || match?.[1] === undefined) return;
+    const id = Number(match[1]);
+    if (id === 0) return;
+    const problem = provinceIdProblem(id, ids);
+    if (problem === undefined) return;
+    const start = field.start + match[0].length - match[1].length;
+    found.push({ ...problem, severity: 'warning', id, key, start, end: start + match[1].length });
+  };
+  let at = 0;
+  while (at < text.length) {
+    const newline = text.indexOf('\n', at);
+    const end = newline < 0 ? text.length : newline;
+    const fields = csvFields(text, at, end);
+    at = end + 1;
+    const from = /^[ \t]*([+-]?\d+)/.exec(fields[0]?.text ?? '');
+    const fromId = from?.[1] === undefined ? 0 : Number(from[1]);
+    if (fromId < 0) break;
+    if (fromId === 0) continue;
+    check(fields[0], 'from');
+    check(fields[1], 'to');
+    if (fields[2]?.text === 'sea') check(fields[3], 'through');
+  }
+  return found;
+}
+
+interface CsvField {
+  readonly text: string;
+  readonly start: number;
+}
+
+/** The `;`-separated fields of a line, without its line break. */
+function csvFields(text: string, start: number, end: number): CsvField[] {
+  const line = text.slice(start, end).replace(/\r$/, '');
+  const fields: CsvField[] = [];
+  let at = 0;
+  for (const part of line.split(';')) {
+    fields.push({ text: part, start: start + at });
+    at += part.length + 1;
+  }
+  return fields;
 }
 
 /**

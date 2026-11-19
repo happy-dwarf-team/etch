@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { decodeGameText } from '../game-text.ts';
 import { parseScript } from '../script/parse.ts';
 import {
+  checkAdjacencies,
   checkClimate,
   checkPositions,
   checkTradeWinds,
@@ -205,8 +206,8 @@ const READ_AHEAD = 16;
  * Every province id and name in the script files the playset loads (the winning copy of each file
  * under `common`, `events`, `decisions`, `missions`, `history` and `customizable_localization`)
  * and every province id in the
- * lists of its `map/default.map` and its climate, continent, trade winds and positions files that
- * the playset does not have, by file in path order. Files a later layer overrides or a `replace_path` hides are not read: the game does not load them.
+ * lists of its `map/default.map` and its climate, continent, trade winds and positions files and
+ * the ids of its adjacencies file that the playset does not have, by file in path order. Files a later layer overrides or a `replace_path` hides are not read: the game does not load them.
  */
 export async function findScriptValueProblems(
   files: GameFiles,
@@ -244,16 +245,21 @@ export async function findScriptValueProblems(
       findings.push({ file: values.ids.mapFile, text: mapText, diagnostics: mapDiagnostics });
     }
     filesChecked++;
+    const script =
+      (check: (parsed: ParsedScript, ids: ProvinceIds) => ProvinceIdDiagnostic[]) =>
+      (text: string, ids: ProvinceIds): ProvinceIdDiagnostic[] =>
+        check(parseScript(text, { script: true }), ids);
     const mapLists = [
-      [values.ids.climateFile, checkClimate],
-      [values.ids.continentFile, checkContinents],
-      [values.ids.tradeWindsFile, checkTradeWinds],
-      [values.ids.positionsFile, checkPositions],
+      [values.ids.climateFile, script(checkClimate)],
+      [values.ids.continentFile, script(checkContinents)],
+      [values.ids.tradeWindsFile, script(checkTradeWinds)],
+      [values.ids.positionsFile, script(checkPositions)],
+      [values.ids.adjacenciesFile, checkAdjacencies],
     ] as const;
     for (const [file, check] of mapLists) {
       if (file === undefined) continue;
       const text = decode(await readFile(file.absolutePath));
-      const diagnostics = check(parseScript(text, { script: true }), values.ids);
+      const diagnostics = check(text, values.ids);
       if (diagnostics.length > 0) findings.push({ file, text, diagnostics });
       filesChecked++;
     }
