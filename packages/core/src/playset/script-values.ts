@@ -6,6 +6,8 @@ import {
   checkCountryHistory,
   countryFilePath,
   countryHistoryTag,
+  countryTagsMissing,
+  REQUIRED_COUNTRY_TAGS,
   firstCountryTags,
   isCountryTagsPath,
   readCountryFiles,
@@ -13,6 +15,7 @@ import {
   type CountryHistoryDiagnostic,
   type CountryHistoryFile,
   type CountryTagDiagnostic,
+  type CountryTagsMissingDiagnostic,
 } from '../script/country-files.ts';
 import { checkMapFiles, type MapFileDiagnostic } from '../script/map-files.ts';
 import {
@@ -64,6 +67,7 @@ export type ScriptValueDiagnostic =
   | CountryFileDiagnostic
   | CountryTagDiagnostic
   | CountryHistoryDiagnostic
+  | CountryTagsMissingDiagnostic
   | TechnologyTableDiagnostic;
 
 /** What script values are checked against; a check without its part is skipped. */
@@ -93,6 +97,10 @@ export function checkScriptValues(
   if (values.names !== undefined) found.push(...checkScriptNames(parsed, values.names));
   const countryFiles = values.names?.countryFiles;
   if (countryFiles !== undefined && path !== undefined && isCountryTagsPath(path)) {
+    const missing = values.names?.countryTagsMissing;
+    if (missing !== undefined && missing.path.toLowerCase() === path.toLowerCase()) {
+      found.push(countryTagsMissing(missing.tags));
+    }
     const firsts = values.names?.countryTags;
     found.push(
       ...checkCountryFiles(
@@ -237,6 +245,7 @@ export async function loadScriptNames(files: GameFiles): Promise<ScriptNames | u
     scripted,
     countryFiles: await loadCountryFiles(files),
     countryTags: await loadCountryTags(files),
+    countryTagsMissing: await loadCountryTagsMissing(files),
     countryHistories: await loadCountryHistories(files),
     technologyTables: await loadTechnologyTables(files),
   };
@@ -291,6 +300,22 @@ export async function loadCountryTags(files: GameFiles): Promise<Map<string, str
     }
   }
   return firstCountryTags(parsed);
+}
+
+/**
+ * The first of the playset's `common/country_tags` files and the tags the game needs that no file
+ * defines, when that first file is a mod's: the game's own files define them all, so a playset
+ * lacks one only through a mod that replaces them.
+ */
+export async function loadCountryTagsMissing(
+  files: GameFiles,
+): Promise<{ path: string; tags: string[] } | undefined> {
+  const list = await files.list('common/country_tags', '.txt');
+  const first = list[0];
+  if (first === undefined || first.layer === files.layers[0]) return undefined;
+  const tags = await loadCountryTags(files);
+  const missing = REQUIRED_COUNTRY_TAGS.filter((tag) => !tags.has(tag));
+  return missing.length === 0 ? undefined : { path: first.path, tags: missing };
 }
 
 /**

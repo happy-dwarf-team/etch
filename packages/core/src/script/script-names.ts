@@ -153,6 +153,12 @@ export interface ScriptNames {
    */
   readonly countryTags?: ReadonlyMap<string, string>;
   /**
+   * When a mod's file is the first of the playset's `common/country_tags` files and no file defines
+   * all of `REQUIRED_COUNTRY_TAGS`: that file's game path and the missing tags.
+   */
+  readonly countryTagsMissing?:
+    { readonly path: string; readonly tags: readonly string[] } | undefined;
+  /**
    * The playset's `history/countries` files by the tag the game reads each for
    * (`countryHistoryTag`, `checkCountryHistory`).
    */

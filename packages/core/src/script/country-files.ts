@@ -74,6 +74,46 @@ export interface CountryHistoryFile {
   readonly game: boolean;
 }
 
+/**
+ * The tags the game needs in `common/country_tags`: without one, `CCountryDataBase::AppendFromFile`
+ * logs `Missing <tag> country tag` and stops the game (`bmtest-r40`).
+ */
+export const REQUIRED_COUNTRY_TAGS: readonly string[] = ['PIR', 'NAT', 'REB'];
+
+/**
+ * The game's own tags (`REQUIRED_COUNTRY_TAGS`) that the playset's `common/country_tags` lack, at
+ * the start of its first file; the range is the start of the file.
+ */
+export interface CountryTagsMissingDiagnostic extends SourceRange {
+  readonly severity: 'warning';
+  readonly code: 'country-tags-required';
+  readonly message: string;
+  readonly key: 'common/country_tags';
+  /** The missing tags, comma-separated. */
+  readonly name: string;
+}
+
+/**
+ * The warning for a playset whose `common/country_tags` files lack tags the game needs (`missing`):
+ * after reading them the game logs `Missing REB country tag` (or PIR, NAT) and stops at once, 10 s
+ * after it starts (`bmtest-r40`: vanilla's `00_countries.txt` without `REB`, put in a mod).
+ */
+export function countryTagsMissing(missing: readonly string[]): CountryTagsMissingDiagnostic {
+  const tags = missing.join(', ');
+  return {
+    severity: 'warning',
+    code: 'country-tags-required',
+    message:
+      `No common/country_tags file of the playset defines ${tags}: the game needs ` +
+      `${missing.length === 1 ? 'it' : 'them'} and stops while it starts, after "Missing ` +
+      `${missing[0] ?? ''} country tag" in error.log.`,
+    key: 'common/country_tags',
+    name: tags,
+    start: 0,
+    end: 0,
+  };
+}
+
 /** Whether a path is a file of `common/country_tags`. */
 export function isCountryTagsPath(path: string): boolean {
   return /^common\/country_tags\/[^/]+\.txt$/i.test(path.replace(/\\/g, '/'));
