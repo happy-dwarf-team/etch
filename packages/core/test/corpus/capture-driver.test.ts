@@ -1119,6 +1119,65 @@ describe('the ready wait', () => {
   });
 });
 
+describe('a session after its views', () => {
+  it('holds the game open until the release file appears', async () => {
+    const { options } = await runFixture();
+    const printed: string[] = [];
+    let now = Date.parse('2026-11-19T04:00:00Z');
+    let held = 0;
+    const report = await runCaptures({
+      ...options,
+      sessions: options.sessions.filter((s) => s.start === 'main-menu'),
+      holdMs: 60_000,
+      print: (line) => printed.push(line),
+      now: () => new Date(now),
+      async sleep(ms) {
+        now += ms;
+        // The user creates the file the run named, after the first second of the hold.
+        const named = printed.map((l) => /create (.+) to close it$/.exec(l)?.[1]).find(Boolean);
+        if (named !== undefined && ++held === 2) await writeFile(named, '');
+      },
+    });
+    expect(report.stopped).toBeUndefined();
+    expect(printed).toContainEqual(
+      expect.stringMatching(/^ {2}holding the game open; create .+release to close it$/),
+    );
+    // Two seconds of the minute: the release file ended the hold.
+    expect(held).toBe(2);
+  });
+
+  it("stops the run when the game cannot be closed or the player's profile changed", async () => {
+    const { root, options } = await runFixture();
+    const printed: string[] = [];
+    const menu = options.sessions.filter((s) => s.start === 'main-menu');
+    const crashed = await runCaptures({
+      ...options,
+      sessions: menu,
+      print: (line) => printed.push(line),
+      launcher: {
+        ...options.launcher,
+        stop: () =>
+          Promise.resolve({ ok: false, outcome: 'still running', anvilCrashes: ['crash-1.txt'] }),
+      },
+    });
+    expect(printed).toContain("  the game crashed: Anvil's reports crash-1.txt");
+    expect(crashed.stopped).toBe('The game could not be closed.');
+
+    const touched = await runCaptures({
+      ...options,
+      sessions: menu,
+      launcher: {
+        ...options.launcher,
+        async start(profile, save) {
+          await writeFile(join(root, 'player', 'settings.txt'), 'changed');
+          return options.launcher.start(profile, save);
+        },
+      },
+    });
+    expect(touched.stopped).toBe("The player's profile changed.");
+  });
+});
+
 /** A crawl of the main menu session on the run fixture, whose games answer the crawler's reads. */
 async function crawlFixture(): Promise<{
   root: string;
