@@ -244,6 +244,73 @@ ${GAMESTATE}`,
     const cut = zipped().subarray(0, 40);
     await expect(readSave(cut)).rejects.toMatchObject({ problem: 'damaged' });
   });
+
+  it('names how a zip is damaged, and an entry that is not a text save', async () => {
+    const one = (): Uint8Array => zip([{ name: 'gamestate', text: `EU4txt\n${GAMESTATE}` }]);
+    /** The zip with a little-endian field of its first directory entry (or end record) changed. */
+    const patched = (
+      bytes: Uint8Array,
+      where: 'entry' | 'end',
+      at: number,
+      value: number,
+      width: 2 | 4,
+    ): Uint8Array => {
+      const copy = Buffer.from(bytes);
+      const end = copy.length - 22;
+      const base = where === 'end' ? end : copy.readUInt32LE(end + 16);
+      if (width === 2) copy.writeUInt16LE(value, base + at);
+      else copy.writeUInt32LE(value, base + at);
+      return new Uint8Array(copy);
+    };
+    const failure = async (bytes: Uint8Array): Promise<[string, string]> => {
+      const error = (await readSave(bytes).catch((e: unknown) => e)) as SaveReadError;
+      return [error.problem, error.message];
+    };
+    // The method (+10), the compressed size (+20) and the local header's offset (+42).
+    expect(await failure(patched(one(), 'entry', 10, 12, 2))).toEqual([
+      'damaged',
+      "The save's gamestate is compressed by method 12, not deflate.",
+    ]);
+    expect(await failure(patched(one(), 'entry', 20, 1 << 30, 4))).toEqual([
+      'damaged',
+      "The save's zip is damaged: the entry gamestate ends early.",
+    ]);
+    expect(await failure(patched(one(), 'entry', 42, 1, 4))).toEqual([
+      'damaged',
+      "The save's zip is damaged: the entry gamestate has no local header.",
+    ]);
+    // Two entries counted, one written.
+    expect(await failure(patched(one(), 'end', 10, 2, 2))).toEqual([
+      'damaged',
+      "The save's zip is damaged: its central directory ends early.",
+    ]);
+    const stored = zip([{ name: 'gamestate', text: 'not deflate data', stored: true }]);
+    expect(await failure(patched(stored, 'entry', 10, 8, 2))).toMatchObject([
+      'damaged',
+      expect.stringMatching(/^The save's gamestate does not inflate: /) as unknown,
+    ]);
+    expect(
+      await failure(
+        zip([
+          { name: 'meta', text: 'meta={}' },
+          { name: 'gamestate', text: '' },
+        ]),
+      ),
+    ).toEqual(['not-a-save', "The save's meta does not start with EU4txt."]);
+    expect(await failure(zip([{ name: 'gamestate', text: 'gamestate', stored: true }]))).toEqual([
+      'not-a-save',
+      "The save's gamestate does not start with EU4txt.",
+    ]);
+  });
+
+  it('reads a gamestate that inflates to chunks past the size its directory gives', async () => {
+    // More than two of the inflater's 1 MB chunks, against a directory size of 10 bytes.
+    const bytes = zip([
+      { name: 'meta', text: `EU4txt\n${META}` },
+      { name: 'gamestate', text: `EU4txt\n${GAMESTATE}${' '.repeat(3 << 20)}`, size: 10 },
+    ]);
+    checkContent(await readSave(bytes));
+  });
 });
 
 describe('indexSave', () => {
@@ -257,6 +324,31 @@ describe('indexSave', () => {
     expect(slices('b')).toEqual(['b={ x=1 }']);
     const five = index.provinces.get(5);
     expect(five && text.slice(five.start, five.end)).toBe('-5={ name="Open"');
+  });
+
+  it('skips comments, comparisons, scalars among countries and a stray closing brace', async () => {
+    const text = [
+      '} # a stray brace, then a comment with a { and a }',
+      'checksum="abc"',
+      'countries={',
+      '  count=2',
+      '  "SWE"={ capital=1 }',
+      '  REB={ x>=3 y<2 }',
+      '  { anonymous=yes }',
+      '}',
+      'provinces={ -7={ name="Seven" } 3={ } -x={ } }',
+      'flags={ a=1 }',
+    ].join('\n');
+    const index = await indexSave(latin1(text));
+    const slice = (range: { start: number; end: number } | undefined) =>
+      range && text.slice(range.start, range.end);
+    expect([...index.top.keys()]).toEqual(['checksum', 'countries', 'provinces', 'flags']);
+    expect([...index.countries.keys()]).toEqual(['SWE', 'REB']);
+    expect(slice(index.countries.get('SWE'))).toBe('"SWE"={ capital=1 }');
+    expect(slice(index.countries.get('REB'))).toBe('REB={ x>=3 y<2 }');
+    // Only `-<id>` keys are provinces.
+    expect([...index.provinces.keys()]).toEqual([7]);
+    expect(slice(index.top.get('flags')?.[0])).toBe('flags={ a=1 }');
   });
 
   it('stops when its signal aborts', async () => {
