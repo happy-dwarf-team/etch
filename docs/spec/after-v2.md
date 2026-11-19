@@ -698,7 +698,10 @@ refresh is a step of the 3.0.0 release.
   game draws those with `gfx/FX/tree.shader`, not their materials' shader, so
   the preview cuts out texels with a diffuse alpha under 0.5 and adds no
   highlight. The tree shader's tint, colour and season maps and each tree's
-  random height and turn are not followed. Not drawn: the map's fog of war,
+  random height and turn are not followed. `PdxMeshAlphaBlend` parts (16 African
+  buildings and, without depth writes, `Mapitems/selection.mesh`) are blended by
+  their diffuse alpha after the opaque parts, as the game's blend state does,
+  where the preview cut them at 0.5 before. Not drawn: the map's fog of war,
   snow and distance fog.
 
 ## Open issues

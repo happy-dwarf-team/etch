@@ -4,7 +4,8 @@
 // maps and is offered only the animation that names the mesh's bones. A mesh in the game folder (`etch.gamePath`, a fixture) takes its texture
 // through the playset, one without its texture is drawn untextured, and a file Etch cannot read is
 // reported instead of shown. A `PdxMeshTextureAtlas` part reports its flag (the country colours
-// until a tag is asked for), and a tag's flag comes from `gfx/flags` through the playset. A mesh
+// until a tag is asked for), and a tag's flag comes from `gfx/flags` through the playset. A
+// `PdxMeshAlphaBlendNoZWrite` part (a selection ring) is reported as blended. A mesh
 // with levels of detail draws and counts only its most detailed level, and a mesh a playset's
 // `mapobject_<n>` pdxmesh names is drawn as a map tree.
 import * as assert from 'node:assert/strict';
@@ -99,6 +100,24 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
     { parts: 1 },
     'one flag part, in the country colours until a tag is asked for',
   );
+  assert.equal(atlas.summary.blended, undefined, 'nothing blended');
+  await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+
+  // A unit's selection ring: the fixture quad as a PdxMeshAlphaBlendNoZWrite part.
+  const ring = vscode.Uri.file(path.join(folder, 'etch_ring.mesh'));
+  await writeFile(
+    ring.fsPath,
+    binary(
+      MESH.map((item) =>
+        'name' in item && item.name === 'shader' && item.values[0] === 'PdxMeshStandardSkinned'
+          ? strs('shader', 'PdxMeshAlphaBlendNoZWrite')
+          : item,
+      ),
+    ),
+  );
+  const blended = await open(api, ring);
+  assert.ok(blended.ok, `the ring shows: ${blended.ok ? '' : blended.message}`);
+  assert.equal(blended.summary.blended, 1, 'one part blended by its diffuse alpha');
   await vscode.commands.executeCommand('workbench.action.closeAllEditors');
 
   // A map tree's levels of detail: a quad at level 0 and a triangle at level 1, as two shapes.
