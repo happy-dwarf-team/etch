@@ -348,6 +348,8 @@ it is in no folder of the playset. Collision shapes are hidden.
   second texture coordinates, as the game does. Type a tag in **Flag** for that
   country's `gfx/flags/<TAG>.tga` from your playset; with no tag the three
   colour boxes show as stripes in its place.
+- A mesh with levels of detail (shapes named `lodShape0`, `Lod1Shape`, as on
+  vanilla's map trees) shows its most detailed level; **LOD** picks another.
 - If the mesh has a skeleton, the list offers the `.anim` files beside it that
   name its bones, the mesh's own first (`carrack_idle.anim` for
   `carrack.mesh`); **Play** runs the one you pick in a loop.

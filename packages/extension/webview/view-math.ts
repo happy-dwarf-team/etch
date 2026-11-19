@@ -145,6 +145,17 @@ function axesOf(yaw: number, pitch: number): { s: number[]; u: number[]; f: numb
   return { s, u: cross(s, f), f };
 }
 
+/**
+ * The level of detail a mesh with these levels shows when `chosen` is picked: the most detailed of
+ * its levels that is not more detailed than the choice, or its most detailed one when it has none
+ * as coarse; `undefined` for a mesh without levels.
+ */
+export function shownLevel(levels: readonly number[], chosen: number): number | undefined {
+  const sorted = [...new Set(levels)].sort((a, b) => a - b);
+  const coarser = sorted.filter((level) => level <= chosen);
+  return coarser.length > 0 ? coarser[coarser.length - 1] : sorted[0];
+}
+
 /** The camera's position, in the drawn space. */
 export function eyeOf(camera: OrbitCamera): number[] {
   const { yaw, pitch, distance, target } = camera;

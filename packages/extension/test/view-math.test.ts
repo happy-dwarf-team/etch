@@ -11,6 +11,7 @@ import {
   placedBounds,
   placement,
   scaling,
+  shownLevel,
   viewProjection,
   type Bounds,
 } from '../webview/view-math.ts';
@@ -117,6 +118,16 @@ describe('view math', () => {
     const camera = framing(box, 1);
     const eye = eyeOf(camera);
     expect(Math.hypot(...eye)).toBeGreaterThan(50);
+  });
+
+  it('shows the nearest level of detail a mesh has', () => {
+    expect(shownLevel([0, 1, 2, 3], 2)).toBe(2);
+    // Vanilla's savanna trees skip level 1: they keep level 0 there.
+    expect(shownLevel([0, 2, 3], 1)).toBe(0);
+    expect(shownLevel([0, 2, 3], 4)).toBe(3);
+    // A mesh whose levels start above the pick shows its most detailed one.
+    expect(shownLevel([1, 2, 3], 0)).toBe(1);
+    expect(shownLevel([], 0)).toBeUndefined();
   });
 
   it('puts the eye at the camera distance from its target', () => {

@@ -25,6 +25,11 @@ export interface MeshSummary {
   readonly entity?: EntitySummary;
   /** When `PdxMeshTextureAtlas` parts are drawn: how many, and the flag on them. */
   readonly flag?: FlagSummary;
+  /**
+   * When a mesh has levels of detail (shapes named `lodShape0`, `Lod1Shape`): the level picked and
+   * the levels offered. Only the picked level's shapes are drawn and counted.
+   */
+  readonly lod?: { readonly level: number; readonly levels: readonly number[] };
 }
 
 export interface FlagSummary {

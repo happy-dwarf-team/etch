@@ -687,7 +687,12 @@ refresh is a step of the 3.0.0 release.
   through the playset, or the three country colours as stripes. The game picks
   the flag out of its flag atlas (`TextureAtlasCoords`); its other branches
   (`AtlasHalfColor`, a flag mapped through the country colours) are not
-  followed. Not drawn: LODs, and the map's fog of war, snow and distance fog.
+  followed. Levels of detail are shapes named `lodShape0`, `Lod1Shape` and so
+  on (`MeshShape.lod`: 16 map trees with up to five levels and the map flag
+  with one, `asset.vanilla.test.ts`); the preview draws one level, the most
+  detailed unless the LOD box picks another, where it drew them all on top of
+  each other before. Which level the game draws at which distance is not
+  known. Not drawn: the map's fog of war, snow and distance fog.
 
 ## Open issues
 

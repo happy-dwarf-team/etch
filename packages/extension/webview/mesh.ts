@@ -1,7 +1,7 @@
 // The webview script of the mesh preview (src/mesh-preview.ts) and the entity preview
 // (src/entity-preview.ts): parses the posted `.mesh` files with `@etch/core/asset`, draws their
-// shapes with WebGL2 under an orbit camera (collision shapes skipped), and plays an animation,
-// skinned on the CPU each frame. A mesh preview draws one mesh and plays the animation the user
+// shapes with WebGL2 under an orbit camera (collision shapes skipped, one level of detail of a mesh
+// that has several), and plays an animation, skinned on the CPU each frame. A mesh preview draws one mesh and plays the animation the user
 // picks. An entity preview draws the entity's mesh and its attachments, each on its parent's bone
 // as the bone moves, and plays the state the user picks on all of them. The game's files are
 // left-handed with Y up: Z is mirrored so a mesh does not show mirrored.
@@ -50,6 +50,7 @@ import {
   placedBounds,
   placement,
   scaling,
+  shownLevel,
   viewProjection,
   type Bounds,
   type OrbitCamera,
@@ -68,6 +69,7 @@ const facts = element('facts');
 const status = element('status');
 const errorBox = element('error');
 const animationSelect = element('animation') as HTMLSelectElement;
+const lodSelect = element('lod') as HTMLSelectElement;
 const playButton = element('play') as HTMLButtonElement;
 const wireButton = element('wireframe') as HTMLButtonElement;
 const mapsButton = element('maps') as HTMLButtonElement;
@@ -215,7 +217,6 @@ let instances: Instance[] = [];
 let uploaded: WebGLTexture[] = [];
 /** The mesh preview's file name, or the entity's name. */
 let title = '';
-let textured = 0;
 /** Where each texture came from, or why it is missing. */
 let textureSources: Record<string, string> = {};
 /** Mesh preview: the animations beside the mesh. */
@@ -335,7 +336,6 @@ function clear(context: WebGL2RenderingContext): void {
   for (const texture of uploaded) context.deleteTexture(texture);
   instances = [];
   uploaded = [];
-  textured = 0;
   textureSources = {};
 }
 
@@ -413,7 +413,6 @@ function upload(
       const edgeList = edgesOf(part.indices);
       const edges = buffer(context, context.ELEMENT_ARRAY_BUFFER, edgeList, context.STATIC_DRAW);
       const texture = named(part.material.diffuse, part);
-      if (texture !== undefined) textured++;
       parts.push({
         part,
         shape,
@@ -454,6 +453,32 @@ function showErrorBox(): void {
   const lines = flagProblem === undefined ? warningLines : [...warningLines, flagProblem];
   errorBox.hidden = lines.length === 0;
   errorBox.textContent = lines.join('\n');
+}
+
+/** The level of detail picked in the LOD box; each mesh shows its nearest (`shownLevel`). */
+let lodLevel = 0;
+
+/** The levels of detail of an instance's mesh, most detailed first; empty without levels. */
+function levelsOf(instance: Instance): number[] {
+  const levels = instance.mesh.shapes.flatMap((s) => (s.lod === undefined ? [] : [s.lod]));
+  return [...new Set(levels)].sort((a, b) => a - b);
+}
+
+/** The parts drawn now: those of shapes without a level, and of the level the instance shows. */
+function drawnParts(instance: Instance): DrawnPart[] {
+  const level = shownLevel(levelsOf(instance), lodLevel);
+  return instance.parts.filter((d) => d.shape.lod === undefined || d.shape.lod === level);
+}
+
+/** Offers the levels of detail of the drawn meshes, keeping the pick when it is still offered. */
+function offerLevels(): void {
+  const levels = [...new Set(instances.flatMap(levelsOf))].sort((a, b) => a - b);
+  if (!levels.includes(lodLevel)) lodLevel = levels[0] ?? 0;
+  lodSelect.replaceChildren(
+    ...levels.map((level) => new Option(`LOD ${String(level)}`, String(level))),
+  );
+  lodSelect.value = String(lodLevel);
+  lodSelect.hidden = levels.length < 2;
 }
 
 /** The animation an instance plays now, if any. */
@@ -531,7 +556,7 @@ function pose(context: WebGL2RenderingContext, seconds: number): void {
 function boundsOf(): Bounds | undefined {
   return placedBounds(
     instances.flatMap((instance) =>
-      instance.parts.map((item) => ({ model: instance.model, positions: item.posed })),
+      drawnParts(instance).map((item) => ({ model: instance.model, positions: item.posed })),
     ),
   );
 }
@@ -599,7 +624,7 @@ function draw(now: number): void {
   const lines = uniform('lines');
   for (const instance of instances) {
     gl.uniformMatrix4fv(uniform('model'), false, instance.model);
-    for (const item of instance.parts) {
+    for (const item of drawnParts(instance)) {
       gl.bindVertexArray(item.vao);
       gl.uniform1i(lines, 0);
       const normalMap = maps ? item.normalMap : undefined;
@@ -635,15 +660,15 @@ function redraw(): void {
 
 function summary(): MeshSummary {
   const shapes = instances.flatMap((i) => i.mesh.shapes);
-  const parts = instances.flatMap((i) => i.parts);
-  const drawnParts = parts.map((d) => d.part);
+  const parts = instances.flatMap(drawnParts);
+  const meshParts = parts.map((d) => d.part);
   let base: MeshSummary = {
-    shapes: shapes.filter((s) => !s.collision).length,
+    shapes: new Set(parts.map((d) => d.shape)).size,
     collisionShapes: shapes.filter((s) => s.collision).length,
-    vertices: drawnParts.reduce((sum, p) => sum + p.positions.length / 3, 0),
-    triangles: drawnParts.reduce((sum, p) => sum + p.indices.length / 3, 0),
+    vertices: meshParts.reduce((sum, p) => sum + p.positions.length / 3, 0),
+    triangles: meshParts.reduce((sum, p) => sum + p.indices.length / 3, 0),
     bones: shapes.reduce((sum, s) => sum + s.skeleton.length, 0),
-    textured,
+    textured: parts.filter((d) => d.texture !== undefined).length,
     normalMapped: parts.filter((d) => d.normalMap !== undefined).length,
     specularMapped: parts.filter((d) => d.specularMap !== undefined).length,
     animation: entity === undefined ? playingKey : undefined,
@@ -652,6 +677,8 @@ function summary(): MeshSummary {
   };
   const atlasParts = parts.filter((d) => d.atlas).length;
   if (atlasParts > 0) base = { ...base, flag: { parts: atlasParts, tag: flag?.tag } };
+  const levels = [...new Set(instances.flatMap(levelsOf))].sort((a, b) => a - b);
+  if (levels.length > 0) base = { ...base, lod: { level: lodLevel, levels } };
   if (entity === undefined) return base;
   return {
     ...base,
@@ -667,7 +694,7 @@ function summary(): MeshSummary {
 
 function showFacts(): void {
   const s = summary();
-  const parts = instances.flatMap((i) => i.parts);
+  const parts = instances.flatMap(drawnParts);
   const shaders = [...new Set(parts.map((d) => d.part.material.shader).filter((x) => x !== ''))];
   const items = [title];
   if (s.entity !== undefined) {
@@ -692,6 +719,9 @@ function showFacts(): void {
     items.push(
       flag === undefined ? 'flag: the country colours' : `flag: ${flag.tag} (${flag.source})`,
     );
+  }
+  if (s.lod !== undefined && s.lod.levels.length > 1) {
+    items.push(`LOD ${String(s.lod.level)} of ${s.lod.levels.join(', ')}`);
   }
   if (s.collisionShapes > 0) items.push(`${String(s.collisionShapes)} collision (hidden)`);
   for (const [name, source] of Object.entries(s.textures)) items.push(`${name} (${source})`);
@@ -751,6 +781,7 @@ function show(
   showWarnings(warnings, problems);
   colours.hidden = !instances.some((i) => i.parts.some((d) => d.countryColours || d.atlas));
   flagLabel.hidden = !instances.some((i) => i.parts.some((d) => d.atlas));
+  offerLevels();
   pose(context, 0);
 }
 
@@ -885,6 +916,13 @@ animationSelect.addEventListener('change', () => {
     return;
   }
   vscode.postMessage({ type: 'animation', name: key });
+});
+
+lodSelect.addEventListener('change', () => {
+  lodLevel = Number(lodSelect.value);
+  showFacts();
+  redraw();
+  vscode.postMessage({ type: 'shown', summary: summary() });
 });
 
 playButton.addEventListener('click', () => {

@@ -388,6 +388,7 @@ export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): str
   <div class="spacer"></div>
   <select id="animation" title="Animation beside the mesh" aria-label="Animation" hidden></select>
   <button id="play" aria-pressed="false" title="Play or pause the animation" hidden>Play</button>
+  <select id="lod" title="Level of detail: which of the mesh's levels (lodShape0, lodShape1 …) to draw" aria-label="Level of detail" hidden></select>
   <span id="colours" title="The country colours a PdxMeshColor part shows (the specular map's R, G and B mask them), and the stripes a PdxMeshTextureAtlas part shows with no flag tag" hidden>
     <input type="color" id="primary" value="#bf291f" aria-label="Primary country colour">
     <input type="color" id="secondary" value="#ebe0bf" aria-label="Secondary country colour">

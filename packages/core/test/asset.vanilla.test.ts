@@ -54,12 +54,17 @@ describe.skipIf(gamePath === undefined)('meshes and animations of the installed 
       tangents: 0,
       uvs1: 0,
       atlasWithUvs1: 0,
+      lodMeshes: 0,
+      lodShapes: 0,
     };
     const failed: string[] = [];
     for (const file of files(root, '.mesh')) {
       try {
         const mesh = readMesh(readFileSync(file));
         stats.meshes++;
+        const levels = mesh.shapes.filter((shape) => shape.lod !== undefined).length;
+        if (levels > 0) stats.lodMeshes++;
+        stats.lodShapes += levels;
         for (const shape of mesh.shapes) {
           if (shape.collision) stats.collision++;
           for (const part of shape.parts) {
@@ -102,6 +107,9 @@ describe.skipIf(gamePath === undefined)('meshes and animations of the installed 
       uvs1: 157,
       // Every PdxMeshTextureAtlas part (ships, the map flag) has the UVs its flag is drawn with.
       atlasWithUvs1: 21,
+      // The map's trees (16, up to five levels each) and the map flag (one level).
+      lodMeshes: 17,
+      lodShapes: 66,
     });
     expect(animation).toEqual({ files: 152, joints: 3_116, text: 3 });
   });
