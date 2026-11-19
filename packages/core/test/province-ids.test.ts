@@ -547,12 +547,21 @@ describe('definition file', () => {
     expect(diagnostics.map((d) => `${d.key} ${String(d.id)} ${d.code}`)).toEqual([
       'province -2 province-id-out-of-range',
       'province 9 province-id-out-of-range',
+      'province 8 province-id-out-of-range',
       'red 8 province-colour-out-of-range',
       'green 8 province-colour-out-of-range',
     ]);
-    expect(diagnostics.map((d) => text.slice(d.start, d.end))).toEqual(['-2', '9', '256', '-1']);
+    expect(diagnostics.map((d) => text.slice(d.start, d.end))).toEqual([
+      '-2',
+      '9',
+      '8',
+      '256',
+      '-1',
+    ]);
     expect(diagnostics[1]?.message).toContain('a table of 9 entries');
-    expect(diagnostics[2]?.message).toContain('A red of 256 is outside 0 to 255.');
+    // An id of max_provinces stays in the colour table, but no province has it.
+    expect(diagnostics[2]?.message).not.toContain('a table of');
+    expect(diagnostics[3]?.message).toContain('A red of 256 is outside 0 to 255.');
   });
 });
 

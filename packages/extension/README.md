@@ -224,9 +224,10 @@ lists, the trade winds file's ids, `From` and `To` of each line of
 `map/adjacencies.csv` and `Through` of a `sea` link, and the negative ids of
 the continent, positions and province group files (the game skips ids past
 the map in those three, but not negative ones). In `map/definition.csv`
-itself, a row the game reads whose id is negative or past `max_provinces`, or
-whose red, green or blue is outside 0 to 255, gets a warning: the game stores
-both without a check. A `history/provinces` file
+itself, a row the game reads whose id is negative or at least `max_provinces`,
+or whose red, green or blue is outside 0 to 255, gets a warning: the game
+stores both without a check, and the map's borders look up such an id in the
+province table, which crashes the map load. A `history/provinces` file
 whose name does not start with a province of the map (`4999 - Past.txt` on
 4941 provinces, or `Uppland.txt`) gets a warning at its first line: the game
 skips it without a word.

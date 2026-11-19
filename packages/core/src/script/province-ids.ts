@@ -748,8 +748,12 @@ const COLOUR_KEYS = ['red', 'green', 'blue'] as const;
  * and checks nothing: it stores the row's colour at index id of a table of `max_provinces + 1`
  * entries, and the id at index `red × 65536 + green × 256 + blue` of a table of 2²⁴ entries (the
  * EU4 engine lab, 19.11.2026). An id below 0 or past `max_provinces`, or a red, green or blue
- * outside 0 to 255, writes elsewhere or gives the province another province's colour. Vanilla
- * and the lab's mods with their own file have none.
+ * outside 0 to 255, writes elsewhere or gives the province another province's colour. An id of
+ * `max_provinces` stays inside the colour table, but no province has it: when the map is loaded,
+ * `CPdxMapBorderLayer::CreateBorderRivers` looks up the province of each border's pixels in the
+ * province table without a check, and a new game's map load crashed there with Stockholm's row
+ * given the id 4942 or 30000 on vanilla's `max_provinces = 4942` (19.11.2026). Vanilla and the
+ * lab's mods with their own file have none of these rows.
  */
 export function checkDefinitions(text: string, ids: ProvinceIds): ProvinceIdDiagnostic[] {
   const found: ProvinceIdDiagnostic[] = [];
@@ -768,15 +772,20 @@ export function checkDefinitions(text: string, ids: ProvinceIds): ProvinceIdDiag
     const fields = csvFields(text, at, end);
     at = end + 1;
     const id = atoi(fields[0]);
-    if (id !== undefined && (id.value < 0 || id.value > ids.maxProvinces)) {
+    if (id !== undefined && (id.value < 0 || id.value >= ids.maxProvinces)) {
+      const past =
+        id.value === ids.maxProvinces
+          ? ''
+          : ` It also stores the row's colour by its id in a table of ${String(ids.maxProvinces + 1)} ` +
+            'entries without a check, so this row writes past it.';
       found.push({
         severity: 'warning',
         code: 'province-id-out-of-range',
         message:
           `Province ${String(id.value)} is not on the map: ${ids.maxSource} sets max_provinces = ` +
-          `${String(ids.maxProvinces)}. The game stores each row's colour by its id in a table ` +
-          `of ${String(ids.maxProvinces + 1)} entries without a check, so this row writes past ` +
-          'it, which can crash the game.',
+          `${String(ids.maxProvinces)}. The game gives the row's colour to that province and looks ` +
+          'it up in its province table without a check when it draws the borders, which crashes ' +
+          `the map load when the colour is on the province map.${past}`,
         id: id.value,
         key: 'province',
         start: id.start,
