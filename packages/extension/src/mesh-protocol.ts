@@ -32,10 +32,15 @@ export interface MeshSummary {
    */
   readonly region?: string;
   /**
-   * When a mesh has levels of detail (shapes named `lodShape0`, `Lod1Shape`): the level picked and
-   * the levels offered. Only the picked level's shapes are drawn and counted.
+   * When a mesh has levels of detail (shapes with a `lod` property): the level picked and the
+   * levels offered, and the camera distance the mesh's `loddist` gives that level, if it has one.
+   * Only the picked level's shapes are drawn and counted.
    */
-  readonly lod?: { readonly level: number; readonly levels: readonly number[] };
+  readonly lod?: {
+    readonly level: number;
+    readonly levels: readonly number[];
+    readonly from?: number;
+  };
   /**
    * The map tree type (`mapobject_<n>`) that draws the mesh: it is drawn as the game's tree
    * shader draws it.
@@ -174,7 +179,10 @@ export type MeshTexture =
       readonly width: number;
       readonly height: number;
       readonly rgba: Uint8Array;
-      /** The playset layer it came from (`the game`, a mod's name) or `beside the mesh`. */
+      /**
+       * The playset layer it came from (`the game`, a mod's name), `beside the mesh`, or for a
+       * file of another folder found by its name, the layer and `, by name: <path>`.
+       */
       readonly source: string;
     }
   | { readonly ok: false; readonly message: string };

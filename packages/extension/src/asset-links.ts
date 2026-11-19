@@ -17,7 +17,7 @@ import {
   renderMeshThumbnail,
   type RgbaImage,
 } from '@etch/core/asset';
-import type { GameFiles } from '@etch/core/playset';
+import { loadTexturesByName, type GameFile, type GameFiles } from '@etch/core/playset';
 import { inspectTexture } from '@etch/renderer/inspect';
 import { encodePng } from './png.ts';
 import { linkedFiles } from './script-profile-view.ts';
@@ -36,6 +36,28 @@ export interface ResolvedAsset {
   readonly path: string;
   /** `the game`, a mod's name, or `beside this file` outside the playset. */
   readonly source: string;
+}
+
+/** The playset's textures under `gfx/` by file name, read once per playset. */
+const texturesByName = new WeakMap<GameFiles, Promise<Map<string, GameFile>>>();
+
+/**
+ * A texture of the playset found by its file name alone, wherever under `gfx/` it lies: the game
+ * finds a mesh's textures that way, so a mesh can name a texture of another folder. Its `.tga`
+ * is tried as `.dds` too, as the mesh's own folder is.
+ */
+export async function textureByName(name: string, files: GameFiles): Promise<GameFile | undefined> {
+  let index = texturesByName.get(files);
+  if (index === undefined) {
+    index = loadTexturesByName(files);
+    texturesByName.set(files, index);
+  }
+  const byName = await index;
+  for (const candidate of textureCandidates(name)) {
+    const found = byName.get(candidate.slice(candidate.lastIndexOf('/') + 1).toLowerCase());
+    if (found !== undefined) return found;
+  }
+  return undefined;
 }
 
 export class AssetLinks implements vscode.DocumentLinkProvider, vscode.HoverProvider {
@@ -106,21 +128,25 @@ export class AssetLinks implements vscode.DocumentLinkProvider, vscode.HoverProv
 
   /**
    * A mesh drawn with its diffuse textures, as Markdown: each texture its material names is looked
-   * up in the mesh's folder as a bare asset name is (through the playset, else beside the mesh); one
-   * that is missing or unreadable leaves its part grey.
+   * up in the mesh's folder as a bare asset name is (through the playset, else beside the mesh),
+   * else by its file name elsewhere under the playset's `gfx/`, as the game finds it; one that is
+   * missing or unreadable leaves its part grey.
    */
   async meshThumbnail(absolutePath: string): Promise<string> {
     const mesh = readMesh(await readFile(absolutePath));
     const textures: [string, string][] = [];
     const keys = [await statKey(absolutePath)];
     for (const name of meshFacts(mesh).textures) {
-      const found = await this.resolve(vscode.Uri.file(absolutePath), {
-        folder: 'document',
-        candidates: textureCandidates(name),
-      });
+      const found =
+        (
+          await this.resolve(vscode.Uri.file(absolutePath), {
+            folder: 'document',
+            candidates: textureCandidates(name),
+          })
+        )?.absolutePath ?? (await this.byName(name));
       if (found === undefined) continue;
-      textures.push([name, found.absolutePath]);
-      keys.push(await statKey(found.absolutePath));
+      textures.push([name, found]);
+      keys.push(await statKey(found));
     }
     const key = keys.join('\n');
     let entry = this.meshRenders.get(key);
@@ -134,6 +160,12 @@ export class AssetLinks implements vscode.DocumentLinkProvider, vscode.HoverProv
       }
     }
     return entry;
+  }
+
+  /** A mesh texture of another folder, found by its file name as the game finds it. */
+  private async byName(name: string): Promise<string | undefined> {
+    const files = await this.playset();
+    return files === undefined ? undefined : (await textureByName(name, files))?.absolutePath;
   }
 
   /** The file an asset path leads to, or `undefined` when the playset has none. */

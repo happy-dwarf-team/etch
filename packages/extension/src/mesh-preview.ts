@@ -36,7 +36,7 @@ import {
 } from '@etch/core/asset';
 import { loadPdxMeshTypes, type GameFiles } from '@etch/core/playset';
 import { inspectTexture } from '@etch/renderer/inspect';
-import { layerFolder } from './asset-links.ts';
+import { layerFolder, textureByName } from './asset-links.ts';
 import type {
   MeshAnimationEntry,
   MeshControls,
@@ -88,7 +88,11 @@ async function exists(file: string): Promise<boolean> {
   }
 }
 
-/** The file a material's bare texture name leads to, and where it came from. */
+/**
+ * The file a material's bare texture name leads to, and where it came from: the mesh's folder
+ * through the playset, else beside the mesh, else the playset's file of that name in another
+ * folder.
+ */
 async function findTexture(
   name: string,
   meshFile: string,
@@ -106,7 +110,11 @@ async function findTexture(
     const beside = path.join(path.dirname(meshFile), candidate);
     if (await exists(beside)) return { file: beside, source: 'beside the mesh' };
   }
-  return undefined;
+  if (files === undefined) return undefined;
+  const elsewhere = await textureByName(name, files);
+  if (elsewhere === undefined) return undefined;
+  const layer = elsewhere.layer.name === 'game' ? 'the game' : elsewhere.layer.name;
+  return { file: elsewhere.absolutePath, source: `${layer}, by name: ${elsewhere.path}` };
 }
 
 /** The diffuse, normal and specular textures of a mesh's drawn parts, decoded, by file name. */
@@ -641,7 +649,7 @@ export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): str
   <div class="spacer"></div>
   <select id="animation" title="Animation beside the mesh" aria-label="Animation" hidden></select>
   <button id="play" aria-pressed="false" title="Play or pause the animation" hidden>Play</button>
-  <select id="lod" title="Level of detail: which of the mesh's levels (lodShape0, lodShape1 …) to draw" aria-label="Level of detail" hidden></select>
+  <select id="lod" title="Level of detail: which of the mesh's levels (its shapes' lod property) to draw; the facts give the camera distance the mesh's loddist starts it at" aria-label="Level of detail" hidden></select>
   <span id="colours" title="The country colours a PdxMeshColor part shows (the specular map's R, G and B mask them), and the stripes a PdxMeshTextureAtlas part shows with no flag tag" hidden>
     <input type="color" id="primary" value="#bf291f" aria-label="Primary country colour">
     <input type="color" id="secondary" value="#ebe0bf" aria-label="Secondary country colour">

@@ -1,6 +1,6 @@
 // A `.mesh` file as Etch draws it. The tree (pdx-asset.ts) is
 //
-//   [object] / [[shape]] / [[[mesh]]]       p (xyz), n (xyz), ta (xyzw), u0 (uv), u1, tri
+//   [object] loddist / [[shape]] lod / [[[mesh]]]  p (xyz), n (xyz), ta (xyzw), u0 (uv), u1, tri
 //                          [[[[aabb]]]]     min, max
 //                          [[[[material]]]] shader, diff, n, spec (file names beside the mesh)
 //                          [[[[skin]]]]     bones (influences per vertex), ix and w (4 per vertex)
@@ -64,15 +64,22 @@ export interface MeshShape {
   readonly skeleton: readonly SkeletonBone[];
   readonly collision: boolean;
   /**
-   * The level of detail the shape's name gives (`lodShape0`, `Lod1Shape`), 0 the most detailed;
-   * `undefined` for a shape without one, drawn at every distance. Vanilla's map trees carry up to
-   * five levels as shapes of one mesh, each a whole copy of the trees.
+   * The level of detail of the shape's `lod` property, 0 the most detailed; `undefined` for a
+   * shape without one (or with a negative one), drawn at every distance. The game reads the
+   * property, not the shape's name: vanilla's `HighShape` and `LowShape` are levels 0 and 1, and
+   * its savanna trees number `LodShape2` level 1. Vanilla's map trees carry up to five levels as
+   * shapes of one mesh, each a whole copy of the trees.
    */
   readonly lod: number | undefined;
 }
 
 export interface PdxMesh {
   readonly shapes: readonly MeshShape[];
+  /**
+   * The object's `loddist`: for each level of detail, the camera distance it starts at (vanilla
+   * `[0, 20, 50, 100, 200]` on a pine). `undefined` without one.
+   */
+  readonly lodDistances: readonly number[] | undefined;
   /** The bounds of every drawn (not collision) vertex, or `undefined` for none. */
   readonly bounds: { readonly min: readonly number[]; readonly max: readonly number[] } | undefined;
 }
@@ -142,20 +149,21 @@ export function readMesh(bytes: Uint8Array): PdxMesh {
       parts,
       skeleton: skeletonOf(shape),
       collision,
-      lod: lodOf(shape.name),
+      lod: lodOf(shape),
     });
   }
+  const distances = floats(object, 'loddist');
   return {
     shapes,
+    lodDistances: distances === undefined ? undefined : Array.from(distances),
     bounds: (min[0] ?? Infinity) <= (max[0] ?? -Infinity) ? { min, max } : undefined,
   };
 }
 
-/** The level of detail in a shape name such as `lodShape2` or `Lod2Shape`; `undefined` without one. */
-export function lodOf(shapeName: string): number | undefined {
-  const match = /^lod(\d*)shape(\d*)$/i.exec(shapeName);
-  const digits = match === null ? '' : match[1] || match[2] || '';
-  return digits === '' ? undefined : Number(digits);
+/** A shape's `lod` property; `undefined` without one or for a negative one (every distance). */
+function lodOf(shape: PdxNode): number | undefined {
+  const level = ints(shape, 'lod')?.[0];
+  return level === undefined || level < 0 ? undefined : level;
 }
 
 function skeletonOf(shape: PdxNode): SkeletonBone[] {

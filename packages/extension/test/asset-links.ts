@@ -1,7 +1,7 @@
 // Links and hovers on asset paths end to end in a real VS Code: a fixture game in a temp folder
 // (an `eu4.exe` that is not the game) set as `etch.gamePath`, one `.gfx` file that names a
-// texture, a pdxmesh with a texture beside its mesh, and an `.asset` file that names an
-// animation beside it.
+// texture, a pdxmesh with a texture beside its mesh, one whose texture is in another folder, and
+// an `.asset` file that names an animation beside it.
 import * as assert from 'node:assert/strict';
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -48,6 +48,10 @@ objectTypes = {
 			texture_diffuse = "etch_tower_diffuse.dds"
 		}
 	}
+	pdxmesh = {
+		name = "etch_far_mesh"
+		file = "gfx/models/far/etch_far.mesh"
+	}
 }
 `;
 
@@ -69,6 +73,8 @@ async function fixtureGame(): Promise<string> {
     'gfx/models/etch/etch_tower_idle.anim': binary(ANIM),
     'gfx/models/etch/flag_diffuse.dds': dds(4, 4, [0, 200, 0, 255]),
     'gfx/models/etch/etch_tower.asset': ASSET,
+    // Its material names flag_diffuse.dds, which only gfx/models/etch has.
+    'gfx/models/far/etch_far.mesh': binary(MESH),
   };
   for (const [name, content] of Object.entries(files)) {
     const file = path.join(root, ...name.split('/'));
@@ -120,6 +126,7 @@ export async function testAssetLinks(): Promise<void> {
         ['gfx//interface//etch_badge.tga', path.join('gfx', 'interface', 'etch_badge.dds')],
         ['gfx/models/etch/etch_tower.mesh', path.join('gfx', 'models', 'etch', 'etch_tower.mesh')],
         ['etch_tower_diffuse.dds', path.join('gfx', 'models', 'etch', 'etch_tower_diffuse.dds')],
+        ['gfx/models/far/etch_far.mesh', path.join('gfx', 'models', 'far', 'etch_far.mesh')],
       ],
       'every path the playset resolves links to its file, a .tga to its .dds; a missing one does not',
     );
@@ -168,6 +175,22 @@ export async function testAssetLinks(): Promise<void> {
     assert.ok(
       pixels.some(([r, g, b, a]) => a === 255 && g > 100 && r < 40 && b < 40),
       'drawn with the green texture beside it',
+    );
+    // A texture in no folder of its mesh is found by its file name, as the game finds it.
+    const far = markdownOf(
+      await vscode.commands.executeCommand<vscode.Hover[]>(
+        'vscode.executeHoverProvider',
+        gfx.uri,
+        positionOf(gfx, 'gfx/models/far/etch_far.mesh'),
+      ),
+    );
+    const farRender = /!\[etch_far\.mesh\]\(data:image\/png;base64,([A-Za-z0-9+/=]+)\)/.exec(far);
+    assert.ok(farRender?.[1] !== undefined, 'the far mesh hovers with a render');
+    assert.ok(
+      pngPixels(Buffer.from(farRender[1], 'base64')).some(
+        ([r, g, b, a]) => a === 255 && g > 100 && r < 40 && b < 40,
+      ),
+      'drawn with the green texture of the other folder',
     );
 
     const asset = await vscode.workspace.openTextDocument(

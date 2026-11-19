@@ -48,6 +48,12 @@ describe.skipIf(gamePath === undefined)('province ids and names of the installed
     const countryFiles = [...(names?.countryFiles ?? new Map<string, boolean>())];
     expect(countryFiles.length).toBeGreaterThan(900);
     expect(countryFiles.filter(([, present]) => !present)).toEqual([]);
+    // Every tag once, in vanilla's one country_tags file.
+    const countryTags = names?.countryTags ?? new Map<string, string>();
+    expect(countryTags.size).toBeGreaterThan(900);
+    expect(new Set(countryTags.values())).toEqual(
+      new Set(['common/country_tags/00_countries.txt']),
+    );
     // The three technology tables, each there.
     expect([...(names?.technologyTables ?? new Map<string, boolean>())]).toEqual([
       ['common/technologies/adm.txt', true],

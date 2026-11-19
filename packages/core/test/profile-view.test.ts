@@ -139,6 +139,37 @@ describe('widgets', () => {
     });
   });
 
+  it("keeps a rule's notCreated widgets out whatever the game shows, and sets frames", () => {
+    const rules = profile(`
+      "selectors": { "owner": { "kind": "data", "fact": "province.ownedByPlayer" } },
+      "rules": { "gone": { "when": { "owner": "yes" },
+        "notCreated": ["provinceview/state_window"],
+        "frame": { "provinceview/top_section_window/history": 2 } } }`);
+    const view = evaluateView(rules, WINDOW, LARGE, {
+      gameToggles: {
+        'provinceview/state_window': true,
+        'provinceview/nothing': true,
+        'provinceview/select_building_large': false,
+      },
+    });
+    // A path the window does not have is not counted.
+    expect(view.gameToggles).toBe(2);
+    expect(view.drawn(at('provinceview/state_window'))).toBe(false);
+    expect(view.widgets.get(at('provinceview/state_window'))).toMatchObject({
+      created: false,
+      why: 'not created (rule gone)',
+    });
+    expect(view.widgets.get(at('provinceview/state_window'))?.fromGame).toBeUndefined();
+    expect(view.widgets.get(at('provinceview/select_building_large'))).toMatchObject({
+      shown: false,
+      fromGame: true,
+    });
+    const layout = layoutViewOf(view);
+    const history = at('provinceview/top_section_window/history');
+    expect(layout.frame(history)).toBe(2);
+    expect(layout.steppedFurther?.(history)).toBeUndefined();
+  });
+
   it('creates one of each _large pair by the screen height, which no toggle changes', () => {
     const small = evaluateView(PROFILE, WINDOW, SMALL, {
       toggles: { 'provinceview/select_building_large': true },

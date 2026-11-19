@@ -661,11 +661,13 @@ refresh is a step of the 3.0.0 release.
   frame-major samples). Over EU4 1.37.5 it reads all 476 meshes and 152
   animations (`packages/core/test/asset.vanilla.test.ts`); a mesh or animation
   path's hover gives their facts, and a mesh path's hover a 128-pixel render
-  of the mesh with its diffuse textures (a software rasteriser in
+  of the mesh with its diffuse textures (its most detailed level of detail
+  only) (a software rasteriser in
   `@etch/core/asset`; every vanilla mesh that draws something renders, in
   `asset.vanilla.test.ts`). Etch Mesh Preview (`etch.meshPreview`)
   draws a `.mesh` with WebGL2 (diffuse, normal and specular textures through
-  the playset, collision shapes hidden; the light, normal map, highlight and
+  the playset: the mesh's folder, else beside the file, else by file name
+  under the playset's `gfx/`; collision shapes hidden; the light, normal map, highlight and
   `PdxMeshColor` country colours follow the game's `pdxmesh.shader`, the
   light direction is vanilla's `LIGHT_DIRECTION`) and plays an `.anim` beside it
   that names its bones, skinned on the CPU (`@etch/core/asset`'s
@@ -691,7 +693,14 @@ refresh is a step of the 3.0.0 release.
   two states of `westerngfx_city_0` and its 32 clones, `siege_cannon` in
   the siege cannon's idle state); whether a DLC archive defines them is not
   known, since Etch does not read the archives. The particle systems
-  themselves are not read. A
+  themselves are not read. The game finds a mesh material's texture by its
+  file name (a `.tga` name tried as `.dds` first) in an index of texture files
+  it builds at start, so a mesh can name a texture of another folder: vanilla's
+  three desert forts in `gfx/models/Buildings` name a specular map that only
+  `Buildings/Western` has. Etch keeps the mesh's own folder first and falls
+  back to a file of that name under `gfx/` (`loadTexturesByName`, the first in
+  path order); which folders the game indexes and which of two files of one
+  name it keeps are not known (vanilla's `gfx/models` has 9 such names). A
   `PdxMeshTextureAtlas` part blends in its country's flag where the diffuse
   alpha marks it, sampled with the mesh's `u1` (`MeshPart.uvs1`; all 21 such
   parts of vanilla have it, `asset.vanilla.test.ts`): a tag's `gfx/flags` flag
@@ -705,12 +714,18 @@ refresh is a step of the 3.0.0 release.
   maps a flag through the country colours (`AtlasCutoff.x < 0`) for flags it
   makes itself (revolutionary countries, custom nations and some dynamic
   tags), out of its custom flag textures; the preview's stripes stand in for
-  that. Levels of detail are shapes named `lodShape0`, `Lod1Shape` and so
-  on (`MeshShape.lod`: 16 map trees with up to five levels and the map flag
-  with one, `asset.vanilla.test.ts`); the preview draws one level, the most
-  detailed unless the LOD box picks another, where it drew them all on top of
-  each other before. Which level the game draws at which distance is not
-  known. A mesh a `mapobject_<n>` pdxmesh of the playset names is one of the
+  that. A shape's level of detail is its `lod` property, as the game reads it
+  (`MeshShape.lod`; a shape without one, or with a negative one, is drawn at
+  every distance). The shapes' names do not count: vanilla's `HighShape` and
+  `LowShape` are levels 0 and 1, and its savanna trees number `LodShape2`
+  level 1. 28 vanilla meshes have levels: 17 trees in `Mapitems/Trees` with
+  up to five, and 11 in `Mapitems` (`asset.vanilla.test.ts`). The preview
+  draws one level, the most detailed unless the LOD box picks another, where
+  it drew them all on top of each other before. The object's `loddist` gives
+  each level's camera distance (a pine's `[0, 20, 50, 100, 200]`,
+  `PdxMesh.lodDistances`), which the bar shows. The game squares those values
+  when it loads the mesh and compares them with squared camera distances. How
+  far the camera is in the preview's units is not matched to the game's. A mesh a `mapobject_<n>` pdxmesh of the playset names is one of the
   map's trees (the tree layer places type n where `map/trees.bmp` has palette
   index n: 21 types over 17 meshes in vanilla, `entity.vanilla.test.ts`); the
   game draws those with `gfx/FX/tree.shader`, not their materials' shader, so
