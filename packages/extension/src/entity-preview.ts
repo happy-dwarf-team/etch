@@ -19,7 +19,7 @@ import {
 import { loadEntityIndex, type GameFiles } from '@etch/core/playset';
 import { keyOf } from '@etch/core';
 import { layerFolder } from './asset-links.ts';
-import { meshHtml, read, texturesOf } from './mesh-preview.ts';
+import { flagTexture, meshHtml, read, texturesOf } from './mesh-preview.ts';
 import type {
   EntityNode,
   MeshHostMessage,
@@ -258,10 +258,17 @@ class EntityPreviews {
     };
     this.panels.add(post);
     const subscriptions = [
-      webview.onDidReceiveMessage((message: MeshWebviewMessage) => {
+      webview.onDidReceiveMessage(async (message: MeshWebviewMessage) => {
         if (message.type === 'ready') {
           ready = true;
           void post();
+        } else if (message.type === 'flag') {
+          const reply: MeshHostMessage = {
+            type: 'flag',
+            tag: message.tag,
+            texture: await flagTexture(message.tag, (await this.playset())?.files),
+          };
+          await webview.postMessage(reply);
         } else if (message.type === 'shown') {
           this.report({ name, ok: true, summary: message.summary });
         } else if (message.type === 'failed') {

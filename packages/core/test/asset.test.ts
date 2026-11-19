@@ -53,6 +53,7 @@ describe('readMesh', () => {
       specular: undefined,
     });
     expect(part?.uvs?.length).toBe(8);
+    expect(Array.from(part?.uvs1 ?? [])).toEqual([0, 0, 1, 0, 0, 1, 1, 1]);
     expect(Array.from(part?.tangents?.subarray(0, 4) ?? [])).toEqual([1, 0, 0, 1]);
     expect(part?.skin?.influences).toBe(1);
     expect(flag?.skeleton.map((b) => [b.name, b.parent])).toEqual([

@@ -4,7 +4,8 @@
 // (a bare name is in the mesh's folder, as vanilla keeps them: through the playset when the mesh is
 // in one of its layers, so a mod's texture wins over the game's, else on disk beside the mesh; a
 // `.tga` name also tries `.dds`), and lists the `.anim` files beside it whose joints name the mesh's
-// bones. The webview script
+// bones. A `PdxMeshTextureAtlas` part (a ship's sails) shows a country's flag: the webview asks
+// for a tag's `gfx/flags/<TAG>.tga` and the host decodes it through the playset. The webview script
 // (`dist/mesh-webview.js`, from `webview/mesh.ts`) parses the mesh with `@etch/core/asset`, draws
 // it with WebGL2 and plays an animation the user picks, skinned on the CPU.
 
@@ -115,6 +116,37 @@ export async function texturesOf(
     }
   }
   return textures;
+}
+
+/** A country tag the flag request takes: three letters or digits, as the game's tags are. */
+const TAG = /^[A-Z0-9]{3}$/;
+
+/**
+ * The flag of a country tag, decoded: `gfx/flags/<TAG>.tga` (or `.dds`) through the playset, so
+ * a mod's flag wins over the game's.
+ */
+export async function flagTexture(tag: string, files: GameFiles | undefined): Promise<MeshTexture> {
+  if (!TAG.test(tag)) return { ok: false, message: `"${tag}" is not a country tag` };
+  if (files === undefined) {
+    return { ok: false, message: 'a flag comes from the playset: set etch.gamePath' };
+  }
+  for (const candidate of textureCandidates(`gfx/flags/${tag}.tga`)) {
+    const found = await files.find(candidate);
+    if (found === undefined) continue;
+    try {
+      const { summary, rgba } = inspectTexture(found.absolutePath, await read(found.absolutePath));
+      return {
+        ok: true,
+        width: summary.width,
+        height: summary.height,
+        rgba,
+        source: found.layer.name === 'game' ? 'the game' : found.layer.name,
+      };
+    } catch (error) {
+      return { ok: false, message: error instanceof Error ? error.message : String(error) };
+    }
+  }
+  return { ok: false, message: `no gfx/flags/${tag}.tga in the playset` };
 }
 
 /** The `.anim` files beside the mesh whose joints name at least half of a skinned shape's bones. */
@@ -252,6 +284,13 @@ class MeshPreviewProvider implements vscode.CustomReadonlyEditorProvider<MeshDoc
               message: `cannot read ${message.name}: ${String(error)}`,
             });
           }
+        } else if (message.type === 'flag') {
+          const reply: MeshHostMessage = {
+            type: 'flag',
+            tag: message.tag,
+            texture: await flagTexture(message.tag, await this.playset()),
+          };
+          await webview.postMessage(reply);
         } else if (message.type === 'shown') {
           this.report({ uri, ok: true, summary: message.summary });
         } else {
@@ -325,6 +364,7 @@ export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): str
   #facts span { white-space: nowrap; }
   .spacer { flex: 1; }
   input[type="color"] { width: 24px; height: 20px; padding: 0; border: none; background: none; vertical-align: middle; }
+  #flag-tag { width: 4em; font: inherit; color: var(--vscode-input-foreground); background: var(--vscode-input-background); border: 1px solid var(--vscode-input-border, transparent); padding: 1px 4px; text-transform: uppercase; }
   button, select {
     font: inherit; color: var(--vscode-foreground);
     background: var(--vscode-dropdown-background); border: 1px solid var(--vscode-dropdown-border, transparent);
@@ -348,11 +388,14 @@ export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): str
   <div class="spacer"></div>
   <select id="animation" title="Animation beside the mesh" aria-label="Animation" hidden></select>
   <button id="play" aria-pressed="false" title="Play or pause the animation" hidden>Play</button>
-  <span id="colours" title="The country colours a PdxMeshColor part shows (the specular map's R, G and B mask them)" hidden>
+  <span id="colours" title="The country colours a PdxMeshColor part shows (the specular map's R, G and B mask them), and the stripes a PdxMeshTextureAtlas part shows with no flag tag" hidden>
     <input type="color" id="primary" value="#bf291f" aria-label="Primary country colour">
     <input type="color" id="secondary" value="#ebe0bf" aria-label="Secondary country colour">
     <input type="color" id="tertiary" value="#264d99" aria-label="Tertiary country colour">
   </span>
+  <label id="flag" title="The flag a PdxMeshTextureAtlas part (a ship's sails) shows: a country tag's gfx/flags flag, or with no tag the three country colours as stripes" hidden>
+    Flag <input id="flag-tag" size="4" maxlength="3" spellcheck="false" placeholder="TAG" aria-label="Country tag of the flag">
+  </label>
   <button id="maps" aria-pressed="true" title="Draw the normal and specular maps">Maps</button>
   <button id="wireframe" aria-pressed="false" title="Show the triangle edges">Wire</button>
   <button id="reset" title="Frame the whole mesh">Reset view</button>

@@ -11,7 +11,9 @@
 // ambient 0.2 and intensity 1.2; the normal map in tangent space (RGB - 0.5, green flipped,
 // bitangent `cross(n, ta.xyz) * ta.w`); a Blinn-Phong highlight (exponent 10, times 2) scaled by
 // the specular map's alpha times 2 and added; for `PdxMeshColor`, the specular map's R, G and B
-// mask the country's three colours. The light comes from the vanilla `LIGHT_DIRECTION` of
+// mask the country's three colours; for `PdxMeshTextureAtlas` (a ship's sails, a map flag), the
+// diffuse map's alpha blends in the diffuse colour times the country's flag, sampled with the
+// second texture coordinates (`u1`). The light comes from the vanilla `LIGHT_DIRECTION` of
 // `common/defines.lua` (-1, -1, 0.5, pointing away from the light). The map's fog of war, terra
 // incognita, snow and distance fog are left out.
 //
@@ -60,6 +62,8 @@ const colourInputs = (['primary', 'secondary', 'tertiary'] as const).map(
   (key) => [key, element(key) as HTMLInputElement] as const,
 );
 const resetButton = element('reset') as HTMLButtonElement;
+const flagLabel = element('flag');
+const flagInput = element('flag-tag') as HTMLInputElement;
 
 const gl = canvas.getContext('webgl2', { antialias: true });
 
@@ -68,6 +72,7 @@ in vec3 position;
 in vec3 normal;
 in vec2 uv;
 in vec4 tangent;
+in vec2 uv1;
 uniform mat4 viewProjection;
 uniform mat4 model;
 out vec3 vPosition;
@@ -75,6 +80,7 @@ out vec3 vNormal;
 out vec3 vTangent;
 out vec3 vBitangent;
 out vec2 vUv;
+out vec2 vUv1;
 void main() {
   // Placed in the file's space (rotation and uniform scale), the bitangent built there, then
   // everything left-handed to right-handed: mirror Z.
@@ -88,6 +94,7 @@ void main() {
   vTangent = t * mirror;
   vBitangent = b * mirror;
   vUv = uv;
+  vUv1 = uv1;
   gl_Position = viewProjection * vec4(vPosition, 1.0);
 }`;
 
@@ -98,6 +105,7 @@ in vec3 vNormal;
 in vec3 vTangent;
 in vec3 vBitangent;
 in vec2 vUv;
+in vec2 vUv1;
 uniform sampler2D diffuse;
 uniform sampler2D specularMap;
 uniform sampler2D normalMap;
@@ -108,6 +116,10 @@ uniform bool countryColours;
 uniform vec3 primary;
 uniform vec3 secondary;
 uniform vec3 tertiary;
+// PdxMeshTextureAtlas: the flag through the second UVs, or the country colours as stripes.
+uniform bool atlas;
+uniform bool flagFromColours;
+uniform sampler2D flagMap;
 uniform bool alphaTest;
 uniform bool lines;
 // Towards the light.
@@ -126,6 +138,12 @@ void main() {
   }
   vec4 spec = specularMapped ? texture(specularMap, vUv) : vec4(0.0);
   vec3 c = base.rgb;
+  if (atlas && textured) {
+    vec3 flag = flagFromColours
+      ? (vUv1.x < 1.0 / 3.0 ? primary : vUv1.x < 2.0 / 3.0 ? secondary : tertiary)
+      : texture(flagMap, vUv1).rgb;
+    c = mix(c, flag * c, base.a);
+  }
   if (countryColours) {
     c = mix(c, c * spec.r * primary, spec.r);
     c = mix(c, c * spec.g * secondary, spec.g);
@@ -157,6 +175,8 @@ interface DrawnPart {
   readonly normalMap: WebGLTexture | undefined;
   readonly specularMap: WebGLTexture | undefined;
   readonly countryColours: boolean;
+  /** A `PdxMeshTextureAtlas` part with second UVs: the flag is drawn on it. */
+  readonly atlas: boolean;
   readonly alphaTest: boolean;
 }
 
@@ -212,6 +232,9 @@ const LIGHT = normalise([1, 1, 0.5]);
 
 /** The orbit camera: angles in radians, distance from the target. */
 const camera = { yaw: 0.6, pitch: 0.35, distance: 10, target: [0, 0, 0] as number[] };
+/** The flag on `PdxMeshTextureAtlas` parts: a tag's, or none for the country colours' stripes. */
+let flag: { tag: string; texture: WebGLTexture; source: string } | undefined;
+
 /** Whether the camera has framed a mesh yet: a reload keeps the user's view. */
 let framed = false;
 
@@ -239,6 +262,7 @@ function compile(context: WebGL2RenderingContext): WebGLProgram {
   context.bindAttribLocation(linked, 1, 'normal');
   context.bindAttribLocation(linked, 2, 'uv');
   context.bindAttribLocation(linked, 3, 'tangent');
+  context.bindAttribLocation(linked, 4, 'uv1');
   context.linkProgram(linked);
   if (context.getProgramParameter(linked, context.LINK_STATUS) !== true) {
     throw new Error(context.getProgramInfoLog(linked) ?? 'link error');
@@ -378,6 +402,14 @@ function upload(
       );
       context.enableVertexAttribArray(3);
       context.vertexAttribPointer(3, 4, context.FLOAT, false, 0, 0);
+      const uvs1 = buffer(
+        context,
+        context.ARRAY_BUFFER,
+        part.uvs1 ?? new Float32Array((part.positions.length / 3) * 2),
+        context.STATIC_DRAW,
+      );
+      context.enableVertexAttribArray(4);
+      context.vertexAttribPointer(4, 2, context.FLOAT, false, 0, 0);
       const triangles = buffer(
         context,
         context.ELEMENT_ARRAY_BUFFER,
@@ -393,7 +425,7 @@ function upload(
         part,
         shape,
         vao,
-        buffers: [positions, normals, uvs, tangents, triangles, edges],
+        buffers: [positions, normals, uvs, tangents, uvs1, triangles, edges],
         positions,
         posed: part.positions,
         normals,
@@ -406,6 +438,7 @@ function upload(
         normalMap: part.tangents === undefined ? undefined : named(part.material.normal, part),
         specularMap: named(part.material.specular, part),
         countryColours: /^PdxMeshColor/.test(part.material.shader),
+        atlas: /^PdxMeshTextureAtlas/.test(part.material.shader) && part.uvs1 !== undefined,
         alphaTest: /alpha/i.test(part.material.shader),
       });
     }
@@ -413,10 +446,19 @@ function upload(
   return parts;
 }
 
+/** The warnings of the drawn mesh or entity, and why the flag asked for is not shown. */
+let warningLines: string[] = [];
+let flagProblem: string | undefined;
+
 function showWarnings(warnings: ReadonlySet<string>, problems: readonly string[] = []): void {
-  const lines: string[] = [];
-  if (problems.length > 0) lines.push('Not resolved:', ...problems);
-  if (warnings.size > 0) lines.push('Textures not shown:', ...warnings);
+  warningLines = [];
+  if (problems.length > 0) warningLines.push('Not resolved:', ...problems);
+  if (warnings.size > 0) warningLines.push('Textures not shown:', ...warnings);
+  showErrorBox();
+}
+
+function showErrorBox(): void {
+  const lines = flagProblem === undefined ? warningLines : [...warningLines, flagProblem];
   errorBox.hidden = lines.length === 0;
   errorBox.textContent = lines.join('\n');
 }
@@ -679,6 +721,10 @@ function draw(now: number): void {
   gl.uniform1i(uniform('diffuse'), 0);
   gl.uniform1i(uniform('specularMap'), 1);
   gl.uniform1i(uniform('normalMap'), 2);
+  gl.uniform1i(uniform('flagMap'), 3);
+  gl.uniform1i(uniform('flagFromColours'), flag === undefined ? 1 : 0);
+  gl.activeTexture(gl.TEXTURE3);
+  gl.bindTexture(gl.TEXTURE_2D, flag?.texture ?? null);
   const lines = uniform('lines');
   for (const instance of instances) {
     gl.uniformMatrix4fv(uniform('model'), false, instance.model);
@@ -691,6 +737,7 @@ function draw(now: number): void {
       gl.uniform1i(uniform('normalMapped'), normalMap === undefined ? 0 : 1);
       gl.uniform1i(uniform('specularMapped'), specularMap === undefined ? 0 : 1);
       gl.uniform1i(uniform('countryColours'), item.countryColours ? 1 : 0);
+      gl.uniform1i(uniform('atlas'), item.atlas ? 1 : 0);
       gl.uniform1i(uniform('alphaTest'), item.alphaTest ? 1 : 0);
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, item.texture ?? null);
@@ -719,7 +766,7 @@ function summary(): MeshSummary {
   const shapes = instances.flatMap((i) => i.mesh.shapes);
   const parts = instances.flatMap((i) => i.parts);
   const drawnParts = parts.map((d) => d.part);
-  const base: MeshSummary = {
+  let base: MeshSummary = {
     shapes: shapes.filter((s) => !s.collision).length,
     collisionShapes: shapes.filter((s) => s.collision).length,
     vertices: drawnParts.reduce((sum, p) => sum + p.positions.length / 3, 0),
@@ -732,6 +779,8 @@ function summary(): MeshSummary {
     animations: offered,
     textures: textureSources,
   };
+  const atlasParts = parts.filter((d) => d.atlas).length;
+  if (atlasParts > 0) base = { ...base, flag: { parts: atlasParts, tag: flag?.tag } };
   if (entity === undefined) return base;
   return {
     ...base,
@@ -767,6 +816,11 @@ function showFacts(): void {
   );
   if (instances[0] !== undefined && instances[0].scale !== 1) {
     items.push(`scale ${String(instances[0].scale)}`);
+  }
+  if (s.flag !== undefined) {
+    items.push(
+      flag === undefined ? 'flag: the country colours' : `flag: ${flag.tag} (${flag.source})`,
+    );
   }
   if (s.collisionShapes > 0) items.push(`${String(s.collisionShapes)} collision (hidden)`);
   for (const [name, source] of Object.entries(s.textures)) items.push(`${name} (${source})`);
@@ -824,7 +878,8 @@ function show(
     });
   }
   showWarnings(warnings, problems);
-  colours.hidden = !instances.some((i) => i.parts.some((d) => d.countryColours));
+  colours.hidden = !instances.some((i) => i.parts.some((d) => d.countryColours || d.atlas));
+  flagLabel.hidden = !instances.some((i) => i.parts.some((d) => d.atlas));
   pose(context, 0);
 }
 
@@ -871,6 +926,30 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
         animationSelect.value = keep;
         vscode.postMessage({ type: 'animation', name: keep });
       }
+      vscode.postMessage({ type: 'shown', summary: summary() });
+    } else if (message.type === 'flag') {
+      // Only the tag still asked for: a reply to an earlier one is dropped.
+      if (message.tag !== flagInput.value.trim().toUpperCase()) return;
+      if (flag !== undefined) gl.deleteTexture(flag.texture);
+      flag = undefined;
+      const texture = message.texture.ok ? textureOf(gl, message.texture) : undefined;
+      if (texture !== undefined) {
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        // A flag is drawn once across its part: no repeat at the edges.
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        flag = {
+          tag: message.tag,
+          texture,
+          source: message.texture.ok ? message.texture.source : '',
+        };
+      }
+      flagProblem = message.texture.ok
+        ? undefined
+        : `Flag ${message.tag}: ${message.texture.message}`;
+      showErrorBox();
+      showFacts();
+      redraw();
       vscode.postMessage({ type: 'shown', summary: summary() });
     } else if (message.type === 'animation') {
       animations.set(message.name, readAnimation(Uint8Array.from(message.bytes)));
@@ -960,6 +1039,22 @@ for (const [key, input] of colourInputs) {
     redraw();
   });
 }
+
+flagInput.addEventListener('change', () => {
+  const tag = flagInput.value.trim().toUpperCase();
+  flagInput.value = tag;
+  if (/^[A-Z0-9]{3}$/.test(tag)) {
+    vscode.postMessage({ type: 'flag', tag });
+    return;
+  }
+  if (flag !== undefined) gl?.deleteTexture(flag.texture);
+  flag = undefined;
+  flagProblem = tag === '' ? undefined : `Flag ${tag}: a country tag has three letters or digits`;
+  showErrorBox();
+  showFacts();
+  redraw();
+  vscode.postMessage({ type: 'shown', summary: summary() });
+});
 
 wireButton.addEventListener('click', () => {
   wireframe = !wireframe;

@@ -52,6 +52,8 @@ describe.skipIf(gamePath === undefined)('meshes and animations of the installed 
       skinned: 0,
       collision: 0,
       tangents: 0,
+      uvs1: 0,
+      atlasWithUvs1: 0,
     };
     const failed: string[] = [];
     for (const file of files(root, '.mesh')) {
@@ -66,6 +68,10 @@ describe.skipIf(gamePath === undefined)('meshes and animations of the installed 
             stats.triangles += part.indices.length / 3;
             if (part.skin !== undefined) stats.skinned++;
             if (part.tangents !== undefined) stats.tangents++;
+            if (part.uvs1 !== undefined) {
+              stats.uvs1++;
+              if (part.material.shader === 'PdxMeshTextureAtlas') stats.atlasWithUvs1++;
+            }
           }
         }
       } catch (error) {
@@ -93,6 +99,9 @@ describe.skipIf(gamePath === undefined)('meshes and animations of the installed 
       collision: 40,
       // Every part but the collision shapes' carries tangents for its normal map.
       tangents: 604,
+      uvs1: 157,
+      // Every PdxMeshTextureAtlas part (ships, the map flag) has the UVs its flag is drawn with.
+      atlasWithUvs1: 21,
     });
     expect(animation).toEqual({ files: 152, joints: 3_116, text: 3 });
   });
