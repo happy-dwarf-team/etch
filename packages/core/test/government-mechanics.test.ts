@@ -188,6 +188,28 @@ describe('reading the government mechanics', () => {
     expect(everyPlayer('available = { always = yes }')).toBe(true);
     expect(everyPlayer('available = { has_reform = r }')).toBe(false);
     expect(everyPlayer('available = { ai = no has_dlc = "x" }')).toBe(false);
+    // AND, OR and NOT of what a mechanic answers; anything else leaves it undecided.
+    expect(everyPlayer('available = { AND = { ai = no always = yes } }')).toBe(true);
+    expect(everyPlayer('available = { OR = { always = no ai = no } }')).toBe(true);
+    expect(everyPlayer('available = { OR = { always = no ai = yes } }')).toBe(false);
+    expect(everyPlayer('available = { NOT = { ai = yes } }')).toBe(true);
+    expect(everyPlayer('available = { NOT = { always = yes } }')).toBe(false);
+    expect(everyPlayer('available = { NOT = { has_dlc = "x" } }')).toBe(false);
+    expect(everyPlayer('available = { OR = { has_dlc = "x" always = no } }')).toBe(false);
+    expect(everyPlayer('available = { tag = X }')).toBe(false);
+    expect(everyPlayer('available = { is_subject = { } }')).toBe(false);
+    expect(everyPlayer('available = { ai }')).toBe(false);
+  });
+
+  it('reads the reforms a mechanic is available with, and not those it is not', () => {
+    const reforms = (available: string): readonly string[] | undefined =>
+      readGovernmentMechanics(`m = { ${available} }`)[0]?.reforms;
+    expect(reforms('')).toEqual([]);
+    expect(
+      reforms(
+        'available = { NOT = { has_reform = barred } OR = { has_reform = one AND = { has_reform = two } } ai }',
+      ),
+    ).toEqual(['one', 'two']);
   });
 
   it('reads what the basic reforms give, and no others', () => {
@@ -196,6 +218,12 @@ describe('reading the government mechanics', () => {
           government_abilities = { first_mechanic second_mechanic } }
         other_reform = { government_abilities = { third_mechanic } }`),
     ).toEqual(['first_mechanic', 'second_mechanic']);
+  });
+
+  it('skips the entries of a file that are not blocks', () => {
+    expect(readGovernmentMechanics('stray = 1\nm = { }').map((m) => m.name)).toEqual(['m']);
+    expect(readBasicAbilities('stray = 1')).toEqual([]);
+    expect(readScriptedWidgets('custom_icon = 1').map((w) => w.name)).toEqual([]);
   });
 
   it('reads only named custom_ entries of custom_gui', () => {
@@ -303,6 +331,25 @@ describe('the government view with a mechanic', () => {
     const frames = layout.widgets.filter((w) => w.widget.name === 'government_power_bar_frame');
     expect(frames).toHaveLength(1);
     expect(bars).toHaveLength(2);
+  });
+
+  it('skips a power or an interaction whose window the playset does not define', () => {
+    const missing: GovernmentMechanic = {
+      name: 'missing',
+      reforms: [],
+      everyPlayer: true,
+      powers: [{ name: 'p', gui: 'no_such_bar', showBeforeInteractions: false }],
+      interactions: [
+        { name: 'i', gui: 'no_such_button', icon: 'GFX_one', costType: undefined, center: true },
+      ],
+    };
+    const { layout } = lay([missing]);
+    expect(layout.widgets.filter((w) => w.widget.name === 'government_interaction_button')).toEqual(
+      [],
+    );
+    expect(
+      layout.widgets.filter((w) => w.widget.name === 'government_mechanic_interactions'),
+    ).toHaveLength(1);
   });
 
   it('takes the scripted widgets a mechanic decides, and leaves the others', () => {
