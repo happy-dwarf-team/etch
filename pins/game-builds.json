@@ -8,9 +8,9 @@
     {
       "id": "anvil",
       "name": "Anvil",
-      "tag": "v1.24.0",
-      "url": "https://github.com/happy-dwarf-team/anvil/releases/download/v1.24.0/anvil-windows-x64.zip",
-      "sha256": "CE3BB2D17014DC006507F19C53E468C49934DD69CC24CA4482A4E34C221EFFDB",
+      "tag": "v1.25.0",
+      "url": "https://github.com/happy-dwarf-team/anvil/releases/download/v1.25.0/anvil-windows-x64.zip",
+      "sha256": "EE0E5A0CCBA7DE2F72A388E74C23023D5497DAEC434174E99CBA00209382C258",
       "files": [
         "version.dll",
         "anvil/anvil.toml",
@@ -69,9 +69,9 @@
     {
       "id": "tongs",
       "name": "Tongs",
-      "tag": "v0.36.0",
-      "url": "https://github.com/happy-dwarf-team/tongs/releases/download/v0.36.0/tongs-windows-x64.zip",
-      "sha256": "5F65D89C5463FF6CA25A8F1EC032060125CA6FD1920C9D9074BC0BEEE76D20CB",
+      "tag": "v0.37.0",
+      "url": "https://github.com/happy-dwarf-team/tongs/releases/download/v0.37.0/tongs-windows-x64.zip",
+      "sha256": "C54A3BBE6C22B99573C32B13F1E79C710784C6E3A27BC2B7FAF14406A91BBDB4",
       "into": "anvil/plugins/",
       "files": [
         "tongs/tongs.dll",
