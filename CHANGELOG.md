@@ -1,5 +1,106 @@
 # Changelog
 
+## [2.13.0](https://github.com/happy-dwarf-team/etch/compare/v2.12.0...v2.13.0) (2026-11-20)
+
+
+### Features
+
+* a live snapshot draws the sprites, frames and flags the game's code set ([#562](https://github.com/happy-dwarf-team/etch/issues/562)) ([65d4350](https://github.com/happy-dwarf-team/etch/commit/65d4350f0fce2775dfb2536c5ab388024b8372b5))
+* a live snapshot draws the textures, rebels and pie charts the game's code set ([#563](https://github.com/happy-dwarf-team/etch/issues/563)) ([4a8ee3b](https://github.com/happy-dwarf-team/etch/commit/4a8ee3bef339d9cd609a730a2bed4ed9c03c8a55))
+* check the encoding of script files as the game reads them ([#444](https://github.com/happy-dwarf-team/etch/issues/444)) ([2d4e4fe](https://github.com/happy-dwarf-team/etch/commit/2d4e4fed5c3421b9c33e82c88986f5a222651d87))
+* **core:** a mod's country history that does not replace the game's, which the game reads too ([#549](https://github.com/happy-dwarf-team/etch/issues/549)) ([83d123f](https://github.com/happy-dwarf-team/etch/commit/83d123f881f32278ef9057688aeaf396399644ad))
+* **core:** a playset without PIR, NAT or REB, which the game stops without ([#551](https://github.com/happy-dwarf-team/etch/issues/551)) ([125d503](https://github.com/happy-dwarf-team/etch/commit/125d503fe73310c913cca701f76c99781ff3b6bf))
+* **core:** canals of default.map without their bitmap or outside the river map ([#524](https://github.com/happy-dwarf-team/etch/issues/524)) ([d515518](https://github.com/happy-dwarf-team/etch/commit/d5155186bd5c58117b87805ab4b405ee08763be5))
+* **core:** check a great project's start as a province id ([#476](https://github.com/happy-dwarf-team/etch/issues/476)) ([76114c3](https://github.com/happy-dwarf-team/etch/commit/76114c3b7b37b3c69e0274107d1ebe1c2b0d4db4))
+* **core:** check a war goal's province as a province id ([#470](https://github.com/happy-dwarf-team/etch/issues/470)) ([848b14d](https://github.com/happy-dwarf-team/etch/commit/848b14d568a9f45cdb6c0bfe23ca290657d44603))
+* **core:** check advisor's advisor type and change_graphical_culture's culture ([#462](https://github.com/happy-dwarf-team/etch/issues/462)) ([de9304c](https://github.com/happy-dwarf-team/etch/commit/de9304c156ffa562eaa2c5288c69e17450452368))
+* **core:** check province ids and names in customizable_localization ([#466](https://github.com/happy-dwarf-team/etch/issues/466)) ([51db138](https://github.com/happy-dwarf-team/etch/commit/51db1380bc3b7a389d2b8959a7c5f5b42b8b138e))
+* **core:** check province ids of six keys only mods give integers ([#464](https://github.com/happy-dwarf-team/etch/issues/464)) ([3b553d5](https://github.com/happy-dwarf-team/etch/commit/3b553d5acd1743c705b75f9da6f5ba204808eda4))
+* **core:** check province ids passed to scripted effects and triggers ([#463](https://github.com/happy-dwarf-team/etch/issues/463)) ([40fc095](https://github.com/happy-dwarf-team/etch/commit/40fc095f804a72af866a85274c8350dd59cfccc9))
+* **core:** check the encoding of customizable_localization script files ([#465](https://github.com/happy-dwarf-team/etch/issues/465)) ([c350cf7](https://github.com/happy-dwarf-team/etch/commit/c350cf7dbf5f883453ac103e554bca027eca5861))
+* **core:** check the negative province ids of the map's continent file ([#480](https://github.com/happy-dwarf-team/etch/issues/480)) ([b64bd88](https://github.com/happy-dwarf-team/etch/commit/b64bd8866fa8fc07d8372976a84a95d7f03855cd))
+* **core:** check the province ids of the map's climate file ([#477](https://github.com/happy-dwarf-team/etch/issues/477)) ([395a32b](https://github.com/happy-dwarf-team/etch/commit/395a32b2b0c4287d103b9a91876ef309a43f0d73))
+* **core:** check the province lists of colonial regions, trade company regions and trade nodes ([#471](https://github.com/happy-dwarf-team/etch/issues/471)) ([dbeeb36](https://github.com/happy-dwarf-team/etch/commit/dbeeb36ac08925c952ec5622c64830f4627b5106))
+* **core:** country files common/country_tags names that the playset lacks ([#531](https://github.com/happy-dwarf-team/etch/issues/531)) ([b39d04f](https://github.com/happy-dwarf-team/etch/commit/b39d04f23430ba6bdad03f81c07a0bbfc302803b))
+* **core:** country tags the game leaves out, a duplicate or not three characters long ([#542](https://github.com/happy-dwarf-team/etch/issues/542)) ([30040e0](https://github.com/happy-dwarf-team/etch/commit/30040e033390cd3bd73638e5822c811fd3151845))
+* **core:** flag negative province ids and province ids in block members ([#432](https://github.com/happy-dwarf-team/etch/issues/432)) ([f56a445](https://github.com/happy-dwarf-team/etch/commit/f56a44527d0fcc9241c25890735670649267a66b))
+* **core:** map files default.map names that the playset lacks ([#530](https://github.com/happy-dwarf-team/etch/issues/530)) ([e161c29](https://github.com/happy-dwarf-team/etch/commit/e161c295756939bdeb785036aa086040f2591454))
+* **core:** report what the game logs about a country file's color and name lists ([#554](https://github.com/happy-dwarf-team/etch/issues/554)) ([a73796d](https://github.com/happy-dwarf-team/etch/commit/a73796dbd9eb53f7c41017d259b0e8249ae5cf39))
+* **core:** technology tables common/technology.txt names that the playset lacks ([#538](https://github.com/happy-dwarf-team/etch/issues/538)) ([fc5c46b](https://github.com/happy-dwarf-team/etch/commit/fc5c46b81ff3528c3e24a99a9cd759e6923c0691))
+* **core:** the ids and colours of the map's definition file that the game stores unchecked ([#514](https://github.com/happy-dwarf-team/etch/issues/514)) ([63b12a9](https://github.com/happy-dwarf-team/etch/commit/63b12a9fc7d51f6e34688b41d7e4033c299266f2))
+* **core:** the negative province ids of the map's positions file ([#501](https://github.com/happy-dwarf-team/etch/issues/501)) ([0e521fd](https://github.com/happy-dwarf-team/etch/commit/0e521fdbccaf275fcb897c2ad77e5d67a7734bb0))
+* **core:** the negative province ids of the map's province group file ([#505](https://github.com/happy-dwarf-team/etch/issues/505)) ([0a3cfc2](https://github.com/happy-dwarf-team/etch/commit/0a3cfc2e7caab401ca9f9f96e46e88b1ae461a6f))
+* **core:** the province ids of a religion's holy sites ([#506](https://github.com/happy-dwarf-team/etch/issues/506)) ([af805a8](https://github.com/happy-dwarf-team/etch/commit/af805a85b12094c3d9652548e8d6e6feff9e7a96))
+* **core:** the province ids of the map's adjacencies file ([#503](https://github.com/happy-dwarf-team/etch/issues/503)) ([6972da8](https://github.com/happy-dwarf-team/etch/commit/6972da81337c877a2515a38ec8a77db54de5e89e))
+* **core:** the province ids of the map's trade winds file ([#494](https://github.com/happy-dwarf-team/etch/issues/494)) ([0169d20](https://github.com/happy-dwarf-team/etch/commit/0169d203edaa970399fdba34711d4c45ba83eb46))
+* **core:** warn about a history/provinces file the game never reads ([#473](https://github.com/happy-dwarf-team/etch/issues/473)) ([a6b1212](https://github.com/happy-dwarf-team/etch/commit/a6b121246533db779ba8079f0388a8a0bb32b834))
+* **core:** warn about has_idea's unknown idea, which crashes the tooltip after its log line ([#438](https://github.com/happy-dwarf-team/etch/issues/438)) ([3abe331](https://github.com/happy-dwarf-team/etch/commit/3abe3317439fab2b0733601d6654abc33f5f7f34))
+* **entity:** name a state event's particle that no .asset file defines ([#527](https://github.com/happy-dwarf-team/etch/issues/527)) ([f430f25](https://github.com/happy-dwarf-team/etch/commit/f430f25a9bebd44e403d94824017d0e9a642699d))
+* **entity:** name the particle effects a state's events start ([#522](https://github.com/happy-dwarf-team/etch/issues/522)) ([167ea99](https://github.com/happy-dwarf-team/etch/commit/167ea994288108b72140378af128a2fb0a3ba53b))
+* **extension:** link and preview asset paths in .gfx and .asset files ([#445](https://github.com/happy-dwarf-team/etch/issues/445)) ([3a86d55](https://github.com/happy-dwarf-team/etch/commit/3a86d5501a6582133858fee45c6b68840ac8117e))
+* **extension:** preview .mesh files with their textures and animations ([#455](https://github.com/happy-dwarf-team/etch/issues/455)) ([2098cb6](https://github.com/happy-dwarf-team/etch/commit/2098cb6c7ae06ffa8c61b7c5c6f0457e17efab90))
+* **extension:** preview DDS and TGA textures ([#443](https://github.com/happy-dwarf-team/etch/issues/443)) ([4b147aa](https://github.com/happy-dwarf-team/etch/commit/4b147aa317501bea0a1bf33a5f9ffdddb70e9488))
+* **extension:** read .mesh and .anim files and show their facts on hover ([#449](https://github.com/happy-dwarf-team/etch/issues/449)) ([f7ef418](https://github.com/happy-dwarf-team/etch/commit/f7ef4183a618c40e6864467f1123ded1c2e08c9e))
+* **extension:** show a render of the mesh in the hover of a mesh path ([#456](https://github.com/happy-dwarf-team/etch/issues/456)) ([af5c7fc](https://github.com/happy-dwarf-team/etch/commit/af5c7fc99d0d00548c903221a6053d32aaf73b6b))
+* **extension:** show a sprite's texture on hover and go to its definition in .gui files ([#448](https://github.com/happy-dwarf-team/etch/issues/448)) ([a2863ef](https://github.com/happy-dwarf-team/etch/commit/a2863effee4a32faf8428e016ea38bab53f0cea3))
+* **extension:** show the sprite of an event picture, mission icon or privilege icon on hover ([85568f8](https://github.com/happy-dwarf-team/etch/commit/85568f8bedb93787ce1ba25b25244e7f4fd9d625))
+* **extension:** sprite hovers for event pictures, mission and privilege icons ([#453](https://github.com/happy-dwarf-team/etch/issues/453)) ([85568f8](https://github.com/happy-dwarf-team/etch/commit/85568f8bedb93787ce1ba25b25244e7f4fd9d625))
+* **media:** website loops rebuilt after the maintainer's review ([#491](https://github.com/happy-dwarf-team/etch/issues/491)) ([1f552d6](https://github.com/happy-dwarf-team/etch/commit/1f552d67134a587739124221ed6f718169293abb))
+* **mesh:** a Date slider picks a map tree's season column as the game does ([#532](https://github.com/happy-dwarf-team/etch/issues/532)) ([012a874](https://github.com/happy-dwarf-team/etch/commit/012a874274a09fa7945b8962e42bbadfb576244e))
+* **mesh:** a Ground colour under a map tree ([#521](https://github.com/happy-dwarf-team/etch/issues/521)) ([89e01f8](https://github.com/happy-dwarf-team/etch/commit/89e01f8763d00db786ab30261ead5d04b0482c30))
+* **mesh:** a map tree's season colour from Tree_season.bmp ([#523](https://github.com/happy-dwarf-team/etch/issues/523)) ([d537321](https://github.com/happy-dwarf-team/etch/commit/d53732147d9956be3043b5ced6f5f67956e5fb0e))
+* **mesh:** a map tree's tint map, with a Turn slider ([#519](https://github.com/happy-dwarf-team/etch/issues/519)) ([c0855f0](https://github.com/happy-dwarf-team/etch/commit/c0855f0986f6c2286608ee004905d6e18029e2ea))
+* **mesh:** a Place box takes a map tree's ground colour from the map's colour maps ([#536](https://github.com/happy-dwarf-team/etch/issues/536)) ([8204ae6](https://github.com/happy-dwarf-team/etch/commit/8204ae61677009a7ad17db8959745ed679ef46cf))
+* **mesh:** a Region box draws a colonial nation's region colour as the game does ([#537](https://github.com/happy-dwarf-team/etch/issues/537)) ([efb3b78](https://github.com/happy-dwarf-team/etch/commit/efb3b78a398b0d4e9fc997f4d78d58546f790d24))
+* **mesh:** a Snow slider for PdxMeshSnow parts and map trees ([#512](https://github.com/happy-dwarf-team/etch/issues/512)) ([04c0ebf](https://github.com/happy-dwarf-team/etch/commit/04c0ebf13c1023a4ef078bb11452709cd95afc7f))
+* **mesh:** an LOD auto choice picks the level by camera distance, as the game does ([#558](https://github.com/happy-dwarf-team/etch/issues/558)) ([4f8521a](https://github.com/happy-dwarf-team/etch/commit/4f8521a50e0aa04dcf50a126df4faa6dd87f20c5))
+* **mesh:** draw a country's flag on PdxMeshTextureAtlas parts ([#499](https://github.com/happy-dwarf-team/etch/issues/499)) ([bc34119](https://github.com/happy-dwarf-team/etch/commit/bc341197cc5e67c85e9cea9d23bb6605198edd51))
+* **mesh:** find a mesh's texture by its file name in another folder, as the game does ([#541](https://github.com/happy-dwarf-team/etch/issues/541)) ([0fb231e](https://github.com/happy-dwarf-team/etch/commit/0fb231eba70bbd99a1c2b83d54804a3ec8d92806))
+* **mesh:** normal and specular maps and the game's light in the mesh preview ([#492](https://github.com/happy-dwarf-team/etch/issues/492)) ([48a637f](https://github.com/happy-dwarf-team/etch/commit/48a637f702fa1209e952b9c286eb135297eebfa2))
+* **mesh:** preview an .asset entity with its attachments, states and scale ([#496](https://github.com/happy-dwarf-team/etch/issues/496)) ([bb3840e](https://github.com/happy-dwarf-team/etch/commit/bb3840eeaa2a02ceed55da4c02cdc79046142d7f))
+* **profile:** area and region names from the map in sample data ([#489](https://github.com/happy-dwarf-team/etch/issues/489)) ([6dce3a1](https://github.com/happy-dwarf-team/etch/commit/6dce3a1f71f1ba49d85845bf75953a6bc910ddad))
+* warn about idea group and idea names that crash the game ([#433](https://github.com/happy-dwarf-team/etch/issues/433)) ([6e4bb3a](https://github.com/happy-dwarf-team/etch/commit/6e4bb3a3dbbbbba723c0552e1e54d34e2ac181af))
+* warn about policy, religion, rebel, disaster and icon names whose tooltip crashes ([#434](https://github.com/happy-dwarf-team/etch/issues/434)) ([0a009c4](https://github.com/happy-dwarf-team/etch/commit/0a009c4b075e1baa98e7dc6d1e44899f675829b7))
+* warn about province ids the map does not have ([#431](https://github.com/happy-dwarf-team/etch/issues/431)) ([9231ded](https://github.com/happy-dwarf-team/etch/commit/9231ded70bea817b10e02f1b62a27780b40886a5))
+* warn about unknown institution, estate agenda and spawned rebel names ([#435](https://github.com/happy-dwarf-team/etch/issues/435)) ([e415f81](https://github.com/happy-dwarf-team/etch/commit/e415f81abdb07bbf43ba142ca7c7a795fc64484e))
+
+
+### Bug Fixes
+
+* **asset:** a mesh hover's render draws only the most detailed level of detail ([#546](https://github.com/happy-dwarf-team/etch/issues/546)) ([84f2248](https://github.com/happy-dwarf-team/etch/commit/84f224803c22d3d42b36629a5d6c7037780956ef))
+* **core:** check had_active_policy's policy as a trigger that crashes on evaluation ([#437](https://github.com/happy-dwarf-team/etch/issues/437)) ([4cb9398](https://github.com/happy-dwarf-team/etch/commit/4cb93982dc25018357ce7daa6da04c5807445980))
+* **core:** check the capture driver's --lock-minutes in crawl too, and test its arguments ([#478](https://github.com/happy-dwarf-team/etch/issues/478)) ([3dbe3a6](https://github.com/happy-dwarf-team/etch/commit/3dbe3a6a021bece748d08d54494e64d54413da28))
+* **core:** do not attach an entity under itself ([#516](https://github.com/happy-dwarf-team/etch/issues/516)) ([a018e34](https://github.com/happy-dwarf-team/etch/commit/a018e34f896cefbc4751ecc73c780f2fe15057ab))
+* **core:** mark remove_idea and has_not_spawned_rebels as tried in the game ([#439](https://github.com/happy-dwarf-team/etch/issues/439)) ([86a66ae](https://github.com/happy-dwarf-team/etch/commit/86a66aeea8b33505c64385224de53f9dadaa99cb))
+* **core:** name a window profile's keys as written in its format errors ([#454](https://github.com/happy-dwarf-team/etch/issues/454)) ([6e5e833](https://github.com/happy-dwarf-team/etch/commit/6e5e8334590b1fb6da851880e13689bae19969c6))
+* **core:** re-anchor a live snapshot's rects to the preview's resolution ([#560](https://github.com/happy-dwarf-team/etch/issues/560)) ([4365822](https://github.com/happy-dwarf-team/etch/commit/436582214369e9fd81fe8d067a0a42d3884165f3))
+* **core:** read only index entries of libraryfolders.vdf as Steam libraries ([#475](https://github.com/happy-dwarf-team/etch/issues/475)) ([3439489](https://github.com/happy-dwarf-team/etch/commit/3439489f7a0db6b143098ec2746d586cc4058b5c))
+* **core:** read script strings across lines and check the script they hold ([#442](https://github.com/happy-dwarf-team/etch/issues/442)) ([37c1901](https://github.com/happy-dwarf-team/etch/commit/37c19010dbd769e1a25089d39d1e766323899ebd))
+* **core:** refuse a mesh bone index outside its skeleton ([#513](https://github.com/happy-dwarf-team/etch/issues/513)) ([ccf0b03](https://github.com/happy-dwarf-team/etch/commit/ccf0b0374bc568df2cefa638678da4eab8a19f41))
+* **core:** say which name crashes were tried in the game ([#436](https://github.com/happy-dwarf-team/etch/issues/436)) ([eb92a09](https://github.com/happy-dwarf-team/etch/commit/eb92a09c76b6df18d6372fb167d1dc53cf05305b))
+* **core:** take bytes that form UTF-8 by chance in a misread file for what they are ([#457](https://github.com/happy-dwarf-team/etch/issues/457)) ([d19e84f](https://github.com/happy-dwarf-team/etch/commit/d19e84fe5b26b16f73d2a055cba5fd8175fe6618))
+* **extension:** open the script profile page's links from the Markdown preview ([#447](https://github.com/happy-dwarf-team/etch/issues/447)) ([d09dc2f](https://github.com/happy-dwarf-team/etch/commit/d09dc2f55be56f4f28dfbaceda1647973f4ac160))
+* **live-game:** a pick selects the widget's keyword, as a click in the preview does ([#488](https://github.com/happy-dwarf-team/etch/issues/488)) ([8eb6c92](https://github.com/happy-dwarf-team/etch/commit/8eb6c92b6c5ba2433cbac50577976fcfb4d16c49))
+* **mesh:** blend PdxMeshAlphaBlend parts by their diffuse alpha ([#510](https://github.com/happy-dwarf-team/etch/issues/510)) ([622bad9](https://github.com/happy-dwarf-team/etch/commit/622bad91548e9f67b247fc920c82b449c64b754f))
+* **mesh:** cap the facts and the error box, so a short preview keeps its canvas ([#553](https://github.com/happy-dwarf-team/etch/issues/553)) ([a5cd6a4](https://github.com/happy-dwarf-team/etch/commit/a5cd6a413eff896e0e163795d24c02bf34ca2523))
+* **mesh:** draw map trees as the game's tree shader does ([#507](https://github.com/happy-dwarf-team/etch/issues/507)) ([967b210](https://github.com/happy-dwarf-team/etch/commit/967b2105a78bad8144452b42d20f23149d11fecb))
+* **mesh:** draw one level of detail of a mesh that has several ([#504](https://github.com/happy-dwarf-team/etch/issues/504)) ([8817b98](https://github.com/happy-dwarf-team/etch/commit/8817b9898a244588a12cd1cb7a30a7d18cf720cb))
+* **mesh:** frame a mesh by its box's corners, not its sphere ([#500](https://github.com/happy-dwarf-team/etch/issues/500)) ([7060550](https://github.com/happy-dwarf-team/etch/commit/7060550d0685a89fcde9d21715df6fbb8aa0b9f7))
+* **mesh:** take a shape's level of detail from its lod property, as the game does ([#543](https://github.com/happy-dwarf-team/etch/issues/543)) ([8d7fb61](https://github.com/happy-dwarf-team/etch/commit/8d7fb619a7d0e7955bc42ff77a0362a8ec5f84ab))
+* **plugin:** hide the game's tooltips in pick mode ([#561](https://github.com/happy-dwarf-team/etch/issues/561)) ([a8b9917](https://github.com/happy-dwarf-team/etch/commit/a8b9917733c67cde66a331e25c3babba1df5613c))
+* **profile:** the profile page reads as UTF-8 under a windows1252 files.encoding ([#490](https://github.com/happy-dwarf-team/etch/issues/490)) ([79f382f](https://github.com/happy-dwarf-team/etch/commit/79f382f380b9a9d684059844a00132a42d2bcd57))
+
+
+### Reverts
+
+* **mesh:** look a mesh's texture up in its own folder only, as the game does ([#548](https://github.com/happy-dwarf-team/etch/issues/548)) ([ac59a8b](https://github.com/happy-dwarf-team/etch/commit/ac59a8b6936934b78d9b4b79bfc3a255b3c89153))
+
+
+### Build
+
+* **pins:** pin Anvil 1.25.0, Bellows 2.1.0 and Tongs 0.37.0 ([#564](https://github.com/happy-dwarf-team/etch/issues/564)) ([5020966](https://github.com/happy-dwarf-team/etch/commit/50209668b3eefd3f10a90120cfd453ad0950875f))
+* **pins:** pin Bellows 2.0.1 ([#427](https://github.com/happy-dwarf-team/etch/issues/427)) ([bf9cc70](https://github.com/happy-dwarf-team/etch/commit/bf9cc7025b3f192b6c46895b98f2187d473338ce))
+
 ## [2.12.0](https://github.com/happy-dwarf-team/etch/compare/v2.11.0...v2.12.0) (2026-11-15)
 
 
