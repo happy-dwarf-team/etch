@@ -46,9 +46,9 @@
     {
       "id": "bellows",
       "name": "Bellows",
-      "tag": "v2.0.1",
-      "url": "https://github.com/happy-dwarf-team/bellows/releases/download/v2.0.1/bellows-windows-x64.zip",
-      "sha256": "0445AD61B5B616BBA9019A85B2258A3BC789CE12607BC7B7D814031DDA6218F6",
+      "tag": "v2.1.0",
+      "url": "https://github.com/happy-dwarf-team/bellows/releases/download/v2.1.0/bellows-windows-x64.zip",
+      "sha256": "017403AF73097A35F40288C47AE498736A809C99D9D51255CE721020AFA6D28B",
       "into": "anvil/plugins/",
       "files": ["bellows/"],
       "licenses": [
