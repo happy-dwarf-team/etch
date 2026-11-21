@@ -21,3 +21,29 @@ country_event = {
 		add_prestige = 5
 	}
 }
+
+# The guild raises its hall. Written for Etch's media; never fired. `run` runs the option's
+# development lines and checks the trigger in the province on screen; `encoding` types an
+# accented letter into the master's name, which stays ASCII in the file until then.
+province_event = {
+	id = etch_demo.2
+	title = ETCH_DEMO_GUILD_TITLE
+	desc = ETCH_DEMO_GUILD_DESC
+	is_triggered_only = yes
+
+	trigger = {
+		development = 10
+	}
+
+	option = {
+		name = ETCH_DEMO_GUILD_OPTION
+		add_base_production = 1
+		add_base_tax = 1
+		owner = {
+			define_ruler = {
+				name = "Rene"
+				dynasty = "Hammerhand"
+			}
+		}
+	}
+}

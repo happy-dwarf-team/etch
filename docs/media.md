@@ -157,7 +157,8 @@ input, in the run's private install, which lives in the throwaway profile: the u
 install, profile and saves are never touched. The live take's copy of the demo mod leaves out
 `events/` (the `names` clip's file, which the live clips do not show): with it, three takes on
 2026-11-18 waited 4–10 minutes and the save never loaded, and without it the save loaded at once;
-why is not known. Then the take runs as a user would: **Etch: Open
+why is not known. It leaves out `interface/assets/` too (the models `.gfx` of `hovers`), so the
+game loads the same files as in those takes. Then the take runs as a user would: **Etch: Open
 Preview**, **Etch: Start the Live Game** and the save in its quick pick. Through Tongs' pipe it
 waits until the save is loaded (logging the game's state every 30 s while it waits), moves the
 camera to Kaluga (296, the sample data's province), opens its province view and reads where the
@@ -274,11 +275,16 @@ generated sample data; no save is read (the live take's save is the game's, not 
 
 `packages/media/demo-mod` is the **Etch demo mod** (MIT, not on the Steam Workshop, not playable):
 a descriptor, `interface/etch_demo.gui` with a dialog in the style of an event and a small panel,
-`interface/etch_demo.gfx`, `localisation/etch_demo_l_english.yml`, and `events/etch_demo_events.txt`
-with one event that is never fired (`is_triggered_only`), which `names` edits. Its files are our own text;
-they name base-game EU4 1.37.5 sprites, textures and fonts, so the preview looks like EU4 while no
-game file enters the repository. No DLC-only art, no other mod, no textures of our own, English
-only.
+`interface/etch_demo.gfx`, `localisation/etch_demo_l_english.yml`, `events/etch_demo_events.txt`
+and `interface/assets/etch_demo_models.gfx`. The event file has two events that are never fired
+(`is_triggered_only`): `names` edits the first; the second, a province event, has the development
+effect and the trigger for `run` and a ruler's name, ASCII in the file, for `encoding`. The models
+`.gfx`, in the folder where the game reads pdxmeshes, has one `pdxmesh` that names the base game's
+carrack mesh, its textures and its idle animation, for `hovers` and the demo loop's mesh chapter;
+no entity uses it, and the live take leaves it out with `events/`. Its files are our own text;
+they name base-game EU4 1.37.5 sprites, meshes, textures and fonts, so the preview looks like EU4
+while no game file enters the repository. No DLC-only art, no other mod, no textures of our own,
+English only.
 
 The demo mod is the workspace (its descriptor names the mod); the 0.x scenes edited its dialog,
 which no clip uses since 2.0.0. The takes find their edits by text in the game's file

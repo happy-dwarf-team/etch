@@ -1,0 +1,21 @@
+# The guild's carrack, for Etch's media: the base game's carrack mesh, its textures and its idle
+# animation, named here so the editor's hovers and links show them. No entity uses it.
+objectTypes = {
+	pdxmesh = {
+		name = "etch_demo_carrack"
+		file = "gfx/models/ships/carrack.mesh"
+
+		meshsettings = {
+			name = "polySurfaceShape1"
+			index = 0
+			texture_diffuse = "carrack_diffuse.dds"
+			texture_normal = "carrack_normal.dds"
+			texture_specular = "carrack_spec.dds"
+			shader = "PdxMeshColor"
+			shader_file = "gfx/FX/pdxmesh.shader"
+		}
+
+		animation = { id = "idle" type = "carrack_idle" }
+		scale = 1.5
+	}
+}

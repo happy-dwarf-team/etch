@@ -211,8 +211,9 @@ export async function takeLive(options: ShootOptions & { save: string }): Promis
     demoMod: path.join(options.repository, 'packages', 'media', 'demo-mod'),
     // Without the demo mod's event file (the `names` clip's, which the live clips do not show):
     // with it, three takes waited 4–10 minutes for the save and the game never reached it; the
-    // take without it loaded at once (2026-11-18). Why is not known.
-    excluded: ['events'],
+    // take without it loaded at once (2026-11-18). Why is not known. Nor its models `.gfx`
+    // (`hovers`' file, which no live clip shows), so the game loads what it loaded then.
+    excluded: ['events', path.join('interface', 'assets')],
     overrides: OVERRIDES,
     open: START_FILE,
     gamePath: options.gamePath,

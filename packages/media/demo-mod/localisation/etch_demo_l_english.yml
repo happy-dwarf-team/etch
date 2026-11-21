@@ -5,3 +5,6 @@
  ETCH_DEMO_OPTION_REST:0 "Let the metal rest"
  ETCH_DEMO_PANEL_TITLE:0 "Hammer and Tongs"
  ETCH_DEMO_PANEL_TEXT:0 "Two blows on the anvil for every window drawn."
+ ETCH_DEMO_GUILD_TITLE:0 "The Guild Raises Its Hall"
+ ETCH_DEMO_GUILD_DESC:0 "The smiths of $PROVINCENAME$ have roofed their new hall, and above its door they have carved the name of the master who will keep the forge."
+ ETCH_DEMO_GUILD_OPTION:0 "Ring the hall's first hammer"
