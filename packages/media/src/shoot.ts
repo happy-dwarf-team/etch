@@ -70,6 +70,7 @@ export async function takeClip(clip: Clip, options: ShootOptions): Promise<TakeL
       clip.run({
         wb,
         take,
+        gamePath: options.gamePath,
         ...(options.profile === undefined ? {} : { profile: options.profile }),
         record: () =>
           take.record('vscode', wb.hwnd, path.join(options.masters, `${clip.id}.vscode.mkv`), {
