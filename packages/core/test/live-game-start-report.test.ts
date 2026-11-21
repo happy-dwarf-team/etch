@@ -104,6 +104,21 @@ describe('splitParsingErrors', () => {
     expect(splitParsingErrors(['  [0]: no header'])).toEqual(['  [0]: no header']);
   });
 
+  it("drops the block's `Last good read` tail line", () => {
+    // Check File's live run of 21.11.2026.
+    expect(
+      splitParsingErrors([
+        '[persistent.cpp:88]: Parsing Errors. File: "etch_run_f304458b03b952bb.txt", Error: ',
+        '  [0]: Unknown trigger type. Key: adm_techh: adm_techh, near line: 2',
+        '  Last good read: always=no',
+        '  Last good read: kept, no block before it',
+      ]),
+    ).toEqual([
+      '[persistent.cpp:88]: Parsing Error. File: "etch_run_f304458b03b952bb.txt", Error: Unknown trigger type. Key: adm_techh: adm_techh, near line: 2',
+      '  Last good read: kept, no block before it',
+    ]);
+  });
+
   it('reads a key without the colon the game writes after it', () => {
     expect(
       readStartLine('[x.cpp:1]: Unknown trigger type. Key: adm_techh: adm_techh'),

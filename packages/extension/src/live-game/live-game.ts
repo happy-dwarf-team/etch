@@ -284,6 +284,19 @@ export type RunOutcome =
       readonly lost: number;
     };
 
+/** One run of a file check: the plugin's answer and the `error.log` lines the run added. */
+export interface CheckRun {
+  readonly answer: RunAnswer;
+  readonly lines: readonly string[];
+  /** Characters the game's code page has no byte for, written as `?`. */
+  readonly lost: number;
+}
+
+/** What checking a file in the live game came to (ADR 0007, part 2). */
+export type CheckOutcome =
+  | Extract<RunOutcome, { kind: 'refused' }>
+  | { readonly kind: 'checked'; readonly runs: readonly CheckRun[] };
+
 /**
  * The machine's one live game, owned by this VS Code window: started on request, stopped by
  * command or when the window closes (`stop` from `deactivate`), both saving first. Its watchdog
@@ -614,31 +627,10 @@ export class LiveGame implements vscode.Disposable {
     const { file, token } = newRunFile();
     const script = buildScript(selection, scope, mode, token);
     const { bytes, lost } = encodeScript(script.text);
-    const path = join(this.install.layout.profile, file);
     await this.errorLog?.read();
     await this.gameLog?.read();
-    let answer: RunAnswer;
-    try {
-      await writeFile(path, bytes);
-      try {
-        answer = await running.run(file);
-      } finally {
-        // The game read the file within the job; it is written for one run only.
-        await rm(path, { force: true }).catch(() => undefined);
-      }
-    } catch (error) {
-      if (error instanceof PipeError) {
-        if (error.code === 'console_fault' || error.code === 'console_broken') {
-          if (this.serving(running)) {
-            this.release();
-            await running.stop();
-            await this.crashed("the game's console faulted while it ran a selection");
-          }
-        }
-        return { kind: 'refused', code: error.code, message: error.message };
-      }
-      return { kind: 'refused', code: 'failed', message: String(error) };
-    }
+    const answer = await this.runFile(running, file, bytes, 'a selection');
+    if ('kind' in answer) return answer;
     const session = (await running.ping().catch(() => undefined))?.gameSession?.number ?? 0;
     const firstInSession = session !== this.runSession;
     this.runSession = session;
@@ -660,6 +652,84 @@ export class LiveGame implements vscode.Disposable {
           : ''),
     );
     return { kind: 'ran', answer, script, errors, check, firstInSession, lost };
+  }
+
+  /**
+   * Writes a script file into the private profile, has the plugin `run` it and removes it. A
+   * console that faults ends the process as a crash. `what` names the job in that message.
+   */
+  private async runFile(
+    running: LiveGameProcess,
+    file: string,
+    bytes: Uint8Array,
+    what: string,
+  ): Promise<RunAnswer | Extract<RunOutcome, { kind: 'refused' }>> {
+    const path = join(this.install.layout.profile, file);
+    try {
+      await writeFile(path, bytes);
+      try {
+        return await running.run(file);
+      } finally {
+        // The game read the file within the job; it is written for one run only.
+        await rm(path, { force: true }).catch(() => undefined);
+      }
+    } catch (error) {
+      if (error instanceof PipeError) {
+        if (error.code === 'console_fault' || error.code === 'console_broken') {
+          if (this.serving(running)) {
+            this.release();
+            await running.stop();
+            await this.crashed(`the game's console faulted while it ran ${what}`);
+          }
+        }
+        return { kind: 'refused', code: error.code, message: error.message };
+      }
+      return { kind: 'refused', code: 'failed', message: String(error) };
+    }
+  }
+
+  /**
+   * Checks script files in the live game (ADR 0007, part 2): runs each, already wrapped so that
+   * nothing in it runs (`planCheck`), through the plugin's `run` job and reads the `error.log`
+   * lines each run adds. A check is not a Run: it opens no Run mark, and the notice of a session's
+   * first Run does not come. Runs one at a time, between reloads; a refusal stops the rest.
+   */
+  checkScripts(texts: readonly string[]): Promise<CheckOutcome> {
+    const next = this.reloads.then(() => this.checkNow(texts));
+    this.reloads = next.catch(() => undefined);
+    return next;
+  }
+
+  private async checkNow(texts: readonly string[]): Promise<CheckOutcome> {
+    const runs: CheckRun[] = [];
+    for (const text of texts) {
+      const running = this.process;
+      if (running === undefined || !this.canRun) {
+        return { kind: 'refused', code: 'not_ready', message: 'the live game is not running' };
+      }
+      if (text.length > MAX_SCRIPT) {
+        return {
+          kind: 'refused',
+          code: 'too_long',
+          message: `a block is longer than ${String(MAX_SCRIPT / 1024)} KiB`,
+        };
+      }
+      const { file } = newRunFile();
+      const { bytes, lost } = encodeScript(text);
+      await this.errorLog?.read();
+      const answer = await this.runFile(running, file, bytes, 'a file check');
+      if ('kind' in answer) return answer;
+      if (!answer.success) {
+        return { kind: 'refused', code: 'refused', message: answer.text };
+      }
+      await new Promise((resolve) => setTimeout(resolve, ERROR_LOG_SETTLE_MS));
+      runs.push({ answer, lines: (await this.errorLog?.read()) ?? [], lost });
+    }
+    const lines = runs.reduce((sum, run) => sum + run.lines.length, 0);
+    this.output.info(
+      `Checked a file in ${String(runs.length)} run(s): ${String(lines)} error.log lines`,
+    );
+    return { kind: 'checked', runs };
   }
 
   /** Whether a private save holds what a Run changed: the Continue list says so (lab#156). */

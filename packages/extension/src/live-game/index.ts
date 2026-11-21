@@ -4,6 +4,7 @@ import { LiveGame, type LiveGameState } from './live-game.ts';
 import { PrivateInstallError } from './install.ts';
 import { PickMode } from './pick-mode.ts';
 import { CAN_RUN_CONTEXT, registerRunSelection } from './run-selection.ts';
+import { registerCheckFile } from './check-file.ts';
 
 export type { LiveGameDisplay, LiveGameMod, PreparedInstall } from './install.ts';
 export { PrivateInstallError } from './install.ts';
@@ -90,6 +91,7 @@ export function registerLiveGame(
     }),
   );
   registerRunSelection(context, game, output);
+  registerCheckFile(context, game, output);
   void game.closeOrphan().then(() => removeGameHostInstall(game, output));
   return { game, pick };
 }

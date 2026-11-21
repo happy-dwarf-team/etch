@@ -25,6 +25,7 @@ The folders are the groups of the site's sidebar, in this order:
   [Reload on save](live-game/reload-on-save.md) · [Pick mode](live-game/pick-mode.md) ·
   [Snapshot and compare](live-game/snapshot-and-compare.md) ·
   [Run selection](live-game/run-selection.md) ·
+  [Check File in the Live Game](live-game/check-file.md) ·
   [The private install](live-game/private-install.md)
 - **Scripts**: [Province IDs and names](scripts/province-ids-and-names.md) ·
   [Encoding](scripts/encoding.md) · [Script profile](scripts/script-profile.md) ·
