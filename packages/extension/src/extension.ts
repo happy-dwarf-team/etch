@@ -3,6 +3,7 @@ import { SUPPORTED_GAME_VERSION } from '@etch/core';
 import { registerAssetLinks, type AssetLinks } from './asset-links.ts';
 import { registerSpriteLinks, type SpriteLinks } from './sprite-links.ts';
 import { registerLocalisationHints, type LocalisationHints } from './localisation-hints.ts';
+import { registerGuiCompletion, type GuiCompletion } from './gui-completion.ts';
 import { BuildCheck } from './build-check.ts';
 import { RUNNING_BUILD } from './build-stamp.ts';
 import { registerLiveGame, type LiveGame, type PickMode } from './live-game/index.ts';
@@ -28,6 +29,7 @@ export interface EtchApi {
   readonly assetLinks: AssetLinks;
   readonly spriteLinks: SpriteLinks;
   readonly localisationHints: LocalisationHints;
+  readonly guiCompletion: GuiCompletion;
 }
 
 let liveGame: LiveGame | undefined;
@@ -56,6 +58,7 @@ export function activate(context: vscode.ExtensionContext): EtchApi {
       }),
     );
   }
+  const spriteLinks = registerSpriteLinks(context, output);
   return {
     navigation,
     preview: registerPreview(context, output, navigation, live.game, live.pick),
@@ -65,8 +68,9 @@ export function activate(context: vscode.ExtensionContext): EtchApi {
     meshPreview: registerMeshPreview(context, output),
     entityPreview: registerEntityPreview(context, output),
     assetLinks: registerAssetLinks(context, output),
-    spriteLinks: registerSpriteLinks(context, output),
+    spriteLinks,
     localisationHints: registerLocalisationHints(context, output),
+    guiCompletion: registerGuiCompletion(context, spriteLinks),
   };
 }
 

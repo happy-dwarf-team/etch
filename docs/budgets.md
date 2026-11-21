@@ -117,6 +117,23 @@ pnpm --filter etch test
 
 ## Results
 
+### 2026-11-21, completion in `.gui` files (ADR 0008, reported, not gated)
+
+The core's queries outside VS Code (Node, the files in the file cache), on the
+game folder alone and with Anbennar (Workshop 1385440355) over it. The context
+is `guiCompletionAt` at three offsets of each of the three largest `.gui` files,
+which parses the whole file on each call; the vocabulary is built once per
+interface index and kept.
+
+| Playset | Interface load | Sprites, fonts | Vocabulary | Context per call, largest files |
+| --- | --- | --- | --- | --- |
+| Vanilla (129 `.gui`, 132 `.gfx`) | 199 ms | 6,829, 47 | 34 ms | 2.0 ms (`countrydiplomacyview`, 148,264 characters), 1.8 ms, 1.1 ms |
+| Anbennar (162 `.gui`, 177 `.gfx`) | 681 ms | 15,118, 47 | 39 ms | 1.7 ms (`topbar`, 345,968 characters), 2.3 ms, 2.0 ms |
+
+The interface load is the one the sprite hovers already make, shared with them.
+A proposed budget for the context, should ADR 0008 be accepted: 10 ms per call
+on Anbennar's largest `.gui` file.
+
 ### 2026-10-28, the 2.0.0 trial's fixes (#219)
 
 As M10, one process with both playsets, under the lab's game lock (no game

@@ -381,6 +381,12 @@
           "scope": "resource",
           "markdownDescription": "The localisation language the preview shows a `.gui` file's texts in."
         },
+        "etch.editor.completion": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "markdownDescription": "Suggest words as you type in `.gui` files: widget types, keys, sprite names, fonts and values, taken from your playset (the game, your mod and the mods it depends on)."
+        },
         "etch.editor.localisationHints": {
           "type": "boolean",
           "default": true,

@@ -33,7 +33,7 @@ export const SPRITE_SCRIPT_SELECTOR: vscode.DocumentSelector = [
   { scheme: 'file', pattern: '**/common/estate_privileges/**/*.txt' },
 ];
 
-interface Loaded {
+export interface Loaded {
   readonly files: GameFiles;
   readonly ui: PlaysetInterface;
 }
@@ -74,7 +74,15 @@ export class SpriteLinks implements vscode.HoverProvider, vscode.DefinitionProvi
       }
       return undefined;
     }
-    const definitions = loaded.ui.index.spriteDefinitions(found.reference.name).length;
+    return new vscode.Hover(await this.describe(loaded, sprite), found.range);
+  }
+
+  /**
+   * A sprite's kind, frames, `.gfx` file and texture with its thumbnail, as its hover shows it;
+   * completion shows the same for a sprite name it offers.
+   */
+  async describe(loaded: Loaded, sprite: Located<Sprite>): Promise<vscode.MarkdownString> {
+    const definitions = loaded.ui.index.spriteDefinitions(sprite.item.name).length;
     const { item } = sprite;
     const markdown = new vscode.MarkdownString();
     const frames = item.frames > 1 ? ` · ${String(item.frames)} frames` : '';
@@ -100,7 +108,7 @@ export class SpriteLinks implements vscode.HoverProvider, vscode.DefinitionProvi
         }
       }
     }
-    return new vscode.Hover(markdown, found.range);
+    return markdown;
   }
 
   async provideDefinition(
@@ -133,7 +141,8 @@ export class SpriteLinks implements vscode.HoverProvider, vscode.DefinitionProvi
     );
   }
 
-  private playset(): Promise<Loaded | undefined> {
+  /** The playset's files and interface, loaded once until {@link reset}; shared with completion. */
+  playset(): Promise<Loaded | undefined> {
     this.loaded ??= linkedFiles().then(
       async (linked) =>
         linked === undefined

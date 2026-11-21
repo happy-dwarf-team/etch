@@ -7,7 +7,7 @@ import type { PropertyNode, ScalarNode } from '../script/tree.ts';
 import { fontFilePaths } from '../text/bmfont.ts';
 import { diagnostic, type ModelDiagnostic } from './diagnostics.ts';
 import type { FontDefinition, GfxFile, Sprite } from './gfx.ts';
-import { allWidgets, type GuiFile, type Widget } from './gui.ts';
+import { allWidgets, type GuiFile, type Widget, type WidgetKind } from './gui.ts';
 import type { InterfaceIndex, Located } from './interface-index.ts';
 import { keyOf, scalarText } from './properties.ts';
 
@@ -49,6 +49,19 @@ export function resolveFontFiles(
 
 const SPRITE_KEYS = new Set(['spritetype', 'quadtexturesprite']);
 const FONT_KEYS = new Set(['font', 'buttonfont']);
+
+/**
+ * Whether a widget's key, in lower case, names a sprite: `spriteType`, `quadTextureSprite` or a
+ * list's `background`, the keys `guiDiagnostics` checks as sprites.
+ */
+export function isSpriteKey(key: string, kind: WidgetKind): boolean {
+  return SPRITE_KEYS.has(key) || (key === 'background' && isListKind(kind));
+}
+
+/** Whether a widget's key, in lower case, names a font: `font` or `buttonFont`. */
+export function isFontKey(key: string): boolean {
+  return FONT_KEYS.has(key);
+}
 /** Keys of `scrollbarType` that name one of its child buttons. */
 const SCROLLBAR_PART_KEYS = new Set(['slider', 'track', 'leftbutton', 'rightbutton']);
 
@@ -148,7 +161,11 @@ function checkWidgetReference(
 }
 
 function isList(widget: Widget): boolean {
-  return widget.kind === 'listboxType' || widget.kind === 'smoothListboxType';
+  return isListKind(widget.kind);
+}
+
+function isListKind(kind: WidgetKind): boolean {
+  return kind === 'listboxType' || kind === 'smoothListboxType';
 }
 
 function isWindow(widget: Widget): boolean {

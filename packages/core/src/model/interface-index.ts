@@ -103,6 +103,16 @@ export class InterfaceIndex {
     return this.gfx.sprites().get(name.toLowerCase()) ?? [];
   }
 
+  /** Every sprite name once, with the definition it resolves to, in no particular order. */
+  allSprites(): Located<Sprite>[] {
+    return [...this.gfx.sprites().values()].flatMap((list) => list.slice(-1));
+  }
+
+  /** Every font name once, with the definition it resolves to, in no particular order. */
+  allFonts(): Located<FontDefinition>[] {
+    return [...this.gfx.fonts().values()].flatMap((list) => list.slice(0, 1));
+  }
+
   font(name: string): Located<FontDefinition> | undefined {
     return this.fontDefinitions(name)[0];
   }
