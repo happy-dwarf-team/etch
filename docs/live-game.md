@@ -722,6 +722,24 @@ later.
 Not run: VS Code itself, and the check of a file the start read (the copies
 were outside the game's folders).
 
+**A `=` with no key, 21 November 2026, vanilla.** etch#588 keeps an operator
+the parser skips in the run file, on a line of its own. One start under the
+same procedure (lock, EXE hash, Process Lasso rule before and after,
+unchanged), `etch` at `main` after etch#588, the Russia 1719.3.17 save. The
+event's `trigger = { = is_at_war = yes }` (file line 6) and `immediate = { =
+add_prestige = 1 set_country_flag = … }` (line 9) gave:
+
+- `Unknown trigger type. Key: =: =, near line: 3`, with `Failed to create
+  trigger: is_at_war` and `Failed to create trigger: yes`: the game reads the
+  rest of the line wrong too. Placed on line 6, the first two on the `=`.
+- `Unknown effect type. Key: =: =, near line: 7`, twice. Placed on line 9, on
+  the `=`.
+- The option's `add_treasuryy = 5`, as before, on its line. The run answered
+  `executed` and the flag stayed unset: nothing ran.
+
+The game's `near line` names the line after the `=`, the entry's line in the
+run file; both run-file lines map to the same file line.
+
 ## Live runs
 
 Run on 2026-10-27 under the EU4 engine lab's procedure (its game lock for the
