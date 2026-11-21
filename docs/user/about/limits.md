@@ -13,7 +13,8 @@ in one place, grouped by where you meet them.
 - A window without a [window profile](../reference/glossary.md#window-profile) is drawn with every
   widget at once, and the texts the game's code fills stay as the `.gui` file writes them. A
   window profile is what Etch knows about a window beyond its files: which parts the game shows
-  together, and where its texts come from. Etch ships profiles for the base game and for Anbennar.
+  together, and where its texts come from. Etch comes with profiles for the base game, Anbennar,
+  Proper 2K UI Enhanced and Anbennar's patch for it.
   See [Views and window profiles](../interface-windows/views.md).
 - **Etch: Add Scripted Selectors to the Window Profile** does not work out whether a widget's
   `potential` is true. You set each widget that has a `potential` to shown or hidden yourself, in
@@ -56,7 +57,8 @@ in one place, grouped by where you meet them.
 - Files you save in VS Code are not reloaded into the game in ironman or multiplayer games. See
   [Reload on save](../live-game/reload-on-save.md).
 - Some files cannot be reloaded into the running game: `countryview.gui`, `.gfx` files, fonts,
-  `core.gui` and scripted GUIs. They need a
+  `core.gui`, scripted GUIs and any other file the game reads, such as an event or a file in
+  `common`. They need a
   [planned restart](../reference/glossary.md#planned-restart): Etch saves your game, starts it
   again and loads that save, but only when you click **Restart now**. See
   [Reload on save](../live-game/reload-on-save.md).

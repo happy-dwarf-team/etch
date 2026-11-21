@@ -24,8 +24,10 @@ Etch's design document for 1.x, describes everything Etch 1.x does.
 ## What replaced them
 
 - **The live game** is the game itself, started with your mod and the mods it needs. You play it
-  beside the editor, and each file you save is reloaded into the game's own window, with its real
-  data. See [Start and stop](../live-game/start-and-stop.md).
+  beside the editor, and a window's `.gui` file, a localisation file or a texture you save is
+  reloaded into the game's own window, with its real data. See
+  [Start and stop](../live-game/start-and-stop.md) and
+  [Reload on save](../live-game/reload-on-save.md).
 - **Pick mode** takes you from a widget in the game to where it is written in your files, and
   **live snapshots** bring the texts and states the game shows into the preview. See
   [Pick mode](../live-game/pick-mode.md) and
