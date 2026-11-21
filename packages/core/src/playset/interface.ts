@@ -142,6 +142,24 @@ function cacheKey(path: string): string {
   return normaliseGamePath(path).toLowerCase();
 }
 
+/** The script folders whose files name sprites (`scriptSpriteReferences`). */
+const SPRITE_SCRIPT_FOLDERS = ['events', 'missions', 'common/estate_privileges'];
+
+/**
+ * The files of a playset that can write a sprite's name, the winning copy of each: the `.gfx` and
+ * `.gui` files of `interface` and the `.txt` files of `events`, `missions` and
+ * `common/estate_privileges`, with their subfolders.
+ */
+export async function spriteNamingFiles(files: GameFiles): Promise<GameFile[]> {
+  const out = await interfaceFiles(files);
+  const walk = async (dir: string): Promise<void> => {
+    out.push(...(await files.list(dir, '.txt')));
+    for (const sub of await files.folders(dir)) await walk(sub);
+  };
+  for (const folder of SPRITE_SCRIPT_FOLDERS) await walk(folder);
+  return out;
+}
+
 /** The `.gfx` and `.gui` files of the interface folder and its subfolders. */
 async function interfaceFiles(files: GameFiles): Promise<GameFile[]> {
   const out: GameFile[] = [];

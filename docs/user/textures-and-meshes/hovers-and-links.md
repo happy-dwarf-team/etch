@@ -84,6 +84,34 @@ The same hovers and **Go to Definition** work on the sprite names of three kinds
 
 In a script file, a name with no sprite in your playset's `.gfx` files says so in its hover.
 
+## Find every use of a sprite
+
+Put the cursor on a sprite name and press <kbd>Shift+F12</kbd> (**Find All References**). The
+name can be in a `.gfx` file, after `name`, or in a `.gui` or script file, as above. A list opens
+with every place your playset's files write that name: the `.gfx` file that defines it, the `.gui`
+files and the event, mission and estate privilege files that use it. Etch finds the name whatever
+its capital letters, as the game does.
+
+## Rename a sprite
+
+Your mod's files are the files in the folder you have open in VS Code. Open your mod's folder,
+put the cursor on a sprite name and press <kbd>F2</kbd> (**Rename Symbol**). Type the new name and
+press <kbd>Enter</kbd>. Etch changes the name in your mod's `.gfx` file and in every `.gui`,
+event, mission and estate privilege file of your mod that uses it. Files that were not open are
+changed too and left unsaved: save them to keep the change.
+
+Etch does not rename a sprite when that would leave the old name somewhere. It shows a message
+that starts with "Not renamed", says why, and changes nothing. That happens when:
+
+- another mod of your playset defines or uses the name. One such file is enough: it would keep the
+  old name, and its windows would lose the sprite;
+- the game defines or uses the name;
+- your mod's `.gfx` files do not define the sprite;
+- a `.gui` file of your mod writes the name as an `@` constant: `spriteType = @badge`, with
+  `@badge = "GFX_x"` set at the top of the file. Change the constant by hand instead;
+- the new name is already a sprite of the playset, or uses anything but letters, digits, `_`, `.`
+  and `-`.
+
 ## What it doesn't do
 
 - Etch does not read the game's DLC archives, which define many vanilla event pictures. The hover
@@ -91,6 +119,11 @@ In a script file, a name with no sprite in your playset's `.gfx` files says so i
 - In script files, only these three keys get sprite hovers. An `icon` elsewhere in `common` is not
   always a sprite: a government reform's `icon`, for example, names a texture file. So those get
   no hover.
-- Sprite hovers, and paths with a folder, need the game folder. When Etch does not find the game
-  (see [Where Etch finds the game](../getting-started/finding-the-game.md)), sprite names get no
-  hover and a path with a folder is "Not in the playset".
+- **Find All References** and **Rename Symbol** work only on sprite names, not on texture paths,
+  fonts or widget names. They do not see the DLC archives either: a rename cannot warn about a
+  DLC file that uses the name.
+- Sprite hovers, **Find All References**, **Rename Symbol** and paths with a folder need the game
+  folder. When Etch does not find the game (see
+  [Where Etch finds the game](../getting-started/finding-the-game.md)), sprite names get no hover,
+  Find All References finds nothing, a rename says "Etch cannot read the playset", and a path with
+  a folder is "Not in the playset".
