@@ -471,6 +471,18 @@ refresh is a step of the 3.0.0 release.
   as the Widget Outline names it (`<kind>` without a `name`); containers are
   classes, other widgets fields.
 
+- **Sprite references and rename (ADR 0008).** On a sprite name of a `.gfx`
+  definition, a `.gui` use (`spriteReferences`) or a script use
+  (`scriptSpriteReferences`), Find All References lists the occurrences in the
+  winning copy of every `.gfx` and `.gui` file under `interface` and every
+  `.txt` file under `events`, `missions` and `common/estate_privileges`
+  (`spriteNamingFiles`), matched without regard to case as `InterfaceIndex`
+  matches; an open document's text wins over the file's. Rename Symbol edits
+  only files under a workspace folder (the edited mod) and is refused
+  (`planSpriteRename`) when a file outside them defines or names the sprite,
+  when the mod defines none, when a mod's `.gui` names it through an
+  `@constant`, or when the new name is not a bare word or is already a sprite.
+
 - **Localisation from subfolders.** The game lists `localisation` and then
   `localisation/replace` recursively (`PdxLocalizeReadFolder`; EU4 engine lab,
   eu4-engine-lab#59), so a mod's `localisation/english/*.yml` is read; the

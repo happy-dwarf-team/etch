@@ -389,6 +389,13 @@ mission's `icon` and an estate privilege's `icon`. A script name with no
 sprite says so in its hover; Etch does not read the game's DLC archives,
 which define many vanilla event pictures.
 
+On a sprite name (in those places or in a `.gfx` definition), **Find All
+References** (Shift+F12) lists every `.gfx`, `.gui` and such script file of the
+playset that writes it, and **Rename Symbol** (F2) renames it in the mod's
+`.gfx` definition and the mod's uses. A rename is refused when the game's or
+another mod's files also name the sprite, when the mod does not define it, or
+when a `.gui` file names it through an `@constant`.
+
 A localisation key shows its text after it, in `etch.language`: a `.gui`
 file's `text`, `tooltip`, `tooltipText` and `delayedTooltipText`, and the
 `title`, `desc`, `name`, `tooltip` and `custom_tooltip` of the scripts in

@@ -50,7 +50,15 @@ async function profileFolders(game: LiveGame): Promise<string[]> {
  * mods `etch.gamePath` and `etch.playset` give, as the preview finds them), or the game folder
  * alone without a workspace folder. `undefined` when no game folder is found.
  */
-export async function linkedFiles(): Promise<{ files: GameFiles; playset: string } | undefined> {
+export async function linkedFiles(): Promise<
+  | {
+      files: GameFiles;
+      playset: string;
+      /** The edited mod's folder: the workspace mod's root; `undefined` for none or the game. */
+      editedRoot?: string;
+    }
+  | undefined
+> {
   const folder = vscode.workspace.workspaceFolders?.[0];
   const settings = vscode.workspace.getConfiguration('etch', folder?.uri);
   const gamePath = settings.get<string>('gamePath', '').trim();
@@ -74,7 +82,11 @@ export async function linkedFiles(): Promise<{ files: GameFiles; playset: string
   const layers = playset.files.layers.map((layer) =>
     layer.name === 'game' ? 'the game' : layer.name,
   );
-  return { files: playset.files, playset: `the workspace's playset (${layers.join(', ')})` };
+  return {
+    files: playset.files,
+    playset: `the workspace's playset (${layers.join(', ')})`,
+    ...(playset.workspaceMod === undefined ? {} : { editedRoot: playset.workspaceMod.root }),
+  };
 }
 
 /** Links from the shown rows to where their owners are written; `undefined` without a game folder. */

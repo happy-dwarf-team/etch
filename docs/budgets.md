@@ -117,6 +117,21 @@ pnpm --filter etch test
 
 ## Results
 
+### 2026-11-21, sprite references (ADR 0008, reported, not gated)
+
+The core's functions outside VS Code (Node, the files in the file cache), as
+Find All References calls them: `spriteNamingFiles` lists the files, each is
+read and decoded, and `occurrencesOf` searches each for one name. Two runs on
+Anbennar gave the same times within 10 %.
+
+| Playset | Files | List | Read and decode | Search, per name |
+| --- | --- | --- | --- | --- |
+| Vanilla | 875 | 7 ms | 317 ms | 11–26 ms (`MERCHANTS_TALKING_eventPicture`: 136 places) |
+| Anbennar (Workshop 1385440355) over the game | 2,075 | 13 ms | 1,145–1,236 ms | 89–100 ms (the same picture: 209 places) |
+
+The read is made on each request; a proposed budget, should ADR 0008 be
+accepted: 2 s on Anbennar.
+
 ### 2026-11-21, completion in `.gui` files (ADR 0008, reported, not gated)
 
 The core's queries outside VS Code (Node, the files in the file cache), on the

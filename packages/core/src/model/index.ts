@@ -6,4 +6,5 @@ export * from './properties.ts';
 export * from './references.ts';
 export * from './asset-paths.ts';
 export * from './script-sprites.ts';
+export * from './sprite-uses.ts';
 export * from './localisation-references.ts';
