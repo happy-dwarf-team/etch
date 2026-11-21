@@ -93,6 +93,9 @@ in one place, grouped by where you meet them.
   [Province IDs and names](../scripts/province-ids-and-names.md).
 - Etch does not check that a country file exists when its name has a letter such as `ö`, as in
   `Jötunnheim.txt`. See [Province IDs and names](../scripts/province-ids-and-names.md).
+- Etch warns about a second history file for a province or a country only when the game has a file
+  for it too. Two files from mods, for a province or country that the game has no file for, get no
+  warning. See [Province IDs and names](../scripts/province-ids-and-names.md).
 - **Etch: Show Latest Script Profile** needs Anvil 1.22 or newer, which loads plugins into EU4 and
   whose script profiler times your scripts. Etch does not measure scripts itself. See
   [Script profile](../scripts/script-profile.md).
@@ -109,6 +112,17 @@ in one place, grouped by where you meet them.
   [Encoding](../scripts/encoding.md).
 - Etch does not change VS Code's encoding settings, and it does not save the file for you. See
   [Encoding](../scripts/encoding.md).
+
+## Localisation texts
+
+- Etch shows the text of a localisation key after it only on these lines: `text`, `tooltip`,
+  `tooltipText` and `delayedTooltipText` in `.gui` files, and `title`, `desc`, `name`, `tooltip`
+  and `custom_tooltip` in the script files of `events`, `decisions`, `missions` and `common`. A
+  value that no `.yml` file of your playset defines gets no text. See
+  [Localisation texts](../scripts/localisation-texts.md).
+- A change to a `.yml` file shows in these texts only after you save the file. When Etch cannot
+  find the game folder, it shows no texts. See
+  [Localisation texts](../scripts/localisation-texts.md).
 
 ## Textures and meshes
 

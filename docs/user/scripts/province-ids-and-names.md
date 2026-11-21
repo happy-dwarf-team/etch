@@ -32,6 +32,14 @@ The **Etch** output, in the Output panel, lists the same lines, each with the mo
 When there are none, the message says that every province ID and name is defined. Files you have
 not opened keep their warnings in Problems until the next check.
 
+This check does not list two kinds of warning in Problems: a second history file for a province,
+and a tag without a history file (both under "What Etch checks" below). A big mod can have
+hundreds of them, so the message gives a count for each mod and each kind instead, such as "793
+files of My Mod add a second history to provinces of the game" or "1032 tags of My Mod have no
+history/countries file". The **Etch** output has the same count, with the files under it. When the
+check finds nothing else, the message has a **Show Output** button that opens the **Etch** output.
+Open one of these files to see its warning in the editor.
+
 If Etch cannot find the game, the check asks you to set `etch.gamePath`: see
 [Where Etch finds the game](../getting-started/finding-the-game.md).
 
@@ -74,6 +82,11 @@ uses them. In them, it checks:
 - a `history/provinces` file whose name does not start with the ID of a province on the map, such
   as `4999 - Past.txt` on 4941 provinces, or `Uppland.txt`. The warning is on its first line: the
   game skips the file without a word.
+- a mod's `history/provinces` file for a province that the game already has a file for under
+  another name, such as `1 - Uppland.txt` beside the game's `1-Uppland.txt`. The warning is on its
+  first line. The mod's file does not replace the game's: the game reads both into the province's
+  history. To replace the game's file, give yours the same name, or replace the whole
+  `history/provinces` folder with `replace_path`.
 
 ### Lists and map files
 
@@ -124,6 +137,11 @@ uses them. In them, it checks:
 - A mod's `history/countries` file for a tag that the game already has a file for under another
   name, such as `SWE - My Sweden.txt` beside `SWE - Sweden.txt`. The mod's file does not replace
   the game's: the game reads both into the country's history.
+- A tag in `common/country_tags` that has no file in the `history/countries` folders of your
+  playset: no file whose name starts with the tag, as `SWE - Sweden.txt` does for `SWE`. The
+  warning is on the tag. The game writes that the country "is missing a history file" in
+  `error.log`, and goes on without a history for it. To give the country a history, add a file
+  whose name starts with its tag.
 
 ### Names of idea groups, ideas and graphical cultures
 
@@ -184,3 +202,6 @@ quoted text may run over several lines; Etch reads it as the game does.
 - A name that crashes the game only in a tooltip is not checked inside a `custom_trigger_tooltip`.
 - Etch does not check that a country file exists when its name has a letter such as `ö`, as in
   `Jötunnheim.txt`.
+- Etch warns about a second history file for a province or a country only when the game has a file
+  for it too. Two files from mods, for a province or country that the game has no file for, get no
+  warning.

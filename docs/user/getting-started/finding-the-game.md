@@ -75,8 +75,9 @@ holds the settings of that folder only:
 
 ## The language
 
-The setting `etch.language` picks the language of the localisation the preview shows texts in:
-`english` (the default), `french`, `german` or `spanish`.
+The setting `etch.language` picks the language of the texts that the preview draws, and of the
+[localisation texts](../scripts/localisation-texts.md) in the editor: `english` (the default),
+`french`, `german` or `spanish`.
 
 All of Etch's settings are on the [Settings](../reference/settings.md) page.
 
