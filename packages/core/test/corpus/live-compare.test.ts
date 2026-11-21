@@ -309,6 +309,8 @@ describe('Compare with Live Game', () => {
     ]);
   });
 
+  // Reads and compares every committed capture: 1.1 s alone with the files cached, and over the
+  // default 5 s timeout under a full parallel unit run (2026-11-21).
   it('gives back the game tree of every committed capture from its live snapshot', async () => {
     const folder = join(REPOSITORY, 'corpus', 'captures');
     let roots = 0;
@@ -330,7 +332,7 @@ describe('Compare with Live Game', () => {
       }
     }
     expect(roots).toBeGreaterThan(0);
-  });
+  }, 60_000);
 });
 
 /** A captured widget with the fields a snapshot has, as `snapshotTree` gives it back. */
