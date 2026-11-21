@@ -6,7 +6,8 @@ VSIX. Its contract (clips, framing, the edit, encoding, the paint marker) is the
 specification's section 8,
 [Media pipeline](https://github.com/happy-dwarf-team/etch-website/blob/main/docs/spec.md#8-media-pipeline-work-in-etch);
 change a rule there first. Media are made on the maintainer's Windows machine, never in CI: they
-need EU4 and they show its art.
+need EU4 and they show its art. The same package makes the screenshots of a pull request's
+Evidence ([below](#evidence-for-a-pull-request)).
 
 A media refresh has two steps with a human review between them:
 
@@ -285,6 +286,72 @@ pnpm media publish --site ..\etch-website --keep snapshot
 A failure in steps 1–3 leaves the site's checkout untouched. The command does not commit, push or
 open a pull request: the site's change goes through the team's pull request process like any
 other.
+
+## Evidence for a pull request
+
+`pnpm media evidence` makes the screenshots, and on request a recording, that show a pull
+request's change in VS Code (CONTRIBUTING.md, Evidence). It uses the captures' VS Code and
+window (VS Code 1.142.0, 2560 × 1440 at device scale 1, a throwaway profile and workspace) and
+runs the steps of a scenario file. With `--before`, it runs the same steps against another
+checkout's Etch first, so "before" and "after" show the same files in the same window.
+
+```powershell
+pnpm media evidence packages/media/evidence/sprite-hover.json --before ..\etch-main
+pnpm media evidence packages/media/evidence/references.json --record
+```
+
+| Option     | Default                    | Meaning                                                                                       |
+| ---------- | -------------------------- | --------------------------------------------------------------------------------------------- |
+| `--before` | none                       | a checkout of the code before the change, with `pnpm install` run: its Etch is "before"     |
+| `--record` | off                        | also record each side: Playwright's recording of the window, cut to the steps, as an MP4      |
+| `--ffmpeg` | `ffmpeg` on the `PATH`     | FFmpeg, which cuts the recording                                                              |
+| `--game`   | `ETCH_GAME_PATH`, or Steam | the EU4 folder (`etch.gamePath`)                                                              |
+| `--work`   | `C:\etch-evidence`         | VS Code's folder; outside the user folder, so no picture shows the account name in a path    |
+
+A checkout for `--before` is a worktree of `main`:
+`git worktree add --detach ..\etch-main origin/main`, then `pnpm install` in it. Each side
+builds its own extension first.
+
+The output goes into the git-ignored `packages/media/out/evidence/<scenario>/`: `before/` and
+`after/` with one PNG per shot and `recording.mp4`, and `evidence.md`, an Evidence section that
+pairs the shots in a before/after table and names the build of each side. The command prints
+the `gh pr comment` line that posts it with one `--attach` per file. Look at every picture
+first. A shot that shows the home folder's path prints a warning: crop it out with `clip`.
+
+### Scenario files
+
+A scenario is a JSON file. The ones in `packages/media/evidence/` are examples to copy; a
+scenario for one pull request can stay out of Git.
+
+| Key        | Meaning                                                                                      |
+| ---------- | -------------------------------------------------------------------------------------------- |
+| `mod`      | the mod copied into the workspace, relative to the scenario file (default: the demo mod)   |
+| `open`     | the file VS Code opens first, relative to the mod                                            |
+| `settings` | user settings over the captures' ones; hovers are on (`editor.hover.enabled`)                |
+| `steps`    | the steps, in order; each has one action                                                     |
+
+| Step                                                   | What it does                                                                     |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| `{ "wait": 2000 }`                                     | waits that many milliseconds: for Etch to read the mod after launch, a hint to come |
+| `{ "open": "etch_demo.gfx" }`                          | opens a file through Quick Open, by its name                                     |
+| `{ "find": "GFX_close", "caret": "start" }`            | selects the one match of the text in the editor; `caret` collapses the selection to its start or end |
+| `{ "hover": true }`                                    | opens the hover at the cursor and waits for it                                    |
+| `{ "command": "View: Close Primary Side Bar" }`        | runs a command from the palette, by its title                                    |
+| `{ "key": "Shift+F12", "times": 1 }`                   | presses a key (Playwright's names: `Control+Enter`, `Escape`, `F2`)              |
+| `{ "type": "GFX_new_name", "delayMs": 60 }`            | types text, a key at a time                                                      |
+| `{ "click": "Apply" }`                                 | clicks a button by its label                                                     |
+| `{ "shot": "hover", "clip": { "x": 0, "y": 0, "width": 1100, "height": 1000 } }` | a PNG of the window, or of the `clip` part of it at 1:1, never scaled |
+
+Any step can add `"until": "<selector>"`: after the action, it waits up to 15 s until an
+element of the selector shows, then half a second for it to take the focus. The selector is
+Playwright's: CSS, as `.peekview-widget` after Shift+F12 or `.rename-box input` after F2, or a
+role, as `role=button[name="Apply"]` after Control+Enter in the rename box. Without `until`, a
+key pressed next can go to the editor before the new element takes the focus. A step that fails
+stops the run and saves the window as `failed.png`.
+
+The run needs no game. Playwright sends the keys to VS Code itself, not through the system
+keyboard, but VS Code must keep its focus: do not click into its window while it runs. In the
+EU4 engine lab it runs under the game lock, as a capture does.
 
 ## Media refresh checklist
 

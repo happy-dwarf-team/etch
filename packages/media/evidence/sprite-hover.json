@@ -1,0 +1,13 @@
+{
+  "$comment": "The gutter's sprite thumbnails and a sprite hover in the demo mod's .gui. pnpm media evidence packages/media/evidence/sprite-hover.json --before ../etch-main",
+  "open": "interface/etch_demo.gui",
+  "settings": { "etch.editor.spriteThumbnails": true },
+  "steps": [
+    { "command": "View: Close Primary Side Bar" },
+    { "wait": 6000 },
+    { "shot": "gutter", "clip": { "x": 0, "y": 0, "width": 1100, "height": 1000 } },
+    { "find": "GFX_close" },
+    { "hover": true },
+    { "shot": "hover", "clip": { "x": 0, "y": 0, "width": 1100, "height": 1000 } }
+  ]
+}

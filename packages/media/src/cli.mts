@@ -4,6 +4,8 @@
 //   pnpm media capture [--clip ID]... [--save PATH] [--profile PATH] [--reedit] [--ffmpeg PATH]
 //                      [--game PATH] [--work DIR]
 //   pnpm media publish --site PATH [--etch VERSION] [--keep ID]...
+//   pnpm media evidence SCENARIO.json [--before CHECKOUT] [--record] [--ffmpeg PATH] [--game PATH]
+//                       [--work DIR]
 //
 // --clip takes the clip ids (hero, preview, views, data, zoom, outline, problems, profile, names,
 // reload, pick, snapshot), also separated by commas; all of them by default. profile shows --profile,
@@ -22,6 +24,11 @@
 // stays the one the site shows, with the Etch version it was captured for (a new take that shows
 // an Etch bug); the capture need not have them. The upload token comes from the user
 // environment variables HAPPYDWARF_MEDIA_ACCESS_KEY_ID and HAPPYDWARF_MEDIA_SECRET_ACCESS_KEY.
+//
+// evidence runs a scenario's steps in VS Code with this checkout's Etch, and with --before also
+// with another checkout's, and writes the screenshots, the recording (--record) and an Evidence
+// section into packages/media/out/evidence/<scenario>/ (docs/media.md, "Evidence for a pull
+// request"). --work defaults to C:\etch-evidence, outside the user's folder.
 import { S3Client } from '@aws-sdk/client-s3';
 import { readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -30,6 +37,7 @@ import { parseArgs } from 'node:util';
 import { findGameInSteam, systemEnvironment } from '@etch/core/playset';
 import { capture } from './capture.ts';
 import { MEDIA_BUCKET } from './config.ts';
+import { attachments, defaultWork, evidence, parseScenario } from './evidence.ts';
 import { CLIP_IDS, type ClipId } from './manifest.ts';
 import { credentials, publish, r2Bucket } from './publish.ts';
 
@@ -55,6 +63,8 @@ const { positionals, values } = parseArgs({
     etch: { type: 'string' },
     save: { type: 'string' },
     profile: { type: 'string' },
+    before: { type: 'string' },
+    record: { type: 'boolean', default: false },
   },
 });
 
@@ -73,6 +83,59 @@ function clipIds(values: readonly string[] | undefined): ClipId[] {
 }
 
 const [step] = positionals;
+
+/** The EU4 folder: --game, ETCH_GAME_PATH or Steam's. */
+async function gameFolder(): Promise<string> {
+  const game =
+    values.game ??
+    (process.env['ETCH_GAME_PATH']?.trim() || undefined) ??
+    (await findGameInSteam(systemEnvironment()));
+  if (game === undefined || game === '') {
+    fail('EU4 was not found through Steam; pass --game or set ETCH_GAME_PATH.');
+  }
+  return game;
+}
+
+if (step === 'evidence') {
+  const file = positionals[1];
+  if (file === undefined) {
+    fail(
+      'Usage: pnpm media evidence SCENARIO.json [--before CHECKOUT] [--record] [--ffmpeg PATH] [--game PATH] [--work DIR]',
+    );
+  }
+  const scenarioFile = path.resolve(typedIn, file);
+  let scenario: ReturnType<typeof parseScenario>;
+  try {
+    scenario = parseScenario(
+      await readFile(scenarioFile, 'utf8'),
+      scenarioFile,
+      path.join(repository, 'packages', 'media', 'demo-mod'),
+    );
+  } catch (error) {
+    fail((error as Error).message);
+  }
+  try {
+    const { markdown, file: written } = await evidence({
+      scenario,
+      after: repository,
+      before: values.before === undefined ? undefined : path.resolve(typedIn, values.before),
+      record: values.record,
+      ffmpeg: values.ffmpeg ?? 'ffmpeg',
+      work: values.work ?? defaultWork(),
+      gamePath: await gameFolder(),
+      out: path.join(repository, 'packages', 'media', 'out', 'evidence', scenario.name),
+    });
+    console.log(`\nDone: ${written}. Look at every picture, then post it:`);
+    console.log(
+      `  gh pr comment <n> --body-file ${written} ${attachments(markdown)
+        .map((attached) => `--attach ${attached}`)
+        .join(' ')}`,
+    );
+  } catch (error) {
+    fail(`Evidence stopped: ${(error as Error).message}`);
+  }
+  process.exit(0);
+}
 if (step === 'publish') {
   if (values.site === undefined) {
     fail('Usage: pnpm media publish --site PATH [--etch VERSION] [--keep ID]...');
@@ -117,7 +180,8 @@ if (step === 'publish') {
 if (step !== 'capture') {
   fail(
     'Usage: pnpm media capture [--clip ID]... [--save PATH] [--profile PATH] [--reedit]\n' +
-      '       pnpm media publish --site PATH [--etch VERSION] [--keep ID]...',
+      '       pnpm media publish --site PATH [--etch VERSION] [--keep ID]...\n' +
+      '       pnpm media evidence SCENARIO.json [--before CHECKOUT] [--record]',
   );
 }
 const clips = clipIds(values.clip);
@@ -138,13 +202,7 @@ const ffprobe =
     ? 'ffprobe'
     : path.join(path.dirname(values.ffmpeg), `ffprobe${path.extname(values.ffmpeg)}`);
 // The takes override base-game files, so the game folder is needed before VS Code starts.
-const game =
-  values.game ??
-  (process.env['ETCH_GAME_PATH']?.trim() || undefined) ??
-  (await findGameInSteam(systemEnvironment()));
-if (game === undefined || game === '') {
-  fail('EU4 was not found through Steam; pass --game or set ETCH_GAME_PATH.');
-}
+const game = await gameFolder();
 
 const out = await capture({
   repository,

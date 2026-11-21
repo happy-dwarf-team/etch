@@ -1,0 +1,29 @@
+{
+  "$comment": "Find All References and Rename Symbol on a sprite of the demo mod (#581). pnpm media evidence packages/media/evidence/references.json --record",
+  "open": "interface/etch_demo.gfx",
+  "steps": [
+    { "command": "View: Close Primary Side Bar" },
+    { "wait": 6000 },
+    { "find": "GFX_etch_demo_option", "caret": "start" },
+    { "wait": 800 },
+    { "key": "Shift+F12", "until": ".peekview-widget" },
+    { "wait": 2500 },
+    { "shot": "references", "clip": { "x": 0, "y": 0, "width": 2560, "height": 620 } },
+    { "key": "Escape" },
+    { "wait": 800 },
+    { "key": "F2", "until": ".rename-box input" },
+    { "wait": 500 },
+    { "key": "Control+A" },
+    { "type": "GFX_etch_demo_choice", "delayMs": 60 },
+    { "wait": 800 },
+    { "shot": "rename-box", "clip": { "x": 0, "y": 0, "width": 1000, "height": 260 } },
+    { "key": "Control+Enter", "until": "role=button[name=\"Apply\"]" },
+    { "wait": 2000 },
+    { "shot": "rename-preview" },
+    { "click": "Apply" },
+    { "wait": 2000 },
+    { "open": "etch_demo.gui" },
+    { "wait": 2500 },
+    { "shot": "renamed-gui", "clip": { "x": 0, "y": 0, "width": 1100, "height": 720 } }
+  ]
+}

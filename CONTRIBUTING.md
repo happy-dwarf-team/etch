@@ -15,6 +15,12 @@ page or a section. The pages are written for modders who are not programmers
 ([docs/user/STYLE.md](docs/user/STYLE.md)), and the pull request's Evidence
 lists the findings of their plain-language review and what changed.
 
+A change seen in VS Code (a hover, a decoration, a view, a command's result) shows it in
+the Evidence as screenshots, before and after for a change of what was there, and a
+recording for a flow of several steps. `pnpm media evidence <scenario>` makes them from a
+scenario file, the same steps on `main` and on the branch
+([docs/media.md](docs/media.md#evidence-for-a-pull-request)).
+
 Research and prototypes go on `research/*` and `prototype/*` branches, which
 are pushed and never merged (specification, section 13).
 
@@ -98,7 +104,7 @@ A pnpm workspace (ADR 0001):
 | `packages/renderer`  | WebGL2 drawing in the preview webview                          |
 | `packages/extension` | VS Code glue and the VSIX manifest                             |
 | `packages/compare`   | the precision corpus's headless comparison; never shipped      |
-| `packages/media`     | the Etch site's media: demo mod, clips (docs/media.md); never shipped |
+| `packages/media`     | the Etch site's media and PR evidence: demo mod, clips, evidence scenarios (docs/media.md); never shipped |
 | `plugin`             | the live game's Anvil plugin (C++, CMake, Anvil SDK)           |
 | `corpus`             | precision corpus manifest and capture records (no screenshots) |
 | `coverage`           | the coverage survey's rules, `survey.json` (docs/coverage.md)  |
