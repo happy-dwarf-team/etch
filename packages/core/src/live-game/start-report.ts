@@ -37,7 +37,7 @@ export function startLineMessage(line: string): string {
   return source === null ? rest : rest.slice(source[0].length);
 }
 
-const FILE_LINE = /\bfile:\s*"?([^"\s,]+)"?\s*,?\s*line:\s*(\d+)/i;
+const FILE_LINE = /\bfile:\s*"?([^"\s,]+)"?[\s,]*line:\s*(\d+)/i;
 const QUOTED_FILE = /\bFile:\s*"([^"]+)"/;
 const NEAR_LINE = /\bnear line:\s*(\d+)/i;
 /** A path at the start of the message (`interface/frontend.gui: Missing …`). */
