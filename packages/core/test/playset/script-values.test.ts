@@ -7,6 +7,7 @@ import {
   findScriptValueProblems,
   loadProvinceIds,
   loadScriptNames,
+  summariseFindings,
 } from '../../src/playset/index.ts';
 import { parseScript, type ScriptNames } from '../../src/script/index.ts';
 import { addFiles, makeTree, removeTree } from './fixture.ts';
@@ -302,6 +303,131 @@ describe('script values of a playset', () => {
     expect(own?.countryHistories?.get('SWE')).toEqual([
       { path: 'history/countries/SWE - My Sweden.txt', game: false },
     ]);
+  });
+
+  it("warns about a mod's province history beside the game's, summed up per mod", async () => {
+    await addFiles(root, {
+      'game/history/provinces/1-Uppland.txt': 'owner = SWE\n',
+      'game/history/provinces/2-Ostergotland.txt': 'owner = SWE\n',
+      'game/history/provinces/3 - Kalmar.txt': 'owner = SWE\n',
+      'mod/history/provinces/1 - Uppland.txt': 'owner = DAN\n',
+      'mod/history/provinces/2 - East Gotland.txt': 'owner = DAN\n',
+      // The same name replaces the game's file.
+      'mod/history/provinces/3 - kalmar.txt': 'owner = DAN\n',
+    });
+    const files = playset();
+    const names = await loadScriptNames(files);
+    expect(names?.provinceHistories?.get(1)?.map((file) => [file.path, file.game])).toEqual([
+      ['history/provinces/1 - Uppland.txt', false],
+      ['history/provinces/1-Uppland.txt', true],
+    ]);
+    const checked = await findScriptValueProblems(files, { names });
+    const shared = checked.findings.flatMap((finding) =>
+      finding.diagnostics
+        .filter((d) => d.code === 'province-history-shared')
+        .map((d) => `${finding.file.path} ${d.code}`),
+    );
+    expect(shared).toEqual([
+      'history/provinces/1 - Uppland.txt province-history-shared',
+      'history/provinces/2 - East Gotland.txt province-history-shared',
+    ]);
+    // The playset check lists none of them in Problems: one line for the mod.
+    const { findings, summaries } = summariseFindings(checked.findings);
+    expect(findings.flatMap((f) => f.diagnostics).map((d) => d.code)).not.toContain(
+      'province-history-shared',
+    );
+    expect(summaries.map((s) => [s.code, s.layer, s.message, s.entries.length])).toEqual([
+      [
+        'province-history-shared',
+        'Mod',
+        '2 files of Mod add a second history to provinces of the game',
+        2,
+      ],
+    ]);
+
+    // A mod that replaces the folder has only its own files.
+    const replacing = new GameFiles([
+      { name: 'game', root: join(root, 'game'), replacePaths: [] },
+      { name: 'Mod', root: join(root, 'mod'), replacePaths: ['history/provinces'] },
+    ]);
+    const own = await loadScriptNames(replacing);
+    expect(own?.provinceHistories?.get(1)).toEqual([
+      { path: 'history/provinces/1 - Uppland.txt', game: false },
+    ]);
+    const none = await findScriptValueProblems(replacing, { names: own });
+    expect(
+      none.findings
+        .flatMap((f) => f.diagnostics)
+        .filter((d) => d.code === 'province-history-shared'),
+    ).toEqual([]);
+  });
+
+  it('warns about a tag without a history file, summed up per mod', async () => {
+    await addFiles(root, {
+      'game/common/country_tags/00_countries.txt': 'SWE = "countries/Sweden.txt"\n',
+      'game/common/countries/Sweden.txt': 'color = { 1 2 3 }\n',
+      'game/history/countries/SWE - Sweden.txt': 'capital = 1\n',
+      'mod/common/country_tags/zz_mod.txt': [
+        'XYZ = "countries/Xyz.txt"',
+        'ABC = "countries/Abc.txt"',
+        'QQQ = "countries/Qqq.txt"',
+        // A tag defined again is not read: the duplicate warning covers it.
+        'SWE = "countries/Other.txt"',
+      ].join('\n'),
+      'mod/history/countries/QQQ - Q.txt': 'capital = 2\n',
+      'mod/common/countries/Xyz.txt': 'color = { 1 2 3 }\n',
+      'mod/common/countries/Abc.txt': 'color = { 1 2 3 }\n',
+      'mod/common/countries/Qqq.txt': 'color = { 1 2 3 }\n',
+    });
+    const files = playset();
+    const names = await loadScriptNames(files);
+    const checked = await findScriptValueProblems(files, { names });
+    const tags = checked.findings.find((f) => f.file.path === 'common/country_tags/zz_mod.txt');
+    const missing = tags?.diagnostics.filter((d) => d.code === 'country-history-missing') ?? [];
+    expect(missing.map((d) => d.key)).toEqual(['XYZ', 'ABC']);
+    expect(missing[0]?.message).toBe(
+      'No history/countries file of the playset is for XYZ: the game logs that XYZ "is missing a ' +
+        'history file" in error.log and goes on without a history for the country. A file named ' +
+        '"XYZ - <name>.txt" gives it one.',
+    );
+    expect(tags?.text.slice(missing[0]?.start, missing[0]?.end)).toBe('XYZ');
+    // The open file gets the warning; the playset check keeps only the others for Problems.
+    expect(
+      checkScriptValues(
+        parseScript(tags?.text ?? '', { script: true }),
+        { names },
+        'common/country_tags/zz_mod.txt',
+      ).filter((d) => d.code === 'country-history-missing'),
+    ).toHaveLength(2);
+    const { findings, summaries } = summariseFindings(checked.findings);
+    const kept = findings.find((f) => f.file.path === 'common/country_tags/zz_mod.txt');
+    expect(kept?.diagnostics.map((d) => d.code)).toEqual(['country-tag-duplicate']);
+    expect(summaries.map((s) => s.message)).toEqual([
+      '2 tags of Mod have no history/countries file',
+    ]);
+  });
+
+  it('sums up nothing, and keeps every finding, without the summed-up codes', () => {
+    const finding = {
+      file: {
+        path: 'events/a.txt',
+        absolutePath: 'a',
+        layer: { name: 'Mod', root: '', replacePaths: [] },
+      },
+      text: 'owns = 99',
+      diagnostics: [
+        {
+          severity: 'warning' as const,
+          code: 'province-id-out-of-range' as const,
+          message: 'm',
+          id: 99,
+          key: 'owns',
+          start: 7,
+          end: 9,
+        },
+      ],
+    };
+    expect(summariseFindings([finding])).toEqual({ findings: [finding], summaries: [] });
   });
 
   it('warns about a table of the winning common/technology.txt that no layer has', async () => {
