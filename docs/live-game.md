@@ -176,14 +176,17 @@ line: N`, a path that starts the message, `Key: …`, `in a trigger <key>`):
 - a line that names a file but no line goes on the window it names
   (`… in window 'name'`), else on the file's start;
 - a line that names only a key goes on the key's first whole-word place in the
-  edited mod's `.txt`, `.yml`, `.gui` and `.gfx` files (in path order, without
-  `gfx`, `music`, `sound`, `.git` and `.etch`, at most 20,000 files);
+  edited mod's files (in path order, without `gfx`, `music`, `sound`, `.git`
+  and `.etch`, at most 20,000 files): a localisation line's key in its `.yml`
+  files, any other key in its `.txt`, `.gui` and `.gfx` files;
 - a line about another mod's or the game's file, a key the mod does not
   write, or nothing at all is only counted, in Etch's log
   (`Start report: …`).
 
-A parsing error (`Parsing Error`, `Unexpected token`) is an error, the rest
-warnings. The notes of Anvil's log throttle are not lines of their own: `logged
+A file's several parsing errors come as a `Parsing Errors. File: "…"` line
+and an indented `[0]: …, near line: N` line each; each indented line counts as
+a `Parsing Error` of that file. A parsing error (`Parsing Error`,
+`Unexpected token`) is an error, the rest warnings. The notes of Anvil's log throttle are not lines of their own: `logged
 10 times; …` is dropped, and `repeated N more times …` adds N to its line's
 count. On the lab's machine, a player profile's `error.log` with an Anbennar
 playset (61 lines, 30 after collapsing), with Anbennar as the edited mod, gave 6

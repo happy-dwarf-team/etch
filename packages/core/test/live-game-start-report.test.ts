@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { findKey, readStartLine, startLineMessage } from '../src/index.ts';
+import {
+  findKey,
+  isLocalisationLine,
+  readStartLine,
+  splitParsingErrors,
+  startLineMessage,
+} from '../src/index.ts';
 
 // The shapes of EU4 1.37.5's own start lines (a profile with an Anbennar playset, 21.11.2026),
 // with the names of the mod changed.
@@ -75,5 +81,36 @@ describe('findKey', () => {
     expect(findKey(' MODIFIER_ETCH:0 "x"', 'MODIFIER_ETCH')).toEqual({ start: 1, end: 14 });
     expect(findKey('my_etch_tower = 1', 'etch_tower')).toBeUndefined();
     expect(findKey('anything', '')).toBeUndefined();
+  });
+});
+
+describe('splitParsingErrors', () => {
+  it("splits a file's several errors into a line each, as the game writes a single one", () => {
+    const lines = splitParsingErrors([
+      '[persistent.cpp:88]: Parsing Errors. File: "events/etch_check.txt", Error: ',
+      '  [0]: Unknown trigger type. Key: adm_techh: adm_techh, near line: 9',
+      '  [1]: Failed to create trigger: 1, near line: 9',
+      '[persistent.cpp:88]: Parsing Error. File: "events/etch_check.txt", Error: x, near line: 13',
+      '[persistent.cpp:88]: Parsing Errors. File: "events/empty.txt", Error: ',
+    ]);
+    expect(lines).toEqual([
+      '[persistent.cpp:88]: Parsing Error. File: "events/etch_check.txt", Error: Unknown trigger type. Key: adm_techh: adm_techh, near line: 9',
+      '[persistent.cpp:88]: Parsing Error. File: "events/etch_check.txt", Error: Failed to create trigger: 1, near line: 9',
+      '[persistent.cpp:88]: Parsing Error. File: "events/etch_check.txt", Error: x, near line: 13',
+      // A header without its lines stays.
+      '[persistent.cpp:88]: Parsing Errors. File: "events/empty.txt", Error: ',
+    ]);
+    expect(readStartLine(lines[0] ?? '')).toMatchObject({ path: 'events/etch_check.txt', line: 9 });
+    expect(splitParsingErrors(['  [0]: no header'])).toEqual(['  [0]: no header']);
+  });
+
+  it('reads a key without the colon the game writes after it', () => {
+    expect(
+      readStartLine('[x.cpp:1]: Unknown trigger type. Key: adm_techh: adm_techh'),
+    ).toMatchObject({
+      key: 'adm_techh',
+    });
+    expect(isLocalisationLine('Error in localization value! Key: "x"')).toBe(true);
+    expect(isLocalisationLine('Unknown country-modifier in a trigger x')).toBe(false);
   });
 });

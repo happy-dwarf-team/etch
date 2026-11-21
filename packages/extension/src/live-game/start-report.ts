@@ -5,7 +5,14 @@
 // counted. Node only, no vscode: the caller turns the entries into Problems.
 import { readFile, readdir } from 'node:fs/promises';
 import { join, relative, sep } from 'node:path';
-import { checkedTextKind, decodeGameText, findKey, readStartLine } from '@etch/core';
+import {
+  checkedTextKind,
+  decodeGameText,
+  findKey,
+  isLocalisationLine,
+  readStartLine,
+  splitParsingErrors,
+} from '@etch/core';
 import type { GameFiles } from '@etch/core/playset';
 import { collapseErrorLog } from './error-log.ts';
 
@@ -140,7 +147,7 @@ export async function startReport(
   files: GameFiles,
   editedRoot: string,
 ): Promise<StartReport> {
-  const untangled = untangleThrottle(lines);
+  const untangled = untangleThrottle(splitParsingErrors(lines));
   const collapsed = collapseErrorLog(untangled.lines);
   const problems: StartProblem[] = [];
   const texts = new Map<string, Promise<string | undefined>>();
@@ -186,9 +193,11 @@ export async function startReport(
         placed,
       });
     } else if (read.key !== undefined) {
-      const list = byKey.get(read.key) ?? [];
+      // A localisation key is looked up in the `.yml` files, any other key outside them.
+      const key = `${isLocalisationLine(read.message) ? 'yml' : 'script'}:${read.key}`;
+      const list = byKey.get(key) ?? [];
       list.push({ message, error: read.parseError });
-      byKey.set(read.key, list);
+      byKey.set(key, list);
     } else {
       unplaced++;
     }
@@ -205,12 +214,15 @@ export async function startReport(
       } catch {
         continue;
       }
-      const holds = [...left].filter((key) => bytes.includes(key));
+      const side = /\.yml$/i.test(path) ? 'yml:' : 'script:';
+      const holds = [...left].filter(
+        (key) => key.startsWith(side) && bytes.includes(key.slice(side.length)),
+      );
       if (holds.length === 0) continue;
       const kind = checkedTextKind(path) ?? 'script';
       const text = decodeGameText(bytes, kind).text;
       for (const key of holds) {
-        const at = findKey(text, key);
+        const at = findKey(text, key.slice(side.length));
         if (at === undefined) continue;
         left.delete(key);
         for (const { message, error } of byKey.get(key) ?? []) {

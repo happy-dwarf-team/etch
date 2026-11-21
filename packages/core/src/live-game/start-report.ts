@@ -37,6 +37,50 @@ export function startLineMessage(line: string): string {
   return source === null ? rest : rest.slice(source[0].length);
 }
 
+const PARSING_ERRORS = /^(.*?)Parsing Errors\.\s*File:\s*"([^"]+)"/;
+const CONTINUATION = /^\s+\[\d+\]:\s*(.*)$/;
+
+/**
+ * The lines with each `Parsing Errors.` block split into one line per error. The game writes a
+ * file's several errors as a header and indented lines that name no file (seen on 21.11.2026):
+ *
+ * ```
+ * [persistent.cpp:88]: Parsing Errors. File: "events/x.txt", Error:
+ *   [0]: Unknown trigger type. Key: adm_techh: adm_techh, near line: 9
+ *   [1]: Failed to create trigger: 1, near line: 9
+ * ```
+ *
+ * Each indented line becomes `[persistent.cpp:88]: Parsing Error. File: "events/x.txt", Error: …`,
+ * as the game writes a file's single error, and the header goes. Other lines stay as they are.
+ */
+export function splitParsingErrors(lines: readonly string[]): string[] {
+  const out: string[] = [];
+  let header: { prefix: string; path: string; line: string; used: boolean } | undefined;
+  const flush = (): void => {
+    if (header !== undefined && !header.used) out.push(header.line);
+    header = undefined;
+  };
+  for (const line of lines) {
+    const rest = CONTINUATION.exec(line);
+    if (rest !== null && header !== undefined) {
+      out.push(`${header.prefix}Parsing Error. File: "${header.path}", Error: ${rest[1] ?? ''}`);
+      header.used = true;
+      continue;
+    }
+    flush();
+    const opened = PARSING_ERRORS.exec(line);
+    if (opened === null) out.push(line);
+    else header = { prefix: opened[1] ?? '', path: opened[2] ?? '', line, used: false };
+  }
+  flush();
+  return out;
+}
+
+/** Whether a start line is about a localisation key, whose place is the `.yml` that defines it. */
+export function isLocalisationLine(message: string): boolean {
+  return /\blocali[sz]ation\b/i.test(message);
+}
+
 const FILE_LINE = /\bfile:\s*"?([^"\s,]+)"?[\s,]*line:\s*(\d+)/i;
 const QUOTED_FILE = /\bFile:\s*"([^"]+)"/;
 const NEAR_LINE = /\bnear line:\s*(\d+)/i;
@@ -44,7 +88,8 @@ const NEAR_LINE = /\bnear line:\s*(\d+)/i;
 const LEADING_PATH = /^([\w.\- ]+(?:\/[\w.\- ]+)+\.(?:gui|gfx|txt|yml|asset|csv|map|lua)):\s/i;
 const KEYS: readonly RegExp[] = [
   /\bKey:\s*"([^"]+)"/,
-  /\bKey:\s*([^\s,"]+)/,
+  // `Key: adm_techh: adm_techh`: the key without the colon after it.
+  /\bKey:\s*([^\s,":]+)/,
   /\bin an? (?:trigger|effect)\s+(\S+)\s*$/i,
 ];
 const PARSE_ERROR = /\bparsing error\b|\bunexpected token\b/i;

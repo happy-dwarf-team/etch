@@ -21,6 +21,8 @@ async function tree(root: string, files: Record<string, string>): Promise<void> 
   }
 }
 
+const PARSING = 'error.log: Parsing Error. File: "events/';
+
 describe('startReport', () => {
   it("puts the lines on the edited mod's files and counts the rest", async () => {
     const game = join(folder, 'game');
@@ -33,7 +35,9 @@ describe('startReport', () => {
     await tree(other, { 'interface/other.gui': 'guiTypes = {\n}\n' });
     await tree(mod, {
       'interface/etch.gui': 'guiTypes = {\n\twindowType = {\n\t\tname = "etch"\n\t}\n}\n',
-      'events/etch.txt': 'namespace = etch\nlimit = { has_province_modifier = etch_tower }\n',
+      // The localisation key is used in an event too; its place is the `.yml`.
+      'events/etch.txt':
+        'namespace = etch\nlimit = { has_province_modifier = etch_tower }\ncustom_tooltip = MODIFIER_ETCH\n',
       'localisation/etch_l_english.yml': '﻿l_english:\n MODIFIER_ETCH:0 "x"\n',
       'gfx/skipped.txt': 'etch_tower\n',
     });
@@ -47,6 +51,10 @@ describe('startReport', () => {
       "[windowtype.cpp:809]: Guitype 'b' already exists in windowtype 'etch'.  file: interface/etch.gui line: 3",
       '[persistent.cpp:88]: Parsing Error. File: "interface/settings.gui", Error: Unexpected token: format, near line: 2',
       "[fixedwindow.cpp:2962]: interface/etch.gui: Missing Button 'close' in window 'etch'.",
+      // Several errors of one file: a header and an indented line each.
+      '[persistent.cpp:88]: Parsing Errors. File: "events/etch.txt", Error: ',
+      '  [0]: Unknown trigger type. Key: etch_trigger: etch_trigger, near line: 2',
+      '  [1]: Failed to create trigger: 1, near line: 3',
       "[fixedwindow.cpp:2962]: interface/other.gui: Missing Button 'close' in window 'other'.",
       '[triggerimplementation.cpp:17071]: Unknown province-modifier in a trigger etch_tower',
       '[pdx_localize.cpp:1063]: Error in localization value! Key: "MODIFIER_ETCH", Error: "Couldn\'t find Latin1 character"',
@@ -88,6 +96,22 @@ describe('startReport', () => {
       },
       {
         file: 'events/etch.txt',
+        start: 17,
+        end: 63,
+        error: true,
+        placed: 'line',
+        message: PARSING,
+      },
+      {
+        file: 'events/etch.txt',
+        start: 64,
+        end: 94,
+        error: true,
+        placed: 'line',
+        message: PARSING,
+      },
+      {
+        file: 'events/etch.txt',
         start: 51,
         end: 61,
         error: false,
@@ -104,8 +128,9 @@ describe('startReport', () => {
       },
     ]);
     expect(report.problems[0]?.message).toMatch(/\(×2\)$/);
-    expect(report.problems[3]?.message).toMatch(/\(×7\)$/);
-    expect(report.lines).toBe(9);
+    expect(report.problems[2]?.message).toMatch(/Unknown trigger type\. Key: etch_trigger/);
+    expect(report.problems[5]?.message).toMatch(/\(×7\)$/);
+    expect(report.lines).toBe(11);
     // settings.gui and other.gui and the descriptor are not the mod's.
     expect(report.elsewhere).toBe(3);
     // The unknown key and the line that names nothing.
