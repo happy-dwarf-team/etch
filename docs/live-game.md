@@ -773,6 +773,52 @@ new rule. 7 now take the game's text over Anbennar's, such as `KOK`, `RAJ`
 and `HIGH_QUEEN` from `anb_government_names_l_english.yml`. 1 takes another
 Anbennar file. On vanilla alone none change.
 
+## Which files the game reads
+
+Four more starts the same evening, set up as in the section above: the same
+test mod with up to four more events (`etch_gfx.1` to `.4`), whose files
+changed between the starts. Tongs' `ui find` read each event window's texts and the sprite
+of its `event_picture`. A screenshot gave the picture's colour. The game's
+`error.log` was kept from each start.
+
+| Case | The game | Etch before |
+| --- | --- | --- |
+| `GFX_etch_both`, `texturefile = "gfx/event_pictures/etch_both.tga"`; the mod has a red `etch_both.tga` and a blue `etch_both.dds` | blue: the `.dds` | the `.tga` |
+| `GFX_etch_only`, a `.tga` path; the mod has only a green `etch_only.dds` | green | the same |
+| `picture = merchants_talking_eventpicture`; vanilla's sprite is `MERCHANTS_TALKING_eventPicture` | `GFX_event_event_test`, the game's stand-in picture | not checked by Etch (script) |
+| `etch_nobom_l_english.yml`, saved as UTF-8 without a BOM | `Missing Localisation!`; `error.log`: `Missing UTF8 BOM` | read |
+| `etch_nosuffix.yml`, with a BOM and an `l_english:` header | `Missing Localisation!`; nothing in `error.log` | read |
+| `etch_esc_l_english.yml`: `ETCH_ESC_BEFORE`, then `"a\qb"`, then `ETCH_ESC_NEXT` | the first shown; the other two `Missing Localisation!`; `error.log`: `Illegal break character (utf32=113)` at the `q` | all three read, `\q` kept as written |
+| `etch_escr_l_english.yml`: `"r1\rr2"`, then another key | both `Missing Localisation!`; `Illegal break character (utf32=114)` | both read |
+| `etch_escn_l_english.yml`: `"n1\Nn2"`, then another key | a new line between `n1` and `n2`; the next key shown | `\N` kept as written |
+| `etch_esct_l_english.yml`: `"t1\Tt2"`, then another key | a tab between `t1` and `t2`; the next key shown | `\T` kept as written |
+| `etch_escend_l_english.yml`: a key, then `"x\"` (a backslash just before the closing quote), then another key | all three shown, the second as `x\`; nothing in `error.log` | the same |
+
+So a `.tga` path takes the `.dds` of that name whenever there is one, and a
+sprite name in an event's `picture` is compared with case. Not checked: a
+`.tga` and a `.dds` in different layers, a `.dds` path that exists only as
+`.tga`, and the case of a sprite name in a `.gui` file. Etch follows the rows
+above since: the texture candidates start with the `.dds`, and the
+localisation leaves out a file without a BOM or without a language suffix
+(`localisation/languages.yml`, which the game has, is still read; that the game
+reads it is assumed).
+
+An escape the game does not know (any but `\n`, `\t`, `\"` and `\\`, and `\N`
+and `\T`, which read as `\n` and `\t`) makes the game stop reading the file
+there: the entries before it stay, that entry and all after it are lost, and
+`error.log` names only the first. Etch now does the same, with a problem on
+that line. Not checked: whether a file with several language sections loses
+only the rest of that section.
+
+On Anbennar over the game, in English, 4 of 368,792 keys change value: their
+`\N` and `\T` now read as a new line and a tab (`I45_bond_of_silver_desc` in
+`anb_powers_and_ideas_l_english.yml` among them). None are lost: Anbennar has
+no localisation file without a BOM or a suffix, and no unknown escape. On
+vanilla alone nothing changes. The `.dds`-first rule changes the texture of
+the 7 vanilla sprites whose `.tga` path has both files. The 7 other such
+pairs are font textures, for which Etch already tried the `.dds` first
+(`fontFilePaths`). Anbennar adds no pair.
+
 ## Live runs
 
 Run on 2026-10-27 under the EU4 engine lab's procedure (its game lock for the

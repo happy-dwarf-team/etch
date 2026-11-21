@@ -314,10 +314,10 @@ describe('InterfaceIndex', () => {
 });
 
 describe('texture paths', () => {
-  it('normalises separators and falls back from .tga to .dds', () => {
+  it('normalises separators and tries the .dds of a .tga path first, as the game does', () => {
     expect(textureCandidates('gfx//interface\\\\a.tga')).toEqual([
-      'gfx/interface/a.tga',
       'gfx/interface/a.dds',
+      'gfx/interface/a.tga',
     ]);
     expect(textureCandidates('gfx/interface/a.dds')).toEqual(['gfx/interface/a.dds']);
   });

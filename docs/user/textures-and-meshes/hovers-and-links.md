@@ -16,7 +16,8 @@ In `.gfx` and `.asset` files, every texture (`.dds`, `.tga`), mesh (`.mesh`) and
 [playset](../reference/glossary.md#playset) (the game, your mod and the mods it depends on) loads:
 
 - your mod's file, when it has one, instead of the game's;
-- for a `.tga` path when only a `.dds` of that name exists, that `.dds`, as the game does.
+- for a `.tga` path, the `.dds` of the same name when there is one, even when the `.tga` exists
+  too. The game draws the `.dds` in that case, and Etch does the same.
 
 A texture opens in the [texture preview](texture-preview.md), a mesh in the
 [mesh preview](mesh-preview.md). A path your playset does not have gets no link: its hover says

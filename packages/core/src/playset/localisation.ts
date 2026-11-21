@@ -28,11 +28,10 @@ export async function loadPlaysetLocalisation(
   const read = await Promise.all(
     listed
       .filter((file) => isLocalisationPath(file.path, language))
-      .map(async (file): Promise<LocalisationFile> => ({
-        path: file.path,
-        layer: files.layers.indexOf(file.layer),
-        text: decodeGameText(await readFile(file.absolutePath), 'localisation').text,
-      })),
+      .map(async (file): Promise<LocalisationFile> => {
+        const { text, bom } = decodeGameText(await readFile(file.absolutePath), 'localisation');
+        return { path: file.path, layer: files.layers.indexOf(file.layer), text, bom };
+      }),
   );
   return Localisation.load(language, read);
 }

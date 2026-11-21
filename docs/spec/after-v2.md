@@ -1074,21 +1074,29 @@ with ADR 0005), and the one the release record left of the profiles:
   wins over the rest, and otherwise the first definition wins (the game's over
   the mod's, an earlier path, the first line in a file); Etch follows it since.
   Still unchecked: two replace files, two mods, and a later file against a
-  subfolder whose name sorts before it. Also unchecked: whether the game
-  reads `.yml` files without a language suffix or without a BOM, and what it
-  does with escapes other than `\n`, `\t`, `\"` and `\\`.
+  subfolder whose name sorts before it. Which files the game reads, checked
+  the same day ([live-game.md](../live-game.md#which-files-the-game-reads)):
+  not a file without a BOM, not one without a language suffix, and nothing
+  of a file from an unknown escape on (`\N` and `\T` are known); Etch follows
+  it since. Still assumed: that the game reads `localisation/languages.yml`.
+  Unchecked: whether an unknown escape in a file with several language
+  sections ends only its own section.
 - Which definition the game uses when a font name is defined twice, and whether
-  it compares font and sprite names without regard to case. Etch takes the first
-  font in load order (the files of a folder sorted, then its subfolders), the
-  game's rule for `.gui` names at startup (etch#16), and reports a reference
-  that matches only when case is ignored (etch#33). A sprite takes its last
+  it compares font and `.gui` sprite names without regard to case. Etch takes the
+  first font in load order (the files of a folder sorted, then its subfolders),
+  the game's rule for `.gui` names at startup (etch#16), and reports a reference
+  that matches only when case is ignored (etch#33). An event's `picture` is
+  compared with case (checked on 21 November 2026,
+  [live-game.md](../live-game.md#which-files-the-game-reads)). A sprite takes its last
   definition, as the game shows `GFX_governing_capacity` (27 × 27 from
   `topbar.gfx`, not 64 × 64 from `countrystabilityview.gfx`) and
   `GFX_choose_rivals_bg` (570 × 508 from `countrygovernmentview.gfx`, not
   573 × 589 from `countrycourtview.gfx`) in the survey's captures (etch#256).
-- Texture paths: a `.tga` path falls back to the `.dds` of the same name, as
-  584 vanilla sprites need; which one the game takes when both exist (7
-  vanilla paths) is unchecked. Also assumed: the last of a repeated key in one
+- Texture paths: a `.tga` path takes the `.dds` of the same name, as 584
+  vanilla sprites need, and the game draws the `.dds` when both exist in one
+  mod (checked on 21 November 2026; 7 vanilla paths have both); Etch follows
+  it since. Unchecked: the two in different layers, and a `.dds` path that
+  exists only as `.tga`. Also assumed: the last of a repeated key in one
   block counts, and `if_resolution` properties apply where the block stands
   in the file (etch#33).
 - Which monitor the game takes its native resolution from when there are
