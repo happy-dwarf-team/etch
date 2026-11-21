@@ -93,9 +93,9 @@ Each message goes where it points:
 - When the game names a `.gui` file, a widget and its window, such as
   `interface/etch.gui: Missing Button 'close' in window 'etch'`, the message goes on the window's
   name in that file.
-- When the game names nothing but a name, Etch looks for it in your mod: a localisation key in
-  your `.yml` files, any other name, such as a modifier, in your other files. The message goes on
-  the first place it finds.
+- When the game names nothing but a name, Etch looks for a localisation key in your `.yml` files,
+  and for any other name, such as a modifier, in your other files. The message goes on the first
+  place it finds.
 
 A message saying the game could not read your file ("Parsing Error") is an error in Problems. The
 others are warnings. Messages about other mods' files or the game's own files are not in
