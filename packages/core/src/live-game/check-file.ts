@@ -135,11 +135,27 @@ export function planCheck(written: string, folder: CheckFolder, maxChars: number
   }
 
   const units: Unit[] = [];
-  /** The text of entries, each on its own lines, mapped to the file's lines. */
-  const body = (entries: readonly EntryNode[]): { lines: string[]; map: number[] } => {
+  /** The operators the parser skipped (`= add_prestige = 1`): the run file keeps them for the game. */
+  const strays = parsed.diagnostics.filter((d) => d.code === 'missing-key');
+  /**
+   * The text of entries, each on its own lines, mapped to the file's lines; with the operators the
+   * parser skipped directly in `block`, in text order, so that the game reports them too.
+   */
+  const body = (
+    block: BlockNode,
+    entries: readonly EntryNode[],
+  ): { lines: string[]; map: number[] } => {
     const lines: string[] = [];
     const map: number[] = [];
-    for (const entry of entries) {
+    const skipped = strays.filter(
+      (d) =>
+        block.start < d.start &&
+        d.end < block.end &&
+        !block.entries.some((entry) => entry.start <= d.start && d.end <= entry.end),
+    );
+    const parts: { readonly start: number; readonly end: number }[] = [...entries, ...skipped];
+    parts.sort((a, b) => a.start - b.start);
+    for (const entry of parts) {
       const first = lineOf(entry.start);
       const pieces = text.slice(entry.start, entry.end).split('\n');
       pieces.forEach((piece, i) => {
@@ -149,9 +165,13 @@ export function planCheck(written: string, folder: CheckFolder, maxChars: number
     }
     return { lines, map };
   };
-  const wrap = (kind: BlockKind, key: PropertyNode, entries: readonly EntryNode[]): void => {
+  const wrap = (
+    kind: BlockKind,
+    key: PropertyNode & { value: BlockNode },
+    entries: readonly EntryNode[],
+  ): void => {
     if (entries.length === 0) return;
-    const inner = body(entries);
+    const inner = body(key.value, entries);
     const block: CheckBlock = { kind, key: key.key.text, line: lineOf(key.start) };
     if (kind === 'trigger') {
       units.push({
