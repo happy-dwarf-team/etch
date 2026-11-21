@@ -3323,19 +3323,19 @@ export const HERO_OPEN: Clip = {
     const rest = await startTake(context, { focus: false });
 
     take.mark('start');
-    await clickOn(context, folder);
+    await clickOn(context, folder, { ms: 600 });
     const file = explorerRow(wb, 'provinceview\\.gui');
     await file.waitFor();
-    await sleep(500);
+    await sleep(250);
     take.mark('file');
-    await clickOn(context, file, { ms: 500 });
+    await clickOn(context, file, { ms: 450 });
     await wb.page.locator('.part.editor .monaco-editor .view-lines').first().waitFor();
-    await sleep(700);
+    await sleep(350);
     const button = wb.page
-      .locator('.part.editor .title-actions .action-label[aria-label*="Open Preview"]')
+      .locator('.part.editor .editor-actions .action-label[aria-label*="Open Preview"]')
       .first();
     take.mark('button', { source: 'vscode', rect: await wb.box(button) });
-    await pointTo(context, await centre(button), 800);
+    await pointTo(context, await centre(button), 650);
     await sleep(160);
     take.mark('preview');
     take.click();
@@ -3371,9 +3371,17 @@ export const HERO_OPEN: Clip = {
     };
     const line = rectOf(eventOf(log, 'line'));
     const area = onScreen(rectOf(eventOf(log, 'screen')), TRADE_AREA);
-    // The line's start, its code, and the button's part of the screen beside it.
-    const close = focus(union({ ...line, w: 520 }, area), source, aspect, { margin: 48 });
-    const moves = shown + 0.5;
+    // The line's start, its code, and the button's part of the screen beside it, with the
+    // window's edge, not the next panel, at the view's right.
+    const near = focus(union({ ...line, w: 520 }, area), source, aspect, { margin: 48 });
+    const close = { ...near, x: Math.max(0, area.x + area.w + 24 - near.w) };
+    // The Explorer and the first editor group, up to its title bar's Open Preview.
+    const button = rectOf(eventOf(log, 'button'));
+    const width = Math.min(source.width, button.x + button.w + 160);
+    const files: Rect = { x: 0, y: 0, w: width, h: width / aspect };
+    // The camera sets off at the click: the preview opens while it moves.
+    const moves = at(eventOf(log, 'preview').t) + 0.2;
+    const settled = Math.max(moves + 1.2, shown) + 1.1;
     return single(
       'open',
       log,
@@ -3384,7 +3392,8 @@ export const HERO_OPEN: Clip = {
           source: 'vscode',
           shots: [
             { at: 0, frame, view: rectOf(eventOf(log, 'window')) },
-            { at: moves, frame, view: close, move: 1.1 },
+            { at: at(start) + 0.3, frame, view: files, move: 0.8 },
+            { at: moves, frame, view: close, move: 1.2 },
           ],
         },
       ],
@@ -3408,7 +3417,7 @@ export const HERO_OPEN: Clip = {
             rect: grow(rectOf(eventOf(log, 'button')), 4),
           },
         ],
-        core: { from: at(start) - 0.3, to: moves + 1.1 + 1.4 },
+        core: { from: at(start) - 0.5, to: settled },
       },
     );
   },
