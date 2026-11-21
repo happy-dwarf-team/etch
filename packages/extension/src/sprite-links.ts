@@ -189,15 +189,9 @@ function referenceAt(
 ): { reference: SpriteReference; range: vscode.Range; script: boolean } | undefined {
   const offset = document.offsetAt(position);
   const script = !/\.gui$/i.test(document.fileName);
-  let references: SpriteReference[];
-  if (script) {
-    const path = spriteScriptPath(document.fileName);
-    if (path === undefined) return undefined;
-    references = scriptSpriteReferences(path, parseScript(document.getText(), { script: true }));
-  } else {
-    references = spriteReferences(readGuiFile(parseScript(document.getText())));
-  }
-  const reference = references.find(({ node }) => node.start <= offset && offset <= node.end);
+  const reference = documentSpriteReferences(document).find(
+    ({ node }) => node.start <= offset && offset <= node.end,
+  );
   if (reference === undefined) return undefined;
   const { node } = reference;
   const start = node.quoted ? node.start + 1 : node.start;
@@ -209,7 +203,24 @@ function referenceAt(
   };
 }
 
-async function findTexture(files: GameFiles, written: string): Promise<GameFile | undefined> {
+/**
+ * Every sprite name a `.gui` file or a script file that names sprites writes, in text order;
+ * none for another document. Shared with the gutter thumbnails.
+ */
+export function documentSpriteReferences(document: vscode.TextDocument): SpriteReference[] {
+  if (/\.gui$/i.test(document.fileName)) {
+    return spriteReferences(readGuiFile(parseScript(document.getText())));
+  }
+  const path = spriteScriptPath(document.fileName);
+  if (path === undefined) return [];
+  return scriptSpriteReferences(path, parseScript(document.getText(), { script: true }));
+}
+
+/** The texture file a sprite's `texturefile` names, as the game finds it; shared with the gutter. */
+export async function findTexture(
+  files: GameFiles,
+  written: string,
+): Promise<GameFile | undefined> {
   for (const candidate of textureCandidates(written)) {
     const file = await files.find(candidate);
     if (file !== undefined) return file;

@@ -98,6 +98,23 @@ The same hovers and **Go to Definition** work on the sprite names of these scrip
 
 In a script file, a name with no sprite in your playset's `.gfx` files says so in its hover.
 
+## See sprites beside the line numbers
+
+Etch can show a small picture of each sprite beside the line numbers, so you see a whole file's
+icons and event pictures without hovering. It is off by default. To turn it on:
+
+1. Open [Settings](../reference/settings.md) and search for `etch.editor.spriteThumbnails`.
+2. Tick its checkbox.
+
+Each line of a `.gui` file, or of a script file listed under
+[Sprites in script files](#sprites-in-script-files), that names a sprite then shows the sprite's
+picture beside its line number. If a sprite has several frames side by side (a strip), you see
+the first frame. When a line names several sprites, you see the first one that has a picture.
+
+The pictures update about half a second after you stop typing, and when you save a `.gfx` file.
+You don't need to restart VS Code. You can turn them on for one folder only, in the **Workspace**
+or **Folder** tab of Settings.
+
 ## Find every use of a sprite
 
 Put the cursor on a sprite name and press <kbd>Shift+F12</kbd> (**Find All References**). The
@@ -162,6 +179,9 @@ Etch writes only the three numbers and drops any opacity you set.
   reform's `icon`, for example, names a texture file. So those get no hover.
 - Each key is read only where the base game writes it: a `sprite` nested deeper in a subject
   type, for example, gets no hover.
+- A file shows at most 500 pictures beside its line numbers, on its first 500 lines that get one.
+  A line gets none when Etch finds no texture for its sprite, as with a missing sprite or a DLC
+  picture.
 - **Find All References** and **Rename Symbol** work only on sprite names, not on texture paths,
   fonts or widget names. They do not see the DLC archives either: a rename cannot warn about a
   DLC file that uses the name.

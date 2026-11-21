@@ -1,13 +1,14 @@
 // Sprite hovers and Go to Definition in `.gui` and script files end to end in a real VS Code: a
 // fixture game (an `eu4.exe` that is not the game) set as `etch.gamePath`, two `.gfx` files where
 // the later one redefines a sprite, a `.gui` file that names sprites, one of them missing, and an
-// event, a mission and an estate privilege that name sprites.
+// event, a mission and an estate privilege that name sprites; then the gutter thumbnails.
 import * as assert from 'node:assert/strict';
-import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { dds, markdownOf, positionOf } from './asset-links.ts';
+import type { EtchApi } from '../src/extension.ts';
 import { spriteScriptPath } from '../src/sprite-links.ts';
 
 const FIRST_GFX = `spriteTypes = {
@@ -95,7 +96,7 @@ async function fixtureGame(): Promise<string> {
   return root;
 }
 
-export async function testSpriteLinks(): Promise<void> {
+export async function testSpriteLinks(api: EtchApi): Promise<void> {
   const game = await fixtureGame();
   const settings = vscode.workspace.getConfiguration('etch');
   await settings.update('gamePath', game, vscode.ConfigurationTarget.Global);
@@ -209,7 +210,34 @@ export async function testSpriteLinks(): Promise<void> {
       [[path.join('interface', 'b_etch.gfx'), 11, 10]],
       "Go to Definition opens the picture's .gfx file at the name",
     );
+
+    // Gutter thumbnails: off by default, then one PNG per line that names a sprite with a texture.
+    assert.deepEqual(await api.spriteGutter.icons(gui), [], 'the thumbnails are off by default');
+    await settings.update('editor.spriteThumbnails', true, vscode.ConfigurationTarget.Global);
+    const icons = await api.spriteGutter.icons(gui);
+    assert.deepEqual(
+      icons.map((i) => i.line),
+      [3, 4],
+      'a thumbnail on the badge and the strip lines, none for the missing sprite',
+    );
+    const [first, second] = icons;
+    assert.ok(first !== undefined && second !== undefined);
+    assert.notEqual(first.file, second.file, 'each texture has its own PNG');
+    const png = await readFile(first.file);
+    assert.equal(png.subarray(1, 4).toString('latin1'), 'PNG', 'a PNG file');
+    assert.equal(png.readUInt32BE(16), 32, 'the 48 × 24 badge at 32 pixels wide');
+    assert.deepEqual(
+      (await api.spriteGutter.icons(events)).map((i) => i.line),
+      [3],
+      "an event's picture, not the lost one",
+    );
+    assert.equal(
+      (await api.spriteGutter.icons(await open('missions/etch_missions.txt')))[0]?.file,
+      first.file,
+      'the same texture shares its PNG',
+    );
   } finally {
+    await settings.update('editor.spriteThumbnails', undefined, vscode.ConfigurationTarget.Global);
     await settings.update('gamePath', undefined, vscode.ConfigurationTarget.Global);
   }
 }

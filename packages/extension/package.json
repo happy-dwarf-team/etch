@@ -403,6 +403,12 @@
           "scope": "window",
           "markdownDescription": "Find All References (Shift+F12) and Rename Symbol (F2) on sprite names: in `.gfx` and `.gui` files and in the script files that name sprites: an event's `picture`, a mission's `icon`, an estate privilege's `icon` and the sprite keys of ten `common` folders (see Hovers and links in Etch's guide). A rename changes only your mod's files. Turn it off if another extension already finds or renames these names: Etch then adds neither, and the other extension's answers stand alone."
         },
+        "etch.editor.spriteThumbnails": {
+          "type": "boolean",
+          "default": false,
+          "scope": "resource",
+          "markdownDescription": "Show a small picture of each sprite beside the line numbers, on the lines of a `.gui` file or a script file that name a sprite: an event's `picture`, a mission's `icon` and the other keys listed in Etch's guide under Hovers and links. A strip shows its first frame. Up to 500 pictures per file."
+        },
         "etch.editor.localisationHints": {
           "type": "boolean",
           "default": true,
