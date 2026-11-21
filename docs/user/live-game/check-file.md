@@ -62,6 +62,10 @@ add_treasuryy" on that line. The treasury in the game's top bar does not change.
   line.
 - A modifier the game does not know, written in an effect such as `add_country_modifier`, on the
   line that names it.
+- A stray `=` with no name before it, such as `= add_prestige = 1` or `= is_at_war = yes`.
+  Problems shows "Unknown effect type. Key: =" (or "Unknown trigger type. Key: =") and Etch
+  underlines the `=`. The game may also complain about the words after it, such as `is_at_war`
+  or `yes`, so one line can get two or three problems.
 
 Each problem says what the game wrote to its `error.log` file. When the game writes the same line more
 than once, Problems shows it once, with "(×2)".

@@ -1,7 +1,10 @@
 # The game checks script files: its own parser's errors go to Problems
 
-**Status: proposed** (draft for v3, 21 November 2026). Nothing below is built
-yet; the gate at the end decides whether part 2 is built as written.
+**Status: proposed** (draft for v3, 21 November 2026). Both parts are built on
+`main` for the next release and wait for the maintainer to accept this
+decision: part 1 in etch#570 (with etch#582), part 2, after the vanilla gate
+run, in etch#579 (with etch#588). The third part H4 asked about is not built
+(see the gate).
 
 Etch reports the game's own verdict on a mod's script files, the `.txt` files
 of `events/`, `decisions/`, `missions/` and `common/`, and its `.yml`
