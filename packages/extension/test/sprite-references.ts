@@ -138,7 +138,31 @@ export async function testSpriteReferences(): Promise<void> {
       /Etch renames sprite names/,
       'a rename needs a sprite name under the cursor',
     );
+
+    // The setting takes the providers away, and gives them back.
+    const count = async (): Promise<number> =>
+      (
+        await vscode.commands.executeCommand<vscode.Location[]>(
+          'vscode.executeReferenceProvider',
+          gui.uri,
+          at,
+        )
+      ).length;
+    // The change event may come a moment after the update: up to 2 s.
+    const settled = async (expected: number): Promise<number> => {
+      let seen = await count();
+      for (let i = 0; i < 20 && seen !== expected; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        seen = await count();
+      }
+      return seen;
+    };
+    await settings.update('editor.rename', false, vscode.ConfigurationTarget.Global);
+    assert.equal(await settled(0), 0, 'the setting turns it off');
+    await settings.update('editor.rename', undefined, vscode.ConfigurationTarget.Global);
+    assert.equal(await settled(4), 4, 'and on again');
   } finally {
+    await settings.update('editor.rename', undefined, vscode.ConfigurationTarget.Global);
     await settings.update('gamePath', undefined, vscode.ConfigurationTarget.Global);
   }
 }

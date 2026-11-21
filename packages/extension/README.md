@@ -394,7 +394,8 @@ References** (Shift+F12) lists every `.gfx`, `.gui` and such script file of the
 playset that writes it, and **Rename Symbol** (F2) renames it in the mod's
 `.gfx` definition and the mod's uses. A rename is refused when the game's or
 another mod's files also name the sprite, when the mod does not define it, or
-when a `.gui` file names it through an `@constant`.
+when a `.gui` file names it through an `@constant`. `etch.editor.rename` turns
+both off.
 
 A localisation key shows its text after it, in `etch.language`: a `.gui`
 file's `text`, `tooltip`, `tooltipText` and `delayedTooltipText`, and the
