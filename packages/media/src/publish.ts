@@ -15,6 +15,7 @@ import {
 } from './config.ts';
 import {
   CLIP_IDS,
+  type Chapter,
   type ClipId,
   type DraftLoop,
   type DraftManifest,
@@ -129,6 +130,8 @@ export interface PublishedLoop {
   readonly poster: string;
   /** VP9 WebM first, H.264 MP4 second. */
   readonly sources: readonly [PublishedSource, PublishedSource];
+  /** The hero's chapters (spec section 5.2). */
+  readonly chapters?: readonly Chapter[];
 }
 
 /** The site's media manifest, `src/data/media.json` (etch-website docs/spec.md section 5.2). */
@@ -365,6 +368,7 @@ export async function publish(options: PublishOptions): Promise<MediaManifest> {
             duration: set.loop.duration,
             poster: set.loop.poster,
             sources: [published(webm), published(mp4)],
+            ...(set.loop.chapters === undefined ? {} : { chapters: set.loop.chapters }),
           },
         ];
       }),

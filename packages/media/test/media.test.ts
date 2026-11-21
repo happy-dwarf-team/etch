@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { pngSize } from '../src/capture.ts';
 import { MEDIA_TYPES, workbenchSettings } from '../src/config.ts';
-import { CLIPS } from '../src/clips.ts';
+import { HERO_CHAPTERS, pngSize } from '../src/capture.ts';
+import { CLIPS, HERO_OPEN, heroEdit } from '../src/clips.ts';
+import type { EditSpec } from '../src/edit.ts';
 import { gfxcaptureArgs, h264Args, posterArgs, vp9Args } from '../src/ffmpeg.ts';
 import { LIVE_CLIPS, windowedPdxSettings, windowedSettings } from '../src/live.ts';
 import { CLIP_IDS, draftManifest, LIVE_CLIP_IDS, OFFLINE_CLIP_IDS } from '../src/manifest.ts';
@@ -20,6 +21,39 @@ describe('clips', () => {
     expect(CLIPS.map((clip) => clip.id)).toEqual([...OFFLINE_CLIP_IDS]);
     expect(LIVE_CLIPS.map((clip) => clip.id)).toEqual([...LIVE_CLIP_IDS]);
     expect(['hero', ...OFFLINE_CLIP_IDS, ...LIVE_CLIP_IDS]).toEqual([...CLIP_IDS]);
+  });
+
+  it("cuts the hero's chapters from the open take and four loops, each starting on a frame", () => {
+    expect(HERO_CHAPTERS.map(({ chapter }) => chapter)).toEqual([
+      'open',
+      'type',
+      'mesh',
+      'reload',
+      'pick',
+    ]);
+    expect(CLIP_IDS).not.toContain(HERO_OPEN.id);
+    const part = (id: string, length: number, core: { from: number; to: number }): EditSpec => ({
+      id,
+      sources: {},
+      segments: [{ duration: length, panels: [], captions: [], highlights: [] }],
+      core,
+    });
+    const hero = heroEdit({}, [
+      { chapter: 'open', spec: part('open', 9, { from: 0.31, to: 6.62 }) },
+      { chapter: 'type', spec: part('preview', 8, { from: 0.5, to: 5.017 }) },
+      { chapter: 'pick', spec: { ...part('pick', 12, { from: 1, to: 11.9 }), loopFade: 0.4 } },
+    ]);
+    // 6.31 s is 189.3 frames, rendered as 189; 4.517 s, 135.51 frames, as 136.
+    expect(hero.chapters).toEqual([
+      { id: 'open', start: 0 },
+      { id: 'type', start: 6.3 },
+      { id: 'pick', start: 10.833 },
+    ]);
+    // The last part stops short of its own dissolve and runs on a dip, faded out.
+    const durations = hero.segments.map((segment) => segment.duration);
+    for (const [i, seconds] of [6.31, 4.517, 10.8].entries()) {
+      expect(durations[i]).toBeCloseTo(seconds, 6);
+    }
   });
 });
 
@@ -200,6 +234,13 @@ describe('draft manifest', () => {
         },
       },
     });
+    const chapters = [
+      { id: 'open', start: 0 },
+      { id: 'type', start: 6.4 },
+    ];
+    const chaptered = draftManifest('0.1.0', { hero: { ...loop, chapters }, pick: loop });
+    expect(chaptered.loops.hero?.chapters).toEqual(chapters);
+    expect(chaptered.loops.pick).not.toHaveProperty('chapters');
     expect(MEDIA_TYPES).toEqual({
       webm: 'video/webm; codecs="vp9"',
       mp4: 'video/mp4; codecs="avc1.640028"',

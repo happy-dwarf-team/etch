@@ -180,6 +180,8 @@ export interface EditSpec {
    * differs from its start (the editor moved by a pick), so the loop still has no jump.
    */
   readonly loopFade?: number;
+  /** The hero's chapters: each an id and its start in seconds, the first at 0. */
+  readonly chapters?: readonly { readonly id: string; readonly start: number }[];
 }
 
 /** How long the clip lasts, in seconds and in output frames. */

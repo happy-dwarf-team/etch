@@ -45,7 +45,7 @@ end lists every step.
 pnpm media capture --save <file.eu4> --profile <file.csv> # every clip
 pnpm media capture --clip views           # one clip; --clip views,data for several
 pnpm media capture --clip reload,pick,snapshot --save <file.eu4> # the live take
-pnpm media capture --clip hero            # the trailer, from the rendered preview, reload and pick
+pnpm media capture --clip hero --save <file.eu4> # the demo loop: the open take, then four rendered loops
 pnpm media capture --clip data --reedit   # edit and render again from the take, no new take
 ```
 
@@ -109,6 +109,17 @@ A run of every clip takes about fifteen minutes. It writes into `packages/media/
 
 `--reedit` turns the same take into a new edit: change a camera move or a caption in
 `clips.ts` or `live.ts` and render again without recording.
+
+**The demo loop.** The hero's loop (`--clip hero`) has five chapters: `open`, `type`, `mesh`,
+`reload` and `pick` (etch-website spec section 4.2). The first is a take of its own, `open`, which
+no loop of the site shows alone: VS Code with the demo mod's folder in the Explorer and no editor
+open; a click opens `interface/provinceview.gui` at the trade node button's line, its title bar's
+Open Preview opens the preview beside it, and the camera moves in from the whole window to the
+line and the button. The others are the cores of the rendered `preview`, `mesh`, `reload` and
+`pick` cuts, so those must be captured first. Each part fades in from the background and out into
+it. The edit writes each chapter's start, on a whole frame, into `hero.edit.json`, and the
+capture copies them into the draft manifest's `chapters`. `--clip hero` takes `open` again;
+with `--reedit` it edits it from its log.
 
 ## The scripts' takes
 

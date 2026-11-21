@@ -13,8 +13,10 @@ import type { Frame, Locator } from '@playwright/test';
 import {
   cameraKeys,
   editLength,
+  focus,
   grow,
   GUTTER,
+  OUTPUT,
   rows,
   STAGE,
   union,
@@ -3284,18 +3286,157 @@ export const CLIPS: readonly Clip[] = [
   },
 ];
 
+/** The sidebar's width in the hero's `open` take: the Explorer shows the demo mod's file names. */
+const OPEN_SIDEBAR = 320;
+
+/** A row of VS Code's Explorer, by its file or folder name. */
+function explorerRow(wb: Workbench, name: string): Locator {
+  return wb.page
+    .locator('.explorer-folders-view .monaco-list-row')
+    .filter({ has: wb.page.locator('.label-name', { hasText: new RegExp(`^${name}$`) }) });
+}
+
 /**
- * The hero's trailer: the cores of other clips' cuts, one after another (their panels and captions
- * are in the cuts), each fading in from the background and out into it, so a seam is a short dip,
- * not a cut. The loop's end is a dip too: the last part fades out into the background, and the
- * loop's own dissolve brings the first frame in from it.
+ * The hero's first chapter (etch-website docs/spec.md section 8.5), a take of its own and no loop
+ * of the site: VS Code with the demo mod's folder in the Explorer and no editor open; a click on
+ * `interface/provinceview.gui` opens it at the trade node button's line, and its title bar's Open
+ * Preview opens Etch's preview beside it, which outlines the button. The camera shows the whole
+ * window, then moves in to the line and the button.
+ */
+export const HERO_OPEN: Clip = {
+  id: 'open',
+  async run(context) {
+    const { wb, take } = context;
+    // VS Code opens the file again where its cursor was: on the trade node button's line.
+    const position = await wb.find(TRADE_NODE_POSITION);
+    await wb.walkCursorTo({ line: position.line, column: position.start + 1 }, 0);
+    await wb.command('View: Show Explorer');
+    await wb.fitPreview(OPEN_SIDEBAR);
+    await wb.checkFrame();
+    // Empty groups keep their sizes, so the preview opens again unscaled where it was.
+    await setSettings(wb, { 'workbench.editor.closeEmptyGroups': false });
+    await wb.command('View: Close All Editors');
+    await wb.command('Collapse Folders in Explorer');
+    const folder = explorerRow(wb, 'interface');
+    await folder.waitFor();
+    take.mark('window', { source: 'vscode', rect: { x: 0, y: 0, w: 2560, h: 1440 } });
+    const rest = await startTake(context, { focus: false });
+
+    take.mark('start');
+    await clickOn(context, folder, { ms: 600 });
+    const file = explorerRow(wb, 'provinceview\\.gui');
+    await file.waitFor();
+    await sleep(250);
+    take.mark('file');
+    await clickOn(context, file, { ms: 450 });
+    await wb.page.locator('.part.editor .monaco-editor .view-lines').first().waitFor();
+    await sleep(350);
+    const button = wb.page
+      .locator('.part.editor .editor-actions .action-label[aria-label*="Open Preview"]')
+      .first();
+    take.mark('button', { source: 'vscode', rect: await wb.box(button) });
+    await pointTo(context, await centre(button), 650);
+    await sleep(160);
+    take.mark('preview');
+    take.click();
+    await button.click();
+    await wb.previewOpened();
+    await wb.expectPreviewed(WINDOW_NAME);
+    const data = (await wb.frame.locator('#data-menu').textContent()) ?? '';
+    if (!data.includes(SAMPLE_PROVINCE)) {
+      throw new Error(
+        `the preview opened again without ${SAMPLE_PROVINCE}: Data ▾ reads "${data}"`,
+      );
+    }
+    await wb.highlightSettled();
+    take.mark('shown');
+    take.mark('line', { source: 'vscode', rect: await editorLine(wb) });
+    take.mark('screen', { source: 'vscode', rect: await wb.screenRect() });
+    await take.until(take.t() + 3);
+    await endTake(context, rest);
+  },
+  edit(log, sources) {
+    const source = sources['vscode'] as Source;
+    const start = eventOf(log, 'start').t;
+    const s0 = start - LEAD;
+    const at = (t: number): number => t - s0;
+    const shown = at(eventOf(log, 'shown').t);
+    const end = at(eventOf(log, 'end').t) + TAIL;
+    const aspect = OUTPUT.width / OUTPUT.height;
+    const frame: Rect = {
+      x: (OUTPUT.width - STAGE.h * aspect) / 2,
+      y: STAGE.y,
+      w: STAGE.h * aspect,
+      h: STAGE.h,
+    };
+    const line = rectOf(eventOf(log, 'line'));
+    const area = onScreen(rectOf(eventOf(log, 'screen')), TRADE_AREA);
+    // The line's start, its code, and the button's part of the screen beside it, with the
+    // window's edge, not the next panel, at the view's right.
+    const near = focus(union({ ...line, w: 520 }, area), source, aspect, { margin: 48 });
+    const close = { ...near, x: Math.max(0, area.x + area.w + 24 - near.w) };
+    // The Explorer and the first editor group, up to its title bar's Open Preview.
+    const button = rectOf(eventOf(log, 'button'));
+    const width = Math.min(source.width, button.x + button.w + 160);
+    const files: Rect = { x: 0, y: 0, w: width, h: width / aspect };
+    // The camera sets off at the click: the preview opens while it moves.
+    const moves = at(eventOf(log, 'preview').t) + 0.2;
+    const settled = Math.max(moves + 1.2, shown) + 1.1;
+    return single(
+      'open',
+      log,
+      sources,
+      { s0, end: s0 + end },
+      [
+        {
+          source: 'vscode',
+          shots: [
+            { at: 0, frame, view: rectOf(eventOf(log, 'window')) },
+            { at: at(start) + 0.3, frame, view: files, move: 0.8 },
+            { at: moves, frame, view: close, move: 1.2 },
+          ],
+        },
+      ],
+      {
+        captions: sequence(
+          [
+            { from: at(start) - 0.1, text: 'Your mod in VS Code' },
+            { from: at(eventOf(log, 'file').t) - 0.1, text: 'Open a .gui file' },
+            {
+              from: at(eventOf(log, 'preview').t) - 0.1,
+              text: 'Open Preview: the window as the game draws it',
+            },
+          ],
+          end - 0.3,
+        ),
+        highlights: [
+          {
+            from: at(eventOf(log, 'button').t) + 0.3,
+            to: at(eventOf(log, 'preview').t) + 0.4,
+            panel: 0,
+            rect: grow(rectOf(eventOf(log, 'button')), 4),
+          },
+        ],
+        core: { from: at(start) - 0.5, to: settled },
+      },
+    );
+  },
+};
+
+/**
+ * The hero's demo loop: its chapters, each the core of a cut (the `open` take's, then other clips'
+ * cuts, with their panels and captions), one after another, each fading in from the background
+ * and out into it, so a seam is a short dip, not a cut. The loop's end is a dip too: the last part
+ * fades out into the background, and the loop's own dissolve brings the first frame in from it.
+ * Each chapter starts where its part does (etch-website spec sections 4.2 and 8.5).
  */
 export function heroEdit(
   sources: Readonly<Record<string, Source>>,
-  parts: readonly EditSpec[],
+  chapters: readonly { readonly chapter: string; readonly spec: EditSpec }[],
 ): EditSpec {
   const DIP = 0.25;
   const full: Rect = { x: 0, y: 0, w: 1920, h: 1080 };
+  const parts = chapters.map(({ spec }) => spec);
   const segments: Segment[] = parts.map((part, i) => {
     const length = editLength(part).seconds;
     const core = part.core ?? { from: 0, to: length };
@@ -3324,5 +3465,18 @@ export function heroEdit(
       highlights: [],
     };
   });
-  return { id: 'hero', sources, segments, loopFade: DIP };
+  // A segment's start in whole output frames, as the render cuts it (`editLength`).
+  let frames = 0;
+  const starts = segments.map((segment) => {
+    const start = frames / OUTPUT.fps;
+    frames += Math.round(segment.duration * OUTPUT.fps);
+    return Math.round(start * 1000) / 1000;
+  });
+  return {
+    id: 'hero',
+    sources,
+    segments,
+    loopFade: DIP,
+    chapters: chapters.map(({ chapter }, i) => ({ id: chapter, start: starts[i] ?? 0 })),
+  };
 }

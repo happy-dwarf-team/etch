@@ -5,7 +5,7 @@
 import { execFileSync } from 'node:child_process';
 import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import * as path from 'node:path';
-import { CLIPS, heroEdit } from './clips.ts';
+import { CLIPS, HERO_OPEN, heroEdit } from './clips.ts';
 import { LOOP_HEIGHT, LOOP_WIDTH, VSCODE_VERSION } from './config.ts';
 import type { EditSpec } from './edit.ts';
 import { duration, h264Args, posterArgs, run, vp9Args } from './ffmpeg.ts';
@@ -18,7 +18,7 @@ import {
   type ClipId,
 } from './manifest.ts';
 import { Renderer } from './render.ts';
-import { editClip, takeClip, type ShootOptions } from './shoot.ts';
+import { cutClip, editClip, takeClip, type ShootOptions } from './shoot.ts';
 import type { TakeLog } from './take.ts';
 
 export interface CaptureOptions {
@@ -108,6 +108,12 @@ export async function capture(options: CaptureOptions): Promise<string> {
   }
 
   if (options.clips.includes('hero')) {
+    // The first chapter has a take of its own, which no loop of the site shows.
+    console.log(`Clip hero: ${HERO_OPEN.id}…`);
+    const log =
+      options.reedit === true ? await readTake(HERO_OPEN.id) : await takeClip(HERO_OPEN, shoot);
+    takes[HERO_OPEN.id] = log.capturedAt;
+    edits.set(HERO_OPEN.id, (await cutClip(HERO_OPEN, log, shoot)).spec);
     console.log('Clip hero…');
     const parts = await heroParts(edits, masters);
     const spec = heroEdit(
@@ -126,7 +132,7 @@ export async function capture(options: CaptureOptions): Promise<string> {
           ),
         ),
       ),
-      parts.map(({ spec: part }) => part),
+      parts,
     );
     await writeFile(path.join(masters, 'hero.edit.json'), `${JSON.stringify(spec, null, 2)}\n`);
     const cut = path.join(masters, 'hero.cut.mov');
@@ -141,12 +147,21 @@ export async function capture(options: CaptureOptions): Promise<string> {
     const mp4 = path.join(out, `${id}.mp4`);
     const sizes = await Promise.all([stat(webm), stat(mp4)]).catch(() => undefined);
     if (sizes === undefined) continue;
+    // The hero's chapters are in its edit, of the same capture as its files.
+    const chapters =
+      id === 'hero'
+        ? await readFile(path.join(masters, 'hero.edit.json'), 'utf8').then(
+            (text) => (JSON.parse(text) as EditSpec).chapters,
+            () => undefined,
+          )
+        : undefined;
     loops[id] = {
       width: LOOP_WIDTH,
       height: LOOP_HEIGHT,
       duration: await duration(options.ffprobe, webm),
       webmBytes: sizes[0].size,
       mp4Bytes: sizes[1].size,
+      ...(chapters === undefined ? {} : { chapters }),
     };
   }
   const manifest = draftManifest(version, loops);
@@ -168,13 +183,25 @@ export async function capture(options: CaptureOptions): Promise<string> {
   return out;
 }
 
-/** The clips the hero's trailer takes its parts from, in order, with their edits. */
+/**
+ * The hero's chapters (etch-website docs/spec.md section 4.2) and the cuts they take their parts
+ * from: the `open` take's, then four of the site's loops.
+ */
+export const HERO_CHAPTERS = [
+  { chapter: 'open', clip: 'open' },
+  { chapter: 'type', clip: 'preview' },
+  { chapter: 'mesh', clip: 'mesh' },
+  { chapter: 'reload', clip: 'reload' },
+  { chapter: 'pick', clip: 'pick' },
+] as const;
+
+/** The hero's chapters, in order, with the edits of their cuts. */
 async function heroParts(
   edits: ReadonlyMap<string, EditSpec>,
   masters: string,
-): Promise<{ spec: EditSpec }[]> {
-  const parts: { spec: EditSpec }[] = [];
-  for (const id of ['preview', 'reload', 'pick'] as const) {
+): Promise<{ chapter: string; spec: EditSpec }[]> {
+  const parts: { chapter: string; spec: EditSpec }[] = [];
+  for (const { chapter, clip: id } of HERO_CHAPTERS) {
     const spec =
       edits.get(id) ??
       (JSON.parse(
@@ -182,7 +209,7 @@ async function heroParts(
           throw new Error(`the hero needs the ${id} clip: capture it first`);
         }),
       ) as EditSpec);
-    parts.push({ spec });
+    parts.push({ chapter, spec });
   }
   return parts;
 }
