@@ -401,7 +401,7 @@
           "type": "boolean",
           "default": true,
           "scope": "window",
-          "markdownDescription": "Find All References (Shift+F12) and Rename Symbol (F2) on sprite names: in `.gfx` and `.gui` files and in the scripts of `events`, `missions` and `common/estate_privileges`. A rename changes only your mod's files. Turn it off if another extension already finds or renames these names: Etch then adds neither, and the other extension's answers stand alone."
+          "markdownDescription": "Find All References (Shift+F12) and Rename Symbol (F2) on sprite names: in `.gfx` and `.gui` files and in the script files that name sprites (an event's `picture`, a mission's `icon` and the others the user docs list). A rename changes only your mod's files. Turn it off if another extension already finds or renames these names: Etch then adds neither, and the other extension's answers stand alone."
         },
         "etch.editor.localisationHints": {
           "type": "boolean",
