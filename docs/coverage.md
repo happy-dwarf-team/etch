@@ -7,7 +7,7 @@ specification draft, [spec/v3.md](spec/v3.md), section 2). The results of the
 latest run are in [coverage-results.md](coverage-results.md).
 
 The precision corpus ([ADR 0002](adr/0002-precision-corpus-per-widget-exact-thresholds.md))
-gates releases on 16 hand-chosen views. The survey asks a wider question: of
+gates releases on 15 hand-chosen views. The survey asks a wider question: of
 everything the game can show, how much does Etch get right, and where it does
 not, what kind of thing fails. It gates nothing in 2.x.
 

@@ -9,6 +9,12 @@ to pass, and is **squash-merged**: the pull request title becomes the single
 commit on `main` and, through it, the changelog entry. Keep one topic per pull
 request; split unrelated changes.
 
+A change that users see or do changes its page in [docs/user/](docs/user/), the
+user docs the Etch website shows, in the same pull request: a new feature gets a
+page or a section. The pages are written for modders who are not programmers
+([docs/user/STYLE.md](docs/user/STYLE.md)), and the pull request's Evidence
+lists the findings of their plain-language review and what changed.
+
 Research and prototypes go on `research/*` and `prototype/*` branches, which
 are pushed and never merged (specification, section 13).
 
@@ -70,6 +76,12 @@ two `package.json` versions differ, and the plugin's build when
 request publishes to both stores at once, so it is merged only on the
 maintainer's go-ahead.
 
+The titles of `feat`, `fix`, `perf` and `build` pull requests become the
+release notes, which players and modders read on the release page and on the
+website's changelog page, so they are written for them too. The release pull
+request's notes get the plain-language review of
+[docs/user/STYLE.md](docs/user/STYLE.md) before the go-ahead.
+
 Until 2.0.0 no store release came from `main` (ADR 0005, v2 specification
 section 13), and 2.0.0 was released with `Release-As: 2.0.0`. Fixes for 1.0.x
 (bugs only) went by pull request to `release/1.x`, cut at `v1.0.1`, which
@@ -92,6 +104,7 @@ A pnpm workspace (ADR 0001):
 | `coverage`           | the coverage survey's rules, `survey.json` (docs/coverage.md)  |
 | `pins`               | pinned game-side builds: release tag, URL and SHA-256 (pins/README.md) |
 | `profiles`           | window profiles Etch ships, by source, and their JSON Schema (ADR 0006) |
+| `docs/user`          | the user docs the Etch website shows (docs/user/STYLE.md)      |
 | `docs/adr`           | architecture decisions                                         |
 | `docs/spec`          | the v1 and v2 specifications (frozen), after-v2.md (living) and the v3 draft |
 
