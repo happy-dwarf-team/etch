@@ -39,6 +39,9 @@ export function spriteDocumentPath(fileName: string): string | undefined {
 /** A file's text as VS Code shows it: the open document's, else the file's game text. */
 interface FileText {
   readonly uri: vscode.Uri;
+  /** The playset layer's name (`game` for the game folder) and folder. */
+  readonly layer: string;
+  readonly root: string;
   readonly path: string;
   readonly text: string;
   readonly document: vscode.TextDocument | undefined;
@@ -58,7 +61,7 @@ export class SpriteReferences implements vscode.ReferenceProvider, vscode.Rename
   ): Promise<vscode.Location[]> {
     const found = occurrenceAt(document, position);
     if (found === undefined) return [];
-    const texts = await this.playsetTexts();
+    const texts = await withDocuments(await this.playsetTexts(), found.name);
     const out: vscode.Location[] = [];
     for (const file of texts) {
       for (const o of occurrencesOf(file.path, file.text, found.name)) {
@@ -93,12 +96,13 @@ export class SpriteReferences implements vscode.ReferenceProvider, vscode.Rename
     if (found === undefined) throw new Error('Etch renames sprite names: put the cursor on one.');
     const loaded = await this.links.playset();
     if (loaded === undefined) throw new Error('Etch cannot read the playset.');
-    const texts = await this.playsetTexts();
+    const texts = await withDocuments(await this.playsetTexts(), found.name);
+    const { editedRoot } = loaded;
     const plan = planSpriteRename(
       texts.map((file) => ({
         path: file.path,
         text: file.text,
-        editable: vscode.workspace.getWorkspaceFolder(file.uri) !== undefined,
+        editable: file.layer !== 'game' && editedRoot !== undefined && inFolder(file, editedRoot),
       })),
       found.name,
       newName,
@@ -133,13 +137,37 @@ async function textOf(
   open: ReadonlyMap<string, vscode.TextDocument>,
 ): Promise<FileText> {
   const uri = vscode.Uri.file(file.absolutePath);
+  const { name: layer, root } = file.layer;
   const document = open.get(file.absolutePath.toLowerCase());
   if (document !== undefined) {
-    return { uri, path: file.path, text: document.getText(), document };
+    return { uri, layer, root, path: file.path, text: document.getText(), document };
   }
   const kind = spriteFileKind(file.path) === 'script' ? 'script' : 'interface';
   const text = decodeGameText(await readFile(file.absolutePath), kind).text;
-  return { uri, path: file.path, text, document: undefined };
+  return { uri, layer, root, path: file.path, text, document: undefined };
+}
+
+/**
+ * The files that write the name, read as VS Code reads them: a closed file is opened (not shown),
+ * so that the ranges and the edits follow VS Code's decoding of it (`files.encoding`), not the
+ * game's. The others stay as they are: they have nothing to place.
+ */
+async function withDocuments(texts: FileText[], name: string): Promise<FileText[]> {
+  const lower = name.toLowerCase();
+  return Promise.all(
+    texts.map(async (file) => {
+      if (file.document !== undefined || !file.text.toLowerCase().includes(lower)) return file;
+      const document = await vscode.workspace.openTextDocument(file.uri);
+      return { ...file, text: document.getText(), document };
+    }),
+  );
+}
+
+/** Whether a file is in the edited mod's folder (its layer's root is that folder). */
+function inFolder(file: FileText, folder: string): boolean {
+  const normal = (path: string): string =>
+    path.replace(/\\/g, '/').replace(/\/+$/, '').toLowerCase();
+  return normal(file.root) === normal(folder);
 }
 
 function occurrenceAt(

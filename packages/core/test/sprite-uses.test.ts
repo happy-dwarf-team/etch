@@ -4,6 +4,7 @@ import {
   planSpriteRename,
   spriteFileKind,
   spriteOccurrenceAt,
+  spriteOccurrences,
   type SpriteRenameFile,
 } from '../src/index.ts';
 
@@ -73,6 +74,13 @@ describe('sprite occurrences', () => {
       'GFX_etch_badge',
     ]);
     expect(texts('events/etch.txt', EVENTS, 'GFX_nothing')).toEqual([]);
+    // An unclosed quote keeps the name's last character: it has no closing `"` to leave out.
+    const unclosed = 'name = "GFX_etch_cut\n';
+    expect(
+      spriteOccurrences('interface/etch.gfx', `spriteTypes = { spriteType = { ${unclosed}} }`).map(
+        (o) => o.name,
+      ),
+    ).toEqual(['GFX_etch_cut']);
   });
 
   it('finds the sprite name under the cursor', () => {

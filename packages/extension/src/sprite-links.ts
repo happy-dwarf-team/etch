@@ -36,6 +36,8 @@ export const SPRITE_SCRIPT_SELECTOR: vscode.DocumentSelector = [
 export interface Loaded {
   readonly files: GameFiles;
   readonly ui: PlaysetInterface;
+  /** The edited mod's folder; `undefined` without a workspace mod (the game folder alone). */
+  readonly editedRoot: string | undefined;
 }
 
 export class SpriteLinks implements vscode.HoverProvider, vscode.DefinitionProvider {
@@ -147,7 +149,11 @@ export class SpriteLinks implements vscode.HoverProvider, vscode.DefinitionProvi
       async (linked) =>
         linked === undefined
           ? undefined
-          : { files: linked.files, ui: await PlaysetInterface.load(linked.files) },
+          : {
+              files: linked.files,
+              ui: await PlaysetInterface.load(linked.files),
+              editedRoot: linked.editedRoot,
+            },
       (error: unknown) => {
         this.output.warn(`Sprite hovers: the playset could not be read: ${messageOf(error)}`);
         return undefined;

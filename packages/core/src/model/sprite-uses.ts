@@ -35,9 +35,10 @@ export function spriteFileKind(path: string): 'gfx' | 'gui' | 'script' | undefin
 }
 
 function inside(node: ScalarNode): { start: number; end: number } {
-  return node.quoted && node.end - node.start >= 2
-    ? { start: node.start + 1, end: node.end - 1 }
-    : { start: node.start, end: node.end };
+  if (!node.quoted) return { start: node.start, end: node.end };
+  // An unclosed quote runs to the line's end: it has no closing `"` to leave out.
+  const closed = node.end - node.start === node.text.length + 2;
+  return { start: node.start + 1, end: closed ? node.end - 1 : node.end };
 }
 
 /**
