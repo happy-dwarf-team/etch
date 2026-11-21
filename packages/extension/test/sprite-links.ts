@@ -151,6 +151,7 @@ export async function testSpriteLinks(): Promise<void> {
         '/mods/missions/events/etch_missions.txt',
         '/mods/etch/common/estate_privileges/sub/etch.txt',
         '/mods/etch/common/estates/etch.txt',
+        '/mods/etch/common/holy_orders/etch.txt',
         '/mods/etch/events/etch.yml',
       ].map(spriteScriptPath),
       [
@@ -158,6 +159,7 @@ export async function testSpriteLinks(): Promise<void> {
         'events/etch_missions.txt',
         'common/estate_privileges/sub/etch.txt',
         undefined,
+        'common/holy_orders/etch.txt',
         undefined,
       ],
       "a script file's game path comes from its last sprite folder",

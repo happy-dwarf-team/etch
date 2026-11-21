@@ -1,6 +1,6 @@
 // Hovers and Go to Definition on the sprite names of `.gui` files (`spriteType`,
 // `quadTextureSprite`, a list's `background`) and of script files (an event's `picture`, a
-// mission's and an estate privilege's `icon`): the hover names the sprite's kind, frames and the
+// mission's and an estate privilege's `icon`, the keys of `SCRIPT_SPRITE_KEYS`): the hover names the sprite's kind, frames and the
 // `.gfx` file and playset layer that define it, then its texture with its facts and a thumbnail
 // (the first frame of a strip); Go to Definition (F12, Ctrl+click) opens that `.gfx` file at the
 // sprite's name. The sprite is the one the game draws: the last definition in load order
@@ -15,6 +15,7 @@ import {
   readGuiFile,
   scriptSpriteReferences,
   spriteReferences,
+  SPRITE_SCRIPT_FOLDERS,
   textureCandidates,
   type Located,
   type Sprite,
@@ -27,11 +28,9 @@ import { TextureThumbnails } from './texture-thumbnail.ts';
 export const GUI_SELECTOR: vscode.DocumentSelector = [{ scheme: 'file', pattern: '**/*.gui' }];
 
 /** The script files that name sprites; the folders in the file's path decide which key. */
-export const SPRITE_SCRIPT_SELECTOR: vscode.DocumentSelector = [
-  { scheme: 'file', pattern: '**/events/**/*.txt' },
-  { scheme: 'file', pattern: '**/missions/**/*.txt' },
-  { scheme: 'file', pattern: '**/common/estate_privileges/**/*.txt' },
-];
+export const SPRITE_SCRIPT_SELECTOR: vscode.DocumentSelector = SPRITE_SCRIPT_FOLDERS.map(
+  (folder) => ({ scheme: 'file', pattern: `**/${folder}/**/*.txt` }),
+);
 
 export interface Loaded {
   readonly files: GameFiles;
@@ -165,15 +164,15 @@ export class SpriteLinks implements vscode.HoverProvider, vscode.DefinitionProvi
 
 /**
  * The game path of a script file that names sprites, from the folders in its file name: from the
- * last `events`, `missions` or `common/estate_privileges` folder on, as a mod or the game folder
- * holds them at its root.
+ * last folder of `SPRITE_SCRIPT_FOLDERS` (`events`, `missions`, `common/estate_privileges` …) on,
+ * as a mod or the game folder holds them at its root.
  */
 export function spriteScriptPath(fileName: string): string | undefined {
   const slashed = fileName.replace(/\\/g, '/');
   const lower = slashed.toLowerCase();
   let at = -1;
-  for (const folder of ['/events/', '/missions/', '/common/estate_privileges/']) {
-    at = Math.max(at, lower.lastIndexOf(folder));
+  for (const folder of SPRITE_SCRIPT_FOLDERS) {
+    at = Math.max(at, lower.lastIndexOf(`/${folder}/`));
   }
   if (at < 0) return undefined;
   const path = slashed.slice(at + 1);

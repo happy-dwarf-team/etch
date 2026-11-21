@@ -73,14 +73,28 @@ A sprite name that no `.gfx` file of your playset defines gets no hover in a `.g
 
 ## Sprites in script files
 
-The same hovers and **Go to Definition** work on the sprite names of three kinds of script file:
+The same hovers and **Go to Definition** work on the sprite names of these script files:
 
 - an event's `picture`, such as `picture = MERCHANTS_TALKING_eventPicture` in
   `events/Republics.txt`. A conditional picture works too:
   `picture = { trigger = { … } picture = … }`;
 - a mission's `icon`, in the `missions` folder;
 - an estate privilege's `icon`, such as `icon = privilege_grant_autonomy` in
-  `common/estate_privileges/0002_rajput_privileges.txt`.
+  `common/estate_privileges/0002_rajput_privileges.txt`;
+- in these folders of `common`, the keys the game reads as sprite names:
+
+  | Folder | Key |
+  | --- | --- |
+  | `church_aspects` | `sprite` |
+  | `federation_advancements` | `gfx` |
+  | `government_mechanics` | `alert_icon_gfx` at the top of a mechanic, and `icon` of each power inside its `powers` |
+  | `holy_orders` | `icon` |
+  | `professionalism` | `marker_sprite` |
+  | `religions` | `picture` of a religious school (the base game's seven Muslim schools, such as Hanafi) |
+  | `religious_conversions` | `map_icon` |
+  | `subject_types` | `sprite`, `diplomacy_overlord_sprite`, `diplomacy_subject_sprite` |
+  | `tradecompany_investments` | `sprite` |
+  | `trading_policies` | `button_gfx` |
 
 In a script file, a name with no sprite in your playset's `.gfx` files says so in its hover.
 
@@ -89,15 +103,17 @@ In a script file, a name with no sprite in your playset's `.gfx` files says so i
 Put the cursor on a sprite name and press <kbd>Shift+F12</kbd> (**Find All References**). The
 name can be in a `.gfx` file, after `name`, or in a `.gui` or script file, as above. A list opens
 with every place your playset's files write that name: the `.gfx` file that defines it, the `.gui`
-files and the event, mission and estate privilege files that use it. Etch finds the name whatever
+files, and the script files listed under [Sprites in script files](#sprites-in-script-files)
+that use it. Etch finds the name whatever
 its capital letters, as the game does.
 
 ## Rename a sprite
 
 Your mod's files are the files in the folder you have open in VS Code. Open your mod's folder,
 put the cursor on a sprite name and press <kbd>F2</kbd> (**Rename Symbol**). Type the new name and
-press <kbd>Enter</kbd>. Etch changes the name in your mod's `.gfx` file and in every `.gui`,
-event, mission and estate privilege file of your mod that uses it. Files that were not open are
+press <kbd>Enter</kbd>. Etch changes the name in your mod's `.gfx` file, and in every `.gui` file
+and script file of your mod that uses it (the script files listed under
+[Sprites in script files](#sprites-in-script-files)). Files that were not open are
 changed too and left unsaved: save them to keep the change.
 
 Etch does not rename a sprite when that would leave the old name somewhere. It shows a message
@@ -141,9 +157,11 @@ Etch writes only the three numbers and drops any opacity you set.
 
 - Etch does not read the game's DLC archives, which define many vanilla event pictures. The hover
   of such a picture says it has no sprite.
-- In script files, only these three keys get sprite hovers. An `icon` elsewhere in `common` is not
-  always a sprite: a government reform's `icon`, for example, names a texture file. So those get
-  no hover.
+- In script files, only the keys listed under [Sprites in script files](#sprites-in-script-files)
+  get sprite hovers. An `icon` elsewhere in `common` is not always a sprite: a government
+  reform's `icon`, for example, names a texture file. So those get no hover.
+- Each key is read only where the base game writes it: a `sprite` nested deeper in a subject
+  type, for example, gets no hover.
 - **Find All References** and **Rename Symbol** work only on sprite names, not on texture paths,
   fonts or widget names. They do not see the DLC archives either: a rename cannot warn about a
   DLC file that uses the name.

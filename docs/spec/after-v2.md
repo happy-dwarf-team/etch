@@ -475,7 +475,8 @@ refresh is a step of the 3.0.0 release.
   definition, a `.gui` use (`spriteReferences`) or a script use
   (`scriptSpriteReferences`), Find All References lists the occurrences in the
   winning copy of every `.gfx` and `.gui` file under `interface` and every
-  `.txt` file under `events`, `missions` and `common/estate_privileges`
+  `.txt` file under the folders of `SPRITE_SCRIPT_FOLDERS` (`events`,
+  `missions`, `common/estate_privileges` and the `common` folders below)
   (`spriteNamingFiles`), matched without regard to case as `InterfaceIndex`
   matches; an open document's text wins over the file's, and a closed file
   that writes the name is opened so that its ranges follow VS Code's
@@ -831,7 +832,22 @@ refresh is a step of the 3.0.0 release.
   mission's `icon` and an estate privilege's `icon`
   (`scriptSpriteReferences`). Over EU4 1.37.5 all 4,813 mission and 426
   privilege icons resolve, and 4,729 of 6,573 event pictures
-  (`packages/core/test/script-sprites.vanilla.test.ts`): of the 358 picture
+  (`packages/core/test/script-sprites.vanilla.test.ts`). ADR 0008's "Images in
+  more scripts" added, on 21.11.2026, the keys of ten `common` folders whose
+  every vanilla value is a sprite of the game's `.gfx` files, each at the
+  depth vanilla writes it (`SCRIPT_SPRITE_KEYS`): `church_aspects` `sprite`
+  (10), `federation_advancements` `gfx` (8), `government_mechanics`
+  `alert_icon_gfx` (26) and a power's `icon` (63), `holy_orders` `icon` (28),
+  `professionalism` `marker_sprite` (6, not `unit_sprite_start`, a prefix),
+  `religions` a school's `picture` (7), `religious_conversions` `map_icon`
+  (9), `subject_types` `sprite`, `diplomacy_overlord_sprite` and
+  `diplomacy_subject_sprite` (73), `tradecompany_investments` `sprite` (15)
+  and `trading_policies` `button_gfx` (9); all 254 resolve. In Anbennar's own
+  files 797 of the same keys' 818 values are sprites of the game's or the
+  mod's `.gfx` files; the other 21 name sprites that neither defines (such as
+  `GFX_allclan_ability_ADM`), which the hover reports. The hover, Go to
+  Definition, Find All References and Rename Symbol all follow the list. The
+  optional gutter thumbnail is not done. Of the 358 picture
   names that do not, 302 are defined only in the DLC archives (`dlc/*/*.zip`,
   `builtin_dlc`), which Etch's `GameFiles` does not read, and 56 by no `.gfx`
   file of the game. Reading the archives of the DLCs the player has on, in the
