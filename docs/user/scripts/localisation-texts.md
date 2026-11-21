@@ -7,7 +7,7 @@ since: 2.14.0
 Where a `.gui` file or a script names a localisation key, Etch shows the key's text right after
 it, in grey. You read what the player will see without opening the `.yml` file. In
 `events/FlavorRUS.txt`, for example, `title = "flavor_rus.EVTNAME3401"` is followed by
-**The Pomjestija Reform**.
+"The Pomjestija Reform".
 
 ## Where the texts show
 
@@ -20,23 +20,27 @@ it depends on) defines gets a text. A `name` that is a plain word, not a key, ge
 
 ## Read the whole text
 
-The grey text is short: at most 60 letters, without icons, colour codes and variables.
+The grey text is short: at most 60 letters, without icons, colour codes and variables such as
+`$COUNTRY$`.
 
-- Hover over it to see the whole text, the key, its language and the `.yml` file it comes from.
+- Hover over the grey text to see the whole text, the key, its language and the `.yml` file it
+  comes from.
 - To open that file at the key's line, <kbd>Ctrl</kbd>+click the key, or put the cursor on it and
   press <kbd>F12</kbd>.
 
+When you save a `.yml` file, Etch reads the localisation again, so the texts follow your edits.
+
 ## Choose the language
 
-The texts are in the language of `etch.language`, English unless you change it. Pick another
-language in [Settings](../reference/settings.md), and the texts change to it.
-
-When you save a `.yml` file, Etch reads the localisation again, so the texts follow your edits.
+The texts are in the language of `etch.language`, English unless you change it. To see another
+language, set `etch.language` in [Settings](../reference/settings.md): the texts change to it.
+The same setting is the language the [preview](../interface-windows/preview.md) draws its texts
+in, so the preview changes too.
 
 ## Turn it off
 
-To hide the texts, clear the checkbox of `etch.editor.localisationHints` in
-[Settings](../reference/settings.md). If you see no texts at all, VS Code's own
+To hide the texts, open [Settings](../reference/settings.md), search for
+`etch.editor.localisationHints` and clear its checkbox. If you see no texts at all, VS Code's own
 `editor.inlayHints.enabled` setting may be off: it hides all such grey texts, Etch's included.
 
 ## What it doesn't do
