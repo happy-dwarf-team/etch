@@ -27,7 +27,8 @@ your playset writes it.
   keys it writes in it. Inside an `iconType`, for example, you get `position`, `name`,
   `spriteType` and `Orientation` first. A key that takes a block, such as `position`, comes with
   its `{ }`. After any other key, the suggestions open again for its value.
-- **After `spriteType`, `quadTextureSprite`, or `background` in a `listboxType`:** every sprite
+- **After `spriteType`, `quadTextureSprite`, or `background` in a `listboxType` or
+  `smoothListboxType`:** every sprite
   name of your playset's `.gfx` files. Move to a sprite in the list: the box beside it shows its
   kind, its frames, the `.gfx` file that defines it and a small picture of its texture.
 - **After `font` or `buttonFont`:** the fonts of your playset.
