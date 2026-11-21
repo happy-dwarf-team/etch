@@ -396,6 +396,10 @@ once one is selected; after `font` or `buttonFont`, its fonts; after
 `alwaysTransparent` or `format`, the few values the playset writes for it.
 `etch.editor.completion` turns this off.
 
+The widgets of a `.gui` file and the sprites and fonts of a `.gfx` file are
+also VS Code symbols: the breadcrumbs above the editor, the Explorer's
+**Outline** and **Go to Symbol in Editor** (Ctrl+Shift+O) list them by name.
+
 ## Meshes
 
 A `.mesh` file opens in the **Etch Mesh Preview**: the model drawn with its

@@ -36,6 +36,21 @@ its place and size, and why it shows or not, such as the profile's rule that hid
 - Click a row: the editor shows the line that defines the widget, and the preview outlines it.
 - Move the cursor in the editor, or click a widget in the preview: the outline selects that widget.
 
+## Breadcrumbs and Go to Symbol
+
+VS Code's own tools for moving around a file know the widgets too, in every `.gui` file and
+without the preview:
+
+- The breadcrumbs, the path above the editor, show the widgets around the cursor, such as
+  `provinceview › top_section_window › move_capital` in `interface/provinceview.gui`. Click one to see its neighbours.
+- Press <kbd>Ctrl+Shift+O</kbd> and type a widget's name to jump to it.
+- VS Code's **Outline** section in the Explorer shows all windows of the file, not only the
+  previewed one.
+
+A widget without a `name` shows as its kind in angle brackets, such as `<iconType>`. In a `.gfx`
+file the same tools list its sprites and fonts by name, so <kbd>Ctrl+Shift+O</kbd> finds a
+sprite such as `GFX_provinceview_bg` in `interface/provinceview.gfx`.
+
 ## Show and hide widgets by hand
 
 In a window with a [window profile](views.md), the outline has buttons at the end of each row.

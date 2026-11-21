@@ -4,6 +4,7 @@ import { registerAssetLinks, type AssetLinks } from './asset-links.ts';
 import { registerSpriteLinks, type SpriteLinks } from './sprite-links.ts';
 import { registerLocalisationHints, type LocalisationHints } from './localisation-hints.ts';
 import { registerGuiCompletion, type GuiCompletion } from './gui-completion.ts';
+import { registerInterfaceSymbols, type InterfaceSymbols } from './interface-symbols.ts';
 import { BuildCheck } from './build-check.ts';
 import { RUNNING_BUILD } from './build-stamp.ts';
 import { registerLiveGame, type LiveGame, type PickMode } from './live-game/index.ts';
@@ -30,6 +31,7 @@ export interface EtchApi {
   readonly spriteLinks: SpriteLinks;
   readonly localisationHints: LocalisationHints;
   readonly guiCompletion: GuiCompletion;
+  readonly interfaceSymbols: InterfaceSymbols;
 }
 
 let liveGame: LiveGame | undefined;
@@ -71,6 +73,7 @@ export function activate(context: vscode.ExtensionContext): EtchApi {
     spriteLinks,
     localisationHints: registerLocalisationHints(context, output),
     guiCompletion: registerGuiCompletion(context, spriteLinks),
+    interfaceSymbols: registerInterfaceSymbols(context),
   };
 }
 
