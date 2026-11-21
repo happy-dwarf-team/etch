@@ -50,7 +50,7 @@ pnpm media capture --clip data --reedit   # edit and render again from the take,
 
 | Option     | Default                    | Meaning                                                                                                               |
 | ---------- | -------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `--clip`   | all                        | clip ids: `hero`, `preview`, `views`, `data`, `zoom`, `outline`, `problems`, `profile`, `names`, `reload`, `pick`, `snapshot` |
+| `--clip`   | all                        | clip ids: `hero`, `preview`, `views`, `data`, `zoom`, `outline`, `problems`, `profile`, `names`, `texture`, `encoding`, `hovers`, `mesh`, `trees`, `entity`, `reload`, `pick`, `snapshot` |
 | `--save`   | none                       | the live take's save: a base-game save, not ironman, copied into the run; needed for `reload`, `pick` and `snapshot` |
 | `--profile` | none                      | the script profile `profile` shows: a CSV of Anvil's script profiler measured in a base game; needed for `profile` |
 | `--reedit` | off                        | edit, render and encode the clips again from their takes' logs and masters                                            |
@@ -84,10 +84,10 @@ opens and closes on the same shot (its seam). A menu's panel is folded to its bu
 the menu is closed and unfolds with it. While a menu of the preview is open over the window, the
 window's panel holds its frame from before the menu opened and shows the window's new state from
 the frame the menu closes, so the menu shows whole in its own panel and never cut off at the
-window panel's edge. Where the pointer crosses other widgets between two it hovers (`outline`),
-the drawn pointer glides while Playwright's mouse moves at the end only, so the preview outlines
-no widget on the way. Panels of text lines longer than they are (code, Problems)
-fade out at their right edge rather than cut a word. Captions give the keys pressed and what they
+window panel's edge. Where the pointer crosses the preview's widgets on its way (`outline`) or
+other names in the editor (`hovers`), the drawn pointer glides while Playwright's mouse moves at
+the end only, so no tip or hover shows on the way. Panels of text lines longer than they are
+(code, Problems) fade out at their right edge rather than cut a word. Captions give the keys pressed and what they
 do, rings mark what changed once it has, and a pointer is drawn where Playwright's mouse moved (the
 master has none: Playwright's mouse is not the system pointer).
 

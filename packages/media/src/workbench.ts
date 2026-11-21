@@ -795,13 +795,13 @@ export class Workbench {
   /**
    * Drags the sash between the editor and the preview, and the bottom panel's when it is open, so
    * the preview canvas shows the game screen unscaled: one game pixel, one device pixel (spec
-   * section 8.4). The editor gives way.
+   * section 8.4). The editor gives way, also to a sidebar of `sidebarWidth` CSS pixels.
    */
-  async fitPreview(): Promise<void> {
+  async fitPreview(sidebarWidth = SIDEBAR_WIDTH): Promise<void> {
     const sidebars = this.page.locator('.part.sidebar').filter({ visible: true });
     const sidebar = (await sidebars.count()) > 0 ? await sidebars.first().boundingBox() : null;
-    if (sidebar !== null && sidebar.width !== SIDEBAR_WIDTH) {
-      await this.dragSash('vertical', sidebar.x + sidebar.width, SIDEBAR_WIDTH - sidebar.width);
+    if (sidebar !== null && sidebar.width !== sidebarWidth) {
+      await this.dragSash('vertical', sidebar.x + sidebar.width, sidebarWidth - sidebar.width);
     }
     for (let attempt = 0; attempt < 4; attempt++) {
       const fit = await this.previewFit();

@@ -153,15 +153,23 @@ const KEY_S = 1.1;
 const SECOND_PROVINCE = 'Bali';
 
 /**
- * `outline`: game-screen points of the widgets it hovers, a text, a button and an icon in one band
- * of the demographics, the icon the one it then clicks: its name fits the outline's row beside the
- * row's buttons, where `build_landunit_button` is cut. The tip's first line names each.
+ * `outline`: the widget its eye hides by hand (the window's lower left part), the side panel's
+ * member shown in the view and the one its radio picks, the text whose sample it types and the
+ * name typed. The name is the province name's editBox in the header, at (100, -8) in
+ * `top_section_window`, 180 × 32; `area_name` at (100, 0), 300 × 26, lies over all of it but its
+ * top 8 px, where the take clicks.
  */
-const OUTLINE_HOVERS = [
-  { point: { x: 175, y: 531 }, widget: 'culture' },
-  { point: { x: 330, y: 571 }, widget: 'build_landunit_button' },
-  { point: { x: 270, y: 570 }, widget: 'religion_icon' },
-] as const;
+const OUTLINE_HIDDEN = 'province_window';
+const OUTLINE_PANEL = 'buildings_window';
+const OUTLINE_CHOSEN = 'institutions_window';
+const OUTLINE_HEADER = 'top_section_window';
+const OUTLINE_NAME = 'provincename';
+const OUTLINE_NAME_AT: Rect = { x: 100, y: -8, w: 180, h: 32 };
+const OUTLINE_SAMPLE = 'Kaluga and the Upper Oka';
+/** The outline take's sidebar, in CSS px: the rows' names whole, `institutions_window` too. */
+const OUTLINE_SIDEBAR = 320;
+/** The outline's rows on the left: their names read at the site's size beside the preview. */
+const OUTLINE_SCALE = 2;
 
 /** `problems`: a sprite of the province view, and the typo swapping its `ui`. */
 const SPRITE = '"GFX_provinceview_building_bg"';
@@ -738,17 +746,25 @@ function middle(rect: Rect): { x: number; y: number } {
 }
 
 /**
- * Turns VS Code's hovers on for the rest of the take: the takes run with them off (config.ts), so
- * that the pointer shows nothing on its way. VS Code reads its settings file again when it changes.
+ * Sets VS Code settings for the rest of the take, in the run's throwaway settings file. VS Code
+ * reads its settings file again when it changes.
  */
-async function enableHovers(wb: Workbench): Promise<void> {
+async function setSettings(
+  wb: Workbench,
+  changed: Readonly<Record<string, unknown>>,
+): Promise<void> {
   const file = path.join(path.dirname(wb.workspace), 'user-data', 'User', 'settings.json');
   const settings = JSON.parse(await readFile(file, 'utf8')) as Record<string, unknown>;
-  await writeFile(
-    file,
-    `${JSON.stringify({ ...settings, 'editor.hover.enabled': 'on' }, null, 2)}\n`,
-  );
+  await writeFile(file, `${JSON.stringify({ ...settings, ...changed }, null, 2)}\n`);
   await sleep(1500);
+}
+
+/**
+ * Turns VS Code's hovers on for the rest of the take: the takes run with them off (config.ts), so
+ * that the pointer shows nothing on its way.
+ */
+async function enableHovers(wb: Workbench): Promise<void> {
+  await setSettings(wb, { 'editor.hover.enabled': 'on' });
 }
 
 /** The editor's hover once it shows its content, a picture included; its rect in master pixels. */
@@ -1389,108 +1405,235 @@ export const CLIPS: readonly Clip[] = [
     },
   },
   {
-    // Hover: a widget's tip; click: its definition and outline row; Go Back: where the cursor was.
+    // The Widget Outline beside the preview: an eye hides a widget by hand, a radio picks which
+    // panel shows, a click in the preview reveals its row and its line, and Type Sample Text… puts
+    // a long name in the header.
     id: 'outline',
     async run(context) {
       const { wb, take } = context;
+      // The workbench's own tooltips (a row's, a button's) off: one would show over the rows.
+      await setSettings(wb, { 'workbench.hover.delay': 60_000 });
       await wb.command('Explorer: Focus on Widget Outline View');
       // The Explorer's file tree collapsed, so the outline has the sidebar.
       const folders = wb.page.locator('.part.sidebar .pane-header').first();
       if ((await folders.getAttribute('aria-expanded')) === 'true') await folders.click();
-      await wb.page
-        .locator('.part.sidebar .pane-header[aria-expanded="true"]', { hasText: 'Widget Outline' })
-        .waitFor();
-      await wb.fitPreview();
-      take.mark('screen', { source: 'vscode', rect: await wb.screenRect() });
+      const pane = wb.page.locator('.part.sidebar .pane', {
+        has: wb.page.locator('.pane-header[aria-expanded="true"]', { hasText: 'Widget Outline' }),
+      });
+      await pane.waitFor();
+      // A sidebar wide enough for the rows' names, their buttons beside them.
+      await wb.fitPreview(OUTLINE_SIDEBAR);
+      const screen = await wb.screenRect();
+      take.mark('screen', { source: 'vscode', rect: screen });
+      const row = (name: string): Locator =>
+        pane.locator('.monaco-list-row', {
+          has: wb.page.locator('.label-name', { hasText: new RegExp(`^${name}$`) }),
+        });
+      // A row's widget on the preview's screen, from the row's tooltip: "… at x, y, w × h".
+      const placed = async (name: string): Promise<Rect> => {
+        const label = (await row(name).getAttribute('aria-label')) ?? '';
+        const found = /at (-?[\d.]+), (-?[\d.]+), ([\d.]+) × ([\d.]+)/.exec(label);
+        if (found === null) throw new Error(`the outline row of ${name} gives no rect: ${label}`);
+        const [x, y, w, h] = found.slice(1).map(Number) as [number, number, number, number];
+        return onScreen(screen, { x, y, w, h });
+      };
       await wb.focusEditor();
-      // The cursor outside every widget (parkCursor): the preview outlines nothing before the click.
       await wb.highlightCleared();
-      const home = await wb.cursor();
-      const outlineRow = wb.page
-        .locator('.part.sidebar .pane', {
-          has: wb.page.locator('.pane-header', { hasText: 'Widget Outline' }),
-        })
-        .locator('.monaco-list-row.selected');
+      const header = await placed(OUTLINE_HEADER);
+      // The name's top edge: `area_name` below it, its text right-aligned, covers the rest.
+      const name = {
+        x: header.x + OUTLINE_NAME_AT.x + OUTLINE_NAME_AT.w / 2,
+        y: header.y + OUTLINE_NAME_AT.y + 4,
+      };
+      take.mark('hidden-area', { source: 'vscode', rect: await placed(OUTLINE_HIDDEN) });
+      // The member the radio picks is laid out once it shows: its rect is marked then.
+      take.mark('panel', { source: 'vscode', rect: await placed(OUTLINE_PANEL) });
+      take.mark('header-area', { source: 'vscode', rect: header });
+      take.mark('outline', { source: 'vscode', rect: await wb.box(pane.locator('.pane-body')) });
+      const viewMenu = wb.frame.locator('#view-menu');
+      await viewMenu.filter({ hasNotText: 'by hand' }).waitFor();
+      take.mark('view-menu', { source: 'vscode', rect: await wb.box(viewMenu) });
       const rest = await startTake(context);
       take.mark('start');
-      // Every widget on the way would show its tip, the window's own and its panels' included, and
-      // every way crosses some: the drawn pointer glides to each widget, and Playwright's mouse
-      // reaches it at the end only, so only the hovered widgets' tips show.
-      for (const [i, { point, widget }] of OUTLINE_HOVERS.entries()) {
-        await glideOver(context, await wb.screenPoint(point), i === 0 ? 700 : 350);
-        take.mark('hover', { source: 'vscode', rect: await expectTip(wb, widget), label: widget });
-        await sleep(900);
-      }
-      // The last hovered widget is the icon: the pointer is on it, and clicks it.
-      await sleep(200);
+      await sleep(900);
+      // The eye of a row, which shows while the pointer is on the row.
+      const press = async (widget: string, action: string, step: string): Promise<void> => {
+        const target = row(widget);
+        await pointTo(context, await centre(target), 800);
+        const button = target.locator(`.actions [aria-label="${action}"]`);
+        await button.waitFor();
+        await sleep(200);
+        await pointTo(context, await centre(button), 350);
+        await sleep(200);
+        take.mark(step, { source: 'vscode', rect: await wb.box(target) });
+        take.click();
+        await button.click();
+      };
+      take.mark('to', { label: 'hide' });
+      await press(OUTLINE_HIDDEN, 'Hide by Hand', 'hide');
+      await viewMenu.filter({ hasText: '1 by hand' }).waitFor();
+      await sleep(300);
+      take.mark('hidden', { source: 'vscode', rect: await wb.box(viewMenu) });
+      await sleep(1500);
+      // A radio: the side panel's other member.
+      take.mark('to', { label: 'choose' });
+      await press(OUTLINE_CHOSEN, 'Choose by Hand', 'choose');
+      await viewMenu.filter({ hasText: '2 by hand' }).waitFor();
+      await sleep(300);
+      take.mark('chosen', { source: 'vscode', rect: await wb.box(viewMenu) });
+      take.mark('chosen-area', { source: 'vscode', rect: await placed(OUTLINE_CHOSEN) });
+      await sleep(1500);
+      // A click on the province's name in the preview: its row and its line. The mouse moves at the
+      // end only: on the way the preview would show the tip of every widget it crosses.
+      take.mark('to', { label: 'name' });
+      await glideOver(context, name, 1000);
+      await expectTip(wb, OUTLINE_NAME);
+      await sleep(300);
+      take.mark('clicking');
       take.click();
-      const clicked = OUTLINE_HOVERS[OUTLINE_HOVERS.length - 1];
-      if (clicked === undefined) throw new Error('outline hovers nothing');
-      await wb.clickScreen(clicked.point);
-      await wb.page
-        .locator('[id="status.editor.selection"]', { hasNotText: `Ln ${String(home.line)},` })
-        .waitFor();
-      await outlineRow.first().waitFor();
+      await wb.page.mouse.click(name.x, name.y);
+      const named = row(OUTLINE_NAME);
+      await named.and(pane.locator('.monaco-list-row.selected')).waitFor();
       await wb.highlightSettled();
+      await sleep(300);
       take.mark('picked', { source: 'vscode', rect: await editorLine(wb) });
-      take.mark('row', { source: 'vscode', rect: await wb.box(outlineRow) });
-      // Home while the preview is out of view: the way crosses its widgets, whose tips show.
-      await pointTo(context, rest, 700);
-      await wb.restMouse();
-      await sleep(1600);
-      // Back to where the cursor was, as Go Back takes it. The keys go to the editor: after the
-      // preview's click the keyboard may still be in the preview.
-      await wb.focusEditor();
-      take.mark('back');
-      await wb.press('Alt+ArrowLeft');
-      await wb.page
-        .locator('[id="status.editor.selection"]', { hasText: `Ln ${String(home.line)},` })
-        .waitFor();
-      take.mark('returned', { source: 'vscode', rect: await editorLine(wb) });
-      await sleep(1400);
+      take.mark('row', { source: 'vscode', rect: await wb.box(named) });
+      // The tip stays while the mouse is out of the preview: the mouse moves, unseen, onto the
+      // screen's empty top right corner, where no widget is, and the tip goes. The drawn pointer
+      // goes on from the name.
+      await wb.page.mouse.move(screen.x + screen.w - 30, screen.y + 30);
+      await wb.frame.locator('#tip:not([hidden])').waitFor({ state: 'hidden', timeout: 3_000 });
+      await sleep(1500);
+      // Type Sample Text… on its row, whose buttons show while it is selected.
+      take.mark('to', { label: 'type' });
+      const edit = named.locator('.actions [aria-label="Type Sample Text…"]');
+      await glideOver(context, await centre(edit), 900);
+      await sleep(200);
+      take.mark('edit', { source: 'vscode', rect: await wb.box(edit) });
+      take.click();
+      await edit.click();
+      const input = wb.page.locator('.quick-input-widget');
+      await input.locator('input').waitFor({ state: 'visible' });
+      await sleep(300);
+      take.mark('input', { source: 'vscode', rect: await wb.box(input) });
+      await wb.page.keyboard.press('Control+A');
+      await wb.page.keyboard.type(OUTLINE_SAMPLE, { delay: 70 });
+      await sleep(400);
+      take.mark('enter');
+      await wb.page.keyboard.press('Enter');
+      await input.waitFor({ state: 'hidden' });
+      take.mark('entered');
+      await named.filter({ hasText: OUTLINE_SAMPLE }).waitFor();
+      await sleep(500);
+      take.mark('named', { source: 'vscode', rect: await wb.selectedRect() });
+      await sleep(1800);
       take.mark('leaving');
-      await sleep(800);
-      await endTake(context, rest);
+      await pointTo(context, rest, 800);
+      await wb.focusEditor();
+      await wb.parkMouse();
+      take.mark('end');
+      await take.until(take.t() + POST_ROLL_MS / 1000);
     },
     edit(log, sources) {
       const source = sources['vscode'] as Source;
       const s0 = eventOf(log, 'start').t - LEAD;
       const at = (t: number): number => t - s0;
-      const hovers = eventsOf(log, 'hover', OUTLINE_HOVERS.length);
-      const band = union(...hovers.map(rectOf));
-      // Close on the band of hovered widgets and their tips, the tips' text large enough to read
-      // on the site, unless the band is wider.
-      const hoverScale = Math.min(2.5, STAGE.w / (band.w + 60), STAGE.h / (band.h + 60));
-      // From the screen's left edge, where the window's labels start (centred on the band, the
-      // view cut them: "oduction", "onomy"), unless the band and its tips need it further right.
-      const centred = viewAt(band, hoverScale, STAGE, source);
-      const hoverView = { ...centred, x: Math.min(centred.x, rectOf(eventOf(log, 'screen')).x) };
-      const picked = eventOf(log, 'picked');
-      const row = rectOf(eventOf(log, 'row'));
-      const returned = eventOf(log, 'returned');
-      // The outline's rows only, from the sidebar's left edge to its right, the row in the middle;
-      // the editor beside it is the right panel's.
-      const sidebar = (row.w + 10) * UI_SCALE;
-      const frames = pair(
-        { w: sidebar, h: STAGE.h },
-        { w: STAGE.w - GUTTER - sidebar, h: STAGE.h },
+      const screen = rectOf(eventOf(log, 'screen'));
+      const outline = rectOf(eventOf(log, 'outline'));
+      const menu = rectOf(eventOf(log, 'view-menu'));
+      const moves = eventsOf(log, 'to', 4);
+      const moveAt = (label: string): number => {
+        const move = moves.find((m) => m.label === label);
+        if (move === undefined) throw new Error(`outline's take has no move to ${label}`);
+        return at(move.t);
+      };
+      // Left, the outline's rows at OUTLINE_SCALE, the camera on the row each step acts on.
+      const left: Rect = { x: STAGE.x, y: STAGE.y, w: outline.w * OUTLINE_SCALE, h: STAGE.h };
+      const rowsH = STAGE.h / OUTLINE_SCALE;
+      const rowsOn = (rect: Rect): Rect => ({
+        x: outline.x,
+        y: Math.max(
+          Math.min(rect.y + rect.h / 2 - rowsH / 2, outline.y + outline.h - rowsH),
+          outline.y,
+        ),
+        w: outline.w,
+        h: rowsH,
+      });
+      // Right, above, the preview's View ▾ at UI_SCALE, whose label counts the changes by hand;
+      // under it the part of the screen each step changes, at most at UI_SCALE.
+      const right: Rect = {
+        x: left.x + left.w + GUTTER,
+        y: STAGE.y,
+        w: STAGE.w - left.w - GUTTER,
+        h: STAGE.h,
+      };
+      const stripRow = menu.h + 16;
+      const strip: Rect = { x: right.x, y: right.y, w: right.w, h: stripRow * UI_SCALE };
+      const stripView: Rect = { x: menu.x - 12, y: menu.y - 8, w: right.w / UI_SCALE, h: stripRow };
+      const below: Rect = {
+        x: right.x,
+        y: strip.y + strip.h + GUTTER,
+        w: right.w,
+        h: right.h - strip.h - GUTTER,
+      };
+      // The window on the screen, with its side panel either way: a view keeps inside it where it
+      // can, rather than show the empty screen beside it. Its tabs stand above the header's box.
+      const windows = grow(
+        union(
+          union(rectOf(eventOf(log, 'hidden-area')), rectOf(eventOf(log, 'header-area'))),
+          union(rectOf(eventOf(log, 'panel')), rectOf(eventOf(log, 'chosen-area'))),
+        ),
+        16,
       );
-      const rowView = viewAt(row, UI_SCALE, frames.left, source, { x: 5 / (row.w + 10), y: 0.45 });
-      const definition = rectOf(picked);
-      // The editor across the right panel, without its scroll bar or the preview beside it.
-      const codeScale = Math.max(CODE_SCALE, (STAGE.w - GUTTER - sidebar) / (definition.w - 40));
-      const back = at(eventOf(log, 'back').t);
+      const windowArea: Rect = { ...windows, y: windows.y - 40, h: windows.h + 40 };
+      const within = (from: number, size: number, start: number, length: number): number =>
+        size >= length
+          ? start + (length - size) / 2
+          : Math.min(Math.max(from, start), start + length - size);
+      const fit = (rect: Rect): Rect => {
+        const scale = Math.min(UI_SCALE, below.w / (rect.w + 40), below.h / (rect.h + 40));
+        const view = viewAt(rect, scale, below, source);
+        const x = within(view.x, view.w, windowArea.x, windowArea.w);
+        const y = within(view.y, view.h, windowArea.y, windowArea.h);
+        // Never left of the screen, into the editor beside it.
+        return { ...view, x: Math.max(x, screen.x), y };
+      };
+      const header = rectOf(eventOf(log, 'header-area'));
+      // The province's name and what is around it, for the click and the sample text.
+      const nameArea: Rect = {
+        x: header.x + OUTLINE_NAME_AT.x - 60,
+        y: header.y + OUTLINE_NAME_AT.y - 40,
+        w: OUTLINE_NAME_AT.w + 300,
+        h: OUTLINE_NAME_AT.h + 120,
+      };
+      const hide = eventOf(log, 'hide');
+      const hidden = eventOf(log, 'hidden');
+      const choose = eventOf(log, 'choose');
+      const chosen = eventOf(log, 'chosen');
+      const clicking = at(eventOf(log, 'clicking').t);
+      const picked = eventOf(log, 'picked');
+      const nameRow = rectOf(eventOf(log, 'row'));
+      const edit = at(eventOf(log, 'edit').t);
+      const input = rectOf(eventOf(log, 'input'));
+      const entered = at(eventOf(log, 'entered').t);
+      const named = eventOf(log, 'named');
       const leaving = at(eventOf(log, 'leaving').t);
       const end = at(eventOf(log, 'end').t) + 0.4;
-      // The close-up and the split change through the background, never blended: one fades out,
-      // then the other in.
+      const line = rectOf(picked);
+      const codeScale = Math.max(CODE_SCALE, below.w / (line.w - 40));
+      // The code takes the screen's place through the background, never blended with it.
       const DIP = 0.25;
-      const split = at(picked.t) - 0.1;
-      const shown = (frame: Rect, view: Rect): Shot[] => [
-        { at: 0, frame, view, opacity: 0 },
-        { at: split + DIP, frame, view, opacity: 1, move: DIP },
-        { at: leaving, frame, view, opacity: 0, move: DIP },
-      ];
+      const toCode = at(picked.t);
+      const toScreen = moveAt('type') - DIP;
+      // The input box over the screen's lower part while it is open, cut at its own edges: the
+      // preview's toolbar is behind it.
+      const inputScale = Math.min(UI_SCALE, below.w / input.w);
+      const inputFrame: Rect = {
+        x: below.x + (below.w - input.w * inputScale) / 2,
+        y: below.y + below.h - input.h * inputScale,
+        w: input.w * inputScale,
+        h: input.h * inputScale,
+      };
       return single(
         'outline',
         log,
@@ -1500,48 +1643,121 @@ export const CLIPS: readonly Clip[] = [
           {
             source: 'vscode',
             shots: [
-              { at: 0, frame: STAGE, view: hoverView },
-              { at: split, frame: STAGE, view: hoverView, opacity: 0, move: DIP },
-              { at: leaving + DIP, frame: STAGE, view: hoverView, opacity: 1, move: DIP },
+              { at: 0, frame: left, view: rowsOn(rectOf(hide)) },
+              { at: moveAt('choose'), frame: left, view: rowsOn(rectOf(choose)) },
+              { at: toCode, frame: left, view: rowsOn(nameRow), move: 0.5 },
             ],
           },
-          { source: 'vscode', shots: shown(frames.left, rowView) },
+          still('vscode', strip, stripView),
           {
             source: 'vscode',
             shots: [
-              ...shown(frames.right, codeView(definition, frames.right, source, codeScale)),
-              // Go Back reveals the cursor's line where it was, maybe elsewhere in the editor.
+              { at: 0, frame: below, view: fit(rectOf(eventOf(log, 'hidden-area'))) },
               {
-                at: at(returned.t),
-                frame: frames.right,
-                view: codeView(rectOf(returned), frames.right, source, codeScale),
-                move: 0.4,
+                at: moveAt('choose'),
+                frame: below,
+                view: fit(
+                  union(rectOf(eventOf(log, 'panel')), rectOf(eventOf(log, 'chosen-area'))),
+                ),
               },
-            ].sort((a, b) => a.at - b.at),
+              { at: moveAt('name'), frame: below, view: fit(nameArea) },
+              {
+                at: toCode,
+                opacity: 0,
+                move: DIP,
+                frame: below,
+                view: fit(nameArea),
+              },
+              {
+                at: toScreen,
+                opacity: 1,
+                move: DIP,
+                frame: below,
+                view: fit(nameArea),
+              },
+            ],
+          },
+          {
+            source: 'vscode',
+            shots: [
+              { at: 0, frame: below, view: codeView(line, below, source, codeScale), opacity: 0 },
+              {
+                at: toCode + DIP,
+                frame: below,
+                view: codeView(line, below, source, codeScale),
+                opacity: 1,
+                move: DIP,
+              },
+              {
+                at: toScreen - DIP,
+                frame: below,
+                view: codeView(line, below, source, codeScale),
+                opacity: 0,
+                move: DIP,
+              },
+            ],
+          },
+          {
+            source: 'vscode',
+            shots: [
+              { at: 0, frame: inputFrame, view: input, opacity: 0 },
+              { at: edit + 0.1, frame: inputFrame, view: input, opacity: 1, move: 0.15 },
+              {
+                at: entered - 0.05,
+                frame: inputFrame,
+                view: input,
+                opacity: 0,
+                move: 0.15,
+              },
+            ],
           },
         ],
         {
           captions: sequence(
             [
+              { from: 0.2, text: 'The Widget Outline: every widget of the previewed window' },
+              { from: at(hide.t) - 0.05, text: 'The eye hides a widget by hand; View ▾ counts it' },
               {
-                from: at((hovers[0] as TakeEvent).t) - 0.1,
-                text: 'Hover: the widget, its kind and rect',
+                from: at(choose.t) - 0.05,
+                text: "A radio picks which of the window's panels shows",
               },
-              { from: split + 0.2, text: 'Click: its definition and its row in the outline' },
-              { from: back - 0.05, keys: ['Alt', '←'], text: 'back where the cursor was' },
+              { from: clicking - 0.05, text: 'A click in the preview: its row and its line' },
+              { from: edit - 0.05, text: 'Type Sample Text…: a long name in the header' },
             ],
-            leaving,
+            end - 0.4,
           ),
           highlights: [
-            // The definition's keyword and its name below it, and the outline's row.
+            { from: at(hide.t) + 0.2, to: moveAt('choose') - 0.1, panel: 0, rect: rectOf(hide) },
             {
-              from: split + 0.6,
-              to: back - 0.1,
-              panel: 2,
-              rect: { ...definition, w: Math.min(definition.w, 640), h: definition.h * 2 },
+              from: at(hidden.t) + 0.1,
+              to: moveAt('choose') - 0.1,
+              panel: 1,
+              rect: rectOf(hidden),
             },
-            { from: split + 0.6, to: back - 0.1, panel: 1, rect: row },
+            { from: at(choose.t) + 0.2, to: moveAt('name') - 0.1, panel: 0, rect: rectOf(choose) },
+            { from: at(chosen.t) + 0.1, to: moveAt('name') - 0.1, panel: 1, rect: rectOf(chosen) },
+            { from: toCode + 0.3, to: toScreen, panel: 0, rect: nameRow },
+            {
+              from: toCode + 2 * DIP,
+              to: toScreen - DIP,
+              panel: 3,
+              rect: { ...line, w: Math.min(line.w, 640) },
+            },
+            { from: at(named.t) + 0.1, to: leaving - 0.1, panel: 2, rect: rectOf(named) },
           ],
+          // The input box opens over the preview's toolbar: View ▾'s strip holds its frame from
+          // before the click until the box is gone.
+          holds: [
+            {
+              from: edit - 0.05,
+              to: entered + 0.1,
+              panel: 1,
+              at: eventOf(log, 'edit').t - 0.1,
+            },
+          ],
+          // The window keeps its changes by hand: the loop dissolves into its start.
+          loopFade: 0.5,
+          core: { from: moveAt('hide') - 0.3, to: at(named.t) + 1.5 },
         },
       );
     },
