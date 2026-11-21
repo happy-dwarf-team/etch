@@ -48,6 +48,11 @@ class FakeBucket implements Bucket {
 
 const WEBM = new TextEncoder().encode('webm bytes');
 const MP4 = new TextEncoder().encode('mp4 bytes, a few more');
+/** The hero's chapters in the draft, which publishing passes on as they are. */
+const CHAPTERS = [
+  { id: 'open', start: 0 },
+  { id: 'type', start: 4.5 },
+];
 const sha8 = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex').slice(0, 8);
 
 let root: string;
@@ -78,7 +83,14 @@ beforeEach(async () => {
   const draft = draftManifest(
     '0.3.0',
     Object.fromEntries(
-      CLIP_IDS.map((id) => [id, id === 'pick' ? { ...loop, duration: 14.2 } : loop]),
+      CLIP_IDS.map((id) => [
+        id,
+        id === 'pick'
+          ? { ...loop, duration: 14.2 }
+          : id === 'hero'
+            ? { ...loop, chapters: CHAPTERS }
+            : loop,
+      ]),
     ),
   );
   await writeFile(path.join(capture, 'media.draft.json'), JSON.stringify(draft));
@@ -143,8 +155,10 @@ describe('publishing', () => {
           bytes: MP4.byteLength,
         },
       ],
+      chapters: CHAPTERS,
     });
     expect(manifest.loops.pick.duration).toBe(14.2);
+    expect(manifest.loops.pick).not.toHaveProperty('chapters');
     expect(manifest.loops.pick.sources.map((source) => source.src)).toEqual(
       pickKeys.map((key) => `https://media.happydwarf.dev/${key}`),
     );

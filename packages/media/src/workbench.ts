@@ -311,11 +311,19 @@ export class Workbench {
   /** Runs **Etch: Open Preview** and waits for its first settled paint. */
   async openPreview(allow: readonly PaintResult[] = []): Promise<Paint> {
     await this.command('Etch: Open Preview');
-    const frame = await this.findPreviewFrame();
-    this.previewFrame = frame;
-    const paint = await settledPaint(frame, -1, { timeoutMs: FIRST_PAINT_TIMEOUT_MS, allow });
+    const paint = await this.previewOpened(allow);
     await this.focusEditor();
     return paint;
+  }
+
+  /**
+   * Waits for a preview opened by other means (its button in the editor's title bar) and its first
+   * settled paint; the preview's frame is this one's from then on.
+   */
+  async previewOpened(allow: readonly PaintResult[] = []): Promise<Paint> {
+    const frame = await this.findPreviewFrame();
+    this.previewFrame = frame;
+    return settledPaint(frame, -1, { timeoutMs: FIRST_PAINT_TIMEOUT_MS, allow });
   }
 
   /** Performs a step that changes the preview and waits for its settled paint. */

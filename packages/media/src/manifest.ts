@@ -57,6 +57,15 @@ export interface DraftSource {
   readonly bytes: number;
 }
 
+/**
+ * A chapter of the hero's demo loop (spec sections 4.2 and 5.2): its id, which the site gives a
+ * label, and its start in seconds from the loop's start.
+ */
+export interface Chapter {
+  readonly id: string;
+  readonly start: number;
+}
+
 export interface DraftLoop {
   readonly width: number;
   readonly height: number;
@@ -66,6 +75,8 @@ export interface DraftLoop {
   readonly poster: string;
   /** VP9 WebM first, H.264 MP4 second, the order of the page's `<source>`s. */
   readonly sources: readonly [DraftSource, DraftSource];
+  /** The hero's chapters, the first at 0. */
+  readonly chapters?: readonly Chapter[];
 }
 
 export interface DraftManifest {
@@ -82,6 +93,7 @@ export interface CapturedLoop {
   readonly duration: number;
   readonly webmBytes: number;
   readonly mp4Bytes: number;
+  readonly chapters?: readonly Chapter[];
 }
 
 /** The draft manifest of the loops in a capture folder, in the spec's order. */
@@ -102,6 +114,7 @@ export function draftManifest(
         { file: `${id}.webm`, type: MEDIA_TYPES.webm, bytes: loop.webmBytes },
         { file: `${id}.mp4`, type: MEDIA_TYPES.mp4, bytes: loop.mp4Bytes },
       ],
+      ...(loop.chapters === undefined ? {} : { chapters: loop.chapters }),
     };
   }
   return { schemaVersion: 2, draft: true, etch, loops: draftLoops };

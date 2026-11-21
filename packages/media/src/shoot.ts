@@ -115,6 +115,21 @@ export async function editClip(
   log: TakeLog,
   options: ShootOptions,
 ): Promise<EditSpec> {
+  const { spec, cut } = await cutClip(clip, log, options);
+  await run(options.ffmpeg, posterArgs(cut, path.join(options.out, `${clip.id}.png`)));
+  await options.encode(clip.id, cut);
+  return spec;
+}
+
+/**
+ * Edits and renders a clip from its take's log into `<id>.cut.mov` beside the masters; returns the
+ * edit and the cut. The hero's `open` part stops here: the site shows it in the hero only.
+ */
+export async function cutClip(
+  clip: Pick<Clip, 'id' | 'edit'>,
+  log: TakeLog,
+  options: ShootOptions,
+): Promise<{ spec: EditSpec; cut: string }> {
   const sources: Record<string, Source> = {};
   for (const [name, source] of Object.entries(log.sources)) {
     sources[name] = await options.renderer.proxy(
@@ -131,7 +146,5 @@ export async function editClip(
   const cut = path.join(options.masters, `${clip.id}.cut.mov`);
   console.log(`Rendering ${clip.id}…`);
   await options.renderer.render(spec, cut);
-  await run(options.ffmpeg, posterArgs(cut, path.join(options.out, `${clip.id}.png`)));
-  await options.encode(clip.id, cut);
-  return spec;
+  return { spec, cut };
 }
