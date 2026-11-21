@@ -6,8 +6,8 @@ import { MEDIA_TYPES } from './config.ts';
 
 /**
  * The clip ids, the same in bucket keys, file names and the manifest (spec section 8.5): the hero's
- * trailer, the offline preview's six features, the scripts' two and the live game's three. Every clip is a loop with
- * its poster.
+ * trailer, the offline preview's six features, the scripts' three, the art's three and the live
+ * game's three. Every clip is a loop with its poster.
  */
 export const CLIP_IDS = [
   'hero',
