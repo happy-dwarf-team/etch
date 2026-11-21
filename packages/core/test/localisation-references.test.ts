@@ -1,0 +1,69 @@
+import { describe, expect, it } from 'vitest';
+import { isLocalisationReferencePath, localisationReferences, parseScript } from '../src/index.ts';
+
+const GUI = `guiTypes = {
+	windowType = {
+		name = "etch_window"
+		instantTextBoxType = { name = "title" text = "ETCH_TITLE" }
+		guiButtonType = { name = "ok" buttonText = "NOT_A_TEXT" tooltipText = ETCH_OK_TT }
+		iconType = { name = "badge" tooltip = "" delayedTooltipText = @constant }
+		instantTextBoxType = { name = "late" TEXT = "ETCH_LATE" }
+	}
+}
+`;
+
+const EVENTS = `namespace = etch
+country_event = {
+	id = etch.1
+	title = etch.1.t
+	desc = "etch.1.d"
+	option = {
+		name = etch.1.a
+		custom_tooltip = ETCH_TT
+		add_treasury = 10
+	}
+	immediate = { hidden_effect = { tooltip = { add_prestige = 1 } } }
+}
+`;
+
+const keysOf = (path: string, text: string, script = true): string[] =>
+  localisationReferences(path, parseScript(text, { script })).map(({ key }) => key);
+
+describe('localisationReferences', () => {
+  it('reads the text keys of a .gui file, case-insensitively, and nothing else', () => {
+    expect(keysOf('interface/etch.gui', GUI, false)).toEqual([
+      'ETCH_TITLE',
+      'ETCH_OK_TT',
+      'ETCH_LATE',
+    ]);
+  });
+
+  it('reads the keys of a script file at any depth, but not a block', () => {
+    expect(keysOf('events/etch.txt', EVENTS)).toEqual([
+      'etch.1.t',
+      'etch.1.d',
+      'etch.1.a',
+      'ETCH_TT',
+    ]);
+  });
+
+  it('gives the range of the value, quotes included', () => {
+    const [desc] = localisationReferences(
+      'events/etch.txt',
+      parseScript('desc = "etch.1.d"', { script: true }),
+    );
+    expect(desc?.node.start).toBe(7);
+    expect(desc?.node.end).toBe(17);
+  });
+
+  it('reads files of the folders the game shows texts from, and no others', () => {
+    expect(isLocalisationReferencePath('interface/etch.gui')).toBe(true);
+    expect(isLocalisationReferencePath('events/etch.txt')).toBe(true);
+    expect(isLocalisationReferencePath('decisions/etch.txt')).toBe(true);
+    expect(isLocalisationReferencePath('missions/etch.txt')).toBe(true);
+    expect(isLocalisationReferencePath('common/ideas/etch.txt')).toBe(true);
+    expect(isLocalisationReferencePath('history/provinces/1 - Uppland.txt')).toBe(false);
+    expect(isLocalisationReferencePath('interface/etch.gfx')).toBe(false);
+    expect(keysOf('history/countries/ETC.txt', 'name = etch')).toEqual([]);
+  });
+});

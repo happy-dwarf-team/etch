@@ -381,6 +381,12 @@
           "scope": "resource",
           "markdownDescription": "The localisation language the preview shows a `.gui` file's texts in."
         },
+        "etch.editor.localisationHints": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "markdownDescription": "Show the text of a localisation key, in `#etch.language#`, after the key in `.gui` files and in the scripts of `events`, `decisions`, `missions` and `common` (`text`, `tooltip`, `title`, `desc`, `name`, `custom_tooltip`), and open its `.yml` line with Go to Definition."
+        },
         "etch.previewResolution": {
           "type": "string",
           "default": "default",

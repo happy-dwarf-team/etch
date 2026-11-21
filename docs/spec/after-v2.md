@@ -415,6 +415,18 @@ refresh is a step of the 3.0.0 release.
   Whether `GameFiles` should also hide those files, as the game does, is left
   open.
 
+- **Localisation inlay hints (ADR 0008).** A value that names a key of the
+  playset's localisation in `etch.language` gets the key's text as an inlay
+  hint, in the plain form of profile labels: in `.gui` files `text`,
+  `tooltip`, `tooltipText` and `delayedTooltipText`; in the `.txt` files of
+  `events`, `decisions`, `missions` and `common` a `title`, `desc`, `name`,
+  `tooltip` or `custom_tooltip` at any depth (vanilla writes them on 6,366,
+  8,212, 21,449, 2,322 and 5,766 lines there). A value that no file defines
+  gets nothing, so script `name`s that are plain words stay bare. The hint's
+  tooltip has the whole text and its file; Go to Definition opens the key's
+  line in the winning `.yml`. The localisation is read again after a `.yml`
+  is saved; `etch.editor.localisationHints` turns the hints off.
+
 - **Localisation from subfolders.** The game lists `localisation` and then
   `localisation/replace` recursively (`PdxLocalizeReadFolder`; EU4 engine lab,
   eu4-engine-lab#59), so a mod's `localisation/english/*.yml` is read; the
