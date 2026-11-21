@@ -400,6 +400,11 @@ another mod's files also name the sprite, when the mod does not define it, or
 when a `.gui` file names it through an `@constant`. `etch.editor.rename` turns
 both off.
 
+With `etch.editor.spriteThumbnails` on (off by default), each line of a `.gui`
+file or of those script files that names a sprite with a texture shows a small
+picture of it beside the line numbers (the first frame of a strip, up to 500
+per file). The pictures follow your edits and `.gfx` saves.
+
 A localisation key shows its text after it, in `etch.language`: a `.gui`
 file's `text`, `tooltip`, `tooltipText` and `delayedTooltipText`, and the
 `title`, `desc`, `name`, `tooltip` and `custom_tooltip` of the scripts in

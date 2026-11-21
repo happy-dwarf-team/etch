@@ -37,7 +37,15 @@ export class TextureThumbnails {
   }
 }
 
-async function render(absolutePath: string, frames: number): Promise<string> {
+/**
+ * A texture as a PNG of at most `size` pixels on its longest side: with `frames` above 1, its
+ * first frame. Shared with the gutter thumbnails (sprite-gutter.ts).
+ */
+export async function texturePng(
+  absolutePath: string,
+  frames: number,
+  size: number,
+): Promise<{ png: Uint8Array; summary: ReturnType<typeof inspectTexture>['summary'] }> {
   const bytes = await vscode.workspace.fs.readFile(vscode.Uri.file(absolutePath));
   const { summary, rgba } = inspectTexture(absolutePath, Uint8Array.from(bytes));
   let width = summary.width;
@@ -50,8 +58,13 @@ async function render(absolutePath: string, frames: number): Promise<string> {
       pixels.set(rgba.subarray(from, from + width * 4), y * width * 4);
     }
   }
-  const small = thumbnail(width, summary.height, pixels, THUMBNAIL_SIZE);
-  const png = Buffer.from(encodePng(small.width, small.height, small.rgba)).toString('base64');
+  const small = thumbnail(width, summary.height, pixels, size);
+  return { png: encodePng(small.width, small.height, small.rgba), summary };
+}
+
+async function render(absolutePath: string, frames: number): Promise<string> {
+  const { png: bytes, summary } = await texturePng(absolutePath, frames, THUMBNAIL_SIZE);
+  const png = Buffer.from(bytes).toString('base64');
   const facts = [
     `${String(summary.width)} × ${String(summary.height)}`,
     `${summary.container} ${summary.format}${summary.dx10 ? ' (DX10 header)' : ''}`,

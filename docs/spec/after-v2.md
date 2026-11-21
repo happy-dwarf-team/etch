@@ -847,7 +847,12 @@ refresh is a step of the 3.0.0 release.
   mod's `.gfx` files; the other 21 name sprites that neither defines (such as
   `GFX_allclan_ability_ADM`), which the hover reports. The hover, Go to
   Definition, Find All References and Rename Symbol all follow the list. The
-  optional gutter thumbnail is not done. Of the 358 picture
+  optional gutter thumbnail is done too, off by default
+  (`etch.editor.spriteThumbnails`): a PNG of the texture's first frame, 32
+  pixels on its longest side, per line that names a sprite with a texture, at
+  most 500 per editor, written once per texture file, time, size and frames to
+  Etch's global storage, as VS Code draws a gutter icon only from a file. Of
+  the 358 picture
   names that do not, 302 are defined only in the DLC archives (`dlc/*/*.zip`,
   `builtin_dlc`), which Etch's `GameFiles` does not read, and 56 by no `.gfx`
   file of the game. Reading the archives of the DLCs the player has on, in the

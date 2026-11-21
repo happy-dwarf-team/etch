@@ -95,7 +95,7 @@ export async function run(): Promise<void> {
   await testAssetLinks();
   await testMeshPreview(api);
   await testEntityPreview(api);
-  await testSpriteLinks();
+  await testSpriteLinks(api);
   await testLocalisationHints();
   await testGuiCompletion();
   await testInterfaceSymbols();
