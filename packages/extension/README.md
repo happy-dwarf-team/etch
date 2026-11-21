@@ -178,6 +178,17 @@ its error beside the answer. Run changes only the live game's private copy,
 never your own saves, and does not work in ironman or multiplayer games.
 **Continue** says when the newest private save was written after a Run.
 
+### Check File in the Live Game
+
+**Etch: Check File in the Live Game** has the live game read the open file's
+triggers and effects (an event's `trigger`, `immediate`, `option` and `after`,
+a decision's or a mission's `potential`, `allow`, `trigger` and `effect`, each
+scripted effect and trigger) inside a condition that is never true, so that
+nothing runs. What the game writes to `error.log` while it reads them goes to
+Problems on the file's lines, as "Etch game check": unknown effects, triggers
+and effect modifiers. `etch.liveGame.checkOnSave` checks each such file when
+you save it. A check is not a Run: no save is marked.
+
 ## Script profile
 
 Anvil's script profiler (Anvil 1.22 or newer, the **Script profiler** window in

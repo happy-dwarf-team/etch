@@ -219,6 +219,11 @@
         "category": "Etch"
       },
       {
+        "command": "etch.checkFileInLiveGame",
+        "title": "Check File in the Live Game",
+        "category": "Etch"
+      },
+      {
         "command": "etch.checkProvinceIds",
         "title": "Check Province IDs and Names in the Playset",
         "category": "Etch"
@@ -252,6 +257,11 @@
           "command": "etch.checkSelectionAsTrigger",
           "when": "etch.liveGame.canRun && resourceExtname =~ /^\\.txt$/i",
           "group": "etch@3"
+        },
+        {
+          "command": "etch.checkFileInLiveGame",
+          "when": "etch.liveGame.canRun && resourceExtname =~ /^\\.txt$/i",
+          "group": "etch@4"
         }
       ],
       "view/item/context": [
@@ -412,6 +422,12 @@
           ],
           "scope": "window",
           "markdownDescription": "The screen size the preview lays windows out on and evaluates `if_resolution` blocks against: `default` (the resolution in the game's `settings.txt`, else the monitor's), `native` (the monitor's resolution), or a width × height such as `1920x1080`. UI scale is always 1.0. The command **Etch: Choose the Preview Resolution** also offers the corpus resolutions."
+        },
+        "etch.liveGame.checkOnSave": {
+          "type": "boolean",
+          "default": false,
+          "scope": "window",
+          "markdownDescription": "Check an event, decision, mission, scripted effect or scripted trigger file in the live game each time you save it, as **Etch: Check File in the Live Game** does. The game reads the file's triggers and effects but runs none of them. What it finds appears in the Problems panel, with no notice. Needs a running live game with a save loaded; otherwise saving checks nothing."
         },
         "etch.liveGame.pickModeKey": {
           "type": "string",

@@ -39,6 +39,7 @@ export function startLineMessage(line: string): string {
 
 const PARSING_ERRORS = /^(.*?)Parsing Errors\.\s*File:\s*"([^"]+)"/;
 const CONTINUATION = /^\s+\[\d+\]:(.*)$/;
+const BLOCK_TAIL = /^\s+Last good read:/;
 
 /**
  * The lines with each `Parsing Errors.` block split into one line per error. The game writes a
@@ -67,6 +68,12 @@ export function splitParsingErrors(lines: readonly string[]): string[] {
         `${header.prefix}Parsing Error. File: "${header.path}", Error: ${(rest[1] ?? '').trim()}`,
       );
       header.used = true;
+      continue;
+    }
+    // The block's last indented line names where the game stopped reading, which the errors'
+    // own lines already say (Check File's live run, 21.11.2026).
+    if (header?.used === true && BLOCK_TAIL.test(line)) {
+      flush();
       continue;
     }
     flush();

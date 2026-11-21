@@ -601,6 +601,72 @@ Not run: the Anbennar save, Problems inside VS Code (the extension's tests
 cover the Diagnostics), and ironman and multiplayer (the `run` job refuses
 them).
 
+## Check File in the Live Game (ADR 0007, part 2)
+
+**Etch: Check File in the Live Game**, and with `etch.liveGame.checkOnSave`
+each save, checks the open file of `events`, `decisions`, `missions`,
+`common/scripted_effects` or `common/scripted_triggers`:
+
+- **What is read:** the core's `planCheck` parses the file (script mode) and
+  takes an event's (`country_event`, `province_event`) `trigger`, `immediate`,
+  `option` and `after`; a decision's `potential`, `allow`, `effect` and
+  `provinces_to_highlight`; a mission series' `potential` and each mission's
+  `potential`, `trigger`, `effect` and `provinces_to_highlight`; each scripted
+  effect or trigger without a `$` or a `[[PARAMETER] … ]` block. An `option`'s `name`, `ai_chance`,
+  `highlight` and `goto` are left out, and its `trigger` is a trigger block of
+  its own.
+- **The wrappers:** a trigger block becomes `if = { limit = { always = no` …
+  `} }`, an effect block `if = { limit = { always = no }` … `}`, each wrapper
+  on its own line and the block's entries on their own lines between, so that
+  each run-file line has one file line (`CheckChunk.lines`); line ends are
+  counted as VS Code counts them, a lone `\r` included. A file whose braces do
+  not balance, or with a quote that does not close (the parser cuts it at the
+  line end, the game reads on to the next quote), is refused with the line, as
+  Run selection refuses a selection. Run files stay under `MAX_SCRIPT` (whole
+  blocks per file).
+- **How:** `LiveGame.checkScripts` runs the files through the `run` job as
+  Run selection does, behind the reloads, but opens no Run mark and gives no
+  first-Run notice: nothing in a false `if` runs (the gate, H1).
+- **Answers:** `mapCheckErrors` splits the game's multi-line parsing errors
+  (and drops their `Last good read` tail), places each line by its
+  `near line: N` through the line map, else by the first place the file
+  writes the key the line names (`Key: …`, `Unknown modifier-type '…'`), and
+  sends lines that name neither to the output: the game writes lines about
+  other things meanwhile. `error.log` is read once before the first run and
+  after each run; a parsing error that names another run's file goes to that
+  run (`assignCheckLines`), so a line that comes late is not lost. A file
+  edited while the check ran gets no Problems: the lines would no longer fit.
+  Problems source "Etch game check".
+
+**The live run, 21 November 2026, vanilla.** The lab's procedure as for the
+gate (its game lock, the EXE hash and the Process Lasso rule checked before
+and after, the Etch 2.13.0 VSIX's builds, the gate's test mod), with the
+branch's own modules (`planCheck`, `mapCheckErrors`, the `run` job as
+`checkNow` drives it) from a Node script. The checked files were copies
+outside the game's folders, so the start did not read them:
+
+| File | Error written | Placed |
+| --- | --- | --- |
+| an event | `adm_techh = 1` in `trigger` | line 9, on the key, and its `Failed to create trigger` on line 9 |
+| | `add_treasuryy = 5` in `immediate` | line 13, on the key |
+| | `dip_techh = 2` in the option's one-line `trigger = { is_at_war = yes dip_techh = 2 }` | line 18, on the key |
+| a decision | `is_at_warr = no` in `potential` | line 6, on the key |
+| | `add_country_modifier = { name = etch_check_no_such_modifier … }` in `effect` | line 14, on the name (`Unknown modifier-type`, no line: by the key) |
+| a scripted effect | `add_stabilityy = 1` | line 3, on the key |
+| the gate's scripted trigger file | an extra `}` | refused: line 4 |
+
+Every run answered `executed`. The flags that the option's, the decision's
+and the scripted effect's `set_country_flag` would have set were all unset
+afterwards (`has_country_flag`, checked as a trigger: FALSE). The event's
+`has_country_modifier = etch_no_such_modifier` and `add_treasury = lots`
+wrote nothing, as the gate found, and the scripted effect with `$amount$`
+was left out. The game's own `Country::GetRelativeStrength() is zero` lines
+of the load came before the checks.
+
+Not run: VS Code itself (the command's notices and Problems; the extension's
+glue is covered by its types), the Anbennar save, and a file over
+`MAX_SCRIPT`.
+
 ## Live runs
 
 Run on 2026-10-27 under the EU4 engine lab's procedure (its game lock for the

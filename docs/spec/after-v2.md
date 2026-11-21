@@ -434,7 +434,23 @@ refresh is a step of the 3.0.0 release.
   writes the key; lines about other mods' and the game's files are counted in
   the log
   ([live-game.md](../live-game.md), "`error.log`"). Each start replaces the
-  last one's. Not yet checked in a live start; ADR 0007's gate covers it.
+  last one's. Checked in the gate run of 21 November 2026 (vanilla):
+  [live-game.md](../live-game.md), "The script check: the gate run".
+
+- **Check File in the Live Game (ADR 0007, part 2).** The core's
+  `planCheck` reads an event's, a decision's, a mission's, a scripted
+  effect's or a scripted trigger's blocks with the script parser and writes
+  each as `if = { limit = { always = no … } }` (triggers) or
+  `if = { limit = { always = no } … }` (effects), its own lines in between and
+  a map from each run-file line to its file line; an `option`'s `name`,
+  `ai_chance`, `highlight` and `goto` are left out and its `trigger` is
+  wrapped apart, a scripted block with `$` is skipped, a file whose braces do
+  not balance is refused, and run files stay under `MAX_SCRIPT`.
+  `LiveGame.checkScripts` runs them through the `run` job between reloads
+  without a Run mark; `mapCheckErrors` places the new `error.log` lines by
+  `near line`, else by the key the line names (`Unknown modifier-type '…'`
+  too). Lines that name neither go to the output. Problems source
+  "Etch game check"; `etch.liveGame.checkOnSave` (off) checks on save.
 
 - **Completion in `.gui` files (ADR 0008).** Its words come from the playset,
   counted, not from a schema: the widget types written inside `guiTypes` and
