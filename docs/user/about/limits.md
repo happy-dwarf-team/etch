@@ -23,6 +23,9 @@ in one place, grouped by where you meet them.
   [Zoom and resolution](../interface-windows/zoom-and-resolution.md).
 - You can pick 3840×2160 for the preview, but that size has not been compared with the game. See
   [Accuracy](accuracy.md).
+- Suggestions in `.gui` files list only what some file of your playset writes, and work in `.gui`
+  files only, not in `.gfx` files or scripts. See
+  [Suggestions in .gui files](../interface-windows/completion.md).
 
 ## Saves and sample data
 
@@ -76,6 +79,11 @@ in one place, grouped by where you meet them.
 - When the game cannot read the trigger you selected, **Etch: Check Selection as Trigger in the
   Live Game** answers true. Etch then shows the game's error beside the answer. See
   [Run selection](../live-game/run-selection.md).
+- **Etch: Check File in the Live Game** finds only what the game complains about while it reads
+  the file, such as a key it does not know. It does not find a value the game cannot use, or a
+  trigger or effect in the wrong place. It works only with
+  a game loaded, and not in ironman or multiplayer games. See
+  [Check File in the Live Game](../live-game/check-file.md).
 
 ## Script checks
 
@@ -142,6 +150,12 @@ in one place, grouped by where you meet them.
 - Etch does not read the game's DLC archives, which define many of the base game's event pictures.
   When you hover over such a picture's name, Etch says it has no sprite. See
   [Hovers and links](../textures-and-meshes/hovers-and-links.md).
+- **Find All References** and **Rename Symbol** work only on sprite names. A rename changes only
+  your mod's files: Etch refuses it when the base game's or another mod's files also use the name.
+  It cannot see the DLC archives, so it cannot warn about a DLC file that uses the name.
+  See [Hovers and links](../textures-and-meshes/hovers-and-links.md#rename-a-sprite).
+- A file shows at most 500 of the pictures beside the line numbers. See
+  [Hovers and links](../textures-and-meshes/hovers-and-links.md#see-sprites-beside-the-line-numbers).
 
 ## Platform and versions
 

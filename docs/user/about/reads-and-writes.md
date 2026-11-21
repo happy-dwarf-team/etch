@@ -51,6 +51,13 @@ Etch writes into your mod's folder only when you ask it to:
 - **Override in my mod**, or **Etch: Override in My Mod**, copies the file the playset uses, byte
   for byte, to the same path in your mod, and opens the copy. When your mod already has that
   file, nothing is copied. See [Pick mode](../live-game/pick-mode.md).
+- **Rename Symbol** (<kbd>F2</kbd>) on a sprite name changes that name in your mod's `.gfx` file
+  and in your mod's `.gui` and script files that use it. Files that were not open are changed
+  and left unsaved, so nothing is written until you save them. See
+  [Hovers and links](../textures-and-meshes/hovers-and-links.md#rename-a-sprite).
+- **A colour you pick** in the colour picker of a `.gfx` file's font colour replaces the colour's
+  numbers in that file, in the same form: three numbers in braces, or `0x` and eight digits. See
+  [Hovers and links](../textures-and-meshes/hovers-and-links.md#font-colours-in-gfx-files).
 
 Two more requests change a file through VS Code:
 
@@ -83,6 +90,10 @@ VS Code gives each extension storage of its own, outside your mods. Etch keeps t
 - **Live snapshots**: what the live game showed in a window. Etch keeps the latest one for each
   window and playset. They stay in the storage VS Code keeps for your workspace: never in your
   mod's folder, and never shared. See [Snapshot and compare](../live-game/snapshot-and-compare.md).
+- **The pictures beside the line numbers**, when you turn on `etch.editor.spriteThumbnails`:
+  one small PNG picture for each texture they show. Etch makes a texture's picture again when the
+  texture changes. See
+  [Hovers and links](../textures-and-meshes/hovers-and-links.md#see-sprites-beside-the-line-numbers).
 - **A few small choices**, such as the sample texts you type (**Type a text…** in **Data ▾**,
   **Type Sample Text…** in the Widget Outline), your monitor's resolution, and that you confirmed
   the live game's first start.
