@@ -7,9 +7,9 @@
 // `UI_SCALE`, `DETAIL_SCALE`), the control on the left and its effect on the right, both still
 // while a step runs, and the captions stay in the band under the panels. Every clip starts and ends
 // on the same shot of the same state, so it loops without a seam.
-import { copyFile, mkdir } from 'node:fs/promises';
+import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import * as path from 'node:path';
-import type { Locator } from '@playwright/test';
+import type { Frame, Locator } from '@playwright/test';
 import {
   cameraKeys,
   editLength,
@@ -62,6 +62,8 @@ export interface ClipContext {
   readonly record: () => Promise<void>;
   /** The script profile `profile` shows: a CSV of Anvil's script profiler (`--profile`). */
   readonly profile?: string;
+  /** The local game's folder, whose art the art takes open read-only (spec section 8.2). */
+  readonly gamePath: string;
 }
 
 export interface Clip {
@@ -151,15 +153,23 @@ const KEY_S = 1.1;
 const SECOND_PROVINCE = 'Bali';
 
 /**
- * `outline`: game-screen points of the widgets it hovers, a text, a button and an icon in one band
- * of the demographics, the icon the one it then clicks: its name fits the outline's row beside the
- * row's buttons, where `build_landunit_button` is cut. The tip's first line names each.
+ * `outline`: the widget its eye hides by hand (the window's lower left part), the side panel's
+ * member shown in the view and the one its radio picks, the text whose sample it types and the
+ * name typed. The name is the province name's editBox in the header, at (100, -8) in
+ * `top_section_window`, 180 × 32; `area_name` at (100, 0), 300 × 26, lies over all of it but its
+ * top 8 px, where the take clicks.
  */
-const OUTLINE_HOVERS = [
-  { point: { x: 175, y: 531 }, widget: 'culture' },
-  { point: { x: 330, y: 571 }, widget: 'build_landunit_button' },
-  { point: { x: 270, y: 570 }, widget: 'religion_icon' },
-] as const;
+const OUTLINE_HIDDEN = 'province_window';
+const OUTLINE_PANEL = 'buildings_window';
+const OUTLINE_CHOSEN = 'institutions_window';
+const OUTLINE_HEADER = 'top_section_window';
+const OUTLINE_NAME = 'provincename';
+const OUTLINE_NAME_AT: Rect = { x: 100, y: -8, w: 180, h: 32 };
+const OUTLINE_SAMPLE = 'Kaluga and the Upper Oka';
+/** The outline take's sidebar, in CSS px: the rows' names whole, `institutions_window` too. */
+const OUTLINE_SIDEBAR = 320;
+/** The outline's rows on the left: their names read at the site's size beside the preview. */
+const OUTLINE_SCALE = 2;
 
 /** `problems`: a sprite of the province view, and the typo swapping its `ui`. */
 const SPRITE = '"GFX_provinceview_building_bg"';
@@ -177,6 +187,85 @@ const IDEA_KEY = 's';
 
 /** `profile`: the row of the profile page whose name link it follows, a base-game decision. */
 const PROFILED = 'expel_foreign_traders';
+
+/**
+ * `texture`: a base-game texture with an alpha and a mip chain (spec section 8.2), opened
+ * read-only from the local game: the game settings' crowned frame, whose alpha is its outline.
+ */
+const TEXTURE_FILE = 'gfx/interface/game_settings_bg.dds';
+/** Where the pointer rests on the texture, as fractions of its canvas: on the crown. */
+const TEXEL_AT = { x: 0.5, y: 0.1 } as const;
+/** The mip levels `texture` steps down to with ↓, one at a time. */
+const MIP_STEPS = 2;
+
+/**
+ * `encoding`: the ruler's name in the demo mod's second event, ASCII in the file; an é typed before
+ * its last letter makes it Renée.
+ */
+const RULER_NAME = '"Rene"';
+const ACCENT = 'é';
+
+/**
+ * `hovers`: the sprite `problems` misspells, hovered in `provinceview.gui`; the demo mod's models
+ * `.gfx` (spec section 8.2), its mesh path hovered and its diffuse texture's path Ctrl+clicked.
+ */
+const HOVERED_SPRITE = 'GFX_provinceview_building_bg';
+const MODELS_FILE = 'etch_demo_models.gfx';
+const MESH_PATH = 'gfx/models/ships/carrack.mesh';
+const TEXTURE_PATH = 'carrack_diffuse.dds';
+
+/**
+ * `mesh`: a base-game ship with a skeleton, its own idle animation and sails that show a flag
+ * (`PdxMeshTextureAtlas`), opened read-only from the local game (spec section 8.2); the country
+ * whose flag it shows, and the animation it plays.
+ */
+const MESH_FILE = 'gfx/models/ships/carrack.mesh';
+const FLAG_TAG = 'FRA';
+const IDLE_ANIMATION = 'carrack_idle';
+/**
+ * The drag that turns the ship: from the canvas's middle, this far right (CSS px), this long (the
+ * preview draws at every step, so the drag takes about twice as long).
+ */
+const DRAG = { from: { x: 0.35, y: 0.55 }, by: 520, ms: 1000 } as const;
+/**
+ * The canvas's middle band that the loop shows, a share of its height: the preview frames the
+ * ship in about the middle 60 % at the take's size, turned or not.
+ */
+const SHIP_BAND = 0.72;
+
+/**
+ * `trees`: a base-game map tree (`mapobject_5` in `interface/assets/mapitems.gfx`), opened
+ * read-only from the local game (spec section 8.2). A leaf tree: only the season map's first row
+ * has colours, and the pines take theirs from the grey rows, so their season colour never changes.
+ * Date runs from spring (1 April, in the game's `tree_spring2`) to autumn (28 October,
+ * `tree_autumn2`); Place is Stockholm, the docs' example, whose North (0.85) is below the 1 the
+ * take drags it to, so both Ground and North follow it.
+ */
+const TREE_FILE = 'gfx/models/Mapitems/Trees/leafs_01.mesh';
+const TREE_DAYS = { spring: 90, autumn: 300 } as const;
+const TREE_PLACE = '1';
+/**
+ * The part of the canvas `trees` shows, in shares of its size: the preview frames the mesh's eight
+ * trees in about x 0.25–0.8 and y 0.4–0.74 at the take's size.
+ */
+const TREE_FOCUS = { x: 0.22, y: 0.36, w: 0.61, h: 0.42 } as const;
+
+/**
+ * `entity`: a base-game land unit whose entity attaches a halberd to its right hand and has `idle`
+ * and `walk` states, opened read-only from the local game (spec section 8.2). The file's first
+ * entity, so its lens is in view as the file opens; the lines of its `attach` block and its `walk`
+ * state, which the loop rings.
+ */
+const ENTITY_FILE = 'gfx/entities/western_units.asset';
+const ENTITY_NAME = 'westerngfx_INFANTRY_1';
+const ENTITY_LINES = { entity: 7, walk: 12, retreat: 14, attach: 20, end: 23 } as const;
+const ENTITY_STATE = 'walk';
+/**
+ * The part of the entity preview's canvas `entity` shows, in shares of its size: the preview frames
+ * the unit in about x 0.33–0.64 and y 0.07–0.9 at the take's size, its halberd included, idle or
+ * walking.
+ */
+const UNIT_FOCUS = { x: 0.29, y: 0.04, w: 0.4, h: 0.89 } as const;
 
 /**
  * Puts the cursor on the blank line above the previewed window's `windowType =`, inside no widget:
@@ -532,6 +621,272 @@ async function expectTip(wb: Workbench, widget: string): Promise<Rect> {
     await sleep(50);
   }
   throw new Error(`the tip names ${first}, not ${widget}`);
+}
+
+/**
+ * The webview frame of an open custom editor, the Texture or the Mesh Preview, by an element only
+ * its page has. Etch's window preview is not one of them.
+ */
+async function editorFrame(wb: Workbench, selector: string): Promise<Frame> {
+  for (let i = 0; i < 300; i++) {
+    for (const frame of wb.page.frames()) {
+      const found = await frame
+        .evaluate((s) => document.querySelector(s) !== null, selector)
+        .catch(() => false);
+      if (found) return frame;
+    }
+    await sleep(100);
+  }
+  throw new Error(`no webview with ${selector} appeared`);
+}
+
+/**
+ * Opens a file of the local game read-only (spec section 8.2): Quick Open with its absolute path,
+ * then the editor moved into the preview's group, where it takes the preview's width (section
+ * 8.4). Etch opens a texture or a mesh in its own preview.
+ */
+async function openGameFile({ wb, gamePath }: ClipContext, file: string): Promise<void> {
+  const name = path.posix.basename(file);
+  await wb.quickOpen(name, path.join(gamePath, ...file.split('/')));
+  await wb.command('View: Move Editor into Next Group');
+  await wb.page.locator('.tab.active', { hasText: name }).waitFor();
+}
+
+/**
+ * The rect of an element's text in a webview frame, in master pixels: `box`, the element's own
+ * rect, from its left padding as wide as its text is now.
+ */
+async function textRect(frame: Frame, selector: string, box: Rect): Promise<Rect> {
+  const text = await frame.evaluate((s) => {
+    const element = document.querySelector(s);
+    if (element === null) return undefined;
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    const rect = range.getBoundingClientRect();
+    const left = element.getBoundingClientRect().left;
+    return { x: rect.left - left, w: rect.width };
+  }, selector);
+  if (text === undefined) throw new Error(`${selector} is not in the page`);
+  return { x: box.x + text.x - 6, y: box.y, w: text.w + 12, h: box.h };
+}
+
+/**
+ * Picks an item of VS Code's open quick pick, typing `typed` first when given, and waits until the
+ * focused row starts with `label` (a row reads its label, then its description).
+ */
+async function pickQuickItem(wb: Workbench, label: string, typed?: string): Promise<void> {
+  // The list first: a key typed before the quick pick shows goes to the editor. VS Code filters by
+  // the label, so `typed` is a part of it.
+  const row = wb.page.locator('.quick-input-list .monaco-list-row', { hasText: label }).first();
+  await row.waitFor();
+  if (typed !== undefined) {
+    await wb.page.keyboard.type(typed, { delay: 90 });
+    await row.waitFor();
+  }
+  await wb.focusQuickPickItem(label);
+}
+
+/**
+ * The rect of `text` on a line the active editor shows, in master pixels, for a pointer to hover or
+ * a ring to mark: on line `number` when given, for text other lines in view repeat. Monaco splits a
+ * line into token spans, so the line's text nodes are joined, and draws its spaces as no-break
+ * spaces.
+ */
+async function textOnScreen(wb: Workbench, text: string, number?: number): Promise<Rect> {
+  const found = await wb.page.evaluate(
+    ({ wanted, number }) => {
+      const editor = document.querySelector(
+        '.part.editor .editor-group-container.active .monaco-editor',
+      );
+      let lines = [...(editor?.querySelectorAll('.view-lines .view-line') ?? [])];
+      if (number !== undefined) {
+        // A line's number and its text stand at the same height.
+        const label = [
+          ...(editor?.querySelectorAll('.margin-view-overlays .line-numbers') ?? []),
+        ].find((element) => element.textContent.trim() === String(number));
+        if (label === undefined) return undefined;
+        const top = label.getBoundingClientRect().top;
+        lines = lines.filter((line) => Math.abs(line.getBoundingClientRect().top - top) < 2);
+      }
+      for (const line of lines) {
+        const walker = document.createTreeWalker(line, NodeFilter.SHOW_TEXT);
+        const nodes: { node: Node; from: number }[] = [];
+        let all = '';
+        while (walker.nextNode()) {
+          nodes.push({ node: walker.currentNode, from: all.length });
+          all += (walker.currentNode.textContent ?? '').replace(/\u00a0/g, ' ');
+        }
+        const index = all.indexOf(wanted);
+        if (index < 0) continue;
+        const locate = (offset: number): [Node, number] => {
+          const at = nodes.filter((n) => n.from <= offset).at(-1) ?? nodes[0];
+          if (at === undefined) throw new Error('an empty line');
+          return [at.node, offset - at.from];
+        };
+        const range = document.createRange();
+        range.setStart(...locate(index));
+        range.setEnd(...locate(index + wanted.length));
+        const box = range.getBoundingClientRect();
+        return { x: box.x, y: box.y, w: box.width, h: box.height };
+      }
+      return undefined;
+    },
+    { wanted: text, number },
+  );
+  if (found === undefined) {
+    const where = number === undefined ? '' : ` on line ${String(number)}`;
+    throw new Error(`the active editor shows no "${text}"${where}`);
+  }
+  return found;
+}
+
+/** A rect's centre, in the page's CSS pixels (the device scale is 1). */
+function middle(rect: Rect): { x: number; y: number } {
+  return { x: rect.x + rect.w / 2, y: rect.y + rect.h / 2 };
+}
+
+/**
+ * Sets VS Code settings for the rest of the take, in the run's throwaway settings file. VS Code
+ * reads its settings file again when it changes.
+ */
+async function setSettings(
+  wb: Workbench,
+  changed: Readonly<Record<string, unknown>>,
+): Promise<void> {
+  const file = path.join(path.dirname(wb.workspace), 'user-data', 'User', 'settings.json');
+  const settings = JSON.parse(await readFile(file, 'utf8')) as Record<string, unknown>;
+  await writeFile(file, `${JSON.stringify({ ...settings, ...changed }, null, 2)}\n`);
+  await sleep(1500);
+}
+
+/**
+ * Turns VS Code's hovers on for the rest of the take: the takes run with them off (config.ts), so
+ * that the pointer shows nothing on its way.
+ */
+async function enableHovers(wb: Workbench): Promise<void> {
+  await setSettings(wb, { 'editor.hover.enabled': 'on' });
+}
+
+/** The editor's hover once it shows its content, a picture included; its rect in master pixels. */
+async function shownHover(wb: Workbench, picture: boolean): Promise<Rect> {
+  const hover = wb.page.locator('.monaco-hover:not(.hidden)').filter({ visible: true }).first();
+  await hover.waitFor();
+  if (picture) {
+    const image = hover.locator('img').first();
+    await image.waitFor();
+    await image.evaluate(async (img: HTMLImageElement) => {
+      if (!img.complete) {
+        await new Promise((resolve) => {
+          img.addEventListener('load', resolve);
+        });
+      }
+    });
+  }
+  // VS Code places a hover again once its content has its size.
+  await sleep(250);
+  return wb.box(hover);
+}
+
+/**
+ * Closes the editor's hover with Escape: a pointer moved onto a hover keeps it open, and it may
+ * cover the next name the pointer goes to.
+ */
+async function hideHover(wb: Workbench): Promise<void> {
+  await wb.press('Escape');
+  await wb.page
+    .locator('.monaco-hover:not(.hidden)')
+    .filter({ visible: true })
+    .first()
+    .waitFor({ state: 'hidden' });
+}
+
+/** The page point of a range input's thumb at `value` (beyond its range: past its end). */
+async function rangePoint(input: Locator, value: number): Promise<{ x: number; y: number }> {
+  const box = await input.boundingBox();
+  if (box === null) throw new Error(`${input.toString()} is not shown`);
+  const { min, max } = await input.evaluate((el: HTMLInputElement) => ({
+    min: Number(el.min),
+    max: Number(el.max),
+  }));
+  // Chromium's thumb is about 16 px wide: its centre runs from 8 px in to 8 px before the end.
+  const thumb = 8;
+  return {
+    x: box.x + thumb + ((box.width - 2 * thumb) * (value - min)) / (max - min),
+    y: box.y + box.height / 2,
+  };
+}
+
+/**
+ * Drags a range input's thumb, where the pointer rests (`rangePoint`), to `to` as a hand would,
+ * over `ms`.
+ */
+async function dragRange(
+  context: ClipContext,
+  input: Locator,
+  to: number,
+  ms: number,
+): Promise<void> {
+  await sleep(150);
+  context.take.click();
+  await context.wb.page.mouse.down();
+  await pointTo(context, await rangePoint(input, to), ms);
+  await context.wb.page.mouse.up();
+}
+
+/**
+ * A Mesh Preview take's layout in `area` (the stage, or a part of it): the bar's strip at UI_SCALE
+ * across its top, its camera on one control at a time (`stripOn`; the facts at the start), and
+ * under it a part of the canvas (`focus`, in shares of its size) as large as the rest of the area
+ * allows. A view wider than the canvas would take in the code beside it.
+ */
+function meshPreviewLayout(
+  log: TakeLog,
+  controls: readonly string[],
+  focus: { readonly x: number; readonly y: number; readonly w: number; readonly h: number },
+  area: Rect = STAGE,
+): {
+  readonly bar: (name: string) => Rect;
+  readonly strip: Rect;
+  readonly stripOn: (rect: Rect) => Rect;
+  readonly factsView: Rect;
+  readonly model: Rect;
+  readonly modelView: Rect;
+} {
+  const header = rectOf(eventOf(log, 'header'));
+  const main = rectOf(eventOf(log, 'canvas'));
+  const bar = (name: string): Rect => rectOf(eventOf(log, `bar-${name}`));
+  const rowH = Math.max(...controls.map((n) => bar(n).h)) + 16;
+  const barH = rowH * UI_SCALE;
+  const strip: Rect = { x: area.x, y: area.y, w: area.w, h: barH };
+  const stripW = area.w / UI_SCALE;
+  const stripOn = (rect: Rect): Rect => ({
+    x: Math.min(Math.max(rect.x + rect.w / 2 - stripW / 2, header.x), header.x + header.w - stripW),
+    y: rect.y + rect.h / 2 - rowH / 2,
+    w: stripW,
+    h: rowH,
+  });
+  const facts = bar('facts');
+  const factsView = stripOn({ ...facts, w: Math.min(facts.w, stripW - 20) });
+  const modelH = area.h - barH - GUTTER;
+  const modelView: Rect = {
+    x: main.x + main.w * focus.x,
+    y: main.y + main.h * focus.y,
+    w: main.w * focus.w,
+    h: main.h * focus.h,
+  };
+  const scale = Math.min(modelH / modelView.h, area.w / modelView.w);
+  const model: Rect = {
+    x: area.x + (area.w - modelView.w * scale) / 2,
+    y: area.y + barH + GUTTER + (modelH - modelView.h * scale) / 2,
+    w: modelView.w * scale,
+    h: modelView.h * scale,
+  };
+  return { bar, strip, stripOn, factsView, model, modelView };
+}
+
+/** The encoding of the active editor, as VS Code's status bar names it. */
+async function editorEncoding(wb: Workbench): Promise<string> {
+  return ((await wb.page.locator('[id="status.editor.encoding"]').textContent()) ?? '').trim();
 }
 
 /** Fails when the Problems panel lists anything: a loop starts with none. */
@@ -1050,108 +1405,235 @@ export const CLIPS: readonly Clip[] = [
     },
   },
   {
-    // Hover: a widget's tip; click: its definition and outline row; Go Back: where the cursor was.
+    // The Widget Outline beside the preview: an eye hides a widget by hand, a radio picks which
+    // panel shows, a click in the preview reveals its row and its line, and Type Sample Text… puts
+    // a long name in the header.
     id: 'outline',
     async run(context) {
       const { wb, take } = context;
+      // The workbench's own tooltips (a row's, a button's) off: one would show over the rows.
+      await setSettings(wb, { 'workbench.hover.delay': 60_000 });
       await wb.command('Explorer: Focus on Widget Outline View');
       // The Explorer's file tree collapsed, so the outline has the sidebar.
       const folders = wb.page.locator('.part.sidebar .pane-header').first();
       if ((await folders.getAttribute('aria-expanded')) === 'true') await folders.click();
-      await wb.page
-        .locator('.part.sidebar .pane-header[aria-expanded="true"]', { hasText: 'Widget Outline' })
-        .waitFor();
-      await wb.fitPreview();
-      take.mark('screen', { source: 'vscode', rect: await wb.screenRect() });
+      const pane = wb.page.locator('.part.sidebar .pane', {
+        has: wb.page.locator('.pane-header[aria-expanded="true"]', { hasText: 'Widget Outline' }),
+      });
+      await pane.waitFor();
+      // A sidebar wide enough for the rows' names, their buttons beside them.
+      await wb.fitPreview(OUTLINE_SIDEBAR);
+      const screen = await wb.screenRect();
+      take.mark('screen', { source: 'vscode', rect: screen });
+      const row = (name: string): Locator =>
+        pane.locator('.monaco-list-row', {
+          has: wb.page.locator('.label-name', { hasText: new RegExp(`^${name}$`) }),
+        });
+      // A row's widget on the preview's screen, from the row's tooltip: "… at x, y, w × h".
+      const placed = async (name: string): Promise<Rect> => {
+        const label = (await row(name).getAttribute('aria-label')) ?? '';
+        const found = /at (-?[\d.]+), (-?[\d.]+), ([\d.]+) × ([\d.]+)/.exec(label);
+        if (found === null) throw new Error(`the outline row of ${name} gives no rect: ${label}`);
+        const [x, y, w, h] = found.slice(1).map(Number) as [number, number, number, number];
+        return onScreen(screen, { x, y, w, h });
+      };
       await wb.focusEditor();
-      // The cursor outside every widget (parkCursor): the preview outlines nothing before the click.
       await wb.highlightCleared();
-      const home = await wb.cursor();
-      const outlineRow = wb.page
-        .locator('.part.sidebar .pane', {
-          has: wb.page.locator('.pane-header', { hasText: 'Widget Outline' }),
-        })
-        .locator('.monaco-list-row.selected');
+      const header = await placed(OUTLINE_HEADER);
+      // The name's top edge: `area_name` below it, its text right-aligned, covers the rest.
+      const name = {
+        x: header.x + OUTLINE_NAME_AT.x + OUTLINE_NAME_AT.w / 2,
+        y: header.y + OUTLINE_NAME_AT.y + 4,
+      };
+      take.mark('hidden-area', { source: 'vscode', rect: await placed(OUTLINE_HIDDEN) });
+      // The member the radio picks is laid out once it shows: its rect is marked then.
+      take.mark('panel', { source: 'vscode', rect: await placed(OUTLINE_PANEL) });
+      take.mark('header-area', { source: 'vscode', rect: header });
+      take.mark('outline', { source: 'vscode', rect: await wb.box(pane.locator('.pane-body')) });
+      const viewMenu = wb.frame.locator('#view-menu');
+      await viewMenu.filter({ hasNotText: 'by hand' }).waitFor();
+      take.mark('view-menu', { source: 'vscode', rect: await wb.box(viewMenu) });
       const rest = await startTake(context);
       take.mark('start');
-      // Every widget on the way would show its tip, the window's own and its panels' included, and
-      // every way crosses some: the drawn pointer glides to each widget, and Playwright's mouse
-      // reaches it at the end only, so only the hovered widgets' tips show.
-      for (const [i, { point, widget }] of OUTLINE_HOVERS.entries()) {
-        await glideOver(context, await wb.screenPoint(point), i === 0 ? 700 : 350);
-        take.mark('hover', { source: 'vscode', rect: await expectTip(wb, widget), label: widget });
-        await sleep(900);
-      }
-      // The last hovered widget is the icon: the pointer is on it, and clicks it.
-      await sleep(200);
+      await sleep(900);
+      // The eye of a row, which shows while the pointer is on the row.
+      const press = async (widget: string, action: string, step: string): Promise<void> => {
+        const target = row(widget);
+        await pointTo(context, await centre(target), 800);
+        const button = target.locator(`.actions [aria-label="${action}"]`);
+        await button.waitFor();
+        await sleep(200);
+        await pointTo(context, await centre(button), 350);
+        await sleep(200);
+        take.mark(step, { source: 'vscode', rect: await wb.box(target) });
+        take.click();
+        await button.click();
+      };
+      take.mark('to', { label: 'hide' });
+      await press(OUTLINE_HIDDEN, 'Hide by Hand', 'hide');
+      await viewMenu.filter({ hasText: '1 by hand' }).waitFor();
+      await sleep(300);
+      take.mark('hidden', { source: 'vscode', rect: await wb.box(viewMenu) });
+      await sleep(1500);
+      // A radio: the side panel's other member.
+      take.mark('to', { label: 'choose' });
+      await press(OUTLINE_CHOSEN, 'Choose by Hand', 'choose');
+      await viewMenu.filter({ hasText: '2 by hand' }).waitFor();
+      await sleep(300);
+      take.mark('chosen', { source: 'vscode', rect: await wb.box(viewMenu) });
+      take.mark('chosen-area', { source: 'vscode', rect: await placed(OUTLINE_CHOSEN) });
+      await sleep(1500);
+      // A click on the province's name in the preview: its row and its line. The mouse moves at the
+      // end only: on the way the preview would show the tip of every widget it crosses.
+      take.mark('to', { label: 'name' });
+      await glideOver(context, name, 1000);
+      await expectTip(wb, OUTLINE_NAME);
+      await sleep(300);
+      take.mark('clicking');
       take.click();
-      const clicked = OUTLINE_HOVERS[OUTLINE_HOVERS.length - 1];
-      if (clicked === undefined) throw new Error('outline hovers nothing');
-      await wb.clickScreen(clicked.point);
-      await wb.page
-        .locator('[id="status.editor.selection"]', { hasNotText: `Ln ${String(home.line)},` })
-        .waitFor();
-      await outlineRow.first().waitFor();
+      await wb.page.mouse.click(name.x, name.y);
+      const named = row(OUTLINE_NAME);
+      await named.and(pane.locator('.monaco-list-row.selected')).waitFor();
       await wb.highlightSettled();
+      await sleep(300);
       take.mark('picked', { source: 'vscode', rect: await editorLine(wb) });
-      take.mark('row', { source: 'vscode', rect: await wb.box(outlineRow) });
-      // Home while the preview is out of view: the way crosses its widgets, whose tips show.
-      await pointTo(context, rest, 700);
-      await wb.restMouse();
-      await sleep(1600);
-      // Back to where the cursor was, as Go Back takes it. The keys go to the editor: after the
-      // preview's click the keyboard may still be in the preview.
-      await wb.focusEditor();
-      take.mark('back');
-      await wb.press('Alt+ArrowLeft');
-      await wb.page
-        .locator('[id="status.editor.selection"]', { hasText: `Ln ${String(home.line)},` })
-        .waitFor();
-      take.mark('returned', { source: 'vscode', rect: await editorLine(wb) });
-      await sleep(1400);
+      take.mark('row', { source: 'vscode', rect: await wb.box(named) });
+      // The tip stays while the mouse is out of the preview: the mouse moves, unseen, onto the
+      // screen's empty top right corner, where no widget is, and the tip goes. The drawn pointer
+      // goes on from the name.
+      await wb.page.mouse.move(screen.x + screen.w - 30, screen.y + 30);
+      await wb.frame.locator('#tip:not([hidden])').waitFor({ state: 'hidden', timeout: 3_000 });
+      await sleep(1500);
+      // Type Sample Text… on its row, whose buttons show while it is selected.
+      take.mark('to', { label: 'type' });
+      const edit = named.locator('.actions [aria-label="Type Sample Text…"]');
+      await glideOver(context, await centre(edit), 900);
+      await sleep(200);
+      take.mark('edit', { source: 'vscode', rect: await wb.box(edit) });
+      take.click();
+      await edit.click();
+      const input = wb.page.locator('.quick-input-widget');
+      await input.locator('input').waitFor({ state: 'visible' });
+      await sleep(300);
+      take.mark('input', { source: 'vscode', rect: await wb.box(input) });
+      await wb.page.keyboard.press('Control+A');
+      await wb.page.keyboard.type(OUTLINE_SAMPLE, { delay: 70 });
+      await sleep(400);
+      take.mark('enter');
+      await wb.page.keyboard.press('Enter');
+      await input.waitFor({ state: 'hidden' });
+      take.mark('entered');
+      await named.filter({ hasText: OUTLINE_SAMPLE }).waitFor();
+      await sleep(500);
+      take.mark('named', { source: 'vscode', rect: await wb.selectedRect() });
+      await sleep(1800);
       take.mark('leaving');
-      await sleep(800);
-      await endTake(context, rest);
+      await pointTo(context, rest, 800);
+      await wb.focusEditor();
+      await wb.parkMouse();
+      take.mark('end');
+      await take.until(take.t() + POST_ROLL_MS / 1000);
     },
     edit(log, sources) {
       const source = sources['vscode'] as Source;
       const s0 = eventOf(log, 'start').t - LEAD;
       const at = (t: number): number => t - s0;
-      const hovers = eventsOf(log, 'hover', OUTLINE_HOVERS.length);
-      const band = union(...hovers.map(rectOf));
-      // Close on the band of hovered widgets and their tips, the tips' text large enough to read
-      // on the site, unless the band is wider.
-      const hoverScale = Math.min(2.5, STAGE.w / (band.w + 60), STAGE.h / (band.h + 60));
-      // From the screen's left edge, where the window's labels start (centred on the band, the
-      // view cut them: "oduction", "onomy"), unless the band and its tips need it further right.
-      const centred = viewAt(band, hoverScale, STAGE, source);
-      const hoverView = { ...centred, x: Math.min(centred.x, rectOf(eventOf(log, 'screen')).x) };
-      const picked = eventOf(log, 'picked');
-      const row = rectOf(eventOf(log, 'row'));
-      const returned = eventOf(log, 'returned');
-      // The outline's rows only, from the sidebar's left edge to its right, the row in the middle;
-      // the editor beside it is the right panel's.
-      const sidebar = (row.w + 10) * UI_SCALE;
-      const frames = pair(
-        { w: sidebar, h: STAGE.h },
-        { w: STAGE.w - GUTTER - sidebar, h: STAGE.h },
+      const screen = rectOf(eventOf(log, 'screen'));
+      const outline = rectOf(eventOf(log, 'outline'));
+      const menu = rectOf(eventOf(log, 'view-menu'));
+      const moves = eventsOf(log, 'to', 4);
+      const moveAt = (label: string): number => {
+        const move = moves.find((m) => m.label === label);
+        if (move === undefined) throw new Error(`outline's take has no move to ${label}`);
+        return at(move.t);
+      };
+      // Left, the outline's rows at OUTLINE_SCALE, the camera on the row each step acts on.
+      const left: Rect = { x: STAGE.x, y: STAGE.y, w: outline.w * OUTLINE_SCALE, h: STAGE.h };
+      const rowsH = STAGE.h / OUTLINE_SCALE;
+      const rowsOn = (rect: Rect): Rect => ({
+        x: outline.x,
+        y: Math.max(
+          Math.min(rect.y + rect.h / 2 - rowsH / 2, outline.y + outline.h - rowsH),
+          outline.y,
+        ),
+        w: outline.w,
+        h: rowsH,
+      });
+      // Right, above, the preview's View ▾ at UI_SCALE, whose label counts the changes by hand;
+      // under it the part of the screen each step changes, at most at UI_SCALE.
+      const right: Rect = {
+        x: left.x + left.w + GUTTER,
+        y: STAGE.y,
+        w: STAGE.w - left.w - GUTTER,
+        h: STAGE.h,
+      };
+      const stripRow = menu.h + 16;
+      const strip: Rect = { x: right.x, y: right.y, w: right.w, h: stripRow * UI_SCALE };
+      const stripView: Rect = { x: menu.x - 12, y: menu.y - 8, w: right.w / UI_SCALE, h: stripRow };
+      const below: Rect = {
+        x: right.x,
+        y: strip.y + strip.h + GUTTER,
+        w: right.w,
+        h: right.h - strip.h - GUTTER,
+      };
+      // The window on the screen, with its side panel either way: a view keeps inside it where it
+      // can, rather than show the empty screen beside it. Its tabs stand above the header's box.
+      const windows = grow(
+        union(
+          union(rectOf(eventOf(log, 'hidden-area')), rectOf(eventOf(log, 'header-area'))),
+          union(rectOf(eventOf(log, 'panel')), rectOf(eventOf(log, 'chosen-area'))),
+        ),
+        16,
       );
-      const rowView = viewAt(row, UI_SCALE, frames.left, source, { x: 5 / (row.w + 10), y: 0.45 });
-      const definition = rectOf(picked);
-      // The editor across the right panel, without its scroll bar or the preview beside it.
-      const codeScale = Math.max(CODE_SCALE, (STAGE.w - GUTTER - sidebar) / (definition.w - 40));
-      const back = at(eventOf(log, 'back').t);
+      const windowArea: Rect = { ...windows, y: windows.y - 40, h: windows.h + 40 };
+      const within = (from: number, size: number, start: number, length: number): number =>
+        size >= length
+          ? start + (length - size) / 2
+          : Math.min(Math.max(from, start), start + length - size);
+      const fit = (rect: Rect): Rect => {
+        const scale = Math.min(UI_SCALE, below.w / (rect.w + 40), below.h / (rect.h + 40));
+        const view = viewAt(rect, scale, below, source);
+        const x = within(view.x, view.w, windowArea.x, windowArea.w);
+        const y = within(view.y, view.h, windowArea.y, windowArea.h);
+        // Never left of the screen, into the editor beside it.
+        return { ...view, x: Math.max(x, screen.x), y };
+      };
+      const header = rectOf(eventOf(log, 'header-area'));
+      // The province's name and what is around it, for the click and the sample text.
+      const nameArea: Rect = {
+        x: header.x + OUTLINE_NAME_AT.x - 60,
+        y: header.y + OUTLINE_NAME_AT.y - 40,
+        w: OUTLINE_NAME_AT.w + 300,
+        h: OUTLINE_NAME_AT.h + 120,
+      };
+      const hide = eventOf(log, 'hide');
+      const hidden = eventOf(log, 'hidden');
+      const choose = eventOf(log, 'choose');
+      const chosen = eventOf(log, 'chosen');
+      const clicking = at(eventOf(log, 'clicking').t);
+      const picked = eventOf(log, 'picked');
+      const nameRow = rectOf(eventOf(log, 'row'));
+      const edit = at(eventOf(log, 'edit').t);
+      const input = rectOf(eventOf(log, 'input'));
+      const entered = at(eventOf(log, 'entered').t);
+      const named = eventOf(log, 'named');
       const leaving = at(eventOf(log, 'leaving').t);
       const end = at(eventOf(log, 'end').t) + 0.4;
-      // The close-up and the split change through the background, never blended: one fades out,
-      // then the other in.
+      const line = rectOf(picked);
+      const codeScale = Math.max(CODE_SCALE, below.w / (line.w - 40));
+      // The code takes the screen's place through the background, never blended with it.
       const DIP = 0.25;
-      const split = at(picked.t) - 0.1;
-      const shown = (frame: Rect, view: Rect): Shot[] => [
-        { at: 0, frame, view, opacity: 0 },
-        { at: split + DIP, frame, view, opacity: 1, move: DIP },
-        { at: leaving, frame, view, opacity: 0, move: DIP },
-      ];
+      const toCode = at(picked.t);
+      const toScreen = moveAt('type') - DIP;
+      // The input box over the screen's lower part while it is open, cut at its own edges: the
+      // preview's toolbar is behind it.
+      const inputScale = Math.min(UI_SCALE, below.w / input.w);
+      const inputFrame: Rect = {
+        x: below.x + (below.w - input.w * inputScale) / 2,
+        y: below.y + below.h - input.h * inputScale,
+        w: input.w * inputScale,
+        h: input.h * inputScale,
+      };
       return single(
         'outline',
         log,
@@ -1161,48 +1643,121 @@ export const CLIPS: readonly Clip[] = [
           {
             source: 'vscode',
             shots: [
-              { at: 0, frame: STAGE, view: hoverView },
-              { at: split, frame: STAGE, view: hoverView, opacity: 0, move: DIP },
-              { at: leaving + DIP, frame: STAGE, view: hoverView, opacity: 1, move: DIP },
+              { at: 0, frame: left, view: rowsOn(rectOf(hide)) },
+              { at: moveAt('choose'), frame: left, view: rowsOn(rectOf(choose)) },
+              { at: toCode, frame: left, view: rowsOn(nameRow), move: 0.5 },
             ],
           },
-          { source: 'vscode', shots: shown(frames.left, rowView) },
+          still('vscode', strip, stripView),
           {
             source: 'vscode',
             shots: [
-              ...shown(frames.right, codeView(definition, frames.right, source, codeScale)),
-              // Go Back reveals the cursor's line where it was, maybe elsewhere in the editor.
+              { at: 0, frame: below, view: fit(rectOf(eventOf(log, 'hidden-area'))) },
               {
-                at: at(returned.t),
-                frame: frames.right,
-                view: codeView(rectOf(returned), frames.right, source, codeScale),
-                move: 0.4,
+                at: moveAt('choose'),
+                frame: below,
+                view: fit(
+                  union(rectOf(eventOf(log, 'panel')), rectOf(eventOf(log, 'chosen-area'))),
+                ),
               },
-            ].sort((a, b) => a.at - b.at),
+              { at: moveAt('name'), frame: below, view: fit(nameArea) },
+              {
+                at: toCode,
+                opacity: 0,
+                move: DIP,
+                frame: below,
+                view: fit(nameArea),
+              },
+              {
+                at: toScreen,
+                opacity: 1,
+                move: DIP,
+                frame: below,
+                view: fit(nameArea),
+              },
+            ],
+          },
+          {
+            source: 'vscode',
+            shots: [
+              { at: 0, frame: below, view: codeView(line, below, source, codeScale), opacity: 0 },
+              {
+                at: toCode + DIP,
+                frame: below,
+                view: codeView(line, below, source, codeScale),
+                opacity: 1,
+                move: DIP,
+              },
+              {
+                at: toScreen - DIP,
+                frame: below,
+                view: codeView(line, below, source, codeScale),
+                opacity: 0,
+                move: DIP,
+              },
+            ],
+          },
+          {
+            source: 'vscode',
+            shots: [
+              { at: 0, frame: inputFrame, view: input, opacity: 0 },
+              { at: edit + 0.1, frame: inputFrame, view: input, opacity: 1, move: 0.15 },
+              {
+                at: entered - 0.05,
+                frame: inputFrame,
+                view: input,
+                opacity: 0,
+                move: 0.15,
+              },
+            ],
           },
         ],
         {
           captions: sequence(
             [
+              { from: 0.2, text: 'The Widget Outline: every widget of the previewed window' },
+              { from: at(hide.t) - 0.05, text: 'The eye hides a widget by hand; View ▾ counts it' },
               {
-                from: at((hovers[0] as TakeEvent).t) - 0.1,
-                text: 'Hover: the widget, its kind and rect',
+                from: at(choose.t) - 0.05,
+                text: "A radio picks which of the window's panels shows",
               },
-              { from: split + 0.2, text: 'Click: its definition and its row in the outline' },
-              { from: back - 0.05, keys: ['Alt', '←'], text: 'back where the cursor was' },
+              { from: clicking - 0.05, text: 'A click in the preview: its row and its line' },
+              { from: edit - 0.05, text: 'Type Sample Text…: a long name in the header' },
             ],
-            leaving,
+            end - 0.4,
           ),
           highlights: [
-            // The definition's keyword and its name below it, and the outline's row.
+            { from: at(hide.t) + 0.2, to: moveAt('choose') - 0.1, panel: 0, rect: rectOf(hide) },
             {
-              from: split + 0.6,
-              to: back - 0.1,
-              panel: 2,
-              rect: { ...definition, w: Math.min(definition.w, 640), h: definition.h * 2 },
+              from: at(hidden.t) + 0.1,
+              to: moveAt('choose') - 0.1,
+              panel: 1,
+              rect: rectOf(hidden),
             },
-            { from: split + 0.6, to: back - 0.1, panel: 1, rect: row },
+            { from: at(choose.t) + 0.2, to: moveAt('name') - 0.1, panel: 0, rect: rectOf(choose) },
+            { from: at(chosen.t) + 0.1, to: moveAt('name') - 0.1, panel: 1, rect: rectOf(chosen) },
+            { from: toCode + 0.3, to: toScreen, panel: 0, rect: nameRow },
+            {
+              from: toCode + 2 * DIP,
+              to: toScreen - DIP,
+              panel: 3,
+              rect: { ...line, w: Math.min(line.w, 640) },
+            },
+            { from: at(named.t) + 0.1, to: leaving - 0.1, panel: 2, rect: rectOf(named) },
           ],
+          // The input box opens over the preview's toolbar: View ▾'s strip holds its frame from
+          // before the click until the box is gone.
+          holds: [
+            {
+              from: edit - 0.05,
+              to: entered + 0.1,
+              panel: 1,
+              at: eventOf(log, 'edit').t - 0.1,
+            },
+          ],
+          // The window keeps its changes by hand: the loop dissolves into its start.
+          loopFade: 0.5,
+          core: { from: moveAt('hide') - 0.3, to: at(named.t) + 1.5 },
         },
       );
     },
@@ -1568,6 +2123,1161 @@ export const CLIPS: readonly Clip[] = [
             { from: at(idea.t) + 0.2, to: firstUndo - 0.1, panel: 1, rect: left(rectOf(idea)) },
           ],
           core: { from: walk - 0.4, to: firstUndo },
+        },
+      );
+    },
+  },
+  {
+    // A base-game texture: its alpha alone and back, two mip levels down and back, a texel's values.
+    id: 'texture',
+    async run(context) {
+      const { wb, take } = context;
+      await openGameFile(context, TEXTURE_FILE);
+      const view = await editorFrame(wb, '#channels');
+      const canvas = view.locator('#canvas');
+      const level = view.locator('#level');
+      const status = view.locator('#status');
+      await view.locator('#facts span').nth(3).waitFor();
+      await view.waitForFunction(() => (document.querySelector('canvas')?.width ?? 0) > 0);
+      const facts = await view.locator('#facts').innerText();
+      const levels = Number(/(\d+) mip levels/.exec(facts)?.[1] ?? '1');
+      if (!facts.includes('alpha used') || levels <= MIP_STEPS) {
+        throw new Error(`${TEXTURE_FILE} needs an alpha and a mip chain: ${facts}`);
+      }
+      const options = await level.locator('option').allInnerTexts();
+      take.mark('header', { source: 'vscode', rect: await wb.box(view.locator('header')) });
+      take.mark('facts', { source: 'vscode', rect: await wb.box(view.locator('#facts')) });
+      take.mark('controls', {
+        source: 'vscode',
+        rect: union(await wb.box(level), await wb.box(view.locator('#channels'))),
+      });
+      take.mark('canvas', { source: 'vscode', rect: await wb.box(canvas) });
+      const statusBox = await wb.box(status);
+      take.mark('status', { source: 'vscode', rect: statusBox });
+      const button = (channels: string): Locator =>
+        view.locator(`#channels button[data-channels="${channels}"]`);
+      const pressed = (channels: string): Promise<void> =>
+        view
+          .locator(`#channels button[data-channels="${channels}"][aria-pressed="true"]`)
+          .waitFor();
+      const shownLevel = (n: number): Promise<unknown> =>
+        view.waitForFunction<boolean, readonly [string, number]>(
+          ([value, width]) =>
+            document.querySelector<HTMLSelectElement>('#level')?.value === value &&
+            document.querySelector('canvas')?.width === width,
+          [String(n), Math.max(1, Number(/(\d+) ×/.exec(options[n] ?? '')?.[1] ?? 0))],
+        );
+      const rest = await startTake(context);
+      take.mark('start');
+      // Over the texture to the bar: the mouse moves at the end only, so the texture's bottom line
+      // shows no texels on the way.
+      await glideOver(context, await centre(button('a')), 900);
+      await sleep(160);
+      take.mark('alpha', { source: 'vscode', rect: await wb.box(button('a')) });
+      take.click();
+      await button('a').click();
+      await pressed('a');
+      await sleep(1300);
+      await pointTo(context, await centre(button('rgba')), 400);
+      await sleep(160);
+      take.mark('rgba');
+      take.click();
+      await button('rgba').click();
+      await pressed('rgba');
+      await sleep(900);
+      // The mip level with the keyboard: a click would open the list in a window of its own,
+      // which the master does not record.
+      await pointTo(context, await centre(level), 500);
+      await sleep(200);
+      await level.focus();
+      for (let n = 1; n <= MIP_STEPS; n++) {
+        take.mark('mip', { source: 'vscode', rect: await wb.box(level), label: options[n] ?? '' });
+        await level.press('ArrowDown');
+        await shownLevel(n);
+        await sleep(n === MIP_STEPS ? 1200 : 800);
+      }
+      take.mark('mip0', { label: options[0] ?? '' });
+      await level.press('Home');
+      await shownLevel(0);
+      await sleep(700);
+      const shown = await canvas.boundingBox();
+      if (shown === null) throw new Error('the texture is not shown');
+      await pointTo(
+        context,
+        { x: shown.x + shown.width * TEXEL_AT.x, y: shown.y + shown.height * TEXEL_AT.y },
+        800,
+      );
+      await view.waitForFunction(() =>
+        /^\d+, \d+ /.test(document.querySelector('#status')?.textContent ?? ''),
+      );
+      await sleep(200);
+      take.mark('texel', {
+        source: 'vscode',
+        rect: await textRect(view, '#status', statusBox),
+        label: await status.innerText(),
+      });
+      await sleep(1800);
+      take.mark('leaving');
+      await pointTo(context, rest, 700);
+      // As at the start: the keyboard in the editor beside, so the bar shows no focus.
+      await wb.focusEditor();
+      await wb.parkMouse();
+      take.mark('end');
+      await take.until(take.t() + POST_ROLL_MS / 1000);
+    },
+    edit(log, sources) {
+      const s0 = eventOf(log, 'start').t - LEAD;
+      const at = (t: number): number => t - s0;
+      const header = rectOf(eventOf(log, 'header'));
+      const facts = rectOf(eventOf(log, 'facts'));
+      const controls = rectOf(eventOf(log, 'controls'));
+      const canvas = rectOf(eventOf(log, 'canvas'));
+      const status = rectOf(eventOf(log, 'status'));
+      const texel = eventOf(log, 'texel');
+      const texelRect = rectOf(texel);
+      // The bar's two ends at UI_SCALE in a row across the stage, as in the preview: its facts on
+      // the left and the controls the loop uses on the right; the texture under them, and the
+      // bottom line, as wide as its texel's text, under the texture.
+      const barH = header.h * UI_SCALE;
+      const factsView: Rect = { x: facts.x - 10, y: header.y, w: facts.w + 20, h: header.h };
+      const controlsView: Rect = {
+        x: controls.x - 10,
+        y: header.y,
+        w: controls.w + 20,
+        h: header.h,
+      };
+      const factsFrame: Rect = { x: STAGE.x, y: STAGE.y, w: factsView.w * UI_SCALE, h: barH };
+      const controlsFrame: Rect = {
+        x: STAGE.x + STAGE.w - controlsView.w * UI_SCALE,
+        y: STAGE.y,
+        w: controlsView.w * UI_SCALE,
+        h: barH,
+      };
+      if (factsFrame.x + factsFrame.w + GUTTER > controlsFrame.x) {
+        throw new Error("the bar's facts and controls do not fit the stage side by side");
+      }
+      const statusView: Rect = {
+        x: status.x,
+        y: status.y,
+        w: texelRect.x + texelRect.w + 10 - status.x,
+        h: status.h,
+      };
+      const statusH = status.h * UI_SCALE;
+      const imageView = grow(canvas, 12);
+      const imageH = STAGE.h - barH - statusH - 2 * GUTTER;
+      const imageW = (imageView.w * imageH) / imageView.h;
+      const imageFrame: Rect = {
+        x: STAGE.x + (STAGE.w - imageW) / 2,
+        y: STAGE.y + barH + GUTTER,
+        w: imageW,
+        h: imageH,
+      };
+      const statusFrame: Rect = {
+        x: STAGE.x + (STAGE.w - statusView.w * UI_SCALE) / 2,
+        y: STAGE.y + STAGE.h - statusH,
+        w: statusView.w * UI_SCALE,
+        h: statusH,
+      };
+      const alpha = eventOf(log, 'alpha');
+      const rgba = at(eventOf(log, 'rgba').t);
+      const mips = eventsOf(log, 'mip', MIP_STEPS);
+      const mip0 = eventOf(log, 'mip0');
+      const leaving = at(eventOf(log, 'leaving').t);
+      const end = at(eventOf(log, 'end').t) + 0.4;
+      const first = mips[0] as TakeEvent;
+      return single(
+        'texture',
+        log,
+        sources,
+        { s0, end: s0 + end },
+        [
+          still('vscode', factsFrame, factsView),
+          still('vscode', controlsFrame, controlsView),
+          still('vscode', imageFrame, imageView),
+          still('vscode', statusFrame, statusView),
+        ],
+        {
+          captions: sequence(
+            [
+              { from: 0.2, text: 'A texture of the game, its size, format and mip levels' },
+              { from: at(alpha.t) - 0.05, text: 'A: the alpha alone, in grey' },
+              { from: rgba - 0.05, text: 'RGBA: the colour over a checkerboard again' },
+              ...mips.map((mip) => ({
+                from: at(mip.t) - 0.05,
+                keys: ['↓'],
+                text: mip.label ?? '',
+              })),
+              { from: at(mip0.t) - 0.05, keys: ['Home'], text: mip0.label ?? '' },
+              { from: at(texel.t) - 0.1, text: 'The texel under the pointer, and its colour' },
+            ],
+            end - 0.4,
+          ),
+          highlights: [
+            { from: at(alpha.t) + 0.2, to: rgba - 0.1, panel: 1, rect: rectOf(alpha) },
+            {
+              from: at(first.t) + 0.2,
+              to: at(mip0.t) + 0.7,
+              panel: 1,
+              rect: rectOf(first),
+            },
+            { from: at(texel.t) + 0.2, to: leaving - 0.1, panel: 3, rect: texelRect },
+          ],
+        },
+      );
+    },
+  },
+  {
+    // An é in a file VS Code saves as UTF-8: Etch's warning, then Save with Encoding as Windows 1252.
+    id: 'encoding',
+    async run(context) {
+      const { wb, take } = context;
+      await wb.quickOpen(EVENTS_FILE);
+      // The take's VS Code opens files in the game's encoding (config.ts); a modder's opens them as
+      // UTF-8, VS Code's default. The file is ASCII, so reopened as UTF-8 it reads the same.
+      await wb.command('Change File Encoding', { keepsQuickInput: true });
+      await pickQuickItem(wb, 'Reopen with Encoding');
+      await wb.page.keyboard.press('Enter');
+      await pickQuickItem(wb, 'UTF-8', 'UTF-8');
+      await wb.page.keyboard.press('Enter');
+      await wb.page.locator('.quick-input-widget').waitFor({ state: 'hidden' });
+      const reopened = await editorEncoding(wb);
+      if (reopened !== 'UTF-8') throw new Error(`the event file is open as ${reopened}, not UTF-8`);
+      await wb.page.keyboard.press('Control+Shift+M');
+      await wb.page.locator('.markers-panel').waitFor();
+      await wb.focusEditor();
+      await wb.fitPreview();
+      await expectNoProblems(wb);
+      const name = await wb.find(RULER_NAME);
+      const home = { line: name.line, column: name.start + RULER_NAME.length - 2 };
+      await wb.walkCursorTo(home, 0);
+      take.mark('line', { source: 'vscode', rect: await editorLine(wb) });
+      take.mark('panel', { source: 'vscode', rect: await wb.box(wb.page.locator('.part.panel')) });
+      const listed = wb.page.locator('.markers-panel .monaco-list-row');
+      const quick = wb.page.locator('.quick-input-widget');
+      const quickRows = (): Locator => quick.locator('.quick-input-list .monaco-list-row');
+      const rest = await startTake(context);
+      take.mark('start');
+      await sleep(300);
+      take.mark('key', { label: ACCENT });
+      await wb.type(ACCENT);
+      const warning = listed.filter({ hasText: 'Ã©' });
+      await warning.first().waitFor();
+      take.mark('warning', { source: 'vscode', rect: await wb.box(warning) });
+      await sleep(2000);
+      take.mark('actions');
+      await wb.press('Control+.');
+      const actions = wb.page.locator('.action-widget');
+      const save = actions.locator('.monaco-list-row', { hasText: 'Save with Encoding' });
+      await save.first().waitFor();
+      for (let i = 0; i < 6; i++) {
+        const focused = (await actions.locator('.monaco-list-row.focused').textContent()) ?? '';
+        if (focused.includes('Save with Encoding')) break;
+        await wb.press('ArrowDown');
+        await sleep(150);
+      }
+      take.mark('menu', { source: 'vscode', rect: await wb.box(actions) });
+      await sleep(900);
+      take.mark('save');
+      await wb.press('Enter');
+      await pickQuickItem(wb, 'Save with Encoding');
+      await sleep(150);
+      take.mark('pick', {
+        source: 'vscode',
+        rect: union(await wb.box(quick.locator('input')), await wb.box(quickRows().nth(1))),
+      });
+      await sleep(900);
+      take.mark('chosen');
+      await wb.press('Enter');
+      await quickRows().nth(4).waitFor();
+      take.mark('list');
+      await pickQuickItem(wb, 'Western (Windows 1252)', '1252');
+      await sleep(150);
+      take.mark('typed', {
+        source: 'vscode',
+        rect: union(
+          await wb.box(quick.locator('input')),
+          await wb.box(quickRows().filter({ hasText: 'Windows 1252' })),
+        ),
+      });
+      await sleep(900);
+      take.mark('enter');
+      await wb.press('Enter');
+      await quick.waitFor({ state: 'hidden' });
+      take.mark('saved');
+      await warning.first().waitFor({ state: 'detached' });
+      if (await wb.dirty()) throw new Error('the file is still unsaved after Save with Encoding');
+      const saved = await editorEncoding(wb);
+      if (saved !== 'Windows 1252') throw new Error(`the file is saved as ${saved}`);
+      take.mark('fixed');
+      await sleep(2000);
+      await endTake(context, rest);
+    },
+    edit(log, sources) {
+      const source = sources['vscode'] as Source;
+      const s0 = eventOf(log, 'start').t - LEAD;
+      const at = (t: number): number => t - s0;
+      const warning = eventOf(log, 'warning');
+      // Problems down to its warning, the code above it at the `names` loop's size: the quick fix
+      // menu opens under the line, inside the code's view.
+      const panel = rectOf(eventOf(log, 'panel'));
+      const panels = rows(STAGE, STAGE.h - GUTTER - problemsHeight(panel, rectOf(warning)));
+      const line = rectOf(eventOf(log, 'line'));
+      const code = codeView(line, panels.top, source, NAMES_CODE_SCALE, 0.25);
+      const problems = viewAt(panel, UI_SCALE, panels.bottom, source, { x: 0, y: 0 });
+      // VS Code's encoding quick picks open at the window's top, far from the code: while one is
+      // open the code's panel cuts to it, at UI_SCALE, centred in the panel.
+      const pickShot = (rect: Rect): { frame: Rect; view: Rect } => {
+        const view = grow(rect, 8);
+        const scale = Math.min(UI_SCALE, panels.top.w / view.w, panels.top.h / view.h);
+        const w = view.w * scale;
+        const h = view.h * scale;
+        return {
+          frame: {
+            x: panels.top.x + (panels.top.w - w) / 2,
+            y: panels.top.y + (panels.top.h - h) / 2,
+            w,
+            h,
+          },
+          view,
+        };
+      };
+      const pick = pickShot(rectOf(eventOf(log, 'pick')));
+      const typed = pickShot(rectOf(eventOf(log, 'typed')));
+      const key = at(eventOf(log, 'key').t);
+      const actions = at(eventOf(log, 'actions').t);
+      const saveAt = at(eventOf(log, 'save').t);
+      const chosen = at(eventOf(log, 'chosen').t);
+      const list = at(eventOf(log, 'list').t);
+      const enter = at(eventOf(log, 'enter').t);
+      const saved = at(eventOf(log, 'saved').t);
+      const fixed = at(eventOf(log, 'fixed').t);
+      const end = at(eventOf(log, 'end').t) + 0.4;
+      const left = (rect: Rect): Rect => ({
+        ...rect,
+        w: Math.min(rect.w, problems.w - TEXT_FADE / UI_SCALE - 8),
+      });
+      return single(
+        'encoding',
+        log,
+        sources,
+        { s0, end: s0 + end },
+        [
+          {
+            source: 'vscode',
+            fade: TEXT_FADE,
+            // Cuts: the quick picks are another part of the window, not a scroll of the code.
+            shots: [
+              { at: 0, frame: panels.top, view: code },
+              { at: saveAt + 0.12, ...pick, move: 0 },
+              { at: list + 0.05, ...typed, move: 0 },
+              { at: saved, frame: panels.top, view: code, move: 0 },
+            ],
+          },
+          still('vscode', panels.bottom, problems, TEXT_FADE),
+        ],
+        {
+          captions: sequence(
+            [
+              {
+                from: key - 0.05,
+                keys: [ACCENT],
+                text: 'Saved as UTF-8, the game would show Ã©',
+              },
+              { from: actions - 0.05, keys: ['Ctrl', '.'], text: "Etch's quick fix" },
+              { from: saveAt + 0.05, text: 'Save with Encoding' },
+              { from: chosen + 0.05, text: 'Windows 1252, the encoding the game reads' },
+              { from: fixed - 0.05, text: 'Saved as Windows 1252: the warning is gone' },
+            ],
+            end - 0.4,
+          ),
+          highlights: [
+            {
+              from: at(warning.t) + 0.2,
+              to: fixed - 0.1,
+              panel: 1,
+              rect: left(rectOf(warning)),
+            },
+            {
+              from: actions + 0.4,
+              to: saveAt - 0.05,
+              panel: 0,
+              rect: rectOf(eventOf(log, 'menu')),
+            },
+            { from: chosen + 0.5, to: enter - 0.05, panel: 0, rect: rectOf(eventOf(log, 'typed')) },
+          ],
+          // Between the two quick picks VS Code shows neither for a moment: the panel holds the
+          // first one, as chosen, until the encodings' list is up.
+          holds: [{ from: chosen, to: list + 0.05, panel: 0, at: eventOf(log, 'chosen').t }],
+          // The file is saved in another encoding at the end: the loop dissolves into its start.
+          loopFade: 0.5,
+          core: { from: key - 0.4, to: fixed + 1 },
+        },
+      );
+    },
+  },
+  {
+    // A sprite's hover and F12 to its .gfx; then, after a cut, the demo mod's models .gfx: a mesh
+    // path's hover draws the model, a texture path Ctrl+clicked opens it, Ctrl+W twice comes back.
+    id: 'hovers',
+    async run(context) {
+      const { wb, take } = context;
+      const sprite = await wb.find(`"${HOVERED_SPRITE}"`);
+      // The text cursor on the name, for F12; the loop starts and ends with it there.
+      await wb.walkCursorTo({ line: sprite.line, column: sprite.start + 1 }, 0);
+      await wb.parkMouse();
+      await enableHovers(wb);
+      const group = wb.page.locator('.part.editor .editor-group-container').first();
+      take.mark('group', { source: 'vscode', rect: await wb.box(group) });
+      const name = await textOnScreen(wb, HOVERED_SPRITE);
+      const rest = await startTake(context);
+      take.mark('start');
+      // The mouse moves at the end only: on the way it would hover other names.
+      await glideOver(context, middle(name), 900);
+      take.mark('hovering', { source: 'vscode', rect: name });
+      take.mark('sprite-hover', { source: 'vscode', rect: await shownHover(wb, true) });
+      await sleep(2300);
+      // The pointer out of the way first: over the .gfx that opens it would hover another name.
+      await glideOver(context, rest, 600);
+      await sleep(250);
+      take.mark('f12');
+      await wb.press('F12');
+      await wb.page.locator('.tab.active', { hasText: '.gfx' }).waitFor();
+      await sleep(400);
+      take.mark('definition', { source: 'vscode', rect: await textOnScreen(wb, HOVERED_SPRITE) });
+      await sleep(1900);
+      // Off camera, in the cut: the game's .gfx closed and the demo mod's models .gfx opened.
+      take.mark('cut');
+      await wb.press('Control+W');
+      await wb.page.locator('.tab.active', { hasText: 'provinceview.gui' }).waitFor();
+      await wb.quickOpen(MODELS_FILE);
+      await sleep(500);
+      const mesh = await textOnScreen(wb, MESH_PATH);
+      const texture = await textOnScreen(wb, TEXTURE_PATH);
+      take.mark('models', { source: 'vscode', rect: mesh });
+      await sleep(300);
+      await glideOver(context, middle(mesh), 800);
+      take.mark('mesh-hover', { source: 'vscode', rect: await shownHover(wb, true) });
+      await sleep(2500);
+      // The mesh's hover covers the texture path below it.
+      await hideHover(wb);
+      await glideOver(context, middle(texture), 500);
+      await sleep(200);
+      take.mark('ctrl-click', { source: 'vscode', rect: texture });
+      await wb.page.keyboard.down('Control');
+      take.click();
+      await wb.page.mouse.click(middle(texture).x, middle(texture).y);
+      await wb.page.keyboard.up('Control');
+      await wb.page.locator('.tab.active', { hasText: TEXTURE_PATH }).waitFor();
+      const view = await editorFrame(wb, '#channels');
+      await view.waitForFunction(() => (document.querySelector('canvas')?.width ?? 0) > 0);
+      await sleep(200);
+      take.mark('texture', { source: 'vscode', rect: await wb.box(view.locator('header')) });
+      await sleep(1600);
+      await glideOver(context, rest, 600);
+      for (const back of [MODELS_FILE, 'provinceview.gui']) {
+        take.mark('close');
+        await wb.press('Control+W');
+        await wb.page.locator('.tab.active', { hasText: back }).waitFor();
+        await sleep(150);
+        take.mark('closed');
+        await sleep(back === MODELS_FILE ? 600 : 400);
+      }
+      await endTake(context, rest);
+    },
+    edit(log, sources) {
+      const source = sources['vscode'] as Source;
+      const group = rectOf(eventOf(log, 'group'));
+      // The editor's group, about 1100 px wide, across the stage at CODE_SCALE: its tabs name the
+      // file shown. Each shot centres what it shows in the stage's height.
+      const scale = Math.min(CODE_SCALE, STAGE.w / group.w);
+      const frame: Rect = {
+        x: STAGE.x + (STAGE.w - group.w * scale) / 2,
+        y: STAGE.y,
+        w: group.w * scale,
+        h: STAGE.h,
+      };
+      const viewH = STAGE.h / scale;
+      const around = (rect: Rect): Rect => ({
+        x: group.x,
+        y: Math.min(Math.max(rect.y + rect.h / 2 - viewH / 2, group.y), source.height - viewH),
+        w: group.w,
+        h: viewH,
+      });
+      const spriteView = around(
+        union(rectOf(eventOf(log, 'hovering')), rectOf(eventOf(log, 'sprite-hover'))),
+      );
+      const definition = eventOf(log, 'definition');
+      const definitionView = around(rectOf(definition));
+      // The models .gfx is short: from its tabs down, its first line whole and the hover in view.
+      const modelsView: Rect = { x: group.x, y: group.y, w: group.w, h: viewH };
+      const hovered = union(rectOf(eventOf(log, 'models')), rectOf(eventOf(log, 'mesh-hover')));
+      if (hovered.y + hovered.h > group.y + viewH) {
+        throw new Error('the mesh path and its hover reach below the models view');
+      }
+      // The Texture Preview centres the picture under its header ('texture'): the view on the
+      // middle of the rest of the group.
+      const header = rectOf(eventOf(log, 'texture'));
+      const below = header.y + header.h;
+      const textureView = around({ ...group, y: below, h: group.y + group.h - below });
+      const s0 = eventOf(log, 'start').t - LEAD;
+      const cut = eventOf(log, 'cut').t;
+      const s1 = eventOf(log, 'models').t;
+      const end = eventOf(log, 'end').t + 0.4;
+      const f12 = eventOf(log, 'f12').t;
+      const click = eventOf(log, 'ctrl-click').t;
+      const opened = eventOf(log, 'texture').t;
+      const closes = eventsOf(log, 'close', 2);
+      const closed = eventsOf(log, 'closed', 2);
+      const local = (t: number, from: number): number => t - from;
+      return cuts('hovers', log, sources, [
+        {
+          span: { s0, end: cut },
+          tracks: [
+            {
+              source: 'vscode',
+              shots: [
+                { at: 0, frame, view: spriteView },
+                { at: local(definition.t, s0), frame, view: definitionView, move: 0 },
+              ],
+            },
+          ],
+          // From F12 until the .gfx is revealed at the name, the file as it was: VS Code opens the
+          // new file at its top for a frame or two first.
+          holds: [{ from: local(f12, s0), to: local(definition.t, s0), panel: 0, at: f12 - 0.05 }],
+          captions: sequence(
+            [
+              {
+                from: local(eventOf(log, 'hovering').t, s0) + 0.1,
+                text: 'Hover a sprite: its picture, kind and the .gfx that defines it',
+              },
+              {
+                from: local(f12, s0) - 0.05,
+                keys: ['F12'],
+                text: "Its definition, in the game's .gfx",
+              },
+            ],
+            cut - s0,
+          ),
+          highlights: [
+            {
+              from: local(definition.t, s0) + 0.2,
+              to: cut - s0 - 0.1,
+              panel: 0,
+              rect: rectOf(definition),
+            },
+          ],
+        },
+        {
+          span: { s0: s1, end },
+          tracks: [
+            {
+              source: 'vscode',
+              shots: [
+                { at: 0, frame, view: modelsView },
+                { at: local(opened, s1), frame, view: textureView, move: 0 },
+                ...closed.map((event, i) => ({
+                  at: local(event.t, s1),
+                  frame,
+                  view: i === 0 ? modelsView : spriteView,
+                  move: 0,
+                })),
+              ],
+            },
+          ],
+          // From each click or key until its file is shown, the frame before it.
+          holds: [
+            { from: local(click, s1) + 0.1, to: local(opened, s1), panel: 0, at: click },
+            ...closes.map((event, i) => ({
+              from: local(event.t, s1),
+              to: local((closed[i] as TakeEvent).t, s1),
+              panel: 0,
+              at: event.t - 0.05,
+            })),
+          ],
+          captions: sequence(
+            [
+              { from: 0.1, text: 'Hover a mesh path: the model drawn, with its counts' },
+              {
+                from: local(click, s1) - 0.05,
+                keys: ['Ctrl', 'Click'],
+                text: 'A texture path opens in the Texture Preview',
+              },
+              { from: local((closes[0] as TakeEvent).t, s1) - 0.05, keys: ['Ctrl', 'W'] },
+              {
+                from: local((closes[1] as TakeEvent).t, s1) - 0.05,
+                keys: ['Ctrl', 'W'],
+                text: 'Back to provinceview.gui',
+              },
+            ],
+            end - s1 - 0.4,
+          ),
+        },
+      ]);
+    },
+  },
+  {
+    // A ship's mesh: a drag turns it, Wire on and off, a country's flag on its sails, its idle
+    // animation playing, Reset view.
+    id: 'mesh',
+    async run(context) {
+      const { wb, take } = context;
+      await openGameFile(context, MESH_FILE);
+      const view = await editorFrame(wb, '#wireframe');
+      const canvas = view.locator('#canvas');
+      const animation = view.locator('#animation');
+      await view.locator('#facts').filter({ hasText: /\S/ }).waitFor();
+      await animation.waitFor();
+      const offered = await animation.locator('option').allInnerTexts();
+      const idle = offered.find((label) => label.startsWith(IDLE_ANIMATION));
+      if (idle === undefined) {
+        throw new Error(`${MESH_FILE} offers no ${IDLE_ANIMATION}: ${offered.join(', ')}`);
+      }
+      if (await view.locator('#flag').isHidden()) throw new Error(`${MESH_FILE} shows no flag`);
+      // Its textures load after the mesh.
+      await sleep(1500);
+      const flagInput = view.locator('#flag-tag');
+      const controls = {
+        facts: view.locator('#facts'),
+        wire: view.locator('#wireframe'),
+        flag: view.locator('#flag'),
+        animation,
+        reset: view.locator('#reset'),
+      };
+      for (const [name, locator] of Object.entries(controls)) {
+        take.mark(`bar-${name}`, { source: 'vscode', rect: await wb.box(locator) });
+      }
+      take.mark('header', { source: 'vscode', rect: await wb.box(view.locator('header')) });
+      take.mark('canvas', { source: 'vscode', rect: await wb.box(view.locator('main')) });
+      const box = await canvas.boundingBox();
+      if (box === null) throw new Error('the mesh preview shows no canvas');
+      const from = { x: box.x + box.width * DRAG.from.x, y: box.y + box.height * DRAG.from.y };
+      const rest = await startTake(context);
+      take.mark('start');
+      await sleep(600);
+      // A drag turns the ship.
+      await pointTo(context, from, 600);
+      await sleep(150);
+      take.mark('drag');
+      take.click();
+      await wb.page.mouse.down();
+      await pointTo(context, { x: from.x + DRAG.by, y: from.y }, DRAG.ms);
+      await wb.page.mouse.up();
+      take.mark('dragged');
+      await sleep(300);
+      // Wire on, and off again.
+      take.mark('to', { label: 'wire' });
+      for (const on of [true, false]) {
+        await pointTo(context, await centre(controls.wire), on ? 500 : 200);
+        await sleep(150);
+        take.mark(on ? 'wire' : 'unwire', { source: 'vscode', rect: await wb.box(controls.wire) });
+        take.click();
+        await controls.wire.click();
+        await view.locator(`#wireframe[aria-pressed="${String(on)}"]`).waitFor();
+        await sleep(on ? 1200 : 400);
+      }
+      // A country's flag on the sails.
+      take.mark('to', { label: 'flag' });
+      await pointTo(context, await centre(flagInput), 500);
+      await sleep(150);
+      take.click();
+      await flagInput.click();
+      take.mark('tag', { source: 'vscode', rect: await wb.box(controls.flag) });
+      await wb.page.keyboard.type(FLAG_TAG, { delay: 120 });
+      await sleep(150);
+      take.mark('enter');
+      await wb.page.keyboard.press('Enter');
+      await view.waitForFunction(
+        (tag) => document.querySelector('#facts')?.textContent.includes(tag) ?? false,
+        FLAG_TAG,
+      );
+      await sleep(1500);
+      // Its idle animation, which plays once it is chosen. The list would open in a window of its
+      // own, which the master does not record: the choice is made without it.
+      take.mark('to', { label: 'animation' });
+      await pointTo(context, await centre(animation), 500);
+      await sleep(200);
+      take.mark('animate', { source: 'vscode', rect: await wb.box(animation), label: idle });
+      await animation.selectOption({ label: idle });
+      await view.locator('#play[aria-pressed="true"]').waitFor();
+      await sleep(2000);
+      // Reset view frames the ship as at the start.
+      take.mark('to', { label: 'reset' });
+      await pointTo(context, await centre(controls.reset), 500);
+      await sleep(150);
+      take.mark('reset', { source: 'vscode', rect: await wb.box(controls.reset) });
+      take.click();
+      await controls.reset.click();
+      await sleep(1200);
+      take.mark('leaving');
+      await pointTo(context, rest, 600);
+      await wb.focusEditor();
+      await wb.parkMouse();
+      take.mark('end');
+      await take.until(take.t() + POST_ROLL_MS / 1000);
+    },
+    edit(log, sources) {
+      const layout = meshPreviewLayout(log, ['wire', 'flag', 'animation', 'reset'], {
+        x: 0,
+        y: (1 - SHIP_BAND) / 2,
+        w: 1,
+        h: SHIP_BAND,
+      });
+      const { bar, strip, stripOn, factsView } = layout;
+      const facts = bar('facts');
+      const s0 = eventOf(log, 'start').t - LEAD;
+      const at = (t: number): number => t - s0;
+      const moves = eventsOf(log, 'to', 4);
+      const targets: Record<string, Rect> = {
+        wire: bar('wire'),
+        flag: bar('flag'),
+        // The list and the Play button right of it, which shows once an animation is chosen.
+        animation: { ...bar('animation'), w: bar('animation').w + 90 },
+        reset: bar('reset'),
+      };
+      const drag = at(eventOf(log, 'drag').t);
+      const wire = eventOf(log, 'wire');
+      const unwire = at(eventOf(log, 'unwire').t);
+      const tag = eventOf(log, 'tag');
+      const enter = at(eventOf(log, 'enter').t);
+      const animate = eventOf(log, 'animate');
+      const reset = eventOf(log, 'reset');
+      const leaving = at(eventOf(log, 'leaving').t);
+      const end = at(eventOf(log, 'end').t) + 0.4;
+      return single(
+        'mesh',
+        log,
+        sources,
+        { s0, end: s0 + end },
+        [
+          {
+            source: 'vscode',
+            shots: [
+              { at: 0, frame: strip, view: factsView },
+              ...moves.map((move) => ({
+                at: at(move.t),
+                frame: strip,
+                view: stripOn(targets[move.label ?? ''] ?? facts),
+              })),
+              { at: leaving, frame: strip, view: factsView },
+            ],
+          },
+          still('vscode', layout.model, layout.modelView),
+        ],
+        {
+          captions: sequence(
+            [
+              { from: 0.2, text: "A ship's mesh: its shapes, vertices, triangles and bones" },
+              { from: drag - 0.05, text: 'A drag turns it' },
+              { from: at(wire.t) - 0.05, text: 'Wire: its triangle edges' },
+              {
+                from: unwire + 0.3,
+                keys: [FLAG_TAG, 'Enter'],
+                text: 'Flag: a country on its sails',
+              },
+              { from: at(animate.t) - 0.05, text: `Its idle animation, playing` },
+              { from: at(reset.t) - 0.05, text: 'Reset view' },
+            ],
+            end - 0.4,
+          ),
+          highlights: [
+            { from: at(wire.t) + 0.2, to: unwire - 0.05, panel: 0, rect: rectOf(wire) },
+            { from: enter + 0.3, to: at(animate.t) - 0.9, panel: 0, rect: rectOf(tag) },
+            {
+              from: at(animate.t) + 0.3,
+              to: at(reset.t) - 0.9,
+              panel: 0,
+              rect: rectOf(animate),
+            },
+          ],
+          // The ship keeps its flag and its animation: the loop dissolves into its start.
+          loopFade: 0.5,
+          core: { from: drag - 0.5, to: at(animate.t) + 2 },
+        },
+      );
+    },
+  },
+  {
+    // A map tree in the Mesh Preview: North dragged to 1, Date from spring to autumn, Snow from 0
+    // to 1, and a province typed in Place: Ground and North follow the map there.
+    id: 'trees',
+    async run(context) {
+      const { wb, take } = context;
+      await openGameFile(context, TREE_FILE);
+      const view = await editorFrame(wb, '#season-day');
+      const facts = view.locator('#facts');
+      await facts.filter({ hasText: /\S/ }).waitFor();
+      await view.locator('#season').waitFor();
+      const named = (await facts.textContent()) ?? '';
+      if (!named.includes('mapobject_')) {
+        throw new Error(`${TREE_FILE} is not drawn as a map tree: ${named}`);
+      }
+      // Its textures load after the mesh.
+      await sleep(1500);
+      const controls = {
+        facts,
+        north: view.locator('#season-north'),
+        date: view.locator('#season-day'),
+        day: view.locator('#season-date'),
+        snow: view.locator('#snow-amount'),
+        place: view.locator('#place-province'),
+        ground: view.locator('#ground-colour'),
+      };
+      // Off camera: Date in spring, where the take's drag starts.
+      await controls.date.evaluate((el: HTMLInputElement, day: number) => {
+        el.value = String(day);
+        el.dispatchEvent(new Event('input'));
+        el.dispatchEvent(new Event('change'));
+      }, TREE_DAYS.spring);
+      await sleep(300);
+      for (const [name, locator] of Object.entries(controls)) {
+        take.mark(`bar-${name}`, { source: 'vscode', rect: await wb.box(locator) });
+      }
+      take.mark('header', { source: 'vscode', rect: await wb.box(view.locator('header')) });
+      take.mark('canvas', { source: 'vscode', rect: await wb.box(view.locator('main')) });
+      const value = async (input: Locator): Promise<number> => Number(await input.inputValue());
+      const rest = await startTake(context);
+      take.mark('start');
+      await sleep(600);
+      // North to 1: the tree takes the season colour, as in the map's far north.
+      take.mark('to', { label: 'north' });
+      await pointTo(context, await rangePoint(controls.north, 0), 500);
+      take.mark('north', { source: 'vscode', rect: await wb.box(controls.north) });
+      await dragRange(context, controls.north, 1.1, 700);
+      if ((await value(controls.north)) !== 1) throw new Error('North is not at 1 after its drag');
+      await sleep(700);
+      // Date from spring to autumn: the season colour follows the day.
+      take.mark('to', { label: 'date' });
+      await pointTo(context, await rangePoint(controls.date, TREE_DAYS.spring), 500);
+      take.mark('date', {
+        source: 'vscode',
+        rect: union(await wb.box(controls.date), await wb.box(controls.day)),
+      });
+      await dragRange(context, controls.date, TREE_DAYS.autumn, 1800);
+      const day = await value(controls.date);
+      if (Math.abs(day - TREE_DAYS.autumn) > 10) throw new Error(`Date ends at day ${String(day)}`);
+      await sleep(700);
+      // Snow from none to all.
+      take.mark('to', { label: 'snow' });
+      await pointTo(context, await rangePoint(controls.snow, 0), 500);
+      take.mark('snow', { source: 'vscode', rect: await wb.box(controls.snow) });
+      await dragRange(context, controls.snow, 1.1, 900);
+      if ((await value(controls.snow)) !== 1) throw new Error('Snow is not at 1 after its drag');
+      await sleep(900);
+      // A province in Place: Ground and North take the map's values there, and lock.
+      take.mark('to', { label: 'place' });
+      await pointTo(context, await centre(controls.place), 500);
+      await sleep(150);
+      take.click();
+      await controls.place.click();
+      take.mark('typed', { source: 'vscode', rect: await wb.box(controls.place) });
+      await wb.page.keyboard.type(TREE_PLACE, { delay: 120 });
+      await sleep(150);
+      take.mark('enter');
+      await wb.page.keyboard.press('Enter');
+      await view.locator('#season-north:disabled').waitFor();
+      const north = await value(controls.north);
+      if (north >= 1) throw new Error(`North stays at ${String(north)} at province ${TREE_PLACE}`);
+      take.mark('placed');
+      await sleep(1800);
+      take.mark('leaving');
+      await pointTo(context, rest, 600);
+      await wb.focusEditor();
+      await wb.parkMouse();
+      take.mark('end');
+      await take.until(take.t() + POST_ROLL_MS / 1000);
+    },
+    edit(log, sources) {
+      const layout = meshPreviewLayout(log, ['north', 'date', 'snow', 'place'], TREE_FOCUS);
+      const { bar, strip, stripOn, factsView } = layout;
+      const facts = bar('facts');
+      const s0 = eventOf(log, 'start').t - LEAD;
+      const at = (t: number): number => t - s0;
+      const moves = eventsOf(log, 'to', 4);
+      const targets: Record<string, Rect> = {
+        north: bar('north'),
+        date: union(bar('date'), bar('day')),
+        snow: bar('snow'),
+        // The box, and Ground and North right of it, which follow it.
+        place: union(bar('place'), bar('north')),
+      };
+      const north = eventOf(log, 'north');
+      const date = eventOf(log, 'date');
+      const snow = eventOf(log, 'snow');
+      const typed = at(eventOf(log, 'typed').t);
+      const placed = at(eventOf(log, 'placed').t);
+      const leaving = at(eventOf(log, 'leaving').t);
+      const end = at(eventOf(log, 'end').t) + 0.4;
+      return single(
+        'trees',
+        log,
+        sources,
+        { s0, end: s0 + end },
+        [
+          {
+            source: 'vscode',
+            shots: [
+              { at: 0, frame: strip, view: factsView },
+              ...moves.map((move) => ({
+                at: at(move.t),
+                frame: strip,
+                view: stripOn(targets[move.label ?? ''] ?? facts),
+              })),
+              { at: leaving, frame: strip, view: factsView },
+            ],
+          },
+          still('vscode', layout.model, layout.modelView),
+        ],
+        {
+          captions: sequence(
+            [
+              { from: 0.2, text: "A map tree, drawn with the game's own tree shader" },
+              { from: at(north.t) - 0.05, text: 'North at 1: the tree takes the season colour' },
+              { from: at(date.t) - 0.05, text: 'Date: the season colour follows the day' },
+              { from: at(snow.t) - 0.05, text: 'Snow, as the game puts it on in winter' },
+              {
+                from: typed - 0.05,
+                keys: [TREE_PLACE, 'Enter'],
+                text: "Place: Stockholm's ground colour and North",
+              },
+            ],
+            end - 0.4,
+          ),
+          highlights: [
+            { from: at(north.t) + 0.2, to: at(date.t) - 0.6, panel: 0, rect: rectOf(north) },
+            { from: at(date.t) + 0.2, to: at(snow.t) - 0.6, panel: 0, rect: rectOf(date) },
+            { from: at(snow.t) + 0.2, to: typed - 0.6, panel: 0, rect: rectOf(snow) },
+            { from: placed + 0.2, to: leaving - 0.1, panel: 0, rect: bar('ground') },
+            { from: placed + 0.2, to: leaving - 0.1, panel: 0, rect: bar('north') },
+          ],
+          // The tree keeps its snow and its place: the loop dissolves into its start.
+          loopFade: 0.5,
+          core: { from: at(north.t) - 0.5, to: placed + 1.5 },
+        },
+      );
+    },
+  },
+  {
+    // A unit's entity in its .asset file: Preview entity above it builds the unit beside the code,
+    // its halberd on its hand, playing idle; the state list set to walk.
+    id: 'entity',
+    async run(context) {
+      const { wb, take, gamePath } = context;
+      // In the editor's own group: the preview opens beside it, in the window preview's group.
+      await wb.quickOpen(
+        path.posix.basename(ENTITY_FILE),
+        path.join(gamePath, ...ENTITY_FILE.split('/')),
+      );
+      const entityLine = await textOnScreen(wb, 'entity = {', ENTITY_LINES.entity);
+      await textOnScreen(wb, `name = "${ENTITY_NAME}"`, ENTITY_LINES.entity + 1);
+      // Every entity in view has a lens above it: the file's first is the topmost.
+      const lenses = wb.page
+        .locator('.part.editor .editor-group-container.active .codelens-decoration a', {
+          hasText: 'Preview entity',
+        })
+        .filter({ visible: true });
+      await lenses.first().waitFor();
+      let lens = lenses.first();
+      let top = Number.POSITIVE_INFINITY;
+      for (const candidate of await lenses.all()) {
+        const box = await candidate.boundingBox();
+        if (box !== null && box.y < top) {
+          top = box.y;
+          lens = candidate;
+        }
+      }
+      if (top > entityLine.y || entityLine.y - top > 2 * entityLine.h) {
+        throw new Error(`the topmost lens is not above line ${String(ENTITY_LINES.entity)}`);
+      }
+      // Off camera, once: the first preview reads the playset's .gfx and .asset files, which takes
+      // seconds; the take's draws from them at once.
+      const tab = wb.page.locator('.tab', { hasText: `Entity: ${ENTITY_NAME}` });
+      await lens.click();
+      const first = await editorFrame(wb, '#wireframe');
+      await first.locator('#facts').filter({ hasText: ENTITY_NAME }).waitFor({ timeout: 60_000 });
+      await tab.hover();
+      await tab.locator('.tab-actions .action-label').first().click();
+      await tab.waitFor({ state: 'detached' });
+      await wb.focusEditor();
+      await sleep(500);
+      const group = wb.page.locator('.part.editor .editor-group-container').first();
+      take.mark('group', { source: 'vscode', rect: await wb.box(group) });
+      take.mark('lens', { source: 'vscode', rect: await wb.box(lens) });
+      take.mark('block', {
+        source: 'vscode',
+        rect: union(entityLine, await textOnScreen(wb, '}', ENTITY_LINES.end)),
+      });
+      take.mark('wide', {
+        source: 'vscode',
+        rect: await textOnScreen(wb, 'animation = "retreat" }', ENTITY_LINES.retreat),
+      });
+      take.mark('attach', {
+        source: 'vscode',
+        rect: union(
+          await textOnScreen(wb, 'attach = {', ENTITY_LINES.attach),
+          await textOnScreen(wb, 'Right_hand_node = "western_halbard"', ENTITY_LINES.attach + 1),
+          await textOnScreen(wb, '}', ENTITY_LINES.attach + 2),
+        ),
+      });
+      take.mark('walk', {
+        source: 'vscode',
+        rect: union(
+          await textOnScreen(wb, `state = { name = "${ENTITY_STATE}"`, ENTITY_LINES.walk),
+          await textOnScreen(wb, `animation = "${ENTITY_STATE}" }`, ENTITY_LINES.walk),
+        ),
+      });
+      const rest = await startTake(context);
+      take.mark('start');
+      await sleep(600);
+      await pointTo(context, await centre(lens), 900);
+      take.mark('pointed');
+      await sleep(500);
+      take.mark('click');
+      take.click();
+      await lens.click();
+      const view = await editorFrame(wb, '#wireframe');
+      const facts = view.locator('#facts');
+      const animation = view.locator('#animation');
+      await facts.filter({ hasText: ENTITY_NAME }).waitFor();
+      await animation.locator(`option[value="${ENTITY_STATE}"]`).waitFor({ state: 'attached' });
+      const playing = await animation.inputValue();
+      if (playing !== 'idle') throw new Error(`the preview starts on "${playing}", not idle`);
+      const attached = facts.locator('span').nth(1);
+      const parts = (await attached.textContent()) ?? '';
+      if (!parts.includes('1 attached')) throw new Error(`the facts read "${parts}"`);
+      // Its textures load after the meshes.
+      await sleep(800);
+      take.mark('shown');
+      const controls = { facts, animation, play: view.locator('#play') };
+      for (const [name, locator] of Object.entries(controls)) {
+        take.mark(`bar-${name}`, { source: 'vscode', rect: await wb.box(locator) });
+      }
+      take.mark('header', { source: 'vscode', rect: await wb.box(view.locator('header')) });
+      take.mark('canvas', { source: 'vscode', rect: await wb.box(view.locator('main')) });
+      take.mark('attached', { source: 'vscode', rect: await wb.box(attached) });
+      await sleep(2200);
+      // Its walk. The list would open in a window of its own, which the master does not record:
+      // the choice is made without it.
+      take.mark('to', { label: 'state' });
+      await pointTo(context, await centre(animation), 900);
+      await sleep(200);
+      take.mark('state', { source: 'vscode', rect: await wb.box(animation) });
+      await animation.selectOption({ label: `State: ${ENTITY_STATE}` });
+      if ((await animation.inputValue()) !== ENTITY_STATE) {
+        throw new Error(`the state list does not read ${ENTITY_STATE}`);
+      }
+      await sleep(3200);
+      take.mark('leaving');
+      await pointTo(context, rest, 700);
+      await wb.focusEditor();
+      await wb.parkMouse();
+      take.mark('end');
+      await take.until(take.t() + POST_ROLL_MS / 1000);
+    },
+    edit(log, sources) {
+      const group = rectOf(eventOf(log, 'group'));
+      const wide = rectOf(eventOf(log, 'wide'));
+      const block = rectOf(eventOf(log, 'block'));
+      // The code from the editor's left edge, its line numbers, past the widest state's end by the
+      // fade, at CODE_SCALE: from the tabs, which name the file, while the entity fits under them.
+      const viewH = STAGE.h / CODE_SCALE;
+      const code: Rect = {
+        x: group.x,
+        y: Math.max(group.y, block.y + block.h + 40 - viewH),
+        w: wide.x + wide.w + 30 + TEXT_FADE / CODE_SCALE - group.x,
+        h: viewH,
+      };
+      const left: Rect = { x: STAGE.x, y: STAGE.y, w: code.w * CODE_SCALE, h: STAGE.h };
+      const centred: Rect = { ...left, x: STAGE.x + (STAGE.w - left.w) / 2 };
+      const right: Rect = {
+        x: left.x + left.w + GUTTER,
+        y: STAGE.y,
+        w: STAGE.w - left.w - GUTTER,
+        h: STAGE.h,
+      };
+      const layout = meshPreviewLayout(log, ['animation', 'play'], UNIT_FOCUS, right);
+      const { bar, strip, stripOn, model, modelView } = layout;
+      const s0 = eventOf(log, 'start').t - LEAD;
+      const at = (t: number): number => t - s0;
+      const pointed = at(eventOf(log, 'pointed').t);
+      const click = at(eventOf(log, 'click').t);
+      // The code slides left once the unit is drawn; the preview fades in beside it after, so the
+      // two never overlap. At the end the other way round.
+      const SLIDE = 0.6;
+      const FADE = 0.4;
+      const shown = at(eventOf(log, 'shown').t);
+      const drawn = shown + SLIDE;
+      const to = at(eventOf(log, 'to').t);
+      const state = eventOf(log, 'state');
+      const leaving = at(eventOf(log, 'leaving').t);
+      const end = at(eventOf(log, 'end').t) + 0.4;
+      const attached = rectOf(eventOf(log, 'attached'));
+      const factsView = stripOn(attached);
+      const stateView = stripOn(union(bar('animation'), bar('play')));
+      return single(
+        'entity',
+        log,
+        sources,
+        { s0, end: s0 + end },
+        [
+          {
+            source: 'vscode',
+            shots: [
+              { at: 0, frame: centred, view: code },
+              { at: shown, frame: left, view: code, move: SLIDE },
+              { at: leaving + FADE, frame: centred, view: code, move: SLIDE },
+            ],
+            fade: TEXT_FADE,
+          },
+          {
+            source: 'vscode',
+            shots: [
+              { at: 0, frame: strip, view: factsView, opacity: 0 },
+              { at: drawn, frame: strip, view: factsView, opacity: 1, move: FADE },
+              { at: to, frame: strip, view: stateView },
+              { at: leaving, frame: strip, view: stateView, opacity: 0, move: FADE },
+            ],
+          },
+          {
+            source: 'vscode',
+            shots: [
+              { at: 0, frame: model, view: modelView, opacity: 0 },
+              { at: drawn, frame: model, view: modelView, opacity: 1, move: FADE },
+              { at: leaving, frame: model, view: modelView, opacity: 0, move: FADE },
+            ],
+          },
+        ],
+        {
+          captions: sequence(
+            [
+              { from: 0.2, text: "A unit's entity in its .asset file: mesh, states, attachments" },
+              { from: click - 0.05, text: 'Preview entity builds the unit as the game does' },
+              { from: drawn + 0.3, text: "Its halberd on the right hand's bone, playing idle" },
+              {
+                from: at(state.t) - 0.05,
+                text: `State ${ENTITY_STATE}: the halberd moves with the hand`,
+              },
+            ],
+            end - 0.4,
+          ),
+          highlights: [
+            { from: pointed + 0.1, to: click + 0.4, panel: 0, rect: rectOf(eventOf(log, 'lens')) },
+            {
+              from: drawn + FADE,
+              to: to - 0.1,
+              panel: 0,
+              rect: rectOf(eventOf(log, 'attach')),
+            },
+            { from: drawn + FADE, to: to - 0.1, panel: 1, rect: attached },
+            {
+              from: at(state.t) + 0.2,
+              to: leaving - 0.1,
+              panel: 0,
+              rect: rectOf(eventOf(log, 'walk')),
+            },
+            { from: at(state.t) + 0.2, to: leaving - 0.1, panel: 1, rect: rectOf(state) },
+          ],
+          // The preview fades out and the code slides back: the loop ends as it starts.
+          core: { from: click - 0.6, to: at(state.t) + 2.5 },
         },
       );
     },

@@ -50,7 +50,7 @@ pnpm media capture --clip data --reedit   # edit and render again from the take,
 
 | Option     | Default                    | Meaning                                                                                                               |
 | ---------- | -------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `--clip`   | all                        | clip ids: `hero`, `preview`, `views`, `data`, `zoom`, `outline`, `problems`, `profile`, `names`, `reload`, `pick`, `snapshot` |
+| `--clip`   | all                        | clip ids: `hero`, `preview`, `views`, `data`, `zoom`, `outline`, `problems`, `profile`, `names`, `texture`, `encoding`, `hovers`, `mesh`, `trees`, `entity`, `reload`, `pick`, `snapshot` |
 | `--save`   | none                       | the live take's save: a base-game save, not ironman, copied into the run; needed for `reload`, `pick` and `snapshot` |
 | `--profile` | none                      | the script profile `profile` shows: a CSV of Anvil's script profiler measured in a base game; needed for `profile` |
 | `--reedit` | off                        | edit, render and encode the clips again from their takes' logs and masters                                            |
@@ -84,10 +84,10 @@ opens and closes on the same shot (its seam). A menu's panel is folded to its bu
 the menu is closed and unfolds with it. While a menu of the preview is open over the window, the
 window's panel holds its frame from before the menu opened and shows the window's new state from
 the frame the menu closes, so the menu shows whole in its own panel and never cut off at the
-window panel's edge. Where the pointer crosses other widgets between two it hovers (`outline`),
-the drawn pointer glides while Playwright's mouse moves at the end only, so the preview outlines
-no widget on the way. Panels of text lines longer than they are (code, Problems)
-fade out at their right edge rather than cut a word. Captions give the keys pressed and what they
+window panel's edge. Where the pointer crosses the preview's widgets on its way (`outline`) or
+other names in the editor (`hovers`), the drawn pointer glides while Playwright's mouse moves at
+the end only, so no tip or hover shows on the way. Panels of text lines longer than they are
+(code, Problems) fade out at their right edge rather than cut a word. Captions give the keys pressed and what they
 do, rings mark what changed once it has, and a pointer is drawn where Playwright's mouse moved (the
 master has none: Playwright's mouse is not the system pointer).
 
@@ -111,8 +111,8 @@ A run of every clip takes about fifteen minutes. It writes into `packages/media/
 
 ## The scripts' takes
 
-`profile` and `names` show Etch's work on script files (the Etch site specification's section
-3.2.3). They show VS Code alone: no preview and no game art.
+`profile`, `names` and `encoding` show Etch's work on script files (the Etch site
+specification's section 3.2.3). They show VS Code alone: no preview and no game art.
 
 - **`profile`** copies the CSV given with `--profile` into the run's throwaway private profile
   (`<work>/run/user-data/User/globalStorage/happy-dwarf-team.etch/private-install/profile/logs/`),
@@ -126,6 +126,48 @@ A run of every clip takes about fifteen minutes. It writes into `packages/media/
 - **`names`** opens `events/etch_demo_events.txt` of the demo mod, filters Problems to it, types a
   `5` before `owns = 151` (province 5151, not on the map) and `al` into `economic_ideas` (an idea
   group the playset does not define), and undoes both.
+- **`encoding`** opens the same file and reopens it as UTF-8, VS Code's default: the takes' VS
+  Code opens files in the game's encoding (`files.encoding` in `packages/media/src/config.ts`), and
+  the file is ASCII, so it reads the same. An `é` typed into the second event's ruler name
+  (`Rene`, now `Renée`) gets Etch's warning; its quick fix **Save with Encoding…** and VS Code's
+  list save the run's copy of the file as Windows 1252, and the warning goes.
+
+## The art takes
+
+`texture`, `mesh`, `trees`, `entity` and `hovers` show Etch's previews of the game's art (the
+Etch site specification's sections 3.2.2 and 8.2). `texture`, `mesh`, `trees` and `entity` open a
+base-game file read-only from the local game with Quick Open and its absolute path; the first
+three then move the editor into the preview's group, where it takes the preview's width. No file
+is copied. The Mesh Preview's loops show the bar's strip above a part of the canvas: a wider view
+would take in the code beside it.
+
+- **`texture`** opens `gfx/interface/game_settings_bg.dds` (an alpha and ten mip levels), clicks
+  **A** and **RGBA**, steps the mip level down twice with ↓ and back with Home, and rests the
+  pointer on the texture. The level is chosen with the keyboard: a click would open the list in a
+  window of its own, which `gfxcapture` does not record.
+- **`mesh`** opens `gfx/models/ships/carrack.mesh` (a skeleton, its own idle animation and sails
+  that show a flag): a drag turns the ship, **Wire** goes on and off, `FRA` typed in **Flag** puts
+  France's flag on the sails, the idle animation is chosen (without its list, as above) and plays,
+  and **Reset view** frames the ship again.
+- **`trees`** opens `gfx/models/Mapitems/Trees/leafs_01.mesh`, which `mapobject_5` makes a map
+  tree: a leaf tree, because only the first row of the game's `Tree_season.bmp` has colours and
+  the pines take their season colour from its grey rows. Off camera, **Date** is set to 1 April;
+  the take drags **North** to 1, **Date** to 28 October and **Snow** to 1, and types `1`
+  (Stockholm, the docs' example) in **Place**: Ground and North take the map's values there (North
+  0.85), and lock. The sliders are dragged with the pointer from their thumbs, whose places the
+  take works out from the slider's box and range.
+- **`entity`** opens `gfx/entities/western_units.asset` in the editor's own group and clicks
+  **Preview entity** above its first entity, `westerngfx_INFANTRY_1`: the preview opens beside it
+  with the halberd on the unit's right hand, playing `idle`, and the state list is set to `walk`
+  (without its list, as above). Off camera, before the take, the preview is opened and closed once,
+  so the take's draws at once rather than after the playset's `.gfx` and `.asset` files are read.
+  The bar's first line lists the attachments in its tooltip, which opens in a window of its own:
+  the loop rings the `attach` block in the code and the facts' "1 attached" instead.
+- **`hovers`** turns VS Code's hovers on in the run's settings for its take (the takes run with them
+  off, so the pointer shows nothing on its way). The pointer hovers `GFX_provinceview_building_bg`
+  in `provinceview.gui` and **F12** opens the base game's `.gfx` at its name. After a cut, the demo
+  mod's `interface/assets/etch_demo_models.gfx`: a hover on its mesh path draws the ship, a
+  Ctrl+click on its texture path opens the Texture Preview, and **Ctrl+W** twice comes back.
 
 ## The live take
 
@@ -218,7 +260,7 @@ endpoint are in `packages/media/src/config.ts`.
 
 The command:
 
-1. Reads `media.draft.json` of the capture and checks that it is complete: all twelve loops with
+1. Reads `media.draft.json` of the capture and checks that it is complete: all eighteen loops with
    their posters, every poster a 1920 × 1080 PNG, every loop file the size the draft says. It
    checks that `--site` is an etch-website checkout.
 2. Uploads each loop file with `PutObject` and `If-None-Match: *`, so it never overwrites a key.
