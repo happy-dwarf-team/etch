@@ -1,5 +1,29 @@
 # Changelog
 
+## [2.14.0](https://github.com/happy-dwarf-team/etch/compare/v2.13.0...v2.14.0) (2026-11-21)
+
+
+### Features
+
+* **extension:** check a script file in the live game and put the game's errors on its lines ([#579](https://github.com/happy-dwarf-team/etch/issues/579)) ([ffdcdd2](https://github.com/happy-dwarf-team/etch/commit/ffdcdd2a922de009f4fd1175271d912a2aa7d8b6))
+* **extension:** colour swatches and the colour picker for font colours in .gfx files ([#583](https://github.com/happy-dwarf-team/etch/issues/583)) ([da8c74b](https://github.com/happy-dwarf-team/etch/commit/da8c74bfd1af6e7481e1a54ed3ff305184423944))
+* **extension:** complete .gui files from the playset's widget types, keys, sprites and fonts ([#572](https://github.com/happy-dwarf-team/etch/issues/572)) ([b1fe2fb](https://github.com/happy-dwarf-team/etch/commit/b1fe2fb7a2ca1fb8e2e7c8351a26deb7cce009a4))
+* **extension:** etch.editor.rename turns sprite references and rename off ([#584](https://github.com/happy-dwarf-team/etch/issues/584)) ([c625ae7](https://github.com/happy-dwarf-team/etch/commit/c625ae776797881725a7ba7b81e8c24792d2da71))
+* **extension:** find every use of a sprite name and rename it in the mod's files ([#581](https://github.com/happy-dwarf-team/etch/issues/581)) ([ab86ac2](https://github.com/happy-dwarf-team/etch/commit/ab86ac2d4844e064fd35fd8f3dd186eb51361073))
+* **extension:** list .gui widgets and .gfx sprites and fonts as document symbols ([#573](https://github.com/happy-dwarf-team/etch/issues/573)) ([20b0061](https://github.com/happy-dwarf-team/etch/commit/20b006129371ef140296a2709bdc44efee5bc503))
+* **extension:** put the live game's start errors on the edited mod's files ([#570](https://github.com/happy-dwarf-team/etch/issues/570)) ([0932451](https://github.com/happy-dwarf-team/etch/commit/093245150c6d36fd70e23e4a431384c1cc5b8c38))
+* **extension:** show localisation texts as inlay hints and go to their .yml line ([#568](https://github.com/happy-dwarf-team/etch/issues/568)) ([b320698](https://github.com/happy-dwarf-team/etch/commit/b32069870f5f67363a36ac661c013a8ad389c626))
+* **extension:** sprite hovers and references in ten more common folders ([#585](https://github.com/happy-dwarf-team/etch/issues/585)) ([ae72a73](https://github.com/happy-dwarf-team/etch/commit/ae72a7343b8f00a20ec3d8170a48c4957a22f561))
+* **extension:** sprite thumbnails beside the line numbers ([#587](https://github.com/happy-dwarf-team/etch/issues/587)) ([119ebb0](https://github.com/happy-dwarf-team/etch/commit/119ebb00fdc3cf52262e759f37c0552491c042af))
+* warn about a second province history and a tag without a history file, summed up per mod ([#567](https://github.com/happy-dwarf-team/etch/issues/567)) ([9e96ea3](https://github.com/happy-dwarf-team/etch/commit/9e96ea38d0700970250f11d8c74bc8903cce80cc))
+
+
+### Bug Fixes
+
+* **core:** keep the operators the parser skipped in Check File's run files ([#588](https://github.com/happy-dwarf-team/etch/issues/588)) ([cf3d6d1](https://github.com/happy-dwarf-team/etch/commit/cf3d6d18f450889730201ddf7b5588f4402bc82f))
+* **core:** show the first localisation value of a key, as the game does ([#594](https://github.com/happy-dwarf-team/etch/issues/594)) ([f27bc8d](https://github.com/happy-dwarf-team/etch/commit/f27bc8de78711adefd39f886c2a121d5ef3aef12))
+* **live-game:** split an error.log line where the game went on with the next message ([#582](https://github.com/happy-dwarf-team/etch/issues/582)) ([bb42be6](https://github.com/happy-dwarf-team/etch/commit/bb42be632857bc58d56e993c564db8c55dc4c243))
+
 ## [2.13.0](https://github.com/happy-dwarf-team/etch/compare/v2.12.0...v2.13.0) (2026-11-20)
 
 
