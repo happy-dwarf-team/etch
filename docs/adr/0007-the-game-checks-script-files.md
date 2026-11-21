@@ -114,3 +114,18 @@ value type, a province trigger in a country file, and a localisation key with
 a character Windows-1252 lacks. The run records which errors the start report
 shows and which a check shows, and on which line. It settles H1–H4 and goes
 into [live-game.md](../live-game.md) as Run selection's run did.
+
+**Gate run, 21 November 2026, vanilla**
+([live-game.md](../live-game.md#the-script-check-the-gate-run-adr-0007)):
+
+- **H1 holds.** A false `if`'s unknown effect and unknown modifier name are
+  logged with their line, and nothing in it runs. Part 2 can be built as
+  written.
+- **H2 holds for unknown trigger keys.** It does not hold for an unknown
+  modifier name in a trigger.
+- **H3: no scope errors, and no false ones.** A check finds wrong scopes no
+  more than the start report does.
+- **H4 is not tested.**
+- **The start report** placed all five of the test mod's lines once etch#570
+  split the game's multi-line parsing errors.
+- **Still to run:** the Anbennar save.
