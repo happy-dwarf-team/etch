@@ -436,6 +436,18 @@ refresh is a step of the 3.0.0 release.
   ([live-game.md](../live-game.md), "`error.log`"). Each start replaces the
   last one's. Not yet checked in a live start; ADR 0007's gate covers it.
 
+- **Completion in `.gui` files (ADR 0008).** Its words come from the playset,
+  counted, not from a schema: the widget types written inside `guiTypes` and
+  inside each widget type, the keys each widget type is written with (a key
+  the playset mostly writes with a block gets `{ }`), the sprite names and
+  fonts of the `.gfx` files (a sprite's entry shows its hover with the
+  thumbnail), the exe's nine anchors for `orientation`, and for any other key
+  the playset's values when they are at most 16 words and none a number
+  (`alwaysTransparent`, `fixedsize`, `format`). Nothing is offered in a nested
+  block (`position`), in a comment or outside `guiTypes`. Vanilla offers 6,829
+  sprites and 47 fonts, Anbennar 15,118 sprites; the context takes about 2 ms
+  on the largest files (budgets.md). `etch.editor.completion` turns it off.
+
 - **Localisation from subfolders.** The game lists `localisation` and then
   `localisation/replace` recursively (`PdxLocalizeReadFolder`; EU4 engine lab,
   eu4-engine-lab#59), so a mod's `localisation/english/*.yml` is read; the

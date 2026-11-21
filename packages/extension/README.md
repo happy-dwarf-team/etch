@@ -387,6 +387,15 @@ whole text and the `.yml` file, and **Go to Definition** on the key opens that
 file at the key. Only keys your playset defines get a text, so a `name` that is
 a plain word gets none. `etch.editor.localisationHints` turns this off.
 
+Completion in `.gui` files offers what your playset writes: inside `guiTypes`
+and inside a widget, the widget types and the keys its `.gui` files write there,
+the most used first; after `spriteType`, `quadTextureSprite` or a list's
+`background`, the sprite names of its `.gfx` files, with the sprite's hover
+once one is selected; after `font` or `buttonFont`, its fonts; after
+`orientation`, the nine anchors the game knows; and after a key such as
+`alwaysTransparent` or `format`, the few values the playset writes for it.
+`etch.editor.completion` turns this off.
+
 ## Meshes
 
 A `.mesh` file opens in the **Etch Mesh Preview**: the model drawn with its

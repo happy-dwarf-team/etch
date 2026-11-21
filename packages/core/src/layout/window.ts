@@ -276,6 +276,9 @@ const ANCHORS: ReadonlyMap<string, readonly [number, number]> = new Map([
   ['center_right', [1, 0.5]],
 ]);
 
+/** The `orientation` values the exe's token table lists, in lower case. */
+export const ANCHOR_NAMES: readonly string[] = [...ANCHORS.keys()];
+
 const CONTAINERS = new Set(['windowType', 'eu3dialogtype', 'containerWindowType']);
 const SPRITE_WIDGETS = new Set([
   'iconType',
