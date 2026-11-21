@@ -53,6 +53,8 @@ export interface LaunchOptions {
   readonly helpers?: readonly string[];
   /** Environment variables added to VS Code's, and so to its extension host's. */
   readonly env?: Readonly<Record<string, string>>;
+  /** User settings over the capture's (`workbenchSettings`), for evidence that needs, say, hovers. */
+  readonly settings?: Readonly<Record<string, unknown>>;
 }
 
 /** What may be on screen in a capture besides the scene's editor and preview. */
@@ -174,12 +176,24 @@ export class Workbench {
   readonly hwnd: string;
   /** The workspace copy of the demo mod. */
   readonly workspace: string;
+  /**
+   * When the window opened (`Date.now()`): Playwright's recording, if any, starts with the
+   * window, so a moment's second in the video is its time less this, give or take a few frames.
+   */
+  readonly openedAt: number;
 
-  private constructor(app: ElectronApplication, page: Page, hwnd: string, workspace: string) {
+  private constructor(
+    app: ElectronApplication,
+    page: Page,
+    hwnd: string,
+    workspace: string,
+    openedAt: number,
+  ) {
     this.app = app;
     this.page = page;
     this.hwnd = hwnd;
     this.workspace = workspace;
+    this.openedAt = openedAt;
   }
 
   static async launch(options: LaunchOptions): Promise<Workbench> {
@@ -202,7 +216,7 @@ export class Workbench {
     await mkdir(path.join(userData, 'User'), { recursive: true });
     await writeFile(
       path.join(userData, 'User', 'settings.json'),
-      `${JSON.stringify(workbenchSettings(options.gamePath), null, 2)}\n`,
+      `${JSON.stringify({ ...workbenchSettings(options.gamePath), ...options.settings }, null, 2)}\n`,
     );
     const extensions = path.join(run, 'extensions');
     await mkdir(extensions, { recursive: true });
@@ -234,6 +248,7 @@ export class Workbench {
     const size = WINDOW;
     try {
       const page = await app.firstWindow();
+      const openedAt = Date.now();
       for (let i = 0; i < 300 && !page.url().includes('workbench'); i++) await sleep(100);
       const hwnd = await app.evaluate((electron: ElectronMain, size) => {
         const window = electron.BrowserWindow.getAllWindows().find((w) =>
@@ -280,7 +295,7 @@ export class Workbench {
             String(DEVICE_SCALE),
         );
       }
-      return new Workbench(app, page, hwnd, workspace);
+      return new Workbench(app, page, hwnd, workspace, openedAt);
     } catch (error) {
       await app.close().catch(() => undefined);
       throw error;
@@ -924,9 +939,29 @@ export class Workbench {
     if (problems.length > 0) throw new Error(`framing: ${problems.join('; ')}`);
   }
 
-  /** A PNG of the whole window at device scale: 2560 × 1440. */
-  async screenshot(file: string): Promise<void> {
-    await this.page.screenshot({ path: file, animations: 'disabled', caret: 'initial' });
+  /**
+   * A PNG of the whole window at device scale (2560 × 1440), or of the part `clip` names in the
+   * window's pixels, at 1:1.
+   */
+  async screenshot(
+    file: string,
+    clip?: { x: number; y: number; width: number; height: number },
+  ): Promise<void> {
+    await this.page.screenshot({
+      path: file,
+      animations: 'disabled',
+      caret: 'initial',
+      ...(clip === undefined
+        ? {}
+        : {
+            clip: {
+              x: clip.x / DEVICE_SCALE,
+              y: clip.y / DEVICE_SCALE,
+              width: clip.width / DEVICE_SCALE,
+              height: clip.height / DEVICE_SCALE,
+            },
+          }),
+    });
   }
 
   /** Closes VS Code (unsaved edits go with its throwaway profile); the recorded video, if any. */
