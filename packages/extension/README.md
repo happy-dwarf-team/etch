@@ -387,7 +387,8 @@ The same works on the sprite names of script files: an event's `picture`
 (also inside a conditional `picture = { trigger = { … } picture = … }`), a
 mission's `icon`, an estate privilege's `icon`, and the sprite keys of ten
 `common` folders, such as a holy order's `icon` and a subject type's `sprite`
-(the user docs list them). A script name with no
+(all listed on the Hovers and links page of the guide on
+[etch.happydwarf.dev](https://etch.happydwarf.dev/)). A script name with no
 sprite says so in its hover; Etch does not read the game's DLC archives,
 which define many vanilla event pictures.
 
