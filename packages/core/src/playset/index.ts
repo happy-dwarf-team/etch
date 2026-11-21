@@ -32,8 +32,11 @@ export {
   checkScriptValues,
   findScriptValueProblems,
   loadScriptNames,
+  summariseFindings,
+  SUMMARISED_CODES,
   type ScriptValueDiagnostic,
   type ScriptValueFinding,
+  type ScriptValueSummary,
   type ScriptValues,
 } from './script-values.ts';
 export { loadEntityIndex, loadPdxMeshTypes } from './entities.ts';

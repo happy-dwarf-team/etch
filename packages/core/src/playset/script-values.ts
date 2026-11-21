@@ -4,6 +4,7 @@ import { checkCanals, type CanalDiagnostic } from '../script/canals.ts';
 import {
   checkCountryFiles,
   checkCountryHistory,
+  checkCountryHistoryMissing,
   countryFilePath,
   countryHistoryTag,
   countryTagsMissing,
@@ -16,9 +17,15 @@ import {
   type CountryFileDiagnostic,
   type CountryHistoryDiagnostic,
   type CountryHistoryFile,
+  type CountryHistoryMissingDiagnostic,
   type CountryTagDiagnostic,
   type CountryTagsMissingDiagnostic,
 } from '../script/country-files.ts';
+import {
+  checkProvinceHistory,
+  provinceHistoryId,
+  type ProvinceHistoryDiagnostic,
+} from '../script/province-history.ts';
 import { checkMapFiles, type MapFileDiagnostic } from '../script/map-files.ts';
 import {
   checkTechnologyTables,
@@ -69,6 +76,8 @@ export type ScriptValueDiagnostic =
   | CountryFileDiagnostic
   | CountryTagDiagnostic
   | CountryHistoryDiagnostic
+  | CountryHistoryMissingDiagnostic
+  | ProvinceHistoryDiagnostic
   | CountryTagsMissingDiagnostic
   | CountryContentDiagnostic
   | TechnologyTableDiagnostic;
@@ -112,10 +121,20 @@ export function checkScriptValues(
         firsts === undefined ? undefined : { path, firsts },
       ),
     );
+    const histories = values.names?.countryHistories;
+    // A playset without any history/countries file is not one the game starts: nothing to say.
+    if (firsts !== undefined && histories !== undefined && histories.size > 0) {
+      found.push(...checkCountryHistoryMissing(parsed, path, firsts, histories));
+    }
   }
   const histories = values.names?.countryHistories;
   if (histories !== undefined && path !== undefined) {
     const shared = checkCountryHistory(path, histories);
+    if (shared !== undefined) found.push(shared);
+  }
+  const provinces = values.names?.provinceHistories;
+  if (provinces !== undefined && path !== undefined) {
+    const shared = checkProvinceHistory(path, provinces);
     if (shared !== undefined) found.push(shared);
   }
   const contentTags =
@@ -253,6 +272,7 @@ export async function loadScriptNames(files: GameFiles): Promise<ScriptNames | u
     countryTags: await loadCountryTags(files),
     countryTagsMissing: await loadCountryTagsMissing(files),
     countryHistories: await loadCountryHistories(files),
+    provinceHistories: await loadProvinceHistories(files),
     countryFileTags: await loadCountryFileTags(files),
     technologyTables: await loadTechnologyTables(files),
   };
@@ -357,10 +377,29 @@ export async function loadCountryTagsMissing(
  * The playset's `history/countries` files by the tag the game reads each for, each with whether it
  * has the name of a file of the game's (the first layer's) that the playset reads.
  */
-export async function loadCountryHistories(
+export function loadCountryHistories(files: GameFiles): Promise<Map<string, CountryHistoryFile[]>> {
+  return loadHistoryFiles(files, 'history/countries', countryHistoryTag);
+}
+
+/**
+ * The playset's `history/provinces` files by the province the game reads each for, each with
+ * whether it has the name of a file of the game's (the first layer's) that the playset reads.
+ */
+export function loadProvinceHistories(
   files: GameFiles,
-): Promise<Map<string, CountryHistoryFile[]>> {
-  const folder = 'history/countries';
+): Promise<Map<number, CountryHistoryFile[]>> {
+  return loadHistoryFiles(files, 'history/provinces', provinceHistoryId);
+}
+
+/**
+ * The `.txt` files of a history folder by what `keyOf` reads each for, each with whether it has the
+ * name of one of the game's own files that the playset reads (no layer replaces the folder).
+ */
+async function loadHistoryFiles<K>(
+  files: GameFiles,
+  folder: string,
+  keyOf: (path: string) => K | undefined,
+): Promise<Map<K, CountryHistoryFile[]>> {
   const [game, ...mods] = files.layers;
   const replaced = mods.some((layer) =>
     layer.replacePaths.some(
@@ -373,15 +412,77 @@ export async function loadCountryHistories(
       gameNames.add(file.path.toLowerCase());
     }
   }
-  const byTag = new Map<string, CountryHistoryFile[]>();
+  const byKey = new Map<K, CountryHistoryFile[]>();
   for (const file of await files.list(folder, '.txt')) {
-    const tag = countryHistoryTag(file.path);
-    if (tag === undefined) continue;
-    const list = byTag.get(tag) ?? [];
+    const key = keyOf(file.path);
+    if (key === undefined) continue;
+    const list = byKey.get(key) ?? [];
     list.push({ path: file.path, game: gameNames.has(file.path.toLowerCase()) });
-    byTag.set(tag, list);
+    byKey.set(key, list);
   }
-  return byTag;
+  return byKey;
+}
+
+/** The diagnostics the playset check sums up per mod instead of listing them in Problems. */
+export const SUMMARISED_CODES: ReadonlySet<ScriptValueDiagnostic['code']> = new Set([
+  'province-history-shared',
+  'country-history-missing',
+]);
+
+/** One mod's diagnostics of a summarised code (`SUMMARISED_CODES`) in a playset check. */
+export interface ScriptValueSummary {
+  readonly code: ScriptValueDiagnostic['code'];
+  /** The layer's name (`game` for the game's own files). */
+  readonly layer: string;
+  /** The line for the notification and the Output channel. */
+  readonly message: string;
+  /** Each diagnostic with the file it is in, in path order. */
+  readonly entries: readonly { readonly finding: ScriptValueFinding; readonly diagnostic: ScriptValueDiagnostic }[];
+}
+
+/**
+ * Splits a playset check's findings into those for Problems and one summary per mod and
+ * summarised code: a popular mod has hundreds of second province histories or tags without a
+ * history file, each true but not worth an entry of its own. Findings left with no diagnostic are
+ * dropped.
+ */
+export function summariseFindings(findings: readonly ScriptValueFinding[]): {
+  findings: ScriptValueFinding[];
+  summaries: ScriptValueSummary[];
+} {
+  const kept: ScriptValueFinding[] = [];
+  const groups = new Map<string, ScriptValueSummary['entries'][number][]>();
+  for (const finding of findings) {
+    const own: ScriptValueDiagnostic[] = [];
+    for (const diagnostic of finding.diagnostics) {
+      if (!SUMMARISED_CODES.has(diagnostic.code)) {
+        own.push(diagnostic);
+        continue;
+      }
+      const key = `${diagnostic.code}\n${finding.file.layer.name}`;
+      const group = groups.get(key) ?? [];
+      group.push({ finding, diagnostic });
+      groups.set(key, group);
+    }
+    if (own.length > 0) kept.push({ ...finding, diagnostics: own });
+  }
+  const summaries: ScriptValueSummary[] = [];
+  for (const [key, entries] of groups) {
+    const [code = '', layer = ''] = key.split('\n');
+    const of = layer === 'game' ? 'the game' : layer;
+    const count = entries.length;
+    const message =
+      code === 'province-history-shared'
+        ? `${String(count)} ${count === 1 ? 'file' : 'files'} of ${of} ${count === 1 ? 'adds' : 'add'} a second history to provinces of the game`
+        : `${String(count)} ${count === 1 ? 'tag' : 'tags'} of ${of} ${count === 1 ? 'has' : 'have'} no history/countries file`;
+    summaries.push({
+      code: code as ScriptValueDiagnostic['code'],
+      layer,
+      message,
+      entries,
+    });
+  }
+  return { findings: kept, summaries };
 }
 
 /** A file of the playset with script values it does not have. */

@@ -164,6 +164,11 @@ export interface ScriptNames {
    */
   readonly countryHistories?: ReadonlyMap<string, readonly CountryHistoryFile[]>;
   /**
+   * The playset's `history/provinces` files by the province the game reads each for
+   * (`provinceHistoryId`, `checkProvinceHistory`).
+   */
+  readonly provinceHistories?: ReadonlyMap<number, readonly CountryHistoryFile[]>;
+  /**
    * The tags whose country file the game checks, by the file's game path in lower case, in the
    * order the game reads them (`checkCountryContent`).
    */

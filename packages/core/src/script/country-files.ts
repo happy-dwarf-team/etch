@@ -283,6 +283,57 @@ export function checkCountryHistory(
 }
 
 /**
+ * A tag of `common/country_tags` that no `history/countries` file is read for; the range is the
+ * tag's key.
+ */
+export interface CountryHistoryMissingDiagnostic extends SourceRange {
+  readonly severity: 'warning';
+  readonly code: 'country-history-missing';
+  readonly message: string;
+  /** The tag. */
+  readonly key: string;
+  /** The country file the tag names. */
+  readonly name: string;
+}
+
+/**
+ * The tags a parsed `common/country_tags` file defines first (`firsts`, from `firstCountryTags`)
+ * that no `history/countries` file of the playset is read for (`histories`, by tag). After reading
+ * the folder, `CHistoryDataBase::LoadDatabase` logs a line such as `ZZE - ZZE is missing a history file.` in
+ * `error.log` for each such country and goes on (`history.cpp`, `bmtest-r42`). Vanilla has a file
+ * for each of its tags; a mod that adds tags without files has many (1032 tags of one Workshop mod),
+ * which is why the playset check sums them up per mod.
+ */
+export function checkCountryHistoryMissing(
+  parsed: ParsedScript,
+  path: string,
+  firsts: ReadonlyMap<string, string>,
+  histories: ReadonlyMap<string, readonly CountryHistoryFile[]>,
+): CountryHistoryMissingDiagnostic[] {
+  const here = path.replace(/\\/g, '/').toLowerCase();
+  const found: CountryHistoryMissingDiagnostic[] = [];
+  const seen = new Set<string>();
+  for (const { tag, file, key } of readCountryFiles(parsed)) {
+    if (seen.has(tag) || firsts.get(tag) !== here) continue;
+    seen.add(tag);
+    if ((histories.get(tag.toUpperCase()) ?? []).length > 0) continue;
+    found.push({
+      severity: 'warning',
+      code: 'country-history-missing',
+      message:
+        `No history/countries file of the playset is for ${tag}: the game logs that ${tag} "is ` +
+        'missing a history file" in error.log and goes on without a history for the country. ' +
+        `A file named "${tag} - <name>.txt" gives it one.`,
+      key: tag,
+      name: file.text,
+      start: key.start,
+      end: key.end,
+    });
+  }
+  return found;
+}
+
+/**
  * The file of `common/country_tags` that defines each tag first, by tag, from the playset's files
  * in the order the game reads them (by name); the paths are in lower case.
  */

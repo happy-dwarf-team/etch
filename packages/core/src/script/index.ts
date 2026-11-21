@@ -3,6 +3,7 @@ export type * from './tree.ts';
 export * from './province-ids.ts';
 export * from './canals.ts';
 export * from './country-files.ts';
+export * from './province-history.ts';
 export * from './technology-tables.ts';
 export * from './map-files.ts';
 export * from './script-names.ts';

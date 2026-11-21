@@ -4,7 +4,9 @@
 // `map/definition.csv`, and on the names `SCRIPT_NAME_KEYS` and `SCRIPT_NAME_MEMBERS` list
 // (`add_idea_group = …`, `has_active_policy = …`) that the playset does not define, in the open
 // script files. Etch: Check Province IDs and Names in the Playset checks every script file the
-// playset loads, so that a player can find which mod has such a line.
+// playset loads, so that a player can find which mod has such a line. A second province history
+// and a tag without a history file are warned about in an open file only: the playset check sums
+// them up in one line per mod, since a popular mod has hundreds of them.
 import { readFile } from 'node:fs/promises';
 import * as vscode from 'vscode';
 import {
@@ -29,6 +31,8 @@ import {
   findScriptValueProblems,
   loadProvinceIds,
   loadScriptNames,
+  summariseFindings,
+  SUMMARISED_CODES,
   type GameFiles,
   type PlaysetProvinceIds,
   type ScriptValueDiagnostic,
@@ -198,7 +202,10 @@ export class ProvinceIdDiagnostics implements vscode.Disposable {
       this.collection.delete(uri);
       return;
     }
-    const found = diagnose(text, uri.fsPath, map) ?? [];
+    // A closed file keeps what the playset check lists in Problems, not what it sums up.
+    const found = (diagnose(text, uri.fsPath, map) ?? []).filter(
+      (d) => !SUMMARISED_CODES.has(d.code),
+    );
     this.collection.set(
       uri,
       found.map((d) => toDiagnosticInText(d, text)),
@@ -223,13 +230,15 @@ export class ProvinceIdDiagnostics implements vscode.Disposable {
       return;
     }
     const started = Date.now();
-    const { findings, filesChecked } = await vscode.window.withProgress(
+    const checked = await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
         title: 'Etch: checking province ids and names…',
       },
       () => findScriptValueProblems(map.files, { ids, names }),
     );
+    const { filesChecked } = checked;
+    const { findings, summaries } = summariseFindings(checked.findings);
     for (const key of this.checked) {
       const uri = vscode.Uri.parse(key);
       if (!vscode.workspace.textDocuments.some((open) => open.uri.toString() === key)) {
@@ -273,15 +282,35 @@ export class ProvinceIdDiagnostics implements vscode.Disposable {
         this.output.info(`  ${layer}: ${finding.file.path}:${String(line)}: ${what}`);
       }
     }
+    for (const summary of summaries) {
+      this.output.info(`Province ids and names: ${summary.message}:`);
+      for (const { finding, diagnostic } of summary.entries) {
+        const line = lineOf(finding.text, diagnostic.start);
+        const what =
+          diagnostic.code === 'country-history-missing'
+            ? `${diagnostic.key} = ${finding.text.slice(diagnostic.start, diagnostic.end)}`
+            : `beside ${'name' in diagnostic ? diagnostic.name : ''}`;
+        this.output.info(`  ${finding.file.path}:${String(line)}: ${what}`);
+      }
+    }
+    const summed =
+      summaries.length === 0
+        ? ''
+        : ` ${summaries.map((summary) => summary.message).join('; ')}: the files are in Output.`;
     if (warnings === 0) {
-      void vscode.window.showInformationMessage(
-        `Every province id and name in the playset's ${String(filesChecked)} script files is defined (${against}).`,
-      );
+      const defined = `Every province id and name in the playset's ${String(filesChecked)} script files is defined (${against}).`;
+      if (summaries.length === 0) {
+        void vscode.window.showInformationMessage(defined);
+        return;
+      }
+      void vscode.window.showWarningMessage(defined + summed, 'Show Output').then((choice) => {
+        if (choice !== undefined) this.output.show(true);
+      });
       return;
     }
     const mods = new Set(findings.map((finding) => finding.file.layer.name));
     void vscode.window.showWarningMessage(
-      `${String(warnings)} ${warnings === 1 ? 'id or name' : 'ids or names'} the playset does not have, in ${String(findings.length)} ${findings.length === 1 ? 'file' : 'files'} of ${[...mods].map((m) => (m === 'game' ? 'the game' : m)).join(', ')}: see Problems.`,
+      `${String(warnings)} ${warnings === 1 ? 'id or name' : 'ids or names'} the playset does not have, in ${String(findings.length)} ${findings.length === 1 ? 'file' : 'files'} of ${[...mods].map((m) => (m === 'game' ? 'the game' : m)).join(', ')}: see Problems.${summed}`,
     );
     await vscode.commands.executeCommand('workbench.actions.view.problems');
   }

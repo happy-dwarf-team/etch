@@ -69,6 +69,8 @@ export async function testProvinceIds(): Promise<void> {
     'SWE = "countries/Sweden.txt"\nLST = "countries/Lost.txt"\n',
   );
   await write(game, 'common/countries/Sweden.txt', 'graphical_culture = westerngfx\n');
+  // SWE has a history file, LST none: the check sums LST up instead of listing it in Problems.
+  await write(game, 'history/countries/SWE - Sweden.txt', 'capital = 1\n');
   // Written before the playset's map is read: the map keeps the map files it found then.
   const links = await write(
     game,
@@ -171,6 +173,18 @@ export async function testProvinceIds(): Promise<void> {
     assert.match(
       country.message,
       /^The playset has no common\/countries\/Lost\.txt, which LST names/,
+    );
+    // The open file gets the warning about LST's missing history, at the tag.
+    await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(tags));
+    const opened = await diagnosticsOf(tags, (found) =>
+      found.some((d) => d.code === 'country-history-missing'),
+    );
+    assert.deepEqual(
+      opened.map((d) => [d.code, d.range.start.line, d.range.start.character, d.range.end.character]),
+      [
+        ['country-history-missing', 1, 0, 3],
+        ['country-file-missing', 1, 6, 26],
+      ],
     );
   } finally {
     await vscode.commands.executeCommand('workbench.action.files.revert');

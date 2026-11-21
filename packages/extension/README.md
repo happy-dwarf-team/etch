@@ -256,7 +256,17 @@ whose name does not start with a province of the map (`4999 - Past.txt` on
 skips it without a word. A mod's `history/countries` file whose tag also has a
 file of the game's under another name (`SWE - My Sweden.txt` beside `SWE -
 Sweden.txt`) gets a warning there too: it does not replace the game's file, and
-the game reads both into the country's history.
+the game reads both into the country's history. The same holds for a mod's
+`history/provinces` file beside the game's file of that province under another
+name (`1 - Uppland.txt` beside `1-Uppland.txt`): the game reads both into the
+province. A tag of `common/country_tags` without a `history/countries` file gets
+a warning at the tag: the game logs that it "is missing a history file" and
+goes on without a history for the country. A popular mod can have hundreds of
+these last two, so the playset check below does not list them in Problems: it
+sums them up in one line per mod ("793 files of <mod> add a second history to
+provinces of the game", "1032 tags of <mod> have no history/countries file") in
+its notification and the Output channel, which lists the files. Open a file to
+see its own warning.
 The map is your playset's: `max_provinces` of `map/default.map`, a mod's when
 it has its own, and the provinces its `map/definition.csv` lists. An id written
 as a tag, a scope or a variable is not checked.
@@ -299,7 +309,8 @@ lines, as the game reads it.
 
 **Etch: Check Province IDs and Names in the Playset** checks every script file
 the playset loads, from all its mods, and lists the lines in the Problems
-panel, so you can find which mod has one.
+panel, so you can find which mod has one. Second province histories and tags
+without a history file are summed up per mod instead (see above).
 
 ## Encoding
 
