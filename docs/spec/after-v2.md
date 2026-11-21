@@ -858,6 +858,8 @@ refresh is a step of the 3.0.0 release.
   file of the game. Reading the archives of the DLCs the player has on, in the
   game's search order (mods, then DLC, then the game folder), is not done;
   until then a script name without a sprite gets a hover, not a diagnostic.
+  [ADR 0009](../adr/0009-dlc-archives-are-a-playset-layer.md) proposes it
+  (with builtin_dlc, 304 of the 358 resolve in an archive).
   Core `@etch/core/asset` reads the game's
   asset container in both encodings (binary `@@b@`, text `@@t@`): meshes
   (shapes, vertices, normals, UVs, triangles, materials, skin, skeleton with
