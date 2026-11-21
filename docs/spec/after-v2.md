@@ -427,6 +427,15 @@ refresh is a step of the 3.0.0 release.
   line in the winning `.yml`. The localisation is read again after a `.yml`
   is saved; `etch.editor.localisationHints` turns the hints off.
 
+- **The live game's start report (ADR 0007, part 1).** The `error.log` lines
+  the game wrote while it loaded go to Problems on the edited mod's files, as
+  "Etch game start": on the line or the window the game names, on the file's
+  start, or, for a line that names only a key, on the first place the mod
+  writes the key; lines about other mods' and the game's files are counted in
+  the log
+  ([live-game.md](../live-game.md), "`error.log`"). Each start replaces the
+  last one's. Not yet checked in a live start; ADR 0007's gate covers it.
+
 - **Localisation from subfolders.** The game lists `localisation` and then
   `localisation/replace` recursively (`PdxLocalizeReadFolder`; EU4 engine lab,
   eu4-engine-lab#59), so a mod's `localisation/english/*.yml` is read; the

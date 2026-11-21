@@ -77,6 +77,31 @@ game and asks you to start the live game again.
 **Etch: Open the Live Game's Saves Folder** opens the folder of the live game's own saves: the
 copies of your saves, the saves you make in it and the ones Etch makes before a stop.
 
+## Mistakes the game finds at the start
+
+While the game loads, it writes a message to its `error.log` for each mistake it finds in your
+files: an unknown trigger or effect, a modifier no file defines, a letter the game cannot show
+in a localisation text. When the live game is ready, Etch puts these messages in the Problems
+panel (<kbd>Ctrl+Shift+M</kbd>), marked **Etch game start**, on the file of your mod they are
+about. Etch replaces them at the next start.
+
+Each message goes where it points:
+
+- When the game names a file and a line, the message goes on that line. For
+  `File: "events/etch_check.txt", Error: Unknown effect type. Key: add_treasuryy: add_treasuryy, near line: 13`,
+  that is line 13 of your `events/etch_check.txt`.
+- When the game names a `.gui` file, a widget and its window, such as
+  `interface/etch.gui: Missing Button 'close' in window 'etch'`, the message goes on the window's
+  name in that file.
+- When the game names nothing but a name, Etch looks for a localisation key in your `.yml` files,
+  and for any other name, such as a modifier, in your other files. The message goes on the first
+  place it finds.
+
+A message saying the game could not read your file ("Parsing Error") is an error in Problems. The
+others are warnings. Messages about other mods' files or the game's own files are not in
+Problems. Etch's log only says how many there were (**View › Output**, then **Etch** in the
+list).
+
 ## When the game crashes
 
 If the game crashes or stops answering Etch, Etch starts it again at the live game's newest save:
@@ -104,3 +129,8 @@ that Anbennar shows before the save loads. The save's own events are left to you
 - All playsets share the live game's saves folder, so **Continue** may offer the newest save of
   another playset.
 - It never writes to your own saves or profile.
+- It shows only the mistakes the game writes to `error.log` while it loads. Some mistakes the game
+  does not report, such as an extra `}` in `common/scripted_triggers` or `add_treasury = lots`:
+  Etch shows nothing for them.
+- When a name appears in several of your files, Etch puts the message on the first one in the
+  order of their folders and names, which may not be the one the game meant.

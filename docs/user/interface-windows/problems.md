@@ -110,6 +110,8 @@ Other parts of Etch list what they find in the same panel:
 - the lines the [live game](../reference/glossary.md#live-game), EU4 running beside the editor,
   writes to its `error.log` after it reloads a file you saved: see
   [Reload on save](../live-game/reload-on-save.md);
+- the mistakes the live game finds in your files while it starts: see
+  [Start and stop](../live-game/start-and-stop.md#mistakes-the-game-finds-at-the-start);
 - the widgets the preview places or shows differently from the live game: see
   [Snapshot and compare](../live-game/snapshot-and-compare.md).
 
