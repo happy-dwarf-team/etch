@@ -1,13 +1,13 @@
 ---
 title: Hovers and links
-description: Check and open the textures, meshes, animations and sprites your files name, from the editor.
+description: Check and open the textures, meshes, animations and sprites your files name, and pick font colours, from the editor.
 since: 2.13.0
 clip: hovers
 ---
 
 Etch turns the names of textures, meshes, animations and sprites in your files into hovers and
 links. Hover over a name to see what the game will load; <kbd>Ctrl</kbd>+click it to open that
-file.
+file. Font colours in `.gfx` files get a colour picker.
 
 ## Paths in .gfx and .asset files
 
@@ -112,6 +112,20 @@ that starts with "Not renamed", says why, and changes nothing. That happens when
 - the new name is already a sprite of the playset, or uses anything but letters, digits, `_`, `.`
   and `-`.
 
+## Font colours in .gfx files
+
+In a `.gfx` file, the `bitmapfonts` block lists the game's fonts. Each font colour in it shows a
+small square of its colour in front of it:
+
+- a `textcolors` entry (a named colour the font's text can use), such as `G = { 0 255 0 }`: red,
+  green and blue, each from 0 to 255;
+- a font's `color` and `border_color`, such as `0xffcc8800`: `0x`, then two digits each for
+  opacity (`ff`), red (`cc`), green (`88`) and blue (`00`).
+
+Hover over the square to open VS Code's colour picker. Etch writes the colour you pick in the same
+form: three numbers in braces, or `0x` and eight digits. A `{ R G B }` colour has no opacity, so
+Etch writes only the three numbers and drops any opacity you set.
+
 ## What it doesn't do
 
 - Etch does not read the game's DLC archives, which define many vanilla event pictures. The hover
@@ -122,6 +136,8 @@ that starts with "Not renamed", says why, and changes nothing. That happens when
 - **Find All References** and **Rename Symbol** work only on sprite names, not on texture paths,
   fonts or widget names. They do not see the DLC archives either: a rename cannot warn about a
   DLC file that uses the name.
+- Colours elsewhere in `.gfx` files, such as in `objectTypes` or written as decimals like
+  `{ 0.0 0.5 0.0 }`, get no square. A `textcolors` entry with a number above 255 gets none either.
 - Sprite hovers, **Find All References**, **Rename Symbol** and paths with a folder need the game
   folder. When Etch does not find the game (see
   [Where Etch finds the game](../getting-started/finding-the-game.md)), sprite names get no hover,

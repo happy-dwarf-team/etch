@@ -483,6 +483,14 @@ refresh is a step of the 3.0.0 release.
   when the mod defines none, when a mod's `.gui` names it through an
   `@constant`, or when the new name is not a bare word or is already a sprite.
 
+- **Colours in `.gfx` files (ADR 0008).** A swatch and VS Code's colour
+  picker on the colours the model reads as colours: each `textcolors` entry of
+  `bitmapfonts` and of a `bitmapfont` (`G = { 0 255 0 }`, 0–255 per channel,
+  no alpha) and a `bitmapfont`'s `color` and `border_color` (`0xAARRGGBB`).
+  A picked colour is written back in the form it had; `{ R G B }` drops the
+  alpha. Other colour-like values (`objectTypes`, the 0–1 floats of entity
+  files) get none: the model does not read them as colours.
+
 - **Localisation from subfolders.** The game lists `localisation` and then
   `localisation/replace` recursively (`PdxLocalizeReadFolder`; EU4 engine lab,
   eu4-engine-lab#59), so a mod's `localisation/english/*.yml` is read; the

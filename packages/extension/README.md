@@ -418,6 +418,12 @@ The widgets of a `.gui` file and the sprites and fonts of a `.gfx` file are
 also VS Code symbols: the breadcrumbs above the editor, the Explorer's
 **Outline** and **Go to Symbol in Editor** (Ctrl+Shift+O) list them by name.
 
+In a `.gfx` file's `bitmapfonts` block (the game's fonts), each font colour
+shows a small square: a `textcolors` entry such as `G = { 0 255 0 }`, or a
+font's `color` or `border_color` such as `0xffcc8800`. Hover over the square
+for VS Code's colour picker; the pick is written back in the same form
+(`{ R G B }` loses its opacity).
+
 ## Meshes
 
 A `.mesh` file opens in the **Etch Mesh Preview**: the model drawn with its

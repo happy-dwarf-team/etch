@@ -6,6 +6,7 @@ import { registerLocalisationHints, type LocalisationHints } from './localisatio
 import { registerGuiCompletion, type GuiCompletion } from './gui-completion.ts';
 import { registerInterfaceSymbols, type InterfaceSymbols } from './interface-symbols.ts';
 import { registerSpriteReferences, type SpriteReferences } from './sprite-references.ts';
+import { registerGfxColours, type GfxColours } from './gfx-colours.ts';
 import { BuildCheck } from './build-check.ts';
 import { RUNNING_BUILD } from './build-stamp.ts';
 import { registerLiveGame, type LiveGame, type PickMode } from './live-game/index.ts';
@@ -34,6 +35,7 @@ export interface EtchApi {
   readonly guiCompletion: GuiCompletion;
   readonly interfaceSymbols: InterfaceSymbols;
   readonly spriteReferences: SpriteReferences;
+  readonly gfxColours: GfxColours;
 }
 
 let liveGame: LiveGame | undefined;
@@ -77,6 +79,7 @@ export function activate(context: vscode.ExtensionContext): EtchApi {
     guiCompletion: registerGuiCompletion(context, spriteLinks),
     interfaceSymbols: registerInterfaceSymbols(context),
     spriteReferences: registerSpriteReferences(context, spriteLinks),
+    gfxColours: registerGfxColours(context),
   };
 }
 
