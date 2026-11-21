@@ -26,7 +26,8 @@ The folders are the groups of the site's sidebar, in this order:
   [Run selection](live-game/run-selection.md) ·
   [The private install](live-game/private-install.md)
 - **Scripts**: [Province IDs and names](scripts/province-ids-and-names.md) ·
-  [Encoding](scripts/encoding.md) · [Script profile](scripts/script-profile.md)
+  [Encoding](scripts/encoding.md) · [Script profile](scripts/script-profile.md) ·
+  [Localisation texts](scripts/localisation-texts.md)
 - **Reference**: [Commands](reference/commands.md) · [Settings](reference/settings.md) ·
   [Glossary](reference/glossary.md)
 - **About**: [Limits](about/limits.md) ·

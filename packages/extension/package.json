@@ -385,7 +385,7 @@
           "type": "boolean",
           "default": true,
           "scope": "resource",
-          "markdownDescription": "Show the text of a localisation key, in `#etch.language#`, after the key in `.gui` files and in the scripts of `events`, `decisions`, `missions` and `common` (`text`, `tooltip`, `title`, `desc`, `name`, `custom_tooltip`), and open its `.yml` line with Go to Definition."
+          "markdownDescription": "Show the text of a localisation key, in `#etch.language#`, in grey after the key: in `.gui` files after `text`, `tooltip`, `tooltipText` and `delayedTooltipText`; in the scripts of `events`, `decisions`, `missions` and `common` after `title`, `desc`, `name`, `tooltip` and `custom_tooltip`. Ctrl+click a key to open its line in the `.yml` file."
         },
         "etch.previewResolution": {
           "type": "string",
