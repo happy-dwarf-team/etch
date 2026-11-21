@@ -142,15 +142,26 @@ describe('precedence', () => {
     ' B:0 "vanilla"',
   );
 
-  it('lets a later mod win', () => {
+  // The game run of 21.11.2026 (docs/live-game.md): a mod's own file does not change a key of the
+  // game's, and of two files of one mod the first by path wins.
+  it("keeps the first definition: the game's over a mod's", () => {
     const loc = Localisation.load('english', [
-      file('localisation/Mod2_l_english.yml', 2, 'l_english:', ' A:0 "mod2"'),
+      file('localisation/Mod2_l_english.yml', 2, 'l_english:', ' A:0 "mod2"', ' C:0 "mod2"'),
       vanilla,
-      file('localisation/mod1_l_english.yml', 1, 'l_english:', ' A:0 "mod1"', ' B:0 "mod1"'),
+      file('localisation/mod1_l_english.yml', 1, 'l_english:', ' A:0 "mod1"', ' C:0 "mod1"'),
     ]);
-    expect(loc.get('A')).toBe('mod2');
-    expect(loc.get('B')).toBe('mod1');
-    expect(loc.source('A')).toEqual({ path: 'localisation/Mod2_l_english.yml', layer: 2 });
+    expect(loc.get('A')).toBe('vanilla');
+    expect(loc.get('C')).toBe('mod1');
+    expect(loc.source('C')).toEqual({ path: 'localisation/mod1_l_english.yml', layer: 1 });
+  });
+
+  it('keeps the first value of a key written twice in a file, and the last in a replace file', () => {
+    const loc = Localisation.load('english', [
+      file('localisation/a_l_english.yml', 1, 'l_english:', ' A:0 "first"', ' A:0 "second"'),
+      file('localisation/replace/r_l_english.yml', 1, 'l_english:', ' R:0 "first"', ' R:0 "last"'),
+    ]);
+    expect(loc.get('A')).toBe('first');
+    expect(loc.get('R')).toBe('last');
   });
 
   it('lets replace files win over any other file', () => {
@@ -171,10 +182,21 @@ describe('precedence', () => {
     expect(loc.get('B')).toBeUndefined();
   });
 
-  it('orders files of one layer by path', () => {
+  it('orders files of one layer by path, the first winning', () => {
     const loc = Localisation.load('english', [
-      file('localisation/b_l_english.yml', 0, 'l_english:', ' A:0 "b"'),
-      file('localisation/a_l_english.yml', 0, 'l_english:', ' A:0 "a"'),
+      file('localisation/z_l_english.yml', 1, 'l_english:', ' A:0 "z"', ' C:0 "z"'),
+      file('localisation/sub/c_l_english.yml', 1, 'l_english:', ' C:0 "sub"'),
+      file('localisation/a_l_english.yml', 1, 'l_english:', ' A:0 "a"', ' C:0 "a"'),
+    ]);
+    expect(loc.get('A')).toBe('a');
+    expect(loc.get('C')).toBe('a');
+  });
+
+  it('orders replace files as before: a later layer, then a later path', () => {
+    const loc = Localisation.load('english', [
+      file('localisation/replace/b_l_english.yml', 1, 'l_english:', ' A:0 "b"'),
+      file('localisation/replace/a_l_english.yml', 1, 'l_english:', ' A:0 "a"'),
+      file('localisation/replace/z_l_english.yml', 0, 'l_english:', ' A:0 "game"'),
     ]);
     expect(loc.get('A')).toBe('b');
   });
@@ -200,15 +222,19 @@ describe('update and remove', () => {
   it('applies an edit and gives keys back when it drops them', () => {
     const loc = base();
     expect(
-      loc.update(file('localisation/mod_l_english.yml', 1, 'l_english:', ' B:0 "edited"')),
+      loc.update(file('localisation/mod_l_english.yml', 1, 'l_english:', ' D:0 "edited"')),
     ).toBe(true);
     expect(loc.get('A')).toBe('vanilla');
-    expect(loc.get('B')).toBe('edited');
+    expect(loc.get('D')).toBe('edited');
     expect(loc.get('C')).toBeUndefined();
+    loc.update(file('localisation/text_l_english.yml', 0, 'l_english:', ' B:0 "vanilla"'));
+    expect(loc.get('A')).toBeUndefined();
   });
 
-  it('keeps a later layer winning over an edit in an earlier one', () => {
+  it("keeps the game's value winning over a mod's edit, and follows the game's edit", () => {
     const loc = base();
+    loc.update(file('localisation/mod_l_english.yml', 1, 'l_english:', ' A:0 "mod 2"'));
+    expect(loc.get('A')).toBe('vanilla');
     loc.update(
       file(
         'localisation/text_l_english.yml',
@@ -218,7 +244,7 @@ describe('update and remove', () => {
         ' B:0 "vanilla 2"',
       ),
     );
-    expect(loc.get('A')).toBe('mod');
+    expect(loc.get('A')).toBe('vanilla 2');
     expect(loc.get('B')).toBe('vanilla 2');
   });
 

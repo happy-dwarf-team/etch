@@ -740,6 +740,39 @@ add_prestige = 1 set_country_flag = … }` (line 9) gave:
 The game's `near line` names the line after the `=`, the entry's line in the
 run file; both run-file lines map to the same file line.
 
+## Which localisation value the game shows
+
+Two starts on 21 November 2026, under the lab's procedure (the game lock, the
+EXE hash and the Process Lasso rule checked before and after, unchanged), the
+Etch 2.13.0 VSIX's builds with Tongs' pipe on (`input = false`) and its game
+calls module. Vanilla with one test mod, on the Russia 1719.3.17 save. The
+mod's event `etch_loc.1`, fired with the console's `event etch_loc.1`, names
+one key in each text slot. Tongs' `ui find` read the event window's texts. It
+was a marked run, not a measurement.
+
+| Key, slot | Defined in | The game showed | Etch before |
+| --- | --- | --- | --- |
+| `ETCH_LOC_A`, title | the mod's `a_etch_loc_l_english.yml` and `z_etch_loc_l_english.yml` | the `a_` file's | the `z_` file's |
+| `ETCH_LOC_B`, description | the mod's `replace/etch_loc_l_english.yml` and `zz_etch_loc_l_english.yml` | the replace file's | the same |
+| `drylands`, option 1 | the game's `terrain_stuff_l_english.yml`, and the mod's file of that name with only this key | the mod's | the same |
+| `savannah`, option 2 | only the game's `terrain_stuff_l_english.yml` | `Missing Localization!`: the mod's file hid the game's | the same (no value) |
+| `ETCH_LOC_C`, option 3 | the mod's `a_etch_loc_l_english.yml` and `sub/etch_loc_c_l_english.yml` | the `a_` file's | the `sub/` file's |
+| `NUDGE_0`, option 4 | the game's `nudge_l_english.yml` ("City"), and the mod's `etch_d_l_english.yml` | "City" | the mod's |
+| `ETCH_LOC_F`, option 5 | twice in the mod's `a_etch_loc_l_english.yml` | the first line's | the second line's |
+
+So, outside `localisation/replace/`, the first definition wins: the game's
+over a mod's, an earlier path over a later one, the first line in a file. A
+mod changes one of the game's keys only through `replace/`, or by a file of
+the same path, which hides all of the game's file. The core follows this
+since. Not tested: two replace files, two mods, and a later file against a
+subfolder whose name sorts before it; Etch keeps its old order among replace
+files.
+
+On Anbennar over the game, 8 of 368,792 English keys change value under the
+new rule. 7 now take the game's text over Anbennar's, such as `KOK`, `RAJ`
+and `HIGH_QUEEN` from `anb_government_names_l_english.yml`. 1 takes another
+Anbennar file. On vanilla alone none change.
+
 ## Live runs
 
 Run on 2026-10-27 under the EU4 engine lab's procedure (its game lock for the

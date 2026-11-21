@@ -6,11 +6,16 @@
  * and `£` as written, because the game's code fills the substitutions and the
  * text layout draws the colours and icons.
  *
- * Which file wins (hypothesis, not checked in the game): a file hides any file
- * at the same path in an earlier layer, as for other game files. Of the
- * visible files, those under `localisation/replace/` win over the others, and
- * within each group a later layer wins over an earlier one, then a later path
- * over an earlier one in the same layer.
+ * Which value wins, as checked in the game on 21 November 2026 (docs/live-game.md,
+ * "Which localisation value the game shows"): a file hides any file at the same
+ * path in an earlier layer, as for other game files. A file under
+ * `localisation/replace/` wins over the others. Otherwise the first definition
+ * wins: the game's file over a mod's, an earlier path over a later one in the
+ * same layer (`a_…` over `z_…`, `x.yml` over `sub/y.yml`), and the first value of
+ * a key written twice in one file. Not checked: two replace files, which Etch
+ * orders as before (a later layer, then a later path, and the last value in a
+ * file, win), two mods, and a later file against a subfolder of a name that
+ * sorts before it.
  */
 
 /** The languages of EU4 1.37.5; mods may add others. */
@@ -177,13 +182,15 @@ function normalisePath(path: string): string {
   return path.replaceAll('\\', '/').replace(/^\/+/, '').toLowerCase();
 }
 
-/** Positive when `a` wins over `b`. */
+/**
+ * Positive when `a` wins over `b`: a replace file over any other; among the others the first
+ * definition, an earlier layer, then an earlier path; among replace files a later layer, then a
+ * later path.
+ */
 function precedence(a: ParsedFile, b: ParsedFile): number {
-  return (
-    Number(a.replace) - Number(b.replace) ||
-    a.layer - b.layer ||
-    (a.path < b.path ? -1 : a.path > b.path ? 1 : 0)
-  );
+  if (a.replace !== b.replace) return a.replace ? 1 : -1;
+  const order = a.layer - b.layer || (a.path < b.path ? -1 : a.path > b.path ? 1 : 0);
+  return a.replace ? order : -order;
 }
 
 // ` KEY:0 "value"`: the value runs to the last quote on the line, because the
@@ -194,6 +201,7 @@ const BLANK = /^[ \t]*(?:#.*)?$/;
 
 function parseFile(file: LocalisationFile, language: string): ParsedFile {
   const path = normalisePath(file.path);
+  const replace = path.startsWith('localisation/replace/');
   const entries = new Map<string, string>();
   const problems: LocalisationProblem[] = [];
   const problem = (line: number, message: string): void => {
@@ -211,7 +219,12 @@ function parseFile(file: LocalisationFile, language: string): ParsedFile {
     const entry = ENTRY.exec(raw);
     if (entry !== null) {
       if (inSection === null) problem(line, 'Entry before the `l_<language>:` header.');
-      else if (inSection) entries.set(entry[1] ?? '', unescape(entry[2] ?? '', line, problem));
+      else if (inSection) {
+        const key = entry[1] ?? '';
+        const value = unescape(entry[2] ?? '', line, problem);
+        // The game keeps a key's first value in a file (checked); a replace file the last.
+        if (replace || !entries.has(key)) entries.set(key, value);
+      }
       continue;
     }
     const header = HEADER.exec(raw);
@@ -225,7 +238,7 @@ function parseFile(file: LocalisationFile, language: string): ParsedFile {
     source: file.path,
     path,
     layer: file.layer,
-    replace: path.startsWith('localisation/replace/'),
+    replace,
     entries,
     problems,
   };

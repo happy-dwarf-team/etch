@@ -36,15 +36,16 @@ describe('loadPlaysetLocalisation', () => {
   it('reads the winning files of the language, decoded as UTF-8', async () => {
     const before = await snapshotTree(root);
     const loc = await loadPlaysetLocalisation(layers(), 'english');
-    expect(loc.get('A')).toBe('top');
+    // The first definition wins outside `replace`: the earlier mod's over the later one's.
+    expect(loc.get('A')).toBe('mod é');
     // The mod's file hides the game's file at the same path.
     expect(loc.get('B')).toBeUndefined();
     expect(loc.get('C')).toBe('replace');
     expect(loc.get('D')).toBe('game');
     expect(loc.source('C')).toEqual({ path: 'localisation/replace/r_l_english.yml', layer: 1 });
     expect(loc.problems()).toEqual([]);
-    loc.remove('localisation/top_l_english.yml', 2);
-    expect(loc.get('A')).toBe('mod é');
+    loc.remove('localisation/TEXT_l_english.yml', 1);
+    expect(loc.get('A')).toBe('top');
     expect(await snapshotTree(root)).toEqual(before);
   });
 
