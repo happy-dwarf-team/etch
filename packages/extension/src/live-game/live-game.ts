@@ -15,6 +15,7 @@ import {
   systemEnvironment,
 } from '@etch/core/playset';
 import * as vscode from 'vscode';
+import { startReport } from './start-report.ts';
 import {
   ErrorLogTail,
   collapseErrorLog,
@@ -249,6 +250,8 @@ const UNOPENED_VIEWS = /^countryview$/i;
 const REOPEN_AFTER_FRAMES = 2;
 /** Diagnostic source of the live game's Problems. */
 const SOURCE = 'Etch live game';
+/** The source of the start report's Problems (ADR 0007). */
+const START_SOURCE = 'Etch game start';
 /** The memento key that records the first start's confirmation. */
 const CONFIRMED_KEY = 'etch.liveGame.confirmed';
 /** The memento key of the spans in which the live game held what a Run changed (lab#156). */
@@ -323,6 +326,11 @@ export class LiveGame implements vscode.Disposable {
   private index: Promise<InterfaceIndex> | undefined;
   /** The live game's Problems: `error.log` lines and the game's answers, on the saved files. */
   readonly diagnostics = vscode.languages.createDiagnosticCollection('etch-live-game');
+  /**
+   * The start report (ADR 0007): what the game wrote to `error.log` while it loaded, on the edited
+   * mod's files; replaced at each start.
+   */
+  readonly startDiagnostics = vscode.languages.createDiagnosticCollection('etch-live-game-start');
   /** The views on screen at the last reload that a restart does not open again, said after it. */
   private lastViews: readonly string[] = [];
   /** The province on screen in the running process, from its pings (H8). */
@@ -479,6 +487,7 @@ export class LiveGame implements vscode.Disposable {
     this.emitter.dispose();
     this.pushEmitter.dispose();
     this.diagnostics.dispose();
+    this.startDiagnostics.dispose();
   }
 
   // ---- Pick mode -------------------------------------------------------------------------------
@@ -913,6 +922,52 @@ export class LiveGame implements vscode.Disposable {
     this.diagnostics.set(uri, problems);
   }
 
+  /**
+   * Puts the start's `error.log` lines on the edited mod's files (ADR 0007, part 1), replacing the
+   * last start's, and logs what was placed and what was not.
+   */
+  private async reportStart(lines: readonly string[]): Promise<void> {
+    const request = this.wanted;
+    this.startDiagnostics.clear();
+    if (request?.editedRoot === undefined || lines.length === 0) return;
+    try {
+      const report = await startReport(lines, playsetFiles(request), request.editedRoot);
+      const byFile = new Map<string, vscode.Diagnostic[]>();
+      for (const p of report.problems) {
+        const document = await vscode.workspace.openTextDocument(vscode.Uri.file(p.file)).then(
+          (d) => d,
+          () => undefined,
+        );
+        const range =
+          document === undefined
+            ? new vscode.Range(0, 0, 0, 0)
+            : new vscode.Range(document.positionAt(p.start), document.positionAt(p.end));
+        const d = new vscode.Diagnostic(
+          range,
+          p.message,
+          p.error ? vscode.DiagnosticSeverity.Error : vscode.DiagnosticSeverity.Warning,
+        );
+        d.source = START_SOURCE;
+        d.code = 'game-start-log';
+        const list = byFile.get(p.file) ?? [];
+        list.push(d);
+        byFile.set(p.file, list);
+      }
+      // A later start may have begun meanwhile; its report replaces this one.
+      if (this.wanted !== request) return;
+      for (const [file, list] of byFile) this.startDiagnostics.set(vscode.Uri.file(file), list);
+      this.output.info(
+        `Start report: ${String(report.lines)} distinct error.log lines; ` +
+          `${String(report.problems.length)} on the edited mod's files ` +
+          `(${String(report.problems.filter((p) => p.placed === 'key').length)} by their key), ` +
+          `${String(report.elsewhere)} about other mods' or the game's files, ` +
+          `${String(report.unplaced)} placed nowhere.`,
+      );
+    } catch (error) {
+      this.output.warn(`Start report: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
   /** Asks for a planned restart with its reason; reloads wait until the player restarts (spec section 6). */
   private restartNeeded(reason: string): void {
     const state = this.current;
@@ -1175,8 +1230,9 @@ export class LiveGame implements vscode.Disposable {
     started.onEvent((event) => {
       if (this.process === started) this.pushEmitter.fire(event);
     });
-    const startLines = await this.errorLog.skip();
-    this.output.info(`The live game's error.log had ${String(startLines)} lines at ready.`);
+    const startLines = await this.errorLog.read();
+    this.output.info(`The live game's error.log had ${String(startLines.length)} lines at ready.`);
+    void this.reportStart(startLines);
     this.gameLog = new ErrorLogTail(gameLogPath(this.install.layout.profile));
     await this.gameLog.skip();
     this.runSession = 0;

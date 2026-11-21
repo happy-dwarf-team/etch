@@ -163,6 +163,34 @@ on every vanilla province view reload (`Missing Button 'close_button'`,
 `Missing Icon 'remove_parliament'`) are left out. A console line the game
 refused is a `game-console-answer` error.
 
+**The start report (ADR 0007, part 1).** The lines `error.log` holds when the
+process gets ready, what the game wrote while it loaded, are no longer only
+counted: collapsed as above, each goes to Problems (source "Etch game start",
+code `game-start-log`, its own collection, replaced at each start) when it is
+about a file of the edited mod. The core's `readStartLine` reads what a line
+names, in the shapes EU4 1.37.5 writes (`file: … line: N`, `File: "…" … near
+line: N`, a path that starts the message, `Key: …`, `in a trigger <key>`):
+
+- a line that names a file and a line goes on that line, without its
+  indentation, when the edited mod wins the file in the playset;
+- a line that names a file but no line goes on the window it names
+  (`… in window 'name'`), else on the file's start;
+- a line that names only a key goes on the key's first whole-word place in the
+  edited mod's `.txt`, `.yml`, `.gui` and `.gfx` files (in path order, without
+  `gfx`, `music`, `sound`, `.git` and `.etch`, at most 20,000 files);
+- a line about another mod's or the game's file, a key the mod does not
+  write, or nothing at all is only counted, in Etch's log
+  (`Start report: …`).
+
+A parsing error (`Parsing Error`, `Unexpected token`) is an error, the rest
+warnings. The notes of Anvil's log throttle are not lines of their own: `logged
+10 times; …` is dropped, and `repeated N more times …` adds N to its line's
+count. On the lab's machine, a player profile's `error.log` with an Anbennar
+playset (61 lines, 30 after collapsing), with Anbennar as the edited mod, gave 6
+problems (2 on their line, 2 on their window, 2 by their localisation key), 13
+lines about other files and 11 placed nowhere, in 3–10 s: a key the mod does
+not write makes the search read all its 14,188 text files.
+
 ## Planned restarts
 
 A planned restart has a cause from the table, a visible stale window or the HUD

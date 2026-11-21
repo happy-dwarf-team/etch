@@ -118,6 +118,11 @@ you **save** is reloaded into the game's own window, with its real data.
 - New `error.log` lines go to the Problems panel on the edited file. A saved
   file whose copy in another mod of the playset wins is not reloaded, and Etch
   names that mod.
+- What the game wrote to `error.log` while it started goes to the Problems
+  panel too, as "Etch game start", on your mod's files: on the line the game
+  names, or, when it names only a key (an unknown modifier, a localisation
+  key), on the first place your mod writes it. Lines about other mods and the
+  game are counted in Etch's log. Each start replaces the last one's.
 - Reloading does not work in ironman or multiplayer games.
 
 The private install lives in the extension's storage: links to your game
