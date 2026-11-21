@@ -79,25 +79,28 @@ copies of your saves, the saves you make in it and the ones Etch makes before a 
 
 ## Mistakes the game finds at the start
 
-While the game loads, it writes what it finds wrong in your files to its `error.log`: an unknown
-trigger or effect, a modifier no file defines, a letter the game cannot show in a localisation
-text. When the live game is ready, Etch puts those lines in the Problems panel
-(<kbd>Ctrl+Shift+M</kbd>), marked **Etch game start**, on the file of your mod they are about. At
-the next start they are replaced.
+While the game loads, it writes a message to its `error.log` for each mistake it finds in your
+files: an unknown trigger or effect, a modifier no file defines, a letter the game cannot show
+in a localisation text. When the live game is ready, Etch puts these messages in the Problems
+panel (<kbd>Ctrl+Shift+M</kbd>), marked **Etch game start**, on the file of your mod they are
+about. Etch replaces them at the next start.
 
-Each line goes where it points:
+Each message goes where it points:
 
-- When the game names a file and a line, it goes on that line. For
+- When the game names a file and a line, the message goes on that line. For
   `File: "events/etch_check.txt", Error: Unknown effect type. Key: add_treasuryy: add_treasuryy, near line: 13`,
   that is line 13 of your `events/etch_check.txt`.
-- When the game names a file and a window, such as `Missing Button 'close' in window 'etch'`, it
-  goes on that window's name in the `.gui` file.
-- When the game names only a name, it goes on the first place your mod writes that name: a
-  localisation key in your `.yml` files, anything else, such as a modifier, in your other files.
+- When the game names a `.gui` file, a widget and its window, such as
+  `interface/etch.gui: Missing Button 'close' in window 'etch'`, the message goes on the window's
+  name in that file.
+- When the game names nothing but a name, Etch looks for it in your mod: a localisation key in
+  your `.yml` files, any other name, such as a modifier, in your other files. The message goes on
+  the first place it finds.
 
-A line where the game could not read your file ("Parsing Error") is an error; the others are
-warnings. Lines about other mods' files or the game's own files are not in Problems: Etch counts
-them in its log (**View › Output**, then **Etch** in the list).
+A message that the game could not read your file ("Parsing Error") is an error in Problems. The
+others are warnings. Messages about other mods' files or the game's own files are not in
+Problems. Etch's log only says how many there were (**View › Output**, then **Etch** in the
+list).
 
 ## When the game crashes
 
@@ -127,7 +130,7 @@ that Anbennar shows before the save loads. The save's own events are left to you
   another playset.
 - It never writes to your own saves or profile.
 - It shows only the mistakes the game writes to `error.log` while it loads. Some mistakes the game
-  does not report: an extra `}` in a file of `common/scripted_triggers`, or
-  `add_treasury = lots`, gives no line, so Etch shows nothing for them.
-- When a name appears in several of your files, Etch puts the line on the first one it finds,
-  which may not be the one the game meant.
+  does not report, such as an extra `}` in `common/scripted_triggers` or `add_treasury = lots`:
+  Etch shows nothing for them.
+- When a name appears in several of your files, Etch puts the message on the first one in the
+  order of their folders and names, which may not be the one the game meant.
