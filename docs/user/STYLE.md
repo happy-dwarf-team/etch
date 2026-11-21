@@ -78,8 +78,9 @@ This list is also what the review below checks.
 9. **State limits plainly**, at the end, under "What it doesn't do".
 10. **Etch's internal parts** (Tongs, Bellows, the plugin protocol, the precision corpus) appear
     only where a user meets them, and then with what they do for the user.
-11. **Say only what Etch does today**: every claim follows the extension's README, its
-    specifications or its code. No plans, no "soon".
+11. **Say only what Etch does today**: every claim follows Etch's specifications or its code.
+    No plans, no "soon". The extension's README is a short overview of these pages for the
+    stores: a change to what a page says that the README repeats changes the README too.
 
 ## The plain-language review
 
