@@ -594,8 +594,29 @@ So:
   report's `Unknown country-modifier in a trigger` line is.
 - **H3: a wrapped block logs no scope errors, and no false ones.** The game
   finds a wrong scope only when the trigger or effect runs.
-- **H4 is not tested.** The plugin refuses every console line but `reload`,
-  `reloadloc`, `reloadtexture` and `run`.
+- **H4 is not tested in this run.** The plugin refuses every console line but
+  `reload`, `reloadloc`, `reloadtexture` and `run`. A later start tested it
+  (below).
+
+**H4, the same day.** One start under the same procedure (the game lock, the
+EXE hash and the Process Lasso rule checked before and after, unchanged), the
+Etch 2.13.0 VSIX's builds in a private install of its own, vanilla and the
+Russia 1719.3.17 save, no mod. Only for this start, the VSIX's Tongs 0.37.0 had
+its pipe on (`enabled = true`, `input = false`) and the module
+`tongs.game_calls` in `anvil.toml`'s `enabled_modules`. The console lines went
+through the lab's `tongs` MCP server, each checked against the game's PID and
+creation time. It was a marked run, not a measurement.
+
+| Console line | Answer | `error.log` gained |
+| --- | --- | --- |
+| `help validateevents` | "Validates all events without triggering it" | nothing |
+| `help verify_loc` | "Verifies the localization keys" | nothing |
+| `validateevents` | no text, 8 ms | 9 lines: `Undefined event target: …` and `… tooltip: …` for `ancestral_lands`, `advisor_enemy_country` and `exile_country`; three `Trigger condition set on the wrong scope: Scope.GetProvince()` (`owned_by`, `province_id` twice) |
+| `verify_loc` | no answer within the pipe's read timeout; done a moment later | 23,553 lines `l_spanish: <key> missing`, one per key, Spanish only |
+
+Neither command's lines name a file, an event id or a line, so Etch could
+place them only by a key, and `verify_loc`'s are about a translation, not an
+error. ADR 0007 builds no third part on them.
 
 Not run: the Anbennar save, Problems inside VS Code (the extension's tests
 cover the Diagnostics), and ironman and multiplayer (the `run` job refuses
