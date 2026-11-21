@@ -125,7 +125,36 @@ into [live-game.md](../live-game.md) as Run selection's run did.
   modifier name in a trigger.
 - **H3: no scope errors, and no false ones.** A check finds wrong scopes no
   more than the start report does.
-- **H4 is not tested.**
+- **H4 is not tested in this run** (see "H4" below).
 - **The start report** placed all five of the test mod's lines once etch#570
   split the game's multi-line parsing errors.
-- **Still to run:** the Anbennar save.
+
+**Anbennar run, 21 November 2026**, after part 2 was built
+([live-game.md](../live-game.md#check-file-in-the-live-game-adr-0007-part-2)):
+Anbennar, P2KE and its patch, with the test mod as the edited mod, on the
+Verne 1444.11.11 save.
+
+- **The start report** placed the test mod's lines as on vanilla; the
+  playset's other 10,877 lines name no file of the edited mod.
+- **Check File** placed the test files' errors on the same lines as on
+  vanilla, and found nothing in 557 blocks of four of Anbennar's own files:
+  no false error on a large mod's script.
+- **A glued line:** the game once wrote a message without its line end, so the
+  next one went on in the same line. etch#582 splits such lines.
+
+**H4, 21 November 2026** (vanilla, the Russia 1719 save; the console lines
+sent through the lab's Tongs, not through Etch's plugin):
+
+- **Both commands exist** in 1.37.5. The game's `help` describes
+  `validateevents` as "Validates all events without triggering it" and
+  `verify_loc` as "Verifies the localization keys".
+- **`validateevents`** answered in 8 ms with no text and wrote 9 lines:
+  `Undefined event target: …` and its tooltip for three targets, and three
+  `Trigger condition set on the wrong scope`. None names a file, an event id
+  or a line.
+- **`verify_loc`** wrote 23,553 lines, one per key: `l_spanish: <key>
+  missing`, for Spanish only, naming no file.
+- **So no third part for now.** Neither command says where the problem is
+  written. `verify_loc` reports translations that a mod does not ship, rather
+  than errors. The start report and Check File already place every line that
+  names a file or a key the mod writes.
