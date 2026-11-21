@@ -73,6 +73,7 @@ struct FakeGame {
             .run_later = [](std::function<void()> work) { work(); },
             .now_ms = [this] { return now; },
             .press = {},
+            .confirm_title = {},
             .province_view = [this]() -> std::optional<etch::ProvinceView> {
                 if (!navigation) return std::nullopt;
                 return view;
@@ -449,14 +450,26 @@ void TestConfirm() {
     assert(etch::IsConfirmPath("DefaultConfirm/AgreeButton"));
     assert(!etch::IsConfirmPath("DefaultConfirm/CancelButton"));
     assert(!etch::IsConfirmPath("//AgreeButton"));
+    // The game's title in any of its languages, Anbennar's wording, any case; nothing else.
+    assert(etch::IsAchievementsNoticeTitle("Achievements can no longer be earned"));
+    assert(etch::IsAchievementsNoticeTitle("Vanilla achievements can no longer be earned"));
+    assert(etch::IsAchievementsNoticeTitle("ACHIEVEMENTS CAN NO LONGER BE EARNED"));
+    assert(etch::IsAchievementsNoticeTitle("Les succ\xC3\xA8s ne peuvent plus \xC3\xAAtre remport\xC3\xA9s"));
+    assert(etch::IsAchievementsNoticeTitle("Errungenschaften k\xC3\xB6nnen nicht mehr erspielt werden"));
+    assert(etch::IsAchievementsNoticeTitle("Ya no se pueden ganar logros"));
+    assert(!etch::IsAchievementsNoticeTitle(""));
+    assert(!etch::IsAchievementsNoticeTitle("Old Savegame"));
+    assert(!etch::IsAchievementsNoticeTitle("Achievements can be earned"));
     FakeGame game;
     std::vector<std::string> clicked;
+    std::optional<std::string> title = "Achievements can no longer be earned";
     LiveJobs::Env env = game.Env();
     env.press = [&](const std::string& selector, etch::Key key) {
         assert(key == etch::Key::Enter);
         clicked.push_back(selector);
         return etch::PressResult{true, true};
     };
+    env.confirm_title = [&] { return title; };
     LiveJobs jobs(env);
     std::optional<etch::ConfirmResult> got;
     assert(!jobs.Confirm("DefaultConfirm/AgreeButton", [&](const etch::ConfirmResult& r) { got = r; }));
@@ -465,6 +478,22 @@ void TestConfirm() {
     assert((clicked == std::vector<std::string>{"DefaultConfirm/AgreeButton"}));
     const Value a = *Parse(etch::ConfirmAnswer(5, *got)).value;
     assert(a.Find("found")->AsBool() == true && a.Find("pressed")->AsBool() == true);
+    assert(a.Find("title")->AsString() == "Achievements can no longer be earned");
+    // Another confirm window is not answered; its title is passed on.
+    title = "Old Savegame";
+    assert(!jobs.Confirm("DefaultConfirm/AgreeButton", [&](const etch::ConfirmResult& r) { got = r; }));
+    game.Frame();
+    assert(clicked.size() == 1);
+    const Value other = *Parse(etch::ConfirmAnswer(6, *got)).value;
+    assert(other.Find("found")->AsBool() == false && other.Find("pressed")->AsBool() == false);
+    assert(other.Find("title")->AsString() == "Old Savegame");
+    // No confirm window: nothing pressed, no title.
+    title = std::nullopt;
+    assert(!jobs.Confirm("DefaultConfirm/AgreeButton", [&](const etch::ConfirmResult& r) { got = r; }));
+    game.Frame();
+    assert(clicked.size() == 1);
+    const Value none = *Parse(etch::ConfirmAnswer(7, *got)).value;
+    assert(none.Find("found")->AsBool() == false && none.Find("title") == nullptr);
     // Without tongs.ui there is nothing to find.
     LiveJobs blind(game.Env());
     assert(!blind.Confirm("DefaultConfirm/AgreeButton", [&](const etch::ConfirmResult& r) { got = r; }));

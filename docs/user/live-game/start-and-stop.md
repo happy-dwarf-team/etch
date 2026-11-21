@@ -19,7 +19,10 @@ save goes into it at once ([Reload on save](reload-on-save.md)).
    Click **Create**. [The private install](private-install.md) says what it holds.
 
 The status bar shows **Live game starting**, then **Live game** once the game is ready, and a
-notice says how long it took. A first start of a big playset can take several minutes. Etch keeps
+notice says how long it took. When you start from a save (**Continue** or one of your saves), the
+game is ready once that save is loaded, not at the main menu. If the save has not loaded after five
+minutes, Etch shows the game as ready anyway and warns that it may still be loading or wait at the
+main menu: look at the game. A first start of a big playset can take several minutes. Etch keeps
 waiting; after two minutes a notice offers **Stop**.
 
 ## The first start
@@ -114,15 +117,27 @@ event can freeze it for a while, and Windows may mark its window "not responding
 minutes in which the game draws nothing new, Etch asks **Keep Waiting** or **Close and Restart**,
 and closes it only on your answer.
 
-## In Anbennar
+## The achievements message
 
-When the live game starts from a save in Anbennar's playset, Etch answers the achievements prompt
-that Anbennar shows before the save loads. The save's own events are left to you.
+When your playset has a mod that changes the game itself, such as events, decisions or anything in
+`common`, EU4 turns achievements off. In that case, before it loads a save, it shows the message
+"Achievements can no longer be earned" with **Cancel** and **Ok**. Anbennar shows "Vanilla
+achievements can no longer be earned".
+
+When the live game starts from a save, Etch clicks **Ok** on this message for you, in any playset,
+and the save loads. Events that pop up once the save is loaded are yours to answer.
+
+If the game shows a different message before the save loads, Etch does not answer it. It stops
+waiting: the status bar shows **Live game**, and a warning in VS Code names the message. Answer it
+in the game, and the save loads.
 
 ## What it doesn't do
 
 - It starts only EU4 1.37.5 from Steam: Etch refuses any other `eu4.exe`.
 - It does not copy ironman saves.
+- It knows the achievements message only in the game's own languages: English, French, German and
+  Spanish. If a mod translates it into another language, you see the warning instead and click
+  **Ok** yourself.
 - It does not save before a stop at the main menu, in ironman or in multiplayer.
 - Settings you change in the live game do not last.
 - It runs one live game per machine, and not beside your own EU4.

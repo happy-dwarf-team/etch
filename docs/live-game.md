@@ -78,17 +78,29 @@ preview's playset. A start:
 5. **Starts `eu4.exe`** from the install with `-continue=<save>` (when a save
    was chosen) and `-userdir=<private profile>/`, `ETCH_HOST_SESSION`,
    `SteamAppId` and `SteamGameId`. The lock records the game's identity; the
-   plugin's `hello` must name the same PID and creation time. The game is ready
-   when `anvil-game.ready` is published. The plugin's pipe must come up within
+   plugin's `hello` must name the same PID and creation time. The game reaches
+   its main menu when `anvil-game.ready` is published; a start to the main menu
+   is ready then, a start from a save once the save is loaded (step 6). The
+   plugin's pipe must come up within
    120 s (it does in about 0.3 s); after that the start has no time limit:
    Etch waits as long as the process lives and the plugin answers pings, logs
    the progress every 30 s, and after 2 minutes offers **Stop** in a notice (the
    status bar item stops it throughout). A cold first start of the Anbennar
    playset took over two minutes in the 2.0.0 trial.
-6. **In Anbennar's playset** (Workshop item `1385440355`), after a start from a
-   save, answers the achievements prompt with Enter while
-   `DefaultConfirm/AgreeButton` is on screen (the plugin's `confirm`, H7), until
-   the save is loaded. The save's own events are left to the player.
+6. **After a start from a save** (and every restart), in any playset, waits
+   until the save is loaded (a game session in the plugin's ping) before the
+   live game is ready, and answers the game's achievements notice on the way:
+   "Achievements can no longer be earned" holds the load at the main menu in
+   any playset that turns achievements off (any mod with gameplay files,
+   Anbennar). The plugin's `confirm` knows it by the title of the
+   `DefaultConfirm` window, in the game's four languages, as Tongs 0.37 does,
+   and posts Enter on it (H7, etch#596). The status bar says **Live game
+   starting** throughout, and the ready notice's time counts the load. Another
+   confirm window open for 2 s ends the wait: the game is ready at the main
+   menu, and a warning quotes its title so that the player answers it. So does
+   a save that is not loaded after 5 minutes. A game that ends during the load
+   is a crash; **Stop** cancels the load. The save's own events are left to the
+   player.
 
 ## Stop and exits
 
@@ -204,8 +216,9 @@ without the click, except after a crash.
 
 **Restart now** saves through the plugin (`autosave.eu4`, as for a stop),
 closes the game and starts it again from the newest private save, which is
-that one, with VS Code's progress shown. In Anbennar's playset it answers the
-achievements prompt. A game that does not write the save within 30 s is closed
+that one, with VS Code's progress shown. In any playset it answers the
+achievements notice and is ready once the save is loaded (start, step 6). A
+game that does not write the save within 30 s is closed
 anyway, and the restart continues the newest save there is.
 
 ## Crashes

@@ -16,6 +16,7 @@ import {
 } from '@etch/core/playset';
 import * as vscode from 'vscode';
 import { startReport } from './start-report.ts';
+import { LOAD_TIMEOUT_MS, awaitSaveLoad, type SaveLoad } from './save-load.ts';
 import {
   ErrorLogTail,
   collapseErrorLog,
@@ -235,12 +236,6 @@ const START = 'start';
 export const AUTOSAVE = 'autosave.eu4';
 /** How long after a reload's answer `error.log` is read: the game writes the lines of a few frames. */
 const ERROR_LOG_SETTLE_MS = 250;
-/** Anbennar's Workshop item: its achievements prompt shows before a save loads (H7). */
-const ANBENNAR_WORKSHOP_ID = '1385440355';
-/** The prompt's button the live game clicks after a start from a save in Anbennar's playset. */
-const ACHIEVEMENTS_PROMPT = 'DefaultConfirm/AgreeButton';
-/** How long a start from a save may take to load it, the prompt included (about 100 s, H7). */
-const LOAD_TIMEOUT_MS = 300_000;
 /**
  * The views a restart closes that Etch does not open again: the country view. The province view
  * is selected again on its province (H8).
@@ -1256,7 +1251,19 @@ export class LiveGame implements vscode.Disposable {
         },
         signal,
       });
-      await this.serve(started);
+      // A start from a save is ready once the save is loaded, past the achievements notice.
+      const load =
+        this.startAt.save === undefined ? undefined : await this.loadSave(started, signal);
+      if (load?.kind === 'cancelled') {
+        await started.stop();
+        return false;
+      }
+      if (load?.kind === 'exited') {
+        await started.cleanedUp();
+        throw new HostCrashedError('The live game exited while it loaded the save.');
+      }
+      await this.serve(started, load?.ms ?? 0);
+      if (load?.kind === 'held' || load?.kind === 'timeout') this.saveNotLoaded(load);
       return true;
     } catch (error) {
       if (signal.aborted) return false;
@@ -1292,8 +1299,41 @@ export class LiveGame implements vscode.Disposable {
       });
   }
 
-  /** Makes a ready process the live game and watches it. */
-  private async serve(started: LiveGameProcess): Promise<void> {
+  /**
+   * Waits until a started game has loaded the save it continues, answering the game's achievements
+   * notice, which holds the load in any playset that turns achievements off (H7, etch#596). The
+   * save's own events are left to the player.
+   */
+  private async loadSave(started: LiveGameProcess, signal: AbortSignal): Promise<SaveLoad> {
+    this.output.info('The live game loads the save.');
+    const load = await awaitSaveLoad(started, {
+      signal,
+      onAnswered: (title) => {
+        this.output.info(`Answered the game's notice "${title}" with Ok.`);
+      },
+    });
+    if (load.kind === 'loaded') {
+      this.output.info(`The live game loaded the save in ${String(Math.round(load.ms))} ms.`);
+    }
+    return load;
+  }
+
+  /** Tells the player that the save a start continues is not loaded yet, and why. */
+  private saveNotLoaded(load: Extract<SaveLoad, { kind: 'held' | 'timeout' }>): void {
+    const message =
+      load.kind === 'held'
+        ? `The game shows its message "${load.title}" before it loads the save. Answer it in the game.`
+        : `The live game has not loaded the save after ${String(LOAD_TIMEOUT_MS / 60_000)} ` +
+          'minutes. It may still be loading, or wait at the main menu.';
+    this.output.warn(message);
+    void vscode.window.showWarningMessage(message);
+  }
+
+  /**
+   * Makes a ready process the live game and watches it; `loadMs` is how long it took after ready to
+   * load the save it continues.
+   */
+  private async serve(started: LiveGameProcess, loadMs = 0): Promise<void> {
     this.process = started;
     this.hudRebuilds = 0;
     this.panelRebuilds = 0;
@@ -1324,7 +1364,11 @@ export class LiveGame implements vscode.Disposable {
     }
     this.memory = new ProvinceMemory(this.saveName);
     this.watch(started);
-    this.set({ status: 'ready', pid: started.identity.pid, readyMs: started.times.ready });
+    this.set({
+      status: 'ready',
+      pid: started.identity.pid,
+      readyMs: started.times.ready + Math.round(loadMs),
+    });
     if (this.restarting && this.lastViews.length > 0) {
       void vscode.window.showInformationMessage(
         `The live game restarted: open ${this.lastViews.join(' and ')} again; Etch reopens only ` +
@@ -1345,8 +1389,6 @@ export class LiveGame implements vscode.Disposable {
     } else if (reopen !== undefined) {
       void this.reselectAfterLoad(started, reopen.province);
     }
-    const anbennar = this.wanted?.mods.some((m) => m.workshopId === ANBENNAR_WORKSHOP_ID) === true;
-    if (this.startAt.save !== undefined && anbennar) void this.answerPrompt(started);
   }
 
   /**
@@ -1371,7 +1413,7 @@ export class LiveGame implements vscode.Disposable {
     if (this.process !== started || loadedAt === undefined) return;
     const province = String(remembered.province);
     try {
-      // The prompt's last `confirm` (Anbennar) may still run: one job at a time.
+      // The load wait's last `confirm` may still run: one job at a time.
       const attempt = () =>
         started.reselect(remembered.province).then(
           (answer) => ({ answer }),
@@ -1401,28 +1443,6 @@ export class LiveGame implements vscode.Disposable {
       this.output.warn(
         `The province view of province ${province} was not opened again: ${String(error)}`,
       );
-    }
-  }
-
-  /**
-   * Answers Anbennar's achievements prompt, which shows before a save loads, so that a restart
-   * reaches the loaded game without the player (spec section 6, H7). The save's own events are
-   * left to the player. Tries until the save is loaded or `LOAD_TIMEOUT_MS` passes.
-   */
-  private async answerPrompt(started: LiveGameProcess): Promise<void> {
-    const deadline = performance.now() + LOAD_TIMEOUT_MS;
-    let answered = 0;
-    while (this.process === started && performance.now() < deadline) {
-      const ping = await started.ping().catch(() => undefined);
-      if (ping?.gameSession !== undefined) return;
-      // Enter until the prompt is gone: one may come before the game takes keys.
-      const answer = await started.confirm(ACHIEVEMENTS_PROMPT).catch(() => undefined);
-      if (answer?.pressed === true) answered++;
-      else if (answered > 0 && answer?.found === false) {
-        this.output.info("Answered Anbennar's achievements prompt.");
-        return;
-      }
-      await new Promise((resolve) => setTimeout(resolve, 1_500));
     }
   }
 

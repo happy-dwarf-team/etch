@@ -168,9 +168,18 @@ struct RunResult {
 
 std::string RunAnswer(std::uint64_t id, const RunResult& result);
 
-// The only buttons `confirm` clicks: Anbennar's achievements prompt, which
-// shows before a save loads (live check H7).
+// The only buttons `confirm` clicks: the Ok of the game's achievements notice,
+// which holds a save's load in any playset that turns achievements off (live
+// check H7, etch#596).
 bool IsConfirmPath(std::string_view path);
+
+// Whether `title`, the `Title` of the game's confirm window (`DefaultConfirm`),
+// is the achievements notice's: it contains the game's
+// SAVEGAME_WARNING_ACHIEVEMENTS_DISABLED_TITLE (1.37.5) in English (Anbennar's
+// "Vanilla achievements can no longer be earned" included), French, German or
+// Spanish, ignoring ASCII case, as Tongs 0.37 matches it. The title is game or
+// mod text: it is only compared and passed on.
+bool IsAchievementsNoticeTitle(std::string_view title);
 
 // Frames a posted key takes to land: it goes up a frame after it went down,
 // and the game takes it in its next frame.
@@ -195,7 +204,9 @@ struct PressResult {
 struct ConfirmResult {
     std::string error;
     std::string message;
-    PressResult press;
+    PressResult press;  // found and pressed only for the achievements notice
+    // The Title of the confirm window on screen, whatever it says; nullopt when none shows.
+    std::optional<std::string> title;
     double queued_ms = 0;
 };
 
@@ -222,6 +233,9 @@ public:
         std::function<double()> now_ms;
         // Posts `key` to the game's window when a visible widget matches `selector`; main thread.
         std::function<PressResult(const std::string& selector, Key key)> press;
+        // The Title text of the visible top-level `DefaultConfirm` ("" without one); nullopt when no
+        // such window shows or without tongs.ui. Main thread.
+        std::function<std::optional<std::string>()> confirm_title;
         // The province view now; nullopt without tongs.navigation or when it cannot read. Main thread.
         std::function<std::optional<ProvinceView>()> province_view;
         // tongs.navigation's open_province: its outcome, nullopt without the service. Main thread.

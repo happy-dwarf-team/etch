@@ -171,6 +171,14 @@ Holds for the start, not for Anbennar's prompt. Every start of this run used
 events to the player; the progress shown in VS Code counts the prompt. No time
 target, as settled.
 
+**Policy since etch#596:** the same notice, the game's "Achievements can no
+longer be earned", holds a start from a save in every playset that turns
+achievements off, which is any mod with gameplay files (the Etch 2.14.0 smoke,
+vanilla with one test mod). This run's playsets were `.gui` overlays only,
+which leave achievements on, so it did not show. A start or restart from a save
+in any playset now answers the notice, known by its title as Tongs 0.37 knows
+it, and the live game is ready only once the save is loaded.
+
 ### H8: reopening the province after a restart
 
 Not checked. Tongs cannot call the province-selection function `0x139C830`;

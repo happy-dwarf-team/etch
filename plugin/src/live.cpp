@@ -184,6 +184,25 @@ std::optional<std::string> AllowedLine(std::string_view line, std::vector<std::s
 
 bool IsConfirmPath(std::string_view path) { return path == "DefaultConfirm/AgreeButton"; }
 
+bool IsAchievementsNoticeTitle(std::string_view title) {
+    // SAVEGAME_WARNING_ACHIEVEMENTS_DISABLED_TITLE of the game's localisation (1.37.5), in
+    // lower case and UTF-8: English, French, German, Spanish (Tongs' list, tongs#234).
+    static constexpr std::string_view kTitles[] = {
+        "achievements can no longer be earned",
+        "les succ\xC3\xA8s ne peuvent plus \xC3\xAAtre remport\xC3\xA9s",
+        "errungenschaften k\xC3\xB6nnen nicht mehr erspielt werden",
+        "ya no se pueden ganar logros",
+    };
+    std::string lower(title);
+    for (char& c : lower) {
+        if (c >= 'A' && c <= 'Z') c = static_cast<char>(c - 'A' + 'a');
+    }
+    for (const std::string_view t : kTitles) {
+        if (lower.find(t) != std::string::npos) return true;
+    }
+    return false;
+}
+
 bool IsRunFile(std::string_view name) {
     constexpr std::string_view kPrefix = "etch_run_";
     constexpr std::string_view kSuffix = ".txt";
@@ -304,6 +323,7 @@ std::string ConfirmAnswer(std::uint64_t id, const ConfirmResult& result) {
     if (!result.error.empty()) return Error(id, result.error, result.message);
     json::Writer w = Ok(id);
     w.Bool("found", result.press.found).Bool("pressed", result.press.pressed);
+    if (result.title) w.Str("title", *result.title);
     return w.Fixed("queued_ms", result.queued_ms).Finish();
 }
 
@@ -586,8 +606,13 @@ std::optional<Refusal> LiveJobs::Confirm(std::string path, std::function<void(co
     const bool queued = env_.run_on_main([this, path = std::move(path), asked, done = std::move(done)] {
         auto result = std::make_shared<ConfirmResult>();
         result->queued_ms = env_.now_ms() - asked;
-        if (env_.press) {
-            result->press = env_.press(path, Key::Enter);
+        if (env_.press && env_.confirm_title) {
+            // Only the achievements notice is answered: another confirm window (another
+            // warning, a mod's own) is left to the player, its title passed on.
+            result->title = env_.confirm_title();
+            if (result->title && IsAchievementsNoticeTitle(*result->title)) {
+                result->press = env_.press(path, Key::Enter);
+            }
         } else {
             result->error = "no_tree";
             result->message = "tongs.ui is missing, so the button cannot be found";
