@@ -1,7 +1,10 @@
 # Language features for interface files and script references, without a language id
 
-**Status: proposed** (draft for v3, 21 November 2026). Nothing below is built
-yet.
+**Status: proposed** (draft for v3, 21 November 2026). All of it is built on
+`main` for the next release and waits for the maintainer to accept this
+decision: localisation inlay hints (etch#568), completion (etch#572), symbols
+(etch#573), references and rename (etch#581, etch#584), colours (etch#583),
+images in more scripts (etch#585) and the gutter thumbnail (etch#587).
 
 Etch adds editor features to `.gui` and `.gfx` files, and to the places in
 script and localisation files where they name what Etch already reads:
