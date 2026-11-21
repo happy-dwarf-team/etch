@@ -180,7 +180,12 @@ export async function testProvinceIds(): Promise<void> {
       found.some((d) => d.code === 'country-history-missing'),
     );
     assert.deepEqual(
-      opened.map((d) => [d.code, d.range.start.line, d.range.start.character, d.range.end.character]),
+      opened.map((d) => [
+        d.code,
+        d.range.start.line,
+        d.range.start.character,
+        d.range.end.character,
+      ]),
       [
         ['country-history-missing', 1, 0, 3],
         ['country-file-missing', 1, 6, 26],

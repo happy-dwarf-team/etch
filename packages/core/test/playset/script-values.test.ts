@@ -356,7 +356,9 @@ describe('script values of a playset', () => {
     ]);
     const none = await findScriptValueProblems(replacing, { names: own });
     expect(
-      none.findings.flatMap((f) => f.diagnostics).filter((d) => d.code === 'province-history-shared'),
+      none.findings
+        .flatMap((f) => f.diagnostics)
+        .filter((d) => d.code === 'province-history-shared'),
     ).toEqual([]);
   });
 
@@ -407,7 +409,11 @@ describe('script values of a playset', () => {
 
   it('sums up nothing, and keeps every finding, without the summed-up codes', () => {
     const finding = {
-      file: { path: 'events/a.txt', absolutePath: 'a', layer: { name: 'Mod', root: '', replacePaths: [] } },
+      file: {
+        path: 'events/a.txt',
+        absolutePath: 'a',
+        layer: { name: 'Mod', root: '', replacePaths: [] },
+      },
       text: 'owns = 99',
       diagnostics: [
         {

@@ -437,7 +437,10 @@ export interface ScriptValueSummary {
   /** The line for the notification and the Output channel. */
   readonly message: string;
   /** Each diagnostic with the file it is in, in path order. */
-  readonly entries: readonly { readonly finding: ScriptValueFinding; readonly diagnostic: ScriptValueDiagnostic }[];
+  readonly entries: readonly {
+    readonly finding: ScriptValueFinding;
+    readonly diagnostic: ScriptValueDiagnostic;
+  }[];
 }
 
 /**
