@@ -8,6 +8,7 @@ import {
   normaliseGamePath,
   readGfxFile,
   readGuiFile,
+  SPRITE_SCRIPT_FOLDERS,
   textureCandidates,
   type GfxFile,
   type GuiFile,
@@ -142,13 +143,11 @@ function cacheKey(path: string): string {
   return normaliseGamePath(path).toLowerCase();
 }
 
-/** The script folders whose files name sprites (`scriptSpriteReferences`). */
-const SPRITE_SCRIPT_FOLDERS = ['events', 'missions', 'common/estate_privileges'];
-
 /**
  * The files of a playset that can write a sprite's name, the winning copy of each: the `.gfx` and
- * `.gui` files of `interface` and the `.txt` files of `events`, `missions` and
- * `common/estate_privileges`, with their subfolders.
+ * `.gui` files of `interface` and the `.txt` files of the script folders that name sprites
+ * (`SPRITE_SCRIPT_FOLDERS`: `events`, `missions`, `common/estate_privileges` and more), with their
+ * subfolders.
  */
 export async function spriteNamingFiles(files: GameFiles): Promise<GameFile[]> {
   const out = await interfaceFiles(files);
