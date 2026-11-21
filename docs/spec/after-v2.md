@@ -482,6 +482,7 @@ refresh is a step of the 3.0.0 release.
   (`planSpriteRename`) when a file outside them defines or names the sprite,
   when the mod defines none, when a mod's `.gui` names it through an
   `@constant`, or when the new name is not a bare word or is already a sprite.
+
 - **Colours in `.gfx` files (ADR 0008).** A swatch and VS Code's colour
   picker on the colours the model reads as colours: each `textcolors` entry of
   `bitmapfonts` and of a `bitmapfont` (`G = { 0 255 0 }`, 0–255 per channel,
