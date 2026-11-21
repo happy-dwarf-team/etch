@@ -362,6 +362,15 @@ mission's `icon` and an estate privilege's `icon`. A script name with no
 sprite says so in its hover; Etch does not read the game's DLC archives,
 which define many vanilla event pictures.
 
+A localisation key shows its text after it, in `etch.language`: a `.gui`
+file's `text`, `tooltip`, `tooltipText` and `delayedTooltipText`, and the
+`title`, `desc`, `name`, `tooltip` and `custom_tooltip` of the scripts in
+`events`, `decisions`, `missions` and `common`. The text is cut to 60
+characters, without icons, colour codes or variables; hovering it shows the
+whole text and the `.yml` file, and **Go to Definition** on the key opens that
+file at the key. Only keys your playset defines get a text, so a `name` that is
+a plain word gets none. `etch.editor.localisationHints` turns this off.
+
 ## Meshes
 
 A `.mesh` file opens in the **Etch Mesh Preview**: the model drawn with its

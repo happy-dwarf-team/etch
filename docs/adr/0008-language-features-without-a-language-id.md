@@ -72,8 +72,9 @@ would be small next to that risk.
 ## Consequences
 
 - CWTools' completion and hover may appear next to Etch's in `eu4` mode.
-  Each feature group has its own setting (`etch.language.completion`,
-  `etch.language.inlayHints`, `etch.language.rename`), on by default, so a
+  Each feature group has its own setting (`etch.editor.completion`,
+  `etch.editor.localisationHints`, `etch.editor.rename`; not under
+  `etch.language`, which is already the language setting), on by default, so a
   user can turn off the one that duplicates.
 - Inlay hints and completion get budgets in [docs/budgets.md](../budgets.md)
   before they ship, measured on Anbennar, the largest corpus playset. They
