@@ -7,6 +7,7 @@ import { testAssetLinks } from './asset-links.ts';
 import { testSpriteLinks } from './sprite-links.ts';
 import { testLocalisationHints } from './localisation-hints.ts';
 import { testGuiCompletion } from './gui-completion.ts';
+import { testInterfaceSymbols } from './interface-symbols.ts';
 import { testBuildCheck } from './build-check.ts';
 import { testData } from './data.ts';
 import { testGameText } from './game-text.ts';
@@ -95,4 +96,5 @@ export async function run(): Promise<void> {
   await testSpriteLinks();
   await testLocalisationHints();
   await testGuiCompletion();
+  await testInterfaceSymbols();
 }

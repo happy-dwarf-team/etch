@@ -448,6 +448,13 @@ refresh is a step of the 3.0.0 release.
   sprites and 47 fonts, Anbennar 15,118 sprites; the context takes about 2 ms
   on the largest files (budgets.md). `etch.editor.completion` turns it off.
 
+- **Document symbols for interface files (ADR 0008).** A `.gui` file's widget
+  tree (every top-level definition, not only the previewed window) and a
+  `.gfx` file's sprites and fonts are document symbols, so the breadcrumbs,
+  VS Code's Outline and Go to Symbol in Editor follow them. A widget is named
+  as the Widget Outline names it (`<kind>` without a `name`); containers are
+  classes, other widgets fields.
+
 - **Localisation from subfolders.** The game lists `localisation` and then
   `localisation/replace` recursively (`PdxLocalizeReadFolder`; EU4 engine lab,
   eu4-engine-lab#59), so a mod's `localisation/english/*.yml` is read; the
