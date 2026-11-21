@@ -379,7 +379,7 @@
             "spanish"
           ],
           "scope": "resource",
-          "markdownDescription": "The localisation language the preview shows a `.gui` file's texts in."
+          "markdownDescription": "The language of the localisation texts that the preview shows in a `.gui` file, and that the editor shows after each localisation key."
         },
         "etch.editor.completion": {
           "type": "boolean",

@@ -1,6 +1,6 @@
 ---
 title: Preview
-description: See the window under your cursor drawn close to how the game draws it, redrawn as you type.
+description: See the window your text cursor is in, drawn close to how the game draws it and again as you type.
 clip: preview
 ---
 

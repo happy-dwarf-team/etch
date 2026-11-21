@@ -20,11 +20,13 @@ it depends on) defines gets a text. A `name` that is a plain word, not a key, ge
 
 ## Read the whole text
 
-The grey text is short: at most 60 letters, without icons, colour codes and variables such as
-`$COUNTRY$`.
+The grey text is short: at most 60 characters. It leaves out icons and colour codes, and shows a
+variable such as `$COUNTRY$`, or a scripted text in `[…]`, as "…".
 
 - Hover over the grey text to see the whole text, the key, its language and the `.yml` file it
-  comes from.
+  comes from. When several `.yml` files define the key, Etch shows the text of one of them: a
+  file in `localisation/replace` wins over the others, then a mod's file over the game's, and a
+  later mod's file over an earlier one's.
 - To open that file at the key's line, <kbd>Ctrl</kbd>+click the key, or put the cursor on it and
   press <kbd>F12</kbd>.
 
@@ -46,6 +48,6 @@ To hide the texts, open [Settings](../reference/settings.md), search for
 ## What it doesn't do
 
 - A key your playset does not define gets no text and no warning.
-- It shows the text the key has in the `.yml` file. Icons, colours and the values of variables
-  that the game puts in at play time are left out.
+- It shows the text the key has in the `.yml` file. Icons and colours are left out, and the
+  values that the game puts in at play time, such as a variable's, show as "…".
 - Only the keys listed above get a text. Others, such as `buttonText` in a `.gui` file, get none.
