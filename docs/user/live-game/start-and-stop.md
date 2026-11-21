@@ -97,7 +97,7 @@ Each message goes where it points:
   your `.yml` files, any other name, such as a modifier, in your other files. The message goes on
   the first place it finds.
 
-A message that the game could not read your file ("Parsing Error") is an error in Problems. The
+A message saying the game could not read your file ("Parsing Error") is an error in Problems. The
 others are warnings. Messages about other mods' files or the game's own files are not in
 Problems. Etch's log only says how many there were (**View › Output**, then **Etch** in the
 list).
