@@ -240,6 +240,23 @@ etch::PressResult Press(const std::string& selector, etch::Key key) {
     return out;
 }
 
+// The Title of the game's confirm window while it shows ("" for a title without text): the
+// visible `Title` inside the top-level `DefaultConfirm`. nullopt when none shows or the tree
+// cannot be read.
+std::optional<std::string> ReadConfirmTitle() {
+    if (g_ui == nullptr) return std::nullopt;
+    std::optional<std::string> title;
+    g_ui->find(
+        "DefaultConfirm/Title", 0,
+        [](void* context, const TongsUiWidget* widget) -> int {
+            if ((widget->flags & TONGS_UI_MATCH) == 0 || (widget->flags & TONGS_UI_VISIBLE) == 0) return 1;
+            *static_cast<std::optional<std::string>*>(context) = widget->text != nullptr ? widget->text : "";
+            return 0;
+        },
+        &title, nullptr);
+    return title;
+}
+
 // The province view through tongs.navigation, on the main thread.
 std::optional<etch::ProvinceView> ReadProvinceView() {
     if (g_navigation == nullptr) return std::nullopt;
@@ -298,6 +315,7 @@ etch::LiveJobs& Jobs() {
         .run_later = RunLater,
         .now_ms = NowMs,
         .press = Press,
+        .confirm_title = ReadConfirmTitle,
         .province_view = ReadProvinceView,
         .open_province = OpenProvince,
     });

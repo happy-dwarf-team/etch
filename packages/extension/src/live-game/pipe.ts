@@ -129,6 +129,16 @@ export interface SaveAnswer {
   readonly queuedMs: number;
 }
 
+/** The answer to a `confirm`. */
+export interface ConfirmAnswer {
+  /** The achievements notice is on screen. */
+  readonly found: boolean;
+  /** Enter was posted to it. */
+  readonly pressed: boolean;
+  /** The title of the confirm window on screen, whatever it says; absent when none shows. */
+  readonly title?: string;
+}
+
 /** The answer to a `run`: the console's `run <file>`, as for a `save`. */
 export interface RunAnswer {
   readonly success: boolean;
@@ -586,12 +596,19 @@ export class HostPipe {
   }
 
   /**
-   * Answers a prompt with Enter when its button is on screen (`DefaultConfirm/AgreeButton`,
-   * Anbennar's achievements prompt, H7): whether it was found and the key posted.
+   * Answers the game's achievements notice with Enter when it is on screen
+   * (`DefaultConfirm/AgreeButton`, known by its title in any playset, H7, etch#596): whether it
+   * was found and the key posted, and the title of any confirm window on screen (game or mod
+   * text: data only).
    */
-  async confirm(path: string, timeoutMs = 10_000): Promise<{ found: boolean; pressed: boolean }> {
+  async confirm(path: string, timeoutMs = 10_000): Promise<ConfirmAnswer> {
     const answer = await this.request({ type: 'confirm', path }, timeoutMs);
-    return { found: answer['found'] === true, pressed: answer['pressed'] === true };
+    const title = answer['title'];
+    return {
+      found: answer['found'] === true,
+      pressed: answer['pressed'] === true,
+      ...(typeof title === 'string' ? { title } : {}),
+    };
   }
 
   /**

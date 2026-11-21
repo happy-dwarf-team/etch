@@ -332,19 +332,28 @@ plugin's pushes (Pick mode, below).
 ```
 
 ```json
-{"id":5,"ok":true,"found":true,"pressed":true,"queued_ms":16.4}
+{"id":5,"ok":true,"found":true,"pressed":true,"title":"Achievements can no longer be earned","queued_ms":16.4}
 ```
 
-Answers a prompt with Enter when its button is on screen, for a start from a
-save without the player: Anbennar's achievements prompt shows before a save
-loads (live check H7). `path` is `DefaultConfirm/AgreeButton`, the only button
-it answers; anything else is `bad_request`. On the main thread the plugin finds
-a visible widget of that path through `tongs.ui` and posts Enter (down, and up
-a frame later) to the game's window, which takes the dialog's default button:
-the prompt closed after the first Enter in every live start. A posted mouse
-click did not work (the game reads the real cursor). `found` is false while the prompt is not shown; without `tongs.ui` the
-job answers `no_tree`. Unlike `reload` and `save` it is not refused in ironman
-or multiplayer: the prompt comes before the game session.
+Answers the game's achievements notice with Enter when it is on screen, for a
+start from a save without the player: in any playset that turns achievements
+off (any mod with gameplay files, Anbennar) the notice holds the save's load
+at the main menu until its Ok is clicked (live check H7, etch#596). `path` is
+`DefaultConfirm/AgreeButton`, the only button it answers; anything else is
+`bad_request`. On the main thread the plugin reads, through `tongs.ui`, the
+visible `Title` of the top-level `DefaultConfirm` window. When it contains the
+game's `SAVEGAME_WARNING_ACHIEVEMENTS_DISABLED_TITLE` ("Achievements can no
+longer be earned", Anbennar's "Vanilla achievements can no longer be earned"),
+in English, French, German or Spanish and ignoring case, as Tongs 0.37 knows
+the notice, the plugin finds a visible widget of `path` and posts Enter (down,
+and up a frame later) to the game's window, which takes the dialog's default
+button: the notice closed after the first Enter in every live start. A posted
+mouse click did not work (the game reads the real cursor). Another confirm
+window is never answered. `found` is true only for the notice; `title` is the
+`Title` of any `DefaultConfirm` on screen (game or mod text: data only) and is
+absent when none shows. Without `tongs.ui` the job answers `no_tree`. Unlike
+`reload` and `save` it is not refused in ironman or multiplayer: the notice
+comes before the game session.
 
 ## Pick mode
 
