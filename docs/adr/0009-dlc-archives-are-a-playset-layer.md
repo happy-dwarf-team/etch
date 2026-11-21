@@ -22,7 +22,13 @@ DLCs the player has on, read in place, never unpacked to disk.
   archives of a DLC the player does not own is not checked.
 - **Where in the order.** Between the game folder and the first mod, so a
   mod's file still wins. After-v2 gives the order as mods, then DLC, then
-  the game folder. That is not yet checked in the game (see the gate).
+  the game folder. That is not yet checked in the game (see the gate). For
+  vanilla the order between the archives and the game folder hardly matters:
+  of the archives' files, 49 have a path the game folder also has, and 48 of
+  those are identical to the game folder's (the other is
+  `localisation/127_l_french.yml`). 31 paths are in two archives, such as
+  shared unit meshes; Etch takes the archives in the order of their folder
+  names.
 - **How.** The core reads a zip's central directory once per archive and
   inflates an entry on demand (`node:zlib`'s raw inflate, no native module,
   as ADR 0001 asks). A file from an archive has no path on disk, so its
@@ -59,7 +65,7 @@ reads that same list.
 
 ## Gate
 
-Before the layer is built, one live run checks the order. A test mod
-redefines one DLC sprite, and the run checks which texture the game draws.
-A second check is a DLC that `dlc_load.json` disables: its sprite must not
-be drawn.
+Before the layer is built, one live run checks that a mod wins over an
+archive. A test mod redefines one DLC sprite, and the run checks which
+texture the game draws. A second check is a DLC that `dlc_load.json`
+disables: its sprite must not be drawn.
