@@ -1792,20 +1792,20 @@ export const CLIPS: readonly Clip[] = [
       take.mark('start');
       // Over the texture to the bar: the mouse moves at the end only, so the texture's bottom line
       // shows no texels on the way.
-      await glideOver(context, await centre(button('a')), 1000);
+      await glideOver(context, await centre(button('a')), 900);
       await sleep(160);
       take.mark('alpha', { source: 'vscode', rect: await wb.box(button('a')) });
       take.click();
       await button('a').click();
       await pressed('a');
-      await sleep(1700);
+      await sleep(1300);
       await pointTo(context, await centre(button('rgba')), 400);
       await sleep(160);
       take.mark('rgba');
       take.click();
       await button('rgba').click();
       await pressed('rgba');
-      await sleep(1300);
+      await sleep(900);
       // The mip level with the keyboard: a click would open the list in a window of its own,
       // which the master does not record.
       await pointTo(context, await centre(level), 500);
@@ -1815,12 +1815,12 @@ export const CLIPS: readonly Clip[] = [
         take.mark('mip', { source: 'vscode', rect: await wb.box(level), label: options[n] ?? '' });
         await level.press('ArrowDown');
         await shownLevel(n);
-        await sleep(n === MIP_STEPS ? 1500 : 1000);
+        await sleep(n === MIP_STEPS ? 1200 : 800);
       }
       take.mark('mip0', { label: options[0] ?? '' });
       await level.press('Home');
       await shownLevel(0);
-      await sleep(900);
+      await sleep(700);
       const shown = await canvas.boundingBox();
       if (shown === null) throw new Error('the texture is not shown');
       await pointTo(
@@ -1837,7 +1837,7 @@ export const CLIPS: readonly Clip[] = [
         rect: await textRect(view, '#status', statusBox),
         label: await status.innerText(),
       });
-      await sleep(2200);
+      await sleep(1800);
       take.mark('leaving');
       await pointTo(context, rest, 700);
       // As at the start: the keyboard in the editor beside, so the bar shows no focus.
