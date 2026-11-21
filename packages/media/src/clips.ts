@@ -625,8 +625,14 @@ async function textRect(frame: Frame, selector: string, box: Rect): Promise<Rect
  * focused row starts with `label` (a row reads its label, then its description).
  */
 async function pickQuickItem(wb: Workbench, label: string, typed?: string): Promise<void> {
-  if (typed !== undefined) await wb.page.keyboard.type(typed, { delay: 90 });
-  await wb.page.locator('.quick-input-list .monaco-list-row', { hasText: label }).first().waitFor();
+  // The list first: a key typed before the quick pick shows goes to the editor. VS Code filters by
+  // the label, so `typed` is a part of it.
+  const row = wb.page.locator('.quick-input-list .monaco-list-row', { hasText: label }).first();
+  await row.waitFor();
+  if (typed !== undefined) {
+    await wb.page.keyboard.type(typed, { delay: 90 });
+    await row.waitFor();
+  }
   await wb.focusQuickPickItem(label);
 }
 
@@ -1958,7 +1964,7 @@ export const CLIPS: readonly Clip[] = [
       await wb.command('Change File Encoding', { keepsQuickInput: true });
       await pickQuickItem(wb, 'Reopen with Encoding');
       await wb.page.keyboard.press('Enter');
-      await pickQuickItem(wb, 'UTF-8', 'utf8');
+      await pickQuickItem(wb, 'UTF-8', 'UTF-8');
       await wb.page.keyboard.press('Enter');
       await wb.page.locator('.quick-input-widget').waitFor({ state: 'hidden' });
       const reopened = await editorEncoding(wb);
