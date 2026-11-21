@@ -241,6 +241,35 @@ describe('planCheck, as the review of etch#579 found', () => {
       planCheck('etch = {\n\t[[amount] add_treasury = 5 ]\n}\n', 'scripted_effects', 1 << 20),
     ).toMatchObject({ kind: 'refused', code: 'empty' });
   });
+
+  it('keeps an operator the parser skipped, on its own line, for the game to report', () => {
+    const chunk = only(
+      planCheck(
+        [
+          'country_event = {', // 1
+          '\timmediate = {', // 2
+          '\t\t= add_prestige = 1', // 3
+          '\t\tif = { limit = { = tag = FRA } }', // 4
+          '\t}', // 5
+          '\toption = {', // 6
+          '\t\tname = etch.a', // 7
+          '\t\tai_chance = { = factor = 1 }', // 8
+          '\t}', // 9
+          '}', // 10
+          '',
+        ].join('\n'),
+        'events',
+        1 << 20,
+      ),
+    );
+    expect(mapped(chunk)).toEqual([
+      '0: if = { limit = { always = no }',
+      '3: =',
+      '3: add_prestige = 1',
+      '4: if = { limit = { = tag = FRA } }',
+      '0: }',
+    ]);
+  });
 });
 
 describe('assignCheckLines', () => {
