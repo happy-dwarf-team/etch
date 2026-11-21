@@ -111,6 +111,19 @@ that starts with "Not renamed", says why, and changes nothing. That happens when
   `@badge = "GFX_x"` set at the top of the file. Change the constant by hand instead;
 - the new name is already a sprite of the playset, or uses anything but letters, digits, `_`, `.`
   and `-`.
+## Font colours in .gfx files
+
+In a `.gfx` file's `bitmapfonts` block, each font colour shows a small square of its colour in
+front of it:
+
+- a `textcolors` entry, such as `G = { 0 255 0 }`: red, green and blue, each from 0 to 255;
+- a font's `color` and `border_color`, such as `0xffcc8800`: written as `0x`, then two digits each
+  for opacity, red, green and blue.
+
+Hover over the square to open VS Code's colour picker. The colour you pick is written back the way
+the line had it. A `{ R G B }` colour has no opacity, so the picker's opacity is not kept there.
+
+Other colours in `.gfx` files, such as those in `objectTypes`, get no square.
 
 ## What it doesn't do
 

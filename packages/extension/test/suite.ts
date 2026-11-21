@@ -9,6 +9,7 @@ import { testLocalisationHints } from './localisation-hints.ts';
 import { testGuiCompletion } from './gui-completion.ts';
 import { testInterfaceSymbols } from './interface-symbols.ts';
 import { testSpriteReferences } from './sprite-references.ts';
+import { testGfxColours } from './gfx-colours.ts';
 import { testBuildCheck } from './build-check.ts';
 import { testData } from './data.ts';
 import { testGameText } from './game-text.ts';
@@ -99,4 +100,5 @@ export async function run(): Promise<void> {
   await testGuiCompletion();
   await testInterfaceSymbols();
   await testSpriteReferences();
+  await testGfxColours();
 }
