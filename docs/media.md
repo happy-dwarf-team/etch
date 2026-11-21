@@ -111,8 +111,8 @@ A run of every clip takes about fifteen minutes. It writes into `packages/media/
 
 ## The scripts' takes
 
-`profile` and `names` show Etch's work on script files (the Etch site specification's section
-3.2.3). They show VS Code alone: no preview and no game art.
+`profile`, `names` and `encoding` show Etch's work on script files (the Etch site
+specification's section 3.2.3). They show VS Code alone: no preview and no game art.
 
 - **`profile`** copies the CSV given with `--profile` into the run's throwaway private profile
   (`<work>/run/user-data/User/globalStorage/happy-dwarf-team.etch/private-install/profile/logs/`),
@@ -126,6 +126,32 @@ A run of every clip takes about fifteen minutes. It writes into `packages/media/
 - **`names`** opens `events/etch_demo_events.txt` of the demo mod, filters Problems to it, types a
   `5` before `owns = 151` (province 5151, not on the map) and `al` into `economic_ideas` (an idea
   group the playset does not define), and undoes both.
+- **`encoding`** opens the same file and reopens it as UTF-8, VS Code's default: the takes' VS
+  Code opens files in the game's encoding (`files.encoding` in `packages/media/src/config.ts`), and
+  the file is ASCII, so it reads the same. An `é` typed into the second event's ruler name
+  (`Rene`, now `Renée`) gets Etch's warning; its quick fix **Save with Encoding…** and VS Code's
+  list save the run's copy of the file as Windows 1252, and the warning goes.
+
+## The art takes
+
+`texture`, `mesh` and `hovers` show Etch's previews of the game's art (the Etch site
+specification's sections 3.2.2 and 8.2). `texture` and `mesh` open a base-game file read-only from
+the local game: Quick Open with its absolute path, then the editor moved into the preview's
+group, where it takes the preview's width. No file is copied.
+
+- **`texture`** opens `gfx/interface/game_settings_bg.dds` (an alpha and ten mip levels), clicks
+  **A** and **RGBA**, steps the mip level down twice with ↓ and back with Home, and rests the
+  pointer on the texture. The level is chosen with the keyboard: a click would open the list in a
+  window of its own, which `gfxcapture` does not record.
+- **`mesh`** opens `gfx/models/ships/carrack.mesh` (a skeleton, its own idle animation and sails
+  that show a flag): a drag turns the ship, **Wire** goes on and off, `FRA` typed in **Flag** puts
+  France's flag on the sails, the idle animation is chosen (without its list, as above) and plays,
+  and **Reset view** frames the ship again.
+- **`hovers`** turns VS Code's hovers on in the run's settings for its take (the takes run with them
+  off, so the pointer shows nothing on its way). The pointer hovers `GFX_provinceview_building_bg`
+  in `provinceview.gui` and **F12** opens the base game's `.gfx` at its name. After a cut, the demo
+  mod's `interface/assets/etch_demo_models.gfx`: a hover on its mesh path draws the ship, a
+  Ctrl+click on its texture path opens the Texture Preview, and **Ctrl+W** twice comes back.
 
 ## The live take
 
@@ -218,7 +244,7 @@ endpoint are in `packages/media/src/config.ts`.
 
 The command:
 
-1. Reads `media.draft.json` of the capture and checks that it is complete: all twelve loops with
+1. Reads `media.draft.json` of the capture and checks that it is complete: all sixteen loops with
    their posters, every poster a 1920 × 1080 PNG, every loop file the size the draft says. It
    checks that `--site` is an etch-website checkout.
 2. Uploads each loop file with `PutObject` and `If-None-Match: *`, so it never overwrites a key.
