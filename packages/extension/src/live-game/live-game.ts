@@ -286,6 +286,8 @@ export type RunOutcome =
 
 /** One run of a file check: the plugin's answer and the `error.log` lines the run added. */
 export interface CheckRun {
+  /** The run file's name, which the game's parsing errors name. */
+  readonly file: string;
   readonly answer: RunAnswer;
   readonly lines: readonly string[];
   /** Characters the game's code page has no byte for, written as `?`. */
@@ -702,6 +704,9 @@ export class LiveGame implements vscode.Disposable {
 
   private async checkNow(texts: readonly string[]): Promise<CheckOutcome> {
     const runs: CheckRun[] = [];
+    // Lines from before the check are not its own. Later reads are kept: a line of one run that
+    // comes late is read with the next, and its run file's name sends it back (`assignCheckLines`).
+    await this.errorLog?.read();
     for (const text of texts) {
       const running = this.process;
       if (running === undefined || !this.canRun) {
@@ -716,14 +721,13 @@ export class LiveGame implements vscode.Disposable {
       }
       const { file } = newRunFile();
       const { bytes, lost } = encodeScript(text);
-      await this.errorLog?.read();
       const answer = await this.runFile(running, file, bytes, 'a file check');
       if ('kind' in answer) return answer;
       if (!answer.success) {
         return { kind: 'refused', code: 'refused', message: answer.text };
       }
       await new Promise((resolve) => setTimeout(resolve, ERROR_LOG_SETTLE_MS));
-      runs.push({ answer, lines: (await this.errorLog?.read()) ?? [], lost });
+      runs.push({ file, answer, lines: (await this.errorLog?.read()) ?? [], lost });
     }
     const lines = runs.reduce((sum, run) => sum + run.lines.length, 0);
     this.output.info(

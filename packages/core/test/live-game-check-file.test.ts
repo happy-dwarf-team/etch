@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { checkFolderOf, mapCheckErrors, planCheck, type CheckChunk } from '../src/index.ts';
+import {
+  assignCheckLines,
+  checkFolderOf,
+  mapCheckErrors,
+  planCheck,
+  type CheckChunk,
+} from '../src/index.ts';
 
 const EVENT = [
   'namespace = etch_check', // 1
@@ -197,6 +203,71 @@ describe('planCheck', () => {
       expect(chunk.text.length).toBeLessThanOrEqual(100);
       expect(chunk.text.split('\n').length - 1).toBe(chunk.lines.length);
     }
+  });
+});
+
+describe('planCheck, as the review of etch#579 found', () => {
+  it('counts a lone \\r as a line end, so a comment ends where VS Code ends the line', () => {
+    const chunk = only(
+      planCheck(
+        'etch = {\r\tOR = { tag = FRA # c\r tag = ENG }\r}\r',
+        'scripted_triggers',
+        1 << 20,
+      ),
+    );
+    expect(mapped(chunk)).toEqual([
+      '0: if = { limit = { always = no',
+      '2: OR = { tag = FRA # c',
+      '3:  tag = ENG }',
+      '0: } }',
+    ]);
+    expect(
+      mapped(
+        only(planCheck('etch = {\r\n\tadd_prestige = 1\r\n}\r\n', 'scripted_effects', 1 << 20)),
+      ),
+    ).toEqual(['0: if = { limit = { always = no }', '2: add_prestige = 1', '0: }']);
+  });
+
+  it('refuses a quote that does not close', () => {
+    expect(planCheck('etch = {\n\ttag = "FRA\n}\n', 'scripted_triggers', 1 << 20)).toMatchObject({
+      kind: 'refused',
+      code: 'syntax',
+      line: 2,
+    });
+  });
+
+  it('leaves out a scripted block with a [[PARAMETER] block', () => {
+    expect(
+      planCheck('etch = {\n\t[[amount] add_treasury = 5 ]\n}\n', 'scripted_effects', 1 << 20),
+    ).toMatchObject({ kind: 'refused', code: 'empty' });
+  });
+});
+
+describe('assignCheckLines', () => {
+  it("moves a run's late parsing error back to its run", () => {
+    expect(
+      assignCheckLines([
+        { file: 'etch_run_aaaa1111.txt', lines: ['[x.cpp:1]: early, no file'] },
+        {
+          file: 'etch_run_bbbb2222.txt',
+          lines: [
+            '[persistent.cpp:88]: Parsing Errors. File: "etch_run_aaaa1111.txt", Error: ',
+            '  [0]: Unknown trigger type. Key: adm_techh: adm_techh, near line: 2',
+            '[persistent.cpp:88]: Parsing Error. File: "etch_run_bbbb2222.txt", Error: x, near line: 3',
+            "[effectimplementation.cpp:3994]: Unknown modifier-type 'etch'.",
+          ],
+        },
+      ]),
+    ).toEqual([
+      [
+        '[x.cpp:1]: early, no file',
+        '[persistent.cpp:88]: Parsing Error. File: "etch_run_aaaa1111.txt", Error: Unknown trigger type. Key: adm_techh: adm_techh, near line: 2',
+      ],
+      [
+        '[persistent.cpp:88]: Parsing Error. File: "etch_run_bbbb2222.txt", Error: x, near line: 3',
+        "[effectimplementation.cpp:3994]: Unknown modifier-type 'etch'.",
+      ],
+    ]);
   });
 });
 

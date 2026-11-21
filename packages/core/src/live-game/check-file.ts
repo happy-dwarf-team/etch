@@ -99,11 +99,13 @@ function isBlockProperty(entry: EntryNode): entry is PropertyNode & { value: Blo
  * } }`, each effect block as `if = { limit = { always = no } … }`, the block's own lines in
  * between, so that a `near line: N` maps back through `CheckChunk.lines`. An `option`'s `name`,
  * `ai_chance`, `highlight` and `goto` are left out and its `trigger` gets a wrapper of its own. A
- * scripted effect or trigger with `$PARAMETERS$` is left out: it only means something once called.
- * A file with a block that does not close, or a `}` too many, is refused: the game would read the
- * run file's wrappers wrong.
+ * scripted effect or trigger with `$PARAMETERS$` or `[[PARAMETER] … ]` is left out: it only means
+ * something once called. A file with a block that does not close, a `}` too many or a quote that
+ * does not close is refused: the game would read the run file's wrappers wrong. Line ends are
+ * counted as VS Code counts them (`\r\n`, `\n` or a lone `\r`).
  */
-export function planCheck(text: string, folder: CheckFolder, maxChars: number): CheckPlan {
+export function planCheck(written: string, folder: CheckFolder, maxChars: number): CheckPlan {
+  const text = normaliseLineEnds(written);
   const parsed = parseScript(text, { script: true });
   const lineStarts = [0];
   for (let i = 0; i < text.length; i++) if (text[i] === '\n') lineStarts.push(i + 1);
@@ -118,7 +120,10 @@ export function planCheck(text: string, folder: CheckFolder, maxChars: number): 
     return low + 1;
   };
   const broken = parsed.diagnostics.find(
-    (d) => d.code === 'unclosed-block' || d.code === 'unmatched-close',
+    (d) =>
+      d.code === 'unclosed-block' ||
+      d.code === 'unmatched-close' ||
+      d.code === 'unterminated-string',
   );
   if (broken !== undefined) {
     return {
@@ -136,7 +141,7 @@ export function planCheck(text: string, folder: CheckFolder, maxChars: number): 
     const map: number[] = [];
     for (const entry of entries) {
       const first = lineOf(entry.start);
-      const pieces = text.slice(entry.start, entry.end).replace(/\r/g, '').split('\n');
+      const pieces = text.slice(entry.start, entry.end).split('\n');
       pieces.forEach((piece, i) => {
         lines.push(piece);
         map.push(first + i);
@@ -178,7 +183,8 @@ export function planCheck(text: string, folder: CheckFolder, maxChars: number): 
   if (folder === 'scripted_effects' || folder === 'scripted_triggers') {
     for (const entry of parsed.entries) {
       if (!isBlockProperty(entry)) continue;
-      if (text.slice(entry.value.start, entry.value.end).includes('$')) continue;
+      const block = text.slice(entry.value.start, entry.value.end);
+      if (block.includes('$') || block.includes('[[')) continue;
       wrap(folder === 'scripted_triggers' ? 'trigger' : 'effect', entry, entry.value.entries);
     }
   } else {
@@ -267,8 +273,9 @@ const RUN_FILE_NAME = /\bFile:\s*"[^"]*"/;
 export function mapCheckErrors(
   lines: readonly string[],
   chunk: CheckChunk,
-  text: string,
+  written: string,
 ): CheckError[] {
+  const text = normaliseLineEnds(written);
   const counts = new Map<string, number>();
   for (const split of splitParsingErrors(lines)) {
     counts.set(split, (counts.get(split) ?? 0) + 1);
@@ -306,4 +313,31 @@ export function mapCheckErrors(
     }
   }
   return result;
+}
+
+/**
+ * The `error.log` lines of a check's runs, each run's own: the lines read after each run, with
+ * the game's multi-line parsing errors split, and a line that names another run's file (`File:
+ * "etch_run_….txt"`) moved to that run, as the game may write a run's lines after the next one
+ * started. Lines that name no run file stay with the run they were read after.
+ */
+export function assignCheckLines(
+  runs: readonly { readonly file: string; readonly lines: readonly string[] }[],
+): string[][] {
+  const out = runs.map((): string[] => []);
+  const byFile = new Map(runs.map((run, i) => [run.file.toLowerCase(), i]));
+  runs.forEach((run, i) => {
+    for (const line of splitParsingErrors(run.lines)) {
+      const named = RUN_FILE_NAME_IN.exec(line)?.[1]?.toLowerCase();
+      out[(named === undefined ? undefined : byFile.get(named)) ?? i]?.push(line);
+    }
+  });
+  return out;
+}
+
+const RUN_FILE_NAME_IN = /\bFile:\s*"(etch_run_[0-9a-f]+\.txt)"/i;
+
+/** The text with each line end as `\n`: a lone `\r` ends a line for VS Code and for the parser. */
+function normaliseLineEnds(text: string): string {
+  return text.replace(/\r\n?/g, '\n');
 }

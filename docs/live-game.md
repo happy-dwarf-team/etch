@@ -612,15 +612,18 @@ each save, checks the open file of `events`, `decisions`, `missions`,
   `option` and `after`; a decision's `potential`, `allow`, `effect` and
   `provinces_to_highlight`; a mission series' `potential` and each mission's
   `potential`, `trigger`, `effect` and `provinces_to_highlight`; each scripted
-  effect or trigger without a `$`. An `option`'s `name`, `ai_chance`,
+  effect or trigger without a `$` or a `[[PARAMETER] … ]` block. An `option`'s `name`, `ai_chance`,
   `highlight` and `goto` are left out, and its `trigger` is a trigger block of
   its own.
 - **The wrappers:** a trigger block becomes `if = { limit = { always = no` …
   `} }`, an effect block `if = { limit = { always = no }` … `}`, each wrapper
   on its own line and the block's entries on their own lines between, so that
-  each run-file line has one file line (`CheckChunk.lines`). A file whose
-  braces do not balance is refused with the line, as Run selection refuses a
-  selection. Run files stay under `MAX_SCRIPT` (whole blocks per file).
+  each run-file line has one file line (`CheckChunk.lines`); line ends are
+  counted as VS Code counts them, a lone `\r` included. A file whose braces do
+  not balance, or with a quote that does not close (the parser cuts it at the
+  line end, the game reads on to the next quote), is refused with the line, as
+  Run selection refuses a selection. Run files stay under `MAX_SCRIPT` (whole
+  blocks per file).
 - **How:** `LiveGame.checkScripts` runs the files through the `run` job as
   Run selection does, behind the reloads, but opens no Run mark and gives no
   first-Run notice: nothing in a false `if` runs (the gate, H1).
@@ -629,7 +632,11 @@ each save, checks the open file of `events`, `decisions`, `missions`,
   `near line: N` through the line map, else by the first place the file
   writes the key the line names (`Key: …`, `Unknown modifier-type '…'`), and
   sends lines that name neither to the output: the game writes lines about
-  other things meanwhile. Problems source "Etch game check".
+  other things meanwhile. `error.log` is read once before the first run and
+  after each run; a parsing error that names another run's file goes to that
+  run (`assignCheckLines`), so a line that comes late is not lost. A file
+  edited while the check ran gets no Problems: the lines would no longer fit.
+  Problems source "Etch game check".
 
 **The live run, 21 November 2026, vanilla.** The lab's procedure as for the
 gate (its game lock, the EXE hash and the Process Lasso rule checked before

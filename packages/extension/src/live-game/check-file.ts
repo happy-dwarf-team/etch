@@ -3,7 +3,7 @@
 // `error.log` lines the game writes while it reads them go to Problems on the file, as "Etch game
 // check". On request, and on save with `etch.liveGame.checkOnSave`.
 import * as vscode from 'vscode';
-import { checkFolderOf, mapCheckErrors, planCheck } from '@etch/core';
+import { assignCheckLines, checkFolderOf, mapCheckErrors, planCheck } from '@etch/core';
 import type { LiveGame } from './live-game.ts';
 import { MAX_SCRIPT } from './run-script.ts';
 
@@ -95,6 +95,7 @@ async function checkFile(
     return;
   }
   const text = document.getText();
+  const version = document.version;
   const plan = planCheck(text, folder, CHUNK_CHARS);
   if (plan.kind === 'refused') {
     problems.delete(document.uri);
@@ -125,14 +126,21 @@ async function checkFile(
     );
     return;
   }
+  if (document.version !== version) {
+    // Edited while the game read it: the lines the game names are no longer the file's.
+    problems.delete(document.uri);
+    say('The file changed during the check; check it again.');
+    return;
+  }
   const diagnostics: vscode.Diagnostic[] = [];
   let unplaced = 0;
   let lost = 0;
+  const lines = assignCheckLines(outcome.runs);
   outcome.runs.forEach((run, i) => {
     const chunk = plan.chunks[i];
     if (chunk === undefined) return;
     lost += run.lost;
-    for (const error of mapCheckErrors(run.lines, chunk, text)) {
+    for (const error of mapCheckErrors(lines[i] ?? [], chunk, text)) {
       if (error.line === undefined) {
         unplaced++;
         output.info(`Check File, error.log (not about this file): ${error.message}`);

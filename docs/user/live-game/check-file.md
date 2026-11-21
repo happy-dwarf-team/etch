@@ -78,10 +78,11 @@ than once, Problems shows it once, with "(×2)".
   in a country event: the game finds that only when the script runs, so a check cannot show it.
 - It does not check an event's other lines, such as `id`, `title` or `picture`. The start report
   shows the game's complaints about them.
-- It does not check a scripted effect or trigger with `$` in it, such as `$amount$`: the game reads
-  those only where they are used.
-- It does not check a file whose `{` and `}` do not match. The notice of the command names the
-  line.
+- It does not check a scripted effect or trigger with `$` or `[[` in it, such as `$amount$`: the
+  game reads those only where they are used.
+- It does not check a file whose `{` and `}` do not match, or with a `"` that is not closed. The
+  notice of the command names the line.
+- If you edit the file while the game reads it, the check shows nothing: run it again.
 - It works only in the live game, with a game loaded: not in the main menu, and not in ironman or
   multiplayer games.
 - The game may write lines about other things while it reads your file. Those go to the **Etch**
