@@ -36,7 +36,8 @@ Each warning is underlined in the file and listed in the Problems panel.
 - **`�` in the editor.** VS Code shows `�` where it could not read a letter: it opened the file in
   the wrong encoding. Etch marks this as an error, because saving the file now loses the original
   letters. Reopen the file in the game's encoding first (see below).
-- **Localisation not saved as UTF-8 with BOM.** The warning is at the start of the file.
+- **Localisation not saved as UTF-8 with BOM.** The warning is at the start of the file. The game
+  does not read a localisation file without a BOM, so none of its texts show in the game.
 - **A file saved as UTF-16.** This is an error: the game cannot read the file's letters.
 - **An interface file saved with a BOM.** Etch warns because no one has checked how the game reads
   such a file.

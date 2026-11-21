@@ -23,13 +23,15 @@ export function normaliseGamePath(path: string): string {
 }
 
 /**
- * The files to try for a texture path, in order. A `.tga` path falls back to the `.dds` of the
- * same name: in vanilla 1.37.5, 584 sprites name a `.tga` that exists only as `.dds`, and the game
- * draws them. Which of the two the game takes when both exist (7 vanilla paths) is unverified.
+ * The files to try for a texture path, in order. A `.tga` path tries the `.dds` of the same name
+ * first: in vanilla 1.37.5, 584 sprites name a `.tga` that exists only as `.dds`, and the game
+ * draws them, and when both exist in one mod the game draws the `.dds` (checked in the game on
+ * 21 November 2026, docs/live-game.md, "Which files the game reads"). Not checked: the two in
+ * different layers, and a `.dds` path that exists only as `.tga`.
  */
 export function textureCandidates(path: string): string[] {
   const normal = normaliseGamePath(path);
-  return /\.tga$/i.test(normal) ? [normal, normal.replace(/\.tga$/i, '.dds')] : [normal];
+  return /\.tga$/i.test(normal) ? [normal.replace(/\.tga$/i, '.dds'), normal] : [normal];
 }
 
 /** The texture file a path resolves to, or `undefined` when no candidate exists. */

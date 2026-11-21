@@ -16,6 +16,13 @@
  * orders as before (a later layer, then a later path, and the last value in a
  * file, win), two mods, and a later file against a subfolder of a name that
  * sorts before it.
+ *
+ * Which files the game reads, checked the same day ("Which files the game reads"): a file without
+ * a UTF-8 BOM is not read (`error.log`: `Missing UTF8 BOM`), nor a file whose name has no
+ * `_l_<language>` suffix. `\N` and `\T` read as `\n` and `\t`. At any other escape than these,
+ * `\"` and `\\`, such as `\q` or `\r`, the game stops reading the file (`Illegal break
+ * character`): that entry and those after it are lost, those before it stay. A `\\` just before
+ * the closing quote stays in the text, and the file goes on.
  */
 
 /** The languages of EU4 1.37.5; mods may add others. */
@@ -32,6 +39,11 @@ export interface LocalisationFile {
   readonly layer: number;
   /** The file's game text. */
   readonly text: string;
+  /**
+   * Whether the file starts with a UTF-8 BOM. `false`: the game does not read the file, and
+   * neither does Etch. Left out, as for an editor buffer, the file is read.
+   */
+  readonly bom?: boolean;
 }
 
 /** Something in a localisation file that the game may read differently from Etch. */
@@ -51,14 +63,15 @@ export function isLanguageName(language: string): boolean {
 /**
  * Whether a path, relative to a game or mod folder, is a localisation file to
  * read for `language`: a `.yml` file under `localisation/` whose name ends in
- * `_l_<language>.yml` or names no language at all (as `languages.yml`, which
- * holds one section per language).
+ * `_l_<language>.yml`, or the game's `localisation/languages.yml`, which holds one
+ * section per language. The game skipped another file without the suffix; that it
+ * reads `languages.yml` is assumed.
  */
 export function isLocalisationPath(path: string, language: string): boolean {
   const p = normalisePath(path);
   if (!p.startsWith('localisation/') || !p.endsWith('.yml')) return false;
   const named = /_l_([a-z_]+)\.yml$/.exec(p);
-  return named === null || named[1] === language;
+  return named === null ? p === 'localisation/languages.yml' : named[1] === language;
 }
 
 /** The localisation of a playset in one language. */
@@ -207,6 +220,10 @@ function parseFile(file: LocalisationFile, language: string): ParsedFile {
   const problem = (line: number, message: string): void => {
     problems.push({ path: file.path, layer: file.layer, line, message });
   };
+  if (file.bom === false) {
+    problem(0, 'No UTF-8 BOM; the game does not read this file.');
+    return { source: file.path, path, layer: file.layer, replace, entries, problems };
+  }
   const text = file.text.charCodeAt(0) === 0xfeff ? file.text.slice(1) : file.text;
   // null before the first header; then whether the section is this language's.
   let inSection: boolean | null = null;
@@ -221,7 +238,14 @@ function parseFile(file: LocalisationFile, language: string): ParsedFile {
       if (inSection === null) problem(line, 'Entry before the `l_<language>:` header.');
       else if (inSection) {
         const key = entry[1] ?? '';
-        const value = unescape(entry[2] ?? '', line, problem);
+        const value = unescape(entry[2] ?? '');
+        if (typeof value !== 'string') {
+          problem(
+            line,
+            `Unknown escape \`${value.escape}\`; the game stops reading this file here.`,
+          );
+          break;
+        }
         // The game keeps a key's first value in a file (checked); a replace file the last.
         if (replace || !entries.has(key)) entries.set(key, value);
       }
@@ -244,18 +268,30 @@ function parseFile(file: LocalisationFile, language: string): ParsedFile {
   };
 }
 
-function unescape(
-  value: string,
-  line: number,
-  problem: (line: number, message: string) => void,
-): string {
+/**
+ * The escapes the game reads, in either case (checked): vanilla writes `\t` in tooltips. The empty
+ * one is a `\\` just before the closing quote, which the game shows as it is (checked).
+ */
+const ESCAPES: Readonly<Record<string, string>> = {
+  '': '\\',
+  n: '\n',
+  N: '\n',
+  t: '\t',
+  T: '\t',
+  '"': '"',
+  '\\': '\\',
+};
+
+/** The value with its escapes read, or the first escape the game does not know. */
+function unescape(value: string): string | { escape: string } {
   if (!value.includes('\\')) return value;
-  return value.replace(/\\(.?)/g, (all, c: string) => {
-    if (c === 'n') return '\n';
-    // Vanilla writes `\t` in tooltips.
-    if (c === 't') return '\t';
-    if (c === '"' || c === '\\') return c;
-    problem(line, `Unknown escape \`${all}\`; the game may break the value.`);
-    return all;
-  });
+  let read = '';
+  let last = 0;
+  for (const match of value.matchAll(/\\(.?)/g)) {
+    const char = ESCAPES[match[1] ?? ''];
+    if (char === undefined) return { escape: match[0] };
+    read += value.slice(last, match.index) + char;
+    last = match.index + match[0].length;
+  }
+  return read + value.slice(last);
 }

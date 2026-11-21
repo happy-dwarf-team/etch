@@ -253,7 +253,7 @@ export function diagnoseGameText(
       code: 'localisation-encoding',
       severity: 'warning',
       range: { start: 0, end: 0 },
-      message: `Saved as ${label}; the game expects localisation in UTF-8 with BOM.`,
+      message: `Saved as ${label}; the game reads localisation only in UTF-8 with BOM, and skips this file.`,
     });
   }
 

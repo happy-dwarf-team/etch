@@ -37,6 +37,21 @@ variable such as `$COUNTRY$`, or a scripted text in `[…]`, as "…".
 
 When you save a `.yml` file, Etch reads the localisation again, so the texts follow your edits.
 
+## Texts the game does not show
+
+The game skips some localisation, and so does Etch. The text is then missing in the game and in
+Etch's texts and previews:
+
+- A file that is not saved as UTF-8 with BOM (an encoding setting of your editor, explained in
+  [Encoding](encoding.md)). The game does not read it. Etch warns at the start of the file.
+- A file whose name lacks the language suffix, such as `my_texts.yml` instead of
+  `my_texts_l_english.yml`. The game does not read it and writes nothing about it in its log.
+  Etch skips it too, without a warning.
+- A backslash before anything other than `n`, `t`, `"` or another backslash, such as `\q` or
+  `\r`. Capitals `\N` and `\T` work too. The game stops reading the file at that line: that line
+  and every line after it get no text. The lines before it still work. To show a backslash, write
+  `\\`. A backslash just before the closing quote is shown as it is.
+
 ## Choose the language
 
 The texts are in the language of `etch.language`, English unless you change it. To see another

@@ -11,7 +11,7 @@ const references = (text: string) =>
   }));
 
 describe('assetReferences', () => {
-  it('finds textures in spriteTypes, game-relative, with the .tga to .dds fallback', () => {
+  it('finds textures in spriteTypes, game-relative, the .dds of a .tga path first', () => {
     const text = `spriteTypes = {
 	spriteType = {
 		name = "GFX_a"
@@ -24,7 +24,7 @@ describe('assetReferences', () => {
       {
         kind: 'texture',
         written: 'gfx//interface//a.tga',
-        candidates: ['gfx/interface/a.tga', 'gfx/interface/a.dds'],
+        candidates: ['gfx/interface/a.dds', 'gfx/interface/a.tga'],
         folder: 'game',
         text: '"gfx//interface//a.tga"',
       },

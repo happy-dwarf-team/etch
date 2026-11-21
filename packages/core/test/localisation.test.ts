@@ -14,7 +14,7 @@ function file(path: string, layer: number, ...lines: string[]): LocalisationFile
 }
 
 describe('isLocalisationPath', () => {
-  it('takes the files of the language and files without a language', () => {
+  it('takes the files of the language and languages.yml', () => {
     expect(isLocalisationPath('localisation/text_l_english.yml', 'english')).toBe(true);
     expect(isLocalisationPath('localisation/replace/x_l_english.yml', 'english')).toBe(true);
     expect(isLocalisationPath('Localisation\\Text_L_English.YML', 'english')).toBe(true);
@@ -26,6 +26,11 @@ describe('isLocalisationPath', () => {
     expect(isLocalisationPath('localization/text_l_english.yml', 'english')).toBe(false);
     expect(isLocalisationPath('localisation/text_l_english.txt', 'english')).toBe(false);
     expect(isLocalisationPath('common/text_l_english.yml', 'english')).toBe(false);
+  });
+
+  it('skips a file without a language suffix, as the game does', () => {
+    expect(isLocalisationPath('localisation/notes.yml', 'english')).toBe(false);
+    expect(isLocalisationPath('localisation/sub/languages.yml', 'english')).toBe(false);
   });
 });
 
@@ -115,13 +120,69 @@ describe('Localisation.load', () => {
         ' ODD:0 "a\\qb"',
       ),
     ]);
-    expect(loc.size).toBe(1);
-    expect(loc.get('ODD')).toBe('a\\qb');
+    expect(loc.size).toBe(0);
+    expect(loc.get('ODD')).toBeUndefined();
     expect(loc.problems().map((p) => [p.layer, p.line, p.message])).toEqual([
       [2, 0, 'Entry before the `l_<language>:` header.'],
       [2, 2, 'Not a localisation entry; the game may skip it.'],
-      [2, 3, 'Unknown escape `\\q`; the game may break the value.'],
+      [2, 3, 'Unknown escape `\\q`; the game stops reading this file here.'],
     ]);
+  });
+
+  it('stops reading a file at an unknown escape, as the game does', () => {
+    const loc = Localisation.load('english', [
+      file(
+        'localisation/a_l_english.yml',
+        0,
+        'l_english:',
+        ' BEFORE:0 "a\\\\b\\"c\\n"',
+        ' ODD:0 "a\\rb"',
+        ' AFTER:0 "after"',
+      ),
+    ]);
+    expect(loc.get('BEFORE')).toBe('a\\b"c\n');
+    expect(loc.get('ODD')).toBeUndefined();
+    expect(loc.get('AFTER')).toBeUndefined();
+    expect(loc.problems().map((p) => [p.line, p.message])).toEqual([
+      [2, 'Unknown escape `\\r`; the game stops reading this file here.'],
+    ]);
+  });
+
+  it('reads \\N and \\T as the game does', () => {
+    const loc = Localisation.load('english', [
+      file('localisation/a_l_english.yml', 0, 'l_english:', ' KEY:0 "a\\Nb\\Tc\\td"'),
+    ]);
+    expect(loc.get('KEY')).toBe('a\nb\tc\td');
+    expect(loc.problems()).toEqual([]);
+  });
+
+  it('keeps a backslash before the closing quote, as the game does', () => {
+    const loc = Localisation.load('english', [
+      file('localisation/a_l_english.yml', 0, 'l_english:', ' END:0 "x\\"', ' AFTER:0 "after"'),
+    ]);
+    expect(loc.get('END')).toBe('x\\');
+    expect(loc.get('AFTER')).toBe('after');
+    expect(loc.problems()).toEqual([]);
+  });
+
+  it('does not read a file without a BOM, as the game does', () => {
+    const text = 'l_english:\n KEY:0 "value"\n';
+    const without = Localisation.load('english', [
+      { path: 'localisation/a_l_english.yml', layer: 1, text, bom: false },
+    ]);
+    expect(without.get('KEY')).toBeUndefined();
+    expect(without.problems()).toEqual([
+      {
+        path: 'localisation/a_l_english.yml',
+        layer: 1,
+        line: 0,
+        message: 'No UTF-8 BOM; the game does not read this file.',
+      },
+    ]);
+    const withBom = Localisation.load('english', [
+      { path: 'localisation/a_l_english.yml', layer: 1, text, bom: true },
+    ]);
+    expect(withBom.get('KEY')).toBe('value');
   });
 
   it('rejects a language name that cannot be a section', () => {
