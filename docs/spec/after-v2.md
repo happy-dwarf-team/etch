@@ -477,11 +477,15 @@ refresh is a step of the 3.0.0 release.
   winning copy of every `.gfx` and `.gui` file under `interface` and every
   `.txt` file under `events`, `missions` and `common/estate_privileges`
   (`spriteNamingFiles`), matched without regard to case as `InterfaceIndex`
-  matches; an open document's text wins over the file's. Rename Symbol edits
-  only files under a workspace folder (the edited mod) and is refused
-  (`planSpriteRename`) when a file outside them defines or names the sprite,
-  when the mod defines none, when a mod's `.gui` names it through an
-  `@constant`, or when the new name is not a bare word or is already a sprite.
+  matches; an open document's text wins over the file's, and a closed file
+  that writes the name is opened so that its ranges follow VS Code's
+  decoding. Rename Symbol edits only the files of the workspace mod's layer
+  (the edited mod) and is refused (`planSpriteRename`) when another file
+  defines or names the sprite, when the mod defines none, when a mod's `.gui`
+  names it through an `@constant`, or when the new name is not a bare word or
+  is already a sprite. `etch.editor.rename` (window scope, on by default)
+  registers both providers or none, so that with it off another extension's
+  answers stand alone.
 
 - **Colours in `.gfx` files (ADR 0008).** A swatch and VS Code's colour
   picker on the colours the model reads as colours: each `textcolors` entry of

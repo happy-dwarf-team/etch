@@ -112,6 +112,16 @@ that starts with "Not renamed", says why, and changes nothing. That happens when
 - the new name is already a sprite of the playset, or uses anything but letters, digits, `_`, `.`
   and `-`.
 
+## Turn off references and rename
+
+**Find All References** and **Rename Symbol** on sprite names are on by default. To turn both off,
+open [Settings](../reference/settings.md), search for `etch.editor.rename` and clear its checkbox.
+Etch then offers neither command on sprite names. Do this if another extension already finds or
+renames sprite names in these files, and you want its answers to stand alone.
+
+Set it in the **User** tab of Settings: it cannot be set for one folder. To get the commands back,
+tick the checkbox again. You don't need to restart VS Code.
+
 ## Font colours in .gfx files
 
 In a `.gfx` file, the `bitmapfonts` block lists the game's fonts. Each font colour in it shows a
@@ -125,6 +135,7 @@ small square of its colour in front of it:
 Hover over the square to open VS Code's colour picker. Etch writes the colour you pick in the same
 form: three numbers in braces, or `0x` and eight digits. A `{ R G B }` colour has no opacity, so
 Etch writes only the three numbers and drops any opacity you set.
+
 
 ## What it doesn't do
 

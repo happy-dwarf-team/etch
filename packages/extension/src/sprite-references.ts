@@ -25,6 +25,8 @@ import {
 } from './sprite-links.ts';
 
 const GFX_SELECTOR: vscode.DocumentSelector = [{ scheme: 'file', pattern: '**/*.gfx' }];
+/** The setting that turns Find All References and Rename Symbol on sprite names on and off. */
+const RENAME_SETTING = 'editor.rename';
 
 /** The game path of a document that names sprites, from its folders; `undefined` for others. */
 export function spriteDocumentPath(fileName: string): string | undefined {
@@ -206,11 +208,33 @@ export function registerSpriteReferences(
   links: SpriteLinks,
 ): SpriteReferences {
   const references = new SpriteReferences(links);
-  for (const selector of [GFX_SELECTOR, GUI_SELECTOR, SPRITE_SCRIPT_SELECTOR]) {
-    context.subscriptions.push(
-      vscode.languages.registerReferenceProvider(selector, references),
-      vscode.languages.registerRenameProvider(selector, references),
-    );
-  }
+  // Registered only while the setting is on, so that with it off another extension's references
+  // and rename answer alone, as if Etch had none.
+  let registered: vscode.Disposable | undefined;
+  const apply = (): void => {
+    const on = vscode.workspace.getConfiguration('etch').get<boolean>(RENAME_SETTING, true);
+    if (on && registered === undefined) {
+      registered = vscode.Disposable.from(
+        ...[GFX_SELECTOR, GUI_SELECTOR, SPRITE_SCRIPT_SELECTOR].flatMap((selector) => [
+          vscode.languages.registerReferenceProvider(selector, references),
+          vscode.languages.registerRenameProvider(selector, references),
+        ]),
+      );
+    } else if (!on && registered !== undefined) {
+      registered.dispose();
+      registered = undefined;
+    }
+  };
+  apply();
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeConfiguration((event) => {
+      if (event.affectsConfiguration(`etch.${RENAME_SETTING}`)) apply();
+    }),
+    {
+      dispose: () => {
+        registered?.dispose();
+      },
+    },
+  );
   return references;
 }
