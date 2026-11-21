@@ -385,7 +385,7 @@
           "type": "boolean",
           "default": true,
           "scope": "resource",
-          "markdownDescription": "Suggest words as you type in `.gui` files: widget types, keys, sprite names, fonts and values, taken from the files of your playset."
+          "markdownDescription": "Suggest words as you type in `.gui` files: widget types, keys, sprite names, fonts and values, taken from your playset (the game, your mod and the mods it depends on)."
         },
         "etch.editor.localisationHints": {
           "type": "boolean",

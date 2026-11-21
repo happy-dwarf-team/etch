@@ -16,7 +16,7 @@ The folders are the groups of the site's sidebar, in this order:
   [Widget Outline](interface-windows/widget-outline.md) ·
   [Zoom and resolution](interface-windows/zoom-and-resolution.md) ·
   [Problems](interface-windows/problems.md) ·
-  [Completion in .gui files](interface-windows/completion.md)
+  [Suggestions in .gui files](interface-windows/completion.md)
 - **Textures and meshes**: [Texture preview](textures-and-meshes/texture-preview.md) ·
   [Mesh preview](textures-and-meshes/mesh-preview.md) ·
   [Entities](textures-and-meshes/entities.md) · [Map trees](textures-and-meshes/map-trees.md) ·
