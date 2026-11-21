@@ -385,7 +385,7 @@
           "type": "boolean",
           "default": true,
           "scope": "resource",
-          "markdownDescription": "Complete `.gui` files from the playset: widget types and keys where its `.gui` files write them, sprite names and fonts from its `.gfx` files, `orientation` anchors and the few values a key takes (`alwaysTransparent`, `format`)."
+          "markdownDescription": "Suggest words as you type in `.gui` files: widget types, keys, sprite names, fonts and values, taken from the files of your playset."
         },
         "etch.editor.localisationHints": {
           "type": "boolean",
