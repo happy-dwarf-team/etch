@@ -116,8 +116,11 @@ that starts with "Not renamed", says why, and changes nothing. That happens when
 
 **Find All References** and **Rename Symbol** on sprite names are on by default. To turn both off,
 open [Settings](../reference/settings.md), search for `etch.editor.rename` and clear its checkbox.
-Do this if another extension already finds or renames sprite names in these files and you want
-only its answers. The setting counts for every folder you open: it has no **Workspace** value.
+Etch then offers neither command on sprite names. Do this if another extension already finds or
+renames sprite names in these files, and you want its answers to stand alone.
+
+Set it in the **User** tab of Settings: it cannot be set for one folder. To get the commands back,
+tick the checkbox again. You don't need to restart VS Code.
 
 ## Font colours in .gfx files
 
