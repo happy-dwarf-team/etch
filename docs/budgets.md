@@ -117,6 +117,28 @@ pnpm --filter etch test
 
 ## Results
 
+### 2026-11-21, localisation inlay hints (ADR 0008, reported, not gated)
+
+The core's functions outside VS Code (Node, `etch` at `main` after etch#589):
+
+- `loadPlaysetLocalisation` in English, as the hints load it once;
+- then, for every file whose hints the playset can show, the work `provideInlayHints` does on a
+  new document version: `parseScript`, `localisationReferences`, and the lookup and
+  `plainLabelText` of each reference.
+
+The files are walked in one process, so the per-file times are after the JIT has warmed up. They
+leave out VS Code's own work (the hint objects, `positionAt`). Two runs gave the same
+per-file times within 15 %.
+
+| Playset | Keys | Load | Files | Per file median / p95 | Slowest files |
+| --- | --- | --- | --- | --- | --- |
+| Vanilla | 126,749 | 78–79 ms | 2,753 | 0.0 / 0.4 ms | `common/scripted_triggers/00_scripted_triggers_FR.txt` (601,491 characters) 3.7 ms; `events/RandomEvents.txt` (987 references, 975 hints) 2.9–3.1 ms |
+| Anbennar (Workshop 1385440355) over the game | 368,792 | 1,584 ms (first run), 263 ms (second) | 8,275 | 0.0 / 0.6 ms | `events/Flavour_Feiten_Y20.txt` (906,626 characters, 4,631 references, 654 hints) 8.7–10.1 ms; `events/DiggyDiggyDungeons.txt` (2,376 hints) 9.3–9.6 ms |
+
+The first Anbennar load read its files from disk, the second from the file cache. A proposed
+budget, should ADR 0008 be accepted: 2 s for the load on Anbennar from disk, and 50 ms for a
+document version of Anbennar's largest event file.
+
 ### 2026-11-21, sprite references (ADR 0008, reported, not gated)
 
 The core's functions outside VS Code (Node, the files in the file cache), as
