@@ -214,8 +214,16 @@ const TEXTURE_PATH = 'carrack_diffuse.dds';
 const MESH_FILE = 'gfx/models/ships/carrack.mesh';
 const FLAG_TAG = 'FRA';
 const IDLE_ANIMATION = 'carrack_idle';
-/** The drag that turns the ship: from the canvas's middle, this far right (CSS px), this long. */
-const DRAG = { from: { x: 0.35, y: 0.55 }, by: 520, ms: 1500 } as const;
+/**
+ * The drag that turns the ship: from the canvas's middle, this far right (CSS px), this long (the
+ * preview draws at every step, so the drag takes about twice as long).
+ */
+const DRAG = { from: { x: 0.35, y: 0.55 }, by: 520, ms: 1000 } as const;
+/**
+ * The canvas's middle band that the loop shows, a share of its height: the preview frames the
+ * ship in about the middle 60 % at the take's size, turned or not.
+ */
+const SHIP_BAND = 0.72;
 
 /**
  * Puts the cursor on the blank line above the previewed window's `windowType =`, inside no widget:
@@ -709,6 +717,19 @@ async function shownHover(wb: Workbench, picture: boolean): Promise<Rect> {
   // VS Code places a hover again once its content has its size.
   await sleep(250);
   return wb.box(hover);
+}
+
+/**
+ * Closes the editor's hover with Escape: a pointer moved onto a hover keeps it open, and it may
+ * cover the next name the pointer goes to.
+ */
+async function hideHover(wb: Workbench): Promise<void> {
+  await wb.press('Escape');
+  await wb.page
+    .locator('.monaco-hover:not(.hidden)')
+    .filter({ visible: true })
+    .first()
+    .waitFor({ state: 'hidden' });
 }
 
 /** The encoding of the active editor, as VS Code's status bar names it. */
@@ -2074,6 +2095,7 @@ export const CLIPS: readonly Clip[] = [
       const actions = at(eventOf(log, 'actions').t);
       const saveAt = at(eventOf(log, 'save').t);
       const chosen = at(eventOf(log, 'chosen').t);
+      const list = at(eventOf(log, 'list').t);
       const enter = at(eventOf(log, 'enter').t);
       const saved = at(eventOf(log, 'saved').t);
       const fixed = at(eventOf(log, 'fixed').t);
@@ -2095,7 +2117,7 @@ export const CLIPS: readonly Clip[] = [
             shots: [
               { at: 0, frame: panels.top, view: code },
               { at: saveAt + 0.12, ...pick, move: 0 },
-              { at: chosen + 0.12, ...typed, move: 0 },
+              { at: list + 0.05, ...typed, move: 0 },
               { at: saved, frame: panels.top, view: code, move: 0 },
             ],
           },
@@ -2131,6 +2153,9 @@ export const CLIPS: readonly Clip[] = [
             },
             { from: chosen + 0.5, to: enter - 0.05, panel: 0, rect: rectOf(eventOf(log, 'typed')) },
           ],
+          // Between the two quick picks VS Code shows neither for a moment: the panel holds the
+          // first one, as chosen, until the encodings' list is up.
+          holds: [{ from: chosen, to: list + 0.05, panel: 0, at: eventOf(log, 'chosen').t }],
           // The file is saved in another encoding at the end: the loop dissolves into its start.
           loopFade: 0.5,
           core: { from: key - 0.4, to: fixed + 1 },
@@ -2181,6 +2206,8 @@ export const CLIPS: readonly Clip[] = [
       await glideOver(context, middle(mesh), 800);
       take.mark('mesh-hover', { source: 'vscode', rect: await shownHover(wb, true) });
       await sleep(2500);
+      // The mesh's hover covers the texture path below it.
+      await hideHover(wb);
       await glideOver(context, middle(texture), 500);
       await sleep(200);
       take.mark('ctrl-click', { source: 'vscode', rect: texture });
@@ -2229,10 +2256,17 @@ export const CLIPS: readonly Clip[] = [
       );
       const definition = eventOf(log, 'definition');
       const definitionView = around(rectOf(definition));
-      const modelsView = around(
-        union(rectOf(eventOf(log, 'models')), rectOf(eventOf(log, 'mesh-hover'))),
-      );
-      const textureView: Rect = { x: group.x, y: group.y, w: group.w, h: viewH };
+      // The models .gfx is short: from its tabs down, its first line whole and the hover in view.
+      const modelsView: Rect = { x: group.x, y: group.y, w: group.w, h: viewH };
+      const hovered = union(rectOf(eventOf(log, 'models')), rectOf(eventOf(log, 'mesh-hover')));
+      if (hovered.y + hovered.h > group.y + viewH) {
+        throw new Error('the mesh path and its hover reach below the models view');
+      }
+      // The Texture Preview centres the picture under its header ('texture'): the view on the
+      // middle of the rest of the group.
+      const header = rectOf(eventOf(log, 'texture'));
+      const below = header.y + header.h;
+      const textureView = around({ ...group, y: below, h: group.y + group.h - below });
       const s0 = eventOf(log, 'start').t - LEAD;
       const cut = eventOf(log, 'cut').t;
       const s1 = eventOf(log, 'models').t;
@@ -2367,9 +2401,9 @@ export const CLIPS: readonly Clip[] = [
       const from = { x: box.x + box.width * DRAG.from.x, y: box.y + box.height * DRAG.from.y };
       const rest = await startTake(context);
       take.mark('start');
-      await sleep(1200);
+      await sleep(600);
       // A drag turns the ship.
-      await pointTo(context, from, 800);
+      await pointTo(context, from, 600);
       await sleep(150);
       take.mark('drag');
       take.click();
@@ -2377,21 +2411,21 @@ export const CLIPS: readonly Clip[] = [
       await pointTo(context, { x: from.x + DRAG.by, y: from.y }, DRAG.ms);
       await wb.page.mouse.up();
       take.mark('dragged');
-      await sleep(500);
+      await sleep(300);
       // Wire on, and off again.
       take.mark('to', { label: 'wire' });
       for (const on of [true, false]) {
-        await pointTo(context, await centre(controls.wire), on ? 800 : 200);
+        await pointTo(context, await centre(controls.wire), on ? 500 : 200);
         await sleep(150);
         take.mark(on ? 'wire' : 'unwire', { source: 'vscode', rect: await wb.box(controls.wire) });
         take.click();
         await controls.wire.click();
         await view.locator(`#wireframe[aria-pressed="${String(on)}"]`).waitFor();
-        await sleep(on ? 1400 : 500);
+        await sleep(on ? 1200 : 400);
       }
       // A country's flag on the sails.
       take.mark('to', { label: 'flag' });
-      await pointTo(context, await centre(flagInput), 800);
+      await pointTo(context, await centre(flagInput), 500);
       await sleep(150);
       take.click();
       await flagInput.click();
@@ -2404,33 +2438,32 @@ export const CLIPS: readonly Clip[] = [
         (tag) => document.querySelector('#facts')?.textContent.includes(tag) ?? false,
         FLAG_TAG,
       );
-      await sleep(1900);
+      await sleep(1500);
       // Its idle animation, which plays once it is chosen. The list would open in a window of its
       // own, which the master does not record: the choice is made without it.
       take.mark('to', { label: 'animation' });
-      await pointTo(context, await centre(animation), 800);
+      await pointTo(context, await centre(animation), 500);
       await sleep(200);
       take.mark('animate', { source: 'vscode', rect: await wb.box(animation), label: idle });
       await animation.selectOption({ label: idle });
       await view.locator('#play[aria-pressed="true"]').waitFor();
-      await sleep(2400);
+      await sleep(2000);
       // Reset view frames the ship as at the start.
       take.mark('to', { label: 'reset' });
-      await pointTo(context, await centre(controls.reset), 800);
+      await pointTo(context, await centre(controls.reset), 500);
       await sleep(150);
       take.mark('reset', { source: 'vscode', rect: await wb.box(controls.reset) });
       take.click();
       await controls.reset.click();
-      await sleep(1300);
+      await sleep(1200);
       take.mark('leaving');
-      await pointTo(context, rest, 800);
+      await pointTo(context, rest, 600);
       await wb.focusEditor();
       await wb.parkMouse();
       take.mark('end');
       await take.until(take.t() + POST_ROLL_MS / 1000);
     },
     edit(log, sources) {
-      const source = sources['vscode'] as Source;
       const header = rectOf(eventOf(log, 'header'));
       const main = rectOf(eventOf(log, 'canvas'));
       const bar = (name: string): Rect => rectOf(eventOf(log, `bar-${name}`));
@@ -2451,14 +2484,16 @@ export const CLIPS: readonly Clip[] = [
       });
       const facts = bar('facts');
       const factsView = stripOn({ ...facts, w: Math.min(facts.w, stripW - 20) });
+      // The canvas's middle band only: wider, the view would take in the code beside it.
       const shipH = STAGE.h - barH - GUTTER;
-      const shipView = viewAt(main, shipH / main.h, { ...STAGE, h: shipH }, source);
-      const shipW = shipView.w * (shipH / shipView.h);
+      const band = main.h * SHIP_BAND;
+      const shipView: Rect = { x: main.x, y: main.y + (main.h - band) / 2, w: main.w, h: band };
+      const shipScale = Math.min(shipH / band, STAGE.w / main.w);
       const ship: Rect = {
-        x: STAGE.x + (STAGE.w - shipW) / 2,
-        y: STAGE.y + barH + GUTTER,
-        w: shipW,
-        h: shipH,
+        x: STAGE.x + (STAGE.w - main.w * shipScale) / 2,
+        y: STAGE.y + barH + GUTTER + (shipH - band * shipScale) / 2,
+        w: main.w * shipScale,
+        h: band * shipScale,
       };
       const s0 = eventOf(log, 'start').t - LEAD;
       const at = (t: number): number => t - s0;
