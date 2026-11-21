@@ -499,6 +499,77 @@ on the selection's line. Not checked live: ironman and multiplayer (the
 plugin's unit tests), the commands, notices and Problems inside VS Code, and
 the Run marks in **Continue** (unit tests).
 
+## The script check: the gate run (ADR 0007)
+
+Run on 2026-11-21 under the EU4 engine lab's procedure (its game lock for each
+batch, `eu4.exe` 1.37.5 `9AD3EFE1…DC4D771A` and the Process Lasso rule
+`eu4.exe,0,1-7` checked before and after and left unchanged), with the builds
+of the Etch 2.13.0 VSIX (its plugin, Anvil 1.25.0, Bellows 2.1.0, Tongs
+0.37.0). The extension's modules from the start report's branch
+(etch#570: `install.ts`, `process.ts`, `run-script.ts`, `error-log.ts`,
+`start-report.ts`) drove the game from the lab's Node script, not from VS
+Code. Vanilla only: the vanilla Russia 1719.3.17 save (1920×1080) and a test
+mod of deliberate errors as the edited mod:
+
+- `events/etch_check.txt`: `adm_techh = 1` and
+  `has_country_modifier = etch_no_such_modifier` in a `trigger`,
+  `add_treasuryy = 5` and `add_treasury = lots` in an `immediate`;
+- `common/scripted_triggers/etch_check.txt`: an extra `}` between two
+  triggers;
+- `localisation/etch_check_l_english.yml`: a title with `ő`, which
+  Windows-1252 lacks.
+
+A first start held at the achievements notice a mod brings (no game session in
+5 minutes); the second confirmed it, as the Anbennar runs do, and loaded the
+save in 7.4 s.
+
+**The start report** (part 1). The game wrote 7 lines at ready; with the
+fixes of etch#570, 5 after splitting and collapsing, all on the mod's files:
+
+| Line the game wrote | Placed |
+| --- | --- |
+| `Parsing Errors. File: "events/etch_check.txt"`, `[0]: Unknown trigger type. Key: adm_techh: adm_techh, near line: 9` | line 9, error |
+| the same block's `[1]: Failed to create trigger: 1, near line: 9` | line 9, error |
+| `Parsing Error. … Unknown effect type. Key: add_treasuryy: add_treasuryy, near line: 13` | line 13, error |
+| `Unknown country-modifier in a trigger etch_no_such_modifier` | by its key, line 10 of the event |
+| `Error in localization value! Key: "etch_check.1.t", Error: "Couldn't find Latin1 character for c5 91"` (×2) | by its key, line 2 of the `.yml` |
+
+`add_treasury = lots` and the extra `}` wrote nothing.
+
+**The wrapped blocks** (part 2's hypotheses). Each ran through the plugin's
+`run` job in the player's country scope, as Run selection runs a selection;
+the lines are those `error.log` gained during the run:
+
+| Block | `error.log` | Ran? |
+| --- | --- | --- |
+| control: `add_treasuryy = 5` and `set_country_flag = etch_gate_control` | `Unknown effect type. Key: add_treasuryy …, near line: 1` | yes: the flag was set |
+| H1: both inside `if = { limit = { always = no } … }` | `Unknown effect type. Key: add_treasuryy …, near line: 2, Last good read: always=no` | no: the flag was not set |
+| H1: `add_country_modifier = { name = etch_no_such_modifier duration = 1 }` inside that `if` | `Unknown modifier-type 'etch_no_such_modifier'.` | no |
+| H2: `if = { limit = { always = no adm_techh = 99 } }` | `Parsing Errors. …`, `[0]: Unknown trigger type. Key: adm_techh …, near line: 1`, `[1]: Failed to create trigger: 99, near line: 1` | no |
+| H2: `has_country_modifier = etch_no_such_modifier` after `always = no` | nothing | no |
+| H3: the province trigger `is_capital = yes` after `always = no` | nothing | no |
+| H3: the province effect `add_base_tax = 1` inside the false `if` | nothing | no |
+| H3: `is_capital = yes` checked as a trigger in the country scope | `Script error! … Trigger condition set on the wrong scope: Scope.GetProvince()` | yes, FALSE |
+
+So:
+
+- **H1 holds.** The game reads a false `if`'s effects when it reads the run
+  file. It logs their unknown keys with the line in the file, and runs none of
+  them. It even logs an unknown modifier name in an effect, which the start
+  report gets only from a trigger.
+- **H2 holds for keys, not for names.** An unknown trigger key after
+  `always = no` is logged. An unknown modifier name in `has_country_modifier`
+  is not: the game names it only when the trigger is evaluated, as the start
+  report's `Unknown country-modifier in a trigger` line is.
+- **H3: a wrapped block logs no scope errors, and no false ones.** The game
+  finds a wrong scope only when the trigger or effect runs.
+- **H4 is not tested.** The plugin refuses every console line but `reload`,
+  `reloadloc`, `reloadtexture` and `run`.
+
+Not run: the Anbennar save, Problems inside VS Code (the extension's tests
+cover the Diagnostics), and ironman and multiplayer (the `run` job refuses
+them).
+
 ## Live runs
 
 Run on 2026-10-27 under the EU4 engine lab's procedure (its game lock for the
