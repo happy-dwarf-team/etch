@@ -1,557 +1,129 @@
 # Etch
 
-Etch previews Europa Universalis IV 1.37.5 interface mods in Visual Studio
-Code while they are edited, and runs the game itself beside the editor, each
-saved file reloaded into the game's own window. Website:
-[etch.happydwarf.dev](https://etch.happydwarf.dev/).
+Etch is a Visual Studio Code extension for Europa Universalis IV 1.37.5 mods. It draws your mod's
+interface windows beside the editor, and draws them again as you type. It shows your textures,
+meshes, units and ships. It starts EU4 itself beside the editor, with your mod, and loads the files
+you save into it. And it finds mistakes in your scripts that the game does not report.
 
-## Requirements
+**Docs:** [etch.happydwarf.dev/docs](https://etch.happydwarf.dev/docs/) explains every feature
+and setting. Website: [etch.happydwarf.dev](https://etch.happydwarf.dev/).
 
-- Windows (x64) and Visual Studio Code 1.100 or later.
-- Europa Universalis IV 1.37.5 installed through Steam, or its folder in
-  `etch.gamePath` (a GOG game too, for the preview). Etch draws with the game's
-  own textures, fonts and localisation, and ships none of them.
-- For the live game: the same game folder with the Steam build 1.37.5 exactly
-  (the live game refuses any other `eu4.exe`). The extension creates its private install
-  on first use, after one confirmation; it needs no other download.
+## Get started
 
-## Preview
+You need Windows (x64), Visual Studio Code 1.100 or later and EU4 1.37.5. Etch comes with no game
+files: it draws with your game's own. It finds a Steam copy of the game by itself. For a GOG copy,
+or a game it does not find, put the game folder in the setting `etch.gamePath`. The live game, EU4
+itself started by Etch beside the editor, needs the Steam version of 1.37.5, exactly
+([Install and requirements](https://etch.happydwarf.dev/docs/getting-started/install/)).
 
-Open your mod's folder, open a `.gui` file and run **Etch: Open Preview** from the
-Command Palette (Ctrl+Shift+P), or click the preview button in the editor title. The preview opens beside the editor and shows the
-**previewed window**: the top-level window that holds the cursor. It follows
-the unsaved editor buffer on every change, including changes to the mod's
-`.gfx` and localisation files, and the model's diagnostics (missing sprites,
-fonts and textures, duplicate names and more) appear in the Problems panel.
+Then open your mod's folder in VS Code, open a `.gui` file and run **Etch: Open Preview** from the
+Command Palette (<kbd>Ctrl+Shift+P</kbd>). The preview opens beside the editor:
+[Your first preview](https://etch.happydwarf.dev/docs/getting-started/first-preview/).
 
-- **Pin** keeps the preview on one window while other files are edited
-  (**Etch: Pin or Unpin the Previewed Window**).
-- The **Widget Outline** in the Explorer lists the previewed window's widgets.
-  Clicking a widget in the preview reveals its source, hovering shows its path
-  and rect, and the widget at the cursor is outlined in the preview.
-- The preview resolution is the one in the game's `settings.txt`, else the
-  monitor's. **Etch: Choose the Preview Resolution**, or the resolution button
-  in the preview, picks the monitor's, one of the corpus resolutions (1280×720
-  to 3840×2160; 3840×2160 is not yet measured against the game) or any width × height (`etch.previewResolution`).
-  `if_resolution` blocks follow it. UI scale is always 1.0.
-- **Zoom** changes only how big the preview is shown, never the resolution the
-  window is laid out at. The preview opens fitted into the panel (never above
-  100 %); **Ctrl+mouse wheel**, **Ctrl+=** and **Ctrl+-**, or the **−** and
-  **+** buttons, zoom around the cursor, **Ctrl+0** goes to 100 % and
-  **Ctrl+Shift+0** back to fit, as does a click on the zoom level. 100 % is
-  one pixel of the screen per pixel of the monitor, as the game shows it, and
-  above it only whole steps (200 % to 800 %) are offered, so pixels stay sharp.
-  The mouse wheel or a drag pans a zoomed screen; picking, hover and the Widget
-  Outline's highlight follow the zoom, and a highlighted widget outside the
-  panel is brought into view. The preview keeps its zoom across a window reload.
-- The game is found through Steam, or set `etch.gamePath`. The playset is the
-  edited mod and the `dependencies` of its descriptor, or `etch.playset`.
-  `etch.language` picks the localisation language.
+If you used Etch 1.x: its game host, a hidden copy of the game that drew the preview, is gone in
+Etch 2, and the live game takes its place. To stay on 1.0.x, see
+[Etch 1.x](https://etch.happydwarf.dev/docs/about/etch-1x/).
 
-### Views
+## Interface windows
 
-A window with a **window profile** is drawn in one **view**, as the game would
-show it, instead of every widget at once: the province view as an own or a
-foreign province, with its province or state tab, one side panel and one
-sub-panel. Etch ships profiles for `provinceview` and the windows of its
-precision corpus, for the base game and for Anbennar.
+The [preview](https://etch.happydwarf.dev/docs/interface-windows/preview/) draws the window your
+text cursor is in, close to how the game draws it, and draws it again as you type. While it is
+open, missing sprites, fonts and textures show as warnings in the
+[Problems panel](https://etch.happydwarf.dev/docs/interface-windows/problems/).
 
-- **View ▾** in the preview lists the profile's views and every selector with
-  where its value comes from; the Widget Outline shows a window's alternatives
-  as radios and an eye on every other widget. A radio or an eye set by hand is
-  marked "by hand" and counted in the view's label.
-- **Save as view…** writes the selectors and hand toggles into the mod's
-  `.etch/profiles/<window>.jsonc`, which can be committed with the mod. A mod can
-  write its own profile there; VS Code checks it as you type.
-- **Etch: Add Scripted Selectors to the Window Profile** starts that file for a
-  mod's scripted interface: each widget of the previewed window that
-  `common/custom_gui` gives a `potential` becomes a selector, shown or hidden,
-  set in **View ▾**, with the `potential` quoted in its note and, for a
-  widget's own selector, its tooltip text in the label. Etch does not evaluate the trigger, but
-  reads a few shapes: `always = yes` needs no selector and `always = no` always
-  hides, widgets with the same `potential` share one selector, and widgets
-  that test one `religion`, `tag`, `government`… against different values
-  share one with a value each.
-- Of a `_large` pair the preview draws only the variant the game creates at the
-  preview's height, and the province view's sections move where the game's code
-  moves them.
-- A government mechanic's window (`gui` in `common/government_mechanics`) is
-  drawn where the game puts it, among the mechanic's rows in the government
-  view, so its negative positions land where they do in the game.
+For many windows of the base game and of some mods, such as Anbennar, the preview draws one
+[view](https://etch.happydwarf.dev/docs/interface-windows/views/), one situation as the game shows
+it, such as your own province; **View ▾** picks another. In those windows,
+[sample data](https://etch.happydwarf.dev/docs/interface-windows/sample-data/) fills the texts the
+game's code writes, such as a province's name. The
+[Widget Outline](https://etch.happydwarf.dev/docs/interface-windows/widget-outline/), in the
+Explorer, lists the window's widgets. As you type in a `.gui` file, Etch
+[suggests](https://etch.happydwarf.dev/docs/interface-windows/completion/) widget types, keys,
+sprites and fonts. To jump to a widget, sprite or font by its name, press
+<kbd>Ctrl+Shift+O</kbd>
+([Jump to a widget by name](https://etch.happydwarf.dev/docs/interface-windows/widget-outline/#jump-to-a-widget-by-name)).
 
-How to write a profile:
-[docs/window-profiles.md](https://github.com/happy-dwarf-team/etch/blob/main/docs/window-profiles.md).
+## Textures and meshes
 
-### Sample data
-
-Texts the game's code fills (a province's name, its development, culture,
-religion, a list of great projects) show **sample data** where the profile
-names their source. **Data ▾** shows the layers, the upper winning: a live
-snapshot, a save (a country and a province of it), the game's and the mod's
-files, and generated text of a chosen length. Etch reads text saves itself,
-zipped or plain; ironman and other binary saves are not readable. A value the
-save does not hold, which the engine works out (income, modifiers), comes from
-a live snapshot or is generated: Etch never computes one.
+A `.dds` or `.tga` file opens in the
+[texture preview](https://etch.happydwarf.dev/docs/textures-and-meshes/texture-preview/). A
+`.mesh` file opens in the
+[mesh preview](https://etch.happydwarf.dev/docs/textures-and-meshes/mesh-preview/), where you
+turn the model and play its animations. In an `.asset` file, click **Preview entity** above an
+`entity = { … }` to see that
+[unit or ship](https://etch.happydwarf.dev/docs/textures-and-meshes/entities/). Etch draws a map
+tree's mesh
+[as the game draws it on the map](https://etch.happydwarf.dev/docs/textures-and-meshes/map-trees/).
+Hover over the name of a texture, mesh or sprite in your files to see it, and
+<kbd>Ctrl</kbd>+click the name to open the file that holds it. On a sprite name,
+<kbd>Shift+F12</kbd> lists every file that uses it and <kbd>F2</kbd> renames it in your mod.
+Font colours in `.gfx` files get VS Code's colour picker
+([Hovers and links](https://etch.happydwarf.dev/docs/textures-and-meshes/hovers-and-links/)).
 
 ## The live game
 
-**Etch: Start the Live Game**, or the preview's **Live game** button, starts a
-private copy of the game with the edited mod's playset. You play it; each file
-you **save** is reloaded into the game's own window, with its real data.
+The live game is EU4 itself, with your mod and the mods it depends on, beside the editor. Start it
+with [**Etch: Start the Live Game**](https://etch.happydwarf.dev/docs/live-game/start-and-stop/)
+and play as usual.
 
-- The first start asks for confirmation. The live game takes your
-  `settings.txt` and `pdx_settings.txt` at every start (changes in it do not
-  persist), copies a save you choose, and counts as your EU4 session for
-  Steam: Steam does not start your own game beside it. **Etch: Stop the Live
-  Game** saves and stops it, as does closing the VS Code window.
-- A quick pick offers **Continue** (the newest private save), **Main menu** or
-  one of your saves; ironman saves are greyed out. **Etch: Open the Live Game's
-  Saves Folder** opens its saves.
-- Panels the game rebuilds (the province view, the country view's tabs, the
-  ledger, settings, the event window, the HUD) are reloaded in place.
-  Localisation and textures are reloaded too. A file nothing rebuilds
-  (`countryview.gui`, `.gfx` files, fonts, `core.gui`, scripted GUIs) asks for a
-  **planned restart**: Etch saves, starts the game again and continues the save,
-  only after you click **Restart now**. A crash restarts the game at the newest
-  save. After either restart the province view comes back on the province you
-  had open, unless you opened something else first.
-- New `error.log` lines go to the Problems panel on the edited file. A saved
-  file whose copy in another mod of the playset wins is not reloaded, and Etch
-  names that mod.
-- What the game wrote to `error.log` while it started goes to the Problems
-  panel too, as "Etch game start", on your mod's files: on the line the game
-  names, or, when it names only a key (an unknown modifier, a localisation
-  key), on the first place your mod writes it. Lines about other mods and the
-  game are counted in Etch's log. Each start replaces the last one's.
-- Reloading does not work in ironman or multiplayer games.
+- Save the `.gui` file of a window such as the province view, a localisation file or a texture,
+  and the game [loads it again](https://etch.happydwarf.dev/docs/live-game/reload-on-save/): the
+  change shows in its own window. Other files, such as `.gfx` files and events, need a restart,
+  which Etch does when you click **Restart now**.
+- In [pick mode](https://etch.happydwarf.dev/docs/live-game/pick-mode/), which
+  <kbd>Ctrl+Shift+E</kbd> turns on in the game, click a widget: VS Code opens the line that
+  defines it.
+- A [live snapshot](https://etch.happydwarf.dev/docs/live-game/snapshot-and-compare/) copies a
+  window's texts and shown widgets from the game into the preview.
+- [Run selection](https://etch.happydwarf.dev/docs/live-game/run-selection/) runs in the game the
+  effect you select in the editor, or says whether a trigger is true.
+- [Check File](https://etch.happydwarf.dev/docs/live-game/check-file/) lets the game read the
+  triggers and effects of an event, decision or mission file without running them, and shows
+  what it complains about in the Problems panel, on your lines.
 
-The private install lives in the extension's storage: links to your game
-folder, copies of its top-level files, its own profile and saves, and the
-builds of [Anvil](https://anvil.happydwarf.dev/) (the plugin loader),
-[Bellows](https://anvil.happydwarf.dev/plugins/bellows/) (a faster start),
-[Tongs](https://anvil.happydwarf.dev/plugins/tongs/) (the widget tree) and
-Etch's own Anvil plugin that come in the extension, checked against their
-SHA-256 before every start. It never writes to your game folder, your profile
-or your mods, and never changes `eu4.exe`. **Etch: Remove the Private Install**
-deletes it.
+## Scripts
 
-### Pick mode
+Etch warns about
+[province IDs and names](https://etch.happydwarf.dev/docs/scripts/province-ids-and-names/) that
+the game does not check and can crash on, such as `owns = 5075` on a map of 4941 provinces. It
+warns where the game would read other letters than you see, and offers to fix the file's
+[encoding](https://etch.happydwarf.dev/docs/scripts/encoding/). After a localisation key, such
+as an event's `title`, it shows the key's
+[text](https://etch.happydwarf.dev/docs/scripts/localisation-texts/) in grey.
+Anvil, which lets EU4 load plugins, can time your triggers and effects while you play:
+**Etch: Show Latest Script Profile** opens what it measured, with links to your files
+([Script profile](https://etch.happydwarf.dev/docs/scripts/script-profile/)).
 
-In the live game, **Ctrl+Shift+E** (`etch.liveGame.pickModeKey`) or **Etch:
-Toggle Pick Mode** turns on pick mode: the widget under the pointer is outlined
-with its name, kind, size and file, the wheel steps through the
-widgets under the pointer, and a click opens its definition in VS Code, without
-the game taking the click. The game shows no tooltips while pick mode is on, so
-none covers the widget you point at; they come back when you leave it. A file of
-the base game or another mod
-opens read-only; **Override in my mod** (also **Etch: Override in My Mod**)
-copies it to the same path in your mod and opens the copy. A pick also pins the
-preview on the picked window and takes a **live snapshot** of it: the texts,
-visibility and states the game shows, which the preview uses as its upper data
-layer. **Etch: Snapshot from the Live Game** takes one of the previewed window
-when the game has it open.
+## What Etch reads and writes
 
-**Etch: Compare with Live Game** (also in `Data ▾`) compares the previewed
-window's offline preview with what the live game shows and lists in Problems
-every widget the preview places or shows otherwise than the game. Most of them
-are the preview's to fix: **Report to Etch** on an entry opens a new Etch issue
-with its fields (the widget's path, both rectangles, the versions), which you
-send yourself; no file or text of your mod goes in it. For a window Etch has no
-profile of, **Save as view** keeps what the game hid as a view of your mod's
-own profile.
-
-### Run selection
-
-In a script file of the playset, select an effect or a trigger and run it in
-the live game (also from the editor's context menu while the game runs):
-
-- **Etch: Run Selection in the Live Game** runs the effects in your country.
-- **Etch: Run Selection in the Province on Screen** runs them in the province
-  you have open in the game.
-- **Etch: Check Selection as Trigger in the Live Game** says whether the
-  trigger is true, in your country or the province on screen.
-
-With nothing selected, the statement on the cursor's line runs, with its
-block. The game's `error.log` lines from the run go to the Problems panel on
-the selection. A trigger the game cannot read counts as true: Etch then shows
-its error beside the answer. Run changes only the live game's private copy,
-never your own saves, and does not work in ironman or multiplayer games.
-**Continue** says when the newest private save was written after a Run.
-
-### Check File in the Live Game
-
-**Etch: Check File in the Live Game** has the live game read the open file's
-triggers and effects (an event's `trigger`, `immediate`, `option` and `after`,
-a decision's or a mission's `potential`, `allow`, `trigger` and `effect`, each
-scripted effect and trigger) inside a condition that is never true, so that
-nothing runs. What the game writes to `error.log` while it reads them goes to
-Problems on the file's lines, as "Etch game check": unknown effects, triggers
-and effect modifiers. `etch.liveGame.checkOnSave` checks each such file when
-you save it. A check is not a Run: no save is marked.
-
-## Script profile
-
-Anvil's script profiler (Anvil 1.22 or newer, the **Script profiler** window in
-the Anvil panel) times your events', decisions' and other owners' triggers and
-effects in your own game and writes a CSV to the game's `logs` folder.
-**Etch: Show Latest Script Profile** opens the newest one: how long the span
-was, then the triggers and the effects, each with its longest rows (calls,
-total, mean and the longest single run, `max`). A span that a load, the menu or
-quitting ended early is marked interrupted. Blocks whose owner the profiler
-cannot tell are one row, as in its window; the CSV splits them by where the
-game runs them. With Anvil 1.22's scripted triggers and church aspects, the
-page also lists every scripted trigger by its name, between the triggers and
-the effects; that time is part of the triggers too. Each name links to where
-it is written (an event, a decision, a mission, an `on_action`, a casus belli,
-a triggered modifier, a church aspect or a scripted trigger), at the block the
-row measured, such as an option's `ai_chance`: in the playset of your
-workspace, or the game folder without one, so a profile from another playset
-may not find every name. The page is a Markdown file in Etch's storage folder,
-written again each time it opens. While a profile is shown, the script files show its
-numbers too: a line above each measured event, option, decision and other
-owner gives its triggers' and effects' time and calls (a scripted trigger's
-from all its uses), and opens the profile. **Etch: Hide the Script Profile in
-Script Files** takes them away.
-
-## Province IDs and names
-
-A script that names a province the map does not have, such as `owns = 5075`
-or `5075 = { … }` on the 4941 provinces of EU4 1.37.5, gets no line in the
-game's `error.log`, and the game may crash when it reads that province. Etch
-warns about such ids in the script files you open (events, decisions,
-missions, `common`, `history` and the triggers of `customizable_localization`,
-which the game evaluates when it shows a text that names them): the province
-triggers and effects (`owns`,
-`owns_core_province`, `province_id`, `add_core`, `add_permanent_claim`,
-`set_capital` and more), province scopes, ids such as an event's `goto`, and
-`who` of `province_distance`, `node` of `trading_policy_in_node` and the
-`province` of a war goal in `history/wars`. So are
-the arguments of a call to a scripted effect or trigger that its body uses as
-a province, as in vanilla's `create_colony_mission_reward = { province = 1104 }`,
-whose effect scopes to `$province$`; Etch reads that from the playset's
-`common/scripted_effects` and `common/scripted_triggers`, following arguments
-passed on to other calls. A
-negative id such as `owns = -1` is flagged too: the game keeps the sign.
-The province lists of colonial regions, trade company regions and trade nodes
-(`provinces` in `common/colonial_regions` and `common/trade_companies`,
-`members` in `common/tradenodes`) are checked too, and so are a great project's
-`start`, which crashes a new game, and a religion's `holy_sites`, which its
-religion tab reads. So are the map's own files: the lists of
-`map/default.map` (`sea_starts`, `lakes` and the others), the climate file's
-lists, the trade winds file's ids, `From` and `To` of each line of
-`map/adjacencies.csv` and `Through` of a `sea` link, and the negative ids of
-the continent, positions and province group files (the game skips ids past
-the map in those three, but not negative ones). In `map/definition.csv`
-itself, a row the game reads whose id is negative or at least `max_provinces`,
-or whose red, green or blue is outside 0 to 255, gets a warning: the game
-stores both without a check, and the map's borders look up such an id in the
-province table, which crashes the map load. In `map/default.map`, a
-`canal_definition` whose `map/<name>_river.bmp` the playset does not have gets
-a warning (the game's map load stops without it), and so does one whose bitmap
-does not fit in the river map at its `x` and `y` (the game copies it there
-without a check when the canal is built). So does a map file that
-`map/default.map` names and no layer of the playset has (`climate`, `region`,
-`adjacencies` and the other files): the game crashes or stops loading the map
-without it. So does a tag in `common/country_tags` whose country file
-(`SWE = "countries/Sweden.txt"`) no layer has: the game reads every tag's file
-while it starts and crashes without it. A tag that an earlier line or
-`common/country_tags` file already defines gets a warning instead: the game
-keeps the first, leaves the later one out and does not read its file. So does a
-key of other than three characters that names a country file (`ZZEX =
-"countries/Zzex.txt"`): the game leaves it out without a word. A mod's
-`common/country_tags` file that leaves the playset without `PIR`, `NAT` or
-`REB` gets a warning at its start: the game stops while it starts without them.
-A country file that a tag names gets a warning for each line the game logs
-about it in `error.log`: no `color`, no `monarch_names`, or fewer than ten
-`leader_names` or `ship_names` (the game does not check the first two tags it
-reads, vanilla's `REB` and `PIR`). So does a table of
-`common/technology.txt` (`adm_tech = "technologies/adm.txt"`) whose file no
-layer has. A `history/provinces` file
-whose name does not start with a province of the map (`4999 - Past.txt` on
-4941 provinces, or `Uppland.txt`) gets a warning at its first line: the game
-skips it without a word. A mod's `history/countries` file whose tag also has a
-file of the game's under another name (`SWE - My Sweden.txt` beside `SWE -
-Sweden.txt`) gets a warning there too: it does not replace the game's file, and
-the game reads both into the country's history. The same holds for a mod's
-`history/provinces` file beside the game's file of that province under another
-name (`1 - Uppland.txt` beside `1-Uppland.txt`): the game reads both into the
-province. A tag of `common/country_tags` without a `history/countries` file gets
-a warning at the tag: the game logs that it "is missing a history file" and
-goes on without a history for the country. A popular mod can have hundreds of
-these last two, so the playset check below does not list them in Problems: it
-sums them up in one line per mod ("793 files of <mod> add a second history to
-provinces of the game", "1032 tags of <mod> have no history/countries file") in
-its notification and the Output channel, which lists the files. Open a file to
-see its own warning.
-The map is your playset's: `max_provinces` of `map/default.map`, a mod's when
-it has its own, and the provinces its `map/definition.csv` lists. An id written
-as a tag, a scope or a variable is not checked.
-
-A few effects crash the game the same silent way on a name the playset does
-not define: `add_idea_group` and `remove_idea_group` on an idea group, and
-`remove_idea` on an idea. Etch warns about such a name against the idea
-groups and ideas of your playset's `common/ideas`; names are case-sensitive,
-as in the game. A scripted effect's `$argument$` is not checked, nor is
-`has_idea_group`, which the game reports in `error.log`. `has_idea` is: the
-game logs "Invalid idea" for it, but keeps the missing idea and crashes when
-its tooltip is shown. `change_graphical_culture` crashes the same way on a
-graphical culture its playset's `common/graphicalculturetype.txt` does not
-list, ignoring case; a country tag or a scope there is not checked. The
-arguments of a call to a scripted effect or trigger are not checked either.
-
-For some triggers and effects the game crashes on a missing name only when it
-builds their tooltip, for example when you hover over a decision or an event
-option that uses them. Etch warns about their names too, ignoring case and
-skipping them inside a `custom_trigger_tooltip`, which shows its own text:
-`has_active_policy` (`common/policies`), `enable_religion` (`common/religions`), `likely_rebels`
-(`common/rebel_types`), `has_disaster_progress`'s `disaster`
-(`common/disasters`), `current_icon` (the orthodox icons of
-`common/religions`), `has_spawned_rebels` and `has_not_spawned_rebels`
-(`common/rebel_types`), `has_active_estate_agenda`
-(`common/estate_agendas`) and `advisor` (`common/advisortypes`).
-
-`provincial_institution_progress`'s `which` (`common/institutions`),
-`num_of_religion`'s `religion` (`common/religions`) and `had_active_policy`'s
-`policy` (`common/policies`) are worse: the game crashes whenever the trigger
-is evaluated, for a decision's `allow` on the first day of the game, so Etch
-checks them inside a `custom_trigger_tooltip` too.
-
-Every one of these crashes was tried in the game.
-
-Script passed in a string is checked too, such as the `first_effect = "…"` of
-vanilla's `simple_dynamic_effect`, which the game runs in place of the
-scripted effect's `$first_effect$`. A quoted string may run over several
-lines, as the game reads it.
-
-**Etch: Check Province IDs and Names in the Playset** checks every script file
-the playset loads, from all its mods, and lists the lines in the Problems
-panel, so you can find which mod has one. Second province histories and tags
-without a history file are summed up per mod instead (see above).
-
-## Encoding
-
-The game reads interface files and the script files of `common`, `events`,
-`decisions`, `missions`, `history` and `customizable_localization` as
-Windows-1252, and localisation as
-UTF-8 with BOM. Where the next save would make the game read other characters
-than the editor shows, such as a leader's name `é` saved as UTF-8, which the
-game shows as `Ã©`, Etch warns and offers to reopen the file in the encoding
-the game expects. A script file's comments are skipped: the game does not read
-them. In a file VS Code could not read as UTF-8 (it shows `�`), bytes that only
-happen to form a UTF-8 character of another script, such as `ڞ` for the `Úž`
-of a Windows-1252 file, are not taken for text saved as UTF-8.
-
-## Textures
-
-VS Code cannot open `.dds` and `.tga` files; with Etch they open in the
-**Etch Texture Preview**, which reads them with the same code the preview
-draws with. It lists the size, the format (DXT1, DXT3, DXT5, BGRA8 and the
-other DDS layouts, with or without the DX10 header; TGA at 16, 24 or 32 bits,
-raw, run-length or colour-mapped), the mip levels and whether the alpha is
-used, and shows the image over a checkerboard. A DXT image whose size is not a
-multiple of 4 says the size the game draws it at: its whole 4 × 4 blocks.
-
-- **RGBA**, **RGB** and **A** show the colour with its alpha, the colour
-  alone, or the alpha as grey.
-- **Mip** picks a level of a DDS file's mip chain, down to 1 × 1.
-- **Fit** shrinks a large texture into the panel (never above 100 %), **1:1**
-  shows one texel per screen pixel, **−** and **+** or Ctrl+mouse wheel zoom.
-- The texel under the mouse and its RGBA values show at the bottom.
-- When the file changes on disk, for example a new export from your image
-  editor, the preview shows it at once.
-
-A file Etch cannot read names its format or defect instead, such as a DDS cube
-map or a BC7 texture. To open a texture as text or with another viewer, use
-**Reopen Editor With…**.
-
-In `.gfx` and `.asset` files, a texture, mesh or animation path is a link
-(Ctrl+click) to the file your playset loads: the mod's file over the game's,
-and a `.tga` path that exists only as `.dds` to the `.dds`, as the game does.
-Hovering a texture path shows the texture with its size and format and says
-where it comes from; a path the playset does not have says so. A bare file
-name (`texture_diffuse = "tower_diffuse.dds"` in a `pdxmesh`, an animation's
-`file = "eagle_idle.anim"` in an `.asset` file) is looked up beside the mesh
-or the `.asset` file, where vanilla keeps them. Hovering a mesh path lists its
-shapes, vertices, triangles and bones, its shaders and the textures its
-materials name, and draws the mesh (of a mesh with levels of detail, its most
-detailed level) with those textures, as they are found beside it (a part whose
-texture is missing is grey); an animation path gives its frames, speed and
-joints.
-
-In `.gui` files, hovering a sprite name (`spriteType`, `quadTextureSprite`, a
-list's `background`) shows the sprite the game draws: its kind and frames, the
-`.gfx` file and mod that define it (the last definition wins, as in the game),
-and its texture with a thumbnail, the first frame of a strip. **Go to
-Definition** (F12 or Ctrl+click) opens that `.gfx` file at the sprite's name.
-The same works on the sprite names of script files: an event's `picture`
-(also inside a conditional `picture = { trigger = { … } picture = … }`), a
-mission's `icon`, an estate privilege's `icon`, and the sprite keys of ten
-`common` folders, such as a holy order's `icon` and a subject type's `sprite`
-(all listed on the Hovers and links page of the guide on
-[etch.happydwarf.dev](https://etch.happydwarf.dev/)). A script name with no
-sprite says so in its hover; Etch does not read the game's DLC archives,
-which define many vanilla event pictures.
-
-On a sprite name (in those places or in a `.gfx` definition), **Find All
-References** (Shift+F12) lists every `.gfx`, `.gui` and such script file of the
-playset that writes it, and **Rename Symbol** (F2) renames it in the mod's
-`.gfx` definition and the mod's uses. A rename is refused when the game's or
-another mod's files also name the sprite, when the mod does not define it, or
-when a `.gui` file names it through an `@constant`. `etch.editor.rename` turns
-both off.
-
-With `etch.editor.spriteThumbnails` on (off by default), each line of a `.gui`
-file or of those script files that names a sprite with a texture shows a small
-picture of it beside the line numbers (the first frame of a strip, up to 500
-per file). The pictures follow your edits and `.gfx` saves.
-
-A localisation key shows its text after it, in `etch.language`: a `.gui`
-file's `text`, `tooltip`, `tooltipText` and `delayedTooltipText`, and the
-`title`, `desc`, `name`, `tooltip` and `custom_tooltip` of the scripts in
-`events`, `decisions`, `missions` and `common`. The text is cut to 60
-characters, without icons, colour codes or variables; hovering it shows the
-whole text and the `.yml` file, and **Go to Definition** on the key opens that
-file at the key. Only keys your playset defines get a text, so a `name` that is
-a plain word gets none. `etch.editor.localisationHints` turns this off.
-
-Completion in `.gui` files offers what your playset writes: inside `guiTypes`
-and inside a widget, the widget types and the keys its `.gui` files write there,
-the most used first; after `spriteType`, `quadTextureSprite` or a list's
-`background`, the sprite names of its `.gfx` files, with the sprite's hover
-once one is selected; after `font` or `buttonFont`, its fonts; after
-`orientation`, the nine anchors the game knows; and after a key such as
-`alwaysTransparent` or `format`, the few values the playset writes for it.
-`etch.editor.completion` turns this off.
-
-The widgets of a `.gui` file and the sprites and fonts of a `.gfx` file are
-also VS Code symbols: the breadcrumbs above the editor, the Explorer's
-**Outline** and **Go to Symbol in Editor** (Ctrl+Shift+O) list them by name.
-
-In a `.gfx` file's `bitmapfonts` block (the game's fonts), each font colour
-shows a small square: a `textcolors` entry such as `G = { 0 255 0 }`, or a
-font's `color` or `border_color` such as `0xffcc8800`. Hover over the square
-for VS Code's colour picker; the pick is written back in the same form
-(`{ R G B }` loses its opacity).
-
-## Meshes
-
-A `.mesh` file opens in the **Etch Mesh Preview**: the model drawn with its
-diffuse, normal and specular textures under the game's light (the same light
-formula, highlight and light direction as the game's mesh shader), the way you
-would turn it in your hand. The map's fog of war, snow and distance fog are
-left out. The bar above lists its shapes, vertices,
-triangles, bones and shaders, and where each texture came from: the textures a
-mesh's materials name are looked up in its folder through your playset (the
-mod's over the game's, `.tga` falling back to `.dds`), or beside the file when
-it is in no folder of the playset. Collision shapes are hidden.
-
-- Drag to turn the model, Shift+drag or right-drag to move it, and scroll to
-  zoom; **Reset view** frames it again.
-- **Wire** shows the triangle edges, and **Maps** turns the normal and
-  specular maps off and on.
-- A `PdxMeshColor` part (a unit's uniform, a ship's sails) shows a country's
-  colours where its specular map's red, green and blue channels mark them;
-  the three colour boxes set them.
-- A `PdxMeshTextureAtlas` part (vanilla's ships and the map's flag) shows a
-  country's flag where its diffuse map's alpha marks it, through the mesh's
-  second texture coordinates, as the game does. Type a tag in **Flag** for that
-  country's `gfx/flags/<TAG>.tga` from your playset; with no tag the three
-  colour boxes show as stripes in its place.
-- **Region** shows a colonial nation's region colour as the game shows it: the
-  far half of the flag (its overlord's) in that colour, and the colour in
-  place of the tertiary one on `PdxMeshColor` parts.
-- A mesh with levels of detail (shapes with a `lod` property, as on vanilla's
-  map trees) shows its most detailed level; **LOD** picks another, and the bar
-  gives the camera distance the mesh's `loddist` starts that level at. **LOD
-  auto** picks the level as the game does: the last one whose distance the
-  camera is from the mesh's origin, changing as you zoom.
-- A map tree (a mesh a `mapobject_<n>` pdxmesh of your playset names) is drawn
-  as the game's tree shader draws it: texels with a diffuse alpha under one
-  half are cut out, with no highlight. Its tint map
-  (`map/terrain/Tree_tint.bmp` of your playset) is laid over it as the game
-  lays it; the game shifts each tree's tint by the tree's random turn on the
-  map, and **Turn** stands in for that turn, from 0 to 1 of a full one. The
-  game then lays the map's colour map at the tree's place over it at one
-  quarter; **Ground** stands in for that colour (grey, `#808080`, changes
-  nothing). Last it adds a season colour from `map/terrain/Tree_season.bmp`,
-  only in the map's northern half: **Date** is the day of the year, and the
-  tree season it falls in among the `tree_*` blocks of your playset's
-  `map/seasons.txt` (or between two of them) picks the place in that map, as
-  the game picks it; **North** sets how much of it the tree takes, from 0 (the
-  map's middle and south, no change) to 1 (its far north). Type a province ID
-  in **Place** to stand the tree at that province (its position in your
-  playset's `map/positions.txt`): Ground then takes the map's colour maps
-  there (`map/terrain/colormap_*.dds`), mixed between two map seasons for the
-  Date as the game mixes them, and North how far north the place is. Empty the
-  box to set them by hand again.
-- A `PdxMeshAlphaBlend` part (vanilla's African buildings, a unit's selection
-  ring) is blended over what is behind it by its diffuse map's alpha, as the
-  game blends it, rather than cut.
-- **Snow** (shown for `PdxMeshSnow` parts, vanilla's city buildings and forts,
-  and for map trees) puts snow on the mesh as the game does in winter: from 0,
-  none, to 1. The game takes the amount from the map at the mesh's place.
-- If the mesh has a skeleton, the list offers the `.anim` files beside it that
-  name its bones, the mesh's own first (`carrack_idle.anim` for
-  `carrack.mesh`); **Play** runs the one you pick in a loop.
-- When the mesh, a texture or an animation beside it changes on disk, the
-  preview shows the new one.
-
-To open a mesh with another viewer, use **Reopen Editor
-With…**.
-
-### Entities
-
-In an `.asset` file, **Preview entity** above each `entity = { … }` (or
-**Etch: Preview Entity…**) draws the entity the way the game builds a unit or a
-ship from it: the `.gfx` `pdxmesh` it names at that pdxmesh's scale times the
-entity's own, a `clone` it starts from, and every entity its `attach` blocks
-hang on the bones they name, each at its own scale. The list plays the
-entity's states (`idle`, `walk`, …) through the pdxmesh's animation ids and the
-`.asset` animations they name; a state the attachments have no animation for
-leaves them on their bone as it moves. It resolves through your playset (`.gfx`
-and `.asset` files of the game and your mods, with the open file's unsaved
-text), so set `etch.gamePath`. What it cannot resolve (a missing pdxmesh,
-animation or attached entity, a clone loop, an entity attached under itself)
-is listed under the bar; hover the bar's first line for the attachments and
-their bones. Particle effects a state's `event`s start (an artillery piece's
-muzzle flash) are not drawn: the status line names them while the state
-plays, and a particle no `.asset` file defines (`particle = { name = … }`,
-the game's are in `gfx/particles`) is listed under the bar.
-
-## Etch 1.x
-
-Etch 2.0.0 replaced 1.x's game host and its diff view with the live game. To
-keep them, install 1.0.x: in the Extensions view, **Install Specific
-Version…** on Etch, then 1.0.x, and turn off automatic updates for it. 1.0.x
-gets bug fixes only until 2.0.0 and none after.
-
-Etch only reads the game folder, the mods and the profile, and writes into the
-mod's project only on request (**Save as view…**, **Override in my mod**). It
-sends nothing anywhere: it has no telemetry, and **Report to Etch** only opens
-a filled-in issue in your browser for you to send.
+Etch reads your game folder, your mods and your EU4 profile, the folder where the game keeps your
+settings, saves and mods. It never changes the game folder or your profile, and it writes into
+your mod only when you ask, for example when you save a view. It sends nothing anywhere and
+collects nothing about how you use it. **Report to Etch…**, a quick fix in the Problems panel,
+only opens a filled-in bug report on GitHub in your browser, and you send it yourself. See
+[What Etch reads and writes](https://etch.happydwarf.dev/docs/about/reads-and-writes/) and
+[Limits](https://etch.happydwarf.dev/docs/about/limits/).
 
 ## More from the Happy Dwarf Team
 
-- [Anvil](https://anvil.happydwarf.dev/): the plugin loader for EU4 that the
-  live game runs on, with its plugin catalog.
-- [Tongs](https://anvil.happydwarf.dev/plugins/tongs/): an Anvil plugin that
-  lets scripts and agents control a running game; Etch's precision corpus is
-  captured with it, and the live game reads the widget tree through it.
+- [Anvil](https://anvil.happydwarf.dev/): lets EU4 load plugins, add-ons to the game's own
+  program. The live game runs on it.
+- [Tongs](https://anvil.happydwarf.dev/plugins/tongs/): an Anvil plugin that lets other programs
+  control a running game. Etch only reads the live game's widgets through it.
 - [happydwarf.dev](https://happydwarf.dev/): all of the team's projects.
 
 ## Feedback
 
-Report problems and ideas in the
-[issue tracker](https://github.com/happy-dwarf-team/etch/issues). The first line of the
-**Etch** output names the version and the build (`Etch 2.0.0 (abc1234) for EU4 1.37.5`); put
-it in the report. When an installed VSIX replaces the extension's files without a reload,
-Etch warns that the window still runs the old build and offers **Reload Window**. The
-[changelog](https://github.com/happy-dwarf-team/etch/blob/main/CHANGELOG.md) lists what each release changed.
+Report a bug or an idea on Etch's
+[GitHub issues page](https://github.com/happy-dwarf-team/etch/issues). Copy into it the first
+line of Etch's log (**View › Output**, then **Etch** in the list at the top right of the panel),
+such as "Etch 2.0.0 (abc1234) for EU4 1.37.5": it names your version. The
+[changelog](https://etch.happydwarf.dev/docs/changelog/) lists what each release changed.
 
-Questions, or not sure it is a bug? Ask in `#help-and-bugs` (Etch tag) or `#modding` on the team's
-[Discord server](https://discord.happydwarf.dev/); what the team confirms there is tracked in the
-issue tracker.
+A question, or not sure it is a bug? Ask in the #help-and-bugs channel (with the Etch tag) or in
+#modding on the team's [Discord server](https://discord.happydwarf.dev/). Bugs the team confirms
+there are written down on the GitHub issues page too.
 
 ## License
 
-MIT, see [LICENSE](https://github.com/happy-dwarf-team/etch/blob/main/LICENSE).
+Etch is free, under the [MIT License](https://github.com/happy-dwarf-team/etch/blob/main/LICENSE).

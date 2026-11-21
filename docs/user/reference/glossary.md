@@ -47,7 +47,8 @@ Problems panel. See [Snapshot and compare](../live-game/snapshot-and-compare.md)
 ## Live game
 
 A copy of the game that Etch starts with your mod's playset, from its private install. You play
-it, and each file you save in VS Code is reloaded into the running game. See
+it, and most `.gui` files, localisation files and textures you save in VS Code are reloaded into
+the running game; other files need a [planned restart](#planned-restart). See
 [Start and stop](../live-game/start-and-stop.md).
 
 ## Live snapshot
