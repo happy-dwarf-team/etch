@@ -24,9 +24,15 @@ The grey text is short: at most 60 characters. It leaves out icons and colour co
 variable such as `$COUNTRY$`, or a scripted text in `[…]`, as "…".
 
 - Hover over the grey text to see the whole text, the key, its language and the `.yml` file it
-  comes from. When several `.yml` files define the key, Etch shows the text of one of them: a
-  file in `localisation/replace` wins over the others, then a mod's file over the game's, and a
-  later mod's file over an earlier one's.
+  comes from. When several `.yml` files define the key, Etch shows the text the game shows:
+  - A file in `localisation/replace` wins over the others.
+  - Otherwise the first text wins: the game's text over your mod's. Of your mod's files, the one
+    whose name comes first in the alphabet wins (`a_…` over `z_…`), and in one file the first
+    line with the key.
+  - A file of your mod with the same name and folder as a file of the game's hides the whole of
+    the game's file.
+
+  To change one of the game's texts, put it in `localisation/replace`.
 - To open that file at the key's line, <kbd>Ctrl</kbd>+click the key, or put the cursor on it and
   press <kbd>F12</kbd>.
 

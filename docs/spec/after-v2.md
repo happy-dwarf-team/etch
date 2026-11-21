@@ -1067,10 +1067,14 @@ with ADR 0005), and the one the release record left of the profiles:
   if the game's quads run `v` from 1 at the top. The renderer assumes so.
 - H2 of etch#16 (whether the screen size behind `if_resolution` stays the same
   when a window moves) and H6 (PhysFS precedence of later mods).
-- Which value the game shows for a localisation key defined in several files.
-  Etch assumes that a file hides one at the same path in an earlier layer,
-  that `localisation/replace/` wins over the rest, and that otherwise a later
-  layer, then a later path, wins (etch#32). Also unchecked: whether the game
+- Which value the game shows for a localisation key defined in several files:
+  checked in the game on 21 November 2026 for the game and one mod
+  ([live-game.md](../live-game.md#which-localisation-value-the-game-shows)).
+  A file hides one at the same path in an earlier layer, `localisation/replace/`
+  wins over the rest, and otherwise the first definition wins (the game's over
+  the mod's, an earlier path, the first line in a file); Etch follows it since.
+  Still unchecked: two replace files, two mods, and a later file against a
+  subfolder whose name sorts before it. Also unchecked: whether the game
   reads `.yml` files without a language suffix or without a BOM, and what it
   does with escapes other than `\n`, `\t`, `\"` and `\\`.
 - Which definition the game uses when a font name is defined twice, and whether
