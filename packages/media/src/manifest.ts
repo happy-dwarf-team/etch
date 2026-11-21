@@ -19,6 +19,10 @@ export const CLIP_IDS = [
   'problems',
   'profile',
   'names',
+  'texture',
+  'encoding',
+  'hovers',
+  'mesh',
   'reload',
   'pick',
   'snapshot',
@@ -36,6 +40,10 @@ export const OFFLINE_CLIP_IDS = [
   'problems',
   'profile',
   'names',
+  'texture',
+  'encoding',
+  'hovers',
+  'mesh',
 ] as const satisfies readonly ClipId[];
 
 export interface DraftSource {
