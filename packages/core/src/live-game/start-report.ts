@@ -38,7 +38,7 @@ export function startLineMessage(line: string): string {
 }
 
 const PARSING_ERRORS = /^(.*?)Parsing Errors\.\s*File:\s*"([^"]+)"/;
-const CONTINUATION = /^\s+\[\d+\]:\s*(.*)$/;
+const CONTINUATION = /^\s+\[\d+\]:(.*)$/;
 
 /**
  * The lines with each `Parsing Errors.` block split into one line per error. The game writes a
@@ -63,7 +63,9 @@ export function splitParsingErrors(lines: readonly string[]): string[] {
   for (const line of lines) {
     const rest = CONTINUATION.exec(line);
     if (rest !== null && header !== undefined) {
-      out.push(`${header.prefix}Parsing Error. File: "${header.path}", Error: ${rest[1] ?? ''}`);
+      out.push(
+        `${header.prefix}Parsing Error. File: "${header.path}", Error: ${(rest[1] ?? '').trim()}`,
+      );
       header.used = true;
       continue;
     }
