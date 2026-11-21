@@ -77,6 +77,28 @@ game and asks you to start the live game again.
 **Etch: Open the Live Game's Saves Folder** opens the folder of the live game's own saves: the
 copies of your saves, the saves you make in it and the ones Etch makes before a stop.
 
+## Mistakes the game finds at the start
+
+While the game loads, it writes what it finds wrong in your files to its `error.log`: an unknown
+trigger or effect, a modifier no file defines, a letter the game cannot show in a localisation
+text. When the live game is ready, Etch puts those lines in the Problems panel
+(<kbd>Ctrl+Shift+M</kbd>), marked **Etch game start**, on the file of your mod they are about. At
+the next start they are replaced.
+
+Each line goes where it points:
+
+- When the game names a file and a line, it goes on that line. For
+  `File: "events/etch_check.txt", Error: Unknown effect type. Key: add_treasuryy: add_treasuryy, near line: 13`,
+  that is line 13 of your `events/etch_check.txt`.
+- When the game names a file and a window, such as `Missing Button 'close' in window 'etch'`, it
+  goes on that window's name in the `.gui` file.
+- When the game names only a name, it goes on the first place your mod writes that name: a
+  localisation key in your `.yml` files, anything else, such as a modifier, in your other files.
+
+A line where the game could not read your file ("Parsing Error") is an error; the others are
+warnings. Lines about other mods' files or the game's own files are not in Problems: Etch counts
+them in its log (**View › Output**, then **Etch** in the list).
+
 ## When the game crashes
 
 If the game crashes or stops answering Etch, Etch starts it again at the live game's newest save:
@@ -104,3 +126,8 @@ that Anbennar shows before the save loads. The save's own events are left to you
 - All playsets share the live game's saves folder, so **Continue** may offer the newest save of
   another playset.
 - It never writes to your own saves or profile.
+- It shows only the mistakes the game writes to `error.log` while it loads. Some mistakes the game
+  does not report: an extra `}` in a file of `common/scripted_triggers`, or
+  `add_treasury = lots`, gives no line, so Etch shows nothing for them.
+- When a name appears in several of your files, Etch puts the line on the first one it finds,
+  which may not be the one the game meant.
