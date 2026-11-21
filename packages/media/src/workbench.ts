@@ -360,11 +360,14 @@ export class Workbench {
     throw new Error(`no Markdown preview with the heading "${heading}" appeared`);
   }
 
-  /** Opens a workspace file through Quick Open, by its file name, in the editor's group. */
-  async quickOpen(name: string): Promise<void> {
+  /**
+   * Opens a file through Quick Open in the editor's group: a workspace file by its file name, or
+   * any file by its absolute path typed as `typed`, whose file name is `name`.
+   */
+  async quickOpen(name: string, typed = name): Promise<void> {
     await this.focusEditor();
     await this.openQuickInput('Control+P');
-    await this.page.keyboard.type(name);
+    await this.page.keyboard.type(typed);
     await this.page
       .locator('.quick-input-list .monaco-list-row.focused', { hasText: name })
       .waitFor();
