@@ -104,6 +104,21 @@ describe('splitParsingErrors', () => {
     expect(splitParsingErrors(['  [0]: no header'])).toEqual(['  [0]: no header']);
   });
 
+  it('splits a line where the game went on with the next message', () => {
+    // Check File's run with an Anbennar playset, 21.11.2026: the first message has no line end.
+    expect(
+      splitParsingErrors([
+        `[bitmapfont.cpp:3424]: Could not find coloring for character '[persistent.cpp:88]: Parsing Errors. File: "etch_run_d1.txt", Error: `,
+        '  [0]: Unknown trigger type. Key: adm_techh: adm_techh, near line: 2',
+        '[12:00:01][x.cpp:1]: a stamped line stays whole',
+      ]),
+    ).toEqual([
+      "[bitmapfont.cpp:3424]: Could not find coloring for character '",
+      '[persistent.cpp:88]: Parsing Error. File: "etch_run_d1.txt", Error: Unknown trigger type. Key: adm_techh: adm_techh, near line: 2',
+      '[12:00:01][x.cpp:1]: a stamped line stays whole',
+    ]);
+  });
+
   it("drops the block's `Last good read` tail line", () => {
     // Check File's live run of 21.11.2026.
     expect(

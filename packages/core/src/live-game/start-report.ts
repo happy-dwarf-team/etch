@@ -40,6 +40,32 @@ export function startLineMessage(line: string): string {
 const PARSING_ERRORS = /^(.*?)Parsing Errors\.\s*File:\s*"([^"]+)"/;
 const CONTINUATION = /^\s+\[\d+\]:(.*)$/;
 const BLOCK_TAIL = /^\s+Last good read:/;
+/** A log line's `[file.cpp:123]: ` source, anywhere in the line. */
+const SOURCE = /\[[A-Za-z_]\w*\.cpp:\d+\]:\s/g;
+
+/**
+ * A line split where another log line starts inside it. The game sometimes ends a message without
+ * its line end, and the next message goes on in the same line (Check File's run with an Anbennar
+ * playset, 21.11.2026):
+ *
+ * ```
+ * [bitmapfont.cpp:3424]: Could not find coloring for character '[persistent.cpp:88]: Parsing Errors. File: …
+ * ```
+ */
+export function unglueLine(line: string): string[] {
+  // The line's own source comes first, after an optional `[hh:mm:ss]`.
+  const own = /^\s*(?:\[\d{1,2}:\d{2}:\d{2}\]\s*)?/.exec(line)?.[0].length ?? 0;
+  const starts = [...line.matchAll(SOURCE)].map((m) => m.index).filter((at) => at > own);
+  if (starts.length === 0) return [line];
+  const out: string[] = [];
+  let from = 0;
+  for (const at of starts) {
+    out.push(line.slice(from, at));
+    from = at;
+  }
+  out.push(line.slice(from));
+  return out;
+}
 
 /**
  * The lines with each `Parsing Errors.` block split into one line per error. The game writes a
@@ -52,7 +78,8 @@ const BLOCK_TAIL = /^\s+Last good read:/;
  * ```
  *
  * Each indented line becomes `[persistent.cpp:88]: Parsing Error. File: "events/x.txt", Error: …`,
- * as the game writes a file's single error, and the header goes. Other lines stay as they are.
+ * as the game writes a file's single error, and the header goes. A line that holds two log lines
+ * is split first ({@link unglueLine}). Other lines stay as they are.
  */
 export function splitParsingErrors(lines: readonly string[]): string[] {
   const out: string[] = [];
@@ -61,7 +88,7 @@ export function splitParsingErrors(lines: readonly string[]): string[] {
     if (header !== undefined && !header.used) out.push(header.line);
     header = undefined;
   };
-  for (const line of lines) {
+  for (const line of lines.flatMap(unglueLine)) {
     const rest = CONTINUATION.exec(line);
     if (rest !== null && header !== undefined) {
       out.push(

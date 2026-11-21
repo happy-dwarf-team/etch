@@ -623,7 +623,7 @@ each save, checks the open file of `events`, `decisions`, `missions`,
   not balance, or with a quote that does not close (the parser cuts it at the
   line end, the game reads on to the next quote), is refused with the line, as
   Run selection refuses a selection. Run files stay under `MAX_SCRIPT` (whole
-  blocks per file).
+  blocks per file); a block larger than that goes in a file of its own.
 - **How:** `LiveGame.checkScripts` runs the files through the `run` job as
   Run selection does, behind the reloads, but opens no Run mark and gives no
   first-Run notice: nothing in a false `if` runs (the gate, H1).
@@ -666,6 +666,40 @@ of the load came before the checks.
 Not run: VS Code itself (the command's notices and Problems; the extension's
 glue is covered by its types), the Anbennar save, and a file over
 `MAX_SCRIPT`.
+
+**The live run, 21 November 2026, Anbennar.** The same procedure and builds,
+with `etch` at `main` after etch#579, on the playset Anbennar, P2KE and its
+patch, and the gate's test mod as the edited mod, the save of Verne
+1444.11.11 at 2560×1440. The game was ready in 26.3 s and in the save 9.3 s
+later.
+
+- **The start report:** 10,881 lines (10,872 distinct). The test mod's four
+  were placed as on vanilla (line 9 twice, line 13, and the modifier by its
+  key on line 10); the `.yml`'s Latin1 line did not appear with this
+  playset. The rest name no file of the edited mod and stay in the output:
+  5,432 pairs of `Could not open file: history/<id> - <name>.txt` and
+  `Invalid file when updating checksum`, and 12 `Unknown country 'SWE' in tag
+  trigger` and the like.
+- **The test files** were placed as on vanilla, line for line (the table
+  above), and the scripted trigger file was refused at line 4.
+- **Anbennar's own files**, checked as copies: `events/Flavour_Feiten_Y20.txt`
+  (906 KB, 353 blocks in five run files), `decisions/EscannFormables.txt`
+  (69 blocks), `missions/00_Generic_missions.txt` (34) and
+  `common/scripted_effects/00_scripted_effects.txt` (101). Every run answered
+  `executed` in 3–17 ms and the game wrote nothing: no false error on 557
+  blocks of a large mod's script. Two of the event file's run files held one
+  `option` each of 351 KB, over `MAX_SCRIPT`: a block larger than the limit
+  goes in a run file of its own, and the game read it.
+- **The flags** of the test files were all unset afterwards.
+- **A glued line.** The game wrote a `[bitmapfont.cpp:3424]: Could not find
+  coloring for character '` message without its line end, and the event's
+  `Parsing Errors` header went on in the same line. The errors were placed,
+  but the first carried the font message in front of it. `splitParsingErrors`
+  now splits a line where another `[file.cpp:N]: ` source starts in it
+  (`unglueLine`), for the start report and Check File alike.
+
+Not run: VS Code itself, and the check of a file the start read (the copies
+were outside the game's folders).
 
 ## Live runs
 
