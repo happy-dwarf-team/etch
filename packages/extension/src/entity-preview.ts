@@ -19,7 +19,7 @@ import {
 import { loadEntityIndex, type GameFiles } from '@etch/core/playset';
 import { keyOf } from '@etch/core';
 import { layerFolder } from './asset-links.ts';
-import { flagTexture, meshHtml, read, texturesOf } from './mesh-preview.ts';
+import { countryColours, flagTexture, meshHtml, read, texturesOf } from './mesh-preview.ts';
 import type {
   EntityNode,
   MeshControls,
@@ -290,10 +290,12 @@ class EntityPreviews {
           ready = true;
           void post();
         } else if (message.type === 'flag') {
+          const files = (await this.playset())?.files;
           const reply: MeshHostMessage = {
             type: 'flag',
             tag: message.tag,
-            texture: await flagTexture(message.tag, (await this.playset())?.files),
+            texture: await flagTexture(message.tag, files),
+            colours: await countryColours(message.tag, files),
           };
           await webview.postMessage(reply);
         } else if (message.type === 'shown') {

@@ -4,7 +4,9 @@
 // maps and is offered only the animation that names the mesh's bones. A mesh in the game folder (`etch.gamePath`, a fixture) takes its texture
 // through the playset, one without its texture is drawn untextured, and a file Etch cannot read is
 // reported instead of shown. A `PdxMeshTextureAtlas` part reports its flag (the country colours
-// until a tag is asked for), and a tag's flag comes from `gfx/flags` through the playset. A
+// until a tag is asked for), and a tag's flag comes from `gfx/flags` through the playset; a
+// tag's colours come from the playset's `common/country_colors`, or from its flag as the game takes
+// them, and fill the colour boxes of a PdxMeshColor part. A
 // `PdxMeshAlphaBlendNoZWrite` part (a selection ring) is reported as blended, and a `PdxMeshSnow`
 // part and a map tree as taking snow, and a map tree takes the playset's tint map. A mesh
 // with levels of detail draws and counts only its most detailed level, and a mesh a playset's
@@ -29,6 +31,7 @@ import {
 } from '../../core/test/fixtures/pdx-asset.ts';
 import type { EtchApi } from '../src/extension.ts';
 import {
+  countryColours,
   flagTexture,
   MESH_PREVIEW_VIEW_TYPE,
   treeMap,
@@ -43,6 +46,20 @@ import { linkedFiles } from '../src/script-profile-view.ts';
 import { dds } from './asset-links.ts';
 
 const COLD_TIMEOUT_MS = 30_000;
+
+/** An uncompressed 32-bit TGA, top row first, of BGRA pixels. */
+function tga(width: number, height: number, bgra: readonly number[][]): Uint8Array {
+  const bytes = new Uint8Array(18 + width * height * 4);
+  bytes[2] = 2;
+  new DataView(bytes.buffer).setUint16(12, width, true);
+  new DataView(bytes.buffer).setUint16(14, height, true);
+  bytes[16] = 32;
+  bytes[17] = 0x28;
+  bgra.forEach((pixel, i) => {
+    bytes.set(pixel, 18 + i * 4);
+  });
+  return bytes;
+}
 
 function open(api: EtchApi, file: vscode.Uri): Promise<MeshShown> {
   const shown = new Promise<MeshShown>((resolve, reject) => {
@@ -383,6 +400,31 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
   await mkdir(path.join(game, 'gfx', 'flags'));
   // dds() takes its bytes as BGRA: a red flag.
   await writeFile(path.join(game, 'gfx', 'flags', 'ETC.dds'), dds(2, 2, [40, 40, 200, 255]));
+  // FLG's flag: three blue pixels and one yellow (BGRA).
+  const flagBlue = [147, 82, 0, 255];
+  await writeFile(
+    path.join(game, 'gfx', 'flags', 'FLG.tga'),
+    tga(2, 2, [flagBlue, flagBlue, [0, 204, 254, 255], flagBlue]),
+  );
+  // The countries, and the colours of two of them: ETC's color1 only.
+  await mkdir(path.join(game, 'common', 'country_tags'), { recursive: true });
+  await writeFile(
+    path.join(game, 'common', 'country_tags', '00_countries.txt'),
+    'ABC = "countries/Abc.txt"\nETC = "countries/Etc.txt"\nFLG = "countries/Flg.txt"\n',
+  );
+  await mkdir(path.join(game, 'common', 'country_colors'));
+  await writeFile(
+    path.join(game, 'common', 'country_colors', '00_country_colors.txt'),
+    [
+      'ABC = {',
+      '  color1 = { 10 20 30 }',
+      '  color2 = { 40 50 60 }',
+      '  color3 = { 70 80 90 }',
+      '}',
+      'ETC = { color1 = { 255 0 0 } }',
+      '',
+    ].join('\n'),
+  );
   await writeFile(path.join(game, 'gfx', 'models', 'bare', 'etch_bare.mesh'), binary(MESH));
   // A map tree: a pdxmesh named mapobject_<n> in a .gfx file of the playset names the mesh.
   const trees = path.join(game, 'gfx', 'models', 'Mapitems', 'Trees');
@@ -576,6 +618,60 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
     assert.deepEqual(missing, { ok: false, message: 'no gfx/flags/XYZ.tga in the playset' });
     const notATag = await flagTexture('../x', files);
     assert.ok(!notATag.ok, 'only a country tag is looked up');
+
+    // A tag's colours: common/country_colors, the rest from its .tga flag; not known without.
+    const colourFile = 'common/country_colors/00_country_colors.txt';
+    assert.deepEqual(await countryColours('ABC', files), {
+      ok: true,
+      colours: ['#0a141e', '#28323c', '#46505a'],
+      from: [colourFile, colourFile, colourFile],
+    });
+    assert.deepEqual(await countryColours('FLG', files), {
+      ok: true,
+      colours: ['#105090', '#f0d010', '#105090'],
+      from: ['the flag', 'the flag', 'the flag'],
+    });
+    assert.deepEqual(await countryColours('ETC', files), {
+      ok: false,
+      message:
+        'colours not known: common/country_colors gives ETC no color2, color3, and there is no gfx/flags/ETC.tga in the playset',
+    });
+    assert.deepEqual(await countryColours('XYZ', files), {
+      ok: false,
+      message: "colours not known: the playset's common/country_tags has no XYZ",
+    });
+    assert.deepEqual(await countryColours('ABC', undefined), {
+      ok: false,
+      message: 'the colours come from the playset: set etch.gamePath',
+    });
+
+    // The Country box fills the colour boxes of a PdxMeshColor part with the tag's colours.
+    assert.ok((await open(api, coloured)).ok, 'the coloured part shows again');
+    const abc = await controlled(api, coloured, { tag: 'abc' });
+    assert.deepEqual(abc.country, {
+      tag: 'ABC',
+      colours: ['#0a141e', '#28323c', '#46505a'],
+    });
+    // The webview's answer comes as JSON, which leaves out a tag that is undefined.
+    const handSet = await controlled(api, coloured, { colours: { secondary: '#ffffff' } });
+    assert.deepEqual(
+      handSet.country,
+      { colours: ['#0a141e', '#ffffff', '#46505a'] },
+      "a colour set by hand is no longer the tag's",
+    );
+    const unknown = await controlled(api, coloured, { tag: 'ETC' });
+    assert.deepEqual(
+      unknown.country,
+      { colours: ['#0a141e', '#ffffff', '#46505a'] },
+      'a tag whose colours are not known leaves the colour boxes as they were',
+    );
+    const flg = await controlled(api, coloured, { tag: 'FLG' });
+    assert.deepEqual(flg.country?.colours, ['#105090', '#f0d010', '#105090']);
+    assert.ok(
+      (flg.drawn?.mean[2] ?? 0) > 2 * (flg.drawn?.mean[0] ?? 0),
+      `the flag's blue primary colour is drawn: ${String(flg.drawn?.mean)}`,
+    );
+    await vscode.commands.executeCommand('workbench.action.closeAllEditors');
 
     // The tint map, decoded through the playset: RGBA, top row first.
     const decoded = await treeMap(files, TREE_TINT);

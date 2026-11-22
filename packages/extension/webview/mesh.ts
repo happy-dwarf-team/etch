@@ -12,7 +12,8 @@
 // ambient 0.2 and intensity 1.2; the normal map in tangent space (RGB - 0.5, green flipped,
 // bitangent `cross(n, ta.xyz) * ta.w`); a Blinn-Phong highlight (exponent 10, times 2) scaled by
 // the specular map's alpha times 2 and added; for `PdxMeshColor`, the specular map's R, G and B
-// mask the country's three colours; for `PdxMeshTextureAtlas` (a ship's sails, a map flag), the
+// mask the country's three colours (the colour boxes, which a tag in the Country box fills with
+// that country's colours as the host finds them); for `PdxMeshTextureAtlas` (a ship's sails, a map flag), the
 // diffuse map's alpha blends in the diffuse colour times the country's flag, sampled with the
 // second texture coordinates (`u1`). A colonial nation's region colour (the Region box), as the
 // game's `AtlasHalfColor`, takes the flag's far half (u1's u over 0.5) and the tertiary colour's
@@ -469,6 +470,15 @@ let camera: OrbitCamera = { yaw: FRAMED_YAW, pitch: FRAMED_PITCH, distance: 10, 
 let region: string | undefined;
 /** The flag on `PdxMeshTextureAtlas` parts: a tag's, or none for the country colours' stripes. */
 let flag: { tag: string; texture: WebGLTexture; source: string } | undefined;
+/**
+ * The Country box's tag whose colours the colour boxes hold, with where each came from; undefined
+ * when the colours are the defaults or set by hand.
+ */
+let countryOf: { tag: string; from: readonly string[] } | undefined;
+/** The tag last asked for, so that Enter in the Country box asks again for the same tag. */
+let askedTag = '';
+/** Whether a `controls` message waits for the host's answer to the Country box's tag. */
+let tagControls = false;
 
 /** Whether the camera has framed a mesh yet: a reload keeps the user's view. */
 let framed = false;
@@ -670,6 +680,8 @@ function upload(
 /** The warnings of the drawn mesh or entity, and why the flag asked for is not shown. */
 let warningLines: string[] = [];
 let flagProblem: string | undefined;
+/** Why the Country box's tag gives no colours. */
+let colourProblem: string | undefined;
 
 function showWarnings(warnings: ReadonlySet<string>, problems: readonly string[] = []): void {
   warningLines = [];
@@ -679,9 +691,11 @@ function showWarnings(warnings: ReadonlySet<string>, problems: readonly string[]
 }
 
 function showErrorBox(): void {
+  const parts = instances.flatMap((i) => i.parts);
   const lines = [
     warningLines,
-    flagProblem ?? [],
+    parts.some((d) => d.atlas) ? (flagProblem ?? []) : [],
+    parts.some((d) => d.countryColours) ? (colourProblem ?? []) : [],
     tintProblem ?? [],
     seasonProblem ?? [],
     treeSeasonsProblem ?? [],
@@ -1160,6 +1174,13 @@ function summary(): MeshSummary {
   if (atlasParts > 0) base = { ...base, flag: { parts: atlasParts, tag: flag?.tag } };
   const regionParts = parts.filter((d) => d.atlas || d.countryColours).length;
   if (regionParts > 0 && region !== undefined && tree === undefined) base = { ...base, region };
+  if (parts.some((d) => d.countryColours)) {
+    const [primary = '', secondary = '', tertiary = ''] = colourInputs.map(([, i]) => i.value);
+    base = {
+      ...base,
+      country: { tag: countryOf?.tag, colours: [primary, secondary, tertiary] },
+    };
+  }
   const levels = [...new Set(instances.flatMap(levelsOf))].sort((a, b) => a - b);
   if (levels.length > 0) {
     const from = instances
@@ -1224,6 +1245,11 @@ function summary(): MeshSummary {
   };
 }
 
+/** Where a colour came from, for the bar: a `common/country_colors` file's name, or `flag`. */
+function shortSource(from: string): string {
+  return from === 'the flag' ? 'flag' : (from.split('/').pop() ?? from);
+}
+
 function showFacts(): void {
   const s = summary();
   const parts = instances.flatMap(drawnParts);
@@ -1259,6 +1285,13 @@ function showFacts(): void {
   if (s.flag !== undefined) {
     items.push(
       flag === undefined ? 'flag: the country colours' : `flag: ${flag.tag} (${flag.source})`,
+    );
+  }
+  if (s.country !== undefined) {
+    items.push(
+      countryOf === undefined
+        ? 'colours: set by hand'
+        : `colours: ${countryOf.tag} (${[...new Set(countryOf.from.map(shortSource))].join(', ')})`,
     );
   }
   if (s.lod !== undefined && s.lod.levels.length > 1) {
@@ -1332,7 +1365,7 @@ function show(
   }
   showWarnings(warnings, problems);
   colours.hidden = !instances.some((i) => i.parts.some((d) => d.countryColours || d.atlas));
-  flagLabel.hidden = !instances.some((i) => i.parts.some((d) => d.atlas));
+  flagLabel.hidden = colours.hidden;
   regionLabel.hidden = colours.hidden;
   snowLabel.hidden = tree === undefined && !instances.some((i) => i.parts.some((d) => d.snow));
   tintLabel.hidden = tree === undefined || tint === undefined;
@@ -1445,6 +1478,7 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
         distance,
         frame,
         skeleton,
+        tag: countryTag,
       } = message.controls;
       if (frame !== undefined) goToFrame(frame);
       if (skeleton !== undefined) setSkeleton(skeleton);
@@ -1471,6 +1505,8 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
         if (value === undefined) continue;
         input.value = value;
         country[key] = hexColour(value);
+        // As a colour box changed by hand: the colours are no longer the tag's.
+        countryOf = undefined;
       }
       if (snow !== undefined) {
         snowAmount = snow;
@@ -1498,6 +1534,14 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
         // The answer comes with the host's reply.
         placeControls = true;
         return;
+      }
+      if (countryTag !== undefined) {
+        flagInput.value = countryTag;
+        if (askCountry()) {
+          // The answer comes with the host's reply.
+          tagControls = true;
+          return;
+        }
       }
       render(performance.now());
       vscode.postMessage({ type: 'shown', summary: { ...summary(), drawn: drawnColour(gl) } });
@@ -1537,10 +1581,21 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
       flagProblem = message.texture.ok
         ? undefined
         : `Flag ${message.tag}: ${message.texture.message}`;
-      showErrorBox();
-      showFacts();
-      redraw();
-      vscode.postMessage({ type: 'shown', summary: summary() });
+      if (message.colours.ok) {
+        // The tag's colours fill the colour boxes; a box changed by hand after this is the user's.
+        message.colours.colours.forEach((value, i) => {
+          const [key, input] = colourInputs[i] ?? [];
+          if (key === undefined || input === undefined) return;
+          input.value = value;
+          country[key] = hexColour(value);
+        });
+        countryOf = { tag: message.tag, from: message.colours.from };
+        colourProblem = undefined;
+      } else {
+        // The colour boxes keep their colours, and the bar where they came from.
+        colourProblem = `Country ${message.tag}: ${message.colours.message}`;
+      }
+      countryShown();
     } else if (message.type === 'animation') {
       animations.set(message.name, readAnimation(Uint8Array.from(message.bytes)));
       play(message.name);
@@ -1820,7 +1875,14 @@ function hexColour(value: string): number[] {
 for (const [key, input] of colourInputs) {
   input.addEventListener('input', () => {
     country[key] = hexColour(input.value);
+    if (countryOf !== undefined) {
+      countryOf = undefined;
+      showFacts();
+    }
     redraw();
+  });
+  input.addEventListener('change', () => {
+    vscode.postMessage({ type: 'shown', summary: summary() });
   });
 }
 
@@ -1835,20 +1897,47 @@ for (const input of [regionOn, regionInput]) {
   });
 }
 
-flagInput.addEventListener('change', () => {
+/**
+ * Asks the host for the Country box's tag: its flag and its colours. False when the box holds no
+ * tag: the flag is then off and the colour boxes keep their colours.
+ */
+function askCountry(): boolean {
   const tag = flagInput.value.trim().toUpperCase();
   flagInput.value = tag;
+  askedTag = tag;
   if (/^[A-Z0-9]{3}$/.test(tag)) {
     vscode.postMessage({ type: 'flag', tag });
-    return;
+    return true;
   }
   if (flag !== undefined) gl?.deleteTexture(flag.texture);
   flag = undefined;
-  flagProblem = tag === '' ? undefined : `Flag ${tag}: a country tag has three letters or digits`;
+  const problem = tag === '' ? undefined : `${tag}: a country tag has three letters or digits`;
+  flagProblem = problem === undefined ? undefined : `Flag ${problem}`;
+  colourProblem = problem === undefined ? undefined : `Country ${problem}`;
+  return false;
+}
+
+/** Shows what the Country box's tag gave, and answers a `controls` message waiting for it. */
+function countryShown(): void {
   showErrorBox();
   showFacts();
+  if (gl !== null && tagControls) {
+    tagControls = false;
+    render(performance.now());
+    vscode.postMessage({ type: 'shown', summary: { ...summary(), drawn: drawnColour(gl) } });
+    return;
+  }
   redraw();
   vscode.postMessage({ type: 'shown', summary: summary() });
+}
+
+flagInput.addEventListener('change', () => {
+  if (!askCountry()) countryShown();
+});
+// Enter asks again for the same tag, which gives its colours back after a hand change.
+flagInput.addEventListener('keydown', (event) => {
+  if (event.key !== 'Enter' || flagInput.value.trim().toUpperCase() !== askedTag) return;
+  if (!askCountry()) countryShown();
 });
 
 wireButton.addEventListener('click', () => {

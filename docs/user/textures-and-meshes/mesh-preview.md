@@ -70,21 +70,55 @@ diffuse, normal".
 A part with the `PdxMeshColor` shader takes a country's colours, such as a unit's uniform or a
 ship's sails. Its specular map marks where: its red channel for the first colour, its green
 channel for the second and its blue channel for the third. For such a mesh, three colour boxes
-show in the bar. Pick colours there to see the model in another country's colours.
+and a **Country** box show in the bar above the model.
+
+To see the model in a country's colours:
+
+1. Type the country's tag in **Country**, such as `SWE`, and press <kbd>Enter</kbd>.
+2. The three colour boxes change to that country's colours, and the model is drawn in them. The
+   bar says where the colours came from, such as `colours: SWE (00_country_colors.txt)`.
+
+Etch finds the colours in your [playset](../reference/glossary.md#playset) the way the game does:
+
+- A country with an entry in `common/country_colors` takes its `color1`, `color2` and `color3`
+  from there. Write them in that order. The game does not read a colour written out of order,
+  such as a `color1` after `color2`, and Etch then takes that colour from the flag.
+- Each colour the entry does not give comes from the country's flag, `gfx/flags/SWE.tga`. The bar
+  then says `(flag)`. The game picks them like this:
+  1. The first colour is the one that covers most of the flag.
+  2. The second is the most common colour that is far from the first: it differs from the first
+     by about two thirds of the way from black to white, or more, in red, in green or in blue.
+  3. The third is the most common colour far from both. If it covers a tenth of what the first
+     covers, or less, the third colour is the first colour again.
+
+  A flag with one colour gives white as the second colour. The game also rounds each colour to
+  one of eight steps for red, green and blue, so the colour differs a little from the flag's
+  pixels: a flag's blue `0 82 147` becomes `16 80 144`.
+
+When Etch cannot find a country's colours, a message under the bar says why, and the colour boxes
+keep their colours. That happens for a tag that is not in your playset's `common/country_tags`,
+such as a colonial nation the game makes during play (`C00`). It also happens when the entry does
+not give all three colours and the country has no `.tga` flag.
+
+You can also pick colours in the boxes yourself. The bar then says `colours: set by hand`. The tag
+stays in **Country**, so a ship's sails keep its flag (see [Flag](#flag)). To get the tag's colours
+back, press <kbd>Enter</kbd> in **Country**.
 
 ## Flag
 
-A part with the `PdxMeshTextureAtlas` shader shows a country's flag, as on vanilla's ships and the
-flags on the map. The alpha of its colour texture (what **A** shows in the
+A part with the `PdxMeshTextureAtlas` shader shows a country's flag, such as a ship's sails or a
+flag on the map. The alpha of its colour texture (what **A** shows in the
 [texture preview](texture-preview.md)) marks where the flag goes.
 
-Type a country tag in **Flag**, such as `SWE`, to see that country's flag from your playset:
-`gfx/flags/SWE.tga`. With **Flag** empty, the part shows the three colours of the colour boxes as
-stripes instead.
+Type a country tag in **Country**, such as `SWE`, to see that country's flag from your playset:
+`gfx/flags/SWE.tga`. The same tag sets the colour boxes, as above. With **Country** empty, the part
+shows the three colours of the colour boxes as three stripes.
 
-**Region** shows a colonial nation's flag and colours as the game shows them. Type the overlord's
-tag in **Flag**, then tick **Region**, or pick a colour in the box beside it. The right half of the
-flag takes that colour, and `PdxMeshColor` parts take it in place of their third colour.
+**Region** shows a colonial nation's flag and colours as the game shows them: the game draws a
+colonial nation's flag as its overlord's flag with the right half in the colour of the colony's
+region. Type the overlord's tag in **Country**, then tick **Region**, or pick a colour in the box
+beside it. The right half of the flag takes that colour, and `PdxMeshColor` parts take it in place
+of their third colour.
 
 ## Levels of detail
 
@@ -186,6 +220,10 @@ To open a mesh with another viewer, run **View: Reopen Editor With…** from the
 - It offers only the animations in the mesh's own folder. Vanilla keeps its soldiers' animations
   in `gfx/models/Units/animation`: to play them, open the unit's entity instead (see
   [Entities](entities.md)).
-- A flag, and a map tree's colours, come from your playset. When Etch does not find the game (see
-  [Where Etch finds the game](../getting-started/finding-the-game.md)), the preview shows no flag
-  and draws a map tree as a plain mesh.
+- Flags, country colours and a map tree's colours come from your playset. If Etch does not find
+  the game (see [Where Etch finds the game](../getting-started/finding-the-game.md)), the preview
+  shows no flag, the colour boxes do not change for a tag, and a map tree is drawn as a plain
+  mesh.
+- Etch shows the colours a country starts the game with, from your files. It does not show
+  colours the game gives a country during play, such as a revolutionary country's or a custom
+  nation's.
