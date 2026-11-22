@@ -33,7 +33,7 @@ them have at least one profiled root, 38 and 34 only profiled roots.
 | --- | --- | --- | --- |
 | Live texts, profiled windows | 100 % | 100.0 % on every playset and resolution | yes |
 | Live visibility | 100 % | 100.0 % on every set but vanilla at 1920×1080: 99.96 % (9900 of 9904), the 4 buttons of `peace_view`'s text scrollbar; with etch#608, 100.00 % (10076 of 10076) | with etch#608 |
-| Geometry offline, with the profiles | 100 % | vanilla 1920×1080 99.15 % (28 of 3312 rects off; 27 with etch#612), vanilla 1280×720 99.42 % (15), Anbennar 1920×1080 99.44 % (18; 17 with etch#611), Anbennar 1280×720 99.63 % (8), Verne 1920×1080 99.38 % (21), Verne 1280×720 99.51 % (13) | no |
+| Geometry offline, with the profiles | 100 % | vanilla 1920×1080 99.15 % (28 of 3312 rects off), vanilla 1280×720 99.42 % (15), Anbennar 1920×1080 99.44 % (18), Anbennar 1280×720 99.63 % (8), Verne 1920×1080 99.38 % (21), Verne 1280×720 99.51 % (13). With etch#611–etch#615, measured on their branches: vanilla 1920×1080 99.28 % (24), vanilla 1280×720 99.49 % (13), Anbennar 1920×1080 99.53 % (15), Anbennar 1280×720 99.67 % (7); Verne not measured again | no |
 | Known deviations with an issue and consent | every difference | three proposed, etch#604, etch#605, etch#606; consent not given | no |
 
 The geometry row reads "the outline offline" of section 3 as the outline with the profiles'
@@ -48,9 +48,11 @@ What the geometry left on `main` is, by kind (vanilla and Verne at 1920×1080):
   description, the main menu's version and continue texts, the ages view, institutions, parliament,
   the peace view, Anbennar's magic menu and achievements): the most rects, all heights only. Proposed
   as a known deviation, etch#604.
-- **Widgets the game's code sizes or moves from a value**: the estates' development pie chart and
-  crown land modifier icons, the patriarch authority marker, the selected map mode button. Proposed
-  as a known deviation, etch#606, each still open to a fix.
+- **Widgets the game's code sizes or moves from a value**: the estates' crown land modifier icons
+  (the modifier's sprite) and the selected map mode button (the player's map mode in that slot).
+  Proposed as a known deviation, etch#606, each still open to a fix. The development pie chart
+  (etch#614, `chartSize`) and the patriarch authority marker (etch#615, `slider`) are fixed; the
+  marker's value text is at its place, with the height of a text the code fills (etch#604).
 - **Building slots**: how many a province has and which can build now (visibility, not rects). Proposed
   as a known deviation, etch#605.
 - **Single rects**, fixed since: Anbennar's achievements background, which the preview anchored by

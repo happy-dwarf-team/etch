@@ -619,6 +619,18 @@ Two offline rects are fixed too:
   `secondary_religion_icon` and moves `religion_icon` 18 px down. The capture is Russia's. With
   the profiles, vanilla at 1920×1080 goes from 28 to 27 rects off, and Bigger UI gains one too.
 
+Two more follow what eu4.exe's code does with a value, each a new rule effect:
+
+- **The estates view's development pie chart** (etch#614, `chartSize`): eu4.exe gives the chart
+  32 × 32 around the same centre (`0xF28230`). One rect fewer in each estates view, in the preview,
+  with the profiles and live; with the profiles Anbennar at 1920×1080 goes from 17 to 15 rects off.
+- **The patriarch authority's marker** (etch#615, `slider`): the religion view hands the country's
+  authority to a slider function (`0x1488BC0`) that places the marker between the two ends, and its
+  value beside it. Russia's authority is 1, and the marker stands at the game's 211, 422 in the 4
+  Russian religion views (vanilla and Bigger UI, both sizes). The value's text box is at the
+  game's place too, but 18 px high against the game's 36: the game writes "100%", two lines in
+  32 px, which the preview does not write (the heights of etch#604).
+
 One fix is in the measure itself: in the main menu's settings views, the game holds a second
 `menu_settings` and keeps it hidden. The preview measure drew it only once (etch#378), but the
 measure with the profiles still drew it twice, one visibility failure in each of 10 views
