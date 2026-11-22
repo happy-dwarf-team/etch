@@ -318,7 +318,7 @@ const SPRITE_WIDGETS = new Set([
 const BUTTONS = new Set(['guiButtonType', 'checkboxType', 'buttonType']);
 const TEXT_BOXES = new Set(['instantTextBoxType', 'textBoxType', 'editBoxType']);
 const LISTS = new Set(['listboxType', 'smoothListboxType']);
-/** How far `CLedger::UpdateSpreadSheet` keeps a column of numbers' entry from its right edge. */
+/** How far the ledger's table code (eu4.exe 1.37.5 `0x118CFF0`) keeps a column of numbers' entry from its right edge. */
 const TABLE_MARGIN = 20;
 /** Boxes the game's code fills; the `.gui` gives only their rect. */
 const CODE_FILLED_BOXES = new Set(['gridBoxType', 'OverlappingElementsBoxType']);
@@ -861,7 +861,7 @@ class Layout {
 
   /**
    * The entries of a table across a window (a repeater's `place.table`), as
-   * `CLedger::UpdateSpreadSheet` (eu4.exe 1.37.5 `0x118CFF0`) puts the ledger's sort buttons: the unit
+   * the code at eu4.exe 1.37.5 `0x118CFF0` puts the ledger's sort buttons: the unit
    * is the window's width over the weights, cut; each column is its weight in units wide, after the
    * ones before it. An entry stands at its column's start, in a column of numbers at its right edge
    * less the entry's width less 20 px (the code's constant at `0x14233E838`, 20 in every capture).
@@ -937,7 +937,7 @@ class Layout {
 
   /**
    * The entries sample data puts in an `OverlappingElementsBoxType` (the core shields of
-   * `cores_box`, the province modifiers), side by side as `COverlappingElementsBox::UpdateGraphics`
+   * `cores_box`, the province modifiers), side by side as the code at eu4.exe 1.37.5 `0x163D060`
    * places them (`eu4.exe` 1.37.5 `0x163D060`; the format and spacing as its type's `ReadMember`,
    * `0x15EBF80`, reads them):
    *
@@ -1171,7 +1171,7 @@ class Layout {
 
   /**
    * Where the game's code puts this instance of a row's widget, as
-   * `CGameSetup::RefreshShortcutShields` puts the bookmark shields: the first at the row's start,
+   * The lobby's code (GOG 1.37.5.2 `0x111C740`) puts the bookmark shields: the first at the row's start,
    * from the lower center of the screen less half the row, each further one a step on.
    */
   private rowPoint(
@@ -1352,7 +1352,7 @@ class Layout {
   }
 
   /**
-   * What the window's size step adds, verified in `CCountrySubjectsView::SetupLargeOrHuge`: the `y`
+   * What the window's size step adds, verified in the subjects view's size step (GOG 1.37.5.2 `0xF4ECC0`): the `y`
    * of the `_huge` step from its height, else of the `_large` step from its height, else 0.
    */
   private stepIncrement(): number {
@@ -1605,7 +1605,7 @@ class Layout {
    * A `maskedShieldType`: the overlay, `textureFile1`, at its own size times `scale` (hypothesis),
    * over the flag of the country code picks, when a live snapshot names it.
    *
-   * Verified in eu4.exe 1.37.5 (`CMaskedSpriteType::InitForDevice`, `CShieldObject::Render`): the
+   * Verified in eu4.exe 1.37.5 (the masked sprite's set-up and the shield's drawing): the
    * flag is drawn whole into a quad the size of the mask, `textureFile2`, which keeps the mask's
    * alpha, half the difference of the overlay's and the mask's sizes in from the overlay's corner;
    * the overlay is drawn over it. A shield without a known flag draws only its overlay.
@@ -2106,7 +2106,7 @@ function capitalise(text: string): string {
 
 /**
  * An entry's offset along a bar `width` pixels wide at `share` of it, as
- * `CProfessionalismMarker`'s constructor computes it (eu4.exe 1.37.5 `0xFAC8B0`): the share in the
+ * The marker's constructor computes it (eu4.exe 1.37.5 `0xFAC8B0`): the share in the
  * game's fixed point (1/32768, as a script's `0.2` reads), in thousandths cut, times the width
  * in thousandths, cut to whole pixels. A bar of 483 px puts 0.2 … 1.0 at 96, 192, 289, 385 and
  * 483, as the coverage survey's captures show.

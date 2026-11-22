@@ -5,7 +5,7 @@
  *
  * - A script file (`climate`, `region`, …) is read through the game's lexer, which writes
  *   `CLexer failed to load file map/<name>` to `error.log`, keeps no file and then reads from it:
- *   the game crashes about 16 s after it starts (an access violation in `CTextLexer::GetTok`).
+ *   the game crashes about 16 s after it starts (an access violation in the lexer).
  * - A table or a bitmap (`definitions`, `adjacencies`, `rivers`, …) is opened as a file that must
  *   exist: `error.log` gets "File exception: … Could not open file: map/<name>" and the load stops
  *   there, without a crash or a main menu.

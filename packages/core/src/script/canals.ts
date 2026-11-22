@@ -1,10 +1,10 @@
 /**
  * The canals of `map/default.map` (`canal_definition = { name = … x = … y = … }`) that stop the
  * game loading the map or write outside its canal map when they are built. When it loads the map,
- * `CMap::ReadCanalBitmaps` opens `map/<name>_river.bmp` for every canal definition; without the
+ * the game opens `map/<name>_river.bmp` for every canal definition; without the
  * file it throws a file exception, and the load stops at "Initializing Maplogic..." with
  * `Could not open file` in `error.log` (the EU4 engine lab, `bmtest-r17`, 19.11.2026). When a canal
- * is built (`add_canal`), `CMap::ApplyCanal` copies the canal's bitmap into a bitmap of the river
+ * is built (`add_canal`), the game copies the canal's bitmap into a bitmap of the river
  * map's size at `x`, `y` (its bottom left corner) without a check: a canal that does not fit writes
  * past the map's edge, and past the bitmap's end or before its start (Suez's 64 × 64 bitmap at
  * `y = 2040` on vanilla's 2048 rows faulted the game when an event built it, and at vanilla's

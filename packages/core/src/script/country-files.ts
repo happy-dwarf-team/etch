@@ -1,9 +1,9 @@
 /**
  * The country files of `common/country_tags` (`SWE = "countries/Sweden.txt"`) that no layer of the
- * playset has. `CCountryDataBase::ReadCountryFiles` reads each tag's file below `common/` through
+ * playset has. The game reads each tag's file below `common/` through
  * the game's lexer while the game starts, with no test that the file exists: a missing one leaves
  * `CLexer failed to load file common/countries/<name>` in `error.log`, and the game crashes about
- * 20 s after it starts, before the main menu (an access violation in `CPersistent::Read`; the EU4
+ * 20 s after it starts, before the main menu (an access violation; the EU4
  * engine lab, `bmtest-r36`, 19.11.2026). One of the lab's Workshop mods, run alone, crashes
  * that way on a tag whose file it does not ship.
  *
@@ -11,7 +11,7 @@
  * script files as Windows-1252: a path with other than ASCII characters is not checked, so that a
  * name such as `Jötunnheim.txt` written in UTF-8 is not taken for a missing file.
  *
- * `CCountryDataBase::AppendFromFile` reads the files in name order and keeps the first file of a
+ * The game reads the files in name order and keeps the first file of a
  * tag: a tag defined again, in the same file or a later one, is left out with `Duplicate Country
  * Tag - <tag>` in `error.log`, and its file is not read (`bmtest-r38`). Such a tag is reported as a
  * duplicate and its file is not checked. A key of other than three characters is left out without
@@ -75,7 +75,7 @@ export interface CountryHistoryFile {
 }
 
 /**
- * The tags the game needs in `common/country_tags`: without one, `CCountryDataBase::AppendFromFile`
+ * The tags the game needs in `common/country_tags`: without one, the game
  * logs `Missing <tag> country tag` and stops the game (`bmtest-r40`).
  */
 export const REQUIRED_COUNTRY_TAGS: readonly string[] = ['PIR', 'NAT', 'REB'];
@@ -116,7 +116,7 @@ export function countryTagsMissing(missing: readonly string[]): CountryTagsMissi
 
 /**
  * What the game logs about a country file a tag names, once it has read them all
- * (`CCountryDataBase`, `0x283D20`, `countrydatabase.cpp` lines 0x10A to 0x113; `bmtest-r42`):
+ * (`0x283D20`; `bmtest-r42`):
  * a file without `color`, without `monarch_names` entries, or with fewer than 10 `leader_names`
  * or `ship_names`. The game goes on; its random leaders and ships draw from the lists it has.
  */
@@ -239,7 +239,7 @@ export function readCountryFiles(
 
 /**
  * The tag a `history/countries` file is read for: the first three characters of its name, upper
- * cased, as `CHistoryDataBase::LoadDatabase` looks it up. `undefined` for another path.
+ * cased, as the game looks it up. `undefined` for another path.
  */
 export function countryHistoryTag(path: string): string | undefined {
   const match = /^history\/countries\/([^/]+)\.txt$/i.exec(path.replace(/\\/g, '/'));
@@ -249,7 +249,7 @@ export function countryHistoryTag(path: string): string | undefined {
 
 /**
  * A warning for a mod's `history/countries` file whose tag also has one of the game's own history
- * files (`histories`, by tag). `CHistoryDataBase::LoadDatabase` reads every file of the folder
+ * files (`histories`, by tag). The game reads every file of the folder
  * whose tag is a country into that country's history, so the game reads both: a mod's
  * `SWE - My Sweden.txt` does not replace vanilla's `SWE - Sweden.txt`, which only a file of the
  * same name, or `replace_path`, does (`bmtest-r41`). Files with the game's names are not reported
@@ -299,8 +299,8 @@ export interface CountryHistoryMissingDiagnostic extends SourceRange {
 /**
  * The tags a parsed `common/country_tags` file defines first (`firsts`, from `firstCountryTags`)
  * that no `history/countries` file of the playset is read for (`histories`, by tag). After reading
- * the folder, `CHistoryDataBase::LoadDatabase` logs a line such as `ZZE - ZZE is missing a history file.` in
- * `error.log` for each such country and goes on (`history.cpp`, `bmtest-r42`). Vanilla has a file
+ * the folder, the game logs a line such as `ZZE - ZZE is missing a history file.` in
+ * `error.log` for each such country and goes on (`bmtest-r42`). Vanilla has a file
  * for each of its tags; a mod that adds tags without files has many (1032 tags of one Workshop mod),
  * which is why the playset check sums them up per mod.
  */
