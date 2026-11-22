@@ -1,14 +1,16 @@
 # How far the v3 gate is (22 November 2026)
 
-The distance from `main` (`f8d3f4e`, the content of 2.14.0) to the 3.0.0 gate of the
-[v3 specification](spec/v3.md), section 3. No new measurement was made for this page: the game
-lock was taken by other work. The figures are the last ones recorded: the generated tables of 11
-November and the hand-written ones of 12 November in
-[coverage-results.md](coverage-results.md). Since then 198 commits landed, most of them editor
-features and checks, but some touch what the gate measures: the live snapshot draws what the
-game's code set and re-anchors its rects (etch#560, etch#562, etch#563), and sample data and
-scripted selectors changed (etch#489, etch#410–etch#423). So the figures are an estimate, not a
-measurement of `main`.
+The distance from `main` to the 3.0.0 gate of the [v3 specification](spec/v3.md), section 3,
+measured on 22 November 2026: the rules of `main` (`438543f`, the content of 2.14.0) run under the
+lab's game lock over the stored captures of the coverage survey (3 November, Tongs 0.23), the
+fresh Anbennar captures of Verne (11 November, Tongs 0.26.1) and the two Anbennar countries held
+out (Bluescale and Kobildzan). The generated tables of [coverage-results.md](coverage-results.md)
+are from this run; its section "The measure of 22 November 2026" has the rest.
+
+No capture was taken again for this page: the figures are `main`'s rules on the captures the
+survey already has. One set could not be measured: the Workshop's P2KE Patch - Anbennar changed on
+15 November and no longer matches the hash its playset pins, so the Anbennar playset with Proper 2K
+UI Enhanced and P2KE at 2560×1440 is left out until it is pinned and captured again (gap 2).
 
 ## What the gate asks
 
@@ -27,12 +29,12 @@ them have at least one profiled root, 38 and 34 only profiled roots.
 
 ## Where `main` stands
 
-| Measure | Target | Last recorded | Met |
+| Measure | Target | Measured on `main`, 22 November | Met |
 | --- | --- | --- | --- |
-| Live texts, profiled windows | 100 % | 100.0 % on every playset and resolution (11 Nov) | yes |
-| Live visibility | 100 % | Anbennar 100.0 % on every set; vanilla 1920×1080 99.9 % (9 widgets), 1280×720 100.0 % (11–12 Nov) | almost |
-| Geometry offline, with the profiles | 100 % | Verne 1920×1080 99.2 % (29 rects left), Verne 1280×720 99.3 % (19), vanilla 1920×1080 98.8 % (42), Anbennar with Proper 2K UI Enhanced and P2KE at 2560×1440 98.5 % (68) (12 Nov) | no |
-| Known deviations with an issue and consent | every difference | none recorded for the survey | no |
+| Live texts, profiled windows | 100 % | 100.0 % on every playset and resolution | yes |
+| Live visibility | 100 % | 100.0 % on every set but vanilla at 1920×1080: 99.96 % (9900 of 9904), the 4 buttons of `peace_view`'s text scrollbar; with etch#608, 100.00 % (10076 of 10076) | with etch#608 |
+| Geometry offline, with the profiles | 100 % | vanilla 1920×1080 99.15 % (28 of 3312 rects off; 27 with etch#612), vanilla 1280×720 99.42 % (15), Anbennar 1920×1080 99.44 % (18; 17 with etch#611), Anbennar 1280×720 99.63 % (8), Verne 1920×1080 99.38 % (21), Verne 1280×720 99.51 % (13) | no |
+| Known deviations with an issue and consent | every difference | three proposed, etch#604, etch#605, etch#606; consent not given | no |
 
 The geometry row reads "the outline offline" of section 3 as the outline with the profiles'
 rules (measure 4 of [coverage.md](coverage.md)), as the results do for profiled windows. Read
@@ -40,32 +42,47 @@ literally as measure 1 (the outline without any profile, 81–88 % of rects), th
 met: the profiles exist because positions depend on the game's state. The maintainer should
 confirm the reading before the gate run.
 
+What the geometry left on `main` is, by kind (vanilla and Verne at 1920×1080):
+
+- **Heights of texts the game's code fills** (the confirmation dialogs, the lobby's scenario
+  description, the main menu's version and continue texts, the ages view, institutions, parliament,
+  the peace view, Anbennar's magic menu and achievements): the most rects, all heights only. Proposed
+  as a known deviation, etch#604.
+- **Widgets the game's code sizes or moves from a value**: the estates' development pie chart and
+  crown land modifier icons, the patriarch authority marker, the selected map mode button. Proposed
+  as a known deviation, etch#606, each still open to a fix.
+- **Building slots**: how many a province has and which can build now (visibility, not rects). Proposed
+  as a known deviation, etch#605.
+- **Single rects**, fixed since: Anbennar's achievements background, which the preview anchored by
+  its own orientation where the game puts it at the window's corner (etch#610, etch#611), and the
+  lobby's `religion_icon`, which eu4.exe moves 18 px down for a country without a secondary
+  religion (etch#612).
+- **Outside the profiled windows**, reported, not gated: `diplomessageicons_window` (at 0, 0 in the
+  game), `outliner/outliner_bottom`, the war overview, Anbennar's `tributary_shield`.
+
 ## What is missing, with a rough estimate
 
 Estimates are in agent sessions of about half a day each, and in game lock batches of about an
-hour. They are guesses from the pace of 10–12 November, not plans.
+hour. They are guesses, not plans.
 
 | # | Gap | Kind | Estimate |
 | --- | --- | --- | --- |
-| 1 | **A fresh survey of `main`**: the generated tables are from 11 November; the gate needs one run of `coverage` over captures taken with the current Tongs and Anvil, at 1920×1080 and 1280×720, vanilla and Anbennar. | measurement | 1 session, 2–3 lock batches |
-| 2 | **Built building slots**: Tongs reports a built slot as hidden while the game draws it (`RebuildAllBuildingEntries`, 12 November), so live visibility is 100 % against a wrong reference. Needs a Tongs fix (visibility from the render node), a Tongs release, a pin in Etch, and the captures taken again. No Tongs issue exists yet. | bug in Tongs | 2–3 sessions, plus Tongs' release cadence |
-| 3 | **Vanilla's live visibility** at 1920×1080: `peace_view`'s slider button (4), the settings' `page` selector (3), the religion view's `religionPanel` (2). | profiles | 1 session |
-| 4 | **Geometry the profiles can fix**: the ledger's columns in Proper 2K UI Enhanced (the game's list is 24 px narrower than its file, 11 rects), the patriarch authority marker, which most likely moves with its value (4 views), the estates' modifier icons (32 or 38 px against 48), `dev_share_pie_chart`, `custom_mapmode_7` (42 × 32). Most need the game's code read first. | profiles, code reading | 3–5 sessions |
-| 5 | **Geometry the preview cannot know offline**: sizes of texts the game's code fills (`DefaultConfirm`'s `Description`, the lobby's `scenario_description`, Anbennar's magic menu) and a province's number of building slots, which the save does not hold. These become known deviations, each with an issue. | issues | 1 session |
-| 6 | **The maintainer's consent** to the list of known deviations (5, and whatever 1 finds). | decision | the maintainer's time |
-| 7 | **Views of profiled windows not yet captured**: the country views on the emperor, the Pope's controller and a colonial nation (14, 14 and 17 views whose Russian recipes fail), the country shield behind Anbennar's lobby, and the 1280×720 captures the manifest lists without a record (vanilla 25, Anbennar 19). Section 3 lets the other countries' views into the gate once their window has a profile, and most of theirs have one (a reading for the maintainer to confirm). | recipes, lock batches | 2–3 sessions, 2–3 lock batches |
-| 8 | **The release**: the media refresh, `Release-As: 3.0.0`, the website and the copies of `docs/team-touchpoints.md` (eu4-engine-lab#109). | release | 1–2 sessions |
+| 1 | **Captures with the current Tongs and Anvil**: the figures above are `main`'s rules on captures of 3 and 11 November (Tongs 0.23 and 0.26.1). The gate run needs captures taken with the pinned Tongs, at 1920×1080 and 1280×720, vanilla and Anbennar, on a new capture host. A current Tongs also reports sprites, which could turn some of etch#606 into fixes. | measurement | 1–2 sessions, 2–3 lock batches |
+| 2 | **P2KE Patch - Anbennar changed on 15 November**: pin its new hash in `corpus/manifest.json` and capture the playset at 2560×1440 again; its ledger columns were 24 px off before (the game's list is narrower than its file). | pin, lock batch | 1 session, 1 lock batch |
+| 3 | **Built building slots**: Tongs reports a built slot as hidden while the game draws it, so live visibility is 100 % against a wrong reference (29 vanilla failures offline). happy-dwarf-team/tongs#242; then a Tongs release, a pin in Etch, and captures taken again. | bug in Tongs | 2–3 sessions, plus Tongs' release cadence |
+| 4 | **The maintainer's consent** to the proposed deviations etch#604, etch#605, etch#606, or a fix for any of them. | decision | the maintainer's time |
+| 5 | **Views of profiled windows not yet captured**: the country views on the emperor, the Pope's controller and a colonial nation (14, 14 and 17 views whose Russian recipes fail), the country shield behind Anbennar's lobby, and the 1280×720 captures the manifest lists without a record (vanilla 25, Anbennar 19). Section 3 lets the other countries' views into the gate once their window has a profile, and most of theirs have one (a reading for the maintainer to confirm). | recipes, lock batches | 2–3 sessions, 2–3 lock batches |
+| 6 | **The release**: the media refresh, `Release-As: 3.0.0`, the website and the copies of `docs/team-touchpoints.md` (eu4-engine-lab#109). | release | 1–2 sessions |
 
-Total: about 11–17 sessions and 5–7 lock batches, with one Tongs release in the middle.
+Total: about 8–12 sessions and 5–7 lock batches, with one Tongs release in the middle.
 
 ## Is 3.0.0 the next release after 2.14.0?
 
 No. With at most one release per repository every three days, the release after 2.14.0 can go out
-about three days later, and the gate needs more work than that: a fresh survey (1), a Tongs fix and
-release (2) and the maintainer's consent (6) are on the critical path, and the lock is shared with
-the other projects' batches. A realistic target is the second or third release after 2.14.0, if the
-work starts with 1 and 2 at once. Until then, the releases between can carry the profile fixes of 3
-and 4, which help users whether or not the gate holds.
+about three days later, and the gate needs more than that: captures with the current Tongs (1), a
+Tongs fix and release (3) and the maintainer's consent (4) are on the critical path, and the lock is
+shared with the other projects' batches. A realistic target is the second release after 2.14.0, if
+1, 2 and 3 start at once.
 
 Open question for the maintainer, before 1: which views count as "of a profiled window" when a view
 has profiled and unprofiled roots (18 of vanilla's 56, 15 of Anbennar's 49): the whole view, or only
