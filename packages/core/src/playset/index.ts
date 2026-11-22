@@ -40,3 +40,14 @@ export {
   type ScriptValues,
 } from './script-values.ts';
 export { loadEntityIndex, loadPdxMeshTypes } from './entities.ts';
+export {
+  COUNTRY_COLOUR_KEYS,
+  flagColours,
+  hexOf,
+  loadCountryColours,
+  readCountryColours,
+  type CountryColourEntry,
+  type CountryColourTable,
+  type Rgb,
+} from './country-colours.ts';
+export { loadCountryTags } from './script-values.ts';

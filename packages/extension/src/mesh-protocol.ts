@@ -33,6 +33,15 @@ export interface MeshSummary {
   /** When `PdxMeshTextureAtlas` parts are drawn: how many, and the flag on them. */
   readonly flag?: FlagSummary;
   /**
+   * When `PdxMeshColor` parts are drawn: the three country colours in the colour boxes
+   * (`#rrggbb`), and the Country box's tag when they are that tag's (`undefined` when they are
+   * the defaults or set by hand).
+   */
+  readonly country?: {
+    readonly tag: string | undefined;
+    readonly colours: readonly [string, string, string];
+  };
+  /**
    * The Region colour (`#rrggbb`) when it is on and a `PdxMeshColor` or `PdxMeshTextureAtlas`
    * part shows it: a colonial nation's region colour, which the game draws on the flag's far half
    * and in place of the tertiary colour.
@@ -167,6 +176,11 @@ export interface MeshControls {
    * clear it. The preview answers once the host has looked the place up.
    */
   readonly place?: number | null;
+  /**
+   * The Country box: a tag, whose flag and colours the host looks up (the preview answers once it
+   * has), or `''` to clear it.
+   */
+  readonly tag?: string;
   /** The LOD box: a level, or `auto` for the level the camera's distance gives. */
   readonly lod?: number | 'auto';
   /** The camera's distance from the point it orbits, in the drawn space's units. */
@@ -197,6 +211,19 @@ export interface FlagSummary {
   /** The tag whose `gfx/flags` flag is drawn, or `undefined` for the country colours' stripes. */
   readonly tag: string | undefined;
 }
+
+/**
+ * A country's three colours (`color1` to `color3`, as `#rrggbb`) as the game picks them, with
+ * where each came from: a `common/country_colors` file's game path, or `the flag` for a colour
+ * the game takes from `gfx/flags/<TAG>.tga`; or why they cannot be known.
+ */
+export type MeshCountryColours =
+  | {
+      readonly ok: true;
+      readonly colours: readonly [string, string, string];
+      readonly from: readonly [string, string, string];
+    }
+  | { readonly ok: false; readonly message: string };
 
 export interface EntitySummary {
   readonly name: string;
@@ -252,7 +279,10 @@ export interface EntityNode {
 export type MeshWebviewMessage =
   | { readonly type: 'ready' }
   | { readonly type: 'animation'; readonly name: string }
-  /** The flag of a country tag for `PdxMeshTextureAtlas` parts. */
+  /**
+   * A country tag typed in the Country box: its flag for `PdxMeshTextureAtlas` parts and its
+   * colours for `PdxMeshColor` parts.
+   */
   | { readonly type: 'flag'; readonly tag: string }
   /** A map tree's place: the province ID typed in the Place box. */
   | { readonly type: 'place'; readonly province: number }
@@ -281,7 +311,12 @@ export type MeshHostMessage =
       readonly seasons: MeshTreeSeasons | undefined;
     }
   | { readonly type: 'animation'; readonly name: string; readonly bytes: Uint8Array }
-  | { readonly type: 'flag'; readonly tag: string; readonly texture: MeshTexture }
+  | {
+      readonly type: 'flag';
+      readonly tag: string;
+      readonly texture: MeshTexture;
+      readonly colours: MeshCountryColours;
+    }
   | { readonly type: 'place'; readonly province: number; readonly place: MeshPlace }
   /** Sets the controls, draws a frame and answers `shown` with `drawn` (for Etch's tests). */
   | { readonly type: 'controls'; readonly controls: MeshControls }

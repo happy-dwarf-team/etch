@@ -4,8 +4,10 @@
 // (a bare name is in the mesh's folder, as vanilla keeps them: through the playset when the mesh is
 // in one of its layers, so a mod's texture wins over the game's, else on disk beside the mesh; a
 // `.tga` name also tries `.dds`), and lists the `.anim` files beside it whose joints name the mesh's
-// bones. A `PdxMeshTextureAtlas` part (a ship's sails) shows a country's flag: the webview asks
-// for a tag's `gfx/flags/<TAG>.tga` and the host decodes it through the playset. For a map tree
+// bones. A country tag (the Country box) gives `PdxMeshColor` parts the country's three colours and
+// `PdxMeshTextureAtlas` parts (a ship's sails) its flag: the webview asks for a tag, and the host
+// decodes its `gfx/flags/<TAG>.tga` through the playset and looks up its colours
+// (`countryColours`). For a map tree
 // the host also sends the playset's tint and season maps (`map/terrain/Tree_tint.bmp`,
 // `Tree_season.bmp`). The webview script
 // (`dist/mesh-webview.js`, from `webview/mesh.ts`) parses the mesh with `@etch/core/asset`, draws
@@ -34,12 +36,22 @@ import {
   type PdxMesh,
   type PdxMeshType,
 } from '@etch/core/asset';
-import { loadPdxMeshTypes, type GameFiles } from '@etch/core/playset';
+import {
+  COUNTRY_COLOUR_KEYS,
+  flagColours,
+  hexOf,
+  loadCountryColours,
+  loadCountryTags,
+  loadPdxMeshTypes,
+  type GameFiles,
+  type Rgb,
+} from '@etch/core/playset';
 import { inspectTexture } from '@etch/renderer/inspect';
 import { layerFolder } from './asset-links.ts';
 import type {
   MeshAnimationEntry,
   MeshControls,
+  MeshCountryColours,
   MeshHostMessage,
   MeshPlace,
   MeshSummary,
@@ -175,6 +187,56 @@ export async function flagTexture(tag: string, files: GameFiles | undefined): Pr
     }
   }
   return { ok: false, message: `no gfx/flags/${tag}.tga in the playset` };
+}
+
+/**
+ * A country tag's three colours as the game picks them (`@etch/core/playset`'s
+ * `country-colours.ts`): what the playset's `common/country_colors` files give the tag, and each
+ * colour they do not give from the tag's flag, `gfx/flags/<TAG>.tga` (the game takes only a
+ * `.tga` flag's colours). Not known for a tag the playset's `common/country_tags` does not define,
+ * or when a colour is missing and the flag is not there.
+ */
+export async function countryColours(
+  tag: string,
+  files: GameFiles | undefined,
+): Promise<MeshCountryColours> {
+  if (!TAG.test(tag)) return { ok: false, message: `"${tag}" is not a country tag` };
+  if (files === undefined) {
+    return { ok: false, message: 'the colours come from the playset: set etch.gamePath' };
+  }
+  if (!(await loadCountryTags(files)).has(tag)) {
+    return {
+      ok: false,
+      message: `colours not known: the playset's common/country_tags has no ${tag}`,
+    };
+  }
+  const entry = (await loadCountryColours(files)).tags.get(tag);
+  const colours: (Rgb | undefined)[] = [...(entry?.colours ?? [undefined, undefined, undefined])];
+  const from: string[] = (entry?.files ?? [undefined, undefined, undefined]).map(
+    (file) => file ?? 'the flag',
+  );
+  const missing = COUNTRY_COLOUR_KEYS.filter((_, i) => colours[i] === undefined);
+  if (missing.length > 0) {
+    const flag = await files.find(`gfx/flags/${tag}.tga`);
+    const unknown = (why: string): MeshCountryColours => ({
+      ok: false,
+      message: `colours not known: common/country_colors gives ${tag} no ${missing.join(', ')}, and ${why}`,
+    });
+    if (flag === undefined) return unknown(`there is no gfx/flags/${tag}.tga in the playset`);
+    let rgba: Uint8Array;
+    try {
+      rgba = inspectTexture(flag.absolutePath, await read(flag.absolutePath)).rgba;
+    } catch (error) {
+      return unknown(
+        `gfx/flags/${tag}.tga cannot be read: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+    const fromFlag = flagColours(rgba);
+    for (let i = 0; i < 3; i++) colours[i] ??= fromFlag[i];
+  }
+  const [c1, c2, c3] = colours.map((c) => hexOf(c ?? [255, 255, 255]));
+  const [f1 = '', f2 = '', f3 = ''] = from;
+  return { ok: true, colours: [c1 ?? '', c2 ?? '', c3 ?? ''], from: [f1, f2, f3] };
 }
 
 /** The map's tint map of its trees, which `gfx/FX/tree.shader` takes as `TintMap`. */
@@ -529,10 +591,12 @@ class MeshPreviewProvider implements vscode.CustomReadonlyEditorProvider<MeshDoc
           };
           await webview.postMessage(reply);
         } else if (message.type === 'flag') {
+          const files = await this.playset();
           const reply: MeshHostMessage = {
             type: 'flag',
             tag: message.tag,
-            texture: await flagTexture(message.tag, await this.playset()),
+            texture: await flagTexture(message.tag, files),
+            colours: await countryColours(message.tag, files),
           };
           await webview.postMessage(reply);
         } else if (message.type === 'shown') {
@@ -651,13 +715,13 @@ export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): str
   <button id="play" aria-pressed="false" title="Play or pause the animation" hidden>Play</button>
   <input type="range" id="frame" min="0" max="0" step="1" value="0" title="Animation frame. Drag to pick a frame; the animation plays on when you let go if it was playing. With the slider selected, the left and right arrow keys step one frame; the comma and full stop keys do too, anywhere in the preview." aria-label="Animation frame" hidden>
   <select id="lod" title="Level of detail: which of the mesh's levels (its shapes' lod property) to draw; the facts give the camera distance the mesh's loddist starts it at" aria-label="Level of detail" hidden></select>
-  <span id="colours" title="The country colours a PdxMeshColor part shows (the specular map's R, G and B mask them), and the stripes a PdxMeshTextureAtlas part shows with no flag tag" hidden>
+  <span id="colours" title="The country colours a PdxMeshColor part shows (the specular map's R, G and B mask them), and the stripes a PdxMeshTextureAtlas part shows with no country tag; a tag in the Country box fills them" hidden>
     <input type="color" id="primary" value="#bf291f" aria-label="Primary country colour">
     <input type="color" id="secondary" value="#ebe0bf" aria-label="Secondary country colour">
     <input type="color" id="tertiary" value="#264d99" aria-label="Tertiary country colour">
   </span>
-  <label id="flag" title="The flag a PdxMeshTextureAtlas part (a ship's sails) shows: a country tag's gfx/flags flag, or with no tag the three country colours as stripes" hidden>
-    Flag <input id="flag-tag" size="4" maxlength="3" spellcheck="false" placeholder="TAG" aria-label="Country tag of the flag">
+  <label id="flag" title="A country tag: its colours fill the colour boxes, as the game picks them (color1 to color3 from common/country_colors, the rest from the tag's gfx/flags flag), and a PdxMeshTextureAtlas part (a ship's sails) shows its flag; with no tag the sails show the three colours as stripes" hidden>
+    Country <input id="flag-tag" size="4" maxlength="3" spellcheck="false" placeholder="TAG" aria-label="Country tag">
   </label>
   <label id="region" title="A colonial nation's region colour: the game draws its overlord's flag with the far half (where the flag's u is over 0.5) in this colour, and puts it in place of the tertiary colour on PdxMeshColor parts; off for other countries" hidden>
     Region <input type="checkbox" id="region-on" aria-label="Show a colonial region colour"> <input type="color" id="region-colour" value="#3f8f4f" aria-label="Colonial region colour">
