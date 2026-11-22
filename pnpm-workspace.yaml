@@ -3,3 +3,7 @@ packages:
 allowBuilds:
   '@vscode/vsce-sign': false
   esbuild: true
+overrides:
+  # @vscode/vsce 4.1.1 still asks for minimatch ^10.2.6, which has GHSA-g3hv-75wg-m249 (fixed in
+  # 11.0.1, with no 10.x fix). Remove this once vsce asks for ^11 itself.
+  '@vscode/vsce>minimatch': ^11.0.9

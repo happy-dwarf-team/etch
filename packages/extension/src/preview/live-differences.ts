@@ -28,7 +28,7 @@ export class LiveDifferences implements vscode.CodeActionProvider, vscode.Dispos
   private readonly collection = vscode.languages.createDiagnosticCollection('etch-live-compare');
   /** By file, then by window name in lower case. */
   private readonly byFile = new Map<string, Map<string, WindowEntries>>();
-  private readonly disposables: vscode.Disposable[] = [];
+  private readonly disposables: { dispose(): unknown }[] = [];
 
   private readonly versions: () => ReportVersions;
 
