@@ -71,6 +71,8 @@ export interface WidgetState {
   readonly frame?: number;
   /** The sprite the game's code sets in place of the `.gui` one. */
   readonly sprite?: string;
+  /** The size the game's code gives a chart in place of its sprite's. */
+  readonly chartSize?: { readonly width: number; readonly height: number };
   /** What a country view's size step does to it: moved down, or made taller (etch#274). */
   readonly stepped?: 'moved' | 'grown';
   /** Pixels it moves further than the size step, when a step applies. */
@@ -170,6 +172,11 @@ export function evaluateView(
     }
     for (const ref of rule.sprite ?? []) {
       for (const w of widgetsAt(window, ref.path)) update(w, { sprite: ref.sprite });
+    }
+    for (const ref of rule.chartSize ?? []) {
+      for (const w of widgetsAt(window, ref.path)) {
+        update(w, { chartSize: { width: ref.width, height: ref.height } });
+      }
     }
     for (const ref of rule.offset) {
       for (const w of widgetsAt(window, ref.path)) update(w, { offset: { x: ref.x, y: ref.y } });
@@ -370,6 +377,7 @@ export function layoutViewOf(view: WindowView): LayoutView {
     movedAxis: (widget) => view.widgets.get(widget)?.positionAxis,
     frame: (widget) => view.widgets.get(widget)?.frame,
     sprite: (widget) => view.widgets.get(widget)?.sprite,
+    chartSize: (widget) => view.widgets.get(widget)?.chartSize,
     stepped: (widget) => view.widgets.get(widget)?.stepped,
     steppedFurther: (widget) => view.widgets.get(widget)?.steppedFurther,
     row: (widget) => view.widgets.get(widget)?.row,

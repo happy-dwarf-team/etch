@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   layoutWindow,
   parseScript,
+  readGfxFile,
   readGuiFile,
   type LayoutInput,
   type Widget,
@@ -778,6 +779,54 @@ describe("the lobby's religion icons", () => {
     expect(icons('none')).toEqual({ main: [148, 44], secondary: undefined });
     expect(icons('school')).toEqual({ main: [148, 44], secondary: undefined });
     expect(icons('secondary')).toEqual({ main: [148, 26], secondary: [160, 84] });
+  });
+});
+
+describe("the estates view's development pie chart", () => {
+  const file = readGuiFile(
+    parseScript(`guiTypes = {
+  windowType = {
+    name = "countryestatesview"
+    size = { x = 600 y = 600 }
+    iconType = { name = "dev_share_pie_chart" spriteType = "GFX_ledger_piechart_default" position = { x = 50 y = 55 } }
+  }
+}`),
+  );
+  const window = file.definitions[0] as Widget;
+  const gfx = readGfxFile(
+    parseScript(
+      `spriteTypes = { PieChartType = { name = "GFX_ledger_piechart_default" size = 128 } }`,
+    ),
+  );
+  const written = readProfile(
+    readFileSync(
+      new URL('../../../profiles/vanilla/countryestatesview.jsonc', import.meta.url),
+      'utf8',
+    ),
+    { layer: 0, source: 'vanilla', file: 'countryestatesview.jsonc' },
+  );
+
+  it('is 32 × 32 as eu4.exe sizes it, around the same centre', () => {
+    expect(written.diagnostics).toEqual([]);
+    const profile = layerProfiles(
+      'countryestatesview',
+      written.file === undefined ? [] : [written.file],
+    );
+    const view = evaluateView(profile, window, LARGE, {});
+    const layout = layoutWindow(window, {
+      file,
+      index: InterfaceIndex.of(
+        [{ path: 'interface/ledger.gfx', file: gfx }],
+        [{ path: 'interface/countryestatesview.gui', file }],
+      ),
+      exists: () => false,
+      assets: { textureSize: () => undefined, font: () => undefined },
+      screen: LARGE,
+      view: layoutViewOf(view),
+    });
+    const chart = layout.widgets.find((w) => w.widget.name === 'dev_share_pie_chart');
+    // The chart's centre, the lower left corner, stays at 50, 183.
+    expect(chart && [chart.x, chart.y, chart.width, chart.height]).toEqual([50, 151, 32, 32]);
   });
 });
 

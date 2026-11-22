@@ -113,6 +113,11 @@ export interface Rule extends Written {
    */
   readonly sprite?: readonly (PathRef & { readonly sprite: string })[];
   /**
+   * The size the game's code gives a chart in place of its sprite's `size`: the estates view's
+   * development pie chart, 32 × 32 where its `PieChartType` says 128.
+   */
+  readonly chartSize?: readonly (PathRef & { readonly width: number; readonly height: number })[];
+  /**
    * Widgets the game's code moves by a number of pixels from where they would be, with no
    * `positionType` to name: the diplomacy view's labels, 20 px left without a religion icon.
    */

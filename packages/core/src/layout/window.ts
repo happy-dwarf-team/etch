@@ -216,6 +216,8 @@ export interface LayoutView {
   frame(widget: Widget): number | undefined;
   /** The sprite the game's code sets in place of the `.gui` one, drawn without size variants. */
   sprite?(widget: Widget): string | undefined;
+  /** The size the game's code gives a chart in place of its sprite's `size`. */
+  chartSize?(widget: Widget): Extent | undefined;
   /**
    * What a country view's size step does to the widget: `moved` down, or `grown` taller, by the
    * `y` of the step the screen height reaches (etch#274).
@@ -1635,7 +1637,10 @@ class Layout {
    * quarter, and the slices run counter-clockwise from the right.
    */
   private drawPie(sprite: Sprite, x: number, y: number, source: number): Extent | undefined {
-    const extent = chartSize(sprite.properties);
+    // A profile's `chartSize`: the size the game's code gives the chart (the estates view's).
+    const extent =
+      (this.current === undefined ? undefined : this.input.view?.chartSize?.(this.current)) ??
+      chartSize(sprite.properties);
     const live =
       this.current === undefined
         ? undefined
