@@ -72,4 +72,18 @@ describe('replacePathWarnings', () => {
     ]);
     expect(warnings).toEqual([]);
   });
+
+  it('reads a replace_path written with backslashes or doubled separators', async () => {
+    const warnings = await replacePathWarnings([mod('a', ['\\interface//assets\\']), mod('b', [])]);
+    expect(warnings.map((w) => w.message)).toEqual([
+      expect.stringContaining('a: interface/assets/sprites.gfx'),
+    ]);
+  });
+
+  it('reads a replace_path in time linear in a long run of separators', async () => {
+    // Not /^\/+|\/+$/, which is quadratic in a run that does not end the path (CodeQL js/polynomial-redos).
+    const started = performance.now();
+    expect(await replacePathWarnings([mod('a', [`a${'/'.repeat(100_000)}b`])])).toEqual([]);
+    expect(performance.now() - started).toBeLessThan(250);
+  });
 });

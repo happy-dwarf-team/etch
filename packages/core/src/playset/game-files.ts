@@ -125,6 +125,11 @@ export class GameFiles {
       .map(([, path]) => path);
   }
 
+  /** Whether a mod's `replace_path` hides the game's (the first layer's) files directly in `dir`. */
+  replacesGameFolder(dir: string): boolean {
+    return this.firstVisibleLayer(normalizeDir(dir)) > 0;
+  }
+
   private firstVisibleLayer(dir: string): number {
     const key = dir.toLowerCase();
     for (let i = this.layers.length - 1; i > 0; i--) {

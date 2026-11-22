@@ -32,8 +32,9 @@ export async function replacePathWarnings(mods: readonly Mod[]): Promise<Playset
   const diagnostics: PlaysetDiagnostic[] = [];
   for (const [index, mod] of mods.entries()) {
     for (const written of mod.replacePaths) {
-      const folder = written.replaceAll('\\', '/').replace(/^\/+|\/+$/g, '');
-      const parts = folder.split('/').filter((p) => p !== '');
+      // A split, not /^\/+|\/+$/, which is quadratic in a long run of '/' that does not end the path.
+      const parts = written.split(/[\\/]+/).filter((p) => p !== '');
+      const folder = parts.join('/');
       const root = parts[0]?.toLowerCase();
       const extensions = root === undefined ? undefined : RECURSIVE_ROOTS.get(root);
       if (extensions === undefined || parts.length < 2) continue;

@@ -303,6 +303,20 @@ describe('script values of a playset', () => {
     expect(own?.countryHistories?.get('SWE')).toEqual([
       { path: 'history/countries/SWE - My Sweden.txt', game: false },
     ]);
+
+    // Written as GameFiles reads it: with backslashes and a doubled separator, it replaces too.
+    const written = new GameFiles([
+      { name: 'game', root: join(root, 'game'), replacePaths: [] },
+      { name: 'Mod', root: join(root, 'mod'), replacePaths: ['history\\\\countries\\'] },
+    ]);
+    const writtenOwn = await loadScriptNames(written);
+    expect(writtenOwn?.countryHistories?.get('SWE')).toEqual([
+      { path: 'history/countries/SWE - My Sweden.txt', game: false },
+    ]);
+    // No game file is read, so the mod's file of a game file's name is not the game's.
+    expect(writtenOwn?.countryHistories?.get('DAN')).toEqual([
+      { path: 'history/countries/dan - denmark.txt', game: false },
+    ]);
   });
 
   it("warns about a mod's province history beside the game's, summed up per mod", async () => {
