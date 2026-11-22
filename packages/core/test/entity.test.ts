@@ -4,6 +4,7 @@ import {
   mapTreeOf,
   readAssetFile,
   readPdxMeshTypes,
+  readPdxParticleTypes,
   resolveEntity,
 } from '../src/asset/index.ts';
 import { parseScript } from '../src/index.ts';
@@ -20,6 +21,7 @@ const GFX = `objectTypes = {
     animation = { id = "idle" type = "soldier_idle_animation" } }
   pdxmesh = { name = "spear_mesh" file = "gfx/models/units/spear.mesh" scale = 0.5 }
   pdxmesh = { name = "flag_mesh" file = "gfx/models/units/flag.mesh" }
+  pdxparticle = { name = "musket_flash" type = "musket_smoke" scale = 0.8 }
 }
 spriteTypes = { spriteType = { name = "GFX_x" texturefile = "gfx/x.dds" } }`;
 
@@ -28,7 +30,7 @@ const UNITS = `entity = {
   pdxmesh = "soldier_mesh"
   state = { name = "idle" animation = "idle" }
   state = { name = "walk" animation = "walk" }
-  state = { name = "death" event = { time = 0.25 node = "muzzle" particle = "musket_smoke" } event = { particle = "dust" } }
+  state = { name = "death" event = { time = 0.25 node = "muzzle" particle = "musket_flash" } event = { particle = "dust" } }
   attach = { name = "weapon" Right_hand_node = "spear" }
   attach = { Back_node = "flag" }
 }
@@ -62,6 +64,7 @@ function index(): EntityIndex {
       readAssetFile(parseScript(ANIMATIONS), 'gfx/models/units/animation/animation.asset'),
       readAssetFile(parseScript(PARTICLES), 'gfx/particles/musket_smoke.asset'),
     ],
+    [readPdxParticleTypes(parseScript(GFX), 'interface/units.gfx')],
   );
 }
 
@@ -100,6 +103,20 @@ describe('readPdxMeshTypes and readAssetFile', () => {
     );
     expect(particles).toEqual(['musket_smoke', 'dust_cloud']);
   });
+
+  it('reads pdxparticle types with their particle system and scale, beside pdxmesh types', () => {
+    const types = readPdxParticleTypes(parseScript(GFX), 'interface/units.gfx');
+    expect(types.map((t) => [t.name, t.type, t.scale, t.at.path, t.at.node?.text])).toEqual([
+      ['musket_flash', 'musket_smoke', 0.8, 'interface/units.gfx', 'musket_flash'],
+    ]);
+    expect(readPdxMeshTypes(parseScript(GFX), 'interface/units.gfx')).toHaveLength(4);
+    expect(
+      readPdxParticleTypes(
+        parseScript('objectTypes = { pdxparticle = { type = "x" } pdxparticle = { name = "y" } }'),
+        'interface/p.gfx',
+      ).map((t) => [t.name, t.type, t.scale]),
+    ).toEqual([['y', undefined, undefined]]);
+  });
 });
 
 describe('mapTreeOf', () => {
@@ -129,7 +146,7 @@ describe('resolveEntity', () => {
     const soldier = resolveEntity(index(), 'soldier');
     expect(soldier?.mesh).toBe('gfx/models/units/soldier.mesh');
     expect(soldier?.scale).toBe(0.5);
-    expect(soldier?.states).toEqual([
+    expect(soldier?.states).toMatchObject([
       {
         name: 'idle',
         file: 'gfx/models/units/animation/soldier_idle.anim',
@@ -143,7 +160,7 @@ describe('resolveEntity', () => {
         problem: undefined,
         // A state's particle events, with or without a time and a bone.
         events: [
-          { time: 0.25, node: 'muzzle', particle: 'musket_smoke' },
+          { time: 0.25, node: 'muzzle', particle: 'musket_flash' },
           { time: undefined, node: undefined, particle: 'dust' },
         ],
       },
@@ -154,8 +171,53 @@ describe('resolveEntity', () => {
       ['weapon', 'Right_hand_node', 'spear', 'gfx/models/units/spear.mesh'],
       [undefined, 'Back_node', 'flag', 'gfx/models/units/flag.mesh'],
     ]);
-    // "musket_smoke" is defined in a particle file, "dust" nowhere.
-    expect(soldier?.problems).toEqual(['state death: no particle "dust" in the .asset files']);
+    // "musket_flash" is a pdxparticle type drawing the system "musket_smoke", "dust" nothing.
+    expect(
+      soldier?.states[2]?.events.map((e) => [e.particle, e.pdxparticle?.name, e.system]),
+    ).toEqual([
+      ['musket_flash', 'musket_flash', 'musket_smoke'],
+      ['dust', undefined, undefined],
+    ]);
+    expect(soldier?.problems).toEqual(['state death: no pdxparticle "dust" in the .gfx files']);
+  });
+
+  it('starts a particle system only through a pdxparticle type, as the game does', () => {
+    const gfx = `objectTypes = {
+      pdxmesh = { name = "gun_mesh" file = "gfx/models/gun.mesh" }
+      pdxparticle = { name = "flash" type = "flash_system" }
+      pdxparticle = { name = "smoke" type = "no_system" scale = 2 }
+      pdxparticle = { name = "bare" }
+    }`;
+    const asset = `entity = { name = "gun" pdxmesh = "gun_mesh"
+      state = { name = "fire" event = { particle = "flash" } event = { particle = "flash_system" }
+        event = { particle = "smoke" } event = { particle = "bare" } event = { particle = "gun_mesh" } }
+      state = { name = "again" event = { particle = "flash_system" } }
+    }
+    particle = { name = "flash_system" }`;
+    const gun = resolveEntity(
+      EntityIndex.of(
+        [readPdxMeshTypes(parseScript(gfx), 'interface/gun.gfx')],
+        [readAssetFile(parseScript(asset), 'gfx/gun.asset')],
+        [readPdxParticleTypes(parseScript(gfx), 'interface/gun.gfx')],
+      ),
+      'gun',
+    );
+    expect(gun?.states[0]?.events.map((e) => [e.particle, e.system])).toEqual([
+      ['flash', 'flash_system'],
+      ['flash_system', undefined],
+      ['smoke', undefined],
+      ['bare', undefined],
+      ['gun_mesh', undefined],
+    ]);
+    // A particle system's own name, or a pdxmesh's, is no pdxparticle type: the game logs
+    // `Couldn't find particle 3D object`. A type naming no system is logged when the .gfx loads.
+    expect(gun?.problems).toEqual([
+      'state fire: no pdxparticle "flash_system" in the .gfx files',
+      'state fire: pdxparticle "smoke" names no particle "no_system" in the .asset files',
+      'state fire: pdxparticle "bare" names no particle system (no type)',
+      'state fire: no pdxparticle "gun_mesh" in the .gfx files',
+      'state again: no pdxparticle "flash_system" in the .gfx files',
+    ]);
   });
 
   it('applies a clone, then the entity: its mesh, scale, states and attach groups by name', () => {

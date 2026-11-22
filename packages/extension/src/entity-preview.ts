@@ -15,6 +15,7 @@ import {
   readMesh,
   resolveEntity,
   type ResolvedEntity,
+  type ResolvedEvent,
 } from '@etch/core/asset';
 import { loadEntityIndex, type GameFiles } from '@etch/core/playset';
 import { keyOf } from '@etch/core';
@@ -97,6 +98,20 @@ async function locate(
   }
 }
 
+/**
+ * The particle system an event's pdxparticle type draws, in words, after the event's name: the
+ * system where its name is not the type's, and the type's scale (vanilla's `siege_cannon` is
+ * ` (artillery_cannon, scale 0.8)`); empty for an event that resolves to nothing.
+ */
+function systemOf(event: ResolvedEvent): string {
+  if (event.system === undefined || event.pdxparticle === undefined) return '';
+  const words = [
+    ...(event.system === event.particle ? [] : [event.system]),
+    ...(event.pdxparticle.scale === undefined ? [] : [`scale ${String(event.pdxparticle.scale)}`]),
+  ];
+  return words.length === 0 ? '' : ` (${words.join(', ')})`;
+}
+
 /** Everything the webview needs to draw an entity, read through the playset. */
 async function entityMessage(
   entity: ResolvedEntity,
@@ -137,7 +152,9 @@ async function entityMessage(
         if (event.particle === undefined) continue;
         const where = event.node === undefined ? '' : ` on ${event.node}`;
         const when = event.time === undefined ? '' : ` at ${String(event.time)} s`;
-        (particles[state.name] ??= []).push(`${node.name}: ${event.particle}${where}${when}`);
+        (particles[state.name] ??= []).push(
+          `${node.name}: ${event.particle}${systemOf(event)}${where}${when}`,
+        );
       }
       if (state.file !== undefined) animationPaths.add(state.file);
       if (state.problem !== undefined)
@@ -236,6 +253,7 @@ class EntityPreviews {
     const own = readAssetFile(parseScript(text), gamePath);
     const merged = new EntityIndex();
     for (const [key, value] of index.pdxmeshes) merged.pdxmeshes.set(key, value);
+    for (const [key, value] of index.pdxparticles) merged.pdxparticles.set(key, value);
     for (const [key, value] of index.entities) merged.entities.set(key, value);
     for (const [key, value] of index.animations) merged.animations.set(key, value);
     for (const particle of index.particles) merged.particles.add(particle);

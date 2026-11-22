@@ -46,6 +46,8 @@ describe.skipIf(gamePath === undefined)('entities of the installed game', () => 
     };
     const missingBones = new Set<string>();
     const problems = new Map<string, number>();
+    /** Each event particle of a top-level entity's states, with its system and scale. */
+    const events = new Map<string, number>();
     const walk = (entity: ResolvedEntity, top: boolean): void => {
       if (top) {
         stats.entities++;
@@ -57,6 +59,13 @@ describe.skipIf(gamePath === undefined)('entities of the installed game', () => 
           problems.set(kind, (problems.get(kind) ?? 0) + 1);
         }
         stats.problems += entity.problems.length;
+        for (const state of entity.states) {
+          for (const event of state.events) {
+            if (event.particle === undefined) continue;
+            const key = `${event.particle} → ${event.system ?? '(none)'} × ${String(event.pdxparticle?.scale ?? 1)}`;
+            events.set(key, (events.get(key) ?? 0) + 1);
+          }
+        }
       }
       const mesh = entity.mesh === undefined ? undefined : meshOf(entity.mesh);
       const bones = new Set(mesh?.shapes.flatMap((s) => s.skeleton.map((b) => b.name)));
@@ -72,18 +81,16 @@ describe.skipIf(gamePath === undefined)('entities of the installed game', () => 
       const entity = resolveEntity(index, name);
       if (entity !== undefined) walk(entity, true);
     }
-    // EU4 1.37.5 names two particles no .asset file of the game folder defines:
-    // "devastation_smoke_particle" in two devastation states of "westerngfx_city_0" and the 32
-    // entities that clone it, and "siege_cannon" in the siege cannon's idle state.
-    expect(Object.fromEntries(problems)).toEqual({
-      'state devastation_4: no particle … in the .asset files': 33,
-      'state devastation_5: no particle … in the .asset files': 33,
-      'state idle: no particle … in the .asset files': 1,
-    });
+    // EU4 1.37.5: every state event's particle is a pdxparticle type whose `type` names a
+    // particle system. Etch 2.14 and earlier looked the name up among the systems and reported
+    // 67 problems here: "devastation_smoke_particle" in two devastation states of
+    // "westerngfx_city_0" and the 32 entities that clone it, and "siege_cannon" in the siege
+    // cannon's idle state (the systems "siege_smoke_particle" at scale 3.5 and
+    // "artillery_cannon" at 0.8).
+    expect(Object.fromEntries(problems)).toEqual({});
     expect([...missingBones].slice(0, 10)).toEqual([]);
     // EU4 1.37.5: every entity has a mesh once its clone is applied, every state animation
-    // resolves to an .anim, and every attachment's bone is in the mesh's skeleton; the only
-    // problems are the particles above.
+    // resolves to an .anim, and every attachment's bone is in the mesh's skeleton.
     expect(stats).toEqual({
       entities: 1523,
       withMesh: 1523,
@@ -91,7 +98,23 @@ describe.skipIf(gamePath === undefined)('entities of the installed game', () => 
       statesWithAnimation: 4601,
       attachments: 1411,
       bonesFound: 1411,
-      problems: 67,
+      problems: 0,
+    });
+    // The 577 particle events of the resolved states (clones included), by pdxparticle type,
+    // system and scale (1 where the type has none): all 11 types of vanilla's
+    // interface/assets/particles.gfx and robot_particles.gfx, two of them under another name.
+    expect(Object.fromEntries(events)).toEqual({
+      'artillery_cannon → artillery_cannon × 1.2': 33,
+      'devastation_smoke_particle → siege_smoke_particle × 3.5': 66,
+      'musket_muzzle → musket_muzzle × 1': 13,
+      'musket_smoke_residue → musket_smoke_residue × 1': 2,
+      'musket_trigger_smoke → musket_trigger_smoke × 1': 2,
+      'robot_rifle_laser_muzzle → robot_rifle_laser_muzzle × 1': 11,
+      'ship_cannon → ship_cannon × 1': 151,
+      'siege_cannon → artillery_cannon × 0.8': 1,
+      'siege_smoke_particle → siege_smoke_particle × 2': 264,
+      'smith_sparks → smith_sparks × 1': 1,
+      'white_smoke_particle → white_smoke_particle × 2': 33,
     });
   });
 
