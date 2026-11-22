@@ -117,9 +117,21 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
   // The normal map (tilted along x) and the specular map's highlight change what is drawn.
   const withMaps = await measure(api, mesh, {});
   assert.ok(withMaps.pixels > 0, 'the mesh is drawn');
-  const withoutMaps = await measure(api, mesh, { maps: false });
-  assert.notDeepEqual(withoutMaps.mean, withMaps.mean, `Maps off: ${String(withoutMaps.mean)}`);
-  assert.deepEqual(await measure(api, mesh, { maps: true }), withMaps);
+  // Each map on its own: Normal, Spec and Diffuse off each change it, and all on again draws as
+  // before.
+  const noNormal = await measure(api, mesh, { maps: { normal: false } });
+  assert.notDeepEqual(noNormal.mean, withMaps.mean, `Normal off: ${String(noNormal.mean)}`);
+  const noMaps = await measure(api, mesh, { maps: { specular: false } });
+  assert.notDeepEqual(noMaps.mean, noNormal.mean, `Normal and Spec off: ${String(noMaps.mean)}`);
+  const grey = await measure(api, mesh, { maps: { diffuse: false } });
+  assert.notDeepEqual(grey.mean, noMaps.mean, `all off: ${String(grey.mean)}`);
+  // The plain grey (0.72) is far lighter than the dark blue diffuse texture.
+  assert.ok(
+    grey.mean[0] > noMaps.mean[0] + 40,
+    `grey without the diffuse map: ${String(grey.mean)}`,
+  );
+  const allOn = { maps: { diffuse: true, normal: true, specular: true } };
+  assert.deepEqual(await measure(api, mesh, allOn), withMaps);
   // The webview posts no `animation` key before one plays: postMessage drops `undefined`.
   const { animation, ...rest } = shown.summary;
   assert.equal(animation, undefined);
@@ -133,6 +145,7 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
     normalMapped: 1,
     specularMapped: 1,
     animations: ['flag_wave.anim'],
+    maps: { diffuse: true, normal: true, specular: true },
     textures: {
       'flag_diffuse.dds': 'beside the mesh',
       'flag_normal.dds': 'beside the mesh',
@@ -195,6 +208,9 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
   );
   // A region colour takes the tertiary colour's place only: the primary mask is not touched.
   assert.deepEqual(await measure(api, coloured, { region: '#ff0000' }), blue);
+  // Without the specular map the masks go: the white quad is drawn white, not blue.
+  const unmasked = await measure(api, coloured, { maps: { specular: false } });
+  assert.ok(spread(unmasked) < 8, `no country colour without Spec: ${String(unmasked.mean)}`);
   await vscode.commands.executeCommand('workbench.action.closeAllEditors');
   // The same quad with a specular map that masks the tertiary colour (B) everywhere.
   await writeFile(path.join(folder, 'tertiary_mask.dds'), dds(2, 2, [255, 0, 0, 0]));

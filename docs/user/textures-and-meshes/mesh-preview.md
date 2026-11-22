@@ -41,9 +41,25 @@ The bar also counts the mesh's collision shapes, as "collision (hidden)".
 | Mouse wheel                          | Zooms in and out.                                         |
 | **Reset view**                       | Turns the model back as it opened and fits all of it in.  |
 | **Wire**                             | Shows the edges of its triangles as lines over the model. |
-| **Maps**                             | Turns the normal and specular maps off and on.            |
+| **Diffuse**                          | Turns the colour texture off and on.                      |
+| **Normal**                           | Turns the normal map off and on.                          |
+| **Spec**                             | Turns the specular map off and on.                        |
 
 More controls show only when the mesh has the parts they work on. The sections below explain them.
+
+## See what each texture does
+
+**Diffuse**, **Normal** and **Spec** turn one texture each off and on, so you can see what it
+adds. A button is greyed out when no part of the model has that texture. The bar says which
+textures are off.
+
+- With **Diffuse** off, the model is plain grey. What the colour texture's alpha marks goes too:
+  the flag on a `PdxMeshTextureAtlas` part, the see-through of a `PdxMeshAlphaBlend` part and the
+  holes in a [map tree](map-trees.md).
+- With **Normal** off, the small bumps go, and the surface looks smooth.
+- With **Spec** off, the model no longer shines. On a `PdxMeshColor` part the country colours go
+  too, because the specular map marks where they are (see [Country colours](#country-colours)).
+  The bar says so.
 
 ## Country colours
 

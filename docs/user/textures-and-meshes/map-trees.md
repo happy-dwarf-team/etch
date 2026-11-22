@@ -24,8 +24,9 @@ with its own tree shader (its way of painting it), whatever shader the mesh's ma
   can see through.
 - It does not shine: there is no highlight.
 
-Turning, moving and zooming, **Wire**, **Maps** and the levels of detail (**LOD**, **LOD auto**)
-work as for any mesh: see [Mesh preview](mesh-preview.md).
+Turning, moving and zooming, **Wire**, **Diffuse**, **Normal** and the levels of detail
+(**LOD**, **LOD auto**) work as for any mesh: see [Mesh preview](mesh-preview.md). With
+**Diffuse** off, the holes go too: the tree shows as solid grey cards.
 
 ## Tint and Turn
 

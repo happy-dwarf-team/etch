@@ -111,7 +111,11 @@ const lodSelect = element('lod') as HTMLSelectElement;
 const playButton = element('play') as HTMLButtonElement;
 const frameInput = element('frame') as HTMLInputElement;
 const wireButton = element('wireframe') as HTMLButtonElement;
-const mapsButton = element('maps') as HTMLButtonElement;
+const mapButtons = {
+  diffuse: element('diffuse-map') as HTMLButtonElement,
+  normal: element('normal-map') as HTMLButtonElement,
+  specular: element('specular-map') as HTMLButtonElement,
+};
 const colours = element('colours');
 const colourInputs = (['primary', 'secondary', 'tertiary'] as const).map(
   (key) => [key, element(key) as HTMLInputElement] as const,
@@ -390,8 +394,13 @@ let started = 0;
 /** The second of the animation every instance is posed at; playing resumes from it. */
 let position = 0;
 let wireframe = false;
-/** Whether normal and specular maps are drawn (the Maps button). */
-let maps = true;
+/**
+ * Which of the materials' maps are drawn (the Diffuse, Normal and Spec buttons). Without the
+ * diffuse map a part is plain grey, and what its alpha marks (a flag, see-through parts, a map
+ * tree's cut-out leaves) goes with it; without the specular map, the highlight and a
+ * `PdxMeshColor` part's country colours, which its R, G and B mask.
+ */
+const maps = { diffuse: true, normal: true, specular: true };
 /** The country colours `PdxMeshColor` parts are drawn with, 0-1. */
 const country = {
   primary: [0.75, 0.16, 0.12],
@@ -953,15 +962,16 @@ function render(now: number): void {
     gl.uniform1i(uniform('snowy'), item.snow || tree !== undefined ? 1 : 0);
     gl.bindVertexArray(item.vao);
     gl.uniform1i(lines, 0);
-    const normalMap = maps ? item.normalMap : undefined;
-    const specularMap = maps ? item.specularMap : undefined;
-    gl.uniform1i(uniform('textured'), item.texture === undefined ? 0 : 1);
+    const texture = maps.diffuse ? item.texture : undefined;
+    const normalMap = maps.normal ? item.normalMap : undefined;
+    const specularMap = maps.specular ? item.specularMap : undefined;
+    gl.uniform1i(uniform('textured'), texture === undefined ? 0 : 1);
     gl.uniform1i(uniform('normalMapped'), normalMap === undefined ? 0 : 1);
     gl.uniform1i(uniform('specularMapped'), specularMap === undefined ? 0 : 1);
     gl.uniform1i(uniform('countryColours'), item.countryColours && tree === undefined ? 1 : 0);
     gl.uniform1i(uniform('atlas'), item.atlas && tree === undefined ? 1 : 0);
     gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, item.texture ?? null);
+    gl.bindTexture(gl.TEXTURE_2D, texture ?? null);
     gl.activeTexture(gl.TEXTURE1);
     gl.bindTexture(gl.TEXTURE_2D, specularMap ?? null);
     gl.activeTexture(gl.TEXTURE2);
@@ -1001,6 +1011,7 @@ function summary(): MeshSummary {
     animation: entity === undefined ? playingKey : undefined,
     animations: offered,
     textures: textureSources,
+    maps: { ...maps },
   };
   const atlasParts = parts.filter((d) => d.atlas).length;
   if (atlasParts > 0) base = { ...base, flag: { parts: atlasParts, tag: flag?.tag } };
@@ -1092,6 +1103,13 @@ function showFacts(): void {
       ? shaders.join(', ')
       : `${tree}: the map's tree shader${shaders.length > 0 ? `, not ${shaders.join(', ')}` : ''}`,
   );
+  const off = (['diffuse', 'normal', 'specular'] as const).filter((key) => !maps[key]);
+  if (off.length > 0) {
+    const coloured = tree === undefined && parts.some((d) => d.countryColours);
+    items.push(
+      `${off.join(', ')} map${off.length === 1 ? '' : 's'} off${!maps.specular && coloured ? ' (no country colours without the specular map)' : ''}`,
+    );
+  }
   if (instances[0] !== undefined && instances[0].scale !== 1) {
     items.push(`scale ${String(instances[0].scale)}`);
   }
@@ -1177,6 +1195,11 @@ function show(
   placeLabel.hidden = tree === undefined;
   groundLabel.hidden = tree === undefined;
   seasonLabel.hidden = tree === undefined || seasonMap === undefined;
+  const has = (map: (d: DrawnPart) => WebGLTexture | undefined): boolean =>
+    instances.some((i) => i.parts.some((d) => map(d) !== undefined));
+  mapButtons.diffuse.disabled = !has((d) => d.texture);
+  mapButtons.normal.disabled = !has((d) => d.normalMap);
+  mapButtons.specular.disabled = !has((d) => d.specularMap);
   offerLevels();
   pose(context, 0);
 }
@@ -1285,9 +1308,9 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
       if (lodPick !== undefined || distance !== undefined) showFacts();
       // An empty Place box first, so that Ground and North below are the user's again.
       if (province === null) askPlace('');
-      if (mapsOn !== undefined) {
-        maps = mapsOn;
-        mapsButton.setAttribute('aria-pressed', String(maps));
+      for (const key of ['diffuse', 'normal', 'specular'] as const) {
+        const on = mapsOn?.[key];
+        if (on !== undefined) setMap(key, on);
       }
       if (regionColour !== undefined) {
         region = regionColour ?? undefined;
@@ -1598,11 +1621,20 @@ document.addEventListener('keydown', (event) => {
   vscode.postMessage({ type: 'shown', summary: summary() });
 });
 
-mapsButton.addEventListener('click', () => {
-  maps = !maps;
-  mapsButton.setAttribute('aria-pressed', String(maps));
-  redraw();
-});
+/** Turns one of the materials' maps on or off, as its button shows. */
+function setMap(key: keyof typeof maps, on: boolean): void {
+  maps[key] = on;
+  mapButtons[key].setAttribute('aria-pressed', String(on));
+  showFacts();
+}
+
+for (const key of ['diffuse', 'normal', 'specular'] as const) {
+  mapButtons[key].addEventListener('click', () => {
+    setMap(key, !maps[key]);
+    redraw();
+    vscode.postMessage({ type: 'shown', summary: summary() });
+  });
+}
 
 /** A colour box's `#rrggbb` as red, green and blue from 0 to 1. */
 function hexColour(value: string): number[] {
