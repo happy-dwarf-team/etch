@@ -110,6 +110,7 @@ release.
 | `province.parliamentSeat` | `seat`, `noSeat`, `none` | It has a seat in its owner's parliament (`seat_in_parliament`), has none, or the owner has no `parliament`. |
 | `province.centerOfTrade` | `yes`, `no` | It is a centre of trade (`center_of_trade` above 0). |
 | `game.cradleOfCivilization` | `yes`, `no` | The DLC Cradle of Civilization is active (the save's `dlc_enabled`); the game gates development exploitation on it. |
+| `country.patriarchAuthority` | a number from 0 to 1 | The chosen country's patriarch authority. A number, which a rule's `slider` reads; no selector reads it. |
 | `country.religionIcon` | `none`, `secondary`, `school` | The religion icon the diplomacy view shows by the chosen country's name: its secondary religion, else (with Cradle of Civilization) its religious school, else none; without one the game moves the name and fog labels 20 px left. The lobby's country panel shows only the secondary religion: without one it moves the main religion icon 18 px down. |
 | `province.hreIndicator` | `yes`, `no` | The game shows its Holy Roman Empire indicator (the empire exists and the province can be part of it). The map decides that, not the save; it stays at the default until you set it. |
 | `owner.buildsNativeBuildings` | `yes`, `no` | The owner builds native buildings. A save does not say; it stays at the default until you set it. |
@@ -146,6 +147,7 @@ values); without `when` it always applies. Its effects:
 | `frame` | paths whose sprite frame (from 1) the game's code sets |
 | `sprite` | paths whose sprite the game's code sets in place of the `.gui`'s, drawn as named without the screen size's `_large` and `_huge` variants: `{ "countryreligionview/religionpanel_bg_top": "GFX_country_religion_view_bg" }` |
 | `chartSize` | paths of charts whose size the game's code sets in place of their sprite's `size`, `{ "x": 32, "y": 32 }`. A pie chart keeps its centre, the widget's lower left corner, so an `offset` moves the widget by the difference. |
+| `slider` | markers the game's code places along a slider, by the marker's path: `{ "low": …, "high": …, "value": …, "at": 1, "fact": "country.patriarchAuthority", "offset": { "y": 6 } }`. The marker goes from the right edge of `low` less 15 px, at share 0, to the left edge of `high` less its own width plus 15 px, at share 1, 3 px below the top of `low`; the `value` text box 9 px right of the marker and 9 px below the top of `low`; both move by `offset`. The share is the save's number for `fact`, else `at`. |
 | `hidePosition` | paths the game keeps at their `hide_position` (else `position`) in this case, where the preview would draw them at their `show_position` |
 | `offset` | paths the game's code moves by some pixels from where they would be, when the file has no `positionType` for it: `{ "x": -20 }` (each coordinate 0 when left out) |
 | `adopt` | top-level definitions the game's code puts in a widget, by that widget's path, each at its own `.gui` position: `{ "minimap_panel": ["minimap_bg"] }` |

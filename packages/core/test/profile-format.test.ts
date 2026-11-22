@@ -152,6 +152,16 @@ describe('the format errors of a window profile', () => {
       '"r": { "chartSize": { "w/x": { "x": 32 } } }',
       '"y" of a chart size is a whole number of pixels from 1.',
     ],
+    [
+      RULE,
+      '"r": { "slider": { "w/x": { "low": "w/a", "high": "w/b", "at": 2 } } }',
+      '"at" of a slider is its share without a save, from 0 to 1.',
+    ],
+    [
+      RULE,
+      '"r": { "slider": { "w/x": { "high": "w/b", "at": 1 } } }',
+      'A slider names its "low" end by path.',
+    ],
     [RULE, '"r": { "hide": ["w/x"], "frame": { " ": 2 } }', 'A path is not empty.'],
     [VIEW, '"v": { "set": ["s"] }', '"set" is an object of selector values keyed by selector.'],
     [

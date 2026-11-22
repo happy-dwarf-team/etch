@@ -179,6 +179,7 @@ export function checkProfile(profile: WindowProfile, input: ProfileCheckInput): 
       ...rule.frame,
       ...(rule.sprite ?? []),
       ...(rule.chartSize ?? []),
+      ...(rule.slider ?? []).flatMap((s) => [s, s.low, s.high, ...(s.value ? [s.value] : [])]),
       ...rule.offset,
       ...rule.hidePosition,
       ...rule.adopt,
@@ -195,6 +196,16 @@ export function checkProfile(profile: WindowProfile, input: ProfileCheckInput): 
         );
         ok = false;
       }
+    }
+    for (const slider of rule.slider ?? []) {
+      if (slider.fact === undefined || factNamed(slider.fact)?.numeric === true) continue;
+      error(
+        rule,
+        'profile-unknown-fact',
+        slider.factRange ?? slider.range,
+        `Etch implements no numeric fact "${slider.fact}" for a slider; a new fact needs an Etch release.`,
+      );
+      ok = false;
     }
     return ok;
   });
@@ -413,6 +424,15 @@ function selectorFails(
       'profile-unknown-fact',
       selector.range,
       `Etch implements no fact "${selector.fact ?? ''}"; a new fact needs an Etch release.`,
+    );
+    return true;
+  }
+  if (fact.numeric === true) {
+    error(
+      selector,
+      'profile-unknown-fact',
+      selector.range,
+      `Fact ${fact.name} is a number, which a rule's slider reads; a selector reads a fact with values.`,
     );
     return true;
   }
