@@ -896,7 +896,10 @@ refresh is a step of the 3.0.0 release.
   two states of `westerngfx_city_0` and its 32 clones, `siege_cannon` in
   the siege cannon's idle state); whether a DLC archive defines them is not
   known, since Etch does not read the archives. The particle systems
-  themselves are not read. A mesh material's texture is looked up in the
+  themselves are not read. Both names resolve in the game: an event names a
+  `pdxparticle` object type of an `interface/*.gfx` file, not a particle
+  block (etch#631, "Particles in the entity preview" below). A mesh
+  material's texture is looked up in the
   mesh's own folder, as the game does: EU4 1.37.5 has a lookup of textures by
   file name across folders, but it is switched off, and the game's
   `error.log` reports vanilla's desert forts' specular map missing from
@@ -1001,6 +1004,34 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
   of 688 definitions that draw show nothing at 1920×1080, in Anbennar 24 of 805,
   before the mechanics. Each needs its host, as the mechanics have theirs.
   `countrygovernmentview` itself has no choice of mechanic in `View ▾`.
+- **Particles in the entity preview**
+  ([etch#631](https://github.com/happy-dwarf-team/etch/issues/631),
+  [research](https://github.com/happy-dwarf-team/etch/blob/research/particles/docs/research/particles.md),
+  22 November 2026). A state's `event = { particle = X }` names a `pdxparticle`
+  object type (`name`, `type`, `scale`) of an `interface/*.gfx` file, whose
+  `type` names the `particle` block of an `.asset` file; a block's
+  `subsystem`s emit camera-facing quads that `gfx/FX/particle.shader` draws
+  with one of three blend effects. The readers' keys, value syntax and log
+  lines are known from the game's code; the per-frame maths (variation,
+  curve order, forces, turbulence, sprite-sheet tiles, depth) is not.
+  **Decision:** the preview does not draw particles yet, and does not draw
+  them as game-faithful until that maths is read. The next steps, in order:
+  1. Read particle definitions into the index: `pdxparticle` types from the
+     playset's `.gfx` files, events resolved through them (which ends the
+     false "no particle" problems of `devastation_smoke_particle` and
+     `siege_cannon`, 67 in vanilla), and the game's two errors in their place
+     (a name that is no `pdxparticle` type, a type that names no block). Then
+     hovers and diagnostics for particle blocks: unknown keys, curve and force
+     names nothing defines, a curve `time` the game reads as `spawn` (it is
+     case-sensitive), a missing texture or shader effect, box keys on a sphere
+     emitter. A user docs page on particles goes with it.
+  2. Read the evaluators and the update in the lab's analysis (the research's
+     open questions 1–5), checked live with a test mod and `reload particle`.
+  3. A `prototype/*` branch of an approximate player in the entity preview
+     (billboards, the three blend modes, emission, life, velocity cone, size
+     and colour curves, the forces step 2 settles), compared against a capture
+     of a musket and a ship state. It ships only labelled as a stand-in, as the
+     Date and Snow sliders are, and only if the comparison holds.
 
 Small unknowns, none worth an issue yet.
 
