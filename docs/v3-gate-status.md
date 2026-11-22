@@ -29,11 +29,11 @@ them have at least one profiled root, 38 and 34 only profiled roots.
 
 ## Where `main` stands
 
-| Measure | Target | Measured on `main`, 22 November | Met |
+| Measure | Target | Measured on `main` at `a26978a`, 22 November | Met |
 | --- | --- | --- | --- |
 | Live texts, profiled windows | 100 % | 100.0 % on every playset and resolution | yes |
-| Live visibility | 100 % | 100.0 % on every set but vanilla at 1920×1080: 99.96 % (9900 of 9904), the 4 buttons of `peace_view`'s text scrollbar; with etch#608, 100.00 % (10076 of 10076) | with etch#608 |
-| Geometry offline, with the profiles | 100 % | vanilla 1920×1080 99.15 % (28 of 3312 rects off), vanilla 1280×720 99.42 % (15), Anbennar 1920×1080 99.44 % (18), Anbennar 1280×720 99.63 % (8), Verne 1920×1080 99.38 % (21), Verne 1280×720 99.51 % (13). With etch#611–etch#615, measured on their branches: vanilla 1920×1080 99.28 % (24), vanilla 1280×720 99.49 % (13), Anbennar 1920×1080 99.53 % (15), Anbennar 1280×720 99.67 % (7); Verne not measured again | no |
+| Live visibility | 100 % | 100.00 % on every set of the survey and on Verne (vanilla at 1920×1080: 10076 of 10076; it was 9900 of 9904 before etch#608) | yes |
+| Geometry offline, with the profiles | 100 % | vanilla 1920×1080 99.28 % (24 of 3312 rects off), vanilla 1280×720 99.49 % (13), Anbennar 1920×1080 99.53 % (15), Anbennar 1280×720 99.67 % (7), Verne 1920×1080 99.47 % (18 of 3411), Verne 1280×720 99.59 % (11). At `438543f` the same morning: 28, 15, 18, 8, 21 and 13 | no |
 | Known deviations with an issue and consent | every difference | three proposed, etch#604, etch#605, etch#606; consent not given | no |
 
 The geometry row reads "the outline offline" of section 3 as the outline with the profiles'
