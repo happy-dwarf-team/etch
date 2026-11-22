@@ -112,6 +112,47 @@ describe('readMesh', () => {
     expect(() => readMesh(binary(broken))).toThrow(/out of range/);
   });
 
+  it('skips an empty [mesh] beside the full ones, as the game draws the rest', () => {
+    // As Anbennar's t1_troll.mesh writes it: a full mesh, then one with no properties and no
+    // children, in the same shape.
+    const full = [
+      obj(3, 'mesh'),
+      floats('p', 0, 0, 0, 1, 0, 0, 0, 1, 0),
+      ints('tri', 0, 1, 2),
+      obj(4, 'material'),
+      strs('shader', 'PdxMeshStandard'),
+    ];
+    const items = [
+      ints('pdxasset', 1, 0),
+      obj(1, 'object'),
+      obj(2, 'trollShape'),
+      ...full,
+      obj(3, 'mesh'),
+      ...full,
+      obj(3, 'mesh'),
+      obj(2, 'otherShape'),
+      ...full,
+    ];
+    for (const encode of [binary, text]) {
+      const mesh = readMesh(encode(items));
+      expect(mesh.shapes.map((s) => [s.name, s.parts.length])).toEqual([
+        ['trollShape', 2],
+        ['otherShape', 1],
+      ]);
+      expect(mesh.bounds).toEqual({ min: [0, 0, 0], max: [1, 1, 0] });
+    }
+  });
+
+  it('refuses a mesh with p but no tri, or tri but no p', () => {
+    // flagShape's mesh has 4 vertices (12 values of p) and 2 triangles (6 values of tri).
+    const without = (name: string, length: number): typeof MESH =>
+      MESH.filter(
+        (item) => !('name' in item && item.name === name && item.values.length === length),
+      );
+    expect(() => readMesh(binary(without('tri', 6)))).toThrow(/"flagShape" has no p or tri/);
+    expect(() => readMesh(binary(without('p', 12)))).toThrow(/"flagShape" has no p or tri/);
+  });
+
   it('refuses a bone index outside the skeleton or given twice', () => {
     // The skeleton's second bone, `tip`, has ix 1 (the skin's ix has 16 values).
     const tipIndex = (index: number): typeof MESH =>
@@ -149,6 +190,59 @@ describe('readAnimation', () => {
         : item,
     );
     expect(() => readAnimation(binary(broken))).toThrow(/samples q has 4 values, not 8/);
+  });
+
+  /** Two joints over two frames; `b` samples its scale, written `width` floats wide. */
+  const scaled = (width: 1 | 3, samples: number[]): typeof ANIM => [
+    ints('pdxasset', 1, 0),
+    obj(1, 'info'),
+    floats('fps', 24),
+    ints('sa', 2),
+    ints('j', 2),
+    obj(2, 'a'),
+    strs('sa', ''),
+    floats('t', 0, 0, 0),
+    floats('q', 0, 0, 0, 1),
+    floats('s', ...(width === 3 ? [1, 1, 0.99999994] : [1])),
+    obj(2, 'b'),
+    strs('sa', 's'),
+    floats('t', 0, 0, 0),
+    floats('q', 0, 0, 0, 1),
+    floats('s', ...(width === 3 ? [1, 2, 3] : [2])),
+    obj(1, 'samples'),
+    floats('s', ...samples),
+  ];
+
+  it('reads a uniform scale of one float per joint, as vanilla writes it', () => {
+    const animation = readAnimation(binary(scaled(1, [1, 3])));
+    expect(animation.scaleWidth).toBe(1);
+    expect(animation.joints[0]?.rest.s).toEqual([1, 1, 1]);
+    expect(animation.joints[1]?.rest.s).toEqual([2, 2, 2]);
+    expect(jointPose(animation, 1, 0.5).s).toEqual([2, 2, 2]);
+    expect(jointPose(animation, 0, 0.5).s).toEqual([1, 1, 1]);
+  });
+
+  it('reads a scale of three floats per joint, in the rest values and the samples', () => {
+    // As Anbennar's troll_3_retreat.anim writes it.
+    for (const encode of [binary, text]) {
+      const animation = readAnimation(encode(scaled(3, [1, 1, 1, 3, 5, 7])));
+      expect(animation.scaleWidth).toBe(3);
+      expect(animation.joints[0]?.rest.s.map((v) => Math.fround(v))).toEqual([
+        1,
+        1,
+        Math.fround(0.99999994),
+      ]);
+      expect(animation.joints[1]?.rest.s).toEqual([1, 2, 3]);
+      expect(jointPose(animation, 1, 0).s).toEqual([1, 1, 1]);
+      expect(jointPose(animation, 1, 0.5).s).toEqual([2, 3, 4]);
+      expect(jointPose(animation, 1, 1).s).toEqual([3, 5, 7]);
+    }
+  });
+
+  it('refuses scale samples neither one nor three floats per joint and frame', () => {
+    expect(() => readAnimation(binary(scaled(3, [1, 1, 1, 1])))).toThrow(
+      /samples s has 4 values, not 2 or 6/,
+    );
   });
 });
 

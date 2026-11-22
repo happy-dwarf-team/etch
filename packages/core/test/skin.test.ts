@@ -44,8 +44,12 @@ function turn(axis: readonly [number, number, number], degrees: number): JointPo
   return [axis[0] * s, axis[1] * s, axis[2] * s, Math.cos(half)];
 }
 
-function pose(t: JointPose['t'], q: JointPose['q'] = [0, 0, 0, 1], s = 1): JointPose {
-  return { t, q, s };
+function pose(
+  t: JointPose['t'],
+  q: JointPose['q'] = [0, 0, 0, 1],
+  s: number | JointPose['s'] = 1,
+): JointPose {
+  return { t, q, s: typeof s === 'number' ? [s, s, s] : s };
 }
 
 /** A bone whose bind matrix (in the mesh's space) is `bind`. */
@@ -61,6 +65,7 @@ function restAnimation(joints: readonly { name: string; rest: JointPose }[]): Pd
     joints: joints.map((joint) => ({ ...joint, ranks: { t: -1, q: -1, s: -1 } })),
     samples: { t: new Float32Array(), q: new Float32Array(), s: new Float32Array() },
     sampled: { t: 0, q: 0, s: 0 },
+    scaleWidth: 1,
   };
 }
 
@@ -85,6 +90,18 @@ describe('multiply, invertAffine and poseMatrix', () => {
     const m = poseMatrix(pose([1, -2, 3], turn([0.3, 1, -0.4], 70), 1.5));
     expect(rounded(multiply(m, invertAffine(m)))).toEqual(IDENTITY);
     expect(rounded(multiply(invertAffine(m), m))).toEqual(IDENTITY);
+  });
+
+  it('scales each axis by its own value before the turn', () => {
+    // A scale of (2, 3, 4), then 90 degrees about Z (+X to +Y, +Y to -X), then a move.
+    const m = poseMatrix(pose([10, 0, 0], turn([0, 0, 1], 90), [2, 3, 4]));
+    expect(apply(m, [1, 0, 0])).toEqual([10, 2, 0]);
+    expect(apply(m, [0, 1, 0])).toEqual([7, 0, 0]);
+    expect(apply(m, [0, 0, 1])).toEqual([10, 0, 4]);
+    // Three equal values are the uniform scale.
+    expect(rounded(poseMatrix(pose([1, 2, 3], turn([1, 1, 0], 30), [2, 2, 2])))).toEqual(
+      rounded(poseMatrix(pose([1, 2, 3], turn([1, 1, 0], 30), 2))),
+    );
   });
 
   it('gives finite numbers for a singular matrix', () => {
@@ -155,6 +172,7 @@ describe('jointPose', () => {
       s: new Float32Array(),
     },
     sampled: { t: 0, q: 1, s: 0 },
+    scaleWidth: 1,
   };
 
   it('blends along the shorter arc, so q and -q give the same turn between frames', () => {
@@ -163,7 +181,10 @@ describe('jointPose', () => {
       q.map((v) => Math.round(v * 1e5) / 1e5 + 0),
     );
     // Channels the joint does not sample keep its rest pose.
-    expect([half.t, half.s]).toEqual([[1, 2, 3], 1]);
+    expect([half.t, half.s]).toEqual([
+      [1, 2, 3],
+      [1, 1, 1],
+    ]);
   });
 
   it('wraps a frame past the last one to the start', () => {

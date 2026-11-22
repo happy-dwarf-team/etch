@@ -58,19 +58,20 @@ export function invertAffine(m: Float32Array): Float32Array {
   return out;
 }
 
-/** The matrix of a joint pose: translate × rotate × scale. */
+/** The matrix of a joint pose: translate × rotate × scale (per axis: column i times s[i]). */
 export function poseMatrix({ t, q, s }: JointPose): Float32Array {
   const [x, y, z, w] = q;
+  const [sx, sy, sz] = s;
   const out = new Float32Array(16);
-  out[0] = (1 - 2 * (y * y + z * z)) * s;
-  out[1] = 2 * (x * y + z * w) * s;
-  out[2] = 2 * (x * z - y * w) * s;
-  out[4] = 2 * (x * y - z * w) * s;
-  out[5] = (1 - 2 * (x * x + z * z)) * s;
-  out[6] = 2 * (y * z + x * w) * s;
-  out[8] = 2 * (x * z + y * w) * s;
-  out[9] = 2 * (y * z - x * w) * s;
-  out[10] = (1 - 2 * (x * x + y * y)) * s;
+  out[0] = (1 - 2 * (y * y + z * z)) * sx;
+  out[1] = 2 * (x * y + z * w) * sx;
+  out[2] = 2 * (x * z - y * w) * sx;
+  out[4] = 2 * (x * y - z * w) * sy;
+  out[5] = (1 - 2 * (x * x + z * z)) * sy;
+  out[6] = 2 * (y * z + x * w) * sy;
+  out[8] = 2 * (x * z + y * w) * sz;
+  out[9] = 2 * (y * z - x * w) * sz;
+  out[10] = (1 - 2 * (x * x + y * y)) * sz;
   out[12] = t[0];
   out[13] = t[1];
   out[14] = t[2];
