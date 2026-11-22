@@ -49,17 +49,20 @@ More controls show only when the mesh has the parts they work on. The sections b
 
 ## See what each texture does
 
-**Diffuse**, **Normal** and **Spec** turn one texture each off and on, so you can see what it
-adds. A button is greyed out when no part of the model has that texture. The bar says which
-textures are off.
+**Diffuse** (the colour texture), **Normal** (the normal map) and **Spec** (the specular map)
+each turn one texture off and on, so you can see what it adds. A button is greyed out when no
+part of the model has that texture. The bar lists the textures that are off, such as "maps off:
+diffuse, normal".
 
-- With **Diffuse** off, the model is plain grey. What the colour texture's alpha marks goes too:
-  the flag on a `PdxMeshTextureAtlas` part, the see-through of a `PdxMeshAlphaBlend` part and the
-  holes in a [map tree](map-trees.md).
+- With **Diffuse** off, the model is plain grey. What the colour texture's see-through part (what
+  **A** shows in the [texture preview](texture-preview.md)) controls goes too: the country flag on
+  `PdxMeshTextureAtlas` parts, the see-through of `PdxMeshAlphaBlend` parts and the holes in a
+  [map tree](map-trees.md).
 - With **Normal** off, the small bumps go, and the surface looks smooth.
-- With **Spec** off, the model no longer shines. On a `PdxMeshColor` part the country colours go
-  too, because the specular map marks where they are (see [Country colours](#country-colours)).
-  The bar says so.
+- With **Spec** off, the shine (the bright highlights) goes. On `PdxMeshColor` parts the country
+  colours go too, because the specular map marks where they are (see
+  [Country colours](#country-colours)). The bar then also reads "no country colours without the
+  specular map".
 
 ## Country colours
 

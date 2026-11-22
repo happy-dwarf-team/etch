@@ -675,9 +675,9 @@ export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): str
     Date <input type="range" id="season-day" min="0" max="364" step="1" value="181" aria-label="Day of the year"> <output id="season-date">1 Jul</output>
     North <input type="range" id="season-north" min="0" max="1" step="0.05" value="0" aria-label="How far north the tree stands">
   </label>
-  <button id="diffuse-map" aria-pressed="true" title="Draw the colour texture (diffuse map). Off: the model is plain grey, and what the texture's alpha marks goes with it: a flag, see-through parts, a map tree's cut-out leaves">Diffuse</button>
+  <button id="diffuse-map" aria-pressed="true" title="Draw the colour texture (diffuse map). Off: the model is plain grey, and the flag, see-through parts and a map tree's cut-out leaves go too">Diffuse</button>
   <button id="normal-map" aria-pressed="true" title="Draw the normal map, the small bumps of the surface">Normal</button>
-  <button id="specular-map" aria-pressed="true" title="Draw the specular map. Its alpha makes the model shine; on PdxMeshColor parts its red, green and blue mark where the three country colours go, so they go with it">Spec</button>
+  <button id="specular-map" aria-pressed="true" title="Draw the specular map. Off: no shine, and on PdxMeshColor parts no country colours, which the specular map marks">Spec</button>
   <button id="wireframe" aria-pressed="false" title="Show the triangle edges">Wire</button>
   <button id="reset" title="Frame the whole mesh">Reset view</button>
 </header>

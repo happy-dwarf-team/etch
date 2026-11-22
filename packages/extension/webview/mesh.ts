@@ -1107,7 +1107,7 @@ function showFacts(): void {
   if (off.length > 0) {
     const coloured = tree === undefined && parts.some((d) => d.countryColours);
     items.push(
-      `${off.join(', ')} map${off.length === 1 ? '' : 's'} off${!maps.specular && coloured ? ' (no country colours without the specular map)' : ''}`,
+      `maps off: ${off.join(', ')}${!maps.specular && coloured ? ' (no country colours without the specular map)' : ''}`,
     );
   }
   if (instances[0] !== undefined && instances[0].scale !== 1) {

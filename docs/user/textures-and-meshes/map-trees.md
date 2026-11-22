@@ -26,7 +26,7 @@ with its own tree shader (its way of painting it), whatever shader the mesh's ma
 
 Turning, moving and zooming, **Wire**, **Diffuse**, **Normal** and the levels of detail
 (**LOD**, **LOD auto**) work as for any mesh: see [Mesh preview](mesh-preview.md). With
-**Diffuse** off, the holes go too: the tree shows as solid grey cards.
+**Diffuse** off, the holes go too: the leaves show as solid grey shapes.
 
 ## Tint and Turn
 
