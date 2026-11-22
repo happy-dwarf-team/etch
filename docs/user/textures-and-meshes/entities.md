@@ -46,8 +46,9 @@ the entity has that state.
 - Click **Pause** to stop it, and **Play** to go on from the same frame. **Bind pose**, at the
   top of the list, shows the entity without an animation.
 - The slider beside **Play** goes to a frame, as in the mesh preview (see
-  [Go to a frame](mesh-preview.md#go-to-a-frame)). It runs over the frames of the entity's own
-  mesh. Everything attached to it takes its pose at the same moment.
+  [Go to a frame](mesh-preview.md#go-to-a-frame)). The slider follows the animation of the
+  entity's own mesh. Everything attached to the entity, such as the soldier's halberd, shows the
+  same moment.
 
 A state's `animation` names one of the `animation` blocks of the entity's pdxmesh, by its `id`.
 That block's `type` names an `animation` of an `.asset` file, and that one's `file` is the `.anim`

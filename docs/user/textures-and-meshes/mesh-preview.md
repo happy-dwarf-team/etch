@@ -108,14 +108,15 @@ least half of its bones. The ones whose names start with the mesh's name come fi
 The slider beside **Play** shows where the animation is. It moves along as the animation plays.
 
 - Drag the slider to a frame: the animation stops there while you drag, and the model takes that
-  frame's pose. When you let go, it plays on from there. If it was paused, it stays paused.
-- Click the slider, then press <kbd>←</kbd> or <kbd>→</kbd> to step one frame back or forward.
-  The animation pauses at that frame.
-- Or press <kbd>,</kbd> and <kbd>.</kbd> anywhere in the preview, as in a video player: one frame
-  back and one frame forward. They do nothing while you type in a box, such as **Flag**.
+  frame's pose. When you let go, the animation plays on from that frame if it was playing before
+  you dragged. If it was paused, it stays paused.
+- Click the slider once to select it, then press <kbd>←</kbd> or <kbd>→</kbd> to step one frame
+  back or forward. The animation pauses at that frame.
+- Or press the comma key <kbd>,</kbd> (one frame back) or the full stop key <kbd>.</kbd> (one
+  frame forward) anywhere in the preview, as in a video player. They do nothing while you type in
+  a box, such as **Flag**.
 
-The line at the bottom shows the frame number. Click **Play** to go on from the frame you
-stepped to.
+The line at the bottom shows the frame you are on. **Play** goes on from there.
 
 ## Edit and see it at once
 
