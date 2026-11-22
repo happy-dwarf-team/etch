@@ -3,7 +3,7 @@
 // run's `error.log` lines come back to the editor.
 import * as vscode from 'vscode';
 import type { LiveGame, RunOutcome } from './live-game.ts';
-import { blockAtLine, mapRunErrors, type RunMode, type RunScope } from './run-script.ts';
+import { blockAtLine, counted, mapRunErrors, type RunMode, type RunScope } from './run-script.ts';
 
 /** Runs the selection's effects in the player's country. */
 export const RUN_SELECTION = 'etch.runSelection';
@@ -174,10 +174,12 @@ function show(outcome: RunOutcome, shown: Shown): void {
   for (const e of errors) output.warn(`Run, error.log: ${e.line}`);
   const lost =
     outcome.lost > 0
-      ? ` ${String(outcome.lost)} characters have no byte in the game's code page and were run as "?".`
+      ? ` ${counted(outcome.lost, 'character')} ${outcome.lost === 1 ? 'has' : 'have'} no byte in the game's code page and ${outcome.lost === 1 ? 'was' : 'were'} run as "?".`
       : '';
   const errorNote =
-    errors.length > 0 ? ` ${String(errors.length)} error.log lines are in Problems.` : '';
+    errors.length > 0
+      ? ` ${counted(errors.length, 'error.log line')} ${errors.length === 1 ? 'is' : 'are'} in Problems.`
+      : '';
   if (!outcome.answer.success) {
     void vscode.window.showErrorMessage(
       `The game's console did not run the selection: ${outcome.answer.text || 'no answer'}.${errorNote}`,
