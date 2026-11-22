@@ -107,7 +107,26 @@ A profile can also send you to another window. When the province view's **Coloni
 uncolonised province, not the province view.", with a button **Pin colonisationpanel** that pins
 the preview on that window.
 
-How to write a profile:
+### What a rule can change
+
+A rule applies when its selectors have the values it names. It tells the preview what the game's
+code does to the window in that case:
+
+- `show` and `hide`: widgets the game shows or hides; `notCreated`: widgets the game does not make
+  at all.
+- `position` and `offset`: widgets the game's code moves; `hidePosition`: widgets the game keeps at
+  their `hide_position`.
+- `frame` and `sprite`: the frame or the sprite the game's code puts on a widget in place of the
+  `.gui` file's.
+- `chartSize` (added in 2.14.0): the size the game's code gives a chart, such as the estates
+  view's pie chart at 32 × 32, in place of its sprite's size.
+- `slider` (added in 2.14.0): a marker the game's code places along a bar from a value, such as
+  the patriarch authority's marker in the religion view. The rule names the bar's two ends, the
+  marker and its value text, and either a fixed share from 0 to 1 or a number from the save
+  (`country.patriarchAuthority`).
+- `adopt`: definitions the game's code puts inside a widget.
+
+How to write a profile, with every field of these rules:
 [window profiles](https://github.com/happy-dwarf-team/etch/blob/main/docs/window-profiles.md).
 
 ## Add scripted selectors
