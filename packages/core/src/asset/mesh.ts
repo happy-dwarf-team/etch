@@ -8,7 +8,8 @@
 //                                                       tx (inverse bind: 3 × 3 by columns, then
 //                                                       the translation)
 //
-// as every mesh of EU4 1.37.5 writes it. Shapes whose shader is `Collision` are the game's
+// as every mesh of EU4 1.37.5 writes it. An empty `[mesh]` (no properties, no children) is skipped.
+// Shapes whose shader is `Collision` are the game's
 // picking volumes: they have no texture coordinates and are kept apart.
 
 import { childOf, floats, ints, PdxAssetError, readPdxAsset, strings } from './pdx-asset.ts';
@@ -94,6 +95,9 @@ export function readMesh(bytes: Uint8Array): PdxMesh {
   for (const shape of object.children) {
     const parts: MeshPart[] = [];
     for (const mesh of shape.children.filter((child) => child.name === 'mesh')) {
+      // Some mods' exporters leave a `[mesh]` with no properties and no children beside the
+      // full ones of a shape (Anbennar's trolls and ogres); the game draws the rest of the shape.
+      if (mesh.properties.size === 0 && mesh.children.length === 0) continue;
       const positions = floats(mesh, 'p');
       const triangles = ints(mesh, 'tri');
       if (positions === undefined || triangles === undefined) {

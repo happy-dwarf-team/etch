@@ -1,20 +1,23 @@
 // An `.anim` file: per-joint rest values and frame-major samples.
 //
 //   [info]      fps (f), sa (i, the frame count), j (i, the joint count)
-//     [[joint]] sa (s: which of "t", "q", "s" are sampled), t (3), q (4: x, y, z, w), s (1)
+//     [[joint]] sa (s: which of "t", "q", "s" are sampled), t (3), q (4: x, y, z, w), s (1 or 3)
 //   [samples]   t, q, s: for each frame, the values of every joint whose `sa` names that
 //               channel, in joint order
 //
 // The layout was checked on all 149 binary animations of EU4 1.37.5: each sample array is exactly
-// frames × sampled joints × width long.
+// frames × sampled joints × width long, and every one writes `s` as 1 float (a uniform scale).
+// Some mods' exporters write `s` as 3 floats, a scale per axis (Anbennar's
+// `troll_3_retreat.anim`, in its rest values and its samples); the sample count decides the width.
 
 import { childOf, floats, ints, PdxAssetError, readPdxAsset, strings } from './pdx-asset.ts';
 
-/** A joint's local transform: translation, rotation (x, y, z, w) and uniform scale. */
+/** A joint's local transform: translation, rotation (x, y, z, w) and scale per axis. */
 export interface JointPose {
   readonly t: readonly [number, number, number];
   readonly q: readonly [number, number, number, number];
-  readonly s: number;
+  /** The scale along x, y and z; a file's single uniform value gives three equal ones. */
+  readonly s: readonly [number, number, number];
 }
 
 export interface AnimJoint {
@@ -35,6 +38,15 @@ export interface PdxAnimation {
   };
   /** How many joints sample each channel. */
   readonly sampled: { readonly t: number; readonly q: number; readonly s: number };
+  /** The floats per sampled scale: 1 (uniform, as vanilla writes it) or 3 (per axis). */
+  readonly scaleWidth: 1 | 3;
+}
+
+/** A rest scale of 1 float (uniform) or 3 (per axis); 1 without one. */
+function restScale(values: Float32Array | undefined): [number, number, number] {
+  if (values === undefined || values.length === 0) return [1, 1, 1];
+  const x = values[0] ?? 1;
+  return values.length >= 3 ? [x, values[1] ?? 1, values[2] ?? 1] : [x, x, x];
 }
 
 export function readAnimation(bytes: Uint8Array): PdxAnimation {
@@ -55,7 +67,7 @@ export function readAnimation(bytes: Uint8Array): PdxAnimation {
       rest: {
         t: [t?.[0] ?? 0, t?.[1] ?? 0, t?.[2] ?? 0],
         q: [q?.[0] ?? 0, q?.[1] ?? 0, q?.[2] ?? 0, q?.[3] ?? 1],
-        s: floats(joint, 's')?.[0] ?? 1,
+        s: restScale(floats(joint, 's')),
       },
       ranks: { t: rank('t'), q: rank('q'), s: rank('s') },
     };
@@ -66,16 +78,33 @@ export function readAnimation(bytes: Uint8Array): PdxAnimation {
     q: (block && floats(block, 'q')) ?? new Float32Array(0),
     s: (block && floats(block, 's')) ?? new Float32Array(0),
   };
-  const widths = { t: 3, q: 4, s: 1 } as const;
-  for (const channel of ['t', 'q', 's'] as const) {
-    const expected = frames * sampled[channel] * widths[channel];
+  for (const [channel, width] of [
+    ['t', 3],
+    ['q', 4],
+  ] as const) {
+    const expected = frames * sampled[channel] * width;
     if (samples[channel].length !== expected) {
       throw new PdxAssetError(
         `samples ${channel} has ${String(samples[channel].length)} values, not ${String(expected)}`,
       );
     }
   }
-  return { fps, frames, joints, samples, sampled };
+  // A scale is 1 float (vanilla) or 3; with no scale sampled, the rest values' width.
+  const scales = frames * sampled.s;
+  let scaleWidth: 1 | 3;
+  if (scales === 0) {
+    scaleWidth = info.children.some((joint) => (floats(joint, 's')?.length ?? 0) >= 3) ? 3 : 1;
+    if (samples.s.length !== 0) {
+      throw new PdxAssetError(`samples s has ${String(samples.s.length)} values, not 0`);
+    }
+  } else if (samples.s.length === scales || samples.s.length === scales * 3) {
+    scaleWidth = samples.s.length === scales ? 1 : 3;
+  } else {
+    throw new PdxAssetError(
+      `samples s has ${String(samples.s.length)} values, not ${String(scales)} or ${String(scales * 3)}`,
+    );
+  }
+  return { fps, frames, joints, samples, sampled, scaleWidth };
 }
 
 /** A joint's pose at a frame, which may be fractional: linear between frames, wrapping. */
@@ -110,6 +139,14 @@ export function jointPose(animation: PdxAnimation, joint: number, frame: number)
       (blended[3] ?? 1) / length,
     ];
   }
-  const s = found.ranks.s < 0 ? found.rest.s : mix('s', 1, 0);
+  let s: [number, number, number] = [...found.rest.s];
+  if (found.ranks.s >= 0) {
+    if (animation.scaleWidth === 3) {
+      s = [mix('s', 3, 0), mix('s', 3, 1), mix('s', 3, 2)];
+    } else {
+      const uniform = mix('s', 1, 0);
+      s = [uniform, uniform, uniform];
+    }
+  }
   return { t, q, s };
 }
