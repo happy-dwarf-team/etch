@@ -150,6 +150,12 @@ export interface LayoutContent {
     readonly name: string;
     readonly rect?: readonly [number, number, number, number];
     readonly text?: string;
+    /** Its own children the game showed, by name, where it showed them. */
+    readonly parts?: readonly {
+      readonly name: string;
+      readonly rect?: readonly [number, number, number, number];
+      readonly text?: string;
+    }[];
   }[];
   /**
    * The entries of a list box: a top-level definition, from its file, `count` times; with `place`,
@@ -401,7 +407,19 @@ class Layout {
   private current: Widget | undefined;
   /** The definition being placed where a live snapshot showed it (`placeAdopted`). */
   private adopting:
-    | { widget: Widget; x: number; y: number; width: number; height: number; text?: string }
+    | {
+        widget: Widget;
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+        text?: string;
+        parts?: readonly {
+          readonly name: string;
+          readonly rect?: readonly [number, number, number, number];
+          readonly text?: string;
+        }[];
+      }
     | undefined;
   /** The windows a live snapshot could not move as one (`livePosition`), by their index. */
   private readonly movedByChildren = new Set<number>();
@@ -625,8 +643,12 @@ class Layout {
     if (LISTS.has(kind)) this.placeRows(widget, props, rect, index);
     if (kind === 'OverlappingElementsBoxType') this.placeOverlapping(widget, props, rect, index);
     // A `scrollbarType` has no render node of its own; lists create it when their rows overflow
-    // (etch#3), and the preview does not scroll.
-    if (kind === 'scrollbarType') return;
+    // (etch#3), and the preview does not scroll. One a live snapshot showed beside a text box
+    // (`peace_view`'s `standardtext_slider`) has its buttons where the game's code put them.
+    if (kind === 'scrollbarType') {
+      if (this.adopting?.widget === widget) this.placeParts(widget, rect, index);
+      return;
+    }
     for (const child of this.paintOrder(widget, props)) {
       this.place(child.widget, rect, index, child.background ? rect : undefined);
     }
@@ -658,11 +680,36 @@ class Layout {
               width: entry.rect[2],
               height: entry.rect[3],
               ...(entry.text === undefined ? {} : { text: entry.text }),
+              ...(entry.parts === undefined ? {} : { parts: entry.parts }),
             };
       this.place(found.item, rect, index, undefined);
       this.constants = outer.constants;
       this.adopting = outer.adopting;
     }
+  }
+
+  /**
+   * The children of an adopted widget the snapshot showed, each where the game showed it; the
+   * ones it did not show are left out, as the game's code laid them out and the `.gui` does not
+   * say where.
+   */
+  private placeParts(widget: Widget, rect: Rect, index: number): void {
+    const parts = this.adopting?.parts ?? [];
+    const outer = this.adopting;
+    for (const child of widget.children) {
+      const part = parts.find((p) => p.name.toLowerCase() === child.name?.toLowerCase());
+      if (part?.rect === undefined) continue;
+      this.adopting = {
+        widget: child,
+        x: part.rect[0],
+        y: part.rect[1],
+        width: part.rect[2],
+        height: part.rect[3],
+        ...(part.text === undefined ? {} : { text: part.text }),
+      };
+      this.place(child, rect, index, undefined);
+    }
+    this.adopting = outer;
   }
 
   /** A widget and what it drew moved to a point, its children placed after it following. */

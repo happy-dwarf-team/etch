@@ -137,6 +137,25 @@ describe('liveMatch', () => {
     expect(match.unmatched).toBe(1);
   });
 
+  it('gives an adopted widget the children the game showed in it, as its parts', () => {
+    const match = liveMatch(
+      snapshot([
+        w('provinceview', true),
+        w('provinceview/text_slider', true, { type: 'other', rect: [150, 20, 16, 110] }),
+        w('provinceview/text_slider/up', true, { type: 'button', rect: [150, 20, 16, 16] }),
+        w('provinceview/text_slider/track', false, { type: 'button' }),
+      ]),
+      WINDOW,
+    );
+    expect(match.texts.adopted?.('provinceview')).toEqual([
+      {
+        name: 'text_slider',
+        rect: [150, 20, 16, 110],
+        parts: [{ name: 'up', rect: [150, 20, 16, 16] }],
+      },
+    ]);
+  });
+
   it('gives the text with the game’s colour codes when the snapshot has them', () => {
     const match = liveMatch(
       snapshot([
