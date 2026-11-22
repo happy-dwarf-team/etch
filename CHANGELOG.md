@@ -1,5 +1,49 @@
 # Changelog
 
+## [2.14.0](https://github.com/happy-dwarf-team/etch/compare/v2.13.0...v2.14.0) (2026-11-22)
+
+
+### Features
+
+* **extension:** check a script file in the live game and put the game's errors on its lines ([#579](https://github.com/happy-dwarf-team/etch/issues/579)) ([ffdcdd2](https://github.com/happy-dwarf-team/etch/commit/ffdcdd2a922de009f4fd1175271d912a2aa7d8b6))
+* **extension:** colour swatches and the colour picker for font colours in .gfx files ([#583](https://github.com/happy-dwarf-team/etch/issues/583)) ([da8c74b](https://github.com/happy-dwarf-team/etch/commit/da8c74bfd1af6e7481e1a54ed3ff305184423944))
+* **extension:** complete .gui files from the playset's widget types, keys, sprites and fonts ([#572](https://github.com/happy-dwarf-team/etch/issues/572)) ([b1fe2fb](https://github.com/happy-dwarf-team/etch/commit/b1fe2fb7a2ca1fb8e2e7c8351a26deb7cce009a4))
+* **extension:** etch.editor.rename turns sprite references and rename off ([#584](https://github.com/happy-dwarf-team/etch/issues/584)) ([c625ae7](https://github.com/happy-dwarf-team/etch/commit/c625ae776797881725a7ba7b81e8c24792d2da71))
+* **extension:** find every use of a sprite name and rename it in the mod's files ([#581](https://github.com/happy-dwarf-team/etch/issues/581)) ([ab86ac2](https://github.com/happy-dwarf-team/etch/commit/ab86ac2d4844e064fd35fd8f3dd186eb51361073))
+* **extension:** list .gui widgets and .gfx sprites and fonts as document symbols ([#573](https://github.com/happy-dwarf-team/etch/issues/573)) ([20b0061](https://github.com/happy-dwarf-team/etch/commit/20b006129371ef140296a2709bdc44efee5bc503))
+* **extension:** put the live game's start errors on the edited mod's files ([#570](https://github.com/happy-dwarf-team/etch/issues/570)) ([0932451](https://github.com/happy-dwarf-team/etch/commit/093245150c6d36fd70e23e4a431384c1cc5b8c38))
+* **extension:** show localisation texts as inlay hints and go to their .yml line ([#568](https://github.com/happy-dwarf-team/etch/issues/568)) ([b320698](https://github.com/happy-dwarf-team/etch/commit/b32069870f5f67363a36ac661c013a8ad389c626))
+* **extension:** sprite hovers and references in ten more common folders ([#585](https://github.com/happy-dwarf-team/etch/issues/585)) ([ae72a73](https://github.com/happy-dwarf-team/etch/commit/ae72a7343b8f00a20ec3d8170a48c4957a22f561))
+* **extension:** sprite thumbnails beside the line numbers ([#587](https://github.com/happy-dwarf-team/etch/issues/587)) ([119ebb0](https://github.com/happy-dwarf-team/etch/commit/119ebb00fdc3cf52262e759f37c0552491c042af))
+* **media:** pnpm media evidence, screenshots for a pull request's Evidence ([#598](https://github.com/happy-dwarf-team/etch/issues/598)) ([f4d1334](https://github.com/happy-dwarf-team/etch/commit/f4d13341a105e3f47394eec65b0b60466a0d8412))
+* **media:** six art loops and the outline loop shot again ([#590](https://github.com/happy-dwarf-team/etch/issues/590)) ([0b7e393](https://github.com/happy-dwarf-team/etch/commit/0b7e393a76f97f29a54158568d84aec0df1c17d0))
+* **media:** the hero's demo loop in five chapters, from an open take ([#599](https://github.com/happy-dwarf-team/etch/issues/599)) ([a2477f1](https://github.com/happy-dwarf-team/etch/commit/a2477f1ae8d77a1aa7e7145a494fa67dc5f99e47))
+* **media:** the run live clip, script run and checked in the game from the editor ([#600](https://github.com/happy-dwarf-team/etch/issues/600)) ([b67cb9f](https://github.com/happy-dwarf-team/etch/commit/b67cb9f458954b8c4b978ac35e40e0f145fdf2fe))
+* **profiles:** a rule's chartSize, and the estates view's pie chart at 32 × 32 ([#614](https://github.com/happy-dwarf-team/etch/issues/614)) ([d1ee281](https://github.com/happy-dwarf-team/etch/commit/d1ee28196d4d75860fea7d2917d47f5aa25ba72d))
+* **profiles:** a rule's slider, and the patriarch authority's marker where eu4.exe puts it ([#615](https://github.com/happy-dwarf-team/etch/issues/615)) ([a26978a](https://github.com/happy-dwarf-team/etch/commit/a26978a28e0232c1dcc653fa73403f49279e4dd0))
+* warn about a second province history and a tag without a history file, summed up per mod ([#567](https://github.com/happy-dwarf-team/etch/issues/567)) ([9e96ea3](https://github.com/happy-dwarf-team/etch/commit/9e96ea38d0700970250f11d8c74bc8903cce80cc))
+
+
+### Bug Fixes
+
+* **compare:** measure a window the game holds twice once with the profiles too ([#613](https://github.com/happy-dwarf-team/etch/issues/613)) ([7020a25](https://github.com/happy-dwarf-team/etch/commit/7020a257dd55ba1caaf10c6ac1ee095c87209093))
+* **core:** a live snapshot's table headings head their columns, not adopted copies ([#607](https://github.com/happy-dwarf-team/etch/issues/607)) ([d63a35c](https://github.com/happy-dwarf-team/etch/commit/d63a35cf250ed4896ef0d4315ec21703b932fcdd))
+* **core:** an adopted scrollbar in a live snapshot draws the buttons the game showed ([#608](https://github.com/happy-dwarf-team/etch/issues/608)) ([d0913a9](https://github.com/happy-dwarf-team/etch/commit/d0913a9bb0c249771a73deece541d145efb081e3))
+* **core:** keep the operators the parser skipped in Check File's run files ([#588](https://github.com/happy-dwarf-team/etch/issues/588)) ([cf3d6d1](https://github.com/happy-dwarf-team/etch/commit/cf3d6d18f450889730201ddf7b5588f4402bc82f))
+* **core:** read localisation files and .tga textures as the game does ([#595](https://github.com/happy-dwarf-team/etch/issues/595)) ([9ed1129](https://github.com/happy-dwarf-team/etch/commit/9ed11291d5fa563ed9a2f861e849db6ad5557c8f))
+* **core:** show the first localisation value of a key, as the game does ([#594](https://github.com/happy-dwarf-team/etch/issues/594)) ([f27bc8d](https://github.com/happy-dwarf-team/etch/commit/f27bc8de78711adefd39f886c2a121d5ef3aef12))
+* **corpus:** leave a player's Anvil in the Steam folder out of the capture host ([#619](https://github.com/happy-dwarf-team/etch/issues/619)) ([ee2bc37](https://github.com/happy-dwarf-team/etch/commit/ee2bc378c9e633b988346fa88c619cc7211680aa))
+* **extension:** answer the achievements notice in any playset and report ready after the save loads ([#597](https://github.com/happy-dwarf-team/etch/issues/597)) ([f5a2e22](https://github.com/happy-dwarf-team/etch/commit/f5a2e2239d4efa59827422e3ddaf610da5bb3d58))
+* **extension:** say one error.log line, one character, in the run and check notifications ([#601](https://github.com/happy-dwarf-team/etch/issues/601)) ([1662678](https://github.com/happy-dwarf-team/etch/commit/166267815f52a2c8245959c94fa7dbdb7c068327))
+* **layout:** anchor a window's background at the window's corner ([#611](https://github.com/happy-dwarf-team/etch/issues/611)) ([14715b5](https://github.com/happy-dwarf-team/etch/commit/14715b5a12e7d84767391663611b5e63f6b81632))
+* **live-game:** split an error.log line where the game went on with the next message ([#582](https://github.com/happy-dwarf-team/etch/issues/582)) ([bb42be6](https://github.com/happy-dwarf-team/etch/commit/bb42be632857bc58d56e993c564db8c55dc4c243))
+* **profiles:** the lobby's religion icon without a secondary religion ([#612](https://github.com/happy-dwarf-team/etch/issues/612)) ([f6eabcb](https://github.com/happy-dwarf-team/etch/commit/f6eabcbcbc95a292ffa3c70079d27e7ad7250eec))
+
+
+### Build
+
+* **pins:** pin Anvil 1.26.0 and Bellows 2.2.0 ([#621](https://github.com/happy-dwarf-team/etch/issues/621)) ([2145648](https://github.com/happy-dwarf-team/etch/commit/21456480c16287f43284b0d102219680829fd6f4))
+
 ## [2.13.0](https://github.com/happy-dwarf-team/etch/compare/v2.12.0...v2.13.0) (2026-11-20)
 
 
