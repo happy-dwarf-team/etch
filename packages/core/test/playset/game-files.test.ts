@@ -76,6 +76,34 @@ describe('GameFiles', () => {
     expect((await replacing.find('interface/sub/deep.gui'))?.layer.name).toBe('game');
   });
 
+  it("says whether a mod's replace_path hides the game's files in a folder", () => {
+    expect(files.replacesGameFolder('common/ideas')).toBe(true);
+    expect(files.replacesGameFolder('Common\\Ideas\\')).toBe(true);
+    expect(files.replacesGameFolder('common/ideas/sub')).toBe(false);
+    expect(files.replacesGameFolder('interface')).toBe(false);
+    const written = new GameFiles([
+      { name: 'game', root: join(root, 'game'), replacePaths: [] },
+      { name: 'Top', root: join(root, 'top'), replacePaths: ['\\history//countries/'] },
+    ]);
+    expect(written.replacesGameFolder('history/countries')).toBe(true);
+    // The game's own layer never counts.
+    const game = new GameFiles([
+      { name: 'game', root: join(root, 'game'), replacePaths: ['interface'] },
+    ]);
+    expect(game.replacesGameFolder('interface')).toBe(false);
+  });
+
+  it('reads a replace_path in time linear in a long run of separators', () => {
+    // Not /\/+$/, which is quadratic in a run that does not end the path (CodeQL js/polynomial-redos).
+    const started = performance.now();
+    const long = new GameFiles([
+      { name: 'game', root: join(root, 'game'), replacePaths: [] },
+      { name: 'Top', root: join(root, 'top'), replacePaths: [`a${'/'.repeat(100_000)}b`] },
+    ]);
+    expect(long.replacesGameFolder('a/b')).toBe(true);
+    expect(performance.now() - started).toBeLessThan(250);
+  });
+
   it('finds nothing outside the layers', async () => {
     expect(await files.find('../game/interface/core.gfx')).toBeUndefined();
     expect(await files.find(join(root, 'game', 'interface', 'core.gfx'))).toBeUndefined();

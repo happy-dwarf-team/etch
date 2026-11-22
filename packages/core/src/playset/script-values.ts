@@ -400,12 +400,8 @@ async function loadHistoryFiles<K>(
   folder: string,
   keyOf: (path: string) => K | undefined,
 ): Promise<Map<K, CountryHistoryFile[]>> {
-  const [game, ...mods] = files.layers;
-  const replaced = mods.some((layer) =>
-    layer.replacePaths.some(
-      (p) => p.replace(/\\/g, '/').replace(/\/+$/, '').toLowerCase() === folder,
-    ),
-  );
+  const game = files.layers[0];
+  const replaced = files.replacesGameFolder(folder);
   const gameNames = new Set<string>();
   if (game !== undefined && !replaced) {
     for (const file of await new GameFiles([game]).list(folder, '.txt')) {
