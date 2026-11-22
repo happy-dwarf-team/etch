@@ -1,8 +1,8 @@
 # Language features for interface files and script references, without a language id
 
-**Status: proposed** (draft for v3, 21 November 2026). All of it is built on
-`main` for the next release and waits for the maintainer to accept this
-decision: localisation inlay hints (etch#568), completion (etch#572), symbols
+**Status: accepted** (22 November 2026; proposed as a draft for v3 on 21
+November 2026). All of it is built for 2.14.0: localisation inlay hints
+(etch#568), completion (etch#572), symbols
 (etch#573), references and rename (etch#581, etch#584), colours (etch#583),
 images in more scripts (etch#585) and the gutter thumbnail (etch#587).
 

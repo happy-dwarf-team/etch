@@ -135,9 +135,9 @@ per-file times within 15 %.
 | Vanilla | 126,749 | 78–79 ms | 2,753 | 0.0 / 0.4 ms | `common/scripted_triggers/00_scripted_triggers_FR.txt` (601,491 characters) 3.7 ms; `events/RandomEvents.txt` (987 references, 975 hints) 2.9–3.1 ms |
 | Anbennar (Workshop 1385440355) over the game | 368,792 | 1,584 ms (first run), 263 ms (second) | 8,275 | 0.0 / 0.6 ms | `events/Flavour_Feiten_Y20.txt` (906,626 characters, 4,631 references, 654 hints) 8.7–10.1 ms; `events/DiggyDiggyDungeons.txt` (2,376 hints) 9.3–9.6 ms |
 
-The first Anbennar load read its files from disk, the second from the file cache. A proposed
-budget, should ADR 0008 be accepted: 2 s for the load on Anbennar from disk, and 50 ms for a
-document version of Anbennar's largest event file.
+The first Anbennar load read its files from disk, the second from the file cache. The budget,
+proposed with ADR 0008 and in force since its acceptance on 22 November 2026: 2 s for the load
+on Anbennar from disk, and 50 ms for a document version of Anbennar's largest event file.
 
 ### 2026-11-21, sprite references (ADR 0008, reported, not gated)
 
@@ -151,8 +151,8 @@ Anbennar gave the same times within 10 %.
 | Vanilla | 875 | 7 ms | 317 ms | 11–26 ms (`MERCHANTS_TALKING_eventPicture`: 136 places) |
 | Anbennar (Workshop 1385440355) over the game | 2,075 | 13 ms | 1,145–1,236 ms | 89–100 ms (the same picture: 209 places) |
 
-The read is made on each request; a proposed budget, should ADR 0008 be
-accepted: 2 s on Anbennar.
+The read is made on each request; the budget, proposed with ADR 0008 and in
+force since its acceptance on 22 November 2026: 2 s on Anbennar.
 
 ### 2026-11-21, completion in `.gui` files (ADR 0008, reported, not gated)
 
@@ -168,8 +168,8 @@ interface index and kept.
 | Anbennar (162 `.gui`, 177 `.gfx`) | 681 ms | 15,118, 47 | 39 ms | 1.7 ms (`topbar`, 345,968 characters), 2.3 ms, 2.0 ms |
 
 The interface load is the one the sprite hovers already make, shared with them.
-A proposed budget for the context, should ADR 0008 be accepted: 10 ms per call
-on Anbennar's largest `.gui` file.
+The budget for the context, proposed with ADR 0008 and in force since its
+acceptance on 22 November 2026: 10 ms per call on Anbennar's largest `.gui` file.
 
 ### 2026-10-28, the 2.0.0 trial's fixes (#219)
 
