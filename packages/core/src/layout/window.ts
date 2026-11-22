@@ -503,7 +503,10 @@ class Layout {
     const props = widgetProperties(widget, this.constants, this.input.screen);
     this.checkNotApplied(props);
     this.current = widget;
-    const anchor = this.anchor(props, parent);
+    // A window's background stands at the window's corner whatever its orientation: Anbennar's
+    // achievements window, where a child with the same `CENTER` stands at the centre (the
+    // coverage survey, etch#610).
+    const anchor = fill !== undefined ? { x: parent.x, y: parent.y } : this.anchor(props, parent);
     const entry = this.entry?.widget === widget ? this.entry : undefined;
     this.entry = undefined;
     // Hypothesis: the preview shows a window where it ends up once opened, at `show_position`,

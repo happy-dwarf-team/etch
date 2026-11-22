@@ -222,6 +222,20 @@ describe('layoutWindow: placement', () => {
     expect(rectOf(sized, 'inner')).toEqual([350, 260, 30, 20]);
   });
 
+  it("anchors a window's background at the window's corner, whatever its orientation", () => {
+    // Anbennar's achievements window (etch#610): its background, `Orientation = "CENTER"`, stands
+    // at the window's corner; another child of the same window, with the same orientation, at its
+    // centre.
+    const { layout } = setUp(`guiTypes = { windowType = {
+      name = "w" backGround = "bg" position = { x = 10 y = 20 } size = { x = 100 y = 80 }
+      iconType = { name = "bg" spriteType = "GFX_plain" orientation = "CENTER" }
+      iconType = { name = "other" spriteType = "GFX_plain" orientation = "CENTER" }
+    } }`);
+    const l = layout();
+    expect(rectOf(l, 'bg')).toEqual([10, 20, 20, 10]);
+    expect(rectOf(l, 'other')).toEqual([60, 60, 20, 10]);
+  });
+
   it('applies if_resolution blocks for the preview screen, in file order', () => {
     const text = `guiTypes = { windowType = {
       name = "w"
