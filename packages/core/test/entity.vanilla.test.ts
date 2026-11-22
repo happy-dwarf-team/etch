@@ -8,6 +8,8 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   animationFits,
+  checkAssetParticles,
+  checkGfxParticles,
   MAP_TREE_NAME,
   mapTreeOf,
   readAnimation,
@@ -16,7 +18,13 @@ import {
   type PdxMesh,
   type ResolvedEntity,
 } from '../src/asset/index.ts';
-import { GameFiles, loadEntityIndex, loadPdxMeshTypes } from '../src/playset/index.ts';
+import { decodeGameText, parseScript } from '../src/index.ts';
+import {
+  GameFiles,
+  loadEntityIndex,
+  loadPdxMeshTypes,
+  type GameFile,
+} from '../src/playset/index.ts';
 
 const gamePath = process.env['ETCH_GAME_PATH'];
 
@@ -178,5 +186,25 @@ describe.skipIf(gamePath === undefined)('entities of the installed game', () => 
     );
     expect(shapes.every((count) => count > 0)).toBe(true);
     expect(mapTreeOf(types, 'gfx/models/Mapitems/Trees/Pine_01.mesh')?.name).toBe('mapobject_2');
+  });
+
+  it('warns on no particle reference of its .asset and .gfx files', async () => {
+    const files = new GameFiles([{ name: 'game', root: gamePath ?? '', replacePaths: [] }]);
+    const index = await loadEntityIndex(files);
+    const under = async (dir: string, extension: string): Promise<GameFile[]> => [
+      ...(await files.list(dir, extension)),
+      ...(await Promise.all((await files.folders(dir)).map((sub) => under(sub, extension)))).flat(),
+    ];
+    const text = (file: GameFile): string =>
+      decodeGameText(readFileSync(file.absolutePath), 'script').text;
+    const assets = await under('gfx', '.asset');
+    const gfx = await under('interface', '.gfx');
+    const warnings = [
+      ...assets.flatMap((file) => checkAssetParticles(parseScript(text(file)), index)),
+      ...gfx.flatMap((file) => checkGfxParticles(parseScript(text(file)), index)),
+    ];
+    expect(warnings).toEqual([]);
+    expect(assets.length).toBeGreaterThan(0);
+    expect(gfx.length).toBeGreaterThan(0);
   });
 });

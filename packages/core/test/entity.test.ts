@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+  checkAssetParticles,
+  checkGfxParticles,
   EntityIndex,
   mapTreeOf,
   readAssetFile,
@@ -218,6 +220,59 @@ describe('resolveEntity', () => {
       'state fire: no pdxparticle "gun_mesh" in the .gfx files',
       'state again: no pdxparticle "flash_system" in the .gfx files',
     ]);
+  });
+
+  it('warns on the particle references of an .asset and a .gfx file the game cannot start', () => {
+    const gfx = `objectTypes = {
+      pdxparticle = { name = "flash" type = "flash_system" scale = 0.8 }
+      pdxparticle = { name = "smoke" type = "smoke_sytem" }
+      pdxparticle = { name = "bare" }
+      pdxparticle = { type = "nameless" }
+    }`;
+    const particles = `particle = { name = "flash_system" }
+    particle = { name = "lonely_system" }`;
+    const asset = `entity = { name = "gun"
+      state = { name = "fire"
+        event = { particle = "flash" } event = { time = 0.5 particle = "flash_system" }
+        event = { particle = "lonely_system" } event = { particle = "dust" } event = { time = 1 } }
+    }`;
+    const index = EntityIndex.of(
+      [],
+      [readAssetFile(parseScript(particles), 'gfx/particles/p.asset')],
+      [readPdxParticleTypes(parseScript(gfx), 'interface/p.gfx')],
+    );
+    const at = (text: string, d: { start: number; end: number }): string =>
+      text.slice(d.start, d.end);
+
+    const onAsset = checkAssetParticles(parseScript(asset), index);
+    expect(onAsset.map((d) => [d.code, at(asset, d)])).toEqual([
+      ['unknown-pdxparticle', '"flash_system"'],
+      ['unknown-pdxparticle', '"lonely_system"'],
+      ['unknown-pdxparticle', '"dust"'],
+    ]);
+    expect(onAsset.map((d) => d.message)).toEqual([
+      'No .gfx file has a pdxparticle named "flash_system", so the game does not start this particle. The game logs: Couldn\'t find particle 3D object "flash_system". "flash_system" is the name of a particle effect, not of a pdxparticle: use the pdxparticle that starts it, "flash".',
+      'No .gfx file has a pdxparticle named "lonely_system", so the game does not start this particle. The game logs: Couldn\'t find particle 3D object "lonely_system". "lonely_system" is the name of a particle effect, not of a pdxparticle: add a pdxparticle with type = "lonely_system" to a .gfx file, and write its name here.',
+      'No .gfx file has a pdxparticle named "dust", so the game does not start this particle. The game logs: Couldn\'t find particle 3D object "dust".',
+    ]);
+
+    const onGfx = checkGfxParticles(parseScript(gfx), index);
+    expect(onGfx.map((d) => [d.code, at(gfx, d), d.message])).toEqual([
+      [
+        'unknown-particle-system',
+        '"smoke_sytem"',
+        'No .asset file has a particle effect named "smoke_sytem", so the game cannot start the pdxparticle "smoke". The game logs: Could not find particle effect [smoke_sytem].',
+      ],
+      [
+        'pdxparticle-without-type',
+        '"bare"',
+        'The pdxparticle "bare" has no type, so the game does not know which particle effect to start. Add type = "…" with the name of an effect from an .asset file.',
+      ],
+    ]);
+    // Outside an objectTypes block, a pdxparticle is not a type the game reads.
+    expect(
+      checkGfxParticles(parseScript('pdxparticle = { name = "x" type = "y" }'), index),
+    ).toEqual([]);
   });
 
   it('applies a clone, then the entity: its mesh, scale, states and attach groups by name', () => {

@@ -16,6 +16,7 @@ import { registerGameText } from './game-text.ts';
 import { WidgetNavigation } from './navigation.ts';
 import { registerPreview, type PreviewApi } from './preview/index.ts';
 import { registerProvinceIds } from './province-ids.ts';
+import { registerParticleDiagnostics } from './particle-diagnostics.ts';
 import { registerScriptProfile } from './script-profile-view.ts';
 import { registerTexturePreview, type TexturePreviewApi } from './texture-preview.ts';
 import { registerMeshPreview, type MeshPreviewApi } from './mesh-preview.ts';
@@ -57,6 +58,7 @@ export function activate(context: vscode.ExtensionContext): EtchApi {
   liveGame = live.game;
   context.subscriptions.push(registerScriptProfile(live.game, output, context.globalStorageUri));
   context.subscriptions.push(registerProvinceIds(output));
+  context.subscriptions.push(registerParticleDiagnostics(output));
   if (RUNNING_BUILD !== undefined) {
     const build = new BuildCheck(RUNNING_BUILD, context.extensionUri, output);
     context.subscriptions.push(

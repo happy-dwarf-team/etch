@@ -131,6 +131,25 @@ The box under the bar lists an event whose particle the game cannot start:
 
 To fix it, add or correct the `pdxparticle` in your mod's `.gfx` file.
 
+### Warnings in the files
+
+Etch also warns you about these two cases in the files, without the preview. Open an `.asset`
+file from a `gfx` folder, or a `.gfx` file from an `interface` folder. A wavy underline marks
+each case. The same warning shows in VS Code's Problems panel (<kbd>Ctrl+Shift+M</kbd>), with
+"Etch" next to it.
+
+- In the `.asset` file, the underline is under the name in `particle = "…"` when no `.gfx` file
+  has a `pdxparticle` of that name. Sometimes you wrote the name of the effect instead of the
+  name of the `pdxparticle`: `my_smoke_effect` where your `.gfx` file has
+  `pdxparticle = { name = "my_smoke" type = "my_smoke_effect" }`. Then the warning tells you the
+  name of the `pdxparticle` to use, here `my_smoke`.
+- In the `.gfx` file, the underline is under `type = "…"` when no `.asset` file has an effect of
+  that name. It is under `name = "…"` when the `pdxparticle` has no `type`.
+
+The warnings update as you type in the open file. For the other files, Etch reads them as they
+are saved. So after you add a `pdxparticle` or an effect in another file, save that file. The
+warnings in the open files then update.
+
 ## What it doesn't do
 
 - It does not draw particle effects.

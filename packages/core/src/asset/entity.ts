@@ -26,7 +26,7 @@
 // replace the clone's states of the same name, and its attach groups replace the clone's groups
 // of the same name (an unnamed group is added).
 
-import type { BlockNode, ParsedScript, ScalarNode } from '../script/tree.ts';
+import type { BlockNode, ParsedScript, ScalarNode, SourceRange } from '../script/tree.ts';
 import { keyOf } from '../model/properties.ts';
 import { normaliseGamePath } from '../model/references.ts';
 
@@ -495,4 +495,84 @@ function resolve(index: EntityIndex, name: string, path: readonly string[]): Res
     attachments,
     problems,
   };
+}
+
+/**
+ * A warning on a particle reference of an `.asset` or `.gfx` file: a state event's particle that
+ * no pdxparticle type has (`unknown-pdxparticle`), a pdxparticle type whose `type` names no
+ * particle system (`unknown-particle-system`) or that has no `type` (`pdxparticle-without-type`).
+ * The range is the scalar it is about.
+ */
+export interface ParticleDiagnostic extends SourceRange {
+  readonly code: 'unknown-pdxparticle' | 'unknown-particle-system' | 'pdxparticle-without-type';
+  readonly message: string;
+}
+
+/**
+ * The state events of a parsed `.asset` file whose particle the game does not start: one that no
+ * pdxparticle type of the index has. When the name is a particle system's, the message says which
+ * pdxparticle types start it.
+ */
+export function checkAssetParticles(
+  parsed: ParsedScript,
+  index: EntityIndex,
+): ParticleDiagnostic[] {
+  const out: ParticleDiagnostic[] = [];
+  for (const entity of blocksOf(parsed, 'entity')) {
+    for (const state of blocksOf(entity, 'state')) {
+      for (const event of blocksOf(state, 'event')) {
+        const particle = scalarOf(event, 'particle');
+        if (particle === undefined || index.pdxparticles.has(particle.text)) continue;
+        const name = particle.text;
+        let hint = '';
+        if (index.particles.has(name)) {
+          const starting = [...index.pdxparticles.values()]
+            .filter((type) => type.type === name)
+            .map((type) => `"${type.name}"`);
+          hint =
+            starting.length === 0
+              ? ` "${name}" is the name of a particle effect, not of a pdxparticle: add a pdxparticle with type = "${name}" to a .gfx file, and write its name here.`
+              : ` "${name}" is the name of a particle effect, not of a pdxparticle: use the pdxparticle that starts it, ${starting.join(' or ')}.`;
+        }
+        out.push({
+          code: 'unknown-pdxparticle',
+          start: particle.start,
+          end: particle.end,
+          message: `No .gfx file has a pdxparticle named "${name}", so the game does not start this particle. The game logs: Couldn't find particle 3D object "${name}".${hint}`,
+        });
+      }
+    }
+  }
+  return out;
+}
+
+/**
+ * The pdxparticle types of a parsed `.gfx` file that start no particle system: a `type` that no
+ * `particle` block of the index has, or no `type` at all.
+ */
+export function checkGfxParticles(parsed: ParsedScript, index: EntityIndex): ParticleDiagnostic[] {
+  const out: ParticleDiagnostic[] = [];
+  for (const types of blocksOf(parsed, 'objecttypes')) {
+    for (const block of blocksOf(types, 'pdxparticle')) {
+      const name = scalarOf(block, 'name');
+      if (name === undefined) continue;
+      const type = scalarOf(block, 'type');
+      if (type === undefined) {
+        out.push({
+          code: 'pdxparticle-without-type',
+          start: name.start,
+          end: name.end,
+          message: `The pdxparticle "${name.text}" has no type, so the game does not know which particle effect to start. Add type = "…" with the name of an effect from an .asset file.`,
+        });
+      } else if (!index.particles.has(type.text)) {
+        out.push({
+          code: 'unknown-particle-system',
+          start: type.start,
+          end: type.end,
+          message: `No .asset file has a particle effect named "${type.text}", so the game cannot start the pdxparticle "${name.text}". The game logs: Could not find particle effect [${type.text}].`,
+        });
+      }
+    }
+  }
+  return out;
 }
