@@ -62,8 +62,10 @@ the mesh has bones does not play in the game: the preview shows that entity in i
 names the state in the box under the bar.
 
 Turning, moving and zooming, the colour boxes, **Flag**, **Region**, **LOD**, **Snow**, **Wire**,
-**Diffuse**, **Normal**, **Spec** and **Reset view** work as in the
-[mesh preview](mesh-preview.md).
+**Bones**, **Diffuse**, **Normal**, **Spec** and **Reset view** work as in the
+[mesh preview](mesh-preview.md). **Bones** shows the skeletons of the entity and of everything
+attached to it that has one. An orange dot marks each bone an attached entity hangs on: point at
+it to see the bone's name, then the name of the attached entity.
 
 ## Where it finds the files
 

@@ -106,6 +106,66 @@ export function placedBounds(
   return (min[0] ?? Infinity) <= (max[0] ?? -Infinity) ? { min, max } : undefined;
 }
 
+/** A bone as the Bones button draws it, in the drawn (Z mirrored) space. */
+export interface PlacedBone {
+  readonly name: string;
+  /** The bone's origin: the translation of its matrix. */
+  readonly at: readonly number[];
+  /** Its parent's origin; `undefined` for a root bone. */
+  readonly parent: readonly number[] | undefined;
+}
+
+/**
+ * The bones of a skeleton placed by an instance's model matrix: each bone's origin at a frame
+ * (`worlds`, the bone matrices in the mesh's space by skeleton index, as `boneWorldMatrices` gives
+ * them) and its parent's, in the drawn (Z mirrored) space.
+ */
+export function placedBones(
+  skeleton: readonly { readonly name: string; readonly parent: number | undefined }[],
+  worlds: readonly Float32Array[],
+  model: Float32Array,
+): PlacedBone[] {
+  const origin = (index: number): number[] | undefined => {
+    const w = worlds[index];
+    if (w === undefined) return undefined;
+    const x = w[12] ?? 0;
+    const y = w[13] ?? 0;
+    const z = w[14] ?? 0;
+    const m = model;
+    return [
+      (m[0] ?? 0) * x + (m[4] ?? 0) * y + (m[8] ?? 0) * z + (m[12] ?? 0),
+      (m[1] ?? 0) * x + (m[5] ?? 0) * y + (m[9] ?? 0) * z + (m[13] ?? 0),
+      -((m[2] ?? 0) * x + (m[6] ?? 0) * y + (m[10] ?? 0) * z + (m[14] ?? 0)),
+    ];
+  };
+  return skeleton.flatMap((bone, index) => {
+    const at = origin(index);
+    if (at === undefined) return [];
+    const parent =
+      bone.parent === undefined || bone.parent === index ? undefined : origin(bone.parent);
+    return [{ name: bone.name, at, parent }];
+  });
+}
+
+/**
+ * Where a point of the drawn space shows on a canvas `width` × `height` pixels, from its top left;
+ * `undefined` for a point behind the camera.
+ */
+export function onScreen(
+  viewProjection: Float32Array,
+  [x = 0, y = 0, z = 0]: readonly number[],
+  width: number,
+  height: number,
+): { x: number; y: number } | undefined {
+  const m = viewProjection;
+  const clip = [0, 1, 3].map(
+    (row) => (m[row] ?? 0) * x + (m[4 + row] ?? 0) * y + (m[8 + row] ?? 0) * z + (m[12 + row] ?? 0),
+  );
+  const [cx = 0, cy = 0, w = 0] = clip;
+  if (w <= 0) return undefined;
+  return { x: ((cx / w + 1) / 2) * width, y: ((1 - cy / w) / 2) * height };
+}
+
 /** How much of the view's height or width a framed box fills, at most. */
 export const FRAMED_FILL = 0.9;
 

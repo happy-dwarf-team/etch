@@ -75,6 +75,8 @@ type Drawn = NonNullable<Summary['drawn']> & {
   readonly from: string;
   /** The frame slider, as the summary gives it. */
   readonly frame: Summary['frame'];
+  /** The Bones button's bones, as the summary gives them. */
+  readonly skeleton: Summary['skeleton'];
 };
 
 /** The colour the open preview of an entity draws, read back after a frame with `controls`. */
@@ -98,6 +100,7 @@ async function measure(
         ...result.summary.drawn,
         from: JSON.stringify({ shapes, textured, textures, nodes: entity?.nodes }),
         frame: result.summary.frame,
+        skeleton: result.summary.skeleton,
       });
     });
   });
@@ -212,6 +215,14 @@ export async function testEntityPreview(api: EtchApi): Promise<void> {
     const again = await measure(api, asset, 'etch_flag', { frame: 2 });
     assert.deepEqual(again.frame, { at: 0, of: 2, playing: false }, 'frame 2 wraps to 0');
     assert.deepEqual([again.pixels, again.mean], [first.pixels, first.mean]);
+    // The Bones button: the flag's two bones and the knob's two, the tip marked for the knob on
+    // it, drawn over the model.
+    const boned = await measure(api, asset, 'etch_flag', { skeleton: true });
+    assert.deepEqual(boned.skeleton, { bones: 4, attachments: ['tip'] });
+    assert.notDeepEqual([boned.pixels, boned.mean], [again.pixels, again.mean], 'bones drawn');
+    const unboned = await measure(api, asset, 'etch_flag', { skeleton: false });
+    assert.equal(unboned.skeleton, undefined);
+    assert.deepEqual([unboned.pixels, unboned.mean], [again.pixels, again.mean]);
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
 
     const bare = await open(api, asset, 'etch_flag_bare');
