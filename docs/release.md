@@ -96,6 +96,34 @@ without it.
 
 ## Each release
 
+Player-facing text added to the release pull request's description, such as a
+"For modders" summary, goes **below** the `## [x.y.z](…)` heading, which comes
+after release-please's header (`:robot: I have created a release *beep* *boop*`
+and `---`). Never put text above that header, and keep the header, the heading
+and the closing `---` footer as they are:
+
+```markdown
+:robot: I have created a release *beep* *boop*
+---
+
+
+## [2.14.0](https://github.com/happy-dwarf-team/etch/compare/v2.13.0...v2.14.0) (2026-11-22)
+
+Your summary for players and modders goes here.
+
+### Features
+…
+```
+
+When the pull request merges, release-please (17.6) reads the release notes
+from the description, starting at that header. Text above it leaves release-please
+with "Failed to find version in release notes", and the GitHub release is
+created with an empty body; 2.14.0 went out that way (run 45038322046). The
+Discord post (`discord-release.yml`) now refuses a release without notes and
+fails `notify-discord`: fix the notes with `gh release edit`, then run
+`discord-release.yml` in `happy-dwarf-team/.github` by hand with the
+repository and tag.
+
 Approve the `vscode-marketplace` deployment of the `marketplace` job; it
 publishes the release's VSIX. The Marketplace scans the file and lists it after
 a few minutes. While it waits, later pushes still update the release pull request.
