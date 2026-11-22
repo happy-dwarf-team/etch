@@ -23,6 +23,15 @@
 // `common/defines.lua` (-1, -1, 0.5, pointing away from the light). The map's fog of war, terra
 // incognita, snow and distance fog are left out.
 //
+// Back faces are culled, as pdxmesh.shader's one rasterizer state for all its effects says
+// (`CullMode = "CULL_BACK"`, `FrontCCW = no`: a front face runs clockwise on the screen). The Z
+// mirror leaves the screen image as the game's, so a front face runs clockwise here too
+// (`gl.frontFace(gl.CW)`); in vanilla's meshes 99.5% of the triangles turn that way round their
+// normals. A sheet the artist meant to be seen from both sides (a ship's sails) is modelled twice,
+// once each way, and shows the side that faces the camera, lit as that side. tree.shader names no
+// rasterizer state, so the engine's default holds; its fields are Direct3D's, whose default culls
+// back faces, and the map trees are culled the same (not confirmed in the game's code).
+//
 // A mesh the playset names as a map tree (`mapobject_<n>`) is drawn as the game's tree shader
 // (`gfx/FX/tree.shader`, read, not copied) draws it, whatever shader its materials name: texels
 // with a diffuse alpha under 0.5 are cut out, the same light, and no highlight. Its normal map
@@ -904,7 +913,10 @@ function render(now: number): void {
   gl.clearColor(...BACKGROUND, 1);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   gl.enable(gl.DEPTH_TEST);
-  gl.disable(gl.CULL_FACE);
+  // Back faces culled, as the game's rasterizer state does (see the notes at the top).
+  gl.enable(gl.CULL_FACE);
+  gl.cullFace(gl.BACK);
+  gl.frontFace(gl.CW);
   gl.useProgram(program);
   const uniform = (name: string): WebGLUniformLocation | null =>
     gl.getUniformLocation(program as WebGLProgram, name);

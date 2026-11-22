@@ -137,6 +137,14 @@ The slider beside **Play** shows where the animation is. It moves along as the a
 
 The line at the bottom shows the frame you are on. **Play** goes on from there.
 
+## Front and back of a surface
+
+Each triangle has a front and a back, and the preview draws only its front, as the game does.
+Seen from behind, a triangle is not drawn. A closed model looks the same either way, but a single
+sheet, such as a cape made of one layer, vanishes when you turn it round. To show a sheet from both
+sides, model it twice in your 3D editor, the second copy flipped, as vanilla does with its ships'
+sails.
+
 ## Edit and see it at once
 
 Keep the mesh open while you work on it. When the mesh, or a texture or an animation in its folder,
