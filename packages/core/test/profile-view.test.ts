@@ -728,6 +728,59 @@ describe("a rule's offset (the diplomacy view's labels)", () => {
   });
 });
 
+describe("the lobby's religion icons", () => {
+  const file = readGuiFile(
+    parseScript(`guiTypes = {
+  windowType = {
+    name = "country_selection_panel"
+    size = { x = 600 y = 600 }
+    windowType = { name = "lobby" size = { x = 600 y = 600 }
+      windowType = { name = "right" size = { x = 600 y = 600 }
+        windowType = { name = "singleplayer" size = { x = 200 y = 340 }
+          iconType = { name = "religion_icon" position = { x = 148 y = 26 } }
+          iconType = { name = "secondary_religion_icon" position = { x = 160 y = 84 } }
+        }
+      }
+    }
+  }
+}`),
+  );
+  const window = file.definitions[0] as Widget;
+  const written = readProfile(
+    readFileSync(
+      new URL('../../../profiles/vanilla/country_selection_panel.jsonc', import.meta.url),
+      'utf8',
+    ),
+    { layer: 0, source: 'vanilla', file: 'country_selection_panel.jsonc' },
+  ).file;
+  const profile = layerProfiles('country_selection_panel', written === undefined ? [] : [written]);
+  const icons = (icon: string) => {
+    const view = evaluateView(profile, window, LARGE, {
+      set: { page: 'lobby', country: 'chosen' },
+      facts: { 'country.religionIcon': icon },
+    });
+    const layout = layoutWindow(window, {
+      file,
+      index: InterfaceIndex.of([], [{ path: 'interface/frontend.gui', file }]),
+      exists: () => false,
+      assets: { textureSize: () => undefined, font: () => undefined },
+      screen: LARGE,
+      view: layoutViewOf(view),
+    });
+    const at = (name: string) => {
+      const w = layout.widgets.find((l) => l.widget.name === name);
+      return w === undefined ? undefined : [w.x, w.y];
+    };
+    return { main: at('religion_icon'), secondary: at('secondary_religion_icon') };
+  };
+
+  it('moves the main icon 18 px down and hides the other without a secondary religion', () => {
+    expect(icons('none')).toEqual({ main: [148, 44], secondary: undefined });
+    expect(icons('school')).toEqual({ main: [148, 44], secondary: undefined });
+    expect(icons('secondary')).toEqual({ main: [148, 26], secondary: [160, 84] });
+  });
+});
+
 describe('the diplomacy view of another country (the coverage survey)', () => {
   const file = readGuiFile(
     parseScript(`guiTypes = {

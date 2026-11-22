@@ -29,6 +29,13 @@
       "values": { "none": "None chosen", "chosen": "Chosen" },
       "note": "Whether the player has chosen a country in the single-player lobby: the coverage survey shows the country's panel in place of no_player.",
     },
+    "religionIcon": {
+      "kind": "data",
+      "label": "Religion icon",
+      "fact": "country.religionIcon",
+      "values": { "none": "None", "secondary": "Secondary religion", "school": "Religious school" },
+      "note": "The lobby's country panel shows the chosen country's secondary religion; without one eu4.exe hides secondary_religion_icon and moves religion_icon 18 px down (Steam 1.37.5 0x11199A0). The lobby shows no religious school, so a school counts as none.",
+    },
   },
   "rules": {
     "lobby-no-country": {
@@ -38,6 +45,11 @@
     "lobby-country": {
       "when": { "page": ["lobby", "nation-designer"], "country": "chosen" },
       "hide": ["country_selection_panel/lobby/right/no_player"],
+    },
+    "no-secondary-religion": {
+      "when": { "religionIcon": ["none", "school"] },
+      "hide": ["country_selection_panel/lobby/right/singleplayer/secondary_religion_icon"],
+      "offset": { "country_selection_panel/lobby/right/singleplayer/religion_icon": { "y": 18 } },
     },
     "hidden": {
       "note": "Hidden in the corpus capture of \"lobby\" and \"main-menu\" in vanilla (Russia, 17 March 1719): the game decides these from its data or a click; show one by hand.",
