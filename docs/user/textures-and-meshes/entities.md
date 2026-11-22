@@ -56,7 +56,8 @@ file that plays. For the soldier, `idle` plays `polearm_twohanded_idle.anim`. An
 with no animation for the state stays on its bone as the bone moves.
 
 Turning, moving and zooming, the colour boxes, **Flag**, **Region**, **LOD**, **Snow**, **Wire**,
-**Maps** and **Reset view** work as in the [mesh preview](mesh-preview.md).
+**Diffuse**, **Normal**, **Spec** and **Reset view** work as in the
+[mesh preview](mesh-preview.md).
 
 ## Where it finds the files
 

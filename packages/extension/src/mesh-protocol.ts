@@ -21,6 +21,8 @@ export interface MeshSummary {
    * `beside the mesh`), or `not found`.
    */
   readonly textures: Readonly<Record<string, string>>;
+  /** Which of the materials' maps are drawn: the Diffuse, Normal and Spec buttons. */
+  readonly maps: MeshMaps;
   /** For an entity: its meshes in drawing order and the states offered. */
   readonly entity?: EntitySummary;
   /** When `PdxMeshTextureAtlas` parts are drawn: how many, and the flag on them. */
@@ -136,12 +138,13 @@ export type MeshPlace =
 
 /**
  * The preview's controls, set as a user would set them: Snow, Turn, Ground (`#rrggbb`), Date
- * (a day of the year, 0 for 1 January), North, the Maps button and the three country colours
- * (`#rrggbb`). Etch's tests set them
+ * (a day of the year, 0 for 1 January), North, the Diffuse, Normal and Spec buttons and the
+ * three country colours (`#rrggbb`). Etch's tests set them
  * through `MeshPreviewApi.control`.
  */
 export interface MeshControls {
-  readonly maps?: boolean;
+  /** The Diffuse, Normal and Spec buttons; a map left out keeps its button. */
+  readonly maps?: Partial<MeshMaps>;
   /** The Region box: a colonial nation's region colour (`#rrggbb`), or `null` for off. */
   readonly region?: string | null;
   readonly colours?: {
@@ -168,6 +171,18 @@ export interface MeshControls {
    * (wrapped into its frames); nothing without one.
    */
   readonly frame?: number;
+}
+
+/**
+ * Which of a material's maps the preview draws. Without the diffuse map a part is plain grey, and
+ * what its alpha marks goes with it (a flag, see-through parts, a map tree's cut-out leaves);
+ * without the specular map, the highlight and a `PdxMeshColor` part's country colours, which its
+ * R, G and B mask.
+ */
+export interface MeshMaps {
+  readonly diffuse: boolean;
+  readonly normal: boolean;
+  readonly specular: boolean;
 }
 
 export interface FlagSummary {
