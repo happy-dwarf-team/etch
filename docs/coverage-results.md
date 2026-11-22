@@ -602,10 +602,20 @@ Two live failures were the preview's own, and are fixed:
   sort button, and the live match still adopted the game's headings as copies made by the code, so
   the live preview drew six headings too many. The ledger view becomes fully right from the live
   snapshot on every set that has it: Verne 54 → 55 of 58 at 1920×1080, 46 → 47 of 50 at 1280×720,
-  Bluescale 41 → 42 of 44, Kobildzan 39 → 40 of 43.
+  Bluescale 41 → 42 of 44, Kobildzan 39 → 40 of 43. In the survey's stored captures, vanilla,
+  Bigger UI and Anbennar at 1920×1080 each gain one view fully right (`vanilla-save-s28`,
+  `anbennar-alone-save-s21`).
 - **The peace view's text scrollbar** (etch#608): the game adds `standardtext_slider` beside the
   terms' description when it overflows; the preview adopted the bar but drew none of its buttons,
-  the 4 live visibility failures left in vanilla at 1920×1080 (99.96 %).
+  the 4 live visibility failures left in vanilla at 1920×1080. With the fix, live visibility is
+  100.00 % (10076 of 10076) there too.
+
+One offline rect is fixed too: Anbennar's achievements background (etch#610, etch#611), which the
+preview anchored by its own `CENTER` where the game puts a window's background at the window's
+corner. With the profiles, Anbennar at 1920×1080 goes from 18 to 17 rects off.
+
+Each fix was measured on its branch over the survey's stored captures, against `main`: no view got
+worse in any measure.
 
 What stays is listed by kind in [v3-gate-status.md](v3-gate-status.md): three proposed known
 deviations (etch#604, the heights of texts the game's code fills; etch#605, a province's building
