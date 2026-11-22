@@ -100,8 +100,22 @@ least half of its bones. The ones whose names start with the mesh's name come fi
 
 1. Pick an animation in the list. It plays in a loop, and the line at the bottom shows its frame
    and speed.
-2. Click **Pause** to stop it, and **Play** to start it again.
+2. Click **Pause** to stop it, and **Play** to go on from the same frame.
 3. Pick **Bind pose**, at the top of the list, to see the model without an animation.
+
+### Go to a frame
+
+The slider beside **Play** shows where the animation is. It moves along as the animation plays.
+
+- Drag the slider to a frame: the animation stops there while you drag, and the model takes that
+  frame's pose. When you let go, it plays on from there. If it was paused, it stays paused.
+- Click the slider, then press <kbd>←</kbd> or <kbd>→</kbd> to step one frame back or forward.
+  The animation pauses at that frame.
+- Or press <kbd>,</kbd> and <kbd>.</kbd> anywhere in the preview, as in a video player: one frame
+  back and one frame forward. They do nothing while you type in a box, such as **Flag**.
+
+The line at the bottom shows the frame number. Click **Play** to go on from the frame you
+stepped to.
 
 ## Edit and see it at once
 

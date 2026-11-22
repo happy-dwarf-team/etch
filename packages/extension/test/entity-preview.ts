@@ -13,6 +13,7 @@ import * as vscode from 'vscode';
 import { ANIM, binary, MESH, strs } from '../../core/test/fixtures/pdx-asset.ts';
 import type { EtchApi } from '../src/extension.ts';
 import { PREVIEW_ENTITY_COMMAND, type EntityShown } from '../src/entity-preview.ts';
+import type { MeshControls } from '../src/mesh-protocol.ts';
 import { dds } from './asset-links.ts';
 
 const COLD_TIMEOUT_MS = 30_000;
@@ -69,10 +70,17 @@ type Summary = Extract<EntityShown, { ok: true }>['summary'];
 type Drawn = NonNullable<Summary['drawn']> & {
   /** What the frame was drawn from, for a failure's message. */
   readonly from: string;
+  /** The frame slider, as the summary gives it. */
+  readonly frame: Summary['frame'];
 };
 
-/** The colour the open preview of an entity draws, read back after a frame. */
-async function measure(api: EtchApi, uri: vscode.Uri, name: string): Promise<Drawn> {
+/** The colour the open preview of an entity draws, read back after a frame with `controls`. */
+async function measure(
+  api: EtchApi,
+  uri: vscode.Uri,
+  name: string,
+  controls: MeshControls = {},
+): Promise<Drawn> {
   const drawn = new Promise<Drawn>((resolve, reject) => {
     const timer = setTimeout(() => {
       subscription.dispose();
@@ -86,10 +94,11 @@ async function measure(api: EtchApi, uri: vscode.Uri, name: string): Promise<Dra
       resolve({
         ...result.summary.drawn,
         from: JSON.stringify({ shapes, textured, textures, nodes: entity?.nodes }),
+        frame: result.summary.frame,
       });
     });
   });
-  assert.ok(await api.entityPreview.control(uri, name, {}), `a preview of ${name} is open`);
+  assert.ok(await api.entityPreview.control(uri, name, controls), `a preview of ${name} is open`);
   const result = await drawn;
   assert.ok(
     result.pixels >= MIN_DRAWN_PIXELS,
@@ -183,6 +192,20 @@ export async function testEntityPreview(api: EtchApi): Promise<void> {
     // smaller window, where the knob then read as background grey.
     await makeRoom();
     const knobbed = await measure(api, asset, 'etch_flag');
+    // The frame slider pauses the idle state and poses the flag and the knob on its tip at a
+    // frame: the same frame draws the same, the other (the tip turned) does not.
+    const first = await measure(api, asset, 'etch_flag', { frame: 0 });
+    assert.deepEqual(first.frame, { at: 0, of: 2, playing: false });
+    const second = await measure(api, asset, 'etch_flag', { frame: 1 });
+    assert.deepEqual(second.frame, { at: 1, of: 2, playing: false });
+    assert.notDeepEqual(
+      [second.pixels, second.mean],
+      [first.pixels, first.mean],
+      'the tip turned on frame 1',
+    );
+    const again = await measure(api, asset, 'etch_flag', { frame: 2 });
+    assert.deepEqual(again.frame, { at: 0, of: 2, playing: false }, 'frame 2 wraps to 0');
+    assert.deepEqual([again.pixels, again.mean], [first.pixels, first.mean]);
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
 
     const bare = await open(api, asset, 'etch_flag_bare');
