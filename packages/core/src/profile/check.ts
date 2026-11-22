@@ -178,6 +178,7 @@ export function checkProfile(profile: WindowProfile, input: ProfileCheckInput): 
       ...rule.position,
       ...rule.frame,
       ...(rule.sprite ?? []),
+      ...(rule.chartSize ?? []),
       ...rule.offset,
       ...rule.hidePosition,
       ...rule.adopt,

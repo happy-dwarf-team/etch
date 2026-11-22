@@ -184,6 +184,7 @@
         { "required": ["position"] },
         { "required": ["frame"] },
         { "required": ["sprite"] },
+        { "required": ["chartSize"] },
         { "required": ["offset"] },
         { "required": ["hidePosition"] },
         { "required": ["adopt"] }
@@ -232,6 +233,19 @@
           "description": "Sprites the game's code sets in place of the .gui one, keyed by path: drawn as named, without the screen size's _large and _huge variants.",
           "type": "object",
           "additionalProperties": { "type": "string" }
+        },
+        "chartSize": {
+          "description": "The size the game's code gives a chart in place of its sprite's size, keyed by path: { x, y } in pixels. A pie chart keeps its centre, the widget's lower left corner, so move it by its difference with an offset.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["x", "y"],
+            "additionalProperties": false,
+            "properties": {
+              "x": { "type": "integer", "minimum": 1 },
+              "y": { "type": "integer", "minimum": 1 }
+            }
+          }
         },
         "offset": {
           "description": "Widgets the game's code moves by a number of pixels from where they would be, keyed by path: { x, y }, each 0 when left out.",

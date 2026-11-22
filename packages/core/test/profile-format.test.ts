@@ -147,6 +147,11 @@ describe('the format errors of a window profile', () => {
       '"r": { "offset": { "w/x": { "x": 1.5 } } }',
       '"x" of an offset is a whole number of pixels.',
     ],
+    [
+      RULE,
+      '"r": { "chartSize": { "w/x": { "x": 32 } } }',
+      '"y" of a chart size is a whole number of pixels from 1.',
+    ],
     [RULE, '"r": { "hide": ["w/x"], "frame": { " ": 2 } }', 'A path is not empty.'],
     [VIEW, '"v": { "set": ["s"] }', '"set" is an object of selector values keyed by selector.'],
     [

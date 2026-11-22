@@ -20,6 +20,11 @@
     },
   },
   "rules": {
+    "dev-share-chart": {
+      "note": "eu4.exe sizes the development pie chart 32 × 32 (Steam 1.37.5 0xF28230) where GFX_ledger_piechart_default says 128; the chart keeps its centre, the widget's lower left corner, so the widget is 96 px lower (the coverage survey: 47, 291, 32 × 32 at 1920×1080).",
+      "chartSize": { "countryestatesview/dev_share_pie_chart": { "x": 32, "y": 32 } },
+      "offset": { "countryestatesview/dev_share_pie_chart": { "y": 96 } },
+    },
     "no-crown-land-effect": {
       "when": { "crownLand": "none" },
       "hide": [
