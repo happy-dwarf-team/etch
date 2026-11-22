@@ -205,20 +205,32 @@ export function liveMatch(
   const known = new Set(entries.map((e) => e.path.toLowerCase()));
   const pathOf = new Map(entries.map((e) => [e.widget, e.path.toLowerCase()]));
   const placed: { prefix: string; list: string }[] = [];
+  // A table's headings (`place.table.label`), which the preview draws with each entry: the game
+  // names them after their definition, `ledger_sort_buttons/ledger_default_button_text[2]`.
+  const headings: string[] = [];
   for (const repeater of profile?.repeaters ?? []) {
     for (const list of widgetsAt(window, repeater.path.path)) {
       const listPath = pathOf.get(list);
       if (listPath === undefined || LIST_BOXES.has(list.kind)) continue;
       const template = repeater.template.toLowerCase();
       placed.push({ prefix: `${listPath}/${template}`, list: listPath });
+      const label = repeater.place?.table?.label?.toLowerCase();
+      if (label !== undefined) headings.push(`${listPath}/${label}`);
       const parent = listPath.slice(0, listPath.lastIndexOf('/'));
       if (list.kind === 'OverlappingElementsBoxType' && parent !== '') {
         placed.push({ prefix: `${parent}/${template}`, list: listPath });
       }
     }
   }
+  const heading = (path: string): boolean =>
+    headings.some((h) => path.startsWith(h) && /^(?:\[\d+\])?$/.test(path.slice(h.length)));
   const normal = (raw: string): string => {
     const path = raw.toLowerCase();
+    for (const h of headings) {
+      if (!path.startsWith(h)) continue;
+      const match = /^(?:\[(\d+)\])?$/.exec(path.slice(h.length));
+      if (match !== null) return `${h}[${match[1] ?? '1'}]`;
+    }
     for (const { prefix, list } of placed) {
       if (!path.startsWith(prefix)) continue;
       const match = /^(?:\[(\d+)\])?(\/.*)?$/.exec(path.slice(prefix.length));
@@ -242,7 +254,8 @@ export function liveMatch(
       w.visible &&
       !known.has(path) &&
       known.has(parent) &&
-      !/\/row\[\d+\]/.test(path)
+      !/\/row\[\d+\]/.test(path) &&
+      !heading(path)
     ) {
       const name = (w.path.split('/').pop() ?? '').replace(/\[\d+\]$/, '');
       const entry = {
@@ -271,7 +284,7 @@ export function liveMatch(
     // The colours too: the game colours values with codes (§G…§!), which Tongs' `text` drops.
     const text = w.markup ?? w.text;
     if (text === undefined) continue;
-    if (known.has(row === null ? path : (row[1] ?? ''))) texts.set(path, text);
+    if (known.has(row === null ? path : (row[1] ?? '')) || heading(path)) texts.set(path, text);
     else if (!builtByCode(path, known)) unmatched++;
   }
   // Lookups take the game's paths too (`…/building_progress_entry[2]/…`), as they are stored.

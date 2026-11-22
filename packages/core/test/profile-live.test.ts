@@ -274,6 +274,39 @@ describe('liveMatch with the profile', () => {
     expect(match.texts.rows?.('provinceview/rows')).toBe(0);
     expect(match.texts.rows?.('provinceview/hidden_rows')).toBeUndefined();
   });
+
+  it("takes a table's headings as the entries' headings, not as widgets the code adopted", () => {
+    const file = readGuiFile(
+      parseScript(`guiTypes = {
+  windowType = { name = "provinceview" windowType = { name = "sort_buttons" } }
+  guiButtonType = { name = "sort_button" }
+  instantTextBoxType = { name = "sort_text" }
+}`),
+    );
+    const table = profile(`
+      "repeaters": {
+        "provinceview/sort_buttons": { "template": "sort_button",
+          "place": { "table": { "weights": [1, 3], "label": "sort_text" } } }
+      }`);
+    const found = liveMatch(
+      snapshot([
+        w('provinceview', true),
+        w('provinceview/sort_buttons', true),
+        w('provinceview/sort_buttons/sort_button[1]', true, { type: 'button' }),
+        w('provinceview/sort_buttons/sort_button[2]', true, { type: 'button' }),
+        w('provinceview/sort_buttons/sort_text[1]', true, { type: 'text', text: '' }),
+        w('provinceview/sort_buttons/sort_text[2]', true, { type: 'text', text: 'Country' }),
+      ]),
+      file.definitions[0] as Widget,
+      table,
+    );
+    expect(found.texts.rows?.('provinceview/sort_buttons')).toBe(2);
+    expect(found.texts.text('provinceview/sort_buttons/sort_text[2]')).toBe('Country');
+    expect(found.texts.state?.('provinceview/sort_buttons/sort_text[2]')?.visible).toBe(true);
+    // Before, the headings came back a second time as copies the game's code made.
+    expect(found.texts.adopted?.('provinceview/sort_buttons')).toEqual([]);
+    expect(found.unmatched).toBe(0);
+  });
 });
 
 describe('liveSelectors', () => {
