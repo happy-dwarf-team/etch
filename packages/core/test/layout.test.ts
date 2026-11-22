@@ -1254,6 +1254,51 @@ describe('layoutWindow: sample data', () => {
     });
   });
 
+  it("draws an adopted scrollbar's buttons where the snapshot showed them", () => {
+    const { file, input } = setUp(`guiTypes = {
+      windowType = { name = "panel" size = { x = 200 y = 200 } position = { x = 0 y = 0 } }
+      scrollbarType = { name = "text_slider" size = { x = 12 y = 12 }
+        guiButtonType = { name = "slider" spriteType = "GFX_plain" position = { x = 0 y = 0 } }
+        guiButtonType = { name = "track" spriteType = "GFX_plain" position = { x = 12 y = 12 } }
+        guiButtonType = { name = "up" spriteType = "GFX_plain" position = { x = 0 y = 0 } }
+        guiButtonType = { name = "down" spriteType = "GFX_plain" position = { x = 0 y = 120 } }
+      }
+    }`);
+    const panel = file.definitions[0] as Widget;
+    const l = layoutWindow(panel, {
+      ...input,
+      content: {
+        text: () => undefined,
+        rows: () => undefined,
+        adopted: (w) =>
+          w === panel
+            ? [
+                {
+                  name: 'text_slider',
+                  rect: [150, 20, 16, 110],
+                  // As peace_view's: the game's code lays the buttons out along the bar; the
+                  // track it did not show stays out.
+                  parts: [
+                    { name: 'up', rect: [150, 20, 16, 16] },
+                    { name: 'slider', rect: [150, 36, 16, 16] },
+                    { name: 'down', rect: [150, 114, 16, 16] },
+                  ],
+                },
+              ]
+            : [],
+      },
+    });
+    const rect = (name: string) => {
+      const w = l.widgets.find((x) => x.widget.name === name);
+      return w === undefined ? undefined : [w.x, w.y, w.width, w.height];
+    };
+    expect(rect('text_slider')).toEqual([150, 20, 16, 110]);
+    expect(rect('up')).toEqual([150, 20, 16, 16]);
+    expect(rect('slider')).toEqual([150, 36, 16, 16]);
+    expect(rect('down')).toEqual([150, 114, 16, 16]);
+    expect(rect('track')).toBeUndefined();
+  });
+
   it("re-anchors a snapshot taken at 2560×1440 to a 1440×900 preview's screen", () => {
     const { file, input } = setUp(`guiTypes = {
       windowType = { name = "pv" orientation = "LOWER_LEFT" position = { x = 0 y = -580 }

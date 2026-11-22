@@ -242,6 +242,7 @@ export function liveMatch(
   const states = new Map<string, LiveState>();
   const rows = new Map<string, number>();
   const adopted = new Map<string, LiveAdopted[]>();
+  const partsOf = new Map<string, LiveAdopted[]>();
   let unmatched = 0;
   for (const w of snapshot.widgets) {
     const path = normal(w.path);
@@ -258,12 +259,22 @@ export function liveMatch(
       !heading(path)
     ) {
       const name = (w.path.split('/').pop() ?? '').replace(/\[\d+\]$/, '');
+      const parts: LiveAdopted[] = [];
       const entry = {
         name,
         rect: w.rect,
         ...(w.text === undefined ? {} : { text: w.markup ?? w.text }),
+        parts,
       };
       adopted.set(parent, [...(adopted.get(parent) ?? []), entry]);
+      partsOf.set(path, parts);
+    } else if (at > 0 && w.visible && partsOf.has(parent)) {
+      // A shown child of an adopted widget: the game's code put it there too.
+      partsOf.get(parent)?.push({
+        name: (w.path.split('/').pop() ?? '').replace(/\[\d+\]$/, ''),
+        rect: w.rect,
+        ...(w.text === undefined ? {} : { text: w.markup ?? w.text }),
+      });
     }
     states.set(path, {
       visible: w.visible,

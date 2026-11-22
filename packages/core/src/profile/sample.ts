@@ -99,6 +99,11 @@ export interface LiveAdopted {
   /** Where the game showed it; without one, its own `.gui` position (a profile's `adopt`). */
   readonly rect?: readonly [number, number, number, number];
   readonly text?: string;
+  /**
+   * Its own children the game showed, by name: the buttons of a text box's scrollbar, which the
+   * game's code lays out along the bar (`peace_view`'s `standardtext_slider`).
+   */
+  readonly parts?: readonly LiveAdopted[];
 }
 
 export interface LiveTexts {
