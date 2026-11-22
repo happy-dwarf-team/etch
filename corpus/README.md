@@ -305,8 +305,10 @@ another session's).
      -AnvilZip <anvil zip> -TongsZip <tongs zip>
    ```
 
-   Prepare refuses while an Anvil is installed in the Steam folder (a lab
-   script's run: the copy's junctions would lead into it), checks both
+   Prepare leaves an Anvil installed in the Steam folder (whatever the Anvil
+   archive has at its top: `anvil`, `version.dll`, `AnvilManager.exe`; the
+   player's or a lab script's run) out of the copy, which
+   gets its own from the archive, so the Steam folder is only read. It checks both
    archives against their sums, turns Tongs on with
    `input = true` (game calls stay off by default), turns `anvil-overlay` off (its
    notifications would be in the screenshots), and writes `host.json` with
