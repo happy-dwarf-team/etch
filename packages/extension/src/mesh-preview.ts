@@ -23,7 +23,7 @@ import {
   type ValueNode,
 } from '@etch/core';
 import {
-  jointsOfBones,
+  animationFits,
   mapTreeOf,
   MAP_SEASONS,
   readBmp,
@@ -366,10 +366,8 @@ async function animationsOf(
     if (type !== vscode.FileType.File || !/\.anim$/i.test(name)) continue;
     try {
       const animation = readAnimation(await read(path.join(folder, name)));
-      const fits = skeletons.some((shape) => {
-        const named = jointsOfBones(shape.skeleton, animation).filter((j) => j !== undefined);
-        return named.length * 2 >= shape.skeleton.length;
-      });
+      // The game plays an animation only on a skeleton with as many bones as it has joints.
+      const fits = skeletons.some((shape) => animationFits(shape.skeleton, animation));
       if (fits) found.push({ name, frames: animation.frames, fps: animation.fps });
     } catch {
       // An animation Etch cannot read is not offered.

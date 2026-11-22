@@ -113,9 +113,13 @@ Map trees take snow too, in their own way: see [Map trees](map-trees.md).
 
 ## Animations
 
-If the mesh has a skeleton, a list in the bar offers the `.anim` files in its folder that move at
-least half of its bones. The ones whose names start with the mesh's name come first, such as
-`carrack_idle.anim` for `carrack.mesh`.
+If the mesh has a skeleton, a list in the bar offers the `.anim` files in its folder that have as
+many joints as the mesh has bones: the game plays no other animation on it. The ones whose names
+start with the mesh's name come first, such as `carrack_idle.anim` for `carrack.mesh`.
+
+As in the game, an animation moves the bones by their order, not by their names: its first joint
+moves the skeleton's first bone, its second joint the second bone, and so on. A joint named
+`attack_L_hand` in tenth place moves the tenth bone, even if that bone is `Left_hand_node`.
 
 1. Pick an animation in the list. It plays in a loop, and the line at the bottom shows its frame
    and speed.

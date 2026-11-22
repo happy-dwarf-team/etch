@@ -119,3 +119,19 @@ export const ANIM: Item[] = [
   obj(1, 'samples'),
   floats('q', 0, 0, 0, 1, 0, 0, half, half),
 ];
+
+/** `ANIM` with a third, still joint: one joint more than `MESH` has bones. */
+export const ANIM_THREE_JOINTS: Item[] = ANIM.flatMap((item) =>
+  'name' in item && item.name === 'j'
+    ? [ints('j', 3)]
+    : 'object' in item && item.object === 'samples'
+      ? [
+          obj(2, 'extra'),
+          strs('sa', ''),
+          floats('t', 0, 0, 0),
+          floats('q', 0, 0, 0, 1),
+          floats('s', 1),
+          item,
+        ]
+      : [item],
+);

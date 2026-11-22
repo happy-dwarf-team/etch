@@ -55,6 +55,12 @@ That block's `type` names an `animation` of an `.asset` file, and that one's `fi
 file that plays. For the soldier, `idle` plays `polearm_twohanded_idle.anim`. An attached entity
 with no animation for the state stays on its bone as the bone moves.
 
+The animation moves the mesh's bones by their order, as the game does: joint 1 moves bone 1, joint
+2 bone 2, whatever their names. A musket on `Left_hand_node`, the tenth bone, therefore follows the
+tenth joint of `rifleman_idle.anim`, `attack_L_hand`. An animation with more or fewer joints than
+the mesh has bones does not play in the game: the preview shows that entity in its bind pose and
+names the state in the box under the bar.
+
 Turning, moving and zooming, the colour boxes, **Flag**, **Region**, **LOD**, **Snow**, **Wire**,
 **Diffuse**, **Normal**, **Spec** and **Reset view** work as in the
 [mesh preview](mesh-preview.md).
@@ -89,6 +95,7 @@ A box under the bar lists what Etch could not find or draw:
 - a `clone` loop: an entity that clones another one that clones it back;
 - an entity that would hang under itself, directly or further down; Etch does not draw it;
 - a particle that no `.asset` file defines;
+- an animation that does not fit its mesh: another number of joints than the mesh has bones;
 - a texture that is missing.
 
 ## Particles

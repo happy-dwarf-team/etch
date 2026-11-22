@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   animationFacts,
+  animationFits,
   meshFacts,
   jointPose,
   jointsOfBones,
@@ -11,7 +12,18 @@ import {
   skinningMatrices,
   skinPart,
 } from '../src/asset/index.ts';
-import { ANIM, binary, floats, half, ints, MESH, obj, strs, text } from './fixtures/pdx-asset.ts';
+import {
+  ANIM,
+  ANIM_THREE_JOINTS,
+  binary,
+  floats,
+  half,
+  ints,
+  MESH,
+  obj,
+  strs,
+  text,
+} from './fixtures/pdx-asset.ts';
 
 describe('readPdxAsset', () => {
   it('reads the same tree from the binary and the text encoding', () => {
@@ -288,12 +300,39 @@ describe('skinning', () => {
     expect(Array.from(bent.normals?.subarray(3, 6) ?? []).map(round)).toEqual([0, 0, -1]);
   });
 
-  it('matches a joint named by its path to the bone of its last name', () => {
-    const renamed = ANIM.map((item) =>
-      'object' in item && item.object === 'tip' ? obj(2, 'root|tip') : item,
+  it('binds joints to bones by index, whatever their names, as the game does', () => {
+    // Swapped names: by name the root would take the turning joint; the game poses bone k with
+    // joint k, so the tip still turns (vanilla's rifleman_idle names joint 9 attack_L_hand where
+    // the skeleton's bone 9 is Left_hand_node).
+    const names: Record<string, string> = { root: 'tip', tip: 'root' };
+    const swapped = ANIM.map((item) =>
+      'object' in item && item.object in names ? obj(2, names[item.object] ?? '') : item,
     );
     const mesh = readMesh(binary(MESH));
-    const skeleton = mesh.shapes[0]?.skeleton ?? [];
-    expect(jointsOfBones(skeleton, readAnimation(binary(renamed)))).toEqual([0, 1]);
+    const shape = mesh.shapes[0];
+    const part = shape?.parts[0];
+    if (shape === undefined || part === undefined) throw new Error('no shape');
+    const animation = readAnimation(binary(swapped));
+    expect(animationFits(shape.skeleton, animation)).toBe(true);
+    expect(jointsOfBones(shape.skeleton, animation)).toEqual([0, 1]);
+    const bent = skinPart(part, skinningMatrices(shape.skeleton, animation, 1));
+    const round = (v: number): number => Math.round(v * 1e5) / 1e5 + 0;
+    expect(Array.from(bent.positions.subarray(3, 6)).map(round)).toEqual([1, 1, 0]);
+  });
+
+  it('plays nothing when the joint count is not the bone count, as the game does', () => {
+    const mesh = readMesh(binary(MESH));
+    const shape = mesh.shapes[0];
+    const part = shape?.parts[0];
+    if (shape === undefined || part === undefined) throw new Error('no shape');
+    const animation = readAnimation(binary(ANIM_THREE_JOINTS));
+    expect(animation.joints).toHaveLength(3);
+    expect(animationFits(shape.skeleton, animation)).toBe(false);
+    expect(jointsOfBones(shape.skeleton, animation)).toEqual([undefined, undefined]);
+    // Every bone keeps its bind pose: nothing moves at the frame that turns the tip.
+    const still = skinPart(part, skinningMatrices(shape.skeleton, animation, 1));
+    expect(Array.from(still.positions).map((v) => Math.round(v * 1e5) / 1e5)).toEqual(
+      Array.from(part.positions),
+    );
   });
 });

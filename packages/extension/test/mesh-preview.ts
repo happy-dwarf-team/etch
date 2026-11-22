@@ -17,7 +17,16 @@ import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
-import { ANIM, binary, floats, ints, MESH, obj, strs } from '../../core/test/fixtures/pdx-asset.ts';
+import {
+  ANIM,
+  ANIM_THREE_JOINTS,
+  binary,
+  floats,
+  ints,
+  MESH,
+  obj,
+  strs,
+} from '../../core/test/fixtures/pdx-asset.ts';
 import type { EtchApi } from '../src/extension.ts';
 import {
   flagTexture,
@@ -106,11 +115,9 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
   await writeFile(path.join(folder, 'flag_normal.dds'), dds(2, 2, [255, 128, 128, 255]));
   await writeFile(path.join(folder, 'flag_spec.dds'), dds(2, 2, [0, 0, 0, 128]));
   await writeFile(path.join(folder, 'flag_wave.anim'), binary(ANIM));
-  // An animation of another skeleton: not offered.
-  const other = ANIM.map((item) =>
-    'object' in item && item.depth === 2 ? obj(2, `${item.object}_other`) : item,
-  );
-  await writeFile(path.join(folder, 'other.anim'), binary(other));
+  // An animation of another skeleton, one joint more than the mesh's bones: the game plays it
+  // only on a skeleton of as many bones, so it is not offered. Joint names do not count.
+  await writeFile(path.join(folder, 'other.anim'), binary(ANIM_THREE_JOINTS));
 
   const shown = await open(api, mesh);
   assert.ok(shown.ok, `the mesh shows: ${shown.ok ? '' : shown.message}`);
