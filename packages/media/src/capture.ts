@@ -137,7 +137,7 @@ export async function capture(options: CaptureOptions): Promise<string> {
     await writeFile(path.join(masters, 'hero.edit.json'), `${JSON.stringify(spec, null, 2)}\n`);
     const cut = path.join(masters, 'hero.cut.mov');
     await shoot.renderer.render(spec, cut);
-    await run(options.ffmpeg, posterArgs(cut, path.join(out, 'hero.png')));
+    await run(options.ffmpeg, posterArgs(cut, path.join(out, 'hero.png'), heroPosterAt(spec)));
     await encode('hero', cut, options.ffmpeg, out, masters);
   }
 
@@ -194,6 +194,19 @@ export const HERO_CHAPTERS = [
   { chapter: 'reload', clip: 'reload' },
   { chapter: 'pick', clip: 'pick' },
 ] as const;
+
+/** How long before its second chapter the demo loop's poster is taken: the first one's last shot. */
+export const HERO_POSTER_BEFORE_S = 0.5;
+
+/**
+ * The demo loop's poster, in seconds: the last shot of its first chapter, the preview open beside
+ * the code (etch-website docs/spec.md section 4.1), rather than its first frame, VS Code before a
+ * file is open. Its first frame when the edit has one chapter only.
+ */
+export function heroPosterAt(spec: Pick<EditSpec, 'chapters'>): number | undefined {
+  const second = spec.chapters?.[1];
+  return second === undefined ? undefined : Math.max(0, second.start - HERO_POSTER_BEFORE_S);
+}
 
 /** The hero's chapters, in order, with the edits of their cuts. */
 async function heroParts(

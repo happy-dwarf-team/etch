@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { MEDIA_TYPES, workbenchSettings } from '../src/config.ts';
-import { HERO_CHAPTERS, pngSize } from '../src/capture.ts';
+import { HERO_CHAPTERS, heroPosterAt, pngSize } from '../src/capture.ts';
 import { CLIPS, HERO_OPEN, heroEdit } from '../src/clips.ts';
 import type { EditSpec } from '../src/edit.ts';
 import { gfxcaptureArgs, h264Args, posterArgs, vp9Args } from '../src/ffmpeg.ts';
@@ -145,6 +145,16 @@ describe('FFmpeg', () => {
       'fillborders',
     );
     expect(after(posterArgs('c.mov', 'reload.png'), '-frames:v')).toBe('1');
+    expect(posterArgs('c.mov', 'reload.png')).not.toContain('-ss');
+    expect(after(posterArgs('c.mov', 'hero.png', 6.9667), '-ss')).toBe('6.967');
+    // The demo loop's poster: the last shot of its first chapter, half a second before the second.
+    const chapters = [
+      { id: 'open', start: 0 },
+      { id: 'type', start: 7.467 },
+    ];
+    expect(heroPosterAt({ chapters })).toBeCloseTo(6.967, 3);
+    expect(heroPosterAt({ chapters: [{ id: 'open', start: 0 }] })).toBeUndefined();
+    expect(heroPosterAt({})).toBeUndefined();
   });
 
   it('encodes VP9 in two passes and H.264 with the spec settings, 1920 px wide, silent', () => {
