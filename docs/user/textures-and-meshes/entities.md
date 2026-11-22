@@ -61,11 +61,12 @@ tenth joint of `rifleman_idle.anim`, `attack_L_hand`. An animation with more or 
 the mesh has bones does not play in the game: the preview shows that entity in its bind pose and
 names the state in the box under the bar.
 
-Turning, moving and zooming, the colour boxes, **Country**, **Region**, **LOD**, **Snow**, **Wire**,
-**Bones**, **Diffuse**, **Normal**, **Spec** and **Reset view** work as in the
-[mesh preview](mesh-preview.md). **Bones** shows the skeletons of the entity and of everything
-attached to it that has one. An orange dot marks each bone an attached entity hangs on: point at
-it to see the bone's name, then the name of the attached entity.
+You turn, move and zoom the model as in the [mesh preview](mesh-preview.md). The colour boxes,
+**Country**, **Region**, **LOD**, **Snow**, **Wire**, **Bones**, **Diffuse**, **Normal**, **Spec**
+and **Reset view** work the same way. As there, the colour boxes, **Country**, **Region**, **LOD**
+and **Snow** show only when the model has parts they work on. **Bones** shows the skeletons of the
+entity and of everything attached to it that has one. An orange dot marks each bone an attached
+entity hangs on: point at it to see the bone's name, then the name of the attached entity.
 
 ## Where it finds the files
 

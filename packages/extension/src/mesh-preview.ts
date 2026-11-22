@@ -715,12 +715,12 @@ export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): str
   <button id="play" aria-pressed="false" title="Play or pause the animation" hidden>Play</button>
   <input type="range" id="frame" min="0" max="0" step="1" value="0" title="Animation frame. Drag to pick a frame; the animation plays on when you let go if it was playing. With the slider selected, the left and right arrow keys step one frame; the comma and full stop keys do too, anywhere in the preview." aria-label="Animation frame" hidden>
   <select id="lod" title="Level of detail: which of the mesh's levels (its shapes' lod property) to draw; the facts give the camera distance the mesh's loddist starts it at" aria-label="Level of detail" hidden></select>
-  <span id="colours" title="The country colours a PdxMeshColor part shows (the specular map's R, G and B mask them), and the stripes a PdxMeshTextureAtlas part shows with no country tag; a tag in the Country box fills them" hidden>
+  <span id="colours" title="The country's three colours: they colour a unit's uniform or a ship's sails, and the sails show them as stripes when Country is empty. A tag in Country fills them" hidden>
     <input type="color" id="primary" value="#bf291f" aria-label="Primary country colour">
     <input type="color" id="secondary" value="#ebe0bf" aria-label="Secondary country colour">
     <input type="color" id="tertiary" value="#264d99" aria-label="Tertiary country colour">
   </span>
-  <label id="flag" title="A country tag: its colours fill the colour boxes, as the game picks them (color1 to color3 from common/country_colors, the rest from the tag's gfx/flags flag), and a PdxMeshTextureAtlas part (a ship's sails) shows its flag; with no tag the sails show the three colours as stripes" hidden>
+  <label id="flag" title="Type a country tag, such as SWE, and press Enter. The colour boxes take that country's colours, as the game picks them, and a ship's sails show its flag. With no tag, the sails show the three colours as stripes" hidden>
     Country <input id="flag-tag" size="4" maxlength="3" spellcheck="false" placeholder="TAG" aria-label="Country tag">
   </label>
   <label id="region" title="A colonial nation's region colour: the game draws its overlord's flag with the far half (where the flag's u is over 0.5) in this colour, and puts it in place of the tertiary colour on PdxMeshColor parts; off for other countries" hidden>

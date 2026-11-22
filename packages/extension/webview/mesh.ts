@@ -1592,7 +1592,7 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
         countryOf = { tag: message.tag, from: message.colours.from };
         colourProblem = undefined;
       } else {
-        countryOf = undefined;
+        // The colour boxes keep their colours, and the bar where they came from.
         colourProblem = `Country ${message.tag}: ${message.colours.message}`;
       }
       countryShown();
@@ -1911,7 +1911,6 @@ function askCountry(): boolean {
   }
   if (flag !== undefined) gl?.deleteTexture(flag.texture);
   flag = undefined;
-  countryOf = undefined;
   const problem = tag === '' ? undefined : `${tag}: a country tag has three letters or digits`;
   flagProblem = problem === undefined ? undefined : `Flag ${problem}`;
   colourProblem = problem === undefined ? undefined : `Country ${problem}`;
