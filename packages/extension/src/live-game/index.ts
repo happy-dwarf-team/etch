@@ -116,13 +116,11 @@ function watchTextures(game: LiveGame): vscode.Disposable[] {
     watcher,
     watcher.onDidChange(changed),
     watcher.onDidCreate(changed),
-    {
-      dispose: () => {
-        waiting.forEach((timer) => {
-          clearTimeout(timer);
-        });
-      },
-    },
+    new vscode.Disposable(() => {
+      waiting.forEach((timer) => {
+        clearTimeout(timer);
+      });
+    }),
   ];
 }
 

@@ -50,7 +50,7 @@ export function pickKeySetting(): string {
 export class PickMode implements vscode.Disposable {
   private readonly game: LiveGame;
   private readonly output: vscode.LogOutputChannel;
-  private readonly subscriptions: vscode.Disposable[];
+  private readonly subscriptions: { dispose(): unknown }[];
   private readonly emitter = new vscode.EventEmitter<PickOpened>();
   /** Whether pick mode is on, as the plugin last said. */
   private on = false;
