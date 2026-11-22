@@ -19,13 +19,15 @@ beside the editor, with each saved file reloaded into the game's own window,
 **pick mode** to jump from a widget in the game to its definition, and **live
 snapshots** of a window's texts and states. The preview gained **views** of a
 window from window profiles and **sample data** from saves (ADR 0005). Users
-who want the game host stay on 1.0.x: the extension's
-[README](packages/extension/README.md#etch-1x) says how. Releases are on
+who want the game host stay on 1.0.x: the docs page
+[Etch 1.x](docs/user/about/etch-1x.md) says how. Releases are on
 [Open VSX](https://open-vsx.org/extension/happy-dwarf-team/etch), the
 [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=happy-dwarf-team.etch)
 and the [GitHub releases](https://github.com/happy-dwarf-team/etch/releases);
-the [changelog](CHANGELOG.md) lists what each one changed, and the
-extension's [README](packages/extension/README.md) says what it does. The
+the [changelog](CHANGELOG.md) lists what each one changed, and the user docs
+([docs/user](docs/user/README.md), published on
+[etch.happydwarf.dev/docs](https://etch.happydwarf.dev/docs/)) say what it does; the
+extension's [README](packages/extension/README.md) is the stores' short overview. The
 [v1 specification](docs/spec/v1.md) says what 1.0.0 contains and in what
 order it was built; the decisions behind both are in [docs/adr](docs/adr) and
 in the wayfinder maps in this repository's issues (label `wayfinder:map`).
