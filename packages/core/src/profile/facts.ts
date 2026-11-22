@@ -95,7 +95,7 @@ export const FACTS: readonly Fact[] = [
     name: 'country.religionIcon',
     values: ['none', 'secondary', 'school'],
     description:
-      "Which religion icon the diplomacy view shows beside the chosen country's name: its secondary religion (the save's `secondary_religion`), else with Cradle of Civilization its religious school (`religious_school`), else none. Without either `eu4.exe` moves `label_nation` and `label_fog` 20 px left (GOG 1.37.5.2 0xEFC380, 0xEFC40D).",
+      "Which religion icon the diplomacy view shows beside the chosen country's name: its secondary religion (the save's `secondary_religion`), else with Cradle of Civilization its religious school (`religious_school`), else none. Without either `eu4.exe` moves `label_nation` and `label_fog` 20 px left (GOG 1.37.5.2 0xEFC380, 0xEFC40D). The lobby's country panel shows only a secondary religion: without one it hides `secondary_religion_icon` and moves `religion_icon` 18 px down (Steam 1.37.5 0x11199A0).",
     inSave: true,
   },
   {
