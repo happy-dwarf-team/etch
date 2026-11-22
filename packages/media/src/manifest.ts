@@ -7,7 +7,7 @@ import { MEDIA_TYPES } from './config.ts';
 /**
  * The clip ids, the same in bucket keys, file names and the manifest (spec section 8.5): the hero's
  * trailer, the offline preview's six features, the scripts' three, the art's five and the live
- * game's three. Every clip is a loop with its poster.
+ * game's four. Every clip is a loop with its poster.
  */
 export const CLIP_IDS = [
   'hero',
@@ -28,10 +28,16 @@ export const CLIP_IDS = [
   'reload',
   'pick',
   'snapshot',
+  'run',
 ] as const;
 export type ClipId = (typeof CLIP_IDS)[number];
 /** The clips whose take starts the live game. */
-export const LIVE_CLIP_IDS = ['reload', 'pick', 'snapshot'] as const satisfies readonly ClipId[];
+export const LIVE_CLIP_IDS = [
+  'reload',
+  'pick',
+  'snapshot',
+  'run',
+] as const satisfies readonly ClipId[];
 /** The clips with a take of their own in the offline preview. */
 export const OFFLINE_CLIP_IDS = [
   'preview',

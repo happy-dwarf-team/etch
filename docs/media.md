@@ -44,15 +44,15 @@ end lists every step.
 ```powershell
 pnpm media capture --save <file.eu4> --profile <file.csv> # every clip
 pnpm media capture --clip views           # one clip; --clip views,data for several
-pnpm media capture --clip reload,pick,snapshot --save <file.eu4> # the live take
+pnpm media capture --clip reload,pick,snapshot,run --save <file.eu4> # the live take
 pnpm media capture --clip hero --save <file.eu4> # the demo loop: the open take, then four rendered loops
 pnpm media capture --clip data --reedit   # edit and render again from the take, no new take
 ```
 
 | Option     | Default                    | Meaning                                                                                                               |
 | ---------- | -------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `--clip`   | all                        | clip ids: `hero`, `preview`, `views`, `data`, `zoom`, `outline`, `problems`, `profile`, `names`, `texture`, `encoding`, `hovers`, `mesh`, `trees`, `entity`, `reload`, `pick`, `snapshot` |
-| `--save`   | none                       | the live take's save: a base-game save, not ironman, copied into the run; needed for `reload`, `pick` and `snapshot` |
+| `--clip`   | all                        | clip ids: `hero`, `preview`, `views`, `data`, `zoom`, `outline`, `problems`, `profile`, `names`, `texture`, `encoding`, `hovers`, `mesh`, `trees`, `entity`, `reload`, `pick`, `snapshot`, `run` |
+| `--save`   | none                       | the live take's save: a base-game save, not ironman, copied into the run; needed for `reload`, `pick`, `snapshot` and `run` |
 | `--profile` | none                      | the script profile `profile` shows: a CSV of Anvil's script profiler measured in a base game; needed for `profile` |
 | `--reedit` | off                        | edit, render and encode the clips again from their takes' logs and masters                                            |
 | `--ffmpeg` | `ffmpeg` on the `PATH`     | FFmpeg; `ffprobe` is taken from beside it                                                                             |
@@ -183,9 +183,10 @@ would take in the code beside it.
 
 ## The live take
 
-`reload`, `pick` and `snapshot` come from one take beside Etch's live game: a save reloads the
-province view in the running game; pick mode in the game outlines widgets and a click opens one's
-definition in VS Code; the same pick gives the preview a live snapshot (the Etch site
+`reload`, `pick`, `snapshot` and `run` come from one take beside Etch's live game: a save
+reloads the province view in the running game; pick mode in the game outlines widgets and a click
+opens one's definition in VS Code; the same pick gives the preview a live snapshot; selected script
+runs in the game (the Etch site
 specification's section 8.5). It is the only take that starts EU4, and it needs:
 
 - EU4 not running, and the desktop to itself for about two minutes: the script moves and clicks
@@ -224,9 +225,20 @@ It runs one reload unrecorded (the first reload of a freshly opened province vie
 province's name, `docs/live-game.md`, and the start state is then the end's), then records both
 windows, each by its own `gfxcapture` (the game's with its pointer) on the take's clock: the
 reload (one keystroke, Ctrl+S, the button moves, Ctrl+Z, Ctrl+S), then pick mode: the pointer
-goes to the first widget, Ctrl+Shift+E in the game, and the pointer jumps from widget to widget
+goes to the first widget, Ctrl+Shift+E in the game (pressed once more, after bringing the game
+forward again, when the plugin's `pick mode on` line does not follow in the private install's
+`anvil.log`), and the pointer jumps from widget to widget
 (three hovered, the last one the trade node button, then clicked), so pick mode outlines no widget
-on the way. Closing VS Code stops the live
+on the way. Then `run`, last, since it changes the game: the take writes `events/etch_demo_events.txt`
+into the workspace (the game loaded the mod without it), opens it with Problems under it, and runs
+one **Check Selection as Trigger** unrecorded (the first run of a session adds a notice about the
+private copy). Recorded: the effect's two development lines, right-clicked, **Etch: Run Selection in
+the Province on Screen** (the take waits until Tongs reads the province's base production risen);
+the trigger, right-clicked, **Etch: Check Selection as Trigger in the Live Game** in the province;
+an `s` added to the effect's name and the lines run again, until the game's error is in Problems;
+Ctrl+Z. Run's drawn pointer is Playwright's mouse, as in the offline takes: the real pointer stays
+on the game. The game keeps the development the take added (into the run's private copy only), so
+the loop dissolves its end into its start. Closing VS Code stops the live
 game: it is saved into the run's private profile and closed after its identity checks. The take
 needs the plugin's build and the pinned game-side builds staged under
 `packages/extension/game/` (`pnpm pins`, CONTRIBUTING.md); without them it stops at once.
