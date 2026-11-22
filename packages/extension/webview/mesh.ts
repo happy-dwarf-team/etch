@@ -109,6 +109,7 @@ const errorBox = element('error');
 const animationSelect = element('animation') as HTMLSelectElement;
 const lodSelect = element('lod') as HTMLSelectElement;
 const playButton = element('play') as HTMLButtonElement;
+const frameInput = element('frame') as HTMLInputElement;
 const wireButton = element('wireframe') as HTMLButtonElement;
 const mapsButton = element('maps') as HTMLButtonElement;
 const colours = element('colours');
@@ -384,7 +385,10 @@ let placeControls = false;
 /** What plays: an animation's file name (mesh) or a state (entity); `undefined` for the bind pose. */
 let playingKey: string | undefined;
 let playing = false;
+/** While playing: `performance.now()` at the animation's second 0. */
 let started = 0;
+/** The second of the animation every instance is posed at; playing resumes from it. */
+let position = 0;
 let wireframe = false;
 /** Whether normal and specular maps are drawn (the Maps button). */
 let maps = true;
@@ -777,6 +781,63 @@ function showStatus(seconds: number): void {
   status.textContent = `${entity === undefined ? '' : 'State '}${playingKey}: ${where}${notDrawn}`;
 }
 
+/** The animation the frame slider moves through: the root mesh's. */
+function rootAnimation(): PdxAnimation | undefined {
+  const root = instances[0];
+  return root === undefined ? undefined : animationOf(root);
+}
+
+/** The whole frame of `animation` that `seconds` falls in. */
+function frameAt(animation: PdxAnimation, seconds: number): number {
+  // A frame stepped to is `frame / fps` seconds, which can read back a hair under the frame.
+  const frame = Math.floor(frameOf(animation, seconds) + 1e-6);
+  return Math.max(0, Math.min(animation.frames - 1, frame));
+}
+
+/** The frame slider: over the root mesh's animation, at the frame shown; hidden without one. */
+function showFrame(seconds: number): void {
+  const animation = rootAnimation();
+  frameInput.hidden = animation === undefined || animation.frames < 2;
+  if (animation === undefined) return;
+  const frame = frameAt(animation, seconds);
+  frameInput.max = String(Math.max(0, animation.frames - 1));
+  frameInput.value = String(frame);
+  frameInput.setAttribute(
+    'aria-valuetext',
+    `frame ${String(frame)} of ${String(animation.frames)}`,
+  );
+}
+
+/** Poses every instance `seconds` into the animation and shows where on the status line and slider. */
+function showAt(context: WebGL2RenderingContext, seconds: number): void {
+  position = seconds;
+  pose(context, seconds);
+  showStatus(seconds);
+  showFrame(seconds);
+}
+
+/** Plays or pauses; playing goes on from the frame shown. */
+function setPlaying(on: boolean): void {
+  playing = on && playingKey !== undefined;
+  playButton.setAttribute('aria-pressed', String(playing));
+  playButton.textContent = playing ? 'Pause' : 'Play';
+  if (playing) {
+    started = performance.now() - position * 1000;
+    requestAnimationFrame(draw);
+  }
+}
+
+/** Pauses and poses every instance at a frame of the root mesh's animation. */
+function goToFrame(frame: number): void {
+  const animation = rootAnimation();
+  if (gl === null || animation === undefined || animation.fps <= 0) return;
+  setPlaying(false);
+  const frames = Math.max(1, animation.frames);
+  const wrapped = ((Math.round(frame) % frames) + frames) % frames;
+  showAt(gl, wrapped / animation.fps);
+  redraw();
+}
+
 /** The canvas's clear colour, behind the mesh. */
 const BACKGROUND = [0.16, 0.17, 0.19] as const;
 
@@ -829,11 +890,7 @@ function render(now: number): void {
     canvas.width = width;
     canvas.height = height;
   }
-  if (playing) {
-    const seconds = (now - started) / 1000;
-    pose(gl, seconds);
-    showStatus(seconds);
-  }
+  if (playing) showAt(gl, (now - started) / 1000);
   gl.viewport(0, 0, width, height);
   gl.clearColor(...BACKGROUND, 1);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -968,6 +1025,13 @@ function summary(): MeshSummary {
     };
   }
   if (tree !== undefined) base = { ...base, tree };
+  const animation = rootAnimation();
+  if (animation !== undefined) {
+    base = {
+      ...base,
+      frame: { at: frameAt(animation, position), of: animation.frames, playing },
+    };
+  }
   const blendedParts = tree === undefined ? parts.filter((d) => d.blend !== 'none').length : 0;
   if (blendedParts > 0) base = { ...base, blended: blendedParts };
   const snowyParts = parts.filter((d) => d.snow || tree !== undefined).length;
@@ -1073,15 +1137,11 @@ function showFacts(): void {
 /** Starts playing `key` (an animation or a state), or shows the bind pose for `undefined`. */
 function play(key: string | undefined): void {
   playingKey = key;
-  playing = key !== undefined;
   playButton.hidden = key === undefined;
-  playButton.setAttribute('aria-pressed', String(playing));
-  playButton.textContent = playing ? 'Pause' : 'Play';
-  started = performance.now();
-  if (gl !== null) pose(gl, 0);
-  showStatus(0);
-  if (playing) requestAnimationFrame(draw);
-  else redraw();
+  position = 0;
+  if (gl !== null) showAt(gl, 0);
+  setPlaying(key !== undefined);
+  if (!playing) redraw();
 }
 
 /** Builds the instances of a mesh or an entity and shows them. */
@@ -1213,7 +1273,9 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
         place: province,
         lod: lodPick,
         distance,
+        frame,
       } = message.controls;
+      if (frame !== undefined) goToFrame(frame);
       if (lodPick !== undefined) {
         lodAuto = lodPick === 'auto' && lodSelect.querySelector('option[value="auto"]') !== null;
         if (lodPick !== 'auto') lodLevel = lodPick;
@@ -1503,13 +1565,37 @@ lodSelect.addEventListener('change', () => {
 });
 
 playButton.addEventListener('click', () => {
-  playing = !playing;
-  playButton.setAttribute('aria-pressed', String(playing));
-  playButton.textContent = playing ? 'Pause' : 'Play';
-  if (playing) {
-    started = performance.now();
-    requestAnimationFrame(draw);
-  }
+  setPlaying(!playing);
+  vscode.postMessage({ type: 'shown', summary: summary() });
+});
+
+/** Whether a drag of the frame slider began while playing: playing goes on when it ends. */
+let resumeAfterDrag = false;
+frameInput.addEventListener('pointerdown', () => {
+  resumeAfterDrag = playing;
+});
+frameInput.addEventListener('keydown', () => {
+  resumeAfterDrag = false;
+});
+frameInput.addEventListener('input', () => {
+  goToFrame(Number(frameInput.value));
+});
+frameInput.addEventListener('change', () => {
+  if (resumeAfterDrag) setPlaying(true);
+  resumeAfterDrag = false;
+  vscode.postMessage({ type: 'shown', summary: summary() });
+});
+// , and . step one frame back and forward, as in a video player; not while typing in a box.
+document.addEventListener('keydown', (event) => {
+  if (event.key !== ',' && event.key !== '.') return;
+  if (event.ctrlKey || event.altKey || event.metaKey) return;
+  const target = event.target;
+  if (target instanceof HTMLInputElement && target.type === 'text') return;
+  const animation = rootAnimation();
+  if (animation === undefined) return;
+  event.preventDefault();
+  goToFrame(frameAt(animation, position) + (event.key === '.' ? 1 : -1));
+  vscode.postMessage({ type: 'shown', summary: summary() });
 });
 
 mapsButton.addEventListener('click', () => {

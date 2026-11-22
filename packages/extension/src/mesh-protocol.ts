@@ -48,6 +48,11 @@ export interface MeshSummary {
    * shader draws it.
    */
   readonly tree?: string;
+  /**
+   * While the root mesh plays an animation: the whole frame every mesh is posed at (the frame
+   * slider's), the animation's frame count and whether it plays or is paused.
+   */
+  readonly frame?: { readonly at: number; readonly of: number; readonly playing: boolean };
   /** Drawn `PdxMeshAlphaBlend` parts, blended by their diffuse alpha after the opaque ones. */
   readonly blended?: number;
   /** Drawn parts that take snow (`PdxMeshSnow`, or a map tree's), and the Snow slider's amount. */
@@ -158,6 +163,11 @@ export interface MeshControls {
   readonly lod?: number | 'auto';
   /** The camera's distance from the point it orbits, in the drawn space's units. */
   readonly distance?: number;
+  /**
+   * The frame slider: pauses and poses every mesh at this frame of the root mesh's animation
+   * (wrapped into its frames); nothing without one.
+   */
+  readonly frame?: number;
 }
 
 export interface FlagSummary {

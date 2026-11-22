@@ -617,6 +617,7 @@ export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): str
   #facts span { white-space: nowrap; }
   .spacer { flex: 1; }
   #snow-amount, #tint-turn, #season-day, #season-north { width: 6em; vertical-align: middle; }
+  #frame { width: 12em; vertical-align: middle; }
   #season-date { display: inline-block; min-width: 3.6em; margin-right: 0.5em; }
   input[type="color"] { width: 24px; height: 20px; padding: 0; border: none; background: none; vertical-align: middle; }
   #flag-tag, #place-province { width: 4em; font: inherit; color: var(--vscode-input-foreground); background: var(--vscode-input-background); border: 1px solid var(--vscode-input-border, transparent); padding: 1px 4px; text-transform: uppercase; }
@@ -644,6 +645,7 @@ export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): str
   <div class="spacer"></div>
   <select id="animation" title="Animation beside the mesh" aria-label="Animation" hidden></select>
   <button id="play" aria-pressed="false" title="Play or pause the animation" hidden>Play</button>
+  <input type="range" id="frame" min="0" max="0" step="1" value="0" title="Animation frame. Drag to pick a frame; the animation plays on when you let go if it was playing. With the slider selected, the left and right arrow keys step one frame; the comma and full stop keys do too, anywhere in the preview." aria-label="Animation frame" hidden>
   <select id="lod" title="Level of detail: which of the mesh's levels (its shapes' lod property) to draw; the facts give the camera distance the mesh's loddist starts it at" aria-label="Level of detail" hidden></select>
   <span id="colours" title="The country colours a PdxMeshColor part shows (the specular map's R, G and B mask them), and the stripes a PdxMeshTextureAtlas part shows with no flag tag" hidden>
     <input type="color" id="primary" value="#bf291f" aria-label="Primary country colour">
