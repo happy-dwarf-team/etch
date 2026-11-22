@@ -345,7 +345,12 @@ export class Workbench {
     throw new Error("the preview's canvas#screen did not appear");
   }
 
-  /** Runs a command through the command palette, by its title. */
+  /**
+   * Runs a command through the command palette, by its title. The palette lists the commands
+   * known when it opens: one opened before Etch's development copy has loaded (VS Code first
+   * initialises the profile's extensions, which took 6 s on 2026-11-22) never lists Etch's, so an
+   * unrecorded command closes it and opens it again, up to three times.
+   */
   async command(
     title: string,
     options: {
@@ -356,11 +361,22 @@ export class Workbench {
       onShown?: (box: Rect) => Promise<void>;
     } = {},
   ): Promise<void> {
-    await this.openQuickInput('F1');
-    await this.page.keyboard.type(title, { delay: options.typeDelayMs ?? 0 });
-    await this.page
-      .locator('.quick-input-list .monaco-list-row.focused', { hasText: title })
-      .waitFor();
+    const row = this.page.locator('.quick-input-list .monaco-list-row.focused', { hasText: title });
+    // A take that shows the palette types it once: a second palette would be on camera.
+    const attempts = options.typeDelayMs === undefined ? 3 : 1;
+    for (let attempt = 1; ; attempt++) {
+      await this.openQuickInput('F1');
+      await this.page.keyboard.type(title, { delay: options.typeDelayMs ?? 0 });
+      try {
+        await row.waitFor({ timeout: attempt < attempts ? 10_000 : 30_000 });
+        break;
+      } catch (error) {
+        if (attempt >= attempts) throw error;
+        await this.page.keyboard.press('Escape');
+        await this.quickInputClosed();
+        await sleep(1_000);
+      }
+    }
     if (options.onShown !== undefined) {
       await options.onShown(await this.box(this.page.locator('.quick-input-widget')));
     }
