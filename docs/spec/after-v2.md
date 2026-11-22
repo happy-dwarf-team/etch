@@ -1038,8 +1038,12 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
      false "no particle" problems of `devastation_smoke_particle` and
      `siege_cannon`, 67 in vanilla), and the game's two errors in their place
      (a name that is no `pdxparticle` type, a type that names no block). Done
-     for the entity preview (entry above); still to do: the same two errors
-     as warnings in the `.asset` and `.gfx` files, then hovers and diagnostics for particle blocks: unknown keys, curve and force
+     for the entity preview (entry above), and as warnings in the open
+     `.asset` files under `gfx/` and `.gfx` files under `interface/` (on the
+     event's `particle`, on the pdxparticle's `type` or, without one, its
+     `name`), checked against the playset's files on disk and read again when
+     an `.asset` or `.gfx` file is saved; none in vanilla 1.37.5. Still to do:
+     hovers and diagnostics for particle blocks: unknown keys, curve and force
      names nothing defines, a curve `time` the game reads as `spawn` (it is
      case-sensitive), a missing texture or shader effect, box keys on a sphere
      emitter. A user docs page on particles goes with it.
