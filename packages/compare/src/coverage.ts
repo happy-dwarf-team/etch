@@ -238,6 +238,19 @@ export async function runCoverage(options: CoverageOptions): Promise<CoverageRes
       if (loaded !== undefined && loaded.problems.length > 0) {
         problems.push(...loaded.problems.map((p) => `Profile of ${top}: ${p}`));
       }
+      // A second instance of a window the game keeps hidden while another one is shown (the main
+      // menu's settings): the preview draws the window once, for the shown one, as the live
+      // preview does (etch#378), so the hidden instance is the capture's only, with the profiles
+      // too.
+      const base = root.path.replace(/\[\d+\]$/, '');
+      const hiddenCopy =
+        !root.visible &&
+        base !== root.path &&
+        record.widgets.some(
+          (r) => r !== root && r.visible && r.path.replace(/\[\d+\]$/, '') === base,
+        );
+      const drawnOnce = (window: PlanWindow): PlanWindow =>
+        hiddenCopy ? { ...window, layout: { ...window.layout, widgets: [] }, root: top } : window;
       const snapshot = snapshotOf(root, record.resolution, record.takenAt);
       const withProfile =
         loaded === undefined
@@ -263,26 +276,11 @@ export async function runCoverage(options: CoverageOptions): Promise<CoverageRes
             ),
           );
           command.push(compareLive(planSnapshot(snapshot, withTexts), true));
-          profiledWindows.push(withProfile);
+          profiledWindows.push(drawnOnce(withProfile));
           profiledRoots.push(root);
         }
       }
-      // A second instance of a window the game keeps hidden while another one is shown (the main
-      // menu's settings): the preview draws the window once, for the shown one, as the live
-      // preview does (etch#378), so the hidden instance is the capture's only.
-      const base = root.path.replace(/\[\d+\]$/, '');
-      const hiddenCopy =
-        !root.visible &&
-        base !== root.path &&
-        record.widgets.some(
-          (r) => r !== root && r.visible && r.path.replace(/\[\d+\]$/, '') === base,
-        );
-      const preview = withProfile ?? offline;
-      previewWindows.push(
-        hiddenCopy
-          ? { ...preview, layout: { ...preview.layout, widgets: [] }, root: top }
-          : preview,
-      );
+      previewWindows.push(drawnOnce(withProfile ?? offline));
       const live = await files.livePreview(top, record.resolution, snapshot, loaded, size);
       if (live === undefined) continue;
       liveWindows.push({ ...live.window, root: top });

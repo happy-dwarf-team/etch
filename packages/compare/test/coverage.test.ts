@@ -256,6 +256,43 @@ describe('runCoverage', () => {
     expect(view?.live.geometry.exact).toBe(2);
   });
 
+  it('draws a window the game holds twice once, for the instance it shows, with the profiles too', async () => {
+    // The main menu's settings (etch#378): a second instance the game keeps hidden at 0, 0.
+    const game = record(15);
+    const [shown] = game['widgets'] as Record<string, unknown>[];
+    const copy = (index: number, visible: boolean, at: number) => ({
+      ...shown,
+      path: `test_window[${String(index)}]`,
+      visible,
+      rect: { x: at, y: at * 2, w: 300, h: 200 },
+      children: [],
+    });
+    await addFiles(root, {
+      'survey/captures/test/1920x1080/v.json': JSON.stringify({
+        ...game,
+        widgets: [
+          copy(1, false, 0),
+          {
+            ...shown,
+            path: 'test_window[2]',
+            children: (shown?.['children'] as Record<string, unknown>[]).map((c) => ({
+              ...c,
+              path: 'test_window[2]/title',
+            })),
+          },
+        ],
+      }),
+      'profiles/vanilla/test_window.jsonc': SHIFT_PROFILE,
+    });
+    const { views } = await runCoverage(options);
+    const view = views[0];
+    expect(view?.problems).toEqual([]);
+    for (const measure of [view?.preview, view?.profiled]) {
+      expect(measure?.visibility.drawnHidden).toEqual([]);
+      expect(measure?.visibility.agree).toBe(measure?.visibility.compared);
+    }
+  });
+
   it("reads `compare`'s report of the capture, by kind of failing widget", async () => {
     await capture(15);
     const report = {
