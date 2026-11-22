@@ -117,6 +117,8 @@ export interface Rule extends Written {
    * development pie chart, 32 × 32 where its `PieChartType` says 128.
    */
   readonly chartSize?: readonly (PathRef & { readonly width: number; readonly height: number })[];
+  /** Markers the game's code places along a slider between two ends, by the marker's path. */
+  readonly slider?: readonly (PathRef & Slider)[];
   /**
    * Widgets the game's code moves by a number of pixels from where they would be, with no
    * `positionType` to name: the diplomacy view's labels, 20 px left without a religion icon.
@@ -133,6 +135,24 @@ export interface Rule extends Written {
    * own `.gui` position: the minimap panel's `minimap_bg`, a definition of `menubar.gui`.
    */
   readonly adopt: readonly (PathRef & { readonly definitions: readonly string[] })[];
+}
+
+/**
+ * A marker the game's code places along a slider (eu4.exe 1.37.5 `0x1488BC0`):
+ * between the right edge of `low`, less 15 px, at share 0 and the left edge of `high`, less the
+ * marker's width, plus 15 px, at share 1, 3 px below the top of `low`, moved by `offset`. The
+ * share is in thousandths, as the game holds it. `value`, a text box, goes 9 px right of the
+ * marker and 9 px below the top of `low`, moved by `offset` too. Without a save, or a save that
+ * lacks the numeric `fact`, the marker stands at the share `at`.
+ */
+export interface Slider {
+  readonly low: PathRef;
+  readonly high: PathRef;
+  readonly value?: PathRef;
+  readonly at: number;
+  readonly fact?: string;
+  readonly factRange?: SourceRange;
+  readonly offset: { readonly x: number; readonly y: number };
 }
 
 export interface SelectorSetting {

@@ -27,6 +27,7 @@ import {
   type Repeater,
   type RepeaterField,
   type SavePathRef,
+  type Slider,
   type ValueFormat,
   type Layered,
   type PathRef,
@@ -779,6 +780,7 @@ function readRule(
     'frame',
     'sprite',
     'chartSize',
+    'slider',
     'offset',
     'hidePosition',
     'adopt',
@@ -841,18 +843,8 @@ function readRule(
       };
       return { width: pixels('x'), height: pixels('y') };
     }),
-    offset: keyed('offset', (value) => {
-      const by = object(value, 'an offset', ['x', 'y']);
-      const pixels = (axis: 'x' | 'y'): number => {
-        const n = by.get(axis);
-        if (n === undefined) return 0;
-        if (n.kind !== 'number' || !Number.isInteger(n.value)) {
-          throw new Faulty(`"${axis}" of an offset is a whole number of pixels.`, n);
-        }
-        return n.value;
-      };
-      return { x: pixels('x'), y: pixels('y') };
-    }),
+    slider: keyed('slider', readSlider),
+    offset: keyed('offset', readOffset),
     hidePosition: paths('hidePosition'),
     adopt: keyed('adopt', (value) => {
       if (value.kind !== 'array' || value.items.length === 0) {
@@ -870,16 +862,55 @@ function readRule(
     rule.frame.length +
     (rule.sprite?.length ?? 0) +
     (rule.chartSize?.length ?? 0) +
+    (rule.slider?.length ?? 0) +
     rule.offset.length +
     rule.hidePosition.length +
     rule.adopt.length;
   if (effects === 0) {
     throw new Faulty(
-      `Rule "${id}" has no effect: show, hide, notCreated, position, frame, sprite, chartSize, offset, hidePosition or adopt.`,
+      `Rule "${id}" has no effect: show, hide, notCreated, position, frame, sprite, chartSize, slider, offset, hidePosition or adopt.`,
       node,
     );
   }
   return rule;
+}
+
+/** An offset in whole pixels, `x` and `y` 0 when left out. */
+function readOffset(value: JsonNode): { x: number; y: number } {
+  const by = object(value, 'an offset', ['x', 'y']);
+  const pixels = (axis: 'x' | 'y'): number => {
+    const n = by.get(axis);
+    if (n === undefined) return 0;
+    if (n.kind !== 'number' || !Number.isInteger(n.value)) {
+      throw new Faulty(`"${axis}" of an offset is a whole number of pixels.`, n);
+    }
+    return n.value;
+  };
+  return { x: pixels('x'), y: pixels('y') };
+}
+
+function readSlider(value: JsonNode): Slider {
+  const props = object(value, 'a slider', ['low', 'high', 'value', 'at', 'fact', 'offset']);
+  const end = (key: 'low' | 'high'): PathRef => {
+    const n = props.get(key);
+    if (n === undefined) throw new Faulty(`A slider names its "${key}" end by path.`, value);
+    return pathOf(n);
+  };
+  const atNode = props.get('at');
+  if (atNode?.kind !== 'number' || atNode.value < 0 || atNode.value > 1) {
+    throw new Faulty('"at" of a slider is its share without a save, from 0 to 1.', atNode ?? value);
+  }
+  const valueNode = props.get('value');
+  const factNode = props.get('fact');
+  const offsetNode = props.get('offset');
+  return {
+    low: end('low'),
+    high: end('high'),
+    ...(valueNode === undefined ? {} : { value: pathOf(valueNode) }),
+    at: atNode.value,
+    ...(factNode === undefined ? {} : { fact: text$(factNode, '"fact"'), factRange: factNode }),
+    offset: offsetNode === undefined ? { x: 0, y: 0 } : readOffset(offsetNode),
+  };
 }
 
 function readView(

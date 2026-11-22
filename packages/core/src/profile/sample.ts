@@ -502,6 +502,7 @@ export function saveFacts(choice: SaveChoice): Record<string, string> {
               : cradle === true && scalarIn(country, 'religious_school') !== undefined
                 ? 'school'
                 : 'none',
+          ...numericFact('country.patriarchAuthority', scalarIn(country, 'patriarch_authority')),
         };
   const province = choice.block('province');
   if (province === undefined) return countryFacts;
@@ -547,6 +548,11 @@ export function saveFacts(choice: SaveChoice): Record<string, string> {
         }),
     ),
   };
+}
+
+/** A numeric fact as the save writes it, left out when the save lacks it or it is no number. */
+function numericFact(name: string, text: string | undefined): Record<string, string> {
+  return text !== undefined && Number.isFinite(Number(text)) ? { [name]: text } : {};
 }
 
 /** The links that hold in a view: every condition of theirs holds (spec section 2). */

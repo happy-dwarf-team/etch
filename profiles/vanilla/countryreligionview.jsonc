@@ -68,6 +68,19 @@
       "note": "The game's code puts the icon 62 px right of its .gui place (the coverage survey, every playset, 1920×1080 and 1280×720; etch#253).",
       "offset": { "countryreligionview/current_religion_icon": { "x": 62 } },
     },
+    "patriarch-authority": {
+      "note": "The game's code places the patriarch authority's marker and value along the slider between its two icons (eu4.exe 1.37.5 0xFE8190, 0x1488BC0), by the country's authority. Without a save at 1, Russia's in the coverage survey's save (marker at 211, 422 at 1920×1080).",
+      "slider": {
+        "countryreligionview/orthodox_specific_window/current_patriarch_authority": {
+          "low": "countryreligionview/orthodox_specific_window/low_patriarch_authority",
+          "high": "countryreligionview/orthodox_specific_window/high_patriarch_authority",
+          "value": "countryreligionview/orthodox_specific_window/current_patriarch_authority_value",
+          "at": 1,
+          "fact": "country.patriarchAuthority",
+          "offset": { "y": 6 },
+        },
+      },
+    },
     "hidden": {
       "note": "Hidden in every view of the coverage survey (the base game): the game decides these from its data or a click; show one by hand.",
       "hide": [

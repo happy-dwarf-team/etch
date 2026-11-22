@@ -830,6 +830,90 @@ describe("the estates view's development pie chart", () => {
   });
 });
 
+describe("the religion view's patriarch authority slider", () => {
+  const file = readGuiFile(
+    parseScript(`guiTypes = {
+  windowType = {
+    name = "countryreligionview"
+    size = { x = 600 y = 600 }
+    windowType = {
+      name = "orthodox_specific_window"
+      position = { x = 10 y = 20 }
+      size = { x = 400 y = 400 }
+      iconType = { name = "low_patriarch_authority" spriteType = "GFX_low" position = { x = 54 y = 273 } }
+      iconType = { name = "high_patriarch_authority" spriteType = "GFX_high" position = { x = 272 y = 273 } }
+      iconType = { name = "current_patriarch_authority" spriteType = "GFX_marker" position = { x = 155 y = 285 } }
+      instantTextBoxType = { name = "current_patriarch_authority_value" position = { x = 170 y = 279 } maxWidth = 32 maxHeight = 24 }
+    }
+  }
+}`),
+  );
+  const window = file.definitions[0] as Widget;
+  const gfx = readGfxFile(
+    parseScript(`spriteTypes = {
+  spriteType = { name = "GFX_low" texturefile = "gfx/low.dds" }
+  spriteType = { name = "GFX_high" texturefile = "gfx/high.dds" }
+  spriteType = { name = "GFX_marker" texturefile = "gfx/marker.dds" }
+}`),
+  );
+  const sizes: Record<string, { width: number; height: number }> = {
+    'gfx/low.dds': { width: 38, height: 38 },
+    'gfx/high.dds': { width: 38, height: 38 },
+    'gfx/marker.dds': { width: 52, height: 27 },
+  };
+  const written = readProfile(
+    readFileSync(
+      new URL('../../../profiles/vanilla/countryreligionview.jsonc', import.meta.url),
+      'utf8',
+    ),
+    { layer: 0, source: 'vanilla', file: 'countryreligionview.jsonc' },
+  );
+  const placed = (facts: Record<string, string>) => {
+    const profile = layerProfiles(
+      'countryreligionview',
+      written.file === undefined ? [] : [written.file],
+    );
+    const view = evaluateView(profile, window, LARGE, { facts });
+    const layout = layoutWindow(window, {
+      file,
+      index: InterfaceIndex.of(
+        [{ path: 'interface/religion.gfx', file: gfx }],
+        [{ path: 'interface/countryreligionview.gui', file }],
+      ),
+      exists: (path) => path.toLowerCase() in sizes,
+      assets: { textureSize: (path) => sizes[path.toLowerCase()], font: () => undefined },
+      screen: LARGE,
+      view: layoutViewOf(view),
+    });
+    const at = (name: string) => {
+      const w = layout.widgets.find((l) => l.widget.name === name);
+      return w === undefined ? undefined : [w.x, w.y];
+    };
+    return {
+      marker: at('current_patriarch_authority'),
+      value: at('current_patriarch_authority_value'),
+    };
+  };
+
+  it("places the marker and its value along the slider as eu4.exe does, by the save's authority", () => {
+    expect(written.diagnostics).toEqual([]);
+    // Without a save, at 1: the left edge of the high end less the marker's width plus 15 px
+    // (272 − 52 + 15 = 235 in the window), 3 + 6 px below the ends' top (273), as the coverage
+    // survey's Russia (211, 422 at 1920×1080).
+    expect(placed({})).toEqual({ marker: [245, 302], value: [254, 308] });
+    // At 0: the right edge of the low end less 15 px (54 + 38 − 15 = 77).
+    expect(placed({ 'country.patriarchAuthority': '0.000' })).toEqual({
+      marker: [87, 302],
+      value: [96, 308],
+    });
+    // Between, worked out in single precision and cut: 0.667 · 77 + 0.333 · 235 = 129.6.
+    expect(placed({ 'country.patriarchAuthority': '0.333' })).toEqual({
+      marker: [139, 302],
+      value: [148, 308],
+    });
+  });
+});
+
 describe('the diplomacy view of another country (the coverage survey)', () => {
   const file = readGuiFile(
     parseScript(`guiTypes = {

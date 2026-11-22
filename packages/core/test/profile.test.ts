@@ -192,7 +192,7 @@ describe('reading a profile file', () => {
     );
     expect(diagnostics.map((d) => d.message)).toEqual([
       'Only a resolution value has bounds.',
-      'Rule "r" has no effect: show, hide, notCreated, position, frame, sprite, chartSize, offset, hidePosition or adopt.',
+      'Rule "r" has no effect: show, hide, notCreated, position, frame, sprite, chartSize, slider, offset, hidePosition or adopt.',
     ]);
   });
 });
@@ -339,6 +339,23 @@ describe('load checks', () => {
     ]);
   });
 
+  it('keeps numeric facts for sliders and the others for selectors', () => {
+    const { profile, diagnostics } = check(`{ "formatVersion": 1, "window": "provinceview",
+      "selectors": {
+        "authority": { "kind": "data", "fact": "country.patriarchAuthority", "values": { "a": "A" } }
+      },
+      "rules": {
+        "words": { "slider": { "provinceview/bg": { "low": "provinceview/bg", "high": "provinceview/bg", "at": 0.5, "fact": "province.owned" } } },
+        "number": { "slider": { "provinceview/bg": { "low": "provinceview/bg", "high": "provinceview/bg", "at": 0.5, "fact": "country.patriarchAuthority" } } }
+      } }`);
+    expect(profile.selectors).toEqual([]);
+    expect(profile.rules.map((r) => r.id)).toEqual(['number']);
+    expect(diagnostics.map((d) => d.message)).toEqual([
+      "Fact country.patriarchAuthority is a number, which a rule's slider reads; a selector reads a fact with values.",
+      'Etch implements no numeric fact "province.owned" for a slider; a new fact needs an Etch release.',
+    ]);
+  });
+
   it("skips a group of an unknown selector, a selector without its default, a view's faulty toggle", () => {
     const { profile, diagnostics } = check(`{ "formatVersion": 1, "window": "provinceview",
       "selectors": { "sub": { "kind": "ui", "default": "ledger", "values": { "none": "None" } } },
@@ -387,7 +404,12 @@ describe('the JSON Schema', () => {
 
   it('names the facts Etch implements', () => {
     expect(schema.definitions['selector']?.properties?.['fact']?.enum).toEqual(
-      FACTS.map((f) => f.name),
+      FACTS.filter((f) => f.numeric !== true).map((f) => f.name),
+    );
+    const slider = schema.definitions['rule']?.properties?.['slider'] as
+      { additionalProperties?: { properties?: Record<string, { enum?: string[] }> } } | undefined;
+    expect(slider?.additionalProperties?.properties?.['fact']?.enum).toEqual(
+      FACTS.filter((f) => f.numeric === true).map((f) => f.name),
     );
   });
 
@@ -422,6 +444,7 @@ describe('the JSON Schema', () => {
       'offset',
       'position',
       'show',
+      'slider',
       'sprite',
       'when',
     ]);

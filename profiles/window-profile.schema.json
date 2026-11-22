@@ -185,6 +185,7 @@
         { "required": ["frame"] },
         { "required": ["sprite"] },
         { "required": ["chartSize"] },
+        { "required": ["slider"] },
         { "required": ["offset"] },
         { "required": ["hidePosition"] },
         { "required": ["adopt"] }
@@ -244,6 +245,27 @@
             "properties": {
               "x": { "type": "integer", "minimum": 1 },
               "y": { "type": "integer", "minimum": 1 }
+            }
+          }
+        },
+        "slider": {
+          "description": "Markers the game's code places along a slider, keyed by the marker's path: between the right edge of low less 15 px (share 0) and the left edge of high less the marker's width plus 15 px (share 1), 3 px below the top of low; value, a text box, 9 px right of the marker and 9 px below the top of low; both moved by offset. The share is at, or the save's numeric fact.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["low", "high", "at"],
+            "additionalProperties": false,
+            "properties": {
+              "low": { "$ref": "#/definitions/text" },
+              "high": { "$ref": "#/definitions/text" },
+              "value": { "$ref": "#/definitions/text" },
+              "at": { "type": "number", "minimum": 0, "maximum": 1 },
+              "fact": { "enum": ["country.patriarchAuthority"] },
+              "offset": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": { "x": { "type": "integer" }, "y": { "type": "integer" } }
+              }
             }
           }
         },

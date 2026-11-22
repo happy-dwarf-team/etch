@@ -8,7 +8,7 @@
  * groups, the rules in layer order, the toggles from a live snapshot, then the hand toggles. A
  * widget the game does not create stays so; a toggle cannot create it.
  */
-import type { LayoutView } from '../layout/window.ts';
+import type { LayoutView, SliderPlace } from '../layout/window.ts';
 import type { Screen, Widget } from '../model/gui.ts';
 import {
   ENGINE_MOVES,
@@ -73,6 +73,8 @@ export interface WidgetState {
   readonly sprite?: string;
   /** The size the game's code gives a chart in place of its sprite's. */
   readonly chartSize?: { readonly width: number; readonly height: number };
+  /** Where the game's code places it along a slider (a rule's `slider`): the marker or its value. */
+  readonly slider?: SliderPlace;
   /** What a country view's size step does to it: moved down, or made taller (etch#274). */
   readonly stepped?: 'moved' | 'grown';
   /** Pixels it moves further than the size step, when a step applies. */
@@ -176,6 +178,22 @@ export function evaluateView(
     for (const ref of rule.chartSize ?? []) {
       for (const w of widgetsAt(window, ref.path)) {
         update(w, { chartSize: { width: ref.width, height: ref.height } });
+      }
+    }
+    for (const ref of rule.slider ?? []) {
+      const low = widgetsAt(window, ref.low.path)[0];
+      const high = widgetsAt(window, ref.high.path)[0];
+      if (low === undefined || high === undefined) continue;
+      // The save's number when it has the fact, else the profile's share; the game holds it in
+      // thousandths.
+      const fact = ref.fact === undefined ? Number.NaN : Number(choice.facts?.[ref.fact]);
+      const thousandths = Math.round((Number.isFinite(fact) ? fact : ref.at) * 1000);
+      const place = { low, high, thousandths, offset: ref.offset };
+      for (const marker of widgetsAt(window, ref.path)) {
+        update(marker, { slider: place });
+        for (const value of ref.value === undefined ? [] : widgetsAt(window, ref.value.path)) {
+          update(value, { slider: { ...place, marker } });
+        }
       }
     }
     for (const ref of rule.offset) {
@@ -378,6 +396,7 @@ export function layoutViewOf(view: WindowView): LayoutView {
     frame: (widget) => view.widgets.get(widget)?.frame,
     sprite: (widget) => view.widgets.get(widget)?.sprite,
     chartSize: (widget) => view.widgets.get(widget)?.chartSize,
+    slider: (widget) => view.widgets.get(widget)?.slider,
     stepped: (widget) => view.widgets.get(widget)?.stepped,
     steppedFurther: (widget) => view.widgets.get(widget)?.steppedFurther,
     row: (widget) => view.widgets.get(widget)?.row,

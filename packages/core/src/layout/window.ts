@@ -218,6 +218,8 @@ export interface LayoutView {
   sprite?(widget: Widget): string | undefined;
   /** The size the game's code gives a chart in place of its sprite's `size`. */
   chartSize?(widget: Widget): Extent | undefined;
+  /** Where the game's code places the widget along a slider, after it is drawn. */
+  slider?(widget: Widget): SliderPlace | undefined;
   /**
    * What a country view's size step does to the widget: `moved` down, or `grown` taller, by the
    * `y` of the step the screen height reaches (etch#274).
@@ -236,6 +238,20 @@ export interface LayoutView {
   offset?(widget: Widget): { readonly x: number; readonly y: number } | undefined;
   /** Whether the game keeps the widget at its `hide_position` rather than its `show_position`. */
   atHidePosition?(widget: Widget): boolean;
+}
+
+/**
+ * A place the game's code computes along a slider (eu4.exe 1.37.5 `0x1488BC0`), for
+ * a marker or, with `marker`, the text box of its value. `low` and `high` are the slider's ends,
+ * laid out before the marker, and the marker before its value.
+ */
+export interface SliderPlace {
+  readonly low: Widget;
+  readonly high: Widget;
+  readonly marker?: Widget;
+  /** The share from `low` to `high`, in thousandths, as the game holds it. */
+  readonly thousandths: number;
+  readonly offset: { readonly x: number; readonly y: number };
 }
 
 /** One laid-out widget, in paint order: a parent comes before its children. */
@@ -620,6 +636,11 @@ class Layout {
       rect = { x, y, ...sizeIn(props.size('size'), parent) };
     }
 
+    const slider = view?.slider?.(widget);
+    if (slider !== undefined) {
+      const to = this.sliderPoint(slider, rect, parent, parentIndex);
+      if (to !== undefined) rect = this.moveTo(rect, to, drawStart);
+    }
     if (this.input.content?.centred?.(widget, this.row) === true) {
       const by = Math.trunc((parent.width - rect.width) / 2);
       rect = this.moveTo(rect, { x: rect.x + by, y: rect.y }, drawStart);
@@ -715,6 +736,38 @@ class Layout {
       this.place(child, rect, index, undefined);
     }
     this.adopting = outer;
+  }
+
+  /**
+   * Where the game's code puts a slider's marker, or its value's text box (eu4.exe 1.37.5
+   * `0x1488BC0`): `x` from the right edge of `low` less 15 px, at share 0, to the left edge of `high`
+   * less the marker's width plus 15 px, at share 1, worked out in single precision and cut, in the
+   * parent's coordinates; `y` 3 px below the top of `low`. The value goes 9 px right of the marker
+   * and 9 px below the top of `low`. Both move by `offset`. `undefined` when an end is not laid out.
+   */
+  private sliderPoint(
+    slider: SliderPlace,
+    own: Rect,
+    parent: Rect,
+    parentIndex: number,
+  ): { x: number; y: number } | undefined {
+    const laid = (widget: Widget): LaidOutWidget | undefined =>
+      this.widgets.findLast(
+        (w) => w.widget === widget && w.parent === parentIndex && w.row === this.row,
+      );
+    const low = laid(slider.low);
+    const high = laid(slider.high);
+    const marker = slider.marker === undefined ? own : laid(slider.marker);
+    if (low === undefined || high === undefined || marker === undefined) return undefined;
+    const left = Math.round(low.x - parent.x) - 15 + Math.round(low.width);
+    const right = Math.round(high.x - parent.x) - Math.round(marker.width) + 15;
+    const share = Math.fround(slider.thousandths / 1000);
+    const along = Math.trunc(
+      Math.fround(Math.fround(Math.fround(1 - share) * left) + Math.fround(right * share)),
+    );
+    const x = Math.round(parent.x) + slider.offset.x + along;
+    const top = Math.round(low.y) + slider.offset.y;
+    return slider.marker === undefined ? { x, y: top + 3 } : { x: x + 9, y: top + 9 };
   }
 
   /** A widget and what it drew moved to a point, its children placed after it following. */
