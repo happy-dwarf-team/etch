@@ -684,7 +684,7 @@ export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): str
   <button id="normal-map" aria-pressed="true" title="Draw the normal map, the small bumps of the surface">Normal</button>
   <button id="specular-map" aria-pressed="true" title="Draw the specular map. Off: no shine, and on PdxMeshColor parts no country colours, which the specular map marks">Spec</button>
   <button id="wireframe" aria-pressed="false" title="Show the triangle edges">Wire</button>
-  <button id="skeleton" aria-pressed="false" title="Show the skeleton over the model: a line from each bone to its parent, a white dot on each bone, a bigger orange one where an attached entity hangs. Point at a dot to see the bone's name">Bones</button>
+  <button id="skeleton" aria-pressed="false" title="Show the skeleton over the model: yellow lines join each bone to the one it hangs from, white dots mark the bones, bigger orange dots mark where an attached entity hangs. Point at a dot to see its name">Bones</button>
   <button id="reset" title="Frame the whole mesh">Reset view</button>
 </header>
 <div id="error" role="alert" hidden></div>
