@@ -33,7 +33,7 @@ them have at least one profiled root, 38 and 34 only profiled roots.
 | --- | --- | --- | --- |
 | Live texts, profiled windows | 100 % | 100.0 % on every playset and resolution | yes |
 | Live visibility | 100 % | 100.0 % on every set but vanilla at 1920×1080: 99.96 % (9900 of 9904), the 4 buttons of `peace_view`'s text scrollbar; with etch#608, 100.00 % (10076 of 10076) | with etch#608 |
-| Geometry offline, with the profiles | 100 % | vanilla 1920×1080 99.15 % (28 of 3312 rects off), vanilla 1280×720 99.42 % (15), Anbennar 1920×1080 99.44 % (18; 17 with etch#611), Anbennar 1280×720 99.63 % (8), Verne 1920×1080 99.38 % (21), Verne 1280×720 99.51 % (13) | no |
+| Geometry offline, with the profiles | 100 % | vanilla 1920×1080 99.15 % (28 of 3312 rects off; 27 with etch#612), vanilla 1280×720 99.42 % (15), Anbennar 1920×1080 99.44 % (18; 17 with etch#611), Anbennar 1280×720 99.63 % (8), Verne 1920×1080 99.38 % (21), Verne 1280×720 99.51 % (13) | no |
 | Known deviations with an issue and consent | every difference | three proposed, etch#604, etch#605, etch#606; consent not given | no |
 
 The geometry row reads "the outline offline" of section 3 as the outline with the profiles'
@@ -53,10 +53,10 @@ What the geometry left on `main` is, by kind (vanilla and Verne at 1920×1080):
   as a known deviation, etch#606, each still open to a fix.
 - **Building slots**: how many a province has and which can build now (visibility, not rects). Proposed
   as a known deviation, etch#605.
-- **Single rects** still open: Anbennar's achievements background, anchored by its own orientation
-  where the game puts it at the window's corner (etch#610, fixed by etch#611); the lobby's
-  `religion_icon`, 18 px lower in the game than its file for Russia, which has no secondary
-  religion (one capture, so a hypothesis, no rule yet).
+- **Single rects**, fixed since: Anbennar's achievements background, which the preview anchored by
+  its own orientation where the game puts it at the window's corner (etch#610, etch#611), and the
+  lobby's `religion_icon`, which eu4.exe moves 18 px down for a country without a secondary
+  religion (etch#612).
 - **Outside the profiled windows**, reported, not gated: `diplomessageicons_window` (at 0, 0 in the
   game), `outliner/outliner_bottom`, the war overview, Anbennar's `tributary_shield`.
 

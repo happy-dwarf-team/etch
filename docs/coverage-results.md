@@ -610,9 +610,19 @@ Two live failures were the preview's own, and are fixed:
   the 4 live visibility failures left in vanilla at 1920×1080. With the fix, live visibility is
   100.00 % (10076 of 10076) there too.
 
-One offline rect is fixed too: Anbennar's achievements background (etch#610, etch#611), which the
-preview anchored by its own `CENTER` where the game puts a window's background at the window's
-corner. With the profiles, Anbennar at 1920×1080 goes from 18 to 17 rects off.
+Two offline rects are fixed too:
+
+- **Anbennar's achievements background** (etch#610, etch#611): the preview anchored it by its own
+  `CENTER`, but the game puts a window's background at the window's corner. With the profiles,
+  Anbennar at 1920×1080 goes from 18 to 17 rects off.
+- **The lobby's religion icon** (etch#612): without a secondary religion, eu4.exe hides
+  `secondary_religion_icon` and moves `religion_icon` 18 px down. The capture is Russia's. With
+  the profiles, vanilla at 1920×1080 goes from 28 to 27 rects off, and Bigger UI gains one too.
+
+One fix is in the measure itself: in the main menu's settings views, the game holds a second
+`menu_settings` and keeps it hidden. The preview measure drew it only once (etch#378), but the
+measure with the profiles still drew it twice, one visibility failure in each of 10 views
+(etch#613).
 
 Each fix was measured on its branch over the survey's stored captures, against `main`: no view got
 worse in any measure.
