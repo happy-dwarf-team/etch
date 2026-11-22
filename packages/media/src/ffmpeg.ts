@@ -39,10 +39,14 @@ export function gfxcaptureArgs(
   ];
 }
 
-/** The first frame of a cut as a PNG: a loop's poster. */
-export function posterArgs(cut: string, png: string): string[] {
+/**
+ * A frame of a cut as a PNG: a loop's poster, its first frame unless `atSeconds` names another
+ * (the demo loop's, `heroPosterAt`).
+ */
+export function posterArgs(cut: string, png: string, atSeconds?: number): string[] {
   return [
     ...['-hide_banner', '-loglevel', 'error', '-y', '-i', cut],
+    ...(atSeconds === undefined ? [] : ['-ss', atSeconds.toFixed(3)]),
     ...['-frames:v', '1', '-update', '1', png],
   ];
 }

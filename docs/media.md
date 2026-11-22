@@ -94,14 +94,15 @@ master has none: Playwright's mouse is not the system pointer).
 
 **The render.** The Remotion composition in `packages/media/motion/` draws the edit at
 1920 × 1080, 30 fps, from H.264 proxies of the masters, into a ProRes 4444 cut, whose first frame
-is the poster; the cut is encoded as before. Remotion is free for individuals and companies of
+is the poster (the demo loop's poster is the last shot of its first chapter, half a second before
+the second: the preview open beside the code); the cut is encoded as before. Remotion is free for individuals and companies of
 up to three people (its licence); it needs no key.
 
 A run of every clip takes about fifteen minutes. It writes into `packages/media/out/v<version>/`:
 
 | File                    | What                                                                     |
 | ----------------------- | ------------------------------------------------------------------------ |
-| `<clip>.png`            | the loop's poster, its first frame, 1920 × 1080                          |
+| `<clip>.png`            | the loop's poster, its first frame (`hero`: see the render), 1920 × 1080 |
 | `<clip>.webm`, `.mp4`   | the loop, 1920 × 1080, 30 fps, silent: VP9 two-pass CRF 34, H.264 CRF 23 |
 | `media.draft.json`      | the media manifest with local file names (etch-website spec section 5.2) |
 | `capture.json`          | the log: Etch version and commit, VS Code, FFmpeg, when each take ran    |

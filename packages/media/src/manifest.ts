@@ -77,7 +77,7 @@ export interface DraftLoop {
   readonly height: number;
   /** Seconds. */
   readonly duration: number;
-  /** The poster PNG, the loop's first frame. */
+  /** The poster PNG: the loop's first frame, the demo loop's the last shot of its first chapter. */
   readonly poster: string;
   /** VP9 WebM first, H.264 MP4 second, the order of the page's `<source>`s. */
   readonly sources: readonly [DraftSource, DraftSource];
