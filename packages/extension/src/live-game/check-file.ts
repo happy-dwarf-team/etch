@@ -5,7 +5,7 @@
 import * as vscode from 'vscode';
 import { assignCheckLines, checkFolderOf, mapCheckErrors, planCheck } from '@etch/core';
 import type { LiveGame } from './live-game.ts';
-import { MAX_SCRIPT } from './run-script.ts';
+import { counted, MAX_SCRIPT } from './run-script.ts';
 
 export const CHECK_FILE = 'etch.checkFileInLiveGame';
 /** The Problems source of a check's lines. */
@@ -166,11 +166,11 @@ async function checkFile(
   const blocks = plan.chunks.reduce((sum, chunk) => sum + chunk.blocks.length, 0);
   const lostNote =
     lost > 0
-      ? ` ${String(lost)} characters have no byte in the game's code page and were checked as "?".`
+      ? ` ${counted(lost, 'character')} ${lost === 1 ? 'has' : 'have'} no byte in the game's code page and ${lost === 1 ? 'was' : 'were'} checked as "?".`
       : '';
   const unplacedNote =
     unplaced > 0
-      ? ` ${String(unplaced)} other error.log lines came meanwhile; they are in the Etch output.`
+      ? ` ${counted(unplaced, 'other error.log line')} came meanwhile; ${unplaced === 1 ? 'it is' : 'they are'} in the Etch output.`
       : '';
   if (diagnostics.length > 0) {
     say(
