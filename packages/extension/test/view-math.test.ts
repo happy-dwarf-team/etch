@@ -8,6 +8,8 @@ import {
   frameOf,
   framing,
   normalise,
+  onScreen,
+  placedBones,
   placedBounds,
   placement,
   scaling,
@@ -150,5 +152,36 @@ describe('view math', () => {
     expect(Math.hypot(...eye.map((v, i) => v - (camera.target[i] ?? 0)))).toBeCloseTo(7);
     expect(Math.hypot(...normalise([3, 4, 12]))).toBeCloseTo(1);
     expect(normalise([0, 0, 0])).toEqual([0, 0, 0]);
+  });
+});
+
+describe('skeleton', () => {
+  it('places each bone and its parent by the model matrix, Z mirrored', () => {
+    const worlds = [translation(0, 1, 0), translation(0, 1, 2)];
+    const bones = placedBones(
+      [
+        { name: 'root', parent: undefined },
+        { name: 'tip', parent: 0 },
+      ],
+      worlds,
+      scaling(2),
+    );
+    expect(bones).toEqual([
+      { name: 'root', at: [0, 2, -0], parent: undefined },
+      { name: 'tip', at: [0, 2, -4], parent: [0, 2, -0] },
+    ]);
+  });
+
+  it('puts the camera target at the middle of the canvas and leaves out points behind it', () => {
+    const camera = { yaw: 0.4, pitch: 0.2, distance: 5, target: [1, 2, 3] };
+    const projection = viewProjection(camera, 2);
+    const middle = onScreen(projection, camera.target, 200, 100);
+    expect(middle?.x).toBeCloseTo(100);
+    expect(middle?.y).toBeCloseTo(50);
+    // Up in the drawn space is up on the canvas, which counts down from its top.
+    expect(onScreen(projection, [1, 2.5, 3], 200, 100)?.y).toBeLessThan(50);
+    const eye = eyeOf(camera);
+    const behind = eye.map((v, i) => 2 * v - (camera.target[i] ?? 0));
+    expect(onScreen(projection, behind, 200, 100)).toBeUndefined();
   });
 });

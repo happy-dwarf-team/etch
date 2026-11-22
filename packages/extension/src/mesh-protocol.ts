@@ -23,6 +23,11 @@ export interface MeshSummary {
   readonly textures: Readonly<Record<string, string>>;
   /** Which of the materials' maps are drawn: the Diffuse, Normal and Spec buttons. */
   readonly maps: MeshMaps;
+  /**
+   * While the Bones button is on: the bones drawn (each mesh's once, however many of its shapes
+   * share them) and the bones an attachment hangs on, which it marks.
+   */
+  readonly skeleton?: { readonly bones: number; readonly attachments: readonly string[] };
   /** For an entity: its meshes in drawing order and the states offered. */
   readonly entity?: EntitySummary;
   /** When `PdxMeshTextureAtlas` parts are drawn: how many, and the flag on them. */
@@ -171,6 +176,8 @@ export interface MeshControls {
    * (wrapped into its frames); nothing without one.
    */
   readonly frame?: number;
+  /** The Bones button: the skinned shapes' bones drawn over the model. */
+  readonly skeleton?: boolean;
 }
 
 /**

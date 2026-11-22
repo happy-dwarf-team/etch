@@ -93,6 +93,8 @@ import {
   frameOf,
   framing,
   normalise,
+  onScreen,
+  placedBones,
   placedBounds,
   placement,
   scaling,
@@ -101,6 +103,7 @@ import {
   viewProjection,
   type Bounds,
   type OrbitCamera,
+  type PlacedBone,
 } from './view-math.ts';
 
 declare function acquireVsCodeApi(): { postMessage(message: MeshWebviewMessage): void };
@@ -120,6 +123,8 @@ const lodSelect = element('lod') as HTMLSelectElement;
 const playButton = element('play') as HTMLButtonElement;
 const frameInput = element('frame') as HTMLInputElement;
 const wireButton = element('wireframe') as HTMLButtonElement;
+const skeletonButton = element('skeleton') as HTMLButtonElement;
+const boneTip = element('bone-tip');
 const mapButtons = {
   diffuse: element('diffuse-map') as HTMLButtonElement,
   normal: element('normal-map') as HTMLButtonElement,
@@ -286,6 +291,33 @@ void main() {
   colour = vec4(clamp(c + highlight, 0.0, 1.0), blended ? base.a : 1.0);
 }`;
 
+// The Bones button: lines and points already in the drawn space, over the model.
+const BONE_VERTEX = `#version 300 es
+in vec3 position;
+uniform mat4 viewProjection;
+uniform float pointSize;
+void main() {
+  gl_Position = viewProjection * vec4(position, 1.0);
+  gl_PointSize = pointSize;
+}`;
+
+const BONE_FRAGMENT = `#version 300 es
+precision highp float;
+uniform vec3 tint;
+uniform bool round;
+out vec4 colour;
+void main() {
+  if (round && length(gl_PointCoord - 0.5) > 0.5) discard;
+  colour = vec4(tint, 1.0);
+}`;
+
+/** The bones' lines, joints and the joints an attachment hangs on, red, green, blue 0-1. */
+const BONE_COLOURS = {
+  line: [1, 0.82, 0.25],
+  joint: [1, 1, 1],
+  attachment: [1, 0.35, 0.1],
+} as const;
+
 interface DrawnPart {
   readonly part: MeshPart;
   readonly shape: MeshShape;
@@ -325,9 +357,16 @@ interface Instance {
   readonly states: Readonly<Record<string, string | undefined>>;
   /** Where it is drawn, in the file's space; set by `pose`. */
   model: Float32Array;
+  /** Its skinned shapes' bones at the frame shown, in the drawn space; set by `pose`. */
+  bones: PlacedBone[];
 }
 
 let program: WebGLProgram | undefined;
+/** The Bones button's program, with its vertex array and buffer. */
+let bonePass:
+  { program: WebGLProgram; vao: WebGLVertexArrayObject; buffer: WebGLBuffer } | undefined;
+/** Whether the skinned shapes' bones are drawn over the model (the Bones button). */
+let skeletonShown = false;
 let instances: Instance[] = [];
 /** The uploaded textures, shared by the parts of a mesh that name them. */
 let uploaded: WebGLTexture[] = [];
@@ -439,7 +478,11 @@ function fail(message: string): void {
   vscode.postMessage({ type: 'failed', message });
 }
 
-function compile(context: WebGL2RenderingContext): WebGLProgram {
+function compile(
+  context: WebGL2RenderingContext,
+  vertex = VERTEX,
+  fragment = FRAGMENT,
+): WebGLProgram {
   const shader = (type: number, source: string): WebGLShader => {
     const created = context.createShader(type);
     if (created === null) throw new Error('cannot create a shader');
@@ -451,8 +494,8 @@ function compile(context: WebGL2RenderingContext): WebGLProgram {
     return created;
   };
   const linked = context.createProgram();
-  context.attachShader(linked, shader(context.VERTEX_SHADER, VERTEX));
-  context.attachShader(linked, shader(context.FRAGMENT_SHADER, FRAGMENT));
+  context.attachShader(linked, shader(context.VERTEX_SHADER, vertex));
+  context.attachShader(linked, shader(context.FRAGMENT_SHADER, fragment));
   context.bindAttribLocation(linked, 0, 'position');
   context.bindAttribLocation(linked, 1, 'normal');
   context.bindAttribLocation(linked, 2, 'uv');
@@ -714,9 +757,15 @@ function pose(context: WebGL2RenderingContext, seconds: number): void {
     // Bone matrices in the mesh's space, by bone name, for the attachments on it.
     const bones = new Map<string, Float32Array>();
     const matrices = new Map<MeshShape, Float32Array[]>();
+    // The skeletons for the Bones button, placed once the instance's model is known.
+    const skeletons: { skeleton: MeshShape['skeleton']; world: Float32Array[] }[] = [];
     for (const shape of instance.mesh.shapes) {
       if (shape.skeleton.length === 0) continue;
       const world = boneWorldMatrices(shape.skeleton, animation, frame);
+      // Shapes of one mesh share their skeleton: each bone once.
+      if (shape.skeleton.some((bone) => !bones.has(bone.name))) {
+        skeletons.push({ skeleton: shape.skeleton, world });
+      }
       for (const [index, bone] of shape.skeleton.entries()) {
         const matrix = world[index];
         if (matrix !== undefined && !bones.has(bone.name)) bones.set(bone.name, matrix);
@@ -740,6 +789,13 @@ function pose(context: WebGL2RenderingContext, seconds: number): void {
         ? undefined
         : worlds.get(parent)?.get(instance.bone);
     instance.model = placement(instance.scale, parent, bone);
+    const placed = new Map<string, PlacedBone>();
+    for (const { skeleton, world } of skeletons) {
+      for (const one of placedBones(skeleton, world, instance.model)) {
+        if (!placed.has(one.name)) placed.set(one.name, one);
+      }
+    }
+    instance.bones = [...placed.values()];
     for (const item of instance.parts) {
       if (item.part.skin === undefined) continue;
       const shapeMatrices = matrices.get(item.shape);
@@ -998,7 +1054,71 @@ function render(now: number): void {
   }
   gl.disable(gl.BLEND);
   gl.depthMask(true);
+  drawSkeleton(gl, viewProjection(camera, width / height), ratio);
   gl.bindVertexArray(null);
+}
+
+/** The bones of an instance that attachments hang on, with the names of what hangs there. */
+function attachmentBones(instance: Instance): Map<string, string[]> {
+  const found = new Map<string, string[]>();
+  for (const child of instances) {
+    if (child.parent !== instance || child.bone === undefined) continue;
+    found.set(child.bone, [...(found.get(child.bone) ?? []), child.name]);
+  }
+  return found;
+}
+
+/**
+ * The Bones button: a line from each bone to its parent, a dot on each joint and a bigger one in
+ * another colour where an attachment hangs, all over the model (no depth test), so that bones
+ * inside it show.
+ */
+function drawSkeleton(
+  context: WebGL2RenderingContext,
+  projection: Float32Array,
+  ratio: number,
+): void {
+  if (!skeletonShown || bonePass === undefined) return;
+  const lines: number[] = [];
+  const joints: number[] = [];
+  const marked: number[] = [];
+  for (const instance of instances) {
+    const carried = attachmentBones(instance);
+    for (const bone of instance.bones) {
+      if (bone.parent !== undefined) lines.push(...bone.parent, ...bone.at);
+      (carried.has(bone.name) ? marked : joints).push(...bone.at);
+    }
+  }
+  const pass = bonePass;
+  context.useProgram(pass.program);
+  context.disable(context.DEPTH_TEST);
+  context.uniformMatrix4fv(
+    context.getUniformLocation(pass.program, 'viewProjection'),
+    false,
+    projection,
+  );
+  context.bindVertexArray(pass.vao);
+  context.bindBuffer(context.ARRAY_BUFFER, pass.buffer);
+  const draw = (
+    data: readonly number[],
+    mode: number,
+    [r = 0, g = 0, b = 0]: readonly number[],
+    size: number,
+  ): void => {
+    if (data.length === 0) return;
+    context.bufferData(context.ARRAY_BUFFER, new Float32Array(data), context.STREAM_DRAW);
+    context.uniform3f(context.getUniformLocation(pass.program, 'tint'), r, g, b);
+    context.uniform1f(context.getUniformLocation(pass.program, 'pointSize'), size * ratio);
+    context.uniform1i(
+      context.getUniformLocation(pass.program, 'round'),
+      mode === context.POINTS ? 1 : 0,
+    );
+    context.drawArrays(mode, 0, data.length / 3);
+  };
+  draw(lines, context.LINES, BONE_COLOURS.line, 1);
+  draw(joints, context.POINTS, BONE_COLOURS.joint, 5);
+  draw(marked, context.POINTS, BONE_COLOURS.attachment, 10);
+  context.enable(context.DEPTH_TEST);
 }
 
 function redraw(): void {
@@ -1025,6 +1145,15 @@ function summary(): MeshSummary {
     textures: textureSources,
     maps: { ...maps },
   };
+  if (skeletonShown) {
+    base = {
+      ...base,
+      skeleton: {
+        bones: instances.reduce((sum, i) => sum + i.bones.length, 0),
+        attachments: instances.flatMap((i) => [...attachmentBones(i).keys()]),
+      },
+    };
+  }
   const atlasParts = parts.filter((d) => d.atlas).length;
   if (atlasParts > 0) base = { ...base, flag: { parts: atlasParts, tag: flag?.tag } };
   const regionParts = parts.filter((d) => d.atlas || d.countryColours).length;
@@ -1196,6 +1325,7 @@ function show(
       scale: node.scale,
       states: node.states,
       model: scaling(node.scale),
+      bones: [],
     });
   }
   showWarnings(warnings, problems);
@@ -1212,6 +1342,9 @@ function show(
   mapButtons.diffuse.disabled = !has((d) => d.texture);
   mapButtons.normal.disabled = !has((d) => d.normalMap);
   mapButtons.specular.disabled = !has((d) => d.specularMap);
+  skeletonButton.disabled = !instances.some((i) =>
+    i.mesh.shapes.some((s) => s.skeleton.length > 0),
+  );
   offerLevels();
   pose(context, 0);
 }
@@ -1309,8 +1442,10 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
         lod: lodPick,
         distance,
         frame,
+        skeleton,
       } = message.controls;
       if (frame !== undefined) goToFrame(frame);
+      if (skeleton !== undefined) setSkeleton(skeleton);
       if (lodPick !== undefined) {
         lodAuto = lodPick === 'auto' && lodSelect.querySelector('option[value="auto"]') !== null;
         if (lodPick !== 'auto') lodLevel = lodPick;
@@ -1694,6 +1829,64 @@ wireButton.addEventListener('click', () => {
   redraw();
 });
 
+/** Shows or hides the bones (the Bones button). */
+function setSkeleton(on: boolean): void {
+  skeletonShown = on;
+  skeletonButton.setAttribute('aria-pressed', String(on));
+  if (!on) boneTip.hidden = true;
+}
+
+skeletonButton.addEventListener('click', () => {
+  setSkeleton(!skeletonShown);
+  redraw();
+  vscode.postMessage({ type: 'shown', summary: summary() });
+});
+
+/**
+ * The bone nearest a point of the canvas (CSS pixels from its top left), within `reach` pixels:
+ * its name and what hangs on it.
+ */
+function boneAt(
+  x: number,
+  y: number,
+  reach: number,
+): { name: string; carries: string[] } | undefined {
+  const width = canvas.clientWidth;
+  const height = canvas.clientHeight;
+  if (width === 0 || height === 0) return undefined;
+  const projection = viewProjection(camera, width / height);
+  let nearest: { name: string; carries: string[]; distance: number } | undefined;
+  for (const instance of instances) {
+    const carried = attachmentBones(instance);
+    for (const bone of instance.bones) {
+      const point = onScreen(projection, bone.at, width, height);
+      if (point === undefined) continue;
+      const distance = Math.hypot(point.x - x, point.y - y);
+      if (distance > reach || (nearest !== undefined && distance >= nearest.distance)) continue;
+      nearest = { name: bone.name, carries: carried.get(bone.name) ?? [], distance };
+    }
+  }
+  return nearest;
+}
+
+/** With the bones shown, names the bone under the pointer beside it. */
+function showBoneTip(event: PointerEvent): void {
+  const rect = canvas.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+  const bone = skeletonShown && dragging === undefined ? boneAt(x, y, 10) : undefined;
+  boneTip.hidden = bone === undefined;
+  if (bone === undefined) return;
+  boneTip.textContent =
+    bone.carries.length === 0 ? bone.name : `${bone.name}: ${bone.carries.join(', ')}`;
+  boneTip.style.left = `${String(Math.round(x + 14))}px`;
+  boneTip.style.top = `${String(Math.round(y + 14))}px`;
+}
+
+canvas.addEventListener('pointerleave', () => {
+  boneTip.hidden = true;
+});
+
 resetButton.addEventListener('click', () => {
   frameView();
   redraw();
@@ -1711,6 +1904,7 @@ canvas.addEventListener('contextmenu', (event) => {
   event.preventDefault();
 });
 canvas.addEventListener('pointermove', (event) => {
+  showBoneTip(event);
   if (dragging === undefined) return;
   const dx = event.clientX - dragging.x;
   const dy = event.clientY - dragging.y;
@@ -1746,6 +1940,14 @@ if (gl === null) {
 } else {
   try {
     program = compile(gl);
+    const vao = gl.createVertexArray();
+    gl.bindVertexArray(vao);
+    const bufferOfBones = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, bufferOfBones);
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+    gl.bindVertexArray(null);
+    bonePass = { program: compile(gl, BONE_VERTEX, BONE_FRAGMENT), vao, buffer: bufferOfBones };
     vscode.postMessage({ type: 'ready' });
   } catch (error) {
     fail(error instanceof Error ? error.message : String(error));

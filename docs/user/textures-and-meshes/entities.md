@@ -56,8 +56,10 @@ file that plays. For the soldier, `idle` plays `polearm_twohanded_idle.anim`. An
 with no animation for the state stays on its bone as the bone moves.
 
 Turning, moving and zooming, the colour boxes, **Flag**, **Region**, **LOD**, **Snow**, **Wire**,
-**Diffuse**, **Normal**, **Spec** and **Reset view** work as in the
-[mesh preview](mesh-preview.md).
+**Bones**, **Diffuse**, **Normal**, **Spec** and **Reset view** work as in the
+[mesh preview](mesh-preview.md). **Bones** shows the skeletons of the entity and of everything
+attached to it. An orange dot marks each bone an attached entity hangs on: point at it to see the
+bone's name and the entity's.
 
 ## Where it finds the files
 

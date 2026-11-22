@@ -637,6 +637,11 @@ export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): str
   main { flex: 1; position: relative; min-height: 0; }
   canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; }
   canvas:active { cursor: grabbing; }
+  #bone-tip {
+    position: absolute; pointer-events: none; padding: 1px 6px; white-space: nowrap;
+    background: var(--vscode-editorHoverWidget-background); color: var(--vscode-editorHoverWidget-foreground);
+    border: 1px solid var(--vscode-editorHoverWidget-border, transparent);
+  }
   footer { padding: 2px 8px; min-height: 1.4em; opacity: 0.8; font-variant-numeric: tabular-nums; white-space: pre; }
 </style>
 </head>
@@ -679,10 +684,11 @@ export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): str
   <button id="normal-map" aria-pressed="true" title="Draw the normal map, the small bumps of the surface">Normal</button>
   <button id="specular-map" aria-pressed="true" title="Draw the specular map. Off: no shine, and on PdxMeshColor parts no country colours, which the specular map marks">Spec</button>
   <button id="wireframe" aria-pressed="false" title="Show the triangle edges">Wire</button>
+  <button id="skeleton" aria-pressed="false" title="Show the skeleton over the model: a line from each bone to its parent, a white dot on each bone, a bigger orange one where an attached entity hangs. Point at a dot to see the bone's name">Bones</button>
   <button id="reset" title="Frame the whole mesh">Reset view</button>
 </header>
 <div id="error" role="alert" hidden></div>
-<main><canvas id="canvas"></canvas></main>
+<main><canvas id="canvas"></canvas><div id="bone-tip" role="tooltip" hidden></div></main>
 <footer id="status"></footer>
 <script nonce="${nonce}" src="${script.toString()}"></script>
 </body>

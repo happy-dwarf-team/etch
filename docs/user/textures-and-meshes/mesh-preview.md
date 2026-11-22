@@ -41,6 +41,7 @@ The bar also counts the mesh's collision shapes, as "collision (hidden)".
 | Mouse wheel                          | Zooms in and out.                                         |
 | **Reset view**                       | Turns the model back as it opened and fits all of it in.  |
 | **Wire**                             | Shows the edges of its triangles as lines over the model. |
+| **Bones**                            | Shows its skeleton over the model.                        |
 | **Diffuse**                          | Turns the colour texture off and on.                      |
 | **Normal**                           | Turns the normal map off and on.                          |
 | **Spec**                             | Turns the specular map off and on.                        |
@@ -136,6 +137,20 @@ The slider beside **Play** shows where the animation is. It moves along as the a
   a box, such as **Flag**.
 
 The line at the bottom shows the frame you are on. **Play** goes on from there.
+
+## Skeleton
+
+Click **Bones** to see the mesh's skeleton over the model: the bones an animation moves. Click it
+again to hide it. It is greyed out when the mesh has no skeleton.
+
+- A yellow line joins each bone to the bone it hangs from.
+- A white dot marks each bone.
+- A bigger orange dot marks a bone that something hangs on in an
+  [entity](entities.md), such as the soldier's halberd on `Right_hand_node`.
+- Point at a dot to see the bone's name. For an orange dot, the name of what hangs there follows.
+
+The skeleton shows at the frame the animation is on, and it moves as the animation plays. It is
+drawn on top of the model, so you also see the bones inside it.
 
 ## Front and back of a surface
 
