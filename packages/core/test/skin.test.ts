@@ -128,7 +128,8 @@ describe('boneWorldMatrices', () => {
     expect(apply(world[2] ?? new Float32Array(16), [0, 0, 0])).toEqual([0, 2, 0]);
   });
 
-  it('keeps the bind pose of the bones an animation does not name', () => {
+  it('keeps the bind pose with an animation that does not fit the skeleton', () => {
+    // One joint for three bones: the game plays nothing.
     const animation = restAnimation([{ name: 'elsewhere', rest: pose([5, 5, 5]) }]);
     const world = boneWorldMatrices(skeleton, animation);
     expect(world.map(rounded)).toEqual([rootBind, childBind, tipBind].map(rounded));
@@ -140,10 +141,11 @@ describe('boneWorldMatrices', () => {
     ]);
   });
 
-  it('poses a named joint and carries the unnamed bones below it along', () => {
-    // The child, relative to the root, straight up two instead of one and not turned.
+  it('poses a bone with a joint and carries the bones without one below it along', () => {
+    // The child, relative to the root, straight up two instead of one and not turned; the root
+    // and the tip get no joint.
     const animation = restAnimation([{ name: 'child', rest: pose([0, 2, 0]) }]);
-    const world = boneWorldMatrices(skeleton, animation);
+    const world = boneWorldMatrices(skeleton, animation, 0, [undefined, 0, undefined]);
     expect(rounded(world[0])).toEqual(rounded(rootBind));
     expect(apply(world[1] ?? new Float32Array(16), [0, 0, 0])).toEqual([0, 2, 0]);
     // The tip keeps its bind offset from the child, one along the child's X, now unturned.

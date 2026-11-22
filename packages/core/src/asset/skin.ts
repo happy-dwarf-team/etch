@@ -1,22 +1,30 @@
 // Posing a skinned mesh with an animation, on the CPU: each bone's world matrix from the joint
-// poses (bones the animation does not name keep their bind pose), the skinning matrix
-// world × inverse bind, and the vertices blended by their weights. Matrices are 4 × 4 by columns.
+// poses (bones without a joint keep their bind pose), the skinning matrix world × inverse bind,
+// and the vertices blended by their weights. Matrices are 4 × 4 by columns.
+//
+// The game binds an animation's joints to the skeleton's bones by index, not by name: EU4 1.37.5's
+// `AnimPlayAnimation` (pdx_anim.cpp) refuses an animation whose joint count is not the mesh's bone
+// count and otherwise writes joint k's pose to bone k. The animation it keeps holds no joint names.
 
 import { jointPose, type JointPose, type PdxAnimation } from './anim.ts';
 import type { MeshPart, SkeletonBone } from './mesh.ts';
 
-/** For each bone (by index), the animation's joint of the same name, else `undefined`. */
+/** Whether the game plays the animation on the skeleton: as many joints as bones. */
+export function animationFits(skeleton: readonly SkeletonBone[], animation: PdxAnimation): boolean {
+  return skeleton.length > 0 && animation.joints.length === skeleton.length;
+}
+
+/**
+ * For each bone (by index), the animation's joint that poses it: the joint of the same index,
+ * whatever its name, as the game binds them. When the animation does not fit the skeleton, every
+ * bone is `undefined`, since the game then plays nothing.
+ */
 export function jointsOfBones(
   skeleton: readonly SkeletonBone[],
   animation: PdxAnimation,
 ): (number | undefined)[] {
-  const byName = new Map(animation.joints.map((joint, index) => [joint.name, index]));
-  // Some text animations name a joint by its path, "Top6|Top2".
-  for (const [index, joint] of animation.joints.entries()) {
-    const last = joint.name.split('|').pop();
-    if (last !== undefined && !byName.has(last)) byName.set(last, index);
-  }
-  return skeleton.map((bone) => byName.get(bone.name));
+  const fits = animationFits(skeleton, animation);
+  return skeleton.map((_, index) => (fits ? index : undefined));
 }
 
 export function multiply(a: Float32Array, b: Float32Array): Float32Array {

@@ -10,7 +10,7 @@ import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
-import { ANIM, binary, MESH, strs } from '../../core/test/fixtures/pdx-asset.ts';
+import { ANIM, ANIM_THREE_JOINTS, binary, MESH, strs } from '../../core/test/fixtures/pdx-asset.ts';
 import type { EtchApi } from '../src/extension.ts';
 import { PREVIEW_ENTITY_COMMAND, type EntityShown } from '../src/entity-preview.ts';
 import type { MeshControls } from '../src/mesh-protocol.ts';
@@ -37,6 +37,7 @@ const GFX = `objectTypes = {
     name = "etch_flag_mesh"
     file = "gfx/models/etch/etch_flag.mesh"
     animation = { id = "idle" type = "etch_wave_animation" }
+    animation = { id = "wide" type = "etch_wide_animation" }
     scale = 0.5
   }
   pdxmesh = { name = "etch_knob_mesh" file = "gfx/models/etch/etch_knob.mesh" scale = 0.5 }
@@ -48,6 +49,7 @@ const ASSET = `entity = {
   pdxmesh = "etch_flag_mesh"
   state = { name = "idle" animation = "idle" event = { time = 0.5 node = "tip" particle = "etch_sparks" } }
   state = { name = "walk" animation = "walk" event = { particle = "etch_dust" } }
+  state = { name = "wide" animation = "wide" }
   attach = { name = "top" tip = "etch_knob" }
 }
 
@@ -60,6 +62,7 @@ entity = {
 entity = { name = "etch_knob" pdxmesh = "etch_knob_mesh" }
 
 animation = { name = "etch_wave_animation" file = "etch_wave.anim" }
+animation = { name = "etch_wide_animation" file = "etch_wide.anim" }
 `;
 
 // The particle systems: etch_sparks only, so the walk state's etch_dust is defined nowhere.
@@ -146,6 +149,8 @@ export async function testEntityPreview(api: EtchApi): Promise<void> {
   await writeFile(path.join(models, 'knob_diffuse.dds'), dds(2, 2, [0, 0, 255, 255]));
   await writeFile(path.join(models, 'flag_diffuse.dds'), dds(2, 2, [30, 20, 10, 255]));
   await writeFile(path.join(entities, 'etch_wave.anim'), binary(ANIM));
+  // One joint more than the flag's two bones: the game plays nothing.
+  await writeFile(path.join(entities, 'etch_wide.anim'), binary(ANIM_THREE_JOINTS));
   await mkdir(path.join(game, 'gfx', 'particles'));
   await writeFile(path.join(game, 'gfx', 'particles', 'etch_sparks.asset'), PARTICLES);
   const asset = vscode.Uri.file(path.join(entities, 'etch_units.asset'));
@@ -166,8 +171,8 @@ export async function testEntityPreview(api: EtchApi): Promise<void> {
         .map((lens) => [lens.range.start.line, String(lens.command?.arguments?.[1])]),
       [
         [0, 'etch_flag'],
-        [8, 'etch_flag_bare'],
-        [14, 'etch_knob'],
+        [9, 'etch_flag_bare'],
+        [15, 'etch_knob'],
       ],
       'a lens above each entity',
     );
@@ -177,11 +182,12 @@ export async function testEntityPreview(api: EtchApi): Promise<void> {
     assert.deepEqual(shown.summary.entity, {
       name: 'etch_flag',
       nodes: ['etch_flag', 'etch_knob on tip'],
-      states: ['idle', 'walk'],
+      states: ['idle', 'walk', 'wide'],
       state: 'idle',
       problems: [
         'etch_flag: state walk: no particle "etch_dust" in the .asset files',
         'etch_flag: state walk: pdxmesh "etch_flag_mesh" has no animation id "walk"',
+        'etch_flag: state wide: gfx/entities/etch_wide.anim has 3 joints, etch_flag.mesh 2 bones; the game plays nothing',
       ],
       // The idle state's particle event, named since particles are not drawn.
       particles: ['etch_flag: etch_sparks on tip at 0.5 s'],

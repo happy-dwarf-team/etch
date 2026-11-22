@@ -7,6 +7,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { basename, dirname, join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
+  animationFits,
   jointsOfBones,
   readAnimation,
   readMesh,
@@ -138,10 +139,9 @@ describe.skipIf(gamePath === undefined)('meshes and animations of the installed 
         for (const shape of mesh.shapes) {
           const skinned = shape.parts.filter((part) => part.skin !== undefined);
           if (skinned.length === 0 || shape.skeleton.length === 0) continue;
-          // A mesh beside the animation whose bones it names, half of them at least.
+          // A mesh beside the animation that the game plays it on: as many bones as joints.
+          if (!animationFits(shape.skeleton, animation)) continue;
           const joints = jointsOfBones(shape.skeleton, animation);
-          const named = joints.filter((joint) => joint !== undefined).length;
-          if (named * 2 < shape.skeleton.length) continue;
           posed.pairs++;
           const bind = diagonal(skinned.map((part) => part.positions));
           let worst = 1;
@@ -160,7 +160,18 @@ describe.skipIf(gamePath === undefined)('meshes and animations of the installed 
         }
       }
     }
-    expect(posed).toEqual({ animations: 151, pairs: 444, sane: 444, odd: [] });
+    // Two animations fit by joint count only another mesh beside them, which no pdxmesh pairs them
+    // with: the seagulls' on the vulture, the envoy ship's on a missionary.
+    expect(posed).toEqual({
+      animations: 151,
+      pairs: 259,
+      sane: 257,
+      odd: [
+        join('models', 'animated_mapobjects', 'seagulls_idle.anim') + ' on vulture2Shape: 2.10',
+        join('models', 'Mapitems', 'envoy_ship_idle.anim') +
+          ' on Missionary:DrawCall_0172Shape: 5.29',
+      ],
+    });
   });
 
   it('renders a thumbnail of every mesh that draws something', () => {

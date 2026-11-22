@@ -873,10 +873,21 @@ refresh is a step of the 3.0.0 release.
   the playset, collision shapes hidden; the light, normal map, highlight and
   `PdxMeshColor` country colours follow the game's `pdxmesh.shader`, the
   light direction is vanilla's `LIGHT_DIRECTION`) and plays an `.anim` beside it
-  that names its bones, skinned on the CPU (`@etch/core/asset`'s
-  `skinningMatrices`, `skinPart`); posing the 151 animations vanilla's
-  `.asset` files use on the skinned meshes beside them keeps all 444 pairs
-  within 0.5–2× of their bind size. The entity preview (`etch.previewEntity`,
+  with as many joints as the mesh has bones, skinned on the CPU
+  (`@etch/core/asset`'s `skinningMatrices`, `skinPart`). Joints pose bones by
+  index, not by name, as the game does: EU4 1.37.5's `AnimPlayAnimation`
+  (`pdx_anim.cpp`) refuses an animation whose joint count is not the mesh's
+  bone count and otherwise writes joint k's pose to bone k, with the joint's
+  uniform scale (its rest `s`, or the sampled one interpolated); the animation
+  it keeps holds no joint names (read in the decompiled game, etch#625). Of
+  vanilla's 1,579 pdxmesh × animation pairs all fit, and in 645 a joint's name
+  is not its bone's: `Left_hand_node` and `Right_hand_node` of the infantry,
+  posed by `attack_L_hand` and `attack_R_hand` (`rifleman_*`,
+  `musketeer_02_*`, `polearm_*`), and the galleass's attack, whose skeleton
+  names bones by path (`Top4|Top2`) (`entity.vanilla.test.ts`). Posing the 151
+  animations vanilla's `.asset` files use on the skinned meshes beside them
+  that they fit keeps 257 of the 259 pairs within 0.5–2× of their bind size;
+  the two others fit by count only a mesh no pdxmesh pairs them with. The entity preview (`etch.previewEntity`,
   a CodeLens on each `entity` of an `.asset` file) resolves an entity through
   the playset's `.gfx` pdxmesh types and `.asset` files (`@etch/core/asset`
   `resolveEntity`: `clone` first, then the entity's own keys; states by name,

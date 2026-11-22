@@ -61,6 +61,7 @@
 // bone's position is). Vanilla gives a soldier and the weapon in its hand the same scale (0.5).
 
 import {
+  animationFits,
   boneWorldMatrices,
   colourMapAt,
   dayName,
@@ -1435,6 +1436,7 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
           nodes.push({ ...node, textures: {} });
         }
       }
+      problems.push(...unfitStates(nodes, meshes));
       entity = {
         name: message.name,
         states: [...message.states],
@@ -1463,6 +1465,31 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
     fail(error instanceof Error ? error.message : String(error));
   }
 });
+
+/**
+ * The states whose animation the game would not play on the node's mesh: another joint count
+ * than the skeleton's bone count. The node then keeps its bind pose.
+ */
+function unfitStates(
+  nodes: readonly Omit<EntityNode, 'bytes'>[],
+  meshes: readonly PdxMesh[],
+): string[] {
+  const out: string[] = [];
+  for (const [index, node] of nodes.entries()) {
+    const skeletons = (meshes[index]?.shapes ?? []).filter((shape) => shape.skeleton.length > 0);
+    for (const [state, key] of Object.entries(node.states)) {
+      const animation = key === undefined ? undefined : animations.get(key);
+      if (key === undefined || animation === undefined) continue;
+      const unfit = skeletons.find((shape) => !animationFits(shape.skeleton, animation));
+      if (unfit === undefined) continue;
+      out.push(
+        `${node.name}: state ${state}: ${key} has ${String(animation.joints.length)} joints, ` +
+          `${node.meshName} ${String(unfit.skeleton.length)} bones; the game plays nothing`,
+      );
+    }
+  }
+  return out;
+}
 
 /** A mesh with no shapes, standing in for one that cannot be read. */
 const EMPTY_MESH = new TextEncoder().encode('@@t@\n\tpdxasset i 2 1 0\n[object]\n');

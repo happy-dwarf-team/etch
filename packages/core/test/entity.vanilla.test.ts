@@ -7,8 +7,10 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
+  animationFits,
   MAP_TREE_NAME,
   mapTreeOf,
+  readAnimation,
   readMesh,
   resolveEntity,
   type PdxMesh,
@@ -90,6 +92,50 @@ describe.skipIf(gamePath === undefined)('entities of the installed game', () => 
       attachments: 1411,
       bonesFound: 1411,
       problems: 67,
+    });
+  });
+
+  it('plays every pdxmesh animation on its mesh, joints bound to bones by index', async () => {
+    const root = gamePath ?? '';
+    const index = await loadEntityIndex(new GameFiles([{ name: 'game', root, replacePaths: [] }]));
+    const counts = { pairs: 0, fit: 0, nameIsIndex: 0, differ: new Map<string, number>() };
+    for (const type of index.pdxmeshes.values()) {
+      if (type.file === undefined) continue;
+      const mesh = readMesh(readFileSync(join(root, type.file)));
+      for (const animationType of type.animations.values()) {
+        const file = index.animations.get(animationType)?.file;
+        if (file === undefined) continue;
+        const animation = readAnimation(readFileSync(join(root, file)));
+        for (const shape of mesh.shapes) {
+          if (shape.skeleton.length === 0) continue;
+          counts.pairs++;
+          if (!animationFits(shape.skeleton, animation)) continue;
+          counts.fit++;
+          // The bones a binding by name (Etch 2.14 and earlier) would pose with another joint, or none.
+          const byName = shape.skeleton.flatMap((bone, k) =>
+            animation.joints[k]?.name === bone.name
+              ? []
+              : [`${bone.name}←${animation.joints[k]?.name ?? ''}`],
+          );
+          if (byName.length === 0) counts.nameIsIndex++;
+          for (const pair of byName) counts.differ.set(pair, (counts.differ.get(pair) ?? 0) + 1);
+        }
+      }
+    }
+    // EU4 1.37.5: every animation a pdxmesh names has its mesh's bone count, so the game plays
+    // them all. In 645 pairs some joint's name is not its bone's: the hand nodes of the infantry
+    // animations (rifleman_*, musketeer_02_*, polearm_*) and the galleass's attack, whose skeleton
+    // names its bones by path ("Top4|Top2") and the animation by the last name.
+    expect([counts.pairs, counts.fit, counts.nameIsIndex]).toEqual([1579, 1579, 934]);
+    expect(Object.fromEntries(counts.differ)).toEqual({
+      'Left_hand_node←attack_L_hand': 644,
+      'Right_hand_node←attack_R_hand': 610,
+      'Top4|Top2←Top2': 1,
+      'Top4|Top2|Top3←Top3': 1,
+      'Top5|Top2←Top2': 1,
+      'Top5|Top2|Top3←Top3': 1,
+      'Top6|Top2←Top2': 1,
+      'Top6|Top2|Top3←Top3': 1,
     });
   });
 
