@@ -1056,6 +1056,7 @@ function render(now: number): void {
   gl.depthMask(true);
   drawSkeleton(gl, viewProjection(camera, width / height), ratio);
   gl.bindVertexArray(null);
+  if (skeletonShown) showBoneTip();
 }
 
 /** The bones of an instance that attachments hang on, with the names of what hangs there. */
@@ -1869,21 +1870,29 @@ function boneAt(
   return nearest;
 }
 
-/** With the bones shown, names the bone under the pointer beside it. */
-function showBoneTip(event: PointerEvent): void {
-  const rect = canvas.getBoundingClientRect();
-  const x = event.clientX - rect.left;
-  const y = event.clientY - rect.top;
-  const bone = skeletonShown && dragging === undefined ? boneAt(x, y, 10) : undefined;
+/** Where the pointer is over the canvas, in CSS pixels from its top left; `undefined` off it. */
+let pointer: { x: number; y: number } | undefined;
+
+/**
+ * With the bones shown, names the bone under the pointer beside it. Called as the pointer moves
+ * and after each frame drawn, since the bones move under a still pointer as the animation plays
+ * or the camera turns.
+ */
+function showBoneTip(): void {
+  const bone =
+    skeletonShown && dragging === undefined && pointer !== undefined
+      ? boneAt(pointer.x, pointer.y, 10)
+      : undefined;
   boneTip.hidden = bone === undefined;
-  if (bone === undefined) return;
+  if (bone === undefined || pointer === undefined) return;
   boneTip.textContent =
     bone.carries.length === 0 ? bone.name : `${bone.name}: ${bone.carries.join(', ')}`;
-  boneTip.style.left = `${String(Math.round(x + 14))}px`;
-  boneTip.style.top = `${String(Math.round(y + 14))}px`;
+  boneTip.style.left = `${String(Math.round(pointer.x + 14))}px`;
+  boneTip.style.top = `${String(Math.round(pointer.y + 14))}px`;
 }
 
 canvas.addEventListener('pointerleave', () => {
+  pointer = undefined;
   boneTip.hidden = true;
 });
 
@@ -1904,7 +1913,9 @@ canvas.addEventListener('contextmenu', (event) => {
   event.preventDefault();
 });
 canvas.addEventListener('pointermove', (event) => {
-  showBoneTip(event);
+  const rect = canvas.getBoundingClientRect();
+  pointer = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+  showBoneTip();
   if (dragging === undefined) return;
   const dx = event.clientX - dragging.x;
   const dy = event.clientY - dragging.y;
