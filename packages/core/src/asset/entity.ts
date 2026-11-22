@@ -1,11 +1,19 @@
 // The game's 3D objects as `.gfx` and `.asset` files define them, and one entity resolved into the
 // meshes it draws. Read from parsed script, so it needs neither Node nor the DOM.
 //
-//   .gfx:   objectTypes = { pdxmesh = { name file scale animation = { id type } ... } }
+//   .gfx:   objectTypes = { pdxmesh = { name file scale animation = { id type } ... }
+//                           pdxparticle = { name type scale } }
 //   .asset: entity = { name pdxmesh clone scale default_state
-//                      state = { name animation event state_time }
+//                      state = { name animation event = { time node particle } state_time }
 //                      attach = { name = <group> <bone> = <entity> ... } }
 //           animation = { name file }        (a bare file name beside the `.asset` file)
+//           particle = { name subsystem ... } (a particle system)
+//
+// A state event's `particle` names a pdxparticle type, not a particle system: the type's `type`
+// names the system (vanilla's `siege_cannon` is the system `artillery_cannon` at scale 0.8).
+// EU4 1.37.5's entity event looks the name up among the 3D object types and logs
+// `Couldn't find particle 3D object "X" (or X is not of 'pdxparticle' type)` when it is none; the
+// pdxparticle reader logs `Could not find particle effect [Y]` for a `type` no system has.
 //
 // An entity names its mesh by a pdxmesh's `name`; a state's `animation` is one of that pdxmesh's
 // animation `id`s, whose `type` is the `name` of an `.asset` `animation`, whose `file` is the
@@ -55,6 +63,24 @@ export interface EntityEvent {
   /** The bone it starts on; `undefined` for the entity's origin. */
   readonly node: string | undefined;
   readonly particle: string | undefined;
+}
+
+/**
+ * A pdxparticle type of a `.gfx` file: the name a state event starts, the particle system it draws
+ * (`type`, a `particle` block's name) and its scale.
+ */
+export interface PdxParticleType {
+  readonly name: string;
+  readonly type: string | undefined;
+  readonly scale: number | undefined;
+  readonly at: DefinedAt;
+}
+
+/** A state event with its pdxparticle type and particle system, where they are defined. */
+export interface ResolvedEvent extends EntityEvent {
+  readonly pdxparticle: PdxParticleType | undefined;
+  /** The particle system's name, when an `.asset` file defines it. */
+  readonly system: string | undefined;
 }
 
 export interface AttachGroup {
@@ -129,6 +155,25 @@ export function readPdxMeshTypes(parsed: ParsedScript, path: string): PdxMeshTyp
     }
   }
   return found;
+}
+
+/** The pdxparticle types of a parsed `.gfx` file (vanilla keeps its 11 in `interface/assets`). */
+export function readPdxParticleTypes(parsed: ParsedScript, path: string): PdxParticleType[] {
+  return blocksOf(parsed, 'objecttypes').flatMap((types) =>
+    blocksOf(types, 'pdxparticle').flatMap((block) => {
+      const name = scalarOf(block, 'name');
+      return name === undefined
+        ? []
+        : [
+            {
+              name: name.text,
+              type: scalarOf(block, 'type')?.text,
+              scale: numberOf(block, 'scale'),
+              at: { path, node: name },
+            },
+          ];
+    }),
+  );
 }
 
 /**
@@ -217,16 +262,20 @@ export function readAssetFile(
 }
 
 /**
- * The playset's pdxmesh types, entities and animations by name (a later definition wins), and
- * the names of its particle systems.
+ * The playset's pdxmesh and pdxparticle types, entities and animations by name (a later
+ * definition wins), and the names of its particle systems.
  */
 export class EntityIndex {
   readonly pdxmeshes = new Map<string, PdxMeshType>();
+  readonly pdxparticles = new Map<string, PdxParticleType>();
   readonly entities = new Map<string, EntityDefinition>();
   readonly animations = new Map<string, AnimationDefinition>();
   readonly particles = new Set<string>();
 
-  /** Files in load order: `.gfx` files' pdxmesh types and `.asset` files' definitions. */
+  /**
+   * Files in load order: `.gfx` files' pdxmesh types, `.asset` files' definitions and `.gfx`
+   * files' pdxparticle types.
+   */
   static of(
     gfx: readonly (readonly PdxMeshType[])[],
     assets: readonly {
@@ -234,9 +283,13 @@ export class EntityIndex {
       readonly animations: readonly AnimationDefinition[];
       readonly particles?: readonly string[];
     }[],
+    pdxparticles: readonly (readonly PdxParticleType[])[] = [],
   ): EntityIndex {
     const index = new EntityIndex();
     for (const file of gfx) for (const type of file) index.pdxmeshes.set(type.name, type);
+    for (const file of pdxparticles) {
+      for (const type of file) index.pdxparticles.set(type.name, type);
+    }
     for (const file of assets) {
       for (const entity of file.entities) index.entities.set(entity.name, entity);
       for (const animation of file.animations) index.animations.set(animation.name, animation);
@@ -253,7 +306,34 @@ export interface ResolvedState {
   readonly file: string | undefined;
   /** Why `file` is missing, for a state that names an animation. */
   readonly problem: string | undefined;
-  readonly events: readonly EntityEvent[];
+  readonly events: readonly ResolvedEvent[];
+}
+
+/** A state event resolved through the pdxparticle types, and what the game logs when it fails. */
+function resolveEvent(
+  index: EntityIndex,
+  event: EntityEvent,
+): { event: ResolvedEvent; problem: string | undefined } {
+  const pdxparticle =
+    event.particle === undefined ? undefined : index.pdxparticles.get(event.particle);
+  const system =
+    pdxparticle?.type !== undefined && index.particles.has(pdxparticle.type)
+      ? pdxparticle.type
+      : undefined;
+  const resolved = { ...event, pdxparticle, system };
+  if (event.particle === undefined || system !== undefined) {
+    return { event: resolved, problem: undefined };
+  }
+  if (pdxparticle === undefined) {
+    return { event: resolved, problem: `no pdxparticle "${event.particle}" in the .gfx files` };
+  }
+  return {
+    event: resolved,
+    problem:
+      pdxparticle.type === undefined
+        ? `pdxparticle "${pdxparticle.name}" names no particle system (no type)`
+        : `pdxparticle "${pdxparticle.name}" names no particle "${pdxparticle.type}" in the .asset files`,
+  };
 }
 
 /** An entity with its clone applied, its mesh and states resolved, and its attachments. */
@@ -349,7 +429,13 @@ function resolve(index: EntityIndex, name: string, path: readonly string[]): Res
     problems.push(`pdxmesh "${pdxmesh.name}" has no file`);
   }
   const states: ResolvedState[] = [...own.states.values()].map((state) => {
-    const { events } = state;
+    const events = state.events.map((event) => {
+      const resolved = resolveEvent(index, event);
+      const problem =
+        resolved.problem === undefined ? undefined : `state ${state.name}: ${resolved.problem}`;
+      if (problem !== undefined && !problems.includes(problem)) problems.push(problem);
+      return resolved.event;
+    });
     if (state.animation === undefined)
       return { name: state.name, file: undefined, problem: undefined, events };
     const type = pdxmesh?.animations.get(state.animation);
@@ -372,14 +458,6 @@ function resolve(index: EntityIndex, name: string, path: readonly string[]): Res
     }
     return { name: state.name, file: animation.file, problem: undefined, events };
   });
-  // A particle no `.asset` file defines: the game has nothing to start (vanilla names three).
-  for (const state of states) {
-    for (const { particle } of state.events) {
-      if (particle === undefined || index.particles.has(particle)) continue;
-      const problem = `state ${state.name}: no particle "${particle}" in the .asset files`;
-      if (!problems.includes(problem)) problems.push(problem);
-    }
-  }
   const attachments: ResolvedEntity['attachments'][number][] = [];
   for (const group of own.attach) {
     for (const node of group.nodes) {

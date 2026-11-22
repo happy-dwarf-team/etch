@@ -2,8 +2,8 @@
 // `.asset` file's entity names a `.gfx` pdxmesh (the skinned fixture quad), plays a state through
 // the pdxmesh's animation id, and carries a second entity on its `tip` bone; a clone of it
 // replaces the attachment group. The CodeLens names each entity, and the webview reports the
-// meshes it drew, the states and what it could not resolve, a particle no `.asset` file defines
-// among it. The attached entity is drawn: its red texture reddens what the preview draws, which the
+// meshes it drew, the states and what it could not resolve, a particle that is no `.gfx`
+// pdxparticle type among it. The attached entity is drawn: its red texture reddens what the preview draws, which the
 // webview reads back from its canvas (`EntityPreviewApi.control`).
 import * as assert from 'node:assert/strict';
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
@@ -41,6 +41,7 @@ const GFX = `objectTypes = {
     scale = 0.5
   }
   pdxmesh = { name = "etch_knob_mesh" file = "gfx/models/etch/etch_knob.mesh" scale = 0.5 }
+  pdxparticle = { name = "etch_sparks" type = "etch_sparks_system" scale = 0.8 }
 }
 `;
 
@@ -65,8 +66,9 @@ animation = { name = "etch_wave_animation" file = "etch_wave.anim" }
 animation = { name = "etch_wide_animation" file = "etch_wide.anim" }
 `;
 
-// The particle systems: etch_sparks only, so the walk state's etch_dust is defined nowhere.
-const PARTICLES = `particle = { name = "etch_sparks" subsystem = { max_amount = 10 } }
+// The particle systems: the one the pdxparticle type etch_sparks draws. The walk state's etch_dust
+// is no pdxparticle type.
+const PARTICLES = `particle = { name = "etch_sparks_system" subsystem = { max_amount = 10 } }
 `;
 
 type Summary = Extract<EntityShown, { ok: true }>['summary'];
@@ -188,12 +190,13 @@ export async function testEntityPreview(api: EtchApi): Promise<void> {
       states: ['idle', 'walk', 'wide'],
       state: 'idle',
       problems: [
-        'etch_flag: state walk: no particle "etch_dust" in the .asset files',
+        'etch_flag: state walk: no pdxparticle "etch_dust" in the .gfx files',
         'etch_flag: state walk: pdxmesh "etch_flag_mesh" has no animation id "walk"',
         'etch_flag: state wide: gfx/entities/etch_wide.anim has 3 joints, etch_flag.mesh 2 bones; the game plays nothing',
       ],
-      // The idle state's particle event, named since particles are not drawn.
-      particles: ['etch_flag: etch_sparks on tip at 0.5 s'],
+      // The idle state's particle event, named since particles are not drawn, with the system its
+      // pdxparticle type draws and the type's scale.
+      particles: ['etch_flag: etch_sparks (etch_sparks_system, scale 0.8) on tip at 0.5 s'],
     });
     assert.equal(shown.summary.shapes, 2, 'the flag and the knob, collision shapes apart');
     assert.equal(shown.summary.textured, 2, 'both textured through the playset');

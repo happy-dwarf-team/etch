@@ -900,16 +900,22 @@ refresh is a step of the 3.0.0 release.
   attachment that repeats an entity above it is not followed but named. A
   state's `event` blocks (209 in vanilla, `time`, `node` and `particle`:
   artillery muzzle flashes, siege smoke) start particle effects, which Etch
-  does not draw; the status line names them while the state plays. The
-  index reads the names of the `particle` blocks of the `.asset` files
-  (vanilla's 9, in `gfx/particles`), and a state event naming another is a
-  problem of the entity: vanilla names two (`devastation_smoke_particle` in
-  two states of `westerngfx_city_0` and its 32 clones, `siege_cannon` in
-  the siege cannon's idle state); whether a DLC archive defines them is not
-  known, since Etch does not read the archives. The particle systems
-  themselves are not read. Both names resolve in the game: an event names a
-  `pdxparticle` object type of an `interface/*.gfx` file, not a particle
-  block (etch#631, "Particles in the entity preview" below). A mesh
+  does not draw; the status line names them while the state plays. An
+  event's `particle` is a `pdxparticle` object type of an `interface/*.gfx`
+  file (`name`, `type`, `scale`; vanilla's 11 in `interface/assets`), whose
+  `type` names a `particle` block of an `.asset` file (vanilla's 9, in
+  `gfx/particles`), as the game resolves it (etch#631, "Particles in the
+  entity preview" below). The index reads both; the status line adds the
+  block and the scale where the type's name is not the block's or it has a
+  scale (`siege_cannon (artillery_cannon, scale 0.8)`). An event whose name
+  is no pdxparticle type, or whose type names no block (or has no `type`),
+  is a problem of the entity, after the game's `Couldn't find particle 3D
+  object` and `Could not find particle effect`. Etch 2.14 looked the name
+  up among the blocks and reported vanilla's `devastation_smoke_particle`
+  (two states of `westerngfx_city_0` and its 32 clones) and `siege_cannon`
+  as missing; all 577 particle events of vanilla's resolved states now
+  resolve (`entity.vanilla.test.ts`). The particle systems themselves are
+  not read. A mesh
   material's texture is looked up in the
   mesh's own folder, as the game does: EU4 1.37.5 has a lookup of textures by
   file name across folders, but it is switched off, and the game's
@@ -1031,8 +1037,9 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
      playset's `.gfx` files, events resolved through them (which ends the
      false "no particle" problems of `devastation_smoke_particle` and
      `siege_cannon`, 67 in vanilla), and the game's two errors in their place
-     (a name that is no `pdxparticle` type, a type that names no block). Then
-     hovers and diagnostics for particle blocks: unknown keys, curve and force
+     (a name that is no `pdxparticle` type, a type that names no block). Done
+     for the entity preview (entry above); still to do: the same two errors
+     as warnings in the `.asset` and `.gfx` files, then hovers and diagnostics for particle blocks: unknown keys, curve and force
      names nothing defines, a curve `time` the game reads as `spawn` (it is
      case-sensitive), a missing texture or shader effect, box keys on a sphere
      emitter. A user docs page on particles goes with it.

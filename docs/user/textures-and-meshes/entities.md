@@ -97,7 +97,7 @@ A box under the bar lists what Etch could not find or draw:
 - a missing pdxmesh, mesh file, animation or attached entity;
 - a `clone` loop: an entity that clones another one that clones it back;
 - an entity that would hang under itself, directly or further down; Etch does not draw it;
-- a particle that no `.asset` file defines;
+- a particle the game cannot start (see [Particles](#particles));
 - an animation that does not fit its mesh: another number of joints than the mesh has bones;
 - a texture that is missing.
 
@@ -108,9 +108,28 @@ flash of an artillery piece. In `western_units.asset`, the `attack` state of
 `westerngfx_ARTILLERY_1_cannon` starts `artillery_cannon` on the bone `cannon_muzzle`. Etch does not
 draw them: while the state plays, the line at the bottom names them after "particles not drawn".
 
-Particles are defined in `.asset` files as `particle = { name = … }`; the game's are in
-`gfx/particles`. When a state starts a particle that no `.asset` file defines, the box under the
-bar lists it: the game has nothing to start there.
+To start a particle, the game needs two definitions:
+
+1. A `pdxparticle` in a `.gfx` file in the `interface` folder, inside its `objectTypes = { … }`
+   block. The event's `particle = …` uses its `name`. The game's are in
+   `interface/assets/particles.gfx`, such as
+   `pdxparticle = { name = "siege_cannon" type = "artillery_cannon" scale = 0.8 }`.
+2. The effect that its `type` names: a `particle = { name = "artillery_cannon" … }` block in an
+   `.asset` file. The game's are in `gfx/particles`.
+
+So in the game, an event with `particle = "siege_cannon"` starts the effect `artillery_cannon`
+with the scale 0.8. Etch does not draw it, but the line at the bottom shows the effect and the
+scale after the name: "siege_cannon (artillery_cannon, scale 0.8)". It shows them only when the
+effect has another name or the `pdxparticle` has a scale.
+
+The box under the bar lists an event whose particle the game cannot start:
+
+- No `.gfx` file has a `pdxparticle` of that name. An effect of that name in an `.asset` file is
+  not enough. The game's own message for this begins `Couldn't find particle 3D object`.
+- The `pdxparticle` has no `type`, or its `type` is not the name of any effect in an `.asset`
+  file. The game's own message for the second begins `Could not find particle effect`.
+
+To fix it, add or correct the `pdxparticle` in your mod's `.gfx` file.
 
 ## What it doesn't do
 
