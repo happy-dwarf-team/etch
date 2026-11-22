@@ -537,7 +537,7 @@ function sequence(
 }
 
 /** The page point (CSS px) at the centre of a locator's first match. */
-async function centre(locator: Locator): Promise<{ x: number; y: number }> {
+export async function centre(locator: Locator): Promise<{ x: number; y: number }> {
   const box = await locator.first().boundingBox();
   if (box === null) throw new Error(`${locator.toString()} is not shown`);
   return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
@@ -554,8 +554,8 @@ async function restPoint(wb: Workbench): Promise<{ x: number; y: number }> {
 }
 
 /** Moves the drawn pointer, and Playwright's mouse with it, to a page point. */
-async function pointTo(
-  { wb, take }: ClipContext,
+export async function pointTo(
+  { wb, take }: Pick<ClipContext, 'wb' | 'take'>,
   at: { x: number; y: number },
   ms = 700,
 ): Promise<void> {

@@ -1,16 +1,19 @@
 // The live take (etch-website docs/spec.md section 8.5): Etch's live game beside VS Code, one take
-// for the three live clips. VS Code fills the primary monitor as in the offline takes, with the
+// for the four live clips. VS Code fills the primary monitor as in the offline takes, with the
 // preview open; the game runs windowed at a corpus resolution on the monitor right of it, from the
 // run's private install with the run's own copies of the player's settings and of one save, through
 // the media helper (live-helper/), on the province whose sample data the preview shows. Both windows
 // are recorded against the take's clock. The take first saves an edit that the game reloads
 // (`reload`), then turns pick mode on in the game, hovers a few widgets and clicks one (`pick`),
-// which also gives the preview a live snapshot (`snapshot`). The edits compose the clips as the
-// offline ones (clips.ts): the control left, its effect right, the captions under both.
+// which also gives the preview a live snapshot (`snapshot`); last, it runs script in the game from
+// the editor's context menu (`run`). The edits compose the clips as the offline ones (clips.ts):
+// the control left, its effect right, the captions under both.
 import { copyFile, mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import * as path from 'node:path';
+import type { Locator } from '@playwright/test';
 import { findProfileFolder, systemEnvironment } from '@etch/core/playset';
 import {
+  centre,
   CODE_SCALE,
   codeView,
   DETAIL_SCALE,
@@ -19,6 +22,7 @@ import {
   onScreen,
   OVERRIDES,
   pair,
+  pointTo,
   PRE_ROLL_MS,
   POST_ROLL_MS,
   SAMPLE_PROVINCE,
@@ -32,7 +36,7 @@ import {
   WINDOW_NAME,
   type Clip,
 } from './clips.ts';
-import { LIVE_GAME_RESOLUTION } from './config.ts';
+import { DEVICE_SCALE, LIVE_GAME_RESOLUTION } from './config.ts';
 import { Desktop, SCAN, type Point, type WindowInfo } from './desktop.ts';
 import {
   cameraKeys,
@@ -450,8 +454,41 @@ export async function takeLive(options: ShootOptions & { save: string }): Promis
     await desktop.movePointer(screen(point), 650);
     await sleep(500);
     const picked = await wb.cursor();
+    // The plugin logs each switch of pick mode in the private install's anvil.log: the key can be
+    // lost (a take on 2026-11-21 hovered with pick mode off), so it is pressed once more if no
+    // switch follows.
+    const anvilLog = path.join(
+      path.dirname(wb.workspace),
+      'user-data',
+      'User',
+      'globalStorage',
+      'happy-dwarf-team.etch',
+      'private-install',
+      'game',
+      'anvil',
+      'anvil.log',
+    );
+    const pickOns = async (): Promise<number> =>
+      ((await readFile(anvilLog, 'utf8').catch(() => '')).match(/\] pick mode on \(/g) ?? [])
+        .length;
+    const onsBefore = await pickOns();
     take.mark('pick.on');
     await desktop.keys(SCAN.ctrl, SCAN.shift, SCAN.e);
+    const turnedOn = (): Promise<boolean> =>
+      until('pick mode on', async () => (await pickOns()) > onsBefore, 1_500, 50).then(
+        () => true,
+        () => false,
+      );
+    if (!(await turnedOn())) {
+      console.log('Pick mode did not come on: the key is pressed again.');
+      if (!(await desktop.focus(game.hwnd)))
+        throw new Error('the game could not be brought forward');
+      await sleep(300);
+      take.mark('pick.again');
+      await desktop.keys(SCAN.ctrl, SCAN.shift, SCAN.e);
+      if (!(await turnedOn()))
+        throw new Error('pick mode did not come on after Ctrl+Shift+E, twice');
+    }
     // Pick mode labels the widget under the pointer once the pointer moves.
     point = { x: point.x + 2, y: point.y };
     await desktop.movePointer(screen(point), 50);
@@ -510,6 +547,8 @@ export async function takeLive(options: ShootOptions & { save: string }): Promis
     // Away from the game's edges again once the loops' frames are recorded: on its way, pick
     // mode, still on, labels every widget it crosses.
     await desktop.movePointer(rest, 600);
+
+    await takeRun({ wb, take, live, repository: options.repository });
   } catch (error) {
     await wb.screenshot(path.join(options.masters, 'live.failed.png')).catch(() => undefined);
     throw error;
@@ -535,6 +574,238 @@ export async function takeLive(options: ShootOptions & { save: string }): Promis
     `${JSON.stringify(log, null, 2)}\n`,
   );
   return log;
+}
+
+/** The demo mod's event file `run` selects in, copied into the workspace once the game is in. */
+const RUN_FILE = 'etch_demo_events.txt';
+/** The effect `run` runs, its first line; the next line is the effect's second. */
+const RUN_EFFECT = 'add_base_production = 1';
+/** The letter `run` adds to the effect's name: the game logs an unknown effect. */
+const RUN_TYPO = 's';
+/** The part of the game's error.log line, in Problems, that the loop shows. */
+const RUN_ERROR_TEXT = 'Error: Unknown effect type. Key: add_base_productions';
+/** The trigger `run` checks, in the province's scope. */
+const RUN_TRIGGER = 'development = 10';
+/** The province view's development, as Tongs finds it: its three parts and its sum. */
+const DEVELOPMENT = [
+  'provinceview//tax_base_value',
+  'provinceview//production_base_value',
+  'provinceview//manpower_base_value',
+  'provinceview//development_value',
+] as const;
+const RUN_MENU_ITEM = 'Run Selection in the Province on Screen';
+const CHECK_MENU_ITEM = 'Check Selection as Trigger in the Live Game';
+
+interface Development {
+  readonly base_tax: number;
+  readonly base_production: number;
+  readonly base_manpower: number;
+}
+
+/**
+ * `run`, the take's last part, since it changes the game: the demo mod's event file in VS Code,
+ * Problems open under it. The effect's two lines run in the province on screen from the editor's
+ * context menu, the trigger checked there, the effect's name misspelt and run again; then undone.
+ * The game's state is not restored: the loop dissolves its end into its start.
+ */
+async function takeRun({
+  wb,
+  take,
+  live,
+  repository,
+}: {
+  wb: Workbench;
+  take: Take;
+  live: Tongs;
+  repository: string;
+}): Promise<void> {
+  const development = (): Promise<Development> =>
+    live.send<Development>(`province ${String(LIVE_PROVINCE)}`);
+  const developmentRect = async (): Promise<Rect> => {
+    const found: Rect[] = [];
+    for (const selector of DEVELOPMENT) {
+      const widget = await live.widget(selector).catch(() => undefined);
+      if (widget?.visible === true) found.push(rectOfWidget(widget));
+    }
+    if (found.length === 0) throw new Error("the province view's development is not found");
+    return union(...found);
+  };
+
+  // The file, written into the workspace now: the game loaded the mod without it (`excluded`).
+  await mkdir(path.join(wb.workspace, 'events'), { recursive: true });
+  await copyFile(
+    path.join(repository, 'packages', 'media', 'demo-mod', 'events', RUN_FILE),
+    path.join(wb.workspace, 'events', RUN_FILE),
+  );
+  await wb.quickOpen(RUN_FILE);
+  await wb.page.keyboard.press('Control+Shift+M');
+  await wb.page.locator('.markers-panel').waitFor();
+  await wb.filterProblems(RUN_FILE).catch(() => undefined);
+  const trigger = await wb.find(RUN_TRIGGER);
+  const effect = await wb.find(RUN_EFFECT);
+
+  const select = {
+    // The effect's two lines, from the first one's first letter.
+    effect: async (): Promise<void> => {
+      await wb.walkCursorTo({ line: effect.line, column: 1 }, 0);
+      await wb.press('Home');
+      await wb.press('Shift+ArrowDown');
+      await wb.press('Shift+End');
+    },
+    trigger: async (): Promise<void> => {
+      await wb.walkCursorTo({ line: trigger.line, column: 1 }, 0);
+      await wb.press('Home');
+      await wb.press('Shift+End');
+    },
+  };
+  const menuItem = (label: string) =>
+    wb.page.locator('.context-view .monaco-menu .action-item', { hasText: label }).first();
+  const toast = (text: string | RegExp) =>
+    wb.page.locator('.notifications-toasts .notification-toast', { hasText: text }).last();
+  /** A box once it stops moving: a notification slides in, and pushes the older ones up. */
+  const settled = async (locator: Locator): Promise<Rect> => {
+    let last = await wb.box(locator);
+    for (let tries = 0; tries < 30; tries += 1) {
+      await sleep(50);
+      const now = await wb.box(locator);
+      if (now.x === last.x && now.y === last.y && now.w === last.w && now.h === last.h) return now;
+      last = now;
+    }
+    return last;
+  };
+  const scopePick = wb.page
+    .locator('.quick-input-list .monaco-list-row', { hasText: `Province ${String(LIVE_PROVINCE)}` })
+    .first();
+
+  // A first run unrecorded: the first of a session adds a notice about the private copy.
+  await select.trigger();
+  await wb.command(`Etch: ${CHECK_MENU_ITEM}`, { keepsQuickInput: true });
+  await scopePick.waitFor();
+  await scopePick.click();
+  await toast(/The trigger is (TRUE|FALSE)/).waitFor({ timeout: 30_000 });
+  await wb.command('Notifications: Clear All Notifications');
+  await wb.focusEditor();
+
+  // The lines, measured with the effect selected, as the take starts.
+  await select.effect();
+  const editor = await wb.box(wb.page.locator('.part.editor .monaco-editor').first());
+  const line = await wb.lineRect();
+  const effectLines: Rect = { x: editor.x, y: line.y - line.h, w: editor.w, h: 2 * line.h };
+  take.mark('run.lines', { source: 'vscode', rect: effectLines });
+  await select.trigger();
+  take.mark('run.trigger', { source: 'vscode', rect: await editorLine(wb) });
+  await select.effect();
+  take.mark('run.panel', { source: 'vscode', rect: await wb.box(wb.page.locator('.part.panel')) });
+  take.mark('run.dev', { source: 'game', rect: await developmentRect() });
+  const context = { wb, take };
+  const rest = { x: editor.x + 60, y: editor.y + editor.h - 60 };
+  await pointTo(context, rest, 16);
+  await sleep(1200);
+
+  /** Right-clicks the selection and clicks `label` in the editor's context menu. */
+  const fromMenu = async (label: string, step: string): Promise<void> => {
+    const selected = await wb.box(wb.page.locator('.part.editor .selected-text').first());
+    const at = { x: selected.x + Math.min(160, selected.w / 2), y: selected.y + selected.h / 2 };
+    await pointTo(context, at, 600);
+    await sleep(150);
+    take.click();
+    await wb.page.mouse.click(at.x, at.y, { button: 'right' });
+    const item = menuItem(label);
+    await item.waitFor();
+    take.mark(`${step}.menu`, {
+      source: 'vscode',
+      rect: await wb.box(wb.page.locator('.context-view .monaco-menu').first()),
+    });
+    await sleep(350);
+    await pointTo(context, await centre(item), 450);
+    await sleep(200);
+    take.mark(`${step}.click`, { source: 'vscode', rect: await wb.box(item) });
+    take.click();
+    await item.click();
+  };
+
+  // The effect run in the province on screen: the development rises in the game.
+  const before = await development();
+  take.mark('run.start');
+  await fromMenu(RUN_MENU_ITEM, 'run.effect');
+  await until(
+    'the development to rise',
+    async () => (await development()).base_production > before.base_production,
+    15_000,
+    50,
+  );
+  take.mark('run.raised', { source: 'game', rect: await developmentRect() });
+  const ran = toast(`Ran in province ${String(LIVE_PROVINCE)}`);
+  await ran.waitFor({ timeout: 10_000 });
+  take.mark('run.ran', { source: 'vscode', rect: await settled(ran) });
+  await sleep(1400);
+
+  // The trigger checked in the province: the answer in a notification.
+  take.mark('run.select');
+  await select.trigger();
+  await sleep(300);
+  await fromMenu(CHECK_MENU_ITEM, 'run.check');
+  await scopePick.waitFor();
+  take.mark('run.scope', {
+    source: 'vscode',
+    rect: await settled(wb.page.locator('.quick-input-widget')),
+  });
+  await sleep(300);
+  await pointTo(context, await centre(scopePick), 500);
+  await sleep(150);
+  take.click();
+  await scopePick.click();
+  const answer = toast(/The trigger is (TRUE|FALSE)/);
+  await answer.waitFor({ timeout: 30_000 });
+  take.mark('run.answer', { source: 'vscode', rect: await settled(answer) });
+  await sleep(1600);
+
+  // The effect's name misspelt and run again: the game's error, in Problems on the selection.
+  take.mark('run.typo');
+  await wb.walkCursorTo({ line: effect.line, column: 1 }, 0);
+  await wb.press('Home');
+  await wb.press('ArrowRight', 'add_base_production'.length);
+  await wb.type(RUN_TYPO);
+  await sleep(500);
+  await select.effect();
+  await sleep(200);
+  await fromMenu(RUN_MENU_ITEM, 'run.again');
+  const problem = wb.page.locator('.markers-panel .monaco-list-row', { hasText: 'error.log' });
+  await problem.first().waitFor({ timeout: 30_000 });
+  // The row is as wide as the window, its message a long error.log line: the loop shows the part
+  // that names the misspelt effect.
+  const message = await problem.first().evaluate((row, wanted) => {
+    const walker = row.ownerDocument.createTreeWalker(row, NodeFilter.SHOW_TEXT);
+    for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
+      const at = node.textContent?.indexOf(wanted) ?? -1;
+      if (at < 0) continue;
+      const range = row.ownerDocument.createRange();
+      range.setStart(node, at);
+      range.setEnd(node, at + wanted.length);
+      const box = range.getBoundingClientRect();
+      return { x: box.x, y: box.y, w: box.width, h: box.height };
+    }
+    return undefined;
+  }, RUN_ERROR_TEXT);
+  if (message === undefined) throw new Error(`the Problems row does not say "${RUN_ERROR_TEXT}"`);
+  take.mark('run.error', {
+    source: 'vscode',
+    rect: {
+      x: message.x * DEVICE_SCALE,
+      y: message.y * DEVICE_SCALE,
+      w: message.w * DEVICE_SCALE,
+      h: message.h * DEVICE_SCALE,
+    },
+  });
+  await sleep(2000);
+  take.mark('run.undo');
+  await wb.press('Control+Z');
+  await problem.first().waitFor({ state: 'detached', timeout: 10_000 });
+  await sleep(300);
+  await pointTo(context, rest, 600);
+  await sleep(800);
+  take.mark('run.end');
+  await take.until(take.t() + POST_ROLL_MS / 1000);
 }
 
 const t = (event: TakeEvent): number => event.t;
@@ -794,6 +1065,161 @@ export const LIVE_CLIPS: readonly Pick<Clip, 'id' | 'edit'>[] = [
               panel: 0,
               rect,
             })),
+          },
+        ],
+      } satisfies EditSpec;
+    },
+  },
+  {
+    // Run in the live game: the event file left, with the context menu over it; the game's
+    // development top right; what Etch answers under it: the notification of each run, the
+    // scope's pick, Problems. The end dissolves into the start: the game keeps the development.
+    id: 'run',
+    edit(log, sources) {
+      const code = sources['vscode'] as Source;
+      const game = sources['game'] as Source;
+      const s0 = t(eventOf(log, 'run.start')) - LEAD;
+      const at = (time: number): number => time - s0;
+      const atOf = (kind: string): number => at(t(eventOf(log, kind)));
+      const end = atOf('run.end') + TAIL;
+      const dev = rectOf(eventOf(log, 'run.dev'));
+      // The development's row at 2×, with room around it for its ring.
+      const right = { w: Math.min(900, Math.round((dev.w + 80) * DETAIL_SCALE)) };
+      const left: Rect = { x: STAGE.x, y: STAGE.y, w: STAGE.w - GUTTER - right.w, h: STAGE.h };
+      const ran = rectOf(eventOf(log, 'run.ran'));
+      const scope = rectOf(eventOf(log, 'run.scope'));
+      const answer = rectOf(eventOf(log, 'run.answer'));
+      const error = rectOf(eventOf(log, 'run.error'));
+      // Each answer at the largest scale the column's width takes, up to 1.8×; the panel under
+      // the development as tall as the tallest of them; the two centred on the stage's height.
+      const answerScale = (rect: Rect): number => Math.min(1.8, (right.w - 48) / rect.w);
+      const topH = Math.round((dev.h + 120) * DETAIL_SCALE);
+      const bottomH = Math.round(
+        Math.max(...[ran, scope, answer, error].map((rect) => rect.h * answerScale(rect))) + 48,
+      );
+      const top: Rect = {
+        x: left.x + left.w + GUTTER,
+        y: STAGE.y + Math.round((STAGE.h - topH - GUTTER - bottomH) / 2),
+        w: right.w,
+        h: topH,
+      };
+      const bottom: Rect = { ...top, y: top.y + top.h + GUTTER, h: bottomH };
+      // The code from the trigger's line down to the menu's bottom, at 1.5× if it fits.
+      const triggerLine = rectOf(eventOf(log, 'run.trigger'));
+      const menuBottom = Math.max(
+        ...['run.effect.menu', 'run.check.menu', 'run.again.menu'].map((kind) => {
+          const menu = rectOf(eventOf(log, kind));
+          return menu.y + menu.h;
+        }),
+      );
+      const codeScale = Math.min(CODE_SCALE, left.h / (menuBottom + 24 - (triggerLine.y - 48)));
+      const codeViewRect = viewAt(
+        { ...triggerLine, y: triggerLine.y - 48 },
+        codeScale,
+        left,
+        code,
+        { x: 0, y: 0 },
+      );
+      // `margin` output px from the panel's left edge, in the middle of its height; the error's
+      // excerpt at the edge, where the text before it would show.
+      const answerView = (rect: Rect, margin = 24): Rect => {
+        const scale = answerScale(rect);
+        return viewAt(rect, scale, bottom, code, {
+          x: margin / (bottom.w / scale),
+          y: 0.5 - rect.h / 2 / (bottom.h / scale),
+        });
+      };
+      // From one answer to the next through black: they lie far apart in the window, and a pan
+      // would cross the preview.
+      const cutTo = (at: number, from: Rect, to: Rect, margin?: number) => [
+        { at: at - 0.35, view: answerView(from), opacity: 0, move: 0.15 },
+        { at: at - 0.2, view: answerView(to, margin), opacity: 0, move: 0 },
+        { at: at - 0.19, view: answerView(to, margin), opacity: 1, move: 0.2 },
+      ];
+      const raised = atOf('run.raised');
+      const ranAt = atOf('run.ran');
+      const scopeAt = atOf('run.scope');
+      const answerAt = atOf('run.answer');
+      const errorAt = atOf('run.error');
+      const undo = atOf('run.undo');
+      const pointer = { points: log.pointer, clicks: log.clicks };
+      const captions: Caption[] = [
+        {
+          from: 0.2,
+          to: raised - 0.2,
+          text: `Right-click an effect: ${RUN_MENU_ITEM}`,
+        },
+        {
+          from: raised,
+          to: atOf('run.select') - 0.2,
+          text: "The game runs it: the province's development rises",
+        },
+        {
+          from: atOf('run.select'),
+          to: answerAt - 0.2,
+          text: `${CHECK_MENU_ITEM}, in the province`,
+        },
+        { from: answerAt, to: atOf('run.typo') - 0.2, text: "The game's answer" },
+        {
+          from: atOf('run.typo'),
+          to: errorAt - 0.2,
+          keys: [RUN_TYPO],
+          text: 'A misspelt effect, run again',
+        },
+        { from: errorAt, to: undo - 0.2, text: "The game's error, in Problems on the selection" },
+        { from: undo, to: end - 0.3, keys: ['Ctrl', 'Z'] },
+      ];
+      const highlights: Highlight[] = [
+        { from: raised + 0.1, to: atOf('run.select') - 0.1, panel: 1, rect: dev },
+        { from: answerAt + 0.3, to: atOf('run.typo') - 0.1, panel: 2, rect: answer },
+        { from: errorAt + 0.3, to: undo - 0.1, panel: 2, rect: error },
+        {
+          from: errorAt + 0.3,
+          to: undo - 0.1,
+          panel: 0,
+          rect: { ...rectOf(eventOf(log, 'run.lines')), w: 720 },
+        },
+      ];
+      return {
+        id: 'run',
+        sources,
+        loopFade: 0.6,
+        segments: [
+          {
+            duration: end,
+            panels: [
+              {
+                source: 'vscode',
+                start: s0,
+                keys: cameraKeys([{ at: 0, frame: left, view: codeViewRect }]),
+                pointer,
+                fadeRight: TEXT_FADE,
+              },
+              {
+                source: 'game',
+                start: s0,
+                keys: cameraKeys([
+                  { at: 0, frame: top, view: viewAt(dev, DETAIL_SCALE, top, game) },
+                ]),
+              },
+              {
+                source: 'vscode',
+                start: s0,
+                keys: cameraKeys([
+                  { at: 0, frame: bottom, view: answerView(ran), opacity: 0 },
+                  { at: ranAt - 0.1, view: answerView(ran), opacity: 1, move: 0.3 },
+                  ...cutTo(scopeAt, ran, scope),
+                  ...cutTo(answerAt, scope, answer),
+                  ...cutTo(errorAt, answer, error, 8),
+                  // The undo clears Problems: the panel goes with it.
+                  { at: undo, view: answerView(error, 8), opacity: 0, move: 0.3 },
+                ]),
+                pointer,
+                fadeRight: TEXT_FADE,
+              },
+            ],
+            captions,
+            highlights,
           },
         ],
       } satisfies EditSpec;
