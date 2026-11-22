@@ -82,7 +82,15 @@ if ($Action -in 'Cursor', 'Pin', 'Release') {
     return
 }
 Import-Module (Join-Path $Lab 'scripts\lib\LabProcess.psm1') -Force
-$steamGame = 'C:\Program Files (x86)\Steam\steamapps\common\Europa Universalis IV'
+# The lab's game folder (EU4LAB_GAME_DIR, else the detected Steam library); a lab without
+# LabPaths.psm1 has it in the default Steam library.
+$labPaths = Join-Path $Lab 'scripts\lib\LabPaths.psm1'
+if (Test-Path -LiteralPath $labPaths) {
+    Import-Module $labPaths -Force
+    $steamGame = Get-LabGameDir
+} else {
+    $steamGame = 'C:\Program Files (x86)\Steam\steamapps\common\Europa Universalis IV'
+}
 $copy = Join-Path $HostDir 'game'
 $exe = Join-Path $copy 'eu4.exe'
 $hostFile = Join-Path $HostDir 'host.json'
@@ -152,18 +160,22 @@ switch ($Action) {
         if (Test-Path -LiteralPath $HostDir) { throw "$HostDir exists; remove it first to prepare again" }
         $anvilSha = Assert-Archive $AnvilZip
         $tongsSha = Assert-Archive $TongsZip
-        # An Anvil installed in the Steam folder (a lab script's run) would become a junction of the
-        # copy, and the archives and settings would be written into it.
-        foreach ($n in 'version.dll', 'anvil') {
-            if (Test-Path (Join-Path $steamGame $n)) { throw "$n is in the Steam game folder; not preparing" }
-        }
         Assert-LabPreflight | Out-Null
         New-Item -ItemType Directory $copy, (Join-Path $HostDir 'profiles') | Out-Null
+        # An Anvil the player installed in the Steam folder (`anvil`, version.dll, AnvilManager.exe:
+        # whatever the archive has at its top) stays out of the copy: as a junction the archives and
+        # settings would be written into it. The copy gets its own from the archive below, and the
+        # Steam folder is only read.
+        Add-Type -AssemblyName System.IO.Compression.FileSystem
+        $zip = [IO.Compression.ZipFile]::OpenRead((Resolve-Path -LiteralPath $AnvilZip).ProviderPath)
+        try { $anvilTop = @($zip.Entries | ForEach-Object { ($_.FullName -split '[\\/]')[0] } | Sort-Object -Unique) }
+        finally { $zip.Dispose() }
         foreach ($d in Get-ChildItem -LiteralPath $steamGame -Directory) {
+            if ($d.Name -in $anvilTop) { continue }
             New-Item -ItemType Junction -Path (Join-Path $copy $d.Name) -Target $d.FullName | Out-Null
         }
         foreach ($f in Get-ChildItem -LiteralPath $steamGame -File) {
-            if ($f.Name -like 'launcher-installer*' -or $f.Name -eq 'userdir.txt') { continue }
+            if ($f.Name -like 'launcher-installer*' -or $f.Name -eq 'userdir.txt' -or $f.Name -in $anvilTop) { continue }
             Copy-Item -LiteralPath $f.FullName (Join-Path $copy $f.Name)
         }
         Expand-Archive -LiteralPath $AnvilZip -DestinationPath $copy
