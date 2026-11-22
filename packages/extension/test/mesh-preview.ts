@@ -321,8 +321,8 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
       ints('pdxasset', 1, 0),
       obj(1, 'object'),
       floats('loddist', 0, 30),
-      ...level('HighShape', 0, [0, 0, 0, 2, 0, 0, 0, 1, 0, 2, 1, 0], [0, 1, 2, 1, 3, 2]),
-      ...level('LowShape', 1, [0, 0, 0, 2, 0, 0, 0, 1, 0], [0, 1, 2]),
+      ...level('HighShape', 0, [0, 0, 0, 2, 0, 0, 0, 1, 0, 2, 1, 0], [0, 2, 1, 1, 2, 3]),
+      ...level('LowShape', 1, [0, 0, 0, 2, 0, 0, 0, 1, 0], [0, 2, 1]),
     ]),
   );
   const lod = await open(api, tree);
