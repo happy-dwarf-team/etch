@@ -193,8 +193,8 @@ refresh is a step of the 3.0.0 release.
   with every id, for a colonial region's center point while the file is read
   and for its name, for each trade company region's provinces when the game
   starts, and for a trade node's members, whose provinces it writes the node
-  into (EU4 engine lab, `CColonialRegionDefinition`,
-  `CTradeNodeDatabase::InitTradeCompanyRegions` and `InitializeProvinces`).
+  into (EU4 engine lab, the code that reads the colonial regions and the trade
+  nodes).
   Vanilla lists 3290 ids in the regions and 3369 in the trade nodes, all on its
   map; a trade node's `location` was already checked.
 
@@ -202,7 +202,7 @@ refresh is a step of the 3.0.0 release.
   it with `atoi` (`123 - Name.txt` is 123, a name without a leading number 0)
   and reads only the files of provinces from 1 to `max_provinces - 1`,
   skipping the others without a line in `error.log` (EU4 engine lab,
-  `CLoadProvinces`, 18 November 2026). Etch warns about such a file
+  18 November 2026). Etch warns about such a file
   (`province-history-not-read`, an empty range at the file's start). Vanilla's
   3923 files all give provinces of its map. Of the 68 Workshop items on the
   lab's disk, one total conversion has 47 files for provinces 4952 to 4998 on
@@ -353,11 +353,11 @@ refresh is a step of the 3.0.0 release.
 
   A second run that day let the game run a day and found one more:
   `had_active_policy`'s `policy` crashed the game in
-  `CHadActivePolicyTrigger::Evaluate` on the first day, in a decision's `allow`
+  the trigger's evaluation on the first day, in a decision's `allow`
   that no country could take (its `potential` needs a flag no country had), so
   the game evaluates such an `allow` every day. It moves to the trigger keys,
   and its warning says the game crashes. The same run confirmed that
-  `num_of_religion`'s crash is in `CNumOfReligionTrigger::Evaluate`.
+  `num_of_religion`'s crash is in that trigger's evaluation.
 
   A third run (`ideagrp-r5`) ran three days with `has_spawned_rebels` and
   `has_idea` in shown decisions without a crash, then hovered each: both
@@ -380,7 +380,7 @@ refresh is a step of the 3.0.0 release.
   three days in a shown decision without a crash, and the hover crashed the
   game where `has_spawned_rebels` does (`eu4.exe+0xA91163`); hovering an event
   option with `remove_idea = <unknown>` crashed it in
-  `CRemoveIdeaEffect::GetDesc` (`eu4.exe+0x68E453`, a read of `0x0`). Every
+  the effect's description (`eu4.exe+0x68E453`, a read of `0x0`). Every
   key Etch checks has now crashed the game in a test, and every warning says
   so. The effect keys' text says that running the effect or showing its
   tooltip crashes the game: the idea group effects crashed when they ran,
@@ -389,10 +389,10 @@ refresh is a step of the 3.0.0 release.
   A fifth run (`advtest-r1`, 18.11.2026) tried the keys a static scan of the
   game's name lookups had left: `advisor` with an unknown advisor type
   crashed on the hover over the decision's `allow` (`eu4.exe+0xC111DD`, in
-  `CAdvisorTypeTrigger`'s tooltip, a read of `0x0`), and
+  the trigger's tooltip, a read of `0x0`), and
   `change_graphical_culture` with an unknown graphical culture on the hover
   over the decision's effect (`eu4.exe+0x69139E`, in
-  `CChangeGraphicalCultureEffect::GetDesc`). Etch checks both, the second
+  the effect's description). Etch checks both, the second
   against `common/graphicalculturetype.txt` and not when its value is a tag
   or a scope. `ruler_has_personality`, `heir_has_personality`,
   `consort_has_personality`, `has_institution` and `is_institution_enabled`
@@ -506,7 +506,7 @@ refresh is a step of the 3.0.0 release.
   subfolders, so their previews do not change.
 
 - **The province view's history list has sample entries.** Its code
-  (`CProvinceHistoryView::SetProvince`, `eu4.exe` `0x133A060`) adds one
+  (`eu4.exe` `0x133A060`) adds one
   standard list entry of `province_history_entry`, a definition of
   `provincehistory.gui`, per dated change: the year on a year's first entry,
   the month and day, and the change's description. The vanilla profile's
@@ -530,7 +530,7 @@ refresh is a step of the 3.0.0 release.
 - **An `OverlappingElementsBoxType` places its entries as the game does,** and
   the province modifiers have sample entries. The modifiers are not placed from
   `province_modifier_start`: `modifiers` is an `OverlappingElementsBoxType`, and
-  `COverlappingElementsBox::UpdateGraphics` (`eu4.exe` `0x163D060`) places any
+  the code at `eu4.exe` `0x163D060` places any
   such box's entries. The step is the entry's width plus `spacing`, and when
   the entries' steps are wider than the box, `(width − entry / 2) / count`, so
   they overlap; `format = right` puts the last entry at `width − entry +
@@ -567,7 +567,7 @@ refresh is a step of the 3.0.0 release.
   tab like the rest (667 and 986 at 1920×1080 in the survey's captures, the
   `.gui` place of the screen's height plus 16); no code places them. The widget
   at `this+0x668` is `domesticpanel_naval_doctrine_select`, the naval doctrine
-  choice the tab opens (`CCountryMilitaryView::Setup`, `0xFAEDC0`), which moves
+  choice the tab opens (the military view's setup, `0xFAEDC0`), which moves
   down 16 px with the tab: its own vanilla profile does so, and the survey's
   capture of it matches. Without the DLC the same function hides
   `army_professionalism`, `CoCbackground` and `slacken_button` and shows the
@@ -589,8 +589,8 @@ refresh is a step of the 3.0.0 release.
   does and draws such a word whole, as the game does. Left open by etch#266 and
   settled since: "Aggressiveness:" (the rect, etch#304) and the rebels'
   description, `onsiegewon_desc`, one line in the game and two in the
-  preview. Its code (`CCountryHandleRebelsView::OnDailyUpdate`, `0xF9B290`)
-  sets `REB_NO_EFFECT` first with the height left open (`ChangeString` with
+  preview. Its code (`0xF9B290`)
+  sets `REB_NO_EFFECT` first with the height left open (the text set with
   `true`), which makes that one line the box's `maxHeight`, so the rebels'
   effect after it is cut after one line with " ...", though the `.gui` gives
   room for two. A profile's content says so with `sizedBy`, and the vanilla
@@ -619,9 +619,9 @@ refresh is a step of the 3.0.0 release.
 
   | What the game's code sets | The game state Tongs reads | In the preview |
   | --- | --- | --- |
-  | the sprite: the terrain picture, a building's icon, the locked building slot, a province modifier's icon | the widget's render node's object type (`CGraphicalObject::_pObjectType`), whose `_Name` is the `.gfx` name | drawn as named when it is neither the `.gui`'s sprite nor one of its size variants, over a profile's |
-  | the frame: the religion's icon, the province view's selected tab | the node's `_nSuperState`, which `SetFrame` writes, from 1 | over the view's frame and the ticked check box's second |
-  | a shield's flag: the trade node's owner, a core | `CShieldObject::_TagIndex`, the country whose own tag the country database holds | `gfx/flags/<tag>.tga` in the mask, under the overlay |
+  | the sprite: the terrain picture, a building's icon, the locked building slot, a province modifier's icon | the widget's render node's object type, whose name is the `.gfx` name | drawn as named when it is neither the `.gui`'s sprite nor one of its size variants, over a profile's |
+  | the frame: the religion's icon, the province view's selected tab | the node's frame, which the code sets, from 1 | over the view's frame and the ticked check box's second |
+  | a shield's flag: the trade node's owner, a core | the shield's country index, the country whose own tag the country database holds | `gfx/flags/<tag>.tga` in the mask, under the overlay |
   | a texture file on the sprite: a province modifier's icon, whose sprite stays `GFX_idea_unknown` | the texture file the game's code gave the render node (`texture`) | that file, whole, over the size of the sprite's own texture |
   | a shield's rebels: the likely rebels (`unrest`) | the rebel type the shield's custom value names (`rebels`) | `gfx/flags/<name>.tga` in the mask (`REB.tga` when the playset has none), under the overlay |
   | a pie chart's slices: the trade node's colour, the trade node window's power charts | the chart's slices, each a percent and a colour (`slices`) | a new `pie` draw (draw list version 3): a triangle per percent with `color.shader`, counter-clockwise from 3 o'clock, around the widget's bottom-left corner with its size as radii |
@@ -634,7 +634,7 @@ refresh is a step of the 3.0.0 release.
   game did; Etch 2.12.0 drew hills, the Catholic cross, empty shields, `?` and
   a building.
 
-  Verified in `CMaskedSpriteType::InitForDevice` and `CShieldObject::Render`:
+  Verified in eu4.exe 1.37.5, in the masked sprite's set-up and the shield's drawing:
   the flag is drawn whole into a quad the size of the mask (`textureFile2`),
   half the difference of the overlay's and the mask's sizes in from the
   overlay's corner, and the overlay (`textureFile1`) over it; vanilla's small

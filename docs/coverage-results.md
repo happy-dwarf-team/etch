@@ -335,7 +335,7 @@ What was fixed, largest first (widgets of Verne's views at 1920×1080 that each 
 | --- | --- | --- |
 | The province view's state tab: the game keeps `province_window` shown under `state_window`, so no value of `tab` fitted and every selector fell back | 181, 1 | etch#355 |
 | Anbennar's scripted military buttons, the unit type choice, a country without an heir, an Empire member, a mage ruler, the top bar's unused icons | 43, 12 | etch#356 |
-| The military tab's professionalism markers, which the game's code adds along the bar (`CProfessionalismMarker`, 0xFAC8B0) | 30, 3 (50 in vanilla) | etch#357 (`place.along`) |
+| The military tab's professionalism markers, which the game's code adds along the bar (eu4.exe 0xFAC8B0) | 30, 3 (50 in vanilla) | etch#357 (`place.along`) |
 | Sub-screens a click opens: a new policy, an idea group's choice, the reform choice, the religion view's selection screens, the institutions, rebel handling, the loan list, the map mode list | 29, 15 | etch#359, etch#361, etch#367 |
 | Main menu settings pages, Anbennar's lobby date and random New World, the unit panel's rebel suppression | 21, 8 | etch#360, etch#364, etch#365 |
 | Texts the game fits to one line: the fort's level and the military technology (`integer`), the economy tab's totals | 13, 6 | etch#362, etch#363 |
@@ -462,10 +462,10 @@ Anbennar set). What was fixed:
 
 - **The building slots' parts**: `building_canbuild` and `required_development` hidden in the
   generated slots, as the game shows `required_development` only on the locked slot
-  (`CBuildingEntry::SetLocked`, eu4.exe 0x138AFF0) and the green frame only where something can be
+  (eu4.exe 0x138AFF0) and the green frame only where something can be
   built now. A great project's `progress_bar_window` is hidden until it is built up.
 - **Selectors for what a click or the map decides**: the province's river and strait marks
-  (`waterway`), the stability marker and value (`stability`: `CCountryStabilityView::OnDailyUpdate`,
+  (`waterway`), the stability marker and value (`stability`: the stability view's daily update,
   0xF87E80, moves them by `stability_progress_threshold_move` times the stability, 16 px a point in
   the base game, 19 px in Proper 2K UI Enhanced and P2KE), the subjects tab's military focus window,
   the diplomacy view's shield glow in the base game, and new profiles of the lobby's options
@@ -485,9 +485,9 @@ Anbennar set). What was fixed:
 the construction) as hidden while the game draws it, in every capture with buildings. A check on 12
 November under the lab's game lock (vanilla Russia 1719, Moskva and Stanovoy, Anvil 1.20.0 and Tongs
 0.33.0) found the same, and the game's own hover landed on the hidden slot's `building` button.
-`CProvinceViewBuildings::RebuildAllBuildingEntries` (0x138EF20) calls `Show` only on the free and
+The province view's rebuild of its building slots (0x138EF20) shows only the free and the
 locked slots' windows, so a built slot's window keeps its shown byte (`+0xC5`) at 0. Hypothesis: its
-render node, which `CFixedWindow::Hide` (0x1547B00) would have hidden, still draws it. Tongs' `visible`
+render node, which a window's hide (0x1547B00) would have hidden, still draws it. Tongs' `visible`
 needs every ancestor's byte, so it reports the slot and its parts as hidden, and the live preview
 hides them too. Built slots are 29 of the 68 offline visibility failures left in vanilla at
 1920×1080 (Russia's provinces have many buildings) and 3 of Verne's 27; the offline preview draws
@@ -513,11 +513,11 @@ visibility 99.08 → 99.20 %, 15 → 17 views fully right. No view of either los
 1920×1080 (12 buttons and 12 texts in one view, 72 widgets over the survey's playsets), and the
 code says where they go:
 
-- `CLedger::CLedger` (eu4.exe 0x117BE40) gives each page its columns (`SColumnInfo`): the great
+- The ledger's constructor (eu4.exe 0x117BE40) gives each page its columns: the great
   powers page an unnamed column, `LEDGER_COUNTRY`, `LEDGER_GREAT_POWER_RANK`,
   `LEDGER_GREAT_POWER_SCORE`, `LEDGER_DEVELOPMENT` and `LEDGER_INSTITUTIONS_PENALTY`, with the
   weights 1, 3, 1, 1, 1, 1 and no fixed widths.
-- `CLedger::UpdateSpreadSheet` (0x118CFF0) makes the unit `(list width − fixed widths) / weights`,
+- The ledger's table update (0x118CFF0) makes the unit `(list width − fixed widths) / weights`,
   cut: 972 / 8 = 121 at 1920×1080, 229 in Proper 2K UI Enhanced at 2560×1440. A column is as wide as
   its weight times the unit (a fixed width wins, 0x117AE40), and the columns follow each other from
   0.

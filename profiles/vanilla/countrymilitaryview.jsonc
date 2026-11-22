@@ -29,7 +29,7 @@
   },
   "repeaters": {
     "countrymilitaryview/army_professionalism": {
-      "note": "The professionalism markers (professionalism_marker_template): one per professionalism level that is not hidden, at its army_professionalism of the bar's width (UpdateArmyProfessionalism, Steam 0xFBC0A0; CProfessionalismMarker, 0xFAC8B0). The base game's levels and Anbennar's: 0.2, 0.4, 0.6, 0.8 and 1.0 (common/professionalism).",
+      "note": "The professionalism markers (professionalism_marker_template): one per professionalism level that is not hidden, at its army_professionalism of the bar's width (Steam 0xFBC0A0 and 0xFAC8B0). The base game's levels and Anbennar's: 0.2, 0.4, 0.6, 0.8 and 1.0 (common/professionalism).",
       "template": "professionalism_marker_template",
       "count": 5,
       "place": {

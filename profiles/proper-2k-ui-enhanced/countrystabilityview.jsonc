@@ -1,7 +1,7 @@
 // The countrystabilityview window in Proper 2K UI Enhanced, over the vanilla profile (and Anbennar's
 // in the Anbennar playset). Proper 2K UI Enhanced, and P2KE Patch - Anbennar after it, set the
 // positionType stability_progress_threshold_move to 19 px, not the base game's 16, so the stability
-// marker and its value move by 19 px for each point of stability (CCountryStabilityView::OnDailyUpdate,
+// marker and its value move by 19 px for each point of stability (eu4.exe
 // eu4.exe 0xF87E80).
 {
   "formatVersion": 1,

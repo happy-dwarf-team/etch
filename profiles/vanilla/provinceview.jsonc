@@ -307,7 +307,7 @@
   // the positionTypes named in "place" (building_start and its kin), so each playset has its own.
   "repeaters": {
     "provinceview/modifiers": {
-      "note": "The province's modifiers (province_modifier_item), right to left from the box's right edge and overlapping when more do not fit (COverlappingElementsBox, eu4.exe 0x163D060; the survey's captures).",
+      "note": "The province's modifiers (province_modifier_item), right to left from the box's right edge and overlapping when more do not fit (eu4.exe 0x163D060; the survey's captures).",
       "template": "province_modifier_item",
       "from": "provinces.{province}.modifier",
       "count": 3,
@@ -439,7 +439,7 @@
       },
     },
     "provinceview/history_window/history_list": {
-      "note": "The province's history (CProvinceHistoryView::SetProvince, eu4.exe 0x133A060): one standard list entry of province_history_entry (provincehistory.gui) per dated change, the year only on the first entry of a year, the month and day (\"November 11\") and the change's description. The captures of 9 November (vanilla and Anbennar, 1920x1080) have the entries from the list's top, one entry's height (46) apart.",
+      "note": "The province's history (eu4.exe 0x133A060): one standard list entry of province_history_entry (provincehistory.gui) per dated change, the year only on the first entry of a year, the month and day (\"November 11\") and the change's description. The captures of 9 November (vanilla and Anbennar, 1920x1080) have the entries from the list's top, one entry's height (46) apart.",
       "template": "province_history_entry",
       "count": 4,
       "fields": {
@@ -652,7 +652,7 @@
       ],
     },
     "great-projects-window": {
-      "note": "The game shows the window 10 px lower than its .gui place (the coverage survey, every playset, 1920×1080 and 1280×720; etch#253). CProvinceViewBuildings sets no position.",
+      "note": "The game shows the window 10 px lower than its .gui place (the coverage survey, every playset, 1920×1080 and 1280×720; etch#253). The game's code sets no position.",
       "offset": { "provinceview/buildings_window/great_projects_window": { "y": 10 } },
     },
     "hidden-province_window": {

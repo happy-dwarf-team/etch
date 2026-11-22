@@ -89,7 +89,7 @@ export const PROVINCE_ID_KEYS: ReadonlyMap<string, ProvinceIdKeyKind> = new Map<
  * larger id indexes the province table unchecked (the lab's `docs/script-unchecked-indexes.md`,
  * 16.11.2026). A war goal's `province` (`history/wars`, and saves) is read with `atoi` and kept;
  * the war goal's name, description and controller index the province table with it, checking only
- * that it is not negative (the EU4 engine lab, `CWarGoal`, 18.11.2026). Vanilla gives it 233
+ * that it is not negative (the EU4 engine lab, 18.11.2026). Vanilla gives it 233
  * integers, all on its map.
  */
 export const PROVINCE_ID_MEMBERS: ReadonlyMap<string, ReadonlySet<string>> = new Map([
@@ -304,7 +304,7 @@ export function checkProvinceIds(
  * A warning for a `history/provinces` file the game never reads, at the start of the file. The game
  * takes a file's province from its name with `atoi` (`123 - Name.txt` is province 123, a name without
  * a leading number province 0) and reads only the files of provinces from 1 to `max_provinces - 1`;
- * the others it skips without a line in `error.log` (`CLoadProvinces`, the EU4 engine lab,
+ * the others it skips without a line in `error.log` (the EU4 engine lab,
  * 18.11.2026). Files in folders below `history/provinces` are not names it reads.
  */
 export function provinceHistoryNotRead(
@@ -343,16 +343,16 @@ export function provinceHistoryNotRead(
  *
  * A great project's (a monument's) `start` is its province, a property of a key that other folders
  * use for years. The game reads it as an integer with no range check, and when a new game starts it
- * looks up every project the start date has built in the province table at that index, unchecked
- * (`CCurrentGameState::InitGreatProjects`), and `CGreatProjectType::OnCreated` writes the project
+ * looks up every project the start date has built in the province table at that index, unchecked,
+ * and the project's creation writes it
  * into that province (the EU4 engine lab, 18.11.2026). A new game from the 1444 bookmark with
- * Stonehenge's `start = 30000000` crashed there, in `CGreatProjectType::ExecuteBuiltEffect`
+ * Stonehenge's `start = 30000000` crashed there, in the project's built effect
  * (19.11.2026). Vanilla gives 138 ids, all on its map.
  *
  * A religion's `holy_sites`, a member of the religion inside its group, lists the provinces whose
- * owners its blessings and religion view show. The game reads it as a list of integers
- * (`CReligion::ReadMember`), and the religion tab of a country of that religion
- * (`CCountryReligionView::Update`) and the blessings window (`CBlessingsView::Show`) index the
+ * owners its blessings and religion view show. The game reads it as a list of integers,
+ * and the religion tab of a country of that religion
+ * and the blessings window index the
  * province table with each id, unchecked, a negative one too (the EU4 engine lab, 19.11.2026).
  * Vanilla gives the Coptic and Zoroastrian religions 10 ids, all on its map.
  */
@@ -638,7 +638,7 @@ export function checkDefaultMap(
 /**
  * The lists of province ids in the climate file (`map/climate.txt`, as `map/default.map`'s `climate`
  * names it). The game reads each as integers and marks every province's template in it, at
- * `templates + id × 0x230`, with no range check and no `error.log` line (`CMap::ReadClimate`, the
+ * `templates + id × 0x230`, with no range check and no `error.log` line (the
  * EU4 engine lab, 18.11.2026): an id past the map writes past the table while the map loads. It
  * also keeps only the id's low 16 bits. Vanilla 1.37.5 lists 3675 ids, all on its map.
  */
@@ -672,7 +672,7 @@ export function checkClimate(parsed: ParsedScript, ids: ProvinceIds): ProvinceId
  * `trade_winds` names it), whose every top-level key is a province id with the wind's direction as
  * its value (`1571 = 0`). The game reads each key with `atoi`, keeps its low 16 bits and marks the
  * province's template at `templates + id × 0x230`, writing the direction there, with no range check
- * and no `error.log` line (`CMap::ReadTradeWinds`, the EU4 engine lab, 19.11.2026), as it does the
+ * and no `error.log` line (the EU4 engine lab, 19.11.2026), as it does the
  * climate file's ids. Vanilla 1.37.5 gives 27 ids, all on its map.
  */
 export function checkTradeWinds(parsed: ParsedScript, ids: ProvinceIds): ProvinceIdDiagnostic[] {
@@ -689,8 +689,8 @@ export function checkTradeWinds(parsed: ParsedScript, ids: ProvinceIds): Provinc
  * `positions` names it), whose every top-level key is a province id with the places of its city,
  * units and text as its value (`1 = { position = { … } … }`). The game reads each key with `atoi`
  * and skips `0` and an id at or past the end of its province graphics, but not a negative one: it
- * reads that "province" before the table and calls through it (`CEU3GraphicalMap::ReadPositions`,
- * the EU4 engine lab, 19.11.2026). Ids past the map are left alone, since the game skips them.
+ * reads that "province" before the table and calls through it (the
+ * EU4 engine lab, 19.11.2026). Ids past the map are left alone, since the game skips them.
  */
 export function checkPositions(parsed: ParsedScript, ids: ProvinceIds): ProvinceIdDiagnostic[] {
   const found: ProvinceIdDiagnostic[] = [];
@@ -707,8 +707,8 @@ export function checkPositions(parsed: ParsedScript, ids: ProvinceIds): Province
 /**
  * The province ids of the adjacencies file (`map/adjacencies.csv`, as `map/default.map`'s
  * `adjacencies` names it), whose lines are `From;To;Type;Through;…`: the straits, canals and other
- * links the map's colours do not give. The game reads each line's fields with `atoi`
- * (`CMap::InitStraits`): it skips a line whose `From` is 0, such as the header, and stops at the
+ * links the map's colours do not give. The game reads each line's fields with `atoi`:
+ * it skips a line whose `From` is 0, such as the header, and stops at the
  * first negative `From` (vanilla ends with `-1;-1;;-1;…`). Otherwise it indexes the province
  * templates with `From` and `To`, each cut to 16 bits, with no range check and no `error.log` line,
  * and with `Through` when the type is `sea`, whose crossing it records there; the other types do
@@ -749,14 +749,14 @@ const COLOUR_KEYS = ['red', 'green', 'blue'] as const;
 
 /**
  * The rows of the map's definition file (`map/definition.csv`) that would write outside the
- * game's tables. `CMap::GenerateColorSpace` reads the first `max_provinces` rows, the header
+ * game's tables. The game reads the first `max_provinces` rows, the header
  * among them, and no more (Anbennar's file runs to 8000 on 7039); it takes each field with `atoi`
  * and checks nothing: it stores the row's colour at index id of a table of `max_provinces + 1`
  * entries, and the id at index `red × 65536 + green × 256 + blue` of a table of 2²⁴ entries (the
  * EU4 engine lab, 19.11.2026). An id below 0 or past `max_provinces`, or a red, green or blue
  * outside 0 to 255, writes elsewhere or gives the province another province's colour. An id of
  * `max_provinces` stays inside the colour table, but no province has it: when the map is loaded,
- * `CPdxMapBorderLayer::CreateBorderRivers` looks up the province of each border's pixels in the
+ * the border layer's river set-up looks up the province of each border's pixels in the
  * province table without a check, and a new game's map load crashed there with Stockholm's row
  * given the id 4942 or 30000 on vanilla's `max_provinces = 4942` (19.11.2026). Vanilla and the
  * lab's mods with their own file have none of these rows.
@@ -838,7 +838,7 @@ function csvFields(text: string, start: number, end: number): CsvField[] {
 /**
  * The negative province ids in the continent file (`map/continent.txt`, as `map/default.map`'s
  * `continent` names it), whose every top-level block lists a continent's provinces. The game reads
- * each id with `atoi` (`CContinent::Read`), and `CMap::ApplyContinents` skips an id at or past the
+ * each id with `atoi`, and then skips an id at or past the
  * end of the province table but not a negative one: it reads and writes the continent of the
  * "province" before the table (the EU4 engine lab, 18.11.2026). Ids past the map are left alone,
  * since the game skips them.
@@ -851,7 +851,7 @@ export function checkContinents(parsed: ParsedScript, ids: ProvinceIds): Provinc
  * The negative province ids in the province group file (`map/provincegroup.txt`, as
  * `map/default.map`'s `provincegroup` names it), whose every top-level block lists a group's
  * provinces (`group = { 1 2 3 }`), which the `province_group` trigger asks about. The game reads
- * each value of a block with `atoi` (`CProvinceGroup::Read`), and `CMap::ApplyProvinceGroups`
+ * each value of a block with `atoi`, and then
  * skips an id at or past the end of the province table but not a negative one: it adds the group
  * to the list of the "province" before the table (the EU4 engine lab, 19.11.2026). Ids past the
  * map are left alone, since the game skips them. Vanilla's file has only a commented example.

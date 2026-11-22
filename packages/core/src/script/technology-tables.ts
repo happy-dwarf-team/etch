@@ -1,10 +1,10 @@
 /**
  * The technology tables of `common/technology.txt` (`tables = { adm_tech = "technologies/adm.txt" }`)
- * that no layer of the playset has. `CTechnologyDataBase::ReadTables` reads each table's file below
+ * that no layer of the playset has. The game reads each table's file below
  * `common/` through the game's lexer while the game starts, with no test that the file exists, as
- * `CCountryDataBase::ReadCountryFiles` does for country files: a missing one leaves
+ * it does for country files: a missing one leaves
  * `CLexer failed to load file common/technologies/<name>` in `error.log`, and the game crashes
- * about 12 s after it starts, before the main menu (an access violation in `CPersistent::Read`; the
+ * about 12 s after it starts, before the main menu (an access violation; the
  * EU4 engine lab, `bmtest-r37`, 19.11.2026). Vanilla and the lab's mods with their own
  * `common/technology.txt` name only the three files they have.
  */

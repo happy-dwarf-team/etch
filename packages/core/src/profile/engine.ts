@@ -54,7 +54,7 @@ export const ENGINE_STEPS: ReadonlyMap<string, EngineSteps> = new Map<string, En
         'countrydiplomacyview/diploopinion_list',
       ],
       evidence:
-        'CCountryDiplomacyView::SetupLargeOrHuge (GOG 1.37.5.2 0xEF7F70); the coverage survey at 1920×1080 (+304, +309)',
+        'the size step of the diplomacy view (GOG 1.37.5.2 0xEF7F70); the coverage survey at 1920×1080 (+304, +309)',
     },
   ],
   [
@@ -70,7 +70,7 @@ export const ENGINE_STEPS: ReadonlyMap<string, EngineSteps> = new Map<string, En
         'countrygovernmentview/**/modifier_listbox',
       ],
       evidence:
-        'CCountryGovernmentView::SetupLargeOrHuge (GOG 1.37.5.2 0xF337E0); the coverage survey at 1920×1080 (+330)',
+        'the size step of the government view (GOG 1.37.5.2 0xF337E0); the coverage survey at 1920×1080 (+330)',
     },
   ],
   [
@@ -80,7 +80,7 @@ export const ENGINE_STEPS: ReadonlyMap<string, EngineSteps> = new Map<string, En
       further: { 'countrystabilityview/cv_governmentrebels_handlerebels/back_button': 30 },
       grown: ['countrystabilityview/cv_governmentrebels_handlerebels/handle_listbox'],
       evidence:
-        'CCountryStabilityView::Setup (GOG 1.37.5.2 0xF84931); the coverage survey at 1920×1080 (+320)',
+        'the setup of the stability view (GOG 1.37.5.2 0xF84931); the coverage survey at 1920×1080 (+320)',
     },
   ],
   [
@@ -88,7 +88,7 @@ export const ENGINE_STEPS: ReadonlyMap<string, EngineSteps> = new Map<string, En
     {
       moved: [],
       grown: ['countrytradeview/trade_node_list_window/tradenode_list'],
-      evidence: 'CCountryTradeView::Setup (GOG 1.37.5.2 0x101F638)',
+      evidence: 'the setup of the trade view (GOG 1.37.5.2 0x101F638)',
     },
   ],
   [
@@ -100,7 +100,7 @@ export const ENGINE_STEPS: ReadonlyMap<string, EngineSteps> = new Map<string, En
       ],
       grown: ['countrysubjectview/subjects_listbox'],
       evidence:
-        'CCountrySubjectsView::SetupLargeOrHuge (GOG 1.37.5.2 0xF4ECC0); the coverage survey at 1920×1080 (+328)',
+        'the size step of the subjects view (GOG 1.37.5.2 0xF4ECC0); the coverage survey at 1920×1080 (+328)',
     },
   ],
 ]);
@@ -133,7 +133,7 @@ export const ENGINE_ROWS: ReadonlyMap<string, EngineRow> = new Map([
       start: 'shield_position',
       step: 'shield_offset',
       evidence:
-        'CGameSetup::RefreshShortcutShields (GOG 1.37.5.2 0x111C740); the coverage survey at 1920×1080 and 1280×720',
+        'the bookmark shields of the lobby (GOG 1.37.5.2 0x111C740); the coverage survey at 1920×1080 and 1280×720',
     },
   ],
   [

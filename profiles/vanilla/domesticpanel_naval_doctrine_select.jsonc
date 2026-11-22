@@ -1,5 +1,5 @@
 // The naval doctrine choice the military tab opens (docs/window-profiles.md). The tab's code holds
-// it (CCountryMilitaryView::Setup, Steam 1.37.5 0xFAEDC0, at this+0x668) and, with Cradle of
+// it (Steam 1.37.5 0xFAEDC0, at this+0x668) and, with Cradle of
 // Civilization, moves it down by army_professionalism's height as it moves the tab
 // (UpdateArmyProfessionalism, 0xFBC0A0): the survey's capture shows it and every widget in it 16 px
 // below the .gui's place.

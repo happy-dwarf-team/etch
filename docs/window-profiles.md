@@ -286,7 +286,7 @@ does:
 ```
 
 With `table`, the entries are the columns of a table across the window, as the ledger's code puts
-its sort buttons (`CLedger::UpdateSpreadSheet`, eu4.exe 0x118CFF0). The unit is a width over the
+its sort buttons (eu4.exe 0x118CFF0). The unit is a width over the
 sum of `weights`, cut: the width of `list`, a sibling of the window (the ledger takes its list
 box's), else the window's own. Each column is its weight in units wide, after the ones before it.
 An entry stands at its column's start; in a column of `numbers` (counted from 1) at the column's

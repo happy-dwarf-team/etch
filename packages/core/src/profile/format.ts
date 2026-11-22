@@ -274,7 +274,7 @@ export interface Placement {
   /**
    * Entries along a bar of the window instead of `step` apart: the n-th at the share `at[n]` of the
    * bar's width, from `start` (0, 0 by default) and the template's own position. The game's code
-   * computes the offset in its fixed point (`CProfessionalismMarker`, eu4.exe 1.37.5 `0xFAC8B0`):
+   * computes the offset in its fixed point (eu4.exe 1.37.5 `0xFAC8B0`):
    * the share in thousandths, cut, times the width, cut to whole pixels. `sprites`, when given,
    * are the entries' sprites in place of the template's, as the game gives each marker its own.
    */
@@ -285,7 +285,7 @@ export interface Placement {
   };
   /**
    * Entries as the columns of a table across the window, as the ledger's code puts its sort
-   * buttons (`CLedger::UpdateSpreadSheet`, eu4.exe 1.37.5 `0x118CFF0`): the unit is the window's
+   * buttons (eu4.exe 1.37.5 `0x118CFF0`): the unit is the window's
    * width over the sum of `weights`, cut, and the n-th column is `weights[n]` units wide, after the
    * ones before it. An entry stands at its column's start; in a column of `numbers` (from 1) at the
    * column's right edge less its own width less 20 px. `label`, a top-level definition of the

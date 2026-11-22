@@ -1,5 +1,5 @@
 /**
- * Province history files of one province under different names. `CLoadProvinces::operator()`
+ * Province history files of one province under different names. The game
  * takes a `history/provinces` file's province from its name with `atoi` (`1 - Uppland.txt` is
  * province 1) and reads every such file with a new lexer into that province's history; it does not
  * check whether the province already has a file (the EU4 engine lab, 19.11.2026, the same
@@ -30,7 +30,7 @@ export interface ProvinceHistoryDiagnostic extends SourceRange {
 }
 
 /**
- * The province a `history/provinces` file is read for: `atoi` of its name, as `CLoadProvinces`
+ * The province a `history/provinces` file is read for: `atoi` of its name, as the game
  * takes it (leading blanks and a sign allowed). `undefined` for another path, a file in a folder
  * below it, or a name that gives no province above 0.
  */
