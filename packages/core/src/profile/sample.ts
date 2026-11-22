@@ -264,6 +264,12 @@ export function sampleData(
     const layer: DataLayer =
       liveRows !== undefined ? 'live' : entries === undefined ? 'generated' : 'save';
     const templatePaths = windowPaths(template.widget);
+    const label = repeater.place?.table?.label;
+    const labelWidget = label === undefined ? undefined : input.template?.(label)?.widget;
+    const heading =
+      label === undefined || labelWidget === undefined
+        ? undefined
+        : { name: label, widget: labelWidget };
     const rowPath = (listPath: string, row: number, inEntry: string): string => {
       const relative = inEntry.split('/').slice(1).join('/');
       return `${listPath}/row[${String(row + 1)}]${relative === '' ? '' : `/${relative}`}`;
@@ -300,6 +306,15 @@ export function sampleData(
             if (text !== undefined) filled.set(entry.widget, { text, layer: 'live', detail: path });
             const state = input.live.state?.(path);
             if (state !== undefined) shown.set(entry.widget, state);
+          }
+          // A table's heading is the game's `<label>[n]` beside the n-th entry (liveMatch).
+          if (heading !== undefined) {
+            const path = `${listPath}/${heading.name}[${String(row + 1)}]`.toLowerCase();
+            const text = input.live.text(path);
+            if (text !== undefined)
+              filled.set(heading.widget, { text, layer: 'live', detail: path });
+            const state = input.live.state?.(path);
+            if (state !== undefined) shown.set(heading.widget, state);
           }
         }
         const fromLive = new Set(shown.keys());
