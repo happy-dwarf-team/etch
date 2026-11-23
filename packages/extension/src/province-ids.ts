@@ -42,7 +42,7 @@ import { linkedFiles } from './script-profile-view.ts';
 import { pathUri } from './dlc-files.ts';
 import { registerProvinceNames } from './province-names.ts';
 import { ACTIONS, notify, showOutput } from './notify.ts';
-import { count, counted } from './numbers.ts';
+import { counted } from './numbers.ts';
 
 export const CHECK_PROVINCE_IDS = 'etch.checkProvinceIds';
 
@@ -310,7 +310,7 @@ export class ProvinceIdDiagnostics implements vscode.Disposable {
         ? ''
         : ` ${summaries.map((summary) => summary.message).join('; ')}: the files are in Output.`;
     if (warnings === 0) {
-      const defined = `Every province id and name in the playset's ${count(filesChecked)} script files is defined (${against}).`;
+      const defined = `All province ids and names are defined: ${counted(filesChecked, 'script file')} of the playset checked (${against}).`;
       if (summaries.length === 0) {
         void notify('info', defined);
         return;
