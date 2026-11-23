@@ -30,11 +30,6 @@ export type RunMode = 'effect' | 'trigger';
 /** The file names the plugin accepts (`IsRunFile`): no folder, one per run. */
 export const RUN_FILE = /^etch_run_[0-9a-f]{8,32}\.txt$/;
 
-/** A count with its noun, for the notifications: "1 error.log line", "2 error.log lines". */
-export function counted(n: number, one: string, many = `${one}s`): string {
-  return `${String(n)} ${n === 1 ? one : many}`;
-}
-
 /** The most characters a selection may have; the game reads the whole file in one frame. */
 export const MAX_SCRIPT = 256 * 1024;
 

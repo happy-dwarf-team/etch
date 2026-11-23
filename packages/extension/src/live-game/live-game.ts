@@ -99,6 +99,7 @@ import {
 } from './watchdog.ts';
 import { flatpakInstancePid } from './host.ts';
 import { childProcesses, processIdentity, type ProcessIdentity } from './windows.ts';
+import { ACTIONS, notify, showOutput } from '../notify.ts';
 
 /**
  * The private install in the extension's global storage: created on first use after one
@@ -413,7 +414,8 @@ export class LiveGame implements vscode.Disposable {
     });
     if (playerGame !== undefined) {
       this.output.info(`Live game: the player's own EU4 runs (PID ${String(playerGame.pid)}).`);
-      void vscode.window.showWarningMessage(
+      void notify(
+        'warning',
         `Your own EU4 runs (PID ${String(playerGame.pid)}). The live game counts as your EU4 ` +
           'session for Steam, so it starts only when your game is closed.',
       );
@@ -862,7 +864,8 @@ export class LiveGame implements vscode.Disposable {
     }
     const closed = answer.closed;
     if (closed.length > 0) {
-      void vscode.window.showInformationMessage(
+      void notify(
+        'info',
         `The live game closed ${closed.join(', ')} to reload ${plan.path}: open it again to see the change.`,
       );
     }
@@ -895,9 +898,7 @@ export class LiveGame implements vscode.Disposable {
         const session = (await running.ping().catch(() => undefined))?.gameSession?.number ?? 0;
         if (this.notAvailableSaid !== session) {
           this.notAvailableSaid = session;
-          void vscode.window.showWarningMessage(
-            `The live game did not reload ${path}: ${error.message}.`,
-          );
+          void notify('warning', `The live game did not reload ${path}: ${error.message}.`);
         }
         return undefined;
       }
@@ -1045,10 +1046,12 @@ export class LiveGame implements vscode.Disposable {
     if (reasons.includes(reason)) return;
     this.output.warn(`Restart needed: ${reason}.`);
     this.set({ status: 'stale', pid: state.pid, reasons: [...reasons, reason] });
-    const now = 'Restart now';
-    void vscode.window
-      .showWarningMessage(`Restart needed: ${reason}.`, now, 'Later')
-      .then((answer) => (answer === now ? this.restartNow() : undefined));
+    void notify(
+      'warning',
+      `Restart needed: ${reason}.`,
+      { label: 'Restart Now', run: () => this.restartNow() },
+      { label: 'Later' },
+    );
   }
 
   private get errorLogPath(): string {
@@ -1144,7 +1147,8 @@ export class LiveGame implements vscode.Disposable {
       if (chosen === undefined) return undefined;
       const pick = chosen.pick;
       if (pick === undefined) {
-        void vscode.window.showInformationMessage(
+        void notify(
+          'info',
           `${chosen.label.replace(/^\$\([^)]*\) /, '')} is an ironman save: the live game cannot ` +
             'reload in ironman, so it is not copied.',
         );
@@ -1286,17 +1290,19 @@ export class LiveGame implements vscode.Disposable {
    * never ends one by itself while the game lives and its plugin answers.
    */
   private offerStop(): void {
-    const stop = 'Stop';
-    void vscode.window
-      .showInformationMessage(
-        'The live game is still starting: a first start of a big playset can take several ' +
-          "minutes. Etch keeps waiting; its log shows the game's progress.",
-        stop,
-      )
-      .then((answer) => {
-        const state = this.current.status;
-        if (answer === stop && (state === 'starting' || state === 'restarting')) void this.stop();
-      });
+    void notify(
+      'info',
+      'The live game is still starting. A first start of a big playset can take several ' +
+        "minutes; Etch keeps waiting, and its log shows the game's progress.",
+      showOutput(this.output),
+      {
+        label: 'Stop',
+        run: () => {
+          const state = this.current.status;
+          if (state === 'starting' || state === 'restarting') void this.stop();
+        },
+      },
+    );
   }
 
   /**
@@ -1326,7 +1332,7 @@ export class LiveGame implements vscode.Disposable {
         : `The live game has not loaded the save after ${String(LOAD_TIMEOUT_MS / 60_000)} ` +
           'minutes. It may still be loading, or wait at the main menu.';
     this.output.warn(message);
-    void vscode.window.showWarningMessage(message);
+    void notify('warning', message);
   }
 
   /**
@@ -1370,7 +1376,8 @@ export class LiveGame implements vscode.Disposable {
       readyMs: started.times.ready + Math.round(loadMs),
     });
     if (this.restarting && this.lastViews.length > 0) {
-      void vscode.window.showInformationMessage(
+      void notify(
+        'info',
         `The live game restarted: open ${this.lastViews.join(' and ')} again; Etch reopens only ` +
           'the province view.',
       );
@@ -1383,7 +1390,8 @@ export class LiveGame implements vscode.Disposable {
       this.output.info(
         `The live game restarted; the province view was not opened again: ${reopen.why}.`,
       );
-      void vscode.window.showInformationMessage(
+      void notify(
+        'info',
         `The live game restarted on the map; Etch did not open the province view again: ${reopen.why}.`,
       );
     } else if (reopen !== undefined) {
@@ -1436,7 +1444,8 @@ export class LiveGame implements vscode.Disposable {
       this.output.info(`The province view of province ${province} was not opened again: ${why}.`);
       // The player's own choice needs no notice.
       if (r.outcome === 'moved_on') return;
-      void vscode.window.showInformationMessage(
+      void notify(
+        'info',
         `The live game restarted on the map; Etch did not open province ${province} again: ${why}.`,
       );
     } catch (error) {
@@ -1483,21 +1492,20 @@ export class LiveGame implements vscode.Disposable {
   private async stillAsked(started: LiveGameProcess, reason: string): Promise<void> {
     this.output.warn(`The live game may hang: ${reason}. Etch keeps waiting.`);
     const restart = 'Close and Restart';
-    const answer = await vscode.window.showWarningMessage(
+    const answer = await notify(
+      'warning',
       `The live game may hang: ${reason}. It may only be busy (a load, a new game, a save or a ` +
         'big event). Etch keeps waiting unless you close it.',
-      'Keep Waiting',
-      restart,
+      { label: 'Keep Waiting' },
+      { label: restart },
     );
-    if (answer !== restart || !this.serving(started)) return;
+    if (answer?.label !== restart || !this.serving(started)) return;
     const before = await started.ping().catch(() => undefined);
     await new Promise((resolve) => setTimeout(resolve, 2_000));
     const after = await started.ping().catch(() => undefined);
     if (before !== undefined && after !== undefined && before.frame !== after.frame) {
       this.output.info('The live game drew frames again before it was closed: it keeps running.');
-      void vscode.window.showInformationMessage(
-        'The live game moved on in the meantime: Etch left it running.',
-      );
+      void notify('info', 'The live game moved on in the meantime: Etch left it running.');
       return;
     }
     if (!this.serving(started)) return;
@@ -1547,9 +1555,11 @@ export class LiveGame implements vscode.Disposable {
             `The game restarted itself after Exit to Main Menu and was closed: ${why}`,
           );
           this.set({ status: 'stopped' });
-          void vscode.window.showInformationMessage(
-            'The live game was exited to the main menu, and the game it started again runs without ' +
-              "Etch's plugin, so Etch closed it. Start the live game again to continue.",
+          void notify(
+            'info',
+            'The live game went to the main menu and came back without ' +
+              "Etch's plugin, so Etch closed it.",
+            ACTIONS.startLiveGame,
           );
         }
         return;

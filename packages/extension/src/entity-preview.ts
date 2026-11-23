@@ -42,6 +42,7 @@ import type {
 } from './mesh-protocol.ts';
 import { pickCurrent } from './pick-current.ts';
 import { linkedFiles } from './script-profile-view.ts';
+import { notify } from './notify.ts';
 
 export const ENTITY_PREVIEW_VIEW_TYPE = 'etch.entityPreview';
 export const PREVIEW_ENTITY_COMMAND = 'etch.previewEntity';
@@ -124,7 +125,8 @@ const ENTITY_ICON = new vscode.ThemeIcon('symbol-class');
 async function pickEntity(document: vscode.TextDocument): Promise<string | undefined> {
   const entities = entitiesOf(document.getText());
   if (entities.length === 0) {
-    void vscode.window.showInformationMessage(
+    void notify(
+      'info',
       `${path.basename(document.fileName)} has no entity = { name = … } to preview.`,
     );
     return undefined;
@@ -436,7 +438,7 @@ class EntityPreviews {
         const message = await this.message(uri, name);
         if (typeof message === 'string') {
           this.report({ name, ok: false, message });
-          void vscode.window.showWarningMessage(message);
+          void notify('warning', message);
           return;
         }
         await webview.postMessage(message);
@@ -513,7 +515,7 @@ export function registerEntityPreview(
       async (uri?: vscode.Uri, name?: string) => {
         const target = uri ?? vscode.window.activeTextEditor?.document.uri;
         if (target === undefined || !/\.asset$/i.test(target.fsPath)) {
-          void vscode.window.showInformationMessage('Open an .asset file to preview its entities.');
+          void notify('info', 'Open an .asset file to preview its entities.');
           return;
         }
         const chosen = name ?? (await pickEntity(await vscode.workspace.openTextDocument(target)));

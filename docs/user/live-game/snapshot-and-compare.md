@@ -62,7 +62,7 @@ hides as in the game.
    or click **Compare with Live Game** under **Live snapshot** in **Data ▾**.
 
 A notice says how many [live differences](../reference/glossary.md#live-difference) (widgets the
-preview draws differently from the game) it found. Each one shows in the Problems panel as
+preview draws differently from the game) it found, with **Show Problems** when there are any. Each one shows in the Problems panel as
 information, not as a warning, on the widget's line in the `.gui` file. A widget only the game has
 goes on the line of the nearest widget that holds it. There are three kinds:
 

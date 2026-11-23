@@ -41,6 +41,8 @@ import { gamePathOf } from './live-game/pick.ts';
 import { linkedFiles } from './script-profile-view.ts';
 import { pathUri } from './dlc-files.ts';
 import { registerProvinceNames } from './province-names.ts';
+import { ACTIONS, notify, showOutput } from './notify.ts';
+import { counted } from './numbers.ts';
 
 export const CHECK_PROVINCE_IDS = 'etch.checkProvinceIds';
 
@@ -224,14 +226,17 @@ export class ProvinceIdDiagnostics implements vscode.Disposable {
     this.refresh();
     const map = await this.playsetMap();
     if (map === undefined) {
-      void vscode.window.showWarningMessage(
-        'Etch could not find the game folder: set etch.gamePath to check the province ids and names.',
+      void notify(
+        'warning',
+        "Etch can't find the game folder, so it cannot check the province ids and names.",
+        ACTIONS.setGameFolder,
       );
       return;
     }
     const { ids, names } = map;
     if (ids === undefined && names === undefined) {
-      void vscode.window.showWarningMessage(
+      void notify(
+        'warning',
         'The playset has no map/default.map with max_provinces and no files that define names, so Etch cannot check province ids or names.',
       );
       return;
@@ -305,19 +310,18 @@ export class ProvinceIdDiagnostics implements vscode.Disposable {
         ? ''
         : ` ${summaries.map((summary) => summary.message).join('; ')}: the files are in Output.`;
     if (warnings === 0) {
-      const defined = `Every province id and name in the playset's ${String(filesChecked)} script files is defined (${against}).`;
+      const defined = `All province ids and names are defined: ${counted(filesChecked, 'script file')} of the playset checked (${against}).`;
       if (summaries.length === 0) {
-        void vscode.window.showInformationMessage(defined);
+        void notify('info', defined);
         return;
       }
-      void vscode.window.showWarningMessage(defined + summed, 'Show Output').then((choice) => {
-        if (choice !== undefined) this.output.show(true);
-      });
+      void notify('warning', defined + summed, showOutput(this.output));
       return;
     }
     const mods = new Set(findings.map((finding) => finding.file.layer.name));
-    void vscode.window.showWarningMessage(
-      `${String(warnings)} ${warnings === 1 ? 'id or name' : 'ids or names'} the playset does not have, in ${String(findings.length)} ${findings.length === 1 ? 'file' : 'files'} of ${[...mods].map((m) => (m === 'game' ? 'the game' : m)).join(', ')}: see Problems.${summed}`,
+    void notify(
+      'warning',
+      `${counted(warnings, 'id or name', 'ids or names')} the playset does not have, in ${counted(findings.length, 'file')} of ${[...mods].map((m) => (m === 'game' ? 'the game' : m)).join(', ')}: see Problems.${summed}`,
     );
     await vscode.commands.executeCommand('workbench.actions.view.problems');
   }

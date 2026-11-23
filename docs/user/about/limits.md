@@ -60,7 +60,7 @@ in one place, grouped by where you meet them.
   `core.gui`, scripted GUIs and any other file the game reads, such as an event or a file in
   `common`. They need a
   [planned restart](../reference/glossary.md#planned-restart): Etch saves your game, starts it
-  again and loads that save, but only when you click **Restart now**. See
+  again and loads that save, but only when you click **Restart Now**. See
   [Reload on save](../live-game/reload-on-save.md).
 - A file you save is not reloaded into the game when another mod of the
   [playset](../reference/glossary.md#playset) (the mods loaded with yours) has its own copy of it,

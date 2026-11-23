@@ -3,7 +3,9 @@
 // run's `error.log` lines come back to the editor.
 import * as vscode from 'vscode';
 import type { LiveGame, RunOutcome } from './live-game.ts';
-import { blockAtLine, counted, mapRunErrors, type RunMode, type RunScope } from './run-script.ts';
+import { counted } from '../numbers.ts';
+import { blockAtLine, mapRunErrors, type RunMode, type RunScope } from './run-script.ts';
+import { ACTIONS, notify } from '../notify.ts';
 
 /** Runs the selection's effects in the player's country. */
 export const RUN_SELECTION = 'etch.runSelection';
@@ -53,7 +55,7 @@ async function runSelection(
 ): Promise<void> {
   const editor = vscode.window.activeTextEditor;
   if (editor === undefined) {
-    void vscode.window.showInformationMessage('Open a script file and select what to run.');
+    void notify('info', 'Open a script file and select what to run.');
     return;
   }
   const document = editor.document;
@@ -63,7 +65,8 @@ async function runSelection(
     const line = document.lineAt(editor.selection.active.line);
     const block = blockAtLine(text, document.offsetAt(line.range.start));
     if (block === undefined) {
-      void vscode.window.showInformationMessage(
+      void notify(
+        'info',
         'Select the script to run, or put the cursor on the line where a statement starts.',
       );
       return;
@@ -72,32 +75,27 @@ async function runSelection(
     editor.selection = new vscode.Selection(range.start, range.end);
   }
   if (!game.canRun) {
-    const start = 'Start the Live Game';
-    const answer = await vscode.window.showInformationMessage(
+    void notify(
+      'info',
       'Run needs the live game: start it and load a save first.',
-      start,
+      ACTIONS.startLiveGame,
     );
-    if (answer === start) void vscode.commands.executeCommand('etch.startLiveGame');
     return;
   }
   const screen = await game.onScreen();
   if (screen === undefined) {
-    void vscode.window.showWarningMessage('The live game does not answer; try again in a moment.');
+    void notify('warning', 'The live game does not answer; try again in a moment.');
     return;
   }
   if (!screen.inGame) {
-    void vscode.window.showInformationMessage(
-      'The live game is in the main menu: load a save or start a game first.',
-    );
+    void notify('info', 'The live game is in the main menu: load a save or start a game first.');
     return;
   }
   let scope: RunScope = { kind: 'country' };
   const province = screen.province?.province;
   if (where === 'province') {
     if (province === undefined) {
-      void vscode.window.showInformationMessage(
-        'No province is on screen: open a province in the live game first.',
-      );
+      void notify('info', 'No province is on screen: open a province in the live game first.');
       return;
     }
     scope = { kind: 'province', province };
@@ -152,10 +150,10 @@ function show(outcome: RunOutcome, shown: Shown): void {
         : outcome.code === 'busy'
           ? 'The live game is busy with a reload; run the selection again in a moment.'
           : `The live game did not run the selection: ${outcome.message}.`;
-    void vscode.window.showWarningMessage(text);
+    void notify('warning', text);
     return;
   }
-  if (outcome.firstInSession) void vscode.window.showInformationMessage(PRIVATE_COPY_NOTICE);
+  if (outcome.firstInSession) void notify('info', PRIVATE_COPY_NOTICE);
   const lineCount = selection.replace(/\r\n?/g, '\n').replace(/\n+$/, '').split('\n').length;
   const errors = mapRunErrors(outcome.errors, outcome.script, lineCount);
   const diagnostics = errors.map((e) => {
@@ -181,31 +179,34 @@ function show(outcome: RunOutcome, shown: Shown): void {
       ? ` ${counted(errors.length, 'error.log line')} ${errors.length === 1 ? 'is' : 'are'} in Problems.`
       : '';
   if (!outcome.answer.success) {
-    void vscode.window.showErrorMessage(
+    void notify(
+      'error',
       `The game's console did not run the selection: ${outcome.answer.text || 'no answer'}.${errorNote}`,
     );
     return;
   }
   if (mode === 'effect') {
     const text = `Ran in ${scopeName(scope)}.${errorNote}${lost}`;
-    if (errors.length > 0 || outcome.lost > 0) void vscode.window.showWarningMessage(text);
-    else void vscode.window.showInformationMessage(text);
+    if (errors.length > 0 || outcome.lost > 0) void notify('warning', text);
+    else void notify('info', text);
     return;
   }
   if (outcome.check === undefined) {
-    void vscode.window.showWarningMessage(
+    void notify(
+      'warning',
       `The trigger gave no answer in ${scopeName(scope)}: the game logged neither TRUE nor FALSE.${errorNote}${lost}`,
     );
     return;
   }
   const answer = `The trigger is ${outcome.check ? 'TRUE' : 'FALSE'} in ${scopeName(scope)}.`;
   if (errors.length > 0) {
-    void vscode.window.showWarningMessage(
+    void notify(
+      'warning',
       `${answer}${outcome.check ? ` ${UNREAD_TRIGGER_NOTE}` : ''}${errorNote}${lost}`,
     );
   } else if (outcome.lost > 0) {
-    void vscode.window.showWarningMessage(`${answer}${lost}`);
+    void notify('warning', `${answer}${lost}`);
   } else {
-    void vscode.window.showInformationMessage(answer);
+    void notify('info', answer);
   }
 }

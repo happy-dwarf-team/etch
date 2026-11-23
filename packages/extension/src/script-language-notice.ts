@@ -6,6 +6,7 @@
 // is on, as it is in Etch's media captures.
 import * as vscode from 'vscode';
 import { SCRIPT_LANGUAGE_EXTENSIONS, offersScriptLanguage } from './script-language.ts';
+import { notify } from './notify.ts';
 
 /** The global state key that Don't Show Again sets. */
 const DECLINED = 'etch.scriptLanguageNotice.declined';
@@ -50,11 +51,14 @@ export function registerScriptLanguageNotice(context: vscode.ExtensionContext): 
 /** Shows the notice and does what the user picks. */
 async function showNotice(context: vscode.ExtensionContext): Promise<void> {
   const install = (name: string): string => `Install ${name}`;
-  const choice = await vscode.window.showInformationMessage(
-    MESSAGE,
-    ...SCRIPT_LANGUAGE_EXTENSIONS.map(({ name }) => install(name)),
-    DONT_SHOW,
-  );
+  const choice = (
+    await notify(
+      'info',
+      MESSAGE,
+      ...SCRIPT_LANGUAGE_EXTENSIONS.map(({ name }) => ({ label: install(name) })),
+      { label: DONT_SHOW },
+    )
+  )?.label;
   if (choice === DONT_SHOW) {
     await context.globalState.update(DECLINED, true);
     return;
@@ -64,7 +68,8 @@ async function showNotice(context: vscode.ExtensionContext): Promise<void> {
   try {
     await vscode.commands.executeCommand('workbench.extensions.installExtension', extension.id);
   } catch (error) {
-    void vscode.window.showErrorMessage(
+    void notify(
+      'error',
       `${extension.name} could not be installed: ${error instanceof Error ? error.message : String(error)}`,
     );
   }

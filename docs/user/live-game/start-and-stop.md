@@ -23,7 +23,8 @@ notice says how long it took. When you start from a save (**Continue** or one of
 game is ready once that save is loaded, not at the main menu. If the save has not loaded after five
 minutes, Etch shows the game as ready anyway and warns that it may still be loading or wait at the
 main menu: look at the game. A first start of a big playset can take several minutes. Etch keeps
-waiting; after two minutes a notice offers **Stop**.
+waiting; after two minutes a notice offers **Show Output**, with the game's progress in Etch's
+log, and **Stop**.
 
 ## The first start
 

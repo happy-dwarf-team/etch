@@ -5,7 +5,9 @@
 import * as vscode from 'vscode';
 import { assignCheckLines, checkFolderOf, mapCheckErrors, planCheck } from '@etch/core';
 import type { LiveGame } from './live-game.ts';
-import { counted, MAX_SCRIPT } from './run-script.ts';
+import { counted } from '../numbers.ts';
+import { MAX_SCRIPT } from './run-script.ts';
+import { ACTIONS, notify } from '../notify.ts';
 
 export const CHECK_FILE = 'etch.checkFileInLiveGame';
 /** The Problems source of a check's lines. */
@@ -29,7 +31,7 @@ export function registerCheckFile(
           ? await vscode.workspace.openTextDocument(uri)
           : vscode.window.activeTextEditor?.document;
       if (document === undefined) {
-        void vscode.window.showInformationMessage('Open a script file to check.');
+        void notify('info', 'Open a script file to check.');
         return;
       }
       await checkFile(game, problems, output, document, false);
@@ -64,8 +66,8 @@ async function checkFile(
 ): Promise<void> {
   const say = (text: string, warn = false): void => {
     if (quiet) return;
-    if (warn) void vscode.window.showWarningMessage(text);
-    else void vscode.window.showInformationMessage(text);
+    if (warn) void notify('warning', text);
+    else void notify('info', text);
   };
   const folder = checkFolderOf(document.uri.fsPath);
   if (folder === undefined) {
@@ -77,12 +79,11 @@ async function checkFile(
   }
   if (!game.canRun) {
     if (quiet) return;
-    const start = 'Start the Live Game';
-    const answer = await vscode.window.showInformationMessage(
+    void notify(
+      'info',
       'Check File needs the live game: start it and load a save first.',
-      start,
+      ACTIONS.startLiveGame,
     );
-    if (answer === start) void vscode.commands.executeCommand('etch.startLiveGame');
     return;
   }
   const screen = await game.onScreen();
