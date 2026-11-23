@@ -49,7 +49,7 @@ A `.dds` or `.tga` file opens in the
 [texture preview](https://etch.happydwarf.dev/docs/textures-and-meshes/texture-preview/). A
 `.mesh` file opens in the
 [mesh preview](https://etch.happydwarf.dev/docs/textures-and-meshes/mesh-preview/), where you
-turn the model and play its animations. In an `.asset` file, click **Preview entity** above an
+turn the model and play its animations. In an `.asset` file, click **Preview Entity** above an
 `entity = { … }` to see that
 [unit or ship](https://etch.happydwarf.dev/docs/textures-and-meshes/entities/). Etch draws a map
 tree's mesh

@@ -3059,7 +3059,7 @@ export const CLIPS: readonly Clip[] = [
     },
   },
   {
-    // A unit's entity in its .asset file: Preview entity above it builds the unit beside the code,
+    // A unit's entity in its .asset file: Preview Entity above it builds the unit beside the code,
     // its halberd on its hand, playing idle; the state list set to walk.
     id: 'entity',
     async run(context) {
@@ -3074,7 +3074,7 @@ export const CLIPS: readonly Clip[] = [
       // Every entity in view has a lens above it: the file's first is the topmost.
       const lenses = wb.page
         .locator('.part.editor .editor-group-container.active .codelens-decoration a', {
-          hasText: 'Preview entity',
+          hasText: 'Preview Entity',
         })
         .filter({ visible: true });
       await lenses.first().waitFor();
@@ -3252,7 +3252,7 @@ export const CLIPS: readonly Clip[] = [
           captions: sequence(
             [
               { from: 0.2, text: "A unit's entity in its .asset file: mesh, states, attachments" },
-              { from: click - 0.05, text: 'Preview entity builds the unit as the game does' },
+              { from: click - 0.05, text: 'Preview Entity builds the unit as the game does' },
               { from: drawn + 0.3, text: "Its halberd on the right hand's bone, playing idle" },
               {
                 from: at(state.t) - 0.05,

@@ -28,6 +28,7 @@ import type {
   MeshSummary,
   MeshWebviewMessage,
 } from './mesh-protocol.ts';
+import { pickCurrent } from './pick-current.ts';
 import { linkedFiles } from './script-profile-view.ts';
 
 export const ENTITY_PREVIEW_VIEW_TYPE = 'etch.entityPreview';
@@ -47,22 +48,103 @@ export interface EntityPreviewApi {
   control(uri: vscode.Uri, name: string, controls: MeshControls): Promise<boolean>;
 }
 
+/** An entity of an `.asset` file as its text writes it. */
+export interface AssetEntity {
+  readonly name: string;
+  /** Where its `entity = { … }` starts and ends in the text. */
+  readonly start: number;
+  readonly end: number;
+  /** Its `pdxmesh`, else the entity its `clone` names. */
+  readonly pdxmesh: string | undefined;
+  readonly clone: string | undefined;
+  /** The names of its own `state` blocks. */
+  readonly states: readonly string[];
+}
+
 /** The entities of an `.asset` file's text: each `entity = { name = … }` at the top level. */
-export function entitiesOf(text: string): { name: string; start: number }[] {
-  const found: { name: string; start: number }[] = [];
+export function entitiesOf(text: string): AssetEntity[] {
+  const found: AssetEntity[] = [];
   for (const entry of parseScript(text).entries) {
     if (entry.kind !== 'property' || keyOf(entry) !== 'entity' || entry.value?.kind !== 'block') {
       continue;
     }
-    let name: string | undefined;
+    const scalars = new Map<string, string>();
+    const states: string[] = [];
     for (const inner of entry.value.entries) {
-      if (inner.kind === 'property' && keyOf(inner) === 'name' && inner.value?.kind === 'scalar') {
-        name = inner.value.text;
+      if (inner.kind !== 'property') continue;
+      const key = keyOf(inner);
+      if (inner.value?.kind === 'scalar') scalars.set(key, inner.value.text);
+      else if (key === 'state' && inner.value?.kind === 'block') {
+        for (const field of inner.value.entries) {
+          if (
+            field.kind === 'property' &&
+            keyOf(field) === 'name' &&
+            field.value?.kind === 'scalar'
+          )
+            states.push(field.value.text);
+        }
       }
     }
-    if (name !== undefined) found.push({ name, start: entry.start });
+    const name = scalars.get('name');
+    if (name === undefined) continue;
+    found.push({
+      name,
+      start: entry.start,
+      end: entry.end,
+      pdxmesh: scalars.get('pdxmesh'),
+      clone: scalars.get('clone'),
+      states,
+    });
   }
   return found;
+}
+
+interface EntityItem extends vscode.QuickPickItem {
+  readonly entity?: AssetEntity;
+}
+
+const ENTITY_ICON = new vscode.ThemeIcon('symbol-class');
+
+/**
+ * Asks which entity of an `.asset` file to preview: the one the cursor is in comes first and
+ * active, with its states; every item shows the mesh (or the clone) and the line it starts on.
+ */
+async function pickEntity(document: vscode.TextDocument): Promise<string | undefined> {
+  const entities = entitiesOf(document.getText());
+  if (entities.length === 0) {
+    void vscode.window.showInformationMessage(
+      `${path.basename(document.fileName)} has no entity = { name = … } to preview.`,
+    );
+    return undefined;
+  }
+  const editor = vscode.window.activeTextEditor;
+  const cursor =
+    editor?.document.uri.toString() === document.uri.toString()
+      ? document.offsetAt(editor.selection.active)
+      : undefined;
+  const item = (entity: AssetEntity, states: boolean): EntityItem => ({
+    label: entity.name,
+    description: [
+      entity.pdxmesh ?? (entity.clone === undefined ? 'no mesh' : `clone of ${entity.clone}`),
+      `line ${String(document.positionAt(entity.start).line + 1)}`,
+    ].join(' · '),
+    ...(states && entity.states.length > 0 ? { detail: entity.states.join(' · ') } : {}),
+    iconPath: ENTITY_ICON,
+    entity,
+  });
+  const at =
+    cursor === undefined
+      ? undefined
+      : entities.find((entity) => entity.start <= cursor && cursor <= entity.end);
+  const items = entities.filter((entity) => entity !== at).map((entity) => item(entity, false));
+  const count = entities.length === 1 ? 'the entity' : `the ${String(entities.length)} entities`;
+  const picked = await pickCurrent(items, at === undefined ? undefined : item(at, true), {
+    title: 'Preview Entity',
+    placeholder: `Filter ${count} of ${path.basename(document.fileName)}`,
+    current: 'At the cursor',
+    rest: 'In the file',
+  });
+  return picked?.entity?.name;
 }
 
 class EntityLenses implements vscode.CodeLensProvider {
@@ -70,7 +152,7 @@ class EntityLenses implements vscode.CodeLensProvider {
     return entitiesOf(document.getText()).map(({ name, start }) => {
       const position = document.positionAt(start);
       return new vscode.CodeLens(new vscode.Range(position, position), {
-        title: 'Preview entity',
+        title: 'Preview Entity',
         tooltip: `Draw ${name} with its attachments and states`,
         command: PREVIEW_ENTITY_COMMAND,
         arguments: [document.uri, name],
@@ -365,14 +447,7 @@ export function registerEntityPreview(
           void vscode.window.showInformationMessage('Open an .asset file to preview its entities.');
           return;
         }
-        let chosen = name;
-        if (chosen === undefined) {
-          const document = await vscode.workspace.openTextDocument(target);
-          chosen = await vscode.window.showQuickPick(
-            entitiesOf(document.getText()).map((entity) => entity.name),
-            { placeHolder: 'Entity to preview' },
-          );
-        }
+        const chosen = name ?? (await pickEntity(await vscode.workspace.openTextDocument(target)));
         if (chosen !== undefined) previews.open(target, chosen);
       },
     ),
