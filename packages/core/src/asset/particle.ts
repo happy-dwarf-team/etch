@@ -467,7 +467,7 @@ export function checkParticleBlocks(
         code: 'unknown-particle-curve',
         start: use.start,
         end: use.end,
-        message: `No animation of this particle effect is named "${use.name}". The game writes no error for this, so check the name.${nearest(use.name, effect.curves.keys(), ' Did you mean "%"?')}`,
+        message: `No animation of this particle effect is named "${use.name}". The game writes no error for this, so check the name.${nearest(use.name, effect.curves.keys())}`,
       });
     }
     for (const use of effect.forceUses) {
@@ -476,7 +476,7 @@ export function checkParticleBlocks(
         code: 'unknown-particle-force',
         start: use.start,
         end: use.end,
-        message: `No force of this particle effect is named "${use.name}". The game writes no error for this, so check the name.${nearest(use.name, effect.forces.keys(), ' Did you mean "%"?')}`,
+        message: `No force of this particle effect is named "${use.name}". The game writes no error for this, so check the name.${nearest(use.name, effect.forces.keys())}`,
       });
     }
   }
@@ -723,7 +723,7 @@ function unknownKeys(
       code: 'unknown-particle-key',
       start: entry.key.start,
       end: entry.key.end,
-      message: `The game does not read "${entry.key.text}" in ${BLOCK_NAMES[kind]} block, so it has no effect.${nearest(entry.key.text, known.keys(), ' Did you mean "%"?')}`,
+      message: `The game does not read "${entry.key.text}" in ${BLOCK_NAMES[kind]} block, so it has no effect.${nearest(entry.key.text, known.keys())}`,
     });
   }
 }
@@ -890,8 +890,8 @@ function capitalise(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
-/** The closest known name within two edits, as `template` with `%` for it, or ''. */
-function nearest(written: string, known: Iterable<string>, template: string): string {
+/** ` Did you mean "…"?` with the closest known name within two edits, or '' without one. */
+function nearest(written: string, known: Iterable<string>): string {
   const lower = written.toLowerCase();
   let best: string | undefined;
   let bestDistance = 3;
@@ -902,7 +902,7 @@ function nearest(written: string, known: Iterable<string>, template: string): st
       bestDistance = distance;
     }
   }
-  return best === undefined ? '' : template.replace('%', best);
+  return best === undefined ? '' : ` Did you mean "${best}"?`;
 }
 
 function editDistance(a: string, b: string): number {
