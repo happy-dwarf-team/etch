@@ -97,7 +97,8 @@ export async function testProvinceNames(): Promise<void> {
       tooltip.value,
       /\*\*PROV151\*\* · english · `localisation\/prov_names_l_english\.yml`/,
     );
-    assert.match(tooltip.value, /Province 151: Constantinople/);
+    // appendText writes the spaces as &nbsp;.
+    assert.match(tooltip.value, /Province(?: |&nbsp;)151:(?: |&nbsp;)Constantinople/);
 
     await settings.update('editor.provinceNames', false, vscode.ConfigurationTarget.Global);
     await expectHints(events, []);
