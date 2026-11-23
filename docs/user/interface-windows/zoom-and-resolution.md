@@ -20,7 +20,7 @@ The resolution changes what the game itself changes with the screen size:
   high, the `_large` one from 814 pixels;
 - the `if_resolution` blocks of a `.gui` file, such as the ones in the base game's
   `countrydecisionsview.gui`;
-- the **Screen height** [selector](../reference/glossary.md#selector) in **View ▾**, for a window
+- the **Screen height** [selector](../reference/glossary.md#selector) in **Selectors…** of **View ▾**, for a window
   with a [window profile](../reference/glossary.md#window-profile).
 
 ### Choose another resolution

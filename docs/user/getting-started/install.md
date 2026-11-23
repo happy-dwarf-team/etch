@@ -112,7 +112,7 @@ Palette (<kbd>Ctrl+Shift+P</kbd>).
 - It only reads your game folder, your mods and your EU4 profile, the folder where the game keeps
   your settings, saves and mods (usually `Documents/Paradox Interactive/Europa Universalis IV`).
   It writes into your mod only when you ask, for example when you save a
-  [view](../reference/glossary.md#view) of a window with **Save as view…**. See
+  [view](../reference/glossary.md#view) of a window with **Save as View…**. See
   [What Etch reads and writes](../about/reads-and-writes.md).
 
 ## See your version

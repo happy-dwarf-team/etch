@@ -688,34 +688,42 @@ export class Workbench {
     throw new Error(`the quick pick has no item ${label}`);
   }
 
-  /** Opens the preview's `View ▾` or `Data ▾`; it stays open while its items are clicked. */
+  /**
+   * Opens the preview's View menu or its Data dialog; the dialog stays open while its buttons are
+   * clicked.
+   */
   async openMenu(menu: 'view' | 'data'): Promise<void> {
     await this.frame.locator(`#${menu}-menu`).click();
-    await this.frame.locator(`#${menu}-popup:not([hidden])`).waitFor();
+    await this.frame
+      .locator(menu === 'view' ? '#view-popup:not([hidden])' : '#data-pop:not([hidden])')
+      .waitFor();
   }
 
   /**
-   * Closes the preview's menus through its own Escape handler, on the document: Escape pressed on
-   * a toolbar button would leave the button focused, its focus ring in the recording.
+   * Closes the preview's menu and dialogs as a click beside them does: Escape would give the focus
+   * back to the toolbar button, its focus ring in the recording.
    */
   async closeMenus(): Promise<void> {
     await this.frame.locator('body').evaluate(() => {
-      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
     });
     await this.frame.locator('#view-popup').waitFor({ state: 'hidden' });
-    await this.frame.locator('#data-popup').waitFor({ state: 'hidden' });
+    await this.frame.locator('#data-pop').waitFor({ state: 'hidden' });
+    await this.frame.locator('#selectors-pop').waitFor({ state: 'hidden' });
   }
 
-  /** Clicks a view in the open `View ▾` and waits until the preview has drawn it. */
+  /** Clicks a view in the open View menu and waits until the preview has drawn it. */
   async chooseView(label: string): Promise<void> {
-    const item = this.frame.locator('#view-popup .item', { hasText: new RegExp(`^. ${label}$`) });
+    const item = this.frame.locator('#view-popup .item[role="menuitemradio"]', {
+      hasText: new RegExp(`^${label}(yours)?$`),
+    });
     // The menu's height follows the toolbar, so the item below the click can move under the mouse:
     // rest it at once, not after the paint.
     await this.paint(async () => {
       await item.click();
       await this.restMouse();
     });
-    await this.frame.locator('#view-menu', { hasText: `View: ${label} ▾` }).waitFor();
+    await this.frame.locator('#view-menu', { hasText: `View: ${label}` }).waitFor();
   }
 
   /**
@@ -736,7 +744,7 @@ export class Workbench {
       dialog['showOpenDialog'] = () => Promise.resolve({ canceled: false, filePaths: [chosen] });
     }, file);
     await this.openMenu('data');
-    await this.frame.locator('#data-popup button', { hasText: 'Choose save' }).click();
+    await this.frame.locator('#data-pop button', { hasText: 'Choose a Save' }).click();
     await this.page.locator('.quick-input-widget input').waitFor();
     await this.page.keyboard.type('Choose a save file');
     await this.page
@@ -759,8 +767,8 @@ export class Workbench {
    * the name's keys, and waits for the preview's paint.
    */
   async chooseProvince(name: string, typeDelayMs = 0): Promise<void> {
-    if (!(await this.frame.locator('#data-popup').isVisible())) await this.openMenu('data');
-    await this.frame.locator('#data-popup button', { hasText: 'Province' }).click();
+    if (!(await this.frame.locator('#data-pop').isVisible())) await this.openMenu('data');
+    await this.frame.locator('#data-pop button', { hasText: 'Province' }).click();
     await this.page.locator('.quick-input-widget input').waitFor();
     await this.page.keyboard.type(name, { delay: typeDelayMs });
     await this.page
@@ -772,10 +780,10 @@ export class Workbench {
 
   /** Presses a generated text length in the open `Data ▾` and waits for the preview. */
   async chooseTextLength(length: 'short' | 'typical' | 'long' | 'overflow'): Promise<void> {
-    const button = this.frame.locator('#data-popup .actions button', { hasText: length });
+    const button = this.frame.locator('#data-pop .row button', { hasText: length });
     await this.paint(() => button.click());
     await this.frame
-      .locator('#data-popup .actions button[aria-pressed="true"]', { hasText: length })
+      .locator('#data-pop .row button[aria-pressed="true"]', { hasText: length })
       .waitFor();
     await this.restMouse();
   }

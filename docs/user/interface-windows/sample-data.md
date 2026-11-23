@@ -18,7 +18,7 @@ that window.
 ## The layers
 
 Click **Data ▾** in the toolbar. The button says where the data comes from now, such as
-"Data: generated, typical ▾". The menu lists the **layers** of sample data, the upper ones
+"Data: generated, typical ▾". A dialog lists the **layers** of sample data, the upper ones
 winning: a text takes its value from the highest layer that has one. Each layer shows how many
 texts it fills.
 
@@ -37,7 +37,7 @@ The menu stays open while you click in it. Click elsewhere or press <kbd>Esc</kb
 
 ## Read a save
 
-1. In **Data ▾**, under **Save**, click **Choose save…**.
+1. In **Data ▾**, under **Save**, click **Choose a Save…**.
 2. Pick a save from the list: your game's saves and the live game's, newest first. Or choose
    **Choose a save file…** at the end of the list to pick any `.eu4` file. The list marks an
    ironman save "ironman, not readable".
@@ -51,7 +51,7 @@ Once a save is read, under **Save**:
   provinces count as your own and which as foreign. The save's player is marked "the save's
   player".
 - **Province…** chooses any province of the save, own or foreign.
-- **Other save…** chooses another save, and **Drop** stops using the save.
+- **Other Save…** chooses another save, and **Drop** stops using the save.
 
 When the save was made with other mods than your
 [playset](../getting-started/finding-the-game.md), the mods loaded with yours, a warning says
@@ -77,11 +77,13 @@ Use **long** and **overflow** to see whether your text boxes hold long texts.
 
 ## Type a text yourself
 
-1. Under **By hand**, click **Type a text…**.
+1. Under **By hand**, click **Type a Text…**.
 2. Choose which text of the window to fill, then type what it should show and press
    <kbd>Enter</kbd>. The preview shows it at once.
 
-The typed text wins over every other layer. **Clear** takes back every text typed for the window.
+The typed text wins over every other layer. **Clear** takes back every text typed for the window
+at once and closes the dialog. A notice above the window says how many it cleared, with **Undo**
+to type them again; it goes at your next change, or with its **×**.
 You can also type a text from the [Widget Outline](widget-outline.md). Etch keeps typed texts for
 each window, also after you close VS Code.
 

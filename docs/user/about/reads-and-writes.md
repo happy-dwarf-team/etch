@@ -36,7 +36,7 @@ session, as when you play.
 
 Etch writes into your mod's folder only when you ask it to:
 
-- **Save as view…** in **View ▾** writes the [view](../reference/glossary.md#view) you set up, one
+- **Save as View…** in **View ▾** writes the [view](../reference/glossary.md#view) you set up, one
   way the game shows the window, into `.etch/profiles/<window>.jsonc`, beside your
   `descriptor.mod`. The view holds your choices in **View ▾** and the widgets you showed or hid by
   hand. You can keep that file with your mod's other files. See
@@ -94,7 +94,7 @@ VS Code gives each extension storage of its own, outside your mods. Etch keeps t
   one small PNG picture for each texture they show. Etch makes a texture's picture again when the
   texture changes. See
   [Hovers and links](../textures-and-meshes/hovers-and-links.md#see-sprites-beside-the-line-numbers).
-- **A few small choices**, such as the sample texts you type (**Type a text…** in **Data ▾**,
+- **A few small choices**, such as the sample texts you type (**Type a Text…** in **Data ▾**,
   **Type Sample Text…** in the Widget Outline), your monitor's resolution, and that you confirmed
   the live game's first start.
 

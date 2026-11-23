@@ -3,8 +3,24 @@
 // moves through it and on, a click outside or Esc closes it, and Esc gives the focus back to its
 // button. A `[data-close]` button inside closes it too.
 
-/** Makes `button` open and close `pop`, placed under the button and kept inside the page. */
-export function attachPopover(button: HTMLButtonElement, pop: HTMLElement): void {
+/** A popover's way to open and close from elsewhere, such as a menu item or its own button. */
+export interface Popover {
+  open(): void;
+  /** Closes it; `focusButton` gives the focus back to its button. */
+  close(focusButton: boolean): void;
+}
+
+/**
+ * Makes `button` open and close `pop`, placed under the button and kept inside the page. With
+ * `opensOnClick: false` the button only places it and takes the focus back, and the popover
+ * opens from elsewhere, such as a menu item of that button's menu.
+ */
+export function attachPopover(
+  button: HTMLButtonElement,
+  pop: HTMLElement,
+  options: { readonly opensOnClick?: boolean } = {},
+): Popover {
+  const opensOnClick = options.opensOnClick !== false;
   const place = (): void => {
     const anchor = button.getBoundingClientRect();
     const width = pop.offsetWidth;
@@ -15,22 +31,24 @@ export function attachPopover(button: HTMLButtonElement, pop: HTMLElement): void
   const close = (focusButton: boolean): void => {
     if (pop.hidden) return;
     pop.hidden = true;
-    button.setAttribute('aria-expanded', 'false');
+    if (opensOnClick) button.setAttribute('aria-expanded', 'false');
     if (focusButton) button.focus();
   };
   const open = (): void => {
     pop.hidden = false;
-    button.setAttribute('aria-expanded', 'true');
+    if (opensOnClick) button.setAttribute('aria-expanded', 'true');
     place();
     pop
       .querySelector<HTMLElement>('input:not([hidden]), select, button:not([data-close])')
       ?.focus();
   };
 
-  button.addEventListener('click', () => {
-    if (pop.hidden) open();
-    else close(true);
-  });
+  if (opensOnClick) {
+    button.addEventListener('click', () => {
+      if (pop.hidden) open();
+      else close(true);
+    });
+  }
   pop.addEventListener('keydown', (event) => {
     if (event.key !== 'Escape') return;
     event.preventDefault();
@@ -44,10 +62,12 @@ export function attachPopover(button: HTMLButtonElement, pop: HTMLElement): void
   }
   document.addEventListener('pointerdown', (event) => {
     const target = event.target;
-    if (!(target instanceof Node) || pop.contains(target) || button.contains(target)) return;
+    if (!(target instanceof Node) || pop.contains(target)) return;
+    if (opensOnClick && button.contains(target)) return;
     close(false);
   });
   window.addEventListener('resize', () => {
     if (!pop.hidden) place();
   });
+  return { open, close };
 }

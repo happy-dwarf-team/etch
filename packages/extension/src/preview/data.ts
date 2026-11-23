@@ -120,10 +120,23 @@ export class PreviewData {
     this.keepHand();
   }
 
-  /** Takes back every text typed for a window. */
-  clearHand(window: string): void {
-    this.hand.delete(window.toLowerCase());
+  /**
+   * Takes back every text typed for a window: how many there were, and a function that types
+   * them again (the Undo after Clear, etch#648, finding P2.20).
+   */
+  clearHand(window: string): { readonly count: number; readonly restore: () => void } {
+    const key = window.toLowerCase();
+    const texts = this.hand.get(key);
+    this.hand.delete(key);
     this.keepHand();
+    return {
+      count: texts?.size ?? 0,
+      restore: () => {
+        if (texts === undefined) return;
+        this.hand.set(key, texts);
+        this.keepHand();
+      },
+    };
   }
 
   /** The number of entries set for each list of a window, by repeater id. */

@@ -11,13 +11,16 @@ export interface Notice {
   readonly message: string;
   /**
    * A button with the way on: `chooseWindow` opens the window list (etch#648, finding P1.3),
-   * `changeEncoding` VS Code's Save with Encoding for the file (finding P2.19).
+   * `changeEncoding` VS Code's Save with Encoding for the file (finding P2.19), `undo` takes
+   * back the reset the notice reports (finding P2.20).
    */
   readonly action?: { readonly kind: NoticeActionKind; readonly label: string };
+  /** A × that closes the notice, posting this kind: the Undo notice has one (finding P2.20). */
+  readonly dismiss?: NoticeActionKind;
 }
 
 /** What a notice's button does. */
-export type NoticeActionKind = 'chooseWindow' | 'changeEncoding';
+export type NoticeActionKind = 'chooseWindow' | 'changeEncoding' | 'undo' | 'dismissUndo';
 
 /** A window of the previewed file, as the window list shows it (etch#648, finding P1.3). */
 export interface WindowEntry {

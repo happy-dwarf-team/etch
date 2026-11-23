@@ -136,6 +136,11 @@ export const CONTROLS_CSS = `
   .menu .keys { color: var(--vscode-descriptionForeground); font-size: 0.92em; }
   .menu button.item:hover .keys, .menu button.item:focus .keys { color: inherit; }
   .menu hr { border: 0; border-top: 1px solid var(--vscode-menu-separatorBackground, var(--vscode-panel-border, #555)); margin: 4px 0; }
+  .menu button.item:disabled { opacity: 0.5; }
+  .menu .heading {
+    padding: 4px 12px 2px 28px; font-size: 0.85em; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--vscode-descriptionForeground);
+  }
   .pop {
     position: fixed; z-index: 30; width: max-content; min-width: 280px; max-width: min(440px, calc(100vw - 8px));
     max-height: calc(100vh - 60px); overflow: auto; padding: 8px 12px 10px; box-sizing: border-box; border-radius: 5px;
@@ -145,6 +150,7 @@ export const CONTROLS_CSS = `
   }
   .pop-head { display: flex; align-items: center; gap: 6px; margin: 0 -6px 6px 0; font-weight: 600; }
   .pop-head .spacer + button { font-size: 1.15em; }
+  .pop-head .muted { font-weight: 400; color: var(--vscode-descriptionForeground); }
   .pop .row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; margin: 4px 0; }
   .pop .help { margin: 2px 0 6px; font-size: 0.92em; line-height: 1.45; color: var(--vscode-descriptionForeground); }
   .pop .heading {

@@ -76,8 +76,8 @@ is struck through and has no buttons. To draw it, change the preview resolution:
 
 Each change by hand is counted in the preview's **View ▾** button, such as
 "View: Own province · 2 by hand ▾". A change that agrees with what the profile shows anyway does
-not count. **Reset hand toggles (2)** in **View ▾** takes them all back, and **Save as view…**
-keeps them in your mod: see [Views and window profiles](views.md).
+not count. **Reset Hand Toggles** in **View ▾** takes them all back, with **Undo** in the notice
+it leaves, and **Save as View…** keeps them in your mod: see [Views and window profiles](views.md).
 
 ## Type a sample text
 

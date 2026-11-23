@@ -28,15 +28,17 @@ preview starts with), **Foreign province**, **State tab**, **Build army**, **Bui
 2. Click **View ▾** in the toolbar. The button names the view you see, such as
    "View: Own province ▾".
 3. Under **Views**, click another one, such as **Foreign province**: the preview draws the window
-   in that view. A filled dot (●) marks the current view.
+   in that view. A check (✓) marks the current view, and "yours" a view of your mod.
 
-The menu stays open while you click in it. Click elsewhere or press <kbd>Esc</kbd> to close it.
+The arrow keys move through the menu and <kbd>Enter</kbd> picks an item. <kbd>Esc</kbd> closes
+the menu and puts the focus back on its button.
 
 ## Set a selector
 
-Under **Selectors**, each selector has a list of its values. Choose another value to draw the
-window with it. Point at a selector's name to read its note. After the list, a word says where the
-value comes from:
+Click **Selectors…** in **View ▾**, with the number of selectors after it. A dialog lists each
+selector with its values. Choose another value to draw the window with it; the dialog stays open,
+and <kbd>Tab</kbd> moves between the lists. Point at a selector's name to read its note. After the
+list, a word says where the value comes from:
 
 | Word | Where the value comes from |
 | --- | --- |
@@ -47,7 +49,8 @@ value comes from:
 | default | the profile's default |
 
 A value you chose has a button after it. **×** goes back to the profile's default. For a selector
-that a save can set, the button is **follow save** instead: it takes the save's value again.
+that a save can set, the button is **Follow Save** instead: it takes the save's value again.
+<kbd>Esc</kbd> or a click beside the dialog closes it.
 
 The **Screen height** selector follows the preview resolution, so you cannot choose it here. To
 change it, choose another resolution: see [Zoom and resolution](zoom-and-resolution.md).
@@ -59,7 +62,9 @@ When the values no longer match the view you clicked, the button says "Custom vi
 In the [Widget Outline](widget-outline.md), widgets of which the game shows only one at a time
 have a round button, and every other widget has an eye. Click them to show or hide widgets by
 hand. Each change by hand is counted in the **View ▾** button, such as
-"View: Own province · 2 by hand ▾". **Reset hand toggles (2)** in **View ▾** takes them all back.
+"View: Own province · 2 by hand ▾". **Reset Hand Toggles** in **View ▾**, with the count after it,
+takes them all back at once. A notice above the window says how many it reset, with **Undo** to
+bring them back; it goes at your next change, or with its **×**.
 
 - A change that agrees with what the profile shows anyway does not count.
 - Clicking a view replaces your changes by hand with the view's own.
@@ -72,7 +77,7 @@ button can also say "live" or "3 from the game": see
 ## Save a view with your mod
 
 1. Set the selectors, and show or hide widgets by hand, until the window looks as you want.
-2. Click **View ▾**, then **Save as view…**.
+2. Click **View ▾**, then **Save as View…**.
 3. Type a name for the view and press <kbd>Enter</kbd>.
 
 Etch writes the view into your mod, beside its `descriptor.mod`, in
@@ -82,9 +87,9 @@ the menu. Saving again under the same name replaces your view. Etch keeps the re
 comments too. Keep the file with your mod, and commit it if your mod is in Git: everyone who works
 on the mod then sees the same views.
 
-**Save as view…** needs a mod: when it is greyed out, open a file of a mod first.
+**Save as View…** needs a mod: when it is greyed out, open a file of a mod first.
 
-**Open profile** opens the profile file that counts for this window: your mod's
+**Open the Window Profile** opens the profile file that counts for this window: your mod's
 `.etch/profiles/<window>.jsonc` when it has one, else Etch's own profile of the window.
 
 ## Write your own profile
@@ -141,7 +146,7 @@ whether to show the widget. Etch can write a first set of selectors for these wi
    (<kbd>Ctrl+Shift+P</kbd>).
 3. Etch writes the selectors into your mod's `.etch/profiles/<window>.jsonc` and opens the file. A
    message says how many it added.
-4. Set each one to **Shown** or **Hidden** in **View ▾**.
+4. Set each one to **Shown** or **Hidden** in **Selectors…** of **View ▾**.
 
 What Etch writes:
 

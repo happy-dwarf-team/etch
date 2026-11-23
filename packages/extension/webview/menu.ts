@@ -2,17 +2,28 @@
 // choices under it, as VS Code's own menus do. The arrow keys, Home and End move between the
 // items, Enter or Space picks one, and Esc closes the menu and gives the focus back to its button.
 
-/** One item of a menu: one choice of a few, ticked when it is the current one. */
+/**
+ * One item of a menu: one choice of a few, ticked when it is the current one (`checked`), or a
+ * command, which has no `checked`.
+ */
 export interface MenuItem {
   readonly label: string;
-  /** The keys that do the same, shown at the right. */
+  /** The keys that do the same, or a count, shown at the right. */
   readonly keys?: string;
-  readonly checked: boolean;
+  readonly checked?: boolean;
+  /** Shown but not picked: the arrow keys pass it. */
+  readonly disabled?: boolean;
+  readonly title?: string;
   readonly pick: () => void;
 }
 
 /** A line between two groups of items. */
 export const SEPARATOR = 'separator';
+
+/** The name of the group of items under it, such as "Views". */
+export interface MenuHeading {
+  readonly heading: string;
+}
 
 /**
  * Makes `button` open `menu` (an empty element with role="menu" next to it), filled from `items`
@@ -21,10 +32,10 @@ export const SEPARATOR = 'separator';
 export function attachMenu(
   button: HTMLButtonElement,
   menu: HTMLElement,
-  items: () => readonly (MenuItem | typeof SEPARATOR)[],
+  items: () => readonly (MenuItem | MenuHeading | typeof SEPARATOR)[],
 ): void {
   const entries = (): HTMLButtonElement[] => [
-    ...menu.querySelectorAll<HTMLButtonElement>('button.item'),
+    ...menu.querySelectorAll<HTMLButtonElement>('button.item:not(:disabled)'),
   ];
   const close = (focusButton: boolean): void => {
     if (menu.hidden) return;
@@ -36,12 +47,25 @@ export function attachMenu(
     menu.replaceChildren(
       ...items().map((item) => {
         if (item === SEPARATOR) return document.createElement('hr');
+        if ('heading' in item) {
+          const heading = document.createElement('div');
+          heading.className = 'heading';
+          heading.setAttribute('role', 'presentation');
+          heading.textContent = item.heading;
+          return heading;
+        }
         const entry = document.createElement('button');
         entry.type = 'button';
         entry.className = 'item';
         entry.tabIndex = -1;
-        entry.setAttribute('role', 'menuitemradio');
-        entry.setAttribute('aria-checked', String(item.checked));
+        if (item.checked === undefined) {
+          entry.setAttribute('role', 'menuitem');
+        } else {
+          entry.setAttribute('role', 'menuitemradio');
+          entry.setAttribute('aria-checked', String(item.checked));
+        }
+        entry.disabled = item.disabled === true;
+        if (item.title !== undefined) entry.title = item.title;
         const mark = document.createElement('span');
         mark.className = 'mark';
         mark.setAttribute('aria-hidden', 'true');
