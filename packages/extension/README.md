@@ -92,7 +92,7 @@ as an event's `title`, it shows the key's
 [text](https://etch.happydwarf.dev/docs/scripts/localisation-texts/) in grey, and its hover
 shows the whole text in the game's colours.
 Anvil, which lets EU4 load plugins, can time your triggers and effects while you play:
-**Etch: Show Latest Script Profile** opens what it measured, with links to your files
+**Etch: Show the Latest Script Profile** opens what it measured, with links to your files
 ([Script profile](https://etch.happydwarf.dev/docs/scripts/script-profile/)).
 
 ## What Etch reads and writes

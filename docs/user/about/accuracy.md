@@ -5,7 +5,7 @@ description: How close the preview is to the game, how that was measured, and ho
 
 Etch measures its preview against the game instead of claiming it is right. A fixed set of
 screens decides whether a release can ship. A wider survey covers every screen a player can open.
-**Etch: Compare with Live Game** checks your own window.
+**Etch: Compare with the Live Game** checks your own window.
 
 ## The screens every release must pass
 
@@ -119,14 +119,14 @@ Sources: [budgets](https://github.com/happy-dwarf-team/etch/blob/main/docs/budge
 
 ## Check your own window
 
-To see where the preview of your window differs from the game, use **Etch: Compare with Live
-Game**:
+To see where the preview of your window differs from the game, use **Etch: Compare with the
+Live Game**:
 
 1. Start the [live game](../live-game/start-and-stop.md), Etch's own copy of EU4 that you play
    beside the editor.
 2. Save your file, and open your window in the game.
 3. Open the preview on the same window.
-4. Run **Etch: Compare with Live Game** from the Command Palette (<kbd>Ctrl+Shift+P</kbd>), or
+4. Run **Etch: Compare with the Live Game** from the Command Palette (<kbd>Ctrl+Shift+P</kbd>), or
    open **Data ▾** and click **Compare with Live Game** under **Live snapshot**.
 
 The Problems panel lists every widget the preview places or shows otherwise than the game: in

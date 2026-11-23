@@ -19,7 +19,7 @@ const moved: LiveDifference = {
 };
 const VERSIONS = { etch: '2.7.0', anvil: 'v1.6.1', tongs: 'v0.24.0' };
 
-describe('Compare with Live Game in Problems', () => {
+describe('Compare with the Live Game in Problems', () => {
   it('says where the game and the offline preview put a widget', () => {
     expect(differenceMessage(moved)).toBe(
       'Live difference: the game shows mywindow/title at 10,23 100×20, the offline preview at 10,20 100×20.',

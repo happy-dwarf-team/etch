@@ -52,6 +52,7 @@ export class PickMode implements vscode.Disposable {
   private readonly output: vscode.LogOutputChannel;
   private readonly subscriptions: { dispose(): unknown }[];
   private readonly emitter = new vscode.EventEmitter<PickOpened>();
+  private readonly changeEmitter = new vscode.EventEmitter<boolean>();
   /** Whether pick mode is on, as the plugin last said. */
   private on = false;
   private index: { files: GameFiles; index: Promise<InterfaceIndex> } | undefined;
@@ -60,20 +61,23 @@ export class PickMode implements vscode.Disposable {
 
   /** Fires once a pick's definition is open. */
   readonly onDidPick = this.emitter.event;
+  /** Fires when pick mode turns on or off, with whether it is on now. */
+  readonly onDidChange = this.changeEmitter.event;
 
   constructor(game: LiveGame, output: vscode.LogOutputChannel) {
     this.game = game;
     this.output = output;
     this.subscriptions = [
       this.emitter,
+      this.changeEmitter,
       vscode.commands.registerCommand(TOGGLE_PICK_MODE, () => this.toggle()),
       vscode.commands.registerCommand(OVERRIDE_IN_MY_MOD, (uri?: vscode.Uri) => this.override(uri)),
       game.onDidChangeState((state) => {
         if (state.status === 'ready') void this.configure();
-        else if (state.status !== 'stale') this.on = false;
+        else if (state.status !== 'stale') this.set(false);
       }),
       game.onDidPush((event) => {
-        if (event.kind === 'pickMode') this.on = event.on;
+        if (event.kind === 'pickMode') this.set(event.on);
         else if (event.kind === 'pick') {
           const pick = event.pick;
           this.picks = this.picks.then(() => this.opened(pick)).catch(() => undefined);
@@ -93,6 +97,17 @@ export class PickMode implements vscode.Disposable {
     for (const s of this.subscriptions) s.dispose();
   }
 
+  /** Whether pick mode is on in the live game, as the plugin last said. */
+  get isOn(): boolean {
+    return this.on;
+  }
+
+  private set(on: boolean): void {
+    if (on === this.on) return;
+    this.on = on;
+    this.changeEmitter.fire(on);
+  }
+
   /**
    * Tells a ready game the hotkey, the mods the label names and VS Code's window, which the game
    * brings forward after a pick: the extension host's parent, VS Code's main process, owns it.
@@ -106,7 +121,7 @@ export class PickMode implements vscode.Disposable {
         editor: { pid: process.ppid, title: vscode.workspace.name ?? '' },
       });
       if (answer !== undefined) {
-        this.on = answer.on;
+        this.set(answer.on);
         this.output.info(`Pick mode is ready in the live game: ${answer.key} turns it on and off.`);
       }
     } catch (error) {
@@ -125,7 +140,7 @@ export class PickMode implements vscode.Disposable {
     try {
       const answer = await this.game.pickMode({ on: !this.on, front: true });
       if (answer === undefined) return;
-      this.on = answer.on;
+      this.set(answer.on);
       this.output.info(
         `Pick mode ${answer.on ? 'on' : 'off'}; the game ${answer.front === true ? 'came' : 'did not come'} to the front.`,
       );

@@ -1881,7 +1881,7 @@ export const CLIPS: readonly Clip[] = [
       await mkdir(logs, { recursive: true });
       await copyFile(profile, path.join(logs, path.basename(profile)));
       // The page opens before the take, and the loop starts and ends on it.
-      await wb.command('Etch: Show Latest Script Profile');
+      await wb.command('Etch: Show the Latest Script Profile');
       const page = await wb.markdownPreview('Script profile');
       const link = page.locator('a', { hasText: new RegExp(`^${PROFILED}$`) }).first();
       await link.waitFor();

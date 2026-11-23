@@ -50,7 +50,8 @@ window on screen after a reload.
 A notice says "Restart needed:" with the file and the reason, and offers **Restart now** and
 **Later**. The status bar shows **Live game: restart needed**. Nothing restarts until you click:
 
-1. Click **Restart now** in the notice, or **Live game: restart needed** in the status bar.
+1. Click **Restart now** in the notice. Or click **Live game: restart needed** in the status bar
+   and choose **Restart Now** in its menu.
 2. "Restarting the live game" shows while Etch saves, closes the game and starts it again from
    that save.
 
