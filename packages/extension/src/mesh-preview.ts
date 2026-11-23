@@ -61,6 +61,7 @@ import type {
 } from './mesh-protocol.ts';
 import { linkedFiles } from './script-profile-view.ts';
 import { pathUri } from './dlc-files.ts';
+import { CONTROLS_CSS } from './webview-controls.ts';
 
 export const MESH_PREVIEW_VIEW_TYPE = 'etch.meshPreview';
 
@@ -664,39 +665,23 @@ export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): str
 <meta http-equiv="Content-Security-Policy" content="${csp}">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style nonce="${nonce}">
-  html, body { height: 100%; margin: 0; }
-  body {
-    display: flex; flex-direction: column; overflow: hidden;
-    background: var(--vscode-editor-background); color: var(--vscode-foreground);
-    font-family: var(--vscode-font-family); font-size: var(--vscode-font-size);
-  }
-  header {
-    display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 4px 8px;
-    border-bottom: 1px solid var(--vscode-panel-border, transparent);
-  }
+  ${CONTROLS_CSS}
+  header { gap: 4px 8px; }
+  label { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
   /* The facts scroll past a fifth of the height and the error box past a sixth, so that a short view
      keeps its controls and most of its canvas. */
-  #facts { display: flex; flex-wrap: wrap; gap: 4px 12px; max-height: 20vh; overflow-y: auto; }
+  #facts { display: flex; flex-wrap: wrap; gap: 4px 12px; max-height: 20vh; overflow-y: auto; margin-left: 2px; }
   #facts span { white-space: nowrap; }
-  .spacer { flex: 1; }
-  #snow-amount, #tint-turn, #season-day, #season-north { width: 6em; vertical-align: middle; }
-  #frame { width: 12em; vertical-align: middle; }
+  #snow-amount, #tint-turn, #season-day, #season-north { width: 6em; }
+  #frame { width: 12em; }
   #season-date { display: inline-block; min-width: 3.6em; margin-right: 0.5em; }
-  input[type="color"] { width: 24px; height: 20px; padding: 0; border: none; background: none; vertical-align: middle; }
-  #flag-tag, #place-province { width: 4em; font: inherit; color: var(--vscode-input-foreground); background: var(--vscode-input-background); border: 1px solid var(--vscode-input-border, transparent); padding: 1px 4px; text-transform: uppercase; }
-  button, select {
-    font: inherit; color: var(--vscode-foreground);
-    background: var(--vscode-dropdown-background); border: 1px solid var(--vscode-dropdown-border, transparent);
-    padding: 1px 6px;
+  #colours { display: inline-flex; gap: 2px; }
+  input[type="color"] {
+    width: 26px; height: 22px; padding: 0; box-sizing: border-box; vertical-align: middle;
+    border: 1px solid var(--vscode-input-border, transparent); border-radius: 2px; background: none;
   }
-  button[aria-pressed="true"] { background: var(--vscode-button-background); color: var(--vscode-button-foreground); }
-  button:disabled { opacity: 0.5; }
-  [hidden] { display: none !important; }
-  #error {
-    margin: 8px; padding: 4px 8px; white-space: pre-wrap;
-    border-left: 3px solid var(--vscode-notificationsErrorIcon-foreground);
-    max-height: 15vh; overflow-y: auto;
-  }
+  #flag-tag, #place-province { width: 4.5em; text-transform: uppercase; }
+  #error { max-height: 15vh; overflow-y: auto; }
   main { flex: 1; position: relative; min-height: 0; }
   canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; }
   canvas:active { cursor: grabbing; }
@@ -705,7 +690,6 @@ export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): str
     background: var(--vscode-editorHoverWidget-background); color: var(--vscode-editorHoverWidget-foreground);
     border: 1px solid var(--vscode-editorHoverWidget-border, transparent);
   }
-  footer { padding: 2px 8px; min-height: 1.4em; opacity: 0.8; font-variant-numeric: tabular-nums; white-space: pre; }
 </style>
 </head>
 <body>
@@ -743,9 +727,14 @@ export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): str
     Date <input type="range" id="season-day" min="0" max="364" step="1" value="181" aria-label="Day of the year"> <output id="season-date">1 Jul</output>
     North <input type="range" id="season-north" min="0" max="1" step="0.05" value="0" aria-label="How far north the tree stands">
   </label>
-  <button id="diffuse-map" aria-pressed="true" title="Draw the colour texture (diffuse map). Off: the model is plain grey, and the flag, see-through parts and a map tree's cut-out leaves go too">Diffuse</button>
-  <button id="normal-map" aria-pressed="true" title="Draw the normal map, the small bumps of the surface">Normal</button>
-  <button id="specular-map" aria-pressed="true" title="Draw the specular map. Off: no shine, and on PdxMeshColor parts no country colours, which the specular map marks">Spec</button>
+  <span class="sep"></span>
+  <span class="checks" role="group" aria-labelledby="maps-label">
+    <span class="group-label" id="maps-label">Maps</span>
+    <button id="diffuse-map" class="tog" aria-pressed="true" title="Draw the colour texture (diffuse map). Off: the model is plain grey, and the flag, see-through parts and a map tree's cut-out leaves go too"><span class="tick" aria-hidden="true"></span>Diffuse</button>
+    <button id="normal-map" class="tog" aria-pressed="true" title="Draw the normal map, the small bumps of the surface. Off: the surface looks smooth"><span class="tick" aria-hidden="true"></span>Normal</button>
+    <button id="specular-map" class="tog" aria-pressed="true" title="Draw the specular map. Off: no shine, and on PdxMeshColor parts no country colours, which the specular map marks"><span class="tick" aria-hidden="true"></span>Spec</button>
+  </span>
+  <span class="sep"></span>
   <button id="wireframe" aria-pressed="false" title="Show the triangle edges">Wire</button>
   <button id="skeleton" aria-pressed="false" title="Show the skeleton over the model: yellow lines join each bone to the one it hangs from, white dots mark the bones, bigger orange dots mark where an attached entity hangs. Point at a dot to see its name">Bones</button>
   <button id="reset" title="Frame the whole mesh">Reset view</button>
