@@ -9,9 +9,15 @@ import type { DrawList, DrawRect } from '@etch/core/draw-list';
 export interface Notice {
   readonly severity: 'error' | 'warning' | 'information';
   readonly message: string;
-  /** A button with the way on; `chooseWindow` opens the window list (etch#648, finding P1.3). */
-  readonly action?: { readonly kind: 'chooseWindow'; readonly label: string };
+  /**
+   * A button with the way on: `chooseWindow` opens the window list (etch#648, finding P1.3),
+   * `changeEncoding` VS Code's Save with Encoding for the file (finding P2.19).
+   */
+  readonly action?: { readonly kind: NoticeActionKind; readonly label: string };
 }
+
+/** What a notice's button does. */
+export type NoticeActionKind = 'chooseWindow' | 'changeEncoding';
 
 /** A window of the previewed file, as the window list shows it (etch#648, finding P1.3). */
 export interface WindowEntry {
@@ -47,6 +53,11 @@ export interface ViewState {
   readonly data?: DataMenu;
   /** The windows the game opens instead of this one in the view shown (spec section 2). */
   readonly links?: readonly { readonly window: string; readonly label: string }[];
+  /**
+   * The canvas shows the last render, which is not current: an error keeps it, faded, under its
+   * notice (etch#648, finding P2.19).
+   */
+  readonly stale?: boolean;
 }
 
 /** A layer of sample data (core's `DataLayer`). */
@@ -212,6 +223,11 @@ export type HostMessage =
     }
   | { readonly type: 'state'; readonly state: ViewState }
   /**
+   * What the host reads before the preview can draw, such as the playset on a cold open; none
+   * once it is done. The webview shows it after 300 ms (etch#648, finding P2.19).
+   */
+  | { readonly type: 'busy'; readonly text?: string }
+  /**
    * Outline the widget under the pointer, with its path and rect, and the widget highlighted from
    * the source or the outline (etch#37). A missing one is not outlined.
    */
@@ -219,6 +235,11 @@ export type HostMessage =
       readonly type: 'overlay';
       readonly hover?: { readonly rect: DrawRect; readonly text: string };
       readonly selected?: DrawRect;
+      /**
+       * The highlighted widget's name, kind, size and place, shown under its outline (etch#648,
+       * finding P3.21).
+       */
+      readonly selectedLabel?: string;
     }
   /** Forget textures that changed on disk, so the next draw fetches them again. */
   | { readonly type: 'invalidate'; readonly urls: readonly string[] }
@@ -254,6 +275,8 @@ export type WebviewMessage =
   | { readonly type: 'pointer'; readonly point?: Point }
   | { readonly type: 'click'; readonly point: Point }
   | { readonly type: 'pin'; readonly pinned: boolean }
+  /** A notice's button that the host carries out. */
+  | { readonly type: 'noticeAction'; readonly kind: NoticeActionKind }
   /** Pin the file's window at this place among its definitions, from the window list. */
   | { readonly type: 'pinWindow'; readonly index: number }
   /** The monitor's resolution in device pixels, at start and when it changes. */

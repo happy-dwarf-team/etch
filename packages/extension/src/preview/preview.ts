@@ -30,6 +30,7 @@ import {
   readGuiFile,
   widgetAt,
   widgetHoverText,
+  widgetLabel,
   widgetPathAt,
   withMechanics,
   type DrawList,
@@ -37,6 +38,7 @@ import {
   type GameTextOffsets,
   type GovernmentMechanic,
   type GuiFile,
+  type LaidOutWidget,
   type LayoutContent,
   type LayoutView,
   type ModelDiagnostic,
@@ -356,6 +358,8 @@ export class Preview implements PreviewApi, vscode.Disposable {
   /** What the last render drew from, to skip a render that would draw the same. */
   private renderKey: string | undefined;
   private lastDraw: HostMessage | undefined;
+  /** What the host reads before the preview can draw, shown as busy (finding P2.19). */
+  private busyText: string | undefined;
   private lastState: ViewState | undefined;
   /** The monitor's resolution in device pixels, as the webview last reported it. */
   private native: Screen | undefined;
@@ -612,6 +616,14 @@ export class Preview implements PreviewApi, vscode.Disposable {
     this.request();
   }
 
+  /** Opens the previewed file's editor and VS Code's Reopen or Save with Encoding there. */
+  private async changeEncoding(): Promise<void> {
+    const uri = this.target();
+    if (uri === undefined) return;
+    await vscode.window.showTextDocument(uri, { preview: false });
+    await vscode.commands.executeCommand('workbench.action.editor.changeEncoding');
+  }
+
   /** Pins the window at `index` among the definitions of the previewed file (the window list). */
   pinWindow(index: number): void {
     const render = this.render;
@@ -678,7 +690,9 @@ export class Preview implements PreviewApi, vscode.Disposable {
       ...(hovered < 0
         ? {}
         : { hover: { rect: rectOf(widgets[hovered]), text: widgetHoverText(widgets, hovered) } }),
-      ...(selected < 0 ? {} : { selected: rectOf(widgets[selected]) }),
+      ...(selected < 0
+        ? {}
+        : { selected: rectOf(widgets[selected]), selectedLabel: selectedLabel(widgets[selected]) }),
     };
     const key = JSON.stringify(message);
     if (key === this.lastOverlay) return;
@@ -720,6 +734,21 @@ export class Preview implements PreviewApi, vscode.Disposable {
   }
 
   private async renderNow(): Promise<void> {
+    try {
+      await this.renderOnce();
+    } finally {
+      this.setBusy(undefined);
+    }
+  }
+
+  /** What the webview shows while the host reads, when it changed (finding P2.19). */
+  private setBusy(text: string | undefined): void {
+    if (text === this.busyText) return;
+    this.busyText = text;
+    this.post({ type: 'busy', ...(text === undefined ? {} : { text }) });
+  }
+
+  private async renderOnce(): Promise<void> {
     const panel = this.panel;
     if (panel === undefined) return;
     if (!panel.visible) {
@@ -754,10 +783,18 @@ export class Preview implements PreviewApi, vscode.Disposable {
 
     const source = await sourceText(uri);
     if (source === undefined) {
+      // The last render stays, faded, under the notice with the way out (finding P2.19).
       this.show({
         title: 'No window',
         file: vscode.workspace.asRelativePath(uri),
-        notices: [{ severity: 'error', message: 'The game cannot read this file in UTF-16.' }],
+        notices: [
+          {
+            severity: 'error',
+            message: 'The game cannot read this file in UTF-16. Save it in UTF-8 to preview it.',
+            action: { kind: 'changeEncoding', label: 'Save with Encoding…' },
+          },
+        ],
+        stale: true,
       });
       return;
     }
@@ -1193,6 +1230,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
 
     const started = performance.now();
     this.listingsChanged = false;
+    this.setBusy('Reading the playset: sprites, fonts and texts…');
     const session = await PreviewSession.load(settings, workspaceFolder, uri.fsPath);
     this.session = session;
     this.watch(session);
@@ -1362,6 +1400,9 @@ export class Preview implements PreviewApi, vscode.Disposable {
         if (this.lastState)
           void this.panel?.webview.postMessage({ type: 'state', state: this.lastState });
         if (this.lastDraw) void this.panel?.webview.postMessage(this.lastDraw);
+        if (this.busyText !== undefined) {
+          void this.panel?.webview.postMessage({ type: 'busy', text: this.busyText });
+        }
         if (this.lastMemento) {
           void this.panel?.webview.postMessage({ type: 'remember', memento: this.lastMemento });
         }
@@ -1408,6 +1449,9 @@ export class Preview implements PreviewApi, vscode.Disposable {
         break;
       case 'pinWindow':
         this.pinWindow(message.index);
+        break;
+      case 'noticeAction':
+        if (message.kind === 'changeEncoding') void this.changeEncoding();
         break;
       case 'startLiveGame':
         this.startLiveGame();
@@ -2491,6 +2535,13 @@ function positionOf(source: SourceText, offset: number): vscode.Position {
     start = i + 1;
   }
   return new vscode.Position(line, at - start);
+}
+
+/** A highlighted widget's label under its outline: `title · instantTextBoxType · 300 × 24 at 20, 12`. */
+function selectedLabel(entry: LaidOutWidget | undefined): string {
+  if (entry === undefined) return '';
+  const size = `${String(entry.width)} × ${String(entry.height)}`;
+  return `${widgetLabel(entry.widget)} · ${entry.widget.kind} · ${size} at ${String(entry.x)}, ${String(entry.y)}`;
 }
 
 function rectOf(entry: DrawRect | undefined): DrawRect {

@@ -83,6 +83,9 @@ const dataPopup = element('data-popup', HTMLDivElement);
 const hoverBox = element('hover', HTMLDivElement);
 const selectedBox = element('selected', HTMLDivElement);
 const tip = element('tip', HTMLDivElement);
+const selectedLabel = element('selected-label', HTMLDivElement);
+const busy = element('busy', HTMLDivElement);
+const busyText = element('busy-text', HTMLSpanElement);
 
 let painter: Painter | undefined;
 let failure: string | undefined;
@@ -875,6 +878,9 @@ async function receive(message: HostMessage): Promise<void> {
       else setZoom(shown);
       break;
     }
+    case 'busy':
+      showBusy(message.text);
+      break;
     case 'invalidate':
       for (const url of message.urls) painter?.textures.invalidate(url);
       break;
@@ -882,6 +888,29 @@ async function receive(message: HostMessage): Promise<void> {
       keep({ ...message.memento, zoom });
       break;
   }
+}
+
+/** How long the host reads before the preview says it is busy: a warm reload never shows it. */
+const BUSY_DELAY_MS = 300;
+let busyTimer: ReturnType<typeof setTimeout> | undefined;
+
+/**
+ * Shows what the host reads, after {@link BUSY_DELAY_MS}, with the stage `aria-busy`; hides it
+ * when `text` is undefined (etch#648, finding P2.19).
+ */
+function showBusy(text: string | undefined): void {
+  clearTimeout(busyTimer);
+  busyTimer = undefined;
+  if (text === undefined) {
+    busy.hidden = true;
+    stage.removeAttribute('aria-busy');
+    return;
+  }
+  busyTimer = setTimeout(() => {
+    busyText.textContent = text;
+    busy.hidden = false;
+    stage.setAttribute('aria-busy', 'true');
+  }, BUSY_DELAY_MS);
 }
 
 async function draw(message: Extract<HostMessage, { type: 'draw' }>): Promise<void> {
@@ -958,6 +987,7 @@ function outline(box: HTMLElement, rect: DrawRect | undefined): void {
 function showOverlay(): void {
   outline(hoverBox, overlay?.hover?.rect);
   outline(selectedBox, overlay?.selected);
+  showSelectedLabel();
   const hovered = overlay?.hover;
   const parent = stage.getBoundingClientRect();
   if (hovered === undefined || pointer === undefined) {
@@ -966,8 +996,38 @@ function showOverlay(): void {
   }
   tip.hidden = false;
   tip.textContent = hovered.text;
-  tip.style.left = `${String(pointer.x - parent.left + 12)}px`;
-  tip.style.top = `${String(pointer.y - parent.top + 12)}px`;
+  // Inside the stage: past its right or bottom edge the tip flips to the pointer's other side
+  // (etch#648, finding P3.17).
+  const x = pointer.x - parent.left;
+  const y = pointer.y - parent.top;
+  const left = x + 12 + tip.offsetWidth > stage.clientWidth - 4 ? x - 12 - tip.offsetWidth : x + 12;
+  const top =
+    y + 12 + tip.offsetHeight > stage.clientHeight - 4 ? y - 12 - tip.offsetHeight : y + 12;
+  tip.style.left = `${String(Math.max(4, left))}px`;
+  tip.style.top = `${String(Math.max(4, top))}px`;
+}
+
+/**
+ * The highlighted widget's name, kind, size and place under its outline, or over it at the
+ * stage's bottom, inside the stage (etch#648, finding P3.21).
+ */
+function showSelectedLabel(): void {
+  const text = overlay?.selectedLabel;
+  if (text === undefined || text === '' || selectedBox.hidden) {
+    selectedLabel.hidden = true;
+    return;
+  }
+  selectedLabel.hidden = false;
+  selectedLabel.textContent = text;
+  const box = selectedBox.getBoundingClientRect();
+  const parent = stage.getBoundingClientRect();
+  const width = selectedLabel.offsetWidth;
+  const height = selectedLabel.offsetHeight;
+  const below = box.bottom - parent.top + 3;
+  const top = below + height > stage.clientHeight - 2 ? box.top - parent.top - height - 3 : below;
+  const left = Math.min(box.left - parent.left, stage.clientWidth - width - 4);
+  selectedLabel.style.left = `${String(Math.max(4, left))}px`;
+  selectedLabel.style.top = `${String(Math.max(4, top))}px`;
 }
 
 function show(next: ViewState): void {
@@ -976,6 +1036,7 @@ function show(next: ViewState): void {
   file.textContent = next.file;
   file.title = next.file;
   pinnedBadge.hidden = !next.pinned;
+  canvas.classList.toggle('stale', next.stale === true);
   // Without windows the list closes first: a disabled button takes no click.
   const none = (next.windows?.length ?? 0) === 0;
   if (none) toggleWindowList(false);
@@ -1007,6 +1068,8 @@ function show(next: ViewState): void {
     ...shown.map((notice) => {
       const item = document.createElement('li');
       item.className = notice.severity;
+      // An error is read out at once; the others with the list's polite live region.
+      if (notice.severity === 'error') item.setAttribute('role', 'alert');
       if (notice.action === undefined) {
         item.textContent = notice.message;
         return item;
@@ -1018,8 +1081,10 @@ function show(next: ViewState): void {
       const act = document.createElement('button');
       act.type = 'button';
       act.textContent = notice.action.label;
+      const kind = notice.action.kind;
       act.addEventListener('click', () => {
-        toggleWindowList(true);
+        if (kind === 'chooseWindow') toggleWindowList(true);
+        else post({ type: 'noticeAction', kind });
       });
       item.append(text, act);
       return item;

@@ -63,7 +63,11 @@ line that defines it. Such a click also pins the preview on the window you picke
 - Point at a widget: an outline and a tooltip give its path, its kind, its place and its size. The
   path names the widgets it sits in, down to its own name, such as
   "provinceview › top_section_window › provincename".
-- Move the cursor in the editor: the widget at the cursor is outlined in the preview.
+- Move the cursor in the editor, or choose a widget in the [Widget Outline](widget-outline.md):
+  the preview outlines that widget, and a label under it gives its name, its kind, its size and
+  its place, such as "title · instantTextBoxType · 300 × 24 at 20, 12".
+- The tooltip and the label stay inside the panel: near its right or bottom edge they move to the
+  other side.
 
 The [Widget Outline](widget-outline.md) lists the same widgets as a tree.
 
@@ -100,6 +104,17 @@ written twice and more. Closing the preview clears them. Each one is explained o
 
 What goes wrong in finding the game or the mods shows as a notice above the window instead: see
 [Where Etch finds the game](../getting-started/finding-the-game.md).
+
+## While it reads, and when it cannot draw
+
+The first preview in a playset reads its sprites, fonts and texts, which takes about a second. When
+reading takes longer than 0.3 seconds, a thin bar runs at the top of the preview with what Etch
+reads. A redraw after an edit is faster, so it shows no bar.
+
+When the preview cannot draw the file, the last window it drew stays, faded, and a notice above
+it says why with a button that fixes it. For a file saved in UTF-16, which the game cannot read,
+**Save with Encoding…** opens VS Code's choice of encodings: pick **Save with Encoding** and then
+UTF-8. Screen readers read such notices out.
 
 ## Start the live game
 

@@ -108,9 +108,32 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
   /* Placed and sized by the webview script from the zoom (etch#162); sharp pixels above 100 %. */
   canvas { position: absolute; left: 0; top: 0; background: ${BACKDROP}; outline: 1px dashed rgba(0, 0, 0, 0.45); }
   canvas.sharp { image-rendering: pixelated; }
+  /* The last render, not current: an error notice above says why (etch#648, finding P2.19). */
+  canvas.stale { opacity: 0.45; }
+  /* Busy after 300 ms: a bar at the top of the stage and what is read (finding P2.19). */
+  #busy { position: absolute; z-index: 5; left: 0; right: 0; top: 0; pointer-events: none; }
+  #busy .bar { height: 2px; overflow: hidden; background: transparent; }
+  #busy .bar::before {
+    content: ''; display: block; width: 30%; height: 100%; background: var(--vscode-progressBar-background);
+    animation: etch-busy 1.4s ease-in-out infinite;
+  }
+  @keyframes etch-busy { from { transform: translateX(-100%); } to { transform: translateX(340%); } }
+  @media (prefers-reduced-motion: reduce) {
+    #busy .bar::before { width: 100%; animation: none; opacity: 0.6; }
+  }
+  #busy-text {
+    display: inline-block; margin: 6px 8px; padding: 2px 6px; border-radius: 3px;
+    background: var(--vscode-editorWidget-background); color: var(--vscode-editorWidget-foreground, var(--vscode-foreground));
+  }
   .box { position: absolute; pointer-events: none; box-sizing: border-box; }
   #hover { border: 1px dashed var(--vscode-editorCursor-foreground, #fff); }
   #selected { border: 2px solid var(--vscode-focusBorder, #0af); }
+  /* The highlighted widget's name, kind, size and place under its outline (finding P3.21). */
+  #selected-label {
+    position: absolute; pointer-events: none; white-space: nowrap; padding: 1px 5px; font-size: 0.85em;
+    background: var(--vscode-editorWidget-background); color: var(--vscode-editorWidget-foreground, var(--vscode-foreground));
+    border: 1px solid var(--vscode-focusBorder, #0af);
+  }
   #tip {
     position: absolute; pointer-events: none; white-space: pre; padding: 2px 6px;
     background: var(--vscode-editorHoverWidget-background, #252526);
@@ -139,12 +162,14 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
   <input id="window-filter" type="text" spellcheck="false" placeholder="Filter the windows" aria-label="Filter the windows" aria-controls="window-list">
   <div id="window-list" role="listbox" aria-label="Windows"></div>
 </div>
-<ul id="notices"></ul>
+<ul id="notices" aria-live="polite"></ul>
 <main id="stage">
   <canvas id="screen" hidden></canvas>
   <div id="selected" class="box" hidden></div>
   <div id="hover" class="box" hidden></div>
+  <div id="selected-label" aria-hidden="true" hidden></div>
   <div id="tip" hidden></div>
+  <div id="busy" role="status" hidden><div class="bar"></div><span id="busy-text"></span></div>
 </main>
 <script nonce="${nonce}" src="${script.toString()}"></script>
 </body>
