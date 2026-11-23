@@ -58,8 +58,26 @@ describe('the walkthrough', () => {
       // Etch's own drawings: no game art, nothing loaded from elsewhere.
       const picture = readFileSync(new URL(svg, root), 'utf8');
       expect(picture, svg).not.toMatch(/<image|href=|url\(/);
+      // VS Code shows it under a content security policy that blocks styles without its nonce:
+      // presentation attributes only.
+      expect(picture, svg).not.toMatch(/<style|style=|class=/);
     }
-    expect(walkthrough?.steps[0]?.completionEvents).toEqual(['onContext:etch.gameFound']);
+  });
+
+  it('ticks a context step also when the page opens after the context was set', () => {
+    // VS Code registers an extension's walkthrough up to 5 s after start-up (it waits for an
+    // experiment's answer), and a context that already holds then never ticks its step in that
+    // session. The same context together with the Get Started page as the active editor ticks it
+    // when the page opens.
+    const events = (id: string): string[] | undefined =>
+      walkthrough?.steps.find((step) => step.id === id)?.completionEvents;
+    expect(events('findGame')).toEqual([
+      'onContext:etch.gameFound',
+      "onContext:etch.gameFound && activeEditor == 'gettingStartedPage'",
+    ]);
+    expect(events('openPreview')).toContain(
+      "onContext:etch.previewOpen && activeEditor == 'gettingStartedPage'",
+    );
   });
 
   it('links only to commands that exist', () => {

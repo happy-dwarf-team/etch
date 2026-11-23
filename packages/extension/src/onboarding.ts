@@ -1,7 +1,9 @@
 // Getting started (etch#648, P2.8): **Etch: Get Started** opens the walkthrough of
 // `contributes.walkthroughs`, whose steps tick themselves on completion events. Its first step
 // ticks on `etch.gameFound`, which Etch sets while it finds the game folder as the preview does:
-// `etch.gamePath` when set, else Steam's library list.
+// `etch.gamePath` when set, else Steam's library list. VS Code registers the walkthrough up to 5 s
+// after start-up and ignores a context that already holds then, so the step also ticks on the
+// context with the Get Started page as the active editor (package.json).
 import { resolve } from 'node:path';
 import * as vscode from 'vscode';
 import { findGameInSteam, isGameFolder, systemEnvironment } from '@etch/core/playset';

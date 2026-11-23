@@ -1,40 +1,30 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" role="img" aria-label="The Widget Outline lists the widgets of a window; clicking one selects its line in the file">
-  <style>
-    .panel { fill: var(--vscode-sideBar-background, #252526); stroke: var(--vscode-panel-border, #444); }
-    .editor { fill: var(--vscode-editor-background, #1e1e1e); stroke: var(--vscode-panel-border, #444); }
-    .text { fill: var(--vscode-foreground, #ccc); font: 13px var(--vscode-font-family, sans-serif); }
-    .muted { fill: var(--vscode-descriptionForeground, #999); font: 12px var(--vscode-font-family, sans-serif); }
-    .head { fill: var(--vscode-foreground, #ccc); font: bold 11px var(--vscode-font-family, sans-serif); letter-spacing: .06em; }
-    .icon { fill: var(--vscode-foreground, #ccc); opacity: .4; }
-    .code { fill: var(--vscode-foreground, #ccc); opacity: .45; }
-    .selected { fill: var(--vscode-list-activeSelectionBackground, #04395e); }
-  </style>
-  <rect class="panel" x="20" y="30" width="210" height="240" rx="6"/>
-  <text class="head" x="34" y="54">WIDGET OUTLINE</text>
-  <rect class="icon" x="34" y="70" width="12" height="12" rx="2"/>
-  <text class="text" x="54" y="81">my_window</text>
-  <rect class="icon" x="50" y="96" width="12" height="12" rx="2"/>
-  <text class="text" x="70" y="107">background</text>
-  <rect class="selected" x="22" y="116" width="206" height="24"/>
+  <rect fill="var(--vscode-sideBar-background, #252526)" stroke="var(--vscode-panel-border, #444)" x="20" y="30" width="210" height="240" rx="6"/>
+  <text fill="var(--vscode-foreground, #ccc)" font-weight="bold" font-size="11" font-family="var(--vscode-font-family, sans-serif)" letter-spacing=".06em" x="34" y="54">WIDGET OUTLINE</text>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".4" x="34" y="70" width="12" height="12" rx="2"/>
+  <text fill="var(--vscode-foreground, #ccc)" font-size="13" font-family="var(--vscode-font-family, sans-serif)" x="54" y="81">my_window</text>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".4" x="50" y="96" width="12" height="12" rx="2"/>
+  <text fill="var(--vscode-foreground, #ccc)" font-size="13" font-family="var(--vscode-font-family, sans-serif)" x="70" y="107">background</text>
+  <rect fill="var(--vscode-list-activeSelectionBackground, #04395e)" x="22" y="116" width="206" height="24"/>
   <rect x="50" y="122" width="12" height="12" rx="2" fill="#f5922a"/>
-  <text class="text" x="70" y="133">title</text>
-  <text class="muted" x="104" y="133">“My Window”</text>
-  <rect class="icon" x="50" y="148" width="12" height="12" rx="2"/>
-  <text class="text" x="70" y="159">icon</text>
-  <rect class="icon" x="50" y="174" width="12" height="12" rx="2"/>
-  <text class="text" x="70" y="185">ok_button</text>
-  <rect class="icon" x="50" y="200" width="12" height="12" rx="2"/>
-  <text class="text" x="70" y="211">close</text>
+  <text fill="var(--vscode-foreground, #ccc)" font-size="13" font-family="var(--vscode-font-family, sans-serif)" x="70" y="133">title</text>
+  <text fill="var(--vscode-descriptionForeground, #999)" font-size="12" font-family="var(--vscode-font-family, sans-serif)" x="104" y="133">“My Window”</text>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".4" x="50" y="148" width="12" height="12" rx="2"/>
+  <text fill="var(--vscode-foreground, #ccc)" font-size="13" font-family="var(--vscode-font-family, sans-serif)" x="70" y="159">icon</text>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".4" x="50" y="174" width="12" height="12" rx="2"/>
+  <text fill="var(--vscode-foreground, #ccc)" font-size="13" font-family="var(--vscode-font-family, sans-serif)" x="70" y="185">ok_button</text>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".4" x="50" y="200" width="12" height="12" rx="2"/>
+  <text fill="var(--vscode-foreground, #ccc)" font-size="13" font-family="var(--vscode-font-family, sans-serif)" x="70" y="211">close</text>
   <!-- The file, at the widget's line. -->
-  <rect class="editor" x="250" y="30" width="210" height="240" rx="6"/>
-  <rect class="code" x="264" y="62" width="110" height="6" rx="3"/>
-  <rect class="code" x="276" y="80" width="130" height="6" rx="3"/>
-  <rect class="code" x="276" y="98" width="60" height="6" rx="3"/>
+  <rect fill="var(--vscode-editor-background, #1e1e1e)" stroke="var(--vscode-panel-border, #444)" x="250" y="30" width="210" height="240" rx="6"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="264" y="62" width="110" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="276" y="80" width="130" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="276" y="98" width="60" height="6" rx="3"/>
   <rect x="254" y="112" width="202" height="20" fill="#f5922a" opacity=".2"/>
   <rect x="276" y="119" width="120" height="6" rx="3" fill="#f5922a"/>
-  <rect class="code" x="288" y="140" width="140" height="6" rx="3"/>
-  <rect class="code" x="288" y="158" width="96" height="6" rx="3"/>
-  <rect class="code" x="276" y="176" width="20" height="6" rx="3"/>
-  <rect class="code" x="276" y="194" width="110" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="288" y="140" width="140" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="288" y="158" width="96" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="276" y="176" width="20" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="276" y="194" width="110" height="6" rx="3"/>
   <path d="M228 128 H 250" stroke="#f5922a" stroke-width="2" stroke-dasharray="4 4"/>
 </svg>

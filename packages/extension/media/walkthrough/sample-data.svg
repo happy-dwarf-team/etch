@@ -1,33 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" role="img" aria-label="The preview's Data menu fills the texts the game writes, from a live snapshot, a save or generated text">
-  <style>
-    .panel { fill: var(--vscode-editor-background, #1e1e1e); stroke: var(--vscode-panel-border, #444); }
-    .menu { fill: var(--vscode-menu-background, #252526); stroke: var(--vscode-menu-border, #555); }
-    .text { fill: var(--vscode-foreground, #ccc); font: 13px var(--vscode-font-family, sans-serif); }
-    .big { fill: var(--vscode-foreground, #ccc); font: 18px var(--vscode-font-family, sans-serif); }
-    .muted { fill: var(--vscode-descriptionForeground, #999); font: 12px var(--vscode-font-family, sans-serif); }
-    .frame { fill: var(--vscode-editorWidget-background, #252526); stroke: var(--vscode-panel-border, #555); }
-    .filled { fill: #f5922a; opacity: .2; stroke: #f5922a; stroke-dasharray: 3 3; }
-  </style>
-  <rect class="panel" x="20" y="30" width="440" height="240" rx="6"/>
+  <rect fill="var(--vscode-editor-background, #1e1e1e)" stroke="var(--vscode-panel-border, #444)" x="20" y="30" width="440" height="240" rx="6"/>
   <!-- The preview's toolbar with Data ▾ open. -->
   <rect x="20" y="30" width="440" height="34" rx="6" fill="var(--vscode-editorWidget-background, #252526)"/>
-  <text class="text" x="36" y="52">my_window</text>
+  <text fill="var(--vscode-foreground, #ccc)" font-size="13" font-family="var(--vscode-font-family, sans-serif)" x="36" y="52">my_window</text>
   <rect x="352" y="38" width="92" height="20" rx="3" fill="var(--vscode-button-secondaryBackground, #3a3d41)"/>
-  <text class="text" x="366" y="52">Data ▾</text>
-  <rect class="menu" x="296" y="64" width="148" height="92" rx="4"/>
-  <text class="text" x="312" y="88">Live snapshot</text>
+  <text fill="var(--vscode-foreground, #ccc)" font-size="13" font-family="var(--vscode-font-family, sans-serif)" x="366" y="52">Data ▾</text>
+  <rect fill="var(--vscode-menu-background, #252526)" stroke="var(--vscode-menu-border, #555)" x="296" y="64" width="148" height="92" rx="4"/>
+  <text fill="var(--vscode-foreground, #ccc)" font-size="13" font-family="var(--vscode-font-family, sans-serif)" x="312" y="88">Live snapshot</text>
   <rect x="298" y="98" width="144" height="24" fill="var(--vscode-list-activeSelectionBackground, #04395e)"/>
-  <text class="text" x="312" y="115">Save</text>
-  <text class="text" x="312" y="142">Generated</text>
+  <text fill="var(--vscode-foreground, #ccc)" font-size="13" font-family="var(--vscode-font-family, sans-serif)" x="312" y="115">Save</text>
+  <text fill="var(--vscode-foreground, #ccc)" font-size="13" font-family="var(--vscode-font-family, sans-serif)" x="312" y="142">Generated</text>
   <!-- The window, its game-written texts filled. -->
-  <rect class="frame" x="44" y="84" width="232" height="164" rx="4"/>
-  <rect class="filled" x="60" y="98" width="200" height="30" rx="3"/>
-  <text class="big" x="74" y="119">Northmarch</text>
-  <text class="muted" x="60" y="150">Development</text>
-  <rect class="filled" x="160" y="138" width="56" height="18" rx="3"/>
-  <text class="text" x="172" y="152">14</text>
-  <text class="muted" x="60" y="180">Owner</text>
-  <rect class="filled" x="160" y="168" width="96" height="18" rx="3"/>
-  <text class="text" x="172" y="182">Eastmarch</text>
+  <rect fill="var(--vscode-editorWidget-background, #252526)" stroke="var(--vscode-panel-border, #555)" x="44" y="84" width="232" height="164" rx="4"/>
+  <rect fill="#f5922a" opacity=".2" stroke="#f5922a" stroke-dasharray="3 3" x="60" y="98" width="200" height="30" rx="3"/>
+  <text fill="var(--vscode-foreground, #ccc)" font-size="18" font-family="var(--vscode-font-family, sans-serif)" x="74" y="119">Northmarch</text>
+  <text fill="var(--vscode-descriptionForeground, #999)" font-size="12" font-family="var(--vscode-font-family, sans-serif)" x="60" y="150">Development</text>
+  <rect fill="#f5922a" opacity=".2" stroke="#f5922a" stroke-dasharray="3 3" x="160" y="138" width="56" height="18" rx="3"/>
+  <text fill="var(--vscode-foreground, #ccc)" font-size="13" font-family="var(--vscode-font-family, sans-serif)" x="172" y="152">14</text>
+  <text fill="var(--vscode-descriptionForeground, #999)" font-size="12" font-family="var(--vscode-font-family, sans-serif)" x="60" y="180">Owner</text>
+  <rect fill="#f5922a" opacity=".2" stroke="#f5922a" stroke-dasharray="3 3" x="160" y="168" width="96" height="18" rx="3"/>
+  <text fill="var(--vscode-foreground, #ccc)" font-size="13" font-family="var(--vscode-font-family, sans-serif)" x="172" y="182">Eastmarch</text>
   <rect x="60" y="206" width="196" height="26" rx="3" fill="var(--vscode-button-background, #0e639c)" opacity=".7"/>
 </svg>

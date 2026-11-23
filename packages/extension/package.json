@@ -106,7 +106,8 @@
               "altText": "A game folder found through Steam, holding eu4.exe"
             },
             "completionEvents": [
-              "onContext:etch.gameFound"
+              "onContext:etch.gameFound",
+              "onContext:etch.gameFound && activeEditor == 'gettingStartedPage'"
             ]
           },
           {
@@ -119,7 +120,8 @@
             },
             "completionEvents": [
               "onCommand:etch.openPreview",
-              "onContext:etch.previewOpen"
+              "onContext:etch.previewOpen",
+              "onContext:etch.previewOpen && activeEditor == 'gettingStartedPage'"
             ]
           },
           {
