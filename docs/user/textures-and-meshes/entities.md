@@ -150,6 +150,9 @@ The warnings update as you type in the open file. For the other files, Etch read
 are saved. So after you add a `pdxparticle` or an effect in another file, save that file. The
 warnings in the open files then update.
 
+Etch also explains the keys inside the effect's own `particle = { … }` block when you hover over
+them, and warns about mistakes in them: see [Particle effects](particles.md).
+
 ## What it doesn't do
 
 - It does not draw particle effects.

@@ -2,16 +2,24 @@
 // under `gfx/` and `.gfx` files under `interface/` of the playset: a state event's `particle = …`
 // that no pdxparticle type of the playset's `.gfx` files has, and a pdxparticle type whose `type`
 // names no `particle` block of its `.asset` files, or that has no `type`. The same two failures
-// the entity preview lists (`checkAssetParticles`, `checkGfxParticles` in core). The playset's
-// definitions are read from disk; saving an `.asset` or `.gfx` file reads them again.
+// the entity preview lists (`checkAssetParticles`, `checkGfxParticles` in core). In the `.asset`
+// files also the warnings of their `particle` blocks (`checkParticleBlocks`): unknown keys, curve
+// and force names the effect does not define, curve times and durations the game changes, emitter
+// keys of the other shape, a shader effect the playset's `gfx/FX/particle.shader` does not have and
+// a texture the playset does not have. The playset's definitions are read from disk; saving an
+// `.asset`, `.gfx` or `.shader` file reads them again. Hovers on the keys of particle blocks and of
+// `.gfx` pdxparticle types say what they do (`particleHoverAt`), in any `.asset` or `.gfx` file.
 import * as vscode from 'vscode';
 import {
   checkAssetParticles,
   checkGfxParticles,
+  checkParticleBlocks,
+  particleHoverAt,
+  particleTextureFiles,
+  shaderEffectNames,
   type EntityIndex,
-  type ParticleDiagnostic,
 } from '@etch/core/asset';
-import { parseScript } from '@etch/core';
+import { normaliseGamePath, parseScript, textureCandidates, type SourceRange } from '@etch/core';
 import { loadEntityIndex, type GameFiles } from '@etch/core/playset';
 import { gamePathOf } from './live-game/pick.ts';
 import { linkedFiles } from './script-profile-view.ts';
@@ -20,10 +28,26 @@ import { linkedFiles } from './script-profile-view.ts';
 const DEBOUNCE_MS = 150;
 
 const PARTICLE_FILE = /\.(?:asset|gfx)$/i;
+/** The files whose saving can change the warnings of the others. */
+const DEFINITION_FILE = /\.(?:asset|gfx|shader)$/i;
+
+/** The files whose keys get hovers. */
+const PARTICLE_SELECTOR: vscode.DocumentSelector = [
+  { scheme: 'file', pattern: '**/*.asset' },
+  { scheme: 'file', pattern: '**/*.gfx' },
+];
 
 interface Playset {
   readonly files: GameFiles;
   readonly index: EntityIndex;
+  /** The effects of the playset's `gfx/FX/particle.shader`; `undefined` when it has none. */
+  readonly effects: ReadonlySet<string> | undefined;
+}
+
+/** A warning of a particle file, with the code the Problems panel shows. */
+export interface ParticleWarning extends SourceRange {
+  readonly code: string;
+  readonly message: string;
 }
 
 /**
@@ -31,20 +55,56 @@ interface Playset {
  * `.gfx` file under `interface/` of a playset layer, the folders the game reads them from;
  * `undefined` for any other file.
  */
-export function diagnoseParticles(
+export async function diagnoseParticles(
   text: string,
   file: string,
   playset: Playset,
-): ParticleDiagnostic[] | undefined {
+): Promise<ParticleWarning[] | undefined> {
   const gamePath = gamePathOf(file, playset.files)?.toLowerCase();
   if (gamePath === undefined) return undefined;
   if (gamePath.startsWith('gfx/') && gamePath.endsWith('.asset')) {
-    return checkAssetParticles(parseScript(text), playset.index);
+    const parsed = parseScript(text);
+    const found: ParticleWarning[] = [
+      ...checkAssetParticles(parsed, playset.index),
+      ...checkParticleBlocks(parsed, playset.effects),
+    ];
+    for (const node of particleTextureFiles(parsed)) {
+      const candidates = textureCandidates(normaliseGamePath(node.text));
+      const files = await Promise.all(candidates.map((c) => playset.files.find(c)));
+      if (files.some((f) => f !== undefined)) continue;
+      found.push({
+        code: 'missing-particle-texture',
+        start: node.quoted ? node.start + 1 : node.start,
+        end: node.quoted && node.end - node.start >= 2 ? node.end - 1 : node.end,
+        message: `Texture ${normaliseGamePath(node.text)} is not in the playset, so the game has no picture for these particles.`,
+      });
+    }
+    return found.sort((a, b) => a.start - b.start);
   }
   if (gamePath.startsWith('interface/') && gamePath.endsWith('.gfx')) {
     return checkGfxParticles(parseScript(text), playset.index);
   }
   return undefined;
+}
+
+/** The effect names of the playset's `gfx/FX/particle.shader`, or `undefined` without one. */
+async function particleEffects(files: GameFiles): Promise<ReadonlySet<string> | undefined> {
+  const shader = await files.read('gfx/FX/particle.shader');
+  return shader === undefined
+    ? undefined
+    : shaderEffectNames(new TextDecoder('latin1').decode(shader));
+}
+
+/** Hovers on the keys of particle blocks and on the curve and force names they use. */
+export class ParticleHovers implements vscode.HoverProvider {
+  provideHover(document: vscode.TextDocument, position: vscode.Position): vscode.Hover | undefined {
+    const found = particleHoverAt(parseScript(document.getText()), document.offsetAt(position));
+    if (found === undefined) return undefined;
+    return new vscode.Hover(
+      new vscode.MarkdownString(found.markdown),
+      new vscode.Range(document.positionAt(found.start), document.positionAt(found.end)),
+    );
+  }
 }
 
 /** Keeps the particle warnings of the open `.asset` and `.gfx` files. */
@@ -71,9 +131,9 @@ export class ParticleDiagnostics implements vscode.Disposable {
         this.timers.delete(key);
         this.collection.delete(document.uri);
       }),
-      // A saved `.gfx` or `.asset` file can add or remove the definitions the others name.
+      // A saved `.gfx`, `.asset` or `.shader` file can add or remove what the others name.
       vscode.workspace.onDidSaveTextDocument((document) => {
-        if (PARTICLE_FILE.test(document.uri.fsPath)) this.refresh();
+        if (DEFINITION_FILE.test(document.uri.fsPath)) this.refresh();
       }),
       vscode.workspace.onDidChangeConfiguration((event) => {
         if (
@@ -100,7 +160,11 @@ export class ParticleDiagnostics implements vscode.Disposable {
       .then(async (linked) =>
         linked === undefined
           ? undefined
-          : { files: linked.files, index: await loadEntityIndex(linked.files) },
+          : {
+              files: linked.files,
+              index: await loadEntityIndex(linked.files),
+              effects: await particleEffects(linked.files),
+            },
       )
       .catch((error: unknown) => {
         this.output.warn(
@@ -127,14 +191,19 @@ export class ParticleDiagnostics implements vscode.Disposable {
   private async update(document: vscode.TextDocument): Promise<void> {
     const { version } = document;
     const pending = this.load();
+    // Not after a change of the file, or a refresh, during a wait: a newer update is scheduled.
+    const current = (): boolean =>
+      !this.disposed &&
+      !document.isClosed &&
+      document.version === version &&
+      this.playset === pending;
     const playset = await pending;
-    if (this.disposed || document.isClosed || document.version !== version) return;
-    // A refresh during the wait scheduled a newer update against the new definitions.
-    if (this.playset !== pending) return;
+    if (!current()) return;
     const found =
       playset === undefined
         ? undefined
-        : diagnoseParticles(document.getText(), document.uri.fsPath, playset);
+        : await diagnoseParticles(document.getText(), document.uri.fsPath, playset);
+    if (!current()) return;
     if (found === undefined) {
       this.collection.delete(document.uri);
       return;
@@ -163,7 +232,10 @@ export class ParticleDiagnostics implements vscode.Disposable {
   }
 }
 
-/** Registers the particle warnings of the open `.asset` and `.gfx` files. */
+/** Registers the particle warnings of the open `.asset` and `.gfx` files, and their hovers. */
 export function registerParticleDiagnostics(output: vscode.LogOutputChannel): vscode.Disposable {
-  return vscode.Disposable.from(new ParticleDiagnostics(output));
+  return vscode.Disposable.from(
+    new ParticleDiagnostics(output),
+    vscode.languages.registerHoverProvider(PARTICLE_SELECTOR, new ParticleHovers()),
+  );
 }
