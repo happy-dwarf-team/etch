@@ -15,6 +15,7 @@ import {
   type SkeletonPart,
 } from '@etch/core/profile';
 import { PROJECT_PROFILES } from './profiles.ts';
+import { readGamePath } from '@etch/core/playset';
 
 export const ADD_SCRIPTED_SELECTORS = 'etch.addScriptedSelectors';
 
@@ -46,7 +47,7 @@ export interface LowerIds {
 async function customGuiEntries(files: GameFiles): Promise<CustomGuiEntry[]> {
   const entries: CustomGuiEntry[] = [];
   for (const file of await files.list(CUSTOM_GUI_FOLDER, '.txt')) {
-    const bytes = await readFile(file.absolutePath).catch(() => undefined);
+    const bytes = await readGamePath(file.absolutePath).catch(() => undefined);
     if (bytes === undefined) continue;
     entries.push(...readCustomGui(decodeGameText(bytes, 'interface').text, file.path));
   }

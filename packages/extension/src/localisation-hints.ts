@@ -3,7 +3,6 @@
 // profile labels, and Go to Definition opens the key's line in its `.yml` file. The localisation
 // is the playset's in `etch.language`, read once and again after a `.yml` file is saved or the
 // game path, playset or language changes; it is the same playset the sprite links read.
-import { readFile } from 'node:fs/promises';
 import * as vscode from 'vscode';
 import {
   DEFAULT_LANGUAGE,
@@ -17,6 +16,8 @@ import {
 import { loadPlaysetLocalisation, type GameFiles } from '@etch/core/playset';
 import { plainLabelText } from '@etch/core/profile';
 import { linkedFiles } from './script-profile-view.ts';
+import { readGamePath } from '@etch/core/playset';
+import { pathUri } from './dlc-files.ts';
 
 const SELECTOR: vscode.DocumentSelector = [
   { scheme: 'file', pattern: '**/*.gui' },
@@ -141,11 +142,11 @@ export class LocalisationHints implements vscode.InlayHintsProvider, vscode.Defi
     if (loaded === undefined || source === undefined) return undefined;
     const file = await loaded.files.find(source.path);
     if (file === undefined) return undefined;
-    const text = decodeGameText(await readFile(file.absolutePath), 'localisation').text;
+    const text = decodeGameText(await readGamePath(file.absolutePath), 'localisation').text;
     const at = keyLine(text, found.key);
     if (at === undefined) return undefined;
     return new vscode.Location(
-      vscode.Uri.file(file.absolutePath),
+      pathUri(file.absolutePath),
       new vscode.Range(at.line, at.column, at.line, at.column + found.key.length),
     );
   }

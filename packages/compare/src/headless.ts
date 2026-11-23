@@ -3,7 +3,7 @@
  * preview's webview runs, drawing a draw list into a WebGL2 canvas and reading it back as
  * straight RGBA. Textures are served from the playset's files on disk, read only.
  */
-import { readFile } from 'node:fs/promises';
+import { readGamePath } from '@etch/core/playset';
 import { fileURLToPath } from 'node:url';
 import { chromium, type Browser, type Page } from '@playwright/test';
 import type { DrawList } from '@etch/core';
@@ -73,7 +73,7 @@ export class HeadlessRenderer {
           return;
         }
         try {
-          await route.fulfill({ body: await readFile(file) });
+          await route.fulfill({ body: await readGamePath(file) });
         } catch {
           await route.fulfill({ status: 404 });
         }

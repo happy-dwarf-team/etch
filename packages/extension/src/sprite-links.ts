@@ -6,7 +6,6 @@
 // sprite's name. The sprite is the one the game draws: the last definition in load order
 // (`InterfaceIndex`), over the playset the script profile and the asset links use.
 
-import { readFile } from 'node:fs/promises';
 import * as vscode from 'vscode';
 import {
   decodeGameText,
@@ -24,6 +23,8 @@ import {
 import { PlaysetInterface, type GameFile, type GameFiles } from '@etch/core/playset';
 import { linkedFiles } from './script-profile-view.ts';
 import { TextureThumbnails } from './texture-thumbnail.ts';
+import { readGamePath } from '@etch/core/playset';
+import { pathUri } from './dlc-files.ts';
 
 export const GUI_SELECTOR: vscode.DocumentSelector = [{ scheme: 'file', pattern: '**/*.gui' }];
 
@@ -67,8 +68,8 @@ export class SpriteLinks implements vscode.HoverProvider, vscode.DefinitionProvi
       if (found.script) {
         return new vscode.Hover(
           new vscode.MarkdownString(
-            `**${found.reference.name}** · no sprite of that name in the playset's \`.gfx\` files. ` +
-              'Etch does not read the DLC archives, which define many event pictures.',
+            `**${found.reference.name}** · no sprite of that name in the playset's \`.gfx\` files, ` +
+              'nor in the archives of the DLCs that are on.',
           ),
           found.range,
         );
@@ -132,12 +133,12 @@ export class SpriteLinks implements vscode.HoverProvider, vscode.DefinitionProvi
   ): Promise<vscode.Location | undefined> {
     const file = await files.find(sprite.path);
     if (file === undefined) return undefined;
-    const text = decodeGameText(await readFile(file.absolutePath), 'interface').text;
+    const text = decodeGameText(await readGamePath(file.absolutePath), 'interface').text;
     const { nameNode } = sprite.item;
     const start = nameNode.quoted ? nameNode.start + 1 : nameNode.start;
     const end = nameNode.quoted ? nameNode.end - 1 : nameNode.end;
     return new vscode.Location(
-      vscode.Uri.file(file.absolutePath),
+      pathUri(file.absolutePath),
       new vscode.Range(positionIn(text, start), positionIn(text, end)),
     );
   }

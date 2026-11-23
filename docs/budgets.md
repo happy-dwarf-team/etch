@@ -117,6 +117,26 @@ pnpm --filter etch test
 
 ## Results
 
+### 2026-11-23, ADR 0008's measures with the DLC archives (ADR 0009, reported, not gated)
+
+The measures of 21 November below, again with the 129 archives of the game folder's DLCs as
+layers (every DLC on), outside VS Code (Node 24.21.0, the files in the file cache, two runs). The
+archives are read in place: an index of each archive once per playset, then the entries a request
+reads.
+
+| Playset | Localisation load | Interface load | Sprite references: files, list, read and decode, search |
+| --- | --- | --- | --- |
+| Vanilla | 78–83 ms | 161–169 ms | 918, 4–6 ms, 296–316 ms, 25–28 ms |
+| Vanilla with every DLC | 75–78 ms | 198–226 ms | 1,066, 3–8 ms, 332–357 ms, 23–25 ms |
+| Anbennar (Workshop 1385440355) over the game | 213–233 ms | 238–260 ms | 2,204, 9 ms, 1,175–1,206 ms, 140–152 ms |
+| Anbennar over the game with every DLC | 241–268 ms | 282–297 ms | 2,352, 11–14 ms, 1,217–1,471 ms, 121–185 ms |
+
+The search is for `MERCHANTS_TALKING_eventPicture`; the interface load is the one sprite hovers and
+completion share. Both budgets of ADR 0008 that these touch hold with the DLCs: sprite references
+under 2 s on Anbennar, and the localisation load under 2 s. A first build of the layer took 1.3–2.3 s
+for the interface load, as each lookup waited on every archive in turn; the layer now keeps one map
+of the archives' paths.
+
 ### 2026-11-21, localisation inlay hints (ADR 0008, reported, not gated)
 
 The core's functions outside VS Code (Node, `etch` at `main` after etch#589):

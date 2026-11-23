@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
 import { decodeDescriptor, parseModDescriptor } from './descriptor.ts';
 import type { PlaysetDiagnostic } from './diagnostics.ts';
+import { findDlcArchives, readDisabledDlcs, type DlcArchive } from './dlc.ts';
 import { GameFiles, type GameFilesLayer } from './game-files.ts';
 import { replacePathWarnings } from './replace-paths.ts';
 import {
@@ -42,6 +43,11 @@ export interface FindPlaysetOptions {
   playsetOverride?: readonly string[] | undefined;
   /** The player's profile folder; found as the game finds it when not given. */
   profileFolder?: string | undefined;
+  /**
+   * The DLCs turned off, as `dlc_load.json`'s `disabled_dlcs` writes them; the profile's
+   * `dlc_load.json` is read when not given.
+   */
+  disabledDlcs?: readonly string[] | undefined;
   /** How the registry and environment are read; the real ones when not given. */
   environment?: DiscoveryEnvironment | undefined;
   /** Hashes of `eu4.exe` that count as the supported build; 1.37.5's when not given. */
@@ -61,7 +67,13 @@ export interface Playset {
   workspaceMod: Mod | undefined;
   /** The playset's mods in load order: a later mod's file wins. */
   mods: readonly Mod[];
-  /** The game folder and the mods as one read-only file system. */
+  /**
+   * The DLCs whose archives the playset reads (ADR 0009): those of the game folder that the
+   * profile's `dlc_load.json` does not turn off. Their layers lie between the game folder and the
+   * mods.
+   */
+  dlcs: readonly DlcArchive[];
+  /** The game folder, the DLC archives and the mods as one read-only file system. */
   files: GameFiles;
   diagnostics: PlaysetDiagnostic[];
 }
@@ -154,8 +166,14 @@ export async function findPlayset(options: FindPlaysetOptions): Promise<Playset>
 
   diagnostics.push(...(await replacePathWarnings(mods)));
 
-  const layers: GameFilesLayer[] = [];
-  if (gameFolder !== undefined) layers.push({ name: 'game', root: gameFolder, replacePaths: [] });
+  const dlcs =
+    gameFolder === undefined
+      ? []
+      : await findDlcArchives(
+          gameFolder,
+          options.disabledDlcs ?? (await readDisabledDlcs(profileFolder)),
+        );
+  const layers: GameFilesLayer[] = gameFolder === undefined ? [] : gameLayers(gameFolder, dlcs);
   for (const mod of mods)
     layers.push({ name: mod.name, root: mod.root, replacePaths: mod.replacePaths });
 
@@ -166,9 +184,32 @@ export async function findPlayset(options: FindPlaysetOptions): Promise<Playset>
     workshopFolder,
     workspaceMod,
     mods,
+    dlcs,
     files: new GameFiles(layers),
     diagnostics,
   };
+}
+
+/** The game folder's layer, then one per DLC archive (ADR 0009). */
+export function gameLayers(gameFolder: string, dlcs: readonly DlcArchive[]): GameFilesLayer[] {
+  return [
+    { name: 'game', root: gameFolder, replacePaths: [] },
+    ...dlcs.map((dlc) => ({ name: dlc.name, root: dlc.archive, replacePaths: [], archive: true })),
+  ];
+}
+
+/**
+ * The base game's files without mods: the game folder and the DLCs that the profile's
+ * `dlc_load.json` does not turn off (the profile found as the game finds it when not given).
+ */
+export async function baseGameFiles(
+  gameFolder: string,
+  profileFolder?: string,
+  environment: DiscoveryEnvironment = systemEnvironment(),
+): Promise<GameFiles> {
+  const profile = profileFolder ?? (await findProfileFolder(gameFolder, environment));
+  const dlcs = await findDlcArchives(gameFolder, await readDisabledDlcs(profile));
+  return new GameFiles(gameLayers(gameFolder, dlcs));
 }
 
 async function findGameFolder(

@@ -60,6 +60,7 @@ import type {
   MeshWebviewMessage,
 } from './mesh-protocol.ts';
 import { linkedFiles } from './script-profile-view.ts';
+import { pathUri } from './dlc-files.ts';
 
 export const MESH_PREVIEW_VIEW_TYPE = 'etch.meshPreview';
 
@@ -88,12 +89,12 @@ class MeshDocument implements vscode.CustomDocument {
 }
 
 export async function read(file: string): Promise<Uint8Array> {
-  return Uint8Array.from(await vscode.workspace.fs.readFile(vscode.Uri.file(file)));
+  return Uint8Array.from(await vscode.workspace.fs.readFile(pathUri(file)));
 }
 
 async function exists(file: string): Promise<boolean> {
   try {
-    await vscode.workspace.fs.stat(vscode.Uri.file(file));
+    await vscode.workspace.fs.stat(pathUri(file));
     return true;
   } catch {
     return false;

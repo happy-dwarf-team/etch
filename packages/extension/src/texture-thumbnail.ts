@@ -2,11 +2,12 @@
 // as a PNG `data:` URI, which VS Code renders in hovers. Shared by the asset path hovers
 // (asset-links.ts) and the sprite hovers (sprite-links.ts); cached by file, time and size.
 
-import { stat } from 'node:fs/promises';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { inspectTexture } from '@etch/renderer/inspect';
 import { encodePng, thumbnail } from './png.ts';
+import { statGamePath } from '@etch/core/playset';
+import { pathUri } from './dlc-files.ts';
 
 /** The thumbnail's longest side in a hover, in pixels. */
 const THUMBNAIL_SIZE = 128;
@@ -21,7 +22,7 @@ export class TextureThumbnails {
    * `noOfFrames`), the image is the first frame: the texture's width cut into that many cells.
    */
   async markdown(absolutePath: string, frames = 1): Promise<string> {
-    const info = await stat(absolutePath);
+    const info = await statGamePath(absolutePath);
     const key = `${absolutePath}|${String(info.mtimeMs)}|${String(info.size)}|${String(frames)}`;
     let entry = this.cache.get(key);
     if (entry === undefined) {
@@ -46,7 +47,7 @@ export async function texturePng(
   frames: number,
   size: number,
 ): Promise<{ png: Uint8Array; summary: ReturnType<typeof inspectTexture>['summary'] }> {
-  const bytes = await vscode.workspace.fs.readFile(vscode.Uri.file(absolutePath));
+  const bytes = await vscode.workspace.fs.readFile(pathUri(absolutePath));
   const { summary, rgba } = inspectTexture(absolutePath, Uint8Array.from(bytes));
   let width = summary.width;
   let pixels = rgba;

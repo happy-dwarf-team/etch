@@ -1,4 +1,3 @@
-import { readFile } from 'node:fs/promises';
 import { decodeGameText } from '../game-text.ts';
 import { checkCanals, type CanalDiagnostic } from '../script/canals.ts';
 import {
@@ -238,7 +237,7 @@ export async function loadScriptNames(files: GameFiles): Promise<ScriptNames | u
   for (const { folder, read } of NAME_FOLDERS) {
     const found = await files.list(folder, '.txt');
     const texts = await Promise.all(
-      found.map((file) => readFile(file.absolutePath).catch(() => undefined)),
+      found.map((file) => files.readFile(file).catch(() => undefined)),
     );
     for (const bytes of texts) {
       if (bytes !== undefined) read(parseScript(decode(bytes), { script: true }), byKind);
@@ -254,7 +253,7 @@ export async function loadScriptNames(files: GameFiles): Promise<ScriptNames | u
   for (const folder of SCRIPTED_FOLDERS) {
     const found = await files.list(folder, '.txt');
     const texts = await Promise.all(
-      found.map((file) => readFile(file.absolutePath).catch(() => undefined)),
+      found.map((file) => files.readFile(file).catch(() => undefined)),
     );
     for (const bytes of texts) {
       if (bytes === undefined) continue;
@@ -285,8 +284,7 @@ export async function loadScriptNames(files: GameFiles): Promise<ScriptNames | u
 export async function loadTechnologyTables(files: GameFiles): Promise<Map<string, boolean>> {
   const present = new Map<string, boolean>();
   const file = await files.find('common/technology.txt');
-  const bytes =
-    file === undefined ? undefined : await readFile(file.absolutePath).catch(() => undefined);
+  const bytes = file === undefined ? undefined : await files.readFile(file).catch(() => undefined);
   if (bytes === undefined) return present;
   for (const { file: name } of readTechnologyTables(parseScript(decode(bytes), { script: true }))) {
     const path = countryFilePath(name.text);
@@ -303,7 +301,7 @@ export async function loadTechnologyTables(files: GameFiles): Promise<Map<string
 export async function loadCountryFiles(files: GameFiles): Promise<Map<string, boolean>> {
   const present = new Map<string, boolean>();
   for (const file of await files.list('common/country_tags', '.txt')) {
-    const bytes = await readFile(file.absolutePath).catch(() => undefined);
+    const bytes = await files.readFile(file).catch(() => undefined);
     if (bytes === undefined) continue;
     for (const { file: name } of readCountryFiles(parseScript(decode(bytes), { script: true }))) {
       const path = countryFilePath(name.text);
@@ -321,7 +319,7 @@ export async function loadCountryFiles(files: GameFiles): Promise<Map<string, bo
 export async function loadCountryTags(files: GameFiles): Promise<Map<string, string>> {
   const parsed: { path: string; parsed: ParsedScript }[] = [];
   for (const file of await files.list('common/country_tags', '.txt')) {
-    const bytes = await readFile(file.absolutePath).catch(() => undefined);
+    const bytes = await files.readFile(file).catch(() => undefined);
     if (bytes !== undefined) {
       parsed.push({ path: file.path, parsed: parseScript(decode(bytes), { script: true }) });
     }
@@ -339,7 +337,7 @@ export async function loadCountryFileTags(files: GameFiles): Promise<Map<string,
   const byFile = new Map<string, string[]>();
   const seen = new Set<string>();
   for (const file of await files.list('common/country_tags', '.txt')) {
-    const bytes = await readFile(file.absolutePath).catch(() => undefined);
+    const bytes = await files.readFile(file).catch(() => undefined);
     if (bytes === undefined) continue;
     for (const { tag, file: name } of readCountryFiles(
       parseScript(decode(bytes), { script: true }),
@@ -527,7 +525,7 @@ export async function findScriptValueProblems(
     const batch = checked.slice(i, i + READ_AHEAD);
     // A file deleted or locked since the listing is skipped, as the game would not read it either.
     const texts = await Promise.all(
-      batch.map((file) => readFile(file.absolutePath).catch(() => undefined)),
+      batch.map((file) => files.readFile(file).catch(() => undefined)),
     );
     batch.forEach((file, j) => {
       const bytes = texts[j];
@@ -539,7 +537,7 @@ export async function findScriptValueProblems(
   }
   let filesChecked = checked.length;
   if (values.ids !== undefined) {
-    const mapText = decode(await readFile(values.ids.mapFile.absolutePath));
+    const mapText = decode(await files.readFile(values.ids.mapFile));
     const mapParsed = parseScript(mapText, { script: true });
     const mapDiagnostics: ScriptValueDiagnostic[] = checkDefaultMap(
       mapParsed,
@@ -571,7 +569,7 @@ export async function findScriptValueProblems(
     ] as const;
     for (const [file, check] of mapLists) {
       if (file === undefined) continue;
-      const text = decode(await readFile(file.absolutePath));
+      const text = decode(await files.readFile(file));
       const diagnostics = check(text, values.ids);
       if (diagnostics.length > 0) findings.push({ file, text, diagnostics });
       filesChecked++;

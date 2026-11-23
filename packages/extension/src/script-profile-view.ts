@@ -8,10 +8,11 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join, posix } from 'node:path';
 import * as vscode from 'vscode';
 import {
+  baseGameFiles,
   findGameInSteam,
   findPlayset,
   findProfileFolder,
-  GameFiles,
+  type GameFiles,
   systemEnvironment,
 } from '@etch/core/playset';
 import type { LiveGame } from './live-game/index.ts';
@@ -69,8 +70,8 @@ export async function linkedFiles(): Promise<
         : await findGameInSteam(systemEnvironment()).catch(() => undefined);
     if (game === undefined) return undefined;
     return {
-      files: new GameFiles([{ name: 'game', root: game, replacePaths: [] }]),
-      playset: 'the game folder',
+      files: await baseGameFiles(game),
+      playset: 'the game folder and its DLCs',
     };
   }
   const playset = await findPlayset({

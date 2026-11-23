@@ -99,6 +99,19 @@ The same hovers and **Go to Definition** work on the sprite names of these scrip
 
 In a script file, a name with no sprite in your playset's `.gfx` files says so in its hover.
 
+## Sprites of DLCs
+
+Etch reads the `.gfx` files and textures of the DLCs in the game folder too (see
+[The DLCs](../getting-started/finding-the-game.md#the-dlcs)). For example, hover over
+`picture = ANGLICAN_SERMON_eventPicture`, an event picture from Rule Britannia. You see the
+picture, as for any other sprite. Where the hover would name a mod, it names the DLC:
+"Defined in `interface/eventpictures_rb.gfx` — Rule Britannia".
+
+**Go to Definition** on such a sprite opens the DLC's `.gfx` file, read-only, at the line that
+defines the sprite. **Find All References** lists the DLC's files too. **Rename Symbol** does not
+rename a name that a DLC defines or uses: it shows a "Not renamed" message, as for the game's own
+names (see [Rename a sprite](#rename-a-sprite)).
+
 ## See sprites beside the line numbers
 
 Etch can show a small picture of each sprite beside the line numbers, so you see a whole file's
@@ -173,19 +186,20 @@ Etch writes only the three numbers and drops any opacity you set.
 
 ## What it doesn't do
 
-- Etch does not read the game's DLC archives, which define many vanilla event pictures. The hover
-  of such a picture says it has no sprite.
+- Etch does not check which DLCs you own: it reads every DLC in the game folder that the game's
+  launcher has not turned off. A player without a DLC does not see its pictures.
+- 54 of the base game's event pictures are defined by no `.gfx` file, in the game folder or in a
+  DLC. Their hover says there is no sprite of that name. This is a gap of the game itself: there
+  is nothing to fix in your mod.
 - In script files, only the keys listed under [Sprites in script files](#sprites-in-script-files)
   get sprite hovers. An `icon` elsewhere in `common` is not always a sprite: a government
   reform's `icon`, for example, names a texture file. So those get no hover.
 - Each key is read only where the base game writes it: a `sprite` nested deeper in a subject
   type, for example, gets no hover.
 - A file shows at most 500 pictures beside its line numbers, on its first 500 lines that get one.
-  A line gets none when Etch finds no texture for its sprite, as with a missing sprite or a DLC
-  picture.
+  A line gets none when Etch finds no texture for its sprite, as with a missing sprite.
 - **Find All References** and **Rename Symbol** work only on sprite names, not on texture paths,
-  fonts or widget names. They do not see the DLC archives either: a rename cannot warn about a
-  DLC file that uses the name.
+  fonts or widget names.
 - Colours elsewhere in `.gfx` files, such as in `objectTypes` or written as decimals like
   `{ 0.0 0.5 0.0 }`, get no square. A `textcolors` entry with a number above 255 gets none either.
 - Sprite hovers, **Find All References**, **Rename Symbol** and paths with a folder need the game

@@ -85,9 +85,10 @@ Etch save your game, start it again and load that save, so you lose no play. See
 
 ## Playset
 
-The mods Etch previews and plays with, in load order, on top of the game: your mod and the mods
-its descriptor names as `dependencies`, or the list in `etch.playset`. A later mod's file wins
-over an earlier one's. See [Where Etch finds the game](../getting-started/finding-the-game.md).
+The mods Etch previews and plays with, in load order, on top of the game and its DLCs: your mod
+and the mods its descriptor names as `dependencies`, or the list in `etch.playset`. A later mod's
+file wins over an earlier mod's, and any mod's file wins over a DLC's. See
+[Where Etch finds the game](../getting-started/finding-the-game.md).
 
 ## Precision corpus
 

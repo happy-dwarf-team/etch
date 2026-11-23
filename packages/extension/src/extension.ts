@@ -21,6 +21,7 @@ import { registerScriptProfile } from './script-profile-view.ts';
 import { registerTexturePreview, type TexturePreviewApi } from './texture-preview.ts';
 import { registerMeshPreview, type MeshPreviewApi } from './mesh-preview.ts';
 import { registerEntityPreview, type EntityPreviewApi } from './entity-preview.ts';
+import { registerDlcFiles } from './dlc-files.ts';
 
 /** What `activate` returns: for Etch's own tests, not a stable API for other extensions. */
 export interface EtchApi {
@@ -51,6 +52,7 @@ export function activate(context: vscode.ExtensionContext): EtchApi {
   output.info(
     `Etch ${version} (${RUNNING_BUILD?.commit ?? 'dev'}) for EU4 ${SUPPORTED_GAME_VERSION}`,
   );
+  context.subscriptions.push(registerDlcFiles());
   context.subscriptions.push(registerGameText());
   const navigation = new WidgetNavigation();
   context.subscriptions.push(navigation);

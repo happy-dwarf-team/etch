@@ -1,4 +1,4 @@
-import { open, readFile } from 'node:fs/promises';
+import { open } from 'node:fs/promises';
 import {
   TEXTURE_HEADER_BYTES,
   layoutWindow,
@@ -15,6 +15,7 @@ import type { GuiFile, Screen, Widget } from '../model/index.ts';
 import { normaliseGamePath } from '../model/index.ts';
 import { screenLayoutView } from '../profile/view.ts';
 import { parseBmFont, type BmFont } from '../text/bmfont.ts';
+import type { GameFile } from './game-files.ts';
 import type { PlaysetInterface } from './interface.ts';
 
 /**
@@ -51,11 +52,11 @@ export class PlaysetAssets implements LayoutAssets {
         const key = keyOf(path);
         const file = this.playset.gameFile(path);
         if (/\.fnt$/i.test(path)) {
-          this.fonts.set(key, file === undefined ? notFound() : await readFont(file.absolutePath));
+          this.fonts.set(key, file === undefined ? notFound() : await readFont(this.playset, file));
         } else {
           this.textures.set(
             key,
-            file === undefined ? notFound() : await readHeader(file.absolutePath),
+            file === undefined ? notFound() : await readHeader(this.playset, file),
           );
         }
       }),
@@ -117,9 +118,16 @@ function notFound(): AssetProblem {
   return { problem: 'the playset has no such file' };
 }
 
-async function readHeader(absolutePath: string): Promise<TextureSize | AssetProblem> {
+async function readHeader(
+  playset: PlaysetInterface,
+  file: GameFile,
+): Promise<TextureSize | AssetProblem> {
   try {
-    const handle = await open(absolutePath, 'r');
+    // An archive's entry is read whole; a file on disk only for its header.
+    if (file.archiveEntry !== undefined) {
+      return readTextureSize((await playset.readFile(file)).subarray(0, TEXTURE_HEADER_BYTES));
+    }
+    const handle = await open(file.absolutePath, 'r');
     try {
       const bytes = new Uint8Array(TEXTURE_HEADER_BYTES);
       const { bytesRead } = await handle.read(bytes, 0, bytes.byteLength, 0);
@@ -132,10 +140,10 @@ async function readHeader(absolutePath: string): Promise<TextureSize | AssetProb
   }
 }
 
-async function readFont(absolutePath: string): Promise<BmFont | AssetProblem> {
+async function readFont(playset: PlaysetInterface, file: GameFile): Promise<BmFont | AssetProblem> {
   try {
     // BMFont text files are Windows-1252; their syntax is ASCII, so Latin-1 reads them.
-    return parseBmFont(await readFile(absolutePath, 'latin1')).font;
+    return parseBmFont(Buffer.from(await playset.readFile(file)).toString('latin1')).font;
   } catch (error) {
     return { problem: `cannot read it (${errorText(error)})` };
   }

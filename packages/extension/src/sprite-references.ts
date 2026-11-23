@@ -6,7 +6,6 @@
 // script files, never another mod's or the game's files. A rename that would leave the old name
 // behind is refused (`planSpriteRename`).
 
-import { readFile } from 'node:fs/promises';
 import * as vscode from 'vscode';
 import {
   decodeGameText,
@@ -23,6 +22,8 @@ import {
   spriteScriptPath,
   type SpriteLinks,
 } from './sprite-links.ts';
+import { readGamePath } from '@etch/core/playset';
+import { pathUri } from './dlc-files.ts';
 
 const GFX_SELECTOR: vscode.DocumentSelector = [{ scheme: 'file', pattern: '**/*.gfx' }];
 /** The setting that turns Find All References and Rename Symbol on sprite names on and off. */
@@ -138,14 +139,14 @@ async function textOf(
   file: GameFile,
   open: ReadonlyMap<string, vscode.TextDocument>,
 ): Promise<FileText> {
-  const uri = vscode.Uri.file(file.absolutePath);
+  const uri = pathUri(file.absolutePath);
   const { name: layer, root } = file.layer;
   const document = open.get(file.absolutePath.toLowerCase());
   if (document !== undefined) {
     return { uri, layer, root, path: file.path, text: document.getText(), document };
   }
   const kind = spriteFileKind(file.path) === 'script' ? 'script' : 'interface';
-  const text = decodeGameText(await readFile(file.absolutePath), kind).text;
+  const text = decodeGameText(await readGamePath(file.absolutePath), kind).text;
   return { uri, layer, root, path: file.path, text, document: undefined };
 }
 

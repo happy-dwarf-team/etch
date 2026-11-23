@@ -2,7 +2,6 @@
 // `interface/` and the entities, animations and particle systems of every `.asset` file under
 // `gfx/`, subfolders included, the folders vanilla EU4 1.37.5 keeps them in. Files are read in path
 // order; a later definition of a name wins (which one the game keeps is not checked).
-import { readFile } from 'node:fs/promises';
 import {
   readAssetFile,
   readPdxMeshTypes,
@@ -26,8 +25,8 @@ async function filesUnder(files: GameFiles, root: string, extension: string): Pr
   return out;
 }
 
-async function read(file: GameFile): Promise<string> {
-  return decodeGameText(await readFile(file.absolutePath), 'script').text;
+async function read(files: GameFiles, file: GameFile): Promise<string> {
+  return decodeGameText(await files.readFile(file), 'script').text;
 }
 
 /** Reads each of the playset's `.gfx` files with `reader`, one list per file in path order. */
@@ -37,7 +36,7 @@ async function readGfx<T>(
 ): Promise<T[][]> {
   const gfxFiles = await filesUnder(files, 'interface', '.gfx');
   return Promise.all(
-    gfxFiles.map(async (file) => reader(parseScript(await read(file)), file.path)),
+    gfxFiles.map(async (file) => reader(parseScript(await read(files, file)), file.path)),
   );
 }
 
@@ -55,7 +54,7 @@ export async function loadEntityIndex(files: GameFiles): Promise<EntityIndex> {
     filesUnder(files, 'gfx', '.asset'),
   ]);
   const assets = await Promise.all(
-    assetFiles.map(async (file) => readAssetFile(parseScript(await read(file)), file.path)),
+    assetFiles.map(async (file) => readAssetFile(parseScript(await read(files, file)), file.path)),
   );
   const gfx = types.flat();
   return EntityIndex.of(

@@ -149,12 +149,12 @@ in one place, grouped by where you meet them.
 - The entity preview does not draw particle effects, such as an artillery piece's muzzle flash.
   The status line names them while the state plays. See
   [Entities](../textures-and-meshes/entities.md).
-- Etch does not read the game's DLC archives, which define many of the base game's event pictures.
-  When you hover over such a picture's name, Etch says it has no sprite. See
-  [Hovers and links](../textures-and-meshes/hovers-and-links.md).
+- Etch does not check which DLCs you own: it reads every DLC in the game folder that the game's
+  launcher has not turned off. A player without a DLC does not see its pictures. See
+  [The DLCs](../getting-started/finding-the-game.md#the-dlcs).
 - **Find All References** and **Rename Symbol** work only on sprite names. A rename changes only
-  your mod's files: Etch refuses it when the base game's or another mod's files also use the name.
-  It cannot see the DLC archives, so it cannot warn about a DLC file that uses the name.
+  your mod's files: Etch refuses it when a file of the base game, a DLC or another mod also uses
+  the name.
   See [Hovers and links](../textures-and-meshes/hovers-and-links.md#rename-a-sprite).
 - A file shows at most 500 of the pictures beside the line numbers. See
   [Hovers and links](../textures-and-meshes/hovers-and-links.md#see-sprites-beside-the-line-numbers).

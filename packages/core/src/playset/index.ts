@@ -5,6 +5,8 @@
 export { parseModDescriptor, decodeDescriptor, type ModDescriptor } from './descriptor.ts';
 export type { PlaysetDiagnostic, PlaysetDiagnosticSeverity } from './diagnostics.ts';
 export { GameFiles, type GameFile, type GameFilesLayer } from './game-files.ts';
+export { findDlcArchives, readDisabledDlcs, type DlcArchive } from './dlc.ts';
+export { ZipArchive, readGamePath, splitArchivePath, statGamePath, type ZipEntry } from './zip.ts';
 export { PlaysetInterface, spriteNamingFiles } from './interface.ts';
 export { PlaysetAssets, layOutPreview } from './assets.ts';
 export { loadGovernmentMechanics, type PlaysetMechanics } from './government-mechanics.ts';
@@ -23,7 +25,13 @@ export {
 } from './locate.ts';
 export type { Mod, ModSource } from './mods.ts';
 export { parsePlayerSettings, readPlayerSettings, type PlayerSettings } from './player-settings.ts';
-export { findPlayset, type FindPlaysetOptions, type Playset } from './playset.ts';
+export {
+  baseGameFiles,
+  findPlayset,
+  gameLayers,
+  type FindPlaysetOptions,
+  type Playset,
+} from './playset.ts';
 export { parseVdf, type VdfObject } from './vdf.ts';
 export { hostPathFromWindows, isWindowsDrivePath, winePrefixOf } from './wine.ts';
 export { definedIds, loadProvinceIds, type PlaysetProvinceIds } from './province-ids.ts';

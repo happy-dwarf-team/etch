@@ -1,4 +1,3 @@
-import { readFile } from 'node:fs/promises';
 import { decodeGameText } from '../game-text.ts';
 import {
   InterfaceIndex,
@@ -54,7 +53,7 @@ export class PlaysetInterface {
     const gui: InterfaceFile<GuiFile>[] = [];
     await Promise.all(
       paths.map(async (file) => {
-        const text = decodeGameText(await readFile(file.absolutePath), 'interface').text;
+        const text = decodeGameText(await files.readFile(file), 'interface').text;
         if (/\.gfx$/i.test(file.path)) {
           gfx.push({ path: file.path, file: readGfxFile(parseScript(text)) });
         } else {
@@ -85,6 +84,11 @@ export class PlaysetInterface {
   /** The winning file at a game-relative path that a loaded file names, such as a texture. */
   gameFile(path: string): GameFile | undefined {
     return this.found.get(cacheKey(path)) ?? undefined;
+  }
+
+  /** The bytes of a file of the playset, from disk or from a DLC's archive (ADR 0009). */
+  readFile(file: GameFile): Promise<Uint8Array> {
+    return this.files.readFile(file);
   }
 
   /**
