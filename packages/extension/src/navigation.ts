@@ -75,7 +75,8 @@ const TEXT_KINDS: ReadonlySet<WidgetKind> = new Set<WidgetKind>([
 /** Set while Etch runs; the outline view shows only then. */
 const OUTLINE_CONTEXT = 'etch.widgetOutline.available';
 
-const NO_WINDOW = 'Open a .gui file to see the widgets of its window.';
+// With no window, the outline is empty and shows its welcome view (`contributes.viewsWelcome`):
+// a tree view's message would hide it.
 /** While the preview is closed, the outline follows the editor after this pause in typing. */
 /** While the preview is closed the outline follows the editor; a short debounce spares bursts of typing. */
 const DEBOUNCE_MS = 30;
@@ -395,7 +396,6 @@ export class WidgetNavigation implements vscode.Disposable {
       treeDataProvider: this.tree,
       showCollapseAll: true,
     });
-    this.outline.message = NO_WINDOW;
     void vscode.commands.executeCommand('setContext', OUTLINE_CONTEXT, true);
     this.subscriptions = [
       this.outline,
@@ -570,7 +570,6 @@ export class WidgetNavigation implements vscode.Disposable {
   private show(previewed: PreviewedWindow | undefined): void {
     this.current = previewed;
     this.tree.show(previewed);
-    this.outline.message = previewed ? '' : NO_WINDOW;
     this.outline.description = previewed ? widgetLabel(previewed.window) : '';
     this.highlightedWidget = undefined;
     const editor = previewed && this.editorOf(previewed.document);

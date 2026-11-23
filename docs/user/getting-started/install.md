@@ -86,6 +86,23 @@ setting also turns off VS Code's own suggestions of extensions.
 
 When Etch is installed, go on to [Your first preview](first-preview.md).
 
+## The Get Started page
+
+Once Etch is installed, VS Code opens **Get Started with Etch** on its Welcome page. Five steps
+show the main things Etch does, each with a button that does it:
+
+1. **Find the game**: Etch says whether it found the game. **Set the Game Folder** opens the
+   setting `etch.gamePath`.
+2. **Open your first preview**: **Open a .gui File…** lists your mod's `.gui` files.
+3. **Find a widget in the Widget Outline**: **Show the Widget Outline** opens it in the Explorer.
+4. **Fill texts with sample data**: what **Data ▾** in the preview does.
+5. **Start the live game (optional)**: **Start the Live Game**.
+
+A step ticks itself when you have done it, whether with its button or not: when Etch finds the
+game, when a preview opens, when the Widget Outline shows, when you open the sample data step and
+when the live game starts. To open the page again, run **Etch: Get Started** from the Command
+Palette (<kbd>Ctrl+Shift+P</kbd>).
+
 ## Free and private
 
 - Etch is free, under the

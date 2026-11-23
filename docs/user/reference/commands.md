@@ -34,7 +34,9 @@ Many commands are also a button, a menu entry or a key:
   [by hand](glossary.md#by-hand) (**Hide by Hand**, **Show by Hand**), pick it from a set of
   alternatives (**Choose by Hand**), or let you type its [sample text](glossary.md#sample-data)
   (**Type Sample Text…**). Right-click a text's row for **Type Sample Text…** and **Clear Sample
-  Text**.
+  Text**. With no `.gui` file open, **Get started** there runs **Etch: Get Started**.
+- **On the Get Started page**: each step's button, such as **Start the Live Game**
+  ([The Get Started page](../getting-started/install.md#the-get-started-page)).
 - **Above an entity** in an `.asset` file: **Preview Entity** previews that entity at once, as
   **Etch: Preview Entity…** does after you pick it from its list.
 - **With a key**: in the live game, <kbd>Ctrl+Shift+E</kbd> turns pick mode on and off, as

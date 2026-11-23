@@ -85,6 +85,83 @@
         }
       ]
     },
+    "viewsWelcome": [
+      {
+        "view": "etch.widgetOutline",
+        "contents": "Open a .gui file to see the widgets of its window here.\n[Open a .gui File…](command:workbench.action.quickOpen?%5B%22.gui%22%5D)\nNew to Etch? [Get started](command:etch.getStarted) in five steps."
+      }
+    ],
+    "walkthroughs": [
+      {
+        "id": "gettingStarted",
+        "title": "Get Started with Etch",
+        "description": "Preview your EU4 interface mod beside the code, as the game draws it.",
+        "steps": [
+          {
+            "id": "findGame",
+            "title": "Find the game",
+            "description": "Etch draws with your game's own sprites, fonts and texts, so it needs the Europa Universalis IV folder. It finds a game installed through Steam by itself, and this step ticks itself once it has. Is your game elsewhere, such as a GOG copy? Set its folder, the one that holds `eu4.exe`.\n[Set the Game Folder](command:workbench.action.openSettings?%5B%22etch.gamePath%22%5D)",
+            "media": {
+              "svg": "media/walkthrough/find-game.svg",
+              "altText": "A game folder found through Steam, holding eu4.exe"
+            },
+            "completionEvents": [
+              "onContext:etch.gameFound"
+            ]
+          },
+          {
+            "id": "openPreview",
+            "title": "Open your first preview",
+            "description": "Open a `.gui` file of your mod, put the cursor in a window and click **Open Preview** in the editor's title bar. The preview draws that window beside the editor and follows the cursor from window to window.\n[Open a .gui File…](command:workbench.action.quickOpen?%5B%22.gui%22%5D)",
+            "media": {
+              "svg": "media/walkthrough/first-preview.svg",
+              "altText": "A .gui file in the editor, and the preview of its window beside it"
+            },
+            "completionEvents": [
+              "onCommand:etch.openPreview",
+              "onContext:etch.previewOpen"
+            ]
+          },
+          {
+            "id": "widgetOutline",
+            "title": "Find a widget in the Widget Outline",
+            "description": "The **Widget Outline** in the Explorer lists the widgets of the previewed window as a tree. Click one to jump to its line; the buttons on its row hide or show it.\n[Show the Widget Outline](command:etch.widgetOutline.focus)",
+            "media": {
+              "svg": "media/walkthrough/widget-outline.svg",
+              "altText": "The Widget Outline lists the widgets of a window beside the file"
+            },
+            "completionEvents": [
+              "onView:etch.widgetOutline"
+            ]
+          },
+          {
+            "id": "sampleData",
+            "title": "Fill texts with sample data",
+            "description": "The game's code writes many texts of a window, such as a province's name. In the preview, **Data ▾** fills them with made-up text, with a save of yours or with what the live game showed.",
+            "media": {
+              "svg": "media/walkthrough/sample-data.svg",
+              "altText": "The preview's Data menu and the texts it fills"
+            },
+            "completionEvents": [
+              "onStepSelected"
+            ]
+          },
+          {
+            "id": "liveGame",
+            "title": "Start the live game (optional)",
+            "description": "The live game is EU4 itself beside the editor, with your mod's playset: each file you save goes into it at once, and pick mode jumps from a widget in the game to its line. It needs the Steam version of EU4 1.37.5.\n[Start the Live Game](command:etch.startLiveGame)",
+            "media": {
+              "svg": "media/walkthrough/live-game.svg",
+              "altText": "Saving a file reloads it in the live game; a pick goes back to its line"
+            },
+            "completionEvents": [
+              "onCommand:etch.startLiveGame",
+              "onContext:etch.liveGame.canRun"
+            ]
+          }
+        ]
+      }
+    ],
     "commands": [
       {
         "command": "etch.previewEntity",
@@ -96,6 +173,11 @@
         "title": "Open Preview",
         "category": "Etch",
         "icon": "$(open-preview)"
+      },
+      {
+        "command": "etch.getStarted",
+        "title": "Get Started",
+        "category": "Etch"
       },
       {
         "command": "etch.togglePreviewPin",
@@ -406,96 +488,131 @@
         "url": "./dist/profiles/window-profile.schema.json"
       }
     ],
-    "configuration": {
-      "title": "Etch",
-      "properties": {
-        "etch.gamePath": {
-          "type": "string",
-          "default": "",
-          "scope": "machine-overridable",
-          "markdownDescription": "The Europa Universalis IV game folder, the one that holds `eu4.exe`. When empty, Etch finds it through Steam's library list. Etch only reads this folder."
-        },
-        "etch.playset": {
-          "type": "array",
-          "items": {
-            "type": "string"
+    "configuration": [
+      {
+        "id": "etch.game",
+        "title": "Game",
+        "order": 1,
+        "properties": {
+          "etch.gamePath": {
+            "type": "string",
+            "default": "",
+            "scope": "machine-overridable",
+            "markdownDescription": "The Europa Universalis IV game folder, the one that holds `eu4.exe`. When empty, Etch finds it through Steam's library list. Etch only reads this folder.",
+            "order": 1
           },
-          "default": [],
-          "scope": "resource",
-          "markdownDescription": "Mods to preview with, in load order (a later mod's file wins), as mod names or as mod folders or `.mod` descriptors. When not empty it replaces the default playset: the edited mod and the `dependencies` of its descriptor. The edited mod is added last unless the list names it."
-        },
-        "etch.language": {
-          "type": "string",
-          "default": "english",
-          "enum": [
-            "english",
-            "french",
-            "german",
-            "spanish"
-          ],
-          "scope": "resource",
-          "markdownDescription": "The language of the localisation texts that the preview shows in a `.gui` file, and that the editor shows after each localisation key."
-        },
-        "etch.editor.completion": {
-          "type": "boolean",
-          "default": true,
-          "scope": "resource",
-          "markdownDescription": "Suggest words as you type in `.gui` files: widget types, keys, sprite names, fonts and values, taken from your playset (the game, your mod and the mods it depends on)."
-        },
-        "etch.editor.rename": {
-          "type": "boolean",
-          "default": true,
-          "scope": "window",
-          "markdownDescription": "Find All References (Shift+F12) and Rename Symbol (F2) on sprite names: in `.gfx` and `.gui` files and in the script files that name sprites: an event's `picture`, a mission's `icon`, an estate privilege's `icon` and the sprite keys of ten `common` folders (see Hovers and links in Etch's guide). A rename changes only your mod's files. Turn it off if another extension already finds or renames these names: Etch then adds neither, and the other extension's answers stand alone."
-        },
-        "etch.editor.spriteThumbnails": {
-          "type": "boolean",
-          "default": false,
-          "scope": "resource",
-          "markdownDescription": "Show a small picture of each sprite beside the line numbers, on the lines of a `.gui` file or a script file that name a sprite: an event's `picture`, a mission's `icon` and the other keys listed in Etch's guide under Hovers and links. A strip shows its first frame. Up to 500 pictures per file."
-        },
-        "etch.editor.localisationHints": {
-          "type": "boolean",
-          "default": true,
-          "scope": "resource",
-          "markdownDescription": "Show the text of a localisation key, in `#etch.language#`, in grey after the key: in `.gui` files after `text`, `tooltip`, `tooltipText` and `delayedTooltipText`; in the scripts of `events`, `decisions`, `missions` and `common` after `title`, `desc`, `name`, `tooltip` and `custom_tooltip`. Ctrl+click a key to open its line in the `.yml` file."
-        },
-        "etch.previewResolution": {
-          "type": "string",
-          "default": "default",
-          "pattern": "^\\s*(?:[Dd][Ee][Ff][Aa][Uu][Ll][Tt]|[Nn][Aa][Tt][Ii][Vv][Ee]|\\d+\\s*[xX×*]\\s*\\d+)?\\s*$",
-          "patternErrorMessage": "Write default, native or a width × height such as 1920x1080.",
-          "examples": [
-            "default",
-            "native",
-            "1280x720",
-            "1366x768",
-            "1600x900",
-            "1680x1050",
-            "1920x1080",
-            "2560x1440",
-            "3440x1440",
-            "3840x2160"
-          ],
-          "scope": "window",
-          "markdownDescription": "The screen size the preview lays windows out on and evaluates `if_resolution` blocks against: `default` (the resolution in the game's `settings.txt`, else the monitor's), `native` (the monitor's resolution), or a width × height such as `1920x1080`. UI scale is always 1.0. The command **Etch: Choose the Preview Resolution** also offers the corpus resolutions."
-        },
-        "etch.liveGame.checkOnSave": {
-          "type": "boolean",
-          "default": false,
-          "scope": "window",
-          "markdownDescription": "Check an event, decision, mission, scripted effect or scripted trigger file in the live game each time you save it, as **Etch: Check File in the Live Game** does. The game reads the file's triggers and effects but runs none of them. What it finds appears in the Problems panel, with no notice. Needs a running live game with a save loaded; otherwise saving checks nothing."
-        },
-        "etch.liveGame.pickModeKey": {
-          "type": "string",
-          "default": "Ctrl+Shift+E",
-          "pattern": "^\\s*(?:(?:[Cc][Tt][Rr][Ll]|[Ss][Hh][Ii][Ff][Tt]|[Aa][Ll][Tt])\\s*\\+\\s*)+(?:[A-Za-z0-9]|[Ff](?:[1-9]|1[0-9]|2[0-4]))\\s*$",
-          "patternErrorMessage": "Write Ctrl or Alt (with Shift if you like) and a letter, a digit or F1-F24, such as Ctrl+Shift+E.",
-          "scope": "machine",
-          "markdownDescription": "The key that turns pick mode on and off in the live game: Ctrl or Alt, with Shift if you like, and a letter, a digit or F1-F24. The game binds nothing to the default `Ctrl+Shift+E`; Esc is never taken. A change applies to a running live game at once."
+          "etch.playset": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": [],
+            "scope": "resource",
+            "markdownDescription": "Mods to preview with, in load order (a later mod's file wins), as mod names or as mod folders or `.mod` descriptors. When not empty it replaces the default playset: the edited mod and the `dependencies` of its descriptor. The edited mod is added last unless the list names it.",
+            "order": 2
+          },
+          "etch.language": {
+            "type": "string",
+            "default": "english",
+            "enum": [
+              "english",
+              "french",
+              "german",
+              "spanish"
+            ],
+            "scope": "resource",
+            "markdownDescription": "The language of the localisation texts that the preview shows in a `.gui` file, and that the editor shows after each localisation key.",
+            "order": 3
+          }
+        }
+      },
+      {
+        "id": "etch.editor",
+        "title": "Editor",
+        "order": 2,
+        "properties": {
+          "etch.editor.completion": {
+            "type": "boolean",
+            "default": true,
+            "scope": "resource",
+            "markdownDescription": "Suggest words as you type in `.gui` files: widget types, keys, sprite names, fonts and values, taken from your playset (the game, your mod and the mods it depends on).",
+            "order": 1
+          },
+          "etch.editor.localisationHints": {
+            "type": "boolean",
+            "default": true,
+            "scope": "resource",
+            "markdownDescription": "Show the text of a localisation key, in `#etch.language#`, in grey after the key: in `.gui` files after `text`, `tooltip`, `tooltipText` and `delayedTooltipText`; in the scripts of `events`, `decisions`, `missions` and `common` after `title`, `desc`, `name`, `tooltip` and `custom_tooltip`. Ctrl+click a key to open its line in the `.yml` file.",
+            "order": 2
+          },
+          "etch.editor.rename": {
+            "type": "boolean",
+            "default": true,
+            "scope": "window",
+            "markdownDescription": "Find All References (Shift+F12) and Rename Symbol (F2) on sprite names: in `.gfx` and `.gui` files and in the script files that name sprites: an event's `picture`, a mission's `icon`, an estate privilege's `icon` and the sprite keys of ten `common` folders (see Hovers and links in Etch's guide). A rename changes only your mod's files. Turn it off if another extension already finds or renames these names: Etch then adds neither, and the other extension's answers stand alone.",
+            "order": 3
+          },
+          "etch.editor.spriteThumbnails": {
+            "type": "boolean",
+            "default": false,
+            "scope": "resource",
+            "markdownDescription": "Show a small picture of each sprite beside the line numbers, on the lines of a `.gui` file or a script file that name a sprite: an event's `picture`, a mission's `icon` and the other keys listed in Etch's guide under Hovers and links. A strip shows its first frame. Up to 500 pictures per file.",
+            "order": 4
+          }
+        }
+      },
+      {
+        "id": "etch.preview",
+        "title": "Preview",
+        "order": 3,
+        "properties": {
+          "etch.previewResolution": {
+            "type": "string",
+            "default": "default",
+            "pattern": "^\\s*(?:[Dd][Ee][Ff][Aa][Uu][Ll][Tt]|[Nn][Aa][Tt][Ii][Vv][Ee]|\\d+\\s*[xX×*]\\s*\\d+)?\\s*$",
+            "patternErrorMessage": "Write default, native or a width × height such as 1920x1080.",
+            "examples": [
+              "default",
+              "native",
+              "1280x720",
+              "1366x768",
+              "1600x900",
+              "1680x1050",
+              "1920x1080",
+              "2560x1440",
+              "3440x1440",
+              "3840x2160"
+            ],
+            "scope": "window",
+            "markdownDescription": "The screen size the preview lays windows out on and evaluates `if_resolution` blocks against: `default` (the resolution in the game's `settings.txt`, else the monitor's), `native` (the monitor's resolution), or a width × height such as `1920x1080`. UI scale is always 1.0. The command **Etch: Choose the Preview Resolution** also offers the corpus resolutions.",
+            "order": 1
+          }
+        }
+      },
+      {
+        "id": "etch.liveGame",
+        "title": "Live Game",
+        "order": 4,
+        "properties": {
+          "etch.liveGame.checkOnSave": {
+            "type": "boolean",
+            "default": false,
+            "scope": "window",
+            "markdownDescription": "Check an event, decision, mission, scripted effect or scripted trigger file in the live game each time you save it, as **Etch: Check File in the Live Game** does. The game reads the file's triggers and effects but runs none of them. What it finds appears in the Problems panel, with no notice. Needs a running live game with a save loaded; otherwise saving checks nothing.",
+            "order": 1
+          },
+          "etch.liveGame.pickModeKey": {
+            "type": "string",
+            "default": "Ctrl+Shift+E",
+            "pattern": "^\\s*(?:(?:[Cc][Tt][Rr][Ll]|[Ss][Hh][Ii][Ff][Tt]|[Aa][Ll][Tt])\\s*\\+\\s*)+(?:[A-Za-z0-9]|[Ff](?:[1-9]|1[0-9]|2[0-4]))\\s*$",
+            "patternErrorMessage": "Write Ctrl or Alt (with Shift if you like) and a letter, a digit or F1-F24, such as Ctrl+Shift+E.",
+            "scope": "machine",
+            "markdownDescription": "The key that turns pick mode on and off in the live game: Ctrl or Alt, with Shift if you like, and a letter, a digit or F1-F24. The game binds nothing to the default `Ctrl+Shift+E`; Esc is never taken. A change applies to a running live game at once.",
+            "order": 2
+          }
         }
       }
-    }
+    ]
   },
   "scripts": {
     "build": "node build.mts",

@@ -16,6 +16,7 @@ export {
   SUPPORTED_GAME_EXE_SHA256,
   findGameInSteam,
   findProfileFolder,
+  isGameFolder,
   readGameBuild,
   readSteamLibraries,
   systemEnvironment,
