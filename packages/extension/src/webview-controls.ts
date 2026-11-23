@@ -17,7 +17,10 @@
  *   that add up. The two sets look different, so a set that adds up never reads as one choice;
  *   `.group-label` names a set;
  * - selects and text inputs 26 px high;
- * - `#error` and the notices, the `footer`, and `[hidden]`.
+ * - `#error` and the notices, the `footer`, and `[hidden]`;
+ * - the zoom control (`zoomControl()`), `.menu` (`webview/menu.ts`: one choice from a list) and
+ *   `.pop` (`webview/popover.ts`: a small form under its button, with `.pop-head`, `.row`, `.help`
+ *   and `.heading`), whose buttons are `.field`s with ▾; `.swatches` shows colours on a button.
  */
 export const CONTROLS_CSS = `
   html, body { height: 100%; margin: 0; }
@@ -112,7 +115,7 @@ export const CONTROLS_CSS = `
   }
   .zoom { position: relative; display: inline-flex; align-items: center; gap: 1px; flex: none; }
   .zoom #zoom-level { min-width: 7.5em; }
-  button[aria-haspopup="menu"].field::after { content: '▾' / ''; }
+  button[aria-haspopup].field::after { content: '▾' / ''; }
   .menu {
     position: absolute; z-index: 20; top: calc(100% + 2px); right: 0; min-width: 180px; padding: 4px 0;
     background: var(--vscode-menu-background, var(--vscode-dropdown-background));
@@ -133,6 +136,23 @@ export const CONTROLS_CSS = `
   .menu .keys { color: var(--vscode-descriptionForeground); font-size: 0.92em; }
   .menu button.item:hover .keys, .menu button.item:focus .keys { color: inherit; }
   .menu hr { border: 0; border-top: 1px solid var(--vscode-menu-separatorBackground, var(--vscode-panel-border, #555)); margin: 4px 0; }
+  .pop {
+    position: fixed; z-index: 30; width: max-content; min-width: 280px; max-width: min(440px, calc(100vw - 8px));
+    max-height: calc(100vh - 60px); overflow: auto; padding: 8px 12px 10px; box-sizing: border-box; border-radius: 5px;
+    background: var(--vscode-editorWidget-background); color: var(--vscode-editorWidget-foreground, var(--vscode-foreground));
+    border: 1px solid var(--vscode-editorWidget-border, var(--vscode-widget-border, transparent));
+    box-shadow: 0 2px 8px var(--vscode-widget-shadow, rgba(0, 0, 0, 0.36));
+  }
+  .pop-head { display: flex; align-items: center; gap: 6px; margin: 0 -6px 6px 0; font-weight: 600; }
+  .pop-head .spacer + button { font-size: 1.15em; }
+  .pop .row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; margin: 4px 0; }
+  .pop .help { margin: 2px 0 6px; font-size: 0.92em; line-height: 1.45; color: var(--vscode-descriptionForeground); }
+  .pop .heading {
+    margin: 10px 0 4px; font-size: 0.85em; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--vscode-descriptionForeground);
+  }
+  .swatches { display: inline-flex; gap: 2px; }
+  .swatches i { display: inline-block; width: 9px; height: 14px; border-radius: 1px; outline: 1px solid var(--vscode-widget-border, transparent); }
 `;
 
 /**

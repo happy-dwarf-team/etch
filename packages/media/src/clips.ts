@@ -2742,14 +2742,17 @@ export const CLIPS: readonly Clip[] = [
       if (idle === undefined) {
         throw new Error(`${MESH_FILE} offers no ${IDLE_ANIMATION}: ${offered.join(', ')}`);
       }
-      if (await view.locator('#flag').isHidden()) throw new Error(`${MESH_FILE} shows no flag`);
+      if (await view.locator('#colours-button').isHidden()) {
+        throw new Error(`${MESH_FILE} shows no country colours`);
+      }
       // Its textures load after the mesh.
       await sleep(1500);
       const flagInput = view.locator('#flag-tag');
       const controls = {
         facts: view.locator('#facts'),
         wire: view.locator('#wireframe'),
-        flag: view.locator('#flag'),
+        // The country colours' button, whose popover holds the tag.
+        flag: view.locator('#colours-button'),
         animation,
         reset: view.locator('#zoom-level'),
       };
@@ -2785,13 +2788,15 @@ export const CLIPS: readonly Clip[] = [
         await view.locator(`#wireframe[aria-pressed="${String(on)}"]`).waitFor();
         await sleep(on ? 1200 : 400);
       }
-      // A country's flag on the sails.
+      // A country's flag on the sails: the colours' popover opens on the tag, Esc closes it, and
+      // the button shows the country.
       take.mark('to', { label: 'flag' });
-      await pointTo(context, await centre(flagInput), 500);
+      await pointTo(context, await centre(controls.flag), 500);
       await sleep(150);
       take.click();
-      await flagInput.click();
-      take.mark('tag', { source: 'vscode', rect: await wb.box(controls.flag) });
+      await controls.flag.click();
+      await flagInput.waitFor();
+      await sleep(300);
       await wb.page.keyboard.type(FLAG_TAG, { delay: 120 });
       await sleep(150);
       take.mark('enter');
@@ -2800,7 +2805,11 @@ export const CLIPS: readonly Clip[] = [
         (tag) => document.querySelector('#facts')?.textContent.includes(tag) ?? false,
         FLAG_TAG,
       );
-      await sleep(1500);
+      await sleep(600);
+      await wb.page.keyboard.press('Escape');
+      await view.locator('#colours-pop').waitFor({ state: 'hidden' });
+      take.mark('tag', { source: 'vscode', rect: await wb.box(controls.flag) });
+      await sleep(900);
       // Its idle animation, which plays once it is chosen. The list would open in a window of its
       // own, which the master does not record: the choice is made without it.
       take.mark('to', { label: 'animation' });

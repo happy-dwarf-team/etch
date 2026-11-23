@@ -44,7 +44,7 @@ Etch follows the entity's keys as the game does:
 
 ## States
 
-The list in the bar above the model holds the entity's states (**State: idle**, **State: walk**,
+The list in the bar under the model holds the entity's states (**State: idle**, **State: walk**,
 …). The preview starts with the entity's `default_state`. Without one, it starts with `idle`, if
 the entity has that state.
 
@@ -68,11 +68,11 @@ tenth joint of `rifleman_idle.anim`, `attack_L_hand`. An animation with more or 
 the mesh has bones does not play in the game: the preview shows that entity in its bind pose and
 names the state in the box under the bar.
 
-You turn, move and zoom the model as in the [mesh preview](mesh-preview.md). The colour boxes,
-**Country**, **Region**, **LOD**, **Snow**, **Wire**, **Bones**, **Diffuse**, **Normal**, **Spec**
-and the zoom with **Fit model** work the same way. **Particles** shows or hides the state's smoke,
-sparks and flashes (see [Particles](#particles)). As there, the colour boxes, **Country**, **Region**, **LOD**
-and **Snow** show only when the model has parts they work on. **Bones** shows the skeletons of the
+You turn, move and zoom the model as in the [mesh preview](mesh-preview.md). The country colours
+(the colour boxes, **Country** and **Region**), **LOD**, **Snow**, **Wire**, **Bones**,
+**Diffuse**, **Normal**, **Spec** and the zoom with **Fit model** work the same way. **Particles**
+shows or hides the state's smoke, sparks and flashes (see [Particles](#particles)). As there, the
+country colours, **LOD** and **Snow** show only when the model has parts they work on. **Bones** shows the skeletons of the
 entity and of everything attached to it that has one. An orange dot marks each bone an attached
 entity hangs on: point at it to see the bone's name, then the name of the attached entity.
 

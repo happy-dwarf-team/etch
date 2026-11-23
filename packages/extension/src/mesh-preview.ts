@@ -708,9 +708,15 @@ export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): str
   #facts { display: flex; flex-wrap: wrap; gap: 4px 12px; max-height: 20vh; overflow-y: auto; margin-left: 2px; }
   #facts span { white-space: nowrap; }
   #snow-amount, #tint-turn, #season-day, #season-north { width: 6em; }
-  #frame { width: 12em; }
   #season-date { display: inline-block; min-width: 3.6em; margin-right: 0.5em; }
-  #colours { display: inline-flex; gap: 2px; }
+  .pop label.swatch { flex-direction: column; gap: 2px; font-size: 0.85em; color: var(--vscode-descriptionForeground); }
+  /* The animation under the model: the list, Play and the frame slider, which takes the width. */
+  .playbar {
+    display: flex; align-items: center; gap: 6px; flex: none; min-height: 34px; padding: 3px 6px; box-sizing: border-box;
+    border-top: 1px solid var(--vscode-panel-border, transparent);
+  }
+  .playbar:not(:has(> :not([hidden]))) { display: none; }
+  #frame { flex: 1; min-width: 80px; }
   input[type="color"] {
     width: 26px; height: 22px; padding: 0; box-sizing: border-box; vertical-align: middle;
     border: 1px solid var(--vscode-input-border, transparent); border-radius: 2px; background: none;
@@ -731,21 +737,8 @@ export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): str
 <header>
   <div id="facts"></div>
   <div class="spacer"></div>
-  <select id="animation" title="Animation beside the mesh" aria-label="Animation" hidden></select>
-  <button id="play" aria-pressed="false" title="Play or pause the animation" hidden>Play</button>
-  <input type="range" id="frame" min="0" max="0" step="1" value="0" title="Animation frame. Drag to pick a frame; the animation plays on when you let go if it was playing. With the slider selected, the left and right arrow keys step one frame; the comma and full stop keys do too, anywhere in the preview." aria-label="Animation frame" hidden>
   <select id="lod" title="Level of detail: which of the mesh's levels (its shapes' lod property) to draw; the facts give the camera distance the mesh's loddist starts it at" aria-label="Level of detail" hidden></select>
-  <span id="colours" title="The country's three colours: they colour a unit's uniform or a ship's sails, and the sails show them as stripes when Country is empty. A tag in Country fills them" hidden>
-    <input type="color" id="primary" value="#bf291f" aria-label="Primary country colour">
-    <input type="color" id="secondary" value="#ebe0bf" aria-label="Secondary country colour">
-    <input type="color" id="tertiary" value="#264d99" aria-label="Tertiary country colour">
-  </span>
-  <label id="flag" title="Type a country tag, such as SWE, and press Enter. The colour boxes take that country's colours, as the game picks them, and a ship's sails show its flag. With no tag, the sails show the three colours as stripes" hidden>
-    Country <input id="flag-tag" size="4" maxlength="3" spellcheck="false" placeholder="TAG" aria-label="Country tag">
-  </label>
-  <label id="region" title="A colonial nation's region colour: the game draws its overlord's flag with the far half (where the flag's u is over 0.5) in this colour, and puts it in place of the tertiary colour on PdxMeshColor parts; off for other countries" hidden>
-    Region <input type="checkbox" id="region-on" aria-label="Show a colonial region colour"> <input type="color" id="region-colour" value="#3f8f4f" aria-label="Colonial region colour">
-  </label>
+  <button id="colours-button" class="field" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="colours-pop" title="Country colours: a tag, the three colours and a colonial region's colour" hidden><span class="swatches" aria-hidden="true"><i id="swatch-primary"></i><i id="swatch-secondary"></i><i id="swatch-tertiary"></i></span><span id="colours-country">by hand</span></button>
   <label id="snow" title="Snow on PdxMeshSnow parts and map trees, as the game puts it on them in winter: the game takes the amount from the map, here from 0 (none) to 1" hidden>
     Snow <input type="range" id="snow-amount" min="0" max="1" step="0.05" value="0" aria-label="Snow amount">
   </label>
@@ -776,8 +769,33 @@ export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): str
   <span class="sep"></span>
   ${zoomControl({ wheel: 'wheel', fit: 'Fit model' })}
 </header>
+<div id="colours-pop" class="pop" role="dialog" aria-labelledby="colours-title" hidden>
+  <div class="pop-head"><span id="colours-title">Country colours</span><span class="spacer"></span><button type="button" data-close title="Close (Esc)" aria-label="Close">×</button></div>
+  <div id="flag" hidden>
+    <div class="row"><label>Country <input id="flag-tag" size="4" maxlength="3" spellcheck="false" placeholder="TAG" aria-label="Country tag" aria-describedby="flag-help"></label></div>
+    <p class="help" id="flag-help">Type a country tag, such as SWE, and press Enter: the three colours take that country's colours, as the game picks them, and a ship's sails show its flag.</p>
+  </div>
+  <div id="colours" hidden>
+    <div class="row">
+      <label class="swatch"><input type="color" id="primary" value="#bf291f" aria-label="Primary country colour">Primary</label>
+      <label class="swatch"><input type="color" id="secondary" value="#ebe0bf" aria-label="Secondary country colour">Secondary</label>
+      <label class="swatch"><input type="color" id="tertiary" value="#264d99" aria-label="Tertiary country colour">Tertiary</label>
+    </div>
+    <p class="help">They colour a unit's uniform or a ship's sails. With no tag, the sails show them as stripes.</p>
+  </div>
+  <div id="region" hidden>
+    <div class="heading">Colonial region</div>
+    <div class="row"><label><input type="checkbox" id="region-on"> Region colour</label><input type="color" id="region-colour" value="#3f8f4f" aria-label="Colonial region colour"></div>
+    <p class="help">A colonial nation's colour: the game draws its overlord's flag with the far half (where the flag's u is over 0.5) in it, and puts it in place of the tertiary colour on PdxMeshColor parts. Off for other countries.</p>
+  </div>
+</div>
 <div id="error" role="alert" hidden></div>
 <main><canvas id="canvas"></canvas><div id="bone-tip" role="tooltip" hidden></div></main>
+<div id="playbar" class="playbar" role="group" aria-label="Animation">
+  <select id="animation" title="Animation beside the mesh" aria-label="Animation" hidden></select>
+  <button id="play" aria-pressed="false" title="Play or pause the animation" hidden>Play</button>
+  <input type="range" id="frame" min="0" max="0" step="1" value="0" title="Animation frame. Drag to pick a frame; the animation plays on when you let go if it was playing. With the slider selected, the left and right arrow keys step one frame; the comma and full stop keys do too, anywhere in the preview." aria-label="Animation frame" hidden>
+</div>
 <footer id="status"></footer>
 <script nonce="${nonce}" src="${script.toString()}"></script>
 </body>

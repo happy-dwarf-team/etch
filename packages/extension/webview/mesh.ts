@@ -114,6 +114,7 @@ import {
 } from './view-math.ts';
 import { ParticleLayer } from './particles.ts';
 import { listenForZoomKeys } from './zoom-keys.ts';
+import { attachPopover } from './popover.ts';
 
 declare function acquireVsCodeApi(): { postMessage(message: MeshWebviewMessage): void };
 const vscode = acquireVsCodeApi();
@@ -144,6 +145,15 @@ const colours = element('colours');
 const colourInputs = (['primary', 'secondary', 'tertiary'] as const).map(
   (key) => [key, element(key) as HTMLInputElement] as const,
 );
+// The tag, the three colours and the region colour sit in one popover; its button shows the
+// colours and the country (etch#648, finding P2.5).
+const coloursButton = element('colours-button') as HTMLButtonElement;
+const coloursPop = element('colours-pop');
+const swatches = (['primary', 'secondary', 'tertiary'] as const).map((key) =>
+  element(`swatch-${key}`),
+);
+const coloursCountry = element('colours-country');
+attachPopover(coloursButton, coloursPop);
 const zoomOutButton = element('zoom-out') as HTMLButtonElement;
 const zoomInButton = element('zoom-in') as HTMLButtonElement;
 /** Fit model, the zoom control's level here: frames the whole mesh as it opened. */
@@ -1411,6 +1421,16 @@ function showFacts(): void {
   } else {
     facts.title = '';
   }
+  showColoursButton();
+}
+
+/** The colours button: the three colours as swatches, and the country they came from. */
+function showColoursButton(): void {
+  colourInputs.forEach(([, input], i) => {
+    const swatch = swatches[i];
+    if (swatch !== undefined) swatch.style.background = input.value;
+  });
+  coloursCountry.textContent = countryOf === undefined ? 'by hand' : countryOf.tag;
 }
 
 /** Starts playing `key` (an animation or a state), or shows the bind pose for `undefined`. */
@@ -1453,6 +1473,8 @@ function show(
   colours.hidden = !instances.some((i) => i.parts.some((d) => d.countryColours || d.atlas));
   flagLabel.hidden = colours.hidden;
   regionLabel.hidden = colours.hidden;
+  coloursButton.hidden = colours.hidden;
+  if (colours.hidden) coloursPop.hidden = true;
   snowLabel.hidden = tree === undefined && !instances.some((i) => i.parts.some((d) => d.snow));
   tintLabel.hidden = tree === undefined || tint === undefined;
   placeLabel.hidden = tree === undefined;
@@ -1974,6 +1996,7 @@ for (const [key, input] of colourInputs) {
       countryOf = undefined;
       showFacts();
     }
+    showColoursButton();
     redraw();
   });
   input.addEventListener('change', () => {
