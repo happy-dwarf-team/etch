@@ -215,3 +215,44 @@ export function zoomOf(state: unknown): Zoom | undefined {
   if (typeof x !== 'number' || typeof y !== 'number' || !Number.isFinite(x + y)) return undefined;
   return { fit: false, scale, center: { x, y } };
 }
+
+/** What each zoom key does in one view (webview/zoom-keys.ts listens for them). */
+export interface ZoomKeys {
+  readonly zoomIn: () => void;
+  readonly zoomOut: () => void;
+  /** Ctrl+0: 100 %. */
+  readonly actualSize: () => void;
+  /** Ctrl+Shift+0: fit the view. */
+  readonly fit: () => void;
+}
+
+/** The modifiers and the key of a key press, as a `KeyboardEvent` has them. */
+export interface KeyPress {
+  readonly ctrlKey: boolean;
+  readonly altKey: boolean;
+  readonly metaKey: boolean;
+  readonly shiftKey: boolean;
+  /** The key's place on the keyboard, so that Shift and the layout do not change it. */
+  readonly code: string;
+}
+
+/**
+ * The zoom action of a key press, the same in the three previews (etch#648, finding P2.6), or
+ * `undefined` for a key that is not a zoom key.
+ */
+export function zoomKey(event: KeyPress): keyof ZoomKeys | undefined {
+  if (!event.ctrlKey || event.altKey || event.metaKey) return undefined;
+  switch (event.code) {
+    case 'Equal':
+    case 'NumpadAdd':
+      return 'zoomIn';
+    case 'Minus':
+    case 'NumpadSubtract':
+      return 'zoomOut';
+    case 'Digit0':
+    case 'Numpad0':
+      return event.shiftKey ? 'fit' : 'actualSize';
+    default:
+      return undefined;
+  }
+}

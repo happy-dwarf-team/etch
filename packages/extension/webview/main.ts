@@ -20,6 +20,7 @@ import type {
   Zoom,
 } from '../src/preview/protocol.ts';
 import { markPaint, paintResult } from './paint-marker.ts';
+import { listenForZoomKeys } from './zoom-keys.ts';
 import {
   FIT,
   type Panel,
@@ -530,20 +531,20 @@ zoomLevel.addEventListener('click', () => {
   else setZoom(FIT);
 });
 
-window.addEventListener(
-  'keydown',
-  (event) => {
-    if (!event.ctrlKey || event.altKey) return;
-    if (event.code === 'Equal' || event.code === 'NumpadAdd') zoomBy(1, pointer);
-    else if (event.code === 'Minus' || event.code === 'NumpadSubtract') zoomBy(-1, pointer);
-    else if ((event.code === 'Digit0' || event.code === 'Numpad0') && event.shiftKey) setZoom(FIT);
-    else if (event.code === 'Digit0' || event.code === 'Numpad0') zoomTo(1, pointer);
-    else return;
-    event.preventDefault();
-    event.stopPropagation();
+listenForZoomKeys({
+  zoomIn: () => {
+    zoomBy(1, pointer);
   },
-  { capture: true },
-);
+  zoomOut: () => {
+    zoomBy(-1, pointer);
+  },
+  actualSize: () => {
+    zoomTo(1, pointer);
+  },
+  fit: () => {
+    setZoom(FIT);
+  },
+});
 
 /** Ctrl+wheel distance not yet turned into a zoom step, in pixels. */
 let wheel = 0;

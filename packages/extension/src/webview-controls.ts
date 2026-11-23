@@ -110,4 +110,20 @@ export const CONTROLS_CSS = `
     color: var(--vscode-descriptionForeground); font-variant-numeric: tabular-nums;
     border-top: 1px solid var(--vscode-panel-border, transparent);
   }
+  .zoom { display: inline-flex; align-items: center; gap: 1px; flex: none; }
+  .zoom #zoom-level { min-width: 7.5em; }
 `;
+
+/**
+ * The zoom control, the same in all three previews (etch#648, finding P2.6): −, the level, +.
+ * The level shows the zoom and its click switches between fitting the view and the view's
+ * own size; the webview script (with `webview/zoom-keys.ts` for the keys) makes them work.
+ * `wheel` names the wheel that zooms, for the tooltips.
+ */
+export function zoomControl(wheel: string): string {
+  return `<span id="zoom" class="zoom" role="group" aria-label="Zoom">
+    <button id="zoom-out" type="button" title="Zoom out (Ctrl+-, ${wheel})" aria-label="Zoom out">−</button>
+    <button id="zoom-level" class="field" type="button">Fit</button>
+    <button id="zoom-in" type="button" title="Zoom in (Ctrl+=, ${wheel})" aria-label="Zoom in">+</button>
+  </span>`;
+}

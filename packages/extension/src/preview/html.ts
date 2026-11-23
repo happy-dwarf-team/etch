@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import * as vscode from 'vscode';
-import { CONTROLS_CSS } from '../webview-controls.ts';
+import { CONTROLS_CSS, zoomControl } from '../webview-controls.ts';
 
 /**
  * The neutral background the transparent render is composited over (spec section 2): mid grey,
@@ -81,8 +81,6 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
   /* Placed and sized by the webview script from the zoom (etch#162); sharp pixels above 100 %. */
   canvas { position: absolute; left: 0; top: 0; background: ${BACKDROP}; }
   canvas.sharp { image-rendering: pixelated; }
-  #zoom { display: flex; gap: 1px; }
-  #zoom-level { min-width: 7.5em; }
   .box { position: absolute; pointer-events: none; box-sizing: border-box; }
   #hover { border: 1px dashed var(--vscode-editorCursor-foreground, #fff); }
   #selected { border: 2px solid var(--vscode-focusBorder, #0af); }
@@ -105,11 +103,7 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
     <div id="data-popup" class="popup" role="menu" hidden></div>
   </span>
   <span class="spacer"></span>
-  <span id="zoom" role="group" aria-label="Zoom">
-    <button id="zoom-out" type="button" title="Zoom out (Ctrl+-, Ctrl+wheel)">−</button>
-    <button id="zoom-level" class="field" type="button">Fit</button>
-    <button id="zoom-in" type="button" title="Zoom in (Ctrl+=, Ctrl+wheel)">+</button>
-  </span>
+  ${zoomControl('Ctrl+wheel')}
   <button id="live-game" type="button" title="Start the live game with this playset (Etch: Start the Live Game).">Live game</button>
   <button id="resolution" class="field" type="button">1920×1080</button>
   <button id="pin" type="button" aria-pressed="false" disabled>Pin</button>

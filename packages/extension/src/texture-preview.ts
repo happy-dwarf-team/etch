@@ -8,7 +8,7 @@
 import { randomBytes } from 'node:crypto';
 import * as vscode from 'vscode';
 import type { TextureSummary } from '@etch/renderer/inspect';
-import { CONTROLS_CSS } from './webview-controls.ts';
+import { CONTROLS_CSS, zoomControl } from './webview-controls.ts';
 import type { TextureHostMessage, TextureWebviewMessage } from './texture-protocol.ts';
 
 export const TEXTURE_PREVIEW_VIEW_TYPE = 'etch.texturePreview';
@@ -163,12 +163,7 @@ function textureHtml(webview: vscode.Webview, extensionUri: vscode.Uri): string 
     <button role="radio" data-channels="a" aria-checked="false" tabindex="-1" title="Alpha as grey">A</button>
   </div>
   <span class="sep"></span>
-  <div class="group" id="zoom" role="group" aria-label="Zoom">
-    <button id="zoom-out" title="Zoom out">−</button>
-    <button id="zoom-fit" aria-pressed="true" title="Fit the panel">Fit</button>
-    <button id="zoom-one" aria-pressed="false" title="One texel per screen pixel">1:1</button>
-    <button id="zoom-in" title="Zoom in">+</button>
-  </div>
+  ${zoomControl('Ctrl+wheel')}
 </header>
 <div id="error" role="alert" hidden></div>
 <main><div id="stage"><canvas id="canvas" width="0" height="0"></canvas></div></main>

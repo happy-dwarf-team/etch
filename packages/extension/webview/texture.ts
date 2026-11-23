@@ -6,7 +6,8 @@
 import { inspectTexture, TextureReadError } from '@etch/renderer';
 import type { InspectedTexture, TextureSummary } from '@etch/renderer';
 import type { TextureHostMessage, TextureWebviewMessage } from '../src/texture-protocol.ts';
-import { fitScale, step } from './zoom.ts';
+import { FIT, fitScale, step, zoomLabel } from './zoom.ts';
+import { listenForZoomKeys } from './zoom-keys.ts';
 
 /** Which channels show: colour with alpha, colour alone, or alpha as grey. */
 type Channels = 'rgba' | 'rgb' | 'a';
@@ -26,6 +27,7 @@ const status = element('status');
 const errorBox = element('error');
 const levelSelect = element('level') as HTMLSelectElement;
 const main = document.querySelector('main') as HTMLElement;
+const zoomLevel = element('zoom-level');
 
 /** The file the host posted last, kept to read another mip level of it. */
 let file: { readonly name: string; readonly bytes: Uint8Array } | undefined;
@@ -76,9 +78,16 @@ function place(): void {
   const s = currentScale(shown.summary) / devicePixelRatio;
   canvas.style.width = `${String(shown.summary.width * s)}px`;
   canvas.style.height = `${String(shown.summary.height * s)}px`;
-  element('zoom-fit').setAttribute('aria-pressed', String(scale === undefined));
-  element('zoom-one').setAttribute('aria-pressed', String(scale === 1));
-  status.dataset['zoom'] = `${String(Math.round(currentScale(shown.summary) * 100))} %`;
+  const current = currentScale(shown.summary);
+  zoomLevel.textContent = zoomLabel(
+    scale === undefined ? FIT : { fit: false, scale, center: { x: 0, y: 0 } },
+    current,
+  );
+  zoomLevel.title =
+    scale === undefined
+      ? 'The texture fitted into the panel, never above 100 %. Click for 100 % (Ctrl+0).'
+      : 'Monitor pixels per texture pixel. Click to fit the panel (Ctrl+Shift+0).';
+  status.dataset['zoom'] = `${String(Math.round(current * 100))} %`;
   status.textContent = status.dataset['texel'] ?? status.dataset['zoom'];
 }
 
@@ -182,13 +191,29 @@ element('zoom-in').addEventListener('click', () => {
 element('zoom-out').addEventListener('click', () => {
   zoom(-1);
 });
-element('zoom-fit').addEventListener('click', () => {
-  scale = undefined;
+/** Sets the zoom: a scale, or `undefined` to fit the panel. */
+function zoomTo(next: number | undefined): void {
+  scale = next;
   place();
+}
+// The level shows the zoom; a click switches between fitting the panel and 100 %, as in the
+// interface preview.
+zoomLevel.addEventListener('click', () => {
+  zoomTo(scale === undefined ? 1 : undefined);
 });
-element('zoom-one').addEventListener('click', () => {
-  scale = 1;
-  place();
+listenForZoomKeys({
+  zoomIn: () => {
+    zoom(1);
+  },
+  zoomOut: () => {
+    zoom(-1);
+  },
+  actualSize: () => {
+    zoomTo(1);
+  },
+  fit: () => {
+    zoomTo(undefined);
+  },
 });
 main.addEventListener(
   'wheel',
