@@ -3,9 +3,9 @@
   "playset": "vanilla",
   "resolution": { "width": 1920, "height": 1080 },
   "view": "settings",
-  "takenAt": "2026-11-01T05:30:29.908Z",
+  "takenAt": "2026-11-23T06:11:13.928Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
-  "tongs": { "version": "0.23.0" },
+  "tongs": { "version": "0.37.0" },
   "save": { "sha256": "2A4CAF306CCDDB2DAFC7EE015C4ECFFB260654A1D10D86F5F4F768D3C3F56F6A" },
   "mods": [],
   "disabledDlcs": [],
@@ -17,13 +17,13 @@
   },
   "window": { "width": 1920, "height": 1080, "dpi": 96 },
   "screenshot": {
-    "sha256": "B692069CF39138BD31E75DB9FB340C21FB305CC8FDE4A97C305A4C6F831F865D",
+    "sha256": "12871F8147CB5C043D4F5A211FD41C30372179AB0C67F61794C169007BC76DBF",
     "width": 1920,
     "height": 1080,
     "shots": 4,
     "unstable": {
-      "pixels": 1294298,
-      "sha256": "4E536AC7B6B5FCA56D04EED9BDCBD074E55A571626CE63D28DE6D260D2A2A080"
+      "pixels": 1290230,
+      "sha256": "608C41D404E857C4D101F9F26122BE4A5604D167AD2A32F3E46BA6A3959849BB"
     }
   },
   "widgets": [
@@ -41,7 +41,8 @@
           "visible": true,
           "rect": { "x": 960, "y": 690, "w": 105, "h": 31 },
           "text": "Apply",
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_standard_button_105"
         },
         {
           "name": "BackButton",
@@ -50,7 +51,8 @@
           "visible": true,
           "rect": { "x": 859, "y": 690, "w": 105, "h": 31 },
           "text": "Back",
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_standard_button_105"
         },
         {
           "name": "settings_tab_1",
@@ -58,7 +60,9 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 710, "y": 398, "w": 70, "h": 35 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_settings_tab_small",
+          "frame": 1
         },
         {
           "name": "settings_tab_2",
@@ -66,7 +70,9 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 775, "y": 398, "w": 70, "h": 35 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_settings_tab_small",
+          "frame": 2
         },
         {
           "name": "settings_tab_3",
@@ -74,7 +80,9 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 840, "y": 398, "w": 70, "h": 35 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_settings_tab_small",
+          "frame": 2
         },
         {
           "name": "settings_tab_4",
@@ -82,7 +90,9 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 905, "y": 398, "w": 101, "h": 38 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_settings_tab_medium",
+          "frame": 2
         },
         {
           "name": "settings_tab_5",
@@ -90,7 +100,9 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 1002, "y": 393, "w": 222, "h": 47 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_settings_tab_large",
+          "frame": 2
         },
         {
           "name": "settings_label",
@@ -152,7 +164,9 @@
               "path": "menu_settings_ingame/menu_settings_AUDIO/menu",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 960, "y": 12, "w": 722, "h": 528 }
+              "rect": { "x": 960, "y": 12, "w": 722, "h": 528 },
+              "sprite": "GFX_audio_settings_bg",
+              "frame": 1
             },
             {
               "name": "mastervolume_label",
@@ -198,14 +212,16 @@
                   "path": "menu_settings_ingame/menu_settings_AUDIO/mastervolume_slider/landslider_SliderButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 960, "y": 517, "w": 16, "h": 23 }
+                  "rect": { "x": 960, "y": 517, "w": 16, "h": 23 },
+                  "sprite": "GFX_settings_scroll_drager_blue"
                 },
                 {
                   "name": "landslider_TrackButton",
                   "path": "menu_settings_ingame/menu_settings_AUDIO/mastervolume_slider/landslider_TrackButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 960, "y": 540, "w": 182, "h": 16 }
+                  "rect": { "x": 960, "y": 540, "w": 182, "h": 16 },
+                  "sprite": "yearslider_background"
                 },
                 {
                   "name": "landslider_upButton",
@@ -213,7 +229,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "yearslider_leftbutton"
                 },
                 {
                   "name": "landslider_downButton",
@@ -221,7 +238,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "yearslider_rightbutton"
                 }
               ]
             },
@@ -237,14 +255,16 @@
                   "path": "menu_settings_ingame/menu_settings_AUDIO/effectvolume_slider/landslider_SliderButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 960, "y": 517, "w": 16, "h": 23 }
+                  "rect": { "x": 960, "y": 517, "w": 16, "h": 23 },
+                  "sprite": "GFX_settings_scroll_drager_blue"
                 },
                 {
                   "name": "landslider_TrackButton",
                   "path": "menu_settings_ingame/menu_settings_AUDIO/effectvolume_slider/landslider_TrackButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 960, "y": 540, "w": 182, "h": 16 }
+                  "rect": { "x": 960, "y": 540, "w": 182, "h": 16 },
+                  "sprite": "yearslider_background"
                 },
                 {
                   "name": "landslider_upButton",
@@ -252,7 +272,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "yearslider_leftbutton"
                 },
                 {
                   "name": "landslider_downButton",
@@ -260,7 +281,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "yearslider_rightbutton"
                 }
               ]
             },
@@ -276,14 +298,16 @@
                   "path": "menu_settings_ingame/menu_settings_AUDIO/musicvolume_slider/landslider_SliderButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 960, "y": 517, "w": 16, "h": 23 }
+                  "rect": { "x": 960, "y": 517, "w": 16, "h": 23 },
+                  "sprite": "GFX_settings_scroll_drager_blue"
                 },
                 {
                   "name": "landslider_TrackButton",
                   "path": "menu_settings_ingame/menu_settings_AUDIO/musicvolume_slider/landslider_TrackButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 960, "y": 540, "w": 182, "h": 16 }
+                  "rect": { "x": 960, "y": 540, "w": 182, "h": 16 },
+                  "sprite": "yearslider_background"
                 },
                 {
                   "name": "landslider_upButton",
@@ -291,7 +315,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "yearslider_leftbutton"
                 },
                 {
                   "name": "landslider_downButton",
@@ -299,7 +324,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "yearslider_rightbutton"
                 }
               ]
             },
@@ -315,14 +341,16 @@
                   "path": "menu_settings_ingame/menu_settings_AUDIO/ambient_slider/landslider_SliderButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 960, "y": 517, "w": 16, "h": 23 }
+                  "rect": { "x": 960, "y": 517, "w": 16, "h": 23 },
+                  "sprite": "GFX_settings_scroll_drager_blue"
                 },
                 {
                   "name": "landslider_TrackButton",
                   "path": "menu_settings_ingame/menu_settings_AUDIO/ambient_slider/landslider_TrackButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 960, "y": 540, "w": 182, "h": 16 }
+                  "rect": { "x": 960, "y": 540, "w": 182, "h": 16 },
+                  "sprite": "yearslider_background"
                 },
                 {
                   "name": "landslider_upButton",
@@ -330,7 +358,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "yearslider_leftbutton"
                 },
                 {
                   "name": "landslider_downButton",
@@ -338,7 +367,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "yearslider_rightbutton"
                 }
               ]
             }
@@ -358,14 +388,17 @@
               "visible": false,
               "rect": { "x": 960, "y": 509, "w": 105, "h": 31 },
               "text": "RESET",
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_standard_button_105"
             },
             {
               "name": "menu",
               "path": "menu_settings_ingame/menu_settings_CONTROLS/menu",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 960, "y": 12, "w": 722, "h": 528 }
+              "rect": { "x": 960, "y": 12, "w": 722, "h": 528 },
+              "sprite": "GFX_controls_settings_bg",
+              "frame": 1
             },
             {
               "name": "scrollspeed_label",
@@ -403,14 +436,16 @@
                   "path": "menu_settings_ingame/menu_settings_CONTROLS/scrollspeed_slider/landslider_SliderButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 960, "y": 517, "w": 16, "h": 23 }
+                  "rect": { "x": 960, "y": 517, "w": 16, "h": 23 },
+                  "sprite": "GFX_settings_scroll_drager_blue"
                 },
                 {
                   "name": "landslider_TrackButton",
                   "path": "menu_settings_ingame/menu_settings_CONTROLS/scrollspeed_slider/landslider_TrackButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 960, "y": 540, "w": 182, "h": 16 }
+                  "rect": { "x": 960, "y": 540, "w": 182, "h": 16 },
+                  "sprite": "yearslider_background"
                 },
                 {
                   "name": "landslider_upButton",
@@ -418,7 +453,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "yearslider_leftbutton"
                 },
                 {
                   "name": "landslider_downButton",
@@ -426,7 +462,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "yearslider_rightbutton"
                 }
               ]
             },
@@ -442,14 +479,16 @@
                   "path": "menu_settings_ingame/menu_settings_CONTROLS/zoomspeed_slider/landslider_SliderButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 960, "y": 517, "w": 16, "h": 23 }
+                  "rect": { "x": 960, "y": 517, "w": 16, "h": 23 },
+                  "sprite": "GFX_settings_scroll_drager_blue"
                 },
                 {
                   "name": "landslider_TrackButton",
                   "path": "menu_settings_ingame/menu_settings_CONTROLS/zoomspeed_slider/landslider_TrackButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 960, "y": 540, "w": 182, "h": 16 }
+                  "rect": { "x": 960, "y": 540, "w": 182, "h": 16 },
+                  "sprite": "yearslider_background"
                 },
                 {
                   "name": "landslider_upButton",
@@ -457,7 +496,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "yearslider_leftbutton"
                 },
                 {
                   "name": "landslider_downButton",
@@ -465,7 +505,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "yearslider_rightbutton"
                 }
               ]
             }
@@ -484,7 +525,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_left"
             },
             {
               "name": "increase_display_mode_button",
@@ -492,7 +534,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_right"
             },
             {
               "name": "decrease_resolution_button",
@@ -500,7 +543,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_left"
             },
             {
               "name": "increase_resolution_button",
@@ -508,7 +552,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_right"
             },
             {
               "name": "decrease_refreshrate_button",
@@ -516,7 +561,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_left"
             },
             {
               "name": "increase_refreshrate_button",
@@ -524,7 +570,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_right"
             },
             {
               "name": "decrease_multisample_button",
@@ -532,7 +579,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_left"
             },
             {
               "name": "increase_multisample_button",
@@ -540,14 +588,17 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_right"
             },
             {
               "name": "menu",
               "path": "menu_settings_ingame/menu_settings_VIDEO/menu",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 960, "y": 12, "w": 722, "h": 528 }
+              "rect": { "x": 960, "y": 12, "w": 722, "h": 528 },
+              "sprite": "GFX_video_settings_bg",
+              "frame": 1
             },
             {
               "name": "display_mode_label",
@@ -633,14 +684,16 @@
                   "path": "menu_settings_ingame/menu_settings_VIDEO/gamma_slider/landslider_SliderButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 960, "y": 517, "w": 16, "h": 23 }
+                  "rect": { "x": 960, "y": 517, "w": 16, "h": 23 },
+                  "sprite": "GFX_settings_scroll_drager_blue"
                 },
                 {
                   "name": "landslider_TrackButton",
                   "path": "menu_settings_ingame/menu_settings_VIDEO/gamma_slider/landslider_TrackButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 960, "y": 540, "w": 154, "h": 13 }
+                  "rect": { "x": 960, "y": 540, "w": 154, "h": 13 },
+                  "sprite": "yearslider_background"
                 },
                 {
                   "name": "landslider_upButton",
@@ -648,7 +701,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                  "enabled": false
+                  "enabled": false,
+                  "sprite": "yearslider_leftbutton"
                 },
                 {
                   "name": "landslider_downButton",
@@ -656,7 +710,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                  "enabled": false
+                  "enabled": false,
+                  "sprite": "yearslider_rightbutton"
                 }
               ]
             },
@@ -680,7 +735,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "button_left"
                     },
                     {
                       "name": "increase_settings_item_button",
@@ -688,7 +744,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "button_right"
                     },
                     {
                       "name": "settings_item_label",
@@ -721,7 +778,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "button_left"
                     },
                     {
                       "name": "increase_settings_item_button",
@@ -729,7 +787,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "button_right"
                     },
                     {
                       "name": "settings_item_label",
@@ -762,7 +821,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "button_left"
                     },
                     {
                       "name": "increase_settings_item_button",
@@ -770,7 +830,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "button_right"
                     },
                     {
                       "name": "settings_item_label",
@@ -803,7 +864,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "button_left"
                     },
                     {
                       "name": "increase_settings_item_button",
@@ -811,7 +873,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "button_right"
                     },
                     {
                       "name": "settings_item_label",
@@ -844,7 +907,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "button_left"
                     },
                     {
                       "name": "increase_settings_item_button",
@@ -852,7 +916,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "button_right"
                     },
                     {
                       "name": "settings_item_label",
@@ -885,7 +950,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "button_left"
                     },
                     {
                       "name": "increase_settings_item_button",
@@ -893,7 +959,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "button_right"
                     },
                     {
                       "name": "settings_item_label",
@@ -926,7 +993,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "button_left"
                     },
                     {
                       "name": "increase_settings_item_button",
@@ -934,7 +1002,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "button_right"
                     },
                     {
                       "name": "settings_item_label",
@@ -967,7 +1036,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "button_left"
                     },
                     {
                       "name": "increase_settings_item_button",
@@ -975,7 +1045,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "button_right"
                     },
                     {
                       "name": "settings_item_label",
@@ -1008,7 +1079,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "button_left"
                     },
                     {
                       "name": "increase_settings_item_button",
@@ -1016,7 +1088,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "button_right"
                     },
                     {
                       "name": "settings_item_label",
@@ -1049,7 +1122,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "button_left"
                     },
                     {
                       "name": "increase_settings_item_button",
@@ -1057,7 +1131,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "button_right"
                     },
                     {
                       "name": "settings_item_label",
@@ -1090,7 +1165,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "button_left"
                     },
                     {
                       "name": "increase_settings_item_button",
@@ -1098,7 +1174,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "button_right"
                     },
                     {
                       "name": "settings_item_label",
@@ -1131,7 +1208,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "button_left"
                     },
                     {
                       "name": "increase_settings_item_button",
@@ -1139,7 +1217,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "button_right"
                     },
                     {
                       "name": "settings_item_label",
@@ -1172,7 +1251,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "button_left"
                     },
                     {
                       "name": "increase_settings_item_button",
@@ -1180,7 +1260,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "button_right"
                     },
                     {
                       "name": "settings_item_label",
@@ -1213,7 +1294,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "button_left"
                     },
                     {
                       "name": "increase_settings_item_button",
@@ -1221,7 +1303,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "button_right"
                     },
                     {
                       "name": "settings_item_label",
@@ -1254,7 +1337,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "button_left"
                     },
                     {
                       "name": "increase_settings_item_button",
@@ -1262,7 +1346,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "button_right"
                     },
                     {
                       "name": "settings_item_label",
@@ -1295,7 +1380,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "button_left"
                     },
                     {
                       "name": "increase_settings_item_button",
@@ -1303,7 +1389,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "button_right"
                     },
                     {
                       "name": "settings_item_label",
@@ -1335,14 +1422,16 @@
                       "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/standardlistbox_slider/listboxSliderButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 960, "y": 524, "w": 16, "h": 16 }
+                      "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
+                      "sprite": "GFX_scroll_drager"
                     },
                     {
                       "name": "listboxTrackButton",
                       "path": "menu_settings_ingame/menu_settings_VIDEO/settings_listbox/standardlistbox_slider/listboxTrackButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 960, "y": 540, "w": 12, "h": 193 }
+                      "rect": { "x": 960, "y": 540, "w": 12, "h": 193 },
+                      "sprite": "GFX_scroll_track"
                     },
                     {
                       "name": "downButton",
@@ -1350,7 +1439,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_down"
                     },
                     {
                       "name": "upButton",
@@ -1358,7 +1448,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_up"
                     }
                   ]
                 }
@@ -1379,7 +1470,8 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 758, "y": 485, "w": 30, "h": 30 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_left"
             },
             {
               "name": "increase_autosave_button",
@@ -1387,7 +1479,8 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 876, "y": 485, "w": 30, "h": 30 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_right"
             },
             {
               "name": "autosave_tocloud",
@@ -1395,7 +1488,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 757, "y": 520, "w": 32, "h": 32 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_checkbox_gold_32",
+              "frame": 1
             },
             {
               "name": "compress_autosaves_checkbox",
@@ -1403,7 +1498,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 757, "y": 557, "w": 32, "h": 32 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_checkbox_gold_32",
+              "frame": 1
             },
             {
               "name": "rich_presence_checkbox",
@@ -1411,7 +1508,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 757, "y": 595, "w": 32, "h": 32 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_checkbox_gold_32",
+              "frame": 2
             },
             {
               "name": "hints_active",
@@ -1419,7 +1518,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 952, "y": 484, "w": 32, "h": 32 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_checkbox_gold_32",
+              "frame": 1
             },
             {
               "name": "hide_chat",
@@ -1427,7 +1528,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 952, "y": 520, "w": 32, "h": 32 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_checkbox_gold_32",
+              "frame": 2
             },
             {
               "name": "allow_hotjoin",
@@ -1435,7 +1538,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 952, "y": 557, "w": 32, "h": 32 },
-              "enabled": false
+              "enabled": false,
+              "sprite": "GFX_checkbox_gold_32",
+              "frame": 1
             },
             {
               "name": "allow_coop",
@@ -1443,7 +1548,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 952, "y": 595, "w": 32, "h": 32 },
-              "enabled": false
+              "enabled": false,
+              "sprite": "GFX_checkbox_gold_32",
+              "frame": 1
             },
             {
               "name": "autopause_on_events_button",
@@ -1451,14 +1558,18 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 952, "y": 633, "w": 32, "h": 32 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_checkbox_gold_32",
+              "frame": 1
             },
             {
               "name": "menu",
               "path": "menu_settings_ingame/menu_settings_GAME/menu",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 600, "y": 271, "w": 722, "h": 528 }
+              "rect": { "x": 600, "y": 271, "w": 722, "h": 528 },
+              "sprite": "GFX_game_settings_bg",
+              "frame": 1
             },
             {
               "name": "autosave_label",
@@ -1555,7 +1666,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_left"
             },
             {
               "name": "prev_visual_alerts_value",
@@ -1563,7 +1675,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_right"
             },
             {
               "name": "next_large_fonts_value",
@@ -1571,7 +1684,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_left"
             },
             {
               "name": "prev_large_fonts_value",
@@ -1579,7 +1693,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_right"
             },
             {
               "name": "next_text_to_speech_value",
@@ -1587,7 +1702,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_left"
             },
             {
               "name": "prev_text_to_speech_value",
@@ -1595,7 +1711,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_right"
             },
             {
               "name": "next_speech_to_text_value",
@@ -1603,7 +1720,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_left"
             },
             {
               "name": "prev_speech_to_text_value",
@@ -1611,7 +1729,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_right"
             },
             {
               "name": "next_speech_to_text_shortcat_state_value",
@@ -1619,7 +1738,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_left"
             },
             {
               "name": "prev_speech_to_text_shortcat_state_value",
@@ -1627,21 +1747,26 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_right"
             },
             {
               "name": "menu",
               "path": "menu_settings_ingame/menu_settings_ACCESSIBILITY/menu",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 960, "y": 12, "w": 722, "h": 528 }
+              "rect": { "x": 960, "y": 12, "w": 722, "h": 528 },
+              "sprite": "GFX_multiplayer_settings_bg",
+              "frame": 1
             },
             {
               "name": "speech_to_text_shortcut_edit_bkg",
               "path": "menu_settings_ingame/menu_settings_ACCESSIBILITY/speech_to_text_shortcut_edit_bkg",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 960, "y": 511, "w": 97, "h": 29 }
+              "rect": { "x": 960, "y": 511, "w": 97, "h": 29 },
+              "sprite": "GFX_accessibility_settings_shortcut_bkg",
+              "frame": 1
             },
             {
               "name": "visual_alerts_label",

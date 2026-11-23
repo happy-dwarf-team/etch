@@ -12,6 +12,13 @@ survey already has. One set could not be measured: the Workshop's P2KE Patch - A
 15 November and no longer matches the hash its playset pins, so the Anbennar playset with Proper 2K
 UI Enhanced and P2KE at 2560×1440 is left out until it is pinned and captured again (gap 2).
 
+**Update, 23 November 2026** ([etch#618](https://github.com/happy-dwarf-team/etch/issues/618)):
+the precision corpus was taken again with Tongs 0.37.0, Anvil 1.26.0 and the new P2KE pin, all 240
+release captures, and all 240 pass with `--gpu`. Tongs 0.37 reports the built building slots as
+the game draws them (21 widgets of vanilla's province view were hidden before). The coverage
+survey's own captures were not taken again, so the figures below are unchanged (the survey run
+on this branch gives the same tables); gaps 2 and 3 are left for the survey's captures, gap 1.
+
 ## What the gate asks
 
 Section 3 gates three measures, and only for the views of a profiled window:
@@ -70,8 +77,8 @@ hour. They are guesses, not plans.
 | # | Gap | Kind | Estimate |
 | --- | --- | --- | --- |
 | 1 | **Captures with the current Tongs and Anvil**: the figures above are `main`'s rules on captures of 3 and 11 November (Tongs 0.23 and 0.26.1). The gate run needs captures taken with the pinned Tongs, at 1920×1080 and 1280×720, vanilla and Anbennar, on a new capture host. A current Tongs also reports sprites, which could turn some of etch#606 into fixes. | measurement | 1–2 sessions, 2–3 lock batches |
-| 2 | **P2KE Patch - Anbennar changed on 15 November**: pin its new hash in `corpus/manifest.json` and capture the playset at 2560×1440 again; its ledger columns were 24 px off before (the game's list is narrower than its file). | pin, lock batch | 1 session, 1 lock batch |
-| 3 | **Built building slots**: Tongs reports a built slot as hidden while the game draws it, so live visibility is 100 % against a wrong reference (29 vanilla failures offline). happy-dwarf-team/tongs#242; then a Tongs release, a pin in Etch, and captures taken again. | bug in Tongs | 2–3 sessions, plus Tongs' release cadence |
+| 2 | **P2KE Patch - Anbennar changed on 15 November**: pinned and the precision corpus taken again (etch#618); the survey's set at 2560×1440 is still to capture, with gap 1. Its ledger columns were 24 px off before (the game's list is narrower than its file). | lock batch | with gap 1 |
+| 3 | **Built building slots**: Tongs 0.23 reported a built slot as hidden while the game draws it, so live visibility was 100 % against a wrong reference (29 vanilla failures offline). Tongs 0.37.0 reports them shown (tongs#238) and is pinned, and the precision corpus has them (etch#618); the survey's captures get them with gap 1. | measurement | with gap 1 |
 | 4 | **The maintainer's consent** to the proposed deviations etch#604, etch#605, etch#606, or a fix for any of them. | decision | the maintainer's time |
 | 5 | **Views of profiled windows not yet captured**: the country views on the emperor, the Pope's controller and a colonial nation (14, 14 and 17 views whose Russian recipes fail), the country shield behind Anbennar's lobby, and the 1280×720 captures the manifest lists without a record (vanilla 25, Anbennar 19). Section 3 lets the other countries' views into the gate once their window has a profile, and most of theirs have one (a reading for the maintainer to confirm). | recipes, lock batches | 2–3 sessions, 2–3 lock batches |
 | 6 | **The release**: the media refresh, `Release-As: 3.0.0`, the website and the copies of `docs/team-touchpoints.md` (eu4-engine-lab#109). | release | 1–2 sessions |

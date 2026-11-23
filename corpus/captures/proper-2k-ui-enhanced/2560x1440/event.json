@@ -3,9 +3,9 @@
   "playset": "proper-2k-ui-enhanced",
   "resolution": { "width": 2560, "height": 1440 },
   "view": "event",
-  "takenAt": "2026-11-02T09:08:52.168Z",
+  "takenAt": "2026-11-23T06:25:13.792Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
-  "tongs": { "version": "0.23.0" },
+  "tongs": { "version": "0.37.0" },
   "save": { "sha256": "FE1EC50168BFB7F412C0957CE016940617533A9EA2DC8780FE86A9074255CEA6" },
   "mods": [
     {
@@ -18,17 +18,17 @@
     "from": "save",
     "steps": [],
     "verified": true,
-    "evidence": "Run by the capture driver (etch#42) on 2026-11-02 at every gating size of the four release playsets, with Tongs 0.14.1: the view's save loads with its event open, so the recipe has no step, and EventWindow was read (etch#97)."
+    "evidence": "Run by the capture driver (etch#42) on 2026-11-02 at every gating size of the four release playsets, with Tongs 0.14.1 and again with Tongs 0.23.0 (etch#232): the view's save loads with its event open, so the recipe has no step, and EventWindow was read (etch#97)."
   },
   "window": { "width": 2560, "height": 1440, "dpi": 96 },
   "screenshot": {
-    "sha256": "708B4910114AD5FF69DDFA2A8E3BE4C97F839C68E85FFEAAEF0E387FC5A60B3D",
+    "sha256": "0F75355E24ED42F5FCF65864C565CC30CAEDED1D96F4960224C50A0F85956CC8",
     "width": 2560,
     "height": 1440,
     "shots": 4,
     "unstable": {
-      "pixels": 1058686,
-      "sha256": "B813653A7E0E37CB696FC9C6E596798C0249995F6277BB244632EF556B4FDCB7"
+      "pixels": 1055344,
+      "sha256": "D33205D51078E120C40789E413EB8FB2AD326DEDCCD8928342ABDE47342D9687"
     }
   },
   "widgets": [
@@ -45,42 +45,52 @@
           "type": "button",
           "visible": false,
           "rect": { "x": 1280, "y": 611, "w": 66, "h": 109 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_event_goto_province"
         },
         {
           "name": "event_bg_top",
           "path": "EventWindow/event_bg_top",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 890, "y": 348, "w": 793, "h": 269 }
+          "rect": { "x": 890, "y": 348, "w": 793, "h": 269 },
+          "sprite": "GFX_event_bg_top",
+          "frame": 1
         },
         {
           "name": "event_picture",
           "path": "EventWindow/event_picture",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 978, "y": 444, "w": 619, "h": 159 }
+          "rect": { "x": 978, "y": 444, "w": 619, "h": 159 },
+          "sprite": "ORTHODOX_eventPicture"
         },
         {
           "name": "event_bg_middle",
           "path": "EventWindow/event_bg_middle[1]",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 890, "y": 617, "w": 788, "h": 69 }
+          "rect": { "x": 890, "y": 617, "w": 788, "h": 69 },
+          "sprite": "GFX_event_bg_middle",
+          "frame": 1
         },
         {
           "name": "event_bg_bottom",
           "path": "EventWindow/event_bg_bottom",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 890, "y": 755, "w": 788, "h": 159 }
+          "rect": { "x": 890, "y": 755, "w": 788, "h": 159 },
+          "sprite": "GFX_event_bg_bottom_S",
+          "frame": 1
         },
         {
           "name": "event_bg_middle",
           "path": "EventWindow/event_bg_middle[2]",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 890, "y": 686, "w": 788, "h": 69 }
+          "rect": { "x": 890, "y": 686, "w": 788, "h": 69 },
+          "sprite": "GFX_event_bg_middle",
+          "frame": 1
         },
         {
           "name": "Title",
@@ -103,7 +113,8 @@
           "path": "EventWindow/Background",
           "type": "button",
           "visible": true,
-          "rect": { "x": 942, "y": 348, "w": 677, "h": 566 }
+          "rect": { "x": 942, "y": 348, "w": 677, "h": 566 },
+          "sprite": "GFX_event_bg_transparency"
         },
         {
           "name": "event_option_listbox",
@@ -126,7 +137,8 @@
                   "visible": true,
                   "rect": { "x": 958, "y": 795, "w": 657, "h": 37 },
                   "text": "Affirm these changes",
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_event_button_547"
                 },
                 {
                   "name": "event_option_goto_button",
@@ -134,7 +146,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 1280, "y": 683, "w": 75, "h": 37 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_event_option_goto_province"
                 }
               ]
             },
@@ -152,7 +165,8 @@
                   "visible": true,
                   "rect": { "x": 958, "y": 831, "w": 657, "h": 37 },
                   "text": "Prohibit these ideas",
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_event_button_547"
                 },
                 {
                   "name": "event_option_goto_button",
@@ -160,7 +174,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 1280, "y": 683, "w": 75, "h": 37 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_event_option_goto_province"
                 }
               ]
             },
@@ -176,14 +191,16 @@
                   "path": "EventWindow/event_option_listbox/standardlistbox_slider/listboxSliderButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 }
+                  "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                  "sprite": "GFX_scroll_drager"
                 },
                 {
                   "name": "listboxTrackButton",
                   "path": "EventWindow/event_option_listbox/standardlistbox_slider/listboxTrackButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 720, "w": 15, "h": 34 }
+                  "rect": { "x": 1280, "y": 720, "w": 15, "h": 34 },
+                  "sprite": "GFX_scroll_track"
                 },
                 {
                   "name": "downButton",
@@ -191,7 +208,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_scroll_down"
                 },
                 {
                   "name": "upButton",
@@ -199,7 +217,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_scroll_up"
                 }
               ]
             }

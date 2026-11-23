@@ -3,9 +3,9 @@
   "playset": "proper-2k-ui-enhanced",
   "resolution": { "width": 2560, "height": 1440 },
   "view": "province",
-  "takenAt": "2026-11-01T07:06:03.535Z",
+  "takenAt": "2026-11-23T06:23:36.074Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
-  "tongs": { "version": "0.23.0" },
+  "tongs": { "version": "0.37.0" },
   "save": { "sha256": "2A4CAF306CCDDB2DAFC7EE015C4ECFFB260654A1D10D86F5F4F768D3C3F56F6A" },
   "mods": [
     {
@@ -18,17 +18,17 @@
     "from": "save",
     "steps": [{ "province": 148 }],
     "verified": true,
-    "evidence": "Run by the capture driver (etch#42) at 2560x1440: the steps opened the view and its roots were read."
+    "evidence": "Run by the capture driver with Tongs 0.23.0 at the seven corpus resolutions in vanilla and at 2560×1440 and 3440×1440 in Proper 2K UI Enhanced on 2026-11-01 (etch#232): Tongs' province open 148 answered the province view with nothing over it and no game call, and the view's roots were read and shown. Every capture shows Macedonia, the player's own province."
   },
   "window": { "width": 2560, "height": 1440, "dpi": 96 },
   "screenshot": {
-    "sha256": "FC928D2E9B44980B3CBF0651B2A33350AEDD0071403DD8075E5B21A889A4BFB9",
+    "sha256": "CF22FCA0820AFBFBB9E9661D3EDEA6C4E04EE7AB09ED48468D9CA5F02D8BC94C",
     "width": 2560,
     "height": 1440,
     "shots": 4,
     "unstable": {
-      "pixels": 2026032,
-      "sha256": "4E54F348EB47E780558D2608F23933A9431BD918DB8A23FC238340659C61A168"
+      "pixels": 2025764,
+      "sha256": "3625672B978EEDB674D5CF88D195FE0FAC51A075AA5170BD46F9EB25BD5A8238"
     }
   },
   "widgets": [
@@ -45,56 +45,70 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 519, "y": 846, "w": 51, "h": 51 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_province_institutions_button"
         },
         {
           "name": "provinceview_bg",
           "path": "provinceview/provinceview_bg",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 1280, "y": 9, "w": 610, "h": 711 }
+          "rect": { "x": 1280, "y": 9, "w": 610, "h": 711 },
+          "sprite": "GFX_provinceview_bg",
+          "frame": 1
         },
         {
           "name": "provinceview_bg_large",
           "path": "provinceview/provinceview_bg_large",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 0, "y": 356, "w": 598, "h": 1084 }
+          "rect": { "x": 0, "y": 356, "w": 598, "h": 1084 },
+          "sprite": "GFX_provinceview_bg_large",
+          "frame": 1
         },
         {
           "name": "provinceview_foreign_bg",
           "path": "provinceview/provinceview_foreign_bg",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 1280, "y": 9, "w": 610, "h": 711 }
+          "rect": { "x": 1280, "y": 9, "w": 610, "h": 711 },
+          "sprite": "GFX_provinceview_foreign_bg",
+          "frame": 1
         },
         {
           "name": "provinceview_foreign_bg_large",
           "path": "provinceview/provinceview_foreign_bg_large",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 1280, "y": 0, "w": 610, "h": 720 }
+          "rect": { "x": 1280, "y": 0, "w": 610, "h": 720 },
+          "sprite": "GFX_provinceview_foreign_bg_large",
+          "frame": 1
         },
         {
           "name": "trade_icon",
           "path": "provinceview/trade_icon",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 24, "y": 1020, "w": 39, "h": 39 }
+          "rect": { "x": 24, "y": 1020, "w": 39, "h": 39 },
+          "sprite": "GFX_diplomacy_traderights",
+          "frame": 1
         },
         {
           "name": "military_icon",
           "path": "provinceview/military_icon",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 27, "y": 902, "w": 33, "h": 33 }
+          "rect": { "x": 27, "y": 902, "w": 33, "h": 33 },
+          "sprite": "GFX_icon_powers_military",
+          "frame": 1
         },
         {
           "name": "province_terrain",
           "path": "provinceview/province_terrain",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 60, "y": 426, "w": 464, "h": 95 }
+          "rect": { "x": 60, "y": 426, "w": 464, "h": 95 },
+          "sprite": "GFX_combat_terrain_farmlands"
         },
         {
           "name": "modifiers",
@@ -115,14 +129,18 @@
                   "path": "provinceview/modifiers/province_modifier_item[1]/prov_modifier_bg",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 375, "y": 850, "w": 43, "h": 43 }
+                  "rect": { "x": 375, "y": 850, "w": 43, "h": 43 },
+                  "sprite": "GFX_prov_modifier_bg_big",
+                  "frame": 1
                 },
                 {
                   "name": "icon",
                   "path": "provinceview/modifiers/province_modifier_item[1]/icon",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 375, "y": 850, "w": 43, "h": 43 }
+                  "rect": { "x": 375, "y": 850, "w": 43, "h": 43 },
+                  "sprite": "GFX_idea_unknown",
+                  "texture": "gfx/interface/ideas_EU4/province_trade_power_value.dds"
                 }
               ]
             },
@@ -138,14 +156,18 @@
                   "path": "provinceview/modifiers/province_modifier_item[2]/prov_modifier_bg",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 419, "y": 850, "w": 43, "h": 43 }
+                  "rect": { "x": 419, "y": 850, "w": 43, "h": 43 },
+                  "sprite": "GFX_prov_modifier_bg_big",
+                  "frame": 1
                 },
                 {
                   "name": "icon",
                   "path": "provinceview/modifiers/province_modifier_item[2]/icon",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 419, "y": 850, "w": 43, "h": 43 }
+                  "rect": { "x": 419, "y": 850, "w": 43, "h": 43 },
+                  "sprite": "GFX_idea_unknown",
+                  "texture": "gfx/interface/ideas_EU4/local_unrest.dds"
                 }
               ]
             },
@@ -161,14 +183,17 @@
                   "path": "provinceview/modifiers/province_modifier_item[3]/prov_modifier_bg",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 463, "y": 850, "w": 43, "h": 43 }
+                  "rect": { "x": 463, "y": 850, "w": 43, "h": 43 },
+                  "sprite": "GFX_prov_modifier_bg_big",
+                  "frame": 1
                 },
                 {
                   "name": "icon",
                   "path": "provinceview/modifiers/province_modifier_item[3]/icon",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 463, "y": 850, "w": 43, "h": 43 }
+                  "rect": { "x": 463, "y": 850, "w": 43, "h": 43 },
+                  "sprite": "GFX_hostile_attrition"
                 }
               ]
             }
@@ -188,7 +213,9 @@
               "visible": true,
               "rect": { "x": 53, "y": 324, "w": 238, "h": 55 },
               "text": "Macedonia",
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_province_tab_button",
+              "frame": 1
             },
             {
               "name": "states_tab_button",
@@ -197,7 +224,9 @@
               "visible": true,
               "rect": { "x": 297, "y": 324, "w": 238, "h": 55 },
               "text": "Macedonia",
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_province_tab_button",
+              "frame": 2
             },
             {
               "name": "move_capital",
@@ -205,7 +234,8 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 48, "y": 374, "w": 42, "h": 42 },
-              "enabled": false
+              "enabled": false,
+              "sprite": "GFX_move_capital"
             },
             {
               "name": "move_trade_port",
@@ -213,7 +243,8 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 86, "y": 374, "w": 42, "h": 42 },
-              "enabled": false
+              "enabled": false,
+              "sprite": "GFX_move_trade_port"
             },
             {
               "name": "add_parliament",
@@ -221,7 +252,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 1280, "y": 681, "w": 39, "h": 39 },
-              "enabled": false
+              "enabled": false,
+              "sprite": "GFX_add_parliament_icon"
             },
             {
               "name": "remove_parliament",
@@ -229,7 +261,8 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 123, "y": 374, "w": 41, "h": 37 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_remove_parliament_icon"
             },
             {
               "name": "history",
@@ -237,7 +270,8 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 9, "y": 525, "w": 43, "h": 43 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_button_history"
             },
             {
               "name": "close_button",
@@ -245,70 +279,89 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 543, "y": 365, "w": 43, "h": 43 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_closebutton2"
             },
             {
               "name": "province_banner_foreign",
               "path": "provinceview/top_section_window/province_banner_foreign",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1280, "y": 633, "w": 650, "h": 87 }
+              "rect": { "x": 1280, "y": 633, "w": 650, "h": 87 },
+              "sprite": "GFX_province_banner_foreign",
+              "frame": 1
             },
             {
               "name": "province_banner",
               "path": "provinceview/top_section_window/province_banner",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 0, "y": 356, "w": 618, "h": 87 }
+              "rect": { "x": 0, "y": 356, "w": 618, "h": 87 },
+              "sprite": "GFX_province_banner",
+              "frame": 1
             },
             {
               "name": "move_button_box",
               "path": "provinceview/top_section_window/move_button_box",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 38, "y": 367, "w": 140, "h": 53 }
+              "rect": { "x": 38, "y": 367, "w": 140, "h": 53 },
+              "sprite": "GFX_p2kuie_province_move_button_box",
+              "frame": 1
             },
             {
               "name": "have_capital",
               "path": "provinceview/top_section_window/have_capital",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1280, "y": 681, "w": 39, "h": 39 }
+              "rect": { "x": 1280, "y": 681, "w": 39, "h": 39 },
+              "sprite": "GFX_have_capital",
+              "frame": 1
             },
             {
               "name": "have_trade_port",
               "path": "provinceview/top_section_window/have_trade_port",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1280, "y": 681, "w": 39, "h": 39 }
+              "rect": { "x": 1280, "y": 681, "w": 39, "h": 39 },
+              "sprite": "GFX_have_trade_port",
+              "frame": 1
             },
             {
               "name": "have_parliament",
               "path": "provinceview/top_section_window/have_parliament",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1280, "y": 681, "w": 39, "h": 39 }
+              "rect": { "x": 1280, "y": 681, "w": 39, "h": 39 },
+              "sprite": "GFX_have_parliament_icon",
+              "frame": 1
             },
             {
               "name": "strait_indicator",
               "path": "provinceview/top_section_window/strait_indicator",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1280, "y": 681, "w": 38, "h": 39 }
+              "rect": { "x": 1280, "y": 681, "w": 38, "h": 39 },
+              "sprite": "GFX_strait",
+              "frame": 1
             },
             {
               "name": "river_indicator",
               "path": "provinceview/top_section_window/river_indicator",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1280, "y": 681, "w": 39, "h": 39 }
+              "rect": { "x": 1280, "y": 681, "w": 39, "h": 39 },
+              "sprite": "GFX_river_indicator_icon",
+              "frame": 1
             },
             {
               "name": "river_indicator_2",
               "path": "provinceview/top_section_window/river_indicator_2",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 11, "y": 487, "w": 39, "h": 39 }
+              "rect": { "x": 11, "y": 487, "w": 39, "h": 39 },
+              "sprite": "GFX_river_indicator_icon",
+              "frame": 1
             },
             {
               "name": "area_name",
@@ -357,7 +410,8 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 51, "y": 525, "w": 43, "h": 43 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_development_button_tax"
             },
             {
               "name": "tax_base_exploit_button",
@@ -365,7 +419,8 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 90, "y": 546, "w": 48, "h": 21 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_exploit_button"
             },
             {
               "name": "prod_base_increase_button",
@@ -373,7 +428,8 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 145, "y": 525, "w": 43, "h": 43 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_development_button_production"
             },
             {
               "name": "prod_base_exploit_button",
@@ -381,7 +437,8 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 184, "y": 546, "w": 48, "h": 21 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_exploit_button"
             },
             {
               "name": "mp_base_increase_button",
@@ -389,7 +446,8 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 238, "y": 525, "w": 43, "h": 43 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_development_button_manpower"
             },
             {
               "name": "mp_base_exploit_button",
@@ -397,7 +455,8 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 277, "y": 546, "w": 48, "h": 21 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_exploit_button"
             },
             {
               "name": "settle_tribe_button",
@@ -405,7 +464,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 1280, "y": 677, "w": 43, "h": 43 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_settle_tribe_button"
             },
             {
               "name": "raze_button",
@@ -413,7 +473,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 1280, "y": 677, "w": 43, "h": 43 },
-              "enabled": false
+              "enabled": false,
+              "sprite": "GFX_development_button_raze"
             },
             {
               "name": "religion_button",
@@ -421,7 +482,8 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 300, "y": 742, "w": 51, "h": 49 },
-              "enabled": false
+              "enabled": false,
+              "sprite": "GFX_province_religion_button"
             },
             {
               "name": "hre_button",
@@ -429,7 +491,9 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 1280, "y": 669, "w": 50, "h": 51 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_hre_indicators",
+              "frame": 1
             },
             {
               "name": "trade_company_button",
@@ -437,7 +501,9 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 1280, "y": 669, "w": 50, "h": 51 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_tradecompany_indicators",
+              "frame": 1
             },
             {
               "name": "client_state_button",
@@ -445,7 +511,8 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 111, "y": 846, "w": 51, "h": 51 },
-              "enabled": false
+              "enabled": false,
+              "sprite": "GFX_client_state_button"
             },
             {
               "name": "trading_city_button",
@@ -453,7 +520,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 1280, "y": 669, "w": 51, "h": 51 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_trading_city_button"
             },
             {
               "name": "add_core_button",
@@ -461,7 +529,8 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 300, "y": 632, "w": 51, "h": 49 },
-              "enabled": false
+              "enabled": false,
+              "sprite": "GFX_add_core_button"
             },
             {
               "name": "abandon_core_button",
@@ -469,7 +538,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 1280, "y": 671, "w": 51, "h": 49 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_abandon_core_button"
             },
             {
               "name": "claim_province_button",
@@ -477,7 +547,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 1280, "y": 669, "w": 51, "h": 51 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_claim_province_button"
             },
             {
               "name": "return_province_button",
@@ -485,7 +556,8 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 63, "y": 846, "w": 51, "h": 51 },
-              "enabled": false
+              "enabled": false,
+              "sprite": "GFX_return_province_button"
             },
             {
               "name": "likely_rebel_shield",
@@ -493,7 +565,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 114, "y": 731, "w": 39, "h": 39 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_shield_small",
+              "rebels": "particularist_rebels"
             },
             {
               "name": "inc_autonomy_button",
@@ -501,7 +575,8 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 116, "y": 796, "w": 43, "h": 43 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_inc_autonomy_button"
             },
             {
               "name": "dec_autonomy_button",
@@ -509,7 +584,8 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 16, "y": 796, "w": 43, "h": 43 },
-              "enabled": false
+              "enabled": false,
+              "sprite": "GFX_dec_autonomy_button"
             },
             {
               "name": "change_culture_button",
@@ -517,7 +593,8 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 300, "y": 688, "w": 51, "h": 49 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_change_culture_button"
             },
             {
               "name": "build_landunit_button",
@@ -526,7 +603,8 @@
               "visible": true,
               "rect": { "x": 372, "y": 742, "w": 51, "h": 49 },
               "text": " ",
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_build_army"
             },
             {
               "name": "build_merc_button",
@@ -535,7 +613,8 @@
               "visible": true,
               "rect": { "x": 504, "y": 742, "w": 51, "h": 49 },
               "text": " ",
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_build_merc"
             },
             {
               "name": "build_navy_button",
@@ -544,7 +623,8 @@
               "visible": true,
               "rect": { "x": 438, "y": 742, "w": 51, "h": 49 },
               "text": " ",
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_build_navy"
             },
             {
               "name": "transfer_occupation_button",
@@ -552,7 +632,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 1280, "y": 671, "w": 51, "h": 49 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_transfer_occupation_button"
             },
             {
               "name": "occupied_by_shield",
@@ -560,7 +641,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 1280, "y": 681, "w": 39, "h": 39 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_shield_small"
             },
             {
               "name": "fort_maintenance_checkbox",
@@ -568,7 +650,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 312, "y": 940, "w": 24, "h": 24 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_maintenance_checkbox",
+              "frame": 2
             },
             {
               "name": "fort_maintenance_lock_checkbox",
@@ -576,7 +660,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 374, "y": 940, "w": 24, "h": 24 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_maintenance_checkbox",
+              "frame": 1
             },
             {
               "name": "select_allied_objective",
@@ -585,7 +671,8 @@
               "visible": true,
               "rect": { "x": 340, "y": 981, "w": 177, "h": 39 },
               "text": "No Objective",
-              "enabled": false
+              "enabled": false,
+              "sprite": "GFX_button_straight_148_32"
             },
             {
               "name": "open_siege_window",
@@ -593,7 +680,8 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 516, "y": 975, "w": 51, "h": 49 },
-              "enabled": false
+              "enabled": false,
+              "sprite": "GFX_button_show_siege"
             },
             {
               "name": "resource_icon",
@@ -601,7 +689,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 486, "y": 1053, "w": 77, "h": 77 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_resource_icon",
+              "frame": 4
             },
             {
               "name": "tradenode_button",
@@ -610,7 +700,8 @@
               "visible": true,
               "rect": { "x": 292, "y": 1114, "w": 179, "h": 37 },
               "text": "Ragusa",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_1"
             },
             {
               "name": "tradepost_button",
@@ -618,7 +709,8 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 418, "y": 1062, "w": 51, "h": 49 },
-              "enabled": false
+              "enabled": false,
+              "sprite": "GFX_trade_post_button"
             },
             {
               "name": "trade_shield",
@@ -626,7 +718,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 363, "y": 1066, "w": 39, "h": 39 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_shield_small",
+              "flag": "PLC"
             },
             {
               "name": "buildings_button",
@@ -635,196 +729,249 @@
               "visible": true,
               "rect": { "x": 83, "y": 1161, "w": 409, "h": 93 },
               "text": "Click to Restore Buildings",
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_restore_buildings"
             },
             {
               "name": "tax_base_icon",
               "path": "provinceview/province_window/tax_base_icon",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1280, "y": 687, "w": 33, "h": 33 }
+              "rect": { "x": 1280, "y": 687, "w": 33, "h": 33 },
+              "sprite": "GFX_icon_tax_base",
+              "frame": 1
             },
             {
               "name": "prod_base_icon",
               "path": "provinceview/province_window/prod_base_icon",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1280, "y": 687, "w": 33, "h": 33 }
+              "rect": { "x": 1280, "y": 687, "w": 33, "h": 33 },
+              "sprite": "GFX_production_icon",
+              "frame": 1
             },
             {
               "name": "mp_base_icon",
               "path": "provinceview/province_window/mp_base_icon",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1280, "y": 687, "w": 33, "h": 33 }
+              "rect": { "x": 1280, "y": 687, "w": 33, "h": 33 },
+              "sprite": "GFX_text_icon_manpower",
+              "frame": 1
             },
             {
               "name": "development_icon",
               "path": "provinceview/province_window/development_icon",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 336, "y": 530, "w": 37, "h": 33 }
+              "rect": { "x": 336, "y": 530, "w": 37, "h": 33 },
+              "sprite": "GFX_development_icon",
+              "frame": 1
             },
             {
               "name": "improve_icon",
               "path": "provinceview/province_window/improve_icon",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 447, "y": 529, "w": 39, "h": 39 }
+              "rect": { "x": 447, "y": 529, "w": 39, "h": 39 },
+              "sprite": "GFX_extra_development_icon",
+              "frame": 1
             },
             {
               "name": "province_religious_conversion_progress",
               "path": "provinceview/province_window/province_religious_conversion_progress",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1280, "y": 711, "w": 48, "h": 9 }
+              "rect": { "x": 1280, "y": 711, "w": 48, "h": 9 },
+              "sprite": "GFX_provinceView_religious_progressbar"
             },
             {
               "name": "bad_religion_icon",
               "path": "provinceview/province_window/bad_religion_icon",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1280, "y": 657, "w": 63, "h": 63 }
+              "rect": { "x": 1280, "y": 657, "w": 63, "h": 63 },
+              "sprite": "GFX_small_red_glow",
+              "frame": 1
             },
             {
               "name": "religion_icon",
               "path": "provinceview/province_window/religion_icon",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 306, "y": 748, "w": 38, "h": 38 }
+              "rect": { "x": 306, "y": 748, "w": 38, "h": 38 },
+              "sprite": "GFX_icon_religion_small",
+              "frame": 4
             },
             {
               "name": "hre_icon",
               "path": "provinceview/province_window/hre_icon",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1280, "y": 669, "w": 50, "h": 51 }
+              "rect": { "x": 1280, "y": 669, "w": 50, "h": 51 },
+              "sprite": "GFX_hre_indicators",
+              "frame": 1
             },
             {
               "name": "trade_company_icon",
               "path": "provinceview/province_window/trade_company_icon",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1280, "y": 669, "w": 50, "h": 51 }
+              "rect": { "x": 1280, "y": 669, "w": 50, "h": 51 },
+              "sprite": "GFX_tradecompany_indicators",
+              "frame": 1
             },
             {
               "name": "warscore_icon",
               "path": "provinceview/province_window/warscore_icon",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 225, "y": 948, "w": 36, "h": 39 }
+              "rect": { "x": 225, "y": 948, "w": 36, "h": 39 },
+              "sprite": "GFX_ticking_war_score_icon",
+              "frame": 1
             },
             {
               "name": "no_building_fort",
               "path": "provinceview/province_window/no_building_fort",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1280, "y": 663, "w": 57, "h": 57 }
+              "rect": { "x": 1280, "y": 663, "w": 57, "h": 57 },
+              "sprite": "GFX_fort0",
+              "frame": 1
             },
             {
               "name": "province_view_fort_nr_bg",
               "path": "provinceview/province_window/province_view_fort_nr_bg",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 312, "y": 998, "w": 24, "h": 27 }
+              "rect": { "x": 312, "y": 998, "w": 24, "h": 27 },
+              "sprite": "GFX_province_view_fort_nr_bg",
+              "frame": 1
             },
             {
               "name": "maintenance_icon",
               "path": "provinceview/province_window/maintenance_icon",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 279, "y": 938, "w": 30, "h": 27 }
+              "rect": { "x": 279, "y": 938, "w": 30, "h": 27 },
+              "sprite": "GFX_maintenance_icon",
+              "frame": 1
             },
             {
               "name": "maintenance_lock_icon",
               "path": "provinceview/province_window/maintenance_lock_icon",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 342, "y": 938, "w": 30, "h": 27 }
+              "rect": { "x": 342, "y": 938, "w": 30, "h": 27 },
+              "sprite": "GFX_maintenance_lock_icon",
+              "frame": 1
             },
             {
               "name": "defensiveness_icon",
               "path": "provinceview/province_window/defensiveness_icon",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 404, "y": 945, "w": 26, "h": 26 }
+              "rect": { "x": 404, "y": 945, "w": 26, "h": 26 },
+              "sprite": "GFX_fort_defense_icon",
+              "frame": 1
             },
             {
               "name": "building_fort",
               "path": "provinceview/province_window/building_fort",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 279, "y": 966, "w": 57, "h": 57 }
+              "rect": { "x": 279, "y": 966, "w": 57, "h": 57 },
+              "sprite": "GFX_fort_easterngfx"
             },
             {
               "name": "latent_resource_icon",
               "path": "provinceview/province_window/latent_resource_icon",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1280, "y": 643, "w": 77, "h": 77 }
+              "rect": { "x": 1280, "y": 643, "w": 77, "h": 77 },
+              "sprite": "GFX_resource_icon",
+              "frame": 1
             },
             {
               "name": "hidden_latent_resource_icon",
               "path": "provinceview/province_window/hidden_latent_resource_icon",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 528, "y": 1041, "w": 39, "h": 39 }
+              "rect": { "x": 528, "y": 1041, "w": 39, "h": 39 },
+              "sprite": "GFX_resource_transparent",
+              "frame": 1
             },
             {
               "name": "resource_price_gold",
               "path": "provinceview/province_window/resource_price_gold",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 528, "y": 1123, "w": 33, "h": 33 }
+              "rect": { "x": 528, "y": 1123, "w": 33, "h": 33 },
+              "sprite": "GFX_icon_gold_font_medium",
+              "frame": 1
             },
             {
               "name": "tradepost_allready_present",
               "path": "provinceview/province_window/tradepost_allready_present",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1280, "y": 689, "w": 35, "h": 31 }
+              "rect": { "x": 1280, "y": 689, "w": 35, "h": 31 },
+              "sprite": "GFX_terms_accepted_icon",
+              "frame": 1
             },
             {
               "name": "trade_pie",
               "path": "provinceview/province_window/trade_pie",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 324, "y": 1062, "w": 24, "h": 24 }
+              "rect": { "x": 324, "y": 1062, "w": 24, "h": 24 },
+              "sprite": "GFX_trade_power_chart_small",
+              "frame": 1,
+              "slices": [{ "percent": 100, "color": "#a53a3aff" }]
             },
             {
               "name": "trade_pie_overlay",
               "path": "provinceview/province_window/trade_pie_overlay",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 288, "y": 1056, "w": 75, "h": 78 }
+              "rect": { "x": 288, "y": 1056, "w": 75, "h": 78 },
+              "sprite": "GFX_provinceView_chart_overlay",
+              "frame": 1
             },
             {
               "name": "loot_icon",
               "path": "provinceview/province_window/loot_icon",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 18, "y": 611, "w": 35, "h": 39 }
+              "rect": { "x": 18, "y": 611, "w": 35, "h": 39 },
+              "sprite": "GFX_loot_icon",
+              "frame": 1
             },
             {
               "name": "loot_progress",
               "path": "provinceview/province_window/loot_progress",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 56, "y": 616, "w": 91, "h": 27 }
+              "rect": { "x": 56, "y": 616, "w": 91, "h": 27 },
+              "sprite": "GFX_loot_progressbar"
             },
             {
               "name": "loot_progress_frame",
               "path": "provinceview/province_window/loot_progress_frame",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 54, "y": 615, "w": 96, "h": 31 }
+              "rect": { "x": 54, "y": 615, "w": 96, "h": 31 },
+              "sprite": "GFX_loot_bar_frame",
+              "frame": 1
             },
             {
               "name": "devastation_icon",
               "path": "provinceview/province_window/devastation_icon",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 19, "y": 577, "w": 36, "h": 36 }
+              "rect": { "x": 19, "y": 577, "w": 36, "h": 36 },
+              "sprite": "GFX_devestation_icon",
+              "frame": 1
             },
             {
               "name": "tax_base_value",
@@ -1174,7 +1321,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 174, "y": 635, "w": 39, "h": 39 },
-                      "enabled": false
+                      "enabled": false,
+                      "sprite": "GFX_shield_small",
+                      "flag": "GRE"
                     }
                   ]
                 },
@@ -1191,7 +1340,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 214, "y": 635, "w": 39, "h": 39 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_shield_small",
+                      "flag": "RUS"
                     }
                   ]
                 }
@@ -1209,14 +1360,18 @@
                   "path": "provinceview/province_window/queue_window/land_amount_icon",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 365, "y": 634, "w": 48, "h": 48 }
+                  "rect": { "x": 365, "y": 634, "w": 48, "h": 48 },
+                  "sprite": "GFX_icon_land",
+                  "frame": 1
                 },
                 {
                   "name": "naval_amount_icon",
                   "path": "provinceview/province_window/queue_window/naval_amount_icon",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 466, "y": 634, "w": 48, "h": 48 }
+                  "rect": { "x": 466, "y": 634, "w": 48, "h": 48 },
+                  "sprite": "GFX_icon_naval",
+                  "frame": 1
                 },
                 {
                   "name": "queue_header",
@@ -1281,7 +1436,8 @@
                   "type": "button",
                   "visible": true,
                   "rect": { "x": 527, "y": 801, "w": 30, "h": 30 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_alerticon_dismiss_always"
                 },
                 {
                   "name": "mutually_cancel",
@@ -1289,7 +1445,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 1280, "y": 690, "w": 30, "h": 30 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_alerticon_dismiss_always"
                 },
                 {
                   "name": "mutually_progress_icon",
@@ -1297,42 +1454,51 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 1280, "y": 659, "w": 60, "h": 61 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_mutually_progress_strip"
                 },
                 {
                   "name": "unit_progress",
                   "path": "provinceview/province_window/progress_bar_window/unit_progress",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 404, "y": 809, "w": 114, "h": 11 }
+                  "rect": { "x": 404, "y": 809, "w": 114, "h": 11 },
+                  "sprite": "GFX_provinceView_progressbar"
                 },
                 {
                   "name": "unit_progress_frame",
                   "path": "provinceview/province_window/progress_bar_window/unit_progress_frame",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 394, "y": 805, "w": 131, "h": 21 }
+                  "rect": { "x": 394, "y": 805, "w": 131, "h": 21 },
+                  "sprite": "GFX_provinceView_morale_frame_long",
+                  "frame": 1
                 },
                 {
                   "name": "unit_progress_icon",
                   "path": "provinceview/province_window/progress_bar_window/unit_progress_icon",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 357, "y": 797, "w": 39, "h": 39 }
+                  "rect": { "x": 357, "y": 797, "w": 39, "h": 39 },
+                  "sprite": "GFX_unit_types_strip",
+                  "frame": 4
                 },
                 {
                   "name": "mutually_progress",
                   "path": "provinceview/province_window/progress_bar_window/mutually_progress",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 709, "w": 93, "h": 11 }
+                  "rect": { "x": 1280, "y": 709, "w": 93, "h": 11 },
+                  "sprite": "GFX_provinceView_progressbar2"
                 },
                 {
                   "name": "mutually_progress_frame",
                   "path": "provinceview/province_window/progress_bar_window/mutually_progress_frame",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 699, "w": 117, "h": 21 }
+                  "rect": { "x": 1280, "y": 699, "w": 117, "h": 21 },
+                  "sprite": "GFX_provinceView_morale_frame_medium",
+                  "frame": 1
                 }
               ]
             },
@@ -1348,7 +1514,9 @@
                   "path": "provinceview/province_window/allied_objectives_list/background2",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 65, "w": 477, "h": 655 }
+                  "rect": { "x": 1280, "y": 65, "w": 477, "h": 655 },
+                  "sprite": "GFX_transfer_occupation_bg",
+                  "frame": 1
                 },
                 {
                   "name": "list",
@@ -1369,14 +1537,16 @@
                           "path": "provinceview/province_window/allied_objectives_list/list/standardlistbox_slider/listboxSliderButton",
                           "type": "button",
                           "visible": false,
-                          "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 }
+                          "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                          "sprite": "GFX_scroll_drager"
                         },
                         {
                           "name": "listboxTrackButton",
                           "path": "provinceview/province_window/allied_objectives_list/list/standardlistbox_slider/listboxTrackButton",
                           "type": "button",
                           "visible": false,
-                          "rect": { "x": 1280, "y": 720, "w": 15, "h": 528 }
+                          "rect": { "x": 1280, "y": 720, "w": 15, "h": 528 },
+                          "sprite": "GFX_scroll_track"
                         },
                         {
                           "name": "downButton",
@@ -1384,7 +1554,8 @@
                           "type": "button",
                           "visible": false,
                           "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                          "enabled": true
+                          "enabled": true,
+                          "sprite": "GFX_scroll_down"
                         },
                         {
                           "name": "upButton",
@@ -1392,7 +1563,8 @@
                           "type": "button",
                           "visible": false,
                           "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                          "enabled": true
+                          "enabled": true,
+                          "sprite": "GFX_scroll_up"
                         }
                       ]
                     }
@@ -1414,14 +1586,17 @@
                   "visible": false,
                   "rect": { "x": 1280, "y": 683, "w": 95, "h": 37 },
                   "text": "Back",
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_province_back_button"
                 },
                 {
                   "name": "background",
                   "path": "provinceview/province_window/change_culture_view/background",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 136, "w": 569, "h": 584 }
+                  "rect": { "x": 1280, "y": 136, "w": 569, "h": 584 },
+                  "sprite": "GFX_culture_change_bg",
+                  "frame": 1
                 },
                 {
                   "name": "label_type",
@@ -1458,14 +1633,16 @@
                           "path": "provinceview/province_window/change_culture_view/cultures/standardlistbox_slider/listboxSliderButton",
                           "type": "button",
                           "visible": false,
-                          "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 }
+                          "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                          "sprite": "GFX_scroll_drager"
                         },
                         {
                           "name": "listboxTrackButton",
                           "path": "provinceview/province_window/change_culture_view/cultures/standardlistbox_slider/listboxTrackButton",
                           "type": "button",
                           "visible": false,
-                          "rect": { "x": 1280, "y": 720, "w": 15, "h": 394 }
+                          "rect": { "x": 1280, "y": 720, "w": 15, "h": 394 },
+                          "sprite": "GFX_scroll_track"
                         },
                         {
                           "name": "downButton",
@@ -1473,7 +1650,8 @@
                           "type": "button",
                           "visible": false,
                           "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                          "enabled": true
+                          "enabled": true,
+                          "sprite": "GFX_scroll_down"
                         },
                         {
                           "name": "upButton",
@@ -1481,7 +1659,8 @@
                           "type": "button",
                           "visible": false,
                           "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                          "enabled": true
+                          "enabled": true,
+                          "sprite": "GFX_scroll_up"
                         }
                       ]
                     }
@@ -1503,35 +1682,44 @@
                   "visible": false,
                   "rect": { "x": 1280, "y": 683, "w": 95, "h": 37 },
                   "text": "Back",
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_province_back_button"
                 },
                 {
                   "name": "background",
                   "path": "provinceview/province_window/build_army_view/background",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 136, "w": 569, "h": 584 }
+                  "rect": { "x": 1280, "y": 136, "w": 569, "h": 584 },
+                  "sprite": "GFX_build_unit_bg",
+                  "frame": 1
                 },
                 {
                   "name": "icon_fire",
                   "path": "provinceview/province_window/build_army_view/icon_fire",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 681, "w": 39, "h": 39 }
+                  "rect": { "x": 1280, "y": 681, "w": 39, "h": 39 },
+                  "sprite": "GFX_icon_fire",
+                  "frame": 1
                 },
                 {
                   "name": "icon_shock",
                   "path": "provinceview/province_window/build_army_view/icon_shock",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 681, "w": 39, "h": 39 }
+                  "rect": { "x": 1280, "y": 681, "w": 39, "h": 39 },
+                  "sprite": "GFX_icon_shock",
+                  "frame": 1
                 },
                 {
                   "name": "icon_morale",
                   "path": "provinceview/province_window/build_army_view/icon_morale",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 687, "w": 33, "h": 33 }
+                  "rect": { "x": 1280, "y": 687, "w": 33, "h": 33 },
+                  "sprite": "GFX_icon_morale",
+                  "frame": 1
                 },
                 {
                   "name": "label_type",
@@ -1570,56 +1758,71 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 667, "w": 514, "h": 53 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_build_unit_entry"
                     },
                     {
                       "name": "icon_type",
                       "path": "provinceview/province_window/build_army_view/unit[1]/icon_type",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 675, "w": 44, "h": 45 }
+                      "rect": { "x": 1280, "y": 675, "w": 44, "h": 45 },
+                      "sprite": "GFX_unit_types_strip",
+                      "frame": 1
                     },
                     {
                       "name": "fire_offensive",
                       "path": "provinceview/province_window/build_army_view/unit[1]/fire_offensive",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 }
+                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 },
+                      "sprite": "GFX_dots_offensive_no_transp",
+                      "frame": 1
                     },
                     {
                       "name": "fire_defensive",
                       "path": "provinceview/province_window/build_army_view/unit[1]/fire_defensive",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 }
+                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 },
+                      "sprite": "GFX_dots_defensive_no_transp",
+                      "frame": 1
                     },
                     {
                       "name": "shock_offensive",
                       "path": "provinceview/province_window/build_army_view/unit[1]/shock_offensive",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 }
+                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 },
+                      "sprite": "GFX_dots_offensive_no_transp",
+                      "frame": 1
                     },
                     {
                       "name": "shock_defensive",
                       "path": "provinceview/province_window/build_army_view/unit[1]/shock_defensive",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 }
+                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 },
+                      "sprite": "GFX_dots_defensive_no_transp",
+                      "frame": 1
                     },
                     {
                       "name": "morale_offensive",
                       "path": "provinceview/province_window/build_army_view/unit[1]/morale_offensive",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 }
+                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 },
+                      "sprite": "GFX_dots_offensive_no_transp",
+                      "frame": 1
                     },
                     {
                       "name": "morale_defensive",
                       "path": "provinceview/province_window/build_army_view/unit[1]/morale_defensive",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 }
+                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 },
+                      "sprite": "GFX_dots_defensive_no_transp",
+                      "frame": 1
                     },
                     {
                       "name": "unit_name",
@@ -1660,56 +1863,71 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 667, "w": 514, "h": 53 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_build_unit_entry"
                     },
                     {
                       "name": "icon_type",
                       "path": "provinceview/province_window/build_army_view/unit[2]/icon_type",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 675, "w": 44, "h": 45 }
+                      "rect": { "x": 1280, "y": 675, "w": 44, "h": 45 },
+                      "sprite": "GFX_unit_types_strip",
+                      "frame": 1
                     },
                     {
                       "name": "fire_offensive",
                       "path": "provinceview/province_window/build_army_view/unit[2]/fire_offensive",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 }
+                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 },
+                      "sprite": "GFX_dots_offensive_no_transp",
+                      "frame": 1
                     },
                     {
                       "name": "fire_defensive",
                       "path": "provinceview/province_window/build_army_view/unit[2]/fire_defensive",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 }
+                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 },
+                      "sprite": "GFX_dots_defensive_no_transp",
+                      "frame": 1
                     },
                     {
                       "name": "shock_offensive",
                       "path": "provinceview/province_window/build_army_view/unit[2]/shock_offensive",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 }
+                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 },
+                      "sprite": "GFX_dots_offensive_no_transp",
+                      "frame": 1
                     },
                     {
                       "name": "shock_defensive",
                       "path": "provinceview/province_window/build_army_view/unit[2]/shock_defensive",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 }
+                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 },
+                      "sprite": "GFX_dots_defensive_no_transp",
+                      "frame": 1
                     },
                     {
                       "name": "morale_offensive",
                       "path": "provinceview/province_window/build_army_view/unit[2]/morale_offensive",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 }
+                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 },
+                      "sprite": "GFX_dots_offensive_no_transp",
+                      "frame": 1
                     },
                     {
                       "name": "morale_defensive",
                       "path": "provinceview/province_window/build_army_view/unit[2]/morale_defensive",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 }
+                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 },
+                      "sprite": "GFX_dots_defensive_no_transp",
+                      "frame": 1
                     },
                     {
                       "name": "unit_name",
@@ -1750,56 +1968,71 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 667, "w": 514, "h": 53 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_build_unit_entry"
                     },
                     {
                       "name": "icon_type",
                       "path": "provinceview/province_window/build_army_view/unit[3]/icon_type",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 675, "w": 44, "h": 45 }
+                      "rect": { "x": 1280, "y": 675, "w": 44, "h": 45 },
+                      "sprite": "GFX_unit_types_strip",
+                      "frame": 1
                     },
                     {
                       "name": "fire_offensive",
                       "path": "provinceview/province_window/build_army_view/unit[3]/fire_offensive",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 }
+                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 },
+                      "sprite": "GFX_dots_offensive_no_transp",
+                      "frame": 1
                     },
                     {
                       "name": "fire_defensive",
                       "path": "provinceview/province_window/build_army_view/unit[3]/fire_defensive",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 }
+                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 },
+                      "sprite": "GFX_dots_defensive_no_transp",
+                      "frame": 1
                     },
                     {
                       "name": "shock_offensive",
                       "path": "provinceview/province_window/build_army_view/unit[3]/shock_offensive",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 }
+                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 },
+                      "sprite": "GFX_dots_offensive_no_transp",
+                      "frame": 1
                     },
                     {
                       "name": "shock_defensive",
                       "path": "provinceview/province_window/build_army_view/unit[3]/shock_defensive",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 }
+                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 },
+                      "sprite": "GFX_dots_defensive_no_transp",
+                      "frame": 1
                     },
                     {
                       "name": "morale_offensive",
                       "path": "provinceview/province_window/build_army_view/unit[3]/morale_offensive",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 }
+                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 },
+                      "sprite": "GFX_dots_offensive_no_transp",
+                      "frame": 1
                     },
                     {
                       "name": "morale_defensive",
                       "path": "provinceview/province_window/build_army_view/unit[3]/morale_defensive",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 }
+                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 },
+                      "sprite": "GFX_dots_defensive_no_transp",
+                      "frame": 1
                     },
                     {
                       "name": "unit_name",
@@ -1840,56 +2073,71 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 667, "w": 514, "h": 53 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_build_unit_entry"
                     },
                     {
                       "name": "icon_type",
                       "path": "provinceview/province_window/build_army_view/unit[4]/icon_type",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 675, "w": 44, "h": 45 }
+                      "rect": { "x": 1280, "y": 675, "w": 44, "h": 45 },
+                      "sprite": "GFX_unit_types_strip",
+                      "frame": 1
                     },
                     {
                       "name": "fire_offensive",
                       "path": "provinceview/province_window/build_army_view/unit[4]/fire_offensive",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 }
+                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 },
+                      "sprite": "GFX_dots_offensive_no_transp",
+                      "frame": 1
                     },
                     {
                       "name": "fire_defensive",
                       "path": "provinceview/province_window/build_army_view/unit[4]/fire_defensive",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 }
+                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 },
+                      "sprite": "GFX_dots_defensive_no_transp",
+                      "frame": 1
                     },
                     {
                       "name": "shock_offensive",
                       "path": "provinceview/province_window/build_army_view/unit[4]/shock_offensive",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 }
+                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 },
+                      "sprite": "GFX_dots_offensive_no_transp",
+                      "frame": 1
                     },
                     {
                       "name": "shock_defensive",
                       "path": "provinceview/province_window/build_army_view/unit[4]/shock_defensive",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 }
+                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 },
+                      "sprite": "GFX_dots_defensive_no_transp",
+                      "frame": 1
                     },
                     {
                       "name": "morale_offensive",
                       "path": "provinceview/province_window/build_army_view/unit[4]/morale_offensive",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 }
+                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 },
+                      "sprite": "GFX_dots_offensive_no_transp",
+                      "frame": 1
                     },
                     {
                       "name": "morale_defensive",
                       "path": "provinceview/province_window/build_army_view/unit[4]/morale_defensive",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 }
+                      "rect": { "x": 1280, "y": 696, "w": 38, "h": 24 },
+                      "sprite": "GFX_dots_defensive_no_transp",
+                      "frame": 1
                     },
                     {
                       "name": "unit_name",
@@ -1936,14 +2184,16 @@
                           "path": "provinceview/province_window/build_army_view/buildqueue/standardlistbox_slider/listboxSliderButton",
                           "type": "button",
                           "visible": false,
-                          "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 }
+                          "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                          "sprite": "GFX_scroll_drager"
                         },
                         {
                           "name": "listboxTrackButton",
                           "path": "provinceview/province_window/build_army_view/buildqueue/standardlistbox_slider/listboxTrackButton",
                           "type": "button",
                           "visible": false,
-                          "rect": { "x": 1280, "y": 720, "w": 15, "h": 135 }
+                          "rect": { "x": 1280, "y": 720, "w": 15, "h": 135 },
+                          "sprite": "GFX_scroll_track"
                         },
                         {
                           "name": "downButton",
@@ -1951,7 +2201,8 @@
                           "type": "button",
                           "visible": false,
                           "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                          "enabled": true
+                          "enabled": true,
+                          "sprite": "GFX_scroll_down"
                         },
                         {
                           "name": "upButton",
@@ -1959,7 +2210,8 @@
                           "type": "button",
                           "visible": false,
                           "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                          "enabled": true
+                          "enabled": true,
+                          "sprite": "GFX_scroll_up"
                         }
                       ]
                     }
@@ -1981,42 +2233,53 @@
                   "visible": false,
                   "rect": { "x": 1280, "y": 683, "w": 95, "h": 37 },
                   "text": "Back",
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_province_back_button"
                 },
                 {
                   "name": "background",
                   "path": "provinceview/province_window/build_navy_view/background",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 136, "w": 569, "h": 584 }
+                  "rect": { "x": 1280, "y": 136, "w": 569, "h": 584 },
+                  "sprite": "GFX_build_unit_bg",
+                  "frame": 1
                 },
                 {
                   "name": "icon_trade_power",
                   "path": "provinceview/province_window/build_navy_view/icon_trade_power",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 681, "w": 39, "h": 39 }
+                  "rect": { "x": 1280, "y": 681, "w": 39, "h": 39 },
+                  "sprite": "GFX_icon_trade_power",
+                  "frame": 1
                 },
                 {
                   "name": "icon_hull_size",
                   "path": "provinceview/province_window/build_navy_view/icon_hull_size",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 681, "w": 39, "h": 39 }
+                  "rect": { "x": 1280, "y": 681, "w": 39, "h": 39 },
+                  "sprite": "GFX_icon_hull_size",
+                  "frame": 1
                 },
                 {
                   "name": "icon_ship_cannons",
                   "path": "provinceview/province_window/build_navy_view/icon_ship_cannons",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 681, "w": 39, "h": 39 }
+                  "rect": { "x": 1280, "y": 681, "w": 39, "h": 39 },
+                  "sprite": "GFX_icon_ship_cannons",
+                  "frame": 1
                 },
                 {
                   "name": "icon_ship_speed",
                   "path": "provinceview/province_window/build_navy_view/icon_ship_speed",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 681, "w": 39, "h": 39 }
+                  "rect": { "x": 1280, "y": 681, "w": 39, "h": 39 },
+                  "sprite": "GFX_icon_ship_speed",
+                  "frame": 1
                 },
                 {
                   "name": "label_type",
@@ -2055,14 +2318,17 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 667, "w": 514, "h": 53 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_build_unit_entry_naval"
                     },
                     {
                       "name": "icon_type",
                       "path": "provinceview/province_window/build_navy_view/naval_unit[1]/icon_type",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 675, "w": 44, "h": 45 }
+                      "rect": { "x": 1280, "y": 675, "w": 44, "h": 45 },
+                      "sprite": "GFX_unit_types_strip",
+                      "frame": 1
                     },
                     {
                       "name": "unit_name",
@@ -2143,14 +2409,17 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 667, "w": 514, "h": 53 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_build_unit_entry_naval"
                     },
                     {
                       "name": "icon_type",
                       "path": "provinceview/province_window/build_navy_view/naval_unit[2]/icon_type",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 675, "w": 44, "h": 45 }
+                      "rect": { "x": 1280, "y": 675, "w": 44, "h": 45 },
+                      "sprite": "GFX_unit_types_strip",
+                      "frame": 1
                     },
                     {
                       "name": "unit_name",
@@ -2231,14 +2500,17 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 667, "w": 514, "h": 53 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_build_unit_entry_naval"
                     },
                     {
                       "name": "icon_type",
                       "path": "provinceview/province_window/build_navy_view/naval_unit[3]/icon_type",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 675, "w": 44, "h": 45 }
+                      "rect": { "x": 1280, "y": 675, "w": 44, "h": 45 },
+                      "sprite": "GFX_unit_types_strip",
+                      "frame": 1
                     },
                     {
                       "name": "unit_name",
@@ -2319,14 +2591,17 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 667, "w": 514, "h": 53 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_build_unit_entry_naval"
                     },
                     {
                       "name": "icon_type",
                       "path": "provinceview/province_window/build_navy_view/naval_unit[4]/icon_type",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 675, "w": 44, "h": 45 }
+                      "rect": { "x": 1280, "y": 675, "w": 44, "h": 45 },
+                      "sprite": "GFX_unit_types_strip",
+                      "frame": 1
                     },
                     {
                       "name": "unit_name",
@@ -2407,14 +2682,17 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 667, "w": 514, "h": 53 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_build_unit_entry_naval"
                     },
                     {
                       "name": "icon_type",
                       "path": "provinceview/province_window/build_navy_view/naval_unit[5]/icon_type",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 675, "w": 44, "h": 45 }
+                      "rect": { "x": 1280, "y": 675, "w": 44, "h": 45 },
+                      "sprite": "GFX_unit_types_strip",
+                      "frame": 1
                     },
                     {
                       "name": "unit_name",
@@ -2501,14 +2779,16 @@
                           "path": "provinceview/province_window/build_navy_view/buildqueue/standardlistbox_slider/listboxSliderButton",
                           "type": "button",
                           "visible": false,
-                          "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 }
+                          "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                          "sprite": "GFX_scroll_drager"
                         },
                         {
                           "name": "listboxTrackButton",
                           "path": "provinceview/province_window/build_navy_view/buildqueue/standardlistbox_slider/listboxTrackButton",
                           "type": "button",
                           "visible": false,
-                          "rect": { "x": 1280, "y": 720, "w": 15, "h": 142 }
+                          "rect": { "x": 1280, "y": 720, "w": 15, "h": 142 },
+                          "sprite": "GFX_scroll_track"
                         },
                         {
                           "name": "downButton",
@@ -2516,7 +2796,8 @@
                           "type": "button",
                           "visible": false,
                           "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                          "enabled": true
+                          "enabled": true,
+                          "sprite": "GFX_scroll_down"
                         },
                         {
                           "name": "upButton",
@@ -2524,7 +2805,8 @@
                           "type": "button",
                           "visible": false,
                           "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                          "enabled": true
+                          "enabled": true,
+                          "sprite": "GFX_scroll_up"
                         }
                       ]
                     }
@@ -2545,7 +2827,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 1280, "y": 643, "w": 77, "h": 77 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_shield_medium"
                 },
                 {
                   "name": "button_diploaction",
@@ -2554,7 +2837,8 @@
                   "visible": false,
                   "rect": { "x": 1280, "y": 683, "w": 179, "h": 37 },
                   "text": "Diplomacy",
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "button_type_7"
                 },
                 {
                   "name": "cancel_integrate_annex_button",
@@ -2562,56 +2846,70 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 1280, "y": 691, "w": 29, "h": 29 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_abandon_idea"
                 },
                 {
                   "name": "government_type_icon",
                   "path": "provinceview/province_window/foreign_province_window/government_type_icon",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 683, "w": 40, "h": 37 }
+                  "rect": { "x": 1280, "y": 683, "w": 40, "h": 37 },
+                  "sprite": "GFX_government_type_icon",
+                  "frame": 1
                 },
                 {
                   "name": "foreign_attitude_icons_strip",
                   "path": "provinceview/province_window/foreign_province_window/foreign_attitude_icons_strip",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 691, "w": 24, "h": 29 }
+                  "rect": { "x": 1280, "y": 691, "w": 24, "h": 29 },
+                  "sprite": "GFX_attitude_icons_strip",
+                  "frame": 1
                 },
                 {
                   "name": "miltech_icon",
                   "path": "provinceview/province_window/foreign_province_window/miltech_icon",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 687, "w": 33, "h": 33 }
+                  "rect": { "x": 1280, "y": 687, "w": 33, "h": 33 },
+                  "sprite": "GFX_icon_powers_military_tech",
+                  "frame": 1
                 },
                 {
                   "name": "integrate_icon",
                   "path": "provinceview/province_window/foreign_province_window/integrate_icon",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 681, "w": 39, "h": 39 }
+                  "rect": { "x": 1280, "y": 681, "w": 39, "h": 39 },
+                  "sprite": "GFX_integrate_icon",
+                  "frame": 1
                 },
                 {
                   "name": "annex_icon",
                   "path": "provinceview/province_window/foreign_province_window/annex_icon",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 681, "w": 39, "h": 39 }
+                  "rect": { "x": 1280, "y": 681, "w": 39, "h": 39 },
+                  "sprite": "GFX_annex_icon",
+                  "frame": 1
                 },
                 {
                   "name": "integrate_annex_progress",
                   "path": "provinceview/province_window/foreign_province_window/integrate_annex_progress",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 708, "w": 109, "h": 12 }
+                  "rect": { "x": 1280, "y": 708, "w": 109, "h": 12 },
+                  "sprite": "GFX_integrate_annex_progress"
                 },
                 {
                   "name": "integrate_annex_progress_frame",
                   "path": "provinceview/province_window/foreign_province_window/integrate_annex_progress_frame",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 699, "w": 131, "h": 21 }
+                  "rect": { "x": 1280, "y": 699, "w": 131, "h": 21 },
+                  "sprite": "GFX_integrate_annex_progress_frame",
+                  "frame": 1
                 },
                 {
                   "name": "country_name",
@@ -2684,14 +2982,17 @@
                   "visible": false,
                   "rect": { "x": 1280, "y": 683, "w": 179, "h": 37 },
                   "text": "Cancel",
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "largefloaterbutton"
                 },
                 {
                   "name": "bg",
                   "path": "provinceview/province_window/client_state_selection/bg",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 148, "w": 610, "h": 572 }
+                  "rect": { "x": 1280, "y": 148, "w": 610, "h": 572 },
+                  "sprite": "GFX_client_select_bg",
+                  "frame": 1
                 },
                 {
                   "name": "Title",
@@ -2728,14 +3029,16 @@
                       "path": "provinceview/province_window/client_state_selection/standardtext_slider/listboxSliderButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 }
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "sprite": "GFX_scroll_drager"
                     },
                     {
                       "name": "listboxTrackButton",
                       "path": "provinceview/province_window/client_state_selection/standardtext_slider/listboxTrackButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 720, "w": 15, "h": 166 }
+                      "rect": { "x": 1280, "y": 720, "w": 15, "h": 166 },
+                      "sprite": "GFX_scroll_track"
                     },
                     {
                       "name": "downButton",
@@ -2743,7 +3046,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_down"
                     },
                     {
                       "name": "upButton",
@@ -2751,7 +3055,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_up"
                     }
                   ]
                 }
@@ -2771,7 +3076,8 @@
                   "visible": false,
                   "rect": { "x": 1280, "y": 683, "w": 95, "h": 37 },
                   "text": "Back",
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_standard_button_71"
                 },
                 {
                   "name": "transfer_occupation_header",
@@ -2786,7 +3092,8 @@
                   "path": "provinceview/province_window/transfer_occupation_window/background",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 0, "w": 477, "h": 720 }
+                  "rect": { "x": 1280, "y": 0, "w": 477, "h": 720 },
+                  "sprite": "GFX_transfer_occupation_bg_large"
                 },
                 {
                   "name": "eligitable_allies",
@@ -2807,14 +3114,16 @@
                           "path": "provinceview/province_window/transfer_occupation_window/eligitable_allies/standardlistbox_slider/listboxSliderButton",
                           "type": "button",
                           "visible": false,
-                          "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 }
+                          "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                          "sprite": "GFX_scroll_drager"
                         },
                         {
                           "name": "listboxTrackButton",
                           "path": "provinceview/province_window/transfer_occupation_window/eligitable_allies/standardlistbox_slider/listboxTrackButton",
                           "type": "button",
                           "visible": false,
-                          "rect": { "x": 1280, "y": 720, "w": 15, "h": 682 }
+                          "rect": { "x": 1280, "y": 720, "w": 15, "h": 682 },
+                          "sprite": "GFX_scroll_track"
                         },
                         {
                           "name": "downButton",
@@ -2822,7 +3131,8 @@
                           "type": "button",
                           "visible": false,
                           "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                          "enabled": true
+                          "enabled": true,
+                          "sprite": "GFX_scroll_down"
                         },
                         {
                           "name": "upButton",
@@ -2830,7 +3140,8 @@
                           "type": "button",
                           "visible": false,
                           "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                          "enabled": true
+                          "enabled": true,
+                          "sprite": "GFX_scroll_up"
                         }
                       ]
                     }
@@ -2851,28 +3162,35 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 1280, "y": 677, "w": 43, "h": 43 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_closebutton2"
                 },
                 {
                   "name": "background",
                   "path": "provinceview/province_window/tradegoods_province_window/background",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 592, "w": 468, "h": 128 }
+                  "rect": { "x": 1280, "y": 592, "w": 468, "h": 128 },
+                  "sprite": "GFX_tradegood_info_bg",
+                  "frame": 1
                 },
                 {
                   "name": "tradegoods_base_price_value_gold",
                   "path": "provinceview/province_window/tradegoods_province_window/tradegoods_base_price_value_gold",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 687, "w": 33, "h": 33 }
+                  "rect": { "x": 1280, "y": 687, "w": 33, "h": 33 },
+                  "sprite": "GFX_icon_gold_font_medium",
+                  "frame": 1
                 },
                 {
                   "name": "tradegoods_current_price_value_gold",
                   "path": "provinceview/province_window/tradegoods_province_window/tradegoods_current_price_value_gold",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 687, "w": 33, "h": 33 }
+                  "rect": { "x": 1280, "y": 687, "w": 33, "h": 33 },
+                  "sprite": "GFX_icon_gold_font_medium",
+                  "frame": 1
                 },
                 {
                   "name": "tradegoods_name",
@@ -2938,7 +3256,8 @@
               "type": "checkbox",
               "visible": true,
               "rect": { "x": 398, "y": 529, "w": 37, "h": 37 },
-              "checked": false
+              "checked": false,
+              "sprite": "GFX_checkbox_settlement_growth"
             }
           ]
         },
@@ -2955,7 +3274,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 1280, "y": 677, "w": 43, "h": 43 },
-              "enabled": false
+              "enabled": false,
+              "sprite": "GFX_concentrate_development"
             },
             {
               "name": "centralize_state",
@@ -2963,7 +3283,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 1280, "y": 677, "w": 43, "h": 43 },
-              "enabled": false
+              "enabled": false,
+              "sprite": "GFX_centralize_state_button"
             },
             {
               "name": "make_state",
@@ -2971,7 +3292,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 1280, "y": 677, "w": 43, "h": 43 },
-              "enabled": false
+              "enabled": false,
+              "sprite": "GFX_make_state_button"
             },
             {
               "name": "abandon_state",
@@ -2979,7 +3301,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 1280, "y": 677, "w": 43, "h": 43 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_abandon_state_button"
             },
             {
               "name": "core_all",
@@ -2987,7 +3310,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 1280, "y": 677, "w": 43, "h": 43 },
-              "enabled": false
+              "enabled": false,
+              "sprite": "GFX_core_all_button"
             },
             {
               "name": "view_edicts_button",
@@ -2996,7 +3320,8 @@
               "visible": false,
               "rect": { "x": 1280, "y": 683, "w": 179, "h": 37 },
               "text": "View Edicts",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_1"
             },
             {
               "name": "sort_state_core",
@@ -3004,7 +3329,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 1280, "y": 696, "w": 36, "h": 24 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_state_core"
             },
             {
               "name": "sort_state_province_name",
@@ -3013,7 +3339,8 @@
               "visible": false,
               "rect": { "x": 1280, "y": 696, "w": 139, "h": 24 },
               "text": "Name",
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_state_116"
             },
             {
               "name": "sort_state_shield",
@@ -3021,7 +3348,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 1280, "y": 696, "w": 39, "h": 24 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_state_shield"
             },
             {
               "name": "sort_state_development",
@@ -3029,7 +3357,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 1280, "y": 696, "w": 39, "h": 24 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_state_development"
             },
             {
               "name": "sort_state_religion",
@@ -3037,7 +3366,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 1280, "y": 696, "w": 39, "h": 24 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_state_religion"
             },
             {
               "name": "sort_state_province_culture",
@@ -3046,7 +3376,8 @@
               "visible": false,
               "rect": { "x": 1280, "y": 693, "w": 111, "h": 27 },
               "text": "Culture",
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_button_90"
             },
             {
               "name": "sort_state_unrest",
@@ -3054,7 +3385,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 1280, "y": 696, "w": 69, "h": 24 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_state_unrest"
             },
             {
               "name": "sort_state_fort",
@@ -3062,7 +3394,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 1280, "y": 696, "w": 39, "h": 24 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_state_fort"
             },
             {
               "name": "sort_state_devastation",
@@ -3070,70 +3403,88 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 1280, "y": 696, "w": 42, "h": 24 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_state_devastation"
             },
             {
               "name": "states_view_bg",
               "path": "provinceview/state_window/states_view_bg",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1280, "y": 0, "w": 610, "h": 720 }
+              "rect": { "x": 1280, "y": 0, "w": 610, "h": 720 },
+              "sprite": "GFX_provinceview_bg_large_state",
+              "frame": 1
             },
             {
               "name": "edict_overlay",
               "path": "provinceview/state_window/edict_overlay",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1280, "y": 631, "w": 555, "h": 89 }
+              "rect": { "x": 1280, "y": 631, "w": 555, "h": 89 },
+              "sprite": "GFX_edict_overlay",
+              "frame": 1
             },
             {
               "name": "supply_depots",
               "path": "provinceview/state_window/supply_depots",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1280, "y": 679, "w": 40, "h": 41 }
+              "rect": { "x": 1280, "y": 679, "w": 40, "h": 41 },
+              "sprite": "GFX_supply_depots_icon",
+              "frame": 1
             },
             {
               "name": "is_state",
               "path": "provinceview/state_window/is_state",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1280, "y": 679, "w": 41, "h": 41 }
+              "rect": { "x": 1280, "y": 679, "w": 41, "h": 41 },
+              "sprite": "GFX_in_state_icon",
+              "frame": 1
             },
             {
               "name": "is_territory",
               "path": "provinceview/state_window/is_territory",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1280, "y": 679, "w": 41, "h": 41 }
+              "rect": { "x": 1280, "y": 679, "w": 41, "h": 41 },
+              "sprite": "GFX_in_territory_icon",
+              "frame": 1
             },
             {
               "name": "prosperity_progress",
               "path": "provinceview/state_window/prosperity_progress",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1280, "y": 696, "w": 138, "h": 24 }
+              "rect": { "x": 1280, "y": 696, "w": 138, "h": 24 },
+              "sprite": "GFX_prosperity_progressbar"
             },
             {
               "name": "prosperity_progress_frame",
               "path": "provinceview/state_window/prosperity_progress_frame",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1280, "y": 667, "w": 195, "h": 53 }
+              "rect": { "x": 1280, "y": 667, "w": 195, "h": 53 },
+              "sprite": "GFX_prosperity_gauge_frame",
+              "frame": 1
             },
             {
               "name": "prosperity",
               "path": "provinceview/state_window/prosperity",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1280, "y": 677, "w": 43, "h": 43 }
+              "rect": { "x": 1280, "y": 677, "w": 43, "h": 43 },
+              "sprite": "gfx_prosperity_strip",
+              "frame": 1
             },
             {
               "name": "edict_icon",
               "path": "provinceview/state_window/edict_icon",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1280, "y": 640, "w": 80, "h": 80 }
+              "rect": { "x": 1280, "y": 640, "w": 80, "h": 80 },
+              "sprite": "GFX_no_edict",
+              "frame": 1
             },
             {
               "name": "state_name",
@@ -3218,14 +3569,16 @@
                       "path": "provinceview/state_window/provinces_listbox/standardlistbox_slider/listboxSliderButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 }
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "sprite": "GFX_scroll_drager"
                     },
                     {
                       "name": "listboxTrackButton",
                       "path": "provinceview/state_window/provinces_listbox/standardlistbox_slider/listboxTrackButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 720, "w": 15, "h": 382 }
+                      "rect": { "x": 1280, "y": 720, "w": 15, "h": 382 },
+                      "sprite": "GFX_scroll_track"
                     },
                     {
                       "name": "downButton",
@@ -3233,7 +3586,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_down"
                     },
                     {
                       "name": "upButton",
@@ -3241,7 +3595,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_up"
                     }
                   ]
                 }
@@ -3266,14 +3621,16 @@
                       "path": "provinceview/state_window/stateviews_listbox/standardlistbox_slider/listboxSliderButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 }
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "sprite": "GFX_scroll_drager"
                     },
                     {
                       "name": "listboxTrackButton",
                       "path": "provinceview/state_window/stateviews_listbox/standardlistbox_slider/listboxTrackButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 720, "w": 15, "h": 562 }
+                      "rect": { "x": 1280, "y": 720, "w": 15, "h": 562 },
+                      "sprite": "GFX_scroll_track"
                     },
                     {
                       "name": "downButton",
@@ -3281,7 +3638,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_down"
                     },
                     {
                       "name": "upButton",
@@ -3289,7 +3647,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_up"
                     }
                   ]
                 }
@@ -3310,7 +3669,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 591, "y": 27723, "w": 45, "h": 43 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_exploit_button_expand_infrastructure"
             },
             {
               "name": "great_projects_window",
@@ -3324,7 +3684,9 @@
                   "path": "provinceview/buildings_window/great_projects_window/great_projects_window_bg",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 264, "w": 468, "h": 456 }
+                  "rect": { "x": 1280, "y": 264, "w": 468, "h": 456 },
+                  "sprite": "GFX_provinceview_great_projects_bg",
+                  "frame": 1
                 },
                 {
                   "name": "header_label",
@@ -3353,14 +3715,16 @@
                           "path": "provinceview/buildings_window/great_projects_window/great_projects_list/standardlistbox_slider/listboxSliderButton",
                           "type": "button",
                           "visible": false,
-                          "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 }
+                          "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                          "sprite": "GFX_scroll_drager"
                         },
                         {
                           "name": "listboxTrackButton",
                           "path": "provinceview/buildings_window/great_projects_window/great_projects_list/standardlistbox_slider/listboxTrackButton",
                           "type": "button",
                           "visible": false,
-                          "rect": { "x": 1280, "y": 720, "w": 15, "h": 334 }
+                          "rect": { "x": 1280, "y": 720, "w": 15, "h": 334 },
+                          "sprite": "GFX_scroll_track"
                         },
                         {
                           "name": "downButton",
@@ -3368,7 +3732,8 @@
                           "type": "button",
                           "visible": false,
                           "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                          "enabled": true
+                          "enabled": true,
+                          "sprite": "GFX_scroll_down"
                         },
                         {
                           "name": "upButton",
@@ -3376,7 +3741,8 @@
                           "type": "button",
                           "visible": false,
                           "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                          "enabled": true
+                          "enabled": true,
+                          "sprite": "GFX_scroll_up"
                         }
                       ]
                     }
@@ -3397,28 +3763,35 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 1280, "y": 651, "w": 147, "h": 69 },
-                  "enabled": false
+                  "enabled": false,
+                  "sprite": "GFX_center_of_trade_coastal_2",
+                  "frame": 1
                 },
                 {
                   "name": "provinceview_building_bg",
                   "path": "provinceview/buildings_window/general_buildings_window/provinceview_building_bg",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 0, "y": 1155, "w": 597, "h": 285 }
+                  "rect": { "x": 0, "y": 1155, "w": 597, "h": 285 },
+                  "sprite": "GFX_provinceview_building_bg",
+                  "frame": 1
                 },
                 {
                   "name": "provinceview_building_icon",
                   "path": "provinceview/buildings_window/general_buildings_window/provinceview_building_icon",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 18, "y": 1149, "w": 53, "h": 53 }
+                  "rect": { "x": 18, "y": 1149, "w": 53, "h": 53 },
+                  "sprite": "GFX_p2kuie_build_icon",
+                  "frame": 1
                 },
                 {
                   "name": "center_of_trade_icon",
                   "path": "provinceview/buildings_window/general_buildings_window/center_of_trade_icon",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 192, "y": 1349, "w": 147, "h": 69 }
+                  "rect": { "x": 192, "y": 1349, "w": 147, "h": 69 },
+                  "sprite": "GFX_center_of_trade_coastal_2"
                 },
                 {
                   "name": "province_improvements_label",
@@ -3432,53 +3805,62 @@
                   "name": "building_progress_entry",
                   "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[1]",
                   "type": "window",
-                  "visible": false,
+                  "visible": true,
                   "rect": { "x": 33, "y": 1188, "w": 77, "h": 77 },
                   "children": [
                     {
                       "name": "building",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[1]/building",
                       "type": "button",
-                      "visible": false,
+                      "visible": true,
                       "rect": { "x": 45, "y": 1199, "w": 57, "h": 57 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_shipyard_easterngfx",
+                      "frame": 1
                     },
                     {
                       "name": "building_canbuild",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[1]/building_canbuild",
                       "type": "button",
-                      "visible": false,
+                      "visible": true,
                       "rect": { "x": 36, "y": 1190, "w": 75, "h": 75 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_building_canbuild_unique"
                     },
                     {
                       "name": "building_destroy",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[1]/building_destroy",
                       "type": "button",
-                      "visible": false,
+                      "visible": true,
                       "rect": { "x": 45, "y": 1199, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_building_destroy"
                     },
                     {
                       "name": "building_status",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[1]/building_status",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 701, "w": 57, "h": 19 }
+                      "rect": { "x": 1280, "y": 701, "w": 57, "h": 19 },
+                      "sprite": "GFX_building_status_strip",
+                      "frame": 1
                     },
                     {
                       "name": "building_progress",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[1]/building_progress",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 714, "w": 55, "h": 6 }
+                      "rect": { "x": 1280, "y": 714, "w": 55, "h": 6 },
+                      "sprite": "GFX_building_progress"
                     },
                     {
                       "name": "building_currentlybuilding",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[1]/building_currentlybuilding",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 687, "w": 28, "h": 33 }
+                      "rect": { "x": 1280, "y": 687, "w": 28, "h": 33 },
+                      "sprite": "GFX_building_currentlybuilding",
+                      "frame": 1
                     },
                     {
                       "name": "required_development",
@@ -3494,53 +3876,62 @@
                   "name": "building_progress_entry",
                   "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[2]",
                   "type": "window",
-                  "visible": false,
+                  "visible": true,
                   "rect": { "x": 110, "y": 1188, "w": 77, "h": 77 },
                   "children": [
                     {
                       "name": "building",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[2]/building",
                       "type": "button",
-                      "visible": false,
+                      "visible": true,
                       "rect": { "x": 122, "y": 1199, "w": 57, "h": 57 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_fort_15th_easterngfx",
+                      "frame": 1
                     },
                     {
                       "name": "building_canbuild",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[2]/building_canbuild",
                       "type": "button",
-                      "visible": false,
+                      "visible": true,
                       "rect": { "x": 113, "y": 1190, "w": 75, "h": 75 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_building_canbuild_unique"
                     },
                     {
                       "name": "building_destroy",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[2]/building_destroy",
                       "type": "button",
-                      "visible": false,
+                      "visible": true,
                       "rect": { "x": 122, "y": 1199, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_building_destroy"
                     },
                     {
                       "name": "building_status",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[2]/building_status",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 701, "w": 57, "h": 19 }
+                      "rect": { "x": 1280, "y": 701, "w": 57, "h": 19 },
+                      "sprite": "GFX_building_status_strip",
+                      "frame": 1
                     },
                     {
                       "name": "building_progress",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[2]/building_progress",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 714, "w": 55, "h": 6 }
+                      "rect": { "x": 1280, "y": 714, "w": 55, "h": 6 },
+                      "sprite": "GFX_building_progress"
                     },
                     {
                       "name": "building_currentlybuilding",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[2]/building_currentlybuilding",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 687, "w": 28, "h": 33 }
+                      "rect": { "x": 1280, "y": 687, "w": 28, "h": 33 },
+                      "sprite": "GFX_building_currentlybuilding",
+                      "frame": 1
                     },
                     {
                       "name": "required_development",
@@ -3556,53 +3947,62 @@
                   "name": "building_progress_entry",
                   "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[3]",
                   "type": "window",
-                  "visible": false,
+                  "visible": true,
                   "rect": { "x": 187, "y": 1188, "w": 77, "h": 77 },
                   "children": [
                     {
                       "name": "building",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[3]/building",
                       "type": "button",
-                      "visible": false,
+                      "visible": true,
                       "rect": { "x": 199, "y": 1199, "w": 57, "h": 57 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_trade_depot_easterngfx",
+                      "frame": 1
                     },
                     {
                       "name": "building_canbuild",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[3]/building_canbuild",
                       "type": "button",
-                      "visible": false,
+                      "visible": true,
                       "rect": { "x": 190, "y": 1190, "w": 75, "h": 75 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_building_canbuild_unique"
                     },
                     {
                       "name": "building_destroy",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[3]/building_destroy",
                       "type": "button",
-                      "visible": false,
+                      "visible": true,
                       "rect": { "x": 199, "y": 1199, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_building_destroy"
                     },
                     {
                       "name": "building_status",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[3]/building_status",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 701, "w": 57, "h": 19 }
+                      "rect": { "x": 1280, "y": 701, "w": 57, "h": 19 },
+                      "sprite": "GFX_building_status_strip",
+                      "frame": 1
                     },
                     {
                       "name": "building_progress",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[3]/building_progress",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 714, "w": 55, "h": 6 }
+                      "rect": { "x": 1280, "y": 714, "w": 55, "h": 6 },
+                      "sprite": "GFX_building_progress"
                     },
                     {
                       "name": "building_currentlybuilding",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[3]/building_currentlybuilding",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 687, "w": 28, "h": 33 }
+                      "rect": { "x": 1280, "y": 687, "w": 28, "h": 33 },
+                      "sprite": "GFX_building_currentlybuilding",
+                      "frame": 1
                     },
                     {
                       "name": "required_development",
@@ -3618,16 +4018,18 @@
                   "name": "building_progress_entry",
                   "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[4]",
                   "type": "window",
-                  "visible": false,
+                  "visible": true,
                   "rect": { "x": 264, "y": 1188, "w": 77, "h": 77 },
                   "children": [
                     {
                       "name": "building",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[4]/building",
                       "type": "button",
-                      "visible": false,
+                      "visible": true,
                       "rect": { "x": 276, "y": 1199, "w": 57, "h": 57 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_town_hall_easterngfx",
+                      "frame": 1
                     },
                     {
                       "name": "building_canbuild",
@@ -3635,36 +4037,43 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 645, "w": 75, "h": 75 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_building_canbuild_unique"
                     },
                     {
                       "name": "building_destroy",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[4]/building_destroy",
                       "type": "button",
-                      "visible": false,
+                      "visible": true,
                       "rect": { "x": 276, "y": 1199, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_building_destroy"
                     },
                     {
                       "name": "building_status",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[4]/building_status",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 701, "w": 57, "h": 19 }
+                      "rect": { "x": 1280, "y": 701, "w": 57, "h": 19 },
+                      "sprite": "GFX_building_status_strip",
+                      "frame": 1
                     },
                     {
                       "name": "building_progress",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[4]/building_progress",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 714, "w": 55, "h": 6 }
+                      "rect": { "x": 1280, "y": 714, "w": 55, "h": 6 },
+                      "sprite": "GFX_building_progress"
                     },
                     {
                       "name": "building_currentlybuilding",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[4]/building_currentlybuilding",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 687, "w": 28, "h": 33 }
+                      "rect": { "x": 1280, "y": 687, "w": 28, "h": 33 },
+                      "sprite": "GFX_building_currentlybuilding",
+                      "frame": 1
                     },
                     {
                       "name": "required_development",
@@ -3680,16 +4089,18 @@
                   "name": "building_progress_entry",
                   "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[5]",
                   "type": "window",
-                  "visible": false,
+                  "visible": true,
                   "rect": { "x": 33, "y": 1265, "w": 77, "h": 77 },
                   "children": [
                     {
                       "name": "building",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[5]/building",
                       "type": "button",
-                      "visible": false,
+                      "visible": true,
                       "rect": { "x": 45, "y": 1276, "w": 57, "h": 57 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_textile",
+                      "frame": 1
                     },
                     {
                       "name": "building_canbuild",
@@ -3697,36 +4108,43 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 645, "w": 75, "h": 75 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_building_canbuild_unique"
                     },
                     {
                       "name": "building_destroy",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[5]/building_destroy",
                       "type": "button",
-                      "visible": false,
+                      "visible": true,
                       "rect": { "x": 45, "y": 1276, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_building_destroy"
                     },
                     {
                       "name": "building_status",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[5]/building_status",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 701, "w": 57, "h": 19 }
+                      "rect": { "x": 1280, "y": 701, "w": 57, "h": 19 },
+                      "sprite": "GFX_building_status_strip",
+                      "frame": 1
                     },
                     {
                       "name": "building_progress",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[5]/building_progress",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 714, "w": 55, "h": 6 }
+                      "rect": { "x": 1280, "y": 714, "w": 55, "h": 6 },
+                      "sprite": "GFX_building_progress"
                     },
                     {
                       "name": "building_currentlybuilding",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[5]/building_currentlybuilding",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 687, "w": 28, "h": 33 }
+                      "rect": { "x": 1280, "y": 687, "w": 28, "h": 33 },
+                      "sprite": "GFX_building_currentlybuilding",
+                      "frame": 1
                     },
                     {
                       "name": "required_development",
@@ -3742,16 +4160,18 @@
                   "name": "building_progress_entry",
                   "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[6]",
                   "type": "window",
-                  "visible": false,
+                  "visible": true,
                   "rect": { "x": 110, "y": 1265, "w": 77, "h": 77 },
                   "children": [
                     {
                       "name": "building",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[6]/building",
                       "type": "button",
-                      "visible": false,
+                      "visible": true,
                       "rect": { "x": 122, "y": 1276, "w": 57, "h": 57 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_state_house",
+                      "frame": 1
                     },
                     {
                       "name": "building_canbuild",
@@ -3759,36 +4179,43 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 645, "w": 75, "h": 75 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_building_canbuild_unique"
                     },
                     {
                       "name": "building_destroy",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[6]/building_destroy",
                       "type": "button",
-                      "visible": false,
+                      "visible": true,
                       "rect": { "x": 122, "y": 1276, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_building_destroy"
                     },
                     {
                       "name": "building_status",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[6]/building_status",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 701, "w": 57, "h": 19 }
+                      "rect": { "x": 1280, "y": 701, "w": 57, "h": 19 },
+                      "sprite": "GFX_building_status_strip",
+                      "frame": 1
                     },
                     {
                       "name": "building_progress",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[6]/building_progress",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 714, "w": 55, "h": 6 }
+                      "rect": { "x": 1280, "y": 714, "w": 55, "h": 6 },
+                      "sprite": "GFX_building_progress"
                     },
                     {
                       "name": "building_currentlybuilding",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[6]/building_currentlybuilding",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 687, "w": 28, "h": 33 }
+                      "rect": { "x": 1280, "y": 687, "w": 28, "h": 33 },
+                      "sprite": "GFX_building_currentlybuilding",
+                      "frame": 1
                     },
                     {
                       "name": "required_development",
@@ -3813,7 +4240,8 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 199, "y": 1276, "w": 57, "h": 57 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_building_default"
                     },
                     {
                       "name": "building_canbuild",
@@ -3821,7 +4249,8 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 190, "y": 1267, "w": 75, "h": 75 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_building_canbuild_unique"
                     },
                     {
                       "name": "building_destroy",
@@ -3829,28 +4258,34 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_building_destroy"
                     },
                     {
                       "name": "building_status",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[7]/building_status",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 701, "w": 57, "h": 19 }
+                      "rect": { "x": 1280, "y": 701, "w": 57, "h": 19 },
+                      "sprite": "GFX_building_status_strip",
+                      "frame": 1
                     },
                     {
                       "name": "building_progress",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[7]/building_progress",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 714, "w": 55, "h": 6 }
+                      "rect": { "x": 1280, "y": 714, "w": 55, "h": 6 },
+                      "sprite": "GFX_building_progress"
                     },
                     {
                       "name": "building_currentlybuilding",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[7]/building_currentlybuilding",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 687, "w": 28, "h": 33 }
+                      "rect": { "x": 1280, "y": 687, "w": 28, "h": 33 },
+                      "sprite": "GFX_building_currentlybuilding",
+                      "frame": 1
                     },
                     {
                       "name": "required_development",
@@ -3875,7 +4310,8 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 276, "y": 1276, "w": 57, "h": 57 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_building_default"
                     },
                     {
                       "name": "building_canbuild",
@@ -3883,7 +4319,8 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 267, "y": 1267, "w": 75, "h": 75 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_building_canbuild_unique"
                     },
                     {
                       "name": "building_destroy",
@@ -3891,28 +4328,34 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_building_destroy"
                     },
                     {
                       "name": "building_status",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[8]/building_status",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 701, "w": 57, "h": 19 }
+                      "rect": { "x": 1280, "y": 701, "w": 57, "h": 19 },
+                      "sprite": "GFX_building_status_strip",
+                      "frame": 1
                     },
                     {
                       "name": "building_progress",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[8]/building_progress",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 714, "w": 55, "h": 6 }
+                      "rect": { "x": 1280, "y": 714, "w": 55, "h": 6 },
+                      "sprite": "GFX_building_progress"
                     },
                     {
                       "name": "building_currentlybuilding",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[8]/building_currentlybuilding",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 687, "w": 28, "h": 33 }
+                      "rect": { "x": 1280, "y": 687, "w": 28, "h": 33 },
+                      "sprite": "GFX_building_currentlybuilding",
+                      "frame": 1
                     },
                     {
                       "name": "required_development",
@@ -3937,7 +4380,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 45, "y": 1353, "w": 57, "h": 57 },
-                      "enabled": false
+                      "enabled": false,
+                      "sprite": "GFX_locked_building_slot",
+                      "frame": 1
                     },
                     {
                       "name": "building_canbuild",
@@ -3945,7 +4390,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 645, "w": 75, "h": 75 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_building_canbuild_unique"
                     },
                     {
                       "name": "building_destroy",
@@ -3953,28 +4399,34 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_building_destroy"
                     },
                     {
                       "name": "building_status",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[9]/building_status",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 701, "w": 57, "h": 19 }
+                      "rect": { "x": 1280, "y": 701, "w": 57, "h": 19 },
+                      "sprite": "GFX_building_status_strip",
+                      "frame": 1
                     },
                     {
                       "name": "building_progress",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[9]/building_progress",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 714, "w": 55, "h": 6 }
+                      "rect": { "x": 1280, "y": 714, "w": 55, "h": 6 },
+                      "sprite": "GFX_building_progress"
                     },
                     {
                       "name": "building_currentlybuilding",
                       "path": "provinceview/buildings_window/general_buildings_window/building_progress_entry[9]/building_currentlybuilding",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 687, "w": 28, "h": 33 }
+                      "rect": { "x": 1280, "y": 687, "w": 28, "h": 33 },
+                      "sprite": "GFX_building_currentlybuilding",
+                      "frame": 1
                     },
                     {
                       "name": "required_development",
@@ -4001,7 +4453,8 @@
                   "type": "button",
                   "visible": true,
                   "rect": { "x": 530, "y": 442, "w": 45, "h": 43 },
-                  "enabled": false
+                  "enabled": false,
+                  "sprite": "GFX_exploit_button_expand_infrastructure"
                 },
                 {
                   "name": "reduce_infrastructure_button",
@@ -4009,77 +4462,97 @@
                   "type": "button",
                   "visible": true,
                   "rect": { "x": 530, "y": 484, "w": 45, "h": 43 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_exploit_button_reduce_infrastructure"
                 },
                 {
                   "name": "naval_forcelimit_icon",
                   "path": "provinceview/buildings_window/province_values_window/naval_forcelimit_icon",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 349, "y": 1257, "w": 42, "h": 37 }
+                  "rect": { "x": 349, "y": 1257, "w": 42, "h": 37 },
+                  "sprite": "GFX_naval_forcelimit_icon",
+                  "frame": 1
                 },
                 {
                   "name": "land_forcelimit_icon",
                   "path": "provinceview/buildings_window/province_values_window/land_forcelimit_icon",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 463, "y": 1258, "w": 41, "h": 36 }
+                  "rect": { "x": 463, "y": 1258, "w": 41, "h": 36 },
+                  "sprite": "GFX_land_forcelimit_icon",
+                  "frame": 1
                 },
                 {
                   "name": "province_governing_cost_icon",
                   "path": "provinceview/buildings_window/province_values_window/province_governing_cost_icon",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 461, "y": 1312, "w": 43, "h": 36 }
+                  "rect": { "x": 461, "y": 1312, "w": 43, "h": 36 },
+                  "sprite": "GFX_province_governing_cost",
+                  "frame": 1
                 },
                 {
                   "name": "center_of_revolution",
                   "path": "provinceview/buildings_window/province_values_window/center_of_revolution",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 675, "w": 45, "h": 45 }
+                  "rect": { "x": 1280, "y": 675, "w": 45, "h": 45 },
+                  "sprite": "GFX_center_of_revolution",
+                  "frame": 1
                 },
                 {
                   "name": "revolution_spread",
                   "path": "provinceview/buildings_window/province_values_window/revolution_spread",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 668, "w": 52, "h": 52 }
+                  "rect": { "x": 1280, "y": 668, "w": 52, "h": 52 },
+                  "sprite": "GFX_revolution_spreading",
+                  "frame": 1
                 },
                 {
                   "name": "revolution_progress",
                   "path": "provinceview/buildings_window/province_values_window/revolution_progress",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 709, "w": 93, "h": 11 }
+                  "rect": { "x": 1280, "y": 709, "w": 93, "h": 11 },
+                  "sprite": "GFX_provinceView_revolution_progressbar"
                 },
                 {
                   "name": "revolution_progress_frame",
                   "path": "provinceview/buildings_window/province_values_window/revolution_progress_frame",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 699, "w": 117, "h": 21 }
+                  "rect": { "x": 1280, "y": 699, "w": 117, "h": 21 },
+                  "sprite": "GFX_provinceView_morale_frame_medium",
+                  "frame": 1
                 },
                 {
                   "name": "build_allowed_icon",
                   "path": "provinceview/buildings_window/province_values_window/build_allowed_icon",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 348, "y": 1311, "w": 43, "h": 43 }
+                  "rect": { "x": 348, "y": 1311, "w": 43, "h": 43 },
+                  "sprite": "GFX_technologyView_show_buildings",
+                  "frame": 1
                 },
                 {
                   "name": "build_cost_modifier_icon",
                   "path": "provinceview/buildings_window/province_values_window/build_cost_modifier_icon",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 351, "y": 1204, "w": 36, "h": 31 }
+                  "rect": { "x": 351, "y": 1204, "w": 36, "h": 31 },
+                  "sprite": "GFX_build_cost",
+                  "frame": 1
                 },
                 {
                   "name": "build_time_modifier_icon",
                   "path": "provinceview/buildings_window/province_values_window/build_time_modifier_icon",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 462, "y": 1201, "w": 43, "h": 36 }
+                  "rect": { "x": 462, "y": 1201, "w": 43, "h": 36 },
+                  "sprite": "GFX_build_time",
+                  "frame": 1
                 },
                 {
                   "name": "province_values_label",
@@ -4193,14 +4666,17 @@
                   "visible": false,
                   "rect": { "x": 1280, "y": 683, "w": 95, "h": 37 },
                   "text": "Back",
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_standard_button_71"
                 },
                 {
                   "name": "background",
                   "path": "provinceview/buildings_window/select_building_large/background",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 24, "w": 486, "h": 696 }
+                  "rect": { "x": 1280, "y": 24, "w": 486, "h": 696 },
+                  "sprite": "gfx_select_building_large_bg2",
+                  "frame": 1
                 },
                 {
                   "name": "window_title",
@@ -4229,14 +4705,16 @@
                           "path": "provinceview/buildings_window/select_building_large/list1/standardlistbox_slider/listboxSliderButton",
                           "type": "button",
                           "visible": false,
-                          "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 }
+                          "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                          "sprite": "GFX_scroll_drager"
                         },
                         {
                           "name": "listboxTrackButton",
                           "path": "provinceview/buildings_window/select_building_large/list1/standardlistbox_slider/listboxTrackButton",
                           "type": "button",
                           "visible": false,
-                          "rect": { "x": 1280, "y": 720, "w": 15, "h": 711 }
+                          "rect": { "x": 1280, "y": 720, "w": 15, "h": 711 },
+                          "sprite": "GFX_scroll_track"
                         },
                         {
                           "name": "downButton",
@@ -4244,7 +4722,8 @@
                           "type": "button",
                           "visible": false,
                           "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                          "enabled": true
+                          "enabled": true,
+                          "sprite": "GFX_scroll_down"
                         },
                         {
                           "name": "upButton",
@@ -4252,7 +4731,8 @@
                           "type": "button",
                           "visible": false,
                           "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                          "enabled": true
+                          "enabled": true,
+                          "sprite": "GFX_scroll_up"
                         }
                       ]
                     }
@@ -4274,7 +4754,8 @@
                   "visible": false,
                   "rect": { "x": 1280, "y": 691, "w": 249, "h": 29 },
                   "text": "Name",
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_p2kuie_sort_205"
                 },
                 {
                   "name": "sort_cost",
@@ -4283,7 +4764,8 @@
                   "visible": false,
                   "rect": { "x": 1280, "y": 693, "w": 77, "h": 27 },
                   "text": "Cost",
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_sort_64"
                 },
                 {
                   "name": "sort_time",
@@ -4292,14 +4774,17 @@
                   "visible": false,
                   "rect": { "x": 1280, "y": 693, "w": 138, "h": 27 },
                   "text": "Time",
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_p2kuie_sort_125"
                 },
                 {
                   "name": "provinceview_native_building_bg_large",
                   "path": "provinceview/buildings_window/natives_buildings_window_large/provinceview_native_building_bg_large",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 437, "w": 610, "h": 283 }
+                  "rect": { "x": 1280, "y": 437, "w": 610, "h": 283 },
+                  "sprite": "GFX_select_building_large_bg",
+                  "frame": 1
                 },
                 {
                   "name": "province_values_window",
@@ -4313,42 +4798,54 @@
                       "path": "provinceview/buildings_window/natives_buildings_window_large/province_values_window/naval_forcelimit_icon",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 687, "w": 37, "h": 33 }
+                      "rect": { "x": 1280, "y": 687, "w": 37, "h": 33 },
+                      "sprite": "GFX_naval_forcelimit_icon",
+                      "frame": 1
                     },
                     {
                       "name": "land_forcelimit_icon",
                       "path": "provinceview/buildings_window/natives_buildings_window_large/province_values_window/land_forcelimit_icon",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 688, "w": 36, "h": 32 }
+                      "rect": { "x": 1280, "y": 688, "w": 36, "h": 32 },
+                      "sprite": "GFX_land_forcelimit_icon",
+                      "frame": 1
                     },
                     {
                       "name": "governing_capacity_icon",
                       "path": "provinceview/buildings_window/natives_buildings_window_large/province_values_window/governing_capacity_icon",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 687, "w": 33, "h": 33 }
+                      "rect": { "x": 1280, "y": 687, "w": 33, "h": 33 },
+                      "sprite": "GFX_governing_capacity",
+                      "frame": 1
                     },
                     {
                       "name": "build_allowed_icon",
                       "path": "provinceview/buildings_window/natives_buildings_window_large/province_values_window/build_allowed_icon",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 677, "w": 43, "h": 43 }
+                      "rect": { "x": 1280, "y": 677, "w": 43, "h": 43 },
+                      "sprite": "GFX_technologyView_show_buildings",
+                      "frame": 1
                     },
                     {
                       "name": "build_cost_modifier_icon",
                       "path": "provinceview/buildings_window/natives_buildings_window_large/province_values_window/build_cost_modifier_icon",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 689, "w": 36, "h": 31 }
+                      "rect": { "x": 1280, "y": 689, "w": 36, "h": 31 },
+                      "sprite": "GFX_build_cost",
+                      "frame": 1
                     },
                     {
                       "name": "build_time_modifier_icon",
                       "path": "provinceview/buildings_window/natives_buildings_window_large/province_values_window/build_time_modifier_icon",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 688, "w": 38, "h": 32 }
+                      "rect": { "x": 1280, "y": 688, "w": 38, "h": 32 },
+                      "sprite": "GFX_build_time",
+                      "frame": 1
                     },
                     {
                       "name": "province_values_label",
@@ -4427,14 +4924,16 @@
                           "path": "provinceview/buildings_window/natives_buildings_window_large/buildings/standardlistbox_slider/listboxSliderButton",
                           "type": "button",
                           "visible": false,
-                          "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 }
+                          "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                          "sprite": "GFX_scroll_drager"
                         },
                         {
                           "name": "listboxTrackButton",
                           "path": "provinceview/buildings_window/natives_buildings_window_large/buildings/standardlistbox_slider/listboxTrackButton",
                           "type": "button",
                           "visible": false,
-                          "rect": { "x": 1280, "y": 720, "w": 15, "h": 214 }
+                          "rect": { "x": 1280, "y": 720, "w": 15, "h": 214 },
+                          "sprite": "GFX_scroll_track"
                         },
                         {
                           "name": "downButton",
@@ -4442,7 +4941,8 @@
                           "type": "button",
                           "visible": false,
                           "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                          "enabled": true
+                          "enabled": true,
+                          "sprite": "GFX_scroll_down"
                         },
                         {
                           "name": "upButton",
@@ -4450,7 +4950,8 @@
                           "type": "button",
                           "visible": false,
                           "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                          "enabled": true
+                          "enabled": true,
+                          "sprite": "GFX_scroll_up"
                         }
                       ]
                     }
@@ -4473,14 +4974,17 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 1280, "y": 677, "w": 43, "h": 43 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_closebutton2"
             },
             {
               "name": "provinceview_building_bg",
               "path": "provinceview/institutions_window/provinceview_building_bg",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1280, "y": 93, "w": 414, "h": 627 }
+              "rect": { "x": 1280, "y": 93, "w": 414, "h": 627 },
+              "sprite": "GFX_provinceview_institutions_bg",
+              "frame": 1
             },
             {
               "name": "header_label",
@@ -4525,14 +5029,16 @@
                       "path": "provinceview/institutions_window/institutions/standardlistbox_slider/listboxSliderButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 }
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "sprite": "GFX_scroll_drager"
                     },
                     {
                       "name": "listboxTrackButton",
                       "path": "provinceview/institutions_window/institutions/standardlistbox_slider/listboxTrackButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 720, "w": 15, "h": 538 }
+                      "rect": { "x": 1280, "y": 720, "w": 15, "h": 538 },
+                      "sprite": "GFX_scroll_track"
                     },
                     {
                       "name": "downButton",
@@ -4540,7 +5046,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_down"
                     },
                     {
                       "name": "upButton",
@@ -4548,7 +5055,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_up"
                     }
                   ]
                 }
@@ -4570,14 +5078,17 @@
               "visible": false,
               "rect": { "x": 1280, "y": 683, "w": 95, "h": 37 },
               "text": "Back",
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_standard_button_71"
             },
             {
               "name": "province_history_banner",
               "path": "provinceview/history_window/province_history_banner",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1280, "y": 673, "w": 357, "h": 47 }
+              "rect": { "x": 1280, "y": 673, "w": 357, "h": 47 },
+              "sprite": "GFX_province_banner_foreign",
+              "frame": 1
             },
             {
               "name": "province_hisotry_label",
@@ -4592,7 +5103,8 @@
               "path": "provinceview/history_window/background",
               "type": "button",
               "visible": false,
-              "rect": { "x": 1280, "y": 159, "w": 606, "h": 561 }
+              "rect": { "x": 1280, "y": 159, "w": 606, "h": 561 },
+              "sprite": "GFX_province_view_history_bg"
             },
             {
               "name": "history_list",
@@ -4613,14 +5125,16 @@
                       "path": "provinceview/history_window/history_list/standardlistbox_slider/listboxSliderButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 }
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "sprite": "GFX_scroll_drager"
                     },
                     {
                       "name": "listboxTrackButton",
                       "path": "provinceview/history_window/history_list/standardlistbox_slider/listboxTrackButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 720, "w": 15, "h": 406 }
+                      "rect": { "x": 1280, "y": 720, "w": 15, "h": 406 },
+                      "sprite": "GFX_scroll_track"
                     },
                     {
                       "name": "downButton",
@@ -4628,7 +5142,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_down"
                     },
                     {
                       "name": "upButton",
@@ -4636,7 +5151,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_up"
                     }
                   ]
                 }
@@ -4659,7 +5175,9 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 0, "y": 2, "w": 179, "h": 184 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_shield_fancy",
+          "flag": "RUS"
         },
         {
           "name": "open_build_interface_button",
@@ -4667,7 +5185,8 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 7, "y": 130, "w": 48, "h": 48 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_open_build_interface"
         },
         {
           "name": "great_power_button",
@@ -4675,7 +5194,8 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 138, "y": 100, "w": 27, "h": 27 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_great_power_button"
         },
         {
           "name": "government_reforms_button",
@@ -4683,7 +5203,8 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 120, "y": 131, "w": 48, "h": 48 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_government_reforms_button"
         },
         {
           "name": "icon_merchant",
@@ -4691,7 +5212,8 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 947, "y": 10, "w": 37, "h": 37 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_icon_merchant"
         },
         {
           "name": "icon_settler",
@@ -4699,7 +5221,8 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 997, "y": 10, "w": 37, "h": 37 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_icon_settler"
         },
         {
           "name": "icon_diplomat",
@@ -4707,7 +5230,8 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 1046, "y": 10, "w": 37, "h": 37 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_icon_diplomat"
         },
         {
           "name": "icon_missionary",
@@ -4715,7 +5239,8 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 1095, "y": 10, "w": 37, "h": 37 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_icon_missionary"
         },
         {
           "name": "current_age_button",
@@ -4723,7 +5248,8 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 928, "y": 38, "w": 234, "h": 57 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_age_button"
         },
         {
           "name": "age_icon",
@@ -4731,189 +5257,242 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 907, "y": 56, "w": 44, "h": 45 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_icon_age_s",
+          "frame": 4
         },
         {
           "name": "brown_bg",
           "path": "topbar/brown_bg",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 811, "y": 23, "w": 233, "h": 41 }
+          "rect": { "x": 811, "y": 23, "w": 233, "h": 41 },
+          "sprite": "GFX_brown_bg",
+          "frame": 1
         },
         {
           "name": "topbar_1",
           "path": "topbar/topbar_1",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 119415, "y": -2, "w": 131, "h": 37 }
+          "rect": { "x": 119415, "y": -2, "w": 131, "h": 37 },
+          "sprite": "GFX_remove",
+          "frame": 1
         },
         {
           "name": "topbar_2",
           "path": "topbar/topbar_2",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 1189229, "y": -2, "w": 131, "h": 37 }
+          "rect": { "x": 1189229, "y": -2, "w": 131, "h": 37 },
+          "sprite": "GFX_remove",
+          "frame": 1
         },
         {
           "name": "topbar_3",
           "path": "topbar/topbar_3",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 1189839, "y": -2, "w": 131, "h": 37 }
+          "rect": { "x": 1189839, "y": -2, "w": 131, "h": 37 },
+          "sprite": "GFX_remove",
+          "frame": 1
         },
         {
           "name": "topbar_upper_left_bg",
           "path": "topbar/topbar_upper_left_bg",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 0, "y": 0, "w": 1173, "h": 191 }
+          "rect": { "x": 0, "y": 0, "w": 1173, "h": 191 },
+          "sprite": "GFX_topbar_bg",
+          "frame": 1
         },
         {
           "name": "topbar_upper_left_bg4",
           "path": "topbar/topbar_upper_left_bg4",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 84, "y": 47, "w": 843, "h": 83 }
+          "rect": { "x": 84, "y": 47, "w": 843, "h": 83 },
+          "sprite": "GFX_topbar_banner",
+          "frame": 1
         },
         {
           "name": "government_reforms_button_base",
           "path": "topbar/government_reforms_button_base",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 111, "y": 124, "w": 65, "h": 65 }
+          "rect": { "x": 111, "y": 124, "w": 65, "h": 65 },
+          "sprite": "GFX_government_reforms_button_base",
+          "frame": 1
         },
         {
           "name": "player_shield_glow",
           "path": "topbar/player_shield_glow",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 0, "y": 2, "w": 181, "h": 184 }
+          "rect": { "x": 0, "y": 2, "w": 181, "h": 184 },
+          "sprite": "GFX_shield_fancy_great_power_glow",
+          "frame": 1
         },
         {
           "name": "great_power_button_base",
           "path": "topbar/great_power_button_base",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 133, "y": 95, "w": 36, "h": 36 }
+          "rect": { "x": 133, "y": 95, "w": 36, "h": 36 },
+          "sprite": "GFX_great_power_button_base",
+          "frame": 1
         },
         {
           "name": "government_reforms_progress",
           "path": "topbar/government_reforms_progress",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 120, "y": 131, "w": 48, "h": 48 }
+          "rect": { "x": 120, "y": 131, "w": 48, "h": 48 },
+          "sprite": "GFX_government_reforms_progress"
         },
         {
           "name": "topbar_upper_left_bg2",
           "path": "topbar/topbar_upper_left_bg2",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 939, "y": 35, "w": 201, "h": 29 }
+          "rect": { "x": 939, "y": 35, "w": 201, "h": 29 },
+          "sprite": "GFX_topbar_portrait_value_bg",
+          "frame": 1
         },
         {
           "name": "icon_gold",
           "path": "topbar/icon_gold",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 178, "y": 12, "w": 32, "h": 33 }
+          "rect": { "x": 178, "y": 12, "w": 32, "h": 33 },
+          "sprite": "GFX_icon_gold_strip",
+          "frame": 1
         },
         {
           "name": "icon_manpower",
           "path": "topbar/icon_manpower",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 288, "y": 12, "w": 33, "h": 33 }
+          "rect": { "x": 288, "y": 12, "w": 33, "h": 33 },
+          "sprite": "GFX_icon_manpower",
+          "frame": 1
         },
         {
           "name": "icon_sailors",
           "path": "topbar/icon_sailors",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 398, "y": 16, "w": 33, "h": 33 }
+          "rect": { "x": 398, "y": 16, "w": 33, "h": 33 },
+          "sprite": "GFX_icon_sailors",
+          "frame": 1
         },
         {
           "name": "icon_stability",
           "path": "topbar/icon_stability",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 512, "y": 12, "w": 33, "h": 33 }
+          "rect": { "x": 512, "y": 12, "w": 33, "h": 33 },
+          "sprite": "GFX_icon_stability",
+          "frame": 1
         },
         {
           "name": "icon_prestige",
           "path": "topbar/icon_prestige",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 677, "y": 11, "w": 33, "h": 33 }
+          "rect": { "x": 677, "y": 11, "w": 33, "h": 33 },
+          "sprite": "GFX_icon_prestige",
+          "frame": 1
         },
         {
           "name": "icon_dev",
           "path": "topbar/icon_dev",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 1280, "y": 687, "w": 32, "h": 33 }
+          "rect": { "x": 1280, "y": 687, "w": 32, "h": 33 },
+          "sprite": "GFX_icon_legitimacy",
+          "frame": 3
         },
         {
           "name": "icon_meritocracy",
           "path": "topbar/icon_meritocracy",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 768, "y": 12, "w": 32, "h": 33 }
+          "rect": { "x": 768, "y": 12, "w": 32, "h": 33 },
+          "sprite": "GFX_icon_legitimacy",
+          "frame": 5
         },
         {
           "name": "icon_leg",
           "path": "topbar/icon_leg",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 1280, "y": 687, "w": 32, "h": 33 }
+          "rect": { "x": 1280, "y": 687, "w": 32, "h": 33 },
+          "sprite": "GFX_icon_legitimacy",
+          "frame": 1
         },
         {
           "name": "icon_rep",
           "path": "topbar/icon_rep",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 1280, "y": 687, "w": 32, "h": 33 }
+          "rect": { "x": 1280, "y": 687, "w": 32, "h": 33 },
+          "sprite": "GFX_icon_legitimacy",
+          "frame": 2
         },
         {
           "name": "icon_unity",
           "path": "topbar/icon_unity",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 1280, "y": 687, "w": 32, "h": 33 }
+          "rect": { "x": 1280, "y": 687, "w": 32, "h": 33 },
+          "sprite": "GFX_icon_legitimacy",
+          "frame": 4
         },
         {
           "name": "icon_corruption",
           "path": "topbar/icon_corruption",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 599, "y": 14, "w": 31, "h": 31 }
+          "rect": { "x": 599, "y": 14, "w": 31, "h": 31 },
+          "sprite": "GFX_icon_corruption_small",
+          "frame": 1
         },
         {
           "name": "icon_ADM",
           "path": "topbar/icon_ADM",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 601, "y": 58, "w": 33, "h": 33 }
+          "rect": { "x": 601, "y": 58, "w": 33, "h": 33 },
+          "sprite": "GFX_icon_powers_administrative",
+          "frame": 1
         },
         {
           "name": "icon_DIP",
           "path": "topbar/icon_DIP",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 691, "y": 58, "w": 33, "h": 33 }
+          "rect": { "x": 691, "y": 58, "w": 33, "h": 33 },
+          "sprite": "GFX_icon_powers_diplomatic",
+          "frame": 1
         },
         {
           "name": "icon_MIL",
           "path": "topbar/icon_MIL",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 782, "y": 58, "w": 33, "h": 33 }
+          "rect": { "x": 782, "y": 58, "w": 33, "h": 33 },
+          "sprite": "GFX_icon_powers_military",
+          "frame": 1
         },
         {
           "name": "button_base",
           "path": "topbar/button_base",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 889, "y": 35, "w": 75, "h": 73 }
+          "rect": { "x": 889, "y": 35, "w": 75, "h": 73 },
+          "sprite": "GFX_age_frame_addon",
+          "frame": 1
         },
         {
           "name": "text_merchants",
@@ -5087,14 +5666,18 @@
               "path": "topbar/powerprojection_topbar/topbar_liberty_overlay",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 830, "y": 0, "w": 115, "h": 61 }
+              "rect": { "x": 830, "y": 0, "w": 115, "h": 61 },
+              "sprite": "GFX_topbar_liberty_overlay",
+              "frame": 1
             },
             {
               "name": "icon_powerprojection",
               "path": "topbar/powerprojection_topbar/icon_powerprojection",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 857, "y": 13, "w": 13, "h": 33 }
+              "rect": { "x": 857, "y": 13, "w": 13, "h": 33 },
+              "sprite": "GFX_icon_powerprojection",
+              "frame": 1
             },
             {
               "name": "text_powerprojection",
@@ -5118,14 +5701,18 @@
               "path": "topbar/liberty_desire_topbar/topbar_liberty_overlay",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1280, "y": 657, "w": 115, "h": 63 }
+              "rect": { "x": 1280, "y": 657, "w": 115, "h": 63 },
+              "sprite": "GFX_topbar_liberty_overlay",
+              "frame": 1
             },
             {
               "name": "topbar_liberty_icon",
               "path": "topbar/liberty_desire_topbar/topbar_liberty_icon",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1280, "y": 687, "w": 30, "h": 33 }
+              "rect": { "x": 1280, "y": 687, "w": 30, "h": 33 },
+              "sprite": "GFX_liberty_icon",
+              "frame": 1
             },
             {
               "name": "topbar_liberty_value",
@@ -5149,7 +5736,9 @@
               "path": "topbar/pause_window/pause_banner",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 1036, "y": 92, "w": 488, "h": 81 }
+              "rect": { "x": 1036, "y": 92, "w": 488, "h": 81 },
+              "sprite": "GFX_pause_banner",
+              "frame": 1
             },
             {
               "name": "pause_banner_text",
@@ -5176,7 +5765,8 @@
           "type": "button",
           "visible": false,
           "rect": { "x": 1280, "y": 684, "w": 36, "h": 36 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_observer_select_country"
         },
         {
           "name": "observer_unselect",
@@ -5184,28 +5774,35 @@
           "type": "button",
           "visible": false,
           "rect": { "x": 1280, "y": 684, "w": 36, "h": 36 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_observer_unselect"
         },
         {
           "name": "mapmode_bg",
           "path": "menubar/mapmode_bg",
           "type": "icon",
           "visible": false,
-          "rect": { "x": -116579, "y": 1309, "w": 264, "h": 24 }
+          "rect": { "x": -116579, "y": 1309, "w": 264, "h": 24 },
+          "sprite": "GFX_mapmode_bg",
+          "frame": 1
         },
         {
           "name": "mapmode_bg_2",
           "path": "menubar/mapmode_bg_2",
           "type": "icon",
           "visible": false,
-          "rect": { "x": -116579, "y": 1289, "w": 264, "h": 24 }
+          "rect": { "x": -116579, "y": 1289, "w": 264, "h": 24 },
+          "sprite": "GFX_mapmode_bg",
+          "frame": 1
         },
         {
           "name": "observer_bg",
           "path": "menubar/observer_bg",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 1280, "y": 591, "w": 51, "h": 129 }
+          "rect": { "x": 1280, "y": 591, "w": 51, "h": 129 },
+          "sprite": "GFX_observer_bg",
+          "frame": 1
         },
         {
           "name": "WarOverviewButtonWindow",
@@ -5234,21 +5831,26 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1814, "y": 1344, "w": 84, "h": 96 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_button_war_overview"
                     },
                     {
                       "name": "waroverview_icon",
                       "path": "menubar/WarOverviewButtonWindow/WarOverviewButtonList/waroverview_shieldItem/waroverview_icon",
                       "type": "icon",
                       "visible": true,
-                      "rect": { "x": 1816, "y": 1345, "w": 77, "h": 77 }
+                      "rect": { "x": 1816, "y": 1345, "w": 77, "h": 77 },
+                      "sprite": "GFX_shield_medium",
+                      "frame": 1,
+                      "flag": "TUR"
                     },
                     {
                       "name": "war_enthusiasm_icon",
                       "path": "menubar/WarOverviewButtonWindow/WarOverviewButtonList/waroverview_shieldItem/war_enthusiasm_icon",
                       "type": "icon",
                       "visible": true,
-                      "rect": { "x": 1280, "y": 691, "w": 30, "h": 29 }
+                      "rect": { "x": 1280, "y": 691, "w": 30, "h": 29 },
+                      "sprite": "GFX_war_enthusiasm_medium"
                     },
                     {
                       "name": "progress",
@@ -5276,7 +5878,9 @@
               "path": "menubar/messagelog_window/log_bg",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 810, "y": 1442, "w": 1229, "h": 160 }
+              "rect": { "x": 810, "y": 1442, "w": 1229, "h": 160 },
+              "sprite": "GFX_log_bg",
+              "frame": 1
             },
             {
               "name": "messagelog",
@@ -5315,14 +5919,16 @@
                       "path": "menubar/messagelog_window/messagelog/standardlistbox_slider/listboxSliderButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 }
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "sprite": "GFX_scroll_drager"
                     },
                     {
                       "name": "listboxTrackButton",
                       "path": "menubar/messagelog_window/messagelog/standardlistbox_slider/listboxTrackButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 720, "w": 15, "h": 70 }
+                      "rect": { "x": 1280, "y": 720, "w": 15, "h": 70 },
+                      "sprite": "GFX_scroll_track"
                     },
                     {
                       "name": "downButton",
@@ -5330,7 +5936,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_down"
                     },
                     {
                       "name": "upButton",
@@ -5338,7 +5945,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_up"
                     }
                   ]
                 }
@@ -5350,7 +5958,8 @@
               "type": "checkbox",
               "visible": false,
               "rect": { "x": 1116, "y": 1452, "w": 26, "h": 27 },
-              "checked": false
+              "checked": false,
+              "sprite": "GFX_msg_log_combat"
             },
             {
               "name": "messagecat_diplomacy",
@@ -5358,7 +5967,8 @@
               "type": "checkbox",
               "visible": false,
               "rect": { "x": 1086, "y": 1452, "w": 26, "h": 27 },
-              "checked": false
+              "checked": false,
+              "sprite": "GFX_msg_log_diplo"
             },
             {
               "name": "messagecat_government",
@@ -5366,7 +5976,8 @@
               "type": "checkbox",
               "visible": false,
               "rect": { "x": 1056, "y": 1452, "w": 26, "h": 27 },
-              "checked": false
+              "checked": false,
+              "sprite": "GFX_msg_log_gov"
             },
             {
               "name": "messagecat_trade",
@@ -5374,7 +5985,8 @@
               "type": "checkbox",
               "visible": false,
               "rect": { "x": 1026, "y": 1452, "w": 26, "h": 27 },
-              "checked": false
+              "checked": false,
+              "sprite": "GFX_msg_log_trade"
             },
             {
               "name": "messagecat_events",
@@ -5382,7 +5994,8 @@
               "type": "checkbox",
               "visible": false,
               "rect": { "x": 996, "y": 1452, "w": 26, "h": 27 },
-              "checked": false
+              "checked": false,
+              "sprite": "GFX_msg_log_event"
             },
             {
               "name": "logfilter_me",
@@ -5390,7 +6003,8 @@
               "type": "checkbox",
               "visible": false,
               "rect": { "x": 928, "y": 1485, "w": 31, "h": 42 },
-              "checked": true
+              "checked": true,
+              "sprite": "GFX_checkbox_logfilter_me"
             },
             {
               "name": "logfilter_interesting",
@@ -5398,7 +6012,8 @@
               "type": "checkbox",
               "visible": false,
               "rect": { "x": 928, "y": 1523, "w": 31, "h": 42 },
-              "checked": true
+              "checked": true,
+              "sprite": "GFX_checkbox_logfilter_interesting"
             },
             {
               "name": "logfilter_other",
@@ -5406,7 +6021,8 @@
               "type": "checkbox",
               "visible": false,
               "rect": { "x": 928, "y": 1561, "w": 31, "h": 42 },
-              "checked": true
+              "checked": true,
+              "sprite": "GFX_checkbox_logfilter_other"
             }
           ]
         },
@@ -5424,7 +6040,8 @@
               "visible": false,
               "rect": { "x": 1280, "y": 683, "w": 95, "h": 37 },
               "text": "None",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_6"
             },
             {
               "name": "allies",
@@ -5433,7 +6050,8 @@
               "visible": false,
               "rect": { "x": 1280, "y": 683, "w": 95, "h": 37 },
               "text": "Allies",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_6"
             },
             {
               "name": "enemies",
@@ -5442,7 +6060,8 @@
               "visible": false,
               "rect": { "x": 1280, "y": 683, "w": 95, "h": 37 },
               "text": "Foes",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_6"
             },
             {
               "name": "all",
@@ -5451,7 +6070,8 @@
               "visible": false,
               "rect": { "x": 1280, "y": 683, "w": 95, "h": 37 },
               "text": "All",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_6"
             },
             {
               "name": "closebutton",
@@ -5460,14 +6080,16 @@
               "visible": false,
               "rect": { "x": 1280, "y": 690, "w": 30, "h": 30 },
               "text": "  ",
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_closelog_button"
             },
             {
               "name": "chat_bg",
               "path": "menubar/chat_window/chat_bg",
               "type": "button",
               "visible": false,
-              "rect": { "x": 1280, "y": 683, "w": 131, "h": 37 }
+              "rect": { "x": 1280, "y": 683, "w": 131, "h": 37 },
+              "sprite": "GFX_remove"
             },
             {
               "name": "chat_message",
@@ -5499,14 +6121,17 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 1280, "y": 687, "w": 42, "h": 33 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_messages_settings"
                 },
                 {
                   "name": "menubar_bg",
                   "path": "menubar/message_window_container/message_window/menubar_bg",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 477, "w": 347, "h": 243 }
+                  "rect": { "x": 1280, "y": 477, "w": 347, "h": 243 },
+                  "sprite": "GFX_messageinterface_bg",
+                  "frame": 1
                 },
                 {
                   "name": "message_list",
@@ -5527,14 +6152,16 @@
                           "path": "menubar/message_window_container/message_window/message_list/standardlistbox_slider/listboxSliderButton",
                           "type": "button",
                           "visible": false,
-                          "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 }
+                          "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                          "sprite": "GFX_scroll_drager"
                         },
                         {
                           "name": "listboxTrackButton",
                           "path": "menubar/message_window_container/message_window/message_list/standardlistbox_slider/listboxTrackButton",
                           "type": "button",
                           "visible": false,
-                          "rect": { "x": 1280, "y": 720, "w": 15, "h": 154 }
+                          "rect": { "x": 1280, "y": 720, "w": 15, "h": 154 },
+                          "sprite": "GFX_scroll_track"
                         },
                         {
                           "name": "downButton",
@@ -5542,7 +6169,8 @@
                           "type": "button",
                           "visible": false,
                           "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                          "enabled": true
+                          "enabled": true,
+                          "sprite": "GFX_scroll_down"
                         },
                         {
                           "name": "upButton",
@@ -5550,7 +6178,8 @@
                           "type": "button",
                           "visible": false,
                           "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                          "enabled": true
+                          "enabled": true,
+                          "sprite": "GFX_scroll_up"
                         }
                       ]
                     }
@@ -5562,7 +6191,8 @@
                   "type": "checkbox",
                   "visible": false,
                   "rect": { "x": 1280, "y": 687, "w": 42, "h": 33 },
-                  "checked": true
+                  "checked": true,
+                  "sprite": "GFX_messages_logfilter_me"
                 },
                 {
                   "name": "msg_icons_filter_interesting",
@@ -5570,7 +6200,8 @@
                   "type": "checkbox",
                   "visible": false,
                   "rect": { "x": 1280, "y": 687, "w": 42, "h": 33 },
-                  "checked": true
+                  "checked": true,
+                  "sprite": "GFX_messages_logfilter_interesting"
                 },
                 {
                   "name": "msg_icons_filter_other",
@@ -5578,7 +6209,8 @@
                   "type": "checkbox",
                   "visible": false,
                   "rect": { "x": 1280, "y": 687, "w": 42, "h": 33 },
-                  "checked": false
+                  "checked": false,
+                  "sprite": "GFX_messages_logfilter_other"
                 }
               ]
             },
@@ -5595,14 +6227,17 @@
                   "type": "button",
                   "visible": true,
                   "rect": { "x": 2531, "y": 1184, "w": 29, "h": 30 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_togglemessageinterface"
                 },
                 {
                   "name": "ToggleMessageBackground",
                   "path": "menubar/message_window_container/toggle_message_interface_window/ToggleMessageBackground",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 2529, "y": 1163, "w": 31, "h": 71 }
+                  "rect": { "x": 2529, "y": 1163, "w": 31, "h": 71 },
+                  "sprite": "GFX_toggle_messageinterface_bg",
+                  "frame": 1
                 }
               ]
             }
@@ -5621,7 +6256,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 2128, "y": 1371, "w": 49, "h": 48 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_menubar_floating_strip",
+              "frame": 3
             },
             {
               "name": "f_button_2",
@@ -5629,7 +6266,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 2074, "y": 1371, "w": 49, "h": 48 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_menubar_floating_strip",
+              "frame": 6
             },
             {
               "name": "f_button_3",
@@ -5637,7 +6276,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 2020, "y": 1371, "w": 49, "h": 48 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_menubar_floating_strip",
+              "frame": 8
             },
             {
               "name": "f_button_4",
@@ -5645,7 +6286,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 1966, "y": 1371, "w": 49, "h": 48 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_menubar_floating_strip"
             },
             {
               "name": "f_button_5",
@@ -5653,7 +6295,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 1912, "y": 1371, "w": 49, "h": 48 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_menubar_floating_strip"
             },
             {
               "name": "f_button_6",
@@ -5661,7 +6304,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 1858, "y": 1371, "w": 49, "h": 48 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_menubar_floating_strip"
             },
             {
               "name": "f_button_7",
@@ -5669,7 +6313,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 1804, "y": 1371, "w": 49, "h": 48 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_menubar_floating_strip"
             },
             {
               "name": "f_button_8",
@@ -5677,77 +6322,98 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 1750, "y": 1371, "w": 49, "h": 48 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_menubar_floating_strip"
             },
             {
               "name": "menubar_floating_bg_1",
               "path": "menubar/floating_buttons/menubar_floating_bg_1",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 2125, "y": 1397, "w": 57, "h": 43 }
+              "rect": { "x": 2125, "y": 1397, "w": 57, "h": 43 },
+              "sprite": "GFX_menubar_floating_bg",
+              "frame": 1
             },
             {
               "name": "menubar_floating_bg_2",
               "path": "menubar/floating_buttons/menubar_floating_bg_2",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 2071, "y": 1397, "w": 57, "h": 43 }
+              "rect": { "x": 2071, "y": 1397, "w": 57, "h": 43 },
+              "sprite": "GFX_menubar_floating_bg",
+              "frame": 1
             },
             {
               "name": "menubar_floating_bg_3",
               "path": "menubar/floating_buttons/menubar_floating_bg_3",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 2017, "y": 1397, "w": 57, "h": 43 }
+              "rect": { "x": 2017, "y": 1397, "w": 57, "h": 43 },
+              "sprite": "GFX_menubar_floating_bg",
+              "frame": 1
             },
             {
               "name": "menubar_floating_bg_4",
               "path": "menubar/floating_buttons/menubar_floating_bg_4",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1963, "y": 1397, "w": 57, "h": 43 }
+              "rect": { "x": 1963, "y": 1397, "w": 57, "h": 43 },
+              "sprite": "GFX_menubar_floating_bg",
+              "frame": 1
             },
             {
               "name": "menubar_floating_bg_5",
               "path": "menubar/floating_buttons/menubar_floating_bg_5",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1909, "y": 1397, "w": 57, "h": 43 }
+              "rect": { "x": 1909, "y": 1397, "w": 57, "h": 43 },
+              "sprite": "GFX_menubar_floating_bg",
+              "frame": 1
             },
             {
               "name": "menubar_floating_bg_6",
               "path": "menubar/floating_buttons/menubar_floating_bg_6",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1843, "y": 1397, "w": 57, "h": 43 }
+              "rect": { "x": 1843, "y": 1397, "w": 57, "h": 43 },
+              "sprite": "GFX_menubar_floating_bg",
+              "frame": 1
             },
             {
               "name": "menubar_floating_bg_7",
               "path": "menubar/floating_buttons/menubar_floating_bg_7",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1777, "y": 1397, "w": 57, "h": 43 }
+              "rect": { "x": 1777, "y": 1397, "w": 57, "h": 43 },
+              "sprite": "GFX_menubar_floating_bg",
+              "frame": 1
             },
             {
               "name": "menubar_floating_bg_8",
               "path": "menubar/floating_buttons/menubar_floating_bg_8",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1711, "y": 1397, "w": 57, "h": 43 }
+              "rect": { "x": 1711, "y": 1397, "w": 57, "h": 43 },
+              "sprite": "GFX_menubar_floating_bg",
+              "frame": 1
             },
             {
               "name": "hre_strip_glow",
               "path": "menubar/floating_buttons/hre_strip_glow",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1280, "y": 671, "w": 52, "h": 49 }
+              "rect": { "x": 1280, "y": 671, "w": 52, "h": 49 },
+              "sprite": "GFX_hre_strip_glow",
+              "frame": 1
             },
             {
               "name": "revolution_flag",
               "path": "menubar/floating_buttons/revolution_flag",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 2025, "y": 1375, "w": 37, "h": 37 }
+              "rect": { "x": 2025, "y": 1375, "w": 37, "h": 37 },
+              "sprite": "GFX_rev_target",
+              "frame": 1
             },
             {
               "name": "floating_number_1",

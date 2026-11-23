@@ -361,7 +361,9 @@ What a run does:
 - **One playset profile** per playset in `<host>/profiles/<playset>/profile`
   (`-userdir`): descriptors with absolute paths to the pinned Workshop
   items, `dlc_load.json`, and a copy of each save its views load (the
-  playset's and the views' own). Every mod's
+  playset's and the views' own). A start from the main menu gets no save and
+  no `continue_game.json`, as a fresh profile: with a save in the profile the
+  main menu offers Continue (etch#618). Every mod's
   content hash and the save's hash are checked against the manifest before
   and after each start. The player's own profile, saves and mods are only
   read; a run stops when the player's profile changed.
@@ -468,7 +470,9 @@ both release playsets of v1 passed (etch#44). In M10, with the province views,
 the Anbennar playsets gating and the matrix of 2560×1440 and above for Proper
 2K UI Enhanced, 208 of the 224 gating captures passed at first, and all 224 for
 2.0.0 ([docs/release-2.0.0.md](../docs/release-2.0.0.md)). Taken again with
-Tongs 0.23.0 (etch#232), all 240 pass with the event view (2026-11-02).
+Tongs 0.23.0 (etch#232), all 240 pass with the event view (2026-11-02), and
+taken again with Tongs 0.37.0, Anvil 1.26.0 and the P2KE Patch of 15 November
+(etch#618), all 240 pass (2026-11-23).
 SwiftShader rounds the linear
 filtering of scaled sprites differently: with it a few scaled icons of the
 diplomacy view, the declare war dialog and the province view fall to 94–99 %

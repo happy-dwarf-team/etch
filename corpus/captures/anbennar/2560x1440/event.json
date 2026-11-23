@@ -3,9 +3,9 @@
   "playset": "anbennar",
   "resolution": { "width": 2560, "height": 1440 },
   "view": "event",
-  "takenAt": "2026-11-02T09:12:01.402Z",
+  "takenAt": "2026-11-23T06:37:47.109Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
-  "tongs": { "version": "0.23.0" },
+  "tongs": { "version": "0.37.0" },
   "save": { "sha256": "C2B960AED4143C311DA2CED51763AA4B72D0B5FA5BCB971B31C80C4706A30C14" },
   "mods": [
     {
@@ -18,7 +18,7 @@
     },
     {
       "name": "P2KE Patch - Anbennar",
-      "sha256": "E4ABCD62FCE34798AC0CF4BBB76CA147BE105E00D8E3F04B643062EF8C25FC55"
+      "sha256": "D20BFC4B294B845BBE66DE9851795284FB852F14C10841DE4C8DED6AE446D751"
     }
   ],
   "disabledDlcs": [],
@@ -26,17 +26,17 @@
     "from": "save",
     "steps": [],
     "verified": true,
-    "evidence": "Run by the capture driver (etch#42) on 2026-11-02 at every gating size of the four release playsets, with Tongs 0.14.1: the view's save loads with its event open, so the recipe has no step, and EventWindow was read (etch#97)."
+    "evidence": "Run by the capture driver (etch#42) on 2026-11-02 at every gating size of the four release playsets, with Tongs 0.14.1 and again with Tongs 0.23.0 (etch#232): the view's save loads with its event open, so the recipe has no step, and EventWindow was read (etch#97)."
   },
   "window": { "width": 2560, "height": 1440, "dpi": 96 },
   "screenshot": {
-    "sha256": "A57C0B85B2E574ED1A1D276573447A53A29C2C882731EB0D75C33C8A69E3C6B0",
+    "sha256": "B430DA208B6D53C5E1F2DDEB494ECDD00BC33509E275C4D99B6B1D0DB75CCBD6",
     "width": 2560,
     "height": 1440,
     "shots": 4,
     "unstable": {
-      "pixels": 3011475,
-      "sha256": "CAD93A24F6448E90DCC247E7DC741051C91C9BDAB59F05276B2CAC9F61A7573F"
+      "pixels": 3005963,
+      "sha256": "799E0EF168CEED5B0F81FABEBF521099007BEAFFCA67625CCF5D24FBB02265D9"
     }
   },
   "widgets": [
@@ -53,42 +53,52 @@
           "type": "button",
           "visible": false,
           "rect": { "x": 1280, "y": 611, "w": 66, "h": 109 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_event_goto_province"
         },
         {
           "name": "event_bg_top",
           "path": "EventWindow/event_bg_top",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 890, "y": 348, "w": 793, "h": 269 }
+          "rect": { "x": 890, "y": 348, "w": 793, "h": 269 },
+          "sprite": "GFX_event_bg_top",
+          "frame": 1
         },
         {
           "name": "event_bg_middle",
           "path": "EventWindow/event_bg_middle[1]",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 890, "y": 617, "w": 788, "h": 69 }
+          "rect": { "x": 890, "y": 617, "w": 788, "h": 69 },
+          "sprite": "GFX_event_bg_middle",
+          "frame": 1
         },
         {
           "name": "event_bg_bottom",
           "path": "EventWindow/event_bg_bottom",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 890, "y": 755, "w": 788, "h": 159 }
+          "rect": { "x": 890, "y": 755, "w": 788, "h": 159 },
+          "sprite": "GFX_event_bg_bottom_S",
+          "frame": 1
         },
         {
           "name": "event_picture",
           "path": "EventWindow/event_picture",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 975, "y": 442, "w": 619, "h": 159 }
+          "rect": { "x": 975, "y": 442, "w": 619, "h": 159 },
+          "sprite": "LILAC_WARS_eventPicture"
         },
         {
           "name": "event_bg_middle",
           "path": "EventWindow/event_bg_middle[2]",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 890, "y": 686, "w": 788, "h": 69 }
+          "rect": { "x": 890, "y": 686, "w": 788, "h": 69 },
+          "sprite": "GFX_event_bg_middle",
+          "frame": 1
         },
         {
           "name": "Title",
@@ -111,7 +121,8 @@
           "path": "EventWindow/Background",
           "type": "button",
           "visible": true,
-          "rect": { "x": 942, "y": 348, "w": 677, "h": 566 }
+          "rect": { "x": 942, "y": 348, "w": 677, "h": 566 },
+          "sprite": "GFX_event_bg_transparency"
         },
         {
           "name": "event_option_listbox",
@@ -134,7 +145,8 @@
                   "visible": true,
                   "rect": { "x": 958, "y": 795, "w": 657, "h": 37 },
                   "text": "We were part of the losing Moon Party.",
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_event_button_547"
                 },
                 {
                   "name": "event_option_goto_button",
@@ -142,7 +154,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 1280, "y": 683, "w": 75, "h": 37 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_event_option_goto_province"
                 }
               ]
             },
@@ -158,14 +171,16 @@
                   "path": "EventWindow/event_option_listbox/standardlistbox_slider/listboxSliderButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 }
+                  "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                  "sprite": "GFX_scroll_drager"
                 },
                 {
                   "name": "listboxTrackButton",
                   "path": "EventWindow/event_option_listbox/standardlistbox_slider/listboxTrackButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 1280, "y": 720, "w": 15, "h": -2 }
+                  "rect": { "x": 1280, "y": 720, "w": 15, "h": -2 },
+                  "sprite": "GFX_scroll_track"
                 },
                 {
                   "name": "downButton",
@@ -173,7 +188,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_scroll_down"
                 },
                 {
                   "name": "upButton",
@@ -181,7 +197,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_scroll_up"
                 }
               ]
             }

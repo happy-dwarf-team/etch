@@ -3,9 +3,9 @@
   "playset": "vanilla",
   "resolution": { "width": 1680, "height": 1050 },
   "view": "court",
-  "takenAt": "2026-11-01T05:26:46.838Z",
+  "takenAt": "2026-11-23T06:06:24.186Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
-  "tongs": { "version": "0.23.0" },
+  "tongs": { "version": "0.37.0" },
   "save": { "sha256": "2A4CAF306CCDDB2DAFC7EE015C4ECFFB260654A1D10D86F5F4F768D3C3F56F6A" },
   "mods": [],
   "disabledDlcs": [],
@@ -17,13 +17,13 @@
   },
   "window": { "width": 1680, "height": 1050, "dpi": 96 },
   "screenshot": {
-    "sha256": "12176000A796FD8F0D019A30188AF58DF53E540814472C59D6245686BF2FAD51",
+    "sha256": "765FDE501320414086A5CAACC69ABA7C232B3E94AB84C1F9B14D1520191BFB49",
     "width": 1680,
     "height": 1050,
     "shots": 4,
     "unstable": {
-      "pixels": 343717,
-      "sha256": "067AA989E969771DC877DB81B09730826855B1DBD16F3A85CEF2F92846F4A1EA"
+      "pixels": 344043,
+      "sha256": "6F94C674305C26C1D7239C8F604EFF997530FFEE5600D5DB952D874BD085908D"
     }
   },
   "widgets": [
@@ -40,7 +40,8 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 514, "y": 139, "w": 36, "h": 36 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_closebutton2"
         },
         {
           "name": "abdicate_ruler_button",
@@ -48,7 +49,8 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 486, "y": 279, "w": 42, "h": 42 },
-          "enabled": false
+          "enabled": false,
+          "sprite": "GFX_abdicate_button"
         },
         {
           "name": "extend_regency_button",
@@ -56,7 +58,8 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 440, "y": 279, "w": 42, "h": 42 },
-          "enabled": false
+          "enabled": false,
+          "sprite": "GFX_abdicate_button"
         },
         {
           "name": "support_heir_button",
@@ -64,7 +67,8 @@
           "type": "button",
           "visible": false,
           "rect": { "x": 840, "y": 493, "w": 32, "h": 32 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_support_heir_button"
         },
         {
           "name": "disinherit_button",
@@ -72,7 +76,8 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 486, "y": 343, "w": 42, "h": 42 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_disinherit_button"
         },
         {
           "name": "assign_heir_button",
@@ -80,7 +85,8 @@
           "type": "button",
           "visible": false,
           "rect": { "x": 840, "y": 493, "w": 32, "h": 32 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_assign_heir_button"
         },
         {
           "name": "national_focus_ADM",
@@ -88,7 +94,9 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 400, "y": 455, "w": 42, "h": 41 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_icon_national_focus_adm",
+          "frame": 1
         },
         {
           "name": "national_focus_DIP",
@@ -96,7 +104,9 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 400, "y": 542, "w": 42, "h": 41 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_icon_national_focus_dip",
+          "frame": 2
         },
         {
           "name": "national_focus_MIL",
@@ -104,147 +114,189 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 400, "y": 629, "w": 42, "h": 41 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_icon_national_focus_mil",
+          "frame": 1
         },
         {
           "name": "background",
           "path": "countrycourtview/background",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 0, "y": 130, "w": 569, "h": 590 }
+          "rect": { "x": 0, "y": 130, "w": 569, "h": 590 },
+          "sprite": "GFX_court_view_bg",
+          "frame": 1
         },
         {
           "name": "heir_banner_green",
           "path": "countrycourtview/heir_banner_green",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 10, "y": 318, "w": 533, "h": 34 }
+          "rect": { "x": 10, "y": 318, "w": 533, "h": 34 },
+          "sprite": "GFX_court_banner_green",
+          "frame": 1
         },
         {
           "name": "queen_banner_green",
           "path": "countrycourtview/queen_banner_green",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 10, "y": 381, "w": 533, "h": 34 }
+          "rect": { "x": 10, "y": 381, "w": 533, "h": 34 },
+          "sprite": "GFX_court_banner_green",
+          "frame": 1
         },
         {
           "name": "monarch_gender",
           "path": "countrycourtview/monarch_gender",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 16, "y": 260, "w": 16, "h": 16 }
+          "rect": { "x": 16, "y": 260, "w": 16, "h": 16 },
+          "sprite": "GFX_gender_icon",
+          "frame": 2
         },
         {
           "name": "monarch_adm_icon",
           "path": "countrycourtview/monarch_adm_icon",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 14, "y": 286, "w": 28, "h": 28 }
+          "rect": { "x": 14, "y": 286, "w": 28, "h": 28 },
+          "sprite": "GFX_icon_powers_administrative",
+          "frame": 1
         },
         {
           "name": "monarch_dip_icon",
           "path": "countrycourtview/monarch_dip_icon",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 64, "y": 286, "w": 28, "h": 28 }
+          "rect": { "x": 64, "y": 286, "w": 28, "h": 28 },
+          "sprite": "GFX_icon_powers_diplomatic",
+          "frame": 1
         },
         {
           "name": "monarch_mil_icon",
           "path": "countrycourtview/monarch_mil_icon",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 114, "y": 286, "w": 28, "h": 28 }
+          "rect": { "x": 114, "y": 286, "w": 28, "h": 28 },
+          "sprite": "GFX_icon_powers_military",
+          "frame": 1
         },
         {
           "name": "heir_gender",
           "path": "countrycourtview/heir_gender",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 16, "y": 323, "w": 16, "h": 16 }
+          "rect": { "x": 16, "y": 323, "w": 16, "h": 16 },
+          "sprite": "GFX_gender_icon",
+          "frame": 1
         },
         {
           "name": "monarch_heir_adm_icon",
           "path": "countrycourtview/monarch_heir_adm_icon",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 14, "y": 349, "w": 28, "h": 28 }
+          "rect": { "x": 14, "y": 349, "w": 28, "h": 28 },
+          "sprite": "GFX_icon_powers_administrative",
+          "frame": 1
         },
         {
           "name": "monarch_heir_dip_icon",
           "path": "countrycourtview/monarch_heir_dip_icon",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 64, "y": 349, "w": 28, "h": 28 }
+          "rect": { "x": 64, "y": 349, "w": 28, "h": 28 },
+          "sprite": "GFX_icon_powers_diplomatic",
+          "frame": 1
         },
         {
           "name": "monarch_heir_mil_icon",
           "path": "countrycourtview/monarch_heir_mil_icon",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 114, "y": 349, "w": 28, "h": 28 }
+          "rect": { "x": 114, "y": 349, "w": 28, "h": 28 },
+          "sprite": "GFX_icon_powers_military",
+          "frame": 1
         },
         {
           "name": "monarch_heir_crown_icon",
           "path": "countrycourtview/monarch_heir_crown_icon",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 840, "y": 508, "w": 25, "h": 17 }
+          "rect": { "x": 840, "y": 508, "w": 25, "h": 17 },
+          "sprite": "GFX_monarch_heir_crown_icon",
+          "frame": 1
         },
         {
           "name": "queen_gender",
           "path": "countrycourtview/queen_gender",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 840, "y": 509, "w": 16, "h": 16 }
+          "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
+          "sprite": "GFX_gender_icon",
+          "frame": 1
         },
         {
           "name": "monarch_queen_adm_icon",
           "path": "countrycourtview/monarch_queen_adm_icon",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 840, "y": 497, "w": 28, "h": 28 }
+          "rect": { "x": 840, "y": 497, "w": 28, "h": 28 },
+          "sprite": "GFX_icon_powers_administrative",
+          "frame": 1
         },
         {
           "name": "monarch_queen_dip_icon",
           "path": "countrycourtview/monarch_queen_dip_icon",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 840, "y": 497, "w": 28, "h": 28 }
+          "rect": { "x": 840, "y": 497, "w": 28, "h": 28 },
+          "sprite": "GFX_icon_powers_diplomatic",
+          "frame": 1
         },
         {
           "name": "monarch_queen_mil_icon",
           "path": "countrycourtview/monarch_queen_mil_icon",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 840, "y": 497, "w": 28, "h": 28 }
+          "rect": { "x": 840, "y": 497, "w": 28, "h": 28 },
+          "sprite": "GFX_icon_powers_military",
+          "frame": 1
         },
         {
           "name": "monarch_queen_crown_icon",
           "path": "countrycourtview/monarch_queen_crown_icon",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 840, "y": 508, "w": 25, "h": 17 }
+          "rect": { "x": 840, "y": 508, "w": 25, "h": 17 },
+          "sprite": "GFX_monarch_heir_crown_icon",
+          "frame": 1
         },
         {
           "name": "icon_ADM",
           "path": "countrycourtview/icon_ADM",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 447, "y": 460, "w": 28, "h": 28 }
+          "rect": { "x": 447, "y": 460, "w": 28, "h": 28 },
+          "sprite": "GFX_icon_powers_administrative",
+          "frame": 1
         },
         {
           "name": "icon_DIP",
           "path": "countrycourtview/icon_DIP",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 447, "y": 547, "w": 28, "h": 28 }
+          "rect": { "x": 447, "y": 547, "w": 28, "h": 28 },
+          "sprite": "GFX_icon_powers_diplomatic",
+          "frame": 1
         },
         {
           "name": "icon_MIL",
           "path": "countrycourtview/icon_MIL",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 447, "y": 634, "w": 28, "h": 28 }
+          "rect": { "x": 447, "y": 634, "w": 28, "h": 28 },
+          "sprite": "GFX_icon_powers_military",
+          "frame": 1
         },
         {
           "name": "window_title",
@@ -404,14 +456,17 @@
               "visible": false,
               "rect": { "x": 840, "y": 494, "w": 79, "h": 31 },
               "text": "Back",
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_standard_button_71"
             },
             {
               "name": "domesticpanel_overlay",
               "path": "countrycourtview/court_select/domesticpanel_overlay",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 840, "y": 0, "w": 573, "h": 525 }
+              "rect": { "x": 840, "y": 0, "w": 573, "h": 525 },
+              "sprite": "GFX_court_view_select_advisor_bg",
+              "frame": 1
             },
             {
               "name": "description",
@@ -448,14 +503,16 @@
                       "path": "countrycourtview/court_select/court_select_slider/standardlistbox_slider/listboxSliderButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 840, "y": 509, "w": 16, "h": 16 }
+                      "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
+                      "sprite": "GFX_scroll_drager"
                     },
                     {
                       "name": "listboxTrackButton",
                       "path": "countrycourtview/court_select/court_select_slider/standardlistbox_slider/listboxTrackButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 840, "y": 525, "w": 12, "h": 318 }
+                      "rect": { "x": 840, "y": 525, "w": 12, "h": 318 },
+                      "sprite": "GFX_scroll_track"
                     },
                     {
                       "name": "downButton",
@@ -463,7 +520,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_down"
                     },
                     {
                       "name": "upButton",
@@ -471,7 +529,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_up"
                     }
                   ]
                 }
@@ -498,21 +557,27 @@
                   "path": "countrycourtview/monarch_ruler_personality_list/countrycourtview_personalityitem[1]/personality_icon",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 170, "y": 268, "w": 64, "h": 64 }
+                  "rect": { "x": 170, "y": 268, "w": 64, "h": 64 },
+                  "sprite": "GFX_idea_unknown",
+                  "texture": "gfx/interface/ideas_EU4/tolerance_own_opposite.dds"
                 },
                 {
                   "name": "no_personality_icon",
                   "path": "countrycourtview/monarch_ruler_personality_list/countrycourtview_personalityitem[1]/no_personality_icon",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 840, "y": 508, "w": 17, "h": 17 }
+                  "rect": { "x": 840, "y": 508, "w": 17, "h": 17 },
+                  "sprite": "GFX_no_personality_chart",
+                  "frame": 1
                 },
                 {
                   "name": "no_personality_overlay",
                   "path": "countrycourtview/monarch_ruler_personality_list/countrycourtview_personalityitem[1]/no_personality_overlay",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 840, "y": 478, "w": 44, "h": 47 }
+                  "rect": { "x": 840, "y": 478, "w": 44, "h": 47 },
+                  "sprite": "GFX_no_provinceView_chart_overlay_0.9",
+                  "frame": 1
                 }
               ]
             },
@@ -528,21 +593,27 @@
                   "path": "countrycourtview/monarch_ruler_personality_list/countrycourtview_personalityitem[2]/personality_icon",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 230, "y": 268, "w": 64, "h": 64 }
+                  "rect": { "x": 230, "y": 268, "w": 64, "h": 64 },
+                  "sprite": "GFX_idea_unknown",
+                  "texture": "gfx/interface/ideas_EU4/global_trade_goods_size_modifier.dds"
                 },
                 {
                   "name": "no_personality_icon",
                   "path": "countrycourtview/monarch_ruler_personality_list/countrycourtview_personalityitem[2]/no_personality_icon",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 840, "y": 508, "w": 17, "h": 17 }
+                  "rect": { "x": 840, "y": 508, "w": 17, "h": 17 },
+                  "sprite": "GFX_no_personality_chart",
+                  "frame": 1
                 },
                 {
                   "name": "no_personality_overlay",
                   "path": "countrycourtview/monarch_ruler_personality_list/countrycourtview_personalityitem[2]/no_personality_overlay",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 840, "y": 478, "w": 44, "h": 47 }
+                  "rect": { "x": 840, "y": 478, "w": 44, "h": 47 },
+                  "sprite": "GFX_no_provinceView_chart_overlay_0.9",
+                  "frame": 1
                 }
               ]
             },
@@ -558,21 +629,27 @@
                   "path": "countrycourtview/monarch_ruler_personality_list/countrycourtview_personalityitem[3]/personality_icon",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 290, "y": 268, "w": 64, "h": 64 }
+                  "rect": { "x": 290, "y": 268, "w": 64, "h": 64 },
+                  "sprite": "GFX_idea_unknown",
+                  "texture": "gfx/interface/ideas_EU4/years_of_nationalism.dds"
                 },
                 {
                   "name": "no_personality_icon",
                   "path": "countrycourtview/monarch_ruler_personality_list/countrycourtview_personalityitem[3]/no_personality_icon",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 840, "y": 508, "w": 17, "h": 17 }
+                  "rect": { "x": 840, "y": 508, "w": 17, "h": 17 },
+                  "sprite": "GFX_no_personality_chart",
+                  "frame": 1
                 },
                 {
                   "name": "no_personality_overlay",
                   "path": "countrycourtview/monarch_ruler_personality_list/countrycourtview_personalityitem[3]/no_personality_overlay",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 840, "y": 478, "w": 44, "h": 47 }
+                  "rect": { "x": 840, "y": 478, "w": 44, "h": 47 },
+                  "sprite": "GFX_no_provinceView_chart_overlay_0.9",
+                  "frame": 1
                 }
               ]
             },
@@ -588,14 +665,16 @@
                   "path": "countrycourtview/monarch_ruler_personality_list/standardlistbox_slider/listboxSliderButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 840, "y": 509, "w": 16, "h": 16 }
+                  "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
+                  "sprite": "GFX_scroll_drager"
                 },
                 {
                   "name": "listboxTrackButton",
                   "path": "countrycourtview/monarch_ruler_personality_list/standardlistbox_slider/listboxTrackButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 840, "y": 525, "w": 12, "h": 268 }
+                  "rect": { "x": 840, "y": 525, "w": 12, "h": 268 },
+                  "sprite": "GFX_scroll_track"
                 },
                 {
                   "name": "downButton",
@@ -603,7 +682,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_scroll_down"
                 },
                 {
                   "name": "upButton",
@@ -611,7 +691,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_scroll_up"
                 }
               ]
             }
@@ -636,21 +717,31 @@
                   "path": "countrycourtview/monarch_heir_personality_list/countrycourtview_personalityitem/personality_icon",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 840, "y": 461, "w": 64, "h": 64 }
+                  "rect": { "x": 840, "y": 461, "w": 64, "h": 64 },
+                  "sprite": "GFX_idea_unknown",
+                  "frame": 1
                 },
                 {
                   "name": "no_personality_icon",
                   "path": "countrycourtview/monarch_heir_personality_list/countrycourtview_personalityitem/no_personality_icon",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 196, "y": 346, "w": 17, "h": 17 }
+                  "rect": { "x": 196, "y": 346, "w": 17, "h": 17 },
+                  "sprite": "GFX_no_personality_chart",
+                  "frame": 1,
+                  "slices": [
+                    { "percent": 40, "color": "#a53a3aff" },
+                    { "percent": 60, "color": "#3aa53aff" }
+                  ]
                 },
                 {
                   "name": "no_personality_overlay",
                   "path": "countrycourtview/monarch_heir_personality_list/countrycourtview_personalityitem/no_personality_overlay",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 176, "y": 345, "w": 44, "h": 47 }
+                  "rect": { "x": 176, "y": 345, "w": 44, "h": 47 },
+                  "sprite": "GFX_no_provinceView_chart_overlay_0.9",
+                  "frame": 1
                 }
               ]
             },
@@ -666,14 +757,16 @@
                   "path": "countrycourtview/monarch_heir_personality_list/standardlistbox_slider/listboxSliderButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 840, "y": 509, "w": 16, "h": 16 }
+                  "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
+                  "sprite": "GFX_scroll_drager"
                 },
                 {
                   "name": "listboxTrackButton",
                   "path": "countrycourtview/monarch_heir_personality_list/standardlistbox_slider/listboxTrackButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 840, "y": 525, "w": 12, "h": 68 }
+                  "rect": { "x": 840, "y": 525, "w": 12, "h": 68 },
+                  "sprite": "GFX_scroll_track"
                 },
                 {
                   "name": "downButton",
@@ -681,7 +774,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_scroll_down"
                 },
                 {
                   "name": "upButton",
@@ -689,7 +783,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_scroll_up"
                 }
               ]
             }
@@ -714,14 +809,16 @@
                   "path": "countrycourtview/monarch_queen_personality_list/standardlistbox_slider/listboxSliderButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 840, "y": 509, "w": 16, "h": 16 }
+                  "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
+                  "sprite": "GFX_scroll_drager"
                 },
                 {
                   "name": "listboxTrackButton",
                   "path": "countrycourtview/monarch_queen_personality_list/standardlistbox_slider/listboxTrackButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 840, "y": 525, "w": 12, "h": 68 }
+                  "rect": { "x": 840, "y": 525, "w": 12, "h": 68 },
+                  "sprite": "GFX_scroll_track"
                 },
                 {
                   "name": "downButton",
@@ -729,7 +826,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_scroll_down"
                 },
                 {
                   "name": "upButton",
@@ -737,7 +835,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_scroll_up"
                 }
               ]
             }
@@ -763,7 +862,9 @@
                   "type": "button",
                   "visible": true,
                   "rect": { "x": 29, "y": 455, "w": 77, "h": 77 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_advisor_iranian_theologian",
+                  "frame": 1
                 },
                 {
                   "name": "advisor_sack",
@@ -771,7 +872,8 @@
                   "type": "button",
                   "visible": true,
                   "rect": { "x": 352, "y": 451, "w": 28, "h": 28 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_dismiss_leader"
                 },
                 {
                   "name": "advisor_promote",
@@ -779,7 +881,8 @@
                   "type": "button",
                   "visible": true,
                   "rect": { "x": 325, "y": 451, "w": 28, "h": 28 },
-                  "enabled": false
+                  "enabled": false,
+                  "sprite": "GFX_promote_advisor"
                 },
                 {
                   "name": "progress_bar_frame",
@@ -787,42 +890,51 @@
                   "type": "button",
                   "visible": true,
                   "rect": { "x": 389, "y": 498, "w": 148, "h": 25 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_progress_bar_frame"
                 },
                 {
                   "name": "advisor_indicator_religion",
                   "path": "countrycourtview/abilities_listbox/countrycourtview_abilitylistitem[1]/advisor_indicator_religion",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 8, "y": 457, "w": 37, "h": 37 }
+                  "rect": { "x": 8, "y": 457, "w": 37, "h": 37 },
+                  "sprite": "GFX_advisor_indicator_religion",
+                  "frame": 1
                 },
                 {
                   "name": "advisor_indicator_religion_icon",
                   "path": "countrycourtview/abilities_listbox/countrycourtview_abilitylistitem[1]/advisor_indicator_religion_icon",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 13, "y": 462, "w": 28, "h": 28 }
+                  "rect": { "x": 13, "y": 462, "w": 28, "h": 28 },
+                  "sprite": "GFX_province_view_religion",
+                  "frame": 4
                 },
                 {
                   "name": "advisor_indicator_culture",
                   "path": "countrycourtview/abilities_listbox/countrycourtview_abilitylistitem[1]/advisor_indicator_culture",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 8, "y": 491, "w": 37, "h": 37 }
+                  "rect": { "x": 8, "y": 491, "w": 37, "h": 37 },
+                  "sprite": "GFX_advisor_indicator_culture",
+                  "frame": 4
                 },
                 {
                   "name": "advisor_skill_icon",
                   "path": "countrycourtview/abilities_listbox/countrycourtview_abilitylistitem[1]/advisor_skill_icon",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 106, "y": 452, "w": 28, "h": 28 }
+                  "rect": { "x": 106, "y": 452, "w": 28, "h": 28 },
+                  "sprite": "GFX_icon_powers_administrative"
                 },
                 {
                   "name": "power_progress",
                   "path": "countrycourtview/abilities_listbox/countrycourtview_abilitylistitem[1]/power_progress",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 400, "y": 502, "w": 122, "h": 17 }
+                  "rect": { "x": 400, "y": 502, "w": 122, "h": 17 },
+                  "sprite": "GFX_default_progressbar"
                 },
                 {
                   "name": "advisor_name",
@@ -891,7 +1003,9 @@
                           "path": "countrycourtview/abilities_listbox/countrycourtview_abilitylistitem[1]/advisor_modifier_listbox/advisor_modifier_item/advisor_modifier_icon",
                           "type": "icon",
                           "visible": true,
-                          "rect": { "x": 101, "y": 473, "w": 44, "h": 44 }
+                          "rect": { "x": 101, "y": 473, "w": 44, "h": 44 },
+                          "sprite": "GFX_idea_unknown",
+                          "texture": "gfx/interface/ideas_EU4/global_unrest.dds"
                         },
                         {
                           "name": "advisor_desc",
@@ -915,14 +1029,16 @@
                           "path": "countrycourtview/abilities_listbox/countrycourtview_abilitylistitem[1]/advisor_modifier_listbox/standardlistbox_slider/listboxSliderButton",
                           "type": "button",
                           "visible": false,
-                          "rect": { "x": 840, "y": 509, "w": 16, "h": 16 }
+                          "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
+                          "sprite": "GFX_scroll_drager"
                         },
                         {
                           "name": "listboxTrackButton",
                           "path": "countrycourtview/abilities_listbox/countrycourtview_abilitylistitem[1]/advisor_modifier_listbox/standardlistbox_slider/listboxTrackButton",
                           "type": "button",
                           "visible": false,
-                          "rect": { "x": 840, "y": 525, "w": 12, "h": 68 }
+                          "rect": { "x": 840, "y": 525, "w": 12, "h": 68 },
+                          "sprite": "GFX_scroll_track"
                         },
                         {
                           "name": "downButton",
@@ -930,7 +1046,8 @@
                           "type": "button",
                           "visible": false,
                           "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
-                          "enabled": true
+                          "enabled": true,
+                          "sprite": "GFX_scroll_down"
                         },
                         {
                           "name": "upButton",
@@ -938,7 +1055,8 @@
                           "type": "button",
                           "visible": false,
                           "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
-                          "enabled": true
+                          "enabled": true,
+                          "sprite": "GFX_scroll_up"
                         }
                       ]
                     }
@@ -959,7 +1077,9 @@
                   "type": "button",
                   "visible": true,
                   "rect": { "x": 29, "y": 541, "w": 77, "h": 77 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_advisor_asiangfx_naval_reformer",
+                  "frame": 1
                 },
                 {
                   "name": "advisor_sack",
@@ -967,7 +1087,8 @@
                   "type": "button",
                   "visible": true,
                   "rect": { "x": 352, "y": 537, "w": 28, "h": 28 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_dismiss_leader"
                 },
                 {
                   "name": "advisor_promote",
@@ -975,7 +1096,8 @@
                   "type": "button",
                   "visible": true,
                   "rect": { "x": 325, "y": 537, "w": 28, "h": 28 },
-                  "enabled": false
+                  "enabled": false,
+                  "sprite": "GFX_promote_advisor"
                 },
                 {
                   "name": "progress_bar_frame",
@@ -983,42 +1105,51 @@
                   "type": "button",
                   "visible": true,
                   "rect": { "x": 389, "y": 584, "w": 148, "h": 25 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_progress_bar_frame"
                 },
                 {
                   "name": "advisor_indicator_religion",
                   "path": "countrycourtview/abilities_listbox/countrycourtview_abilitylistitem[2]/advisor_indicator_religion",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 8, "y": 543, "w": 37, "h": 37 }
+                  "rect": { "x": 8, "y": 543, "w": 37, "h": 37 },
+                  "sprite": "GFX_advisor_indicator_religion",
+                  "frame": 1
                 },
                 {
                   "name": "advisor_indicator_religion_icon",
                   "path": "countrycourtview/abilities_listbox/countrycourtview_abilitylistitem[2]/advisor_indicator_religion_icon",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 13, "y": 548, "w": 28, "h": 28 }
+                  "rect": { "x": 13, "y": 548, "w": 28, "h": 28 },
+                  "sprite": "GFX_province_view_religion",
+                  "frame": 4
                 },
                 {
                   "name": "advisor_indicator_culture",
                   "path": "countrycourtview/abilities_listbox/countrycourtview_abilitylistitem[2]/advisor_indicator_culture",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 8, "y": 577, "w": 37, "h": 37 }
+                  "rect": { "x": 8, "y": 577, "w": 37, "h": 37 },
+                  "sprite": "GFX_advisor_indicator_culture",
+                  "frame": 4
                 },
                 {
                   "name": "advisor_skill_icon",
                   "path": "countrycourtview/abilities_listbox/countrycourtview_abilitylistitem[2]/advisor_skill_icon",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 106, "y": 538, "w": 28, "h": 28 }
+                  "rect": { "x": 106, "y": 538, "w": 28, "h": 28 },
+                  "sprite": "GFX_icon_powers_diplomatic"
                 },
                 {
                   "name": "power_progress",
                   "path": "countrycourtview/abilities_listbox/countrycourtview_abilitylistitem[2]/power_progress",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 400, "y": 588, "w": 122, "h": 17 }
+                  "rect": { "x": 400, "y": 588, "w": 122, "h": 17 },
+                  "sprite": "GFX_default_progressbar"
                 },
                 {
                   "name": "advisor_name",
@@ -1087,7 +1218,9 @@
                           "path": "countrycourtview/abilities_listbox/countrycourtview_abilitylistitem[2]/advisor_modifier_listbox/advisor_modifier_item/advisor_modifier_icon",
                           "type": "icon",
                           "visible": true,
-                          "rect": { "x": 101, "y": 559, "w": 44, "h": 44 }
+                          "rect": { "x": 101, "y": 559, "w": 44, "h": 44 },
+                          "sprite": "GFX_idea_unknown",
+                          "texture": "gfx/interface/ideas_EU4/naval_morale.dds"
                         },
                         {
                           "name": "advisor_desc",
@@ -1111,14 +1244,16 @@
                           "path": "countrycourtview/abilities_listbox/countrycourtview_abilitylistitem[2]/advisor_modifier_listbox/standardlistbox_slider/listboxSliderButton",
                           "type": "button",
                           "visible": false,
-                          "rect": { "x": 840, "y": 509, "w": 16, "h": 16 }
+                          "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
+                          "sprite": "GFX_scroll_drager"
                         },
                         {
                           "name": "listboxTrackButton",
                           "path": "countrycourtview/abilities_listbox/countrycourtview_abilitylistitem[2]/advisor_modifier_listbox/standardlistbox_slider/listboxTrackButton",
                           "type": "button",
                           "visible": false,
-                          "rect": { "x": 840, "y": 525, "w": 12, "h": 68 }
+                          "rect": { "x": 840, "y": 525, "w": 12, "h": 68 },
+                          "sprite": "GFX_scroll_track"
                         },
                         {
                           "name": "downButton",
@@ -1126,7 +1261,8 @@
                           "type": "button",
                           "visible": false,
                           "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
-                          "enabled": true
+                          "enabled": true,
+                          "sprite": "GFX_scroll_down"
                         },
                         {
                           "name": "upButton",
@@ -1134,7 +1270,8 @@
                           "type": "button",
                           "visible": false,
                           "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
-                          "enabled": true
+                          "enabled": true,
+                          "sprite": "GFX_scroll_up"
                         }
                       ]
                     }
@@ -1155,7 +1292,9 @@
                   "type": "button",
                   "visible": true,
                   "rect": { "x": 29, "y": 627, "w": 77, "h": 77 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_advisor_asiangfx_commandant",
+                  "frame": 1
                 },
                 {
                   "name": "advisor_sack",
@@ -1163,7 +1302,8 @@
                   "type": "button",
                   "visible": true,
                   "rect": { "x": 352, "y": 623, "w": 28, "h": 28 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_dismiss_leader"
                 },
                 {
                   "name": "advisor_promote",
@@ -1171,7 +1311,8 @@
                   "type": "button",
                   "visible": true,
                   "rect": { "x": 325, "y": 623, "w": 28, "h": 28 },
-                  "enabled": false
+                  "enabled": false,
+                  "sprite": "GFX_promote_advisor"
                 },
                 {
                   "name": "progress_bar_frame",
@@ -1179,42 +1320,51 @@
                   "type": "button",
                   "visible": true,
                   "rect": { "x": 389, "y": 670, "w": 148, "h": 25 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_progress_bar_frame"
                 },
                 {
                   "name": "advisor_indicator_religion",
                   "path": "countrycourtview/abilities_listbox/countrycourtview_abilitylistitem[3]/advisor_indicator_religion",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 8, "y": 629, "w": 37, "h": 37 }
+                  "rect": { "x": 8, "y": 629, "w": 37, "h": 37 },
+                  "sprite": "GFX_advisor_indicator_religion",
+                  "frame": 1
                 },
                 {
                   "name": "advisor_indicator_religion_icon",
                   "path": "countrycourtview/abilities_listbox/countrycourtview_abilitylistitem[3]/advisor_indicator_religion_icon",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 13, "y": 634, "w": 28, "h": 28 }
+                  "rect": { "x": 13, "y": 634, "w": 28, "h": 28 },
+                  "sprite": "GFX_province_view_religion",
+                  "frame": 4
                 },
                 {
                   "name": "advisor_indicator_culture",
                   "path": "countrycourtview/abilities_listbox/countrycourtview_abilitylistitem[3]/advisor_indicator_culture",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 8, "y": 663, "w": 37, "h": 37 }
+                  "rect": { "x": 8, "y": 663, "w": 37, "h": 37 },
+                  "sprite": "GFX_advisor_indicator_culture",
+                  "frame": 2
                 },
                 {
                   "name": "advisor_skill_icon",
                   "path": "countrycourtview/abilities_listbox/countrycourtview_abilitylistitem[3]/advisor_skill_icon",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 106, "y": 624, "w": 28, "h": 28 }
+                  "rect": { "x": 106, "y": 624, "w": 28, "h": 28 },
+                  "sprite": "GFX_icon_powers_military"
                 },
                 {
                   "name": "power_progress",
                   "path": "countrycourtview/abilities_listbox/countrycourtview_abilitylistitem[3]/power_progress",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 400, "y": 674, "w": 122, "h": 17 }
+                  "rect": { "x": 400, "y": 674, "w": 122, "h": 17 },
+                  "sprite": "GFX_default_progressbar"
                 },
                 {
                   "name": "advisor_name",
@@ -1283,7 +1433,9 @@
                           "path": "countrycourtview/abilities_listbox/countrycourtview_abilitylistitem[3]/advisor_modifier_listbox/advisor_modifier_item/advisor_modifier_icon",
                           "type": "icon",
                           "visible": true,
-                          "rect": { "x": 101, "y": 645, "w": 44, "h": 44 }
+                          "rect": { "x": 101, "y": 645, "w": 44, "h": 44 },
+                          "sprite": "GFX_idea_unknown",
+                          "texture": "gfx/interface/ideas_EU4/discipline.dds"
                         },
                         {
                           "name": "advisor_desc",
@@ -1307,14 +1459,16 @@
                           "path": "countrycourtview/abilities_listbox/countrycourtview_abilitylistitem[3]/advisor_modifier_listbox/standardlistbox_slider/listboxSliderButton",
                           "type": "button",
                           "visible": false,
-                          "rect": { "x": 840, "y": 509, "w": 16, "h": 16 }
+                          "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
+                          "sprite": "GFX_scroll_drager"
                         },
                         {
                           "name": "listboxTrackButton",
                           "path": "countrycourtview/abilities_listbox/countrycourtview_abilitylistitem[3]/advisor_modifier_listbox/standardlistbox_slider/listboxTrackButton",
                           "type": "button",
                           "visible": false,
-                          "rect": { "x": 840, "y": 525, "w": 12, "h": 68 }
+                          "rect": { "x": 840, "y": 525, "w": 12, "h": 68 },
+                          "sprite": "GFX_scroll_track"
                         },
                         {
                           "name": "downButton",
@@ -1322,7 +1476,8 @@
                           "type": "button",
                           "visible": false,
                           "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
-                          "enabled": true
+                          "enabled": true,
+                          "sprite": "GFX_scroll_down"
                         },
                         {
                           "name": "upButton",
@@ -1330,7 +1485,8 @@
                           "type": "button",
                           "visible": false,
                           "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
-                          "enabled": true
+                          "enabled": true,
+                          "sprite": "GFX_scroll_up"
                         }
                       ]
                     }
@@ -1350,14 +1506,16 @@
                   "path": "countrycourtview/abilities_listbox/standardlistbox_slider/listboxSliderButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 840, "y": 509, "w": 16, "h": 16 }
+                  "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
+                  "sprite": "GFX_scroll_drager"
                 },
                 {
                   "name": "listboxTrackButton",
                   "path": "countrycourtview/abilities_listbox/standardlistbox_slider/listboxTrackButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 840, "y": 525, "w": 12, "h": 388 }
+                  "rect": { "x": 840, "y": 525, "w": 12, "h": 388 },
+                  "sprite": "GFX_scroll_track"
                 },
                 {
                   "name": "downButton",
@@ -1365,7 +1523,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_scroll_down"
                 },
                 {
                   "name": "upButton",
@@ -1373,7 +1532,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_scroll_up"
                 }
               ]
             }
@@ -1401,7 +1561,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 6, "y": 171, "w": 45, "h": 47 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_tab_court",
+              "frame": 2
             },
             {
               "name": "tab_gov",
@@ -1409,7 +1571,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 44, "y": 171, "w": 45, "h": 47 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_tab_local_government",
+              "frame": 1
             },
             {
               "name": "tab_diplomacy",
@@ -1417,7 +1581,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 82, "y": 171, "w": 45, "h": 47 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_tab_policies",
+              "frame": 1
             },
             {
               "name": "tab_economy",
@@ -1425,7 +1591,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 121, "y": 171, "w": 45, "h": 47 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_tab_economy",
+              "frame": 1
             },
             {
               "name": "tab_trade",
@@ -1433,7 +1601,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 159, "y": 171, "w": 45, "h": 47 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_tab_domestic_trade",
+              "frame": 1
             },
             {
               "name": "tab_technology",
@@ -1441,7 +1611,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 197, "y": 171, "w": 45, "h": 47 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_tab_domestic_technology",
+              "frame": 1
             },
             {
               "name": "tab_ideas",
@@ -1449,7 +1621,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 236, "y": 171, "w": 45, "h": 47 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_tab_domestic_ideas",
+              "frame": 1
             },
             {
               "name": "tab_missions",
@@ -1457,7 +1631,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 273, "y": 171, "w": 45, "h": 47 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_tab_domestic_mission",
+              "frame": 1
             },
             {
               "name": "tab_decisions",
@@ -1465,7 +1641,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 312, "y": 171, "w": 45, "h": 47 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_tab_decisions",
+              "frame": 1
             },
             {
               "name": "tab_stability",
@@ -1473,7 +1651,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 349, "y": 171, "w": 45, "h": 47 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_tab_domestic_government",
+              "frame": 1
             },
             {
               "name": "tab_religion",
@@ -1481,7 +1661,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 388, "y": 171, "w": 45, "h": 47 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_tab_religion",
+              "frame": 1
             },
             {
               "name": "tab_military",
@@ -1489,7 +1671,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 426, "y": 171, "w": 45, "h": 47 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_tab_military",
+              "frame": 1
             },
             {
               "name": "tab_subjects",
@@ -1497,7 +1681,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 465, "y": 171, "w": 45, "h": 47 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_tab_subjects",
+              "frame": 1
             },
             {
               "name": "tab_estates",
@@ -1505,14 +1691,18 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 503, "y": 171, "w": 45, "h": 47 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_tab_estates",
+              "frame": 1
             },
             {
               "name": " ",
               "path": "countryview/countryview_tabs/[15]",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 24, "y": 171, "w": 521, "h": 41 }
+              "rect": { "x": 24, "y": 171, "w": 521, "h": 41 },
+              "sprite": "GFX_tab_detail",
+              "frame": 1
             }
           ]
         }
@@ -1531,7 +1721,9 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 0, "y": 1, "w": 147, "h": 152 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_shield_fancy",
+          "flag": "RUS"
         },
         {
           "name": "open_build_interface_button",
@@ -1539,7 +1731,8 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 6, "y": 108, "w": 40, "h": 40 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_open_build_interface"
         },
         {
           "name": "great_power_button",
@@ -1547,7 +1740,8 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 115, "y": 83, "w": 22, "h": 22 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_great_power_button"
         },
         {
           "name": "government_reforms_button",
@@ -1555,7 +1749,8 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 100, "y": 109, "w": 40, "h": 40 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_government_reforms_button"
         },
         {
           "name": "icon_merchant",
@@ -1563,7 +1758,8 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 739, "y": 8, "w": 31, "h": 31 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_icon_merchant"
         },
         {
           "name": "icon_settler",
@@ -1571,7 +1767,8 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 780, "y": 8, "w": 31, "h": 31 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_icon_settler"
         },
         {
           "name": "icon_diplomat",
@@ -1579,7 +1776,8 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 821, "y": 8, "w": 31, "h": 31 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_icon_diplomat"
         },
         {
           "name": "icon_missionary",
@@ -1587,7 +1785,8 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 862, "y": 8, "w": 31, "h": 31 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_icon_missionary"
         },
         {
           "name": "current_age_button",
@@ -1595,7 +1794,8 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 722, "y": 31, "w": 195, "h": 48 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_age_button"
         },
         {
           "name": "age_icon",
@@ -1603,189 +1803,242 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 705, "y": 46, "w": 37, "h": 37 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_icon_age_s",
+          "frame": 4
         },
         {
           "name": "brown_bg",
           "path": "topbar/brown_bg",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 676, "y": 19, "w": 194, "h": 34 }
+          "rect": { "x": 676, "y": 19, "w": 194, "h": 34 },
+          "sprite": "GFX_brown_bg",
+          "frame": 1
         },
         {
           "name": "topbar_1",
           "path": "topbar/topbar_1",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 99512, "y": -2, "w": 109, "h": 31 }
+          "rect": { "x": 99512, "y": -2, "w": 109, "h": 31 },
+          "sprite": "GFX_remove",
+          "frame": 1
         },
         {
           "name": "topbar_2",
           "path": "topbar/topbar_2",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 991024, "y": -2, "w": 109, "h": 31 }
+          "rect": { "x": 991024, "y": -2, "w": 109, "h": 31 },
+          "sprite": "GFX_remove",
+          "frame": 1
         },
         {
           "name": "topbar_3",
           "path": "topbar/topbar_3",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 991532, "y": -2, "w": 109, "h": 31 }
+          "rect": { "x": 991532, "y": -2, "w": 109, "h": 31 },
+          "sprite": "GFX_remove",
+          "frame": 1
         },
         {
           "name": "topbar_upper_left_bg",
           "path": "topbar/topbar_upper_left_bg",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 0, "y": 0, "w": 927, "h": 159 }
+          "rect": { "x": 0, "y": 0, "w": 927, "h": 159 },
+          "sprite": "GFX_topbar_bg",
+          "frame": 1
         },
         {
           "name": "topbar_upper_left_bg4",
           "path": "topbar/topbar_upper_left_bg4",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 70, "y": 39, "w": 674, "h": 69 }
+          "rect": { "x": 70, "y": 39, "w": 674, "h": 69 },
+          "sprite": "GFX_topbar_banner",
+          "frame": 1
         },
         {
           "name": "government_reforms_button_base",
           "path": "topbar/government_reforms_button_base",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 93, "y": 103, "w": 54, "h": 54 }
+          "rect": { "x": 93, "y": 103, "w": 54, "h": 54 },
+          "sprite": "GFX_government_reforms_button_base",
+          "frame": 1
         },
         {
           "name": "player_shield_glow",
           "path": "topbar/player_shield_glow",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 0, "y": 1, "w": 147, "h": 152 }
+          "rect": { "x": 0, "y": 1, "w": 147, "h": 152 },
+          "sprite": "GFX_shield_fancy_great_power_glow",
+          "frame": 1
         },
         {
           "name": "great_power_button_base",
           "path": "topbar/great_power_button_base",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 111, "y": 79, "w": 30, "h": 30 }
+          "rect": { "x": 111, "y": 79, "w": 30, "h": 30 },
+          "sprite": "GFX_great_power_button_base",
+          "frame": 1
         },
         {
           "name": "government_reforms_progress",
           "path": "topbar/government_reforms_progress",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 100, "y": 109, "w": 40, "h": 40 }
+          "rect": { "x": 100, "y": 109, "w": 40, "h": 40 },
+          "sprite": "GFX_government_reforms_progress"
         },
         {
           "name": "topbar_upper_left_bg2",
           "path": "topbar/topbar_upper_left_bg2",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 731, "y": 29, "w": 168, "h": 24 }
+          "rect": { "x": 731, "y": 29, "w": 168, "h": 24 },
+          "sprite": "GFX_topbar_portrait_value_bg",
+          "frame": 1
         },
         {
           "name": "icon_gold",
           "path": "topbar/icon_gold",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 146, "y": 9, "w": 27, "h": 27 }
+          "rect": { "x": 146, "y": 9, "w": 27, "h": 27 },
+          "sprite": "GFX_icon_gold_strip",
+          "frame": 1
         },
         {
           "name": "icon_manpower",
           "path": "topbar/icon_manpower",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 228, "y": 10, "w": 27, "h": 27 }
+          "rect": { "x": 228, "y": 10, "w": 27, "h": 27 },
+          "sprite": "GFX_icon_manpower",
+          "frame": 1
         },
         {
           "name": "icon_sailors",
           "path": "topbar/icon_sailors",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 311, "y": 13, "w": 27, "h": 27 }
+          "rect": { "x": 311, "y": 13, "w": 27, "h": 27 },
+          "sprite": "GFX_icon_sailors",
+          "frame": 1
         },
         {
           "name": "icon_stability",
           "path": "topbar/icon_stability",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 394, "y": 9, "w": 27, "h": 27 }
+          "rect": { "x": 394, "y": 9, "w": 27, "h": 27 },
+          "sprite": "GFX_icon_stability",
+          "frame": 1
         },
         {
           "name": "icon_prestige",
           "path": "topbar/icon_prestige",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 524, "y": 9, "w": 27, "h": 27 }
+          "rect": { "x": 524, "y": 9, "w": 27, "h": 27 },
+          "sprite": "GFX_icon_prestige",
+          "frame": 1
         },
         {
           "name": "icon_dev",
           "path": "topbar/icon_dev",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 840, "y": 498, "w": 27, "h": 27 }
+          "rect": { "x": 840, "y": 498, "w": 27, "h": 27 },
+          "sprite": "GFX_icon_legitimacy",
+          "frame": 3
         },
         {
           "name": "icon_meritocracy",
           "path": "topbar/icon_meritocracy",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 588, "y": 9, "w": 27, "h": 27 }
+          "rect": { "x": 588, "y": 9, "w": 27, "h": 27 },
+          "sprite": "GFX_icon_legitimacy",
+          "frame": 5
         },
         {
           "name": "icon_leg",
           "path": "topbar/icon_leg",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 840, "y": 498, "w": 27, "h": 27 }
+          "rect": { "x": 840, "y": 498, "w": 27, "h": 27 },
+          "sprite": "GFX_icon_legitimacy",
+          "frame": 1
         },
         {
           "name": "icon_rep",
           "path": "topbar/icon_rep",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 840, "y": 498, "w": 27, "h": 27 }
+          "rect": { "x": 840, "y": 498, "w": 27, "h": 27 },
+          "sprite": "GFX_icon_legitimacy",
+          "frame": 2
         },
         {
           "name": "icon_unity",
           "path": "topbar/icon_unity",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 840, "y": 498, "w": 27, "h": 27 }
+          "rect": { "x": 840, "y": 498, "w": 27, "h": 27 },
+          "sprite": "GFX_icon_legitimacy",
+          "frame": 4
         },
         {
           "name": "icon_corruption",
           "path": "topbar/icon_corruption",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 458, "y": 10, "w": 26, "h": 26 }
+          "rect": { "x": 458, "y": 10, "w": 26, "h": 26 },
+          "sprite": "GFX_icon_corruption_small",
+          "frame": 1
         },
         {
           "name": "icon_ADM",
           "path": "topbar/icon_ADM",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 498, "y": 48, "w": 28, "h": 28 }
+          "rect": { "x": 498, "y": 48, "w": 28, "h": 28 },
+          "sprite": "GFX_icon_powers_administrative",
+          "frame": 1
         },
         {
           "name": "icon_DIP",
           "path": "topbar/icon_DIP",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 558, "y": 48, "w": 28, "h": 28 }
+          "rect": { "x": 558, "y": 48, "w": 28, "h": 28 },
+          "sprite": "GFX_icon_powers_diplomatic",
+          "frame": 1
         },
         {
           "name": "icon_MIL",
           "path": "topbar/icon_MIL",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 616, "y": 48, "w": 28, "h": 28 }
+          "rect": { "x": 616, "y": 48, "w": 28, "h": 28 },
+          "sprite": "GFX_icon_powers_military",
+          "frame": 1
         },
         {
           "name": "button_base",
           "path": "topbar/button_base",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 690, "y": 29, "w": 63, "h": 61 }
+          "rect": { "x": 690, "y": 29, "w": 63, "h": 61 },
+          "sprite": "GFX_age_frame_addon",
+          "frame": 1
         },
         {
           "name": "text_merchants",
@@ -1959,14 +2212,18 @@
               "path": "topbar/powerprojection_topbar/topbar_liberty_overlay",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 639, "y": 0, "w": 95, "h": 49 }
+              "rect": { "x": 639, "y": 0, "w": 95, "h": 49 },
+              "sprite": "GFX_topbar_liberty_overlay",
+              "frame": 1
             },
             {
               "name": "icon_powerprojection",
               "path": "topbar/powerprojection_topbar/icon_powerprojection",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 666, "y": 9, "w": 11, "h": 28 }
+              "rect": { "x": 666, "y": 9, "w": 11, "h": 28 },
+              "sprite": "GFX_icon_powerprojection",
+              "frame": 1
             },
             {
               "name": "text_powerprojection",
@@ -1990,14 +2247,18 @@
               "path": "topbar/liberty_desire_topbar/topbar_liberty_overlay",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 840, "y": 474, "w": 95, "h": 51 }
+              "rect": { "x": 840, "y": 474, "w": 95, "h": 51 },
+              "sprite": "GFX_topbar_liberty_overlay",
+              "frame": 1
             },
             {
               "name": "topbar_liberty_icon",
               "path": "topbar/liberty_desire_topbar/topbar_liberty_icon",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 840, "y": 498, "w": 25, "h": 27 }
+              "rect": { "x": 840, "y": 498, "w": 25, "h": 27 },
+              "sprite": "GFX_liberty_icon",
+              "frame": 1
             },
             {
               "name": "topbar_liberty_value",
@@ -2021,7 +2282,9 @@
               "path": "topbar/pause_window/pause_banner",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 637, "y": 84, "w": 406, "h": 67 }
+              "rect": { "x": 637, "y": 84, "w": 406, "h": 67 },
+              "sprite": "GFX_pause_banner",
+              "frame": 1
             },
             {
               "name": "pause_banner_text",
