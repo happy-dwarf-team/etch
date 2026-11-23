@@ -13,6 +13,7 @@ import {
   type LiveMenuAction,
   type StatusText,
 } from './status-view.ts';
+import { ACTIONS, notify } from '../notify.ts';
 
 export type { LiveGameDisplay, LiveGameMod, PreparedInstall } from './install.ts';
 export { PrivateInstallError } from './install.ts';
@@ -112,19 +113,21 @@ export function registerLiveGame(
     }),
     vscode.commands.registerCommand(STOP_LIVE_GAME, async () => {
       if (!(await game.stop())) {
-        void vscode.window.showInformationMessage('The live game is not running.');
+        void notify('info', 'The live game is not running.', ACTIONS.startLiveGame);
       }
     }),
     vscode.commands.registerCommand(REMOVE_PRIVATE_INSTALL, async () => {
       try {
         const removed = await game.removeInstall();
-        void vscode.window.showInformationMessage(
+        void notify(
+          'info',
           removed ? 'The private install was removed.' : 'There is no private install.',
         );
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         output.error(`Private install not removed: ${message}`);
-        void vscode.window.showErrorMessage(
+        void notify(
+          'error',
           error instanceof PrivateInstallError
             ? message
             : `The private install could not be removed: ${message}`,
@@ -202,7 +205,7 @@ async function openMenu(
     mod: request?.mods.find((mod) => mod.root === request.editedRoot)?.name,
   });
   if (menu === undefined) {
-    void vscode.window.showInformationMessage('The live game is not running.');
+    void notify('info', 'The live game is not running.', ACTIONS.startLiveGame);
     return;
   }
   type Item = vscode.QuickPickItem & { readonly action?: LiveMenuAction };
@@ -248,20 +251,19 @@ async function openMenu(
 function showState(state: LiveGameState): void {
   switch (state.status) {
     case 'ready':
-      void vscode.window.showInformationMessage(
-        `The live game is ready (after ${(state.readyMs / 1000).toFixed(1)} s).`,
-      );
+      void notify('info', `The live game is ready (after ${(state.readyMs / 1000).toFixed(1)} s).`);
       break;
     case 'restarting':
-      void vscode.window.showWarningMessage(`The live game restarts: ${state.reason}.`);
+      void notify('warning', `The live game restarts: ${state.reason}.`);
       break;
     case 'busy':
-      void vscode.window.showWarningMessage(
+      void notify(
+        'warning',
         'Another VS Code window runs the live game; Etch runs one per machine.',
       );
       break;
     case 'failed':
-      void vscode.window.showErrorMessage(`The live game is not running: ${state.message}`);
+      void notify('error', `The live game is not running: ${state.message}`);
       break;
     default:
       break;
@@ -278,7 +280,8 @@ async function removeGameHostInstall(
 ): Promise<void> {
   try {
     if (!(await game.removeGameHostInstall())) return;
-    void vscode.window.showInformationMessage(
+    void notify(
+      'info',
       'Etch 2 has no game host: the live game replaces it. Its install in Etch’s storage was ' +
         'removed; your game folder, profile and mods were not changed.',
     );

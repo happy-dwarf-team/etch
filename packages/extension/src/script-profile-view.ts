@@ -26,6 +26,7 @@ import {
 } from './script-profile.ts';
 import { findScriptSources } from './script-profile-sources.ts';
 import { ScriptProfileLenses, registerScriptProfileLenses } from './script-profile-lenses.ts';
+import { notify, showOutput } from './notify.ts';
 
 export const SHOW_SCRIPT_PROFILE = 'etch.showScriptProfile';
 /** The page's file name in Etch's global storage folder. */
@@ -177,8 +178,10 @@ export function registerScriptProfile(
         const folders = await profileFolders(game);
         const latest = await findLatestScriptProfile(folders);
         if (latest === undefined) {
-          void vscode.window.showInformationMessage(
-            "No script profile yet: measure one with the Script profiler window of Anvil's panel (Anvil 1.22 or newer), and it is written to the game's logs folder.",
+          void notify(
+            'info',
+            "No script profile yet. Measure one with the Script profiler window of Anvil's panel (Anvil 1.22 or newer); it is written to the game's logs folder.",
+            showOutput(output),
           );
           output.info(`No script_profile_*.csv in the logs folders of: ${folders.join(', ')}`);
           return undefined;

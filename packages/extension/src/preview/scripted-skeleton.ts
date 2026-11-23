@@ -16,6 +16,8 @@ import {
 } from '@etch/core/profile';
 import { PROJECT_PROFILES } from './profiles.ts';
 import { readGamePath } from '@etch/core/playset';
+import { notify } from '../notify.ts';
+import { count } from '../numbers.ts';
 
 export const ADD_SCRIPTED_SELECTORS = 'etch.addScriptedSelectors';
 
@@ -82,7 +84,8 @@ export async function addScriptedSelectors(
     alwaysShown: all.alwaysShown,
   };
   if (all.parts.length === 0) {
-    void vscode.window.showInformationMessage(
+    void notify(
+      'info',
       all.alwaysShown.length === 0
         ? `No widget of ${name} has a potential in the playset's common/custom_gui: there is nothing scripted to add.`
         : `Each scripted widget of ${name} has potential = { always = yes }, so the game always shows it: there is nothing to add.`,
@@ -90,8 +93,9 @@ export async function addScriptedSelectors(
     return undefined;
   }
   if (skeleton.selectors.length === 0 && skeleton.rules.length === 0) {
-    void vscode.window.showInformationMessage(
-      `Etch's own profile of ${name} already has all ${String(taken.length)} scripted selectors and rules Etch would add (${taken.slice(0, 5).join(', ')}${taken.length > 5 ? ', …' : ''}): there is nothing to add.`,
+    void notify(
+      'info',
+      `Etch's own profile of ${name} already has all ${count(taken.length)} scripted selectors and rules Etch would add (${taken.slice(0, 5).join(', ')}${taken.length > 5 ? ', …' : ''}): there is nothing to add.`,
     );
     return undefined;
   }

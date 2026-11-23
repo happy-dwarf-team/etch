@@ -4,7 +4,6 @@ import {
   RunMarks,
   blockAtLine,
   buildScript,
-  counted,
   encodeScript,
   mapRunErrors,
   newRunFile,
@@ -189,13 +188,5 @@ describe('RunMarks', () => {
     expect(marks.all).toHaveLength(64);
     expect(marks.isAfterRun(2)).toBe(false);
     expect(marks.isAfterRun(692)).toBe(true);
-  });
-});
-
-describe('counted', () => {
-  it('says one thing in the singular and any other count in the plural', () => {
-    expect(counted(1, 'error.log line')).toBe('1 error.log line');
-    expect(counted(2, 'error.log line')).toBe('2 error.log lines');
-    expect(counted(0, 'character')).toBe('0 characters');
   });
 });

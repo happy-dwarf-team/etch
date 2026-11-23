@@ -128,6 +128,8 @@ import {
 } from './views.ts';
 import { readGamePath } from '@etch/core/playset';
 import { archiveRootUri, pathUri } from '../dlc-files.ts';
+import { ACTIONS, notify } from '../notify.ts';
+import { counted } from '../numbers.ts';
 
 /** The setting of the preview resolution (spec section 6), in the `etch` section. */
 export const RESOLUTION_SETTING = 'previewResolution';
@@ -587,7 +589,8 @@ export class Preview implements PreviewApi, vscode.Disposable {
       this.startPendingLiveGame(this.session);
     } else {
       this.output.info('Live game: no preview playset yet; waiting for one.');
-      void vscode.window.showInformationMessage(
+      void notify(
+        'info',
         'The live game starts with the playset of the previewed .gui file: open one.',
       );
     }
@@ -600,8 +603,10 @@ export class Preview implements PreviewApi, vscode.Disposable {
     this.liveGameStartPending = false;
     const gameFolder = session.playset.gameFolder;
     if (gameFolder === undefined) {
-      void vscode.window.showErrorMessage(
-        'The live game needs the game folder: set etch.gamePath, or install EU4 through Steam.',
+      void notify(
+        'error',
+        'The live game needs the game folder: set it, or install EU4 through Steam.',
+        ACTIONS.setGameFolder,
       );
       return;
     }
@@ -1758,9 +1763,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
     try {
       const answer = await game.snapshot(name);
       if (answer === undefined) {
-        void vscode.window.showInformationMessage(
-          'A live snapshot comes from the live game: start it first (Etch: Start the Live Game).',
-        );
+        void notify('info', 'A live snapshot comes from the live game.', ACTIONS.startLiveGame);
         return false;
       }
       await this.keepSnapshot(answer);
@@ -1768,7 +1771,8 @@ export class Preview implements PreviewApi, vscode.Disposable {
       return true;
     } catch (error) {
       const code = error instanceof PipeError ? error.code : undefined;
-      void vscode.window.showInformationMessage(
+      void notify(
+        'info',
         code === 'not_open'
           ? `The live game does not show ${name}: open it in the game, then take the snapshot.`
           : code === 'stale'
@@ -1818,7 +1822,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
     const session = this.session;
     const name = render?.window.name;
     const tell = (message: string): void => {
-      void vscode.window.showInformationMessage(message);
+      void notify('info', message);
     };
     if (render === undefined || session === undefined || name === undefined) {
       tell(
@@ -1938,10 +1942,12 @@ export class Preview implements PreviewApi, vscode.Disposable {
         `${String(result.visibility.agree)} of ${String(result.visibility.compared)}, ` +
         `${fresh ? 'fresh' : 'stored'} snapshot, ${ms.toFixed(0)} ms.`,
     );
-    void vscode.window.showInformationMessage(
+    void notify(
+      'info',
       entries.length === 0
         ? `Compare with the Live Game: the offline preview of ${name} shows every widget where the game does.`
-        : `Compare with the Live Game: ${String(entries.length)} live ${entries.length === 1 ? 'difference' : 'differences'} in ${name}, listed in Problems.`,
+        : `Compare with the Live Game: ${counted(entries.length, 'live difference')} in ${name}, listed in Problems.`,
+      ...(entries.length === 0 ? [] : [ACTIONS.showProblems]),
     );
     return result;
   }
@@ -1966,8 +1972,10 @@ export class Preview implements PreviewApi, vscode.Disposable {
   async saveLiveView(window: string, paths: readonly string[]): Promise<void> {
     const root = this.session?.playset.workspaceMod?.root;
     if (root === undefined) {
-      void vscode.window.showInformationMessage(
+      void notify(
+        'info',
         'Save as view writes into the mod project, beside its descriptor.mod: open a file of a mod.',
+        ACTIONS.openFolder,
       );
       return;
     }
@@ -1992,7 +2000,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
       await mkdir(dirname(file.fsPath), { recursive: true });
       await writeFile(file.fsPath, after, 'utf8');
     } catch (error) {
-      void vscode.window.showErrorMessage(`Save as view: ${String(error)}`);
+      void notify('error', `Save as view: ${String(error)}`);
       return;
     }
     await vscode.window.showTextDocument(file, {
@@ -2012,15 +2020,19 @@ export class Preview implements PreviewApi, vscode.Disposable {
     const session = this.session;
     const name = render?.window.name;
     if (render === undefined || session === undefined || name === undefined) {
-      void vscode.window.showInformationMessage(
+      void notify(
+        'info',
         'Scripted selectors are added for the previewed window: open the preview on it first.',
+        ACTIONS.openPreview,
       );
       return undefined;
     }
     const root = session.playset.workspaceMod?.root;
     if (root === undefined) {
-      void vscode.window.showInformationMessage(
+      void notify(
+        'info',
         'Scripted selectors are written into the mod project, beside its descriptor.mod: open a file of a mod.',
+        ACTIONS.openFolder,
       );
       return undefined;
     }
@@ -2038,7 +2050,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
         (key) => session.localisation?.get(key),
       );
     } catch (error) {
-      void vscode.window.showErrorMessage(`Add scripted selectors: ${messageOf(error)}`);
+      void notify('error', `Add scripted selectors: ${messageOf(error)}`);
       return undefined;
     }
     if (result === undefined) return undefined;
@@ -2054,8 +2066,9 @@ export class Preview implements PreviewApi, vscode.Disposable {
       result.alwaysShown.length === 0
         ? ''
         : ` ${String(result.alwaysShown.length)} widgets with potential = { always = yes } need none.`;
-    void vscode.window.showInformationMessage(
-      `${String(result.selectors.length)} scripted selectors and ${String(result.rules.length)} rules added to ${vscode.workspace.asRelativePath(result.file)}; set them in View ▾.${kept}${taken}${always}`,
+    void notify(
+      'info',
+      `${counted(result.selectors.length, 'scripted selector')} and ${counted(result.rules.length, 'rule')} added to ${vscode.workspace.asRelativePath(result.file)}; set them in View ▾.${kept}${taken}${always}`,
     );
     await vscode.window.showTextDocument(result.file, {
       viewColumn: vscode.ViewColumn.One,
@@ -2073,7 +2086,8 @@ export class Preview implements PreviewApi, vscode.Disposable {
         ? undefined
         : vscode.Uri.file(join(root, ...PROJECT_PROFILES, `${window}.jsonc`));
     if (file === undefined || (await readText(file)) === undefined) {
-      void vscode.window.showInformationMessage(
+      void notify(
+        'info',
         `${window} has no window profile yet: Save as view writes one into the mod project's .etch/profiles.`,
       );
       return;
@@ -2166,7 +2180,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
         : (await session?.playset.files.find(found.path))?.absolutePath;
     const file = found === undefined ? undefined : session?.guiFile(found.path);
     if (found === undefined || absolute === undefined || file === undefined) {
-      void vscode.window.showWarningMessage(`Etch: the playset defines no window ${window}.`);
+      void notify('warning', `Etch: the playset defines no window ${window}.`);
       return false;
     }
     this.pin = {
@@ -2267,8 +2281,10 @@ export class Preview implements PreviewApi, vscode.Disposable {
   ): Promise<void> {
     const file = loaded.projectFile;
     if (file === undefined) {
-      void vscode.window.showInformationMessage(
+      void notify(
+        'info',
         'Save as view writes into the mod project, beside its descriptor.mod: open a file of a mod.',
+        ACTIONS.openFolder,
       );
       return;
     }
@@ -2300,7 +2316,8 @@ export class Preview implements PreviewApi, vscode.Disposable {
         await writeFile(file.fsPath, after, 'utf8');
       }
     } catch (error) {
-      void vscode.window.showErrorMessage(
+      void notify(
+        'error',
         `Save as view could not write ${vscode.workspace.asRelativePath(file)}: ${messageOf(error)}`,
       );
       return;

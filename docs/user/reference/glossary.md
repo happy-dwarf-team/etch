@@ -80,7 +80,7 @@ Window**. See [Preview](../interface-windows/preview.md#pin-a-window).
 ## Planned restart
 
 A restart of the live game that Etch asks you for when you save a file the game cannot reload
-while it runs, such as `countryview.gui` or a `.gfx` file. Only after you click **Restart now** does
+while it runs, such as `countryview.gui` or a `.gfx` file. Only after you click **Restart Now** does
 Etch save your game, start it again and load that save, so you lose no play. See
 [Reload on save](../live-game/reload-on-save.md).
 

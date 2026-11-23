@@ -18,6 +18,7 @@ import {
   type GameTextKind,
   type SaveEncoding,
 } from '@etch/core';
+import { notify } from './notify.ts';
 
 /** The command behind the reopen quick fix: `(uri: Uri, encoding: string)`. */
 export const REOPEN_WITH_ENCODING = 'etch.reopenWithEncoding';
@@ -262,9 +263,7 @@ async function reopenWithEncoding(uri: vscode.Uri, encoding: string): Promise<vo
     await vscode.window.showTextDocument(document);
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error);
-    void vscode.window.showErrorMessage(
-      `Etch could not reopen the file as ${encodingLabel(encoding)}: ${reason}`,
-    );
+    void notify('error', `Etch could not reopen the file as ${encodingLabel(encoding)}: ${reason}`);
   }
 }
 

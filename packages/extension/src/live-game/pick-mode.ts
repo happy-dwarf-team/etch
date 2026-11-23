@@ -21,6 +21,7 @@ import {
   type PickTarget,
 } from './pick.ts';
 import type { PickEvent } from './pipe.ts';
+import { ACTIONS, notify } from '../notify.ts';
 
 /** Turns pick mode on or off in the live game and brings the game forward (spec section 2). */
 export const TOGGLE_PICK_MODE = 'etch.togglePickMode';
@@ -132,9 +133,7 @@ export class PickMode implements vscode.Disposable {
   private async toggle(): Promise<void> {
     const status = this.game.state.status;
     if (status !== 'ready' && status !== 'stale') {
-      void vscode.window.showInformationMessage(
-        'Pick mode works in the live game: start it first (Etch: Start the Live Game).',
-      );
+      void notify('info', 'Pick mode works in the live game.', ACTIONS.startLiveGame);
       return;
     }
     try {
@@ -145,12 +144,13 @@ export class PickMode implements vscode.Disposable {
         `Pick mode ${answer.on ? 'on' : 'off'}; the game ${answer.front === true ? 'came' : 'did not come'} to the front.`,
       );
       if (answer.on && answer.front === false) {
-        void vscode.window.showInformationMessage(
+        void notify(
+          'info',
           `Pick mode is on: switch to the game to pick a widget (${answer.key} leaves it).`,
         );
       }
     } catch (error) {
-      void vscode.window.showErrorMessage(`Pick mode did not change: ${String(error)}`);
+      void notify('error', `Pick mode did not change: ${String(error)}`);
     }
   }
 
@@ -176,7 +176,8 @@ export class PickMode implements vscode.Disposable {
       this.output.info(
         `Pick ${String(pick.seq)}: ${pick.chain[0]?.name ?? 'nothing'} has no file to open.`,
       );
-      void vscode.window.showInformationMessage(
+      void notify(
+        'info',
         target === 'no-widget'
           ? 'Nothing was under the pointer: the map, a tooltip or the console is not a GUI widget.'
           : `The game knows no file for ${pick.chain[0]?.name ?? 'this widget'}.`,
@@ -220,10 +221,9 @@ export class PickMode implements vscode.Disposable {
     const note =
       target.match === 'file' ? ' (the widget was not found in the file as it is now)' : '';
     if (buttons.length === 0 && !target.open.readOnly) return;
-    const chosen = await vscode.window.showInformationMessage(
-      `${what}: ${where}${note}.`,
-      ...buttons,
-    );
+    const chosen = (
+      await notify('info', `${what}: ${where}${note}.`, ...buttons.map((label) => ({ label })))
+    )?.label;
     if (chosen === override) {
       await this.overridePath(target.open.path, target.open.line, target.open.key);
     } else if (chosen === template && target.template !== undefined) await show(target.template);
@@ -234,9 +234,7 @@ export class PickMode implements vscode.Disposable {
         sources,
       );
       if (found === undefined) {
-        void vscode.window.showInformationMessage(
-          `No .gfx file of the playset defines ${target.sprite}.`,
-        );
+        void notify('info', `No .gfx file of the playset defines ${target.sprite}.`);
       } else await show(found);
     }
   }
@@ -245,23 +243,21 @@ export class PickMode implements vscode.Disposable {
   private async override(uri: vscode.Uri | undefined): Promise<void> {
     const file = uri ?? vscode.window.activeTextEditor?.document.uri;
     if (file?.scheme !== 'file') {
-      void vscode.window.showInformationMessage(
-        'Open an interface file of the playset to override it.',
-      );
+      void notify('info', 'Open an interface file of the playset to override it.');
       return;
     }
     const files = this.game.files;
     if (files === undefined) {
-      void vscode.window.showInformationMessage(
+      void notify(
+        'info',
         'Etch knows the playset once the live game has started: start it, or copy the file by hand.',
+        ACTIONS.startLiveGame,
       );
       return;
     }
     const path = gamePathOf(file.fsPath, files);
     if (path === undefined || !/^interface\//i.test(path)) {
-      void vscode.window.showInformationMessage(
-        `${file.fsPath} is not an interface file of the playset.`,
-      );
+      void notify('info', `${file.fsPath} is not an interface file of the playset.`);
       return;
     }
     const editor = vscode.window.activeTextEditor;
@@ -275,11 +271,12 @@ export class PickMode implements vscode.Disposable {
     if (files === undefined) return;
     const result = await overrideInMod(path, files, this.game.editedRoot);
     if (result.kind === 'refused') {
-      void vscode.window.showWarningMessage(`Nothing copied: ${result.reason}.`);
+      void notify('warning', `Nothing copied: ${result.reason}.`);
       return;
     }
     if (result.laterMod !== undefined) {
-      void vscode.window.showWarningMessage(
+      void notify(
+        'warning',
         `${result.laterMod} loads after your mod and has ${path} too, so the game reads its copy, not yours.`,
       );
     }

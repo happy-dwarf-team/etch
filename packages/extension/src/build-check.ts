@@ -4,8 +4,7 @@
 // (the private install copies the plugin from these files), once for each build found on disk.
 import * as vscode from 'vscode';
 import { describeBuild, readStamp, sameBuild, type BuildStamp } from './build-stamp.ts';
-
-const RELOAD = 'Reload Window';
+import { ACTIONS, notify } from './notify.ts';
 
 export class BuildCheck implements vscode.Disposable {
   private readonly running: BuildStamp;
@@ -56,8 +55,6 @@ export class BuildCheck implements vscode.Disposable {
         ? `Etch's files on disk changed (uninstalled or being replaced), but this window still runs Etch ${running}. Reload the window to run what is installed.`
         : `Etch ${describeBuild(disk)} is installed, but this window still runs Etch ${running}. Reload the window to run the installed build.`;
     this.output.warn(message);
-    void vscode.window.showWarningMessage(message, RELOAD).then((chosen) => {
-      if (chosen === RELOAD) void vscode.commands.executeCommand('workbench.action.reloadWindow');
-    });
+    void notify('warning', message, ACTIONS.reloadWindow);
   }
 }

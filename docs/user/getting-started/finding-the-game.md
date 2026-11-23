@@ -13,7 +13,8 @@ holds it (its `steamapps/common/Europa Universalis IV` folder).
 
 If Etch does not find it, or you want another copy of the game, such as a GOG copy:
 
-1. Open the settings (<kbd>Ctrl+,</kbd>) and search for `etch.gamePath`.
+1. Open the settings (<kbd>Ctrl+,</kbd>) and search for `etch.gamePath`. When a notification says
+   Etch can't find the game folder, its **Set the Game Folder…** button opens that setting.
 2. Type the full path of the game folder, the folder that holds `eu4.exe`. An open preview then
    loads the game from that folder and draws again.
 

@@ -14,6 +14,7 @@ export {
   PREVIEW_VIEW_TYPE,
   RESOLUTION_SETTING,
 } from './preview.ts';
+import { ACTIONS, notify } from '../notify.ts';
 export { writeResolution } from './resolution.ts';
 export { ADD_SCRIPTED_SELECTORS, type ScriptedSkeletonResult } from './scripted-skeleton.ts';
 
@@ -62,8 +63,10 @@ export function registerPreview(
     vscode.commands.registerCommand(CHOOSE_RESOLUTION, () => chooseResolution(preview)),
     vscode.commands.registerCommand(SNAPSHOT_FROM_LIVE_GAME, async () => {
       if (preview.current === undefined) {
-        void vscode.window.showInformationMessage(
+        void notify(
+          'info',
           'A live snapshot is of the previewed window: open the preview on it first.',
+          ACTIONS.openPreview,
         );
         return;
       }
