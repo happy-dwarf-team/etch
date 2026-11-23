@@ -81,7 +81,7 @@ export function activate(context: vscode.ExtensionContext): EtchApi {
     entityPreview: registerEntityPreview(context, output),
     assetLinks: registerAssetLinks(context, output),
     spriteLinks,
-    localisationHints: registerLocalisationHints(context, output),
+    localisationHints: registerLocalisationHints(context, output, spriteLinks),
     guiCompletion: registerGuiCompletion(context, spriteLinks),
     interfaceSymbols: registerInterfaceSymbols(context),
     spriteReferences: registerSpriteReferences(context, spriteLinks),

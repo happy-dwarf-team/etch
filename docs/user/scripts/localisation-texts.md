@@ -1,6 +1,6 @@
 ---
 title: Localisation texts
-description: See the text of a localisation key next to it in .gui and script files, and open the line that defines it.
+description: See the text of a localisation key next to it in .gui and script files, hover over a key to read its whole text in the game's colours, and open the line that defines it.
 since: 2.14.0
 ---
 
@@ -23,10 +23,21 @@ it depends on) defines gets a text. A `name` that is a plain word, not a key, ge
 The grey text is short: at most 60 characters. It leaves out icons and colour codes, and shows a
 variable such as `$COUNTRY$`, or a scripted text in `[…]`, as "…".
 
-- Hover over the grey text to see the whole text, the key, its language and the `.yml` file it
-  comes from. When several `.yml` files define the key, Etch shows the text the game shows. A
-  file in `localisation/replace` wins over the others. Otherwise the first definition wins, and
-  the game's comes before your mod's. Of your mod's files, the one whose path comes first in the
+- Hover over the key, or over the grey text after it, to see the whole text as the game colours
+  it. The hover also names the key and its language. Its last line says which `.yml` file and
+  line the text comes from, and whether it is the game's or your mod's, such as
+  "Defined in `localisation/etch_demo_l_english.yml:3` — Etch demo mod". In the text:
+  - a colour code such as `§Y` paints the text up to its `§!` in that colour. The colours are
+    the ones the `textcolors` blocks of your playset's `.gfx` files give each letter: yellow for
+    `§Y` in the base game;
+  - an icon such as `£building£`, or the gold icon `¤`, shows as its small picture when your
+    playset has its sprite, and as written otherwise;
+  - a line break (`\n`) breaks the line;
+  - a variable such as `$COUNTRY$`, a scripted text in `[…]` and a country's flag such as `@FRA`
+    stay as written, because the game fills them in while you play.
+- When several `.yml` files define the key, Etch shows the text the game shows. A file in
+  `localisation/replace` wins over the others. Otherwise the first definition wins, and the
+  game's comes before your mod's. Of your mod's files, the one whose path comes first in the
   alphabet wins (`a_…` over `z_…`, and `a_…` over `sub/…`). In one file, the first line with the
   key wins.
 - To change one of the game's texts, put your version in your mod's `localisation/replace`
@@ -62,12 +73,16 @@ in, so the preview changes too.
 ## Turn it off
 
 To hide the texts, open [Settings](../reference/settings.md), search for
-`etch.editor.localisationHints` and clear its checkbox. If you see no texts at all, VS Code's own
-`editor.inlayHints.enabled` setting may be off: it hides all such grey texts, Etch's included.
+`etch.editor.localisationHints` and clear its checkbox. That also turns off the hover on the key
+and <kbd>Ctrl</kbd>+click, for example when another extension already shows localisation. If you
+see no grey texts at all, VS Code's own `editor.inlayHints.enabled` setting may be off: it hides
+all such grey texts, Etch's included.
 
 ## What it doesn't do
 
 - A key your playset does not define gets no text and no warning.
-- It shows the text the key has in the `.yml` file. Icons and colours are left out, and the
-  values that the game puts in at play time, such as a variable's, show as "…".
+- It shows the text the key has in the `.yml` file. The grey text leaves out icons and colours,
+  and the values that the game puts in at play time, such as a variable's, show as "…".
+- The hover shows the colours on VS Code's background, not on the game's window, so a dark
+  colour such as black can be hard to read there.
 - Only the keys listed above get a text. Others, such as `buttonText` in a `.gui` file, get none.

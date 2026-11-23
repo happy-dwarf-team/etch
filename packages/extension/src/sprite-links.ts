@@ -1,8 +1,8 @@
 // Hovers and Go to Definition on the sprite names of `.gui` files (`spriteType`,
 // `quadTextureSprite`, a list's `background`) and of script files (an event's `picture`, a
 // mission's and an estate privilege's `icon`, the keys of `SCRIPT_SPRITE_KEYS`): the hover names the sprite's kind, frames and the
-// `.gfx` file and playset layer that define it, then its texture with its facts and a thumbnail
-// (the first frame of a strip); Go to Definition (F12, Ctrl+click) opens that `.gfx` file at the
+// `.gfx` file and playset layer that define it, then its texture with its facts and a picture
+// (every frame of a strip, on a checkerboard); Go to Definition (F12, Ctrl+click) opens that `.gfx` file at the
 // sprite's name. The sprite is the one the game draws: the last definition in load order
 // (`InterfaceIndex`), over the playset the script profile and the asset links use.
 
@@ -17,6 +17,7 @@ import {
   SPRITE_SCRIPT_FOLDERS,
   textureCandidates,
   type Located,
+  type Rgb,
   type Sprite,
   type SpriteReference,
 } from '@etch/core';
@@ -40,7 +41,15 @@ export interface Loaded {
   readonly editedRoot: string | undefined;
 }
 
-export class SpriteLinks implements vscode.HoverProvider, vscode.DefinitionProvider {
+/** What a localisation hover draws its text with (localisation-hints.ts). */
+export interface TextArt {
+  /** The playset's `textcolors`, by letter; undefined without a game folder. */
+  textColours(): Promise<Readonly<Record<string, Rgb>> | undefined>;
+  /** A sprite's first frame as a PNG `data:` URI, at most `size` pixels on its longest side. */
+  spriteUri(name: string, size: number): Promise<string | undefined>;
+}
+
+export class SpriteLinks implements vscode.HoverProvider, vscode.DefinitionProvider, TextArt {
   private loaded: Promise<Loaded | undefined> | undefined;
   private readonly thumbnails = new TextureThumbnails();
   private readonly output: vscode.LogOutputChannel;
@@ -103,7 +112,7 @@ export class SpriteLinks implements vscode.HoverProvider, vscode.DefinitionProvi
         markdown.appendMarkdown(`\n\nTexture \`${file.path}\` — ${layerName(file)}`);
         try {
           markdown.appendMarkdown(
-            `\n\n${await this.thumbnails.markdown(file.absolutePath, item.frames)}`,
+            `\n\n${await this.thumbnails.sprite(file.absolutePath, item.frames)}`,
           );
         } catch (error) {
           markdown.appendMarkdown(`\n\nEtch cannot show it: ${messageOf(error)}.`);
@@ -111,6 +120,25 @@ export class SpriteLinks implements vscode.HoverProvider, vscode.DefinitionProvi
       }
     }
     return markdown;
+  }
+
+  async textColours(): Promise<Readonly<Record<string, Rgb>> | undefined> {
+    return (await this.playset())?.ui.index.textColours;
+  }
+
+  async spriteUri(name: string, size: number): Promise<string | undefined> {
+    const loaded = await this.playset();
+    const sprite = loaded?.ui.index.sprite(name);
+    const texture = sprite?.item.textures[0];
+    if (loaded === undefined || sprite === undefined || texture === undefined) return undefined;
+    const file = await findTexture(loaded.files, texture.path);
+    if (file === undefined) return undefined;
+    try {
+      return await this.thumbnails.uri(file.absolutePath, sprite.item.frames, size);
+    } catch (error) {
+      this.output.warn(`Sprite ${name}: ${file.path} cannot be read: ${messageOf(error)}`);
+      return undefined;
+    }
   }
 
   async provideDefinition(
