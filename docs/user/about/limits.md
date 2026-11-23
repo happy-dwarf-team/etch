@@ -146,9 +146,9 @@ in one place, grouped by where you meet them.
 - In the game, a map tree's colours depend on where it stands on the map and on a random turn.
   **Turn**, **Ground** and **North** stand in for them; **Place** sets **Ground** and **North**
   from a province you type. See [Map trees](../textures-and-meshes/map-trees.md).
-- The entity preview does not draw particle effects, such as an artillery piece's muzzle flash.
-  The status line names them while the state plays. See
-  [Entities](../textures-and-meshes/entities.md).
+- The entity preview draws particle effects, such as an artillery piece's muzzle flash, in its
+  own way: close to the game's, but not the same. See
+  [Entities](../textures-and-meshes/entities.md#differences-from-the-game).
 - Etch does not check which DLCs you own: it reads every DLC in the game folder that the game's
   launcher has not turned off. A player without a DLC does not see its pictures. See
   [The DLCs](../getting-started/finding-the-game.md#the-dlcs).

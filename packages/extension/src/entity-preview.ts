@@ -8,24 +8,36 @@
 
 import * as path from 'node:path';
 import * as vscode from 'vscode';
-import { parseScript } from '@etch/core';
+import { decodeGameText, parseScript } from '@etch/core';
 import {
   EntityIndex,
+  findParticleBlock,
   readAssetFile,
   readMesh,
+  readParticleSystem,
   resolveEntity,
+  type ParticleSystem,
   type ResolvedEntity,
   type ResolvedEvent,
 } from '@etch/core/asset';
 import { loadEntityIndex, type GameFiles } from '@etch/core/playset';
 import { keyOf } from '@etch/core';
 import { layerFolder } from './asset-links.ts';
-import { countryColours, flagTexture, meshHtml, read, texturesOf } from './mesh-preview.ts';
+import {
+  countryColours,
+  flagTexture,
+  gameTexture,
+  meshHtml,
+  read,
+  texturesOf,
+} from './mesh-preview.ts';
 import type {
   EntityNode,
+  EntityParticleEffect,
   MeshControls,
   MeshHostMessage,
   MeshSummary,
+  MeshTexture,
   MeshWebviewMessage,
 } from './mesh-protocol.ts';
 import { pickCurrent } from './pick-current.ts';
@@ -199,11 +211,13 @@ async function entityMessage(
   entity: ResolvedEntity,
   files: GameFiles,
   outside: string | undefined,
+  systemNamed: (name: string) => Promise<ParticleSystem | undefined>,
 ): Promise<MeshHostMessage> {
   const nodes: EntityNode[] = [];
   const problems: string[] = [];
   const animationPaths = new Set<string>();
   const particles: Record<string, string[]> = {};
+  const effects: EntityParticleEffect[] = [];
   const visit = async (
     node: ResolvedEntity,
     parent: number | undefined,
@@ -228,6 +242,8 @@ async function entityMessage(
       return;
     }
     const states: Record<string, string | undefined> = {};
+    // The index this node gets below.
+    const at = nodes.length;
     for (const state of node.states) {
       states[state.name] = state.file;
       for (const event of state.events) {
@@ -237,6 +253,17 @@ async function entityMessage(
         (particles[state.name] ??= []).push(
           `${node.name}: ${event.particle}${systemOf(event)}${where}${when}`,
         );
+        const system = event.system === undefined ? undefined : await systemNamed(event.system);
+        if (system === undefined) continue;
+        effects.push({
+          node: at,
+          state: state.name,
+          bone: event.node,
+          time: event.time ?? 0,
+          name: event.particle,
+          scale: event.pdxparticle?.scale ?? 1,
+          system,
+        });
       }
       if (state.file !== undefined) animationPaths.add(state.file);
       if (state.problem !== undefined)
@@ -267,6 +294,18 @@ async function entityMessage(
     }
     animations[animation] = await read(file);
   }
+  const particleTextures: Record<string, MeshTexture> = {};
+  for (const effect of effects) {
+    for (const subsystem of effect.system.subsystems) {
+      const file = subsystem.texture.file;
+      if (file === undefined || file in particleTextures) continue;
+      const texture = await gameTexture(file, files, outside);
+      particleTextures[file] = texture;
+      if (!texture.ok) {
+        problems.push(`${effect.system.name}: texture ${file}: ${texture.message}`);
+      }
+    }
+  }
   const states = entity.states.map((state) => state.name);
   return {
     type: 'entity',
@@ -277,6 +316,8 @@ async function entityMessage(
     state: entity.defaultState ?? (states.includes('idle') ? 'idle' : undefined),
     problems: [...new Set(problems)],
     particles,
+    effects,
+    particleTextures,
   };
 }
 
@@ -332,7 +373,8 @@ class EntityPreviews {
         : folder === ''
           ? path.basename(uri.fsPath)
           : `${folder}/${path.basename(uri.fsPath)}`;
-    const own = readAssetFile(parseScript(text), gamePath);
+    const ownParsed = parseScript(text);
+    const own = readAssetFile(ownParsed, gamePath);
     const merged = new EntityIndex();
     for (const [key, value] of index.pdxmeshes) merged.pdxmeshes.set(key, value);
     for (const [key, value] of index.pdxparticles) merged.pdxparticles.set(key, value);
@@ -340,14 +382,38 @@ class EntityPreviews {
     for (const [key, value] of index.animations) merged.animations.set(key, value);
     for (const particle of index.particles) merged.particles.add(particle);
     for (const particle of own.particles) merged.particles.add(particle);
+    for (const [key, value] of index.particleFiles) merged.particleFiles.set(key, value);
+    for (const particle of own.particles) merged.particleFiles.set(particle, own.path);
     for (const entity of own.entities) merged.entities.set(entity.name, entity);
     for (const animation of own.animations) merged.animations.set(animation.name, animation);
     const entity = resolveEntity(merged, name);
     if (entity === undefined) return `No entity "${name}" in ${path.basename(uri.fsPath)}.`;
+    const parsedFiles = new Map<string, Promise<ReturnType<typeof parseScript> | undefined>>();
+    const systemNamed = async (system: string): Promise<ParticleSystem | undefined> => {
+      const file = merged.particleFiles.get(system);
+      if (file === undefined) return undefined;
+      let parsed = parsedFiles.get(file);
+      if (parsed === undefined) {
+        parsed =
+          file === own.path
+            ? Promise.resolve(ownParsed)
+            : files
+                .find(file)
+                .then(async (found) =>
+                  found === undefined
+                    ? undefined
+                    : parseScript(decodeGameText(await read(found.absolutePath), 'script').text),
+                );
+        parsedFiles.set(file, parsed);
+      }
+      const block = findParticleBlock((await parsed)?.entries ?? [], system);
+      return block === undefined ? undefined : readParticleSystem(block);
+    };
     return entityMessage(
       entity,
       files,
       folder === undefined ? path.dirname(uri.fsPath) : undefined,
+      systemNamed,
     );
   }
 

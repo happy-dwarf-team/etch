@@ -115,6 +115,26 @@ describe('readMesh', () => {
     expect(readMesh(binary(MESH)).lodDistances).toBeUndefined();
   });
 
+  it('reads the locators a particle event can start on, with the bone they hang on', () => {
+    const items = [
+      ...MESH,
+      obj(1, 'locator'),
+      obj(2, 'muzzle'),
+      floats('p', 0, 0.5, -7),
+      floats('q', 0, -0.5, 0, -0.5),
+      strs('pa', 'tip'),
+      obj(2, 'free'),
+      floats('p', 1, 2, 3),
+    ];
+    for (const encode of [binary, text]) {
+      expect(readMesh(encode(items)).locators).toEqual([
+        { name: 'muzzle', position: [0, 0.5, -7], rotation: [0, -0.5, 0, -0.5], parent: 'tip' },
+        { name: 'free', position: [1, 2, 3], rotation: [0, 0, 0, 1], parent: undefined },
+      ]);
+    }
+    expect(readMesh(binary(MESH)).locators).toEqual([]);
+  });
+
   it('refuses a triangle index past the vertices', () => {
     const broken = MESH.map((item) =>
       'name' in item && item.name === 'tri' && item.values.length === 6

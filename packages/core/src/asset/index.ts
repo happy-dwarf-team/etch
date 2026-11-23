@@ -9,5 +9,7 @@ export * from './skin.ts';
 export * from './render.ts';
 export * from './entity.ts';
 export * from './particle.ts';
+export * from './particle-system.ts';
+export * from './particle-player.ts';
 export * from './bmp.ts';
 export * from './seasons.ts';

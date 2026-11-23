@@ -60,6 +60,9 @@
 //
 // An attachment's scale: its own pdxmesh and entity scale, not multiplied by its parent's (the
 // bone's position is). Vanilla gives a soldier and the weapon in its hand the same scale (0.5).
+//
+// The particle effects a state's events start are drawn by an approximate player (particles.ts,
+// the Particles button), after the meshes.
 
 import {
   animationFits,
@@ -67,6 +70,8 @@ import {
   colourMapAt,
   dayName,
   jointsOfBones,
+  multiply,
+  poseMatrix,
   readAnimation,
   readMesh,
   seasonAt,
@@ -107,6 +112,7 @@ import {
   type OrbitCamera,
   type PlacedBone,
 } from './view-math.ts';
+import { ParticleLayer } from './particles.ts';
 
 declare function acquireVsCodeApi(): { postMessage(message: MeshWebviewMessage): void };
 const vscode = acquireVsCodeApi();
@@ -126,6 +132,7 @@ const playButton = element('play') as HTMLButtonElement;
 const frameInput = element('frame') as HTMLInputElement;
 const wireButton = element('wireframe') as HTMLButtonElement;
 const skeletonButton = element('skeleton') as HTMLButtonElement;
+const particlesButton = element('particles') as HTMLButtonElement;
 const boneTip = element('bone-tip');
 const mapButtons = {
   diffuse: element('diffuse-map') as HTMLButtonElement,
@@ -361,9 +368,13 @@ interface Instance {
   model: Float32Array;
   /** Its skinned shapes' bones at the frame shown, in the drawn space; set by `pose`. */
   bones: PlacedBone[];
+  /** Its bones' matrices at the frame shown, in the mesh's space, by name; set by `pose`. */
+  boneMatrices: Map<string, Float32Array>;
 }
 
 let program: WebGLProgram | undefined;
+/** The entity preview's particle effects (the Particles button). */
+let particleLayer: ParticleLayer | undefined;
 /** The Bones button's program, with its vertex array and buffer. */
 let bonePass:
   { program: WebGLProgram; vao: WebGLVertexArrayObject; buffer: WebGLBuffer } | undefined;
@@ -798,6 +809,7 @@ function pose(context: WebGL2RenderingContext, seconds: number): void {
       }
     }
     worlds.set(instance, bones);
+    instance.boneMatrices = bones;
     const parent = instance.parent;
     const bone =
       parent === undefined || instance.bone === undefined
@@ -865,9 +877,50 @@ function showStatus(seconds: number): void {
     animation === undefined
       ? 'no animation on the root mesh'
       : `frame ${frameOf(animation, seconds).toFixed(1).padStart(5)} of ${String(animation.frames)} at ${String(Number(animation.fps.toFixed(2)))} fps`;
-  const particles = entity?.particles[playingKey] ?? [];
-  const notDrawn = particles.length === 0 ? '' : ` · particles not drawn: ${particles.join(', ')}`;
-  status.textContent = `${entity === undefined ? '' : 'State '}${playingKey}: ${where}${notDrawn}`;
+  status.textContent = `${entity === undefined ? '' : 'State '}${playingKey}: ${where}${particleWords()}`;
+}
+
+/** The status line's words on the state's particle effects. */
+function particleWords(): string {
+  if (playingKey === undefined) return '';
+  const named = entity?.particles[playingKey] ?? [];
+  if (named.length === 0) return '';
+  const drawn = particleLayer?.of(playingKey).length ?? 0;
+  if (drawn === 0) return ` · particles not drawn: ${named.join(', ')}`;
+  if (particleLayer?.on !== true) return ` · particles off: ${named.join(', ')}`;
+  const alive = `${String(particleLayer.count)} alive`;
+  return ` · particles (approximate, ${alive}): ${named.join(', ')}`;
+}
+
+/**
+ * The seconds one loop of the playing state lasts for a node: its own animation's, else the root
+ * mesh's (a musket plays none of its own in the soldier's hand), if either plays one.
+ */
+function clipOf(node: number): number | undefined {
+  const instance = instances[node];
+  const own = instance === undefined ? undefined : animationOf(instance);
+  const animation = own ?? rootAnimation();
+  return animation === undefined || animation.fps <= 0
+    ? undefined
+    : animation.frames / animation.fps;
+}
+
+/**
+ * The matrix in the file's space, as posed now, of the bone or else the locator (a musket's
+ * `muzzle`, on its bone if it names one) an event starts on; the node's origin without either.
+ */
+function nodeMatrix(node: number, bone: string | undefined): Float32Array | undefined {
+  const instance = instances[node];
+  if (instance === undefined) return undefined;
+  if (bone === undefined) return instance.model;
+  const matrix = instance.boneMatrices.get(bone);
+  if (matrix !== undefined) return multiply(instance.model, matrix);
+  const locator = instance.mesh.locators.find((one) => one.name === bone);
+  if (locator === undefined) return instance.model;
+  const local = poseMatrix({ t: locator.position, q: locator.rotation, s: [1, 1, 1] });
+  const parent =
+    locator.parent === undefined ? undefined : instance.boneMatrices.get(locator.parent);
+  return multiply(instance.model, parent === undefined ? local : multiply(parent, local));
 }
 
 /** The animation the frame slider moves through: the root mesh's. */
@@ -901,6 +954,12 @@ function showFrame(seconds: number): void {
 function showAt(context: WebGL2RenderingContext, seconds: number): void {
   position = seconds;
   pose(context, seconds);
+  particleLayer?.advance(
+    entity === undefined ? undefined : playingKey,
+    seconds,
+    clipOf,
+    nodeMatrix,
+  );
   showStatus(seconds);
   showFrame(seconds);
 }
@@ -1069,6 +1128,11 @@ function render(now: number): void {
   }
   gl.disable(gl.BLEND);
   gl.depthMask(true);
+  particleLayer?.draw(
+    viewProjection(camera, width / height),
+    eyeOf(camera),
+    instances[0]?.scale ?? 1,
+  );
   drawSkeleton(gl, viewProjection(camera, width / height), ratio);
   gl.bindVertexArray(null);
   if (skeletonShown) showBoneTip();
@@ -1241,6 +1305,9 @@ function summary(): MeshSummary {
       state: playingKey,
       problems: entity.problems,
       particles: playingKey === undefined ? [] : [...(entity.particles[playingKey] ?? [])],
+      ...(particleLayer?.any === true && particleLayer.on
+        ? { liveParticles: particleLayer.count }
+        : {}),
     },
   };
 }
@@ -1361,6 +1428,7 @@ function show(
       states: node.states,
       model: scaling(node.scale),
       bones: [],
+      boneMatrices: new Map(),
     });
   }
   showWarnings(warnings, problems);
@@ -1431,6 +1499,8 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
       playingKey = undefined;
       animations.clear();
       const mesh = readMesh(Uint8Array.from(message.bytes));
+      particleLayer?.load([], {}, () => undefined);
+      particlesButton.hidden = true;
       show(
         gl,
         [
@@ -1478,8 +1548,10 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
         distance,
         frame,
         skeleton,
+        particles,
         tag: countryTag,
       } = message.controls;
+      if (particles !== undefined) setParticles(particles);
       if (frame !== undefined) goToFrame(frame);
       if (skeleton !== undefined) setSkeleton(skeleton);
       if (lodPick !== undefined) {
@@ -1634,6 +1706,11 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
         problems,
         particles: message.particles,
       };
+      const context = gl;
+      particleLayer?.load(message.effects, message.particleTextures, (texture) =>
+        textureOf(context, texture),
+      );
+      particlesButton.hidden = particleLayer?.any !== true;
       tree = undefined;
       tintProblem = undefined;
       seasonProblem = undefined;
@@ -1953,6 +2030,19 @@ function setSkeleton(on: boolean): void {
   if (!on) boneTip.hidden = true;
 }
 
+/** Draws the particle effects or not (the Particles button). */
+function setParticles(on: boolean): void {
+  if (particleLayer !== undefined) particleLayer.on = on;
+  particlesButton.setAttribute('aria-pressed', String(on));
+  if (gl !== null) showStatus(position);
+}
+
+particlesButton.addEventListener('click', () => {
+  setParticles(particleLayer?.on !== true);
+  redraw();
+  vscode.postMessage({ type: 'shown', summary: summary() });
+});
+
 skeletonButton.addEventListener('click', () => {
   setSkeleton(!skeletonShown);
   redraw();
@@ -2075,6 +2165,8 @@ if (gl === null) {
     gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
     gl.bindVertexArray(null);
     bonePass = { program: compile(gl, BONE_VERTEX, BONE_FRAGMENT), vao, buffer: bufferOfBones };
+    const shaders = ParticleLayer.shaders();
+    particleLayer = new ParticleLayer(gl, compile(gl, shaders.vertex, shaders.fragment));
     vscode.postMessage({ type: 'ready' });
   } catch (error) {
     fail(error instanceof Error ? error.message : String(error));

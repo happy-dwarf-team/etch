@@ -901,8 +901,9 @@ refresh is a step of the 3.0.0 release.
   bones are in their parent's skeleton (`entity.vanilla.test.ts`). An
   attachment that repeats an entity above it is not followed but named. A
   state's `event` blocks (209 in vanilla, `time`, `node` and `particle`:
-  artillery muzzle flashes, siege smoke) start particle effects, which Etch
-  does not draw; the status line names them while the state plays. An
+  artillery muzzle flashes, siege smoke) start particle effects, which the
+  preview draws with an approximate player (step 3 of "Particles in the
+  entity preview" below); the status line names them while the state plays. An
   event's `particle` is a `pdxparticle` object type of an `interface/*.gfx`
   file (`name`, `type`, `scale`; vanilla's 11 in `interface/assets`), whose
   `type` names a `particle` block of an `.asset` file (vanilla's 9, in
@@ -916,8 +917,7 @@ refresh is a step of the 3.0.0 release.
   up among the blocks and reported vanilla's `devastation_smoke_particle`
   (two states of `westerngfx_city_0` and its 32 clones) and `siege_cannon`
   as missing; all 577 particle events of vanilla's resolved states now
-  resolve (`entity.vanilla.test.ts`). The particle systems themselves are
-  not read. A mesh
+  resolve (`entity.vanilla.test.ts`). A mesh
   material's texture is looked up in the
   mesh's own folder, as the game does: EU4 1.37.5 has a lookup of textures by
   file name across folders, but it is switched off, and the game's
@@ -1086,7 +1086,32 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
      (billboards, the three blend modes, emission, life, velocity cone, size
      and colour curves, the forces step 2 settles), compared against a capture
      of a musket and a ship state. It ships only labelled as a stand-in, as the
-     Date and Snow sliders are, and only if the comparison holds.
+     Date and Snow sliders are, and only if the comparison holds. Done 23
+     November 2026 (`prototype/particle-player`, shipped in the same change):
+     `@etch/core/asset` reads a `particle` block into plain data
+     (`readParticleSystem`) and runs it (`ParticleEffect`) with step 2's maths;
+     the entity preview starts each event's effect on its bone each time the
+     state's animation passes the event's time (the root mesh's animation for
+     a node that plays none, such as a musket in a soldier's hand), draws the
+     quads after the meshes as the game's shader does (clip-space corners,
+     sprite-sheet tile times colour, the three blends, depth tested and not
+     written, each subsystem's `sort`), and replays from the state's start
+     with fixed random numbers when paused on a frame. The **Particles** button
+     and the status line say "approximate". Etch's guesses, listed on the
+     user page: the random numbers, the turbulence field (gradient noise over
+     turning gradients), a `point` force that pulls, `spin` in radians per
+     second, trails drawn as sprites, child systems not run, an event time
+     after the clip's end never reached, a state change clearing every
+     effect, and one running effect per event while one of its subsystems
+     emits forever. An event's `node` may be a mesh locator (`[locator]`,
+     `p`, `q`, `pa`), read into `PdxMesh.locators`: vanilla's musket
+     `muzzle` and ship `gun_01` are locators, not bones. Compared by eye
+     with the game (the lab's step 2 notes): a musketeer's volley (forward
+     cone from the muzzle, residue, a puff at the lock) and a carrack's
+     broadside (smoke and sparks out of the side) look like the game's; the
+     siege smoke over `westerngfx_city_0` rises and leans the same way but is
+     darker on the preview's background, and its size next to the city is not
+     compared, since how the map scales a city entity is not known.
 
 Small unknowns, none worth an issue yet.
 
