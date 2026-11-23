@@ -127,9 +127,10 @@ As in the game:
   every 2 seconds.
 - With `trigger_once = yes`, the event starts only in the state's first round: the first pass
   through its animation, or its first `state_time` seconds. A state with neither never starts it.
-- When you pick another state, the effects stop at once. An event with `keep_particle = yes`
-  keeps its effect: the particles already out live on, and it stops sending out new ones if one
-  of its subsystems (the parts of the effect) would send them out for ever.
+- When you pick another state, the effects and their particles go at once. An event with
+  `keep_particle = yes` keeps its effect, and the particles already out live on. If one of its
+  subsystems (the parts of the effect) would send out particles for ever, the effect stops
+  sending out new ones.
 
 A subsystem with `trail = yes` draws a band through its particles, from the oldest to the newest,
 as wide as the particles are big.
