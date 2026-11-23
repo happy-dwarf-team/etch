@@ -7,7 +7,7 @@
  */
 import { copyFile, mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import type { CorpusPlayset, CorpusSave } from '../manifest.ts';
+import type { CorpusPlayset, CorpusSave, RecipeStart } from '../manifest.ts';
 import { hashFile, hashModFolder } from '../files.ts';
 
 export interface PlaysetProfile {
@@ -46,12 +46,17 @@ export function profileDescriptor(itemDescriptor: string, itemFolder: string): s
  * use, the mod descriptors and `dlc_load.json` every time (and no `continue_game.json`), and the
  * save copied once: the playset's, or the one a session's views load instead (`viewSave`). Checks
  * the save's hash and every mod's content hash against the manifest; returns the hashes it read.
+ *
+ * A start from the main menu gets no save at all: the profile's copies are removed, as the main
+ * menu offers Continue for the newest save it finds, which a fresh profile does not have
+ * (etch#618). A later start from a save copies its save again.
  */
 export async function prepareProfile(
   hostDir: string,
   playset: CorpusPlayset,
   sources: ProfileSources,
   pinned: CorpusSave | undefined = playset.save,
+  start: RecipeStart = 'save',
 ): Promise<{ saveSha256?: string; mods: { name: string; sha256: string }[] }> {
   const { profile, baselines } = playsetProfile(hostDir, playset.id);
   await mkdir(join(profile, 'mod'), { recursive: true });
@@ -93,8 +98,14 @@ export async function prepareProfile(
   // start begins without it, as a fresh profile's main menu does (etch#618).
   await rm(join(profile, 'continue_game.json'), { force: true });
 
-  if (pinned === undefined) return { mods };
   const saveFolder = join(profile, 'save games');
+  if (start === 'main-menu') {
+    for (const entry of await readdir(saveFolder).catch(() => [])) {
+      if (entry.toLowerCase().endsWith('.eu4')) await rm(join(saveFolder, entry));
+    }
+    return { mods };
+  }
+  if (pinned === undefined) return { mods };
   const save = join(saveFolder, pinned.file);
   if (!(await exists(save))) {
     const source = join(sources.saves, pinned.file);
