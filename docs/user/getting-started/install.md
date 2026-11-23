@@ -1,6 +1,6 @@
 ---
 title: Install and requirements
-description: What you need to run Etch, how to install it, how to see your version and where to ask for help.
+description: What you need to run Etch, how to install it, how to get coloured text in script files, how to see your version and where to ask for help.
 ---
 
 Etch is an extension for Visual Studio Code. You install it from an extension store. It draws
@@ -45,6 +45,44 @@ and offers **Reload Window**. Click it to switch to the new one.
 If you used Etch 1.x: its [game host](../reference/glossary.md#game-host), a hidden copy of the
 game that drew the preview, is gone in Etch 2, and the live game takes its place. To stay on 1.x,
 see [Etch 1.x](../about/etch-1x.md).
+
+## Coloured text in script files
+
+Script files are your mod's `.gui`, `.gfx` and `.asset` files, and the `.txt` files in the folders
+`common`, `customizable_localization`, `decisions`, `events`, `history`, `map` and `missions`.
+Etch adds no colours to their text. Without another extension, VS Code opens them as
+**Plain Text**: it says so at the bottom right of the window, and the whole file is one colour.
+
+Two other extensions show keywords, numbers and comments in colours of their own. You can use
+either of them together with Etch:
+
+- CWTools colours the files and checks your scripts for mistakes.
+- ParadoxCode colours the files, checks them and adds its own hovers. It is only on the VS Code
+  Marketplace, not on Open VSX, the extension store some other editors use.
+
+To install one, open the Extensions view (<kbd>Ctrl+Shift+X</kbd>), search for its name and click
+**Install**.
+
+### The notification
+
+If neither extension is installed and turned on, Etch shows a notification at the bottom right
+when you open a script file. It says that script files open as Plain Text, and it has three
+buttons. Etch shows it at most once in each VS Code window.
+
+- **Install CWTools** or **Install ParadoxCode** installs that extension, as **Install** in the
+  Extensions view does. If the file is still Plain Text afterwards, close it and open it again.
+- In an editor that gets its extensions from Open VSX, ParadoxCode cannot be installed: a message
+  says so. Install CWTools from the Extensions view instead.
+- **Don't Show Again**: Etch never shows the notification again, in any window, even after you
+  restart VS Code. You can still install either extension yourself.
+- If you close it with **×**, Etch shows it again the next time you start VS Code, or in another
+  VS Code window.
+
+If the notification disappears before you choose, click the bell at the bottom right of the
+window to see it again.
+
+Etch does not show it when the VS Code setting `extensions.ignoreRecommendations` is on. That
+setting also turns off VS Code's own suggestions of extensions.
 
 When Etch is installed, go on to [Your first preview](first-preview.md).
 
