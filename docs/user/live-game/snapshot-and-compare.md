@@ -15,7 +15,7 @@ widget the preview still draws differently from the game.
 
 - Pick a widget in [pick mode](pick-mode.md): the pick takes a snapshot of its window.
 - Or open the window in the live game and the same window in the preview, then run **Etch:
-  Snapshot from the Live Game**, or click **Refresh from live game** under **Live snapshot** in
+  Snapshot from the Live Game**, or click **Refresh from Live Game** under **Live snapshot** in
   **Data ▾**.
 
 The game must show the window. If it does not, Etch asks you to open it in the game first.
@@ -38,8 +38,9 @@ hand wins over it. Its tick box turns the layer off and on.
 The snapshot also sets the selectors of the
 [window profile](../reference/glossary.md#window-profile) (the choices that pick which
 [view](../reference/glossary.md#view) of the window the preview shows) to what the game showed;
-**View ▾** marks them "live". Where the window profile still shows or hides a widget differently
-from the game, **View ▾** says "Profile differs in N paths from the live game", and the Widget
+**Selectors…** in **View ▾** marks them "live". Where the window profile still shows or hides a
+widget differently from the game, **View ▾** has **Compare with Live Game** with the number of
+such paths after it, and the Widget
 Outline marks those widgets "from the game"
 ([Views and window profiles](../interface-windows/views.md)).
 

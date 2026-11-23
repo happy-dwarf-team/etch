@@ -133,6 +133,31 @@ export async function testViews(api: EtchApi): Promise<void> {
     );
     assert.equal(toggled.view?.view.handToggles, 1);
 
+    // Reset Hand Toggles acts at once and leaves a notice whose Undo brings the toggle back
+    // (etch#648, finding P2.20).
+    const reset = await rendered(
+      preview,
+      (r) => !laidOut(r).includes('extra'),
+      () => preview.viewAction({ kind: 'resetToggles' }),
+    );
+    assert.equal(reset.view?.view.handToggles, 0);
+    assert.ok(
+      preview.notices.some(
+        (n) => n.action?.kind === 'undo' && n.message.startsWith('1 hand toggle reset'),
+      ),
+      JSON.stringify(preview.notices),
+    );
+    const undone = await rendered(
+      preview,
+      (r) => laidOut(r).includes('extra'),
+      () => {
+        preview.noticeAction('undo');
+        return undefined;
+      },
+    );
+    assert.equal(undone.view?.view.handToggles, 1);
+    assert.ok(!preview.notices.some((n) => n.action?.kind === 'undo'));
+
     // Save as view writes the selectors and the toggle into the mod project's file.
     const saved = await rendered(
       preview,

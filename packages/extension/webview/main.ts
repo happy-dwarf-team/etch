@@ -22,7 +22,7 @@ import type {
 } from '../src/preview/protocol.ts';
 import { markPaint, paintResult } from './paint-marker.ts';
 import { listenForZoomKeys } from './zoom-keys.ts';
-import { attachMenu, SEPARATOR } from './menu.ts';
+import { attachMenu, SEPARATOR, type MenuHeading, type MenuItem } from './menu.ts';
 import { attachPopover } from './popover.ts';
 import {
   FIT,
@@ -79,7 +79,10 @@ const liveGame = element('live-game', HTMLButtonElement);
 const viewButton = element('view-menu', HTMLButtonElement);
 const viewPopup = element('view-popup', HTMLDivElement);
 const dataButton = element('data-menu', HTMLButtonElement);
-const dataPopup = element('data-popup', HTMLDivElement);
+const dataPop = element('data-pop', HTMLDivElement);
+const dataBody = element('data-body', HTMLDivElement);
+const selectorsPop = element('selectors-pop', HTMLDivElement);
+const selectorsBody = element('selectors-body', HTMLDivElement);
 const hoverBox = element('hover', HTMLDivElement);
 const selectedBox = element('selected', HTMLDivElement);
 const tip = element('tip', HTMLDivElement);
@@ -240,102 +243,174 @@ liveGame.addEventListener('click', () => {
   post({ type: 'startLiveGame' });
 });
 
-// `View ▾` and `Data ▾` stay open while the user clicks in them; a click elsewhere or Escape
-// closes them.
-viewButton.addEventListener('click', () => {
-  openDataMenu(false);
-  openViewMenu(viewPopup.hidden === true);
-});
-dataButton.addEventListener('click', () => {
-  openViewMenu(false);
-  openDataMenu(dataPopup.hidden === true);
-});
-document.addEventListener('mousedown', (event) => {
-  const target = event.target;
-  if (!(target instanceof Node)) return;
-  if (!viewPopup.contains(target) && !viewButton.contains(target)) openViewMenu(false);
-  if (!dataPopup.contains(target) && !dataButton.contains(target)) openDataMenu(false);
-});
-document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape') {
-    openViewMenu(false);
-    openDataMenu(false);
+// `View` is a menu of the views and the commands (etch#648, finding P3.16): the arrow keys move
+// in it and Esc gives the focus back to its button. Its forms are dialogs: Selectors… opens one
+// under View, and `Data` opens the sample data's.
+const selectorsPopover = attachPopover(viewButton, selectorsPop, { opensOnClick: false });
+const dataPopover = attachPopover(dataButton, dataPop);
+
+attachMenu(viewButton, viewPopup, () => {
+  const menu = state?.menu;
+  if (menu === undefined) return [];
+  const items: (MenuItem | MenuHeading | typeof SEPARATOR)[] = [];
+  if (menu.views.length > 0) {
+    items.push({ heading: 'Views' });
+    for (const view of menu.views) {
+      items.push({
+        label: view.label,
+        ...(view.mine ? { keys: 'yours' } : {}),
+        checked: view.current,
+        pick: () => {
+          viewAction({ kind: 'chooseView', id: view.id });
+        },
+      });
+    }
+    items.push(SEPARATOR);
   }
+  if (menu.selectors.length > 0) {
+    items.push({
+      label: 'Selectors…',
+      keys: String(menu.selectors.length),
+      title: 'The values that choose what the window shows, and where each came from',
+      pick: () => {
+        selectorsPopover.open();
+      },
+    });
+  }
+  if (menu.gameToggles > 0) {
+    items.push({
+      label: 'Compare with Live Game',
+      keys: String(menu.gameToggles),
+      title: `The profile differs in ${countOf(menu.gameToggles, 'path')} from the live game, shown as toggles from the game. List in Problems every widget the offline preview places or shows otherwise than the game.`,
+      pick: () => {
+        dataAction({ kind: 'compareLive' });
+      },
+    });
+  }
+  items.push({
+    label: 'Save as View…',
+    disabled: !menu.canSave,
+    title: menu.canSave
+      ? "Write these selectors and hand toggles as a view into the mod project's .etch/profiles."
+      : 'Save as View writes into a mod project; open a file of a mod.',
+    pick: () => {
+      viewAction({ kind: 'saveView' });
+    },
+  });
+  if (menu.handToggles > 0) {
+    items.push({
+      label: 'Reset Hand Toggles',
+      keys: String(menu.handToggles),
+      title: "Show and hide the widgets by the profile's rules again; the notice can undo it",
+      pick: () => {
+        viewAction({ kind: 'resetToggles' });
+      },
+    });
+  }
+  items.push({
+    label: 'Open the Window Profile',
+    pick: () => {
+      viewAction({ kind: 'openProfile' });
+    },
+  });
+  return items;
 });
-
-function openViewMenu(open: boolean): void {
-  viewPopup.hidden = !open || state?.menu === undefined;
-  viewButton.setAttribute('aria-expanded', String(!viewPopup.hidden));
-}
-
-function openDataMenu(open: boolean): void {
-  dataPopup.hidden = !open || state?.data === undefined;
-  dataPopup.style.left = `${String(dataButton.offsetLeft)}px`;
-  dataButton.setAttribute('aria-expanded', String(!dataPopup.hidden));
-}
 
 const dataAction = (action: DataAction): void => {
   post({ type: 'data', action });
 };
 
+/** `1 path`, `2 paths`. */
+function countOf(count: number, noun: string): string {
+  return `${String(count)} ${noun}${count === 1 ? '' : 's'}`;
+}
+
+/** A button of a dialog; `key` finds it again after the dialog is filled anew. */
+function dialogButton(
+  key: string,
+  text: string,
+  onClick: () => void,
+  title?: string,
+): HTMLButtonElement {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.textContent = text;
+  b.dataset['key'] = key;
+  if (title !== undefined) b.title = title;
+  b.addEventListener('click', onClick);
+  return b;
+}
+
+function textLine(className: string, text: string): HTMLElement {
+  const p = document.createElement('p');
+  p.className = className;
+  p.textContent = text;
+  return p;
+}
+
+/**
+ * Fills a dialog's body anew from the host's state, keeping the focus on the control with the
+ * same `data-key`, or on the dialog's close button when that control is gone.
+ */
+function refill(body: HTMLElement, pop: HTMLElement, children: readonly Node[]): void {
+  const active = document.activeElement;
+  const key =
+    active instanceof HTMLElement && body.contains(active) ? active.dataset['key'] : undefined;
+  body.replaceChildren(...children);
+  if (key === undefined) return;
+  const again = [...body.querySelectorAll<HTMLElement>('[data-key]')].find(
+    (control) => control.dataset['key'] === key && !(control as HTMLButtonElement).disabled,
+  );
+  (again ?? pop.querySelector<HTMLElement>('[data-close]'))?.focus();
+}
+
 const LENGTHS: readonly TextLengthName[] = ['short', 'typical', 'long', 'overflow'];
 
 /**
- * Fills `Data ▾` (spec section 5): the layers, upper ones winning, each with how many texts it
- * fills; typing a text under the hand layer, the save's choices under its layer, the generated
- * text's length under its own; then the lists the game fills, each with its number of entries.
+ * Fills the sample data's dialog (spec section 5): the layers, upper ones winning, each with how
+ * many texts it fills; typing a text under the hand layer, the save's choices under its layer,
+ * the generated text's length under its own; then the lists the game fills, each with its number
+ * of entries.
  */
 function showDataMenu(menu: DataMenu | undefined): void {
   dataButton.hidden = menu === undefined;
   if (menu === undefined) {
-    dataPopup.hidden = true;
-    dataPopup.replaceChildren();
+    dataPopover.close(false);
+    dataBody.replaceChildren();
     return;
   }
-  dataButton.textContent = `${menu.label} ▾`;
-  dataButton.title =
-    "Sample data of this window: a save, the playset's files, generated text (Data ▾).";
-  const button = (text: string, onClick: () => void, title?: string): HTMLButtonElement => {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.textContent = text;
-    if (title !== undefined) b.title = title;
-    b.addEventListener('click', onClick);
-    return b;
-  };
-  const line = (className: string, text: string): HTMLElement => {
-    const div = document.createElement('div');
-    div.className = className;
-    div.textContent = text;
-    return div;
-  };
-  const heading = document.createElement('h4');
-  heading.textContent = 'Layers, upper ones winning';
-  const children: HTMLElement[] = [heading];
+  dataButton.textContent = menu.label;
+  dataButton.title = "Sample data of this window: a save, the playset's files, generated text.";
+  const children: HTMLElement[] = [];
   for (const layer of menu.layers) {
-    const row = document.createElement('div');
-    row.className = 'layer';
+    const block = document.createElement('section');
+    block.className = 'layer';
+    const head = document.createElement('div');
+    head.className = 'layer-head';
     const box = document.createElement('input');
     box.type = 'checkbox';
     box.checked = layer.on;
     box.disabled = !layer.canToggle;
+    box.dataset['key'] = `layer:${layer.id}`;
+    box.setAttribute('aria-label', `Use ${layer.label}`);
     box.title = layer.canToggle ? 'Use this layer' : 'This layer is on when it has data';
     box.addEventListener('change', () => {
       dataAction({ kind: 'live', on: box.checked });
     });
-    const label = document.createElement('span');
-    label.textContent = layer.label;
+    const name = document.createElement('b');
+    name.textContent = layer.label;
     const count = document.createElement('span');
     count.className = 'count';
-    count.textContent = `${String(layer.count)} ${layer.count === 1 ? 'text' : 'texts'}`;
-    row.append(box, label, count);
-    children.push(row, line('detail', layer.detail));
+    count.textContent = countOf(layer.count, 'text');
+    head.append(box, name, count);
+    block.append(head, textLine('help', layer.detail));
+    const actions = document.createElement('div');
+    actions.className = 'row';
     if (layer.id === 'hand') {
-      const actions = document.createElement('div');
-      actions.className = 'actions';
       actions.append(
-        button(
-          'Type a text…',
+        dialogButton(
+          'type',
+          'Type a Text…',
           () => {
             dataAction({ kind: 'typeText' });
           },
@@ -344,24 +419,26 @@ function showDataMenu(menu: DataMenu | undefined): void {
       );
       if (layer.count > 0) {
         actions.append(
-          button(
+          dialogButton(
+            'clear',
             'Clear',
             () => {
+              // At once; the notice above the window can undo it, and the focus goes back to
+              // the Data button (etch#648, finding P2.20).
+              dataPopover.close(true);
               dataAction({ kind: 'clearHand' });
             },
-            'Take back every text typed for this window',
+            'Take back every text typed for this window; the notice can undo it',
           ),
         );
       }
-      children.push(actions);
     }
-    if (layer.id === 'live' && (menu.canRefresh || layer.count > 0)) {
-      const actions = document.createElement('div');
-      actions.className = 'actions';
+    if (layer.id === 'live') {
       if (menu.canRefresh) {
         actions.append(
-          button(
-            'Refresh from live game',
+          dialogButton(
+            'refresh',
+            'Refresh from Live Game',
             () => {
               dataAction({ kind: 'refreshLive' });
             },
@@ -369,35 +446,37 @@ function showDataMenu(menu: DataMenu | undefined): void {
           ),
         );
       }
-      actions.append(
-        button(
-          'Compare with Live Game',
-          () => {
-            dataAction({ kind: 'compareLive' });
-          },
-          'List in Problems every widget the offline preview places or shows otherwise than the game',
-        ),
-      );
-      children.push(actions);
+      if (menu.canRefresh || layer.count > 0) {
+        actions.append(
+          dialogButton(
+            'compare',
+            'Compare with Live Game',
+            () => {
+              dataAction({ kind: 'compareLive' });
+            },
+            'List in Problems every widget the offline preview places or shows otherwise than the game',
+          ),
+        );
+      }
     }
     if (layer.id === 'save') {
-      const actions = document.createElement('div');
-      actions.className = 'actions';
       actions.append(
-        button(menu.save.state === 'none' ? 'Choose save…' : 'Other save…', () => {
+        dialogButton('save', menu.save.state === 'none' ? 'Choose a Save…' : 'Other Save…', () => {
           dataAction({ kind: 'chooseSave' });
         }),
       );
       if (menu.save.state === 'ready') {
         actions.append(
-          button(
+          dialogButton(
+            'country',
             'Country…',
             () => {
               dataAction({ kind: 'chooseCountry' });
             },
             'The country that plays the player: own and foreign provinces follow from it',
           ),
-          button(
+          dialogButton(
+            'province',
             'Province…',
             () => {
               dataAction({ kind: 'chooseProvince' });
@@ -408,7 +487,8 @@ function showDataMenu(menu: DataMenu | undefined): void {
       }
       if (menu.save.state !== 'none') {
         actions.append(
-          button(
+          dialogButton(
+            'drop',
             'Drop',
             () => {
               dataAction({ kind: 'dropSave' });
@@ -417,37 +497,39 @@ function showDataMenu(menu: DataMenu | undefined): void {
           ),
         );
       }
-      children.push(actions);
-      if (menu.save.mismatch !== undefined) {
-        children.push(line('detail warning', menu.save.mismatch));
-      }
     }
     if (layer.id === 'generated') {
-      const actions = document.createElement('div');
-      actions.className = 'actions';
+      const lengths = document.createElement('span');
+      lengths.className = 'buttons';
+      lengths.setAttribute('role', 'group');
+      lengths.setAttribute('aria-label', 'Length of the generated text');
       for (const length of LENGTHS) {
-        const b = button(length, () => {
+        const b = dialogButton(`length:${length}`, length, () => {
           dataAction({ kind: 'length', length });
         });
         b.setAttribute('aria-pressed', String(length === menu.length));
-        actions.append(b);
+        lengths.append(b);
       }
-      children.push(actions);
+      actions.append(lengths);
     }
+    if (actions.childElementCount > 0) block.append(actions);
+    if (layer.id === 'save' && menu.save.mismatch !== undefined) {
+      block.append(textLine('help warning', menu.save.mismatch));
+    }
+    children.push(block);
   }
   if (menu.lists.length > 0) {
-    const lists = document.createElement('h4');
+    const lists = document.createElement('div');
+    lists.className = 'heading';
     lists.textContent = 'Lists the game fills';
-    children.push(lists);
+    const grid = document.createElement('div');
+    grid.className = 'lists';
     for (const list of menu.lists) {
-      const row = document.createElement('div');
-      row.className = 'layer list';
       const label = document.createElement('span');
       label.textContent = list.label;
-      const count = document.createElement('span');
-      count.className = 'count';
-      count.textContent = `${String(list.count)} ${list.count === 1 ? 'entry' : 'entries'}`;
-      const less = button(
+      label.title = list.detail;
+      const less = dialogButton(
+        `less:${list.id}`,
         '−',
         () => {
           dataAction({ kind: 'entries', list: list.id, count: list.count - 1 });
@@ -455,39 +537,41 @@ function showDataMenu(menu: DataMenu | undefined): void {
         'One entry fewer',
       );
       less.disabled = list.count === 0;
-      const more = button(
+      less.setAttribute('aria-label', `One entry fewer in ${list.label}`);
+      const count = document.createElement('span');
+      count.className = 'count';
+      count.textContent = `${String(list.count)} ${list.count === 1 ? 'entry' : 'entries'}`;
+      const more = dialogButton(
+        `more:${list.id}`,
         '+',
         () => {
           dataAction({ kind: 'entries', list: list.id, count: list.count + 1 });
         },
         'One entry more',
       );
-      row.append(label, less, count, more);
-      children.push(row);
-      const detail = line('detail', list.detail);
-      if (list.bySet) {
-        detail.append(
-          ' ',
-          button(
+      more.setAttribute('aria-label', `One entry more in ${list.label}`);
+      const reset = list.bySet
+        ? dialogButton(
+            `reset:${list.id}`,
             'Reset',
             () => {
               dataAction({ kind: 'entries', list: list.id });
             },
             "Back to the save's or the profile's number",
-          ),
-        );
-      }
-      children.push(detail);
+          )
+        : document.createElement('span');
+      grid.append(label, less, count, more, reset);
     }
+    children.push(lists, grid);
   }
-  dataPopup.replaceChildren(...children);
+  refill(dataBody, dataPop, children);
 }
 
 const viewAction = (action: ViewAction): void => {
   post({ type: 'view', action });
 };
 
-/** Where a selector's value came from, as `View ▾` names it. */
+/** Where a selector's value came from, as the Selectors dialog names it. */
 const SELECTOR_SOURCES: Readonly<Record<ViewMenu['selectors'][number]['source'], string>> = {
   auto: 'auto',
   save: 'save',
@@ -496,131 +580,74 @@ const SELECTOR_SOURCES: Readonly<Record<ViewMenu['selectors'][number]['source'],
   default: 'default',
 };
 
-/** Fills `View ▾`: the views, the actions, then every selector with its value's source. */
+/**
+ * The View button's label, and the Selectors dialog: every selector with its value and where
+ * the value came from (spec section 4).
+ */
 function showViewMenu(menu: ViewMenu | undefined): void {
   viewButton.hidden = menu === undefined;
   if (menu === undefined) {
     viewPopup.hidden = true;
-    viewPopup.replaceChildren();
+    selectorsPopover.close(false);
+    selectorsBody.replaceChildren();
     return;
   }
-  viewButton.textContent = `View: ${menu.label} ▾`;
-  viewButton.title = 'Views of this window and the selectors that choose them (View ▾).';
-  const item = (text: string, onClick: () => void, title?: string): HTMLButtonElement => {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'item';
-    button.setAttribute('role', 'menuitem');
-    button.textContent = text;
-    if (title !== undefined) button.title = title;
-    button.addEventListener('click', onClick);
-    return button;
-  };
-  const heading = (text: string): HTMLElement => {
-    const h = document.createElement('h4');
-    h.textContent = text;
-    return h;
-  };
+  viewButton.textContent = `View: ${menu.label}`;
+  viewButton.title = 'Views of this window, its selectors and hand toggles.';
   const children: HTMLElement[] = [];
-  if (menu.views.length > 0) {
-    children.push(heading('Views'));
-    for (const view of menu.views) {
-      const button = item(
-        `${view.current ? '●' : '○'} ${view.label}${view.mine ? ' (yours)' : ''}`,
-        () => {
-          viewAction({ kind: 'chooseView', id: view.id });
-        },
-      );
-      button.setAttribute('aria-checked', String(view.current));
-      children.push(button);
-    }
-  }
-  children.push(document.createElement('hr'));
-  if (menu.gameToggles > 0) {
-    const note = document.createElement('div');
-    note.className = 'note';
-    note.textContent = `Profile differs in ${String(menu.gameToggles)} ${
-      menu.gameToggles === 1 ? 'path' : 'paths'
-    } from the live game: shown as toggles from the game.`;
+  if (menu.liveUnknown.length > 0) {
     children.push(
-      note,
-      item(
-        'Compare with Live Game',
-        () => {
-          dataAction({ kind: 'compareLive' });
-        },
-        'List in Problems every widget the offline preview places or shows otherwise than the game',
+      textLine(
+        'help warning',
+        `Live: no value of ${menu.liveUnknown.join(', ')} predicts what the game showed.`,
       ),
     );
   }
-  if (menu.liveUnknown.length > 0) {
-    const note = document.createElement('div');
-    note.className = 'note';
-    note.textContent = `Live: no value of ${menu.liveUnknown.join(', ')} predicts what the game showed.`;
-    children.push(note);
-  }
-  const save = item('Save as view…', () => {
-    viewAction({ kind: 'saveView' });
-  });
-  save.disabled = !menu.canSave;
-  save.title = menu.canSave
-    ? "Write these selectors and hand toggles as a view into the mod project's .etch/profiles."
-    : 'Save as view writes into a mod project; open a file of a mod.';
-  children.push(save);
-  if (menu.handToggles > 0) {
-    children.push(
-      item(`Reset hand toggles (${String(menu.handToggles)})`, () => {
-        viewAction({ kind: 'resetToggles' });
-      }),
-    );
-  }
-  children.push(
-    item('Open profile', () => {
-      viewAction({ kind: 'openProfile' });
-    }),
-  );
-  if (menu.selectors.length > 0) {
-    children.push(document.createElement('hr'), heading('Selectors'));
-    for (const selector of menu.selectors) {
-      const row = document.createElement('div');
-      row.className = 'row';
-      const label = document.createElement('span');
-      label.textContent = selector.label;
-      if (selector.note !== undefined) label.title = selector.note;
-      const select = document.createElement('select');
-      select.title = `${selector.label} (${selector.kind})`;
-      for (const value of selector.values) {
-        const option = document.createElement('option');
-        option.value = value.id;
-        option.textContent = value.label;
-        option.selected = value.id === selector.value;
-        select.append(option);
-      }
-      // The resolution follows the preview's screen.
-      select.disabled = selector.kind === 'resolution';
-      select.addEventListener('change', () => {
-        viewAction({ kind: 'select', selector: selector.id, value: select.value });
-      });
-      const source = document.createElement('span');
-      source.className = 'source';
-      source.textContent = SELECTOR_SOURCES[selector.source];
-      if (selector.source === 'you') {
-        const release = document.createElement('button');
-        release.type = 'button';
-        release.className = 'release';
-        release.textContent = selector.kind === 'data' ? 'follow save' : '×';
-        release.title =
-          selector.kind === 'data' ? 'Follow the save again' : 'Back to the profile default';
-        release.addEventListener('click', () => {
-          viewAction({ kind: 'release', selector: selector.id });
-        });
-        source.append(' ', release);
-      }
-      row.append(label, select, source);
-      children.push(row);
+  const grid = document.createElement('div');
+  grid.className = 'selectors';
+  for (const selector of menu.selectors) {
+    const id = `selector-${selector.id}`;
+    const label = document.createElement('label');
+    label.htmlFor = id;
+    label.textContent = selector.label;
+    if (selector.note !== undefined) label.title = selector.note;
+    const select = document.createElement('select');
+    select.id = id;
+    select.dataset['key'] = `select:${selector.id}`;
+    select.title = `${selector.label} (${selector.kind})`;
+    for (const value of selector.values) {
+      const option = document.createElement('option');
+      option.value = value.id;
+      option.textContent = value.label;
+      option.selected = value.id === selector.value;
+      select.append(option);
     }
+    // The resolution follows the preview's screen.
+    select.disabled = selector.kind === 'resolution';
+    select.addEventListener('change', () => {
+      viewAction({ kind: 'select', selector: selector.id, value: select.value });
+    });
+    const source = document.createElement('span');
+    source.className = 'count';
+    source.textContent = SELECTOR_SOURCES[selector.source];
+    if (selector.source === 'you') {
+      const release = dialogButton(
+        `release:${selector.id}`,
+        selector.kind === 'data' ? 'Follow Save' : '×',
+        () => {
+          viewAction({ kind: 'release', selector: selector.id });
+        },
+        selector.kind === 'data' ? 'Follow the save again' : "Back to the profile's default",
+      );
+      if (selector.kind !== 'data') {
+        release.setAttribute('aria-label', `${selector.label}: back to the profile's default`);
+      }
+      source.append(' ', release);
+    }
+    grid.append(label, select, source);
   }
-  viewPopup.replaceChildren(...children);
+  children.push(grid);
+  refill(selectorsBody, selectorsPop, children);
 }
 
 canvas.addEventListener('mousemove', (event) => {
@@ -1087,6 +1114,19 @@ function show(next: ViewState): void {
         else post({ type: 'noticeAction', kind });
       });
       item.append(text, act);
+      const dismiss = notice.dismiss;
+      if (dismiss !== undefined) {
+        const close = document.createElement('button');
+        close.type = 'button';
+        close.className = 'dismiss';
+        close.textContent = '×';
+        close.title = 'Dismiss';
+        close.setAttribute('aria-label', 'Dismiss');
+        close.addEventListener('click', () => {
+          post({ type: 'noticeAction', kind: dismiss });
+        });
+        item.append(close);
+      }
       return item;
     }),
     ...links,

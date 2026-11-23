@@ -597,9 +597,11 @@ async function clickOn(
   else await click();
 }
 
-/** A view's item in the open `View ▾`. */
+/** A view's item in the open View menu. */
 function viewItem(wb: Workbench, label: string): Locator {
-  return wb.frame.locator('#view-popup .item', { hasText: new RegExp(`^. ${label}$`) });
+  return wb.frame.locator('#view-popup .item[role="menuitemradio"]', {
+    hasText: new RegExp(`^${label}(yours)?$`),
+  });
 }
 
 /** The drawn pointer of a take, for its VS Code panels. */
@@ -1047,7 +1049,7 @@ export const CLIPS: readonly Clip[] = [
       // The menu's button and its list of views, measured open before the take.
       take.mark('button', { source: 'vscode', rect: await wb.box(menu) });
       await wb.openMenu('view');
-      const items = wb.frame.locator('#view-popup .item', { hasText: /^[○●]/ });
+      const items = wb.frame.locator('#view-popup .item[role="menuitemradio"]');
       take.mark('menu', {
         source: 'vscode',
         rect: union(await wb.box(menu), await wb.box(items.first()), await wb.box(items.last())),
@@ -1136,7 +1138,7 @@ export const CLIPS: readonly Clip[] = [
     async run(context) {
       const { wb, take } = context;
       const button = wb.frame.locator('#data-menu');
-      const popup = wb.frame.locator('#data-popup');
+      const popup = wb.frame.locator('#data-pop');
       const province = popup.locator('button', { hasText: 'Province' });
       const quick = wb.page.locator('.quick-input-widget');
       const typedRow = (name: string): Locator =>
@@ -1153,8 +1155,8 @@ export const CLIPS: readonly Clip[] = [
         source: 'vscode',
         rect: union(
           await wb.box(button),
-          await wb.box(popup.locator('h4').first()),
-          await wb.box(popup.locator('.actions').last()),
+          await wb.box(popup.locator('.layer').first()),
+          await wb.box(popup.locator('.layer .row').last()),
         ),
       });
       take.mark('covers', { source: 'vscode', rect: await wb.box(popup) });

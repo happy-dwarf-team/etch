@@ -104,6 +104,7 @@ import type {
   DataAction,
   HostMessage,
   Notice,
+  NoticeActionKind,
   Point,
   PreviewMemento,
   TextureFailure,
@@ -237,6 +238,11 @@ export interface PreviewApi {
   /** Pins the previewed window, or unpins it. */
   togglePin(): void;
   /**
+   * A notice's button: Save with Encoding, or the Undo of a reset and its × (etch#648, findings
+   * P2.19 and P2.20). The window list's opens in the webview.
+   */
+  noticeAction(kind: NoticeActionKind): void;
+  /**
    * Starts the live game with the preview's playset (spec section 2), once the preview has one
    * with a game folder.
    */
@@ -360,6 +366,12 @@ export class Preview implements PreviewApi, vscode.Disposable {
   private lastDraw: HostMessage | undefined;
   /** What the host reads before the preview can draw, shown as busy (finding P2.19). */
   private busyText: string | undefined;
+  /**
+   * The last reset of the previewed window, which its notice can take back until the next
+   * change (etch#648, finding P2.20): Reset Hand Toggles in View, Clear in Data.
+   */
+  private undo:
+    { readonly window: string; readonly message: string; readonly restore: () => void } | undefined;
   private lastState: ViewState | undefined;
   /** The monitor's resolution in device pixels, as the webview last reported it. */
   private native: Screen | undefined;
@@ -613,6 +625,28 @@ export class Preview implements PreviewApi, vscode.Disposable {
         index: file.definitions.indexOf(window),
       };
     }
+    this.request();
+  }
+
+  noticeAction(kind: NoticeActionKind): void {
+    if (kind === 'changeEncoding') void this.changeEncoding();
+    else if (kind === 'undo') this.takeBackReset();
+    else if (kind === 'dismissUndo') this.forgetReset();
+  }
+
+  /** The Undo of a reset's notice: what the reset took comes back, and the notice goes. */
+  private takeBackReset(): void {
+    const undo = this.undo;
+    if (undo === undefined) return;
+    this.undo = undefined;
+    undo.restore();
+    this.request();
+  }
+
+  /** The reset's notice goes, with its × or at the next change, which redraws anyway. */
+  private forgetReset(): void {
+    if (this.undo === undefined) return;
+    this.undo = undefined;
     this.request();
   }
 
@@ -1359,20 +1393,34 @@ export class Preview implements PreviewApi, vscode.Disposable {
   private show(state: Omit<ViewState, 'pinned' | 'pinnable' | 'resolution'>): void {
     const { screen, source } = this.resolution;
     const value = resolutionValue();
+    const undo = this.undo;
+    const undoNotices: Notice[] =
+      undo === undefined || undo.window !== (this.render?.window.name ?? '').toLowerCase()
+        ? []
+        : [
+            {
+              severity: 'information',
+              message: undo.message,
+              action: { kind: 'undo', label: 'Undo' },
+              dismiss: 'dismissUndo',
+            },
+          ];
     const full: ViewState = {
       ...state,
-      notices:
-        parseResolution(value) === undefined
+      notices: [
+        ...state.notices,
+        ...(parseResolution(value) === undefined
           ? [
-              ...state.notices,
               {
-                severity: 'warning',
+                severity: 'warning' as const,
                 message:
                   `etch.${RESOLUTION_SETTING} "${value}" is not default, native or a width × ` +
                   'height such as 1920x1080; the preview uses the default.',
               },
             ]
-          : state.notices,
+          : []),
+        ...undoNotices,
+      ],
       pinned: this.pin !== undefined,
       pinnable: this.pin !== undefined || this.render !== undefined,
       resolution: { text: formatResolution(screen), source },
@@ -1451,7 +1499,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
         this.pinWindow(message.index);
         break;
       case 'noticeAction':
-        if (message.kind === 'changeEncoding') void this.changeEncoding();
+        this.noticeAction(message.kind);
         break;
       case 'startLiveGame':
         this.startLiveGame();
@@ -1474,6 +1522,22 @@ export class Preview implements PreviewApi, vscode.Disposable {
     if (render === undefined || viewed === undefined) return;
     const key = (render.window.name ?? '').toLowerCase();
     const choice = this.choices.get(key) ?? initialChoice(viewed.profile.profile);
+    this.forgetReset();
+    if (action.kind === 'resetToggles') {
+      // At once, with a notice that can take it back (etch#648, finding P2.20).
+      const toggles = choice.toggles;
+      const count = Object.keys(toggles).length;
+      if (count > 0) {
+        this.undo = {
+          window: key,
+          message: `${countOf(count, 'hand toggle')} reset: the profile's rules show and hide the widgets again.`,
+          restore: () => {
+            const now = this.choices.get(key) ?? choice;
+            this.choices.set(key, { ...now, toggles });
+          },
+        };
+      }
+    }
     if (action.kind === 'saveView') {
       await this.saveView(
         render.window.name ?? '',
@@ -1500,6 +1564,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
 
   async dataAction(action: DataAction): Promise<void> {
     const session = this.session;
+    this.forgetReset();
     const localise = (key: string): string | undefined => session?.localisation?.get(key);
     switch (action.kind) {
       case 'chooseSave': {
@@ -1566,7 +1631,16 @@ export class Preview implements PreviewApi, vscode.Disposable {
         return;
       case 'clearHand': {
         const name = this.render?.window.name;
-        if (name !== undefined) this.data.clearHand(name);
+        if (name === undefined) return;
+        // At once, with a notice that can take it back (etch#648, finding P2.20).
+        const cleared = this.data.clearHand(name);
+        if (cleared.count > 0) {
+          this.undo = {
+            window: name.toLowerCase(),
+            message: `${countOf(cleared.count, 'typed text')} cleared.`,
+            restore: cleared.restore,
+          };
+        }
         return;
       }
       case 'entries': {
@@ -2170,6 +2244,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
     if (render === undefined || viewed === undefined) return;
     const key = (render.window.name ?? '').toLowerCase();
     const choice = this.choices.get(key) ?? initialChoice(viewed.profile.profile);
+    this.forgetReset();
     this.choices.set(
       key,
       toggle.kind === 'widget'
@@ -2542,6 +2617,11 @@ function selectedLabel(entry: LaidOutWidget | undefined): string {
   if (entry === undefined) return '';
   const size = `${String(entry.width)} × ${String(entry.height)}`;
   return `${widgetLabel(entry.widget)} · ${entry.widget.kind} · ${size} at ${String(entry.x)}, ${String(entry.y)}`;
+}
+
+/** `1 hand toggle`, `2 hand toggles`. */
+function countOf(count: number, noun: string): string {
+  return `${String(count)} ${noun}${count === 1 ? '' : 's'}`;
 }
 
 function rectOf(entry: DrawRect | undefined): DrawRect {

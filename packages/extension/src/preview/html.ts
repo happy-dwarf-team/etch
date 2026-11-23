@@ -60,9 +60,21 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
   }
   #window-list .none { margin: 4px 8px; color: var(--vscode-descriptionForeground); }
   #file { min-width: 0; margin-right: 4px; color: var(--vscode-descriptionForeground); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  /* The menus of the toolbar: View ▾ (spec section 4), and Data ▾ beside it (section 5). */
+  /* View, a menu (spec section 4), and Data beside it, a dialog (section 5); Selectors… in View
+     opens a dialog too (etch#648, finding P3.16). */
   #menus { display: flex; gap: 4px; position: relative; }
-  .popup {
+  #view-popup { left: 0; right: auto; min-width: 240px; }
+  #data-pop, #selectors-pop { width: 440px; }
+  #data-pop .layer { margin: 8px 0 0; }
+  #data-pop .layer-head { display: grid; grid-template-columns: 18px 1fr auto; gap: 6px; align-items: center; }
+  #data-pop .layer > .help, #data-pop .layer > .row { margin-left: 24px; }
+  #data-pop .count, #selectors-pop .count { font-size: 0.92em; color: var(--vscode-descriptionForeground); white-space: nowrap; }
+  #data-pop .lists { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto auto; gap: 4px 8px; align-items: center; }
+  #data-pop .lists .count { min-width: 5.5em; text-align: center; }
+  #selectors-pop .selectors { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 6px 10px; align-items: center; }
+  #selectors-pop select { min-width: 0; width: 100%; }
+  .pop .help.warning { color: var(--vscode-notificationsWarningIcon-foreground); }
+  #notices li .dismiss { margin-left: auto; }
     position: absolute; z-index: 10; top: calc(100% + 2px); left: 0; min-width: 280px; max-width: 420px;
     max-height: 70vh; overflow: auto; padding: 4px 0;
     background: var(--vscode-menu-background, var(--vscode-dropdown-background));
@@ -70,20 +82,10 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
     border: 1px solid var(--vscode-menu-border, var(--vscode-dropdown-border, transparent));
     box-shadow: 0 2px 8px var(--vscode-widget-shadow, rgba(0, 0, 0, 0.36));
   }
-  .popup[hidden] { display: none; }
-  .popup h4 { margin: 6px 10px 2px; font-size: 0.85em; text-transform: uppercase; opacity: 0.7; }
-  .popup .item {
     display: flex; align-items: center; justify-content: flex-start; gap: 6px; width: 100%; height: auto;
     min-height: 24px; box-sizing: border-box; padding: 2px 10px; border: 0; border-radius: 0;
     background: none; text-align: left; white-space: normal; cursor: pointer;
   }
-  .popup .item:hover:not(:disabled) { background: var(--vscode-menu-selectionBackground, var(--vscode-list-hoverBackground)); }
-  .popup .item:disabled { opacity: 0.5; cursor: default; }
-  .popup .row { display: grid; grid-template-columns: 1fr auto auto; gap: 6px; align-items: center; padding: 2px 10px; }
-  .popup select { font: inherit; max-width: 170px; }
-  .popup .source { font-size: 0.85em; opacity: 0.75; }
-  .popup .release { padding: 0 4px; }
-  .popup hr { border: 0; border-top: 1px solid var(--vscode-menu-separatorBackground, var(--vscode-panel-border, #555)); margin: 4px 0; }
   #notices { margin: 0; padding: 0; list-style: none; }
   #notices li {
     padding: 4px 8px; border-left: 3px solid var(--vscode-notificationsInfoIcon-foreground);
@@ -92,14 +94,6 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
   #notices li.warning { border-color: var(--vscode-notificationsWarningIcon-foreground); }
   #notices li.error { border-color: var(--vscode-notificationsErrorIcon-foreground); }
   #notices li.link, #notices li.action { display: flex; align-items: center; gap: 8px; }
-  .popup .layer { display: grid; grid-template-columns: auto 1fr auto; gap: 6px; align-items: baseline; padding: 2px 10px; }
-  .popup .layer .count { font-size: 0.85em; opacity: 0.75; }
-  .popup .layer.list { grid-template-columns: 1fr auto auto auto; }
-  .popup .layer.list button { min-width: 1.8em; }
-  .popup .detail { padding: 0 10px 2px 30px; font-size: 0.85em; opacity: 0.8; }
-  .popup .actions { display: flex; flex-wrap: wrap; gap: 4px; padding: 2px 10px 4px 30px; }
-  .popup .warning { color: var(--vscode-notificationsWarningIcon-foreground); }
-  .popup .note { padding: 2px 10px; font-size: 0.85em; opacity: 0.85; }
   /* The backdrop fills the panel, so that a fitted window sits in the middle of it; a dashed
      line marks the edge of the screen where it is in view (etch#648, finding P1.3). */
   main { flex: 1; min-height: 0; position: relative; overflow: hidden; background: ${BACKDROP}; }
@@ -148,10 +142,9 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
   <span id="pinned" title="The preview stays on this window while you edit. Choose Follow the cursor in the window list to follow the cursor again." hidden>Pinned</span>
   <span id="file"></span>
   <span id="menus">
-    <button id="view-menu" type="button" aria-haspopup="true" aria-expanded="false" hidden>View ▾</button>
-    <div id="view-popup" class="popup" role="menu" hidden></div>
-    <button id="data-menu" type="button" aria-haspopup="true" aria-expanded="false" hidden>Data ▾</button>
-    <div id="data-popup" class="popup" role="menu" hidden></div>
+    <button id="view-menu" class="field" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="view-popup" hidden>View</button>
+    <div id="view-popup" class="menu" role="menu" aria-label="View" hidden></div>
+    <button id="data-menu" class="field" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="data-pop" hidden>Data</button>
   </span>
   <span class="spacer"></span>
   ${zoomControl({ wheel: 'Ctrl+wheel' })}
@@ -161,6 +154,15 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
 <div id="windows-pop" class="pop" role="dialog" aria-label="Previewed window" hidden>
   <input id="window-filter" type="text" spellcheck="false" placeholder="Filter the windows" aria-label="Filter the windows" aria-controls="window-list">
   <div id="window-list" role="listbox" aria-label="Windows"></div>
+</div>
+<div id="selectors-pop" class="pop" role="dialog" aria-labelledby="selectors-title" hidden>
+  <div class="pop-head"><span id="selectors-title">Selectors</span><span class="muted">of the window profile</span><span class="spacer"></span><button type="button" data-close title="Close (Esc)" aria-label="Close">×</button></div>
+  <div id="selectors-body"></div>
+  <p class="help">The word after a value says where it came from: <b>you</b> or the view you chose, the <b>save</b>, the <b>live</b> game, the preview's resolution (<b>auto</b>) or the profile's <b>default</b>. The screen height follows the preview's resolution.</p>
+</div>
+<div id="data-pop" class="pop" role="dialog" aria-labelledby="data-title" hidden>
+  <div class="pop-head"><span id="data-title">Sample data</span><span class="muted">upper layers win</span><span class="spacer"></span><button type="button" data-close title="Close (Esc)" aria-label="Close">×</button></div>
+  <div id="data-body"></div>
 </div>
 <ul id="notices" aria-live="polite"></ul>
 <main id="stage">
