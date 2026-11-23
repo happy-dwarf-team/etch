@@ -90,8 +90,9 @@ comparison compares them as it does the corpus (`compare --corpus`).
 | anbennar-alone | crawled | Anbennar without UI mods: its own windows |
 | bigger-ui | vanilla's views | the **holdout**: Bigger UI V1.37, which changes 21 `.gui` files and which Etch was never tuned on. It is measured once, before any fix the survey leads to, and reported apart, as the measure of how well what the survey confirms carries over to a mod nobody looked at |
 
-Views are captured at 1920×1080; the views whose windows have another variant
-at 1280×720 are captured there too.
+Views are captured at 1920×1080 and at 1280×720. Until 23 November 2026 only the
+views whose windows have another variant at 1280×720 were captured there; since
+then every view is, as the gate measures both sizes.
 
 ## Other countries
 
