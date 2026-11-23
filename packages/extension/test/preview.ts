@@ -296,13 +296,19 @@ async function testResolution(preview: PreviewApi): Promise<void> {
     JSON.stringify(preview.notices),
   );
 
-  // The command: the first choice is the default, which removes the setting.
+  // The command opens on the current choice, so Enter keeps it; the default, which removes the
+  // setting, comes next.
   await writeResolution('1366x768');
   await preview.idle();
-  const chosen = vscode.commands.executeCommand<string | undefined>(CHOOSE_RESOLUTION);
+  const kept = vscode.commands.executeCommand<string | undefined>(CHOOSE_RESOLUTION);
   await new Promise((resolve) => setTimeout(resolve, 500));
   await vscode.commands.executeCommand('workbench.action.acceptSelectedQuickOpenItem');
-  assert.equal(await chosen, 'default');
+  assert.equal(await kept, '1366x768', 'the list opens on the current choice');
+  const chosen = vscode.commands.executeCommand<string | undefined>(CHOOSE_RESOLUTION);
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  await vscode.commands.executeCommand('workbench.action.quickOpenSelectNext');
+  await vscode.commands.executeCommand('workbench.action.acceptSelectedQuickOpenItem');
+  assert.equal(await chosen, 'default', 'the default follows the current choice');
   assert.equal(settings.inspect(RESOLUTION_SETTING)?.globalValue, undefined);
   await preview.idle();
   assert.deepEqual(preview.resolution, {
