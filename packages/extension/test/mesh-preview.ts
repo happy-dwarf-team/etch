@@ -139,15 +139,19 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
   const shown = await open(api, mesh);
   assert.ok(shown.ok, `the mesh shows: ${shown.ok ? '' : shown.message}`);
   // The normal map (tilted along x) and the specular map's highlight change what is drawn.
-  const withMaps = await measure(api, mesh, {});
+  const allOnSummary = await controlled(api, mesh, {});
+  assert.ok(allOnSummary.drawn !== undefined);
+  const withMaps = allOnSummary.drawn;
   assert.ok(withMaps.pixels > 0, 'the mesh is drawn');
   // Each map on its own: Normal, Spec and Diffuse off each change it, and all on again draws as
   // before.
-  const noNormal = await measure(api, mesh, { maps: { normal: false } });
+  const noNormalSummary = await controlled(api, mesh, { maps: { normal: false } });
+  assert.ok(noNormalSummary.drawn !== undefined);
+  const noNormal = noNormalSummary.drawn;
   assert.notDeepEqual(
     noNormal.mean,
     withMaps.mean,
-    `Normal off: ${JSON.stringify(noNormal)}, all on: ${JSON.stringify(withMaps)}`,
+    `Normal off: ${JSON.stringify(noNormalSummary)}, all on: ${JSON.stringify(allOnSummary)}`,
   );
   const noMaps = await measure(api, mesh, { maps: { specular: false } });
   assert.notDeepEqual(noMaps.mean, noNormal.mean, `Normal and Spec off: ${String(noMaps.mean)}`);
