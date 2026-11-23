@@ -113,7 +113,11 @@ export interface MeshSummary {
    * the background colour) and their mean colour, read back right after a frame drawn with the
    * new controls.
    */
-  readonly drawn?: { readonly pixels: number; readonly mean: readonly [number, number, number] };
+  readonly drawn?: {
+    readonly pixels: number;
+    readonly mean: readonly [number, number, number];
+    readonly canvas?: string;
+  };
 }
 
 /**

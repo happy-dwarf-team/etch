@@ -1656,7 +1656,11 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
         }
       }
       render(performance.now());
-      vscode.postMessage({ type: 'shown', summary: { ...summary(), drawn: drawnColour(gl) } });
+      const canvasSize = `${String(canvas.clientWidth)}x${String(canvas.clientHeight)}@${String(window.devicePixelRatio)} buffer ${String(gl.drawingBufferWidth)}x${String(gl.drawingBufferHeight)} body ${String(document.body.clientHeight)} main ${String(canvas.parentElement?.clientHeight ?? -1)}`;
+      vscode.postMessage({
+        type: 'shown',
+        summary: { ...summary(), drawn: { ...drawnColour(gl), canvas: canvasSize } },
+      });
     } else if (message.type === 'place') {
       // Only the province still asked for: a reply to an earlier one is dropped.
       if (String(message.province) !== placeInput.value) return;
