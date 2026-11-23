@@ -209,12 +209,12 @@ not write makes the search read all its 14,188 text files.
 ## Planned restarts
 
 A planned restart has a cause from the table, a visible stale window or the HUD
-limit. Etch shows "Restart needed: <reason>" with **Restart now** and
+limit. Etch shows "Restart needed: <reason>" with **Restart Now** and
 **Later**; until then the live game is `stale`: reloads wait, and the status
 bar item says so and restarts it on a click. Etch never restarts a played game
 without the click, except after a crash.
 
-**Restart now** saves through the plugin (`autosave.eu4`, as for a stop),
+**Restart Now** saves through the plugin (`autosave.eu4`, as for a stop),
 closes the game and starts it again from the newest private save, which is
 that one, with VS Code's progress shown. In any playset it answers the
 achievements notice and is ready once the save is loaded (start, step 6). A

@@ -69,7 +69,7 @@ and play as usual.
 - Save the `.gui` file of a window such as the province view, a localisation file or a texture,
   and the game [loads it again](https://etch.happydwarf.dev/docs/live-game/reload-on-save/): the
   change shows in its own window. Other files, such as `.gfx` files and events, need a restart,
-  which Etch does when you click **Restart now**.
+  which Etch does when you click **Restart Now**.
 - In [pick mode](https://etch.happydwarf.dev/docs/live-game/pick-mode/), which
   <kbd>Ctrl+Shift+E</kbd> turns on in the game, click a widget: VS Code opens the line that
   defines it.
