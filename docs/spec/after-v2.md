@@ -1060,6 +1060,28 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
      other text there is not known.
   2. Read the evaluators and the update in the lab's analysis (the research's
      open questions 1–5), checked live with a test mod and `reload particle`.
+     Done 23 November 2026 in the lab's analysis. Read: a value is its numbers
+     with its curves applied in order (add, multiply, absolute), then a uniform
+     draw of ± its variation; a curve is 64 samples of a Catmull-Rom spline
+     between `minValue` and `maxValue`, read linearly at its time (`spawn`,
+     `system` with `repeat`, `life_abs` in seconds, `life` as a fraction);
+     emission accumulates per second up to `max_amount`, bursts only when
+     `duration` is below 0; the velocity direction from pitch and yaw goes
+     through the emitter's and the model's rotation; forces add up as
+     acceleration divided by `mass`, and the pdxparticle `scale` scales size,
+     speed and travel; a sprite-sheet tile is drawn at random per particle;
+     `sort` orders by depth, distance or age; particles are depth-tested but
+     do not write depth. Checked in the game (Steam 1.37.5, siege smoke over
+     Trier, `reload assets`; `reload particle` does not read the files again):
+     the error-log lines for an unknown key (`Unexpected token`), curve
+     (`Couldn't find animation`) and force (`Couldn't find particle force`),
+     random tiles, `hide`, `max_amount`, bursts every
+     `emission_pulse_duration` + `emission_pulse_silence` seconds, and a
+     direction that turns with the model. Open: the sign of a `point` force,
+     the turbulence formula, `spin` units, how a trail is drawn without its
+     shader effect, and how event times follow a state's `animation_speed`.
+     The warnings and hovers of step 1 now quote these log lines and mark the
+     keys checked here as the game's.
   3. A `prototype/*` branch of an approximate player in the entity preview
      (billboards, the three blend modes, emission, life, velocity cone, size
      and colour curves, the forces step 2 settles), compared against a capture

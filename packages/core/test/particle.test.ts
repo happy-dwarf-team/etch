@@ -58,32 +58,32 @@ describe('checkParticleBlocks', () => {
       [
         'unknown-particle-key',
         'subsystm',
-        'The game does not read "subsystm" in a particle block, so it has no effect. Did you mean "subsystem"?',
+        'The game does not read "subsystm" in a particle block, so it has no effect. Did you mean "subsystem"? The game writes in its error log: Unexpected token: subsystm.',
       ],
       [
         'unknown-particle-key',
         'lifee',
-        'The game does not read "lifee" in a subsystem block, so it has no effect. Did you mean "life"?',
+        'The game does not read "lifee" in a subsystem block, so it has no effect. Did you mean "life"? The game writes in its error log: Unexpected token: lifee.',
       ],
       [
         'unknown-particle-key',
         'colour',
-        'The game does not read "colour" in a subsystem block, so it has no effect. Did you mean "color"?',
+        'The game does not read "colour" in a subsystem block, so it has no effect. Did you mean "color"? The game writes in its error log: Unexpected token: colour.',
       ],
       [
         'unknown-particle-key',
         'fil',
-        'The game does not read "fil" in a texture block, so it has no effect. Did you mean "file"?',
+        'The game does not read "fil" in a texture block, so it has no effect. Did you mean "file"? The game writes in its error log: Unexpected token: fil.',
       ],
       [
         'unknown-particle-key',
         'duraton',
-        'The game does not read "duraton" in an animation block, so it has no effect. Did you mean "duration"?',
+        'The game does not read "duraton" in an animation block, so it has no effect. Did you mean "duration"? The game writes in its error log: Unexpected token: duraton.',
       ],
       [
         'unknown-particle-key',
         'strength',
-        'The game does not read "strength" in a force block, so it has no effect.',
+        'The game does not read "strength" in a force block, so it has no effect. The game writes in its error log: Unexpected token: strength.',
       ],
     ]);
   });
@@ -114,10 +114,13 @@ describe('checkParticleBlocks', () => {
       ['unknown-particle-curve', 'missing'],
     ]);
     expect(check(text)[0]?.message).toBe(
-      'No animation of this particle effect is named "size_increse". The game writes no error for this, so check the name. Did you mean "size_increase"?',
+      'No animation block of this particle effect is named "size_increse". Did you mean "size_increase"? The game leaves the curve out and writes in its error log: Couldn\'t find animation "size_increse".',
+    );
+    expect(check(text.replace('\tname = "x"\n', ''))[3]?.message).toBe(
+      'No force block of this particle effect is named "gravty". Did you mean "gravity"? The game leaves the force out and writes in its error log: Couldn\'t find particle force "gravty".',
     );
     expect(check(text)[3]?.message).toBe(
-      'No force of this particle effect is named "gravty". The game writes no error for this, so check the name. Did you mean "gravity"?',
+      'No force block of this particle effect is named "gravty". Did you mean "gravity"? The game leaves the force out and writes in its error log: Couldn\'t find particle force "gravty" in: x.',
     );
   });
 
@@ -258,7 +261,12 @@ describe('particleHoverAt', () => {
       /^\*\*`subsystem`\*\* in a particle block/,
     );
     expect(hover('particle = { subsystem = { hide = yes } }', 'hide')?.markdown).toBe(
-      '**`hide`** in a subsystem block\n\nTakes `yes` or `no`.\n\nThe game reads this key. Etch does not know what it does.',
+      '**`hide`** in a subsystem block\n\nTakes `yes` or `no`.\n\nWith `yes`, the emitter sends out no particles.',
+    );
+    expect(
+      hover('particle = { subsystem = { slave_particles = 1 } }', 'slave_particles')?.markdown,
+    ).toBe(
+      '**`slave_particles`** in a subsystem block\n\nTakes a whole number.\n\nThe game reads this key. Etch does not know what it does.',
     );
   });
 

@@ -45,9 +45,10 @@ warning shows in VS Code's Problems panel (<kbd>Ctrl+Shift+M</kbd>), with "Etch"
 
 - **A key the game does not read**, such as `lifee`. The game does not use it. The warning names
   the key you probably meant, here `life`.
-- **A curve or force name the effect does not have**, such as `size_increse`. The game writes no
-  error for this, so it is easy to miss. The `animation` or `force` block must be in the same
-  `particle` block.
+- **A curve or force name with no `animation` or `force` block of that name in the same
+  `particle` block**, such as `size_increse`. The game leaves the curve or force out. It writes one
+  line about it in its error log, among many others, so it is easy to miss. The warning names the
+  curve or force you probably meant, here `size_increase`.
 - **A curve's `time` that the game reads as `spawn`.** The game knows only `life`, `life_abs`,
   `system` and `spawn`, in lowercase. The base game's files have a comment `# Life`, but
   `time = "Life"` counts as `spawn`. Then the curve does not follow the life of each particle: by
