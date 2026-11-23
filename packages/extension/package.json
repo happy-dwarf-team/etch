@@ -164,7 +164,7 @@
           {
             "id": "colourScripts",
             "title": "Colour your script files",
-            "description": "Etch adds no colours of its own: without another extension, VS Code opens script files, such as .gui, .gfx and event files, as Plain Text, all in one colour. **CWTools** or **ParadoxCode** colours their keywords, numbers and comments, and you can use either together with Etch. ParadoxCode is only on the VS Code Marketplace, not on Open VSX. This step ticks itself once one of them is installed.\n[Install CWTools](command:workbench.extensions.installExtension?%5B%22tboby.cwtools-vscode%22%5D)\n[Install ParadoxCode](command:workbench.extensions.installExtension?%5B%22ParadoxCode.paradoxcode-vscode%22%5D)",
+            "description": "Etch adds no colours to script files, such as .gui, .gfx and event files. Without another extension, VS Code opens them as Plain Text, all in one colour. **CWTools** or **ParadoxCode** colours their keywords, numbers and comments, and you can use either together with Etch. ParadoxCode is only on the VS Code Marketplace, not on Open VSX. This step ticks itself once one of them is installed.\n[Install CWTools](command:workbench.extensions.installExtension?%5B%22tboby.cwtools-vscode%22%5D)\n[Install ParadoxCode](command:workbench.extensions.installExtension?%5B%22ParadoxCode.paradoxcode-vscode%22%5D)",
             "media": {
               "svg": "media/walkthrough/colour-scripts.svg",
               "altText": "A script file in one colour as Plain Text, and the same file coloured by CWTools or ParadoxCode"

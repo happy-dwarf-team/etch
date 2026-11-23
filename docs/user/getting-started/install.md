@@ -97,8 +97,8 @@ show the main things Etch does, each with a button that does it:
 3. **Find a widget in the Widget Outline**: **Show the Widget Outline** opens it in the Explorer.
 4. **Fill texts with sample data**: what **Data ▾** in the preview does.
 5. **Start the live game (optional)**: **Start the Live Game**.
-6. **Colour your script files**: **Install CWTools** or **Install ParadoxCode** installs one of
-   the two extensions of [Coloured text in script files](#coloured-text-in-script-files).
+6. **Colour your script files**: **Install CWTools** or **Install ParadoxCode** installs that
+   extension. [Coloured text in script files](#coloured-text-in-script-files) says what each does.
 
 A step ticks itself when you have done it, whether with its button or not: when Etch finds the
 game, when a preview opens, when the Widget Outline shows, when you open the sample data step,
