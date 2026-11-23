@@ -298,6 +298,12 @@ export interface EntityParticleEffect {
   /** The pdxparticle type's `scale`, 1 when it has none. */
   readonly scale: number;
   readonly system: ParticleSystem;
+  /** `keep_particle = yes`: it goes on, stopped, when another state is picked. */
+  readonly keepParticle: boolean;
+  /** `trigger_once = yes`: it starts in the state's first loop only. */
+  readonly triggerOnce: boolean;
+  /** The state's `state_time`, how long a state with no animation lasts; `undefined` without. */
+  readonly stateTime: number | undefined;
 }
 
 /** Messages from the mesh webview. */

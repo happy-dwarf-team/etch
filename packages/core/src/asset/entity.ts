@@ -52,6 +52,11 @@ export interface EntityState {
   readonly animation: string | undefined;
   /** The state's `event` blocks: a particle effect started on a bone, seconds into the state. */
   readonly events: readonly EntityEvent[];
+  /**
+   * `state_time` (or `loop_time`): how long a state with no animation lasts before it starts
+   * again; `undefined` without one.
+   */
+  readonly stateTime: number | undefined;
 }
 
 /**
@@ -63,6 +68,10 @@ export interface EntityEvent {
   /** The bone it starts on; `undefined` for the entity's origin. */
   readonly node: string | undefined;
   readonly particle: string | undefined;
+  /** `keep_particle = yes`: the effect goes on, stopped, after the state ends. */
+  readonly keepParticle: boolean;
+  /** `trigger_once = yes`: the event starts its effect in the state's first loop only. */
+  readonly triggerOnce: boolean;
 }
 
 /**
@@ -122,6 +131,18 @@ function blocksOf(block: BlockNode | ParsedScript, key: string): BlockNode[] {
       ? [entry.value]
       : [],
   );
+}
+
+/** The number of the last of `keys` the block writes (`2.0f` reads as 2). */
+function lastNumber(block: BlockNode, keys: readonly string[]): number | undefined {
+  let found: number | undefined;
+  for (const entry of block.entries) {
+    if (entry.kind !== 'property' || entry.value?.kind !== 'scalar') continue;
+    if (!keys.includes(keyOf(entry))) continue;
+    const value = Number.parseFloat(entry.value.text);
+    if (Number.isFinite(value)) found = value;
+  }
+  return found;
 }
 
 function numberOf(block: BlockNode, key: string): number | undefined {
@@ -225,7 +246,10 @@ export function readAssetFile(
                 time: numberOf(event, 'time'),
                 node: scalarOf(event, 'node')?.text,
                 particle: scalarOf(event, 'particle')?.text,
+                keepParticle: scalarOf(event, 'keep_particle')?.text.toLowerCase() === 'yes',
+                triggerOnce: scalarOf(event, 'trigger_once')?.text.toLowerCase() === 'yes',
               })),
+              stateTime: lastNumber(state, ['state_time', 'loop_time']),
             },
           ];
     });
@@ -318,6 +342,7 @@ export interface ResolvedState {
   /** Why `file` is missing, for a state that names an animation. */
   readonly problem: string | undefined;
   readonly events: readonly ResolvedEvent[];
+  readonly stateTime: number | undefined;
 }
 
 /** A state event resolved through the pdxparticle types, and what the game logs when it fails. */
@@ -447,8 +472,9 @@ function resolve(index: EntityIndex, name: string, path: readonly string[]): Res
       if (problem !== undefined && !problems.includes(problem)) problems.push(problem);
       return resolved.event;
     });
+    const stateTime = state.stateTime;
     if (state.animation === undefined)
-      return { name: state.name, file: undefined, problem: undefined, events };
+      return { name: state.name, file: undefined, problem: undefined, events, stateTime };
     const type = pdxmesh?.animations.get(state.animation);
     if (type === undefined) {
       return {
@@ -456,6 +482,7 @@ function resolve(index: EntityIndex, name: string, path: readonly string[]): Res
         file: undefined,
         problem: `pdxmesh "${own.pdxmesh ?? ''}" has no animation id "${state.animation}"`,
         events,
+        stateTime,
       };
     }
     const animation = index.animations.get(type);
@@ -465,9 +492,10 @@ function resolve(index: EntityIndex, name: string, path: readonly string[]): Res
         file: undefined,
         problem: `no animation "${type}" in the .asset files`,
         events,
+        stateTime,
       };
     }
-    return { name: state.name, file: animation.file, problem: undefined, events };
+    return { name: state.name, file: animation.file, problem: undefined, events, stateTime };
   });
   const attachments: ResolvedEntity['attachments'][number][] = [];
   for (const group of own.attach) {

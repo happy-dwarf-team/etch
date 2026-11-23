@@ -32,7 +32,7 @@ const UNITS = `entity = {
   pdxmesh = "soldier_mesh"
   state = { name = "idle" animation = "idle" }
   state = { name = "walk" animation = "walk" }
-  state = { name = "death" event = { time = 0.25 node = "muzzle" particle = "musket_flash" } event = { particle = "dust" } }
+  state = { name = "death" event = { time = 0.25 node = "muzzle" particle = "musket_flash" keep_particle = yes } event = { particle = "dust" trigger_once = yes } loop_time = 2.0f }
   attach = { name = "weapon" Right_hand_node = "spear" }
   attach = { Back_node = "flag" }
 }
@@ -162,9 +162,23 @@ describe('resolveEntity', () => {
         problem: undefined,
         // A state's particle events, with or without a time and a bone.
         events: [
-          { time: 0.25, node: 'muzzle', particle: 'musket_flash' },
-          { time: undefined, node: undefined, particle: 'dust' },
+          {
+            time: 0.25,
+            node: 'muzzle',
+            particle: 'musket_flash',
+            keepParticle: true,
+            triggerOnce: false,
+          },
+          {
+            time: undefined,
+            node: undefined,
+            particle: 'dust',
+            keepParticle: false,
+            triggerOnce: true,
+          },
         ],
+        // `loop_time` is a name of `state_time`; the game reads `2.0f` as 2.
+        stateTime: 2,
       },
     ]);
     expect(

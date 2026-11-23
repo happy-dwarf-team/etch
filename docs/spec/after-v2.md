@@ -1112,6 +1112,29 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
      siege smoke over `westerngfx_city_0` rises and leans the same way but is
      darker on the preview's background, and its size next to the city is not
      compared, since how the map scales a city entity is not known.
+  4. Settle step 3's guesses from the lab's analysis and a test in the game.
+     Done 23 November 2026. Read and now followed: a `point` force pushes away
+     from its centre for a positive amount, at the same strength at any
+     distance (checked live: a point below the siege smoke lifts it into a
+     tall column, a negative one keeps it low); a force's centre is its
+     `position` times the scale, moved (not turned) with the node for
+     `local_force`; a `vortex` uses its direction as written; turbulence is
+     the game's field (256 turning gradients per turbulence force, gradient
+     noise with linear weights, three shifted samples, a push of exactly the
+     amount), from Etch's own random numbers; an event starts when the
+     state's time passes its time, on each wrap when that time is outside the
+     clip, once in a state with no clip unless `state_time` (or `loop_time`)
+     loops it, each start a new copy; `trigger_once` limits it to the state's
+     first round; on a state change only `keep_particle` effects stay, and
+     those that would emit forever stop emitting; a trail is a strip through
+     its subsystem's particles in spawn order, two vertices per particle at ±
+     its size across the strip, facing the camera with `billboard`. Still
+     differing, listed on the user page: the random numbers; `spin`, whose
+     reading (a push along the chord of the turn) runs away at `amount = 1`
+     while the game's stream bends only a little and is gone at π, so the
+     preview keeps step 3's turn of `amount` radians a second; the trail's
+     look without a `Trail` shader effect, which vanilla lacks; `childsystem`
+     (not used in vanilla) and `time_offset` (not used in vanilla), not run.
 
 Small unknowns, none worth an issue yet.
 

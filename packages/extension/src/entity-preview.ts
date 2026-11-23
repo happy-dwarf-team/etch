@@ -263,6 +263,9 @@ async function entityMessage(
           name: event.particle,
           scale: event.pdxparticle?.scale ?? 1,
           system,
+          keepParticle: event.keepParticle,
+          triggerOnce: event.triggerOnce,
+          stateTime: state.stateTime,
         });
       }
       if (state.file !== undefined) animationPaths.add(state.file);
