@@ -40,6 +40,7 @@ import {
 import { gamePathOf } from './live-game/pick.ts';
 import { linkedFiles } from './script-profile-view.ts';
 import { pathUri } from './dlc-files.ts';
+import { registerProvinceNames } from './province-names.ts';
 
 export const CHECK_PROVINCE_IDS = 'etch.checkProvinceIds';
 
@@ -69,6 +70,9 @@ export class ProvinceIdDiagnostics implements vscode.Disposable {
   private readonly checked = new Set<string>();
   private map: Promise<PlaysetMap | undefined> | undefined;
   private disposed = false;
+  private readonly refreshed = new vscode.EventEmitter<void>();
+  /** Fires when the playset and its map are to be read again; the province names follow it. */
+  readonly onDidRefresh = this.refreshed.event;
 
   private readonly output: vscode.LogOutputChannel;
 
@@ -105,6 +109,7 @@ export class ProvinceIdDiagnostics implements vscode.Disposable {
    */
   refresh(): void {
     this.map = undefined;
+    this.refreshed.fire();
     for (const document of vscode.workspace.textDocuments) this.schedule(document);
     for (const key of this.checked) {
       if (!vscode.workspace.textDocuments.some((open) => open.uri.toString() === key)) {
@@ -113,7 +118,8 @@ export class ProvinceIdDiagnostics implements vscode.Disposable {
     }
   }
 
-  private playsetMap(): Promise<PlaysetMap | undefined> {
+  /** The playset, its map's province ids and its names, read once until a refresh. */
+  playsetMap(): Promise<PlaysetMap | undefined> {
     this.map ??= (async () => {
       const linked = await linkedFiles();
       if (linked === undefined) return undefined;
@@ -322,6 +328,7 @@ export class ProvinceIdDiagnostics implements vscode.Disposable {
     this.timers.clear();
     vscode.Disposable.from(...this.subscriptions).dispose();
     this.collection.dispose();
+    this.refreshed.dispose();
   }
 }
 
@@ -424,11 +431,15 @@ function positionIn(text: string, offset: number): vscode.Position {
   return new vscode.Position(lineOf(text, offset) - 1, offset - start);
 }
 
-/** Registers the diagnostics and Etch: Check Province IDs and Names in the Playset. */
+/**
+ * Registers the diagnostics, Etch: Check Province IDs and Names in the Playset and the province
+ * names after the ids it reads.
+ */
 export function registerProvinceIds(output: vscode.LogOutputChannel): vscode.Disposable {
   const diagnostics = new ProvinceIdDiagnostics(output);
   return vscode.Disposable.from(
     diagnostics,
+    registerProvinceNames(diagnostics, output),
     vscode.commands.registerCommand(CHECK_PROVINCE_IDS, () => diagnostics.checkPlayset()),
   );
 }

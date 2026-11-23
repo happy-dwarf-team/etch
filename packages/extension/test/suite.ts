@@ -16,6 +16,7 @@ import { testGameText } from './game-text.ts';
 import { testNavigation } from './navigation.ts';
 import { testPreviewBudget } from './preview-budget.ts';
 import { testProvinceIds } from './province-ids.ts';
+import { testProvinceNames } from './province-names.ts';
 import { testParticleDiagnostics } from './particle-diagnostics.ts';
 import { testSaveBudget } from './save-budget.ts';
 import { testScriptProfile } from './script-profile.ts';
@@ -92,6 +93,7 @@ export async function run(): Promise<void> {
   await testData(api);
   await testScriptProfile();
   await testProvinceIds();
+  await testProvinceNames();
   await testParticleDiagnostics();
   await testScriptedSkeleton(api);
   await testTexturePreview(api);

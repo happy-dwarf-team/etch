@@ -427,6 +427,19 @@ refresh is a step of the 3.0.0 release.
   line in the winning `.yml`. The localisation is read again after a `.yml`
   is saved; `etch.editor.localisationHints` turns the hints off.
 
+- **Province names after province ids (etch#648, P3.14).** Each integer that
+  the province id check reads as a province id (`provinceIdsIn`: the
+  `PROVINCE_ID_KEYS` values, `151 = { … }` scopes, the folders' province lists
+  and the playset's scripted calls' province arguments) gets the text of
+  `PROV<id>` in `etch.language` as an inlay hint, in the plain form of profile
+  labels, with the key and its file in the tooltip. An id the map does not
+  have gets none, since its warning says why. Only the `PROV<id>` lines of the
+  playset's `.yml` files are parsed (`keepLocalisationKeys`), again after a
+  `.yml` is saved or the check reads the playset again;
+  `etch.editor.provinceNames` turns the names off. Vanilla's script files give
+  25,406 such ids, all named in English; the budget is in
+  [budgets.md](../budgets.md).
+
 - **The live game's start report (ADR 0007, part 1).** The `error.log` lines
   the game wrote while it loaded go to Problems on the edited mod's files, as
   "Etch game start": on the line or the window the game names, on the file's

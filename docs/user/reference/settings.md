@@ -16,7 +16,7 @@ They come in four groups, which the list at the left of Settings also shows unde
 
 - **Game**: the game folder (`etch.gamePath`) first, then the playset and the language;
 - **Editor**: what Etch adds to the editor, such as completion and the grey texts after
-  localisation keys;
+  localisation keys and province IDs;
 - **Preview**: the screen size the preview lays windows out on;
 - **Live Game**: checking files on save and the pick mode key.
 

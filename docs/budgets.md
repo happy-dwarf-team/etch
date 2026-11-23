@@ -159,6 +159,29 @@ The first Anbennar load read its files from disk, the second from the file cache
 proposed with ADR 0008 and in force since its acceptance on 22 November 2026: 2 s for the load
 on Anbennar from disk, and 50 ms for a document version of Anbennar's largest event file.
 
+### 2026-11-23, province names (etch#648 P3.14, against the budget above)
+
+The core's functions outside VS Code (Node, the files in the file cache), as the province names'
+`provideInlayHints` uses them:
+
+- `loadPlaysetLocalisation` in English with only the `PROV<id>` keys, as the names load it once;
+  `loadProvinceIds`, the province id check's index of the map and the scripted calls, which the
+  names share with the check;
+- then, for every file the check reads (`isProvinceIdScriptPath`), the work on a new document
+  version: `parseScript`, `provinceIdsIn`, and the map check, lookup and `plainLabelText` of each
+  id.
+
+Two runs each gave the same times within 10 % (the slowest files within 60 %, at a few ms).
+
+| Playset | Names | Load | Index | Files | Ids, names | Per file median / p95 | Slowest files |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Vanilla | 3,925 | 38–40 ms | 66–76 ms | 7,817 | 25,406, 25,406 | 0.0 / 0.1 ms | `customizable_localization/00_customizable_localization_FR.txt` (5,441,887 characters, no ids) 35–39 ms; `common/achievements.txt` (857 names) 4.5 ms |
+| Anbennar (Workshop 1385440355) over the game | 6,707 | 117–121 ms | 276–277 ms | 13,623 | 73,582, 73,531 | 0.0 / 0.3 ms | `events/Flavour_Feiten_Y20.txt` (906,626 characters, 4,047 names) 7.8 ms; `customizable_localization/anb_custom_loca.txt` (157 names) 7.7–12.5 ms |
+
+Both stay inside the budget: the load is a tenth of the localisation hints' (the other keys' lines
+are dropped before they are parsed), and Anbennar's largest event file takes under a fifth of the
+50 ms. The ids without a name are those whose `PROV<id>` the playset does not define.
+
 ### 2026-11-21, sprite references (ADR 0008, reported, not gated)
 
 The core's functions outside VS Code (Node, the files in the file cache), as
