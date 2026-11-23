@@ -51,7 +51,7 @@ async function tickOnce(state: vscode.Memento, ticked: string, step: string): Pr
   );
 }
 
-/** Registers Etch: Get Started and keeps the first and the sixth step of the walkthrough up to date. */
+/** Registers Etch: Get Started and keeps the walkthrough's first and sixth steps up to date. */
 export function registerOnboarding(
   output: vscode.LogOutputChannel,
   state: vscode.Memento,
