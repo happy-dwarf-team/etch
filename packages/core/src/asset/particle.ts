@@ -66,11 +66,15 @@ const SUBSYSTEM: [string, ParticleKeyDoc][] = [
     'max_amount',
     doc(
       'a whole number, without curves or variation',
-      'The most particles of this emitter alive at the same time.',
+      'The most particles of this emitter alive at the same time. Once that many are alive, the emitter sends out no more until some die.',
+      'game',
     ),
   ],
   ['sort', doc('`depth`, `distance` or `age`', 'The order in which its particles are drawn.')],
-  ['invert', unknown(YES_NO)],
+  [
+    'invert',
+    doc(YES_NO, 'With `yes`, the particles are drawn in the reverse order of `sort`.', 'game'),
+  ],
   [
     'texture',
     doc(
@@ -102,8 +106,22 @@ const SUBSYSTEM: [string, ParticleKeyDoc][] = [
     ),
   ],
   ['emission', doc(VALUE, 'How many particles the emitter sends out each second.')],
-  ['emission_pulse_duration', doc(VALUE, 'For bursts of particles: how long each burst lasts.')],
-  ['emission_pulse_silence', doc(VALUE, 'For bursts of particles: the pause between two bursts.')],
+  [
+    'emission_pulse_duration',
+    doc(
+      SECONDS,
+      'For bursts of particles: how long each burst lasts. Bursts happen only when this subsystem’s `duration` is below 0, such as `duration = -1`.',
+      'game',
+    ),
+  ],
+  [
+    'emission_pulse_silence',
+    doc(
+      SECONDS,
+      'For bursts of particles: the pause between two bursts. Bursts happen only when this subsystem’s `duration` is below 0, such as `duration = -1`.',
+      'game',
+    ),
+  ],
   ['life', doc(SECONDS, 'How long each particle lives.')],
   ['size', doc(VALUE, 'The size of each particle, before the scale of the pdxparticle.')],
   ['velocity', doc(VALUE, 'The speed each particle starts with.')],
@@ -201,7 +219,7 @@ const SUBSYSTEM: [string, ParticleKeyDoc][] = [
       'game',
     ),
   ],
-  ['hide', unknown(YES_NO)],
+  ['hide', doc(YES_NO, 'With `yes`, the emitter sends out no particles.', 'game')],
 ];
 
 /** The keys each block accepts, with what they do. Keys are matched without case. */
@@ -260,7 +278,7 @@ export const PARTICLE_KEYS: Readonly<
       'x',
       doc(
         'a whole number',
-        'How many columns of small pictures the picture holds. Etch does not know which one a particle shows.',
+        'How many columns of small pictures the picture holds. Each particle shows one of them, chosen at random when the emitter sends the particle out.',
         'game',
       ),
     ],
@@ -268,7 +286,7 @@ export const PARTICLE_KEYS: Readonly<
       'y',
       doc(
         'a whole number',
-        'How many rows of small pictures the picture holds. Etch does not know which one a particle shows.',
+        'How many rows of small pictures the picture holds. Each particle shows one of them, chosen at random when the emitter sends the particle out.',
         'game',
       ),
     ],
@@ -430,7 +448,7 @@ interface ParticleEffect {
  * The warnings of the `particle` blocks of a parsed `.asset` file:
  * - a key that its block does not accept (`unknown-particle-key`), with the nearest known key;
  * - a curve name in a value, or a force name in a subsystem's `force`, that no `animation` or
- *   `force` block of the same effect has (the game writes no error for these);
+ *   `force` block of the same effect has, which the game leaves out and logs;
  * - a curve `time` the game reads as `spawn`;
  * - a curve `duration` of 0 or less, which the game logs and replaces by 1;
  * - box emitter keys on a sphere emitter, and the reverse, which the game logs;
@@ -467,16 +485,18 @@ export function checkParticleBlocks(
         code: 'unknown-particle-curve',
         start: use.start,
         end: use.end,
-        message: `No animation of this particle effect is named "${use.name}". The game writes no error for this, so check the name.${nearest(use.name, effect.curves.keys())}`,
+        message: `No animation block of this particle effect is named "${use.name}".${nearest(use.name, effect.curves.keys())} The game leaves the curve out and writes in its error log: Couldn't find animation "${use.name}".`,
       });
     }
+    const effectName = lastScalar(block, 'name')?.text;
     for (const use of effect.forceUses) {
       if (effect.forces.has(use.name.toLowerCase())) continue;
+      const log = `Couldn't find particle force "${use.name}"${effectName === undefined ? '' : ` in: ${effectName}`}`;
       out.push({
         code: 'unknown-particle-force',
         start: use.start,
         end: use.end,
-        message: `No force of this particle effect is named "${use.name}". The game writes no error for this, so check the name.${nearest(use.name, effect.forces.keys())}`,
+        message: `No force block of this particle effect is named "${use.name}".${nearest(use.name, effect.forces.keys())} The game leaves the force out and writes in its error log: ${log}.`,
       });
     }
   }
@@ -723,7 +743,7 @@ function unknownKeys(
       code: 'unknown-particle-key',
       start: entry.key.start,
       end: entry.key.end,
-      message: `The game does not read "${entry.key.text}" in ${BLOCK_NAMES[kind]} block, so it has no effect.${nearest(entry.key.text, known.keys())}`,
+      message: `The game does not read "${entry.key.text}" in ${BLOCK_NAMES[kind]} block, so it has no effect.${nearest(entry.key.text, known.keys())} The game writes in its error log: Unexpected token: ${entry.key.text}.`,
     });
   }
 }
