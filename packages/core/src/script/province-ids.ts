@@ -277,28 +277,71 @@ export function checkProvinceIds(
   body = false,
 ): ProvinceIdDiagnostic[] {
   const found: ProvinceIdDiagnostic[] = [];
-  const root = { key: '', scopes: body };
-  walk(parsed.entries, root, 0, body ? 0 : firstScopeDepth(path), ids, found);
-  const member = body || path === undefined ? undefined : provinceEntryMember(path);
-  if (member !== undefined) {
-    for (const property of membersAt(parsed.entries, member.depth)) {
-      if (property.key.text.toLowerCase() !== member.key) continue;
-      const value = property.value;
-      if (member.list && value?.kind === 'block') {
-        for (const scalar of bareScalars(value)) {
-          checkScalar(scalar, member.key, ids, found, member.signed);
-        }
-      } else if (!member.list && value?.kind === 'scalar') {
-        checkScalar(value, member.key, ids, found, true);
-      }
-    }
-  }
+  visitProvinceIds(parsed, ids.calls, path, body, (scalar, key, signed) => {
+    checkScalar(scalar, key, ids, found, signed);
+  });
   if (!body && path !== undefined) {
     const skipped = provinceHistoryNotRead(path, ids);
     if (skipped !== undefined) found.push(skipped);
   }
   return found.sort((a, b) => a.start - b.start);
 }
+
+/** A province id a script file gives: the id, the key it is the value of (as in a diagnostic), where. */
+export interface ProvinceIdUse extends SourceRange {
+  readonly id: number;
+  readonly key: string;
+}
+
+/**
+ * Every integer province id in a parsed script file that `checkProvinceIds` reads, in text order,
+ * whether the map has it or not: the values of `owns = 151` and the other keys, the keys of
+ * `151 = { … }` scopes, the province lists of the folders that have them, and the province
+ * arguments of the playset's scripted calls (`calls`, `ProvinceIds.calls`). For each, Etch shows
+ * the province's name after it.
+ */
+export function provinceIdsIn(
+  parsed: ParsedScript,
+  path?: string,
+  calls?: ProvinceArguments,
+  body = false,
+): ProvinceIdUse[] {
+  const found: ProvinceIdUse[] = [];
+  visitProvinceIds(parsed, calls, path, body, (scalar, key, signed) => {
+    if (!provinceIdPattern(signed).test(scalar.text)) return;
+    found.push({ id: Number(scalar.text), key, start: scalar.start, end: scalar.end });
+  });
+  return found.sort((a, b) => a.start - b.start);
+}
+
+/**
+ * Calls `visit` with each scalar of a parsed script file that is a province id when it is an
+ * integer, with its key and whether a leading `-` counts (`checkScalar`).
+ */
+function visitProvinceIds(
+  parsed: ParsedScript,
+  calls: ProvinceArguments | undefined,
+  path: string | undefined,
+  body: boolean,
+  visit: Visit,
+): void {
+  const root = { key: '', scopes: body };
+  walk(parsed.entries, root, 0, body ? 0 : firstScopeDepth(path), calls, visit);
+  const member = body || path === undefined ? undefined : provinceEntryMember(path);
+  if (member === undefined) return;
+  for (const property of membersAt(parsed.entries, member.depth)) {
+    if (property.key.text.toLowerCase() !== member.key) continue;
+    const value = property.value;
+    if (member.list && value?.kind === 'block') {
+      for (const scalar of bareScalars(value)) visit(scalar, member.key, member.signed === true);
+    } else if (!member.list && value?.kind === 'scalar') {
+      visit(value, member.key, true);
+    }
+  }
+}
+
+/** What a walk does with a scalar that may be a province id. */
+type Visit = (scalar: ScalarNode, key: string, signed: boolean) => void;
 
 /**
  * A warning for a `history/provinces` file the game never reads, at the start of the file. The game
@@ -406,12 +449,12 @@ function walk(
   parent: Parent,
   depth: number,
   scopeDepth: number,
-  ids: ProvinceIds,
-  found: ProvinceIdDiagnostic[],
+  calls: ProvinceArguments | undefined,
+  visit: Visit,
 ): void {
   for (const entry of entries) {
     if (entry.kind === 'block') {
-      walk(entry.entries, parent, depth + 1, scopeDepth, ids, found);
+      walk(entry.entries, parent, depth + 1, scopeDepth, calls, visit);
       continue;
     }
     if (entry.kind !== 'property') continue;
@@ -421,15 +464,15 @@ function walk(
       if (
         PROVINCE_ID_KEYS.has(key) ||
         PROVINCE_ID_MEMBERS.get(parent.key)?.has(key) === true ||
-        (parent.call && ids.calls?.get(parent.key)?.has(key) === true)
+        (parent.call && calls?.get(parent.key)?.has(key) === true)
       ) {
-        checkScalar(value, key, ids, found, true);
+        visit(value, key, true);
       }
       continue;
     }
     if (value?.kind !== 'block') continue;
     if (parent.scopes && depth >= scopeDepth && !entry.key.quoted) {
-      checkScalar(entry.key, parent.key, ids, found);
+      visit(entry.key, parent.key, false);
     }
     // A top-level block of a file is a definition or a database entry, not a call; in a string's
     // script, which is a body, it is one.
@@ -439,8 +482,8 @@ function walk(
       { key, scopes: scopesIn(key, value), call },
       depth + 1,
       scopeDepth,
-      ids,
-      found,
+      calls,
+      visit,
     );
   }
 }
@@ -461,6 +504,11 @@ function scopesIn(key: string, block: BlockNode): boolean {
   return false;
 }
 
+/** An integer as a province id: unsigned, or with a leading `-` when `signed` (`checkScalar`). */
+function provinceIdPattern(signed: boolean): RegExp {
+  return signed ? /^-?\d+$/ : /^\d+$/;
+}
+
 /**
  * Checks a scalar that is a province id when it is an integer. `signed` takes a leading `-` too:
  * the game reads a key's value with `atoi`, which keeps the sign, so `owns = -1` indexes before
@@ -473,7 +521,7 @@ function checkScalar(
   found: ProvinceIdDiagnostic[],
   signed = false,
 ): void {
-  if (!(signed ? /^-?\d+$/ : /^\d+$/).test(scalar.text)) return;
+  if (!provinceIdPattern(signed).test(scalar.text)) return;
   const id = Number(scalar.text);
   const problem = provinceIdProblem(id, ids);
   if (problem === undefined) return;

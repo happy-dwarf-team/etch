@@ -1,6 +1,6 @@
 ---
 title: Province IDs and names
-description: Find province IDs and names in your scripts that the game does not check and can crash on.
+description: See each province's name after its ID, and find province IDs and names in your scripts that the game does not check and can crash on.
 since: 2.13.0
 clip: names
 ---
@@ -17,6 +17,18 @@ Open a script file, such as an event file of your mod. As you type, Etch underli
 and lists it in the Problems panel (<kbd>Ctrl+Shift+M</kbd>). "What Etch checks" below lists every
 kind. The warning says what is missing and what the game does with it: on `owns = 5075` it starts
 with "Province 5075 is not on the map".
+
+## See which province an ID is
+
+After each province ID that Etch checks, such as `owns = 151` or a `151 = { … }` scope, Etch shows
+the province's name in grey: "Constantinople" in the base game. You can tell which province a
+line means without looking the number up. The name is the text of the localisation key
+`PROV151` in your playset, in the language of `etch.language`. Hover over it to see the key and
+the `.yml` file it comes from. An ID the map does not have gets no name: its warning says why.
+When you save a `.yml` file, Etch reads the names again.
+
+To turn the names off, open Settings (<kbd>Ctrl+,</kbd>), search for `etch.editor.provinceNames`
+and clear its checkbox.
 
 ## Check the whole playset
 

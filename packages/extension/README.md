@@ -90,7 +90,8 @@ warns where the game would read other letters than you see, and offers to fix th
 [encoding](https://etch.happydwarf.dev/docs/scripts/encoding/). After a localisation key, such
 as an event's `title`, it shows the key's
 [text](https://etch.happydwarf.dev/docs/scripts/localisation-texts/) in grey, and its hover
-shows the whole text in the game's colours.
+shows the whole text in the game's colours. After a province ID, such as `owns = 151`, it shows
+the province's name.
 Anvil, which lets EU4 load plugins, can time your triggers and effects while you play:
 **Etch: Show the Latest Script Profile** opens what it measured, with links to your files
 ([Script profile](https://etch.happydwarf.dev/docs/scripts/script-profile/)).
