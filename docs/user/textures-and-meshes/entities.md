@@ -116,7 +116,24 @@ flash of an artillery piece. In `western_units.asset`, the `attack` state of
 `westerngfx_ARTILLERY_1_cannon` starts `artillery_cannon` on the bone `cannon_muzzle`.
 
 Etch draws these effects while the state plays. The smoke, sparks and flashes come out of the
-event's `node` at its `time`, every time the animation comes round to it.
+event's `node` at its `time`, every time the animation comes round to it. Each start is a new
+copy of the effect, and the earlier copies play on.
+
+As in the game:
+
+- An event whose `time` is past the end of the animation, or below 0, starts each time the
+  animation starts over.
+- A state without an animation starts its effects once. With `state_time = 2`, they start again
+  every 2 seconds.
+- With `trigger_once = yes`, the event starts only in the state's first round: the first pass
+  through its animation, or its first `state_time` seconds. A state with neither never starts it.
+- When you pick another state, the effects and their particles go at once. An event with
+  `keep_particle = yes` keeps its effect, and the particles already out live on. If one of its
+  subsystems (the parts of the effect) would send out particles for ever, the effect stops
+  sending out new ones.
+
+A subsystem with `trail = yes` draws a band through its particles, from the oldest to the newest,
+as wide as the particles are big.
 
 The `node` is a bone of the mesh, or a named point that the `.mesh` file stores for this. The
 `muzzle` of vanilla's muskets is such a point. If the mesh has neither of that name, the effect
@@ -188,22 +205,26 @@ These parts work as in the game:
 - when an effect sends out particles, and how many;
 - how long they live, how fast and which way they fly;
 - how their size, rotation and colour change over their life;
-- the picture from the effect's `texture`, and how it blends with what is behind it.
+- the picture from the effect's `texture`, and how it blends with what is behind it;
+- the force blocks (explained in [Particle effects](particles.md)) of `type = "planar"`,
+  `"point"`, `"vortex"`, `"friction"` and `"turbulence"`. A `point` force with a positive
+  `amount` pushes the particles away from its `position`;
+- when an event starts its effect, and what happens to it when you pick another state;
+- the shape of a trail.
 
-These parts are Etch's guess:
+These parts differ:
 
 - The exact direction and other chance values of each particle. The game picks new ones for every
-  shot, so its own shots differ from each other too.
-- How a force block with `type = "turbulence"` swirls the particles (the force blocks are
-  explained in [Particle effects](particles.md)).
-- A `type = "point"` force pulls the particles towards the force's `position`. The game may push
-  them away instead.
-- How fast a `type = "spin"` force turns the particles.
-- A subsystem with `trail = yes` shows as separate particles. The game draws a trail, a band that
-  follows the particles.
-- When you pick another state, every particle goes at once. In the game some effects may stay.
-- An event whose `time` is later than the end of the state's animation never starts in Etch.
-  What the game does then is not known.
+  shot, so its own shots differ from each other too. So does the swirl of a `turbulence` force:
+  it follows the game's rule, but from other chance values.
+- A `type = "spin"` force. Etch turns the particles round its axis, `amount` radians a second (a
+  full turn is about 6.28). The game turns them much less: in a test, `amount = 1` only bent a
+  stream of smoke a little. How the game does it is not known.
+- The look of a trail. Etch draws the band with the effect's `texture`. The game draws it with a
+  shader effect whose name ends in `Trail`, and the base game has none (see
+  [Particle effects](particles.md)).
+- A `childsystem` block. Etch does not start child effects.
+- Etch plays at most 16 copies of one event's effect at a time. The game has no limit.
 
 ## What it doesn't do
 

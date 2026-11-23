@@ -2199,7 +2199,11 @@ if (gl === null) {
     gl.bindVertexArray(null);
     bonePass = { program: compile(gl, BONE_VERTEX, BONE_FRAGMENT), vao, buffer: bufferOfBones };
     const shaders = ParticleLayer.shaders();
-    particleLayer = new ParticleLayer(gl, compile(gl, shaders.vertex, shaders.fragment));
+    particleLayer = new ParticleLayer(
+      gl,
+      compile(gl, shaders.vertex, shaders.fragment),
+      compile(gl, shaders.trailVertex, shaders.fragment),
+    );
     vscode.postMessage({ type: 'ready' });
   } catch (error) {
     fail(error instanceof Error ? error.message : String(error));

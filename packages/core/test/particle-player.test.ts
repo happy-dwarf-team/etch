@@ -229,6 +229,68 @@ describe('a running effect', () => {
     expect(run(3)).not.toEqual(run(4));
   });
 
+  it('pushes away from a point force with a positive amount, at any distance alike', () => {
+    const at = (amount: number, x: number): number => {
+      const effect = new ParticleEffect(
+        system(
+          `particle = { name = "p"
+            force = { type = "point" name = "f" amount = ${String(amount)} position = { ${String(x)} 0 0 } }
+            subsystem = { max_amount = 1 emission = 100 life = 100 velocity = 0 force = f } }`,
+          'p',
+        ),
+      );
+      for (let i = 0; i < 10; i++) effect.step(0.1, IDENTITY);
+      return effect.quads(0)[0]?.x ?? Number.NaN;
+    };
+    expect(at(1, 1)).toBeLessThan(0);
+    expect(at(-1, 1)).toBeGreaterThan(0);
+    // Constant strength: the same push from a centre 1 or 10 away.
+    expect(at(1, 1)).toBeCloseTo(at(1, 10), 9);
+  });
+
+  it('turns about a spin force at its amount in radians a second (Etch’s own rule)', () => {
+    const effect = new ParticleEffect(
+      system(
+        `particle = { name = "p"
+          force = { type = "spin" name = "f" amount = ${String(Math.PI / 2)} direction = { 0 1 0 } position = { 0 0 0 } }
+          subsystem = { max_amount = 1 emission = 10 life = 100 velocity = 0
+            emitter_type = box box_emitter_x = 1 force = f } }`,
+        'p',
+      ),
+    );
+    effect.step(0.1, IDENTITY);
+    const start = effect.quads(0)[0];
+    for (let i = 0; i < 10; i++) effect.step(0.1, IDENTITY);
+    const end = effect.quads(0)[0];
+    if (start === undefined || end === undefined) throw new Error('no particle');
+    // A quarter turn a second: after 1 s, +X has gone to +Z, at the same distance.
+    expect(Math.atan2(end.z, end.x) - Math.atan2(start.z, start.x)).toBeCloseTo(Math.PI / 2, 1);
+    expect(Math.hypot(end.x, end.z)).toBeCloseTo(1, 1);
+  });
+
+  it('pushes with turbulence at exactly its amount, in a direction that changes over time', () => {
+    const effect = new ParticleEffect(
+      system(
+        `particle = { name = "p"
+          force = { type = "turbulence" name = "f" amount = 2 }
+          subsystem = { max_amount = 1 emission = 100 life = 100 velocity = 0 force = f } }`,
+        'p',
+      ),
+    );
+    const positions: number[][] = [];
+    for (let i = 0; i < 4; i++) {
+      effect.step(0.1, IDENTITY);
+      const q = effect.quads(0)[0];
+      if (q === undefined) throw new Error('no particle');
+      positions.push([q.x, q.y, q.z]);
+    }
+    // In the first step the particle, still, moves by amount · dt² (2 · 0.01).
+    const [first = [], second = [], third = []] = positions;
+    expect(Math.hypot(first[0] ?? 0, first[1] ?? 0, first[2] ?? 0)).toBeCloseTo(0.02, 6);
+    const step = (a: number[], b: number[]): number[] => a.map((v, i) => (b[i] ?? 0) - v);
+    expect(step(first, second)).not.toEqual(step(second, third));
+  });
+
   it('lets a stopped effect finish', () => {
     const effect = new ParticleEffect(
       single('max_amount = 10 duration = -1 emission = 50 life = 1'),

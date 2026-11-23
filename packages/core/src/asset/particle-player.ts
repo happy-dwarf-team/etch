@@ -1,6 +1,6 @@
-// An approximate player of a particle system (etch#631, step 3), for the entity preview. It runs
-// a `ParticleSystem` (`particle-system.ts`) the way the EU4 engine lab read EU4 1.37.5's update in
-// the game's code (step 2), and gives each frame's camera-facing quads to the renderer.
+// A player of a particle system (etch#631, steps 3 and 4), for the entity preview. It runs a
+// `ParticleSystem` (`particle-system.ts`) the way the EU4 engine lab read EU4 1.37.5's update in
+// the game's code, and gives each frame's camera-facing quads to the renderer.
 //
 // What follows the game's code as read:
 // - A value at spawn is its base with its curves of time `spawn` and `system` applied in order
@@ -19,10 +19,18 @@
 // - A sprite-sheet tile is drawn at random per particle and kept for its life.
 // - Steps are at least 0.1 s long or a quarter of the frame, whichever is longer.
 //
-// What is a stand-in, because the game's answer is not known: the random numbers (the game seeds
-// them from the clock, so no two runs match anyway), the turbulence field (a smooth noise here),
-// the sign of a `point` force (here it pulls), the units of a `spin` force (radians per second
-// here), and trails (drawn as camera-facing quads). Child systems are not run.
+// - Forces (step 4): `planar` pushes along its direction; `point` pushes away from its centre for
+//   a positive amount, as hard at any distance; `vortex` pushes out from its axis (as written,
+//   not made length 1) and turns round it by its yaw; `friction` is −velocity × amount; a
+//   centre is the force's position × scale, moved by the node's position with `local_force`.
+//   `turbulence` reads the game's field.
+// - A trail subsystem keeps its particles in the order they came out.
+//
+// What differs: the random numbers (the game seeds them from the clock, so no two of its runs
+// match either); child systems, which are not run; and `spin`, which here turns the particles
+// about its axis at amount radians a second. The lab read the game's spin as a push along the
+// turn, but in a test the game's stream bent only a little at amount 1 and was gone at π, which
+// that reading does not give, so the game's rule is not settled.
 
 import type {
   ParticleCurve,
@@ -173,6 +181,8 @@ interface SubsystemState {
 }
 
 const DEGREES = Math.PI / 180;
+/** Closer to a `point` or `vortex` force's centre than this, it gives no push. */
+const NEAR = 0.01;
 const IDENTITY: Matrix4 = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
 
 /** One running particle system, started by a state event on a node. */
@@ -181,7 +191,8 @@ export class ParticleEffect {
   private readonly random: ParticleRandom;
   private node: Matrix4 = IDENTITY;
   private previous: [number, number, number] | undefined;
-  private readonly noise: TurbulenceField;
+  /** One per `turbulence` force of the effect, in its order. */
+  private readonly fields: TurbulenceField[];
   readonly system: ParticleSystem;
   /** The pdxparticle's `scale` (1 when it has none). */
   readonly scale: number;
@@ -191,7 +202,6 @@ export class ParticleEffect {
     this.system = system;
     this.scale = scale;
     this.random = new ParticleRandom(seed);
-    this.noise = new TurbulenceField(this.random);
     this.states = system.subsystems.map((def) => {
       const at = (value: ParticleValue): number => spawnValue(value, system.curves, 0, this.random);
       return {
@@ -207,11 +217,20 @@ export class ParticleEffect {
         offset: [at(def.position[0]), at(def.position[1]), at(def.position[2])],
       };
     });
+    this.fields = system.forces
+      .filter((force) => force.type === 'turbulence')
+      .map((force) => new TurbulenceField(this.random, force.division));
   }
 
-  /** Stops the subsystems that emit forever; the particles they sent out live on. */
+  /**
+   * Stops an effect that emits forever, as the game does when its state ends: when a subsystem
+   * emits forever, every subsystem's `duration` becomes its time so far, so none emits again
+   * and the particles live out their life. (A subsystem still waiting for its `start` gets a
+   * duration below 0, so it emits forever after all, as in the game.)
+   */
   stop(): void {
-    for (const state of this.states) if (state.duration < 0) state.duration = state.time;
+    if (!this.states.some((state) => state.duration < 0)) return;
+    for (const state of this.states) state.duration = state.time;
   }
 
   /** Whether nothing is alive and no subsystem will emit again. */
@@ -290,6 +309,11 @@ export class ParticleEffect {
       if (p === undefined) continue;
       p.age += dt;
       if (p.age < 0 || p.age > p.life) {
+        // A trail keeps its particles in the order they came out, the band's order.
+        if (def.trail) {
+          particles.splice(i, 1);
+          continue;
+        }
         const last = particles.pop();
         if (last !== undefined && i < particles.length) particles[i] = last;
       }
@@ -334,6 +358,8 @@ export class ParticleEffect {
         }
       }
     }
+    // Every field turns to this subsystem's time before its forces, as in the game.
+    if (particles.length > 0) for (const field of this.fields) field.setTime(state.time);
     this.applyForces(state, dt);
     state.time += dt;
   }
@@ -433,20 +459,27 @@ export class ParticleEffect {
       ? Math.floor(particles.length / (def.slaveParticles + 1)) + 1
       : particles.length;
     const accel = new Float64Array(m * 3);
+    // A subsystem's n-th turbulence force reads the effect's n-th field.
+    let turbulence = 0;
     for (const index of def.forces) {
       const force = this.system.forces[index];
       if (force === undefined) continue;
       const amount = spawnValue(force.amount, curves, state.time, this.random);
       if (amount === 0) continue;
       const [dx, dy, dz] = force.direction;
-      const centre = force.localForce
-        ? transform(this.node, force.position[0], force.position[1], force.position[2], 1)
-        : force.position;
+      // The centre is the force's position times the scale, moved by the node's position (not
+      // turned) with `local_force`.
+      const centre = [
+        force.position[0] * scale + (force.localForce ? (this.node[12] ?? 0) : 0),
+        force.position[1] * scale + (force.localForce ? (this.node[13] ?? 0) : 0),
+        force.position[2] * scale + (force.localForce ? (this.node[14] ?? 0) : 0),
+      ] as const;
+      const field = force.type === 'turbulence' ? this.fields[turbulence++] : undefined;
       if (force.type === 'spin') {
-        rotateAbout(particles, centre, force.direction, amount * dt);
+        // Etch's own rule: the game's spin did not behave in a test as the lab read its code.
+        rotateAbout(particles, centre, force.direction, -amount * dt);
         continue;
       }
-      if (force.type === 'turbulence') this.noise.advance(state.time);
       for (let i = 0; i < m; i++) {
         const p = particles[i];
         if (p === undefined) continue;
@@ -458,40 +491,41 @@ export class ParticleEffect {
           ay = amount * dy;
           az = amount * dz;
         } else if (force.type === 'point') {
-          const qx = centre[0] - p.x;
-          const qy = centre[1] - p.y;
-          const qz = centre[2] - p.z;
+          // Away from the centre for a positive amount, at the same strength at any distance.
+          const qx = p.x - centre[0];
+          const qy = p.y - centre[1];
+          const qz = p.z - centre[2];
           const length = Math.hypot(qx, qy, qz);
-          if (length > 1e-6) {
+          if (length > NEAR) {
             const k = (amount * scale) / length;
             ax = k * qx;
             ay = k * qy;
             az = k * qz;
           }
         } else if (force.type === 'vortex') {
-          const axis = normalise(dx, dy, dz);
+          // The direction as written, not made length 1.
           let qx = p.x - centre[0];
           let qy = p.y - centre[1];
           let qz = p.z - centre[2];
-          const along = qx * axis[0] + qy * axis[1] + qz * axis[2];
-          qx -= along * axis[0];
-          qy -= along * axis[1];
-          qz -= along * axis[2];
+          const along = qx * dx + qy * dy + qz * dz;
+          qx -= along * dx;
+          qy -= along * dy;
+          qz -= along * dz;
           const length = Math.hypot(qx, qy, qz);
-          if (length > 1e-6) {
+          if (length > NEAR) {
             const k = (amount * scale) / length;
             const c = Math.cos(force.yaw * DEGREES);
             const s = Math.sin(force.yaw * DEGREES);
-            ax = k * (c * qx + s * (qy * axis[2] - qz * axis[1]));
-            ay = k * (c * qy + s * (qz * axis[0] - qx * axis[2]));
-            az = k * (c * qz + s * (qx * axis[1] - qy * axis[0]));
+            ax = k * (c * qx + s * (qy * dz - qz * dy));
+            ay = k * (c * qy + s * (qz * dx - qx * dz));
+            az = k * (c * qz + s * (qx * dy - qy * dx));
           }
         } else if (force.type === 'friction') {
           ax = -p.vx * amount;
           ay = -p.vy * amount;
           az = -p.vz * amount;
-        } else if (force.type === 'turbulence') {
-          const [nx, ny, nz] = this.noise.at(p.x, p.y, p.z);
+        } else if (field !== undefined) {
+          const [nx, ny, nz] = field.direction(p.x, p.y, p.z);
           ax = amount * nx;
           ay = amount * ny;
           az = amount * nz;
@@ -517,95 +551,128 @@ export class ParticleEffect {
 }
 
 /**
- * A stand-in for the game's turbulence: 256 random unit gradients turning about random axes,
- * read as smooth gradient noise, one sample per axis. The game's field has the same parts; how
- * it reads them is not known.
+ * The game's turbulence field, as the EU4 engine lab read it: 256 random unit gradients, each
+ * turning about its own random axis at π to 2π radians a second of the subsystem's time, read as
+ * gradient noise with linear weights on a lattice of 1 unit. A force's push is |amount| along the
+ * direction of three samples of that noise at shifted points.
+ *
+ * Two quirks of the game's code are kept: the cell of a coordinate is found by cutting off its
+ * fraction (so below 0 each cell is mirrored), and the hash reads past the 256-byte permutation
+ * into the bytes of the turning gradients, which sit right after it.
  */
 class TurbulenceField {
-  private readonly base: Float64Array;
-  private readonly axes: Float64Array;
-  private readonly speeds: Float64Array;
-  private readonly gradients: Float64Array;
-  private readonly permutation: Uint8Array;
-  private time = Number.NaN;
+  /** The permutation, then the turning gradients: the hash can read into them. */
+  private readonly bytes: Uint8Array;
+  private readonly gradients: Float32Array;
+  private readonly base = new Float32Array(256 * 3);
+  private readonly axes = new Float32Array(256 * 3);
+  private readonly speeds = new Float32Array(256);
+  private readonly division: number;
+  private calls = 0;
 
-  constructor(random: ParticleRandom) {
-    this.base = new Float64Array(256 * 3);
-    this.axes = new Float64Array(256 * 3);
-    this.speeds = new Float64Array(256);
-    this.gradients = new Float64Array(256 * 3);
-    this.permutation = new Uint8Array(512);
+  constructor(random: ParticleRandom, division: number) {
+    const buffer = new ArrayBuffer(256 + 256 * 12);
+    this.bytes = new Uint8Array(buffer);
+    this.gradients = new Float32Array(buffer, 256, 256 * 3);
+    // 30 bits from two draws, the first the low 15.
+    const draw30 = (): number => {
+      const low = random.next15();
+      return random.next15() * 32768 + low;
+    };
+    const unit = (): number => draw30() / 1073741824;
     const unitVector = (): [number, number, number] => {
-      const z = 2 * random.unit() - 1;
-      const a = 2 * Math.PI * random.unit();
-      const r = Math.sqrt(1 - z * z);
-      return [r * Math.cos(a), r * Math.sin(a), z];
+      for (;;) {
+        const x = (unit() - 0.5) * 2;
+        const y = (unit() - 0.5) * 2;
+        const z = (unit() - 0.5) * 2;
+        const length2 = x * x + y * y + z * z;
+        if (length2 <= 1 && length2 >= 0.001) return normalise(x, y, z);
+      }
     };
     for (let i = 0; i < 256; i++) {
       this.base.set(unitVector(), i * 3);
       this.axes.set(unitVector(), i * 3);
-      this.speeds[i] = Math.PI * (1 + random.unit());
-      this.permutation[i] = i;
+      this.speeds[i] = unit() * Math.PI + Math.PI;
+      this.bytes[i] = i;
     }
-    for (let i = 255; i > 0; i--) {
-      const j = Math.floor(random.unit() * (i + 1));
-      const swap = this.permutation[i] ?? 0;
-      this.permutation[i] = this.permutation[j] ?? 0;
-      this.permutation[j] = swap;
-    }
-    for (let i = 0; i < 256; i++) this.permutation[i + 256] = this.permutation[i] ?? 0;
     this.gradients.set(this.base);
+    for (let i = 1; i < 256; i++) {
+      const j = draw30() % (i + 1);
+      const swap = this.bytes[i] ?? 0;
+      this.bytes[i] = this.bytes[j] ?? 0;
+      this.bytes[j] = swap;
+    }
+    // The game rounds `division` up to a divisor of 256: each call turns that share of them.
+    let d = Math.trunc(division);
+    if (!(d >= 1)) d = 1;
+    else if (d > 256) d = 256;
+    else while (256 % d !== 0) d++;
+    this.division = d;
   }
 
-  advance(time: number): void {
-    if (time === this.time) return;
-    this.time = time;
-    for (let i = 0; i < 256; i++) {
+  /** Turns the next share of the gradients to their angle at `time` from where they began. */
+  setTime(time: number): void {
+    this.calls %= this.division;
+    const count = 256 / this.division;
+    const first = this.calls * count;
+    for (let i = first; i < first + count; i++) {
       const g = [this.base[i * 3] ?? 0, this.base[i * 3 + 1] ?? 0, this.base[i * 3 + 2] ?? 0];
       const k = [this.axes[i * 3] ?? 0, this.axes[i * 3 + 1] ?? 0, this.axes[i * 3 + 2] ?? 0];
-      const angle = (this.speeds[i] ?? 0) * time;
-      this.gradients.set(rodrigues(g, k, angle), i * 3);
+      this.gradients.set(rodrigues(g, k, time * (this.speeds[i] ?? 0)), i * 3);
     }
+    this.calls++;
   }
 
-  at(x: number, y: number, z: number): [number, number, number] {
-    return [
-      this.noise(x, y, z),
-      this.noise(x + 31.4, y - 17.2, z + 5.9),
-      this.noise(x - 8.3, y + 23.1, z - 41.7),
-    ];
+  /** The unit direction of the push at a point, or zeros where all three samples are 0. */
+  direction(x: number, y: number, z: number): [number, number, number] {
+    return normalise(
+      this.sample(x, y, z),
+      this.sample(y + 31.416, z - 47.853, x + 12.793),
+      this.sample(z - 233.145, x - 113.408, y - 185.31),
+    );
   }
 
-  private noise(x: number, y: number, z: number): number {
-    const xi = Math.floor(x);
-    const yi = Math.floor(y);
-    const zi = Math.floor(z);
-    const fx = x - xi;
-    const fy = y - yi;
-    const fz = z - zi;
-    const fade = (t: number): number => t * t * t * (t * (t * 6 - 15) + 10);
-    const u = fade(fx);
-    const v = fade(fy);
-    const w = fade(fz);
-    const p = this.permutation;
-    const corner = (dx: number, dy: number, dz: number): number => {
-      const h = p[(p[(p[(xi + dx) & 255] ?? 0) + ((yi + dy) & 255)] ?? 0) + ((zi + dz) & 255)] ?? 0;
-      return (
-        (this.gradients[h * 3] ?? 0) * (fx - dx) +
-        (this.gradients[h * 3 + 1] ?? 0) * (fy - dy) +
-        (this.gradients[h * 3 + 2] ?? 0) * (fz - dz)
-      );
+  private sample(a: number, b: number, c: number): number {
+    const ia = Math.trunc(a) | 0;
+    const ib = Math.trunc(b) | 0;
+    const ic = Math.trunc(c) | 0;
+    const fa = Math.abs(a - ia);
+    const fb = Math.abs(b - ib);
+    const fc = Math.abs(c - ic);
+    const bytes = this.bytes;
+    const g = this.gradients;
+    // Only the indices are wrapped to 0–255, not their sums.
+    const corner = (i: number, j: number, k: number, x: number, y: number, z: number): number => {
+      const h =
+        bytes[((ic + k) & 255) + (bytes[((ib + j) & 255) + (bytes[(ia + i) & 255] ?? 0)] ?? 0)] ??
+        0;
+      return (g[h * 3] ?? 0) * x + (g[h * 3 + 1] ?? 0) * y + (g[h * 3 + 2] ?? 0) * z;
     };
-    const lerp = (a: number, b: number, t: number): number => a + (b - a) * t;
+    const ga = fa - 1;
+    const gb = fb - 1;
+    const gc = fc - 1;
+    const lerp = (p: number, q: number, f: number): number => p * (1 - f) + q * f;
     return lerp(
-      lerp(lerp(corner(0, 0, 0), corner(1, 0, 0), u), lerp(corner(0, 1, 0), corner(1, 1, 0), u), v),
-      lerp(lerp(corner(0, 0, 1), corner(1, 0, 1), u), lerp(corner(0, 1, 1), corner(1, 1, 1), u), v),
-      w,
+      lerp(
+        lerp(corner(0, 0, 0, fa, fb, fc), corner(1, 0, 0, ga, fb, fc), fa),
+        lerp(corner(0, 1, 0, fa, gb, fc), corner(1, 1, 0, ga, gb, fc), fa),
+        fb,
+      ),
+      lerp(
+        lerp(corner(0, 0, 1, fa, fb, gc), corner(1, 0, 1, ga, fb, gc), fa),
+        lerp(corner(0, 1, 1, fa, gb, gc), corner(1, 1, 1, ga, gb, gc), fa),
+        fb,
+      ),
+      fc,
     );
   }
 }
 
-function rodrigues(v: number[], k: number[], angle: number): [number, number, number] {
+function rodrigues(
+  v: readonly number[],
+  k: readonly number[],
+  angle: number,
+): [number, number, number] {
   const [vx = 0, vy = 0, vz = 0] = v;
   const [kx = 0, ky = 0, kz = 0] = k;
   const c = Math.cos(angle);
@@ -618,6 +685,10 @@ function rodrigues(v: number[], k: number[], angle: number): [number, number, nu
   ];
 }
 
+/**
+ * Turns the particles about the axis through the centre by `angle` radians; a positive angle
+ * turns +X towards −Z about +Y. Etch's stand-in for a `spin` force.
+ */
 function rotateAbout(
   particles: Particle[],
   centre: readonly number[],

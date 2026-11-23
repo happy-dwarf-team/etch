@@ -334,15 +334,51 @@ export const PARTICLE_KEYS: Readonly<
       'type',
       doc(
         '`planar`, `point`, `vortex`, `friction`, `turbulence` or `spin`',
-        'The kind of force. The base game uses `planar` (a push in one direction, such as gravity), `friction` (drag) and `turbulence` (random motion).',
+        'The kind of force. `planar` pushes along `direction`, such as gravity. `point` pushes away from `position`, as hard at any distance; a negative `amount` pulls. `vortex` pushes out from the line through `position` along `direction` and turns round it by `yaw`. `friction` slows the particles: `amount` times their speed. `turbulence` pushes each particle by `amount` in a direction that changes from place to place and over time. `spin` turns the particles round the line through `position` along `direction`; Etch turns them `amount` radians a second, but how far the game turns them is not known. The base game uses `planar`, `friction` and `turbulence`.',
+        'game',
       ),
     ],
     ['amount', doc(VALUE, 'How strong the force is.')],
-    ['direction', doc('`{ x y z }`', 'Where a `planar` force pushes: `{ 0 -1 0 }` is down.')],
-    ['position', unknown('`{ x y z }`')],
-    ['yaw', unknown('a value')],
-    ['division', unknown('a value')],
-    ['local_force', unknown(YES_NO)],
+    [
+      'direction',
+      doc(
+        '`{ x y z }`',
+        'Where a `planar` force pushes, `{ 0 -1 0 }` being down, or the axis of a `vortex` or `spin` force.',
+        'game',
+      ),
+    ],
+    [
+      'position',
+      doc(
+        '`{ x y z }`',
+        'The centre of a `point`, `vortex` or `spin` force, from where the effect starts, times the pdxparticle’s `scale`.',
+        'game',
+      ),
+    ],
+    [
+      'yaw',
+      doc(
+        'a number of degrees',
+        'How a `vortex` force pushes: 0 straight out from its line, 90 round it.',
+        'game',
+      ),
+    ],
+    [
+      'division',
+      doc(
+        'a whole number',
+        'For `turbulence`: into how many parts the changing directions are split, one part changing at a time, so a higher number changes them less smoothly. The game rounds it up to a number 256 can be divided by.',
+        'game',
+      ),
+    ],
+    [
+      'local_force',
+      doc(
+        YES_NO,
+        'With `yes`, the force’s `position` moves with the point the effect starts on.',
+        'game',
+      ),
+    ],
   ]),
   pdxparticle: new Map([
     [
