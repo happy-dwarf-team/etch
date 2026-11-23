@@ -1433,13 +1433,22 @@ function showColoursButton(): void {
   coloursCountry.textContent = countryOf === undefined ? 'by hand' : countryOf.tag;
 }
 
-/** Starts playing `key` (an animation or a state), or shows the bind pose for `undefined`. */
+/**
+ * Reduce motion, set in the system (etch#648, finding P3.22): an animation or a state then waits
+ * on its first frame, and only Play or Space starts it.
+ */
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+/**
+ * Starts playing `key` (an animation or a state), or shows the bind pose for `undefined`; with
+ * reduce motion on, it waits on its first frame instead.
+ */
 function play(key: string | undefined): void {
   playingKey = key;
   playButton.hidden = key === undefined;
   position = 0;
   if (gl !== null) showAt(gl, 0);
-  setPlaying(key !== undefined);
+  setPlaying(key !== undefined && !reducedMotion.matches);
   if (!playing) redraw();
 }
 
@@ -1955,11 +1964,24 @@ frameInput.addEventListener('change', () => {
   resumeAfterDrag = false;
   vscode.postMessage({ type: 'shown', summary: summary() });
 });
-// , and . step one frame back and forward, as in a video player; not while typing in a box.
+// Space plays and pauses, and , and . step one frame back and forward, as in a video player; not
+// while typing in a box. Space is a list's or a button's own key when one has the focus.
 document.addEventListener('keydown', (event) => {
-  if (event.key !== ',' && event.key !== '.') return;
   if (event.ctrlKey || event.altKey || event.metaKey) return;
   const target = event.target;
+  if (event.key === ' ') {
+    const control =
+      (target instanceof HTMLInputElement && target.type !== 'range') ||
+      target instanceof HTMLSelectElement ||
+      target instanceof HTMLButtonElement ||
+      target instanceof HTMLTextAreaElement;
+    if (control || playingKey === undefined) return;
+    event.preventDefault();
+    setPlaying(!playing);
+    vscode.postMessage({ type: 'shown', summary: summary() });
+    return;
+  }
+  if (event.key !== ',' && event.key !== '.') return;
   if (target instanceof HTMLInputElement && target.type === 'text') return;
   const animation = rootAnimation();
   if (animation === undefined) return;

@@ -50,8 +50,11 @@ the entity has that state.
 
 - Pick a state to play it, in a loop, on the entity and on everything attached to it. The line at
   the bottom shows the state, its frame and its speed.
-- Click **Pause** to stop it, and **Play** to go on from the same frame. **Bind pose**, at the
-  top of the list, shows the entity without an animation.
+- Click **Pause** to stop it, and **Play** to go on from the same frame, or press
+  <kbd>Space</kbd>. **Bind pose**, at the top of the list, shows the entity without an animation.
+- If your system is set to reduce motion, a state waits on its first frame, also the one the
+  preview starts with. Click **Play** or press <kbd>Space</kbd> to start it (see
+  [Animations](mesh-preview.md#animations)).
 - The slider beside **Play** goes to a frame, as in the mesh preview (see
   [Go to a frame](mesh-preview.md#go-to-a-frame)). The slider follows the animation of the
   entity's own mesh. Everything attached to the entity, such as the soldier's halberd, shows the

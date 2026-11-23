@@ -161,8 +161,14 @@ moves the skeleton's first bone, its second joint the second bone, and so on. A 
 
 1. Pick an animation in the list. It plays in a loop, and the line at the bottom shows its frame
    and speed.
-2. Click **Pause** to stop it, and **Play** to go on from the same frame.
+2. Click **Pause** to stop it, and **Play** to go on from the same frame. Or press
+   <kbd>Space</kbd> anywhere in the preview, except while the list, a button or a box has the
+   focus: there, <kbd>Space</kbd> does what it does in that control.
 3. Pick **Bind pose**, at the top of the list, to see the model without an animation.
+
+If your system is set to reduce motion (on Windows, **Settings** > **Accessibility** > **Visual
+effects** > **Animation effects** off), an animation you pick waits on its first frame instead of
+playing at once. Click **Play** or press <kbd>Space</kbd> to start it.
 
 ### Go to a frame
 

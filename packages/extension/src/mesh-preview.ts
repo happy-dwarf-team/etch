@@ -793,7 +793,7 @@ export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): str
 <main><canvas id="canvas"></canvas><div id="bone-tip" role="tooltip" hidden></div></main>
 <div id="playbar" class="playbar" role="group" aria-label="Animation">
   <select id="animation" title="Animation beside the mesh" aria-label="Animation" hidden></select>
-  <button id="play" aria-pressed="false" title="Play or pause the animation" hidden>Play</button>
+  <button id="play" aria-pressed="false" title="Play or pause the animation (Space)" hidden>Play</button>
   <input type="range" id="frame" min="0" max="0" step="1" value="0" title="Animation frame. Drag to pick a frame; the animation plays on when you let go if it was playing. With the slider selected, the left and right arrow keys step one frame; the comma and full stop keys do too, anywhere in the preview." aria-label="Animation frame" hidden>
 </div>
 <footer id="status"></footer>
