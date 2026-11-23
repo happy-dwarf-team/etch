@@ -63,6 +63,8 @@ describe('the walkthrough', () => {
       // VS Code shows it under a content security policy that blocks styles without its nonce:
       // presentation attributes only.
       expect(picture, svg).not.toMatch(/<style|style=|class=/);
+      // The page renders links and bold only: a backtick shows as itself.
+      expect(step.description, step.id).not.toContain('`');
     }
   });
 

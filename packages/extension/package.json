@@ -100,7 +100,7 @@
           {
             "id": "findGame",
             "title": "Find the game",
-            "description": "Etch draws with your game's own sprites, fonts and texts, so it needs the Europa Universalis IV folder. It finds a game installed through Steam by itself, and this step ticks itself once it has. Is your game elsewhere, such as a GOG copy? Set its folder, the one that holds `eu4.exe`.\n[Set the Game Folder](command:workbench.action.openSettings?%5B%22etch.gamePath%22%5D)",
+            "description": "Etch draws with your game's own sprites, fonts and texts, so it needs the Europa Universalis IV folder. It finds a game installed through Steam by itself, and this step ticks itself once it has. Is your game elsewhere, such as a GOG copy? Set its folder, the one that holds eu4.exe.\n[Set the Game Folder](command:workbench.action.openSettings?%5B%22etch.gamePath%22%5D)",
             "media": {
               "svg": "media/walkthrough/find-game.svg",
               "altText": "A game folder found through Steam, holding eu4.exe"
@@ -113,7 +113,7 @@
           {
             "id": "openPreview",
             "title": "Open your first preview",
-            "description": "Open a `.gui` file of your mod, put the cursor in a window and click **Open Preview** in the editor's title bar. The preview draws that window beside the editor and follows the cursor from window to window.\n[Open a .gui File…](command:workbench.action.quickOpen?%5B%22.gui%22%5D)",
+            "description": "Open a .gui file of your mod, put the cursor in a window and click **Open Preview** in the editor's title bar. The preview draws that window beside the editor and follows the cursor from window to window.\n[Open a .gui File…](command:workbench.action.quickOpen?%5B%22.gui%22%5D)",
             "media": {
               "svg": "media/walkthrough/first-preview.svg",
               "altText": "A .gui file in the editor, and the preview of its window beside it"
