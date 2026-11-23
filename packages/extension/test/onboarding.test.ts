@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { SCRIPT_LANGUAGE_EXTENSIONS } from '../src/script-language.ts';
 
 interface Step {
   id: string;
@@ -32,8 +33,11 @@ const contributed = new Set(contributes.commands.map((c) => c.command));
 const WORKBENCH = new Set([
   'workbench.action.quickOpen',
   'workbench.action.openSettings',
+  'workbench.extensions.installExtension',
   'etch.widgetOutline.focus',
 ]);
+/** How the welcome view counts the walkthrough's steps. */
+const NUMBERS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
 
 /** The commands of a text's `command:` links. */
 function linked(text: string): string[] {
@@ -43,7 +47,7 @@ function linked(text: string): string[] {
 describe('the walkthrough', () => {
   const [walkthrough] = contributes.walkthroughs;
 
-  it('has five steps, each ticking itself and with a picture of its own', () => {
+  it('has six steps, each ticking itself and with a picture of its own', () => {
     expect(walkthrough?.id).toBe('gettingStarted');
     expect(walkthrough?.steps.map((step) => step.title)).toEqual([
       'Find the game',
@@ -51,6 +55,7 @@ describe('the walkthrough', () => {
       'Find a widget in the Widget Outline',
       'Fill texts with sample data',
       'Start the live game (optional)',
+      'Colour your script files',
     ]);
     for (const step of walkthrough?.steps ?? []) {
       expect(step.completionEvents?.length, step.id).toBeGreaterThan(0);
@@ -84,10 +89,32 @@ describe('the walkthrough', () => {
     );
   });
 
-  it('has the id by which Etch ticks the first step', () => {
-    // onboarding.ts ticks it with VS Code's welcome.markStepComplete, by the step's full id.
-    const step = `${manifest.publisher}.${manifest.name}#${walkthrough?.id ?? ''}#${walkthrough?.steps[0]?.id ?? ''}`;
-    expect(step).toBe('happy-dwarf-team.etch#gettingStarted#findGame');
+  it('offers the extensions of the script language notice and ticks when one is installed', () => {
+    const step = walkthrough?.steps.find(({ id }) => id === 'colourScripts');
+    const description = step?.description ?? '';
+    // Its buttons install the extensions the notice offers, by the same names and ids.
+    const buttons = [
+      ...description.matchAll(
+        /\n\[Install ([^\]]+)\]\(command:workbench\.extensions\.installExtension\?([^)]+)\)/g,
+      ),
+    ].map(([, name, args]) => ({
+      name,
+      id: (JSON.parse(decodeURIComponent(args ?? '')) as string[])[0],
+    }));
+    expect(buttons).toEqual(SCRIPT_LANGUAGE_EXTENSIONS.map(({ name, id }) => ({ name, id })));
+    for (const { name } of SCRIPT_LANGUAGE_EXTENSIONS) expect(description).toContain(`**${name}**`);
+    // VS Code's onExtensionInstalled; onboarding.ts ticks the step for one installed before.
+    expect(step?.completionEvents).toEqual(
+      SCRIPT_LANGUAGE_EXTENSIONS.map(({ id }) => `extensionInstalled:${id}`),
+    );
+  });
+
+  it('has the ids by which Etch ticks the first and the sixth step', () => {
+    // onboarding.ts ticks them with VS Code's welcome.markStepComplete, by the step's full id.
+    const full = (step: Step | undefined): string =>
+      `${manifest.publisher}.${manifest.name}#${walkthrough?.id ?? ''}#${step?.id ?? ''}`;
+    expect(full(walkthrough?.steps[0])).toBe('happy-dwarf-team.etch#gettingStarted#findGame');
+    expect(full(walkthrough?.steps[5])).toBe('happy-dwarf-team.etch#gettingStarted#colourScripts');
   });
 
   it('links only to commands that exist', () => {
@@ -109,6 +136,9 @@ describe('the Widget Outline', () => {
     expect(welcome?.view).toBe('etch.widgetOutline');
     expect(welcome?.contents).toContain('\n[Open a .gui File…](command:workbench.action.quickOpen');
     expect(welcome?.contents).toContain('(command:etch.getStarted)');
+    // It says how many steps the walkthrough has.
+    const steps = contributes.walkthroughs[0]?.steps.length ?? 0;
+    expect(welcome?.contents).toContain(`in ${NUMBERS[steps] ?? ''} steps.`);
   });
 });
 

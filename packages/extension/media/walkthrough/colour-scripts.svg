@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" role="img" aria-label="A script file in one colour as Plain Text, and the same file coloured by CWTools or ParadoxCode">
+  <!-- Without another extension: Plain Text, one colour. -->
+  <rect fill="var(--vscode-editor-background, #1e1e1e)" stroke="var(--vscode-panel-border, #444)" x="20" y="30" width="200" height="220" rx="6"/>
+  <text fill="var(--vscode-descriptionForeground, #999)" font-size="12" font-family="var(--vscode-font-family, sans-serif)" x="34" y="50">events/my_events.txt</text>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="34" y="66" width="62" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="100" y="66" width="8" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="112" y="66" width="56" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="34" y="82" width="116" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="34" y="98" width="78" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="116" y="98" width="8" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="128" y="98" width="8" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="46" y="114" width="14" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="64" y="114" width="8" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="76" y="114" width="72" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="46" y="130" width="30" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="80" y="130" width="8" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="92" y="130" width="70" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="46" y="146" width="40" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="90" y="146" width="8" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="102" y="146" width="8" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="58" y="162" width="74" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="136" y="162" width="8" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="148" y="162" width="16" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="58" y="178" width="70" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="132" y="178" width="8" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="144" y="178" width="10" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="46" y="194" width="8" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="34" y="210" width="8" height="6" rx="3"/>
+  <text fill="var(--vscode-descriptionForeground, #999)" font-size="13" font-family="var(--vscode-font-family, sans-serif)" x="120" y="278" text-anchor="middle">Plain Text</text>
+  <!-- With CWTools or ParadoxCode: keywords, numbers, texts and comments in colours of their own. -->
+  <rect fill="var(--vscode-editor-background, #1e1e1e)" stroke="var(--vscode-panel-border, #444)" x="260" y="30" width="200" height="220" rx="6"/>
+  <text fill="var(--vscode-descriptionForeground, #999)" font-size="12" font-family="var(--vscode-font-family, sans-serif)" x="274" y="50">events/my_events.txt</text>
+  <rect fill="#f5922a" x="274" y="66" width="62" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="340" y="66" width="8" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".75" x="352" y="66" width="56" height="6" rx="3"/>
+  <rect fill="#6a9955" x="274" y="82" width="116" height="6" rx="3"/>
+  <rect fill="#f5922a" x="274" y="98" width="78" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="356" y="98" width="8" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="368" y="98" width="8" height="6" rx="3"/>
+  <rect fill="#f5922a" x="286" y="114" width="14" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="304" y="114" width="8" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".75" x="316" y="114" width="72" height="6" rx="3"/>
+  <rect fill="#f5922a" x="286" y="130" width="30" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="320" y="130" width="8" height="6" rx="3"/>
+  <rect fill="#c586c0" x="332" y="130" width="70" height="6" rx="3"/>
+  <rect fill="#f5922a" x="286" y="146" width="40" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="330" y="146" width="8" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="342" y="146" width="8" height="6" rx="3"/>
+  <rect fill="#f5922a" x="298" y="162" width="74" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="376" y="162" width="8" height="6" rx="3"/>
+  <rect fill="#4fa8d8" x="388" y="162" width="16" height="6" rx="3"/>
+  <rect fill="#f5922a" x="298" y="178" width="70" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="372" y="178" width="8" height="6" rx="3"/>
+  <rect fill="#4fa8d8" x="384" y="178" width="10" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="286" y="194" width="8" height="6" rx="3"/>
+  <rect fill="var(--vscode-foreground, #ccc)" opacity=".45" x="274" y="210" width="8" height="6" rx="3"/>
+  <text fill="var(--vscode-descriptionForeground, #999)" font-size="13" font-family="var(--vscode-font-family, sans-serif)" x="360" y="278" text-anchor="middle">CWTools or ParadoxCode</text>
+  <!-- Installing one of them ticks the step. -->
+  <path d="M226 140h20" stroke="#f5922a" stroke-width="2" fill="none" stroke-dasharray="4 4"/>
+  <path fill="#f5922a" d="m256 140-9-4v8z"/>
+  <circle fill="#f5922a" cx="438" cy="46" r="11"/>
+  <path d="m432 46 4 4 8-8" stroke="var(--vscode-editor-background, #1e1e1e)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

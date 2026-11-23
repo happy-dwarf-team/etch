@@ -88,7 +88,7 @@ When Etch is installed, go on to [Your first preview](first-preview.md).
 
 ## The Get Started page
 
-Once Etch is installed, VS Code opens **Get Started with Etch** on its Welcome page. Five steps
+Once Etch is installed, VS Code opens **Get Started with Etch** on its Welcome page. Six steps
 show the main things Etch does, each with a button that does it:
 
 1. **Find the game**: Etch says whether it found the game. **Set the Game Folder** opens the
@@ -97,11 +97,13 @@ show the main things Etch does, each with a button that does it:
 3. **Find a widget in the Widget Outline**: **Show the Widget Outline** opens it in the Explorer.
 4. **Fill texts with sample data**: what **Data ▾** in the preview does.
 5. **Start the live game (optional)**: **Start the Live Game**.
+6. **Colour your script files**: **Install CWTools** or **Install ParadoxCode** installs one of
+   the two extensions of [Coloured text in script files](#coloured-text-in-script-files).
 
 A step ticks itself when you have done it, whether with its button or not: when Etch finds the
-game, when a preview opens, when the Widget Outline shows, when you open the sample data step and
-when the live game starts. To open the page again, run **Etch: Get Started** from the Command
-Palette (<kbd>Ctrl+Shift+P</kbd>).
+game, when a preview opens, when the Widget Outline shows, when you open the sample data step,
+when the live game starts and when CWTools or ParadoxCode is installed and turned on. To open the
+page again, run **Etch: Get Started** from the Command Palette (<kbd>Ctrl+Shift+P</kbd>).
 
 ## Free and private
 
