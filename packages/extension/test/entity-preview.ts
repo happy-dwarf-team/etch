@@ -42,13 +42,14 @@ const GFX = `objectTypes = {
   }
   pdxmesh = { name = "etch_knob_mesh" file = "gfx/models/etch/etch_knob.mesh" scale = 0.5 }
   pdxparticle = { name = "etch_sparks" type = "etch_sparks_system" scale = 0.8 }
+  pdxparticle = { name = "etch_burst" type = "etch_burst_system" }
 }
 `;
 
 const ASSET = `entity = {
   name = "etch_flag"
   pdxmesh = "etch_flag_mesh"
-  state = { name = "idle" animation = "idle" event = { time = 0.5 node = "tip" particle = "etch_sparks" } }
+  state = { name = "idle" animation = "idle" event = { time = 0.5 node = "tip" particle = "etch_sparks" } event = { node = "tip" particle = "etch_burst" } }
   state = { name = "walk" animation = "walk" event = { particle = "etch_dust" } }
   state = { name = "wide" animation = "wide" }
   attach = { name = "top" tip = "etch_knob" }
@@ -66,9 +67,17 @@ animation = { name = "etch_wave_animation" file = "etch_wave.anim" }
 animation = { name = "etch_wide_animation" file = "etch_wide.anim" }
 `;
 
-// The particle systems: the one the pdxparticle type etch_sparks draws. The walk state's etch_dust
-// is no pdxparticle type.
+// The particle systems: the one the pdxparticle type etch_sparks draws, whose event at 0.5 s comes
+// after the end of the idle state's two frames, so it never starts, and etch_burst's: big green
+// sprites that start at once and stand still. The walk state's etch_dust is no pdxparticle type.
 const PARTICLES = `particle = { name = "etch_sparks_system" subsystem = { max_amount = 10 } }
+particle = {
+  name = "etch_burst_system"
+  subsystem = {
+    max_amount = 50 duration = 0.1 emission = 1000 life = 10 size = 2
+    texture = { shader = "ParticleAlphaBlend" file = "gfx/particles/etch_spark.dds" }
+  }
+}
 `;
 
 type Summary = Extract<EntityShown, { ok: true }>['summary'];
@@ -79,6 +88,8 @@ type Drawn = NonNullable<Summary['drawn']> & {
   readonly frame: Summary['frame'];
   /** The Bones button's bones, as the summary gives them. */
   readonly skeleton: Summary['skeleton'];
+  /** The particles alive, as the summary gives them. */
+  readonly live: number | undefined;
 };
 
 /** The colour the open preview of an entity draws, read back after a frame with `controls`. */
@@ -103,6 +114,7 @@ async function measure(
         from: JSON.stringify({ shapes, textured, textures, nodes: entity?.nodes }),
         frame: result.summary.frame,
         skeleton: result.summary.skeleton,
+        live: entity?.liveParticles,
       });
     });
   });
@@ -158,6 +170,10 @@ export async function testEntityPreview(api: EtchApi): Promise<void> {
   await writeFile(path.join(entities, 'etch_wide.anim'), binary(ANIM_THREE_JOINTS));
   await mkdir(path.join(game, 'gfx', 'particles'));
   await writeFile(path.join(game, 'gfx', 'particles', 'etch_sparks.asset'), PARTICLES);
+  await writeFile(
+    path.join(game, 'gfx', 'particles', 'etch_spark.dds'),
+    dds(2, 2, [0, 255, 0, 255]),
+  );
   const asset = vscode.Uri.file(path.join(entities, 'etch_units.asset'));
   await writeFile(asset.fsPath, ASSET);
 
@@ -194,22 +210,43 @@ export async function testEntityPreview(api: EtchApi): Promise<void> {
         'etch_flag: state walk: pdxmesh "etch_flag_mesh" has no animation id "walk"',
         'etch_flag: state wide: gfx/entities/etch_wide.anim has 3 joints, etch_flag.mesh 2 bones; the game plays nothing',
       ],
-      // The idle state's particle event, named since particles are not drawn, with the system its
-      // pdxparticle type draws and the type's scale.
-      particles: ['etch_flag: etch_sparks (etch_sparks_system, scale 0.8) on tip at 0.5 s'],
+      // The idle state's particle events, with the system each pdxparticle type draws and the
+      // type's scale; the effects have not sent out a particle yet.
+      particles: [
+        'etch_flag: etch_sparks (etch_sparks_system, scale 0.8) on tip at 0.5 s',
+        'etch_flag: etch_burst (etch_burst_system) on tip',
+      ],
+      liveParticles: 0,
     });
     assert.equal(shown.summary.shapes, 2, 'the flag and the knob, collision shapes apart');
     assert.equal(shown.summary.textured, 2, 'both textured through the playset');
     // The default layout leaves the canvas only a few hundred drawn pixels, or none in CI's
     // smaller window, where the knob then read as background grey.
     await makeRoom();
-    const knobbed = await measure(api, asset, 'etch_flag');
+    // The burst's green sprites off, so that the knob's red shows.
+    const knobbed = await measure(api, asset, 'etch_flag', { particles: false });
     // The frame slider pauses the idle state and poses the flag and the knob on its tip at a
     // frame: the same frame draws the same, the other (the tip turned) does not.
-    const first = await measure(api, asset, 'etch_flag', { frame: 0 });
+    const first = await measure(api, asset, 'etch_flag', { frame: 0, particles: true });
     assert.deepEqual(first.frame, { at: 0, of: 2, playing: false });
     const second = await measure(api, asset, 'etch_flag', { frame: 1 });
     assert.deepEqual(second.frame, { at: 1, of: 2, playing: false });
+    assert.equal(first.live, 0, 'no particle at the state start');
+    // 1/15 s in, the burst has sent out its 50 green sprites, which the Particles button hides.
+    assert.equal(second.live, 50, 'the burst is drawn on frame 1');
+    const hidden = await measure(api, asset, 'etch_flag', { frame: 1, particles: false });
+    assert.equal(hidden.live, undefined);
+    assert.ok(
+      second.mean[1] > hidden.mean[1] + 10 && second.pixels >= hidden.pixels,
+      `the burst's green sprites are drawn: ${String(second.mean)} over ${String(second.pixels)} ` +
+        `pixels, ${String(hidden.mean)} over ${String(hidden.pixels)} without`,
+    );
+    const shownAgain = await measure(api, asset, 'etch_flag', { frame: 1, particles: true });
+    assert.deepEqual(
+      [shownAgain.pixels, shownAgain.mean],
+      [second.pixels, second.mean],
+      'the same frame draws the same',
+    );
     assert.notDeepEqual(
       [second.pixels, second.mean],
       [first.pixels, first.mean],
@@ -238,7 +275,7 @@ export async function testEntityPreview(api: EtchApi): Promise<void> {
       `the missing attachment is named: ${JSON.stringify(bare.summary.entity.problems)}`,
     );
     // Without the knob only the flag's dark blue-grey texture is drawn.
-    const plain = await measure(api, asset, 'etch_flag_bare');
+    const plain = await measure(api, asset, 'etch_flag_bare', { particles: false });
     assert.ok(
       knobbed.mean[0] > plain.mean[0] + 15 && knobbed.mean[0] > knobbed.mean[2],
       `the red knob is drawn: ${String(knobbed.mean)} with it (${String(knobbed.pixels)} pixels of ` +

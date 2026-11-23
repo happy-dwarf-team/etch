@@ -18,6 +18,7 @@ import * as path from 'node:path';
 import * as vscode from 'vscode';
 import {
   keyOf,
+  normaliseGamePath,
   parseScript,
   textureCandidates,
   type EntryNode,
@@ -158,6 +159,40 @@ export async function texturesOf(
     }
   }
   return textures;
+}
+
+/**
+ * A texture by its game-relative path (a particle subsystem's `file`), decoded: through the
+ * playset, else in `beside` (the folder of a file outside the playset) by its file name.
+ */
+export async function gameTexture(
+  gamePath: string,
+  files: GameFiles,
+  beside: string | undefined,
+): Promise<MeshTexture> {
+  const candidates = textureCandidates(normaliseGamePath(gamePath));
+  for (const candidate of candidates) {
+    const found = await files.find(candidate);
+    const file =
+      found?.absolutePath ??
+      (beside !== undefined && (await exists(path.join(beside, path.basename(candidate))))
+        ? path.join(beside, path.basename(candidate))
+        : undefined);
+    if (file === undefined) continue;
+    try {
+      const { summary, rgba } = inspectTexture(file, await read(file));
+      const source =
+        found === undefined
+          ? 'beside the file'
+          : found.layer.name === 'game'
+            ? 'the game'
+            : found.layer.name;
+      return { ok: true, width: summary.width, height: summary.height, rgba, source };
+    } catch (error) {
+      return { ok: false, message: error instanceof Error ? error.message : String(error) };
+    }
+  }
+  return { ok: false, message: `not found: ${candidates.join(', ')}` };
 }
 
 /** A country tag the flag request takes: three letters or digits, as the game's tags are. */
@@ -737,6 +772,7 @@ export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): str
   <span class="sep"></span>
   <button id="wireframe" aria-pressed="false" title="Show the triangle edges">Wire</button>
   <button id="skeleton" aria-pressed="false" title="Show the skeleton over the model: yellow lines join each bone to the one it hangs from, white dots mark the bones, bigger orange dots mark where an attached entity hangs. Point at a dot to see its name">Bones</button>
+  <button id="particles" aria-pressed="true" title="Show the smoke, sparks and flashes the state starts. Etch draws them its own way: close to the game's, not the same" hidden>Particles</button>
   <button id="reset" title="Frame the whole mesh">Reset view</button>
 </header>
 <div id="error" role="alert" hidden></div>

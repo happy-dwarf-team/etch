@@ -75,7 +75,8 @@ see [Warnings in the files](entities.md#warnings-in-the-files) on the Entities p
 
 ## What it doesn't do
 
-- It does not draw particle effects (see [Entities](entities.md)).
+- Opening an `.asset` file does not show its effects. To see one, open the entity preview of an
+  entity whose state starts it (see [Entities](entities.md#particles)).
 - What many keys do is Etch's reading, not checked in the game. Etch does not know how a value's
   variation (the second number in `{ 1.75 0.4 }`) and its curves add up.
 - It does not check the keys inside `childsystem`, `position` and `color` blocks.

@@ -202,7 +202,12 @@ export function mapTreeOf(types: Iterable<PdxMeshType>, meshPath: string): PdxMe
 export function readAssetFile(
   parsed: ParsedScript,
   path: string,
-): { entities: EntityDefinition[]; animations: AnimationDefinition[]; particles: string[] } {
+): {
+  entities: EntityDefinition[];
+  animations: AnimationDefinition[];
+  particles: string[];
+  path: string;
+} {
   const folder = normaliseGamePath(path).split('/').slice(0, -1).join('/');
   const entities: EntityDefinition[] = [];
   for (const block of blocksOf(parsed, 'entity')) {
@@ -258,7 +263,7 @@ export function readAssetFile(
     const name = scalarOf(block, 'name')?.text;
     return name === undefined ? [] : [name];
   });
-  return { entities, animations, particles };
+  return { entities, animations, particles, path: normaliseGamePath(path) };
 }
 
 /**
@@ -271,6 +276,8 @@ export class EntityIndex {
   readonly entities = new Map<string, EntityDefinition>();
   readonly animations = new Map<string, AnimationDefinition>();
   readonly particles = new Set<string>();
+  /** The game-relative `.asset` file of each particle system, by name. */
+  readonly particleFiles = new Map<string, string>();
 
   /**
    * Files in load order: `.gfx` files' pdxmesh types, `.asset` files' definitions and `.gfx`
@@ -282,6 +289,7 @@ export class EntityIndex {
       readonly entities: readonly EntityDefinition[];
       readonly animations: readonly AnimationDefinition[];
       readonly particles?: readonly string[];
+      readonly path?: string;
     }[],
     pdxparticles: readonly (readonly PdxParticleType[])[] = [],
   ): EntityIndex {
@@ -293,7 +301,10 @@ export class EntityIndex {
     for (const file of assets) {
       for (const entity of file.entities) index.entities.set(entity.name, entity);
       for (const animation of file.animations) index.animations.set(animation.name, animation);
-      for (const particle of file.particles ?? []) index.particles.add(particle);
+      for (const particle of file.particles ?? []) {
+        index.particles.add(particle);
+        if (file.path !== undefined) index.particleFiles.set(particle, file.path);
+      }
     }
     return index;
   }

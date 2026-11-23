@@ -70,7 +70,8 @@ names the state in the box under the bar.
 
 You turn, move and zoom the model as in the [mesh preview](mesh-preview.md). The colour boxes,
 **Country**, **Region**, **LOD**, **Snow**, **Wire**, **Bones**, **Diffuse**, **Normal**, **Spec**
-and **Reset view** work the same way. As there, the colour boxes, **Country**, **Region**, **LOD**
+and **Reset view** work the same way. **Particles** shows or hides the state's smoke, sparks and
+flashes (see [Particles](#particles)). As there, the colour boxes, **Country**, **Region**, **LOD**
 and **Snow** show only when the model has parts they work on. **Bones** shows the skeletons of the
 entity and of everything attached to it that has one. An orange dot marks each bone an attached
 entity hangs on: point at it to see the bone's name, then the name of the attached entity.
@@ -112,8 +113,26 @@ A box under the bar lists what Etch could not find or draw:
 
 A state's `event = { … }` blocks (not EU4 events) start particle effects, such as the muzzle
 flash of an artillery piece. In `western_units.asset`, the `attack` state of
-`westerngfx_ARTILLERY_1_cannon` starts `artillery_cannon` on the bone `cannon_muzzle`. Etch does not
-draw them: while the state plays, the line at the bottom names them after "particles not drawn".
+`westerngfx_ARTILLERY_1_cannon` starts `artillery_cannon` on the bone `cannon_muzzle`.
+
+Etch draws these effects while the state plays. The smoke, sparks and flashes come out of the
+event's `node` at its `time`, every time the animation comes round to it.
+
+The `node` is a bone of the mesh, or a named point that the `.mesh` file stores for this. The
+`muzzle` of vanilla's muskets is such a point. If the mesh has neither of that name, the effect
+starts at the entity's feet.
+
+Etch draws the effects in its own way: close to the game's, but not the same (see
+[Differences from the game](#differences-from-the-game)). While they play, the line at the bottom
+says how many particles there are, then the effects' names, for example "particles (approximate,
+120 alive): western_musket: musket_muzzle on muzzle at 0.9 s".
+
+**Particles** shows only for an entity with effects that Etch can draw. Click it to hide them: the
+line then says "particles off", then the names. When none of the state's effects can be drawn, the
+line says "particles not drawn", then the names, and the box under the bar says why (see below).
+
+Pause the animation and drag the frame slider: a frame always shows the same particles, however
+you got to it.
 
 To start a particle, the game needs two definitions:
 
@@ -125,9 +144,11 @@ To start a particle, the game needs two definitions:
    `.asset` file. The game's are in `gfx/particles`.
 
 So in the game, an event with `particle = "siege_cannon"` starts the effect `artillery_cannon`
-with the scale 0.8. Etch does not draw it, but the line at the bottom shows the effect and the
-scale after the name: "siege_cannon (artillery_cannon, scale 0.8)". It shows them only when the
-effect has another name or the `pdxparticle` has a scale.
+with the scale 0.8, and so does Etch. The scale makes each particle bigger and makes it fly
+further.
+The line at the bottom shows the effect and the scale after the name: "siege_cannon
+(artillery_cannon, scale 0.8)". It shows them only when the effect has another name or the
+`pdxparticle` has a scale.
 
 The box under the bar lists an event whose particle the game cannot start:
 
@@ -160,9 +181,34 @@ warnings in the open files then update.
 Etch also explains the keys inside the effect's own `particle = { … }` block when you hover over
 them, and warns about mistakes in them: see [Particle effects](particles.md).
 
+### Differences from the game
+
+These parts work as in the game:
+
+- when an effect sends out particles, and how many;
+- how long they live, how fast and which way they fly;
+- how their size, rotation and colour change over their life;
+- the picture from the effect's `texture`, and how it blends with what is behind it.
+
+These parts are Etch's guess:
+
+- The exact direction and other chance values of each particle. The game picks new ones for every
+  shot, so its own shots differ from each other too.
+- How a force block with `type = "turbulence"` swirls the particles (the force blocks are
+  explained in [Particle effects](particles.md)).
+- A `type = "point"` force pulls the particles towards the force's `position`. The game may push
+  them away instead.
+- How fast a `type = "spin"` force turns the particles.
+- A subsystem with `trail = yes` shows as separate particles. The game draws a trail, a band that
+  follows the particles.
+- When you pick another state, every particle goes at once. In the game some effects may stay.
+- An event whose `time` is later than the end of the state's animation never starts in Etch.
+  What the game does then is not known.
+
 ## What it doesn't do
 
-- It does not draw particle effects.
+- It does not draw particle effects exactly as the game does: see
+  [Differences from the game](#differences-from-the-game).
 - It does not draw an attachment that hangs more than six levels down (an entity on an entity on
   an entity …). Vanilla's go three levels down at most.
 - It combines an entity with its `clone` by Etch's own reading: how the game does it is not

@@ -7,6 +7,7 @@
 //                        [[[skeleton]]] / [[[[bone]]]]  ix, pa (parent; none on the root),
 //                                                       tx (inverse bind: 3 × 3 by columns, then
 //                                                       the translation)
+//   [locator] / [[name]]  p (xyz), q (xyzw), pa (the bone it hangs on, by name; none: the mesh)
 //
 // as every mesh of EU4 1.37.5 writes it. An empty `[mesh]` (no properties, no children) is skipped.
 // Shapes whose shader is `Collision` are the game's
@@ -83,6 +84,21 @@ export interface PdxMesh {
   readonly lodDistances: readonly number[] | undefined;
   /** The bounds of every drawn (not collision) vertex, or `undefined` for none. */
   readonly bounds: { readonly min: readonly number[]; readonly max: readonly number[] } | undefined;
+  /** The `[locator]` points; empty without them. */
+  readonly locators: readonly MeshLocator[];
+}
+
+/**
+ * A point of a mesh that a state's particle event can start on, as a bone can: vanilla's muskets'
+ * `muzzle` and ships' `gun_01`. Its place relative to its bone, or the mesh without one.
+ */
+export interface MeshLocator {
+  readonly name: string;
+  readonly position: readonly [number, number, number];
+  /** A quaternion, x y z w, as an animation's joints have. */
+  readonly rotation: readonly [number, number, number, number];
+  /** The bone it hangs on, by name. */
+  readonly parent: string | undefined;
 }
 
 export function readMesh(bytes: Uint8Array): PdxMesh {
@@ -161,7 +177,23 @@ export function readMesh(bytes: Uint8Array): PdxMesh {
     shapes,
     lodDistances: distances === undefined ? undefined : Array.from(distances),
     bounds: (min[0] ?? Infinity) <= (max[0] ?? -Infinity) ? { min, max } : undefined,
+    locators: locatorsOf(root),
   };
+}
+
+function locatorsOf(root: PdxNode): MeshLocator[] {
+  const locators = childOf(root, 'locator');
+  if (locators === undefined) return [];
+  return locators.children.map((locator) => {
+    const p = floats(locator, 'p');
+    const q = floats(locator, 'q');
+    return {
+      name: locator.name,
+      position: [p?.[0] ?? 0, p?.[1] ?? 0, p?.[2] ?? 0],
+      rotation: [q?.[0] ?? 0, q?.[1] ?? 0, q?.[2] ?? 0, q?.[3] ?? 1],
+      parent: strings(locator, 'pa')?.[0],
+    };
+  });
 }
 
 /** A shape's `lod` property; `undefined` without one or for a negative one (every distance). */

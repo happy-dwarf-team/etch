@@ -2,6 +2,8 @@
 // (src/entity-preview.ts) and their webview script (webview/mesh.ts). Types only, so that both
 // sides can import them.
 
+import type { ParticleSystem } from '@etch/core/asset';
+
 /** What the mesh webview drew, for Etch's tests. */
 export interface MeshSummary {
   readonly shapes: number;
@@ -192,6 +194,8 @@ export interface MeshControls {
   readonly frame?: number;
   /** The Bones button: the skinned shapes' bones drawn over the model. */
   readonly skeleton?: boolean;
+  /** The Particles button: the state's particle effects drawn by the approximate player. */
+  readonly particles?: boolean;
 }
 
 /**
@@ -233,8 +237,13 @@ export interface EntitySummary {
   readonly state: string | undefined;
   /** What the host could not resolve or read. */
   readonly problems: readonly string[];
-  /** The particle effects the shown state starts, which are not drawn. */
+  /** The particle effects the shown state starts. */
   readonly particles: readonly string[];
+  /**
+   * The particles alive in the frame drawn last, while the Particles button is on; `undefined`
+   * while it is off or no effect of the entity can be drawn.
+   */
+  readonly liveParticles?: number;
 }
 
 /** A texture the host decoded, or why it could not. */
@@ -273,6 +282,22 @@ export interface EntityNode {
   readonly scale: number;
   /** For each state the entity has: the key in `animations` of what it plays, if anything. */
   readonly states: Readonly<Record<string, string | undefined>>;
+}
+
+/** A particle effect a state's `event` starts, read for the preview's approximate player. */
+export interface EntityParticleEffect {
+  /** The index in `nodes` of the entity whose state has the event. */
+  readonly node: number;
+  readonly state: string;
+  /** The bone it starts on; `undefined` for the entity's origin. */
+  readonly bone: string | undefined;
+  /** Seconds into the state's animation; 0 for an event with no `time`. */
+  readonly time: number;
+  /** The pdxparticle type's name. */
+  readonly name: string;
+  /** The pdxparticle type's `scale`, 1 when it has none. */
+  readonly scale: number;
+  readonly system: ParticleSystem;
 }
 
 /** Messages from the mesh webview. */
@@ -333,8 +358,12 @@ export type MeshHostMessage =
       readonly state: string | undefined;
       readonly problems: readonly string[];
       /**
-       * The particle effects each state's `event`s start, by state name, in words: Etch does not
-       * draw particles, so the preview names them.
+       * The particle effects each state's `event`s start, by state name, in words: the bar names
+       * them, and those not in `effects` are not drawn.
        */
       readonly particles: Readonly<Record<string, readonly string[]>>;
+      /** The effects the preview's approximate particle player draws. */
+      readonly effects: readonly EntityParticleEffect[];
+      /** Their subsystems' textures, decoded, by game-relative path as the subsystem writes it. */
+      readonly particleTextures: Readonly<Record<string, MeshTexture>>;
     };
