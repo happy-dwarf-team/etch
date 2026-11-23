@@ -22,6 +22,7 @@ import { registerTexturePreview, type TexturePreviewApi } from './texture-previe
 import { registerMeshPreview, type MeshPreviewApi } from './mesh-preview.ts';
 import { registerEntityPreview, type EntityPreviewApi } from './entity-preview.ts';
 import { registerDlcFiles } from './dlc-files.ts';
+import { registerScriptLanguageNotice } from './script-language-notice.ts';
 
 /** What `activate` returns: for Etch's own tests, not a stable API for other extensions. */
 export interface EtchApi {
@@ -61,6 +62,7 @@ export function activate(context: vscode.ExtensionContext): EtchApi {
   context.subscriptions.push(registerScriptProfile(live.game, output, context.globalStorageUri));
   context.subscriptions.push(registerProvinceIds(output));
   context.subscriptions.push(registerParticleDiagnostics(output));
+  context.subscriptions.push(registerScriptLanguageNotice(context));
   if (RUNNING_BUILD !== undefined) {
     const build = new BuildCheck(RUNNING_BUILD, context.extensionUri, output);
     context.subscriptions.push(
