@@ -1361,6 +1361,14 @@ export const CLIPS: readonly Clip[] = [
       await sleep(150);
       take.click();
       await level.click();
+      // The level's menu opens on the current size; Fit is its first item.
+      const fit = wb.frame.locator('#zoom-menu button.item', { hasText: 'Fit' });
+      await fit.waitFor({ timeout: 2_000 });
+      await sleep(300);
+      await pointTo(context, await centre(fit), 250);
+      await sleep(150);
+      take.click();
+      await fit.click();
       await wb.frame.locator('#zoom-level', { hasText: initial }).waitFor({ timeout: 2_000 });
       take.mark('fit', { label: ((await level.textContent()) ?? '').trim() });
       await sleep(600);
@@ -2719,7 +2727,7 @@ export const CLIPS: readonly Clip[] = [
   },
   {
     // A ship's mesh: a drag turns it, Wire on and off, a country's flag on its sails, its idle
-    // animation playing, Reset view.
+    // animation playing, Fit model.
     id: 'mesh',
     async run(context) {
       const { wb, take } = context;
@@ -2743,7 +2751,7 @@ export const CLIPS: readonly Clip[] = [
         wire: view.locator('#wireframe'),
         flag: view.locator('#flag'),
         animation,
-        reset: view.locator('#reset'),
+        reset: view.locator('#zoom-level'),
       };
       for (const [name, locator] of Object.entries(controls)) {
         take.mark(`bar-${name}`, { source: 'vscode', rect: await wb.box(locator) });
@@ -2802,7 +2810,7 @@ export const CLIPS: readonly Clip[] = [
       await animation.selectOption({ label: idle });
       await view.locator('#play[aria-pressed="true"]').waitFor();
       await sleep(2000);
-      // Reset view frames the ship as at the start.
+      // Fit model frames the ship as at the start.
       take.mark('to', { label: 'reset' });
       await pointTo(context, await centre(controls.reset), 500);
       await sleep(150);
@@ -2877,7 +2885,7 @@ export const CLIPS: readonly Clip[] = [
                 text: 'Flag: a country on its sails',
               },
               { from: at(animate.t) - 0.05, text: `Its idle animation, playing` },
-              { from: at(reset.t) - 0.05, text: 'Reset view' },
+              { from: at(reset.t) - 0.05, text: 'Fit model' },
             ],
             end - 0.4,
           ),

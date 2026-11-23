@@ -59,7 +59,7 @@ The preview opens with the whole game screen fitted into the panel, but never ab
 | Zoom in or out around the middle | click **+** or **−** in the toolbar |
 | Go to 100 % | <kbd>Ctrl+0</kbd> |
 | Fit the screen into the panel | <kbd>Ctrl+Shift+0</kbd> |
-| Switch between fit and 100 % | click the zoom level, such as "Fit · 47 %" |
+| Fit the screen, or pick 50 %, 100 %, 200 % or 400 % | click the zoom level, such as "Fit · 47 %", and pick in its menu |
 | Move around a zoomed screen | the mouse wheel (<kbd>Shift</kbd> + wheel sideways), or drag |
 
 <kbd>Ctrl</kbd> with the numeric keypad's <kbd>+</kbd>, <kbd>−</kbd> and <kbd>0</kbd> works too.

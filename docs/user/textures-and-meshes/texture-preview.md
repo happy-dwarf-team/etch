@@ -27,9 +27,13 @@ it is see-through. The bar above it lists:
 | **RGB**                       | Shows the colours alone, as if nothing were see-through.            |
 | **A**                         | Shows the alpha alone, in grey: white is solid, black is see-through. |
 | **Mip**                       | Picks one of the smaller copies, down to 1 × 1 pixel.               |
-| **Fit**                       | Shrinks a large texture to fit the panel. It never enlarges.        |
-| **1:1**                       | Shows one texture pixel per screen pixel.                           |
-| **−** and **+**, <kbd>Ctrl</kbd>+mouse wheel | Zoom out and in.                                     |
+| **−** and **+**, <kbd>Ctrl</kbd>+mouse wheel, <kbd>Ctrl+-</kbd> and <kbd>Ctrl+=</kbd> | Zoom out and in. |
+| The zoom level, such as "Fit · 50 %" | Opens a menu: **Fit**, or 100 %, 200 %, 400 % or 800 %.   |
+| <kbd>Ctrl+0</kbd>             | Goes to 100 %: one texture pixel per screen pixel.                   |
+| <kbd>Ctrl+Shift+0</kbd>       | Fits the texture into the panel. A large one shrinks; a small one is never enlarged. |
+
+After you click in the preview, the zoom keys zoom the texture instead of VS Code. They are the
+same in the interface preview and the mesh preview.
 
 **RGBA**, **RGB** and **A** sit in one frame because you pick one of them: the one you picked is
 filled. With the keyboard, press <kbd>Tab</kbd> to reach them and the arrow keys to pick another.

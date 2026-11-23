@@ -38,8 +38,8 @@ The bar also counts the mesh's collision shapes, as "collision (hidden)".
 | ------------------------------------ | --------------------------------------------------------- |
 | Drag                                 | Turns the model.                                          |
 | <kbd>Shift</kbd>+drag, or right-drag | Moves it.                                                 |
-| Mouse wheel                          | Zooms in and out.                                         |
-| **Reset view**                       | Turns the model back as it opened and fits all of it in.  |
+| Mouse wheel, **−** and **+**, <kbd>Ctrl+-</kbd> and <kbd>Ctrl+=</kbd> | Zoom out and in. |
+| **Fit model**, <kbd>Ctrl+Shift+0</kbd> or <kbd>Ctrl+0</kbd> | Turns the model back as it opened and fits all of it in. |
 | **Wire**                             | Shows the edges of its triangles as lines over the model. |
 | **Bones**                            | Shows the mesh's bones over the model (see [Skeleton](#skeleton)). |
 | **Diffuse**                          | Turns the colour texture off and on.                      |
