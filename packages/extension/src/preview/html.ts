@@ -1,5 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import * as vscode from 'vscode';
+import { CONTROLS_CSS } from '../webview-controls.ts';
 
 /**
  * The neutral background the transparent render is composited over (spec section 2): mid grey,
@@ -30,26 +31,10 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
 <meta http-equiv="Content-Security-Policy" content="${csp}">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style nonce="${nonce}">
-  html, body { height: 100%; margin: 0; }
-  body {
-    display: flex; flex-direction: column; overflow: hidden;
-    background: var(--vscode-editor-background); color: var(--vscode-foreground);
-    font-family: var(--vscode-font-family); font-size: var(--vscode-font-size);
-  }
-  header {
-    display: flex; align-items: center; gap: 8px; padding: 4px 8px;
-    border-bottom: 1px solid var(--vscode-panel-border, transparent);
-  }
-  #title { font-weight: 600; }
-  #file { min-width: 0; opacity: 0.7; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .spacer { flex: 1; }
-  header > button, #zoom > button { flex-shrink: 0; white-space: nowrap; }
-  button {
-    font: inherit; color: var(--vscode-foreground);
-    background: var(--vscode-dropdown-background); border: 1px solid var(--vscode-dropdown-border, transparent);
-    padding: 1px 6px;
-  }
-  button[aria-pressed="true"] { background: var(--vscode-button-background); color: var(--vscode-button-foreground); }
+  ${CONTROLS_CSS}
+  header { flex-wrap: nowrap; }
+  #title { font-weight: 600; margin: 0 4px 0 2px; white-space: nowrap; }
+  #file { min-width: 0; margin-right: 4px; color: var(--vscode-descriptionForeground); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   /* The menus of the toolbar: View ▾ (spec section 4), and Data ▾ beside it (section 5). */
   #menus { display: flex; gap: 4px; position: relative; }
   .popup {
@@ -63,8 +48,9 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
   .popup[hidden] { display: none; }
   .popup h4 { margin: 6px 10px 2px; font-size: 0.85em; text-transform: uppercase; opacity: 0.7; }
   .popup .item {
-    display: flex; align-items: center; gap: 6px; width: 100%; box-sizing: border-box;
-    padding: 2px 10px; border: 0; background: none; text-align: left; cursor: pointer;
+    display: flex; align-items: center; justify-content: flex-start; gap: 6px; width: 100%; height: auto;
+    min-height: 24px; box-sizing: border-box; padding: 2px 10px; border: 0; border-radius: 0;
+    background: none; text-align: left; white-space: normal; cursor: pointer;
   }
   .popup .item:hover:not(:disabled) { background: var(--vscode-menu-selectionBackground, var(--vscode-list-hoverBackground)); }
   .popup .item:disabled { opacity: 0.5; cursor: default; }
@@ -95,9 +81,8 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
   /* Placed and sized by the webview script from the zoom (etch#162); sharp pixels above 100 %. */
   canvas { position: absolute; left: 0; top: 0; background: ${BACKDROP}; }
   canvas.sharp { image-rendering: pixelated; }
-  #zoom { display: flex; gap: 2px; }
-  #zoom-level { min-width: 72px; }
-  canvas[hidden], .box[hidden], #tip[hidden] { display: none; }
+  #zoom { display: flex; gap: 1px; }
+  #zoom-level { min-width: 7.5em; }
   .box { position: absolute; pointer-events: none; box-sizing: border-box; }
   #hover { border: 1px dashed var(--vscode-editorCursor-foreground, #fff); }
   #selected { border: 2px solid var(--vscode-focusBorder, #0af); }
@@ -122,11 +107,11 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
   <span class="spacer"></span>
   <span id="zoom" role="group" aria-label="Zoom">
     <button id="zoom-out" type="button" title="Zoom out (Ctrl+-, Ctrl+wheel)">−</button>
-    <button id="zoom-level" type="button">Fit</button>
+    <button id="zoom-level" class="field" type="button">Fit</button>
     <button id="zoom-in" type="button" title="Zoom in (Ctrl+=, Ctrl+wheel)">+</button>
   </span>
   <button id="live-game" type="button" title="Start the live game with this playset (Etch: Start the Live Game).">Live game</button>
-  <button id="resolution" type="button">1920×1080</button>
+  <button id="resolution" class="field" type="button">1920×1080</button>
   <button id="pin" type="button" aria-pressed="false" disabled>Pin</button>
 </header>
 <ul id="notices"></ul>

@@ -51,8 +51,9 @@ More controls show only when the mesh has the parts they work on. The sections b
 ## See what each texture does
 
 **Diffuse** (the colour texture), **Normal** (the normal map) and **Spec** (the specular map)
-each turn one texture off and on, so you can see what it adds. A button is greyed out when no
-part of the model has that texture. The bar lists the textures that are off, such as "maps off:
+each turn one texture off and on, so you can see what it adds. They sit after the word **Maps**,
+and each has a check box: they add up, so any of them can be on at once. A button is greyed out
+when no part of the model has that texture. The bar lists the textures that are off, such as "maps off:
 diffuse, normal".
 
 - With **Diffuse** off, the model is plain grey. What the colour texture's see-through part (what

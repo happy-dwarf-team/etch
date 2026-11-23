@@ -145,13 +145,29 @@ levelSelect.addEventListener('change', () => {
   show();
 });
 
-for (const button of document.querySelectorAll<HTMLButtonElement>('#channels button')) {
+// RGBA, RGB and A are one choice (role="radiogroup"): a click or the arrow keys pick one, and
+// Tab reaches the group at the chosen one.
+const channelButtons = [...document.querySelectorAll<HTMLButtonElement>('#channels button')];
+function chooseChannels(button: HTMLButtonElement): void {
+  channels = (button.dataset['channels'] ?? 'rgba') as Channels;
+  for (const other of channelButtons) {
+    other.setAttribute('aria-checked', String(other === button));
+    other.tabIndex = other === button ? 0 : -1;
+  }
+  draw();
+}
+for (const [index, button] of channelButtons.entries()) {
   button.addEventListener('click', () => {
-    channels = (button.dataset['channels'] ?? 'rgba') as Channels;
-    for (const other of document.querySelectorAll('#channels button')) {
-      other.setAttribute('aria-pressed', String(other === button));
-    }
-    draw();
+    chooseChannels(button);
+  });
+  button.addEventListener('keydown', (event) => {
+    const move = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[event.key];
+    if (move === undefined) return;
+    event.preventDefault();
+    const next = channelButtons[(index + move + channelButtons.length) % channelButtons.length];
+    if (next === undefined) return;
+    chooseChannels(next);
+    next.focus();
   });
 }
 

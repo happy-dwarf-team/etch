@@ -8,6 +8,7 @@
 import { randomBytes } from 'node:crypto';
 import * as vscode from 'vscode';
 import type { TextureSummary } from '@etch/renderer/inspect';
+import { CONTROLS_CSS } from './webview-controls.ts';
 import type { TextureHostMessage, TextureWebviewMessage } from './texture-protocol.ts';
 
 export const TEXTURE_PREVIEW_VIEW_TYPE = 'etch.texturePreview';
@@ -133,31 +134,11 @@ function textureHtml(webview: vscode.Webview, extensionUri: vscode.Uri): string 
 <meta http-equiv="Content-Security-Policy" content="${csp}">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style nonce="${nonce}">
-  html, body { height: 100%; margin: 0; }
-  body {
-    display: flex; flex-direction: column; overflow: hidden;
-    background: var(--vscode-editor-background); color: var(--vscode-foreground);
-    font-family: var(--vscode-font-family); font-size: var(--vscode-font-size);
-  }
-  header {
-    display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 4px 8px;
-    border-bottom: 1px solid var(--vscode-panel-border, transparent);
-  }
-  #facts { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+  ${CONTROLS_CSS}
+  header { gap: 4px 8px; }
+  #facts { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-left: 2px; }
   #facts span { white-space: nowrap; }
-  .spacer { flex: 1; }
-  .group { display: flex; gap: 2px; }
-  button {
-    font: inherit; color: var(--vscode-foreground);
-    background: var(--vscode-dropdown-background); border: 1px solid var(--vscode-dropdown-border, transparent);
-    padding: 1px 6px;
-  }
-  button[aria-pressed="true"] { background: var(--vscode-button-background); color: var(--vscode-button-foreground); }
-  #error {
-    margin: 8px; padding: 4px 8px; white-space: pre-wrap;
-    border-left: 3px solid var(--vscode-notificationsErrorIcon-foreground);
-  }
-  #error[hidden] { display: none; }
+  .group { display: flex; gap: 1px; }
   main { flex: 1; overflow: auto; display: grid; place-items: center; }
   /* A checkerboard behind the texture, so transparent texels show. */
   #stage {
@@ -169,12 +150,6 @@ function textureHtml(webview: vscode.Webview, extensionUri: vscode.Uri): string 
     line-height: 0;
   }
   canvas { image-rendering: pixelated; display: block; }
-  footer { padding: 2px 8px; min-height: 1.4em; opacity: 0.8; font-variant-numeric: tabular-nums; white-space: pre; }
-  select {
-    font: inherit; color: var(--vscode-dropdown-foreground); background: var(--vscode-dropdown-background);
-    border: 1px solid var(--vscode-dropdown-border, transparent);
-  }
-  select[hidden] { display: none; }
 </style>
 </head>
 <body>
@@ -182,11 +157,12 @@ function textureHtml(webview: vscode.Webview, extensionUri: vscode.Uri): string 
   <div id="facts"></div>
   <div class="spacer"></div>
   <select id="level" title="Mip level" aria-label="Mip level" hidden></select>
-  <div class="group" id="channels" role="group" aria-label="Channels">
-    <button data-channels="rgba" aria-pressed="true" title="Colour over the checkerboard">RGBA</button>
-    <button data-channels="rgb" aria-pressed="false" title="Colour without alpha">RGB</button>
-    <button data-channels="a" aria-pressed="false" title="Alpha as grey">A</button>
+  <div class="seg" id="channels" role="radiogroup" aria-label="Channels">
+    <button role="radio" data-channels="rgba" aria-checked="true" tabindex="0" title="Colour over the checkerboard">RGBA</button>
+    <button role="radio" data-channels="rgb" aria-checked="false" tabindex="-1" title="Colour without alpha">RGB</button>
+    <button role="radio" data-channels="a" aria-checked="false" tabindex="-1" title="Alpha as grey">A</button>
   </div>
+  <span class="sep"></span>
   <div class="group" id="zoom" role="group" aria-label="Zoom">
     <button id="zoom-out" title="Zoom out">−</button>
     <button id="zoom-fit" aria-pressed="true" title="Fit the panel">Fit</button>

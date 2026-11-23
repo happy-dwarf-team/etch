@@ -31,6 +31,9 @@ it is see-through. The bar above it lists:
 | **1:1**                       | Shows one texture pixel per screen pixel.                           |
 | **−** and **+**, <kbd>Ctrl</kbd>+mouse wheel | Zoom out and in.                                     |
 
+**RGBA**, **RGB** and **A** sit in one frame because you pick one of them: the one you picked is
+filled. With the keyboard, press <kbd>Tab</kbd> to reach them and the arrow keys to pick another.
+
 At the bottom you see where the pixel under the mouse is, and its red, green, blue and alpha
 values.
 
