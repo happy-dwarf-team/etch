@@ -3,7 +3,7 @@
 // empty extensions folder and a copy of the demo mod as the workspace (spec section 8.3). It drives
 // the workbench with the keyboard, as a user would, and checks the framing rules before each
 // capture (section 8.4).
-import { copyFile, cp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { copyFile, cp, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import * as path from 'node:path';
 import {
   _electron,
@@ -187,18 +187,31 @@ export class Workbench {
     page: Page,
     hwnd: string,
     workspace: string,
+    run: string,
     openedAt: number,
   ) {
     this.app = app;
     this.page = page;
     this.hwnd = hwnd;
     this.workspace = workspace;
+    this.run = run;
     this.openedAt = openedAt;
   }
 
+  /** The run folder (`newRunFolder`): removed when the window closes. */
+  private readonly run: string;
+
   static async launch(options: LaunchOptions): Promise<Workbench> {
-    const run = path.join(options.work, 'run');
-    await rm(run, { recursive: true, force: true });
+    const run = await newRunFolder(options.work);
+    try {
+      return await Workbench.open(run, options);
+    } catch (error) {
+      await removeRunFolder(run);
+      throw error;
+    }
+  }
+
+  private static async open(run: string, options: LaunchOptions): Promise<Workbench> {
     const workspace = path.join(run, WORKSPACE_NAME);
     const excluded = new Set(
       (options.excluded ?? []).map((name) => path.join(options.demoMod, name)),
@@ -295,7 +308,7 @@ export class Workbench {
             String(DEVICE_SCALE),
         );
       }
-      return new Workbench(app, page, hwnd, workspace, openedAt);
+      return new Workbench(app, page, hwnd, workspace, run, openedAt);
     } catch (error) {
       await app.close().catch(() => undefined);
       throw error;
@@ -988,10 +1001,39 @@ export class Workbench {
     });
   }
 
-  /** Closes VS Code (unsaved edits go with its throwaway profile); the recorded video, if any. */
+  /**
+   * Closes VS Code and removes its run folder (unsaved edits go with the throwaway profile); the
+   * recorded video, if any, which is outside the run folder.
+   */
   async close(): Promise<string | undefined> {
     const video = this.page.video();
     await this.app.close();
-    return video === null ? undefined : await video.path();
+    const file = video === null ? undefined : await video.path();
+    await removeRunFolder(this.run);
+    return file;
+  }
+}
+
+/**
+ * A new folder for one window's workspace, profile and extensions, `<work>/run-XXXXXX`. Each
+ * window gets its own, so runs that share a work folder share its VS Code download
+ * (`<work>/vscode`) and nothing else. Removes the single `<work>/run` that Etch before this kept
+ * between runs.
+ */
+export async function newRunFolder(work: string): Promise<string> {
+  await mkdir(work, { recursive: true });
+  await removeRunFolder(path.join(work, 'run'));
+  return mkdtemp(path.join(work, 'run-'));
+}
+
+/**
+ * Removes a run folder. A file still held (a game the live take started is still closing) leaves
+ * it with a warning rather than failing a run whose pictures are made.
+ */
+export async function removeRunFolder(run: string): Promise<void> {
+  try {
+    await rm(run, { recursive: true, force: true, maxRetries: 5, retryDelay: 500 });
+  } catch (error) {
+    console.warn(`  could not remove ${run}: ${(error as Error).message}`);
   }
 }
