@@ -163,10 +163,14 @@ describe('CorpusPlaysetFiles', () => {
     expect(window).toMatchObject({ x: 10, y: 20, width: 300, height: 200 });
     expect(await files.window('no_such_window', { width: 1920, height: 1080 })).toBeUndefined();
     // The game's code sets some windows' size; the view's `codeSized` replaces the .gui's.
-    const sized = await files.window('test_window', { width: 1920, height: 1080 }, [], {
-      width: 500,
-      height: 100,
-    });
+    const sized = await files.window(
+      'test_window',
+      { width: 1920, height: 1080 },
+      {
+        width: 500,
+        height: 100,
+      },
+    );
     expect(sized?.layout.widgets.find((w) => w.parent === -1)).toMatchObject({
       width: 500,
       height: 100,

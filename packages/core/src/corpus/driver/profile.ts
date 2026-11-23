@@ -43,9 +43,9 @@ export function profileDescriptor(itemDescriptor: string, itemFolder: string): s
 
 /**
  * Creates or refreshes the playset's profile: `settings.txt` and its named baseline at the first
- * use, the mod descriptors and `dlc_load.json` every time, and the save copied once: the playset's,
- * or the one a session's views load instead (`viewSave`). Checks the save's hash and every mod's
- * content hash against the manifest; returns the hashes it read.
+ * use, the mod descriptors and `dlc_load.json` every time (and no `continue_game.json`), and the
+ * save copied once: the playset's, or the one a session's views load instead (`viewSave`). Checks
+ * the save's hash and every mod's content hash against the manifest; returns the hashes it read.
  */
 export async function prepareProfile(
   hostDir: string,
@@ -89,6 +89,9 @@ export async function prepareProfile(
     join(profile, 'dlc_load.json'),
     JSON.stringify({ enabled_mods: enabled, disabled_dlcs: playset.disabledDlcs }),
   );
+  // The game writes the last save it loaded here, and the main menu then shows Continue: every
+  // start begins without it, as a fresh profile's main menu does (etch#618).
+  await rm(join(profile, 'continue_game.json'), { force: true });
 
   if (pinned === undefined) return { mods };
   const saveFolder = join(profile, 'save games');

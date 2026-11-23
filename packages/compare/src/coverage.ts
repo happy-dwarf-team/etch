@@ -228,7 +228,7 @@ export async function runCoverage(options: CoverageOptions): Promise<CoverageRes
       };
       walk(root);
       const instance = rootInstance(record.widgets, root.path);
-      const offline = await files.window(top, record.resolution, [], size, instance);
+      const offline = await files.window(top, record.resolution, size, instance);
       if (offline === undefined) {
         problems.push(`The playset defines no window "${top}".`);
         continue;
