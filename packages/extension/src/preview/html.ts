@@ -41,7 +41,7 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
   /* The window list under the title (etch#648, finding P1.3): a filter and the file's windows. */
   #windows-pop { width: 440px; padding: 6px; }
   #window-filter { width: 100%; box-sizing: border-box; margin-bottom: 6px; }
-  #window-list { max-height: 50vh; overflow: auto; }
+  #window-list { max-height: 50vh; overflow: hidden auto; }
   #window-list .item {
     display: grid; grid-template-columns: 14px 1fr auto; gap: 2px 6px; align-items: baseline; width: 100%;
     height: auto; min-height: 24px; padding: 3px 8px; box-sizing: border-box; border: 0; border-radius: 3px;
@@ -53,7 +53,7 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
   #window-list .item:focus-visible { outline: 1px solid var(--vscode-focusBorder); outline-offset: -1px; }
   #window-list .item[aria-selected="true"] .mark::before { content: '✓'; }
   #window-list .aside { color: var(--vscode-descriptionForeground); font-size: 0.92em; white-space: nowrap; }
-  #window-list .sub { grid-column: 2 / 4; color: var(--vscode-descriptionForeground); font-size: 0.92em; }
+  #window-list .sub { grid-column: 2 / 4; white-space: normal; color: var(--vscode-descriptionForeground); font-size: 0.92em; }
   #window-list .head {
     margin: 8px 8px 2px; font-size: 0.85em; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
     color: var(--vscode-descriptionForeground);
