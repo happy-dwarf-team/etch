@@ -1,4 +1,5 @@
 /// <reference types="node" />
+import { existsSync } from 'node:fs';
 import { readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -280,6 +281,18 @@ describe('the playset profile', () => {
     });
     expect(await readFile(join(profile, 'settings.txt'), 'utf8')).toBe(SETTINGS);
     expect(await readFile(join(baselines, 'settings-baseline.txt'), 'utf8')).toBe(SETTINGS);
+    expect(await readFile(join(profile, 'save games', 'a.eu4'), 'utf8')).toBe('EU4txt');
+
+    // The last save the game loaded is forgotten before every start, and a start from the main
+    // menu has no save to offer as Continue; the next start from a save copies it again.
+    await writeFile(join(profile, 'continue_game.json'), '{"filename":"save games/a.eu4"}');
+    await prepareProfile(host, playset, options);
+    expect(existsSync(join(profile, 'continue_game.json'))).toBe(false);
+    expect(await prepareProfile(host, playset, options, undefined, 'main-menu')).toEqual({
+      mods: [{ name: 'A mod', sha256: pin }],
+    });
+    expect(existsSync(join(profile, 'save games', 'a.eu4'))).toBe(false);
+    await prepareProfile(host, playset, options);
     expect(await readFile(join(profile, 'save games', 'a.eu4'), 'utf8')).toBe('EU4txt');
 
     // A changed copy of the save in the profile stops it, and so does one in the player's folder

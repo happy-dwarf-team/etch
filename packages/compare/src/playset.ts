@@ -151,20 +151,17 @@ export class CorpusPlaysetFiles {
 
   /**
    * A top-level window laid out at a resolution, or `undefined` when the playset defines none by
-   * that name. A definition in one of `files` (the corpus window's) is preferred. `size` replaces
-   * the window's `.gui` size where the game's code sets it (the view's `codeSized`).
+   * that name. Of several definitions the first in load order is laid out, as the game takes it
+   * (etch#16, etch#618). `size` replaces the window's `.gui` size where the game's code sets it
+   * (the view's `codeSized`).
    */
   async window(
     name: string,
     screen: Screen,
-    files: readonly string[] = [],
     size?: Screen,
     instance?: { readonly index: number; readonly count: number },
   ): Promise<PlanWindow | undefined> {
-    const definitions = this.ui.index.guiTypeDefinitions(name);
-    const preferred = new Set(files.map((f) => f.toLowerCase()));
-    const definition =
-      definitions.find((d) => preferred.has(d.path.toLowerCase())) ?? definitions[0];
+    const definition = this.ui.index.guiTypeDefinitions(name)[0];
     if (definition === undefined) return undefined;
     const file = this.ui.index.guiFiles.find((f) => f.path === definition.path)?.file;
     if (file === undefined) return undefined;
@@ -187,12 +184,8 @@ export class CorpusPlaysetFiles {
   async profile(
     profilesFolder: string,
     name: string,
-    files: readonly string[] = [],
   ): Promise<{ profile: WindowProfile; window: Widget; problems: string[] } | undefined> {
-    const definitions = this.ui.index.guiTypeDefinitions(name);
-    const preferred = new Set(files.map((f) => f.toLowerCase()));
-    const definition =
-      definitions.find((d) => preferred.has(d.path.toLowerCase())) ?? definitions[0];
+    const definition = this.ui.index.guiTypeDefinitions(name)[0];
     const file = this.ui.index.guiFiles.find((f) => f.path === definition?.path)?.file;
     if (definition === undefined || file === undefined) return undefined;
     this.shipped ??= readShipped(profilesFolder);

@@ -3,9 +3,9 @@
   "playset": "anbennar-alone",
   "resolution": { "width": 1680, "height": 1050 },
   "view": "esc-menu",
-  "takenAt": "2026-11-01T05:59:01.644Z",
+  "takenAt": "2026-11-23T07:11:09.552Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
-  "tongs": { "version": "0.23.0" },
+  "tongs": { "version": "0.37.0" },
   "save": { "sha256": "AACEDFE6FD0294B80961679AB9618BC48195A9E9A239BE41292CEFFE156FDD3D" },
   "mods": [
     {
@@ -22,13 +22,13 @@
   },
   "window": { "width": 1680, "height": 1050, "dpi": 96 },
   "screenshot": {
-    "sha256": "A87266A2F63BC714F1A499FE2C5C7CE083364147CEF11058912D10E5554A8866",
+    "sha256": "3468B183DF8DCE721DB0F139E084EB8B953C753E476B105C503987E43DA019EA",
     "width": 1680,
     "height": 1050,
     "shots": 4,
     "unstable": {
-      "pixels": 1414754,
-      "sha256": "767D39062B45F8CBC4A5D569C6636037D8C0E3AC436634D881CC4040708E00A9"
+      "pixels": 1413697,
+      "sha256": "4CE6298AFEB7AB86512181B0643C3459BB47D9F0D13E4F6214C97A92AC32B08C"
     }
   },
   "widgets": [
@@ -44,7 +44,9 @@
           "path": "menu/menu",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 606, "y": 257, "w": 473, "h": 524 }
+          "rect": { "x": 606, "y": 257, "w": 473, "h": 524 },
+          "sprite": "GFX_menu",
+          "frame": 1
         },
         {
           "name": "menu_panel",
@@ -60,7 +62,8 @@
               "visible": true,
               "rect": { "x": 748, "y": 367, "w": 189, "h": 31 },
               "text": "Load Game",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_8"
             },
             {
               "name": "menu_save_button",
@@ -69,7 +72,8 @@
               "visible": true,
               "rect": { "x": 748, "y": 402, "w": 189, "h": 31 },
               "text": "Save Game",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_8"
             },
             {
               "name": "menu_options_button",
@@ -78,7 +82,8 @@
               "visible": true,
               "rect": { "x": 748, "y": 437, "w": 189, "h": 31 },
               "text": "Game Options",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_8"
             },
             {
               "name": "menu_message_button",
@@ -87,7 +92,8 @@
               "visible": true,
               "rect": { "x": 748, "y": 472, "w": 189, "h": 31 },
               "text": "Message Settings",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_8"
             },
             {
               "name": "menu_ai_prefs_button",
@@ -96,7 +102,8 @@
               "visible": true,
               "rect": { "x": 748, "y": 507, "w": 189, "h": 31 },
               "text": "AI Settings",
-              "enabled": false
+              "enabled": false,
+              "sprite": "button_type_8"
             },
             {
               "name": "menu_stats_button",
@@ -105,7 +112,8 @@
               "visible": true,
               "rect": { "x": 748, "y": 542, "w": 189, "h": 31 },
               "text": "Statistics",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_8"
             },
             {
               "name": "privacy_policy_button",
@@ -114,7 +122,8 @@
               "visible": true,
               "rect": { "x": 748, "y": 577, "w": 189, "h": 31 },
               "text": "Privacy Policy",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_8"
             },
             {
               "name": "menu_resign_button",
@@ -123,7 +132,8 @@
               "visible": true,
               "rect": { "x": 748, "y": 612, "w": 189, "h": 31 },
               "text": "Exit to Menu",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_8"
             },
             {
               "name": "menu_quit_button",
@@ -132,7 +142,8 @@
               "visible": true,
               "rect": { "x": 748, "y": 647, "w": 189, "h": 31 },
               "text": "Exit Game",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_8"
             },
             {
               "name": "menu_close_button",
@@ -141,7 +152,8 @@
               "visible": true,
               "rect": { "x": 804, "y": 682, "w": 79, "h": 31 },
               "text": "Close",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_6"
             }
           ]
         },
@@ -159,7 +171,8 @@
               "visible": false,
               "rect": { "x": 840, "y": 494, "w": 149, "h": 31 },
               "text": "Cancel",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_7"
             },
             {
               "name": "exit",
@@ -168,7 +181,8 @@
               "visible": false,
               "rect": { "x": 840, "y": 494, "w": 149, "h": 31 },
               "text": "Exit to Menu",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_7"
             },
             {
               "name": "disk_space_needed",
@@ -205,14 +219,16 @@
                       "path": "menu/menu_unsync/games/standardlistbox_slider/listboxSliderButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 840, "y": 509, "w": 16, "h": 16 }
+                      "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
+                      "sprite": "GFX_scroll_drager"
                     },
                     {
                       "name": "listboxTrackButton",
                       "path": "menu/menu_unsync/games/standardlistbox_slider/listboxTrackButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 840, "y": 525, "w": 12, "h": 268 }
+                      "rect": { "x": 840, "y": 525, "w": 12, "h": 268 },
+                      "sprite": "GFX_scroll_track"
                     },
                     {
                       "name": "downButton",
@@ -220,7 +236,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_down"
                     },
                     {
                       "name": "upButton",
@@ -228,7 +245,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_up"
                     }
                   ]
                 }
@@ -250,7 +268,8 @@
               "visible": false,
               "rect": { "x": 840, "y": 494, "w": 149, "h": 31 },
               "text": "Filter",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_7"
             },
             {
               "name": "button_search",
@@ -259,7 +278,8 @@
               "visible": false,
               "rect": { "x": 840, "y": 494, "w": 79, "h": 31 },
               "text": "Search",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_6"
             },
             {
               "name": "button_clear",
@@ -268,7 +288,8 @@
               "visible": false,
               "rect": { "x": 840, "y": 494, "w": 79, "h": 31 },
               "text": "Clear",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_6"
             },
             {
               "name": "messageicon_pause_all",
@@ -276,7 +297,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_messageicon_pause"
             },
             {
               "name": "messageicon_dialog_all",
@@ -284,7 +306,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_messageicon_dialog"
             },
             {
               "name": "messageicon_icon_all",
@@ -292,7 +315,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_mailbox_icon"
             },
             {
               "name": "messageicon_log_all",
@@ -300,7 +324,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_messageicon_log"
             },
             {
               "name": "messageicon_map_all",
@@ -308,7 +333,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_messageicon_map"
             },
             {
               "name": "reset",
@@ -316,7 +342,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 840, "y": 494, "w": 149, "h": 31 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_7"
             },
             {
               "name": "close",
@@ -324,7 +351,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 840, "y": 494, "w": 149, "h": 31 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_7"
             },
             {
               "name": "disable_all_messages",
@@ -333,14 +361,17 @@
               "visible": false,
               "rect": { "x": 840, "y": 494, "w": 149, "h": 31 },
               "text": "Disable all",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_7"
             },
             {
               "name": "messagesettings_bg",
               "path": "menu/menu_message_settings/messagesettings_bg",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 840, "y": 48, "w": 840, "h": 477 }
+              "rect": { "x": 840, "y": 48, "w": 840, "h": 477 },
+              "sprite": "GFX_messagesettings_bg",
+              "frame": 1
             },
             {
               "name": "messagesettings_label",
@@ -505,14 +536,16 @@
                       "path": "menu/menu_message_settings/settings/standardlistbox_slider/listboxSliderButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 840, "y": 509, "w": 16, "h": 16 }
+                      "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
+                      "sprite": "GFX_scroll_drager"
                     },
                     {
                       "name": "listboxTrackButton",
                       "path": "menu/menu_message_settings/settings/standardlistbox_slider/listboxTrackButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 840, "y": 525, "w": 12, "h": 208 }
+                      "rect": { "x": 840, "y": 525, "w": 12, "h": 208 },
+                      "sprite": "GFX_scroll_track"
                     },
                     {
                       "name": "downButton",
@@ -520,7 +553,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_down"
                     },
                     {
                       "name": "upButton",
@@ -528,7 +562,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 840, "y": 509, "w": 16, "h": 16 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_up"
                     }
                   ]
                 }
@@ -548,7 +583,8 @@
               "type": "checkbox",
               "visible": false,
               "rect": { "x": 840, "y": 494, "w": 88, "h": 31 },
-              "checked": false
+              "checked": false,
+              "sprite": "GFX_sort_button_message_left"
             },
             {
               "name": "dynasty",
@@ -556,7 +592,8 @@
               "type": "checkbox",
               "visible": false,
               "rect": { "x": 840, "y": 494, "w": 88, "h": 31 },
-              "checked": true
+              "checked": true,
+              "sprite": "GFX_sort_button_message_middle"
             },
             {
               "name": "diplomacy",
@@ -564,7 +601,8 @@
               "type": "checkbox",
               "visible": false,
               "rect": { "x": 840, "y": 494, "w": 88, "h": 31 },
-              "checked": false
+              "checked": false,
+              "sprite": "GFX_sort_button_message_middle"
             },
             {
               "name": "trade",
@@ -572,7 +610,8 @@
               "type": "checkbox",
               "visible": false,
               "rect": { "x": 840, "y": 494, "w": 88, "h": 31 },
-              "checked": false
+              "checked": false,
+              "sprite": "GFX_sort_button_message_middle"
             },
             {
               "name": "religion",
@@ -580,7 +619,8 @@
               "type": "checkbox",
               "visible": false,
               "rect": { "x": 840, "y": 494, "w": 88, "h": 31 },
-              "checked": false
+              "checked": false,
+              "sprite": "GFX_sort_button_message_middle"
             },
             {
               "name": "events",
@@ -588,7 +628,8 @@
               "type": "checkbox",
               "visible": false,
               "rect": { "x": 840, "y": 494, "w": 88, "h": 31 },
-              "checked": false
+              "checked": false,
+              "sprite": "GFX_sort_button_message_middle"
             },
             {
               "name": "government",
@@ -596,7 +637,8 @@
               "type": "checkbox",
               "visible": false,
               "rect": { "x": 840, "y": 494, "w": 88, "h": 31 },
-              "checked": false
+              "checked": false,
+              "sprite": "GFX_sort_button_message_middle"
             },
             {
               "name": "military",
@@ -604,7 +646,8 @@
               "type": "checkbox",
               "visible": false,
               "rect": { "x": 840, "y": 494, "w": 88, "h": 31 },
-              "checked": false
+              "checked": false,
+              "sprite": "GFX_sort_button_message_middle"
             },
             {
               "name": "combat",
@@ -612,7 +655,8 @@
               "type": "checkbox",
               "visible": false,
               "rect": { "x": 840, "y": 494, "w": 88, "h": 31 },
-              "checked": false
+              "checked": false,
+              "sprite": "GFX_sort_button_message_middle"
             },
             {
               "name": "other",
@@ -620,7 +664,8 @@
               "type": "checkbox",
               "visible": false,
               "rect": { "x": 840, "y": 494, "w": 88, "h": 31 },
-              "checked": false
+              "checked": false,
+              "sprite": "GFX_sort_button_message_right"
             },
             {
               "name": "filter_button_01",
@@ -628,7 +673,8 @@
               "type": "checkbox",
               "visible": false,
               "rect": { "x": 840, "y": 494, "w": 149, "h": 31 },
-              "checked": true
+              "checked": true,
+              "sprite": "button_type_7"
             },
             {
               "name": "filter_button_02",
@@ -636,7 +682,8 @@
               "type": "checkbox",
               "visible": false,
               "rect": { "x": 840, "y": 494, "w": 149, "h": 31 },
-              "checked": false
+              "checked": false,
+              "sprite": "button_type_7"
             },
             {
               "name": "filter_button_03",
@@ -644,7 +691,8 @@
               "type": "checkbox",
               "visible": false,
               "rect": { "x": 840, "y": 494, "w": 149, "h": 31 },
-              "checked": false
+              "checked": false,
+              "sprite": "button_type_7"
             },
             {
               "name": "filter_button_04",
@@ -652,7 +700,8 @@
               "type": "checkbox",
               "visible": false,
               "rect": { "x": 840, "y": 494, "w": 149, "h": 31 },
-              "checked": false
+              "checked": false,
+              "sprite": "button_type_7"
             }
           ]
         }

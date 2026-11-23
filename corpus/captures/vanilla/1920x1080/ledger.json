@@ -3,9 +3,9 @@
   "playset": "vanilla",
   "resolution": { "width": 1920, "height": 1080 },
   "view": "ledger",
-  "takenAt": "2026-11-01T05:30:21.379Z",
+  "takenAt": "2026-11-23T06:11:05.411Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
-  "tongs": { "version": "0.23.0" },
+  "tongs": { "version": "0.37.0" },
   "save": { "sha256": "2A4CAF306CCDDB2DAFC7EE015C4ECFFB260654A1D10D86F5F4F768D3C3F56F6A" },
   "mods": [],
   "disabledDlcs": [],
@@ -17,13 +17,13 @@
   },
   "window": { "width": 1920, "height": 1080, "dpi": 96 },
   "screenshot": {
-    "sha256": "FB92162EDE884EDD13FC0F061C5F650019511ED0838E7DAEF645BF98D82065A3",
+    "sha256": "A9F6BBA36A363344402B0DE7829DD6CDABE86AAD73B2E88A014991DA1FC09BAB",
     "width": 1920,
     "height": 1080,
     "shots": 4,
     "unstable": {
-      "pixels": 989825,
-      "sha256": "D2B6EE13232A325808323B48B6AF6A0C366152F5D78AEAE9232C751460E65292"
+      "pixels": 987587,
+      "sha256": "A116E54DD3127CAA3905C3066375EBC661326A3844B5DDBE0F584BD68F110250"
     }
   },
   "widgets": [
@@ -40,7 +40,8 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 1422, "y": 254, "w": 36, "h": 36 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_button_close"
         },
         {
           "name": "prev",
@@ -49,7 +50,8 @@
           "visible": true,
           "rect": { "x": 1047, "y": 831, "w": 127, "h": 30 },
           "text": "Previous",
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_ledger_previous_button"
         },
         {
           "name": "next",
@@ -58,7 +60,8 @@
           "visible": true,
           "rect": { "x": 1290, "y": 831, "w": 127, "h": 30 },
           "text": "Next",
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_ledger_next_button"
         },
         {
           "name": "index",
@@ -66,7 +69,8 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 516, "y": 821, "w": 57, "h": 50 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_ledger_bookmark_button_index"
         },
         {
           "name": "bookmark_0",
@@ -74,7 +78,8 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 579, "y": 821, "w": 57, "h": 50 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_ledger_bookmark_button_country"
         },
         {
           "name": "bookmark_1",
@@ -82,7 +87,8 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 642, "y": 821, "w": 57, "h": 50 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_ledger_bookmark_button_military"
         },
         {
           "name": "bookmark_2",
@@ -90,7 +96,8 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 705, "y": 821, "w": 57, "h": 50 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_ledger_bookmark_button_economy"
         },
         {
           "name": "bookmark_3",
@@ -98,7 +105,8 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 768, "y": 821, "w": 57, "h": 50 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_ledger_bookmark_button_trade"
         },
         {
           "name": "bookmark_4",
@@ -106,42 +114,53 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 831, "y": 821, "w": 57, "h": 50 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_ledger_bookmark_button_relations"
         },
         {
           "name": "ledger_bg",
           "path": "ledger/ledger_bg",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 450, "y": 240, "w": 1020, "h": 640 }
+          "rect": { "x": 450, "y": 240, "w": 1020, "h": 640 },
+          "sprite": "GFX_ledger_bg",
+          "frame": 1
         },
         {
           "name": "ledger_linegraph_bg",
           "path": "ledger/ledger_linegraph_bg",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 450, "y": 240, "w": 1020, "h": 640 }
+          "rect": { "x": 450, "y": 240, "w": 1020, "h": 640 },
+          "sprite": "GFX_ledger_linegraph_bg",
+          "frame": 1
         },
         {
           "name": "ledger_great_projects_bg",
           "path": "ledger/ledger_great_projects_bg",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 450, "y": 240, "w": 1020, "h": 640 }
+          "rect": { "x": 450, "y": 240, "w": 1020, "h": 640 },
+          "sprite": "GFX_ledger_great_projects_bg",
+          "frame": 1
         },
         {
           "name": "filter_edit_box_bg",
           "path": "ledger/filter_edit_box_bg",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 960, "y": 512, "w": 143, "h": 28 }
+          "rect": { "x": 960, "y": 512, "w": 143, "h": 28 },
+          "sprite": "GFX_ledger_filter_bg",
+          "frame": 1
         },
         {
           "name": "filter_edit_box_icon",
           "path": "ledger/filter_edit_box_icon",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 960, "y": 518, "w": 23, "h": 22 }
+          "rect": { "x": 960, "y": 518, "w": 23, "h": 22 },
+          "sprite": "GFX_ledger_filter_icon",
+          "frame": 1
         },
         {
           "name": "page_number",
@@ -193,7 +212,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 960, "y": 519, "w": 31, "h": 21 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_ledger_income_sort_button_neighbors"
                 },
                 {
                   "name": "linegraph_enemies",
@@ -201,7 +221,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 960, "y": 519, "w": 31, "h": 21 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_ledger_income_sort_button_enemies"
                 },
                 {
                   "name": "linegraph_friends",
@@ -209,7 +230,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 960, "y": 519, "w": 31, "h": 21 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_ledger_income_sort_button_friends"
                 },
                 {
                   "name": "linegraph_clear",
@@ -217,7 +239,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 960, "y": 519, "w": 31, "h": 21 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_ledger_income_sort_button_clear"
                 }
               ]
             },
@@ -240,14 +263,16 @@
                       "path": "ledger/ledger_linegraph_legend/legend_list/standardlistbox_slider/listboxSliderButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 960, "y": 524, "w": 16, "h": 16 }
+                      "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
+                      "sprite": "GFX_scroll_drager"
                     },
                     {
                       "name": "listboxTrackButton",
                       "path": "ledger/ledger_linegraph_legend/legend_list/standardlistbox_slider/listboxTrackButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 960, "y": 540, "w": 12, "h": 452 }
+                      "rect": { "x": 960, "y": 540, "w": 12, "h": 452 },
+                      "sprite": "GFX_scroll_track"
                     },
                     {
                       "name": "downButton",
@@ -255,7 +280,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_down"
                     },
                     {
                       "name": "upButton",
@@ -263,7 +289,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_up"
                     }
                   ]
                 }
@@ -283,7 +310,9 @@
               "path": "ledger/ledger_piecharts/ledger_piechart_bg",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 960, "y": 0, "w": 960, "h": 540 }
+              "rect": { "x": 960, "y": 0, "w": 960, "h": 540 },
+              "sprite": "GFX_ledger_piechart_BG",
+              "frame": 1
             }
           ]
         },
@@ -299,7 +328,9 @@
               "path": "ledger/ledger_index/ledger_overlay",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 450, "y": 240, "w": 1020, "h": 640 }
+              "rect": { "x": 450, "y": 240, "w": 1020, "h": 640 },
+              "sprite": "GFX_ledger_index_BG",
+              "frame": 1
             },
             {
               "name": "page",
@@ -330,7 +361,8 @@
                       "visible": true,
                       "rect": { "x": 832, "y": 304, "w": 264, "h": 29 },
                       "text": "Country",
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_ledger_index_category_button"
                     }
                   ]
                 },
@@ -348,7 +380,8 @@
                       "visible": true,
                       "rect": { "x": 832, "y": 336, "w": 264, "h": 29 },
                       "text": "Military",
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_ledger_index_category_button"
                     }
                   ]
                 },
@@ -366,7 +399,8 @@
                       "visible": true,
                       "rect": { "x": 832, "y": 368, "w": 264, "h": 29 },
                       "text": "Economy",
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_ledger_index_category_button"
                     }
                   ]
                 },
@@ -384,7 +418,8 @@
                       "visible": true,
                       "rect": { "x": 832, "y": 400, "w": 264, "h": 29 },
                       "text": "Trade",
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_ledger_index_category_button"
                     }
                   ]
                 },
@@ -402,7 +437,8 @@
                       "visible": true,
                       "rect": { "x": 832, "y": 432, "w": 264, "h": 29 },
                       "text": "Relations",
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_ledger_index_category_button"
                     }
                   ]
                 },
@@ -418,14 +454,16 @@
                       "path": "ledger/ledger_index/list/standardlistbox_slider/listboxSliderButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 960, "y": 524, "w": 16, "h": 16 }
+                      "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
+                      "sprite": "GFX_scroll_drager"
                     },
                     {
                       "name": "listboxTrackButton",
                       "path": "ledger/ledger_index/list/standardlistbox_slider/listboxTrackButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 960, "y": 540, "w": 12, "h": 480 }
+                      "rect": { "x": 960, "y": 540, "w": 12, "h": 480 },
+                      "sprite": "GFX_scroll_track"
                     },
                     {
                       "name": "downButton",
@@ -433,7 +471,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_down"
                     },
                     {
                       "name": "upButton",
@@ -441,7 +480,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_up"
                     }
                   ]
                 }
@@ -477,7 +517,8 @@
                   "type": "checkbox",
                   "visible": false,
                   "rect": { "x": 960, "y": 508, "w": 32, "h": 32 },
-                  "checked": false
+                  "checked": false,
+                  "sprite": "GFX_checkbox_gold_32"
                 }
               ]
             },
@@ -502,7 +543,8 @@
                   "type": "checkbox",
                   "visible": false,
                   "rect": { "x": 960, "y": 508, "w": 32, "h": 32 },
-                  "checked": false
+                  "checked": false,
+                  "sprite": "GFX_checkbox_gold_32"
                 }
               ]
             },
@@ -527,7 +569,8 @@
                   "type": "checkbox",
                   "visible": false,
                   "rect": { "x": 960, "y": 508, "w": 32, "h": 32 },
-                  "checked": false
+                  "checked": false,
+                  "sprite": "GFX_checkbox_gold_32"
                 }
               ]
             },
@@ -552,7 +595,8 @@
                   "type": "checkbox",
                   "visible": false,
                   "rect": { "x": 960, "y": 508, "w": 32, "h": 32 },
-                  "checked": false
+                  "checked": false,
+                  "sprite": "GFX_checkbox_gold_32"
                 }
               ]
             },
@@ -577,7 +621,8 @@
                   "type": "checkbox",
                   "visible": false,
                   "rect": { "x": 960, "y": 508, "w": 32, "h": 32 },
-                  "checked": false
+                  "checked": false,
+                  "sprite": "GFX_checkbox_gold_32"
                 }
               ]
             },
@@ -602,7 +647,8 @@
                   "type": "checkbox",
                   "visible": false,
                   "rect": { "x": 960, "y": 508, "w": 32, "h": 32 },
-                  "checked": false
+                  "checked": false,
+                  "sprite": "GFX_checkbox_gold_32"
                 }
               ]
             },
@@ -618,14 +664,16 @@
                   "path": "ledger/filter_list/standardlistbox_slider/listboxSliderButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 960, "y": 524, "w": 16, "h": 16 }
+                  "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
+                  "sprite": "GFX_scroll_drager"
                 },
                 {
                   "name": "listboxTrackButton",
                   "path": "ledger/filter_list/standardlistbox_slider/listboxTrackButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 960, "y": 540, "w": 12, "h": 168 }
+                  "rect": { "x": 960, "y": 540, "w": 12, "h": 168 },
+                  "sprite": "GFX_scroll_track"
                 },
                 {
                   "name": "downButton",
@@ -633,7 +681,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_scroll_down"
                 },
                 {
                   "name": "upButton",
@@ -641,7 +690,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_scroll_up"
                 }
               ]
             }
@@ -666,14 +716,16 @@
                   "path": "ledger/default_listbox/standardlistbox_slider/listboxSliderButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 960, "y": 524, "w": 16, "h": 16 }
+                  "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
+                  "sprite": "GFX_scroll_drager"
                 },
                 {
                   "name": "listboxTrackButton",
                   "path": "ledger/default_listbox/standardlistbox_slider/listboxTrackButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 960, "y": 540, "w": 12, "h": 418 }
+                  "rect": { "x": 960, "y": 540, "w": 12, "h": 418 },
+                  "sprite": "GFX_scroll_track"
                 },
                 {
                   "name": "downButton",
@@ -681,7 +733,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_scroll_down"
                 },
                 {
                   "name": "upButton",
@@ -689,7 +742,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_scroll_up"
                 }
               ]
             }

@@ -3,9 +3,9 @@
   "playset": "vanilla",
   "resolution": { "width": 1920, "height": 1080 },
   "view": "macro-builder",
-  "takenAt": "2026-11-01T05:30:38.482Z",
+  "takenAt": "2026-11-23T06:11:22.490Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
-  "tongs": { "version": "0.23.0" },
+  "tongs": { "version": "0.37.0" },
   "save": { "sha256": "2A4CAF306CCDDB2DAFC7EE015C4ECFFB260654A1D10D86F5F4F768D3C3F56F6A" },
   "mods": [],
   "disabledDlcs": [],
@@ -17,13 +17,13 @@
   },
   "window": { "width": 1920, "height": 1080, "dpi": 96 },
   "screenshot": {
-    "sha256": "71CFA9069B908CCFE0ADF6B4AC51B12E0ECFFF81144F464DACB1F7D7C6B699CC",
+    "sha256": "8617E9E3BC05E0EB1E6F1A0518F34664844180E6AD0BCCA2D0503A584EF799A6",
     "width": 1920,
     "height": 1080,
     "shots": 4,
     "unstable": {
-      "pixels": 1187834,
-      "sha256": "68BFB44A051A27FD94AFBFF97CABBDC7C6A5DE591E42CD05B4592DA3CF7E71A2"
+      "pixels": 1192024,
+      "sha256": "15402A087CAA95D2DA6B8C6DF36EEA05960E034D8328DD14D870B6880CF497FD"
     }
   },
   "widgets": [
@@ -40,21 +40,26 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 403, "y": 164, "w": 36, "h": 36 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_closebutton2"
         },
         {
           "name": "background",
           "path": "macro_build_interface/background",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 0, "y": 150, "w": 441, "h": 573 }
+          "rect": { "x": 0, "y": 150, "w": 441, "h": 573 },
+          "sprite": "GFX_macro_build_interface",
+          "frame": 1
         },
         {
           "name": "close_gold",
           "path": "macro_build_interface/close_gold",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 399, "y": 161, "w": 50, "h": 57 }
+          "rect": { "x": 399, "y": 161, "w": 50, "h": 57 },
+          "sprite": "GFX_close_gold",
+          "frame": 1
         },
         {
           "name": "macro_title",
@@ -94,7 +99,8 @@
               "visible": false,
               "rect": { "x": 960, "y": 519, "w": 136, "h": 21 },
               "text": "Name",
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_136"
             },
             {
               "name": "development_button",
@@ -102,7 +108,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 519, "w": 56, "h": 21 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_development"
             },
             {
               "name": "overextension_button",
@@ -110,7 +117,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 519, "w": 56, "h": 21 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_overextension"
             },
             {
               "name": "cost_button",
@@ -118,7 +126,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 519, "w": 56, "h": 21 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_adm_cost"
             }
           ]
         },
@@ -136,7 +145,8 @@
               "visible": false,
               "rect": { "x": 960, "y": 519, "w": 120, "h": 21 },
               "text": "Name",
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_120"
             },
             {
               "name": "religion_button",
@@ -145,7 +155,8 @@
               "visible": false,
               "rect": { "x": 960, "y": 519, "w": 120, "h": 21 },
               "text": "Religion",
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_120"
             },
             {
               "name": "time_button",
@@ -153,7 +164,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 519, "w": 60, "h": 21 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_time"
             },
             {
               "name": "mission_button",
@@ -162,7 +174,8 @@
               "visible": false,
               "rect": { "x": 960, "y": 518, "w": 86, "h": 22 },
               "text": "Monthly Cost",
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_84"
             },
             {
               "name": "show_subjects_title",
@@ -178,7 +191,8 @@
               "type": "checkbox",
               "visible": false,
               "rect": { "x": 960, "y": 508, "w": 32, "h": 32 },
-              "checked": false
+              "checked": false,
+              "sprite": "GFX_checkbox_gold_32"
             }
           ]
         },
@@ -196,7 +210,8 @@
               "visible": false,
               "rect": { "x": 960, "y": 519, "w": 120, "h": 21 },
               "text": "Name",
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_120"
             },
             {
               "name": "rebels_button",
@@ -205,7 +220,8 @@
               "visible": false,
               "rect": { "x": 960, "y": 519, "w": 120, "h": 21 },
               "text": "Rebels",
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_120"
             },
             {
               "name": "autonomy_button",
@@ -213,7 +229,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 519, "w": 38, "h": 21 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_autonomy_s"
             },
             {
               "name": "unrest_button",
@@ -221,7 +238,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 519, "w": 38, "h": 21 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_unrest_s"
             },
             {
               "name": "can_increase_button",
@@ -229,7 +247,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 519, "w": 36, "h": 21 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_actions_small"
             },
             {
               "name": "can_decrease_button",
@@ -237,7 +256,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 519, "w": 36, "h": 21 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_actions_small"
             }
           ]
         },
@@ -255,7 +275,8 @@
               "visible": false,
               "rect": { "x": 960, "y": 519, "w": 148, "h": 21 },
               "text": "Name",
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_148"
             },
             {
               "name": "culture_button",
@@ -264,7 +285,8 @@
               "visible": false,
               "rect": { "x": 960, "y": 519, "w": 148, "h": 21 },
               "text": "Culture",
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_148"
             },
             {
               "name": "cost_button",
@@ -272,7 +294,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 519, "w": 56, "h": 21 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_cost_m"
             },
             {
               "name": "select",
@@ -281,7 +304,8 @@
               "visible": false,
               "rect": { "x": 960, "y": 508, "w": 152, "h": 32 },
               "text": "Select",
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_button_straight_152_32"
             }
           ]
         },
@@ -299,14 +323,17 @@
               "visible": false,
               "rect": { "x": 960, "y": 509, "w": 105, "h": 31 },
               "text": "Cancel",
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_standard_button_105"
             },
             {
               "name": "bg",
               "path": "macro_build_interface/select_culture_window/bg",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 960, "y": 27, "w": 321, "h": 513 }
+              "rect": { "x": 960, "y": 27, "w": 321, "h": 513 },
+              "sprite": "GFX_culture_selection_bg",
+              "frame": 1
             },
             {
               "name": "label",
@@ -335,14 +362,16 @@
                       "path": "macro_build_interface/select_culture_window/listbox/standardlistbox_slider/listboxSliderButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 960, "y": 524, "w": 16, "h": 16 }
+                      "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
+                      "sprite": "GFX_scroll_drager"
                     },
                     {
                       "name": "listboxTrackButton",
                       "path": "macro_build_interface/select_culture_window/listbox/standardlistbox_slider/listboxTrackButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 960, "y": 540, "w": 12, "h": 388 }
+                      "rect": { "x": 960, "y": 540, "w": 12, "h": 388 },
+                      "sprite": "GFX_scroll_track"
                     },
                     {
                       "name": "downButton",
@@ -350,7 +379,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_down"
                     },
                     {
                       "name": "upButton",
@@ -358,7 +388,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_up"
                     }
                   ]
                 }
@@ -380,7 +411,8 @@
               "visible": false,
               "rect": { "x": 960, "y": 519, "w": 114, "h": 21 },
               "text": "Name",
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_114"
             },
             {
               "name": "free_slots_button",
@@ -388,7 +420,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 520, "w": 28, "h": 20 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_building_slots"
             },
             {
               "name": "trade_good_button",
@@ -396,7 +429,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 520, "w": 20, "h": 20 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_exp_sort_goods_s"
             },
             {
               "name": "cost_button",
@@ -404,7 +438,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 520, "w": 59, "h": 20 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_gold"
             },
             {
               "name": "improvement_amount_button",
@@ -412,7 +447,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 520, "w": 83, "h": 20 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_info"
             },
             {
               "name": "improvement_value_button",
@@ -420,7 +456,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 520, "w": 50, "h": 20 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_value"
             },
             {
               "name": "close_button",
@@ -429,7 +466,8 @@
               "visible": false,
               "rect": { "x": 960, "y": 509, "w": 149, "h": 31 },
               "text": "Close",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_1"
             },
             {
               "name": "show_subjects_title",
@@ -445,7 +483,8 @@
               "type": "checkbox",
               "visible": false,
               "rect": { "x": 960, "y": 508, "w": 32, "h": 32 },
-              "checked": false
+              "checked": false,
+              "sprite": "GFX_checkbox_gold_32"
             }
           ]
         },
@@ -463,7 +502,8 @@
               "visible": false,
               "rect": { "x": 960, "y": 517, "w": 92, "h": 23 },
               "text": "Name",
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_button_90"
             },
             {
               "name": "trade_good_button",
@@ -471,7 +511,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 516, "w": 26, "h": 24 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_goods"
             },
             {
               "name": "cost_button",
@@ -479,7 +520,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 519, "w": 38, "h": 21 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_cost_s"
             },
             {
               "name": "development_button",
@@ -487,7 +529,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 519, "w": 38, "h": 21 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_total_s"
             },
             {
               "name": "autonomy_button",
@@ -495,7 +538,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 519, "w": 38, "h": 21 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_autonomy_s"
             },
             {
               "name": "tax_modifier_button",
@@ -503,7 +547,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 520, "w": 25, "h": 20 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_macro_tax"
             },
             {
               "name": "tax_value_button",
@@ -511,7 +556,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 520, "w": 27, "h": 20 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_macro_tax_cost"
             },
             {
               "name": "production_modifier_button",
@@ -519,7 +565,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 520, "w": 25, "h": 20 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_macro_production"
             },
             {
               "name": "production_value_button",
@@ -527,7 +574,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 520, "w": 27, "h": 20 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_macro_production_cost"
             },
             {
               "name": "manpower_modifier_button",
@@ -535,7 +583,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 520, "w": 25, "h": 20 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_macro_manpower"
             },
             {
               "name": "manpower_value_button",
@@ -543,7 +592,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 520, "w": 27, "h": 20 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_macro_manpower_cost"
             },
             {
               "name": "show_subjects_title",
@@ -567,7 +617,8 @@
               "type": "checkbox",
               "visible": false,
               "rect": { "x": 960, "y": 508, "w": 32, "h": 32 },
-              "checked": false
+              "checked": false,
+              "sprite": "GFX_checkbox_gold_32"
             },
             {
               "name": "show_territories",
@@ -575,7 +626,8 @@
               "type": "checkbox",
               "visible": false,
               "rect": { "x": 960, "y": 508, "w": 32, "h": 32 },
-              "checked": false
+              "checked": false,
+              "sprite": "GFX_checkbox_gold_32"
             }
           ]
         },
@@ -593,7 +645,8 @@
               "visible": false,
               "rect": { "x": 960, "y": 519, "w": 114, "h": 21 },
               "text": "Name",
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_114"
             },
             {
               "name": "development_button",
@@ -601,7 +654,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 520, "w": 49, "h": 20 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_total_49"
             },
             {
               "name": "tax_button",
@@ -609,7 +663,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 520, "w": 74, "h": 20 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_exploit_tax_64"
             },
             {
               "name": "sailor_button",
@@ -617,7 +672,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 520, "w": 74, "h": 20 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_exploit_production_64"
             },
             {
               "name": "manpower_button",
@@ -625,7 +681,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 520, "w": 74, "h": 20 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_exploit_manpower_64"
             },
             {
               "name": "show_territories_title",
@@ -641,7 +698,8 @@
               "type": "checkbox",
               "visible": false,
               "rect": { "x": 960, "y": 508, "w": 32, "h": 32 },
-              "checked": false
+              "checked": false,
+              "sprite": "GFX_checkbox_gold_32"
             }
           ]
         },
@@ -658,7 +716,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 465, "w": 55, "h": 75 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_macro_diplomacy_tab_relations"
             },
             {
               "name": "alliances_button",
@@ -666,7 +725,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 465, "w": 55, "h": 75 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_macro_diplomacy_tab_alliance"
             },
             {
               "name": "influence_button",
@@ -674,7 +734,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 465, "w": 55, "h": 75 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_macro_diplomacy_tab_influence"
             },
             {
               "name": "dynastic_button",
@@ -682,7 +743,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 465, "w": 55, "h": 75 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_macro_diplomacy_tab_dynastic"
             },
             {
               "name": "economic_button",
@@ -690,7 +752,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 465, "w": 55, "h": 75 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_macro_diplomacy_tab_economic"
             },
             {
               "name": "papal_button",
@@ -698,7 +761,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 465, "w": 55, "h": 75 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_macro_diplomacy_tab_papal"
             },
             {
               "name": "hre_button",
@@ -706,7 +770,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 465, "w": 55, "h": 75 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_macro_diplomacy_tab_hre"
             },
             {
               "name": "great_power_button",
@@ -714,14 +779,17 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 465, "w": 55, "h": 75 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_macro_diplomacy_tab_great_power"
             },
             {
               "name": "macro_diplomacy_line",
               "path": "macro_build_interface/diplomacy_header/macro_diplomacy_line",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 960, "y": 512, "w": 418, "h": 28 }
+              "rect": { "x": 960, "y": 512, "w": 418, "h": 28 },
+              "sprite": "GFX_macro_diplomacy_line",
+              "frame": 1
             }
           ]
         },
@@ -737,7 +805,9 @@
               "path": "macro_build_interface/improve_relations_window/improve_relations_BG",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 960, "y": 492, "w": 355, "h": 48 }
+              "rect": { "x": 960, "y": 492, "w": 355, "h": 48 },
+              "sprite": "GFX_macro_diplomacy_green_banner",
+              "frame": 1
             },
             {
               "name": "label",
@@ -775,14 +845,17 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 515, "w": 25, "h": 25 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_button_plus"
                     },
                     {
                       "name": "improve_relations_BG",
                       "path": "macro_build_interface/improve_relations_window/rule_button_list/improve_relation_button_entry[1]/improve_relations_BG",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 960, "y": 490, "w": 164, "h": 50 }
+                      "rect": { "x": 960, "y": 490, "w": 164, "h": 50 },
+                      "sprite": "GFX_macro_diplomacy_slot",
+                      "frame": 1
                     },
                     {
                       "name": "improve_rule_text",
@@ -814,14 +887,17 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 515, "w": 25, "h": 25 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_button_plus"
                     },
                     {
                       "name": "improve_relations_BG",
                       "path": "macro_build_interface/improve_relations_window/rule_button_list/improve_relation_button_entry[2]/improve_relations_BG",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 960, "y": 490, "w": 164, "h": 50 }
+                      "rect": { "x": 960, "y": 490, "w": 164, "h": 50 },
+                      "sprite": "GFX_macro_diplomacy_slot",
+                      "frame": 1
                     },
                     {
                       "name": "improve_rule_text",
@@ -853,14 +929,17 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 515, "w": 25, "h": 25 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_button_plus"
                     },
                     {
                       "name": "improve_relations_BG",
                       "path": "macro_build_interface/improve_relations_window/rule_button_list/improve_relation_button_entry[3]/improve_relations_BG",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 960, "y": 490, "w": 164, "h": 50 }
+                      "rect": { "x": 960, "y": 490, "w": 164, "h": 50 },
+                      "sprite": "GFX_macro_diplomacy_slot",
+                      "frame": 1
                     },
                     {
                       "name": "improve_rule_text",
@@ -892,14 +971,17 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 515, "w": 25, "h": 25 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_button_plus"
                     },
                     {
                       "name": "improve_relations_BG",
                       "path": "macro_build_interface/improve_relations_window/rule_button_list/improve_relation_button_entry[4]/improve_relations_BG",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 960, "y": 490, "w": 164, "h": 50 }
+                      "rect": { "x": 960, "y": 490, "w": 164, "h": 50 },
+                      "sprite": "GFX_macro_diplomacy_slot",
+                      "frame": 1
                     },
                     {
                       "name": "improve_rule_text",
@@ -931,14 +1013,17 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 515, "w": 25, "h": 25 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_button_plus"
                     },
                     {
                       "name": "improve_relations_BG",
                       "path": "macro_build_interface/improve_relations_window/rule_button_list/improve_relation_button_entry[5]/improve_relations_BG",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 960, "y": 490, "w": 164, "h": 50 }
+                      "rect": { "x": 960, "y": 490, "w": 164, "h": 50 },
+                      "sprite": "GFX_macro_diplomacy_slot",
+                      "frame": 1
                     },
                     {
                       "name": "improve_rule_text",
@@ -969,14 +1054,16 @@
                       "path": "macro_build_interface/improve_relations_window/rule_button_list/standardlistbox_slider/listboxSliderButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 960, "y": 524, "w": 16, "h": 16 }
+                      "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
+                      "sprite": "GFX_scroll_drager"
                     },
                     {
                       "name": "listboxTrackButton",
                       "path": "macro_build_interface/improve_relations_window/rule_button_list/standardlistbox_slider/listboxTrackButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 960, "y": 540, "w": 12, "h": 328 }
+                      "rect": { "x": 960, "y": 540, "w": 12, "h": 328 },
+                      "sprite": "GFX_scroll_track"
                     },
                     {
                       "name": "downButton",
@@ -984,7 +1071,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_down"
                     },
                     {
                       "name": "upButton",
@@ -992,7 +1080,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_up"
                     }
                   ]
                 }
@@ -1012,7 +1101,9 @@
               "path": "macro_build_interface/select_diplo_action_type_window/select_diplo_action_type_BG",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 960, "y": 363, "w": 354, "h": 177 }
+              "rect": { "x": 960, "y": 363, "w": 354, "h": 177 },
+              "sprite": "GFX_macro_diplomacy_overlay1",
+              "frame": 1
             },
             {
               "name": "action_type_label",
@@ -1041,14 +1132,16 @@
                       "path": "macro_build_interface/select_diplo_action_type_window/action_type_list/standardlistbox_slider/listboxSliderButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 960, "y": 524, "w": 16, "h": 16 }
+                      "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
+                      "sprite": "GFX_scroll_drager"
                     },
                     {
                       "name": "listboxTrackButton",
                       "path": "macro_build_interface/select_diplo_action_type_window/action_type_list/standardlistbox_slider/listboxTrackButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 960, "y": 540, "w": 12, "h": 104 }
+                      "rect": { "x": 960, "y": 540, "w": 12, "h": 104 },
+                      "sprite": "GFX_scroll_track"
                     },
                     {
                       "name": "downButton",
@@ -1056,7 +1149,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_down"
                     },
                     {
                       "name": "upButton",
@@ -1064,7 +1158,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_up"
                     }
                   ]
                 }
@@ -1084,7 +1179,9 @@
               "path": "macro_build_interface/diplomacy_target_list_window/bg",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 960, "y": 263, "w": 420, "h": 277 }
+              "rect": { "x": 960, "y": 263, "w": 420, "h": 277 },
+              "sprite": "GFX_macro_diplomacy_overlay2",
+              "frame": 1
             },
             {
               "name": "label",
@@ -1113,14 +1210,16 @@
                       "path": "macro_build_interface/diplomacy_target_list_window/action_list/standardlistbox_slider/listboxSliderButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 960, "y": 524, "w": 16, "h": 16 }
+                      "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
+                      "sprite": "GFX_scroll_drager"
                     },
                     {
                       "name": "listboxTrackButton",
                       "path": "macro_build_interface/diplomacy_target_list_window/action_list/standardlistbox_slider/listboxTrackButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 960, "y": 540, "w": 12, "h": 200 }
+                      "rect": { "x": 960, "y": 540, "w": 12, "h": 200 },
+                      "sprite": "GFX_scroll_track"
                     },
                     {
                       "name": "downButton",
@@ -1128,7 +1227,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_down"
                     },
                     {
                       "name": "upButton",
@@ -1136,7 +1236,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_up"
                     }
                   ]
                 }
@@ -1157,7 +1258,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 12, "y": 194, "w": 55, "h": 75 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_macro_land_tab_units",
+              "frame": 2
             },
             {
               "name": "recruit_mercs_button",
@@ -1165,7 +1268,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 63, "y": 194, "w": 55, "h": 75 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_macro_land_tab_mercenaries",
+              "frame": 1
             },
             {
               "name": "land_templates_button",
@@ -1173,14 +1278,18 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 114, "y": 194, "w": 55, "h": 75 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_macro_land_tab_templates",
+              "frame": 1
             },
             {
               "name": "land_units_line",
               "path": "macro_build_interface/land_units_header/land_units_line",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 9, "y": 239, "w": 418, "h": 28 }
+              "rect": { "x": 9, "y": 239, "w": 418, "h": 28 },
+              "sprite": "GFX_macro_diplomacy_line",
+              "frame": 1
             }
           ]
         },
@@ -1196,14 +1305,18 @@
               "path": "macro_build_interface/hire_mercenary_company_window/hire_mercenary_company_BG",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 960, "y": 170, "w": 392, "h": 370 }
+              "rect": { "x": 960, "y": 170, "w": 392, "h": 370 },
+              "sprite": "GFX_mercs_bg",
+              "frame": 1
             },
             {
               "name": "improve_relations_BG",
               "path": "macro_build_interface/hire_mercenary_company_window/improve_relations_BG",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 960, "y": 492, "w": 355, "h": 48 }
+              "rect": { "x": 960, "y": 492, "w": 355, "h": 48 },
+              "sprite": "GFX_macro_diplomacy_green_banner",
+              "frame": 1
             },
             {
               "name": "label",
@@ -1232,14 +1345,16 @@
                       "path": "macro_build_interface/hire_mercenary_company_window/mercenary_company_list/standardlistbox_slider/listboxSliderButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 960, "y": 524, "w": 16, "h": 16 }
+                      "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
+                      "sprite": "GFX_scroll_drager"
                     },
                     {
                       "name": "listboxTrackButton",
                       "path": "macro_build_interface/hire_mercenary_company_window/mercenary_company_list/standardlistbox_slider/listboxTrackButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 960, "y": 540, "w": 12, "h": 323 }
+                      "rect": { "x": 960, "y": 540, "w": 12, "h": 323 },
+                      "sprite": "GFX_scroll_track"
                     },
                     {
                       "name": "downButton",
@@ -1247,7 +1362,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_down"
                     },
                     {
                       "name": "upButton",
@@ -1255,7 +1371,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_up"
                     }
                   ]
                 }
@@ -1276,7 +1393,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 515, "w": 25, "h": 25 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_button_plus"
             },
             {
               "name": "infantry_decrease",
@@ -1284,7 +1402,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 515, "w": 25, "h": 25 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_button_minus"
             },
             {
               "name": "cavalry_increase",
@@ -1292,7 +1411,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 515, "w": 25, "h": 25 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_button_plus"
             },
             {
               "name": "cavalry_decrease",
@@ -1300,7 +1420,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 515, "w": 25, "h": 25 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_button_minus"
             },
             {
               "name": "artillery_increase",
@@ -1308,7 +1429,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 515, "w": 25, "h": 25 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_button_plus"
             },
             {
               "name": "artillery_decrease",
@@ -1316,7 +1438,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 515, "w": 25, "h": 25 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_button_minus"
             },
             {
               "name": "province_increase",
@@ -1324,7 +1447,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 515, "w": 25, "h": 25 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_button_plus"
             },
             {
               "name": "province_decrease",
@@ -1332,7 +1456,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 515, "w": 25, "h": 25 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_button_minus"
             },
             {
               "name": "back_template_button",
@@ -1341,7 +1466,8 @@
               "visible": false,
               "rect": { "x": 960, "y": 509, "w": 149, "h": 31 },
               "text": "Back",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_7"
             },
             {
               "name": "save_template_button",
@@ -1350,56 +1476,71 @@
               "visible": false,
               "rect": { "x": 960, "y": 509, "w": 149, "h": 31 },
               "text": "Save",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_7"
             },
             {
               "name": "edittextbox_bg",
               "path": "macro_build_interface/land_template_header/edittextbox_bg",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 960, "y": 507, "w": 317, "h": 33 }
+              "rect": { "x": 960, "y": 507, "w": 317, "h": 33 },
+              "sprite": "GFX_popup_edittextbox_bg",
+              "frame": 1
             },
             {
               "name": "create_army_template_bg",
               "path": "macro_build_interface/land_template_header/create_army_template_bg",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 960, "y": 186, "w": 407, "h": 354 }
+              "rect": { "x": 960, "y": 186, "w": 407, "h": 354 },
+              "sprite": "GFX_create_army_template_bg",
+              "frame": 1
             },
             {
               "name": "infantry_icon",
               "path": "macro_build_interface/land_template_header/infantry_icon",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 960, "y": 497, "w": 39, "h": 43 }
+              "rect": { "x": 960, "y": 497, "w": 39, "h": 43 },
+              "sprite": "GFX_infantry_icon",
+              "frame": 1
             },
             {
               "name": "cavalry_icon",
               "path": "macro_build_interface/land_template_header/cavalry_icon",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 960, "y": 500, "w": 36, "h": 40 }
+              "rect": { "x": 960, "y": 500, "w": 36, "h": 40 },
+              "sprite": "GFX_cavalry_icon",
+              "frame": 1
             },
             {
               "name": "artillery_icon",
               "path": "macro_build_interface/land_template_header/artillery_icon",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 960, "y": 500, "w": 43, "h": 40 }
+              "rect": { "x": 960, "y": 500, "w": 43, "h": 40 },
+              "sprite": "GFX_artillery_icon",
+              "frame": 1
             },
             {
               "name": "money_icon",
               "path": "macro_build_interface/land_template_header/money_icon",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 960, "y": 513, "w": 27, "h": 27 }
+              "rect": { "x": 960, "y": 513, "w": 27, "h": 27 },
+              "sprite": "GFX_icon_gold",
+              "frame": 1
             },
             {
               "name": "province_icon",
               "path": "macro_build_interface/land_template_header/province_icon",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 960, "y": 509, "w": 33, "h": 31 }
+              "rect": { "x": 960, "y": 509, "w": 33, "h": 31 },
+              "sprite": "GFX_province_icon",
+              "frame": 1
             },
             {
               "name": "land_template_title",
@@ -1528,7 +1669,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 515, "w": 25, "h": 25 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_button_plus"
             },
             {
               "name": "heavy_decrease",
@@ -1536,7 +1678,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 515, "w": 25, "h": 25 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_button_minus"
             },
             {
               "name": "light_increase",
@@ -1544,7 +1687,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 515, "w": 25, "h": 25 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_button_plus"
             },
             {
               "name": "light_decrease",
@@ -1552,7 +1696,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 515, "w": 25, "h": 25 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_button_minus"
             },
             {
               "name": "galley_increase",
@@ -1560,7 +1705,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 515, "w": 25, "h": 25 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_button_plus"
             },
             {
               "name": "galley_decrease",
@@ -1568,7 +1714,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 515, "w": 25, "h": 25 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_button_minus"
             },
             {
               "name": "transport_increase",
@@ -1576,7 +1723,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 515, "w": 25, "h": 25 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_button_plus"
             },
             {
               "name": "transport_decrease",
@@ -1584,7 +1732,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 515, "w": 25, "h": 25 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_button_minus"
             },
             {
               "name": "province_increase",
@@ -1592,7 +1741,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 515, "w": 25, "h": 25 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_button_plus"
             },
             {
               "name": "province_decrease",
@@ -1600,7 +1750,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 515, "w": 25, "h": 25 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_button_minus"
             },
             {
               "name": "back_template_button",
@@ -1609,7 +1760,8 @@
               "visible": false,
               "rect": { "x": 960, "y": 509, "w": 149, "h": 31 },
               "text": "Back",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_7"
             },
             {
               "name": "save_template_button",
@@ -1618,63 +1770,80 @@
               "visible": false,
               "rect": { "x": 960, "y": 509, "w": 149, "h": 31 },
               "text": "Save",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_7"
             },
             {
               "name": "edittextbox_bg",
               "path": "macro_build_interface/navy_template_header/edittextbox_bg",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 960, "y": 507, "w": 317, "h": 33 }
+              "rect": { "x": 960, "y": 507, "w": 317, "h": 33 },
+              "sprite": "GFX_popup_edittextbox_bg",
+              "frame": 1
             },
             {
               "name": "create_navy_template_bg",
               "path": "macro_build_interface/navy_template_header/create_navy_template_bg",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 960, "y": 170, "w": 418, "h": 370 }
+              "rect": { "x": 960, "y": 170, "w": 418, "h": 370 },
+              "sprite": "GFX_create_navy_template_bg",
+              "frame": 1
             },
             {
               "name": "heavy_icon",
               "path": "macro_build_interface/navy_template_header/heavy_icon",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 960, "y": 507, "w": 44, "h": 33 }
+              "rect": { "x": 960, "y": 507, "w": 44, "h": 33 },
+              "sprite": "GFX_big_ship_icon",
+              "frame": 1
             },
             {
               "name": "light_icon",
               "path": "macro_build_interface/navy_template_header/light_icon",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 960, "y": 513, "w": 35, "h": 27 }
+              "rect": { "x": 960, "y": 513, "w": 35, "h": 27 },
+              "sprite": "GFX_light_ship_icon",
+              "frame": 1
             },
             {
               "name": "galley_icon",
               "path": "macro_build_interface/navy_template_header/galley_icon",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 960, "y": 518, "w": 29, "h": 22 }
+              "rect": { "x": 960, "y": 518, "w": 29, "h": 22 },
+              "sprite": "GFX_galley_icon",
+              "frame": 1
             },
             {
               "name": "transport_icon",
               "path": "macro_build_interface/navy_template_header/transport_icon",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 960, "y": 518, "w": 24, "h": 22 }
+              "rect": { "x": 960, "y": 518, "w": 24, "h": 22 },
+              "sprite": "GFX_transport_icon",
+              "frame": 1
             },
             {
               "name": "money_icon",
               "path": "macro_build_interface/navy_template_header/money_icon",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 960, "y": 513, "w": 27, "h": 27 }
+              "rect": { "x": 960, "y": 513, "w": 27, "h": 27 },
+              "sprite": "GFX_icon_gold",
+              "frame": 1
             },
             {
               "name": "province_icon",
               "path": "macro_build_interface/navy_template_header/province_icon",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 960, "y": 509, "w": 33, "h": 31 }
+              "rect": { "x": 960, "y": 509, "w": 33, "h": 31 },
+              "sprite": "GFX_province_icon",
+              "frame": 1
             },
             {
               "name": "navy_template_title",
@@ -1802,7 +1971,9 @@
               "path": "macro_build_interface/states_header/macro_diplomacy_line",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 960, "y": 512, "w": 418, "h": 28 }
+              "rect": { "x": 960, "y": 512, "w": 418, "h": 28 },
+              "sprite": "GFX_macro_diplomacy_line",
+              "frame": 1
             },
             {
               "name": "tabs_gridbox",
@@ -1824,7 +1995,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 465, "w": 55, "h": 75 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_macro_states_tab_states"
                     }
                   ]
                 },
@@ -1841,7 +2013,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 465, "w": 55, "h": 75 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_macro_states_tab_edict",
+                      "frame": 1
                     }
                   ]
                 },
@@ -1858,7 +2032,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 465, "w": 55, "h": 75 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_macro_states_tab_trade_companies",
+                      "frame": 1
                     }
                   ]
                 }
@@ -1880,7 +2056,8 @@
               "visible": false,
               "rect": { "x": 960, "y": 519, "w": 128, "h": 21 },
               "text": "Name",
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_127"
             },
             {
               "name": "status_button",
@@ -1888,7 +2065,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 520, "w": 43, "h": 20 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_states_status"
             },
             {
               "name": "provinces_button",
@@ -1896,7 +2074,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 520, "w": 43, "h": 20 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_states_provinces"
             },
             {
               "name": "development_button_top",
@@ -1904,7 +2083,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 520, "w": 43, "h": 20 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_state_development"
             },
             {
               "name": "income_button",
@@ -1912,7 +2092,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 520, "w": 43, "h": 20 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_states_income"
             },
             {
               "name": "prosperity_button",
@@ -1920,7 +2101,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 520, "w": 43, "h": 20 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_states_prosperity"
             },
             {
               "name": "listbox",
@@ -1941,14 +2123,16 @@
                       "path": "macro_build_interface/states_tab_states/listbox/standardlistbox_slider/listboxSliderButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 960, "y": 524, "w": 16, "h": 16 }
+                      "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
+                      "sprite": "GFX_scroll_drager"
                     },
                     {
                       "name": "listboxTrackButton",
                       "path": "macro_build_interface/states_tab_states/listbox/standardlistbox_slider/listboxTrackButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 960, "y": 540, "w": 12, "h": 383 }
+                      "rect": { "x": 960, "y": 540, "w": 12, "h": 383 },
+                      "sprite": "GFX_scroll_track"
                     },
                     {
                       "name": "downButton",
@@ -1956,7 +2140,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_down"
                     },
                     {
                       "name": "upButton",
@@ -1964,7 +2149,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_up"
                     }
                   ]
                 }
@@ -1986,7 +2172,8 @@
               "visible": false,
               "rect": { "x": 960, "y": 516, "w": 160, "h": 24 },
               "text": "Name",
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_160"
             },
             {
               "name": "edict_button",
@@ -1995,7 +2182,8 @@
               "visible": false,
               "rect": { "x": 960, "y": 516, "w": 160, "h": 24 },
               "text": "Edict",
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_160"
             },
             {
               "name": "time_button",
@@ -2003,7 +2191,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 960, "y": 520, "w": 43, "h": 20 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_sort_states_edict_time"
             },
             {
               "name": "listbox",
@@ -2024,14 +2213,16 @@
                       "path": "macro_build_interface/states_tab_edicts/listbox/standardlistbox_slider/listboxSliderButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 960, "y": 524, "w": 16, "h": 16 }
+                      "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
+                      "sprite": "GFX_scroll_drager"
                     },
                     {
                       "name": "listboxTrackButton",
                       "path": "macro_build_interface/states_tab_edicts/listbox/standardlistbox_slider/listboxTrackButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 960, "y": 540, "w": 12, "h": 383 }
+                      "rect": { "x": 960, "y": 540, "w": 12, "h": 383 },
+                      "sprite": "GFX_scroll_track"
                     },
                     {
                       "name": "downButton",
@@ -2039,7 +2230,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_down"
                     },
                     {
                       "name": "upButton",
@@ -2047,7 +2239,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_up"
                     }
                   ]
                 }
@@ -2081,7 +2274,9 @@
                       "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/background",
                       "type": "icon",
                       "visible": false,
-                      "rect": { "x": 960, "y": 475, "w": 428, "h": 65 }
+                      "rect": { "x": 960, "y": 475, "w": 428, "h": 65 },
+                      "sprite": "GFX_macrobuilder_trade_company_investment_banner",
+                      "frame": 1
                     },
                     {
                       "name": "title",
@@ -2124,7 +2319,9 @@
                                       "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[1]/investment_category_list/investment_category_item[1]/background",
                                       "type": "icon",
                                       "visible": false,
-                                      "rect": { "x": 960, "y": 499, "w": 185, "h": 41 }
+                                      "rect": { "x": 960, "y": 499, "w": 185, "h": 41 },
+                                      "sprite": "GFX_banner_both_3",
+                                      "frame": 1
                                     },
                                     {
                                       "name": "title",
@@ -2154,21 +2351,27 @@
                                               "type": "button",
                                               "visible": false,
                                               "rect": { "x": 960, "y": 492, "w": 48, "h": 48 },
-                                              "enabled": true
+                                              "enabled": true,
+                                              "sprite": "GFX_investment_local_quarter",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "upgrade_arrow",
                                               "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[1]/investment_category_list/investment_category_item[1]/investment_list/investment_item[1]/upgrade_arrow",
                                               "type": "icon",
                                               "visible": false,
-                                              "rect": { "x": 960, "y": 512, "w": 12, "h": 28 }
+                                              "rect": { "x": 960, "y": 512, "w": 12, "h": 28 },
+                                              "sprite": "GFX_building_upgrade_icon",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "built_icon",
                                               "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[1]/investment_category_list/investment_category_item[1]/investment_list/investment_item[1]/built_icon",
                                               "type": "icon",
                                               "visible": false,
-                                              "rect": { "x": 960, "y": 509, "w": 31, "h": 31 }
+                                              "rect": { "x": 960, "y": 509, "w": 31, "h": 31 },
+                                              "sprite": "GFX_built_building_icon",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "cost_text",
@@ -2193,21 +2396,27 @@
                                               "type": "button",
                                               "visible": false,
                                               "rect": { "x": 960, "y": 492, "w": 48, "h": 48 },
-                                              "enabled": true
+                                              "enabled": true,
+                                              "sprite": "GFX_investment_permanent_quarter",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "upgrade_arrow",
                                               "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[1]/investment_category_list/investment_category_item[1]/investment_list/investment_item[2]/upgrade_arrow",
                                               "type": "icon",
                                               "visible": false,
-                                              "rect": { "x": 960, "y": 512, "w": 12, "h": 28 }
+                                              "rect": { "x": 960, "y": 512, "w": 12, "h": 28 },
+                                              "sprite": "GFX_building_upgrade_icon",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "built_icon",
                                               "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[1]/investment_category_list/investment_category_item[1]/investment_list/investment_item[2]/built_icon",
                                               "type": "icon",
                                               "visible": false,
-                                              "rect": { "x": 960, "y": 509, "w": 31, "h": 31 }
+                                              "rect": { "x": 960, "y": 509, "w": 31, "h": 31 },
+                                              "sprite": "GFX_built_building_icon",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "cost_text",
@@ -2232,21 +2441,27 @@
                                               "type": "button",
                                               "visible": false,
                                               "rect": { "x": 960, "y": 492, "w": 48, "h": 48 },
-                                              "enabled": true
+                                              "enabled": true,
+                                              "sprite": "GFX_investment_officers_mess",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "upgrade_arrow",
                                               "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[1]/investment_category_list/investment_category_item[1]/investment_list/investment_item[3]/upgrade_arrow",
                                               "type": "icon",
                                               "visible": false,
-                                              "rect": { "x": 960, "y": 512, "w": 12, "h": 28 }
+                                              "rect": { "x": 960, "y": 512, "w": 12, "h": 28 },
+                                              "sprite": "GFX_building_upgrade_icon",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "built_icon",
                                               "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[1]/investment_category_list/investment_category_item[1]/investment_list/investment_item[3]/built_icon",
                                               "type": "icon",
                                               "visible": false,
-                                              "rect": { "x": 960, "y": 509, "w": 31, "h": 31 }
+                                              "rect": { "x": 960, "y": 509, "w": 31, "h": 31 },
+                                              "sprite": "GFX_built_building_icon",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "cost_text",
@@ -2274,7 +2489,9 @@
                                       "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[1]/investment_category_list/investment_category_item[2]/background",
                                       "type": "icon",
                                       "visible": false,
-                                      "rect": { "x": 960, "y": 499, "w": 185, "h": 41 }
+                                      "rect": { "x": 960, "y": 499, "w": 185, "h": 41 },
+                                      "sprite": "GFX_banner_both_3",
+                                      "frame": 1
                                     },
                                     {
                                       "name": "title",
@@ -2304,21 +2521,27 @@
                                               "type": "button",
                                               "visible": false,
                                               "rect": { "x": 960, "y": 492, "w": 48, "h": 48 },
-                                              "enabled": true
+                                              "enabled": true,
+                                              "sprite": "GFX_investment_company_warehouse",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "upgrade_arrow",
                                               "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[1]/investment_category_list/investment_category_item[2]/investment_list/investment_item[1]/upgrade_arrow",
                                               "type": "icon",
                                               "visible": false,
-                                              "rect": { "x": 960, "y": 512, "w": 12, "h": 28 }
+                                              "rect": { "x": 960, "y": 512, "w": 12, "h": 28 },
+                                              "sprite": "GFX_building_upgrade_icon",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "built_icon",
                                               "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[1]/investment_category_list/investment_category_item[2]/investment_list/investment_item[1]/built_icon",
                                               "type": "icon",
                                               "visible": false,
-                                              "rect": { "x": 960, "y": 509, "w": 31, "h": 31 }
+                                              "rect": { "x": 960, "y": 509, "w": 31, "h": 31 },
+                                              "sprite": "GFX_built_building_icon",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "cost_text",
@@ -2343,21 +2566,27 @@
                                               "type": "button",
                                               "visible": false,
                                               "rect": { "x": 960, "y": 492, "w": 48, "h": 48 },
-                                              "enabled": true
+                                              "enabled": true,
+                                              "sprite": "GFX_investment_company_depot",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "upgrade_arrow",
                                               "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[1]/investment_category_list/investment_category_item[2]/investment_list/investment_item[2]/upgrade_arrow",
                                               "type": "icon",
                                               "visible": false,
-                                              "rect": { "x": 960, "y": 512, "w": 12, "h": 28 }
+                                              "rect": { "x": 960, "y": 512, "w": 12, "h": 28 },
+                                              "sprite": "GFX_building_upgrade_icon",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "built_icon",
                                               "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[1]/investment_category_list/investment_category_item[2]/investment_list/investment_item[2]/built_icon",
                                               "type": "icon",
                                               "visible": false,
-                                              "rect": { "x": 960, "y": 509, "w": 31, "h": 31 }
+                                              "rect": { "x": 960, "y": 509, "w": 31, "h": 31 },
+                                              "sprite": "GFX_built_building_icon",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "cost_text",
@@ -2382,21 +2611,27 @@
                                               "type": "button",
                                               "visible": false,
                                               "rect": { "x": 960, "y": 492, "w": 48, "h": 48 },
-                                              "enabled": true
+                                              "enabled": true,
+                                              "sprite": "GFX_investment_admiralty",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "upgrade_arrow",
                                               "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[1]/investment_category_list/investment_category_item[2]/investment_list/investment_item[3]/upgrade_arrow",
                                               "type": "icon",
                                               "visible": false,
-                                              "rect": { "x": 960, "y": 512, "w": 12, "h": 28 }
+                                              "rect": { "x": 960, "y": 512, "w": 12, "h": 28 },
+                                              "sprite": "GFX_building_upgrade_icon",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "built_icon",
                                               "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[1]/investment_category_list/investment_category_item[2]/investment_list/investment_item[3]/built_icon",
                                               "type": "icon",
                                               "visible": false,
-                                              "rect": { "x": 960, "y": 509, "w": 31, "h": 31 }
+                                              "rect": { "x": 960, "y": 509, "w": 31, "h": 31 },
+                                              "sprite": "GFX_built_building_icon",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "cost_text",
@@ -2442,7 +2677,9 @@
                                       "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[2]/investment_category_list/investment_category_item[1]/background",
                                       "type": "icon",
                                       "visible": false,
-                                      "rect": { "x": 960, "y": 499, "w": 185, "h": 41 }
+                                      "rect": { "x": 960, "y": 499, "w": 185, "h": 41 },
+                                      "sprite": "GFX_banner_both_3",
+                                      "frame": 1
                                     },
                                     {
                                       "name": "title",
@@ -2472,21 +2709,27 @@
                                               "type": "button",
                                               "visible": false,
                                               "rect": { "x": 960, "y": 492, "w": 48, "h": 48 },
-                                              "enabled": true
+                                              "enabled": true,
+                                              "sprite": "GFX_investment_brokers_office",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "upgrade_arrow",
                                               "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[2]/investment_category_list/investment_category_item[1]/investment_list/investment_item[1]/upgrade_arrow",
                                               "type": "icon",
                                               "visible": false,
-                                              "rect": { "x": 960, "y": 512, "w": 12, "h": 28 }
+                                              "rect": { "x": 960, "y": 512, "w": 12, "h": 28 },
+                                              "sprite": "GFX_building_upgrade_icon",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "built_icon",
                                               "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[2]/investment_category_list/investment_category_item[1]/investment_list/investment_item[1]/built_icon",
                                               "type": "icon",
                                               "visible": false,
-                                              "rect": { "x": 960, "y": 509, "w": 31, "h": 31 }
+                                              "rect": { "x": 960, "y": 509, "w": 31, "h": 31 },
+                                              "sprite": "GFX_built_building_icon",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "cost_text",
@@ -2511,21 +2754,27 @@
                                               "type": "button",
                                               "visible": false,
                                               "rect": { "x": 960, "y": 492, "w": 48, "h": 48 },
-                                              "enabled": true
+                                              "enabled": true,
+                                              "sprite": "GFX_investment_brokers_exchange",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "upgrade_arrow",
                                               "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[2]/investment_category_list/investment_category_item[1]/investment_list/investment_item[2]/upgrade_arrow",
                                               "type": "icon",
                                               "visible": false,
-                                              "rect": { "x": 960, "y": 512, "w": 12, "h": 28 }
+                                              "rect": { "x": 960, "y": 512, "w": 12, "h": 28 },
+                                              "sprite": "GFX_building_upgrade_icon",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "built_icon",
                                               "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[2]/investment_category_list/investment_category_item[1]/investment_list/investment_item[2]/built_icon",
                                               "type": "icon",
                                               "visible": false,
-                                              "rect": { "x": 960, "y": 509, "w": 31, "h": 31 }
+                                              "rect": { "x": 960, "y": 509, "w": 31, "h": 31 },
+                                              "sprite": "GFX_built_building_icon",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "cost_text",
@@ -2550,21 +2799,27 @@
                                               "type": "button",
                                               "visible": false,
                                               "rect": { "x": 960, "y": 492, "w": 48, "h": 48 },
-                                              "enabled": true
+                                              "enabled": true,
+                                              "sprite": "GFX_investment_property_appraiser",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "upgrade_arrow",
                                               "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[2]/investment_category_list/investment_category_item[1]/investment_list/investment_item[3]/upgrade_arrow",
                                               "type": "icon",
                                               "visible": false,
-                                              "rect": { "x": 960, "y": 512, "w": 12, "h": 28 }
+                                              "rect": { "x": 960, "y": 512, "w": 12, "h": 28 },
+                                              "sprite": "GFX_building_upgrade_icon",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "built_icon",
                                               "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[2]/investment_category_list/investment_category_item[1]/investment_list/investment_item[3]/built_icon",
                                               "type": "icon",
                                               "visible": false,
-                                              "rect": { "x": 960, "y": 509, "w": 31, "h": 31 }
+                                              "rect": { "x": 960, "y": 509, "w": 31, "h": 31 },
+                                              "sprite": "GFX_built_building_icon",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "cost_text",
@@ -2592,7 +2847,9 @@
                                       "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[2]/investment_category_list/investment_category_item[2]/background",
                                       "type": "icon",
                                       "visible": false,
-                                      "rect": { "x": 960, "y": 499, "w": 185, "h": 41 }
+                                      "rect": { "x": 960, "y": 499, "w": 185, "h": 41 },
+                                      "sprite": "GFX_banner_both_3",
+                                      "frame": 1
                                     },
                                     {
                                       "name": "title",
@@ -2622,21 +2879,27 @@
                                               "type": "button",
                                               "visible": false,
                                               "rect": { "x": 960, "y": 492, "w": 48, "h": 48 },
-                                              "enabled": true
+                                              "enabled": true,
+                                              "sprite": "GFX_investment_settlements",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "upgrade_arrow",
                                               "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[2]/investment_category_list/investment_category_item[2]/investment_list/investment_item[1]/upgrade_arrow",
                                               "type": "icon",
                                               "visible": false,
-                                              "rect": { "x": 960, "y": 512, "w": 12, "h": 28 }
+                                              "rect": { "x": 960, "y": 512, "w": 12, "h": 28 },
+                                              "sprite": "GFX_building_upgrade_icon",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "built_icon",
                                               "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[2]/investment_category_list/investment_category_item[2]/investment_list/investment_item[1]/built_icon",
                                               "type": "icon",
                                               "visible": false,
-                                              "rect": { "x": 960, "y": 509, "w": 31, "h": 31 }
+                                              "rect": { "x": 960, "y": 509, "w": 31, "h": 31 },
+                                              "sprite": "GFX_built_building_icon",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "cost_text",
@@ -2661,21 +2924,27 @@
                                               "type": "button",
                                               "visible": false,
                                               "rect": { "x": 960, "y": 492, "w": 48, "h": 48 },
-                                              "enabled": true
+                                              "enabled": true,
+                                              "sprite": "GFX_investment_district",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "upgrade_arrow",
                                               "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[2]/investment_category_list/investment_category_item[2]/investment_list/investment_item[2]/upgrade_arrow",
                                               "type": "icon",
                                               "visible": false,
-                                              "rect": { "x": 960, "y": 512, "w": 12, "h": 28 }
+                                              "rect": { "x": 960, "y": 512, "w": 12, "h": 28 },
+                                              "sprite": "GFX_building_upgrade_icon",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "built_icon",
                                               "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[2]/investment_category_list/investment_category_item[2]/investment_list/investment_item[2]/built_icon",
                                               "type": "icon",
                                               "visible": false,
-                                              "rect": { "x": 960, "y": 509, "w": 31, "h": 31 }
+                                              "rect": { "x": 960, "y": 509, "w": 31, "h": 31 },
+                                              "sprite": "GFX_built_building_icon",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "cost_text",
@@ -2700,21 +2969,27 @@
                                               "type": "button",
                                               "visible": false,
                                               "rect": { "x": 960, "y": 492, "w": 48, "h": 48 },
-                                              "enabled": true
+                                              "enabled": true,
+                                              "sprite": "GFX_investment_townships",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "upgrade_arrow",
                                               "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[2]/investment_category_list/investment_category_item[2]/investment_list/investment_item[3]/upgrade_arrow",
                                               "type": "icon",
                                               "visible": false,
-                                              "rect": { "x": 960, "y": 512, "w": 12, "h": 28 }
+                                              "rect": { "x": 960, "y": 512, "w": 12, "h": 28 },
+                                              "sprite": "GFX_building_upgrade_icon",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "built_icon",
                                               "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[2]/investment_category_list/investment_category_item[2]/investment_list/investment_item[3]/built_icon",
                                               "type": "icon",
                                               "visible": false,
-                                              "rect": { "x": 960, "y": 509, "w": 31, "h": 31 }
+                                              "rect": { "x": 960, "y": 509, "w": 31, "h": 31 },
+                                              "sprite": "GFX_built_building_icon",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "cost_text",
@@ -2760,7 +3035,9 @@
                                       "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[3]/investment_category_list/investment_category_item/background",
                                       "type": "icon",
                                       "visible": false,
-                                      "rect": { "x": 960, "y": 499, "w": 185, "h": 41 }
+                                      "rect": { "x": 960, "y": 499, "w": 185, "h": 41 },
+                                      "sprite": "GFX_banner_both_3",
+                                      "frame": 1
                                     },
                                     {
                                       "name": "title",
@@ -2790,21 +3067,27 @@
                                               "type": "button",
                                               "visible": false,
                                               "rect": { "x": 960, "y": 492, "w": 48, "h": 48 },
-                                              "enabled": true
+                                              "enabled": true,
+                                              "sprite": "GFX_investment_company_administration",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "upgrade_arrow",
                                               "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[3]/investment_category_list/investment_category_item/investment_list/investment_item[1]/upgrade_arrow",
                                               "type": "icon",
                                               "visible": false,
-                                              "rect": { "x": 960, "y": 512, "w": 12, "h": 28 }
+                                              "rect": { "x": 960, "y": 512, "w": 12, "h": 28 },
+                                              "sprite": "GFX_building_upgrade_icon",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "built_icon",
                                               "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[3]/investment_category_list/investment_category_item/investment_list/investment_item[1]/built_icon",
                                               "type": "icon",
                                               "visible": false,
-                                              "rect": { "x": 960, "y": 509, "w": 31, "h": 31 }
+                                              "rect": { "x": 960, "y": 509, "w": 31, "h": 31 },
+                                              "sprite": "GFX_built_building_icon",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "cost_text",
@@ -2829,21 +3112,27 @@
                                               "type": "button",
                                               "visible": false,
                                               "rect": { "x": 960, "y": 492, "w": 48, "h": 48 },
-                                              "enabled": true
+                                              "enabled": true,
+                                              "sprite": "GFX_investment_military_administration",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "upgrade_arrow",
                                               "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[3]/investment_category_list/investment_category_item/investment_list/investment_item[2]/upgrade_arrow",
                                               "type": "icon",
                                               "visible": false,
-                                              "rect": { "x": 960, "y": 512, "w": 12, "h": 28 }
+                                              "rect": { "x": 960, "y": 512, "w": 12, "h": 28 },
+                                              "sprite": "GFX_building_upgrade_icon",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "built_icon",
                                               "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[3]/investment_category_list/investment_category_item/investment_list/investment_item[2]/built_icon",
                                               "type": "icon",
                                               "visible": false,
-                                              "rect": { "x": 960, "y": 509, "w": 31, "h": 31 }
+                                              "rect": { "x": 960, "y": 509, "w": 31, "h": 31 },
+                                              "sprite": "GFX_built_building_icon",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "cost_text",
@@ -2868,21 +3157,27 @@
                                               "type": "button",
                                               "visible": false,
                                               "rect": { "x": 960, "y": 492, "w": 48, "h": 48 },
-                                              "enabled": true
+                                              "enabled": true,
+                                              "sprite": "GFX_investment_governor_general_mansion",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "upgrade_arrow",
                                               "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[3]/investment_category_list/investment_category_item/investment_list/investment_item[3]/upgrade_arrow",
                                               "type": "icon",
                                               "visible": false,
-                                              "rect": { "x": 960, "y": 512, "w": 12, "h": 28 }
+                                              "rect": { "x": 960, "y": 512, "w": 12, "h": 28 },
+                                              "sprite": "GFX_building_upgrade_icon",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "built_icon",
                                               "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/investment_category_pair_item[3]/investment_category_list/investment_category_item/investment_list/investment_item[3]/built_icon",
                                               "type": "icon",
                                               "visible": false,
-                                              "rect": { "x": 960, "y": 509, "w": 31, "h": 31 }
+                                              "rect": { "x": 960, "y": 509, "w": 31, "h": 31 },
+                                              "sprite": "GFX_built_building_icon",
+                                              "frame": 1
                                             },
                                             {
                                               "name": "cost_text",
@@ -2914,14 +3209,16 @@
                               "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/standardlistbox_slider/listboxSliderButton",
                               "type": "button",
                               "visible": false,
-                              "rect": { "x": 960, "y": 524, "w": 16, "h": 16 }
+                              "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
+                              "sprite": "GFX_scroll_drager"
                             },
                             {
                               "name": "listboxTrackButton",
                               "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/trade_company_investment_view/investment_category_pair_list/standardlistbox_slider/listboxTrackButton",
                               "type": "button",
                               "visible": false,
-                              "rect": { "x": 960, "y": 540, "w": 12, "h": 340 }
+                              "rect": { "x": 960, "y": 540, "w": 12, "h": 340 },
+                              "sprite": "GFX_scroll_track"
                             },
                             {
                               "name": "downButton",
@@ -2929,7 +3226,8 @@
                               "type": "button",
                               "visible": false,
                               "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                              "enabled": true
+                              "enabled": true,
+                              "sprite": "GFX_scroll_down"
                             },
                             {
                               "name": "upButton",
@@ -2937,7 +3235,8 @@
                               "type": "button",
                               "visible": false,
                               "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                              "enabled": true
+                              "enabled": true,
+                              "sprite": "GFX_scroll_up"
                             }
                           ]
                         }
@@ -2957,14 +3256,16 @@
                       "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/standardlistbox_slider/listboxSliderButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 960, "y": 524, "w": 16, "h": 16 }
+                      "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
+                      "sprite": "GFX_scroll_drager"
                     },
                     {
                       "name": "listboxTrackButton",
                       "path": "macro_build_interface/states_tab_trade_companies/investments_listbox/standardlistbox_slider/listboxTrackButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 960, "y": 540, "w": 12, "h": 368 }
+                      "rect": { "x": 960, "y": 540, "w": 12, "h": 368 },
+                      "sprite": "GFX_scroll_track"
                     },
                     {
                       "name": "downButton",
@@ -2972,7 +3273,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_down"
                     },
                     {
                       "name": "upButton",
@@ -2980,7 +3282,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_up"
                     }
                   ]
                 }
@@ -3007,28 +3310,36 @@
                   "path": "macro_build_interface/content_list/build_category_entry_land/category_banner_icon",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 9, "y": 261, "w": 390, "h": 41 }
+                  "rect": { "x": 9, "y": 261, "w": 390, "h": 41 },
+                  "sprite": "GFX_build_category_units_banner",
+                  "frame": 1
                 },
                 {
                   "name": "fire_icon",
                   "path": "macro_build_interface/content_list/build_category_entry_land/fire_icon",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 248, "y": 263, "w": 32, "h": 32 }
+                  "rect": { "x": 248, "y": 263, "w": 32, "h": 32 },
+                  "sprite": "GFX_icon_fire",
+                  "frame": 1
                 },
                 {
                   "name": "shock_icon",
                   "path": "macro_build_interface/content_list/build_category_entry_land/shock_icon",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 292, "y": 264, "w": 32, "h": 32 }
+                  "rect": { "x": 292, "y": 264, "w": 32, "h": 32 },
+                  "sprite": "GFX_icon_shock",
+                  "frame": 1
                 },
                 {
                   "name": "morale_icon",
                   "path": "macro_build_interface/content_list/build_category_entry_land/morale_icon",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 335, "y": 265, "w": 28, "h": 28 }
+                  "rect": { "x": 335, "y": 265, "w": 28, "h": 28 },
+                  "sprite": "GFX_icon_morale",
+                  "frame": 1
                 },
                 {
                   "name": "title",
@@ -3066,56 +3377,72 @@
                           "path": "macro_build_interface/content_list/build_content_entry/list_to_fill/window_for_land_units[1]/icon_type",
                           "type": "icon",
                           "visible": true,
-                          "rect": { "x": 12, "y": 295, "w": 37, "h": 37 }
+                          "rect": { "x": 12, "y": 295, "w": 37, "h": 37 },
+                          "sprite": "GFX_unit_types_strip",
+                          "frame": 1
                         },
                         {
                           "name": "icon_sailors",
                           "path": "macro_build_interface/content_list/build_content_entry/list_to_fill/window_for_land_units[1]/icon_sailors",
                           "type": "icon",
                           "visible": false,
-                          "rect": { "x": 960, "y": 513, "w": 27, "h": 27 }
+                          "rect": { "x": 960, "y": 513, "w": 27, "h": 27 },
+                          "sprite": "GFX_icon_sailors",
+                          "frame": 1
                         },
                         {
                           "name": "fire_offensive",
                           "path": "macro_build_interface/content_list/build_content_entry/list_to_fill/window_for_land_units[1]/fire_offensive",
                           "type": "icon",
                           "visible": true,
-                          "rect": { "x": 246, "y": 298, "w": 32, "h": 20 }
+                          "rect": { "x": 246, "y": 298, "w": 32, "h": 20 },
+                          "sprite": "GFX_dots_offensive_no_transp",
+                          "frame": 5
                         },
                         {
                           "name": "fire_defensive",
                           "path": "macro_build_interface/content_list/build_content_entry/list_to_fill/window_for_land_units[1]/fire_defensive",
                           "type": "icon",
                           "visible": true,
-                          "rect": { "x": 246, "y": 312, "w": 32, "h": 20 }
+                          "rect": { "x": 246, "y": 312, "w": 32, "h": 20 },
+                          "sprite": "GFX_dots_defensive_no_transp",
+                          "frame": 4
                         },
                         {
                           "name": "shock_offensive",
                           "path": "macro_build_interface/content_list/build_content_entry/list_to_fill/window_for_land_units[1]/shock_offensive",
                           "type": "icon",
                           "visible": true,
-                          "rect": { "x": 290, "y": 298, "w": 32, "h": 20 }
+                          "rect": { "x": 290, "y": 298, "w": 32, "h": 20 },
+                          "sprite": "GFX_dots_offensive_no_transp",
+                          "frame": 4
                         },
                         {
                           "name": "shock_defensive",
                           "path": "macro_build_interface/content_list/build_content_entry/list_to_fill/window_for_land_units[1]/shock_defensive",
                           "type": "icon",
                           "visible": true,
-                          "rect": { "x": 290, "y": 312, "w": 32, "h": 20 }
+                          "rect": { "x": 290, "y": 312, "w": 32, "h": 20 },
+                          "sprite": "GFX_dots_defensive_no_transp",
+                          "frame": 4
                         },
                         {
                           "name": "morale_offensive",
                           "path": "macro_build_interface/content_list/build_content_entry/list_to_fill/window_for_land_units[1]/morale_offensive",
                           "type": "icon",
                           "visible": true,
-                          "rect": { "x": 335, "y": 298, "w": 32, "h": 20 }
+                          "rect": { "x": 335, "y": 298, "w": 32, "h": 20 },
+                          "sprite": "GFX_dots_offensive_no_transp",
+                          "frame": 5
                         },
                         {
                           "name": "morale_defensive",
                           "path": "macro_build_interface/content_list/build_content_entry/list_to_fill/window_for_land_units[1]/morale_defensive",
                           "type": "icon",
                           "visible": true,
-                          "rect": { "x": 335, "y": 312, "w": 32, "h": 20 }
+                          "rect": { "x": 335, "y": 312, "w": 32, "h": 20 },
+                          "sprite": "GFX_dots_defensive_no_transp",
+                          "frame": 4
                         },
                         {
                           "name": "unit_name",
@@ -3155,7 +3482,8 @@
                           "type": "checkbox",
                           "visible": true,
                           "rect": { "x": 10, "y": 291, "w": 390, "h": 48 },
-                          "checked": false
+                          "checked": false,
+                          "sprite": "GFX_unit_banner_checkbox"
                         }
                       ]
                     },
@@ -3171,56 +3499,72 @@
                           "path": "macro_build_interface/content_list/build_content_entry/list_to_fill/window_for_land_units[2]/icon_type",
                           "type": "icon",
                           "visible": true,
-                          "rect": { "x": 12, "y": 335, "w": 37, "h": 37 }
+                          "rect": { "x": 12, "y": 335, "w": 37, "h": 37 },
+                          "sprite": "GFX_unit_types_strip",
+                          "frame": 2
                         },
                         {
                           "name": "icon_sailors",
                           "path": "macro_build_interface/content_list/build_content_entry/list_to_fill/window_for_land_units[2]/icon_sailors",
                           "type": "icon",
                           "visible": false,
-                          "rect": { "x": 960, "y": 513, "w": 27, "h": 27 }
+                          "rect": { "x": 960, "y": 513, "w": 27, "h": 27 },
+                          "sprite": "GFX_icon_sailors",
+                          "frame": 1
                         },
                         {
                           "name": "fire_offensive",
                           "path": "macro_build_interface/content_list/build_content_entry/list_to_fill/window_for_land_units[2]/fire_offensive",
                           "type": "icon",
                           "visible": true,
-                          "rect": { "x": 246, "y": 338, "w": 32, "h": 20 }
+                          "rect": { "x": 246, "y": 338, "w": 32, "h": 20 },
+                          "sprite": "GFX_dots_offensive_no_transp",
+                          "frame": 3
                         },
                         {
                           "name": "fire_defensive",
                           "path": "macro_build_interface/content_list/build_content_entry/list_to_fill/window_for_land_units[2]/fire_defensive",
                           "type": "icon",
                           "visible": true,
-                          "rect": { "x": 246, "y": 352, "w": 32, "h": 20 }
+                          "rect": { "x": 246, "y": 352, "w": 32, "h": 20 },
+                          "sprite": "GFX_dots_defensive_no_transp",
+                          "frame": 2
                         },
                         {
                           "name": "shock_offensive",
                           "path": "macro_build_interface/content_list/build_content_entry/list_to_fill/window_for_land_units[2]/shock_offensive",
                           "type": "icon",
                           "visible": true,
-                          "rect": { "x": 290, "y": 338, "w": 32, "h": 20 }
+                          "rect": { "x": 290, "y": 338, "w": 32, "h": 20 },
+                          "sprite": "GFX_dots_offensive_no_transp",
+                          "frame": 6
                         },
                         {
                           "name": "shock_defensive",
                           "path": "macro_build_interface/content_list/build_content_entry/list_to_fill/window_for_land_units[2]/shock_defensive",
                           "type": "icon",
                           "visible": true,
-                          "rect": { "x": 290, "y": 352, "w": 32, "h": 20 }
+                          "rect": { "x": 290, "y": 352, "w": 32, "h": 20 },
+                          "sprite": "GFX_dots_defensive_no_transp",
+                          "frame": 5
                         },
                         {
                           "name": "morale_offensive",
                           "path": "macro_build_interface/content_list/build_content_entry/list_to_fill/window_for_land_units[2]/morale_offensive",
                           "type": "icon",
                           "visible": true,
-                          "rect": { "x": 335, "y": 338, "w": 32, "h": 20 }
+                          "rect": { "x": 335, "y": 338, "w": 32, "h": 20 },
+                          "sprite": "GFX_dots_offensive_no_transp",
+                          "frame": 4
                         },
                         {
                           "name": "morale_defensive",
                           "path": "macro_build_interface/content_list/build_content_entry/list_to_fill/window_for_land_units[2]/morale_defensive",
                           "type": "icon",
                           "visible": true,
-                          "rect": { "x": 335, "y": 352, "w": 32, "h": 20 }
+                          "rect": { "x": 335, "y": 352, "w": 32, "h": 20 },
+                          "sprite": "GFX_dots_defensive_no_transp",
+                          "frame": 5
                         },
                         {
                           "name": "unit_name",
@@ -3260,7 +3604,8 @@
                           "type": "checkbox",
                           "visible": true,
                           "rect": { "x": 10, "y": 331, "w": 390, "h": 48 },
-                          "checked": false
+                          "checked": false,
+                          "sprite": "GFX_unit_banner_checkbox"
                         }
                       ]
                     },
@@ -3276,56 +3621,72 @@
                           "path": "macro_build_interface/content_list/build_content_entry/list_to_fill/window_for_land_units[3]/icon_type",
                           "type": "icon",
                           "visible": true,
-                          "rect": { "x": 12, "y": 375, "w": 37, "h": 37 }
+                          "rect": { "x": 12, "y": 375, "w": 37, "h": 37 },
+                          "sprite": "GFX_unit_types_strip",
+                          "frame": 3
                         },
                         {
                           "name": "icon_sailors",
                           "path": "macro_build_interface/content_list/build_content_entry/list_to_fill/window_for_land_units[3]/icon_sailors",
                           "type": "icon",
                           "visible": false,
-                          "rect": { "x": 960, "y": 513, "w": 27, "h": 27 }
+                          "rect": { "x": 960, "y": 513, "w": 27, "h": 27 },
+                          "sprite": "GFX_icon_sailors",
+                          "frame": 1
                         },
                         {
                           "name": "fire_offensive",
                           "path": "macro_build_interface/content_list/build_content_entry/list_to_fill/window_for_land_units[3]/fire_offensive",
                           "type": "icon",
                           "visible": true,
-                          "rect": { "x": 246, "y": 378, "w": 32, "h": 20 }
+                          "rect": { "x": 246, "y": 378, "w": 32, "h": 20 },
+                          "sprite": "GFX_dots_offensive_no_transp",
+                          "frame": 5
                         },
                         {
                           "name": "fire_defensive",
                           "path": "macro_build_interface/content_list/build_content_entry/list_to_fill/window_for_land_units[3]/fire_defensive",
                           "type": "icon",
                           "visible": true,
-                          "rect": { "x": 246, "y": 392, "w": 32, "h": 20 }
+                          "rect": { "x": 246, "y": 392, "w": 32, "h": 20 },
+                          "sprite": "GFX_dots_defensive_no_transp",
+                          "frame": 4
                         },
                         {
                           "name": "shock_offensive",
                           "path": "macro_build_interface/content_list/build_content_entry/list_to_fill/window_for_land_units[3]/shock_offensive",
                           "type": "icon",
                           "visible": true,
-                          "rect": { "x": 290, "y": 378, "w": 32, "h": 20 }
+                          "rect": { "x": 290, "y": 378, "w": 32, "h": 20 },
+                          "sprite": "GFX_dots_offensive_no_transp",
+                          "frame": 2
                         },
                         {
                           "name": "shock_defensive",
                           "path": "macro_build_interface/content_list/build_content_entry/list_to_fill/window_for_land_units[3]/shock_defensive",
                           "type": "icon",
                           "visible": true,
-                          "rect": { "x": 290, "y": 392, "w": 32, "h": 20 }
+                          "rect": { "x": 290, "y": 392, "w": 32, "h": 20 },
+                          "sprite": "GFX_dots_defensive_no_transp",
+                          "frame": 2
                         },
                         {
                           "name": "morale_offensive",
                           "path": "macro_build_interface/content_list/build_content_entry/list_to_fill/window_for_land_units[3]/morale_offensive",
                           "type": "icon",
                           "visible": true,
-                          "rect": { "x": 335, "y": 378, "w": 32, "h": 20 }
+                          "rect": { "x": 335, "y": 378, "w": 32, "h": 20 },
+                          "sprite": "GFX_dots_offensive_no_transp",
+                          "frame": 6
                         },
                         {
                           "name": "morale_defensive",
                           "path": "macro_build_interface/content_list/build_content_entry/list_to_fill/window_for_land_units[3]/morale_defensive",
                           "type": "icon",
                           "visible": true,
-                          "rect": { "x": 335, "y": 392, "w": 32, "h": 20 }
+                          "rect": { "x": 335, "y": 392, "w": 32, "h": 20 },
+                          "sprite": "GFX_dots_defensive_no_transp",
+                          "frame": 3
                         },
                         {
                           "name": "unit_name",
@@ -3365,7 +3726,8 @@
                           "type": "checkbox",
                           "visible": true,
                           "rect": { "x": 10, "y": 371, "w": 390, "h": 48 },
-                          "checked": false
+                          "checked": false,
+                          "sprite": "GFX_unit_banner_checkbox"
                         }
                       ]
                     },
@@ -3381,14 +3743,16 @@
                           "path": "macro_build_interface/content_list/build_content_entry/list_to_fill/standardlistbox_slider/listboxSliderButton",
                           "type": "button",
                           "visible": false,
-                          "rect": { "x": 960, "y": 524, "w": 16, "h": 16 }
+                          "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
+                          "sprite": "GFX_scroll_drager"
                         },
                         {
                           "name": "listboxTrackButton",
                           "path": "macro_build_interface/content_list/build_content_entry/list_to_fill/standardlistbox_slider/listboxTrackButton",
                           "type": "button",
                           "visible": false,
-                          "rect": { "x": 960, "y": 540, "w": 12, "h": 540 }
+                          "rect": { "x": 960, "y": 540, "w": 12, "h": 540 },
+                          "sprite": "GFX_scroll_track"
                         },
                         {
                           "name": "downButton",
@@ -3396,7 +3760,8 @@
                           "type": "button",
                           "visible": false,
                           "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                          "enabled": true
+                          "enabled": true,
+                          "sprite": "GFX_scroll_down"
                         },
                         {
                           "name": "upButton",
@@ -3404,7 +3769,8 @@
                           "type": "button",
                           "visible": false,
                           "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                          "enabled": true
+                          "enabled": true,
+                          "sprite": "GFX_scroll_up"
                         }
                       ]
                     }
@@ -3424,14 +3790,16 @@
                   "path": "macro_build_interface/content_list/standardlistbox_slider/listboxSliderButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 960, "y": 524, "w": 16, "h": 16 }
+                  "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
+                  "sprite": "GFX_scroll_drager"
                 },
                 {
                   "name": "listboxTrackButton",
                   "path": "macro_build_interface/content_list/standardlistbox_slider/listboxTrackButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 960, "y": 540, "w": 12, "h": 379 }
+                  "rect": { "x": 960, "y": 540, "w": 12, "h": 379 },
+                  "sprite": "GFX_scroll_track"
                 },
                 {
                   "name": "downButton",
@@ -3439,7 +3807,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_scroll_down"
                 },
                 {
                   "name": "upButton",
@@ -3447,7 +3816,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_scroll_up"
                 }
               ]
             }
@@ -3459,7 +3829,8 @@
           "type": "checkbox",
           "visible": true,
           "rect": { "x": 416, "y": 212, "w": 62, "h": 46 },
-          "checked": true
+          "checked": true,
+          "sprite": "GFX_build_interface_army_tab"
         },
         {
           "name": "navy_units_button",
@@ -3467,7 +3838,8 @@
           "type": "checkbox",
           "visible": true,
           "rect": { "x": 416, "y": 256, "w": 62, "h": 46 },
-          "checked": false
+          "checked": false,
+          "sprite": "GFX_build_interface_navy_tab"
         },
         {
           "name": "core_button",
@@ -3475,7 +3847,8 @@
           "type": "checkbox",
           "visible": true,
           "rect": { "x": 416, "y": 300, "w": 62, "h": 46 },
-          "checked": false
+          "checked": false,
+          "sprite": "GFX_build_interface_core_tab"
         },
         {
           "name": "missionary_button",
@@ -3483,7 +3856,8 @@
           "type": "checkbox",
           "visible": true,
           "rect": { "x": 416, "y": 344, "w": 62, "h": 46 },
-          "checked": false
+          "checked": false,
+          "sprite": "GFX_build_interface_missionary_tab"
         },
         {
           "name": "autonomy_button",
@@ -3491,7 +3865,8 @@
           "type": "checkbox",
           "visible": true,
           "rect": { "x": 416, "y": 388, "w": 62, "h": 46 },
-          "checked": false
+          "checked": false,
+          "sprite": "GFX_build_interface_revolt_tab"
         },
         {
           "name": "culture_button",
@@ -3499,7 +3874,8 @@
           "type": "checkbox",
           "visible": true,
           "rect": { "x": 416, "y": 432, "w": 62, "h": 46 },
-          "checked": false
+          "checked": false,
+          "sprite": "GFX_build_interface_culture_tab"
         },
         {
           "name": "buildings_button",
@@ -3507,7 +3883,8 @@
           "type": "checkbox",
           "visible": true,
           "rect": { "x": 416, "y": 476, "w": 62, "h": 46 },
-          "checked": false
+          "checked": false,
+          "sprite": "GFX_build_interface_building_tab"
         },
         {
           "name": "development_button",
@@ -3515,7 +3892,8 @@
           "type": "checkbox",
           "visible": true,
           "rect": { "x": 416, "y": 520, "w": 62, "h": 46 },
-          "checked": false
+          "checked": false,
+          "sprite": "GFX_build_interface_development_tab"
         },
         {
           "name": "states_button",
@@ -3523,7 +3901,8 @@
           "type": "checkbox",
           "visible": true,
           "rect": { "x": 416, "y": 564, "w": 62, "h": 46 },
-          "checked": false
+          "checked": false,
+          "sprite": "GFX_build_interface_states_tab"
         },
         {
           "name": "diplomacy_button",
@@ -3531,7 +3910,8 @@
           "type": "checkbox",
           "visible": true,
           "rect": { "x": 416, "y": 608, "w": 62, "h": 46 },
-          "checked": false
+          "checked": false,
+          "sprite": "GFX_build_interface_diplomacy_tab"
         },
         {
           "name": "exploit_button",
@@ -3539,7 +3919,8 @@
           "type": "checkbox",
           "visible": true,
           "rect": { "x": 416, "y": 652, "w": 62, "h": 46 },
-          "checked": false
+          "checked": false,
+          "sprite": "GFX_build_interface_exploit_tab"
         }
       ]
     },
@@ -3556,7 +3937,8 @@
           "type": "button",
           "visible": false,
           "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_observer_select_country"
         },
         {
           "name": "observer_unselect",
@@ -3564,28 +3946,35 @@
           "type": "button",
           "visible": false,
           "rect": { "x": 960, "y": 510, "w": 30, "h": 30 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_observer_unselect"
         },
         {
           "name": "mapmode_bg",
           "path": "menubar/mapmode_bg",
           "type": "icon",
           "visible": false,
-          "rect": { "x": -97362, "y": 971, "w": 220, "h": 20 }
+          "rect": { "x": -97362, "y": 971, "w": 220, "h": 20 },
+          "sprite": "GFX_mapmode_bg",
+          "frame": 1
         },
         {
           "name": "mapmode_bg_2",
           "path": "menubar/mapmode_bg_2",
           "type": "icon",
           "visible": false,
-          "rect": { "x": -97362, "y": 954, "w": 220, "h": 20 }
+          "rect": { "x": -97362, "y": 954, "w": 220, "h": 20 },
+          "sprite": "GFX_mapmode_bg",
+          "frame": 1
         },
         {
           "name": "observer_bg",
           "path": "menubar/observer_bg",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 960, "y": 433, "w": 43, "h": 107 }
+          "rect": { "x": 960, "y": 433, "w": 43, "h": 107 },
+          "sprite": "GFX_observer_bg",
+          "frame": 1
         },
         {
           "name": "WarOverviewButtonWindow",
@@ -3614,21 +4003,26 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1298, "y": 1000, "w": 70, "h": 80 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_button_war_overview"
                     },
                     {
                       "name": "waroverview_icon",
                       "path": "menubar/WarOverviewButtonWindow/WarOverviewButtonList/waroverview_shieldItem/waroverview_icon",
                       "type": "icon",
                       "visible": true,
-                      "rect": { "x": 1300, "y": 1001, "w": 64, "h": 64 }
+                      "rect": { "x": 1300, "y": 1001, "w": 64, "h": 64 },
+                      "sprite": "GFX_shield_medium",
+                      "frame": 1,
+                      "flag": "TUR"
                     },
                     {
                       "name": "war_enthusiasm_icon",
                       "path": "menubar/WarOverviewButtonWindow/WarOverviewButtonList/waroverview_shieldItem/war_enthusiasm_icon",
                       "type": "icon",
                       "visible": true,
-                      "rect": { "x": 960, "y": 516, "w": 25, "h": 24 }
+                      "rect": { "x": 960, "y": 516, "w": 25, "h": 24 },
+                      "sprite": "GFX_war_enthusiasm_medium"
                     },
                     {
                       "name": "progress",
@@ -3656,7 +4050,9 @@
               "path": "menubar/messagelog_window/log_bg",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 595, "y": 1080, "w": 1024, "h": 128 }
+              "rect": { "x": 595, "y": 1080, "w": 1024, "h": 128 },
+              "sprite": "GFX_log_bg",
+              "frame": 1
             },
             {
               "name": "messagelog",
@@ -3695,14 +4091,16 @@
                       "path": "menubar/messagelog_window/messagelog/standardlistbox_slider/listboxSliderButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 960, "y": 524, "w": 16, "h": 16 }
+                      "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
+                      "sprite": "GFX_scroll_drager"
                     },
                     {
                       "name": "listboxTrackButton",
                       "path": "menubar/messagelog_window/messagelog/standardlistbox_slider/listboxTrackButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 960, "y": 540, "w": 12, "h": 58 }
+                      "rect": { "x": 960, "y": 540, "w": 12, "h": 58 },
+                      "sprite": "GFX_scroll_track"
                     },
                     {
                       "name": "downButton",
@@ -3710,7 +4108,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_down"
                     },
                     {
                       "name": "upButton",
@@ -3718,7 +4117,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_up"
                     }
                   ]
                 }
@@ -3730,7 +4130,8 @@
               "type": "checkbox",
               "visible": false,
               "rect": { "x": 820, "y": 1080, "w": 22, "h": 22 },
-              "checked": false
+              "checked": false,
+              "sprite": "GFX_msg_log_combat"
             },
             {
               "name": "messagecat_diplomacy",
@@ -3738,7 +4139,8 @@
               "type": "checkbox",
               "visible": false,
               "rect": { "x": 795, "y": 1080, "w": 22, "h": 22 },
-              "checked": false
+              "checked": false,
+              "sprite": "GFX_msg_log_diplo"
             },
             {
               "name": "messagecat_government",
@@ -3746,7 +4148,8 @@
               "type": "checkbox",
               "visible": false,
               "rect": { "x": 770, "y": 1080, "w": 22, "h": 22 },
-              "checked": false
+              "checked": false,
+              "sprite": "GFX_msg_log_gov"
             },
             {
               "name": "messagecat_trade",
@@ -3754,7 +4157,8 @@
               "type": "checkbox",
               "visible": false,
               "rect": { "x": 745, "y": 1080, "w": 22, "h": 22 },
-              "checked": false
+              "checked": false,
+              "sprite": "GFX_msg_log_trade"
             },
             {
               "name": "messagecat_events",
@@ -3762,7 +4166,8 @@
               "type": "checkbox",
               "visible": false,
               "rect": { "x": 720, "y": 1080, "w": 22, "h": 22 },
-              "checked": false
+              "checked": false,
+              "sprite": "GFX_msg_log_event"
             },
             {
               "name": "logfilter_me",
@@ -3770,7 +4175,8 @@
               "type": "checkbox",
               "visible": false,
               "rect": { "x": 691, "y": 1089, "w": 26, "h": 35 },
-              "checked": true
+              "checked": true,
+              "sprite": "GFX_checkbox_logfilter_me"
             },
             {
               "name": "logfilter_interesting",
@@ -3778,7 +4184,8 @@
               "type": "checkbox",
               "visible": false,
               "rect": { "x": 691, "y": 1122, "w": 26, "h": 35 },
-              "checked": true
+              "checked": true,
+              "sprite": "GFX_checkbox_logfilter_interesting"
             },
             {
               "name": "logfilter_other",
@@ -3786,7 +4193,8 @@
               "type": "checkbox",
               "visible": false,
               "rect": { "x": 691, "y": 1155, "w": 26, "h": 35 },
-              "checked": true
+              "checked": true,
+              "sprite": "GFX_checkbox_logfilter_other"
             }
           ]
         },
@@ -3804,7 +4212,8 @@
               "visible": false,
               "rect": { "x": 960, "y": 509, "w": 79, "h": 31 },
               "text": "None",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_6"
             },
             {
               "name": "allies",
@@ -3813,7 +4222,8 @@
               "visible": false,
               "rect": { "x": 960, "y": 509, "w": 79, "h": 31 },
               "text": "Allies",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_6"
             },
             {
               "name": "enemies",
@@ -3822,7 +4232,8 @@
               "visible": false,
               "rect": { "x": 960, "y": 509, "w": 79, "h": 31 },
               "text": "Foes",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_6"
             },
             {
               "name": "all",
@@ -3831,7 +4242,8 @@
               "visible": false,
               "rect": { "x": 960, "y": 509, "w": 79, "h": 31 },
               "text": "All",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_6"
             },
             {
               "name": "closebutton",
@@ -3840,14 +4252,16 @@
               "visible": false,
               "rect": { "x": 960, "y": 515, "w": 25, "h": 25 },
               "text": "  ",
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_closelog_button"
             },
             {
               "name": "chat_bg",
               "path": "menubar/chat_window/chat_bg",
               "type": "button",
               "visible": false,
-              "rect": { "x": 960, "y": 509, "w": 109, "h": 31 }
+              "rect": { "x": 960, "y": 509, "w": 109, "h": 31 },
+              "sprite": "GFX_remove"
             },
             {
               "name": "chat_message",
@@ -3879,14 +4293,17 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 960, "y": 513, "w": 35, "h": 27 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_messages_settings"
                 },
                 {
                   "name": "menubar_bg",
                   "path": "menubar/message_window_container/message_window/menubar_bg",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 960, "y": 354, "w": 241, "h": 186 }
+                  "rect": { "x": 960, "y": 354, "w": 241, "h": 186 },
+                  "sprite": "GFX_messageinterface_bg",
+                  "frame": 1
                 },
                 {
                   "name": "message_list",
@@ -3907,14 +4324,16 @@
                           "path": "menubar/message_window_container/message_window/message_list/standardlistbox_slider/listboxSliderButton",
                           "type": "button",
                           "visible": false,
-                          "rect": { "x": 960, "y": 524, "w": 16, "h": 16 }
+                          "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
+                          "sprite": "GFX_scroll_drager"
                         },
                         {
                           "name": "listboxTrackButton",
                           "path": "menubar/message_window_container/message_window/message_list/standardlistbox_slider/listboxTrackButton",
                           "type": "button",
                           "visible": false,
-                          "rect": { "x": 960, "y": 540, "w": 12, "h": 103 }
+                          "rect": { "x": 960, "y": 540, "w": 12, "h": 103 },
+                          "sprite": "GFX_scroll_track"
                         },
                         {
                           "name": "downButton",
@@ -3922,7 +4341,8 @@
                           "type": "button",
                           "visible": false,
                           "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                          "enabled": true
+                          "enabled": true,
+                          "sprite": "GFX_scroll_down"
                         },
                         {
                           "name": "upButton",
@@ -3930,7 +4350,8 @@
                           "type": "button",
                           "visible": false,
                           "rect": { "x": 960, "y": 524, "w": 16, "h": 16 },
-                          "enabled": true
+                          "enabled": true,
+                          "sprite": "GFX_scroll_up"
                         }
                       ]
                     }
@@ -3942,7 +4363,8 @@
                   "type": "checkbox",
                   "visible": false,
                   "rect": { "x": 960, "y": 513, "w": 35, "h": 27 },
-                  "checked": true
+                  "checked": true,
+                  "sprite": "GFX_messages_logfilter_me"
                 },
                 {
                   "name": "msg_icons_filter_interesting",
@@ -3950,7 +4372,8 @@
                   "type": "checkbox",
                   "visible": false,
                   "rect": { "x": 960, "y": 513, "w": 35, "h": 27 },
-                  "checked": true
+                  "checked": true,
+                  "sprite": "GFX_messages_logfilter_interesting"
                 },
                 {
                   "name": "msg_icons_filter_other",
@@ -3958,7 +4381,8 @@
                   "type": "checkbox",
                   "visible": false,
                   "rect": { "x": 960, "y": 513, "w": 35, "h": 27 },
-                  "checked": false
+                  "checked": false,
+                  "sprite": "GFX_messages_logfilter_other"
                 }
               ]
             },
@@ -3975,14 +4399,17 @@
                   "type": "button",
                   "visible": true,
                   "rect": { "x": 1895, "y": 830, "w": 25, "h": 25 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_togglemessageinterface"
                 },
                 {
                   "name": "ToggleMessageBackground",
                   "path": "menubar/message_window_container/toggle_message_interface_window/ToggleMessageBackground",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 1893, "y": 813, "w": 27, "h": 59 }
+                  "rect": { "x": 1893, "y": 813, "w": 27, "h": 59 },
+                  "sprite": "GFX_toggle_messageinterface_bg",
+                  "frame": 1
                 }
               ]
             }
@@ -4001,7 +4428,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 1560, "y": 1022, "w": 41, "h": 40 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_menubar_floating_strip",
+              "frame": 3
             },
             {
               "name": "f_button_2",
@@ -4009,7 +4438,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 1515, "y": 1022, "w": 41, "h": 40 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_menubar_floating_strip",
+              "frame": 6
             },
             {
               "name": "f_button_3",
@@ -4017,7 +4448,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 1470, "y": 1022, "w": 41, "h": 40 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_menubar_floating_strip",
+              "frame": 8
             },
             {
               "name": "f_button_4",
@@ -4025,7 +4458,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 1425, "y": 1022, "w": 41, "h": 40 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_menubar_floating_strip"
             },
             {
               "name": "f_button_5",
@@ -4033,7 +4467,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 1380, "y": 1022, "w": 41, "h": 40 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_menubar_floating_strip"
             },
             {
               "name": "f_button_6",
@@ -4041,7 +4476,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 1335, "y": 1022, "w": 41, "h": 40 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_menubar_floating_strip"
             },
             {
               "name": "f_button_7",
@@ -4049,7 +4485,8 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 1290, "y": 1022, "w": 41, "h": 40 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_menubar_floating_strip"
             },
             {
               "name": "f_button_8",
@@ -4057,77 +4494,98 @@
               "type": "button",
               "visible": false,
               "rect": { "x": 1245, "y": 1022, "w": 41, "h": 40 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_menubar_floating_strip"
             },
             {
               "name": "menubar_floating_bg_1",
               "path": "menubar/floating_buttons/menubar_floating_bg_1",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 1558, "y": 1044, "w": 47, "h": 36 }
+              "rect": { "x": 1558, "y": 1044, "w": 47, "h": 36 },
+              "sprite": "GFX_menubar_floating_bg",
+              "frame": 1
             },
             {
               "name": "menubar_floating_bg_2",
               "path": "menubar/floating_buttons/menubar_floating_bg_2",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 1513, "y": 1044, "w": 47, "h": 36 }
+              "rect": { "x": 1513, "y": 1044, "w": 47, "h": 36 },
+              "sprite": "GFX_menubar_floating_bg",
+              "frame": 1
             },
             {
               "name": "menubar_floating_bg_3",
               "path": "menubar/floating_buttons/menubar_floating_bg_3",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 1468, "y": 1044, "w": 47, "h": 36 }
+              "rect": { "x": 1468, "y": 1044, "w": 47, "h": 36 },
+              "sprite": "GFX_menubar_floating_bg",
+              "frame": 1
             },
             {
               "name": "menubar_floating_bg_4",
               "path": "menubar/floating_buttons/menubar_floating_bg_4",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1423, "y": 1044, "w": 47, "h": 36 }
+              "rect": { "x": 1423, "y": 1044, "w": 47, "h": 36 },
+              "sprite": "GFX_menubar_floating_bg",
+              "frame": 1
             },
             {
               "name": "menubar_floating_bg_5",
               "path": "menubar/floating_buttons/menubar_floating_bg_5",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1378, "y": 1044, "w": 47, "h": 36 }
+              "rect": { "x": 1378, "y": 1044, "w": 47, "h": 36 },
+              "sprite": "GFX_menubar_floating_bg",
+              "frame": 1
             },
             {
               "name": "menubar_floating_bg_6",
               "path": "menubar/floating_buttons/menubar_floating_bg_6",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1323, "y": 1044, "w": 47, "h": 36 }
+              "rect": { "x": 1323, "y": 1044, "w": 47, "h": 36 },
+              "sprite": "GFX_menubar_floating_bg",
+              "frame": 1
             },
             {
               "name": "menubar_floating_bg_7",
               "path": "menubar/floating_buttons/menubar_floating_bg_7",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1268, "y": 1044, "w": 47, "h": 36 }
+              "rect": { "x": 1268, "y": 1044, "w": 47, "h": 36 },
+              "sprite": "GFX_menubar_floating_bg",
+              "frame": 1
             },
             {
               "name": "menubar_floating_bg_8",
               "path": "menubar/floating_buttons/menubar_floating_bg_8",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1213, "y": 1044, "w": 47, "h": 36 }
+              "rect": { "x": 1213, "y": 1044, "w": 47, "h": 36 },
+              "sprite": "GFX_menubar_floating_bg",
+              "frame": 1
             },
             {
               "name": "hre_strip_glow",
               "path": "menubar/floating_buttons/hre_strip_glow",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 960, "y": 496, "w": 44, "h": 44 }
+              "rect": { "x": 960, "y": 496, "w": 44, "h": 44 },
+              "sprite": "GFX_hre_strip_glow",
+              "frame": 1
             },
             {
               "name": "revolution_flag",
               "path": "menubar/floating_buttons/revolution_flag",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 1474, "y": 1026, "w": 31, "h": 31 }
+              "rect": { "x": 1474, "y": 1026, "w": 31, "h": 31 },
+              "sprite": "GFX_rev_target",
+              "frame": 1
             },
             {
               "name": "floating_number_1",

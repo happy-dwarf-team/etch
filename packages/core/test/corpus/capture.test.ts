@@ -154,6 +154,31 @@ describe('parseCaptureRecord', () => {
     ).toEqual(['screenshot: Missing field "sha256".', 'screenshot: Missing field "shots".']);
   });
 
+  it("keeps Tongs 0.37's sprites, flags and pie slices and checks their types", () => {
+    expect(
+      problemsOf((r) => {
+        set(r, 'widgets.0.children.0.sprite', 'GFX_close');
+        set(r, 'widgets.0.children.0.frame', 2);
+        set(r, 'widgets.0.children.1.flag', 'RUS');
+        set(r, 'widgets.0.children.1.rebels', 'anti_tax_rebels');
+        set(r, 'widgets.0.children.1.texture', 'gfx/interface/ideas_EU4/local_unrest.dds');
+        set(r, 'widgets.0.children.1.slices', [{ percent: 46, color: '#b0516fff' }]);
+      }),
+    ).toEqual([]);
+    expect(
+      problemsOf((r) => {
+        set(r, 'widgets.0.children.0.sprite', 3);
+        set(r, 'widgets.0.children.0.frame', 0);
+        set(r, 'widgets.0.children.1.slices', [{ percent: 46, color: 'red' }, { percent: 54 }]);
+      }),
+    ).toEqual([
+      'widgets[0].children[0].sprite: Expected a non-empty string.',
+      'widgets[0].children[0].frame: Expected at least 1.',
+      'widgets[0].children[1].slices[0].color: "red" is not a colour as #rrggbbaa.',
+      'widgets[0].children[1].slices[1]: Missing field "color".',
+    ]);
+  });
+
   it('rejects stale widgets and trees cut by depth', () => {
     expect(
       problemsOf((r) => {

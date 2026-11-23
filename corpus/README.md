@@ -30,7 +30,7 @@ joined by `-`, because they become file names.
 | --- | --- |
 | `formatVersion` | `1` |
 | `game` | `version` and `exeSha256` (uppercase) of the build every capture comes from: 1.37.5 |
-| `tongs` | `version` of the Tongs release every capture is taken with: 0.23.0, for the `province` step (0.21) and the ready wait (0.19, etch#232). 0.14.1 was the first release that reads no false stale widgets on a fresh start (tongs#61, tongs#63) |
+| `tongs` | `version` of the Tongs release every capture is taken with: 0.37.0, which reports the province view's built building slots as visible (tongs#238, etch#618); the `province` step needs 0.21 and the ready wait 0.19 (etch#232). 0.14.1 was the first release that reads no false stale widgets on a fresh start (tongs#61, tongs#63) |
 | `uiScale` | `1`: no other `game_ui_scale` is checked |
 | `resolutions` | `width`, `height`, `confirmed` and `evidence` per size. Only confirmed sizes gate a release. [etch#18](https://github.com/happy-dwarf-team/etch/issues/18) confirmed the six of v1: 3440×1440 is the lab's monitor, borderless; the smaller sizes are windowed client areas (below). M10 added 2560×1440 (a windowed client area too, confirmed by its captures) and 3840×2160, which no window of the lab can hold (its desktop is 6000×1440, a window at most 6020×1460): it stays unconfirmed (etch#163). In every corpus playset 1920×1080 and above share one `if_resolution` band (no block has a width bound or a height bound above 1080) and 1440 and 2160 reach the country views' largest size step, so 3840×2160 differs from 3440×1440 only in the screen's size, read from the `.gui` files and not measured |
 | `codeFilledKinds` | `.gui` widget kinds whose content the game always fills (lists, grids, overlapping elements), masked in every view |
@@ -244,7 +244,13 @@ of `rect`): `path`, `name` (case kept; empty for an unnamed widget), `type`
 `checkbox`, `editbox`, `other`), `visible`, `rect` (`x`, `y`, `w`, `h` in
 client pixels; sizes come from the `.gui`, tongs#50, and can be negative: the
 vanilla `foreign_province_window` is `y=-100`, an empty rect), and `text`, `enabled`,
-`checked`, `children` where they apply. Hidden widgets are kept. A record
+`checked`, `children` where they apply. From Tongs 0.37 (etch#618) buttons, icons
+and check boxes have `sprite` (the `.gfx` name drawn) and `frame` (from 1),
+shields `flag` or `rebels`, a sprite the game's code gave a file of its own
+`texture`, and pie charts `slices` (`percent`, `color` as `#rrggbbaa`), as
+Tongs' `docs/commands.md`, "Widgets", says. A widget whose `frame` changed
+while the shots were taken (an animated sprite: the Anbennar lobby's option
+buttons) has no `frame`; any other change fails the view. Hidden widgets are kept. A record
 never has a stale widget (the tree was read after a reload) or
 `children_count` (a tree cut by `depth=`).
 
@@ -355,7 +361,9 @@ What a run does:
 - **One playset profile** per playset in `<host>/profiles/<playset>/profile`
   (`-userdir`): descriptors with absolute paths to the pinned Workshop
   items, `dlc_load.json`, and a copy of each save its views load (the
-  playset's and the views' own). Every mod's
+  playset's and the views' own). A start from the main menu gets no save and
+  no `continue_game.json`, as a fresh profile: with a save in the profile the
+  main menu offers Continue (etch#618). Every mod's
   content hash and the save's hash are checked against the manifest before
   and after each start. The player's own profile, saves and mods are only
   read; a run stops when the player's profile changed.
@@ -462,7 +470,9 @@ both release playsets of v1 passed (etch#44). In M10, with the province views,
 the Anbennar playsets gating and the matrix of 2560×1440 and above for Proper
 2K UI Enhanced, 208 of the 224 gating captures passed at first, and all 224 for
 2.0.0 ([docs/release-2.0.0.md](../docs/release-2.0.0.md)). Taken again with
-Tongs 0.23.0 (etch#232), all 240 pass with the event view (2026-11-02).
+Tongs 0.23.0 (etch#232), all 240 pass with the event view (2026-11-02), and
+taken again with Tongs 0.37.0, Anvil 1.26.0 and the P2KE Patch of 15 November
+(etch#618), all 240 pass (2026-11-23).
 SwiftShader rounds the linear
 filtering of scaled sprites differently: with it a few scaled icons of the
 diplomacy view, the declare war dialog and the province view fall to 94–99 %

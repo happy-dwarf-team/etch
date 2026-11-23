@@ -361,6 +361,7 @@ export async function runSession(
       session.playset,
       options.sources,
       session.save,
+      session.start,
     );
   } catch (error) {
     return { report: { ...base, error: message(error) }, remaining: [], fatal: message(error) };
@@ -608,7 +609,7 @@ async function prepareProfileHashes(
     });
   }
   const save = session.save ?? session.playset.save;
-  if (save === undefined) return { mods };
+  if (save === undefined || session.start === 'main-menu') return { mods };
   return { saveSha256: await hashFile(join(profile, 'save games', save.file)), mods };
 }
 

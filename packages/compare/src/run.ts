@@ -151,13 +151,7 @@ export async function runCorpus(options: RunOptions): Promise<RunResult> {
             : undefined;
           const size = root === undefined ? undefined : { width: root.w, height: root.h };
           const instance = rootInstance(record.widgets, first);
-          const window = await files.window(
-            top,
-            record.resolution,
-            corpusWindow?.files,
-            size,
-            instance,
-          );
+          const window = await files.window(top, record.resolution, size, instance);
           if (window !== undefined) windows.push(window);
         }
         const plan = planCapture({ manifest, record, windows });
@@ -271,7 +265,7 @@ async function profileGate(
   const problems: string[] = [];
   for (const root of record.widgets) {
     if (splitWidgetPath(root.path)?.length !== 1) continue;
-    const loaded = await files.profile(profilesFolder, root.path, corpusWindow?.files);
+    const loaded = await files.profile(profilesFolder, root.path);
     if (loaded === undefined) continue;
     problems.push(...loaded.problems.map((p) => `Profile of ${root.path}: ${p}`));
     const result = profileVisibility(

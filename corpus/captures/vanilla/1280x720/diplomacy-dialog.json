@@ -3,9 +3,9 @@
   "playset": "vanilla",
   "resolution": { "width": 1280, "height": 720 },
   "view": "diplomacy-dialog",
-  "takenAt": "2026-11-01T06:58:02.341Z",
+  "takenAt": "2026-11-23T05:55:08.815Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
-  "tongs": { "version": "0.23.0" },
+  "tongs": { "version": "0.37.0" },
   "save": { "sha256": "2A4CAF306CCDDB2DAFC7EE015C4ECFFB260654A1D10D86F5F4F768D3C3F56F6A" },
   "mods": [],
   "disabledDlcs": [],
@@ -20,17 +20,17 @@
       { "click": "countrydiplomacyview/diploaction_list/diploactionentry[1]/button_diploaction" }
     ],
     "verified": true,
-    "evidence": "Run by the capture driver at the six corpus resolutions in vanilla and Proper 2K UI Enhanced on 2026-10-24 (etch#44): the steps opened the view and its roots were read and shown. The first shield of the second relation in Russia's diplomacy list is the Commonwealth, visible at every corpus size; its diplomacy shows Declare War first, which opens DeclareWarDialog and declares nothing."
+    "evidence": "Run by the capture driver with Tongs 0.23.0 at the seven corpus resolutions in vanilla and at 2560×1440 and 3440×1440 in Proper 2K UI Enhanced on 2026-11-01 (etch#232): the steps opened the view and its roots were read and shown. The first shield of the second relation in Russia's diplomacy list is the Commonwealth, visible at every corpus size; its diplomacy shows Declare War first, which opens DeclareWarDialog and declares nothing. Tongs 0.23.0 reads a relation's shields inside the item's box, so the click names it (`…/box/…`)."
   },
   "window": { "width": 1280, "height": 720, "dpi": 96 },
   "screenshot": {
-    "sha256": "FD18AD09F7763EACF1980D33565D3DC66188D7087D0485867A7C02C8E5A7A9ED",
+    "sha256": "2901BE2849BE031BE57491342C68C599BA36B0584CB937CCBDEBA703E0387605",
     "width": 1280,
     "height": 720,
     "shots": 4,
     "unstable": {
-      "pixels": 33950,
-      "sha256": "3B3D62F1E1D3573ED34F9104A5B87436ECA8CF9C7672ACD638533F1017E06A20"
+      "pixels": 57350,
+      "sha256": "BCF55CA4837ECF9386DA6B2309251D4A81D6916F27FB1DC8AF420EFAE67EED4E"
     }
   },
   "widgets": [
@@ -47,7 +47,9 @@
           "type": "button",
           "visible": false,
           "rect": { "x": 110, "y": 314, "w": 24, "h": 24 },
-          "enabled": false
+          "enabled": false,
+          "sprite": "GFX_checkbox_gold_24",
+          "frame": 1
         },
         {
           "name": "no_wargoal_banner",
@@ -55,7 +57,9 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 335, "y": 498, "w": 188, "h": 24 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_wargoal_list_button",
+          "frame": 1
         },
         {
           "name": "AgreeButton",
@@ -64,7 +68,8 @@
           "visible": true,
           "rect": { "x": 280, "y": 665, "w": 224, "h": 32 },
           "text": "Confirm",
-          "enabled": false
+          "enabled": false,
+          "sprite": "button_type_4"
         },
         {
           "name": "DeclineButton",
@@ -73,84 +78,107 @@
           "visible": true,
           "rect": { "x": 50, "y": 665, "w": 224, "h": 32 },
           "text": "Cancel",
-          "enabled": true
+          "enabled": true,
+          "sprite": "button_type_4"
         },
         {
           "name": "Background",
           "path": "DeclareWarDialog/Background",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 0, "y": 125, "w": 568, "h": 592 }
+          "rect": { "x": 0, "y": 125, "w": 568, "h": 592 },
+          "sprite": "GFX_diplomacy_declare_war_bg",
+          "frame": 1
         },
         {
           "name": "no_wargoal_icon",
           "path": "DeclareWarDialog/no_wargoal_icon",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 341, "y": 502, "w": 16, "h": 16 }
+          "rect": { "x": 341, "y": 502, "w": 16, "h": 16 },
+          "sprite": "GFX_nocasusbelli",
+          "frame": 1
         },
         {
           "name": "enemies_infantry_icon",
           "path": "DeclareWarDialog/enemies_infantry_icon",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 63, "y": 626, "w": 27, "h": 30 }
+          "rect": { "x": 63, "y": 626, "w": 27, "h": 30 },
+          "sprite": "GFX_infantry_icon",
+          "frame": 1
         },
         {
           "name": "enemies_cavalry_icon",
           "path": "DeclareWarDialog/enemies_cavalry_icon",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 118, "y": 626, "w": 25, "h": 28 }
+          "rect": { "x": 118, "y": 626, "w": 25, "h": 28 },
+          "sprite": "GFX_cavalry_icon",
+          "frame": 1
         },
         {
           "name": "enemies_artillery_icon",
           "path": "DeclareWarDialog/enemies_artillery_icon",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 170, "y": 626, "w": 30, "h": 28 }
+          "rect": { "x": 170, "y": 626, "w": 30, "h": 28 },
+          "sprite": "GFX_artillery_icon",
+          "frame": 1
         },
         {
           "name": "enemies_total_amount_icon",
           "path": "DeclareWarDialog/enemies_total_amount_icon",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 228, "y": 626, "w": 34, "h": 30 }
+          "rect": { "x": 228, "y": 626, "w": 34, "h": 30 },
+          "sprite": "GFX_land_forcelimit_icon",
+          "frame": 1
         },
         {
           "name": "allies_infantry_icon",
           "path": "DeclareWarDialog/allies_infantry_icon",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 328, "y": 626, "w": 27, "h": 30 }
+          "rect": { "x": 328, "y": 626, "w": 27, "h": 30 },
+          "sprite": "GFX_infantry_icon",
+          "frame": 1
         },
         {
           "name": "allies_cavalry_icon",
           "path": "DeclareWarDialog/allies_cavalry_icon",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 383, "y": 626, "w": 25, "h": 28 }
+          "rect": { "x": 383, "y": 626, "w": 25, "h": 28 },
+          "sprite": "GFX_cavalry_icon",
+          "frame": 1
         },
         {
           "name": "allies_artillery_icon",
           "path": "DeclareWarDialog/allies_artillery_icon",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 430, "y": 626, "w": 30, "h": 28 }
+          "rect": { "x": 430, "y": 626, "w": 30, "h": 28 },
+          "sprite": "GFX_artillery_icon",
+          "frame": 1
         },
         {
           "name": "allies_total_amount_icon",
           "path": "DeclareWarDialog/allies_total_amount_icon",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 490, "y": 626, "w": 34, "h": 30 }
+          "rect": { "x": 490, "y": 626, "w": 34, "h": 30 },
+          "sprite": "GFX_land_forcelimit_icon",
+          "frame": 1
         },
         {
           "name": "incomplete_enemy_forces_info_icon",
           "path": "DeclareWarDialog/incomplete_enemy_forces_info_icon",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 261, "y": 623, "w": 37, "h": 37 }
+          "rect": { "x": 261, "y": 623, "w": 37, "h": 37 },
+          "sprite": "GFX_incomplete_enemy_forces_info",
+          "frame": 1
         },
         {
           "name": "Title",
@@ -292,7 +320,9 @@
               "path": "DeclareWarDialog/aggressive_expansion/aggressive_expansion_icon",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 240, "y": 306, "w": 33, "h": 33 }
+              "rect": { "x": 240, "y": 306, "w": 33, "h": 33 },
+              "sprite": "GFX_aggresive_exp_icon",
+              "frame": 1
             },
             {
               "name": "aggressive_expansion_desc",
@@ -323,14 +353,17 @@
                   "path": "DeclareWarDialog/war_goals/DeclareWarDialog_wargoalcbentry[1]/banner",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 318, "y": 372, "w": 215, "h": 38 }
+                  "rect": { "x": 318, "y": 372, "w": 215, "h": 38 },
+                  "sprite": "GFX_banner_green_194",
+                  "frame": 1
                 },
                 {
                   "name": "icon",
                   "path": "DeclareWarDialog/war_goals/DeclareWarDialog_wargoalcbentry[1]/icon",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 335, "y": 379, "w": 16, "h": 16 }
+                  "rect": { "x": 335, "y": 379, "w": 16, "h": 16 },
+                  "sprite": "GFX_cb_conquest"
                 },
                 {
                   "name": "name",
@@ -355,7 +388,9 @@
                   "type": "button",
                   "visible": true,
                   "rect": { "x": 335, "y": 400, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 2
                 },
                 {
                   "name": "name",
@@ -380,7 +415,9 @@
                   "type": "button",
                   "visible": true,
                   "rect": { "x": 335, "y": 425, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -405,7 +442,9 @@
                   "type": "button",
                   "visible": true,
                   "rect": { "x": 335, "y": 450, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -430,7 +469,9 @@
                   "type": "button",
                   "visible": true,
                   "rect": { "x": 335, "y": 475, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -455,7 +496,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -480,7 +523,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -505,7 +550,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -530,7 +577,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -555,7 +604,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -579,14 +630,17 @@
                   "path": "DeclareWarDialog/war_goals/DeclareWarDialog_wargoalcbentry[2]/banner",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 640, "y": 322, "w": 215, "h": 38 }
+                  "rect": { "x": 640, "y": 322, "w": 215, "h": 38 },
+                  "sprite": "GFX_banner_green_194",
+                  "frame": 1
                 },
                 {
                   "name": "icon",
                   "path": "DeclareWarDialog/war_goals/DeclareWarDialog_wargoalcbentry[2]/icon",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 640, "y": 344, "w": 16, "h": 16 }
+                  "rect": { "x": 640, "y": 344, "w": 16, "h": 16 },
+                  "sprite": "GFX_cb_nationalist"
                 },
                 {
                   "name": "name",
@@ -611,7 +665,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -636,7 +692,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -661,7 +719,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -686,7 +746,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -711,7 +773,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -736,7 +800,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -761,7 +827,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -786,7 +854,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -811,7 +881,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -836,7 +908,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -861,7 +935,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -886,7 +962,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -911,7 +989,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -936,7 +1016,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -961,7 +1043,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -986,7 +1070,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1011,7 +1097,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1036,7 +1124,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1061,7 +1151,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1086,7 +1178,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1111,7 +1205,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1136,7 +1232,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1161,7 +1259,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1186,7 +1286,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1211,7 +1313,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1236,7 +1340,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1261,7 +1367,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1286,7 +1394,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1311,7 +1421,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1336,7 +1448,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1361,7 +1475,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1386,7 +1502,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1411,7 +1529,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1436,7 +1556,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1461,7 +1583,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1486,7 +1610,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1511,7 +1637,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1536,7 +1664,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1561,7 +1691,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1586,7 +1718,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1611,7 +1745,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1636,7 +1772,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1661,7 +1799,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1686,7 +1826,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1711,7 +1853,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1736,7 +1880,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1761,7 +1907,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1786,7 +1934,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1811,7 +1961,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1836,7 +1988,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1861,7 +2015,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1886,7 +2042,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1911,7 +2069,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1936,7 +2096,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1961,7 +2123,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -1986,7 +2150,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2011,7 +2177,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2036,7 +2204,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2061,7 +2231,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2086,7 +2258,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2111,7 +2285,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2136,7 +2312,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2161,7 +2339,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2186,7 +2366,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2211,7 +2393,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2236,7 +2420,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2261,7 +2447,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2286,7 +2474,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2311,7 +2501,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2336,7 +2528,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2361,7 +2555,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2386,7 +2582,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2411,7 +2609,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2436,7 +2636,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2461,7 +2663,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2486,7 +2690,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2511,7 +2717,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2536,7 +2744,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2561,7 +2771,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2586,7 +2798,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2611,7 +2825,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2636,7 +2852,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2661,7 +2879,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2686,7 +2906,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2711,7 +2933,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2736,7 +2960,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2761,7 +2987,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2786,7 +3014,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2811,7 +3041,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2836,7 +3068,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2861,7 +3095,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2886,7 +3122,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2911,7 +3149,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2936,7 +3176,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2961,7 +3203,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -2986,7 +3230,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3011,7 +3257,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3036,7 +3284,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3061,7 +3311,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3086,7 +3338,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3111,7 +3365,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3136,7 +3392,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3161,7 +3419,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3186,7 +3446,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3211,7 +3473,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3236,7 +3500,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3261,7 +3527,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3286,7 +3554,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3311,7 +3581,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3336,7 +3608,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3361,7 +3635,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3386,7 +3662,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3411,7 +3689,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3436,7 +3716,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3461,7 +3743,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3486,7 +3770,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3511,7 +3797,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3536,7 +3824,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3561,7 +3851,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3586,7 +3878,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3611,7 +3905,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3636,7 +3932,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3661,7 +3959,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3686,7 +3986,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3711,7 +4013,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3736,7 +4040,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3761,7 +4067,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3786,7 +4094,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3811,7 +4121,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3836,7 +4148,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3861,7 +4175,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3885,14 +4201,17 @@
                   "path": "DeclareWarDialog/war_goals/DeclareWarDialog_wargoalcbentry[3]/banner",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 640, "y": 322, "w": 215, "h": 38 }
+                  "rect": { "x": 640, "y": 322, "w": 215, "h": 38 },
+                  "sprite": "GFX_banner_green_194",
+                  "frame": 1
                 },
                 {
                   "name": "icon",
                   "path": "DeclareWarDialog/war_goals/DeclareWarDialog_wargoalcbentry[3]/icon",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 640, "y": 344, "w": 16, "h": 16 }
+                  "rect": { "x": 640, "y": 344, "w": 16, "h": 16 },
+                  "sprite": "GFX_cb_imperial"
                 },
                 {
                   "name": "name",
@@ -3917,7 +4236,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3941,14 +4262,17 @@
                   "path": "DeclareWarDialog/war_goals/DeclareWarDialog_wargoalcbentry[4]/banner",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 640, "y": 322, "w": 215, "h": 38 }
+                  "rect": { "x": 640, "y": 322, "w": 215, "h": 38 },
+                  "sprite": "GFX_banner_green_194",
+                  "frame": 1
                 },
                 {
                   "name": "icon",
                   "path": "DeclareWarDialog/war_goals/DeclareWarDialog_wargoalcbentry[4]/icon",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 640, "y": 344, "w": 16, "h": 16 }
+                  "rect": { "x": 640, "y": 344, "w": 16, "h": 16 },
+                  "sprite": "GFX_cb_heretic"
                 },
                 {
                   "name": "name",
@@ -3973,7 +4297,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -3997,14 +4323,18 @@
                   "path": "DeclareWarDialog/war_goals/DeclareWarDialog_wargoalcbentry[5]/banner",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 640, "y": 322, "w": 215, "h": 38 }
+                  "rect": { "x": 640, "y": 322, "w": 215, "h": 38 },
+                  "sprite": "GFX_banner_green_194",
+                  "frame": 1
                 },
                 {
                   "name": "icon",
                   "path": "DeclareWarDialog/war_goals/DeclareWarDialog_wargoalcbentry[5]/icon",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 640, "y": 344, "w": 16, "h": 16 }
+                  "rect": { "x": 640, "y": 344, "w": 16, "h": 16 },
+                  "sprite": "GFX_cb_core",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -4029,7 +4359,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 188, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_wargoal_list_button",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -4053,14 +4385,16 @@
                   "path": "DeclareWarDialog/war_goals/standardlistbox_slider/listboxSliderButton",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 520, "y": 391, "w": 16, "h": 16 }
+                  "rect": { "x": 520, "y": 391, "w": 16, "h": 16 },
+                  "sprite": "GFX_scroll_drager"
                 },
                 {
                   "name": "listboxTrackButton",
                   "path": "DeclareWarDialog/war_goals/standardlistbox_slider/listboxTrackButton",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 522, "y": 391, "w": 12, "h": 98 }
+                  "rect": { "x": 522, "y": 391, "w": 12, "h": 98 },
+                  "sprite": "GFX_scroll_track"
                 },
                 {
                   "name": "downButton",
@@ -4068,7 +4402,8 @@
                   "type": "button",
                   "visible": true,
                   "rect": { "x": 520, "y": 489, "w": 16, "h": 16 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_scroll_down"
                 },
                 {
                   "name": "upButton",
@@ -4076,7 +4411,8 @@
                   "type": "button",
                   "visible": true,
                   "rect": { "x": 520, "y": 375, "w": 16, "h": 16 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_scroll_up"
                 }
               ]
             }
@@ -4102,7 +4438,9 @@
                   "type": "button",
                   "visible": true,
                   "rect": { "x": 298, "y": 567, "w": 25, "h": 25 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_flag_smallest",
+                  "flag": "TRS"
                 },
                 {
                   "name": "call_checkbox",
@@ -4110,7 +4448,9 @@
                   "type": "button",
                   "visible": true,
                   "rect": { "x": 461, "y": 569, "w": 24, "h": 24 },
-                  "enabled": false
+                  "enabled": false,
+                  "sprite": "GFX_beligerent_icons",
+                  "frame": 2
                 },
                 {
                   "name": "promise_land_checkbox",
@@ -4118,14 +4458,17 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 24, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_promise_land_checkbox"
                 },
                 {
                   "name": "ai_accept",
                   "path": "DeclareWarDialog/allies/DeclareWarDialog_allyentry[1]/ai_accept",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 640, "y": 341, "w": 19, "h": 19 }
+                  "rect": { "x": 640, "y": 341, "w": 19, "h": 19 },
+                  "sprite": "GFX_diplomacy_arrowupdown",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -4158,7 +4501,9 @@
                   "type": "button",
                   "visible": true,
                   "rect": { "x": 298, "y": 588, "w": 25, "h": 25 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_flag_smallest",
+                  "flag": "RUS"
                 },
                 {
                   "name": "call_checkbox",
@@ -4166,7 +4511,9 @@
                   "type": "button",
                   "visible": true,
                   "rect": { "x": 461, "y": 590, "w": 24, "h": 24 },
-                  "enabled": false
+                  "enabled": false,
+                  "sprite": "GFX_beligerent_icons",
+                  "frame": 2
                 },
                 {
                   "name": "promise_land_checkbox",
@@ -4174,14 +4521,17 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 24, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_promise_land_checkbox"
                 },
                 {
                   "name": "ai_accept",
                   "path": "DeclareWarDialog/allies/DeclareWarDialog_allyentry[2]/ai_accept",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 640, "y": 341, "w": 19, "h": 19 }
+                  "rect": { "x": 640, "y": 341, "w": 19, "h": 19 },
+                  "sprite": "GFX_diplomacy_arrowupdown",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -4214,7 +4564,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 335, "w": 25, "h": 25 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_flag_smallest",
+                  "flag": "RUS"
                 },
                 {
                   "name": "call_checkbox",
@@ -4222,7 +4574,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 24, "h": 24 },
-                  "enabled": false
+                  "enabled": false,
+                  "sprite": "GFX_beligerent_icons",
+                  "frame": 2
                 },
                 {
                   "name": "promise_land_checkbox",
@@ -4230,14 +4584,17 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 24, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_promise_land_checkbox"
                 },
                 {
                   "name": "ai_accept",
                   "path": "DeclareWarDialog/allies/DeclareWarDialog_allyentry[3]/ai_accept",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 640, "y": 341, "w": 19, "h": 19 }
+                  "rect": { "x": 640, "y": 341, "w": 19, "h": 19 },
+                  "sprite": "GFX_diplomacy_arrowupdown",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -4270,7 +4627,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 335, "w": 25, "h": 25 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_flag_smallest",
+                  "flag": "RUS"
                 },
                 {
                   "name": "call_checkbox",
@@ -4278,7 +4637,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 24, "h": 24 },
-                  "enabled": false
+                  "enabled": false,
+                  "sprite": "GFX_beligerent_icons",
+                  "frame": 2
                 },
                 {
                   "name": "promise_land_checkbox",
@@ -4286,14 +4647,17 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 24, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_promise_land_checkbox"
                 },
                 {
                   "name": "ai_accept",
                   "path": "DeclareWarDialog/allies/DeclareWarDialog_allyentry[4]/ai_accept",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 640, "y": 341, "w": 19, "h": 19 }
+                  "rect": { "x": 640, "y": 341, "w": 19, "h": 19 },
+                  "sprite": "GFX_diplomacy_arrowupdown",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -4326,7 +4690,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 335, "w": 25, "h": 25 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_flag_smallest",
+                  "flag": "RUS"
                 },
                 {
                   "name": "call_checkbox",
@@ -4334,7 +4700,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 24, "h": 24 },
-                  "enabled": false
+                  "enabled": false,
+                  "sprite": "GFX_beligerent_icons",
+                  "frame": 2
                 },
                 {
                   "name": "promise_land_checkbox",
@@ -4342,14 +4710,17 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 24, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_promise_land_checkbox"
                 },
                 {
                   "name": "ai_accept",
                   "path": "DeclareWarDialog/allies/DeclareWarDialog_allyentry[5]/ai_accept",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 640, "y": 341, "w": 19, "h": 19 }
+                  "rect": { "x": 640, "y": 341, "w": 19, "h": 19 },
+                  "sprite": "GFX_diplomacy_arrowupdown",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -4382,7 +4753,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 335, "w": 25, "h": 25 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_flag_smallest",
+                  "flag": "RUS"
                 },
                 {
                   "name": "call_checkbox",
@@ -4390,7 +4763,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 24, "h": 24 },
-                  "enabled": false
+                  "enabled": false,
+                  "sprite": "GFX_beligerent_icons",
+                  "frame": 2
                 },
                 {
                   "name": "promise_land_checkbox",
@@ -4398,14 +4773,17 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 24, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_promise_land_checkbox"
                 },
                 {
                   "name": "ai_accept",
                   "path": "DeclareWarDialog/allies/DeclareWarDialog_allyentry[6]/ai_accept",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 640, "y": 341, "w": 19, "h": 19 }
+                  "rect": { "x": 640, "y": 341, "w": 19, "h": 19 },
+                  "sprite": "GFX_diplomacy_arrowupdown",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -4438,7 +4816,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 335, "w": 25, "h": 25 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_flag_smallest",
+                  "flag": "RUS"
                 },
                 {
                   "name": "call_checkbox",
@@ -4446,7 +4826,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 24, "h": 24 },
-                  "enabled": false
+                  "enabled": false,
+                  "sprite": "GFX_beligerent_icons",
+                  "frame": 2
                 },
                 {
                   "name": "promise_land_checkbox",
@@ -4454,14 +4836,17 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 24, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_promise_land_checkbox"
                 },
                 {
                   "name": "ai_accept",
                   "path": "DeclareWarDialog/allies/DeclareWarDialog_allyentry[7]/ai_accept",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 640, "y": 341, "w": 19, "h": 19 }
+                  "rect": { "x": 640, "y": 341, "w": 19, "h": 19 },
+                  "sprite": "GFX_diplomacy_arrowupdown",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -4494,7 +4879,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 335, "w": 25, "h": 25 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_flag_smallest",
+                  "flag": "RUS"
                 },
                 {
                   "name": "call_checkbox",
@@ -4502,7 +4889,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 24, "h": 24 },
-                  "enabled": false
+                  "enabled": false,
+                  "sprite": "GFX_beligerent_icons",
+                  "frame": 2
                 },
                 {
                   "name": "promise_land_checkbox",
@@ -4510,14 +4899,17 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 24, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_promise_land_checkbox"
                 },
                 {
                   "name": "ai_accept",
                   "path": "DeclareWarDialog/allies/DeclareWarDialog_allyentry[8]/ai_accept",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 640, "y": 341, "w": 19, "h": 19 }
+                  "rect": { "x": 640, "y": 341, "w": 19, "h": 19 },
+                  "sprite": "GFX_diplomacy_arrowupdown",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -4550,7 +4942,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 335, "w": 25, "h": 25 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_flag_smallest",
+                  "flag": "RUS"
                 },
                 {
                   "name": "call_checkbox",
@@ -4558,7 +4952,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 24, "h": 24 },
-                  "enabled": false
+                  "enabled": false,
+                  "sprite": "GFX_beligerent_icons",
+                  "frame": 2
                 },
                 {
                   "name": "promise_land_checkbox",
@@ -4566,14 +4962,17 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 24, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_promise_land_checkbox"
                 },
                 {
                   "name": "ai_accept",
                   "path": "DeclareWarDialog/allies/DeclareWarDialog_allyentry[9]/ai_accept",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 640, "y": 341, "w": 19, "h": 19 }
+                  "rect": { "x": 640, "y": 341, "w": 19, "h": 19 },
+                  "sprite": "GFX_diplomacy_arrowupdown",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -4606,7 +5005,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 335, "w": 25, "h": 25 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_flag_smallest",
+                  "flag": "RUS"
                 },
                 {
                   "name": "call_checkbox",
@@ -4614,7 +5015,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 24, "h": 24 },
-                  "enabled": false
+                  "enabled": false,
+                  "sprite": "GFX_beligerent_icons",
+                  "frame": 2
                 },
                 {
                   "name": "promise_land_checkbox",
@@ -4622,14 +5025,17 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 24, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_promise_land_checkbox"
                 },
                 {
                   "name": "ai_accept",
                   "path": "DeclareWarDialog/allies/DeclareWarDialog_allyentry[10]/ai_accept",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 640, "y": 341, "w": 19, "h": 19 }
+                  "rect": { "x": 640, "y": 341, "w": 19, "h": 19 },
+                  "sprite": "GFX_diplomacy_arrowupdown",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -4662,7 +5068,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 335, "w": 25, "h": 25 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_flag_smallest",
+                  "flag": "RUS"
                 },
                 {
                   "name": "call_checkbox",
@@ -4670,7 +5078,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 24, "h": 24 },
-                  "enabled": false
+                  "enabled": false,
+                  "sprite": "GFX_beligerent_icons",
+                  "frame": 2
                 },
                 {
                   "name": "promise_land_checkbox",
@@ -4678,14 +5088,17 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 24, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_promise_land_checkbox"
                 },
                 {
                   "name": "ai_accept",
                   "path": "DeclareWarDialog/allies/DeclareWarDialog_allyentry[11]/ai_accept",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 640, "y": 341, "w": 19, "h": 19 }
+                  "rect": { "x": 640, "y": 341, "w": 19, "h": 19 },
+                  "sprite": "GFX_diplomacy_arrowupdown",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -4718,7 +5131,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 335, "w": 25, "h": 25 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_flag_smallest",
+                  "flag": "RUS"
                 },
                 {
                   "name": "call_checkbox",
@@ -4726,7 +5141,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 24, "h": 24 },
-                  "enabled": false
+                  "enabled": false,
+                  "sprite": "GFX_beligerent_icons",
+                  "frame": 2
                 },
                 {
                   "name": "promise_land_checkbox",
@@ -4734,14 +5151,17 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 24, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_promise_land_checkbox"
                 },
                 {
                   "name": "ai_accept",
                   "path": "DeclareWarDialog/allies/DeclareWarDialog_allyentry[12]/ai_accept",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 640, "y": 341, "w": 19, "h": 19 }
+                  "rect": { "x": 640, "y": 341, "w": 19, "h": 19 },
+                  "sprite": "GFX_diplomacy_arrowupdown",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -4774,7 +5194,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 335, "w": 25, "h": 25 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_flag_smallest",
+                  "flag": "RUS"
                 },
                 {
                   "name": "call_checkbox",
@@ -4782,7 +5204,9 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 24, "h": 24 },
-                  "enabled": false
+                  "enabled": false,
+                  "sprite": "GFX_beligerent_icons",
+                  "frame": 2
                 },
                 {
                   "name": "promise_land_checkbox",
@@ -4790,14 +5214,17 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 24, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_promise_land_checkbox"
                 },
                 {
                   "name": "ai_accept",
                   "path": "DeclareWarDialog/allies/DeclareWarDialog_allyentry[13]/ai_accept",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 640, "y": 341, "w": 19, "h": 19 }
+                  "rect": { "x": 640, "y": 341, "w": 19, "h": 19 },
+                  "sprite": "GFX_diplomacy_arrowupdown",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -4829,14 +5256,16 @@
                   "path": "DeclareWarDialog/allies/standardlistbox_slider/listboxSliderButton",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 528, "y": 583, "w": 16, "h": 16 }
+                  "rect": { "x": 528, "y": 583, "w": 16, "h": 16 },
+                  "sprite": "GFX_scroll_drager"
                 },
                 {
                   "name": "listboxTrackButton",
                   "path": "DeclareWarDialog/allies/standardlistbox_slider/listboxTrackButton",
                   "type": "button",
                   "visible": true,
-                  "rect": { "x": 530, "y": 583, "w": 12, "h": 18 }
+                  "rect": { "x": 530, "y": 583, "w": 12, "h": 18 },
+                  "sprite": "GFX_scroll_track"
                 },
                 {
                   "name": "downButton",
@@ -4844,7 +5273,8 @@
                   "type": "button",
                   "visible": true,
                   "rect": { "x": 528, "y": 601, "w": 16, "h": 16 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_scroll_down"
                 },
                 {
                   "name": "upButton",
@@ -4852,7 +5282,8 @@
                   "type": "button",
                   "visible": true,
                   "rect": { "x": 528, "y": 567, "w": 16, "h": 16 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_scroll_up"
                 }
               ]
             }
@@ -4878,7 +5309,9 @@
                   "type": "button",
                   "visible": true,
                   "rect": { "x": 36, "y": 567, "w": 25, "h": 25 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_flag_smallest",
+                  "flag": "DAN"
                 },
                 {
                   "name": "call_checkbox",
@@ -4886,7 +5319,9 @@
                   "type": "button",
                   "visible": true,
                   "rect": { "x": 197, "y": 569, "w": 24, "h": 24 },
-                  "enabled": false
+                  "enabled": false,
+                  "sprite": "GFX_beligerent_icons",
+                  "frame": 2
                 },
                 {
                   "name": "promise_land_checkbox",
@@ -4894,21 +5329,26 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 24, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_checkbox_gold_24"
                 },
                 {
                   "name": "ai_accept",
                   "path": "DeclareWarDialog/enemies/DeclareWarDialog_enemyentry[1]/ai_accept",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 640, "y": 341, "w": 19, "h": 19 }
+                  "rect": { "x": 640, "y": 341, "w": 19, "h": 19 },
+                  "sprite": "GFX_diplomacy_arrowupdown",
+                  "frame": 1
                 },
                 {
                   "name": "ai_coalition",
                   "path": "DeclareWarDialog/enemies/DeclareWarDialog_enemyentry[1]/ai_coalition",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 640, "y": 341, "w": 19, "h": 19 }
+                  "rect": { "x": 640, "y": 341, "w": 19, "h": 19 },
+                  "sprite": "GFX_diplomacy_coalitions_against",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -4941,7 +5381,9 @@
                   "type": "button",
                   "visible": true,
                   "rect": { "x": 36, "y": 588, "w": 25, "h": 25 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_flag_smallest",
+                  "flag": "BUR"
                 },
                 {
                   "name": "call_checkbox",
@@ -4949,7 +5391,9 @@
                   "type": "button",
                   "visible": true,
                   "rect": { "x": 197, "y": 590, "w": 24, "h": 24 },
-                  "enabled": false
+                  "enabled": false,
+                  "sprite": "GFX_beligerent_icons",
+                  "frame": 1
                 },
                 {
                   "name": "promise_land_checkbox",
@@ -4957,21 +5401,26 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 336, "w": 24, "h": 24 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_checkbox_gold_24"
                 },
                 {
                   "name": "ai_accept",
                   "path": "DeclareWarDialog/enemies/DeclareWarDialog_enemyentry[2]/ai_accept",
                   "type": "icon",
                   "visible": true,
-                  "rect": { "x": 222, "y": 592, "w": 19, "h": 19 }
+                  "rect": { "x": 222, "y": 592, "w": 19, "h": 19 },
+                  "sprite": "GFX_diplomacy_arrowupdown",
+                  "frame": 1
                 },
                 {
                   "name": "ai_coalition",
                   "path": "DeclareWarDialog/enemies/DeclareWarDialog_enemyentry[2]/ai_coalition",
                   "type": "icon",
                   "visible": false,
-                  "rect": { "x": 640, "y": 341, "w": 19, "h": 19 }
+                  "rect": { "x": 640, "y": 341, "w": 19, "h": 19 },
+                  "sprite": "GFX_diplomacy_coalitions_against",
+                  "frame": 1
                 },
                 {
                   "name": "name",
@@ -5003,14 +5452,16 @@
                   "path": "DeclareWarDialog/enemies/standardlistbox_slider/listboxSliderButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 640, "y": 344, "w": 16, "h": 16 }
+                  "rect": { "x": 640, "y": 344, "w": 16, "h": 16 },
+                  "sprite": "GFX_scroll_drager"
                 },
                 {
                   "name": "listboxTrackButton",
                   "path": "DeclareWarDialog/enemies/standardlistbox_slider/listboxTrackButton",
                   "type": "button",
                   "visible": false,
-                  "rect": { "x": 640, "y": 360, "w": 12, "h": 18 }
+                  "rect": { "x": 640, "y": 360, "w": 12, "h": 18 },
+                  "sprite": "GFX_scroll_track"
                 },
                 {
                   "name": "downButton",
@@ -5018,7 +5469,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 344, "w": 16, "h": 16 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_scroll_down"
                 },
                 {
                   "name": "upButton",
@@ -5026,7 +5478,8 @@
                   "type": "button",
                   "visible": false,
                   "rect": { "x": 640, "y": 344, "w": 16, "h": 16 },
-                  "enabled": true
+                  "enabled": true,
+                  "sprite": "GFX_scroll_up"
                 }
               ]
             }
@@ -5044,14 +5497,16 @@
               "path": "DeclareWarDialog/standardtext_slider/listboxSliderButton",
               "type": "button",
               "visible": true,
-              "rect": { "x": 300, "y": 368, "w": 16, "h": 16 }
+              "rect": { "x": 300, "y": 368, "w": 16, "h": 16 },
+              "sprite": "GFX_scroll_drager"
             },
             {
               "name": "listboxTrackButton",
               "path": "DeclareWarDialog/standardtext_slider/listboxTrackButton",
               "type": "button",
               "visible": true,
-              "rect": { "x": 302, "y": 368, "w": 12, "h": 128 }
+              "rect": { "x": 302, "y": 368, "w": 12, "h": 128 },
+              "sprite": "GFX_scroll_track"
             },
             {
               "name": "downButton",
@@ -5059,7 +5514,8 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 300, "y": 496, "w": 16, "h": 16 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_scroll_down"
             },
             {
               "name": "upButton",
@@ -5067,7 +5523,8 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 300, "y": 352, "w": 16, "h": 16 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_scroll_up"
             }
           ]
         },
@@ -5077,7 +5534,9 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 32, "y": 260, "w": 92, "h": 92 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "standarddialogshield",
+          "flag": "RUS"
         },
         {
           "name": "RightShield",
@@ -5085,7 +5544,9 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 426, "y": 260, "w": 92, "h": 92 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "standarddialogshield",
+          "flag": "PLC"
         }
       ]
     },
@@ -5102,7 +5563,9 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 0, "y": 1, "w": 147, "h": 152 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_shield_fancy",
+          "flag": "RUS"
         },
         {
           "name": "open_build_interface_button",
@@ -5110,7 +5573,8 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 6, "y": 108, "w": 40, "h": 40 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_open_build_interface"
         },
         {
           "name": "great_power_button",
@@ -5118,7 +5582,8 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 115, "y": 83, "w": 22, "h": 22 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_great_power_button"
         },
         {
           "name": "government_reforms_button",
@@ -5126,7 +5591,8 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 100, "y": 109, "w": 40, "h": 40 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_government_reforms_button"
         },
         {
           "name": "icon_merchant",
@@ -5134,7 +5600,8 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 739, "y": 8, "w": 31, "h": 31 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_icon_merchant"
         },
         {
           "name": "icon_settler",
@@ -5142,7 +5609,8 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 780, "y": 8, "w": 31, "h": 31 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_icon_settler"
         },
         {
           "name": "icon_diplomat",
@@ -5150,7 +5618,8 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 821, "y": 8, "w": 31, "h": 31 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_icon_diplomat"
         },
         {
           "name": "icon_missionary",
@@ -5158,7 +5627,8 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 862, "y": 8, "w": 31, "h": 31 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_icon_missionary"
         },
         {
           "name": "current_age_button",
@@ -5166,7 +5636,8 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 722, "y": 31, "w": 195, "h": 48 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_age_button"
         },
         {
           "name": "age_icon",
@@ -5174,189 +5645,242 @@
           "type": "button",
           "visible": true,
           "rect": { "x": 705, "y": 46, "w": 37, "h": 37 },
-          "enabled": true
+          "enabled": true,
+          "sprite": "GFX_icon_age_s",
+          "frame": 4
         },
         {
           "name": "brown_bg",
           "path": "topbar/brown_bg",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 676, "y": 19, "w": 194, "h": 34 }
+          "rect": { "x": 676, "y": 19, "w": 194, "h": 34 },
+          "sprite": "GFX_brown_bg",
+          "frame": 1
         },
         {
           "name": "topbar_1",
           "path": "topbar/topbar_1",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 99512, "y": -2, "w": 109, "h": 31 }
+          "rect": { "x": 99512, "y": -2, "w": 109, "h": 31 },
+          "sprite": "GFX_remove",
+          "frame": 1
         },
         {
           "name": "topbar_2",
           "path": "topbar/topbar_2",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 991024, "y": -2, "w": 109, "h": 31 }
+          "rect": { "x": 991024, "y": -2, "w": 109, "h": 31 },
+          "sprite": "GFX_remove",
+          "frame": 1
         },
         {
           "name": "topbar_3",
           "path": "topbar/topbar_3",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 991532, "y": -2, "w": 109, "h": 31 }
+          "rect": { "x": 991532, "y": -2, "w": 109, "h": 31 },
+          "sprite": "GFX_remove",
+          "frame": 1
         },
         {
           "name": "topbar_upper_left_bg",
           "path": "topbar/topbar_upper_left_bg",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 0, "y": 0, "w": 927, "h": 159 }
+          "rect": { "x": 0, "y": 0, "w": 927, "h": 159 },
+          "sprite": "GFX_topbar_bg",
+          "frame": 1
         },
         {
           "name": "topbar_upper_left_bg4",
           "path": "topbar/topbar_upper_left_bg4",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 70, "y": 39, "w": 674, "h": 69 }
+          "rect": { "x": 70, "y": 39, "w": 674, "h": 69 },
+          "sprite": "GFX_topbar_banner",
+          "frame": 1
         },
         {
           "name": "government_reforms_button_base",
           "path": "topbar/government_reforms_button_base",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 93, "y": 103, "w": 54, "h": 54 }
+          "rect": { "x": 93, "y": 103, "w": 54, "h": 54 },
+          "sprite": "GFX_government_reforms_button_base",
+          "frame": 1
         },
         {
           "name": "player_shield_glow",
           "path": "topbar/player_shield_glow",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 0, "y": 1, "w": 147, "h": 152 }
+          "rect": { "x": 0, "y": 1, "w": 147, "h": 152 },
+          "sprite": "GFX_shield_fancy_great_power_glow",
+          "frame": 1
         },
         {
           "name": "great_power_button_base",
           "path": "topbar/great_power_button_base",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 111, "y": 79, "w": 30, "h": 30 }
+          "rect": { "x": 111, "y": 79, "w": 30, "h": 30 },
+          "sprite": "GFX_great_power_button_base",
+          "frame": 1
         },
         {
           "name": "government_reforms_progress",
           "path": "topbar/government_reforms_progress",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 100, "y": 109, "w": 40, "h": 40 }
+          "rect": { "x": 100, "y": 109, "w": 40, "h": 40 },
+          "sprite": "GFX_government_reforms_progress"
         },
         {
           "name": "topbar_upper_left_bg2",
           "path": "topbar/topbar_upper_left_bg2",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 731, "y": 29, "w": 168, "h": 24 }
+          "rect": { "x": 731, "y": 29, "w": 168, "h": 24 },
+          "sprite": "GFX_topbar_portrait_value_bg",
+          "frame": 1
         },
         {
           "name": "icon_gold",
           "path": "topbar/icon_gold",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 146, "y": 9, "w": 27, "h": 27 }
+          "rect": { "x": 146, "y": 9, "w": 27, "h": 27 },
+          "sprite": "GFX_icon_gold_strip",
+          "frame": 1
         },
         {
           "name": "icon_manpower",
           "path": "topbar/icon_manpower",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 228, "y": 10, "w": 27, "h": 27 }
+          "rect": { "x": 228, "y": 10, "w": 27, "h": 27 },
+          "sprite": "GFX_icon_manpower",
+          "frame": 1
         },
         {
           "name": "icon_sailors",
           "path": "topbar/icon_sailors",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 311, "y": 13, "w": 27, "h": 27 }
+          "rect": { "x": 311, "y": 13, "w": 27, "h": 27 },
+          "sprite": "GFX_icon_sailors",
+          "frame": 1
         },
         {
           "name": "icon_stability",
           "path": "topbar/icon_stability",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 394, "y": 9, "w": 27, "h": 27 }
+          "rect": { "x": 394, "y": 9, "w": 27, "h": 27 },
+          "sprite": "GFX_icon_stability",
+          "frame": 1
         },
         {
           "name": "icon_prestige",
           "path": "topbar/icon_prestige",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 524, "y": 9, "w": 27, "h": 27 }
+          "rect": { "x": 524, "y": 9, "w": 27, "h": 27 },
+          "sprite": "GFX_icon_prestige",
+          "frame": 1
         },
         {
           "name": "icon_dev",
           "path": "topbar/icon_dev",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 640, "y": 333, "w": 27, "h": 27 }
+          "rect": { "x": 640, "y": 333, "w": 27, "h": 27 },
+          "sprite": "GFX_icon_legitimacy",
+          "frame": 3
         },
         {
           "name": "icon_meritocracy",
           "path": "topbar/icon_meritocracy",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 588, "y": 9, "w": 27, "h": 27 }
+          "rect": { "x": 588, "y": 9, "w": 27, "h": 27 },
+          "sprite": "GFX_icon_legitimacy",
+          "frame": 5
         },
         {
           "name": "icon_leg",
           "path": "topbar/icon_leg",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 640, "y": 333, "w": 27, "h": 27 }
+          "rect": { "x": 640, "y": 333, "w": 27, "h": 27 },
+          "sprite": "GFX_icon_legitimacy",
+          "frame": 1
         },
         {
           "name": "icon_rep",
           "path": "topbar/icon_rep",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 640, "y": 333, "w": 27, "h": 27 }
+          "rect": { "x": 640, "y": 333, "w": 27, "h": 27 },
+          "sprite": "GFX_icon_legitimacy",
+          "frame": 2
         },
         {
           "name": "icon_unity",
           "path": "topbar/icon_unity",
           "type": "icon",
           "visible": false,
-          "rect": { "x": 640, "y": 333, "w": 27, "h": 27 }
+          "rect": { "x": 640, "y": 333, "w": 27, "h": 27 },
+          "sprite": "GFX_icon_legitimacy",
+          "frame": 4
         },
         {
           "name": "icon_corruption",
           "path": "topbar/icon_corruption",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 458, "y": 10, "w": 26, "h": 26 }
+          "rect": { "x": 458, "y": 10, "w": 26, "h": 26 },
+          "sprite": "GFX_icon_corruption_small",
+          "frame": 1
         },
         {
           "name": "icon_ADM",
           "path": "topbar/icon_ADM",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 498, "y": 48, "w": 28, "h": 28 }
+          "rect": { "x": 498, "y": 48, "w": 28, "h": 28 },
+          "sprite": "GFX_icon_powers_administrative",
+          "frame": 1
         },
         {
           "name": "icon_DIP",
           "path": "topbar/icon_DIP",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 558, "y": 48, "w": 28, "h": 28 }
+          "rect": { "x": 558, "y": 48, "w": 28, "h": 28 },
+          "sprite": "GFX_icon_powers_diplomatic",
+          "frame": 1
         },
         {
           "name": "icon_MIL",
           "path": "topbar/icon_MIL",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 616, "y": 48, "w": 28, "h": 28 }
+          "rect": { "x": 616, "y": 48, "w": 28, "h": 28 },
+          "sprite": "GFX_icon_powers_military",
+          "frame": 1
         },
         {
           "name": "button_base",
           "path": "topbar/button_base",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 690, "y": 29, "w": 63, "h": 61 }
+          "rect": { "x": 690, "y": 29, "w": 63, "h": 61 },
+          "sprite": "GFX_age_frame_addon",
+          "frame": 1
         },
         {
           "name": "text_merchants",
@@ -5530,14 +6054,18 @@
               "path": "topbar/powerprojection_topbar/topbar_liberty_overlay",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 639, "y": 0, "w": 95, "h": 49 }
+              "rect": { "x": 639, "y": 0, "w": 95, "h": 49 },
+              "sprite": "GFX_topbar_liberty_overlay",
+              "frame": 1
             },
             {
               "name": "icon_powerprojection",
               "path": "topbar/powerprojection_topbar/icon_powerprojection",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 666, "y": 9, "w": 11, "h": 28 }
+              "rect": { "x": 666, "y": 9, "w": 11, "h": 28 },
+              "sprite": "GFX_icon_powerprojection",
+              "frame": 1
             },
             {
               "name": "text_powerprojection",
@@ -5561,14 +6089,18 @@
               "path": "topbar/liberty_desire_topbar/topbar_liberty_overlay",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 640, "y": 309, "w": 95, "h": 51 }
+              "rect": { "x": 640, "y": 309, "w": 95, "h": 51 },
+              "sprite": "GFX_topbar_liberty_overlay",
+              "frame": 1
             },
             {
               "name": "topbar_liberty_icon",
               "path": "topbar/liberty_desire_topbar/topbar_liberty_icon",
               "type": "icon",
               "visible": false,
-              "rect": { "x": 640, "y": 333, "w": 25, "h": 27 }
+              "rect": { "x": 640, "y": 333, "w": 25, "h": 27 },
+              "sprite": "GFX_liberty_icon",
+              "frame": 1
             },
             {
               "name": "topbar_liberty_value",
@@ -5592,7 +6124,9 @@
               "path": "topbar/pause_window/pause_banner",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 437, "y": 84, "w": 406, "h": 67 }
+              "rect": { "x": 437, "y": 84, "w": 406, "h": 67 },
+              "sprite": "GFX_pause_banner",
+              "frame": 1
             },
             {
               "name": "pause_banner_text",

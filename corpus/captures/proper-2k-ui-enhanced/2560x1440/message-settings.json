@@ -3,9 +3,9 @@
   "playset": "proper-2k-ui-enhanced",
   "resolution": { "width": 2560, "height": 1440 },
   "view": "message-settings",
-  "takenAt": "2026-11-01T07:05:22.767Z",
+  "takenAt": "2026-11-23T06:22:55.231Z",
   "game": { "exeSha256": "9AD3EFE1AF169F40EE577F9DAE5DEBBC87AF6FB8B5450FB345EBF110DC4D771A" },
-  "tongs": { "version": "0.23.0" },
+  "tongs": { "version": "0.37.0" },
   "save": { "sha256": "2A4CAF306CCDDB2DAFC7EE015C4ECFFB260654A1D10D86F5F4F768D3C3F56F6A" },
   "mods": [
     {
@@ -22,13 +22,13 @@
   },
   "window": { "width": 2560, "height": 1440, "dpi": 96 },
   "screenshot": {
-    "sha256": "A02C646C1ACBD2CC2AF515132D3CF6AF3B2E69311BC19714EC28562A4BD67DDF",
+    "sha256": "6770A83333DF424A568851C1F8E9C7B3409A51DC030ECA65AE155BB335930E35",
     "width": 2560,
     "height": 1440,
     "shots": 4,
     "unstable": {
-      "pixels": 1008117,
-      "sha256": "EEA18796FF8311DBC4191AF9E86941A85A44B8940BE14D6D7642F75D0BC9B876"
+      "pixels": 1011315,
+      "sha256": "71E0C89CFE4882D2758FD1EDCE14A15A82F9AC95328B6F36AF5EEAF99B05C000"
     }
   },
   "widgets": [
@@ -44,7 +44,9 @@
           "path": "menu/menu",
           "type": "icon",
           "visible": true,
-          "rect": { "x": 994, "y": 398, "w": 568, "h": 629 }
+          "rect": { "x": 994, "y": 398, "w": 568, "h": 629 },
+          "sprite": "GFX_menu",
+          "frame": 1
         },
         {
           "name": "menu_panel",
@@ -60,7 +62,8 @@
               "visible": false,
               "rect": { "x": 1164, "y": 530, "w": 227, "h": 37 },
               "text": "Load Game",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_8"
             },
             {
               "name": "menu_save_button",
@@ -69,7 +72,8 @@
               "visible": false,
               "rect": { "x": 1164, "y": 572, "w": 227, "h": 37 },
               "text": "Save Game",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_8"
             },
             {
               "name": "menu_options_button",
@@ -78,7 +82,8 @@
               "visible": false,
               "rect": { "x": 1164, "y": 614, "w": 227, "h": 37 },
               "text": "Game Options",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_8"
             },
             {
               "name": "menu_message_button",
@@ -87,7 +92,8 @@
               "visible": false,
               "rect": { "x": 1164, "y": 656, "w": 227, "h": 37 },
               "text": "Message Settings",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_8"
             },
             {
               "name": "menu_ai_prefs_button",
@@ -96,7 +102,8 @@
               "visible": false,
               "rect": { "x": 1164, "y": 698, "w": 227, "h": 37 },
               "text": "AI Settings",
-              "enabled": false
+              "enabled": false,
+              "sprite": "button_type_8"
             },
             {
               "name": "menu_stats_button",
@@ -105,7 +112,8 @@
               "visible": false,
               "rect": { "x": 1164, "y": 740, "w": 227, "h": 37 },
               "text": "Statistics",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_8"
             },
             {
               "name": "privacy_policy_button",
@@ -114,7 +122,8 @@
               "visible": false,
               "rect": { "x": 1164, "y": 782, "w": 227, "h": 37 },
               "text": "Privacy Policy",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_8"
             },
             {
               "name": "menu_resign_button",
@@ -123,7 +132,8 @@
               "visible": false,
               "rect": { "x": 1164, "y": 824, "w": 227, "h": 37 },
               "text": "Exit to Menu",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_8"
             },
             {
               "name": "menu_quit_button",
@@ -132,7 +142,8 @@
               "visible": false,
               "rect": { "x": 1164, "y": 866, "w": 227, "h": 37 },
               "text": "Exit Game",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_8"
             },
             {
               "name": "menu_close_button",
@@ -141,7 +152,8 @@
               "visible": false,
               "rect": { "x": 1232, "y": 908, "w": 95, "h": 37 },
               "text": "Close",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_6"
             }
           ]
         },
@@ -159,7 +171,8 @@
               "visible": false,
               "rect": { "x": 1280, "y": 683, "w": 179, "h": 37 },
               "text": "Cancel",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_7"
             },
             {
               "name": "exit",
@@ -168,7 +181,8 @@
               "visible": false,
               "rect": { "x": 1280, "y": 683, "w": 179, "h": 37 },
               "text": "Exit to Menu",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_7"
             },
             {
               "name": "disk_space_needed",
@@ -205,14 +219,16 @@
                       "path": "menu/menu_unsync/games/standardlistbox_slider/listboxSliderButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 }
+                      "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
+                      "sprite": "GFX_scroll_drager"
                     },
                     {
                       "name": "listboxTrackButton",
                       "path": "menu/menu_unsync/games/standardlistbox_slider/listboxTrackButton",
                       "type": "button",
                       "visible": false,
-                      "rect": { "x": 1280, "y": 720, "w": 15, "h": 322 }
+                      "rect": { "x": 1280, "y": 720, "w": 15, "h": 322 },
+                      "sprite": "GFX_scroll_track"
                     },
                     {
                       "name": "downButton",
@@ -220,7 +236,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_down"
                     },
                     {
                       "name": "upButton",
@@ -228,7 +245,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_up"
                     }
                   ]
                 }
@@ -250,7 +268,8 @@
               "visible": false,
               "rect": { "x": 120323, "y": 495, "w": 179, "h": 37 },
               "text": "Filter",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_7"
             },
             {
               "name": "button_search",
@@ -259,7 +278,8 @@
               "visible": true,
               "rect": { "x": 1357, "y": 575, "w": 95, "h": 37 },
               "text": "Search",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_6"
             },
             {
               "name": "button_clear",
@@ -268,7 +288,8 @@
               "visible": true,
               "rect": { "x": 1446, "y": 575, "w": 95, "h": 37 },
               "text": "Clear",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_6"
             },
             {
               "name": "messageicon_pause_all",
@@ -276,7 +297,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 1618, "y": 586, "w": 19, "h": 19 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_messageicon_pause",
+              "frame": 2
             },
             {
               "name": "messageicon_dialog_all",
@@ -284,7 +307,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 1642, "y": 586, "w": 19, "h": 19 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_messageicon_dialog",
+              "frame": 2
             },
             {
               "name": "messageicon_icon_all",
@@ -292,7 +317,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 1666, "y": 584, "w": 19, "h": 19 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_mailbox_icon",
+              "frame": 2
             },
             {
               "name": "messageicon_log_all",
@@ -300,7 +327,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 1690, "y": 585, "w": 19, "h": 19 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_messageicon_log",
+              "frame": 1
             },
             {
               "name": "messageicon_map_all",
@@ -308,7 +337,9 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 1714, "y": 585, "w": 19, "h": 19 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "GFX_messageicon_map",
+              "frame": 2
             },
             {
               "name": "reset",
@@ -316,7 +347,8 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 812, "y": 843, "w": 179, "h": 37 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_7"
             },
             {
               "name": "close",
@@ -324,7 +356,8 @@
               "type": "button",
               "visible": true,
               "rect": { "x": 812, "y": 879, "w": 179, "h": 37 },
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_7"
             },
             {
               "name": "disable_all_messages",
@@ -333,14 +366,17 @@
               "visible": false,
               "rect": { "x": 120305, "y": 873, "w": 179, "h": 37 },
               "text": "Disable all",
-              "enabled": true
+              "enabled": true,
+              "sprite": "button_type_7"
             },
             {
               "name": "messagesettings_bg",
               "path": "menu/menu_message_settings/messagesettings_bg",
               "type": "icon",
               "visible": true,
-              "rect": { "x": 761, "y": 474, "w": 1058, "h": 573 }
+              "rect": { "x": 761, "y": 474, "w": 1058, "h": 573 },
+              "sprite": "GFX_messagesettings_bg",
+              "frame": 1
             },
             {
               "name": "messagesettings_label",
@@ -506,7 +542,8 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1015, "y": 621, "w": 720, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messagesettings_listbutton"
                     },
                     {
                       "name": "messageicon_pause",
@@ -514,7 +551,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1618, "y": 623, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_pause",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_dialog",
@@ -522,7 +561,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1641, "y": 623, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_dialog",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_icon",
@@ -530,7 +571,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1666, "y": 621, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_mailbox_icon",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_log",
@@ -538,7 +581,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1690, "y": 622, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_log",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_map",
@@ -546,7 +591,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1714, "y": 622, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_map",
+                      "frame": 2
                     },
                     {
                       "name": "text",
@@ -571,7 +618,8 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1015, "y": 645, "w": 720, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messagesettings_listbutton"
                     },
                     {
                       "name": "messageicon_pause",
@@ -579,7 +627,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1618, "y": 647, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_pause",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_dialog",
@@ -587,7 +637,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1641, "y": 647, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_dialog",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_icon",
@@ -595,7 +647,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1666, "y": 645, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_mailbox_icon",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_log",
@@ -603,7 +657,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1690, "y": 646, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_log",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_map",
@@ -611,7 +667,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1714, "y": 646, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_map",
+                      "frame": 2
                     },
                     {
                       "name": "text",
@@ -636,7 +694,8 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1015, "y": 669, "w": 720, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messagesettings_listbutton"
                     },
                     {
                       "name": "messageicon_pause",
@@ -644,7 +703,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1618, "y": 671, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_pause",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_dialog",
@@ -652,7 +713,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1641, "y": 671, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_dialog",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_icon",
@@ -660,7 +723,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1666, "y": 669, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_mailbox_icon",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_log",
@@ -668,7 +733,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1690, "y": 670, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_log",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_map",
@@ -676,7 +743,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1714, "y": 670, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_map",
+                      "frame": 2
                     },
                     {
                       "name": "text",
@@ -701,7 +770,8 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1015, "y": 693, "w": 720, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messagesettings_listbutton"
                     },
                     {
                       "name": "messageicon_pause",
@@ -709,7 +779,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1618, "y": 695, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_pause",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_dialog",
@@ -717,7 +789,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1641, "y": 695, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_dialog",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_icon",
@@ -725,7 +799,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1666, "y": 693, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_mailbox_icon",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_log",
@@ -733,7 +809,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1690, "y": 694, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_log",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_map",
@@ -741,7 +819,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1714, "y": 694, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_map",
+                      "frame": 2
                     },
                     {
                       "name": "text",
@@ -766,7 +846,8 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1015, "y": 717, "w": 720, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messagesettings_listbutton"
                     },
                     {
                       "name": "messageicon_pause",
@@ -774,7 +855,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1618, "y": 719, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_pause",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_dialog",
@@ -782,7 +865,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1641, "y": 719, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_dialog",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_icon",
@@ -790,7 +875,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1666, "y": 717, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_mailbox_icon",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_log",
@@ -798,7 +885,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1690, "y": 718, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_log",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_map",
@@ -806,7 +895,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1714, "y": 718, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_map",
+                      "frame": 2
                     },
                     {
                       "name": "text",
@@ -831,7 +922,8 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1015, "y": 741, "w": 720, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messagesettings_listbutton"
                     },
                     {
                       "name": "messageicon_pause",
@@ -839,7 +931,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1618, "y": 743, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_pause",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_dialog",
@@ -847,7 +941,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1641, "y": 743, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_dialog",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_icon",
@@ -855,7 +951,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1666, "y": 741, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_mailbox_icon",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_log",
@@ -863,7 +961,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1690, "y": 742, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_log",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_map",
@@ -871,7 +971,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1714, "y": 742, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_map",
+                      "frame": 2
                     },
                     {
                       "name": "text",
@@ -896,7 +998,8 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1015, "y": 765, "w": 720, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messagesettings_listbutton"
                     },
                     {
                       "name": "messageicon_pause",
@@ -904,7 +1007,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1618, "y": 767, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_pause",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_dialog",
@@ -912,7 +1017,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1641, "y": 767, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_dialog",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_icon",
@@ -920,7 +1027,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1666, "y": 765, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_mailbox_icon",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_log",
@@ -928,7 +1037,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1690, "y": 766, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_log",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_map",
@@ -936,7 +1047,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1714, "y": 766, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_map",
+                      "frame": 2
                     },
                     {
                       "name": "text",
@@ -961,7 +1074,8 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1015, "y": 789, "w": 720, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messagesettings_listbutton"
                     },
                     {
                       "name": "messageicon_pause",
@@ -969,7 +1083,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1618, "y": 791, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_pause",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_dialog",
@@ -977,7 +1093,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1641, "y": 791, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_dialog",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_icon",
@@ -985,7 +1103,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1666, "y": 789, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_mailbox_icon",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_log",
@@ -993,7 +1113,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1690, "y": 790, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_log",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_map",
@@ -1001,7 +1123,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1714, "y": 790, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_map",
+                      "frame": 2
                     },
                     {
                       "name": "text",
@@ -1026,7 +1150,8 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1015, "y": 813, "w": 720, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messagesettings_listbutton"
                     },
                     {
                       "name": "messageicon_pause",
@@ -1034,7 +1159,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1618, "y": 815, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_pause",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_dialog",
@@ -1042,7 +1169,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1641, "y": 815, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_dialog",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_icon",
@@ -1050,7 +1179,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1666, "y": 813, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_mailbox_icon",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_log",
@@ -1058,7 +1189,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1690, "y": 814, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_log",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_map",
@@ -1066,7 +1199,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1714, "y": 814, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_map",
+                      "frame": 2
                     },
                     {
                       "name": "text",
@@ -1091,7 +1226,8 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1015, "y": 837, "w": 720, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messagesettings_listbutton"
                     },
                     {
                       "name": "messageicon_pause",
@@ -1099,7 +1235,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1618, "y": 839, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_pause",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_dialog",
@@ -1107,7 +1245,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1641, "y": 839, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_dialog",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_icon",
@@ -1115,7 +1255,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1666, "y": 837, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_mailbox_icon",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_log",
@@ -1123,7 +1265,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1690, "y": 838, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_log",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_map",
@@ -1131,7 +1275,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1714, "y": 838, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_map",
+                      "frame": 2
                     },
                     {
                       "name": "text",
@@ -1156,7 +1302,8 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1015, "y": 861, "w": 720, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messagesettings_listbutton"
                     },
                     {
                       "name": "messageicon_pause",
@@ -1164,7 +1311,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1618, "y": 863, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_pause",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_dialog",
@@ -1172,7 +1321,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1641, "y": 863, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_dialog",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_icon",
@@ -1180,7 +1331,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1666, "y": 861, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_mailbox_icon",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_log",
@@ -1188,7 +1341,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1690, "y": 862, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_log",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_map",
@@ -1196,7 +1351,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1714, "y": 862, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_map",
+                      "frame": 2
                     },
                     {
                       "name": "text",
@@ -1221,7 +1378,8 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1015, "y": 885, "w": 720, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messagesettings_listbutton"
                     },
                     {
                       "name": "messageicon_pause",
@@ -1229,7 +1387,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1618, "y": 887, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_pause",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_dialog",
@@ -1237,7 +1397,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1641, "y": 887, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_dialog",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_icon",
@@ -1245,7 +1407,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1666, "y": 885, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_mailbox_icon",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_log",
@@ -1253,7 +1417,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1690, "y": 886, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_log",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_map",
@@ -1261,7 +1427,9 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1714, "y": 886, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_map",
+                      "frame": 2
                     },
                     {
                       "name": "text",
@@ -1286,7 +1454,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 720, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messagesettings_listbutton"
                     },
                     {
                       "name": "messageicon_pause",
@@ -1294,7 +1463,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_pause",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_dialog",
@@ -1302,7 +1473,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_dialog",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_icon",
@@ -1310,7 +1483,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_mailbox_icon",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_log",
@@ -1318,7 +1493,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_log",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_map",
@@ -1326,7 +1503,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_map",
+                      "frame": 2
                     },
                     {
                       "name": "text",
@@ -1351,7 +1530,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 720, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messagesettings_listbutton"
                     },
                     {
                       "name": "messageicon_pause",
@@ -1359,7 +1539,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_pause",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_dialog",
@@ -1367,7 +1549,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_dialog",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_icon",
@@ -1375,7 +1559,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_mailbox_icon",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_log",
@@ -1383,7 +1569,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_log",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_map",
@@ -1391,7 +1579,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_map",
+                      "frame": 2
                     },
                     {
                       "name": "text",
@@ -1416,7 +1606,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 720, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messagesettings_listbutton"
                     },
                     {
                       "name": "messageicon_pause",
@@ -1424,7 +1615,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_pause",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_dialog",
@@ -1432,7 +1625,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_dialog",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_icon",
@@ -1440,7 +1635,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_mailbox_icon",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_log",
@@ -1448,7 +1645,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_log",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_map",
@@ -1456,7 +1655,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_map",
+                      "frame": 2
                     },
                     {
                       "name": "text",
@@ -1481,7 +1682,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 720, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messagesettings_listbutton"
                     },
                     {
                       "name": "messageicon_pause",
@@ -1489,7 +1691,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_pause",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_dialog",
@@ -1497,7 +1701,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_dialog",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_icon",
@@ -1505,7 +1711,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_mailbox_icon",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_log",
@@ -1513,7 +1721,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_log",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_map",
@@ -1521,7 +1731,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_map",
+                      "frame": 2
                     },
                     {
                       "name": "text",
@@ -1546,7 +1758,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 720, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messagesettings_listbutton"
                     },
                     {
                       "name": "messageicon_pause",
@@ -1554,7 +1767,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_pause",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_dialog",
@@ -1562,7 +1777,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_dialog",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_icon",
@@ -1570,7 +1787,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_mailbox_icon",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_log",
@@ -1578,7 +1797,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_log",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_map",
@@ -1586,7 +1807,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_map",
+                      "frame": 2
                     },
                     {
                       "name": "text",
@@ -1611,7 +1834,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 720, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messagesettings_listbutton"
                     },
                     {
                       "name": "messageicon_pause",
@@ -1619,7 +1843,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_pause",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_dialog",
@@ -1627,7 +1853,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_dialog",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_icon",
@@ -1635,7 +1863,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_mailbox_icon",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_log",
@@ -1643,7 +1873,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_log",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_map",
@@ -1651,7 +1883,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_map",
+                      "frame": 2
                     },
                     {
                       "name": "text",
@@ -1676,7 +1910,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 720, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messagesettings_listbutton"
                     },
                     {
                       "name": "messageicon_pause",
@@ -1684,7 +1919,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_pause",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_dialog",
@@ -1692,7 +1929,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_dialog",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_icon",
@@ -1700,7 +1939,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_mailbox_icon",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_log",
@@ -1708,7 +1949,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_log",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_map",
@@ -1716,7 +1959,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_map",
+                      "frame": 2
                     },
                     {
                       "name": "text",
@@ -1741,7 +1986,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 720, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messagesettings_listbutton"
                     },
                     {
                       "name": "messageicon_pause",
@@ -1749,7 +1995,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_pause",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_dialog",
@@ -1757,7 +2005,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_dialog",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_icon",
@@ -1765,7 +2015,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_mailbox_icon",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_log",
@@ -1773,7 +2025,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_log",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_map",
@@ -1781,7 +2035,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_map",
+                      "frame": 2
                     },
                     {
                       "name": "text",
@@ -1806,7 +2062,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 720, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messagesettings_listbutton"
                     },
                     {
                       "name": "messageicon_pause",
@@ -1814,7 +2071,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_pause",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_dialog",
@@ -1822,7 +2081,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_dialog",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_icon",
@@ -1830,7 +2091,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_mailbox_icon",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_log",
@@ -1838,7 +2101,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_log",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_map",
@@ -1846,7 +2111,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_map",
+                      "frame": 2
                     },
                     {
                       "name": "text",
@@ -1871,7 +2138,8 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 720, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messagesettings_listbutton"
                     },
                     {
                       "name": "messageicon_pause",
@@ -1879,7 +2147,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_pause",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_dialog",
@@ -1887,7 +2157,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_dialog",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_icon",
@@ -1895,7 +2167,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_mailbox_icon",
+                      "frame": 2
                     },
                     {
                       "name": "messageicon_log",
@@ -1903,7 +2177,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_log",
+                      "frame": 1
                     },
                     {
                       "name": "messageicon_map",
@@ -1911,7 +2187,9 @@
                       "type": "button",
                       "visible": false,
                       "rect": { "x": 1280, "y": 701, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_messageicon_map",
+                      "frame": 2
                     },
                     {
                       "name": "text",
@@ -1935,14 +2213,16 @@
                       "path": "menu/menu_message_settings/settings/standardlistbox_slider/listboxSliderButton",
                       "type": "button",
                       "visible": true,
-                      "rect": { "x": 1745, "y": 640, "w": 19, "h": 19 }
+                      "rect": { "x": 1745, "y": 640, "w": 19, "h": 19 },
+                      "sprite": "GFX_scroll_drager"
                     },
                     {
                       "name": "listboxTrackButton",
                       "path": "menu/menu_message_settings/settings/standardlistbox_slider/listboxTrackButton",
                       "type": "button",
                       "visible": true,
-                      "rect": { "x": 1747, "y": 640, "w": 15, "h": 250 }
+                      "rect": { "x": 1747, "y": 640, "w": 15, "h": 250 },
+                      "sprite": "GFX_scroll_track"
                     },
                     {
                       "name": "downButton",
@@ -1950,7 +2230,8 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1745, "y": 890, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_down"
                     },
                     {
                       "name": "upButton",
@@ -1958,7 +2239,8 @@
                       "type": "button",
                       "visible": true,
                       "rect": { "x": 1745, "y": 621, "w": 19, "h": 19 },
-                      "enabled": true
+                      "enabled": true,
+                      "sprite": "GFX_scroll_up"
                     }
                   ]
                 }
@@ -1978,7 +2260,8 @@
               "type": "checkbox",
               "visible": true,
               "rect": { "x": 806, "y": 543, "w": 105, "h": 37 },
-              "checked": false
+              "checked": false,
+              "sprite": "GFX_sort_button_message_left"
             },
             {
               "name": "dynasty",
@@ -1986,7 +2269,8 @@
               "type": "checkbox",
               "visible": true,
               "rect": { "x": 900, "y": 543, "w": 105, "h": 37 },
-              "checked": true
+              "checked": true,
+              "sprite": "GFX_sort_button_message_middle"
             },
             {
               "name": "diplomacy",
@@ -1994,7 +2278,8 @@
               "type": "checkbox",
               "visible": true,
               "rect": { "x": 994, "y": 543, "w": 105, "h": 37 },
-              "checked": false
+              "checked": false,
+              "sprite": "GFX_sort_button_message_middle"
             },
             {
               "name": "trade",
@@ -2002,7 +2287,8 @@
               "type": "checkbox",
               "visible": true,
               "rect": { "x": 1088, "y": 543, "w": 105, "h": 37 },
-              "checked": false
+              "checked": false,
+              "sprite": "GFX_sort_button_message_middle"
             },
             {
               "name": "religion",
@@ -2010,7 +2296,8 @@
               "type": "checkbox",
               "visible": true,
               "rect": { "x": 1182, "y": 543, "w": 105, "h": 37 },
-              "checked": false
+              "checked": false,
+              "sprite": "GFX_sort_button_message_middle"
             },
             {
               "name": "events",
@@ -2018,7 +2305,8 @@
               "type": "checkbox",
               "visible": true,
               "rect": { "x": 1276, "y": 543, "w": 105, "h": 37 },
-              "checked": false
+              "checked": false,
+              "sprite": "GFX_sort_button_message_middle"
             },
             {
               "name": "government",
@@ -2026,7 +2314,8 @@
               "type": "checkbox",
               "visible": true,
               "rect": { "x": 1370, "y": 543, "w": 105, "h": 37 },
-              "checked": false
+              "checked": false,
+              "sprite": "GFX_sort_button_message_middle"
             },
             {
               "name": "military",
@@ -2034,7 +2323,8 @@
               "type": "checkbox",
               "visible": true,
               "rect": { "x": 1464, "y": 543, "w": 105, "h": 37 },
-              "checked": false
+              "checked": false,
+              "sprite": "GFX_sort_button_message_middle"
             },
             {
               "name": "combat",
@@ -2042,7 +2332,8 @@
               "type": "checkbox",
               "visible": true,
               "rect": { "x": 1558, "y": 543, "w": 105, "h": 37 },
-              "checked": false
+              "checked": false,
+              "sprite": "GFX_sort_button_message_middle"
             },
             {
               "name": "other",
@@ -2050,7 +2341,8 @@
               "type": "checkbox",
               "visible": true,
               "rect": { "x": 1663, "y": 543, "w": 105, "h": 37 },
-              "checked": false
+              "checked": false,
+              "sprite": "GFX_sort_button_message_right"
             },
             {
               "name": "filter_button_01",
@@ -2058,7 +2350,8 @@
               "type": "checkbox",
               "visible": true,
               "rect": { "x": 812, "y": 609, "w": 179, "h": 37 },
-              "checked": true
+              "checked": true,
+              "sprite": "button_type_7"
             },
             {
               "name": "filter_button_02",
@@ -2066,7 +2359,8 @@
               "type": "checkbox",
               "visible": true,
               "rect": { "x": 812, "y": 645, "w": 179, "h": 37 },
-              "checked": false
+              "checked": false,
+              "sprite": "button_type_7"
             },
             {
               "name": "filter_button_03",
@@ -2074,7 +2368,8 @@
               "type": "checkbox",
               "visible": true,
               "rect": { "x": 812, "y": 681, "w": 179, "h": 37 },
-              "checked": false
+              "checked": false,
+              "sprite": "button_type_7"
             },
             {
               "name": "filter_button_04",
@@ -2082,7 +2377,8 @@
               "type": "checkbox",
               "visible": true,
               "rect": { "x": 812, "y": 717, "w": 179, "h": 37 },
-              "checked": false
+              "checked": false,
+              "sprite": "button_type_7"
             }
           ]
         }

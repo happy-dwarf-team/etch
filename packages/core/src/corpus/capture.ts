@@ -47,6 +47,20 @@ export interface CapturedWidget {
   readonly text?: string;
   readonly enabled?: boolean;
   readonly checked?: boolean;
+  /**
+   * From Tongs 0.37, on buttons, icons and check boxes: the `.gfx` name of the sprite drawn (the
+   * `.gui`'s, the size variant the game took, or one the game's code set) and its frame from 1.
+   */
+  readonly sprite?: string;
+  readonly frame?: number;
+  /** A shield's country tag, whose flag fills its mask. */
+  readonly flag?: string;
+  /** A shield's rebel type, without `flag`: the flag `gfx/flags/<name>.tga` fills its mask. */
+  readonly rebels?: string;
+  /** The texture file the game's code gave the sprite (a modifier icon), as the game names it. */
+  readonly texture?: string;
+  /** A pie chart's slices in its order, each in whole percent and `#rrggbbaa`. */
+  readonly slices?: readonly { readonly percent: number; readonly color: string }[];
   readonly children?: readonly CapturedWidget[];
 }
 
@@ -321,7 +335,20 @@ function checkWidget(
     value,
     at,
     ['path', 'name', 'type', 'visible', 'rect'],
-    ['text', 'enabled', 'checked', 'children', 'stale', 'children_count'],
+    [
+      'text',
+      'enabled',
+      'checked',
+      'sprite',
+      'frame',
+      'flag',
+      'rebels',
+      'texture',
+      'slices',
+      'children',
+      'stale',
+      'children_count',
+    ],
   );
   if (json === undefined) return undefined;
   if ('stale' in json) {
@@ -356,6 +383,15 @@ function checkWidget(
     c.fail(field(at, 'text'), 'Expected a string.');
   if ('enabled' in json) c.boolean(json['enabled'], field(at, 'enabled'));
   if ('checked' in json) c.boolean(json['checked'], field(at, 'checked'));
+  for (const key of ['sprite', 'flag', 'rebels', 'texture']) c.string(json[key], field(at, key));
+  c.integer(json['frame'], field(at, 'frame'), 1);
+  c.array(json['slices'], field(at, 'slices'), (v, sliceAt) => {
+    const slice = c.object(v, sliceAt, ['percent', 'color']);
+    if (slice === undefined) return undefined;
+    c.integer(slice['percent'], field(sliceAt, 'percent'), 0);
+    c.string(slice['color'], field(sliceAt, 'color'), /^#[0-9a-f]{8}$/i, 'a colour as #rrggbbaa');
+    return true;
+  });
   if ('children' in json) {
     c.array(json['children'], field(at, 'children'), (v, childAt) =>
       checkWidget(c, v, childAt, path, paths),

@@ -292,9 +292,11 @@ async function capture(ctx: ViewContext, view: CorpusView): Promise<ViewCapture>
   }
   if (comparison === undefined) throw new ViewFailure('Fewer than two shots.');
 
-  const after = await readTrees(ctx, view);
-  if (JSON.stringify(after) !== JSON.stringify(widgets)) {
-    throw new ViewFailure('The widget trees changed while the screenshots were taken.');
+  // An animated sprite (the Anbennar lobby's option buttons) moves on its frames during the shots.
+  const [settled, after] = withoutChangedFrames(widgets, await readTrees(ctx, view));
+  const changed = firstDifference(settled, after, 'widgets');
+  if (changed !== undefined) {
+    throw new ViewFailure(`The widget trees changed while the screenshots were taken: ${changed}.`);
   }
   await noTooltip(ctx);
   await stillPinned(ctx, pinned);
@@ -349,7 +351,7 @@ async function capture(ctx: ViewContext, view: CorpusView): Promise<ViewCapture>
         ? { unstable: { pixels: comparison.unstablePixels, sha256: sha256(mask) } }
         : {}),
     },
-    widgets,
+    widgets: settled,
   };
 
   const parsed = parseCaptureRecord(JSON.parse(JSON.stringify(record)) as unknown);
@@ -748,4 +750,74 @@ function brief(answer: TongsAnswer): Record<string, unknown> {
 
 function sha256(bytes: Uint8Array): string {
   return createHash('sha256').update(bytes).digest('hex').toUpperCase();
+}
+
+/**
+ * Two reads of the same trees, each without `frame` on a widget whose frame changed between them:
+ * an animated sprite's frame is the moment of the read, not the view's state. Widgets are paired
+ * by path; everything else is left for `firstDifference` to compare.
+ */
+export function withoutChangedFrames(
+  before: readonly CapturedWidget[],
+  after: readonly CapturedWidget[],
+): [CapturedWidget[], CapturedWidget[]] {
+  const frames = new Map<string, number | undefined>();
+  const collect = (widgets: readonly CapturedWidget[]): void => {
+    for (const widget of widgets) {
+      frames.set(widget.path, widget.frame);
+      if (widget.children !== undefined) collect(widget.children);
+    }
+  };
+  collect(after);
+  const changed = new Set<string>();
+  const compare = (widgets: readonly CapturedWidget[]): void => {
+    for (const widget of widgets) {
+      const later = frames.get(widget.path);
+      if (widget.frame !== undefined && later !== undefined && later !== widget.frame) {
+        changed.add(widget.path);
+      }
+      if (widget.children !== undefined) compare(widget.children);
+    }
+  };
+  compare(before);
+  const strip = (widget: CapturedWidget): CapturedWidget => {
+    let kept = widget;
+    if (changed.has(widget.path)) {
+      const copy: { -readonly [K in keyof CapturedWidget]: CapturedWidget[K] } = { ...widget };
+      delete copy.frame;
+      kept = copy;
+    }
+    return kept.children === undefined ? kept : { ...kept, children: kept.children.map(strip) };
+  };
+  return [before.map(strip), after.map(strip)];
+}
+
+/** Where two JSON values first differ, as a field path with both values; none when equal. */
+export function firstDifference(before: unknown, after: unknown, at: string): string | undefined {
+  if (JSON.stringify(before) === JSON.stringify(after)) return undefined;
+  if (Array.isArray(before) && Array.isArray(after)) {
+    if (before.length !== after.length) {
+      return `${at} had ${String(before.length)} items, then ${String(after.length)}`;
+    }
+    for (let i = 0; i < before.length; i++) {
+      const found = firstDifference(before[i], after[i], `${at}[${String(i)}]`);
+      if (found !== undefined) return found;
+    }
+  } else if (isRecord(before) && isRecord(after)) {
+    // A widget is named by its path, which says more than an index.
+    const here = typeof before['path'] === 'string' ? before['path'] : at;
+    for (const key of new Set([...Object.keys(before), ...Object.keys(after)])) {
+      const found = firstDifference(before[key], after[key], `${here}.${key}`);
+      if (found !== undefined) return found;
+    }
+  }
+  return `${at} was ${shown(before)}, then ${shown(after)}`;
+}
+
+function shown(value: unknown): string {
+  return value === undefined ? 'missing' : JSON.stringify(value);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
