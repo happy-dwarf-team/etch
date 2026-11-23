@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest';
 import type { Zoom } from '../src/preview/protocol.ts';
 import {
   FIT,
+  FIT_WINDOW,
   MARGIN,
   STEPS,
   WHEEL_STEP,
   fitScale,
+  onScreen,
   pan,
   pannable,
   panelRect,
@@ -161,15 +163,47 @@ describe('preview zoom', () => {
     expect(wheelPixels(1, 2)).toBe(800);
   });
 
+  it('fits the window, in the middle of the panel, never above 100 %', () => {
+    // A 390 × 32 bar in the screen's top-left corner shows at 100 % in the panel's middle.
+    const bar = { x: 0, y: 0, width: 390, height: 32 };
+    const shown = place(FIT_WINDOW, screen, panel, 1, bar);
+    expect(shown).toMatchObject({ scale: 1, width: 1920, height: 1080, center: { x: 195, y: 16 } });
+    expect(shown.left).toBe(500 - 195);
+    expect(shown.top).toBe(300 - 16);
+    // A dialog larger than the panel shrinks to fit it, inside the margin.
+    const dialog = { x: 100, y: 100, width: 1600, height: 800 };
+    const fitted = place(FIT_WINDOW, screen, panel, 1, dialog);
+    expect(fitted.scale).toBeCloseTo((1000 - 2 * MARGIN) / 1600);
+    expect(fitted.center).toEqual({ x: 900, y: 500 });
+  });
+
+  it('fits only the part of the window on the screen, else the screen', () => {
+    expect(onScreen(screen, { x: -100, y: 1000, width: 300, height: 200 })).toEqual({
+      x: 0,
+      y: 1000,
+      width: 200,
+      height: 80,
+    });
+    expect(onScreen(screen, { x: 2000, y: 0, width: 100, height: 100 })).toBeUndefined();
+    expect(onScreen(screen, { x: 10, y: 10, width: 0, height: 100 })).toBeUndefined();
+    expect(onScreen(screen, undefined)).toBeUndefined();
+    const nowhere = { x: 0, y: 0, width: 0, height: 0 };
+    expect(place(FIT_WINDOW, screen, panel, 1, nowhere)).toEqual(place(FIT, screen, panel, 1));
+    expect(place(FIT_WINDOW, screen, panel, 1)).toEqual(place(FIT, screen, panel, 1));
+  });
+
   it('labels the zoom', () => {
     expect(zoomLabel(FIT, 0.4712)).toBe('Fit · 47 %');
     expect(zoomLabel(FIT, undefined)).toBe('Fit');
+    expect(zoomLabel(FIT_WINDOW, 1, 'Fit window')).toBe('Fit window · 100 %');
+    expect(zoomLabel(at(2), 2, 'Fit window')).toBe('200 %');
     expect(zoomLabel(at(2), undefined)).toBe('200 %');
     expect(zoomLabel(at(1 / 3), 1 / 3)).toBe('33 %');
   });
 
   it('takes back only a zoom it could have kept', () => {
     expect(zoomOf({ fit: true })).toEqual(FIT);
+    expect(zoomOf({ fit: true, window: true })).toEqual(FIT_WINDOW);
     expect(zoomOf(at(3, 10, 20))).toEqual(at(3, 10, 20));
     expect(zoomOf(undefined)).toBeUndefined();
     expect(zoomOf({ fit: false, scale: 100, center: { x: 0, y: 0 } })).toBeUndefined();

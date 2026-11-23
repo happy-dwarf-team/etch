@@ -29,7 +29,14 @@ export interface Placement {
   readonly center: Point;
 }
 
+/** Fits the whole screen (Fit screen in the interface preview, Fit in the texture preview). */
 export const FIT: Zoom = { fit: true };
+
+/**
+ * Fits the previewed window into the panel, the interface preview's default (etch#648, finding
+ * P1.3): a small window shows at 100 % in the middle, not in a corner of a fitted screen.
+ */
+export const FIT_WINDOW: Zoom = { fit: true, window: true };
 
 /**
  * The scales `+` and `-` step through. Above 100 % only whole ones, so that every pixel of the
@@ -52,9 +59,31 @@ export function fitScale(screen: Size, panel: Size, ratio: number): number {
 /**
  * Places the screen in the panel: centred on an axis where it fits, else with `center` in the
  * middle but never panned past an edge. Its corner lands on a monitor pixel. `ratio` is the
- * page's device pixel ratio.
+ * page's device pixel ratio. Fit window fits `window` (a rect of the screen) instead and puts its
+ * middle in the panel's, the screen around it wherever that takes it; without a part of the
+ * window on the screen it fits the screen.
  */
-export function place(zoom: Zoom, screen: Size, panel: Panel, ratio: number): Placement {
+export function place(
+  zoom: Zoom,
+  screen: Size,
+  panel: Panel,
+  ratio: number,
+  window?: DrawRect,
+): Placement {
+  const target = zoom.fit && zoom.window === true ? onScreen(screen, window) : undefined;
+  if (target !== undefined) {
+    const scale = fitScale(target, panel, ratio);
+    const css = scale / ratio;
+    const center = { x: target.x + target.width / 2, y: target.y + target.height / 2 };
+    return {
+      left: snap(panel.width / 2 - center.x * css, panel.left, ratio),
+      top: snap(panel.height / 2 - center.y * css, panel.top, ratio),
+      width: screen.width * css,
+      height: screen.height * css,
+      scale,
+      center,
+    };
+  }
   const scale = zoom.fit ? fitScale(screen, panel, ratio) : zoom.scale;
   const css = scale / ratio;
   const width = screen.width * css;
@@ -73,6 +102,16 @@ export function place(zoom: Zoom, screen: Size, panel: Panel, ratio: number): Pl
       y: clamp((panel.height / 2 - top) / css, 0, screen.height),
     },
   };
+}
+
+/** The part of a rect on the screen, or `undefined` when less than a pixel of it is. */
+export function onScreen(screen: Size, rect: DrawRect | undefined): DrawRect | undefined {
+  if (rect === undefined) return undefined;
+  const x = Math.max(0, rect.x);
+  const y = Math.max(0, rect.y);
+  const width = Math.min(screen.width, rect.x + rect.width) - x;
+  const height = Math.min(screen.height, rect.y + rect.height) - y;
+  return width >= 1 && height >= 1 ? { x, y, width, height } : undefined;
 }
 
 /** Where the screen starts on one axis of the panel. */
@@ -194,19 +233,22 @@ export function reveal(
   };
 }
 
-/** The toolbar's label: `Fit · 47 %`, `200 %`, or `Fit` before anything is shown. */
-export function zoomLabel(zoom: Zoom, shown: number | undefined): string {
+/**
+ * The toolbar's label: `Fit · 47 %`, `200 %`, or `Fit` before anything is shown. `fit` names the
+ * fitting zoom: the interface preview says `Fit window` and `Fit screen`.
+ */
+export function zoomLabel(zoom: Zoom, shown: number | undefined, fit = 'Fit'): string {
   const scale = zoom.fit ? shown : zoom.scale;
-  if (scale === undefined) return 'Fit';
+  if (scale === undefined) return fit;
   const percent = `${String(Math.round(scale * 100))} %`;
-  return zoom.fit ? `Fit · ${percent}` : percent;
+  return zoom.fit ? `${fit} · ${percent}` : percent;
 }
 
 /** A zoom the webview kept, checked: it comes back from VS Code's storage. */
 export function zoomOf(state: unknown): Zoom | undefined {
   if (typeof state !== 'object' || state === null) return undefined;
-  const { fit, scale, center } = state as Record<string, unknown>;
-  if (fit === true) return FIT;
+  const { fit, window, scale, center } = state as Record<string, unknown>;
+  if (fit === true) return window === true ? FIT_WINDOW : FIT;
   if (fit !== false || typeof scale !== 'number' || typeof center !== 'object') return undefined;
   if (center === null || !(scale >= (STEPS[0] ?? 0) && scale <= (STEPS.at(-1) ?? 0))) {
     return undefined;

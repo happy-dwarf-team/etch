@@ -22,7 +22,8 @@ Each row shows a widget's name with an icon for its kind. After the name, in gre
 
 - its kind, such as `instantTextBoxType`;
 - "hidden" when the preview hides it, and "not created" when the game does not create it at the
-  preview's screen height;
+  preview's screen height. Both rows are greyed out; a hidden widget has a closed eye in place of
+  its icon, and a widget the game does not create is struck through. The row's tooltip says why;
 - "by hand" when you changed it, or "from the game" when the
   [live game](../reference/glossary.md#live-game), EU4 running beside the editor, showed it
   differently from what the [window profile](../reference/glossary.md#window-profile) says;

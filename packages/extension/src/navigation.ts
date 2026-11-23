@@ -296,6 +296,16 @@ class OutlineTree implements vscode.TreeDataProvider<OutlineNode> {
         // A text's sample can be typed by hand (spec section 5).
         if (created && TEXT_KINDS.has(widget.kind)) item.contextValue += '.text';
       }
+      // Hidden or not created: dimmed, a hidden one with a closed eye (finding P3.15).
+      if (!created || !state.shown) {
+        item.resourceUri = vscode.Uri.from({ scheme: DIMMED_SCHEME, path: `/${id ?? ''}` });
+        if (member === undefined) {
+          item.iconPath = new vscode.ThemeIcon(
+            created ? 'eye-closed' : (ICONS[widget.kind] ?? 'symbol-field'),
+            new vscode.ThemeColor('disabledForeground'),
+          );
+        }
+      }
     } else {
       item.iconPath = new vscode.ThemeIcon(ICONS[widget.kind] ?? 'symbol-field');
     }
@@ -399,6 +409,16 @@ export class WidgetNavigation implements vscode.Disposable {
     void vscode.commands.executeCommand('setContext', OUTLINE_CONTEXT, true);
     this.subscriptions = [
       this.outline,
+      vscode.window.registerFileDecorationProvider({
+        provideFileDecoration: (uri) =>
+          uri.scheme === DIMMED_SCHEME
+            ? new vscode.FileDecoration(
+                undefined,
+                undefined,
+                new vscode.ThemeColor('disabledForeground'),
+              )
+            : undefined,
+      }),
       vscode.commands.registerCommand(REVEAL_WIDGET_SOURCE, (source: number) =>
         this.revealSource(source),
       ),
@@ -643,6 +663,12 @@ export class WidgetNavigation implements vscode.Disposable {
 }
 
 /** A label struck through, for a widget the game does not create at this screen height. */
+/**
+ * The scheme of the outline's hidden and not created rows (etch#648, finding P3.15): a file
+ * decoration gives their labels the disabled colour, as VS Code dims ignored files.
+ */
+const DIMMED_SCHEME = 'etch-dimmed-widget';
+
 function struck(text: string): string {
   return text.replace(/./gu, (c) => `${c}\u0336`);
 }

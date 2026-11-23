@@ -30,6 +30,7 @@ import {
   readGuiFile,
   widgetAt,
   widgetHoverText,
+  widgetLabel,
   widgetPathAt,
   withMechanics,
   type DrawList,
@@ -37,6 +38,7 @@ import {
   type GameTextOffsets,
   type GovernmentMechanic,
   type GuiFile,
+  type LaidOutWidget,
   type LayoutContent,
   type LayoutView,
   type ModelDiagnostic,
@@ -91,6 +93,7 @@ import { differenceMessage } from './live-report.ts';
 import { RUNNING_BUILD } from '../build-stamp.ts';
 import { PINNED_TAGS } from '../pins.ts';
 import { previewHtml } from './html.ts';
+import { fitRect, windowEntries } from './window-list.ts';
 import {
   PROJECT_PROFILES,
   ProfileStore,
@@ -355,6 +358,8 @@ export class Preview implements PreviewApi, vscode.Disposable {
   /** What the last render drew from, to skip a render that would draw the same. */
   private renderKey: string | undefined;
   private lastDraw: HostMessage | undefined;
+  /** What the host reads before the preview can draw, shown as busy (finding P2.19). */
+  private busyText: string | undefined;
   private lastState: ViewState | undefined;
   /** The monitor's resolution in device pixels, as the webview last reported it. */
   private native: Screen | undefined;
@@ -611,6 +616,23 @@ export class Preview implements PreviewApi, vscode.Disposable {
     this.request();
   }
 
+  /** Opens the previewed file's editor and VS Code's Reopen or Save with Encoding there. */
+  private async changeEncoding(): Promise<void> {
+    const uri = this.target();
+    if (uri === undefined) return;
+    await vscode.window.showTextDocument(uri, { preview: false });
+    await vscode.commands.executeCommand('workbench.action.editor.changeEncoding');
+  }
+
+  /** Pins the window at `index` among the definitions of the previewed file (the window list). */
+  pinWindow(index: number): void {
+    const render = this.render;
+    const window = render?.file.definitions[index];
+    if (render === undefined || window === undefined) return;
+    this.pin = { uri: render.uri.toString(), name: window.name, index };
+    this.request();
+  }
+
   probe(points: readonly Point[]): Promise<PreviewPaint> {
     const message = this.lastDraw;
     if (!this.panel || message?.type !== 'draw') {
@@ -668,7 +690,9 @@ export class Preview implements PreviewApi, vscode.Disposable {
       ...(hovered < 0
         ? {}
         : { hover: { rect: rectOf(widgets[hovered]), text: widgetHoverText(widgets, hovered) } }),
-      ...(selected < 0 ? {} : { selected: rectOf(widgets[selected]) }),
+      ...(selected < 0
+        ? {}
+        : { selected: rectOf(widgets[selected]), selectedLabel: selectedLabel(widgets[selected]) }),
     };
     const key = JSON.stringify(message);
     if (key === this.lastOverlay) return;
@@ -710,6 +734,21 @@ export class Preview implements PreviewApi, vscode.Disposable {
   }
 
   private async renderNow(): Promise<void> {
+    try {
+      await this.renderOnce();
+    } finally {
+      this.setBusy(undefined);
+    }
+  }
+
+  /** What the webview shows while the host reads, when it changed (finding P2.19). */
+  private setBusy(text: string | undefined): void {
+    if (text === this.busyText) return;
+    this.busyText = text;
+    this.post({ type: 'busy', ...(text === undefined ? {} : { text }) });
+  }
+
+  private async renderOnce(): Promise<void> {
     const panel = this.panel;
     if (panel === undefined) return;
     if (!panel.visible) {
@@ -744,10 +783,18 @@ export class Preview implements PreviewApi, vscode.Disposable {
 
     const source = await sourceText(uri);
     if (source === undefined) {
+      // The last render stays, faded, under the notice with the way out (finding P2.19).
       this.show({
         title: 'No window',
         file: vscode.workspace.asRelativePath(uri),
-        notices: [{ severity: 'error', message: 'The game cannot read this file in UTF-16.' }],
+        notices: [
+          {
+            severity: 'error',
+            message: 'The game cannot read this file in UTF-16. Save it in UTF-8 to preview it.',
+            action: { kind: 'changeEncoding', label: 'Save with Encoding…' },
+          },
+        ],
+        stale: true,
       });
       return;
     }
@@ -756,8 +803,17 @@ export class Preview implements PreviewApi, vscode.Disposable {
     const file =
       (place?.wins === true ? session.guiFile(place.path) : undefined) ??
       readGuiFile(parseScript(source.text));
-    const window = this.chooseWindow(uri, file, source);
+    const { window, outside } = this.chooseWindow(uri, file, source);
     const shownPath = place?.path ?? vscode.workspace.asRelativePath(uri);
+    // The window list under the title (etch#648, finding P1.3).
+    const listed = {
+      windows: windowEntries(
+        file,
+        this.resolution.screen,
+        (offset) => positionOf(source, offset).line + 1,
+      ),
+      ...(window === undefined ? {} : { window: file.definitions.indexOf(window) }),
+    };
     if (window === undefined) {
       this.render = undefined;
       this.renderKey = undefined;
@@ -793,6 +849,19 @@ export class Preview implements PreviewApi, vscode.Disposable {
     const notices: Notice[] = [
       ...session.notices,
       ...found.notices.map((message) => ({ severity: 'warning' as const, message })),
+      // The cursor in no window: the preview says which one it shows instead.
+      ...(outside === undefined
+        ? []
+        : [
+            {
+              severity: 'information' as const,
+              message:
+                outside === 'first'
+                  ? "The cursor is in no window, so the preview shows the file's first one."
+                  : 'The cursor is in no window, so the preview shows the last one it showed.',
+              action: { kind: 'chooseWindow' as const, label: 'Choose a Window…' },
+            },
+          ]),
     ];
     // A window without a profile takes a snapshot too (etch#255).
     const snapshot =
@@ -830,6 +899,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
           title: this.lastState.title,
           file: shownPath,
           notices,
+          ...listed,
           ...(this.lastState.menu === undefined ? {} : { menu: this.lastState.menu }),
           ...(this.lastState.data === undefined ? {} : { data: this.lastState.data }),
           ...(this.lastState.links === undefined ? {} : { links: this.lastState.links }),
@@ -968,7 +1038,13 @@ export class Preview implements PreviewApi, vscode.Disposable {
     };
     this.last = { uri: uri.toString(), name: window.name };
     // The draw goes first: diagnostics are not on the warm reload's path to pixels.
-    this.post({ type: 'draw', id, list: drawList });
+    const fitted = fitRect(layout.widgets);
+    this.post({
+      type: 'draw',
+      id,
+      list: drawList,
+      ...(fitted === undefined ? {} : { window: fitted }),
+    });
     this.remember({
       uri: uri.toString(),
       window: window.name,
@@ -980,6 +1056,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
       title: window.name ?? window.kind,
       file: shownPath,
       notices,
+      ...listed,
       ...(loaded === undefined || view === undefined || choice === undefined
         ? {}
         : {
@@ -1114,19 +1191,32 @@ export class Preview implements PreviewApi, vscode.Disposable {
    * The previewed window: the pinned one, else the top-level definition that holds the cursor of
    * the file's active editor, else the one previewed last in this file, else the file's first.
    */
-  private chooseWindow(uri: vscode.Uri, file: GuiFile, source: SourceText): Widget | undefined {
+  /**
+   * The window to preview: the pinned one, the one around the cursor, else the last one shown or
+   * the file's first. `outside` says which of the last two it is when the cursor in the file's
+   * editor is in no window (etch#648, finding P1.3).
+   */
+  private chooseWindow(
+    uri: vscode.Uri,
+    file: GuiFile,
+    source: SourceText,
+  ): { window: Widget | undefined; outside?: 'last' | 'first' } {
     const key = uri.toString();
     if (this.pin?.uri === key) {
-      return named(file, this.pin.name) ?? file.definitions[this.pin.index];
+      return { window: named(file, this.pin.name) ?? file.definitions[this.pin.index] };
     }
     const editor = vscode.window.activeTextEditor;
+    let inEditor = false;
     if (editor?.document.uri.toString() === key) {
       const offset = source.offsets.toGame(editor.document.offsetAt(editor.selection.active));
       const top = widgetPathAt(file, offset)[0];
-      if (top !== undefined) return top;
+      if (top !== undefined) return { window: top };
+      inEditor = true;
     }
     const last = this.last?.uri === key ? named(file, this.last.name) : undefined;
-    return last ?? file.definitions[0];
+    const window = last ?? file.definitions[0];
+    if (!inEditor || window === undefined) return { window };
+    return { window, outside: last === undefined ? 'first' : 'last' };
   }
 
   /** The session of a file's playset, loaded again when the file or the settings need another. */
@@ -1140,6 +1230,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
 
     const started = performance.now();
     this.listingsChanged = false;
+    this.setBusy('Reading the playset: sprites, fonts and texts…');
     const session = await PreviewSession.load(settings, workspaceFolder, uri.fsPath);
     this.session = session;
     this.watch(session);
@@ -1309,6 +1400,9 @@ export class Preview implements PreviewApi, vscode.Disposable {
         if (this.lastState)
           void this.panel?.webview.postMessage({ type: 'state', state: this.lastState });
         if (this.lastDraw) void this.panel?.webview.postMessage(this.lastDraw);
+        if (this.busyText !== undefined) {
+          void this.panel?.webview.postMessage({ type: 'busy', text: this.busyText });
+        }
         if (this.lastMemento) {
           void this.panel?.webview.postMessage({ type: 'remember', memento: this.lastMemento });
         }
@@ -1352,6 +1446,12 @@ export class Preview implements PreviewApi, vscode.Disposable {
         break;
       case 'pin':
         if (message.pinned !== (this.pin !== undefined)) this.togglePin();
+        break;
+      case 'pinWindow':
+        this.pinWindow(message.index);
+        break;
+      case 'noticeAction':
+        if (message.kind === 'changeEncoding') void this.changeEncoding();
         break;
       case 'startLiveGame':
         this.startLiveGame();
@@ -2435,6 +2535,13 @@ function positionOf(source: SourceText, offset: number): vscode.Position {
     start = i + 1;
   }
   return new vscode.Position(line, at - start);
+}
+
+/** A highlighted widget's label under its outline: `title · instantTextBoxType · 300 × 24 at 20, 12`. */
+function selectedLabel(entry: LaidOutWidget | undefined): string {
+  if (entry === undefined) return '';
+  const size = `${String(entry.width)} × ${String(entry.height)}`;
+  return `${widgetLabel(entry.widget)} · ${entry.widget.kind} · ${size} at ${String(entry.x)}, ${String(entry.y)}`;
 }
 
 function rectOf(entry: DrawRect | undefined): DrawRect {

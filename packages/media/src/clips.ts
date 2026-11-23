@@ -1361,8 +1361,8 @@ export const CLIPS: readonly Clip[] = [
       await sleep(150);
       take.click();
       await level.click();
-      // The level's menu opens on the current size; Fit is its first item.
-      const fit = wb.frame.locator('#zoom-menu button.item', { hasText: 'Fit' });
+      // The level's menu opens on the current size; Fit window is its first item.
+      const fit = wb.frame.locator('#zoom-menu button.item', { hasText: 'Fit window' });
       await fit.waitFor({ timeout: 2_000 });
       await sleep(300);
       await pointTo(context, await centre(fit), 250);
