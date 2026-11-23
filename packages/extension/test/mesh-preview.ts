@@ -129,7 +129,9 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
   );
   await writeFile(mesh.fsPath, binary(mapped));
   await writeFile(path.join(folder, 'flag_diffuse.dds'), dds(2, 2, [10, 20, 30, 255]));
-  await writeFile(path.join(folder, 'flag_normal.dds'), dds(2, 2, [255, 128, 128, 255]));
+  // dds() takes its bytes as BGRA: the normal map is RGB (255, 128, 128), tilted along x towards
+  // the light. A flat one would change only the highlight, which a small view can miss.
+  await writeFile(path.join(folder, 'flag_normal.dds'), dds(2, 2, [128, 128, 255, 255]));
   await writeFile(path.join(folder, 'flag_spec.dds'), dds(2, 2, [0, 0, 0, 128]));
   await writeFile(path.join(folder, 'flag_wave.anim'), binary(ANIM));
   // An animation of another skeleton, one joint more than the mesh's bones: the game plays it
@@ -157,7 +159,7 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
   assert.notDeepEqual(noMaps.mean, noNormal.mean, `Normal and Spec off: ${String(noMaps.mean)}`);
   const grey = await measure(api, mesh, { maps: { diffuse: false } });
   assert.notDeepEqual(grey.mean, noMaps.mean, `all off: ${String(grey.mean)}`);
-  // The plain grey (0.72) is far lighter than the dark blue diffuse texture.
+  // The plain grey (0.72) is far lighter than the dark brown diffuse texture (BGRA 10, 20, 30).
   assert.ok(
     grey.mean[0] > noMaps.mean[0] + 40,
     `grey without the diffuse map: ${String(grey.mean)}`,
