@@ -49,6 +49,8 @@ export const CONTROLS_CSS = `
     border-color: var(--vscode-inputOption-activeBorder, transparent);
     color: var(--vscode-inputOption-activeForeground, inherit);
   }
+  /* A toggle that is on has a border in the focus colour already: its focus ring goes outside it. */
+  button[aria-pressed="true"]:focus-visible, button[aria-checked="true"]:focus-visible { outline-offset: 1px; }
   button.field {
     color: var(--vscode-dropdown-foreground, inherit); background: var(--vscode-dropdown-background);
     border-color: var(--vscode-dropdown-border, transparent); font-variant-numeric: tabular-nums;
