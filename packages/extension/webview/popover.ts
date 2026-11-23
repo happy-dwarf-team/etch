@@ -39,7 +39,9 @@ export function attachPopover(
     if (opensOnClick) button.setAttribute('aria-expanded', 'true');
     place();
     pop
-      .querySelector<HTMLElement>('input:not([hidden]), select, button:not([data-close])')
+      .querySelector<HTMLElement>(
+        'input:not([hidden]):not(:disabled), select:not(:disabled), button:not([data-close]):not(:disabled)',
+      )
       ?.focus();
   };
 
