@@ -82,6 +82,16 @@ not draw. The capture driver then captures each one from a fresh
 start (`run --manifest`), which also checks that its recipe holds; the
 comparison compares them as it does the corpus (`compare --corpus`).
 
+A view whose crawled steps do not open it from a fresh game gets steps of its
+own in the survey's `recipes`: the view's id, the steps and the evidence, which
+the manifest's recipe carries after the crawler's. The crawl stays as it was.
+`vanilla-save-s69` is one: the crawler opened the unit panels from the first
+row of the military view's leader list, and in a fresh game of Russia that row
+is a leader without an army, whose type button opens nothing. Its recipe
+scrolls the list one row down and clicks the third row, the leader of the 7th
+Army, the same row at 1920×1080 and at 1280×720. A recipe for a view that a
+crawl read does not have stops `survey-manifest`.
+
 ## Playsets
 
 | Playset | How | Why |

@@ -227,10 +227,14 @@ export interface Recipe {
  * the focused text field, such as the Goto box's (`f`), which finds a province by its name.
  * `province` opens a province's view by its id, as the game's province links do (Tongs 0.21's
  * `province open ID`): no point of the map, so no camera position or resolution to depend on.
+ * `scroll` turns the mouse wheel over the one shown widget a pattern matches (negative steps scroll
+ * a list down), for a list row a smaller screen does not show; the game remembers a list's
+ * position for as long as it runs.
  */
 export type RecipeStep =
   | { readonly key: TongsKey }
   | { readonly click: string }
+  | { readonly scroll: { readonly widget: string; readonly steps: number } }
   | { readonly point: { readonly x: number; readonly y: number } }
   | { readonly text: string }
   | { readonly map: MapPoint }
@@ -760,14 +764,25 @@ export function checkRecipe(
       v,
       stepAt,
       [],
-      ['key', 'click', 'point', 'text', 'map', 'wheel', 'province'],
+      ['key', 'click', 'point', 'text', 'map', 'wheel', 'province', 'scroll'],
     );
     if (step === undefined) return undefined;
     if (Object.keys(step).length !== 1) {
-      c.fail(stepAt, 'Give one of "key", "click", "point", "text", "map", "wheel" or "province".');
+      c.fail(
+        stepAt,
+        'Give one of "key", "click", "point", "text", "map", "wheel", "province" or "scroll".',
+      );
       return undefined;
     }
     if ('province' in step) return c.integer(step['province'], field(stepAt, 'province'), 1);
+    if ('scroll' in step) {
+      const scrollAt = field(stepAt, 'scroll');
+      const scroll = c.object(step['scroll'], scrollAt, ['widget', 'steps']);
+      if (scroll === undefined) return undefined;
+      const steps = c.integer(scroll['steps'], field(scrollAt, 'steps'));
+      if (steps === 0) c.fail(field(scrollAt, 'steps'), 'Turn the wheel at least one step.');
+      return pattern(c, scroll['widget'], field(scrollAt, 'widget'));
+    }
     if ('text' in step) {
       // Tongs' `text` types U+0020-U+007E and U+00A0-U+00FF.
       return c.string(

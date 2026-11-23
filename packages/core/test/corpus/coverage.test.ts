@@ -195,7 +195,8 @@ describe('the survey manifest', () => {
       starts: 1,
       done: true,
     };
-    const out = surveyManifest(manifest, config, [crawl], (_, window) =>
+    // The survey's own recipes are for views of the real crawls, which this one is not.
+    const out = surveyManifest(manifest, { ...config, recipes: [] }, [crawl], (_, window) =>
       window === 'topbar' ? 'interface/topbar.gui' : 'interface/countryview.gui',
     );
     // A refused step, a click the survey now never makes, or roots that are only the rows of a
@@ -264,6 +265,64 @@ describe('the survey configuration and manifest, on what they leave out', () => 
     expect(() =>
       surveyManifest(manifest, { ...config, playsets: [{ id: 'nowhere', crawl: true }] }, []),
     ).toThrow('The corpus has no playset "nowhere".');
+  });
+
+  it("replaces a crawled view's steps by the survey's recipe, and refuses one for a view the crawl lacks", async () => {
+    const { manifest } = await readCorpusManifest(join(REPOSITORY, 'corpus', 'manifest.json'));
+    if (manifest === undefined) throw new Error('No corpus manifest.');
+    const config = readSurveyConfig(
+      await readFile(join(REPOSITORY, 'coverage', 'survey.json'), 'utf8'),
+    );
+    const steps = [
+      { key: 'f2' as const },
+      { scroll: { widget: 'countrymilitaryview//leaderlist', steps: -1 } },
+    ];
+    const crawl: CrawlFile = {
+      formatVersion: 1,
+      playset: 'vanilla',
+      resolution: config.resolution,
+      start: 'save',
+      states: [
+        {
+          id: 's1',
+          steps: [{ key: 'f1' }],
+          signature: 'a',
+          roots: ['a'],
+          depth: 1,
+          explored: true,
+        },
+        {
+          id: 's2',
+          steps: [{ key: 'f3' }],
+          signature: 'b',
+          roots: ['b'],
+          depth: 1,
+          explored: true,
+        },
+      ],
+      tried: {},
+      skipped: {},
+      starts: 1,
+      done: true,
+    };
+    const recipes = [{ view: 'vanilla-save-s1', steps, evidence: 'Seen in the game.' }];
+    const out = surveyManifest(manifest, { ...config, recipes }, [crawl]);
+    const [own, crawled] = out.windows.map((w) => w.views[0]?.recipe);
+    expect(own?.steps).toEqual(steps);
+    expect(own?.evidence).toBe(
+      'Found by the coverage crawler in vanilla at 1920x1080. Steps of coverage/survey.json: Seen in the game.',
+    );
+    expect(crawled?.steps).toEqual([{ key: 'f3' }]);
+    expect(parseCorpusManifest(JSON.parse(JSON.stringify(out)) as unknown).problems).toEqual([]);
+    // The survey's own recipe for vanilla-save-s69 names a view this crawl of vanilla lacks.
+    expect(() => surveyManifest(manifest, config, [crawl])).toThrow('vanilla-save-s69');
+    expect(() =>
+      surveyManifest(
+        manifest,
+        { ...config, recipes: [{ view: 'vanilla-save-s9', steps, evidence: 'Seen in the game.' }] },
+        [crawl],
+      ),
+    ).toThrow('coverage/survey.json: recipes for views no crawl has: vanilla-save-s9.');
   });
 });
 

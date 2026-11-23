@@ -94,9 +94,13 @@ A **recipe** is the Tongs input that opens a view from a known start state:
   `{ "map": { "x": -0.65, "y": -0.1 } }` (a click at a point of the map, given
   as its distance from the client area's centre in client heights),
   `{ "wheel": { "x": 0.5, "y": 0, "steps": 3 } }` (the mouse wheel at such a
-  point; positive steps zoom in) or `{ "province": 286 }` (Tongs
+  point; positive steps zoom in), `{ "province": 286 }` (Tongs
   `province open 286`, from Tongs 0.21: the province's view as the game's
-  province links open it, below);
+  province links open it, below) or
+  `{ "scroll": { "widget": "countrymilitaryview/leaderlist_window/leaderlist", "steps": -1 } }`
+  (the mouse wheel over the click point of the one shown widget the pattern
+  matches; negative steps scroll a list down, for a row a smaller screen does
+  not show; the game keeps the list there until it closes);
 - `verified`: whether the steps and roots were seen to work in the game;
 - `evidence`: where, or what is still unknown.
 
@@ -394,7 +398,12 @@ What a run does:
   recipe's steps; Tongs' pointer to its resting place, which is the
   bottom-right client pixel in the main menu (`--away-menu x,y`, as
   fractions) and the pause banner over a save (`--away-save <pattern>`), off
-  the map's scrolling edges and tooltips; the
+  the map's scrolling edges and tooltips. Where a window of the view covers
+  the pause banner and shows a tooltip there (the great powers, the Celestial
+  Empire and Anbennar's magic menus at 1280×720), the pointer rests on the
+  bottom-right client pixel instead, if the game hovers the minimap's frame
+  (`minimap_panel/minimap_bg`) there: it has no tooltip and is no edge of the
+  map. The run's `events.jsonl` names each view that rests there; the
   trees of the roots read with `ui tree ROOT all`; the shots; the trees and
   the window read again, which must not have changed. The game must still be
   the started process, with no game call made, and from the save still
