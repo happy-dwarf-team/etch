@@ -14,7 +14,9 @@ it, and change that by hand.
 While the preview is open, the outline shows the window the preview draws, the
 [previewed window](../reference/glossary.md#previewed-window). Without the preview, it follows the
 cursor in the `.gui` file you edit. The window's name stands next to the outline's title. With no
-`.gui` file open, it says "Open a .gui file to see the widgets of its window."
+`.gui` file open, it says "Open a .gui file to see the widgets of its window here." Below that,
+**Open a .gui File…** lists your mod's `.gui` files, and **Get started** opens Etch's
+[Get Started page](../getting-started/install.md#the-get-started-page).
 
 Each row shows a widget's name with an icon for its kind. After the name, in grey:
 

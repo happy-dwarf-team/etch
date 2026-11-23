@@ -12,6 +12,14 @@ finds the game through Steam, and previews with your mod and the mods its descri
 1. Press <kbd>Ctrl+,</kbd>, or choose **File › Preferences › Settings**.
 2. Type "etch" in the search box at the top: Etch's settings show under **Etch**.
 
+They come in four groups, which the list at the left of Settings also shows under **Etch**:
+
+- **Game**: the game folder (`etch.gamePath`) first, then the playset and the language;
+- **Editor**: what Etch adds to the editor, such as completion and the grey texts after
+  localisation keys;
+- **Preview**: the screen size the preview lays windows out on;
+- **Live Game**: checking files on save and the pick mode key.
+
 ## User and workspace settings
 
 Settings has two tabs, **User** and **Workspace**:

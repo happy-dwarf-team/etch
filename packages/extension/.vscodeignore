@@ -1,5 +1,5 @@
-# Only the bundle, the manifest, the icon, the documents and the staged
-# game-side builds go into the VSIX;
+# Only the bundle, the manifest, the icon, the walkthrough's pictures, the
+# documents and the staged game-side builds go into the VSIX;
 # package.mts checks the list.
 **
 !dist/extension.js
@@ -9,6 +9,7 @@
 !dist/build.json
 !dist/profiles/**
 !media/icon.png
+!media/walkthrough/*.svg
 !package.json
 !README.md
 !CHANGELOG.md

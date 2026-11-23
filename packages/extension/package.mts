@@ -38,6 +38,10 @@ const profiles = readdirSync('dist/profiles', { recursive: true, withFileTypes: 
       .replace(/\\/g, '/')
       .replace(/^.*?dist\/profiles/, 'dist/profiles'),
   );
+// The walkthrough's pictures (contributes.walkthroughs), Etch's own drawings.
+const walkthrough = readdirSync('media/walkthrough')
+  .filter((name) => name.endsWith('.svg'))
+  .map((name) => `media/walkthrough/${name}`);
 const expected = [
   'dist/build.json',
   'dist/extension.js',
@@ -46,6 +50,7 @@ const expected = [
   'dist/mesh-webview.js',
   ...profiles,
   'media/icon.png',
+  ...walkthrough,
   'package.json',
   'README.md',
   'LICENSE',

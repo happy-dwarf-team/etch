@@ -75,6 +75,7 @@ export async function run(): Promise<void> {
     'etch.stopLiveGame',
     'etch.removePrivateInstall',
     'etch.openLiveGameSaves',
+    'etch.getStarted',
   ]) {
     assert.ok(commands.includes(command), `${command} is registered`);
   }
