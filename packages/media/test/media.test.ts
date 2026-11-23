@@ -1,3 +1,6 @@
+import { mkdir, mkdtemp, readdir, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { MEDIA_TYPES, workbenchSettings } from '../src/config.ts';
 import { HERO_CHAPTERS, heroPosterAt, pngSize } from '../src/capture.ts';
@@ -8,7 +11,7 @@ import { LIVE_CLIPS, windowedPdxSettings, windowedSettings } from '../src/live.t
 import { CLIP_IDS, draftManifest, LIVE_CLIP_IDS, OFFLINE_CLIP_IDS } from '../src/manifest.ts';
 import { checkPaint } from '../src/paint.ts';
 import { proxyArgs, proxySize } from '../src/render.ts';
-import { launchArgs, parseCursor } from '../src/workbench.ts';
+import { launchArgs, newRunFolder, parseCursor, removeRunFolder } from '../src/workbench.ts';
 
 /** The value after `flag` in an argument list. */
 function after(args: readonly string[], flag: string): string | undefined {
@@ -71,6 +74,29 @@ describe('VS Code', () => {
     expect(args).toContain('--extensionDevelopmentPath=E');
     expect(args).toContain('--force-device-scale-factor=1');
     expect(args).not.toContain('--disable-extensions');
+  });
+
+  it('gives each window its own run folder beside the shared download, and removes it', async () => {
+    const work = await mkdtemp(path.join(tmpdir(), 'etch-work-'));
+    try {
+      await mkdir(path.join(work, 'vscode'));
+      // The single run folder Etch kept before.
+      await mkdir(path.join(work, 'run', 'user-data'), { recursive: true });
+      const first = await newRunFolder(work);
+      const second = await newRunFolder(work);
+      expect(first).not.toBe(second);
+      expect(path.dirname(first)).toBe(work);
+      expect(path.basename(first)).toMatch(/^run-/);
+      expect((await readdir(work)).sort()).toEqual(
+        [path.basename(first), path.basename(second), 'vscode'].sort(),
+      );
+      await writeFile(path.join(first, 'settings.json'), '{}');
+      await removeRunFolder(first);
+      await removeRunFolder(second);
+      expect(await readdir(work)).toEqual(['vscode']);
+    } finally {
+      await rm(work, { recursive: true, force: true });
+    }
   });
 
   it('seeds the framing settings', () => {

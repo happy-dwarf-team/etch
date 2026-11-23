@@ -34,8 +34,11 @@ end lists every step.
   expect fails the run.
 - FFmpeg 8.1 or newer, full build (`gfxcapture`, `libvpx-vp9`, `libx264`), on the `PATH` or
   passed with `--ffmpeg`.
-- `pnpm install`. The first run downloads the pinned VS Code into the work folder, and the first
-  render Remotion's Chrome Headless Shell.
+- `pnpm install`. The first run downloads the pinned VS Code into the work folder's `vscode`
+  (about 1 GB), and the first render Remotion's Chrome Headless Shell. Every window then gets its
+  own `run-XXXXXX` folder beside it for the workspace, the profile and the extensions, removed when
+  the window closes, so commands that share a work folder share only the download. A different
+  `--work` downloads VS Code again and keeps that copy.
 - In the EU4 engine lab, every capture runs under the lab's game lock: its takes and renders load
   the machine.
 
@@ -57,7 +60,7 @@ pnpm media capture --clip data --reedit   # edit and render again from the take,
 | `--reedit` | off                        | edit, render and encode the clips again from their takes' logs and masters                                            |
 | `--ffmpeg` | `ffmpeg` on the `PATH`     | FFmpeg; `ffprobe` is taken from beside it                                                                             |
 | `--game`   | `ETCH_GAME_PATH`, or Steam | the EU4 folder: `etch.gamePath`, and where the overridden file is copied from                                         |
-| `--work`   | `%TEMP%\etch-media`        | a short folder for VS Code and its throwaway profiles (VS Code fails under a path longer than MAX_PATH)               |
+| `--work`   | `%TEMP%\etch-media`        | a short folder for VS Code and its throwaway runs (VS Code fails under a path longer than MAX_PATH)                    |
 
 The command builds the extension, then makes each clip in three steps.
 
@@ -330,7 +333,7 @@ pnpm media evidence packages/media/evidence/references.json --record
 | `--record` | off                        | also record each side: Playwright's recording of the window, cut to the steps, as an MP4      |
 | `--ffmpeg` | `ffmpeg` on the `PATH`     | FFmpeg, which cuts the recording                                                              |
 | `--game`   | `ETCH_GAME_PATH`, or Steam | the EU4 folder (`etch.gamePath`)                                                              |
-| `--work`   | `C:\etch-evidence`         | VS Code's folder; outside the user folder, so no picture shows the account name in a path    |
+| `--work`   | `C:\etch-evidence`         | VS Code's folder; outside the user folder, so no picture shows the account name in a path. Keep the default: runs share it |
 
 A checkout for `--before` is a worktree of `main`:
 `git worktree add --detach ..\etch-main origin/main`, then `pnpm install` in it. Each side
