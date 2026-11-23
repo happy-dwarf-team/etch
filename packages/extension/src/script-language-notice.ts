@@ -15,6 +15,13 @@ const MESSAGE =
   'Script files open as Plain Text, without colours: Etch adds none. ' +
   'CWTools or ParadoxCode colour them, and you can use either together with Etch.';
 
+/** Whether CWTools or ParadoxCode is installed and turned on. */
+export function scriptLanguageInstalled(): boolean {
+  return SCRIPT_LANGUAGE_EXTENSIONS.some(
+    ({ id }) => vscode.extensions.getExtension(id) !== undefined,
+  );
+}
+
 /** Offers CWTools and ParadoxCode once a window, when a script file opens as Plain Text. */
 export function registerScriptLanguageNotice(context: vscode.ExtensionContext): vscode.Disposable {
   let shown = false;
@@ -25,9 +32,7 @@ export function registerScriptLanguageNotice(context: vscode.ExtensionContext): 
       scheme: document.uri.scheme,
       languageId: document.languageId,
       fileName: document.fileName,
-      installed: SCRIPT_LANGUAGE_EXTENSIONS.some(
-        ({ id }) => vscode.extensions.getExtension(id) !== undefined,
-      ),
+      installed: scriptLanguageInstalled(),
       declined:
         context.globalState.get<boolean>(DECLINED, false) ||
         vscode.workspace
