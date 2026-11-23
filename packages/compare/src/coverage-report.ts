@@ -147,14 +147,15 @@ export function coverageMarkdown(result: CoverageResult): string {
     );
   }
   if (result.notCaptured.length > 0) {
-    const by = new Map<string, number>();
+    const by = new Map<string, string[]>();
     for (const name of result.notCaptured) {
-      const [, playset = '', resolution = ''] = name.split('/');
-      by.set(`${playset} ${resolution}`, (by.get(`${playset} ${resolution}`) ?? 0) + 1);
+      const [, playset = '', resolution = '', view = ''] = name.split('/');
+      const key = `${playset} ${resolution}`;
+      by.set(key, [...(by.get(key) ?? []), view]);
     }
     lines.push(
       '',
-      `Captures the survey's manifest lists but no record has: ${[...by].map(([k, n]) => `${k} ${String(n)}`).join(', ')}. At 1280×720 only the views whose windows have a variant there are captured.`,
+      `Captures the survey's manifest lists but no record has: ${[...by].map(([k, v]) => `${k} ${String(v.length)} (${v.join(', ')})`).join(', ')}.`,
     );
   }
 

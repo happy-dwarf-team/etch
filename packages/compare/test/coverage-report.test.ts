@@ -199,7 +199,7 @@ describe('coverageMarkdown', () => {
 
   it('counts the captures no record has by playset and resolution', () => {
     expect(md).toContain(
-      "Captures the survey's manifest lists but no record has: vanilla 1280x720 2, anbennar 1920x1080 1.",
+      "Captures the survey's manifest lists but no record has: vanilla 1280x720 2 (country, menu), anbennar 1920x1080 1 (country).",
     );
     expect(coverageMarkdown({ ...RESULT, notCaptured: [] })).not.toContain('no record has');
   });
