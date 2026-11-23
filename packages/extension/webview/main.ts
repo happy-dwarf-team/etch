@@ -1,8 +1,9 @@
 // The preview webview's script (bundled to dist/webview.js): draws each draw list the extension
 // host posts with `@etch/renderer`, fetching textures through webview URIs (ADR 0001), marks each
 // paint on the canvas for Etch's own tools (paint-marker.ts), shows the painted screen at the
-// zoom the user chose (zoom.ts, etch#162), and shows the toolbar, its menus (`View ▾`, spec
-// section 4; `Data ▾`, section 5) and the notices and links the host describes.
+// zoom the user chose (zoom.ts, etch#162), and shows the toolbar, the window list under the
+// title (etch#648, finding P1.3), its menus (`View ▾`, spec section 4; `Data ▾`, section 5) and
+// the notices and links the host describes.
 
 import { Painter, createContext, readPixels } from '@etch/renderer';
 import type { DrawRect } from '@etch/core/draw-list';
@@ -22,8 +23,10 @@ import type {
 import { markPaint, paintResult } from './paint-marker.ts';
 import { listenForZoomKeys } from './zoom-keys.ts';
 import { attachMenu, SEPARATOR } from './menu.ts';
+import { attachPopover } from './popover.ts';
 import {
   FIT,
+  FIT_WINDOW,
   type Panel,
   type Placement,
   pan,
@@ -64,10 +67,13 @@ const zoomLevel = element('zoom-level', HTMLButtonElement);
 const zoomIn = element('zoom-in', HTMLButtonElement);
 /** The sizes in the zoom's menu, after Fit. */
 const PREVIEW_SIZES = [0.5, 1, 2, 4] as const;
-const title = element('title', HTMLSpanElement);
+const title = element('title', HTMLButtonElement);
+const pinnedBadge = element('pinned', HTMLSpanElement);
+const windowsPop = element('windows-pop', HTMLDivElement);
+const windowFilter = element('window-filter', HTMLInputElement);
+const windowList = element('window-list', HTMLDivElement);
 const file = element('file', HTMLSpanElement);
 const notices = element('notices', HTMLUListElement);
-const pin = element('pin', HTMLButtonElement);
 const resolution = element('resolution', HTMLButtonElement);
 const liveGame = element('live-game', HTMLButtonElement);
 const viewButton = element('view-menu', HTMLButtonElement);
@@ -92,16 +98,136 @@ let pointer: { x: number; y: number } | undefined;
 let pointerFrame = 0;
 /** The panel's state as VS Code keeps it: the host's memento and the zoom. */
 let kept: WebviewState = keptState(vscode.getState());
-let zoom: Zoom = kept.zoom ?? FIT;
+let zoom: Zoom = kept.zoom ?? FIT_WINDOW;
+/** The previewed window's rect on the screen, which Fit window fits. */
+let windowRect: DrawRect | undefined;
 /** Where the canvas is shown, once something is painted. */
 let placement: Placement | undefined;
 window.addEventListener('message', (event: MessageEvent<HostMessage>) => {
   void receive(event.data);
 });
 
-pin.addEventListener('click', () => {
-  post({ type: 'pin', pinned: state?.pinned !== true });
+// The window list (etch#648, finding P1.3): the title opens it, with a filter over the file's
+// windows. Choosing one pins it; Follow the cursor unpins.
+attachPopover(title, windowsPop);
+title.addEventListener('click', () => {
+  if (windowsPop.hidden) return;
+  windowFilter.value = '';
+  showWindowList();
 });
+windowFilter.addEventListener('input', () => {
+  showWindowList();
+});
+windowFilter.addEventListener('keydown', (event) => {
+  const options = [...windowList.querySelectorAll<HTMLButtonElement>('button.item')];
+  if (event.key === 'ArrowDown') {
+    event.preventDefault();
+    options[0]?.focus();
+  } else if (event.key === 'Enter') {
+    // The first window that matches; Follow the cursor is not one.
+    event.preventDefault();
+    options.find((option) => option.dataset['window'] !== undefined)?.click();
+  }
+});
+windowList.addEventListener('keydown', (event) => {
+  if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+  const options = [...windowList.querySelectorAll<HTMLButtonElement>('button.item')];
+  const at = options.indexOf(document.activeElement as HTMLButtonElement);
+  event.preventDefault();
+  const next = at + (event.key === 'ArrowDown' ? 1 : -1);
+  if (next < 0) windowFilter.focus();
+  else options[Math.min(next, options.length - 1)]?.focus();
+});
+
+/** Opens the window list, or closes it after a choice (the focus goes back to the title). */
+function toggleWindowList(open: boolean): void {
+  if (windowsPop.hidden === open) title.click();
+}
+
+/** Fills the window list: Follow the cursor, then the file's windows that match the filter. */
+function showWindowList(): void {
+  const windows = state?.windows ?? [];
+  const pinned = state?.pinned === true;
+  const filter = windowFilter.value.trim().toLowerCase();
+  const shown =
+    filter === '' ? windows : windows.filter((w) => w.label.toLowerCase().includes(filter));
+  const name = state?.file.split('/').pop() ?? '';
+  windowFilter.placeholder = `Filter the ${String(windows.length)} ${
+    windows.length === 1 ? 'window' : 'windows'
+  } of ${name}`;
+  const option = (
+    label: string,
+    aside: string,
+    selected: boolean,
+    pick: () => void,
+    sub?: string,
+  ): HTMLButtonElement => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'item';
+    button.setAttribute('role', 'option');
+    button.setAttribute('aria-selected', String(selected));
+    const mark = document.createElement('span');
+    mark.className = 'mark';
+    mark.setAttribute('aria-hidden', 'true');
+    const text = document.createElement('span');
+    text.textContent = label;
+    const side = document.createElement('span');
+    side.className = 'aside';
+    side.textContent = aside;
+    button.append(mark, text, side);
+    if (sub !== undefined) {
+      const detail = document.createElement('span');
+      detail.className = 'sub';
+      detail.textContent = sub;
+      button.append(detail);
+    }
+    button.addEventListener('click', () => {
+      pick();
+      toggleWindowList(false);
+    });
+    return button;
+  };
+  const head = document.createElement('div');
+  head.className = 'head';
+  head.setAttribute('role', 'presentation');
+  head.textContent = `Pin a window of ${name}`;
+  const children: HTMLElement[] = [
+    option(
+      'Follow the cursor',
+      pinned ? '' : 'now',
+      !pinned,
+      () => {
+        post({ type: 'pin', pinned: false });
+      },
+      "The window around the cursor in the editor; with the cursor in none, the last one shown or the file's first.",
+    ),
+    head,
+  ];
+  for (const window of shown) {
+    const size =
+      window.size === undefined
+        ? ''
+        : `${String(window.size.width)} × ${String(window.size.height)} · `;
+    const item = option(
+      window.label,
+      `${size}line ${String(window.line)}`,
+      pinned && window.index === state?.window,
+      () => {
+        post({ type: 'pinWindow', index: window.index });
+      },
+    );
+    item.dataset['window'] = String(window.index);
+    children.push(item);
+  }
+  if (shown.length === 0) {
+    const none = document.createElement('div');
+    none.className = 'none';
+    none.textContent = windows.length === 0 ? 'The file has no window.' : 'No window matches.';
+    children.push(none);
+  }
+  windowList.replaceChildren(...children);
+}
 
 resolution.addEventListener('click', () => {
   post({ type: 'resolution' });
@@ -529,13 +655,21 @@ zoomIn.addEventListener('click', () => {
 zoomOut.addEventListener('click', () => {
   zoomBy(-1);
 });
-// The level shows the zoom and opens its menu: fit the panel, or one of the sizes, around the
-// panel's middle.
+// The level shows the zoom and opens its menu: fit the window or the whole screen into the panel,
+// or one of the sizes, around the panel's middle (etch#648, finding P1.3).
 attachMenu(zoomLevel, element('zoom-menu', HTMLDivElement), () => [
   {
-    label: 'Fit',
+    label: 'Fit window',
     keys: 'Ctrl+Shift+0',
-    checked: zoom.fit,
+    checked: zoom.fit && zoom.window === true,
+    pick: () => {
+      setZoom(FIT_WINDOW);
+    },
+  },
+  {
+    label: 'Fit screen',
+    keys: 'Ctrl+Shift+0 twice',
+    checked: zoom.fit && zoom.window !== true,
     pick: () => {
       setZoom(FIT);
     },
@@ -561,8 +695,9 @@ listenForZoomKeys({
   actualSize: () => {
     zoomTo(1, pointer);
   },
+  // The window, and pressed again the whole screen.
   fit: () => {
-    setZoom(FIT);
+    setZoom(zoom.fit && zoom.window === true ? FIT : FIT_WINDOW);
   },
 });
 
@@ -654,7 +789,7 @@ function layout(): void {
     placement = undefined;
   } else {
     const area = panel();
-    placement = place(zoom, canvas, area, window.devicePixelRatio);
+    placement = place(zoom, canvas, area, window.devicePixelRatio, windowRect);
     // Panning held at an edge stays there.
     if (!zoom.fit) zoom = { fit: false, scale: zoom.scale, center: placement.center };
     canvas.style.left = `${String(placement.left)}px`;
@@ -664,10 +799,17 @@ function layout(): void {
     canvas.classList.toggle('sharp', placement.scale > 1);
     stage.classList.toggle('pannable', !zoom.fit && pannable(placement, area));
   }
-  zoomLevel.textContent = zoomLabel(zoom, placement?.scale);
-  zoomLevel.title = zoom.fit
-    ? 'The screen fitted into the panel, never above 100 %. Click for fit or a size.'
-    : 'Monitor pixels per pixel of the screen. Click for fit or a size.';
+  const fitWindow = zoom.fit && zoom.window === true;
+  zoomLevel.textContent = zoomLabel(
+    zoom,
+    placement?.scale,
+    fitWindow ? 'Fit window' : 'Fit screen',
+  );
+  zoomLevel.title = !zoom.fit
+    ? 'Monitor pixels per pixel of the screen. Click to fit or for a size.'
+    : fitWindow
+      ? 'The window fitted into the panel, never above 100 %. Click to fit the screen or for a size.'
+      : 'The screen fitted into the panel, never above 100 %. Click to fit the window or for a size.';
   zoomOut.disabled = placement === undefined;
   zoomIn.disabled = placement === undefined;
   showOverlay();
@@ -754,6 +896,7 @@ async function draw(message: Extract<HostMessage, { type: 'draw' }>): Promise<vo
     const gl = painter.gl;
     if (result.painted) {
       canvas.hidden = false;
+      windowRect = message.window;
       layout();
       if (message.probes !== undefined) {
         const rgba = readPixels(gl);
@@ -832,12 +975,12 @@ function show(next: ViewState): void {
   title.textContent = next.title;
   file.textContent = next.file;
   file.title = next.file;
-  pin.disabled = !next.pinnable;
-  pin.textContent = next.pinned ? 'Pinned' : 'Pin';
-  pin.setAttribute('aria-pressed', String(next.pinned));
-  pin.title = next.pinned
-    ? 'The preview stays on this window. Click to follow the cursor again.'
-    : 'Keep the preview on this window while other files are edited.';
+  pinnedBadge.hidden = !next.pinned;
+  // Without windows the list closes first: a disabled button takes no click.
+  const none = (next.windows?.length ?? 0) === 0;
+  if (none) toggleWindowList(false);
+  else if (!windowsPop.hidden) showWindowList();
+  title.disabled = none;
   showViewMenu(next.menu);
   showDataMenu(next.data);
   resolution.textContent = next.resolution.text;
@@ -864,7 +1007,21 @@ function show(next: ViewState): void {
     ...shown.map((notice) => {
       const item = document.createElement('li');
       item.className = notice.severity;
-      item.textContent = notice.message;
+      if (notice.action === undefined) {
+        item.textContent = notice.message;
+        return item;
+      }
+      // A notice with the way on: the window list (etch#648, finding P1.3).
+      item.classList.add('action');
+      const text = document.createElement('span');
+      text.textContent = notice.message;
+      const act = document.createElement('button');
+      act.type = 'button';
+      act.textContent = notice.action.label;
+      act.addEventListener('click', () => {
+        toggleWindowList(true);
+      });
+      item.append(text, act);
       return item;
     }),
     ...links,

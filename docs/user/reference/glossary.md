@@ -73,8 +73,9 @@ click opens where it is written in VS Code instead of acting in the game. <kbd>C
 
 ## Pin
 
-Keeps the preview on one window while you edit other files. Click **Pin** in the preview, or run
-**Etch: Pin or Unpin the Previewed Window**. See [Preview](../interface-windows/preview.md).
+Keeps the preview on one window while you edit other files. Choose the window in the window list
+(click the window's name in the preview's toolbar), or run **Etch: Pin or Unpin the Previewed
+Window**. See [Preview](../interface-windows/preview.md#pin-a-window).
 
 ## Planned restart
 

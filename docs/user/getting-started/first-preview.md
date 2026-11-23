@@ -45,8 +45,8 @@ needs no running game. These steps copy a window of the base game into your mod 
   Only windows written directly inside `guiTypes = { … }` count; a window inside another one
   shows as part of the outer one. Move the cursor into another window and the preview follows.
   When the cursor is outside every window, the preview stays on the last one it showed in that
-  file. To keep it on one window, click **Pin** in the toolbar: see
-  [Preview](../interface-windows/preview.md).
+  file, and a notice says so. To keep it on one window, click the window's name at the left of the
+  toolbar and choose it in the list: see [Preview](../interface-windows/preview.md).
 - **One view of the window.** The province view holds widgets for many situations, such as your
   own and a foreign province. Etch knows which ones go together, so it draws one situation, the
   "Own province" view, instead of every widget at once. Click **View ▾** in the toolbar to pick

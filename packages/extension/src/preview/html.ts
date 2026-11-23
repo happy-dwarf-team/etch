@@ -9,8 +9,8 @@ import { CONTROLS_CSS, zoomControl } from '../webview-controls.ts';
 export const BACKDROP = '#808080';
 
 /**
- * The preview's page: a toolbar (previewed window, the menus, the zoom, the live game's start,
- * resolution, pin),
+ * The preview's page: a toolbar (the previewed window, which opens the window list, the menus,
+ * the zoom, the live game's start, resolution),
  * notices, the canvas the webview script (`dist/webview.js`, from `webview/main.ts`) draws into,
  * and the outlines of the hovered and the highlighted widget over it. Textures are fetched from the game and mod folders
  * through webview URIs, so `connect-src` allows them.
@@ -33,7 +33,32 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
 <style nonce="${nonce}">
   ${CONTROLS_CSS}
   header { flex-wrap: nowrap; }
-  #title { font-weight: 600; margin: 0 4px 0 2px; white-space: nowrap; }
+  #title { font-weight: 600; white-space: nowrap; max-width: 40vw; overflow: hidden; text-overflow: ellipsis; }
+  #pinned {
+    flex: none; padding: 0 5px; border-radius: 9px; font-size: 0.85em; line-height: 16px;
+    background: var(--vscode-badge-background); color: var(--vscode-badge-foreground);
+  }
+  /* The window list under the title (etch#648, finding P1.3): a filter and the file's windows. */
+  #windows-pop { width: 440px; padding: 6px; }
+  #window-filter { width: 100%; box-sizing: border-box; margin-bottom: 6px; }
+  #window-list { max-height: 50vh; overflow: auto; }
+  #window-list .item {
+    display: grid; grid-template-columns: 14px 1fr auto; gap: 2px 6px; align-items: baseline; width: 100%;
+    height: auto; min-height: 24px; padding: 3px 8px; box-sizing: border-box; border: 0; border-radius: 3px;
+    background: none; color: inherit; text-align: left;
+  }
+  #window-list .item:hover, #window-list .item:focus {
+    background: var(--vscode-list-hoverBackground); outline: none;
+  }
+  #window-list .item:focus-visible { outline: 1px solid var(--vscode-focusBorder); outline-offset: -1px; }
+  #window-list .item[aria-selected="true"] .mark::before { content: '✓'; }
+  #window-list .aside { color: var(--vscode-descriptionForeground); font-size: 0.92em; white-space: nowrap; }
+  #window-list .sub { grid-column: 2 / 4; color: var(--vscode-descriptionForeground); font-size: 0.92em; }
+  #window-list .head {
+    margin: 8px 8px 2px; font-size: 0.85em; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--vscode-descriptionForeground);
+  }
+  #window-list .none { margin: 4px 8px; color: var(--vscode-descriptionForeground); }
   #file { min-width: 0; margin-right: 4px; color: var(--vscode-descriptionForeground); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   /* The menus of the toolbar: View ▾ (spec section 4), and Data ▾ beside it (section 5). */
   #menus { display: flex; gap: 4px; position: relative; }
@@ -66,7 +91,7 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
   }
   #notices li.warning { border-color: var(--vscode-notificationsWarningIcon-foreground); }
   #notices li.error { border-color: var(--vscode-notificationsErrorIcon-foreground); }
-  #notices li.link { display: flex; align-items: center; gap: 8px; }
+  #notices li.link, #notices li.action { display: flex; align-items: center; gap: 8px; }
   .popup .layer { display: grid; grid-template-columns: auto 1fr auto; gap: 6px; align-items: baseline; padding: 2px 10px; }
   .popup .layer .count { font-size: 0.85em; opacity: 0.75; }
   .popup .layer.list { grid-template-columns: 1fr auto auto auto; }
@@ -75,11 +100,13 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
   .popup .actions { display: flex; flex-wrap: wrap; gap: 4px; padding: 2px 10px 4px 30px; }
   .popup .warning { color: var(--vscode-notificationsWarningIcon-foreground); }
   .popup .note { padding: 2px 10px; font-size: 0.85em; opacity: 0.85; }
-  main { flex: 1; min-height: 0; position: relative; overflow: hidden; }
+  /* The backdrop fills the panel, so that a fitted window sits in the middle of it; a dashed
+     line marks the edge of the screen where it is in view (etch#648, finding P1.3). */
+  main { flex: 1; min-height: 0; position: relative; overflow: hidden; background: ${BACKDROP}; }
   main.pannable { cursor: grab; }
   main.panning { cursor: grabbing; }
   /* Placed and sized by the webview script from the zoom (etch#162); sharp pixels above 100 %. */
-  canvas { position: absolute; left: 0; top: 0; background: ${BACKDROP}; }
+  canvas { position: absolute; left: 0; top: 0; background: ${BACKDROP}; outline: 1px dashed rgba(0, 0, 0, 0.45); }
   canvas.sharp { image-rendering: pixelated; }
   .box { position: absolute; pointer-events: none; box-sizing: border-box; }
   #hover { border: 1px dashed var(--vscode-editorCursor-foreground, #fff); }
@@ -94,7 +121,8 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
 </head>
 <body>
 <header>
-  <span id="title">Etch preview</span>
+  <button id="title" class="field" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="windows-pop" title="The previewed window: the one around the cursor in the editor. Click to choose one and pin it.">Etch preview</button>
+  <span id="pinned" title="The preview stays on this window while you edit. Choose Follow the cursor in the window list to follow the cursor again." hidden>Pinned</span>
   <span id="file"></span>
   <span id="menus">
     <button id="view-menu" type="button" aria-haspopup="true" aria-expanded="false" hidden>View ▾</button>
@@ -106,8 +134,11 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
   ${zoomControl({ wheel: 'Ctrl+wheel' })}
   <button id="live-game" type="button" title="Start the live game with this playset (Etch: Start the Live Game).">Live game</button>
   <button id="resolution" class="field" type="button">1920×1080</button>
-  <button id="pin" type="button" aria-pressed="false" disabled>Pin</button>
 </header>
+<div id="windows-pop" class="pop" role="dialog" aria-label="Previewed window" hidden>
+  <input id="window-filter" type="text" spellcheck="false" placeholder="Filter the windows" aria-label="Filter the windows" aria-controls="window-list">
+  <div id="window-list" role="listbox" aria-label="Windows"></div>
+</div>
 <ul id="notices"></ul>
 <main id="stage">
   <canvas id="screen" hidden></canvas>

@@ -17,9 +17,10 @@ begin with "Etch:". Etch's own words, such as live game and pick mode, are expla
 
 Many commands are also a button, a menu entry or a key:
 
-- **In the preview**: **Live game** runs **Etch: Start the Live Game**, **Pin** runs **Etch: Pin
-  or Unpin the Previewed Window**, and the resolution button, which shows the resolution (such as
-  **1920×1080**), runs **Etch: Choose the Preview Resolution**. **Data ▾** holds **Compare with
+- **In the preview**: **Live game** runs **Etch: Start the Live Game**, the window list under
+  the window's name pins a window as **Etch: Pin or Unpin the Previewed Window** does, and the
+  resolution button, which shows the resolution (such as **1920×1080**), runs **Etch: Choose the
+  Preview Resolution**. **Data ▾** holds **Compare with
   Live Game**.
 - **In the editor's title bar**: in a `.gui` file, the **Open Preview** button at the right of the
   title bar runs **Etch: Open Preview**.

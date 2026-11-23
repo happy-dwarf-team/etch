@@ -9,6 +9,20 @@ import type { DrawList, DrawRect } from '@etch/core/draw-list';
 export interface Notice {
   readonly severity: 'error' | 'warning' | 'information';
   readonly message: string;
+  /** A button with the way on; `chooseWindow` opens the window list (etch#648, finding P1.3). */
+  readonly action?: { readonly kind: 'chooseWindow'; readonly label: string };
+}
+
+/** A window of the previewed file, as the window list shows it (etch#648, finding P1.3). */
+export interface WindowEntry {
+  /** Its place among the file's top-level definitions. */
+  readonly index: number;
+  /** Its name, or its kind when it has none. */
+  readonly label: string;
+  /** Its `size` on the preview screen, when it gives one. */
+  readonly size?: { readonly width: number; readonly height: number };
+  /** The line it starts on, from 1. */
+  readonly line: number;
 }
 
 /** What the preview's toolbar and notices show. */
@@ -20,6 +34,10 @@ export interface ViewState {
   readonly pinned: boolean;
   /** Whether there is a window that could be pinned. */
   readonly pinnable: boolean;
+  /** The windows of the file, for the window list under the title; none without a file. */
+  readonly windows?: readonly WindowEntry[];
+  /** The previewed window's place among them. */
+  readonly window?: number;
   /** The preview resolution as `1920×1080`, and where it came from (spec section 6). */
   readonly resolution: { readonly text: string; readonly source: ResolutionSource };
   readonly notices: readonly Notice[];
@@ -161,7 +179,8 @@ export interface PreviewMemento {
  * the resolution the window is laid out at.
  */
 export type Zoom =
-  { readonly fit: true } | { readonly fit: false; readonly scale: number; readonly center: Point };
+  | { readonly fit: true; readonly window?: true }
+  | { readonly fit: false; readonly scale: number; readonly center: Point };
 
 /**
  * The webview's state as VS Code keeps it for the panel: the host's memento, and the zoom, which
@@ -188,6 +207,8 @@ export type HostMessage =
       readonly id: number;
       readonly list: DrawList;
       readonly probes?: readonly Point[];
+      /** The previewed window's rect on the screen, which Fit window fits (finding P1.3). */
+      readonly window?: DrawRect;
     }
   | { readonly type: 'state'; readonly state: ViewState }
   /**
@@ -233,6 +254,8 @@ export type WebviewMessage =
   | { readonly type: 'pointer'; readonly point?: Point }
   | { readonly type: 'click'; readonly point: Point }
   | { readonly type: 'pin'; readonly pinned: boolean }
+  /** Pin the file's window at this place among its definitions, from the window list. */
+  | { readonly type: 'pinWindow'; readonly index: number }
   /** The monitor's resolution in device pixels, at start and when it changes. */
   | {
       readonly type: 'monitor';

@@ -38,10 +38,20 @@ and shows the window it showed before.
 
 ## Pin a window
 
-To keep the preview on one window while you edit other files, such as its `.gfx` or its
-localisation, click **Pin** in the toolbar. The button then says **Pinned**. Click it again and the
-preview follows the cursor again. **Etch: Pin or Unpin the Previewed Window** does the same from
-the Command Palette.
+The window's name at the left of the toolbar opens the window list: every window of the file,
+with its size and the line it starts on. Type to filter the list, and press <kbd>Enter</kbd> or
+click a window to preview it.
+
+- The window you choose stays in the preview while you edit other files, such as its `.gfx` or its
+  localisation: it is pinned, and **Pinned** shows beside its name.
+- **Follow the cursor**, at the top of the list, unpins it: the preview shows the window around
+  the cursor again.
+- **Etch: Pin or Unpin the Previewed Window** pins the window the preview shows, or unpins it, from
+  the Command Palette.
+
+When the cursor is in no window, for example on the file's first line, the preview shows the last
+window it showed in the file, or the file's first window. A notice above it says so, and its
+**Choose a Window…** button opens the list.
 
 In the [live game](../reference/glossary.md#live-game), EU4 running beside the editor,
 [pick mode](../reference/glossary.md#pick-mode) lets you click a widget in the game to open the

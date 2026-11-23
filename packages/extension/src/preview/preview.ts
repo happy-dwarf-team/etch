@@ -91,6 +91,7 @@ import { differenceMessage } from './live-report.ts';
 import { RUNNING_BUILD } from '../build-stamp.ts';
 import { PINNED_TAGS } from '../pins.ts';
 import { previewHtml } from './html.ts';
+import { fitRect, windowEntries } from './window-list.ts';
 import {
   PROJECT_PROFILES,
   ProfileStore,
@@ -611,6 +612,15 @@ export class Preview implements PreviewApi, vscode.Disposable {
     this.request();
   }
 
+  /** Pins the window at `index` among the definitions of the previewed file (the window list). */
+  pinWindow(index: number): void {
+    const render = this.render;
+    const window = render?.file.definitions[index];
+    if (render === undefined || window === undefined) return;
+    this.pin = { uri: render.uri.toString(), name: window.name, index };
+    this.request();
+  }
+
   probe(points: readonly Point[]): Promise<PreviewPaint> {
     const message = this.lastDraw;
     if (!this.panel || message?.type !== 'draw') {
@@ -756,8 +766,17 @@ export class Preview implements PreviewApi, vscode.Disposable {
     const file =
       (place?.wins === true ? session.guiFile(place.path) : undefined) ??
       readGuiFile(parseScript(source.text));
-    const window = this.chooseWindow(uri, file, source);
+    const { window, outside } = this.chooseWindow(uri, file, source);
     const shownPath = place?.path ?? vscode.workspace.asRelativePath(uri);
+    // The window list under the title (etch#648, finding P1.3).
+    const listed = {
+      windows: windowEntries(
+        file,
+        this.resolution.screen,
+        (offset) => positionOf(source, offset).line + 1,
+      ),
+      ...(window === undefined ? {} : { window: file.definitions.indexOf(window) }),
+    };
     if (window === undefined) {
       this.render = undefined;
       this.renderKey = undefined;
@@ -793,6 +812,19 @@ export class Preview implements PreviewApi, vscode.Disposable {
     const notices: Notice[] = [
       ...session.notices,
       ...found.notices.map((message) => ({ severity: 'warning' as const, message })),
+      // The cursor in no window: the preview says which one it shows instead.
+      ...(outside === undefined
+        ? []
+        : [
+            {
+              severity: 'information' as const,
+              message:
+                outside === 'first'
+                  ? "The cursor is in no window, so the preview shows the file's first one."
+                  : 'The cursor is in no window, so the preview shows the last one it showed.',
+              action: { kind: 'chooseWindow' as const, label: 'Choose a Window…' },
+            },
+          ]),
     ];
     // A window without a profile takes a snapshot too (etch#255).
     const snapshot =
@@ -830,6 +862,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
           title: this.lastState.title,
           file: shownPath,
           notices,
+          ...listed,
           ...(this.lastState.menu === undefined ? {} : { menu: this.lastState.menu }),
           ...(this.lastState.data === undefined ? {} : { data: this.lastState.data }),
           ...(this.lastState.links === undefined ? {} : { links: this.lastState.links }),
@@ -968,7 +1001,13 @@ export class Preview implements PreviewApi, vscode.Disposable {
     };
     this.last = { uri: uri.toString(), name: window.name };
     // The draw goes first: diagnostics are not on the warm reload's path to pixels.
-    this.post({ type: 'draw', id, list: drawList });
+    const fitted = fitRect(layout.widgets);
+    this.post({
+      type: 'draw',
+      id,
+      list: drawList,
+      ...(fitted === undefined ? {} : { window: fitted }),
+    });
     this.remember({
       uri: uri.toString(),
       window: window.name,
@@ -980,6 +1019,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
       title: window.name ?? window.kind,
       file: shownPath,
       notices,
+      ...listed,
       ...(loaded === undefined || view === undefined || choice === undefined
         ? {}
         : {
@@ -1114,19 +1154,32 @@ export class Preview implements PreviewApi, vscode.Disposable {
    * The previewed window: the pinned one, else the top-level definition that holds the cursor of
    * the file's active editor, else the one previewed last in this file, else the file's first.
    */
-  private chooseWindow(uri: vscode.Uri, file: GuiFile, source: SourceText): Widget | undefined {
+  /**
+   * The window to preview: the pinned one, the one around the cursor, else the last one shown or
+   * the file's first. `outside` says which of the last two it is when the cursor in the file's
+   * editor is in no window (etch#648, finding P1.3).
+   */
+  private chooseWindow(
+    uri: vscode.Uri,
+    file: GuiFile,
+    source: SourceText,
+  ): { window: Widget | undefined; outside?: 'last' | 'first' } {
     const key = uri.toString();
     if (this.pin?.uri === key) {
-      return named(file, this.pin.name) ?? file.definitions[this.pin.index];
+      return { window: named(file, this.pin.name) ?? file.definitions[this.pin.index] };
     }
     const editor = vscode.window.activeTextEditor;
+    let inEditor = false;
     if (editor?.document.uri.toString() === key) {
       const offset = source.offsets.toGame(editor.document.offsetAt(editor.selection.active));
       const top = widgetPathAt(file, offset)[0];
-      if (top !== undefined) return top;
+      if (top !== undefined) return { window: top };
+      inEditor = true;
     }
     const last = this.last?.uri === key ? named(file, this.last.name) : undefined;
-    return last ?? file.definitions[0];
+    const window = last ?? file.definitions[0];
+    if (!inEditor || window === undefined) return { window };
+    return { window, outside: last === undefined ? 'first' : 'last' };
   }
 
   /** The session of a file's playset, loaded again when the file or the settings need another. */
@@ -1352,6 +1405,9 @@ export class Preview implements PreviewApi, vscode.Disposable {
         break;
       case 'pin':
         if (message.pinned !== (this.pin !== undefined)) this.togglePin();
+        break;
+      case 'pinWindow':
+        this.pinWindow(message.index);
         break;
       case 'startLiveGame':
         this.startLiveGame();

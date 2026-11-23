@@ -49,8 +49,12 @@ cannot read the value, a notice above the window says so, and the preview uses t
 
 ## Zoom
 
-The preview opens with the whole game screen fitted into the panel, but never above 100 %. At
-100 %, one pixel of the game's screen is one pixel of your monitor, as the game shows it. Above
+The preview opens at **Fit window**: the window you preview fills the panel, in its middle, but
+never above 100 %. A small window, such as a bar of 390 × 32 pixels, shows at 100 % in the middle of
+the panel, not in a corner of the whole screen. **Fit screen** fits the whole game screen instead.
+The grey backdrop fills the panel, and a dashed line marks the edge of the game screen.
+
+At 100 %, one pixel of the game's screen is one pixel of your monitor, as the game shows it. Above
 100 % only whole steps are offered, 200 % to 800 %, so that pixels stay sharp.
 
 | To | Do this |
@@ -58,8 +62,9 @@ The preview opens with the whole game screen fitted into the panel, but never ab
 | Zoom in or out around the pointer | <kbd>Ctrl</kbd> + mouse wheel, or <kbd>Ctrl+=</kbd> and <kbd>Ctrl+-</kbd> |
 | Zoom in or out around the middle | click **+** or **−** in the toolbar |
 | Go to 100 % | <kbd>Ctrl+0</kbd> |
-| Fit the screen into the panel | <kbd>Ctrl+Shift+0</kbd> |
-| Fit the screen, or pick 50 %, 100 %, 200 % or 400 % | click the zoom level, such as "Fit · 47 %", and pick in its menu |
+| Fit the window into the panel | <kbd>Ctrl+Shift+0</kbd> |
+| Fit the whole screen into the panel | <kbd>Ctrl+Shift+0</kbd> again |
+| Fit the window or the screen, or pick 50 %, 100 %, 200 % or 400 % | click the zoom level, such as "Fit window · 100 %", and pick in its menu |
 | Move around a zoomed screen | the mouse wheel (<kbd>Shift</kbd> + wheel sideways), or drag |
 
 <kbd>Ctrl</kbd> with the numeric keypad's <kbd>+</kbd>, <kbd>−</kbd> and <kbd>0</kbd> works too.
