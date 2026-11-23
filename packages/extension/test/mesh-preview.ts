@@ -144,7 +144,11 @@ export async function testMeshPreview(api: EtchApi): Promise<void> {
   // Each map on its own: Normal, Spec and Diffuse off each change it, and all on again draws as
   // before.
   const noNormal = await measure(api, mesh, { maps: { normal: false } });
-  assert.notDeepEqual(noNormal.mean, withMaps.mean, `Normal off: ${String(noNormal.mean)}`);
+  assert.notDeepEqual(
+    noNormal.mean,
+    withMaps.mean,
+    `Normal off: ${JSON.stringify(noNormal)}, all on: ${JSON.stringify(withMaps)}`,
+  );
   const noMaps = await measure(api, mesh, { maps: { specular: false } });
   assert.notDeepEqual(noMaps.mean, noNormal.mean, `Normal and Spec off: ${String(noMaps.mean)}`);
   const grey = await measure(api, mesh, { maps: { diffuse: false } });
