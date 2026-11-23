@@ -50,14 +50,14 @@ one with another playset, Etch deletes the snapshots of the playset before.
 
 ## Compare with the live game
 
-**Etch: Compare with Live Game** came in Etch 2.7.0. It draws the window the preview shows from your
+**Etch: Compare with the Live Game** came in Etch 2.7.0. It draws the window the preview shows from your
 files alone, as the preview does, but with the game's texts and the view the game showed. Then it
 checks each widget against the game: whether it stands in the same place, and whether it shows or
 hides as in the game.
 
 1. Save the window's file, so that the game has your latest version.
 2. Open the window in the live game, and in the preview.
-3. Run **Etch: Compare with Live Game** (the Command Palette offers it while the preview is open),
+3. Run **Etch: Compare with the Live Game** (the Command Palette offers it while the preview is open),
    or click **Compare with Live Game** under **Live snapshot** in **Data ▾**.
 
 A notice says how many [live differences](../reference/glossary.md#live-difference) (widgets the

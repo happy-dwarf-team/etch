@@ -24,7 +24,7 @@ sends nothing anywhere.
   - `save games`, when you pick a save for [sample data](../interface-windows/sample-data.md) or to
     start the [live game](../reference/glossary.md#live-game) from (Etch's own copy of EU4 that
     you play beside the editor);
-  - `logs`, where **Etch: Show Latest Script Profile** looks for the newest script profile;
+  - `logs`, where **Etch: Show the Latest Script Profile** looks for the newest script profile;
   - `mod`, for the descriptors of your mods.
 
 At every start, the [live game](../live-game/start-and-stop.md) copies your `settings.txt` and
@@ -41,7 +41,7 @@ Etch writes into your mod's folder only when you ask it to:
   `descriptor.mod`. The view holds your choices in **View ▾** and the widgets you showed or hid by
   hand. You can keep that file with your mod's other files. See
   [Views and window profiles](../interface-windows/views.md).
-- **Save as view** on an entry of **Etch: Compare with Live Game** writes into the same file a
+- **Save as view** on an entry of **Etch: Compare with the Live Game** writes into the same file a
   view that hides what the game hid. See
   [Snapshot and compare](../live-game/snapshot-and-compare.md).
 - **Etch: Add Scripted Selectors to the Window Profile** finds the widgets of the previewed window
@@ -86,7 +86,7 @@ VS Code gives each extension storage of its own, outside your mods. Etch keeps t
 
   Etch checks those parts before every start. **Etch: Remove the Private Install** deletes it all.
 - **The script profile page**, a Markdown file that Etch writes again each time you run **Etch:
-  Show Latest Script Profile**. See [Script profile](../scripts/script-profile.md).
+  Show the Latest Script Profile**. See [Script profile](../scripts/script-profile.md).
 - **Live snapshots**: what the live game showed in a window. Etch keeps the latest one for each
   window and playset. They stay in the storage VS Code keeps for your workspace: never in your
   mod's folder, and never shared. See [Snapshot and compare](../live-game/snapshot-and-compare.md).
@@ -100,7 +100,7 @@ VS Code gives each extension storage of its own, outside your mods. Etch keeps t
 
 ## Report to Etch
 
-When **Etch: Compare with Live Game** lists a widget the preview draws otherwise than the game,
+When **Etch: Compare with the Live Game** lists a widget the preview draws otherwise than the game,
 you can report it to Etch's team:
 
 1. In the Problems panel, click the entry. Then press <kbd>Ctrl+.</kbd>, or click the light bulb,

@@ -1,4 +1,4 @@
-// Etch: Show Latest Script Profile in a real VS Code: the newest CSV of the game profile that the
+// Etch: Show the Latest Script Profile in a real VS Code: the newest CSV of the game profile that the
 // game folder's userdir.txt names, shown as a Markdown preview of a page in Etch's storage, its
 // names linked to where the game folder defines them (no workspace folder is open in the test).
 import * as assert from 'node:assert/strict';

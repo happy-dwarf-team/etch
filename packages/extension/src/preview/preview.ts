@@ -270,7 +270,7 @@ export interface PreviewApi {
    */
   takeSnapshot(): Promise<boolean>;
   /**
-   * **Compare with Live Game** (spec v3 section 4): the previewed window's offline preview against
+   * **Compare with the Live Game** (spec v3 section 4): the previewed window's offline preview against
    * a fresh live snapshot, or the stored one of the same file; the live differences go to Problems.
    * `undefined` when it did not compare (said to the user).
    */
@@ -321,7 +321,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
   private readonly profileDiagnostics =
     vscode.languages.createDiagnosticCollection('etch-profiles');
   private readonly profiles: ProfileStore;
-  /** Compare with Live Game's entries in Problems (spec v3 section 4). */
+  /** Compare with the Live Game's entries in Problems (spec v3 section 4). */
   private readonly liveDifferences = new LiveDifferences(() => ({
     etch: RUNNING_BUILD?.version ?? 'unknown',
     anvil: PINNED_TAGS['anvil'] ?? 'unknown',
@@ -1647,12 +1647,14 @@ export class Preview implements PreviewApi, vscode.Disposable {
       void vscode.window.showInformationMessage(message);
     };
     if (render === undefined || session === undefined || name === undefined) {
-      tell('Compare with Live Game compares the previewed window: open the preview on it first.');
+      tell(
+        'Compare with the Live Game compares the previewed window: open the preview on it first.',
+      );
       return undefined;
     }
     if (render.linked !== undefined || render.hosted === true) {
       tell(
-        `The preview draws ${name} in or as another window; Compare with Live Game compares a window drawn on its own.`,
+        `The preview draws ${name} in or as another window; Compare with the Live Game compares a window drawn on its own.`,
       );
       return undefined;
     }
@@ -1757,15 +1759,15 @@ export class Preview implements PreviewApi, vscode.Disposable {
     this.liveDifferences.set(render.uri, name, profile !== undefined, snapshot.screen, entries);
     const ms = performance.now() - started;
     this.output.info(
-      `Compare with Live Game, ${name}: ${String(entries.length)} live differences; rects ` +
+      `Compare with the Live Game, ${name}: ${String(entries.length)} live differences; rects ` +
         `${String(result.geometry.exact)} of ${String(result.geometry.compared)} exact, visibility ` +
         `${String(result.visibility.agree)} of ${String(result.visibility.compared)}, ` +
         `${fresh ? 'fresh' : 'stored'} snapshot, ${ms.toFixed(0)} ms.`,
     );
     void vscode.window.showInformationMessage(
       entries.length === 0
-        ? `Compare with Live Game: the offline preview of ${name} shows every widget where the game does.`
-        : `Compare with Live Game: ${String(entries.length)} live ${entries.length === 1 ? 'difference' : 'differences'} in ${name}, listed in Problems.`,
+        ? `Compare with the Live Game: the offline preview of ${name} shows every widget where the game does.`
+        : `Compare with the Live Game: ${String(entries.length)} live ${entries.length === 1 ? 'difference' : 'differences'} in ${name}, listed in Problems.`,
     );
     return result;
   }

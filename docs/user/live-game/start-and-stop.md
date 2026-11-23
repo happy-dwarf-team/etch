@@ -18,7 +18,7 @@ save goes into it at once ([Reload on save](reload-on-save.md)).
 5. The first time, Etch also asks "Create the private install?" and says how much it copies.
    Click **Create**. [The private install](private-install.md) says what it holds.
 
-The status bar shows **Live game starting**, then **Live game** once the game is ready, and a
+The status bar shows **Live game: starting**, then **Live game** once the game is ready, and a
 notice says how long it took. When you start from a save (**Continue** or one of your saves), the
 game is ready once that save is loaded, not at the main menu. If the save has not loaded after five
 minutes, Etch shows the game as ready anyway and warns that it may still be loading or wait at the
@@ -64,9 +64,34 @@ game while your own EU4 runs, and says so.
 
 Etch runs one live game per machine. If another VS Code window runs it, Etch says so.
 
+## The live game in the status bar
+
+While the live game runs, the status bar at the bottom left shows its state, each with its own
+icon: **Live game: starting**, **Live game** (ready), **Live game: restart needed**, **Live game:
+restarting** and **Live game: stopping**. While [pick mode](pick-mode.md) is on, a second item,
+**Pick mode**, shows beside it.
+
+Click **Live game** for its menu. Its title says the state and your mod, such as "Live Game:
+ready (41.2 s) · etch-demo-mod". When the game is ready, the menu offers:
+
+- **Turn Pick Mode On** (or **Off**);
+- **Snapshot from the Live Game**, of the previewed window;
+- **Open the Live Game's Saves Folder**;
+- **Show the Live Game's Log**: Etch's log in **View › Output**;
+- **Restart the Live Game**: saves, then starts EU4 again from that save;
+- **Stop the Live Game**: saves, then closes EU4 (below).
+
+When the game needs a [planned restart](reload-on-save.md), **Restart Now** and **Later** come
+first. While it starts, the menu offers the log and **Stop the Live Game**, which stops the start.
+A click on the status bar never stops the game by itself.
+
+In the Command Palette, **Etch: Start the Live Game** shows only while no live game runs, and
+**Etch: Stop the Live Game** and the commands that act on the game only while it runs.
+
 ## Stop the live game
 
-- Run **Etch: Stop the Live Game**, or click **Live game** in the status bar.
+- Click **Live game** in the status bar and choose **Stop the Live Game**, or run **Etch: Stop the
+  Live Game**.
 - Close the VS Code window.
 
 Both save first: Etch saves the game as `autosave.eu4` in the live game's saves, waits up to 30

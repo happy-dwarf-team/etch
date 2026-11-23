@@ -95,7 +95,7 @@ export type DataAction =
   | { readonly kind: 'entries'; readonly list: string; readonly count?: number }
   /** Take a live snapshot of the previewed window (spec section 7). */
   | { readonly kind: 'refreshLive' }
-  /** Compare with Live Game (spec v3 section 4). */
+  /** Compare with the Live Game (spec v3 section 4). */
   | { readonly kind: 'compareLive' };
 
 /** Where a selector's value came from (core's `SelectorSource`). */

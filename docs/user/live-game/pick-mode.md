@@ -11,10 +11,12 @@ opens its definition in VS Code instead of acting in the game.
 ## Turn it on and off
 
 - Press <kbd>Ctrl+Shift+E</kbd> in the game, or
+- click **Live game** in the status bar and choose **Turn Pick Mode On**, or
 - run **Etch: Toggle Pick Mode** from the Command Palette. It also brings the game forward.
 
-A badge in the game says "Etch pick — Ctrl+Shift+E to leave". Press the key again to leave pick
-mode.
+A badge in the game says "Etch pick — Ctrl+Shift+E to leave", and the status bar in VS Code shows
+**Pick mode** beside **Live game**, so you know why a click in the game opens a file. Press the key
+again, or click **Pick mode** in the status bar, to leave pick mode.
 
 To use another key, change the setting `etch.liveGame.pickModeKey`: <kbd>Ctrl</kbd> or
 <kbd>Alt</kbd>, with <kbd>Shift</kbd> if you like, and a letter, a digit or

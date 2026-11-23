@@ -23,6 +23,10 @@ Many commands are also a button, a menu entry or a key:
   Live Game**.
 - **In the editor's title bar**: in a `.gui` file, the **Open Preview** button at the right of the
   title bar runs **Etch: Open Preview**.
+- **In the status bar**, while the live game runs: **Live game** opens its menu, with **Turn Pick
+  Mode On**, **Snapshot from the Live Game**, **Restart the Live Game**, **Stop the Live Game** and
+  more ([Start and stop](../live-game/start-and-stop.md#the-live-game-in-the-status-bar)).
+  **Pick mode**, while pick mode is on, turns it off.
 - **In the editor's right-click menu**: in a `.txt` script file, while the live game runs,
   **Run Selection in the Live Game**, **Run Selection in the Province on Screen** and **Check
   Selection as Trigger in the Live Game**.
@@ -41,14 +45,21 @@ Many commands are also a button, a menu entry or a key:
 
 Some commands show in the Command Palette only when they can do something:
 
-- **Etch: Pin or Unpin the Previewed Window**, **Etch: Compare with Live Game** and **Etch: Add
+- **Etch: Pin or Unpin the Previewed Window**, **Etch: Compare with the Live Game** and **Etch: Add
   Scripted Selectors to the Window Profile**: while a preview is open.
+- **Etch: Start the Live Game** and **Etch: Remove the Private Install**: while no live game runs.
+- **Etch: Stop the Live Game**: while the live game starts, runs or restarts.
+- **Etch: Restart the Live Game** and **Etch: Toggle Pick Mode**: while the live game is ready.
+  **Etch: Snapshot from the Live Game** too, when a preview is open.
+- **Etch: Run Selection in the Live Game**, **Etch: Run Selection in the Province on Screen**,
+  **Etch: Check Selection as Trigger in the Live Game** and **Etch: Check File in the Live Game**:
+  while the live game is ready, in a `.txt` script file.
 - **Etch: Preview Entity…**: in an `.asset` file.
 - **Etch: Override in My Mod**: in a `.gui` or `.gfx` file of an `interface` folder.
 - **Etch: Hide the Script Profile in Script Files**: while a script profile is shown.
 
 A few are never in the Command Palette, only on their buttons: the buttons on the Widget Outline's
-rows, and the quick fixes on the entries that **Etch: Compare with Live Game** lists in the
+rows, and the quick fixes on the entries that **Etch: Compare with the Live Game** lists in the
 Problems panel (**Report to Etch…**, **Save as view** and **Open profile**).
 
 The list of every Etch command follows.

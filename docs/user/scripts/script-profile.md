@@ -7,7 +7,7 @@ clip: profile
 
 [Anvil](https://anvil.happydwarf.dev/), which loads plugins into EU4, has a script profiler: a tool
 that measures how long the triggers and effects of your events, decisions and other scripts take
-while you play. **Etch: Show Latest Script Profile** opens what it measured as a page in VS Code,
+while you play. **Etch: Show the Latest Script Profile** opens what it measured as a page in VS Code,
 links each row to where it is written, and shows the times in your script files too.
 
 ## Measure a profile
@@ -26,7 +26,7 @@ The profiler comes with Anvil 1.22 and newer. It runs in your own game.
 
 ## Open the profile
 
-Run **Etch: Show Latest Script Profile** from the Command Palette (<kbd>Ctrl+Shift+P</kbd>). Etch
+Run **Etch: Show the Latest Script Profile** from the Command Palette (<kbd>Ctrl+Shift+P</kbd>). Etch
 opens the newest profile in your profile's `logs` folder as a page in VS Code's Markdown preview.
 It also looks in the `logs` folder of Etch's [live game](../reference/glossary.md#live-game), the
 copy of EU4 that Etch starts for you to play beside the editor. If there is none yet, Etch says

@@ -164,6 +164,11 @@
         "category": "Etch"
       },
       {
+        "command": "etch.restartLiveGame",
+        "title": "Restart the Live Game",
+        "category": "Etch"
+      },
+      {
         "command": "etch.overrideInMyMod",
         "title": "Override in My Mod",
         "category": "Etch"
@@ -175,7 +180,7 @@
       },
       {
         "command": "etch.compareWithLiveGame",
-        "title": "Compare with Live Game",
+        "title": "Compare with the Live Game",
         "category": "Etch"
       },
       {
@@ -230,7 +235,7 @@
       },
       {
         "command": "etch.showScriptProfile",
-        "title": "Show Latest Script Profile",
+        "title": "Show the Latest Script Profile",
         "category": "Etch"
       }
     ],
@@ -297,6 +302,46 @@
         }
       ],
       "commandPalette": [
+        {
+          "command": "etch.startLiveGame",
+          "when": "!etch.liveGame.running"
+        },
+        {
+          "command": "etch.stopLiveGame",
+          "when": "etch.liveGame.running"
+        },
+        {
+          "command": "etch.restartLiveGame",
+          "when": "etch.liveGame.canRun"
+        },
+        {
+          "command": "etch.removePrivateInstall",
+          "when": "!etch.liveGame.running"
+        },
+        {
+          "command": "etch.togglePickMode",
+          "when": "etch.liveGame.canRun"
+        },
+        {
+          "command": "etch.snapshotFromLiveGame",
+          "when": "etch.liveGame.canRun && etch.previewOpen"
+        },
+        {
+          "command": "etch.runSelection",
+          "when": "etch.liveGame.canRun && resourceExtname =~ /^\\.txt$/i"
+        },
+        {
+          "command": "etch.runSelectionInProvince",
+          "when": "etch.liveGame.canRun && resourceExtname =~ /^\\.txt$/i"
+        },
+        {
+          "command": "etch.checkSelectionAsTrigger",
+          "when": "etch.liveGame.canRun && resourceExtname =~ /^\\.txt$/i"
+        },
+        {
+          "command": "etch.checkFileInLiveGame",
+          "when": "etch.liveGame.canRun && resourceExtname =~ /^\\.txt$/i"
+        },
         {
           "command": "etch.previewEntity",
           "when": "resourceExtname =~ /^\\.asset$/i"

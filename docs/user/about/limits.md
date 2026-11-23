@@ -72,7 +72,7 @@ in one place, grouped by where you meet them.
 - **Etch: Snapshot from the Live Game** works only while the game has the previewed window (the
   window the preview shows) open. See
   [Snapshot and compare](../live-game/snapshot-and-compare.md).
-- **Etch: Compare with Live Game** compares the window as its file is saved, not your unsaved
+- **Etch: Compare with the Live Game** compares the window as its file is saved, not your unsaved
   edits. When it has no live snapshot of the window as it is saved now, it tells you what to do.
   See [Snapshot and compare](../live-game/snapshot-and-compare.md).
 - Run selection, which runs the script you select in the live game, does not work in ironman or
@@ -106,7 +106,7 @@ in one place, grouped by where you meet them.
 - Etch warns about a second history file for a province or a country only when the game has a file
   for it too. Two files from mods, for a province or country that the game has no file for, get no
   warning. See [Province IDs and names](../scripts/province-ids-and-names.md).
-- **Etch: Show Latest Script Profile** needs Anvil 1.22 or newer, which loads plugins into EU4 and
+- **Etch: Show the Latest Script Profile** needs Anvil 1.22 or newer, which loads plugins into EU4 and
   whose script profiler times your scripts. Etch does not measure scripts itself. See
   [Script profile](../scripts/script-profile.md).
 - The script profile page shows the 30 slowest rows of each list; the rest are only in the CSV.

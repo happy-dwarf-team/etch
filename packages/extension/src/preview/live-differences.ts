@@ -1,4 +1,4 @@
-// Compare with Live Game's entries in Problems (spec v3 section 4): the collection
+// Compare with the Live Game's entries in Problems (spec v3 section 4): the collection
 // `etch-live-compare`, at Information, by file and window. A window's entries go when the next
 // Compare of that window runs or when its file changes, not when the game stops. Each entry offers
 // **Report to Etch**; a window without a profile's one entry also **Save as view** and

@@ -38,7 +38,7 @@ Etch's design document for 1.x, describes everything Etch 1.x does.
   [sample data](../reference/glossary.md#sample-data), stand-in texts such as a province's name,
   which can come from a save. See [Views and window profiles](../interface-windows/views.md) and
   [Sample data](../interface-windows/sample-data.md).
-- Since 2.7.0, **Etch: Compare with Live Game** lists every widget the preview places or shows
+- Since 2.7.0, **Etch: Compare with the Live Game** lists every widget the preview places or shows
   otherwise than the game. See [Accuracy](accuracy.md).
 
 The first time Etch 2 starts, it removes the game host's files from Etch's storage and tells you

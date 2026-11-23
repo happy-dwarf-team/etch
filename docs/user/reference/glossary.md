@@ -41,7 +41,7 @@ wins. See [Sample data](../interface-windows/sample-data.md).
 ## Live difference
 
 A widget that the offline preview puts in another place than the live game does, or shows where
-the game hides it, or the other way round. **Etch: Compare with Live Game** lists them in the
+the game hides it, or the other way round. **Etch: Compare with the Live Game** lists them in the
 Problems panel. See [Snapshot and compare](../live-game/snapshot-and-compare.md).
 
 ## Live game

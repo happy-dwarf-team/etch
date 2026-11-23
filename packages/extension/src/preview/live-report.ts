@@ -1,4 +1,4 @@
-// Compare with Live Game's texts (spec v3 section 4): what Problems says of a live difference and
+// Compare with the Live Game's texts (spec v3 section 4): what Problems says of a live difference and
 // what **Report to Etch** puts in a new issue. The issue holds the widget's path, the kind of
 // difference, both rects, the visibility, the versions and the resolution; never a file or a text
 // of the mod. Node only, no vscode.
@@ -73,7 +73,7 @@ export function reportBody(
     hiddenInWindow: `${String('paths' in difference ? difference.paths.length : 0)} widgets hidden by the game; drawn by the preview`,
   };
   return [
-    'Compare with Live Game found a live difference.',
+    'Compare with the Live Game found a live difference.',
     '',
     `- Widget: \`${difference.path}\``,
     `- Kind: ${difference.kind}`,
