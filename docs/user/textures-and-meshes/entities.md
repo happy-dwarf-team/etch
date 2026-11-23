@@ -13,9 +13,16 @@ or walk). Etch draws an entity the same way, in the same preview as a single
 ## Preview an entity
 
 1. Open an `.asset` file, for example the base game's `gfx/entities/western_units.asset`.
-2. Click **Preview entity**, which shows above each `entity = { … }`, for example above
+2. Click **Preview Entity**, which shows above each `entity = { … }`, for example above
    `westerngfx_INFANTRY_1`. Or run **Etch: Preview Entity…** from the Command Palette
-   (<kbd>Ctrl+Shift+P</kbd>) and pick the entity from the list.
+   (<kbd>Ctrl+Shift+P</kbd>) and pick the entity from the list:
+   - the entity your cursor is in comes first, under **At the cursor**, with its states (such as
+     `idle · walk · attack`), so <kbd>Enter</kbd> previews it;
+   - the others follow under **In the file**, in the order the file has them;
+   - each one shows its `pdxmesh`, or "clone of" and the entity it copies, and the line it
+     starts on.
+
+   Type in the box at the top of the list to filter it by name.
 3. The entity opens beside the editor, in a tab called "Entity: westerngfx_INFANTRY_1".
 
 The command shows in the Command Palette only while you are in an `.asset` file.

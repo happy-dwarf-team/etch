@@ -26,14 +26,18 @@ The resolution changes what the game itself changes with the screen size:
 ### Choose another resolution
 
 1. Click the resolution button in the toolbar, or run **Etch: Choose the Preview Resolution** from
-   the Command Palette (<kbd>Ctrl+Shift+P</kbd>).
+   the Command Palette (<kbd>Ctrl+Shift+P</kbd>). The list opens on your current choice: it is
+   first, under **Current**, with a check mark, so <kbd>Enter</kbd> keeps it.
 2. Choose one:
    - **Default**: your game's `settings.txt`, else your monitor;
    - **Native**: your monitor's resolution;
    - one of the sizes under **Corpus resolutions**, the screen sizes at which Etch's drawing is
      compared with the game's: 1280×720, 1366×768, 1600×900, 1680×1050, 1920×1080, 2560×1440,
      3440×1440 or 3840×2160;
-   - **Custom…**, then type a width × height in pixels, such as `2560x1440`.
+   - any other size: type its width × height in pixels in the box at the top of the list, such
+     as `2560x1440`. The size shows as the first item as soon as you have typed it; press
+     <kbd>Enter</kbd> to choose it. **Custom…**, at the end of the list, asks for the size in a
+     box of its own instead.
 
 The preview lays the window out again at that size, and the resolution button shows it.
 

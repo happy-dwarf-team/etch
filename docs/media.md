@@ -170,7 +170,7 @@ would take in the code beside it.
   0.85), and lock. The sliders are dragged with the pointer from their thumbs, whose places the
   take works out from the slider's box and range.
 - **`entity`** opens `gfx/entities/western_units.asset` in the editor's own group and clicks
-  **Preview entity** above its first entity, `westerngfx_INFANTRY_1`: the preview opens beside it
+  **Preview Entity** above its first entity, `westerngfx_INFANTRY_1`: the preview opens beside it
   with the halberd on the unit's right hand, playing `idle`, and the state list is set to `walk`
   (without its list, as above). Off camera, before the take, the preview is opened and closed once,
   so the take's draws at once rather than after the playset's `.gfx` and `.asset` files are read.

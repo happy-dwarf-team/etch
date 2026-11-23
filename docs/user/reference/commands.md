@@ -31,7 +31,8 @@ Many commands are also a button, a menu entry or a key:
   alternatives (**Choose by Hand**), or let you type its [sample text](glossary.md#sample-data)
   (**Type Sample Text…**). Right-click a text's row for **Type Sample Text…** and **Clear Sample
   Text**.
-- **Above an entity** in an `.asset` file: **Preview entity** runs **Etch: Preview Entity…**.
+- **Above an entity** in an `.asset` file: **Preview Entity** previews that entity at once, as
+  **Etch: Preview Entity…** does after you pick it from its list.
 - **With a key**: in the live game, <kbd>Ctrl+Shift+E</kbd> turns pick mode on and off, as
   **Etch: Toggle Pick Mode** does. You press it in the game's window, and you can choose another
   key with the setting `etch.liveGame.pickModeKey`.
