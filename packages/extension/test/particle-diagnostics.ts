@@ -1,6 +1,8 @@
 // Particle warnings in a real VS Code (etch#631): an open `.asset` file's state events and an open
 // `.gfx` file's pdxparticle types against the game folder that etch.gamePath names (no workspace
-// folder is open in the test), as typed, and again after a saved `.gfx` file.
+// folder is open in the test), as typed, and again after a saved `.gfx` file; the warnings of an
+// open `.asset` file's particle blocks, against the game folder's particle shader and textures; and
+// a hover on a key of a particle block.
 import * as assert from 'node:assert/strict';
 import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -73,6 +75,26 @@ export async function testParticleDiagnostics(): Promise<void> {
     'entity = { name = "x" state = { name = "s" event = { particle = "nothing" } } }\n',
   );
 
+  await write(
+    game,
+    'gfx/FX/particle.shader',
+    'Effect ParticleAdditive\n{\n}\nEffect ParticleAlphaBlend\n{\n}\n',
+  );
+  await write(game, 'gfx/particles/etch_cloud.dds', 'not a texture, only its path is looked up');
+  const effects = await write(
+    game,
+    'gfx/particles/etch_effects.asset',
+    'particle = {\n' +
+      '\tname = "etch_effect"\n' +
+      '\tsubsystem = {\n' +
+      '\t\tlifee = 1\n' +
+      '\t\tsize = { 1,etch_grow }\n' +
+      '\t\ttexture = { shader = "ParticleAdditive" file = "gfx/particles/etch_cloud.dds" }\n' +
+      '\t}\n' +
+      '\tsubsystem = { texture = { shader = "ParticleGlow" file = "gfx/particles/etch_none.dds" } }\n' +
+      '}\n',
+  );
+
   const settings = vscode.workspace.getConfiguration('etch');
   await settings.update('gamePath', game, vscode.ConfigurationTarget.Global);
   try {
@@ -114,6 +136,33 @@ export async function testParticleDiagnostics(): Promise<void> {
     assert.deepEqual(
       vscode.languages.getDiagnostics(elsewhere).filter((d) => d.source === 'Etch'),
       [],
+    );
+
+    // The particle blocks: an unknown key, a curve nothing defines, a shader effect the game
+    // folder's particle.shader does not have, and a texture it does not have.
+    await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(effects));
+    const onEffects = await diagnosticsOf(effects, (found) => found.length >= 4);
+    assert.deepEqual(onEffects.map(where), [
+      ['unknown-particle-key', 3, 2, 7],
+      ['unknown-particle-curve', 4, 13, 22],
+      ['unknown-particle-shader', 7, 36, 50],
+      ['missing-particle-texture', 7, 59, 86],
+    ]);
+    assert.equal(
+      onEffects[3]?.message,
+      'Texture gfx/particles/etch_none.dds is not in the playset, so the game has no picture for these particles.',
+    );
+    const hovers = await vscode.commands.executeCommand<vscode.Hover[]>(
+      'vscode.executeHoverProvider',
+      effects,
+      new vscode.Position(5, 4),
+    );
+    const texts = hovers.flatMap((h) =>
+      h.contents.map((c) => (c instanceof vscode.MarkdownString ? c.value : '')),
+    );
+    assert.ok(
+      texts.some((t) => t.startsWith('**`texture`** in a subsystem block')),
+      JSON.stringify(texts),
     );
   } finally {
     await settings.update('gamePath', undefined, vscode.ConfigurationTarget.Global);

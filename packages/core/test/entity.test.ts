@@ -251,9 +251,9 @@ describe('resolveEntity', () => {
       ['unknown-pdxparticle', '"dust"'],
     ]);
     expect(onAsset.map((d) => d.message)).toEqual([
-      'No .gfx file has a pdxparticle named "flash_system", so the game does not start this particle. The game logs: Couldn\'t find particle 3D object "flash_system". "flash_system" is the name of a particle effect, not of a pdxparticle: use the pdxparticle that starts it, "flash".',
-      'No .gfx file has a pdxparticle named "lonely_system", so the game does not start this particle. The game logs: Couldn\'t find particle 3D object "lonely_system". "lonely_system" is the name of a particle effect, not of a pdxparticle: add a pdxparticle with type = "lonely_system" to a .gfx file, and write its name here.',
-      'No .gfx file has a pdxparticle named "dust", so the game does not start this particle. The game logs: Couldn\'t find particle 3D object "dust".',
+      'No .gfx file has a pdxparticle named "flash_system", so the game does not start this particle. The game writes in its error log: Couldn\'t find particle 3D object "flash_system". "flash_system" is the name of a particle effect, not of a pdxparticle: use the pdxparticle that starts it, "flash".',
+      'No .gfx file has a pdxparticle named "lonely_system", so the game does not start this particle. The game writes in its error log: Couldn\'t find particle 3D object "lonely_system". "lonely_system" is the name of a particle effect, not of a pdxparticle: add a pdxparticle with type = "lonely_system" to a .gfx file, and write its name here.',
+      'No .gfx file has a pdxparticle named "dust", so the game does not start this particle. The game writes in its error log: Couldn\'t find particle 3D object "dust".',
     ]);
 
     const onGfx = checkGfxParticles(parseScript(gfx), index);
@@ -261,7 +261,7 @@ describe('resolveEntity', () => {
       [
         'unknown-particle-system',
         '"smoke_sytem"',
-        'No .asset file has a particle effect named "smoke_sytem", so the game cannot start the pdxparticle "smoke". The game logs: Could not find particle effect [smoke_sytem].',
+        'No .asset file has a particle effect named "smoke_sytem", so the game cannot start the pdxparticle "smoke". The game writes in its error log: Could not find particle effect [smoke_sytem].',
       ],
       [
         'pdxparticle-without-type',

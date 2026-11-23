@@ -8,5 +8,6 @@ export * from './facts.ts';
 export * from './skin.ts';
 export * from './render.ts';
 export * from './entity.ts';
+export * from './particle.ts';
 export * from './bmp.ts';
 export * from './seasons.ts';

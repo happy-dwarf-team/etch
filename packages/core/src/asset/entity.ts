@@ -538,7 +538,7 @@ export function checkAssetParticles(
           code: 'unknown-pdxparticle',
           start: particle.start,
           end: particle.end,
-          message: `No .gfx file has a pdxparticle named "${name}", so the game does not start this particle. The game logs: Couldn't find particle 3D object "${name}".${hint}`,
+          message: `No .gfx file has a pdxparticle named "${name}", so the game does not start this particle. The game writes in its error log: Couldn't find particle 3D object "${name}".${hint}`,
         });
       }
     }
@@ -569,7 +569,7 @@ export function checkGfxParticles(parsed: ParsedScript, index: EntityIndex): Par
           code: 'unknown-particle-system',
           start: type.start,
           end: type.end,
-          message: `No .asset file has a particle effect named "${type.text}", so the game cannot start the pdxparticle "${name.text}". The game logs: Could not find particle effect [${type.text}].`,
+          message: `No .asset file has a particle effect named "${type.text}", so the game cannot start the pdxparticle "${name.text}". The game writes in its error log: Could not find particle effect [${type.text}].`,
         });
       }
     }

@@ -19,7 +19,9 @@ The folders are the groups of the site's sidebar, in this order:
   [Suggestions in .gui files](interface-windows/completion.md)
 - **Textures and meshes**: [Texture preview](textures-and-meshes/texture-preview.md) ·
   [Mesh preview](textures-and-meshes/mesh-preview.md) ·
-  [Entities](textures-and-meshes/entities.md) · [Map trees](textures-and-meshes/map-trees.md) ·
+  [Entities](textures-and-meshes/entities.md) ·
+  [Particle effects](textures-and-meshes/particles.md) ·
+  [Map trees](textures-and-meshes/map-trees.md) ·
   [Hovers and links](textures-and-meshes/hovers-and-links.md)
 - **The live game**: [Start and stop](live-game/start-and-stop.md) ·
   [Reload on save](live-game/reload-on-save.md) · [Pick mode](live-game/pick-mode.md) ·

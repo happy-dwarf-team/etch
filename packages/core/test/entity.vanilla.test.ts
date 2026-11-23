@@ -10,15 +10,20 @@ import {
   animationFits,
   checkAssetParticles,
   checkGfxParticles,
+  checkParticleBlocks,
   MAP_TREE_NAME,
   mapTreeOf,
+  particleTextureFiles,
   readAnimation,
   readMesh,
   resolveEntity,
+  shaderEffectNames,
   type PdxMesh,
   type ResolvedEntity,
 } from '../src/asset/index.ts';
 import { decodeGameText, parseScript } from '../src/index.ts';
+import { keyOf } from '../src/model/properties.ts';
+import { normaliseGamePath, textureCandidates } from '../src/model/references.ts';
 import {
   GameFiles,
   loadEntityIndex,
@@ -206,5 +211,40 @@ describe.skipIf(gamePath === undefined)('entities of the installed game', () => 
     expect(warnings).toEqual([]);
     expect(assets.length).toBeGreaterThan(0);
     expect(gfx.length).toBeGreaterThan(0);
+  });
+
+  it('warns on nothing in its particle blocks, and finds each of their textures', async () => {
+    const files = new GameFiles([{ name: 'game', root: gamePath ?? '', replacePaths: [] }]);
+    const under = async (dir: string, extension: string): Promise<GameFile[]> => [
+      ...(await files.list(dir, extension)),
+      ...(await Promise.all((await files.folders(dir)).map((sub) => under(sub, extension)))).flat(),
+    ];
+    const shader = await files.find('gfx/FX/particle.shader');
+    expect(shader).toBeDefined();
+    const effects = shaderEffectNames(readFileSync(shader?.absolutePath ?? '', 'latin1'));
+    expect([...effects].sort()).toEqual([
+      'ParticleAdditive',
+      'ParticleAlphaBlend',
+      'ParticlePreAlphaBlend',
+    ]);
+    const warnings: string[] = [];
+    const textures: string[] = [];
+    let blocks = 0;
+    for (const file of await under('gfx', '.asset')) {
+      const parsed = parseScript(decodeGameText(readFileSync(file.absolutePath), 'script').text);
+      blocks += parsed.entries.filter(
+        (e) => e.kind === 'property' && keyOf(e) === 'particle',
+      ).length;
+      for (const d of checkParticleBlocks(parsed, effects))
+        warnings.push(`${file.path}: ${d.message}`);
+      for (const node of particleTextureFiles(parsed)) {
+        const candidates = textureCandidates(normaliseGamePath(node.text));
+        const found = await Promise.all(candidates.map((c) => files.find(c)));
+        if (!found.some((f) => f !== undefined)) textures.push(`${file.path}: ${node.text}`);
+      }
+    }
+    expect(warnings).toEqual([]);
+    expect(textures).toEqual([]);
+    expect(blocks).toBe(9);
   });
 });

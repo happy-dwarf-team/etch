@@ -1042,11 +1042,20 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
      `.asset` files under `gfx/` and `.gfx` files under `interface/` (on the
      event's `particle`, on the pdxparticle's `type` or, without one, its
      `name`), checked against the playset's files on disk and read again when
-     an `.asset` or `.gfx` file is saved; none in vanilla 1.37.5. Still to do:
-     hovers and diagnostics for particle blocks: unknown keys, curve and force
-     names nothing defines, a curve `time` the game reads as `spawn` (it is
-     case-sensitive), a missing texture or shader effect, box keys on a sphere
-     emitter. A user docs page on particles goes with it.
+     an `.asset` or `.gfx` file is saved; none in vanilla 1.37.5. Also done:
+     hovers on the keys of particle blocks and of `.gfx` pdxparticle types
+     (what each takes and does, marked where it is Etch's reading rather than
+     the game's) and on curve and force names (their definitions), and
+     warnings in particle blocks: unknown keys, curve and force names the
+     effect does not define, a curve `time` the game reads as `spawn` (it is
+     case-sensitive), a curve `duration` of 0 or less, emitter keys of the
+     other shape, a shader effect the playset's `gfx/FX/particle.shader` lacks
+     (with `Trail` and `NoBillboard` as the game appends them) and a missing
+     texture; none in vanilla 1.37.5 or Anbennar. User page
+     `textures-and-meshes/particles.md`. Not checked: keys inside
+     `childsystem`, `position` and `color`, and the values of `sort`,
+     `emitter_type`, a force's `type` and `op`, since what the game does with
+     other text there is not known.
   2. Read the evaluators and the update in the lab's analysis (the research's
      open questions 1–5), checked live with a test mod and `reload particle`.
   3. A `prototype/*` branch of an approximate player in the entity preview
