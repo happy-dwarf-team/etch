@@ -108,6 +108,7 @@ export class CorpusPlaysetFiles {
       gamePath: gameFolder,
       workspaceFolder: gameFolder,
       playsetOverride: mods,
+      disabledDlcs: playset.disabledDlcs,
       environment,
       supportedExeSha256: [manifest.game.exeSha256],
     });

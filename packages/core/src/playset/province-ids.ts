@@ -1,4 +1,4 @@
-import { open, readFile } from 'node:fs/promises';
+import { open } from 'node:fs/promises';
 import { decodeGameText } from '../game-text.ts';
 import {
   bmpSize,
@@ -57,14 +57,14 @@ function decode(bytes: Uint8Array): string {
 export async function loadProvinceIds(files: GameFiles): Promise<PlaysetProvinceIds | undefined> {
   const mapFile = await files.find('map/default.map');
   if (mapFile === undefined) return undefined;
-  const mapText = decode(await readFile(mapFile.absolutePath));
+  const mapText = decode(await files.readFile(mapFile));
   const map = parseDefaultMap(mapText);
   if (map.maxProvinces === undefined) return undefined;
   const definitionFile = await files.find(`map/${map.definitions}`);
   const defined =
     definitionFile === undefined
       ? undefined
-      : parseProvinceDefinitions(decode(await readFile(definitionFile.absolutePath)));
+      : parseProvinceDefinitions(decode(await files.readFile(definitionFile)));
   return {
     maxProvinces: map.maxProvinces,
     maxSource: describe(mapFile),
@@ -111,11 +111,14 @@ export async function loadCanalBitmaps(
     const name = canal.name?.text;
     if (name === undefined || canals.has(name.toLowerCase())) continue;
     const file = await files.find(canalBitmapPath(name));
-    canals.set(name.toLowerCase(), file === undefined ? null : ((await headerSize(file)) ?? null));
+    canals.set(
+      name.toLowerCase(),
+      file === undefined ? null : ((await headerSize(files, file)) ?? null),
+    );
   }
   const riversFile = await files.find(`map/${rivers}`);
   return {
-    rivers: riversFile === undefined ? undefined : await headerSize(riversFile),
+    rivers: riversFile === undefined ? undefined : await headerSize(files, riversFile),
     riversPath: `map/${rivers}`,
     canals,
   };
@@ -125,8 +128,10 @@ export async function loadCanalBitmaps(
  * A BMP file's size from its first bytes only (a river map is megabytes); `undefined` when it
  * cannot be read or is no BMP.
  */
-async function headerSize(file: GameFile): Promise<BitmapSize | undefined> {
+async function headerSize(files: GameFiles, file: GameFile): Promise<BitmapSize | undefined> {
   try {
+    if (file.archiveEntry !== undefined)
+      return bmpSize((await files.readFile(file)).subarray(0, 26));
     const handle = await open(file.absolutePath, 'r');
     try {
       const bytes = new Uint8Array(26);
@@ -153,7 +158,7 @@ export async function loadScriptedProvinceArguments(files: GameFiles): Promise<P
   for (const folder of SCRIPTED_FOLDERS) {
     const found = await files.list(folder, '.txt');
     const texts = await Promise.all(
-      found.map((file) => readFile(file.absolutePath).catch(() => undefined)),
+      found.map((file) => files.readFile(file).catch(() => undefined)),
     );
     for (const bytes of texts) {
       if (bytes !== undefined) parsed.push(parseScript(decode(bytes), { script: true }));

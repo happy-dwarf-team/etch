@@ -5,7 +5,7 @@
 // with its textures. Paths resolve as `assetReferences` (core) says; the playset is the
 // one the script profile and the province id check use (`linkedFiles`).
 
-import { readFile, stat } from 'node:fs/promises';
+import { stat } from 'node:fs/promises';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { assetReferences, parseScript, textureCandidates, type AssetReference } from '@etch/core';
@@ -22,6 +22,8 @@ import { inspectTexture } from '@etch/renderer/inspect';
 import { encodePng } from './png.ts';
 import { linkedFiles } from './script-profile-view.ts';
 import { TextureThumbnails } from './texture-thumbnail.ts';
+import { readGamePath, statGamePath } from '@etch/core/playset';
+import { pathUri } from './dlc-files.ts';
 
 /** The files whose asset paths get links and hovers. */
 export const ASSET_SELECTOR: vscode.DocumentSelector = [
@@ -63,7 +65,7 @@ export class AssetLinks implements vscode.DocumentLinkProvider, vscode.HoverProv
     for (const { reference, range } of references(document)) {
       const resolved = await this.resolve(document.uri, reference);
       if (resolved === undefined) continue;
-      const link = new vscode.DocumentLink(range, vscode.Uri.file(resolved.absolutePath));
+      const link = new vscode.DocumentLink(range, pathUri(resolved.absolutePath));
       link.tooltip = `${resolved.path} (${resolved.source})`;
       links.push(link);
     }
@@ -110,11 +112,11 @@ export class AssetLinks implements vscode.DocumentLinkProvider, vscode.HoverProv
    * that is missing or unreadable leaves its part grey.
    */
   async meshThumbnail(absolutePath: string): Promise<string> {
-    const mesh = readMesh(await readFile(absolutePath));
+    const mesh = readMesh(await readGamePath(absolutePath));
     const textures: [string, string][] = [];
     const keys = [await statKey(absolutePath)];
     for (const name of meshFacts(mesh).textures) {
-      const found = await this.resolve(vscode.Uri.file(absolutePath), {
+      const found = await this.resolve(pathUri(absolutePath), {
         folder: 'document',
         candidates: textureCandidates(name),
       });
@@ -182,7 +184,7 @@ const MESH_THUMBNAIL_SIZE = 128;
 const MESH_RENDERS = 16;
 
 async function statKey(file: string): Promise<string> {
-  const info = await stat(file);
+  const info = await statGamePath(file);
   return `${file}|${String(info.mtimeMs)}|${String(info.size)}`;
 }
 
@@ -194,7 +196,7 @@ async function renderMesh(
   const decoded = new Map<string, RgbaImage>();
   for (const [name, file] of textures) {
     try {
-      const { summary, rgba } = inspectTexture(file, await readFile(file));
+      const { summary, rgba } = inspectTexture(file, await readGamePath(file));
       decoded.set(name, { width: summary.width, height: summary.height, rgba });
     } catch {
       // A texture Etch cannot read leaves its part grey; its own hover says why.
@@ -207,7 +209,7 @@ async function renderMesh(
 
 /** The facts of a mesh (size, skeleton, shaders, textures) or an animation (frames, joints). */
 async function assetFacts(absolutePath: string, kind: 'mesh' | 'animation'): Promise<string> {
-  const bytes = await readFile(absolutePath);
+  const bytes = await readGamePath(absolutePath);
   if (kind === 'animation') return animationFacts(readAnimation(bytes));
   const { summary, shaders, textures } = meshFacts(readMesh(bytes));
   const lines = [summary];

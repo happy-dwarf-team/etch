@@ -6,7 +6,7 @@
 // size and frames, and each PNG has a decoration type of its own.
 
 import { createHash } from 'node:crypto';
-import { mkdir, stat, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import * as vscode from 'vscode';
 import {
@@ -17,6 +17,7 @@ import {
   type SpriteLinks,
 } from './sprite-links.ts';
 import { texturePng } from './texture-thumbnail.ts';
+import { statGamePath } from '@etch/core/playset';
 
 /** The setting that turns the gutter thumbnails on; off by default. */
 const SETTING = 'editor.spriteThumbnails';
@@ -136,7 +137,7 @@ export class SpriteGutter implements vscode.Disposable {
 
   /** The PNG of a texture's thumbnail in the storage folder, written once; `undefined` if unreadable. */
   private async png(absolutePath: string, frames: number): Promise<string | undefined> {
-    const info = await stat(absolutePath).catch(() => undefined);
+    const info = await statGamePath(absolutePath).catch(() => undefined);
     if (info === undefined) return undefined;
     const key = `${absolutePath.toLowerCase()}|${String(info.mtimeMs)}|${String(info.size)}|${String(frames)}`;
     let entry = this.pngs.get(key);

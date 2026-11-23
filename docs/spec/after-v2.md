@@ -854,12 +854,12 @@ refresh is a step of the 3.0.0 release.
   Etch's global storage, as VS Code draws a gutter icon only from a file. Of
   the 358 picture
   names that do not, 302 are defined only in the DLC archives (`dlc/*/*.zip`,
-  `builtin_dlc`), which Etch's `GameFiles` does not read, and 56 by no `.gfx`
-  file of the game. Reading the archives of the DLCs the player has on, in the
-  game's search order (mods, then DLC, then the game folder), is not done;
-  until then a script name without a sprite gets a hover, not a diagnostic.
-  [ADR 0009](../adr/0009-dlc-archives-are-a-playset-layer.md) proposes it
-  (with builtin_dlc, 304 of the 358 resolve in an archive).
+  `builtin_dlc`), and 56 by no `.gfx` file of the game.
+  [ADR 0009](../adr/0009-dlc-archives-are-a-playset-layer.md), accepted and
+  built on 23 November 2026, reads the archives of the DLCs the player has on
+  as layers between the game folder and the mods (with builtin_dlc, 304 of the
+  358 resolve in an archive). A script name without a sprite still gets a
+  hover, not a diagnostic, until the pictures nothing defines are understood.
   Core `@etch/core/asset` reads the game's
   asset container in both encodings (binary `@@b@`, text `@@t@`): meshes
   (shapes, vertices, normals, UVs, triangles, materials, skin, skeleton with

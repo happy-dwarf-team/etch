@@ -162,7 +162,10 @@ export class PreviewSession {
     return home !== undefined && isInside(file, home);
   }
 
-  /** The folders the webview may read textures from: the game folder and the mods. */
+  /**
+   * The folders the webview may read textures from: the game folder, the DLC archives (as
+   * `etch-dlc` roots) and the mods.
+   */
   get roots(): string[] {
     return this.playset.files.layers.map((layer) => layer.root);
   }
@@ -173,8 +176,10 @@ export class PreviewSession {
    */
   get watchedRoots(): string[] {
     const game = this.playset.gameFolder;
-    if (this.playset.workspaceMod === undefined || game === undefined) return this.roots;
-    return this.roots.filter((root) => pathKey(root) !== pathKey(game));
+    // A DLC's archive changes only when the game updates.
+    const folders = this.playset.files.layers.filter((l) => l.archive !== true).map((l) => l.root);
+    if (this.playset.workspaceMod === undefined || game === undefined) return folders;
+    return folders.filter((root) => pathKey(root) !== pathKey(game));
   }
 
   /** Where a file on disk sits in the playset, or `undefined` when no layer holds it. */

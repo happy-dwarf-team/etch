@@ -62,6 +62,26 @@ game's launcher, or set `etch.playset`.
 
 When you edit the game's own files in the game folder, the preview shows the base game alone.
 
+### The DLCs
+
+Many of the game's files are not in the game folder itself but in its DLCs: in the zip files
+of the `dlc` and `builtin_dlc` folders. Many of the base game's event pictures are there, for
+example. Etch reads those zip files where they are, as the game does, and unpacks nothing.
+
+When two places have a file of the same name, the later one wins. The order is the game folder,
+then the DLCs, then your playset's mods. So a DLC's file wins over the game folder's, and a mod's
+file wins over a DLC's.
+
+Etch reads every DLC in the game folder except the ones you turned off in the game's launcher.
+You turn DLCs on and off there as usual: the launcher keeps the list in `dlc_load.json`, in
+[your EU4 profile](#your-eu4-profile), and Etch reads it from there. After you turn a DLC on or
+off, reload VS Code (**Developer: Reload Window**) to see the change.
+
+Etch does not check which DLCs you own. A player without a DLC does not see its pictures, so a
+window of your mod that uses one looks different for them.
+
+A DLC's file opens read-only, like the game's own files, so you can't change it by accident.
+
 ### Choose the mods yourself
 
 Set `etch.playset` to the mods to load, in load order. Each entry is a mod's name, its folder or

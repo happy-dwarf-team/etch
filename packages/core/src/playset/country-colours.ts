@@ -16,7 +16,6 @@
  *   (`gfx/flags/flagfilescolor.txt` in the user folder) matches this rule on all 1020 flags of the
  *   game.
  */
-import { readFile } from 'node:fs/promises';
 import { decodeGameText } from '../game-text.ts';
 import { parseScript } from '../script/parse.ts';
 import type { ParsedScript, ValueNode } from '../script/tree.ts';
@@ -99,7 +98,7 @@ export async function loadCountryColours(files: GameFiles): Promise<CountryColou
   const tags = new Map<string, CountryColourEntry>();
   const problems: string[] = [];
   for (const file of await files.list('common/country_colors', '.txt')) {
-    const bytes = await readFile(file.absolutePath).catch(() => undefined);
+    const bytes = await files.readFile(file).catch(() => undefined);
     if (bytes === undefined) {
       problems.push(`${file.path}: cannot be read`);
       continue;

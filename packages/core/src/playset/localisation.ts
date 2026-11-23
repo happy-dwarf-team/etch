@@ -1,4 +1,3 @@
-import { readFile } from 'node:fs/promises';
 import { decodeGameText } from '../game-text.ts';
 import { Localisation, isLocalisationPath, type LocalisationFile } from '../localisation.ts';
 import type { GameFile, GameFiles } from './game-files.ts';
@@ -29,7 +28,7 @@ export async function loadPlaysetLocalisation(
     listed
       .filter((file) => isLocalisationPath(file.path, language))
       .map(async (file): Promise<LocalisationFile> => {
-        const { text, bom } = decodeGameText(await readFile(file.absolutePath), 'localisation');
+        const { text, bom } = decodeGameText(await files.readFile(file), 'localisation');
         return { path: file.path, layer: files.layers.indexOf(file.layer), text, bom };
       }),
   );

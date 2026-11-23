@@ -1,4 +1,3 @@
-import { readFile } from 'node:fs/promises';
 import { decodeGameText } from '../game-text.ts';
 import {
   readBasicAbilities,
@@ -24,9 +23,9 @@ export interface PlaysetMechanics {
 /** Reads the playset's government mechanics and `scripted` widgets. */
 export async function loadGovernmentMechanics(files: GameFiles): Promise<PlaysetMechanics> {
   const [mechanics, scripted, abilities] = await Promise.all([
-    readAll(await files.list(MECHANICS_FOLDER, '.txt'), readGovernmentMechanics),
-    readAll(await files.list(CUSTOM_GUI_FOLDER, '.txt'), readScriptedWidgets),
-    readAll(await files.list(REFORMS_FOLDER, '.txt'), readBasicAbilities),
+    readAll(files, await files.list(MECHANICS_FOLDER, '.txt'), readGovernmentMechanics),
+    readAll(files, await files.list(CUSTOM_GUI_FOLDER, '.txt'), readScriptedWidgets),
+    readAll(files, await files.list(REFORMS_FOLDER, '.txt'), readBasicAbilities),
   ]);
   const given = new Set(abilities.map((name) => name.toLowerCase()));
   const basic = mechanics.filter((m) => m.everyPlayer && given.has(m.name.toLowerCase()));
@@ -34,11 +33,12 @@ export async function loadGovernmentMechanics(files: GameFiles): Promise<Playset
 }
 
 async function readAll<T>(
+  playset: GameFiles,
   files: readonly GameFile[],
   read: (text: string) => readonly T[],
 ): Promise<T[]> {
   const texts = await Promise.all(
-    files.map(async (file) => decodeGameText(await readFile(file.absolutePath), 'interface').text),
+    files.map(async (file) => decodeGameText(await playset.readFile(file), 'interface').text),
   );
   return texts.flatMap(read);
 }

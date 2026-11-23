@@ -1,13 +1,15 @@
 // Sprite hovers and Go to Definition in `.gui` and script files end to end in a real VS Code: a
 // fixture game (an `eu4.exe` that is not the game) set as `etch.gamePath`, two `.gfx` files where
 // the later one redefines a sprite, a `.gui` file that names sprites, one of them missing, and an
-// event, a mission and an estate privilege that name sprites; then the gutter thumbnails.
+// event, a mission and an estate privilege that name sprites, and a DLC's archive (ADR 0009) that
+// defines an event picture; then the gutter thumbnails.
 import * as assert from 'node:assert/strict';
 import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { dds, markdownOf, positionOf } from './asset-links.ts';
+import { makeZip } from '../../core/test/playset/zip-fixture.ts';
 import type { EtchApi } from '../src/extension.ts';
 import { spriteScriptPath } from '../src/sprite-links.ts';
 
@@ -49,6 +51,18 @@ country_event = {
 	id = etch.2
 	picture = ETCH_LOST_eventPicture
 }
+country_event = {
+	id = etch.3
+	picture = ETCH_DLC_eventPicture
+}
+`;
+
+const DLC_GFX = `spriteTypes = {
+	spriteType = {
+		name = "ETCH_DLC_eventPicture"
+		texturefile = "gfx/event_pictures/etch_dlc.dds"
+	}
+}
 `;
 
 const MISSIONS = `etch_series = {
@@ -87,6 +101,12 @@ async function fixtureGame(): Promise<string> {
     'gfx/event_pictures/etch_harbour.dds': dds(90, 60, [200, 120, 40, 255]),
     'gfx/interface/etch_badge.dds': dds(48, 24, [0, 128, 255, 255]),
     'gfx/interface/etch_strip.dds': dds(64, 16, [255, 255, 255, 128]),
+    'dlc/dlc999_etch_pack/dlc999.dlc':
+      'name = "Etch Pack"\narchive = "dlc/dlc999_etch_pack/dlc999.zip"\n',
+    'dlc/dlc999_etch_pack/dlc999.zip': makeZip({
+      'interface/etch_dlc.gfx': DLC_GFX,
+      'gfx/event_pictures/etch_dlc.dds': dds(120, 40, [10, 200, 90, 255]),
+    }),
   };
   for (const [name, content] of Object.entries(files)) {
     const file = path.join(root, ...name.split('/'));
@@ -182,8 +202,37 @@ export async function testSpriteLinks(api: EtchApi): Promise<void> {
     assert.match(picture, /90 × 60 · DDS BGRA8/, 'with its texture');
     assert.match(
       await hoverIn(events, 'ETCH_LOST_eventPicture'),
-      /\*\*ETCH_LOST_eventPicture\*\* · no sprite of that name in the playset's `\.gfx` files\. Etch does not read the DLC archives/,
+      /\*\*ETCH_LOST_eventPicture\*\* · no sprite of that name in the playset's `\.gfx` files, nor in the archives of the DLCs that are on/,
       'a missing picture says so, as a script file has no diagnostic for it',
+    );
+    const dlcPicture = await hoverIn(events, 'ETCH_DLC_eventPicture');
+    assert.match(
+      dlcPicture,
+      /Defined in `interface\/etch_dlc\.gfx` — Etch Pack/,
+      "a DLC's picture names the DLC that defines it",
+    );
+    assert.match(
+      dlcPicture,
+      /Texture `gfx\/event_pictures\/etch_dlc\.dds` — Etch Pack/,
+      'its texture',
+    );
+    assert.match(dlcPicture, /120 × 40 · DDS BGRA8/, "read from the DLC's archive");
+    const [dlcDefinition] = await vscode.commands.executeCommand<vscode.Location[]>(
+      'vscode.executeDefinitionProvider',
+      events.uri,
+      positionOf(events, 'ETCH_DLC_eventPicture'),
+    );
+    assert.equal(
+      dlcDefinition?.uri.scheme,
+      'etch-dlc',
+      "Go to Definition opens the archive's file",
+    );
+    assert.equal(dlcDefinition.range.start.line, 2);
+    const dlcGfx = await vscode.workspace.openTextDocument(dlcDefinition.uri);
+    assert.equal(dlcGfx.getText(), DLC_GFX, 'with its text');
+    await assert.rejects(
+      Promise.resolve(vscode.workspace.fs.writeFile(dlcDefinition.uri, new Uint8Array())),
+      'and it cannot be written',
     );
     assert.match(
       await hoverIn(await open('missions/etch_missions.txt'), 'mission_etch_fleet'),
@@ -228,8 +277,8 @@ export async function testSpriteLinks(api: EtchApi): Promise<void> {
     assert.equal(png.readUInt32BE(16), 32, 'the 48 × 24 badge at 32 pixels wide');
     assert.deepEqual(
       (await api.spriteGutter.icons(events)).map((i) => i.line),
-      [3],
-      "an event's picture, not the lost one",
+      [3, 11],
+      "an event's picture and the DLC's, not the lost one",
     );
     assert.equal(
       (await api.spriteGutter.icons(await open('missions/etch_missions.txt')))[0]?.file,

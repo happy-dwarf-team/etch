@@ -1,9 +1,8 @@
-import { readFile } from 'node:fs/promises';
 import { decodeGameText } from '../game-text.ts';
 import { readAreas, readRegions, type MapAreas } from '../script/map-areas.ts';
 import { parseScript } from '../script/parse.ts';
 import { parseDefaultMap } from '../script/province-ids.ts';
-import type { GameFiles } from './game-files.ts';
+import type { GameFile, GameFiles } from './game-files.ts';
 
 /** A script file's text as the game reads it: Windows-1252, without a leading UTF-8 BOM. */
 function decode(bytes: Uint8Array): string {
@@ -18,18 +17,17 @@ function decode(bytes: Uint8Array): string {
 export async function loadMapAreas(files: GameFiles): Promise<MapAreas | undefined> {
   const mapFile = await files.find('map/default.map');
   const map =
-    mapFile === undefined
-      ? undefined
-      : parseDefaultMap(decode(await readFile(mapFile.absolutePath)));
+    mapFile === undefined ? undefined : parseDefaultMap(decode(await files.readFile(mapFile)));
   const [areaFile, regionFile] = await Promise.all([
     files.find(`map/${map?.area ?? 'area.txt'}`),
     files.find(`map/${map?.region ?? 'region.txt'}`),
   ]);
   if (areaFile === undefined) return undefined;
-  const parse = async (path: string) => parseScript(decode(await readFile(path)), { script: true });
+  const parse = async (file: GameFile) =>
+    parseScript(decode(await files.readFile(file)), { script: true });
   const [areas, regions] = await Promise.all([
-    parse(areaFile.absolutePath),
-    regionFile === undefined ? undefined : parse(regionFile.absolutePath),
+    parse(areaFile),
+    regionFile === undefined ? undefined : parse(regionFile),
   ]);
   return {
     area: readAreas(areas),

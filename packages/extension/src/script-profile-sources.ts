@@ -1,11 +1,11 @@
 // Where a script profile's owners are written (eu4-engine-lab#166, after-v2.md): the file and line
 // of an event, a decision, an on_action, … in the playset's files, so that a row of the page links
 // to the block it measured. Node only, no vscode.
-import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { GameFile, GameFiles } from '@etch/core/playset';
 import { parseScript, type BlockNode, type EntryNode, type PropertyNode } from '@etch/core';
 import type { ScriptProfileRow } from './script-profile.ts';
+import { readGamePath } from '@etch/core/playset';
 
 /** Where an owner's block, or its role's block inside it, starts. */
 export interface ScriptSource {
@@ -172,7 +172,7 @@ export async function findScriptSources(
     // UTF-8, and only the ASCII keys are compared. A UTF-8 BOM, on the first line, goes first: as
     // latin1 it would join the file's first key.
     const read = (file: GameFile): Promise<string | undefined> =>
-      readFile(file.absolutePath).then(
+      readGamePath(file.absolutePath).then(
         (bytes) =>
           (bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf
             ? bytes.subarray(3)

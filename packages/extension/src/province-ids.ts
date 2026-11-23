@@ -39,6 +39,7 @@ import {
 } from '@etch/core/playset';
 import { gamePathOf } from './live-game/pick.ts';
 import { linkedFiles } from './script-profile-view.ts';
+import { pathUri } from './dlc-files.ts';
 
 export const CHECK_PROVINCE_IDS = 'etch.checkProvinceIds';
 
@@ -248,7 +249,7 @@ export class ProvinceIdDiagnostics implements vscode.Disposable {
     this.checked.clear();
     let warnings = 0;
     for (const finding of findings) {
-      const uri = vscode.Uri.file(finding.file.absolutePath);
+      const uri = pathUri(finding.file.absolutePath);
       this.checked.add(uri.toString());
       warnings += finding.diagnostics.length;
       const open = vscode.workspace.textDocuments.find((d) => d.uri.toString() === uri.toString());

@@ -122,6 +122,8 @@ import {
   viewMenu,
   type ChoiceState,
 } from './views.ts';
+import { readGamePath } from '@etch/core/playset';
+import { archiveRootUri, pathUri } from '../dlc-files.ts';
 
 /** The setting of the preview resolution (spec section 6), in the `etch` section. */
 export const RESOLUTION_SETTING = 'previewResolution';
@@ -1248,7 +1250,12 @@ export class Preview implements PreviewApi, vscode.Disposable {
    * page is set only once they are known, and the last draw is posted again when it is ready.
    */
   private allowRoots(panel: vscode.WebviewPanel, folders: readonly string[]): void {
-    const roots = [this.distUri, ...folders.map((folder) => vscode.Uri.file(folder))];
+    const roots = [
+      this.distUri,
+      ...folders.map((folder) =>
+        /\.zip$/i.test(folder) ? archiveRootUri(folder) : vscode.Uri.file(folder),
+      ),
+    ];
     const key = roots.map((root) => root.toString()).join('\n');
     if (key === this.roots) return;
     const first = this.roots === undefined;
@@ -1608,7 +1615,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
     const fileHash =
       winner === undefined
         ? undefined
-        : await readFile(winner.absolutePath).then(
+        : await readGamePath(winner.absolutePath).then(
             (bytes) => createHash('sha256').update(bytes).digest('hex'),
             () => undefined,
           );
@@ -1910,7 +1917,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
     if (winner === undefined || opened.pick.window === '') return;
     // The window by its name; the session finds it in the file when it lays it out.
     this.pin = {
-      uri: vscode.Uri.file(winner.absolutePath).toString(),
+      uri: pathUri(winner.absolutePath).toString(),
       name: opened.pick.window,
       index: 0,
     };
@@ -1987,7 +1994,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
       return false;
     }
     this.pin = {
-      uri: vscode.Uri.file(absolute).toString(),
+      uri: pathUri(absolute).toString(),
       name: found.item.name,
       index: file.definitions.indexOf(found.item),
     };
@@ -2352,7 +2359,7 @@ function isAsset(uri: vscode.Uri): boolean {
 
 /** The URL the webview fetches a file of the playset from. */
 function webviewUrl(panel: vscode.WebviewPanel, absolutePath: string): string {
-  return panel.webview.asWebviewUri(vscode.Uri.file(absolutePath)).toString();
+  return panel.webview.asWebviewUri(pathUri(absolutePath)).toString();
 }
 
 /** A memento the webview kept, checked: it comes back from VS Code's storage. */
