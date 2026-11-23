@@ -41,6 +41,14 @@ export interface LiveMenuContext {
 
 const CLICK = 'Click for the Live Game menu.';
 
+/**
+ * A status bar text without its `$(icon)`s, for screen readers: without a label of its own, VS
+ * Code reads the icons' names out, such as "vm-running Live game".
+ */
+export function spokenText(text: string): string {
+  return text.replace(/\$\([^)]*\)\s*/g, '');
+}
+
 /** The live game's status bar item; `undefined` when it is stopped, busy elsewhere or failed. */
 export function liveStatus(state: LiveGameState): StatusText | undefined {
   switch (state.status) {

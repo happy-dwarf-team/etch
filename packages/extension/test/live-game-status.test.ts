@@ -5,6 +5,7 @@ import {
   liveMenu,
   liveStatus,
   pickStatus,
+  spokenText,
   type LiveMenuItem,
 } from '../src/live-game/status-view.ts';
 
@@ -64,6 +65,12 @@ describe('the live game in the status bar', () => {
     expect(on?.tooltip).toContain('press Alt+F2 in the game');
     expect(pickStatus(stale, true, 'Ctrl+Shift+E')?.text).toBe('$(target) Pick mode');
     expect(pickStatus({ status: 'stopping' }, true, 'Ctrl+Shift+E')).toBeUndefined();
+  });
+
+  it('gives screen readers the texts without the icons', () => {
+    expect(spokenText('$(vm-running) Live game')).toBe('Live game');
+    expect(spokenText('$(loading~spin) Live game: starting')).toBe('Live game: starting');
+    expect(spokenText('$(target) Pick mode')).toBe('Pick mode');
   });
 });
 

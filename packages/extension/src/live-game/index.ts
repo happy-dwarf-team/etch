@@ -9,6 +9,7 @@ import {
   liveMenu,
   liveStatus,
   pickStatus,
+  spokenText,
   type LiveMenuAction,
   type StatusText,
 } from './status-view.ts';
@@ -184,6 +185,7 @@ function show(item: vscode.StatusBarItem, shown: StatusText | undefined): void {
   }
   item.text = shown.text;
   item.tooltip = shown.tooltip;
+  item.accessibilityInformation = { label: spokenText(shown.text), role: 'button' };
   item.show();
 }
 
