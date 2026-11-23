@@ -32,13 +32,16 @@ import {
 } from '../../src/corpus/driver/run.ts';
 import {
   captureView,
+  firstDifference,
   holdCursor,
   MouseReleased,
   pinCursor,
   startWindows,
   stepCommand,
   type ViewContext,
+  withoutChangedFrames,
 } from '../../src/corpus/driver/view.ts';
+import type { CapturedWidget } from '../../src/corpus/capture.ts';
 import type { TongsAnswer } from '../../src/corpus/driver/tongs.ts';
 import { makeTree, removeTree } from '../playset/fixture.ts';
 import { CrawlGame, FakeGame, FakeMouse, type FakeWindow } from './fake-game.ts';
@@ -304,6 +307,41 @@ describe('captureView', () => {
     });
   });
 
+  it('names the first field that differs between two trees by its widget path', () => {
+    const tree = (frame: number) => [
+      { path: 'lobby', visible: true, children: [{ path: 'lobby/flag', frame }] },
+    ];
+    expect(firstDifference(tree(1), tree(1), 'widgets')).toBeUndefined();
+    expect(firstDifference(tree(1), tree(2), 'widgets')).toBe('lobby/flag.frame was 1, then 2');
+    expect(firstDifference([{ path: 'a' }], [{ path: 'a', sprite: 'GFX_x' }], 'widgets')).toBe(
+      'a.sprite was missing, then "GFX_x"',
+    );
+  });
+
+  it('leaves out the frame of an animated sprite and keeps every other field', () => {
+    const rect = { x: 0, y: 0, w: 1, h: 1 };
+    const tree = (frame: number, sprite: string): CapturedWidget[] => [
+      {
+        path: 'lobby',
+        name: 'lobby',
+        type: 'window',
+        visible: true,
+        rect,
+        children: [
+          { path: 'lobby/a', name: 'a', type: 'button', visible: true, rect, sprite, frame },
+          { path: 'lobby/b', name: 'b', type: 'icon', visible: true, rect, frame: 3 },
+        ],
+      },
+    ];
+    const [before, after] = withoutChangedFrames(tree(14, 'GFX_x'), tree(6, 'GFX_x'));
+    expect(before[0]?.children?.map((w) => w.frame)).toEqual([undefined, 3]);
+    expect(firstDifference(before, after, 'widgets')).toBeUndefined();
+    const [, changed] = withoutChangedFrames(tree(14, 'GFX_x'), tree(6, 'GFX_y'));
+    expect(firstDifference(before, changed, 'widgets')).toBe(
+      'lobby/a.sprite was "GFX_x", then "GFX_y"',
+    );
+  });
+
   it('fails a view whose widget trees or game window change while the shots are taken', async () => {
     const folder = await makeTree({});
     trees.push(folder);
@@ -319,7 +357,8 @@ describe('captureView', () => {
     expect(await captureView(ctx, viewOf(manifest, 'lobby'))).toEqual({
       view: 'lobby',
       ok: false,
-      reason: 'The widget trees changed while the screenshots were taken.',
+      reason:
+        'The widget trees changed while the screenshots were taken: lobby.children had 0 items, then 2.',
       lost: false,
     });
 
