@@ -70,8 +70,10 @@ diffuse, normal".
 
 A part with the `PdxMeshColor` shader takes a country's colours, such as a unit's uniform or a
 ship's sails. Its specular map marks where: its red channel for the first colour, its green
-channel for the second and its blue channel for the third. For such a mesh, three colour boxes
-and a **Country** box show in the bar above the model.
+channel for the second and its blue channel for the third. For such a mesh, a country colours
+button shows in the bar above the model: three small swatches of the colours, and the country
+they came from, or "by hand". Click it to open the three colour boxes, the **Country** box and
+**Region**. Press <kbd>Esc</kbd> or click outside to close them.
 
 To see the model in a country's colours:
 
@@ -149,7 +151,7 @@ Map trees take snow too, in their own way: see [Map trees](map-trees.md).
 
 ## Animations
 
-If the mesh has a skeleton, a list in the bar offers the `.anim` files in its folder that have as
+If the mesh has a skeleton, a list in the bar under the model offers the `.anim` files in its folder that have as
 many joints as the mesh has bones: the game plays no other animation on it. The ones whose names
 start with the mesh's name come first, such as `carrack_idle.anim` for `carrack.mesh`.
 
@@ -173,7 +175,7 @@ The slider beside **Play** shows where the animation is. It moves along as the a
   back or forward. The animation pauses at that frame.
 - Or press the comma key <kbd>,</kbd> (one frame back) or the full stop key <kbd>.</kbd> (one
   frame forward) anywhere in the preview, as in a video player. They do nothing while you type in
-  a box, such as **Flag**.
+  a box, such as **Country**.
 
 The line at the bottom shows the frame you are on. **Play** goes on from there.
 
