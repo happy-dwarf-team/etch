@@ -163,7 +163,7 @@ function textureHtml(webview: vscode.Webview, extensionUri: vscode.Uri): string 
     <button role="radio" data-channels="a" aria-checked="false" tabindex="-1" title="Alpha as grey">A</button>
   </div>
   <span class="sep"></span>
-  ${zoomControl('Ctrl+wheel')}
+  ${zoomControl({ wheel: 'Ctrl+wheel' })}
 </header>
 <div id="error" role="alert" hidden></div>
 <main><div id="stage"><canvas id="canvas" width="0" height="0"></canvas></div></main>

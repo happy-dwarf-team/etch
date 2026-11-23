@@ -110,20 +110,48 @@ export const CONTROLS_CSS = `
     color: var(--vscode-descriptionForeground); font-variant-numeric: tabular-nums;
     border-top: 1px solid var(--vscode-panel-border, transparent);
   }
-  .zoom { display: inline-flex; align-items: center; gap: 1px; flex: none; }
+  .zoom { position: relative; display: inline-flex; align-items: center; gap: 1px; flex: none; }
   .zoom #zoom-level { min-width: 7.5em; }
+  button[aria-haspopup="menu"].field::after { content: '▾' / ''; }
+  .menu {
+    position: absolute; z-index: 20; top: calc(100% + 2px); right: 0; min-width: 180px; padding: 4px 0;
+    background: var(--vscode-menu-background, var(--vscode-dropdown-background));
+    color: var(--vscode-menu-foreground, var(--vscode-foreground));
+    border: 1px solid var(--vscode-menu-border, var(--vscode-dropdown-border, transparent)); border-radius: 5px;
+    box-shadow: 0 2px 8px var(--vscode-widget-shadow, rgba(0, 0, 0, 0.36));
+  }
+  .menu button.item {
+    display: grid; grid-template-columns: 14px 1fr auto; gap: 6px; width: 100%; height: 24px;
+    padding: 0 12px 0 8px; border: 0; border-radius: 0; text-align: left; color: inherit;
+  }
+  .menu button.item:hover, .menu button.item:focus {
+    background: var(--vscode-menu-selectionBackground, var(--vscode-list-activeSelectionBackground));
+    color: var(--vscode-menu-selectionForeground, inherit); outline: none;
+  }
+  .menu button.item:focus-visible { outline: 1px solid var(--vscode-menu-selectionBorder, transparent); outline-offset: -1px; }
+  .menu button.item[aria-checked="true"] .mark::before { content: '✓'; }
+  .menu .keys { color: var(--vscode-descriptionForeground); font-size: 0.92em; }
+  .menu button.item:hover .keys, .menu button.item:focus .keys { color: inherit; }
+  .menu hr { border: 0; border-top: 1px solid var(--vscode-menu-separatorBackground, var(--vscode-panel-border, #555)); margin: 4px 0; }
 `;
 
 /**
  * The zoom control, the same in all three previews (etch#648, finding P2.6): −, the level, +.
- * The level shows the zoom and its click switches between fitting the view and the view's
- * own size; the webview script (with `webview/zoom-keys.ts` for the keys) makes them work.
+ * The level shows the zoom and opens a menu of fitting the view and sizes (`webview/menu.ts`);
+ * in the mesh preview, which has no size of its own, it is `fit` instead, a button that frames
+ * the model. The webview script (with `webview/zoom-keys.ts` for the keys) makes them work.
  * `wheel` names the wheel that zooms, for the tooltips.
  */
-export function zoomControl(wheel: string): string {
+export function zoomControl(options: { readonly wheel: string; readonly fit?: string }): string {
+  const { wheel, fit } = options;
+  const level =
+    fit === undefined
+      ? `<button id="zoom-level" class="field" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="zoom-menu">Fit</button>`
+      : `<button id="zoom-level" class="field" type="button" title="Frame the whole model (Ctrl+Shift+0)">${fit}</button>`;
   return `<span id="zoom" class="zoom" role="group" aria-label="Zoom">
     <button id="zoom-out" type="button" title="Zoom out (Ctrl+-, ${wheel})" aria-label="Zoom out">−</button>
-    <button id="zoom-level" class="field" type="button">Fit</button>
+    ${level}
     <button id="zoom-in" type="button" title="Zoom in (Ctrl+=, ${wheel})" aria-label="Zoom in">+</button>
+    ${fit === undefined ? '<div id="zoom-menu" class="menu" role="menu" aria-label="Zoom" hidden></div>' : ''}
   </span>`;
 }

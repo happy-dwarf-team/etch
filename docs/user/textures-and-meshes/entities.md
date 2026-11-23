@@ -70,8 +70,8 @@ names the state in the box under the bar.
 
 You turn, move and zoom the model as in the [mesh preview](mesh-preview.md). The colour boxes,
 **Country**, **Region**, **LOD**, **Snow**, **Wire**, **Bones**, **Diffuse**, **Normal**, **Spec**
-and **Reset view** work the same way. **Particles** shows or hides the state's smoke, sparks and
-flashes (see [Particles](#particles)). As there, the colour boxes, **Country**, **Region**, **LOD**
+and the zoom with **Fit model** work the same way. **Particles** shows or hides the state's smoke,
+sparks and flashes (see [Particles](#particles)). As there, the colour boxes, **Country**, **Region**, **LOD**
 and **Snow** show only when the model has parts they work on. **Bones** shows the skeletons of the
 entity and of everything attached to it that has one. An orange dot marks each bone an attached
 entity hangs on: point at it to see the bone's name, then the name of the attached entity.

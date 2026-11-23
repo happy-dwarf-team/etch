@@ -21,6 +21,7 @@ import type {
 } from '../src/preview/protocol.ts';
 import { markPaint, paintResult } from './paint-marker.ts';
 import { listenForZoomKeys } from './zoom-keys.ts';
+import { attachMenu, SEPARATOR } from './menu.ts';
 import {
   FIT,
   type Panel,
@@ -61,6 +62,8 @@ const stage = element('stage', HTMLElement);
 const zoomOut = element('zoom-out', HTMLButtonElement);
 const zoomLevel = element('zoom-level', HTMLButtonElement);
 const zoomIn = element('zoom-in', HTMLButtonElement);
+/** The sizes in the zoom's menu, after Fit. */
+const PREVIEW_SIZES = [0.5, 1, 2, 4] as const;
 const title = element('title', HTMLSpanElement);
 const file = element('file', HTMLSpanElement);
 const notices = element('notices', HTMLUListElement);
@@ -526,10 +529,27 @@ zoomIn.addEventListener('click', () => {
 zoomOut.addEventListener('click', () => {
   zoomBy(-1);
 });
-zoomLevel.addEventListener('click', () => {
-  if (zoom.fit) zoomTo(1);
-  else setZoom(FIT);
-});
+// The level shows the zoom and opens its menu: fit the panel, or one of the sizes, around the
+// panel's middle.
+attachMenu(zoomLevel, element('zoom-menu', HTMLDivElement), () => [
+  {
+    label: 'Fit',
+    keys: 'Ctrl+Shift+0',
+    checked: zoom.fit,
+    pick: () => {
+      setZoom(FIT);
+    },
+  },
+  SEPARATOR,
+  ...PREVIEW_SIZES.map((size) => ({
+    label: `${String(size * 100)} %`,
+    ...(size === 1 ? { keys: 'Ctrl+0' } : {}),
+    checked: !zoom.fit && Math.abs(zoom.scale - size) < 1e-6,
+    pick: () => {
+      zoomTo(size);
+    },
+  })),
+]);
 
 listenForZoomKeys({
   zoomIn: () => {
@@ -646,8 +666,8 @@ function layout(): void {
   }
   zoomLevel.textContent = zoomLabel(zoom, placement?.scale);
   zoomLevel.title = zoom.fit
-    ? 'The screen fitted into the panel, never above 100 %. Click for 100 % (Ctrl+0).'
-    : 'Monitor pixels per pixel of the screen. Click to fit the panel (Ctrl+Shift+0).';
+    ? 'The screen fitted into the panel, never above 100 %. Click for fit or a size.'
+    : 'Monitor pixels per pixel of the screen. Click for fit or a size.';
   zoomOut.disabled = placement === undefined;
   zoomIn.disabled = placement === undefined;
   showOverlay();

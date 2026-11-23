@@ -773,9 +773,8 @@ export function meshHtml(webview: vscode.Webview, extensionUri: vscode.Uri): str
   <button id="wireframe" aria-pressed="false" title="Show the triangle edges">Wire</button>
   <button id="skeleton" aria-pressed="false" title="Show the skeleton over the model: yellow lines join each bone to the one it hangs from, white dots mark the bones, bigger orange dots mark where an attached entity hangs. Point at a dot to see its name">Bones</button>
   <button id="particles" aria-pressed="true" title="Show the smoke, sparks and flashes the state starts. Etch draws them its own way: close to the game's, not the same" hidden>Particles</button>
-  <button id="reset" title="Frame the whole mesh">Reset view</button>
   <span class="sep"></span>
-  ${zoomControl('wheel')}
+  ${zoomControl({ wheel: 'wheel', fit: 'Fit model' })}
 </header>
 <div id="error" role="alert" hidden></div>
 <main><canvas id="canvas"></canvas><div id="bone-tip" role="tooltip" hidden></div></main>

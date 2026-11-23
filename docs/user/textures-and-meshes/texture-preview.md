@@ -28,7 +28,7 @@ it is see-through. The bar above it lists:
 | **A**                         | Shows the alpha alone, in grey: white is solid, black is see-through. |
 | **Mip**                       | Picks one of the smaller copies, down to 1 × 1 pixel.               |
 | **−** and **+**, <kbd>Ctrl</kbd>+mouse wheel, <kbd>Ctrl+-</kbd> and <kbd>Ctrl+=</kbd> | Zoom out and in. |
-| The zoom level, such as "Fit · 50 %" | Switches between fitting the panel and 100 %.            |
+| The zoom level, such as "Fit · 50 %" | Opens a menu: **Fit**, or 100 %, 200 %, 400 % or 800 %.   |
 | <kbd>Ctrl+0</kbd>             | Goes to 100 %: one texture pixel per screen pixel.                   |
 | <kbd>Ctrl+Shift+0</kbd>       | Fits the texture into the panel. A large one shrinks; a small one is never enlarged. |
 

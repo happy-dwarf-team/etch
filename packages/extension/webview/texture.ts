@@ -8,6 +8,7 @@ import type { InspectedTexture, TextureSummary } from '@etch/renderer';
 import type { TextureHostMessage, TextureWebviewMessage } from '../src/texture-protocol.ts';
 import { FIT, fitScale, step, zoomLabel } from './zoom.ts';
 import { listenForZoomKeys } from './zoom-keys.ts';
+import { attachMenu, SEPARATOR } from './menu.ts';
 
 /** Which channels show: colour with alpha, colour alone, or alpha as grey. */
 type Channels = 'rgba' | 'rgb' | 'a';
@@ -27,7 +28,9 @@ const status = element('status');
 const errorBox = element('error');
 const levelSelect = element('level') as HTMLSelectElement;
 const main = document.querySelector('main') as HTMLElement;
-const zoomLevel = element('zoom-level');
+const zoomLevel = element('zoom-level') as HTMLButtonElement;
+/** The sizes in the zoom's menu, after Fit. */
+const TEXTURE_SIZES = [1, 2, 4, 8] as const;
 
 /** The file the host posted last, kept to read another mip level of it. */
 let file: { readonly name: string; readonly bytes: Uint8Array } | undefined;
@@ -85,8 +88,8 @@ function place(): void {
   );
   zoomLevel.title =
     scale === undefined
-      ? 'The texture fitted into the panel, never above 100 %. Click for 100 % (Ctrl+0).'
-      : 'Monitor pixels per texture pixel. Click to fit the panel (Ctrl+Shift+0).';
+      ? 'The texture fitted into the panel, never above 100 %. Click for fit or a size.'
+      : 'Monitor pixels per texture pixel. Click for fit or a size.';
   status.dataset['zoom'] = `${String(Math.round(current * 100))} %`;
   status.textContent = status.dataset['texel'] ?? status.dataset['zoom'];
 }
@@ -196,11 +199,26 @@ function zoomTo(next: number | undefined): void {
   scale = next;
   place();
 }
-// The level shows the zoom; a click switches between fitting the panel and 100 %, as in the
-// interface preview.
-zoomLevel.addEventListener('click', () => {
-  zoomTo(scale === undefined ? 1 : undefined);
-});
+// The level shows the zoom and opens its menu: fit the panel, or one of the sizes.
+attachMenu(zoomLevel, element('zoom-menu'), () => [
+  {
+    label: 'Fit',
+    keys: 'Ctrl+Shift+0',
+    checked: scale === undefined,
+    pick: () => {
+      zoomTo(undefined);
+    },
+  },
+  SEPARATOR,
+  ...TEXTURE_SIZES.map((size) => ({
+    label: `${String(size * 100)} %`,
+    ...(size === 1 ? { keys: 'Ctrl+0' } : {}),
+    checked: scale === size,
+    pick: () => {
+      zoomTo(size);
+    },
+  })),
+]);
 listenForZoomKeys({
   zoomIn: () => {
     zoom(1);

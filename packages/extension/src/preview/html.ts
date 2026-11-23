@@ -103,7 +103,7 @@ export function previewHtml(webview: vscode.Webview, extensionUri: vscode.Uri): 
     <div id="data-popup" class="popup" role="menu" hidden></div>
   </span>
   <span class="spacer"></span>
-  ${zoomControl('Ctrl+wheel')}
+  ${zoomControl({ wheel: 'Ctrl+wheel' })}
   <button id="live-game" type="button" title="Start the live game with this playset (Etch: Start the Live Game).">Live game</button>
   <button id="resolution" class="field" type="button">1920×1080</button>
   <button id="pin" type="button" aria-pressed="false" disabled>Pin</button>

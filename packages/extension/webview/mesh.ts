@@ -144,12 +144,10 @@ const colours = element('colours');
 const colourInputs = (['primary', 'secondary', 'tertiary'] as const).map(
   (key) => [key, element(key) as HTMLInputElement] as const,
 );
-const resetButton = element('reset') as HTMLButtonElement;
 const zoomOutButton = element('zoom-out') as HTMLButtonElement;
 const zoomInButton = element('zoom-in') as HTMLButtonElement;
-const zoomLevel = element('zoom-level') as HTMLButtonElement;
-zoomLevel.title =
-  'The mesh against the view that fits all of it in (100 %). Click to fit it in again, keeping its turn (Ctrl+Shift+0).';
+/** Fit model, the zoom control's level here: frames the whole mesh as it opened. */
+const fitButton = element('zoom-level') as HTMLButtonElement;
 const flagLabel = element('flag');
 const regionLabel = element('region');
 const regionOn = element('region-on') as HTMLInputElement;
@@ -868,27 +866,7 @@ function frameView(): void {
   const bounds = boundsOf();
   if (bounds === undefined) return;
   camera = framing(bounds, canvas.clientHeight > 0 ? canvas.clientWidth / canvas.clientHeight : 1);
-  fitDistance = camera.distance;
   framed = true;
-}
-
-/**
- * The camera's distance when the whole mesh fits in, from the framing as it opened or as Reset
- * view or Fit last set it: 100 % in the zoom's level.
- */
-let fitDistance: number | undefined;
-
-/** Fits the whole mesh in again from where the camera looks, keeping its turn (Ctrl+Shift+0). */
-function fitModel(): void {
-  const bounds = boundsOf();
-  if (bounds === undefined) return;
-  const fitted = framing(
-    bounds,
-    canvas.clientHeight > 0 ? canvas.clientWidth / canvas.clientHeight : 1,
-  );
-  fitDistance = fitted.distance;
-  camera = { ...camera, distance: fitted.distance, target: fitted.target };
-  redraw();
 }
 
 /** How far one step of − or + (and of Ctrl+- or Ctrl+=) moves the camera. */
@@ -899,16 +877,10 @@ function dolly(factor: number): void {
   redraw();
 }
 
-/** The zoom's level: the mesh's size against the fitted view, `Fit` when it is that view. */
-function showZoom(): void {
-  if (fitDistance === undefined || camera.distance <= 0) {
-    zoomLevel.textContent = 'Fit';
-    return;
-  }
-  const percent = Math.round((fitDistance / camera.distance) * 100);
-  const label =
-    Math.abs(camera.distance - fitDistance) < fitDistance * 1e-3 ? 'Fit' : `${String(percent)} %`;
-  if (zoomLevel.textContent !== label) zoomLevel.textContent = label;
+/** Fit model (Ctrl+Shift+0, and Ctrl+0: a mesh has no size of its own to show at 100 %). */
+function fitModel(): void {
+  frameView();
+  redraw();
 }
 
 /** The status line: what plays and where it is. */
@@ -1250,7 +1222,6 @@ function drawSkeleton(
 function redraw(): void {
   // On Auto the level follows the camera, so the bar's level does too.
   if (lodAuto) showFacts();
-  showZoom();
   if (!playing) requestAnimationFrame(draw);
 }
 
@@ -2149,20 +2120,15 @@ canvas.addEventListener('pointerleave', () => {
   boneTip.hidden = true;
 });
 
-resetButton.addEventListener('click', () => {
-  frameView();
-  redraw();
-});
-
-// The zoom, as in the other previews: − and + move the camera a step, the level fits the mesh in
-// again and keeps its turn; the keys are the same (Ctrl+0 is the fitted view too).
+// The zoom, as in the other previews: − and + move the camera a step, Fit model in the level's
+// place frames the whole mesh as it opened; the keys are the same.
 zoomOutButton.addEventListener('click', () => {
   dolly(ZOOM_STEP);
 });
 zoomInButton.addEventListener('click', () => {
   dolly(1 / ZOOM_STEP);
 });
-zoomLevel.addEventListener('click', fitModel);
+fitButton.addEventListener('click', fitModel);
 listenForZoomKeys({
   zoomIn: () => {
     dolly(1 / ZOOM_STEP);
