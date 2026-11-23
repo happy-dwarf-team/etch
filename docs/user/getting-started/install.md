@@ -99,7 +99,7 @@ show the main things Etch does, each with a button that does it:
 5. **Start the live game (optional)**: **Start the Live Game**.
 
 A step ticks itself when you have done it, whether with its button or not: when Etch finds the
-game, when a preview opens, when the Widget Outline shows, when you open the sample data step and
+game (it looks a few seconds after VS Code starts), when a preview opens, when the Widget Outline shows, when you open the sample data step and
 when the live game starts. To open the page again, run **Etch: Get Started** from the Command
 Palette (<kbd>Ctrl+Shift+P</kbd>).
 
