@@ -63,8 +63,14 @@ In `.gui` files, hover over the sprite name after `spriteType`, `quadTextureSpri
 - the sprite's kind, such as `spriteType`, and its number of frames when it has more than one;
 - the `.gfx` file and the mod that define it, here `interface/provinceview.gfx` of the game. When
   several files define it, the hover says how many: the one loaded last wins, as in the game;
-- its texture, `gfx/interface/provinceview_bg.dds`, with its size and format and a small picture.
-  For a strip of frames the picture is the first frame.
+- its texture, `gfx/interface/provinceview_bg.dds`, with its size and format and a picture of it
+  on a grey checkerboard, so that you see which parts are transparent.
+  - For a strip of frames, such as a button's normal, hover and pressed looks side by side in one
+    texture, the picture shows every frame, left to right, and a line under it says so, such as
+    "Frames 1 to 3, left to right, at 2×." Many frames wrap onto up to four rows; when even that
+    is not enough, the line says how many of them the picture shows.
+  - A small frame, at most 64 pixels on its longest side, is shown at twice its size (2×), with
+    its pixels kept sharp. A frame over 128 pixels is shown smaller.
 
 To open the `.gfx` file at the sprite's name, press <kbd>F12</kbd> on the name, or
 <kbd>Ctrl</kbd>+click it (**Go to Definition**).

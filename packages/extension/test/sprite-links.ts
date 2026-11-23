@@ -144,7 +144,7 @@ export async function testSpriteLinks(api: EtchApi): Promise<void> {
 
     const strip = markdownOf(await hover('GFX_etch_strip'));
     assert.match(strip, /· 4 frames/, 'a strip names its frames');
-    assert.match(strip, /Frame 1 of 4:/, 'and shows the first');
+    assert.match(strip, /Frames 1 to 4, left to right/, 'and shows them all');
 
     assert.equal(
       markdownOf(await hover('GFX_etch_nowhere')),
@@ -242,7 +242,7 @@ export async function testSpriteLinks(api: EtchApi): Promise<void> {
     const privileges = await open('common/estate_privileges/etch.txt');
     assert.match(
       await hoverIn(privileges, 'GFX_etch_strip'),
-      /Frame 1 of 4:/,
+      /Frames 1 to 4, left to right/,
       "an estate privilege's icon",
     );
     const scriptDefinitions = await vscode.commands.executeCommand<vscode.Location[]>(

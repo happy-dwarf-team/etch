@@ -1,12 +1,13 @@
-// Localisation inlay hints and Go to Definition end to end in a real VS Code: a fixture game
-// (an `eu4.exe` that is not the game) set as `etch.gamePath`, with an English and a French
-// localisation file, a `.gui` file and an event that name keys, one of them undefined.
+// Localisation inlay hints, hovers and Go to Definition end to end in a real VS Code: a fixture
+// game (an `eu4.exe` that is not the game) set as `etch.gamePath`, with an English and a French
+// localisation file, a `.gui` file and an event that name keys, one of them undefined, and the
+// `textcolors` and a text icon's sprite that the hover draws with.
 import * as assert from 'node:assert/strict';
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
-import { positionOf } from './asset-links.ts';
+import { dds, markdownOf, positionOf } from './asset-links.ts';
 import { keyLine, localisationReferencePath } from '../src/localisation-hints.ts';
 
 const ENGLISH = `\uFEFFl_english:
@@ -18,6 +19,14 @@ const ENGLISH = `\uFEFFl_english:
 
 const FRENCH = `\uFEFFl_french:
  etch.1.t:0 "Un port est construit"
+`;
+
+const CORE_GFX = `bitmapfonts = {
+	textcolors = { Y = { 255 189 0 } }
+}
+spriteTypes = {
+	spriteType = { name = "GFX_text_ducats" texturefile = "gfx/interface/ducats.dds" }
+}
 `;
 
 const GUI = `guiTypes = {
@@ -40,8 +49,10 @@ country_event = {
 
 async function fixtureGame(): Promise<string> {
   const root = await mkdtemp(path.join(tmpdir(), 'etch-loc-hints-'));
-  const files: Record<string, string> = {
+  const files: Record<string, string | Uint8Array> = {
     'eu4.exe': 'not the game',
+    'interface/core.gfx': CORE_GFX,
+    'gfx/interface/ducats.dds': dds(1, 1, [0, 200, 255, 255]),
     'localisation/etch_l_english.yml': ENGLISH,
     'localisation/etch_l_french.yml': FRENCH,
     'interface/etch.gui': GUI,
@@ -90,7 +101,7 @@ export async function testLocalisationHints(): Promise<void> {
         'title = etch.1.t → A harbour is built',
         'option = { name = etch.1.a → Pay … ducats for it, and a very long text that the hint mus…',
       ],
-      "an event's keys at any depth; the last value of a key wins; an undefined key gets nothing",
+      "an event's keys at any depth; an undefined key gets nothing",
     );
 
     const definitions = await vscode.commands.executeCommand<vscode.Location[]>(
@@ -108,6 +119,39 @@ export async function testLocalisationHints(): Promise<void> {
       'Go to Definition opens the key in its .yml file',
     );
 
+    const hover = async (document: vscode.TextDocument, text: string): Promise<string> =>
+      markdownOf(
+        await vscode.commands.executeCommand<vscode.Hover[]>(
+          'vscode.executeHoverProvider',
+          document.uri,
+          positionOf(document, text),
+        ),
+      );
+    const title = await hover(gui, 'ETCH_TITLE');
+    assert.match(
+      title,
+      /\*\*ETCH&#95;TITLE\*\* · localisation · english/,
+      'the hover names the key',
+    );
+    assert.match(
+      title,
+      /<span style="color:#ffbd00;">The Etch window<\/span>/,
+      "a § code in the colour of the playset's textcolors",
+    );
+    assert.match(
+      title,
+      /Defined in `localisation\/etch_l_english\.yml:2` — the game/,
+      'and the file and line of the key',
+    );
+    const option = await hover(events, 'etch.1.a');
+    assert.match(
+      option,
+      /^Pay &#36;AMOUNT&#36; ducats <img src="data:image\/png;base64,[^"]+" alt="&#163;ducats&#163;"[^>]*> for it&#44; and a very long text that the hint must cut short$/m,
+      "the whole text of the key's first value in the file: an icon as its sprite's picture, a variable as written",
+    );
+    assert.match(option, /etch_l_english\.yml:4`/, "and that value's line");
+    assert.equal(await hover(events, 'etch.1.undefined'), '', 'an undefined key has no hover');
+
     await settings.update('language', 'french', vscode.ConfigurationTarget.Global);
     assert.deepEqual(
       await hintsOf(events),
@@ -118,6 +162,7 @@ export async function testLocalisationHints(): Promise<void> {
 
     await settings.update('editor.localisationHints', false, vscode.ConfigurationTarget.Global);
     assert.deepEqual(await hintsOf(events), [], 'the setting turns them off');
+    assert.equal(await hover(events, 'etch.1.t'), '', 'and the hovers');
     await settings.update('editor.localisationHints', undefined, vscode.ConfigurationTarget.Global);
 
     assert.deepEqual(
@@ -131,7 +176,16 @@ export async function testLocalisationHints(): Promise<void> {
       ['interface/etch.gui', 'Events/etch.txt', 'common/ideas/etch.txt', undefined, undefined],
       "a file's game path comes from its last script folder",
     );
-    assert.deepEqual(keyLine(ENGLISH, 'etch.1.a'), { line: 4, column: 1 }, 'the last key wins');
+    assert.deepEqual(
+      keyLine(ENGLISH, 'etch.1.a'),
+      { line: 3, column: 1 },
+      'the first line of a key wins, as the game keeps the first value in a file',
+    );
+    assert.deepEqual(
+      keyLine(ENGLISH, 'etch.1.a', true),
+      { line: 4, column: 1 },
+      'and the last in a replace file',
+    );
     assert.equal(keyLine(ENGLISH, 'etch.1'), undefined, 'a prefix is not a key');
   } finally {
     await settings.update('gamePath', undefined, vscode.ConfigurationTarget.Global);
