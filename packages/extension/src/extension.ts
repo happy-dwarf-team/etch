@@ -56,7 +56,7 @@ export function activate(context: vscode.ExtensionContext): EtchApi {
   );
   context.subscriptions.push(registerDlcFiles());
   context.subscriptions.push(registerGameText());
-  context.subscriptions.push(registerOnboarding(output));
+  context.subscriptions.push(registerOnboarding(output, context.globalState));
   const navigation = new WidgetNavigation();
   context.subscriptions.push(navigation);
   const live = registerLiveGame(context, output);

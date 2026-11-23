@@ -11,6 +11,8 @@ interface Step {
 
 const root = new URL('../', import.meta.url);
 const manifest = JSON.parse(readFileSync(new URL('package.json', root), 'utf8')) as {
+  publisher: string;
+  name: string;
   contributes: {
     commands: { command: string }[];
     views: { explorer: { id: string }[] };
@@ -78,6 +80,12 @@ describe('the walkthrough', () => {
     expect(events('openPreview')).toContain(
       "onContext:etch.previewOpen && activeEditor == 'gettingStartedPage'",
     );
+  });
+
+  it('has the id by which Etch ticks the first step', () => {
+    // onboarding.ts ticks it with VS Code's welcome.markStepComplete, by the step's full id.
+    const step = `${manifest.publisher}.${manifest.name}#${walkthrough?.id ?? ''}#${walkthrough?.steps[0]?.id ?? ''}`;
+    expect(step).toBe('happy-dwarf-team.etch#gettingStarted#findGame');
   });
 
   it('links only to commands that exist', () => {
