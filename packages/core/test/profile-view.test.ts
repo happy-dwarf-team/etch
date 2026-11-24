@@ -20,6 +20,8 @@ import {
   sampleData,
   layoutContentOf,
   activeLinks,
+  checkProfile,
+  definitionPositionType,
   type SampleInput,
 } from '../src/profile/index.ts';
 import { InterfaceIndex } from '../src/model/interface-index.ts';
@@ -1183,6 +1185,109 @@ describe("a rule's adopt (the minimap panel's top-level definitions)", () => {
     expect(diagnostics.map((d) => d.message)).toEqual([
       '"adopt" lists the top-level definitions a widget takes.',
     ]);
+  });
+});
+
+describe("a rule's size (the minimap, which takes minimap_size)", () => {
+  // As in the game: the panel in minimappanel.gui, the minimap and its size in menubar.gui.
+  const panelFile = readGuiFile(
+    parseScript(`guiTypes = {
+  windowType = {
+    name = "panel" size = { x = 400 y = 200 }
+    iconType = { name = "own_pic" spriteType = "GFX_pic" position = { x = 1 y = 2 } }
+  }
+  positionType = { name = "own_size" position = { x = 50 y = 20 } }
+}`),
+  );
+  const menubar = readGuiFile(
+    parseScript(`guiTypes = {
+  iconType = { name = "pic" spriteType = "GFX_pic" position = { x = 7 y = 9 } }
+  positionType = { name = "pic_size" position = { x = 268 y = 98 } }
+}`),
+  );
+  const window = panelFile.definitions.find((w) => w.name === 'panel') as Widget;
+  const gfx = readGfxFile(
+    parseScript(`spriteTypes = { spriteType = { name = "GFX_pic" texturefile = "gfx/pic.dds" } }`),
+  );
+  const index = InterfaceIndex.of(
+    [{ path: 'interface/pic.gfx', file: gfx }],
+    [
+      { path: 'interface/minimappanel.gui', file: panelFile },
+      { path: 'interface/menubar.gui', file: menubar },
+    ],
+  );
+  const profileOf = (rules: string): WindowProfile => {
+    const { file: written, diagnostics } = readProfile(
+      `{ "formatVersion": 1, "window": "panel", "rules": ${rules} }`,
+      { layer: 0, source: 'vanilla', file: 'panel.jsonc' },
+    );
+    expect(diagnostics).toEqual([]);
+    return layerProfiles('panel', written === undefined ? [] : [written]);
+  };
+  const sized = (rules: string, name: string) => {
+    const profile = profileOf(rules);
+    const view = evaluateView(profile, window, LARGE);
+    const sample = sampleData(profile, window, view, {
+      localise: () => undefined,
+      length: 'typical',
+      template: () => undefined,
+    });
+    const layout = layoutWindow(window, {
+      file: panelFile,
+      index,
+      exists: () => true,
+      // Proper 2K UI Enhanced's minimap texture.
+      assets: { textureSize: () => ({ width: 321, height: 117 }), font: () => undefined },
+      screen: LARGE,
+      view: layoutViewOf(view),
+      content: layoutContentOf(sample),
+    });
+    const pic = layout.widgets.find((w) => w.widget.name === name);
+    const draw = pic === undefined ? undefined : layout.drawList.draws[pic.drawStart];
+    return {
+      rect: pic && [pic.x, pic.y, pic.width, pic.height],
+      drawn: draw?.kind === 'sprite' ? [draw.width, draw.height] : undefined,
+    };
+  };
+  const adopt = '"bg": { "adopt": { "panel": ["pic"] } }';
+
+  it("makes an adopted definition its own file's positionType's size, and stretches the sprite", () => {
+    expect(sized(`{ ${adopt} }`, 'pic')).toEqual({ rect: [7, 9, 321, 117], drawn: [321, 117] });
+    expect(sized(`{ ${adopt}, "s": { "size": { "panel/pic": "pic_size" } } }`, 'pic')).toEqual({
+      rect: [7, 9, 268, 98],
+      drawn: [268, 98],
+    });
+  });
+
+  it("makes a widget of the window its file's positionType's size", () => {
+    expect(sized('{ "s": { "size": { "panel/own_pic": "own_size" } } }', 'own_pic')).toEqual({
+      rect: [1, 2, 50, 20],
+      drawn: [50, 20],
+    });
+  });
+
+  it('checks the positionType in the file of the window or of the adopted definition', () => {
+    const messages = (rules: string): string[] =>
+      checkProfile(profileOf(rules), {
+        window,
+        positionType: (type) => type === 'own_size',
+        definitionPositionType: definitionPositionType(index),
+      }).diagnostics.map((d) => d.message);
+    expect(messages(`{ ${adopt}, "s": { "size": { "panel/pic": "pic_size" } } }`)).toEqual([]);
+    expect(messages(`{ ${adopt}, "s": { "size": { "panel/pic": "own_size" } } }`)).toEqual([
+      'The file of pic defines no positionType "own_size".',
+    ]);
+    expect(messages('{ "s": { "size": { "panel/own_pic": "pic_size" } } }')).toEqual([
+      'The file of panel defines no positionType "pic_size".',
+    ]);
+  });
+
+  it('reads the positionType by name', () => {
+    const { diagnostics } = readProfile(
+      '{ "formatVersion": 1, "window": "panel", "rules": { "r": { "size": { "panel/pic": 268 } } } }',
+      { layer: 0, source: 'vanilla', file: 'panel.jsonc' },
+    );
+    expect(diagnostics.map((d) => d.message)).toHaveLength(1);
   });
 });
 

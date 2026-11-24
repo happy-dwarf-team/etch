@@ -129,6 +129,9 @@ code does to the window in that case:
   text from the game's files until a live game or your own text replaces it.
 - `chartSize` (added in 2.14.0): the size the game's code gives a chart, such as the estates
   view's pie chart at 32 × 32, in place of its sprite's size.
+- `size` (added in 2.15.0): the size the game's code gives a widget from a `positionType` of the
+  window's file, such as the minimap, which takes the size of `minimap_size` whatever its
+  sprite's picture is.
 - `slider` (added in 2.14.0): a marker the game's code places along a bar from a value, such as
   the patriarch authority's marker in the religion view. The rule names the bar's two ends, the
   marker and its value text, and either a fixed share from 0 to 1 or a number from the save

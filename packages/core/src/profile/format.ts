@@ -122,6 +122,13 @@ export interface Rule extends Written {
    * development pie chart, 32 × 32 where its `PieChartType` says 128.
    */
   readonly chartSize?: readonly (PathRef & { readonly width: number; readonly height: number })[];
+  /**
+   * Widgets the game's code sizes to a `positionType` of the window's file, whose `position` is
+   * the width and height: the minimap, 268 × 98 from `minimap_size` (eu4.exe 0x10B67E0) whatever
+   * its sprite's texture. A path may name a definition a rule adopts, after the adopting widget's
+   * path; its `positionType` is then of the definition's own file (`minimap_pic`'s `menubar.gui`).
+   */
+  readonly size?: readonly (PathRef & { readonly positionType: string })[];
   /** Markers the game's code places along a slider between two ends, by the marker's path. */
   readonly slider?: readonly (PathRef & Slider)[];
   /**

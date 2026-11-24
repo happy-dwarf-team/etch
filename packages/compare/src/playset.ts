@@ -28,6 +28,7 @@ import {
 import type { Localisation, Widget } from '@etch/core';
 import {
   checkProfile,
+  definitionPositionType,
   evaluateView,
   layerProfiles,
   layoutContentOf,
@@ -211,6 +212,7 @@ export class CorpusPlaysetFiles {
           ),
         template: (template) => this.ui.index.guiType(template)?.item,
         windowExists: (other) => this.ui.index.guiType(other) !== undefined,
+        definitionPositionType: definitionPositionType(this.ui.index),
       },
     );
     return {

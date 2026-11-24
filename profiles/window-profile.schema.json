@@ -186,6 +186,7 @@
         { "required": ["sprite"] },
         { "required": ["text"] },
         { "required": ["chartSize"] },
+        { "required": ["size"] },
         { "required": ["slider"] },
         { "required": ["offset"] },
         { "required": ["hidePosition"] },
@@ -253,6 +254,11 @@
               "y": { "type": "integer", "minimum": 1 }
             }
           }
+        },
+        "size": {
+          "description": "Widgets the game's code sizes to a positionType of the window's file, keyed by path: its position is the width and height, over the size of the widget's sprite. A path may name a definition a rule adopts, after the adopting widget's path; the positionType is then of the definition's own file.",
+          "type": "object",
+          "additionalProperties": { "$ref": "#/definitions/text" }
         },
         "slider": {
           "description": "Markers the game's code places along a slider, keyed by the marker's path: between the right edge of low less 15 px (share 0) and the left edge of high less the marker's width plus 15 px (share 1), 3 px below the top of low; value, a text box, 9 px right of the marker and 9 px below the top of low; both moved by offset. The share is at, or the save's numeric fact.",

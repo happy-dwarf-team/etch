@@ -10,6 +10,7 @@ import * as vscode from 'vscode';
 import { SUPPORTED_GAME_VERSION, type GuiFile, type InterfaceIndex, type Widget } from '@etch/core';
 import {
   checkProfile,
+  definitionPositionType,
   layerProfiles,
   otherVersionNotice,
   profileModMatches,
@@ -141,6 +142,7 @@ export class ProfileStore {
         ),
       template: (name) => index.guiType(name)?.item,
       windowExists: (name) => index.guiType(name) !== undefined,
+      definitionPositionType: definitionPositionType(index),
     });
     const own: ProfileDiagnostic[] = [];
     for (const layer of layers) {
