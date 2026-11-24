@@ -54,6 +54,11 @@ never above 100 %. A small window, such as a bar of 390 × 32 pixels, shows at 1
 the panel, not in a corner of the whole screen. **Fit screen** fits the whole game screen instead.
 The grey backdrop fills the panel, and a dashed line marks the edge of the game screen.
 
+When you select a widget outside the panel, in the source or the
+[Widget Outline](widget-outline.md), the preview moves to it at the same zoom level. Under
+**Fit window** this happens to a widget placed beyond the window's size: the preview leaves
+**Fit window** and keeps its zoom level, such as 100 %.
+
 At 100 %, one pixel of the game's screen is one pixel of your monitor, as the game shows it. Above
 100 % only whole steps are offered, 200 % to 800 %, so that pixels stay sharp.
 
