@@ -652,7 +652,7 @@
       ],
     },
     "great-projects-window": {
-      "note": "The game shows the window 10 px lower than its .gui place (the coverage survey, every playset, 1920×1080 and 1280×720; etch#253). The game's code sets no position.",
+      "note": "The game shows the window 10 px lower than its .gui place (the coverage survey, every playset, 1920×1080 and 1280×720; etch#253): its bottom at general_buildings_window's top, which the .gui leaves 10 px lower. The game's code sets no position on it.",
       "offset": { "provinceview/buildings_window/great_projects_window": { "y": 10 } },
     },
     "hidden-province_window": {

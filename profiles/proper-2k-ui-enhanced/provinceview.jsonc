@@ -1,0 +1,22 @@
+// The province view in Proper 2K UI Enhanced, over the vanilla profile (and Anbennar's in the
+// Anbennar playset). The game shows great_projects_window right above general_buildings_window: its
+// bottom at that window's top. The base game's .gui leaves a 10 px gap there, which the vanilla
+// profile closes with a 10 px offset. Proper 2K UI Enhanced, and P2KE Patch - Anbennar after it,
+// overlap the two by 201 px (great_projects_window y 480, height 252; general_buildings_window y
+// 531). The coverage survey's captures of 24 November 2026 at 2560x1440 show the window 201 px
+// above its .gui place in both playsets.
+{
+  "formatVersion": 1,
+  "window": "provinceview",
+  "checkedWith": "1",
+  "mod": {
+    "remoteFileId": "3290499798",
+    "name": "Proper 2K UI Enhanced",
+  },
+  "rules": {
+    "great-projects-window": {
+      "note": "Its bottom at general_buildings_window's top: 201 px above its .gui place.",
+      "offset": { "provinceview/buildings_window/great_projects_window": { "y": -201 } },
+    },
+  },
+}
