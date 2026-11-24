@@ -148,7 +148,9 @@ export interface Rule extends Written {
  * marker's width, plus 15 px, at share 1, 3 px below the top of `low`, moved by `offset`. The
  * share is in thousandths, as the game holds it. `value`, a text box, goes 9 px right of the
  * marker and 9 px below the top of `low`, moved by `offset` too. Without a save, or a save that
- * lacks the numeric `fact`, the marker stands at the share `at`.
+ * lacks the numeric `fact`, the marker stands at the share `at`. With `valueText: 'percent'` the
+ * value box shows the share as a whole percentage, as the game's code writes the patriarch
+ * authority (`0xFE8190`: "100%").
  */
 export interface Slider {
   readonly low: PathRef;
@@ -158,6 +160,8 @@ export interface Slider {
   readonly fact?: string;
   readonly factRange?: SourceRange;
   readonly offset: { readonly x: number; readonly y: number };
+  /** What the game's code writes in `value`: the share as a whole percentage. */
+  readonly valueText?: 'percent';
 }
 
 export interface SelectorSetting {

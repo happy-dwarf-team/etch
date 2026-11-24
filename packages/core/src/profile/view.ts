@@ -77,6 +77,11 @@ export interface WidgetState {
   readonly chartSize?: { readonly width: number; readonly height: number };
   /** Where the game's code places it along a slider (a rule's `slider`): the marker or its value. */
   readonly slider?: SliderPlace;
+  /**
+   * The text the game's code writes in a slider's value (a slider's `valueText`), and the save's
+   * fact it shows, if the share came from the save.
+   */
+  readonly sliderText?: { readonly text: string; readonly fact?: string };
   /** What a country view's size step does to it: moved down, or made taller (etch#274). */
   readonly stepped?: 'moved' | 'grown';
   /** Pixels it moves further than the size step, when a step applies. */
@@ -192,12 +197,21 @@ export function evaluateView(
       // The save's number when it has the fact, else the profile's share; the game holds it in
       // thousandths.
       const fact = ref.fact === undefined ? Number.NaN : Number(choice.facts?.[ref.fact]);
-      const thousandths = Math.round((Number.isFinite(fact) ? fact : ref.at) * 1000);
+      const fromSave = Number.isFinite(fact);
+      const thousandths = Math.round((fromSave ? fact : ref.at) * 1000);
       const place = { low, high, thousandths, offset: ref.offset };
+      // The game writes the share times 100 with no decimals and a per cent sign (0xFE8190).
+      const sliderText =
+        ref.valueText === 'percent'
+          ? {
+              text: `${String(Math.round(thousandths / 10))}%`,
+              ...(fromSave ? { fact: ref.fact } : {}),
+            }
+          : undefined;
       for (const marker of widgetsAt(window, ref.path)) {
         update(marker, { slider: place });
         for (const value of ref.value === undefined ? [] : widgetsAt(window, ref.value.path)) {
-          update(value, { slider: { ...place, marker } });
+          update(value, { slider: { ...place, marker }, ...(sliderText ? { sliderText } : {}) });
         }
       }
     }

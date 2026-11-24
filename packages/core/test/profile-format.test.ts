@@ -162,6 +162,16 @@ describe('the format errors of a window profile', () => {
       '"r": { "slider": { "w/x": { "high": "w/b", "at": 1 } } }',
       'A slider names its "low" end by path.',
     ],
+    [
+      RULE,
+      '"r": { "slider": { "w/x": { "low": "w/a", "high": "w/b", "at": 1, "valueText": "number" } } }',
+      '"valueText" of a slider is "percent".',
+    ],
+    [
+      RULE,
+      '"r": { "slider": { "w/x": { "low": "w/a", "high": "w/b", "at": 1, "valueText": "percent" } } }',
+      'A slider with "valueText" names its "value" text box.',
+    ],
     [RULE, '"r": { "hide": ["w/x"], "frame": { " ": 2 } }', 'A path is not empty.'],
     [VIEW, '"v": { "set": ["s"] }', '"set" is an object of selector values keyed by selector.'],
     [

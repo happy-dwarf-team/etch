@@ -893,7 +893,15 @@ function readOffset(value: JsonNode): { x: number; y: number } {
 }
 
 function readSlider(value: JsonNode): Slider {
-  const props = object(value, 'a slider', ['low', 'high', 'value', 'at', 'fact', 'offset']);
+  const props = object(value, 'a slider', [
+    'low',
+    'high',
+    'value',
+    'at',
+    'fact',
+    'offset',
+    'valueText',
+  ]);
   const end = (key: 'low' | 'high'): PathRef => {
     const n = props.get(key);
     if (n === undefined) throw new Faulty(`A slider names its "${key}" end by path.`, value);
@@ -906,6 +914,15 @@ function readSlider(value: JsonNode): Slider {
   const valueNode = props.get('value');
   const factNode = props.get('fact');
   const offsetNode = props.get('offset');
+  const valueTextNode = props.get('valueText');
+  if (valueTextNode !== undefined) {
+    if (text$(valueTextNode, '"valueText"') !== 'percent') {
+      throw new Faulty('"valueText" of a slider is "percent".', valueTextNode);
+    }
+    if (valueNode === undefined) {
+      throw new Faulty('A slider with "valueText" names its "value" text box.', valueTextNode);
+    }
+  }
   return {
     low: end('low'),
     high: end('high'),
@@ -913,6 +930,7 @@ function readSlider(value: JsonNode): Slider {
     at: atNode.value,
     ...(factNode === undefined ? {} : { fact: text$(factNode, '"fact"'), factRange: factNode }),
     offset: offsetNode === undefined ? { x: 0, y: 0 } : readOffset(offsetNode),
+    ...(valueTextNode === undefined ? {} : { valueText: 'percent' as const }),
   };
 }
 

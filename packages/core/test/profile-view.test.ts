@@ -912,6 +912,29 @@ describe("the religion view's patriarch authority slider", () => {
       value: [148, 308],
     });
   });
+
+  it("writes the value as a whole percentage, from the save or the profile's share", () => {
+    const profile = layerProfiles(
+      'countryreligionview',
+      written.file === undefined ? [] : [written.file],
+    );
+    const value = (facts: Record<string, string>) => {
+      const view = evaluateView(profile, window, LARGE, { facts });
+      const sample = sampleData(profile, window, view, {
+        localise: () => undefined,
+        length: 'typical',
+      });
+      const [widget] = widgetsAt(
+        window,
+        'countryreligionview/orthodox_specific_window/current_patriarch_authority_value',
+      );
+      const text = widget === undefined ? undefined : sample.text(widget);
+      return text === undefined ? undefined : [text.text, text.layer];
+    };
+    // Without a save at 1: the coverage survey's Russia shows "100%".
+    expect(value({})).toEqual(['100%', 'generated']);
+    expect(value({ 'country.patriarchAuthority': '0.333' })).toEqual(['33%', 'save']);
+  });
 });
 
 describe('the diplomacy view of another country (the coverage survey)', () => {
