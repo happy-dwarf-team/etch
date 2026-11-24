@@ -1,0 +1,21 @@
+// The countryreligionview window in Proper 2K UI Enhanced, over the vanilla profile (and Anbennar's
+// in the Anbennar playset). The mod's .gui gives religionpanel_bg_top its own sprite,
+// GFX_country_religion_view_bg_no_shadow, which the game draws as named: the vanilla profile's
+// standard background would put the base game's sprite back.
+{
+  "formatVersion": 1,
+  "window": "countryreligionview",
+  "checkedWith": "1",
+  "mod": {
+    "remoteFileId": "3290499798",
+    "name": "Proper 2K UI Enhanced",
+  },
+  "rules": {
+    "standard-background": {
+      "note": "The game draws religionpanel_bg_top with the sprite the mod's .gui names, GFX_country_religion_view_bg_no_shadow (682 × 1114), not a size variant (the coverage survey of 24 November 2026, Proper 2K UI Enhanced and the Anbennar playset with P2KE, 2560×1440).",
+      "sprite": {
+        "countryreligionview/religionpanel_bg_top": "GFX_country_religion_view_bg_no_shadow",
+      },
+    },
+  },
+}
