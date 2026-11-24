@@ -160,6 +160,7 @@ const LOC: Record<string, string> = {
   temple: 'Temple',
   workshop: 'Workshop',
   PROVINCE_TITLE: 'Province',
+  TRUCE: 'A truce until §Y$DATE$§W with $WHO|Y$ ($LEFT$, $AMOUNT|0+$).',
 };
 
 function input(overrides: Partial<SampleInput> = {}): SampleInput {
@@ -703,6 +704,33 @@ describe('sampleData', () => {
       detail: 'PROVINCE_TITLE',
     });
     expect(sample.text(named('culture'))).toEqual({ text: '', layer: 'files', detail: 'literal' });
+  });
+
+  it("writes a rule's text of parts one after another, with its keys' variables filled", () => {
+    const { profile, diagnostics } = profileOf(`{ "formatVersion": 1, "window": "provinceview",
+      "rules": {
+        "texts": { "text": {
+          "provinceview/title": [
+            { "literal": "> " },
+            { "key": "PROVINCE_TITLE", "suffix": "\\n" },
+            { "key": "TRUCE", "vars": {
+              "DATE": { "literal": "1 May 1450" },
+              "WHO": "SWE",
+              "AMOUNT": { "literal": "3" }
+            } }
+          ]
+        } }
+      } }`);
+    expect(diagnostics).toEqual([]);
+    const view = evaluateView(profile, WINDOW, { width: 1920, height: 1080 }, {});
+    const sample = sampleData(profile, WINDOW, view, input());
+    // A variable's value is a text of its own (a key here); a colour format colours it, another
+    // format is left out, and a variable without a value stays as written.
+    expect(sample.text(named('title'))).toEqual({
+      text: '> Province\nA truce until §Y1 May 1450§W with §YSweden§! ($LEFT$, 3).',
+      layer: 'files',
+      detail: 'PROVINCE_TITLE + TRUCE',
+    });
   });
 
   it("sets the number of a list's entries, the save's first and generated ones after", async () => {

@@ -88,6 +88,32 @@
     }
   },
   "definitions": {
+    "ruleText": {
+      "description": "One text of a rule's text effect.",
+      "oneOf": [
+        { "$ref": "#/definitions/text" },
+        {
+          "type": "object",
+          "required": ["key"],
+          "additionalProperties": false,
+          "properties": {
+            "key": { "$ref": "#/definitions/text" },
+            "suffix": { "type": "string", "minLength": 1 },
+            "vars": {
+              "type": "object",
+              "minProperties": 1,
+              "additionalProperties": { "$ref": "#/definitions/ruleText" }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["literal"],
+          "additionalProperties": false,
+          "properties": { "literal": { "type": "string" } }
+        }
+      ]
+    },
     "text": { "type": "string", "pattern": "\\S" },
     "path": {
       "description": "A widget path: names from the top-level window joined by /, with * and ? inside a name, ** for any number of levels and [n] for one of siblings that share a name.",
@@ -238,26 +264,12 @@
           "additionalProperties": { "type": "string" }
         },
         "text": {
-          "description": "Texts the game's code sets, keyed by path: the localisation key of the text; { key, suffix } for a key the game's code adds a text after; { literal } for a text the game's code writes itself, which may be empty. Shown as sample data from the playset's files, under a live snapshot's texts.",
+          "description": "Texts the game's code sets, keyed by path: the localisation key of the text; { key, suffix, vars } for a key the game's code adds a text after or fills the $NAME$ variables of, each variable's value a text of its own; { literal } for a text the game's code writes itself, which may be empty; or an array of these, which the game's code writes one after another. Shown as sample data from the playset's files, under a live snapshot's texts.",
           "type": "object",
           "additionalProperties": {
             "oneOf": [
-              { "$ref": "#/definitions/text" },
-              {
-                "type": "object",
-                "required": ["key"],
-                "additionalProperties": false,
-                "properties": {
-                  "key": { "$ref": "#/definitions/text" },
-                  "suffix": { "type": "string", "minLength": 1 }
-                }
-              },
-              {
-                "type": "object",
-                "required": ["literal"],
-                "additionalProperties": false,
-                "properties": { "literal": { "type": "string" } }
-              }
+              { "$ref": "#/definitions/ruleText" },
+              { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/ruleText" } }
             ]
           }
         },

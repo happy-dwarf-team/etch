@@ -5,6 +5,21 @@
   "window": "peace_view",
   "checkedWith": "1.37.5",
   "rules": {
+    "offer": {
+      "note": "The game's code writes the offer's description from its terms: who negotiates for whom, each term, and the truce it gives. A white peace between two alliance leaders, as the coverage survey's peace view shows (Russia, 17 March 1719, the truce until 1 April 1724). Another offer needs its text by hand.",
+      "text": {
+        "peace_view/desc": [
+          "PO_WELEAD",
+          { "key": "PO_THEYLEAD", "suffix": "\n\n" },
+          { "key": "WHITE_PEACE", "suffix": "\n\n" },
+          {
+            "key": "PEACEOFFER_TRUCE",
+            "vars": { "DATE": { "literal": "01 April 1724" } },
+            "suffix": "\n",
+          },
+        ],
+      },
+    },
     "hidden": {
       "note": "Hidden in every view of the coverage survey (the base game): the game decides these from its data or a click; show one by hand.",
       "hide": [

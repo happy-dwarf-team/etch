@@ -12,11 +12,38 @@
       "default": "closed",
       "note": "show_institutions opens institutions_window over the tab (the coverage survey, vanilla and Anbennar: closed as the tab opens, open after the click).",
     },
+    "institution": {
+      "kind": "ui",
+      "label": "Institution",
+      "values": { "industrialization": "Industrialization", "printingPress": "Printing Press" },
+      "default": "industrialization",
+      "note": "The institution the window shows, whose bonus the game's code writes in when_embraced, a modifier a line. It opens on the country's first institution not yet embraced, as far as the survey shows (Russia industrialization; Austria, Aragon and C01 the printing press); another one needs its text by hand. The values are the institutions whose text a capture shows.",
+    },
   },
   "rules": {
     "institutions-closed": {
       "when": { "institutions": "closed" },
       "hide": ["countrytechnologyview/institutions_window"],
+    },
+    "when-embraced-industrialization": {
+      "when": { "institutions": "open", "institution": "industrialization" },
+      "note": "Industrialization's bonus, as the coverage survey's institutions views show it (Russia, 17 March 1719, vanilla, Bigger UI and Proper 2K UI Enhanced).",
+      "text": {
+        "countrytechnologyview/institutions_window/when_embraced": [
+          { "key": "GLOBAL_TAX_MODIFIER", "suffix": ": +15.0%\n" },
+          { "key": "GLOBAL_MANPOWER", "suffix": ": +25.0%" },
+        ],
+      },
+    },
+    "when-embraced-printing-press": {
+      "when": { "institutions": "open", "institution": "printingPress" },
+      "note": "The printing press's bonus, as the country views of the survey show it (Austria, Aragon and C01, 17 March 1719).",
+      "text": {
+        "countrytechnologyview/institutions_window/when_embraced": {
+          "key": "STABILITY_COST_MODIFIER",
+          "suffix": ": -5.0%",
+        },
+      },
     },
     "institutions-window": {
       "note": "The game places the institutions window as if the tab were at y 0, not at its show_position's 140 (the coverage survey, every playset, 1920×1080 and 1280×720; etch#253). Nothing in the tab's code that sets a position explains it.",

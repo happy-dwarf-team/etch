@@ -224,6 +224,28 @@
         "topbar/achievements_root_window/achievement_indiv_small/achievement_left_page_small_button",
       ],
     },
+    "magic-menu-infamy": {
+      "when": { "magicMenu": "main" },
+      "note": "The main page's infamy row is two customizable localisations, a line for each of the ruler, heir, consort and the mages' estate that is a mage (customizable_localization/anb_magic_menus_localization.txt): getNameIf*IsMage writes the mage's icon and name, getInfamyIf*IsMage the infamy, whose last case, Paragon, has no trigger. A country with the mages' estate and no mage on the throne, as the coverage survey's main page shows (Verne, 11 November 1444): the estate's custom_name with the Magisterium privilege, Magisters (estate_magisters), and Paragon. Another country needs its texts by hand.",
+      "text": {
+        "topbar/magic_menu_parent/magic_menu_main/magic_menu_main_row_3/magic_menu_infamy_types": [
+          { "literal": "£mages_estate_icon£" },
+          "estate_magisters",
+          "linebreak_tt",
+        ],
+        "topbar/magic_menu_parent/magic_menu_main/magic_menu_main_row_3/magic_menu_infamy_text": [
+          "infamy_paragon",
+          "linebreak_tt",
+        ],
+      },
+    },
+    "magic-menu-traditions": {
+      "when": { "magicMenu": "spellbook" },
+      "note": "getTraditionSpellListName writes magical_tradition_string for a country without a custom spell list, and the tradition's name otherwise (customizable_localization/anb_magic_menus_localization.txt); the coverage survey's spellbook (Verne, 11 November 1444) has none.",
+      "text": {
+        "topbar/magic_menu_parent/magic_menu_spellbook_window/magic_menu_change_spellbook_window/magic_menu_button_custom_magic_lists_text": "magical_tradition_string",
+      },
+    },
     "achievements-page-1": {
       "when": { "achievements": "open" },
       "note": "The window opens on page 1: the top bar's button sets achievements_page_1_opened the first time, when no page flag is set, and each title and requirement text is a customizable localisation that picks its key by the page flag (common/custom_gui/customgui_achievements.txt, customizable_localization/anb_achievements_custom_localization.txt). These are page 1's keys, as the coverage survey's achievements views show (Anbennar alone, 1920×1080 and 1280×720); another page needs its texts by hand.",

@@ -832,7 +832,11 @@ function readRule(
       return { frame: value.value };
     }),
     sprite: keyed('sprite', (value) => ({ sprite: text$(value, 'a sprite') })),
-    text: keyed('text', readRuleText),
+    text: keyed('text', (value) => {
+      if (value.kind !== 'array') return { parts: [readRuleText(value)] };
+      if (value.items.length === 0) throw new Faulty('A text of parts has one at least.', value);
+      return { parts: value.items.map(readRuleText) };
+    }),
     chartSize: keyed('chartSize', (value) => {
       const size = object(value, 'a chart size', ['x', 'y']);
       const pixels = (axis: 'x' | 'y'): number => {
@@ -990,18 +994,20 @@ function required(node: JsonNode & { kind: 'object' }, key: string): JsonNode {
 }
 
 /**
- * A rule's text: a localisation key, or `{ "key", "suffix" }` for a key the game's code adds a
- * text after (the leader dialog's description ends with a line break), or `{ "literal" }` for a
- * text the game's code writes itself, which may be empty (an estate without an agenda).
+ * A rule's text: a localisation key, or `{ "key", "suffix", "vars" }` for a key the game's code
+ * adds a text after (the leader dialog's description ends with a line break) or fills the
+ * `$NAME$` variables of (a truce's date), or `{ "literal" }` for a text the game's code writes
+ * itself, which may be empty (an estate without an agenda). A variable's value is a text too.
  */
 function readRuleText(value: JsonNode): RuleText {
   if (value.kind !== 'object') return { loc: text$(value, 'a localisation key') };
-  const props = object(value, 'a text', ['key', 'suffix', 'literal']);
+  const props = object(value, 'a text', ['key', 'suffix', 'vars', 'literal']);
   const key = props.get('key');
   const suffix = props.get('suffix');
+  const vars = props.get('vars');
   const literal = props.get('literal');
   if (literal !== undefined) {
-    if (key !== undefined || suffix !== undefined) {
+    if (key !== undefined || suffix !== undefined || vars !== undefined) {
       throw new Faulty('A text has a "literal" or a "key", not both.', value);
     }
     if (literal.kind !== 'string') throw new Faulty('"literal" is a text.', literal);
@@ -1011,9 +1017,17 @@ function readRuleText(value: JsonNode): RuleText {
   if (suffix !== undefined && (suffix.kind !== 'string' || suffix.value === '')) {
     throw new Faulty('"suffix" is a text that is not empty.', suffix);
   }
+  if (vars !== undefined && (vars.kind !== 'object' || vars.members.length === 0)) {
+    throw new Faulty('"vars" is an object of texts keyed by variable name.', vars);
+  }
   return {
     loc: text$(key, 'a localisation key'),
     ...(suffix?.kind === 'string' ? { suffix: suffix.value } : {}),
+    ...(vars?.kind === 'object'
+      ? {
+          vars: Object.fromEntries(vars.members.map((m) => [m.key, readRuleText(m.value)])),
+        }
+      : {}),
   };
 }
 
