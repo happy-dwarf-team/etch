@@ -124,6 +124,34 @@ fails `notify-discord`: fix the notes with `gh release edit`, then run
 `discord-release.yml` in `happy-dwarf-team/.github` by hand with the
 repository and tag.
 
+### Fixing an entry of the notes
+
+Each entry is a merged pull request's squash commit, so editing the release
+pull request's notes by hand lasts only until the next push to `main`, when
+release-please writes them again. To change an entry for good, put the new
+commit message at the end of the **merged** pull request's description:
+
+```markdown
+BEGIN_COMMIT_OVERRIDE
+fix(extension): the **Undo** after **Clear** keeps the texts you typed after it (#683)
+END_COMMIT_OVERRIDE
+```
+
+Release-please reads it in place of the squash commit's message at its next
+run, which a push to `main` starts (not `workflow_dispatch`: run by hand,
+`release.yml` builds and publishes an existing tag again). Keep the `(#n)` at
+the end: without it the entry links only the commit, not the pull request. A
+type that is not in the notes, such as `chore`, takes the entry out; several
+lines make several entries.
+
+The same block removes a duplicate. A squash commit whose body repeats a
+commit's Conventional Commits title, such as `feat(extension): …` of the
+branch's first commit, gives two entries, the second without the pull
+request's number: GitHub's default squash message lists the branch's commits.
+For 2.15.0, 45 overrides fixed four duplicates, took six `media` and `corpus`
+entries for Etch's own tools out, and reworded the others after the
+plain-language review.
+
 Approve the `vscode-marketplace` deployment of the `marketplace` job; it
 publishes the release's VSIX. The Marketplace scans the file and lists it after
 a few minutes. While it waits, later pushes still update the release pull request.
