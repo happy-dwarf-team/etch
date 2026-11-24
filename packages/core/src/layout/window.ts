@@ -443,7 +443,7 @@ class Layout {
         }[];
       }
     | undefined;
-  /** The definition being adopted and the `positionType` a profile sizes it to (`placeAdopted`). */
+  /** The definition being adopted and the size a profile's `size` gives it (`placeAdopted`). */
   private sizing: { widget: Widget; x: number; y: number } | undefined;
   /** The windows a live snapshot could not move as one (`livePosition`), by their index. */
   private readonly movedByChildren = new Set<number>();
