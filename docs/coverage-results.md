@@ -90,8 +90,8 @@ three texts of the magic menu (customizable localisations by whether the ruler, 
 estate is a mage, and by the country's magic tradition), the estates' `agenda_effects` (the game
 writes no text without an agenda, the localisation's text wraps in its 106 px) and `version_label`.
 On the three countries: the colonisation panel's `region_text` and the leader dialog. All of them
-but `rebelsize_desc` are heights of texts the game's code fills from the game's state (etch#604);
-`rebelsize_desc` is a width the preview does not explain yet. Nothing of etch#606 is left: the pie
+are texts the game's code fills from the game's state (etch#604): heights, and the width of
+`rebelsize_desc`, which a comment on etch#604 adds to its list. Nothing of etch#606 is left: the pie
 chart (etch#614), the patriarch marker (etch#615), the crown land icons and the map mode buttons
 (etch#672) are fixed.
 
