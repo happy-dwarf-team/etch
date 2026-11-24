@@ -958,7 +958,7 @@ class Layout {
   /**
    * The entries sample data puts in an `OverlappingElementsBoxType` (the core shields of
    * `cores_box`, the province modifiers), side by side as the code at eu4.exe 1.37.5 `0x163D060`
-   * places them (`eu4.exe` 1.37.5 `0x163D060`; the format and spacing as its type's `ReadMember`,
+   * places them (`eu4.exe` 1.37.5 `0x163D060`; the format and spacing as its type's reader,
    * `0x15EBF80`, reads them):
    *
    * - An entry is as wide as its template, `w`; `spacing` is read as a whole number. The step is
@@ -1996,7 +1996,7 @@ class Layout {
         ? undefined
         : this.input.content?.sizedBy?.(this.current);
     if (fit !== undefined && sizer !== undefined) {
-      // `ChangeString(text, true)` fits the first text with no height limit and makes its height
+      // Setting the first text with its height left open fits it with no limit and makes its height
       // the box's `maxHeight` (`0x15F42C0`): the rebels' `onsiegewon_desc` is one line so.
       const first = fitText(font, sizer, { ...fit, height: 0x7fffffff, iconWidth });
       fit = { ...fit, height: first.height };

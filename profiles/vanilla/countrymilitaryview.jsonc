@@ -1,7 +1,7 @@
 // The countrymilitaryview window of the base game, the country view's military tab
 // (docs/window-profiles.md). From the coverage survey (etch#254): with Cradle of Civilization the
 // game moves most of the tab down by the height of army_professionalism, as the .gui's own comment
-// on that window says and eu4.exe's UpdateArmyProfessionalism does (Steam 1.37.5: the DLC's flag at
+// on that window says and eu4.exe's code at 0xFBC0A0 does (Steam 1.37.5: the DLC's flag at
 // 0x233FF24); the survey's captures show the tab and its widgets 16 px lower, with the background,
 // the close button and the title where the .gui puts them. Without the DLC the same function hides
 // the professionalism bar, its background and the slacken button. Anbennar and Bigger UI keep the
@@ -49,7 +49,7 @@
   },
   "rules": {
     "cradle-moves-the-tab": {
-      "note": "army_professionalism is 16 px high: the tab moves down by it, and CoCbackground, the close button and the title stay (UpdateArmyProfessionalism, Steam 0xFBC0A0). Everything else moves with the tab, activate_all, slacken_button and button_makeheirgeneral included (the survey's captures: 667 and 986 at 1080).",
+      "note": "army_professionalism is 16 px high: the tab moves down by it, and CoCbackground, the close button and the title stay (Steam 0xFBC0A0). Everything else moves with the tab, activate_all, slacken_button and button_makeheirgeneral included (the survey's captures: 667 and 986 at 1080).",
       "when": { "cradle": "yes" },
       "offset": {
         "countrymilitaryview": { "y": 16 },
@@ -59,12 +59,12 @@
       },
     },
     "with-cradle": {
-      "note": "UpdateArmyProfessionalism hides the plain background and shows CoCbackground and army_professionalism with the DLC.",
+      "note": "eu4.exe 0xFBC0A0 hides the plain background and shows CoCbackground and army_professionalism with the DLC.",
       "when": { "cradle": "yes" },
       "hide": ["countrymilitaryview/background"],
     },
     "without-cradle": {
-      "note": "UpdateArmyProfessionalism, without the DLC: hides army_professionalism, CoCbackground and slacken_button (lowering recruitment standards comes with professionalism), and shows the plain background.",
+      "note": "eu4.exe 0xFBC0A0, without the DLC: hides army_professionalism, CoCbackground and slacken_button (lowering recruitment standards comes with professionalism), and shows the plain background.",
       "when": { "cradle": "no" },
       "hide": [
         "countrymilitaryview/army_professionalism",

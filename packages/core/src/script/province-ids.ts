@@ -380,8 +380,8 @@ export function provinceHistoryNotRead(
  * their province in a property. The game reads each list as integers with no range check (it logs
  * only an id listed twice) and then indexes the province table with every id: a colonial region's
  * center point while the file is read and its name, each trade company region's provinces when the
- * game starts (`InitTradeCompanyRegions`), and a trade node's `members`, whose provinces it writes
- * its node into (`InitializeProvinces`; the EU4 engine lab, 18.11.2026). A trade node's `location` is a `PROVINCE_ID_KEYS` property. Vanilla lists
+ * game starts, and a trade node's `members`, whose provinces it writes
+ * its node into (the EU4 engine lab, 18.11.2026). A trade node's `location` is a `PROVINCE_ID_KEYS` property. Vanilla lists
  * 3290 ids in the regions and 3369 in the trade nodes, all on its map.
  *
  * A great project's (a monument's) `start` is its province, a property of a key that other folders

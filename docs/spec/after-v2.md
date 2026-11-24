@@ -281,7 +281,7 @@ refresh is a step of the 3.0.0 release.
 
 - **Names whose tooltip crashes the game.** A reading of the game's trigger
   and effect code (EU4 engine lab, 17 November 2026) found more keys that
-  keep an unknown name's lookup unchecked: their `PostValidate` looks the
+  keep an unknown name's lookup unchecked: their check after loading looks the
   name up again but logs nothing, and the validation passes ignore what it
   returns. Where their run was read, it only compares or checks the
   pointer, but building their tooltip or description reads through it: `has_active_policy` and
@@ -569,7 +569,7 @@ refresh is a step of the 3.0.0 release.
 - **The military tab with Cradle of Civilization** (etch#254, from the coverage
   survey). With the DLC the game moves most of the tab down by the height of
   `army_professionalism` (16 px), as the `.gui`'s own comment on that window
-  says and `UpdateArmyProfessionalism` does; the background, the close button
+  says and eu4.exe's code does (0xFBC0A0); the background, the close button
   and the title stay. The vanilla profile `countrymilitaryview` has a `cradle`
   selector (`game.cradleOfCivilization`, default yes) and that offset; Anbennar
   and Bigger UI keep the 16 px and take it from the vanilla layer. In the
@@ -676,7 +676,7 @@ refresh is a step of the 3.0.0 release.
   `docs/design.md` ("Sprites and frames") records them.
 
   Not carried, and why:
-  - **Flags the game makes**: a colonial nation's (`RenderCustomFlag`, with
+  - **Flags the game makes**: a colonial nation's (drawn by the game's code, with
     its overlord's colours) and a custom nation's name a tag that `gfx/flags`
     has no file of, so their shields keep the overlay alone; nor the client
     state symbols of `textureFile3`.
