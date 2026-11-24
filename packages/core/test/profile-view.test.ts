@@ -1186,6 +1186,70 @@ describe("a rule's adopt (the minimap panel's top-level definitions)", () => {
   });
 });
 
+describe("a rule's size (the minimap, which takes minimap_size)", () => {
+  const file = readGuiFile(
+    parseScript(`guiTypes = {
+  windowType = { name = "panel" size = { x = 400 y = 200 } }
+  iconType = { name = "pic" spriteType = "GFX_pic" position = { x = 7 y = 9 } }
+  positionType = { name = "pic_size" position = { x = 268 y = 98 } }
+}`),
+  );
+  const window = file.definitions.find((w) => w.name === 'panel') as Widget;
+  const gfx = readGfxFile(
+    parseScript(`spriteTypes = { spriteType = { name = "GFX_pic" texturefile = "gfx/pic.dds" } }`),
+  );
+  const sized = (rules: string) => {
+    const { file: written, diagnostics } = readProfile(
+      `{ "formatVersion": 1, "window": "panel", "rules": ${rules} }`,
+      { layer: 0, source: 'vanilla', file: 'panel.jsonc' },
+    );
+    expect(diagnostics).toEqual([]);
+    const profile = layerProfiles('panel', written === undefined ? [] : [written]);
+    const view = evaluateView(profile, window, LARGE);
+    const sample = sampleData(profile, window, view, {
+      localise: () => undefined,
+      length: 'typical',
+      template: () => undefined,
+    });
+    const layout = layoutWindow(window, {
+      file,
+      index: InterfaceIndex.of(
+        [{ path: 'interface/pic.gfx', file: gfx }],
+        [{ path: 'interface/panel.gui', file }],
+      ),
+      exists: () => true,
+      // Proper 2K UI Enhanced's minimap texture.
+      assets: { textureSize: () => ({ width: 321, height: 117 }), font: () => undefined },
+      screen: LARGE,
+      view: layoutViewOf(view),
+      content: layoutContentOf(sample),
+    });
+    const pic = layout.widgets.find((w) => w.widget.name === 'pic');
+    const draw = layout.drawList.draws.find((d) => d.kind === 'sprite');
+    return {
+      rect: pic && [pic.x, pic.y, pic.width, pic.height],
+      drawn: draw?.kind === 'sprite' ? [draw.width, draw.height] : undefined,
+    };
+  };
+  const adopt = '"bg": { "adopt": { "panel": ["pic"] } }';
+
+  it("makes the widget the positionType's size, over its texture's, and stretches the sprite", () => {
+    expect(sized(`{ ${adopt} }`)).toEqual({ rect: [7, 9, 321, 117], drawn: [321, 117] });
+    expect(sized(`{ ${adopt}, "s": { "size": { "panel/pic": "pic_size" } } }`)).toEqual({
+      rect: [7, 9, 268, 98],
+      drawn: [268, 98],
+    });
+  });
+
+  it('reads the positionType by name', () => {
+    const { diagnostics } = readProfile(
+      '{ "formatVersion": 1, "window": "panel", "rules": { "r": { "size": { "panel/pic": 268 } } } }',
+      { layer: 0, source: 'vanilla', file: 'panel.jsonc' },
+    );
+    expect(diagnostics.map((d) => d.message)).toHaveLength(1);
+  });
+});
+
 describe("a rule's hidePosition (the menubar's war overview button)", () => {
   const file = readGuiFile(
     parseScript(`guiTypes = {

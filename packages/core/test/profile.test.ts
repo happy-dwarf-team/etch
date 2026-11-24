@@ -192,7 +192,7 @@ describe('reading a profile file', () => {
     );
     expect(diagnostics.map((d) => d.message)).toEqual([
       'Only a resolution value has bounds.',
-      'Rule "r" has no effect: show, hide, notCreated, position, frame, sprite, text, chartSize, slider, offset, hidePosition or adopt.',
+      'Rule "r" has no effect: show, hide, notCreated, position, frame, sprite, text, chartSize, size, slider, offset, hidePosition or adopt.',
     ]);
   });
 });
@@ -293,6 +293,25 @@ describe('load checks', () => {
     expect(wrong.file?.rules.some((r) => r.id === 'move')).toBe(false);
     expect(wrong.diagnostics.map((d) => d.message)).toEqual([
       '"axis" is "x" or "y": the coordinate the move takes.',
+    ]);
+  });
+
+  it('reads a size of a widget or of a definition a rule adopts, and its positionType', () => {
+    const rule = (
+      path: string,
+      type: string,
+    ): string => `{ "formatVersion": 1, "window": "provinceview",
+      "rules": { "adopt": { "adopt": { "provinceview/state_window": ["minimap_pic"] } },
+        "size": { "size": { "${path}": "${type}" } } } }`;
+    const sized = (path: string, type = 'big_pos') =>
+      check(BASE, rule(path, type)).diagnostics.map((d) => d.message);
+    expect(sized('provinceview/bg[1]')).toEqual([]);
+    expect(sized('provinceview/state_window/minimap_pic')).toEqual([]);
+    expect(sized('provinceview/state_window/other_pic')).toEqual([
+      'No widget of provinceview has the path "provinceview/state_window/other_pic".',
+    ]);
+    expect(sized('provinceview/bg[1]', 'small_pos')).toEqual([
+      'The file of provinceview defines no positionType "small_pos".',
     ]);
   });
 
@@ -444,6 +463,7 @@ describe('the JSON Schema', () => {
       'offset',
       'position',
       'show',
+      'size',
       'slider',
       'sprite',
       'text',

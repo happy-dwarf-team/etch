@@ -19,7 +19,7 @@ import {
   type EngineRow,
 } from './engine.ts';
 import type { Group, Selector, SelectorValue, WindowProfile } from './format.ts';
-import { widgetsAt, windowPaths } from './paths.ts';
+import { adoptersAt, widgetsAt, windowPaths } from './paths.ts';
 
 /**
  * Where a selector's value came from: the preview's screen (`auto`), the chosen save (`save`),
@@ -75,6 +75,13 @@ export interface WidgetState {
   readonly text?: string;
   /** The size the game's code gives a chart in place of its sprite's. */
   readonly chartSize?: { readonly width: number; readonly height: number };
+  /** The `positionType` whose `position` the game's code gives it as its size (a rule's `size`). */
+  readonly sizeType?: string;
+  /**
+   * The same for the definitions it adopts, by their names in lower case: a rule's `size` of the
+   * path `<this widget>/<definition>`.
+   */
+  readonly adoptedSizes?: Readonly<Record<string, string>>;
   /** Where the game's code places it along a slider (a rule's `slider`): the marker or its value. */
   readonly slider?: SliderPlace;
   /**
@@ -160,6 +167,8 @@ export function evaluateView(
     groups.push({ group, members });
   }
 
+  // What the rules adopt, for a size of an adopted definition.
+  const adopts = profile.rules.flatMap((r) => r.adopt);
   for (const rule of profile.rules) {
     if (!rule.when.every((c) => c.values.includes(value.get(c.selector) ?? ''))) continue;
     const why = `rule ${rule.id}`;
@@ -188,6 +197,19 @@ export function evaluateView(
     for (const ref of rule.chartSize ?? []) {
       for (const w of widgetsAt(window, ref.path)) {
         update(w, { chartSize: { width: ref.width, height: ref.height } });
+      }
+    }
+    for (const ref of rule.size ?? []) {
+      const own = widgetsAt(window, ref.path);
+      for (const w of own) update(w, { sizeType: ref.positionType });
+      if (own.length > 0) continue;
+      const adopted = adoptersAt(window, ref.path, adopts);
+      for (const w of adopted?.adopters ?? []) {
+        const sizes = {
+          ...states.get(w)?.adoptedSizes,
+          [adopted?.definition ?? '']: ref.positionType,
+        };
+        update(w, { adoptedSizes: sizes });
       }
     }
     for (const ref of rule.slider ?? []) {
@@ -415,6 +437,9 @@ export function layoutViewOf(view: WindowView): LayoutView {
     frame: (widget) => view.widgets.get(widget)?.frame,
     sprite: (widget) => view.widgets.get(widget)?.sprite,
     chartSize: (widget) => view.widgets.get(widget)?.chartSize,
+    sizedTo: (widget) => view.widgets.get(widget)?.sizeType,
+    adoptedSizedTo: (adopter, name) =>
+      view.widgets.get(adopter)?.adoptedSizes?.[name.toLowerCase()],
     slider: (widget) => view.widgets.get(widget)?.slider,
     stepped: (widget) => view.widgets.get(widget)?.stepped,
     steppedFurther: (widget) => view.widgets.get(widget)?.steppedFurther,

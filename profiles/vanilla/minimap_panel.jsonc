@@ -37,5 +37,9 @@
       "note": "minimap_bg and minimap_pic are top-level definitions of menubar.gui; the game shows them in this panel at their own positions (etch#256).",
       "adopt": { "minimap_panel": ["minimap_bg", "minimap_pic"] },
     },
+    "minimap-size": {
+      "note": "eu4.exe makes the minimap the size of menubar.gui's positionType minimap_size (0x10B67E0), whatever GFX_minimap's texture is: 268 × 98 in the coverage survey's captures of 24 November 2026 in every playset, also where Proper 2K UI Enhanced's texture is 321 × 117. The game draws its own picture of the map there.",
+      "size": { "minimap_panel/minimap_pic": "minimap_size" },
+    },
   },
 }

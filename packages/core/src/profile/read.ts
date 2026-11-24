@@ -781,6 +781,7 @@ function readRule(
     'sprite',
     'text',
     'chartSize',
+    'size',
     'slider',
     'offset',
     'hidePosition',
@@ -845,6 +846,7 @@ function readRule(
       };
       return { width: pixels('x'), height: pixels('y') };
     }),
+    size: keyed('size', (value) => ({ positionType: text$(value, 'a positionType') })),
     slider: keyed('slider', readSlider),
     offset: keyed('offset', readOffset),
     hidePosition: paths('hidePosition'),
@@ -865,13 +867,14 @@ function readRule(
     (rule.sprite?.length ?? 0) +
     (rule.text?.length ?? 0) +
     (rule.chartSize?.length ?? 0) +
+    (rule.size?.length ?? 0) +
     (rule.slider?.length ?? 0) +
     rule.offset.length +
     rule.hidePosition.length +
     rule.adopt.length;
   if (effects === 0) {
     throw new Faulty(
-      `Rule "${id}" has no effect: show, hide, notCreated, position, frame, sprite, text, chartSize, slider, offset, hidePosition or adopt.`,
+      `Rule "${id}" has no effect: show, hide, notCreated, position, frame, sprite, text, chartSize, size, slider, offset, hidePosition or adopt.`,
       node,
     );
   }

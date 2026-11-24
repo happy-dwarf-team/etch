@@ -22,7 +22,7 @@ import type {
   WindowProfile,
   Written,
 } from './format.ts';
-import { entryPath, profilePattern, widgetsAt } from './paths.ts';
+import { adoptersAt, entryPath, profilePattern, widgetsAt } from './paths.ts';
 import { readSavePath } from './save-paths.ts';
 
 /** The widget kinds a repeater fills. */
@@ -187,7 +187,14 @@ export function checkProfile(profile: WindowProfile, input: ProfileCheckInput): 
     ]) {
       ok = !pathFails(rule, ref) && ok;
     }
-    for (const move of rule.position) {
+    // A size may also name a definition a rule adopts, by the adopting widget's path.
+    const adopts = profile.rules.flatMap((r) => r.adopt);
+    for (const ref of rule.size ?? []) {
+      const own = widgetsAt(input.window, ref.path).length > 0;
+      if (!own && adoptersAt(input.window, ref.path, adopts) !== undefined) continue;
+      ok = !pathFails(rule, ref) && ok;
+    }
+    for (const move of [...rule.position, ...(rule.size ?? [])]) {
       if (!input.positionType(move.positionType)) {
         error(
           rule,

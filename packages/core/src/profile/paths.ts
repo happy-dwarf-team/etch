@@ -102,6 +102,32 @@ export function widgetsAt(window: Widget, path: string): readonly Widget[] {
   return widgets;
 }
 
+/**
+ * The widgets a path's last step names a definition of, when that definition is not in the window
+ * but adopted (a rule's `adopt`): the widgets at the path before it that adopt the definition, and
+ * its name in lower case. `minimap_panel/minimap_pic` names `menubar.gui`'s top-level
+ * `minimap_pic`, which the minimap panel adopts. `undefined` when no widget at that path adopts it
+ * or the last step is a pattern.
+ */
+export function adoptersAt(
+  window: Widget,
+  path: string,
+  adopts: readonly { readonly path: string; readonly definitions: readonly string[] }[],
+): { readonly adopters: readonly Widget[]; readonly definition: string } | undefined {
+  const cut = path.lastIndexOf('/');
+  if (cut <= 0) return undefined;
+  const definition = path.slice(cut + 1).toLowerCase();
+  if (!/^[\w.-]+$/.test(definition)) return undefined;
+  const at = new Set(widgetsAt(window, path.slice(0, cut)));
+  const adopters = new Set(
+    adopts
+      .filter((a) => a.definitions.some((d) => d.toLowerCase() === definition))
+      .flatMap((a) => widgetsAt(window, a.path))
+      .filter((w) => at.has(w)),
+  );
+  return adopters.size === 0 ? undefined : { adopters: [...adopters], definition };
+}
+
 const matches = new WeakMap<Widget, Map<string, readonly Widget[]>>();
 /** Each window path split into its steps once, in `windowPaths` order. */
 const steps = new WeakMap<Widget, readonly (readonly PathStep[] | undefined)[]>();
