@@ -1,0 +1,19 @@
+// The menubar in P2KE Patch - Anbennar, over the vanilla and Anbennar profiles (and Proper 2K UI
+// Enhanced's). The patch gives floating_buttons the position x = -90 and keeps its show_position at
+// 0, 0; the game draws the window at its position, where the preview would put it at its
+// show_position.
+{
+  "formatVersion": 1,
+  "window": "menubar",
+  "checkedWith": "1",
+  "mod": {
+    "remoteFileId": "3777997797",
+    "name": "P2KE Patch - Anbennar",
+  },
+  "rules": {
+    "floating-buttons-at-position": {
+      "note": "The game draws floating_buttons at its position (x = -90), not its show_position (0, 0): its buttons 90 px left of the show_position's place (the coverage survey of 24 November 2026, the Anbennar playset with P2KE, 2560×1440). In the base game, Anbennar and Proper 2K UI Enhanced the two are the same.",
+      "offset": { "menubar/floating_buttons": { "x": -90 } },
+    },
+  },
+}
