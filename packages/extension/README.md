@@ -11,7 +11,9 @@ and setting. Website: [etch.happydwarf.dev](https://etch.happydwarf.dev/).
 ## Get started
 
 You need Windows (x64), Visual Studio Code 1.100 or later and EU4 1.37.5. Etch comes with no game
-files: it draws with your game's own. It finds a Steam copy of the game by itself. For a GOG copy,
+files: it draws with your game's own, and with those of every DLC you have not turned off in the
+game's launcher ([The DLCs](https://etch.happydwarf.dev/docs/getting-started/finding-the-game/#the-dlcs)).
+It finds a Steam copy of the game by itself. For a GOG copy,
 or a game it does not find, put the game folder in the setting `etch.gamePath`. The live game, EU4
 itself started by Etch beside the editor, needs the Steam version of 1.37.5, exactly
 ([Install and requirements](https://etch.happydwarf.dev/docs/getting-started/install/)).
@@ -19,6 +21,16 @@ itself started by Etch beside the editor, needs the Steam version of 1.37.5, exa
 Then open your mod's folder in VS Code, open a `.gui` file and run **Etch: Open Preview** from the
 Command Palette (<kbd>Ctrl+Shift+P</kbd>). The preview opens beside the editor:
 [Your first preview](https://etch.happydwarf.dev/docs/getting-started/first-preview/).
+
+After the install, VS Code opens **Get Started with Etch** on its Welcome page. Its six steps show
+the main things Etch does, each with a button that does it. To open it again, run **Etch: Get
+Started** ([The Get Started page](https://etch.happydwarf.dev/docs/getting-started/install/#the-get-started-page)).
+
+Etch adds no colours to the text of script files: `.gui`, `.gfx`, `.asset` and the `.txt` files
+of folders such as `common` and `events`. CWTools and ParadoxCode colour them (ParadoxCode only
+from the VS Code Marketplace). When you open a script file and neither is installed, a
+notification at the bottom right offers to install one
+([Coloured text in script files](https://etch.happydwarf.dev/docs/getting-started/install/#coloured-text-in-script-files)).
 
 If you used Etch 1.x: its game host, a hidden copy of the game that drew the preview, is gone in
 Etch 2, and the live game takes its place. To stay on 1.0.x, see
@@ -51,7 +63,10 @@ A `.dds` or `.tga` file opens in the
 [mesh preview](https://etch.happydwarf.dev/docs/textures-and-meshes/mesh-preview/), where you
 turn the model and play its animations. In an `.asset` file, click **Preview Entity** above an
 `entity = { … }` to see that
-[unit or ship](https://etch.happydwarf.dev/docs/textures-and-meshes/entities/). Etch draws a map
+[unit or ship](https://etch.happydwarf.dev/docs/textures-and-meshes/entities/). While it plays an
+animation, such as `attack`, Etch draws its
+[particle effects](https://etch.happydwarf.dev/docs/textures-and-meshes/entities/#particles), such
+as a cannon's smoke, close to how the game draws them. Etch draws a map
 tree's mesh
 [as the game draws it on the map](https://etch.happydwarf.dev/docs/textures-and-meshes/map-trees/).
 Hover over the name of a texture, mesh or sprite in your files to see it, and
@@ -80,6 +95,11 @@ and play as usual.
 - [Check File](https://etch.happydwarf.dev/docs/live-game/check-file/) lets the game read the
   triggers and effects of an event, decision or mission file without running them, and shows
   what it complains about in the Problems panel, on your lines.
+
+**Live game** in the status bar, at the bottom left, shows the game's state. Once the game is
+ready, click it for a menu with **Turn Pick Mode On**, **Snapshot from the Live Game**, **Restart
+the Live Game**, **Stop the Live Game** and more
+([The live game in the status bar](https://etch.happydwarf.dev/docs/live-game/start-and-stop/#the-live-game-in-the-status-bar)).
 
 ## Scripts
 
