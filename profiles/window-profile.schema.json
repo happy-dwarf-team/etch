@@ -256,7 +256,7 @@
           }
         },
         "size": {
-          "description": "Widgets the game's code sizes to a positionType of the window's file, keyed by path: its position is the width and height, over the size of the widget's sprite. A path may name a definition a rule adopts, after the adopting widget's path.",
+          "description": "Widgets the game's code sizes to a positionType of the window's file, keyed by path: its position is the width and height, over the size of the widget's sprite. A path may name a definition a rule adopts, after the adopting widget's path; the positionType is then of the definition's own file.",
           "type": "object",
           "additionalProperties": { "$ref": "#/definitions/text" }
         },

@@ -444,7 +444,7 @@ class Layout {
       }
     | undefined;
   /** The definition being adopted and the `positionType` a profile sizes it to (`placeAdopted`). */
-  private sizing: { widget: Widget; positionType: string } | undefined;
+  private sizing: { widget: Widget; x: number; y: number } | undefined;
   /** The windows a live snapshot could not move as one (`livePosition`), by their index. */
   private readonly movedByChildren = new Set<number>();
   /**
@@ -701,9 +701,10 @@ class Layout {
       const file = this.input.index.guiFiles.find((f) => f.path === found.path)?.file;
       if (file === undefined) continue;
       const outer = { constants: this.constants, adopting: this.adopting, sizing: this.sizing };
+      // A profile's size of the definition: a positionType of the definition's own file.
       const sizeType = this.input.view?.adoptedSizedTo?.(widget, entry.name);
-      this.sizing =
-        sizeType === undefined ? undefined : { widget: found.item, positionType: sizeType };
+      const sized = sizeType === undefined ? undefined : this.positionTypeAt(sizeType, file);
+      this.sizing = sized === undefined ? undefined : { widget: found.item, ...sized };
       this.constants = file.constants;
       this.adopting =
         entry.rect === undefined
@@ -1178,14 +1179,17 @@ class Layout {
     return name === undefined ? undefined : this.positionTypeAt(name);
   }
 
-  /** The point of the window file's `positionType` of a name, ignoring case. */
-  private positionTypeAt(name: string): { x: number; y: number } | undefined {
+  /** The point of the `positionType` of a name in the window's file or another, ignoring case. */
+  private positionTypeAt(
+    name: string,
+    file = this.input.file,
+  ): { x: number; y: number } | undefined {
     const lower = name.toLowerCase();
-    const target = this.input.file.definitions.find(
+    const target = file.definitions.find(
       (d) => d.kind === 'positionType' && d.name?.toLowerCase() === lower,
     );
     if (target === undefined) return undefined;
-    return widgetProperties(target, this.input.file.constants, this.input.screen).point('position');
+    return widgetProperties(target, file.constants, this.input.screen).point('position');
   }
 
   /**
@@ -1485,12 +1489,13 @@ class Layout {
     // (eu4.exe 0x10B67E0) also where Proper 2K UI Enhanced's texture is 321 × 117 (the coverage
     // survey of 24 November 2026); the game draws its own picture of the map there.
     const sizedTo =
-      this.current === undefined
-        ? undefined
-        : this.sizing?.widget === this.current
-          ? this.sizing.positionType
-          : this.input.view?.sizedTo?.(this.current);
-    const sized = sizedTo === undefined ? undefined : this.positionTypeAt(sizedTo);
+      this.current === undefined ? undefined : this.input.view?.sizedTo?.(this.current);
+    const sized =
+      this.sizing !== undefined && this.sizing.widget === this.current
+        ? this.sizing
+        : sizedTo === undefined
+          ? undefined
+          : this.positionTypeAt(sizedTo);
     if (sized !== undefined && sized.x > 0 && sized.y > 0) {
       this.draws.push({
         kind: 'sprite',

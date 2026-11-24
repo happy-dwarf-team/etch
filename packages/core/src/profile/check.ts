@@ -6,6 +6,7 @@
  * error goes to the file that wrote the entry.
  */
 import type { Widget } from '../model/gui.ts';
+import type { InterfaceIndex } from '../model/interface-index.ts';
 import type { SourceRange } from '../script/tree.ts';
 import { factNamed } from './facts.ts';
 import type {
@@ -44,6 +45,30 @@ export interface ProfileCheckInput {
   readonly template?: (name: string) => Widget | undefined;
   /** Whether the playset defines a top-level window of a name, for links; unchecked without. */
   readonly windowExists?: (name: string) => boolean;
+  /**
+   * Whether the file that defines a top-level definition defines a `positionType` of a name, for
+   * the `size` of a definition a rule adopts; unchecked without ({@link definitionPositionType}).
+   */
+  readonly definitionPositionType?: (definition: string, type: string) => boolean;
+}
+
+/**
+ * {@link ProfileCheckInput.definitionPositionType} from the playset's interface: the file of the
+ * definition that wins, ignoring case, as the game's code reads `minimap_size` beside
+ * `minimap_pic` in `menubar.gui`.
+ */
+export function definitionPositionType(
+  index: InterfaceIndex,
+): (definition: string, type: string) => boolean {
+  return (definition, type) => {
+    const found = index.guiType(definition);
+    const file = index.guiFiles.find((f) => f.path === found?.path)?.file;
+    const lower = type.toLowerCase();
+    return (
+      file?.definitions.some((d) => d.kind === 'positionType' && d.name?.toLowerCase() === lower) ??
+      false
+    );
+  };
 }
 
 export interface CheckedProfile {
@@ -187,14 +212,37 @@ export function checkProfile(profile: WindowProfile, input: ProfileCheckInput): 
     ]) {
       ok = !pathFails(rule, ref) && ok;
     }
-    // A size may also name a definition a rule adopts, by the adopting widget's path.
+    // A size may also name a definition a rule adopts, by the adopting widget's path; its
+    // positionType is then the definition's file's.
     const adopts = profile.rules.flatMap((r) => r.adopt);
     for (const ref of rule.size ?? []) {
       const own = widgetsAt(input.window, ref.path).length > 0;
-      if (!own && adoptersAt(input.window, ref.path, adopts) !== undefined) continue;
-      ok = !pathFails(rule, ref) && ok;
+      const adopted = own ? undefined : adoptersAt(input.window, ref.path, adopts);
+      if (adopted === undefined) {
+        const found = !pathFails(rule, ref);
+        ok = found && ok;
+        if (found && !input.positionType(ref.positionType)) {
+          error(
+            rule,
+            'profile-unknown-name',
+            ref.range,
+            `The file of ${profile.window} defines no positionType "${ref.positionType}".`,
+          );
+          ok = false;
+        }
+        continue;
+      }
+      if (input.definitionPositionType?.(adopted.definition, ref.positionType) === false) {
+        error(
+          rule,
+          'profile-unknown-name',
+          ref.range,
+          `The file of ${adopted.definition} defines no positionType "${ref.positionType}".`,
+        );
+        ok = false;
+      }
     }
-    for (const move of [...rule.position, ...(rule.size ?? [])]) {
+    for (const move of rule.position) {
       if (!input.positionType(move.positionType)) {
         error(
           rule,
