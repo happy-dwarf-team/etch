@@ -12,7 +12,7 @@ have a profile.
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | vanilla | 1280x720 | 62 | 98.9 % | 99.5 % | 81.6 % | 87.5 % | 23 | 99.3 % | 99.5 % | 99.7 % | 100.0 % | 59 | 100.0 % | 100.0 % | 3 of 62 |
 | vanilla | 1920x1080 | 62 | 98.9 % | 99.6 % | 81.5 % | 87.2 % | 23 | 99.3 % | 99.5 % | 99.7 % | 100.0 % | 59 | 100.0 % | 100.0 % | 3 of 62 |
-| anbennar-alone | 1280x720 | 59 | 99.3 % | 99.0 % | 88.7 % | 76.8 % | 25 | 99.5 % | 98.9 % | 99.7 % | 100.0 % | 57 | 100.0 % | 100.0 % | 3 of 59 |
+| anbennar-alone | 1280x720 | 59 | 99.3 % | 99.9 % | 88.7 % | 76.8 % | 25 | 99.4 % | 99.9 % | 99.7 % | 100.0 % | 57 | 100.0 % | 100.0 % | 3 of 59 |
 | anbennar-alone | 1920x1080 | 60 | 99.2 % | 99.9 % | 88.8 % | 77.0 % | 25 | 99.4 % | 99.9 % | 99.9 % | 100.0 % | 59 | 100.0 % | 100.0 % | 3 of 60 |
 | bigger-ui | 1280x720 | 62 | 98.9 % | 99.6 % | 81.5 % | 87.5 % | 23 | 99.3 % | 99.5 % | 99.7 % | 100.0 % | 59 | 100.0 % | 100.0 % | 3 of 62 |
 | bigger-ui | 1920x1080 | 62 | 98.9 % | 99.6 % | 81.5 % | 87.3 % | 23 | 99.3 % | 99.6 % | 99.7 % | 100.0 % | 59 | 100.0 % | 100.0 % | 3 of 62 |
@@ -26,7 +26,7 @@ data: what Compare with Live Game compares (spec/v3.md section 4), through the s
 | --- | --- | --- | --- |
 | vanilla | 1280x720 | 99.5 % | 99.6 % |
 | vanilla | 1920x1080 | 99.5 % | 99.6 % |
-| anbennar-alone | 1280x720 | 99.9 % | 98.9 % |
+| anbennar-alone | 1280x720 | 99.9 % | 99.9 % |
 | anbennar-alone | 1920x1080 | 99.9 % | 99.9 % |
 | bigger-ui | 1280x720 | 99.5 % | 99.6 % |
 | bigger-ui | 1920x1080 | 99.5 % | 99.6 % |
@@ -734,7 +734,7 @@ the game shows no tooltip for him. Its steps in `coverage/survey.json` scroll th
 | vanilla, 1920×1080 | 62 of 62 | 23 of 3421 (23 of 3364 on 23 November) | 42 of 10640 (42 of 10090) | 10835 of 10835 |
 | vanilla, 1280×720 | 62 of 62 | 23 of 3417 (23 of 3360) | 45 of 10801 (45 of 10100) | 100.00 % |
 | Anbennar alone, 1920×1080 | 60 of 60 | 19 of 3524 (14 of 3192) | 7 of 10271 (7 of 8907) | 100.00 % |
-| Anbennar alone, 1280×720 | 59 of 60 | 15 of 3369 (7 of 2471) | 98 of 9976 (7 of 7272) | 100.00 % |
+| Anbennar alone, 1280×720 | 59 of 60 | 18 of 3444 (7 of 2471) | 7 of 9984 (7 of 7272) | 100.00 % |
 | Bigger UI, 1920×1080 | 62 of 62 | 23 of 3421 (23 of 3364) | 37 of 10669 (37 of 10119) | 100.00 % |
 | Bigger UI, 1280×720 | 62 of 62 | 23 of 3401 (23 of 3344) | 41 of 10832 (41 of 10131) | 100.00 % |
 | Proper 2K UI Enhanced, 2560×1440 | 61 of 62 | 80 of 3517 (76 of 3460) | 37 of 10872 (37 of 10136) | 100.00 % |
@@ -745,11 +745,14 @@ the lobby's `scenario_description` (15 rects over the sets) and two texts of Anb
 heights of texts the game's code fills (etch#604); at 2560×1440, with Proper 2K UI Enhanced, the
 unit panel's `regiment_bg`, three icons of the ideas view and the lobby's `nation_designer_hint`.
 
-**Anbennar's achievements at 1280×720** (`anbennar-alone-save-s16`): its 91 visibility failures
-offline are the topbar profile's. The window has a small variant for heights up to 864 pixels
-(`achievement_indiv_small`, `achievement_window_small_bg`), which the game shows at 1280×720, and
-the profile's `achievements` value `open`, made at 1920×1080, hides it. No value of the selector
-fits the snapshot there, so the preview keeps the window closed. Live, nothing fails.
+**Anbennar's achievements at 1280×720** (`anbennar-alone-save-s16`): the window has a small variant
+for heights up to 864 pixels (`achievement_indiv_small`, `achievement_window_small_bg`), which the
+game shows at 1280×720. The topbar profile's `achievements` value `open`, made at 1920×1080, hid
+it, so no value of the selector fitted the snapshot there and the preview kept the window closed:
+91 visibility failures offline. The profile now has the screen height as a selector (`screen`, 864
+pixels or less), and `open` hides each variant's widgets at the height the game hides them. The
+view has no visibility failure at either size now; the window's rects at 1280×720 add three
+`flavor_text` heights, a text the game's code fills (etch#604), as at 1920×1080.
 
 **Not captured** (3 captures): Anbennar's disbanding from the reorganisation at 1280×720, as the
 reorganisation window covers the unit panel's disband button at that size (both tries); in Proper
@@ -836,7 +839,6 @@ on its own. Pixels: `compare --gpu` over the 487 captures, 22 pass, reported onl
 | outline rect, guiButtonType: w, h differ | 2 | 1 | `minimap_panel/custom_mapmode_7` |
 | outline rect, iconType: placed outside the screen | 2 | 1 | `countrytechnologyview/institutions_window/country_progress` |
 | outline rect, guiButtonType: placed outside the screen | 1 | 1 | `countrytechnologyview/institutions_window/back_button` |
-| live: no value of selector achievements fits | 1 | 1 | `topbar` |
 
 ### bigger-ui
 
