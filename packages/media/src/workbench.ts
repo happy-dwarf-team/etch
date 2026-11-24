@@ -3,7 +3,17 @@
 // empty extensions folder and a copy of the demo mod as the workspace (spec section 8.3). It drives
 // the workbench with the keyboard, as a user would, and checks the framing rules before each
 // capture (section 8.4).
-import { copyFile, cp, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import {
+  copyFile,
+  cp,
+  mkdir,
+  mkdtemp,
+  readdir,
+  readFile,
+  rm,
+  stat,
+  writeFile,
+} from 'node:fs/promises';
 import * as path from 'node:path';
 import {
   _electron,
@@ -1022,16 +1032,71 @@ export class Workbench {
   }
 }
 
+/** The file in a run folder that names the process using it (`newRunFolder`). */
+export const RUN_OWNER = 'owner.json';
+
+/** How old a run folder without its owner file must be before it counts as left behind. */
+export const ORPHAN_AGE_MS = 10 * 60 * 1000;
+
+/** Whether a process runs: signal 0 only checks, on Windows too; EPERM means it runs. */
+function processRuns(pid: number): boolean {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    return (error as NodeJS.ErrnoException).code === 'EPERM';
+  }
+}
+
 /**
  * A new folder for one window's workspace, profile and extensions, `<work>/run-XXXXXX`. Each
  * window gets its own, so runs that share a work folder share its VS Code download
  * (`<work>/vscode`) and nothing else. Removes the single `<work>/run` that Etch before this kept
- * between runs.
+ * between runs, and the run folders of runs that ended without closing their window
+ * (`removeLeftRuns`).
  */
 export async function newRunFolder(work: string): Promise<string> {
   await mkdir(work, { recursive: true });
   await removeRunFolder(path.join(work, 'run'));
-  return mkdtemp(path.join(work, 'run-'));
+  await removeLeftRuns(work);
+  const run = await mkdtemp(path.join(work, 'run-'));
+  await writeFile(path.join(run, RUN_OWNER), `${JSON.stringify({ pid: process.pid })}\n`);
+  return run;
+}
+
+/**
+ * Removes the run folders a killed or crashed run left in `work` (Ctrl+C, a crash: `close` never
+ * ran), which can hold a private install with copied game files. A folder whose owner file names a
+ * process that still runs is another window's and stays; so does one without the file younger than
+ * `ORPHAN_AGE_MS`, which a run may be creating. Returns the folders it removed.
+ */
+export async function removeLeftRuns(
+  work: string,
+  runs: (pid: number) => boolean = processRuns,
+  now: number = Date.now(),
+): Promise<string[]> {
+  const names = await readdir(work).catch(() => [] as string[]);
+  const removed: string[] = [];
+  for (const name of names) {
+    if (!name.startsWith('run-')) continue;
+    const run = path.join(work, name);
+    const owner = await readFile(path.join(run, RUN_OWNER), 'utf8').then(
+      (text) => (JSON.parse(text) as { pid?: unknown }).pid,
+      () => undefined,
+    );
+    if (typeof owner === 'number') {
+      if (runs(owner)) continue;
+    } else {
+      const made = await stat(run).then(
+        (s) => (s.isDirectory() ? s.mtimeMs : undefined),
+        () => undefined,
+      );
+      if (made === undefined || now - made < ORPHAN_AGE_MS) continue;
+    }
+    await removeRunFolder(run);
+    removed.push(run);
+  }
+  return removed;
 }
 
 /**
