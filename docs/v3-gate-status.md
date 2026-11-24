@@ -1,4 +1,4 @@
-# How far the v3 gate is (25 November 2026)
+# How far the v3 gate is (24 November 2026)
 
 The distance from `main` to the 3.0.0 gate of the [v3 specification](spec/v3.md), section 3,
 measured on 22 November 2026: the rules of `main` (`438543f`, the content of 2.14.0) run under the
@@ -31,7 +31,7 @@ and the generated tables of [coverage-results.md](coverage-results.md) are `main
 (`b156984`) on these captures; that page's section "Gap 5: the views not yet captured,
 24 November 2026" has the rest.
 
-**Update, 25 November 2026.** Six fixes to the profiles take the geometry with the profiles from 23
+**Update, 24 November 2026.** Six fixes to the profiles take the geometry with the profiles from 23
 to 6 rects off in vanilla at each size, and from 19 and 18 to 7 in Anbennar (etch#672 to etch#677:
 the sprites Tongs 0.37 reports, the lobby's description, a rule's `text`, the patriarch authority's
 value, Anbennar's achievement texts, and two of Proper 2K UI Enhanced's and P2KE's). Three more
@@ -41,7 +41,7 @@ etch#694 and etch#696: a rule's `size` for the minimap, the naval doctrine choic
 projects box) take Proper 2K UI Enhanced to 23 and the P2KE playset to 19, and leave the gated sets
 as they were. No capture was taken again. The figures below and the generated tables of
 [coverage-results.md](coverage-results.md) are `main`'s rules (`c34df38`) on the captures of 23 and
-24 November; that page's section "The geometry fixes of 25 November 2026" has the rest. Nothing of
+24 November; that page's section "The geometry fixes of 24 November 2026" has the rest. Nothing of
 etch#606's kind is left: the minimap was the last (etch#693).
 
 ## What the gate asks
@@ -74,7 +74,7 @@ literally as measure 1 (the outline without any profile, 81–88 % of rects), th
 met: the profiles exist because positions depend on the game's state. The maintainer should
 confirm the reading before the gate run.
 
-What the geometry left on `main` is, by kind (vanilla and Anbennar at 1920×1080). The 25 November
+What the geometry left on `main` is, by kind (vanilla and Anbennar at 1920×1080). The 24 November
 fixes are in the list:
 
 - **Heights of texts the game's code fills**: the most rects, all heights only. Proposed as a known
@@ -83,7 +83,7 @@ fixes are in the list:
   `when_embraced`, the parliament's enacted modifiers, the peace view's terms, and in Anbennar three
   texts of the magic menu and the estates' `agenda_effects`, which the game leaves empty without an
   agenda; one width, the rebels' `rebelsize_desc`, which the game draws 249 px wide in its
-  `fixedsize` box of `maxWidth` 246 (added to etch#604 in a comment). Fixed on 25 November: the lobby's scenario description (etch#673), the ages view's
+  `fixedsize` box of `maxWidth` 246 (added to etch#604 in a comment). Fixed on 24 November: the lobby's scenario description (etch#673), the ages view's
   description (etch#674), the patriarch authority's value (etch#676) and Anbennar's achievement
   texts (etch#677).
 - **Widgets the game's code sizes or moves from a value**: all fixed. The development pie chart
