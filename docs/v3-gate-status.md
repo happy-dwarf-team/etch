@@ -36,11 +36,13 @@ to 6 rects off in vanilla at each size, and from 19 and 18 to 7 in Anbennar (etc
 the sprites Tongs 0.37 reports, the lobby's description, a rule's `text`, the patriarch authority's
 value, Anbennar's achievement texts, and two of Proper 2K UI Enhanced's and P2KE's). Three more
 (etch#684 to etch#686: the pie chart, the ledger's columns and the national idea icons) take
-Proper 2K UI Enhanced from 80 to 33 and the P2KE playset from 52 to 23. No capture was taken again.
-The figures below and the generated tables of [coverage-results.md](coverage-results.md) are
-`main`'s rules (`6d2cad0`) on the captures of 23 and 24 November; that page's section "The geometry
-fixes of 25 November 2026" has the rest. One widget of etch#606's kind is left, the minimap, which a
-comment on that issue describes.
+Proper 2K UI Enhanced from 80 to 33 and the P2KE playset from 52 to 23. Three after them (etch#693,
+etch#694 and etch#696: a rule's `size` for the minimap, the naval doctrine choice and the great
+projects box) take Proper 2K UI Enhanced to 23 and the P2KE playset to 19, and leave the gated sets
+as they were. No capture was taken again. The figures below and the generated tables of
+[coverage-results.md](coverage-results.md) are `main`'s rules (`c34df38`) on the captures of 23 and
+24 November; that page's section "The geometry fixes of 25 November 2026" has the rest. Nothing of
+etch#606's kind is left: the minimap was the last (etch#693).
 
 ## What the gate asks
 
@@ -59,7 +61,7 @@ them have at least one profiled root, 38 and 35 only profiled roots.
 
 ## Where `main` stands
 
-| Measure | Target | Measured on `main` at `6d2cad0` (the same as at `016919c`), captures of 23 and 24 November | Met |
+| Measure | Target | Measured on `main` at `c34df38` (the same as at `6d2cad0` and `016919c`), captures of 23 and 24 November | Met |
 | --- | --- | --- | --- |
 | Live texts, profiled windows | 100 % | 100.0 % on every playset and resolution, and on the three countries | yes |
 | Live visibility | 100 % | 100.00 % on every set of the survey (vanilla at 1920×1080: 10835 of 10835, with the built building slots Tongs 0.23 reported hidden) and on the three countries | yes |
@@ -88,7 +90,8 @@ fixes are in the list:
   (etch#614, `chartSize`), the patriarch authority marker (etch#615, `slider`) and its value
   (etch#676), the estates' crown land modifier icons, which the game draws with `GFX_idea_unknown`
   and the modifier's picture, and the map mode buttons, with the sprites of their map modes
-  (etch#672). Proposed as etch#606, which has nothing left.
+  (etch#672), and, off only in Proper 2K UI Enhanced, the minimap, which eu4.exe sizes to the
+  `positionType` `minimap_size` (etch#693). Proposed as etch#606, which has nothing left.
 - **Building slots**: how many a province has and which can build now (visibility, not rects). Proposed
   as a known deviation, etch#605.
 - **Single rects**, fixed since: Anbennar's achievements background, which the preview anchored by
