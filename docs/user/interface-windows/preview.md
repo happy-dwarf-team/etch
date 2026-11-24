@@ -48,6 +48,8 @@ click a window to preview it.
   the cursor again.
 - **Etch: Pin or Unpin the Previewed Window** pins the window the preview shows, or unpins it, from
   the Command Palette.
+- When you delete the pinned window from its file, a notice says it is no longer there. The
+  window list stays, so you can choose another window or **Follow the cursor**.
 
 When the cursor is in no window, for example on the file's first line, the preview shows the last
 window it showed in the file, or the file's first window. A notice above it says so, and its

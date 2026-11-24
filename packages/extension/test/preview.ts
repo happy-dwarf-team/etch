@@ -425,6 +425,27 @@ export async function testPreview(api: EtchApi): Promise<void> {
     await preview.idle();
     assert.equal(preview.current.window.name, 'etch_second');
     assert.equal(navigation.previewed.window.name, 'etch_second', 'the outline keeps the pin');
+
+    // A pinned window the file no longer defines keeps the window list, the way out of the pin.
+    const SECOND = GUI.slice(GUI.indexOf('\twindowType = {\n\t\tname = "etch_second"'), -3);
+    await replace(gui, SECOND, '');
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    await preview.idle();
+    assert.equal(preview.viewState?.title, 'No window');
+    assert.deepEqual(
+      preview.viewState.windows?.map((w) => w.label),
+      ['etch_first'],
+      'the window list stays',
+    );
+    assert.ok(
+      preview.notices.some((n) => /pinned window etch_second is no longer/.test(n.message)),
+      JSON.stringify(preview.notices),
+    );
+    await nextPaint(
+      preview,
+      (r) => r.window.name === 'etch_second',
+      () => replace(gui, '\t}\n\n}', `\t}\n${SECOND}\n}`),
+    );
     const unpinned = await nextPaint(
       preview,
       (r) => r.window.name === 'etch_first',

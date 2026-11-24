@@ -857,13 +857,23 @@ export class Preview implements PreviewApi, vscode.Disposable {
       this.render = undefined;
       this.renderKey = undefined;
       this.navigation.setPreviewed(undefined);
+      // A pinned window the file no longer defines (deleted; a renamed one keeps its place): the
+      // window list stays, with Follow the cursor, the way out of the pin.
+      const lostPin = file.definitions.length > 0 ? this.pin?.name : undefined;
       this.show({
         title: 'No window',
         file: shownPath,
         notices: [
           ...session.notices,
-          { severity: 'information', message: 'This file defines no window to preview.' },
+          {
+            severity: 'information',
+            message:
+              lostPin === undefined
+                ? 'This file defines no window to preview.'
+                : `The pinned window ${lostPin} is no longer in this file. Choose a window from the list under the title.`,
+          },
         ],
+        ...listed,
       });
       this.post({
         type: 'draw',
@@ -1527,7 +1537,8 @@ export class Preview implements PreviewApi, vscode.Disposable {
     if (render === undefined || viewed === undefined) return;
     const key = (render.window.name ?? '').toLowerCase();
     const choice = this.choices.get(key) ?? initialChoice(viewed.profile.profile);
-    this.forgetReset();
+    // Saving the view and opening the profile change nothing shown: a reset's Undo stays.
+    if (action.kind !== 'saveView' && action.kind !== 'openProfile') this.forgetReset();
     if (action.kind === 'resetToggles') {
       // At once, with a notice that can take it back (etch#648, finding P2.20).
       const toggles = choice.toggles;
@@ -1569,15 +1580,19 @@ export class Preview implements PreviewApi, vscode.Disposable {
 
   async dataAction(action: DataAction): Promise<void> {
     const session = this.session;
-    this.forgetReset();
+    // A reset's Undo goes at the next change of what the preview shows, not at an action that
+    // changes nothing (a cancelled pick, Compare with Live Game).
     const localise = (key: string): string | undefined => session?.localisation?.get(key);
     switch (action.kind) {
       case 'chooseSave': {
         const path = await this.pickSave(session);
-        if (path !== undefined) await this.chooseSave(path);
+        if (path === undefined) return;
+        this.forgetReset();
+        await this.chooseSave(path);
         return;
       }
       case 'dropSave':
+        this.forgetReset();
         this.data.drop();
         await this.rememberSave(undefined);
         return;
@@ -1592,7 +1607,9 @@ export class Preview implements PreviewApi, vscode.Disposable {
             matchOnDescription: true,
           },
         );
-        if (picked !== undefined) this.chooseData({ country: picked.tag });
+        if (picked === undefined) return;
+        this.forgetReset();
+        this.chooseData({ country: picked.tag });
         return;
       }
       case 'chooseProvince': {
@@ -1614,18 +1631,23 @@ export class Preview implements PreviewApi, vscode.Disposable {
           placeHolder: 'Any province, own or foreign',
           matchOnDescription: true,
         });
-        if (picked?.id !== undefined) this.chooseData({ province: picked.id });
+        if (picked?.id === undefined) return;
+        this.forgetReset();
+        this.chooseData({ province: picked.id });
         return;
       }
       case 'length':
+        this.forgetReset();
         this.data.length = action.length;
         this.request();
         return;
       case 'live':
+        this.forgetReset();
         this.data.live = action.on;
         this.request();
         return;
       case 'refreshLive':
+        this.forgetReset();
         await this.takeSnapshot();
         return;
       case 'compareLive':
@@ -1637,6 +1659,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
       case 'clearHand': {
         const name = this.render?.window.name;
         if (name === undefined) return;
+        this.forgetReset();
         // At once, with a notice that can take it back (etch#648, finding P2.20).
         const cleared = this.data.clearHand(name);
         if (cleared.count > 0) {
@@ -1650,7 +1673,9 @@ export class Preview implements PreviewApi, vscode.Disposable {
       }
       case 'entries': {
         const name = this.render?.window.name;
-        if (name !== undefined) this.data.setEntries(name, action.list, action.count);
+        if (name === undefined) return;
+        this.forgetReset();
+        this.data.setEntries(name, action.list, action.count);
         return;
       }
     }
