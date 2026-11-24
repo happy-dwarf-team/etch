@@ -209,7 +209,9 @@ export function panelRect(placement: Placement, rect: DrawRect, ratio: number): 
 
 /**
  * A zoom that brings a rect of the screen into view when it is not wholly in the panel: its
- * centre in the middle, at the same scale. `undefined` when it is in view or the zoom fits.
+ * centre in the middle, at the scale shown. `undefined` when it is in view or the zoom fits the
+ * screen. Fit window, which can leave a part of the screen outside the panel, stops fitting and
+ * keeps its scale for a rect there, such as a widget placed beyond the window's `size`.
  */
 export function reveal(
   zoom: Zoom,
@@ -218,7 +220,7 @@ export function reveal(
   panel: Size,
   ratio: number,
 ): Zoom | undefined {
-  if (zoom.fit) return undefined;
+  if (zoom.fit && zoom.window !== true) return undefined;
   const shown = panelRect(placement, rect, ratio);
   const inside =
     shown.x >= -EPSILON &&
@@ -228,7 +230,7 @@ export function reveal(
   if (inside) return undefined;
   return {
     fit: false,
-    scale: zoom.scale,
+    scale: placement.scale,
     center: { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 },
   };
 }

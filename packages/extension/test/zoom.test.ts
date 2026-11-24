@@ -147,6 +147,17 @@ describe('preview zoom', () => {
     expect(reveal(FIT, place(FIT, screen, panel, 1), far, panel, 1)).toBeUndefined();
   });
 
+  it('leaves Fit window for a highlighted widget outside the panel, at the scale shown', () => {
+    // A 390 × 32 bar at 100 % in the panel's middle; a widget of it placed far beyond its size.
+    const bar = { x: 0, y: 0, width: 390, height: 32 };
+    const shown = place(FIT_WINDOW, screen, panel, 1, bar);
+    const far = { x: 1500, y: 900, width: 100, height: 20 };
+    expect(reveal(FIT_WINDOW, shown, far, panel, 1)).toEqual(at(1, 1550, 910));
+    // One just outside the bar's size but still in the panel keeps the fit.
+    const beside = { x: 400, y: 0, width: 50, height: 20 };
+    expect(reveal(FIT_WINDOW, shown, beside, panel, 1)).toBeUndefined();
+  });
+
   it('turns the wheel into steps, a notch each, and a pinch into fewer', () => {
     expect(wheelDelta(0, -WHEEL_STEP)).toEqual({ steps: 1, left: 0 });
     expect(wheelDelta(0, 3 * WHEEL_STEP)).toEqual({ steps: -3, left: 0 });
