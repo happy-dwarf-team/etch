@@ -16,7 +16,8 @@ opens its definition in VS Code instead of acting in the game.
 
 A badge in the game says "Etch pick — Ctrl+Shift+E to leave", and the status bar in VS Code shows
 **Pick mode** beside **Live game**, so you know why a click in the game opens a file. Press the key
-again, or click **Pick mode** in the status bar, to leave pick mode.
+again, or click **Pick mode** in the status bar, to leave pick mode. Turning it on from VS Code
+brings the game forward; turning it off from VS Code leaves the game behind VS Code.
 
 To use another key, change the setting `etch.liveGame.pickModeKey`: <kbd>Ctrl</kbd> or
 <kbd>Alt</kbd>, with <kbd>Shift</kbd> if you like, and a letter, a digit or

@@ -14,6 +14,7 @@ import {
   gamePathOf,
   interfaceSources,
   overrideInMod,
+  pickToggleRequest,
   resolvePick,
   spriteLocation,
   type PickLocation,
@@ -137,11 +138,13 @@ export class PickMode implements vscode.Disposable {
       return;
     }
     try {
-      const answer = await this.game.pickMode({ on: !this.on, front: true });
+      const answer = await this.game.pickMode(pickToggleRequest(this.on));
       if (answer === undefined) return;
       this.set(answer.on);
       this.output.info(
-        `Pick mode ${answer.on ? 'on' : 'off'}; the game ${answer.front === true ? 'came' : 'did not come'} to the front.`,
+        answer.on
+          ? `Pick mode on; the game ${answer.front === true ? 'came' : 'did not come'} to the front.`
+          : 'Pick mode off.',
       );
       if (answer.on && answer.front === false) {
         void notify(
