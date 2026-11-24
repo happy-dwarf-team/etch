@@ -183,6 +183,18 @@
         "country_selection_panel/mainmenu/mainmenu_panel_bottom/nudge_button",
       ],
     },
+    "national-idea-icons": {
+      "note": "eu4.exe gives the lobby's seven national idea icons GFX_idea_unknown, with the idea's own picture as its texture, in place of the .gui's GFX_idea_empty: the coverage survey's lobby captures of 24 November 2026 show it in every playset. Both are 64 × 64 in the base game; Proper 2K UI Enhanced's unknown.dds is a 77 × 77 DXT5 image, drawn 80 × 80 and so 52 × 52 at the .gui's scale 0.66, where its empty.tga gives 50 × 50.",
+      "sprite": {
+        "country_selection_panel/lobby/right/singleplayer/national_idea1": "GFX_idea_unknown",
+        "country_selection_panel/lobby/right/singleplayer/national_idea2": "GFX_idea_unknown",
+        "country_selection_panel/lobby/right/singleplayer/national_idea3": "GFX_idea_unknown",
+        "country_selection_panel/lobby/right/singleplayer/national_idea4": "GFX_idea_unknown",
+        "country_selection_panel/lobby/right/singleplayer/national_idea5": "GFX_idea_unknown",
+        "country_selection_panel/lobby/right/singleplayer/national_idea6": "GFX_idea_unknown",
+        "country_selection_panel/lobby/right/singleplayer/national_idea7": "GFX_idea_unknown",
+      },
+    },
     "no-game-to-continue": {
       "when": { "page": "main-menu", "continueGame": "no" },
       "hide": ["country_selection_panel/mainmenu/mainmenu_panel_bottom/continue_container"],
