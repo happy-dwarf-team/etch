@@ -307,8 +307,9 @@ export interface Placement {
     readonly label?: string;
     /**
      * A sibling of the window, by name, whose width the unit divides in place of the window's own:
-     * the ledger's code takes its list box's (`default_listbox`, 1832 px in Proper 2K UI Enhanced
-     * against 1760 for its sort buttons).
+     * the ledger's code takes its list box's (`default_listbox`, 1839 px in Proper 2K UI Enhanced
+     * against 1767 for its sort buttons). A list a repeater fills is as wide as its entry
+     * template, as the game sizes it.
      */
     readonly list?: string;
   };

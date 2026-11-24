@@ -289,7 +289,9 @@ does:
 With `table`, the entries are the columns of a table across the window, as the ledger's code puts
 its sort buttons (eu4.exe 0x118CFF0). The unit is a width over the
 sum of `weights`, cut: the width of `list`, a sibling of the window (the ledger takes its list
-box's), else the window's own. Each column is its weight in units wide, after the ones before it.
+box's), else the window's own. When a repeater fills `list`, the width is its entry template's, as
+the game sizes the list to its entries (Proper 2K UI Enhanced's ledger list is 1863 px in its
+`.gui` and 1839 in the game, its entry's width). Each column is its weight in units wide, after the ones before it.
 An entry stands at its column's start; in a column of `numbers` (counted from 1) at the column's
 right edge less the entry's width less 20 px. `label`, a top-level definition of the template's
 file, is drawn with each entry as the column's heading: 10 px down, 1 px right of the column's
