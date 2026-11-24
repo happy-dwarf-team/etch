@@ -67,6 +67,20 @@ describe('evidence scenarios', () => {
     );
   });
 
+  it('loads no other extension by default, and the listed ones relative to the scenario file', () => {
+    expect(scenario({ open: 'a.gui', steps: [{ shot: 'a' }] }).extensions).toEqual([]);
+    expect(
+      scenario({ open: 'a.gui', extensions: ['../ext/cwtools'], steps: [{ shot: 'a' }] })
+        .extensions,
+    ).toEqual([path.resolve('ext', 'cwtools')]);
+    expect(error({ open: 'a.gui', extensions: 'cwtools', steps: [{ shot: 'a' }] })).toBe(
+      'case.json: extensions is not a list',
+    );
+    expect(error({ open: 'a.gui', extensions: [3], steps: [{ shot: 'a' }] })).toBe(
+      'case.json: extensions[0] is not a text',
+    );
+  });
+
   it('refuses what it cannot run, naming the step', () => {
     const shot = { shot: 'a' };
     expect(error({ steps: [shot] })).toBe('case.json: open is not a text');

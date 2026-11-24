@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+  SCRIPT_ASSOCIATIONS,
+  inGameNamedFolder,
   isScriptFile,
-  offersScriptLanguage,
+  scriptLanguageNotice,
+  withScriptAssociations,
   type ScriptLanguageCase,
 } from '../src/script-language.ts';
 
@@ -12,8 +15,13 @@ const plain: ScriptLanguageCase = {
   languageId: 'plaintext',
   fileName: EVENTS,
   installed: false,
+  cwtools: false,
   declined: false,
+  folderDeclined: false,
 };
+
+/** CWTools installed, the file still Plain Text (etch#704). */
+const withCwtools: ScriptLanguageCase = { ...plain, installed: true, cwtools: true };
 
 describe('script files', () => {
   it('are interface files anywhere, and .txt files in a script folder', () => {
@@ -44,19 +52,96 @@ describe('script files', () => {
   });
 });
 
-describe('the script language notice', () => {
-  it('offers the extensions for a script file on disk that opens as Plain Text', () => {
-    expect(offersScriptLanguage(plain)).toBe(true);
+describe('the notice that offers the extensions', () => {
+  it('shows for a script file on disk that opens as Plain Text, with neither extension', () => {
+    expect(scriptLanguageNotice(plain)).toBe('install');
   });
 
   it('stays silent when the file has a language, either extension is installed, or the user declined', () => {
-    expect(offersScriptLanguage({ ...plain, languageId: 'eu4' })).toBe(false);
-    expect(offersScriptLanguage({ ...plain, installed: true })).toBe(false);
-    expect(offersScriptLanguage({ ...plain, declined: true })).toBe(false);
+    expect(scriptLanguageNotice({ ...plain, languageId: 'eu4' })).toBeUndefined();
+    expect(scriptLanguageNotice({ ...plain, installed: true })).toBeUndefined();
+    expect(scriptLanguageNotice({ ...plain, declined: true })).toBeUndefined();
   });
 
   it('stays silent for an unsaved document and for other files', () => {
-    expect(offersScriptLanguage({ ...plain, scheme: 'untitled' })).toBe(false);
-    expect(offersScriptLanguage({ ...plain, fileName: '/mods/etch/readme.txt' })).toBe(false);
+    expect(scriptLanguageNotice({ ...plain, scheme: 'untitled' })).toBeUndefined();
+    expect(scriptLanguageNotice({ ...plain, fileName: '/mods/etch/readme.txt' })).toBeUndefined();
+  });
+});
+
+describe('the notice about CWTools and the mod folder', () => {
+  it('shows when CWTools is installed and a script file outside a game-named folder is Plain Text', () => {
+    expect(scriptLanguageNotice(withCwtools)).toBe('folder');
+    expect(
+      scriptLanguageNotice({ ...withCwtools, fileName: 'D:\\git\\my-mod\\interface\\x.gfx' }),
+    ).toBe('folder');
+  });
+
+  it('still shows after Don’t Show Again on the other notice', () => {
+    expect(scriptLanguageNotice({ ...withCwtools, declined: true })).toBe('folder');
+  });
+
+  it('stays silent under a game-named folder, with ParadoxCode only, or after its own Don’t Show Again', () => {
+    const inMods =
+      'C:\\Users\\modder\\Documents\\Paradox Interactive\\Europa Universalis IV\\mod\\etch\\events\\a.txt';
+    expect(scriptLanguageNotice({ ...withCwtools, fileName: inMods })).toBeUndefined();
+    expect(scriptLanguageNotice({ ...withCwtools, cwtools: false })).toBeUndefined();
+    expect(scriptLanguageNotice({ ...withCwtools, folderDeclined: true })).toBeUndefined();
+  });
+
+  it('stays silent once the file has CWTools’ language', () => {
+    expect(scriptLanguageNotice({ ...withCwtools, languageId: 'eu4' })).toBeUndefined();
+  });
+});
+
+describe('a game-named folder', () => {
+  it('is a folder whose name matches CWTools’ europa*universalis*iv, case aside', () => {
+    expect(
+      [
+        'C:\\Program Files (x86)\\Steam\\steamapps\\common\\Europa Universalis IV\\events\\a.txt',
+        'C:\\Users\\modder\\Documents\\Paradox Interactive\\Europa Universalis IV\\mod\\m\\events\\a.txt',
+        '/home/modder/europa_universalis_iv/mod/m/interface/a.gui',
+      ].filter((file) => !inGameNamedFolder(file)),
+    ).toEqual([]);
+  });
+
+  it('is not another folder, nor a name that only starts like the game’s', () => {
+    expect(
+      [
+        EVENTS,
+        'D:\\git\\eu4-mod\\events\\a.txt',
+        'C:\\Europa Universalis IV - Copy\\events\\a.txt',
+        'C:\\mods\\europa universalis iv.txt',
+      ].filter(inGameNamedFolder),
+    ).toEqual([]);
+  });
+});
+
+describe('the files.associations entries', () => {
+  it('give the script folders’ .txt files and the interface files CWTools’ eu4 language', () => {
+    expect(SCRIPT_ASSOCIATIONS).toEqual({
+      '**/common/**/*.txt': 'eu4',
+      '**/customizable_localization/**/*.txt': 'eu4',
+      '**/decisions/**/*.txt': 'eu4',
+      '**/events/**/*.txt': 'eu4',
+      '**/history/**/*.txt': 'eu4',
+      '**/map/**/*.txt': 'eu4',
+      '**/missions/**/*.txt': 'eu4',
+      '*.gui': 'eu4',
+      '*.gfx': 'eu4',
+      '*.asset': 'eu4',
+    });
+  });
+
+  it('are added to the workspace’s, which keep their own entries', () => {
+    expect(withScriptAssociations(undefined)).toEqual(SCRIPT_ASSOCIATIONS);
+    const merged = withScriptAssociations({ '*.gui': 'plaintext', '*.yml': 'yaml' });
+    expect(merged?.['*.gui']).toBe('plaintext');
+    expect(merged?.['*.yml']).toBe('yaml');
+    expect(merged?.['**/events/**/*.txt']).toBe('eu4');
+  });
+
+  it('change nothing when the workspace has them all', () => {
+    expect(withScriptAssociations({ ...SCRIPT_ASSOCIATIONS })).toBeUndefined();
   });
 });
