@@ -100,6 +100,8 @@ export function surveyManifest(
   const byPlayset = new Map<string, string[]>();
   const replaced = new Map((config.recipes ?? []).map((r) => [r.view, r]));
   const unused = new Set(replaced.keys());
+  // Recipes for views a crawl has and the survey leaves out, with the reason.
+  const leftOut: string[] = [];
   for (const crawl of crawls) {
     if (crawl.resolution !== config.resolution) continue;
     // A view Escape does not close ends its game when it is captured: such views go last, each
@@ -109,25 +111,33 @@ export function surveyManifest(
       ...crawl.states.filter((x) => x.escapeFails !== undefined),
     ];
     for (const state of states) {
-      // Steps that Tongs refused cannot open the view again; steps that showed another view are
-      // the game's memory of a window's last tab (`LED_ELSEWHERE`), which a fresh game does not have.
-      if (state.unreproducible !== undefined && state.unreproducible !== LED_ELSEWHERE) continue;
-      if (state.roots.length === 0) continue;
-      // Roots that are all numbered copies are the rows of a list whose window a click closed:
-      // Tongs still lists them as top-level windows, and the game draws none of them (the estate
-      // rows after the estates view's close button, vanilla and Anbennar). Not a view.
-      if (state.roots.every(orphanedRow)) continue;
-      // A view found before a `never` pattern named one of its clicks is left out with it.
-      if (
-        state.steps.some(
-          (step) => 'click' in step && neverClicked(config.crawl, step.click) !== undefined,
-        )
-      ) {
-        continue;
-      }
       const id = surveyViewId(crawl.playset, crawl.start, state.id);
       const own = replaced.get(id);
       unused.delete(id);
+      const steps = own?.steps ?? state.steps;
+      // Steps that Tongs refused cannot open the view again, unless the survey gives it steps of
+      // its own; steps that showed another view are the game's memory of a window's last tab
+      // (`LED_ELSEWHERE`), which a fresh game does not have.
+      const refused = state.unreproducible !== undefined && state.unreproducible !== LED_ELSEWHERE;
+      if (refused && own === undefined) continue;
+      const out =
+        state.roots.length === 0
+          ? 'it has no window'
+          : // Roots that are all numbered copies are the rows of a list whose window a click
+            // closed: Tongs still lists them as top-level windows, and the game draws none of
+            // them (the estate rows after the estates view's close button, vanilla and Anbennar).
+            state.roots.every(orphanedRow)
+            ? 'its windows are the rows of a closed list'
+            : // A view found before a `never` pattern named one of its clicks is left out with it.
+              steps.some(
+                  (step) => 'click' in step && neverClicked(config.crawl, step.click) !== undefined,
+                )
+              ? 'a never pattern names one of its clicks'
+              : undefined;
+      if (out !== undefined) {
+        if (own !== undefined) leftOut.push(`${id} (${out})`);
+        continue;
+      }
       const found = `Found by the coverage crawler in ${crawl.playset} at ${crawl.resolution}.`;
       const view: CorpusView = {
         id,
@@ -142,7 +152,7 @@ export function surveyManifest(
         roots: state.roots,
         codeFilled: [],
         ...(state.escapeFails === undefined
-          ? state.unreproducible === undefined
+          ? state.unreproducible !== LED_ELSEWHERE
             ? {}
             : {
                 note: 'The game remembers what this window last showed; captured as a fresh game opens it.',
@@ -169,6 +179,11 @@ export function surveyManifest(
   const lost = [...unused].filter((id) => crawled.some((prefix) => id.startsWith(prefix)));
   if (lost.length > 0) {
     throw new Error(`coverage/survey.json: recipes for views no crawl has: ${lost.join(', ')}.`);
+  }
+  if (leftOut.length > 0) {
+    throw new Error(
+      `coverage/survey.json: recipes for views the survey leaves out: ${leftOut.join(', ')}.`,
+    );
   }
   const playsets: CorpusPlayset[] = config.playsets.flatMap((p) => {
     const base = p.playset ?? corpus.playsets.find((c) => c.id === p.id);

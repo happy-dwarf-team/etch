@@ -89,8 +89,12 @@ the manifest's recipe carries after the crawler's. The crawl stays as it was.
 row of the military view's leader list, and in a fresh game of Russia that row
 is a leader without an army, whose type button opens nothing. Its recipe
 scrolls the list one row down and clicks the third row, the leader of the 7th
-Army, the same row at 1920×1080 and at 1280×720. A recipe for a view that a
-crawl read does not have stops `survey-manifest`.
+Army, the same row at 1920×1080 and at 1280×720. A recipe also brings back a
+view whose crawled steps Tongs refused, which the survey otherwise leaves out.
+A recipe for a view that a crawl read does not have stops `survey-manifest`,
+and so does one for a view the survey leaves out for another reason (no
+window, the rows of a closed list, a click a `never` pattern names), with the
+reason.
 
 ## Playsets
 

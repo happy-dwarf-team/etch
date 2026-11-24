@@ -324,6 +324,60 @@ describe('the survey configuration and manifest, on what they leave out', () => 
       ),
     ).toThrow('coverage/survey.json: recipes for views no crawl has: vanilla-save-s9.');
   });
+
+  it("opens a view whose crawled steps Tongs refused with the survey's own steps", async () => {
+    const { manifest } = await readCorpusManifest(join(REPOSITORY, 'corpus', 'manifest.json'));
+    if (manifest === undefined) throw new Error('No corpus manifest.');
+    const config = readSurveyConfig(
+      await readFile(join(REPOSITORY, 'coverage', 'survey.json'), 'utf8'),
+    );
+    const steps = [{ key: 'f4' as const }];
+    const crawl: CrawlFile = {
+      formatVersion: 1,
+      playset: 'vanilla',
+      resolution: config.resolution,
+      start: 'save',
+      states: [
+        {
+          id: 's1',
+          steps: [{ key: 'f1' }],
+          signature: 'a',
+          roots: ['a'],
+          depth: 1,
+          explored: true,
+          unreproducible: 'ui click ledger/page: not_visible.',
+        },
+        {
+          id: 's2',
+          steps: [{ key: 'f3' }],
+          signature: 'b',
+          roots: ['b[1]'],
+          depth: 1,
+          explored: true,
+        },
+      ],
+      tried: {},
+      skipped: {},
+      starts: 1,
+      done: true,
+    };
+    const recipe = { view: 'vanilla-save-s1', steps, evidence: 'Seen in the game.' };
+    const out = surveyManifest(manifest, { ...config, recipes: [recipe] }, [crawl]);
+    expect(out.windows.map((w) => w.id)).toEqual(['vanilla-save-s1']);
+    const [view] = out.windows[0]?.views ?? [];
+    expect(view?.recipe.steps).toEqual(steps);
+    expect(view?.note).toBeUndefined();
+    // Without the recipe the view is left out, as before.
+    expect(surveyManifest(manifest, { ...config, recipes: [] }, [crawl]).windows).toEqual([]);
+    // A recipe for a view the survey leaves out for another reason says why.
+    expect(() =>
+      surveyManifest(manifest, { ...config, recipes: [{ ...recipe, view: 'vanilla-save-s2' }] }, [
+        crawl,
+      ]),
+    ).toThrow(
+      'coverage/survey.json: recipes for views the survey leaves out: vanilla-save-s2 (its windows are the rows of a closed list).',
+    );
+  });
 });
 
 describe('the geometry and visibility measures, on a plan made by hand', () => {
