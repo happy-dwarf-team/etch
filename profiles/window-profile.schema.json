@@ -271,6 +271,10 @@
                 "type": "object",
                 "additionalProperties": false,
                 "properties": { "x": { "type": "integer" }, "y": { "type": "integer" } }
+              },
+              "valueText": {
+                "description": "What the game's code writes in value: \"percent\", the share as a whole percentage (\"100%\").",
+                "enum": ["percent"]
               }
             }
           }

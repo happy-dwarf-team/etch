@@ -131,7 +131,8 @@ code does to the window in that case:
 - `slider` (added in 2.14.0): a marker the game's code places along a bar from a value, such as
   the patriarch authority's marker in the religion view. The rule names the bar's two ends, the
   marker and its value text, and either a fixed share from 0 to 1 or a number from the save
-  (`country.patriarchAuthority`).
+  (`country.patriarchAuthority`). With `"valueText": "percent"` (added in 2.15.0) the value text
+  shows that share as a whole percentage, such as "100%", as the game writes it.
 - `adopt`: definitions the game's code puts inside a widget.
 
 How to write a profile, with every field of these rules:

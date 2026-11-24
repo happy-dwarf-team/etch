@@ -222,6 +222,17 @@ export function sampleData(
     if (key === undefined) continue;
     texts.set(widget, { text: input.localise(key) ?? key, layer: 'files', detail: key });
   }
+  // A slider's value the game's code writes: the save's share, else the profile's `at`.
+  for (const widget of pathOf.keys()) {
+    const slider = view?.widgets.get(widget)?.sliderText;
+    if (slider === undefined) continue;
+    texts.set(
+      widget,
+      slider.fact === undefined
+        ? { text: slider.text, layer: 'generated', detail: 'slider' }
+        : { text: slider.text, layer: 'save', detail: slider.fact },
+    );
+  }
   // A live snapshot fills every text the game showed, not only the profile's sources.
   if (input.live !== undefined) {
     for (const [widget, path] of pathOf) {
