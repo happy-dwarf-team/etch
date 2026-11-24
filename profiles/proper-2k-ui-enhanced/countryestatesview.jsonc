@@ -1,0 +1,20 @@
+// The countryestatesview window in Proper 2K UI Enhanced, over the vanilla profile (and Anbennar's
+// in the Anbennar playset). The mod makes GFX_ledger_piechart_default 153 px, not the base game's
+// 128, and P2KE Patch - Anbennar keeps 153: eu4.exe still draws the development pie chart 32 × 32
+// around the same centre, the widget's lower left corner, so the widget is 121 px lower.
+{
+  "formatVersion": 1,
+  "window": "countryestatesview",
+  "checkedWith": "1",
+  "mod": {
+    "remoteFileId": "3290499798",
+    "name": "Proper 2K UI Enhanced",
+  },
+  "rules": {
+    "dev-share-chart": {
+      "note": "eu4.exe sizes the development pie chart 32 × 32 (Steam 1.37.5 0xF28230) where the mod's GFX_ledger_piechart_default says 153; the chart keeps its centre, so the widget is 153 − 32 = 121 px lower (the coverage survey of 24 November 2026: 32 × 32 at the game's place, Proper 2K UI Enhanced and the Anbennar playset with P2KE, 2560×1440).",
+      "chartSize": { "countryestatesview/dev_share_pie_chart": { "x": 32, "y": 32 } },
+      "offset": { "countryestatesview/dev_share_pie_chart": { "y": 121 } },
+    },
+  },
+}
