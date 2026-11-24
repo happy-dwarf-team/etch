@@ -188,6 +188,12 @@
       "hide": ["country_selection_panel/mainmenu/mainmenu_panel_bottom/continue_container"],
     },
   },
+  "content": {
+    "country_selection_panel/lobby/bottom/scenario_description": {
+      "loc": "RISE_OF_THE_OTTOMANS_DESC",
+      "note": "The lobby describes the chosen bookmark; it opens on the bookmark with default = yes in common/bookmarks, the Rise of the Ottomans (the coverage survey's lobby views of 24 November 2026).",
+    },
+  },
   "views": {
     "main-menu": {
       "label": "Main menu",
