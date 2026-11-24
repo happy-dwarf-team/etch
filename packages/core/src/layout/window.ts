@@ -931,6 +931,15 @@ class Layout {
       (c) => c.name?.toLowerCase() === list.toLowerCase(),
     );
     if (parent === undefined || sibling === undefined) return rect.width;
+    // The game sizes the list to its entries, so the code reads their width when the list has a
+    // template: Proper 2K UI Enhanced's ledger list is 1863 px in its `.gui` and 1839 in the game,
+    // its entry's width (the coverage survey of 24 November 2026).
+    const rows = this.input.content?.rows(sibling);
+    if (rows !== undefined) {
+      const entry = widgetProperties(rows.template, rows.file.constants, this.input.screen);
+      const width = sizeIn(entry.size('size'), parent).width;
+      if (width > 0) return width;
+    }
     const props = widgetProperties(sibling, this.constants, this.input.screen);
     return sizeIn(props.size('size'), parent).width || rect.width;
   }

@@ -1554,4 +1554,39 @@ describe('layoutWindow: sample data', () => {
       [10 + 810 - 19, 30, 162],
     ]);
   });
+
+  it("takes a table's width from its list's entries, as the game sizes the list to them", () => {
+    const { file, input } = setUp(`guiTypes = {
+      windowType = {
+        name = "ledger"
+        size = { x = 1000 y = 600 }
+        windowType = { name = "sort_buttons" position = { x = 10 y = 20 } size = { x = 900 y = 32 } }
+        listboxType = { name = "rows" position = { x = 10 y = 60 } size = { x = 972 y = 400 } }
+      }
+      windowType = { name = "button" size = { x = 100 y = 24 } }
+      windowType = { name = "row" size = { x = 960 y = 32 } }
+    }`);
+    const window = file.definitions[0] as Widget;
+    const buttons = window.children[0] as Widget;
+    const list = window.children[1] as Widget;
+    const button = file.definitions[1] as Widget;
+    const row = file.definitions[2] as Widget;
+    const table = { weights: [1, 3, 1, 1], numbers: [], list: 'rows' };
+    const l = layoutWindow(window, {
+      ...input,
+      content: {
+        text: () => undefined,
+        rows: (w) =>
+          w === buttons
+            ? { template: button, file, count: 4, place: { start: { x: 0, y: 0 }, table } }
+            : w === list
+              ? { template: row, file, count: 2 }
+              : undefined,
+      },
+    });
+    // The unit is the entry's 960 over the weights: 160, where the list's 972 would give 162.
+    expect(l.widgets.filter((w) => w.widget === button).map((w) => w.x)).toEqual([
+      10, 170, 650, 810,
+    ]);
+  });
 });
