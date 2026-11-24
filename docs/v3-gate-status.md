@@ -52,7 +52,7 @@ them have at least one profiled root, 38 and 35 only profiled roots.
 | --- | --- | --- | --- |
 | Live texts, profiled windows | 100 % | 100.0 % on every playset and resolution, and on the three countries | yes |
 | Live visibility | 100 % | 100.00 % on every set of the survey (vanilla at 1920×1080: 10835 of 10835, with the built building slots Tongs 0.23 reported hidden) and on the three countries | yes |
-| Geometry offline, with the profiles | 100 % | vanilla 1920×1080 99.33 % (23 of 3421 rects off, 62 views), vanilla 1280×720 99.33 % (23 of 3417, 62 views), Anbennar 1920×1080 99.46 % (19 of 3524, 60 views), Anbennar 1280×720 99.55 % (15 of 3369, 59 views). On the captures of 23 November: 23 (60 views), 23 (57), 14 (52) and 7 (45) | no |
+| Geometry offline, with the profiles | 100 % | vanilla 1920×1080 99.33 % (23 of 3421 rects off, 62 views), vanilla 1280×720 99.33 % (23 of 3417, 62 views), Anbennar 1920×1080 99.46 % (19 of 3524, 60 views), Anbennar 1280×720 99.48 % (18 of 3444, 59 views, with the achievements window the profile now draws there). On the captures of 23 November: 23 (60 views), 23 (57), 14 (52) and 7 (45) | no |
 | Known deviations with an issue and consent | every difference | three proposed, etch#604, etch#605, etch#606; consent not given | no |
 
 The geometry row reads "the outline offline" of section 3 as the outline with the profiles'
