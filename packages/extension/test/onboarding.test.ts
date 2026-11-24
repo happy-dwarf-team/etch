@@ -14,6 +14,7 @@ const root = new URL('../', import.meta.url);
 const manifest = JSON.parse(readFileSync(new URL('package.json', root), 'utf8')) as {
   publisher: string;
   name: string;
+  activationEvents: string[];
   contributes: {
     commands: { command: string }[];
     views: { explorer: { id: string }[] };
@@ -115,6 +116,11 @@ describe('the walkthrough', () => {
       `${manifest.publisher}.${manifest.name}#${walkthrough?.id ?? ''}#${step?.id ?? ''}`;
     expect(full(walkthrough?.steps[0])).toBe('happy-dwarf-team.etch#gettingStarted#findGame');
     expect(full(walkthrough?.steps[5])).toBe('happy-dwarf-team.etch#gettingStarted#colourScripts');
+  });
+
+  it('starts Etch when the walkthrough opens, so its steps tick in a window without mod files', () => {
+    // The first step ticks from activate(), and the Widget Outline shows only while Etch runs.
+    expect(manifest.activationEvents).toContain(`onWalkthrough:${walkthrough?.id ?? ''}`);
   });
 
   it('links only to commands that exist', () => {

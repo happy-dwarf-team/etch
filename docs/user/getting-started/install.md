@@ -104,6 +104,7 @@ A step ticks itself when you have done it, whether with its button or not: when 
 game, when a preview opens, when the Widget Outline shows, when you open the sample data step,
 when the live game starts and when CWTools or ParadoxCode is installed and turned on. To open the
 page again, run **Etch: Get Started** from the Command Palette (<kbd>Ctrl+Shift+P</kbd>).
+The page starts Etch when it opens, so its steps work in a window without mod files too.
 
 ## Free and private
 

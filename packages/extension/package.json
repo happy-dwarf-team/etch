@@ -42,6 +42,7 @@
     "onWebviewPanel:etch.preview",
     "onCustomEditor:etch.texturePreview",
     "onCustomEditor:etch.meshPreview",
+    "onWalkthrough:gettingStarted",
     "workspaceContains:**/*.gui",
     "workspaceContains:**/*.gfx",
     "workspaceContains:**/localisation/**/*.yml",
