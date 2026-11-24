@@ -64,7 +64,8 @@ have a round button, and every other widget has an eye. Click them to show or hi
 hand. Each change by hand is counted in the **View ▾** button, such as
 "View: Own province · 2 by hand ▾". **Reset Hand Toggles** in **View ▾**, with the count after it,
 takes them all back at once. A notice above the window says how many it reset, with **Undo** to
-bring them back; it goes at your next change, or with its **×**.
+bring them back; it goes at your next change of what the preview shows, or with its **×**.
+Opening the profile, saving a view, or a pick you cancel keeps it.
 
 - A change that agrees with what the profile shows anyway does not count.
 - Clicking a view replaces your changes by hand with the view's own.

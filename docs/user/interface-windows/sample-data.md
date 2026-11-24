@@ -83,7 +83,8 @@ Use **long** and **overflow** to see whether your text boxes hold long texts.
 
 The typed text wins over every other layer. **Clear** takes back every text typed for the window
 at once and closes the dialog. A notice above the window says how many it cleared, with **Undo**
-to type them again; it goes at your next change, or with its **×**. A text you typed after the
+to type them again; it goes at your next change of what the preview shows, or with its **×**.
+Typing a text, a pick you cancel and **Compare with the Live Game** keep it. A text you typed after the
 **Clear**, from the [Widget Outline](widget-outline.md), stays as you typed it.
 You can also type a text from the [Widget Outline](widget-outline.md). Etch keeps typed texts for
 each window, also after you close VS Code.

@@ -147,6 +147,8 @@ export async function testViews(api: EtchApi): Promise<void> {
       ),
       JSON.stringify(preview.notices),
     );
+    // An action that changes nothing keeps the Undo: here a comparison without a live snapshot.
+    await preview.dataAction({ kind: 'compareLive' });
     const undone = await rendered(
       preview,
       (r) => laidOut(r).includes('extra'),
