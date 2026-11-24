@@ -3,7 +3,7 @@
 // game's archives use is read: stored and deflated entries, without encryption, zip64 sizes and
 // offsets included.
 
-import type { Stats } from 'node:fs';
+import { statSync, type Stats } from 'node:fs';
 import { open, readFile, stat, type FileHandle } from 'node:fs/promises';
 import { promisify } from 'node:util';
 import { inflateRaw } from 'node:zlib';
@@ -38,9 +38,19 @@ export class ZipArchive {
     this.path = path;
   }
 
-  /** The archive's file entries (folders left out); empty when the file is not a readable zip. */
+  /**
+   * The archive's file entries (folders left out); empty when the file is not a readable zip. A
+   * file that could not be opened or read (missing, or locked while Steam updates it) is tried again
+   * at the next call; a file that is not a zip stays empty.
+   */
   list(): Promise<readonly ZipEntry[]> {
-    this.entries ??= withFile(this.path, readCentralDirectory).catch(() => []);
+    this.entries ??= withFile(this.path, readCentralDirectory).catch((error: unknown) => {
+      if (isSystemError(error)) {
+        this.entries = undefined;
+        this.byName = undefined;
+      }
+      return [];
+    });
     return this.entries;
   }
 
@@ -72,6 +82,11 @@ export class ZipArchive {
       );
     });
   }
+}
+
+/** An error of the file system (it has a `code`, such as ENOENT or EBUSY), not of the archive's bytes. */
+function isSystemError(error: unknown): boolean {
+  return error instanceof Error && typeof (error as NodeJS.ErrnoException).code === 'string';
 }
 
 async function withFile<T>(path: string, use: (file: FileHandle) => Promise<T>): Promise<T> {
@@ -175,25 +190,49 @@ export function splitArchivePath(path: string): { archive: string; entry: string
   return { archive: parts.slice(0, at + 1).join(separator), entry: parts.slice(at + 1).join('/') };
 }
 
-/** `stat` of a `GameFile.absolutePath`: of the archive, for an entry of a DLC's archive. */
-export function statGamePath(path: string): Promise<Stats> {
-  return stat(splitArchivePath(path)?.archive ?? path);
+/**
+ * `splitArchivePath` for a path on this disk: only when the archive is a file, so a folder whose
+ * name ends in `.zip` (a mod's, say) is a folder. For code that cannot wait, such as building a URI.
+ */
+export function archivePlaceOnDisk(path: string): { archive: string; entry: string } | undefined {
+  const place = splitArchivePath(path);
+  if (place === undefined) return undefined;
+  return statSync(place.archive, { throwIfNoEntry: false })?.isFile() === true ? place : undefined;
 }
 
-const opened = new Map<string, ZipArchive>();
+/**
+ * `stat` of a `GameFile.absolutePath`: of the archive, for an entry of a DLC's archive. A folder
+ * whose name ends in `.zip` is a folder, and the path is the file's on disk.
+ */
+export async function statGamePath(path: string): Promise<Stats> {
+  const place = splitArchivePath(path);
+  if (place === undefined) return stat(path);
+  const archive = await stat(place.archive).catch(() => undefined);
+  return archive?.isFile() === true ? archive : stat(path);
+}
+
+/** Archives read through paths, by lower-case path, with the size and time they were read at. */
+const opened = new Map<string, { readonly stamp: string; readonly zip: ZipArchive }>();
 
 /**
  * The bytes of a `GameFile.absolutePath`: the file on disk, or the entry of a DLC's archive when
- * the path runs through one (ADR 0009). For code that passes paths, not `GameFile`s, around.
+ * the path runs through one (ADR 0009). For code that passes paths, not `GameFile`s, around. An
+ * archive whose size or time changed (a game update) is read again; a folder whose name ends in
+ * `.zip` is a folder.
  */
 export async function readGamePath(path: string): Promise<Buffer> {
   const place = splitArchivePath(path);
   if (place === undefined) return readFile(path);
-  let zip = opened.get(place.archive.toLowerCase());
-  if (zip === undefined) {
-    zip = new ZipArchive(place.archive);
-    opened.set(place.archive.toLowerCase(), zip);
+  const archive = await stat(place.archive).catch(() => undefined);
+  if (archive?.isFile() !== true) return readFile(path);
+  const key = place.archive.toLowerCase();
+  const stamp = `${String(archive.size)}:${String(archive.mtimeMs)}`;
+  let known = opened.get(key);
+  if (known?.stamp !== stamp) {
+    known = { stamp, zip: new ZipArchive(place.archive) };
+    opened.set(key, known);
   }
+  const zip = known.zip;
   const entry = await zip.entry(place.entry);
   if (entry === undefined) throw new Error(`${place.archive} has no ${place.entry}`);
   return zip.read(entry);

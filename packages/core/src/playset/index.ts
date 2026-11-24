@@ -6,7 +6,14 @@ export { parseModDescriptor, decodeDescriptor, type ModDescriptor } from './desc
 export type { PlaysetDiagnostic, PlaysetDiagnosticSeverity } from './diagnostics.ts';
 export { GameFiles, type GameFile, type GameFilesLayer } from './game-files.ts';
 export { findDlcArchives, readDisabledDlcs, type DlcArchive } from './dlc.ts';
-export { ZipArchive, readGamePath, splitArchivePath, statGamePath, type ZipEntry } from './zip.ts';
+export {
+  ZipArchive,
+  archivePlaceOnDisk,
+  readGamePath,
+  splitArchivePath,
+  statGamePath,
+  type ZipEntry,
+} from './zip.ts';
 export { PlaysetInterface, spriteNamingFiles } from './interface.ts';
 export { PlaysetAssets, layOutPreview } from './assets.ts';
 export { loadGovernmentMechanics, type PlaysetMechanics } from './government-mechanics.ts';

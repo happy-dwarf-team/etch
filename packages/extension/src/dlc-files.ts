@@ -2,7 +2,7 @@
 // entry of an archive on disk as `etch-dlc:/<archive path>!/<entry>`, so VS Code can open it, a
 // webview can load it, and `vscode.workspace.fs` reads it like a file on disk.
 
-import { ZipArchive, splitArchivePath, type GameFile } from '@etch/core/playset';
+import { ZipArchive, archivePlaceOnDisk, type GameFile } from '@etch/core/playset';
 import { stat } from 'node:fs/promises';
 import * as vscode from 'vscode';
 
@@ -18,10 +18,10 @@ export function gameFileUri(file: GameFile): vscode.Uri {
 
 /**
  * The URI of a `GameFile.absolutePath`: an entry of a DLC's archive when the path runs through
- * one, else the file on disk.
+ * one, else the file on disk (also under a folder whose name ends in `.zip`).
  */
 export function pathUri(absolutePath: string): vscode.Uri {
-  const place = splitArchivePath(absolutePath);
+  const place = archivePlaceOnDisk(absolutePath);
   return place === undefined
     ? vscode.Uri.file(absolutePath)
     : archiveEntryUri(place.archive, place.entry);

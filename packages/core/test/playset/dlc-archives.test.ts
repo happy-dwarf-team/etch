@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   GameFiles,
   ZipArchive,
+  archivePlaceOnDisk,
   findDlcArchives,
   findPlayset,
   readDisabledDlcs,
@@ -77,6 +78,36 @@ describe('ZipArchive', () => {
     expect(text(await readGamePath(join(root, 'plain.txt')))).toBe('on disk');
     expect((await statGamePath(join(root, 'z.zip', 'interface', 'a.gfx'))).isFile()).toBe(true);
     await expect(readGamePath(join(root, 'z.zip', 'none.txt'))).rejects.toThrow('has no');
+  });
+
+  it('reads a folder whose name ends in .zip from disk, not as an archive', async () => {
+    const tree = await makeTree({ 'mod/My.zip/interface/x.gui': 'a folder' });
+    try {
+      const path = join(tree, 'mod', 'My.zip', 'interface', 'x.gui');
+      expect(text(await readGamePath(path))).toBe('a folder');
+      expect((await statGamePath(path)).isFile()).toBe(true);
+      expect(archivePlaceOnDisk(path)).toBeUndefined();
+      await writeFile(join(tree, 'z.zip'), makeZip({ 'a.txt': 'a' }));
+      expect(archivePlaceOnDisk(join(tree, 'z.zip', 'a.txt'))).toEqual({
+        archive: join(tree, 'z.zip'),
+        entry: 'a.txt',
+      });
+    } finally {
+      await removeTree(tree);
+    }
+  });
+
+  it('reads an archive again after it was missing or rewritten', async () => {
+    const archive = join(root, 'later.zip');
+    const path = join(archive, 'a.txt');
+    const missing = new ZipArchive(archive);
+    expect(await missing.list()).toEqual([]);
+    await expect(readGamePath(path)).rejects.toThrow();
+    await writeFile(archive, makeZip({ 'a.txt': 'first' }));
+    expect((await missing.list()).map((e) => e.name)).toEqual(['a.txt']);
+    expect(text(await readGamePath(path))).toBe('first');
+    await writeFile(archive, makeZip({ 'other.txt': 'padding', 'a.txt': 'second, longer' }));
+    expect(text(await readGamePath(path))).toBe('second, longer');
   });
 });
 
