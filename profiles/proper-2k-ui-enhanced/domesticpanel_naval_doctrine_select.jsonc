@@ -1,0 +1,22 @@
+// The naval doctrine choice in Proper 2K UI Enhanced, over the vanilla profile (and Anbennar's in
+// the Anbennar playset). The military tab moves it down by army_professionalism's height with Cradle
+// of Civilization, as it moves the tab (eu4.exe 0xFBC0A0); Proper 2K UI Enhanced, and P2KE Patch -
+// Anbennar after it, make army_professionalism 19 px high, not the base game's 16. The coverage
+// survey's capture of 24 November 2026 (vanilla-save-s68 at 2560x1440) shows the window and every
+// widget in it 3 px below the vanilla profile's place.
+{
+  "formatVersion": 1,
+  "window": "domesticpanel_naval_doctrine_select",
+  "checkedWith": "1",
+  "mod": {
+    "remoteFileId": "3290499798",
+    "name": "Proper 2K UI Enhanced",
+  },
+  "rules": {
+    "cradle-moves-the-window": {
+      "note": "Moved down by army_professionalism's 19 px, as the tab is.",
+      "when": { "cradle": "yes" },
+      "offset": { "domesticpanel_naval_doctrine_select": { "y": 19 } },
+    },
+  },
+}
