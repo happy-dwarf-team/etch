@@ -11,14 +11,22 @@ and setting. Website: [etch.happydwarf.dev](https://etch.happydwarf.dev/).
 ## Get started
 
 You need Windows (x64), Visual Studio Code 1.100 or later and EU4 1.37.5. Etch comes with no game
-files: it draws with your game's own. It finds a Steam copy of the game by itself. For a GOG copy,
+files: it draws with your game's own, those of its DLC included. It finds a Steam copy of the game
+by itself. For a GOG copy,
 or a game it does not find, put the game folder in the setting `etch.gamePath`. The live game, EU4
 itself started by Etch beside the editor, needs the Steam version of 1.37.5, exactly
 ([Install and requirements](https://etch.happydwarf.dev/docs/getting-started/install/)).
 
 Then open your mod's folder in VS Code, open a `.gui` file and run **Etch: Open Preview** from the
 Command Palette (<kbd>Ctrl+Shift+P</kbd>). The preview opens beside the editor:
-[Your first preview](https://etch.happydwarf.dev/docs/getting-started/first-preview/).
+[Your first preview](https://etch.happydwarf.dev/docs/getting-started/first-preview/). Once Etch
+is installed, **Get Started with Etch** on VS Code's Welcome page shows the main things it does in
+six steps, each with a button that does it
+([The Get Started page](https://etch.happydwarf.dev/docs/getting-started/install/#the-get-started-page)).
+
+Etch adds no colours to the text of script files. When one opens as **Plain Text**, Etch offers to
+install CWTools or ParadoxCode, which colour it
+([Coloured text in script files](https://etch.happydwarf.dev/docs/getting-started/install/#coloured-text-in-script-files)).
 
 If you used Etch 1.x: its game host, a hidden copy of the game that drew the preview, is gone in
 Etch 2, and the live game takes its place. To stay on 1.0.x, see
@@ -51,7 +59,9 @@ A `.dds` or `.tga` file opens in the
 [mesh preview](https://etch.happydwarf.dev/docs/textures-and-meshes/mesh-preview/), where you
 turn the model and play its animations. In an `.asset` file, click **Preview Entity** above an
 `entity = { … }` to see that
-[unit or ship](https://etch.happydwarf.dev/docs/textures-and-meshes/entities/). Etch draws a map
+[unit or ship](https://etch.happydwarf.dev/docs/textures-and-meshes/entities/), with its
+[particle effects](https://etch.happydwarf.dev/docs/textures-and-meshes/entities/#particles),
+such as a cannon's smoke, drawn close to how the game draws them. Etch draws a map
 tree's mesh
 [as the game draws it on the map](https://etch.happydwarf.dev/docs/textures-and-meshes/map-trees/).
 Hover over the name of a texture, mesh or sprite in your files to see it, and
@@ -64,7 +74,9 @@ Font colours in `.gfx` files get VS Code's colour picker
 
 The live game is EU4 itself, with your mod and the mods it depends on, beside the editor. Start it
 with [**Etch: Start the Live Game**](https://etch.happydwarf.dev/docs/live-game/start-and-stop/)
-and play as usual.
+and play as usual. **Live game** in the status bar shows its state: click it for a menu that turns
+pick mode on, takes a snapshot, restarts or stops the game
+([The live game in the status bar](https://etch.happydwarf.dev/docs/live-game/start-and-stop/#the-live-game-in-the-status-bar)).
 
 - Save the `.gui` file of a window such as the province view, a localisation file or a texture,
   and the game [loads it again](https://etch.happydwarf.dev/docs/live-game/reload-on-save/): the
