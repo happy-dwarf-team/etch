@@ -184,6 +184,7 @@
         { "required": ["position"] },
         { "required": ["frame"] },
         { "required": ["sprite"] },
+        { "required": ["text"] },
         { "required": ["chartSize"] },
         { "required": ["slider"] },
         { "required": ["offset"] },
@@ -234,6 +235,11 @@
           "description": "Sprites the game's code sets in place of the .gui one, keyed by path: drawn as named, without the screen size's _large and _huge variants.",
           "type": "object",
           "additionalProperties": { "type": "string" }
+        },
+        "text": {
+          "description": "Texts the game's code sets, keyed by path: the localisation key of the text, shown as sample data from the playset's files, under a live snapshot's texts.",
+          "type": "object",
+          "additionalProperties": { "$ref": "#/definitions/text" }
         },
         "chartSize": {
           "description": "The size the game's code gives a chart in place of its sprite's size, keyed by path: { x, y } in pixels. A pie chart keeps its centre, the widget's lower left corner, so move it by its difference with an offset.",

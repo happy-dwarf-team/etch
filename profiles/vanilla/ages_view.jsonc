@@ -31,21 +31,25 @@
   },
   "rules": {
     "picture-discovery": {
-      "note": "The game's code gives picture the current age's sprite (504 × 162) in place of the .gui's (the coverage survey, vanilla and Anbennar, both resolutions); Anbennar keeps the base game's age keys.",
+      "note": "The game's code gives picture the current age's sprite (504 × 162) in place of the .gui's, and desc the age's description, its key with _desc (the coverage survey, vanilla and Anbennar, both resolutions); Anbennar keeps the base game's age keys.",
       "when": { "age": "discovery" },
       "sprite": { "ages_view/picture": "GFX_age_of_discovery" },
+      "text": { "ages_view/desc": "age_of_discovery_desc" },
     },
     "picture-reformation": {
       "when": { "age": "reformation" },
       "sprite": { "ages_view/picture": "GFX_age_of_reformation" },
+      "text": { "ages_view/desc": "age_of_reformation_desc" },
     },
     "picture-absolutism": {
       "when": { "age": "absolutism" },
       "sprite": { "ages_view/picture": "GFX_age_of_absolutism" },
+      "text": { "ages_view/desc": "age_of_absolutism_desc" },
     },
     "picture-revolutions": {
       "when": { "age": "revolutions" },
       "sprite": { "ages_view/picture": "GFX_age_of_revolutions" },
+      "text": { "ages_view/desc": "age_of_revolutions_desc" },
     },
     "hidden": {
       "note": "Hidden in every view of the coverage survey (the base game): the game decides these from its data or a click; show one by hand.",

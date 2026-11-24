@@ -779,6 +779,7 @@ function readRule(
     'position',
     'frame',
     'sprite',
+    'text',
     'chartSize',
     'slider',
     'offset',
@@ -829,6 +830,7 @@ function readRule(
       return { frame: value.value };
     }),
     sprite: keyed('sprite', (value) => ({ sprite: text$(value, 'a sprite') })),
+    text: keyed('text', (value) => ({ loc: text$(value, 'a localisation key') })),
     chartSize: keyed('chartSize', (value) => {
       const size = object(value, 'a chart size', ['x', 'y']);
       const pixels = (axis: 'x' | 'y'): number => {
@@ -861,6 +863,7 @@ function readRule(
     rule.position.length +
     rule.frame.length +
     (rule.sprite?.length ?? 0) +
+    (rule.text?.length ?? 0) +
     (rule.chartSize?.length ?? 0) +
     (rule.slider?.length ?? 0) +
     rule.offset.length +
@@ -868,7 +871,7 @@ function readRule(
     rule.adopt.length;
   if (effects === 0) {
     throw new Faulty(
-      `Rule "${id}" has no effect: show, hide, notCreated, position, frame, sprite, chartSize, slider, offset, hidePosition or adopt.`,
+      `Rule "${id}" has no effect: show, hide, notCreated, position, frame, sprite, text, chartSize, slider, offset, hidePosition or adopt.`,
       node,
     );
   }

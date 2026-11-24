@@ -16,7 +16,9 @@
   },
   "rules": {
     "ruler-keeps-name": {
+      "note": "The ruler as a general: the game's code writes CONFIRM_LEADER_DESC_RULER in the description (makerulergeneral in the coverage survey, vanilla and Bigger UI).",
       "when": { "leader": "ruler" },
+      "text": { "ConfirmAndNameLeaderDialog/Description": "CONFIRM_LEADER_DESC_RULER" },
       "hide": [
         "ConfirmAndNameLeaderDialog/leader_name_editbox",
         "ConfirmAndNameLeaderDialog/leader_name_editbox_bg",

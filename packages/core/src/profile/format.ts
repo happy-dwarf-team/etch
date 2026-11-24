@@ -113,6 +113,11 @@ export interface Rule extends Written {
    */
   readonly sprite?: readonly (PathRef & { readonly sprite: string })[];
   /**
+   * Texts the game's code sets, by the localisation key of the text: the ages view's description,
+   * the current age's `<age>_desc`. The sample data's `files` layer, below a live snapshot's.
+   */
+  readonly text?: readonly (PathRef & { readonly loc: string })[];
+  /**
    * The size the game's code gives a chart in place of its sprite's `size`: the estates view's
    * development pie chart, 32 × 32 where its `PieChartType` says 128.
    */
