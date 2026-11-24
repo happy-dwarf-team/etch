@@ -17,6 +17,22 @@
       "when": { "mapModeList": "closed" },
       "hide": ["minimap_panel/mapmode_list_window", "minimap_panel/closebutton"],
     },
+    "map-mode-buttons": {
+      "note": "eu4.exe gives each of the ten map mode buttons the sprite of the map mode the player keeps in that slot, in place of the .gui's GFX_mapmode_notselected; these are the game's own slots, which every capture of the coverage survey of 24 November 2026 shows (vanilla, Anbennar, Bigger UI, Proper 2K UI Enhanced). GFX_mapmode_coalition's texture is 42 × 32 where the others are 41 × 31. The political map mode is the one shown after a load, its second frame.",
+      "sprite": {
+        "minimap_panel/custom_mapmode_1": "GFX_mapmode_terrain",
+        "minimap_panel/custom_mapmode_2": "GFX_mapmode_political",
+        "minimap_panel/custom_mapmode_3": "GFX_mapmode_trade",
+        "minimap_panel/custom_mapmode_4": "GFX_mapmode_empire",
+        "minimap_panel/custom_mapmode_5": "GFX_mapmode_religion",
+        "minimap_panel/custom_mapmode_6": "GFX_mapmode_diplomatic",
+        "minimap_panel/custom_mapmode_7": "GFX_mapmode_coalition",
+        "minimap_panel/custom_mapmode_8": "GFX_mapmode_truce",
+        "minimap_panel/custom_mapmode_9": "GFX_mapmode_institutions",
+        "minimap_panel/custom_mapmode_10": "GFX_mapmode_acceptedculture",
+      },
+      "frame": { "minimap_panel/custom_mapmode_2": 2 },
+    },
     "minimap": {
       "note": "minimap_bg and minimap_pic are top-level definitions of menubar.gui; the game shows them in this panel at their own positions (etch#256).",
       "adopt": { "minimap_panel": ["minimap_bg", "minimap_pic"] },

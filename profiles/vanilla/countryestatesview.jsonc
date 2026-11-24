@@ -25,6 +25,15 @@
       "chartSize": { "countryestatesview/dev_share_pie_chart": { "x": 32, "y": 32 } },
       "offset": { "countryestatesview/dev_share_pie_chart": { "y": 96 } },
     },
+    "crown-land-icons": {
+      "note": "eu4.exe gives each crown land modifier icon GFX_idea_unknown (64 × 64, at the .gui's scale 0.5 drawn 32 × 32) in place of the .gui's GFX_event_bg_transparency: the coverage survey's captures of 24 November 2026 show it on all four icons for Russia, the emperor and the Pope's controller.",
+      "sprite": {
+        "countryestatesview/crown_land_modifier_icon_1": "GFX_idea_unknown",
+        "countryestatesview/crown_land_modifier_icon_2": "GFX_idea_unknown",
+        "countryestatesview/crown_land_modifier_icon_3": "GFX_idea_unknown",
+        "countryestatesview/crown_land_modifier_icon_4": "GFX_idea_unknown",
+      },
+    },
     "no-crown-land-effect": {
       "when": { "crownLand": "none" },
       "hide": [
