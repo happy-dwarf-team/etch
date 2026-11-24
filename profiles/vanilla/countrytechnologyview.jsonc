@@ -18,6 +18,16 @@
       "when": { "institutions": "closed" },
       "hide": ["countrytechnologyview/institutions_window"],
     },
+    "when-embraced": {
+      "when": { "institutions": "open" },
+      "note": "The game's code writes the bonus of the institution the window shows, a modifier a line, sorted as the game's modifiers are: industrialization's, as the coverage survey's institutions views show it (Russia, 17 March 1719, vanilla, Bigger UI and Proper 2K UI Enhanced). Another institution needs its text by hand.",
+      "text": {
+        "countrytechnologyview/institutions_window/when_embraced": [
+          { "key": "GLOBAL_TAX_MODIFIER", "suffix": ": +15.0%\n" },
+          { "key": "GLOBAL_MANPOWER", "suffix": ": +25.0%" },
+        ],
+      },
+    },
     "institutions-window": {
       "note": "The game places the institutions window as if the tab were at y 0, not at its show_position's 140 (the coverage survey, every playset, 1920×1080 and 1280×720; etch#253). Nothing in the tab's code that sets a position explains it.",
       "offset": { "countrytechnologyview/institutions_window": { "y": -140 } },

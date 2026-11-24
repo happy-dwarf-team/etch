@@ -188,6 +188,22 @@ describe('the format errors of a window profile', () => {
       '"suffix" is a text that is not empty.',
     ],
     [RULE, '"r": { "text": { "w/x": { "literal": 1 } } }', '"literal" is a text.'],
+    [RULE, '"r": { "text": { "w/x": [] } }', 'A text of parts has one at least.'],
+    [
+      RULE,
+      '"r": { "text": { "w/x": { "key": "K", "vars": {} } } }',
+      '"vars" is an object of texts keyed by variable name.',
+    ],
+    [
+      RULE,
+      '"r": { "text": { "w/x": { "literal": "", "vars": { "A": "B" } } } }',
+      'A text has a "literal" or a "key", not both.',
+    ],
+    [
+      RULE,
+      '"r": { "text": { "w/x": ["K", { "key": "L", "vars": { "A": { "suffix": "x" } } }] } }',
+      'A text names its "key" or a "literal".',
+    ],
     [RULE, '"r": { "hide": ["w/x"], "frame": { " ": 2 } }', 'A path is not empty.'],
     [VIEW, '"v": { "set": ["s"] }', '"set" is an object of selector values keyed by selector.'],
     [

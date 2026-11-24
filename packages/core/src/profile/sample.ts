@@ -18,7 +18,14 @@ import type { LayoutContent } from '../layout/window.ts';
 import type { GuiFile, Widget } from '../model/gui.ts';
 import { scalarIn, valueIn } from '../save/save.ts';
 import { mapAreaOf, type MapAreas } from '../script/map-areas.ts';
-import type { ContentSource, GeneratedKind, Link, Placement, WindowProfile } from './format.ts';
+import type {
+  ContentSource,
+  GeneratedKind,
+  Link,
+  Placement,
+  RuleText,
+  WindowProfile,
+} from './format.ts';
 import { entryPath, widgetsAt, windowPaths } from './paths.ts';
 import { readSavePath, type RepeaterEntry, type SaveChoice } from './save-paths.ts';
 import type { WindowView } from './view.ts';
@@ -218,15 +225,15 @@ export function sampleData(
   // A rule's text: the localisation key the game's code sets in the view's case (the age's
   // description), over the content's source.
   for (const widget of pathOf.keys()) {
-    const rule = view?.widgets.get(widget)?.text;
-    if (rule === undefined) continue;
-    if (rule.literal !== undefined) {
-      texts.set(widget, { text: rule.literal, layer: 'files', detail: 'literal' });
-      continue;
-    }
-    const key = rule.loc ?? '';
-    const text = (input.localise(key) ?? key) + (rule.suffix ?? '');
-    texts.set(widget, { text, layer: 'files', detail: key });
+    const parts = view?.widgets.get(widget)?.text;
+    if (parts === undefined) continue;
+    const text = parts.map((part) => ruleText(part, input.localise)).join('');
+    const keys = parts.flatMap((part) => (part.loc === undefined ? [] : [part.loc]));
+    texts.set(widget, {
+      text,
+      layer: 'files',
+      detail: keys.length === 0 ? 'literal' : keys.join(' + '),
+    });
   }
   // A slider's value the game's code writes: the save's share, else the profile's `at`.
   for (const widget of pathOf.keys()) {
@@ -614,4 +621,32 @@ export function layoutContentOf(sample: SampleData): LayoutContent {
     sizedBy: (widget) => sample.sizedBy(widget),
     sprite: (widget, row) => sample.sprite?.(widget, row),
   };
+}
+
+/**
+ * A rule's text as the game's code writes it: the literal, or the key's localisation (the key
+ * itself without one) with its variables filled and the suffix after it. A variable is
+ * `$NAME$` or `$NAME|format$`; a format of one colour letter colours the value as the game does
+ * (`§Y…§!`), and any other format, which numbers take, is left out of the sample's value. A
+ * variable without a value stays as written.
+ */
+export function ruleText(text: RuleText, localise: (key: string) => string | undefined): string {
+  if (text.literal !== undefined) return text.literal;
+  const key = text.loc ?? '';
+  let out = localise(key) ?? key;
+  const vars = text.vars;
+  if (vars !== undefined) {
+    out = out.replace(
+      /\$([A-Za-z0-9_]+)(?:\|([^$]*))?\$/g,
+      (whole, name: string, format?: string) => {
+        const value = vars[name];
+        if (value === undefined) return whole;
+        const written = ruleText(value, localise);
+        return format !== undefined && /^[A-Za-z]$/.test(format)
+          ? `§${format}${written}§!`
+          : written;
+      },
+    );
+  }
+  return out + (text.suffix ?? '');
 }

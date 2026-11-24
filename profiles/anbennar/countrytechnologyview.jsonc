@@ -1,0 +1,24 @@
+// The countrytechnologyview window in the Anbennar playset (Anbennar, Proper 2K UI Enhanced, P2KE
+// Patch - Anbennar), over the vanilla profile: Anbennar's institutions give other bonuses.
+{
+  "formatVersion": 1,
+  "window": "countrytechnologyview",
+  "checkedWith": "1",
+  "mod": {
+    "remoteFileId": "1385440355",
+    "name": "Anbennar: A Fantasy Total Conversion",
+  },
+  "rules": {
+    "when-embraced": {
+      "when": { "institutions": "open" },
+      "note": "The game's code writes the bonus of the institution the window shows, a modifier a line, sorted as the game's modifiers are: the renaissance's of Anbennar's common/institutions, as the coverage survey's institutions views show it (Verne, 11 November 1444, Anbennar alone and the Anbennar playset). Another institution needs its text by hand.",
+      "text": {
+        "countrytechnologyview/institutions_window/when_embraced": [
+          { "key": "BUILD_COST", "suffix": ": -5.0%\n" },
+          { "key": "DEVELOPMENT_COST", "suffix": ": -5.0%\n" },
+          { "key": "monarch_spell_levels", "suffix": ": +1.00" },
+        ],
+      },
+    },
+  },
+}

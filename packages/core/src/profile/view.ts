@@ -71,8 +71,8 @@ export interface WidgetState {
   readonly frame?: number;
   /** The sprite the game's code sets in place of the `.gui` one. */
   readonly sprite?: string;
-  /** The text the game's code sets (a rule's `text`). */
-  readonly text?: RuleText;
+  /** The text the game's code sets (a rule's `text`), in its parts. */
+  readonly text?: readonly RuleText[];
   /** The size the game's code gives a chart in place of its sprite's. */
   readonly chartSize?: { readonly width: number; readonly height: number };
   /** The `positionType` whose `position` the game's code gives it as its size (a rule's `size`). */
@@ -192,13 +192,7 @@ export function evaluateView(
       for (const w of widgetsAt(window, ref.path)) update(w, { sprite: ref.sprite });
     }
     for (const ref of rule.text ?? []) {
-      const text: RuleText =
-        ref.literal === undefined
-          ? {
-              ...(ref.loc === undefined ? {} : { loc: ref.loc }),
-              ...(ref.suffix === undefined ? {} : { suffix: ref.suffix }),
-            }
-          : { literal: ref.literal };
+      const text: readonly RuleText[] = ref.parts;
       for (const w of widgetsAt(window, ref.path)) update(w, { text });
     }
     for (const ref of rule.chartSize ?? []) {

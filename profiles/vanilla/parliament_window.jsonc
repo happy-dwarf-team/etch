@@ -5,6 +5,25 @@
   "window": "parliament_window",
   "checkedWith": "1.37.5",
   "rules": {
+    "enacted": {
+      "note": "The game's code writes the enacted issue's effect from its script: its effects, then the modifier it gives until a date. Russia's issue of the coverage survey's parliament view (17 March 1719): one stability, and a modifier until 16 August 1720, whose lines the game writes in another text. Another issue needs its text by hand.",
+      "text": {
+        "parliament_window/enacted_modifiers_effect": [
+          {
+            "key": "STABILITY_EFFECT",
+            "vars": { "DIRECTION": "GAIN", "VALUE": { "literal": "1" } },
+          },
+          {
+            "key": "PI_GRANTS_ENACTED",
+            "vars": {
+              "DATE": { "literal": "16 August 1720" },
+              "COUNTRY": "RUS",
+              "MOD": { "literal": "" },
+            },
+          },
+        ],
+      },
+    },
     "hidden": {
       "note": "Hidden in every view of the coverage survey (the base game): the game decides these from its data or a click; show one by hand.",
       "hide": [
