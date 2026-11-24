@@ -122,7 +122,8 @@ export class PreviewData {
 
   /**
    * Takes back every text typed for a window: how many there were, and a function that types
-   * them again (the Undo after Clear, etch#648, finding P2.20).
+   * them again (the Undo after Clear, etch#648, finding P2.20). A text typed for a widget after the
+   * Clear stays as typed; the Undo brings back the others.
    */
   clearHand(window: string): { readonly count: number; readonly restore: () => void } {
     const key = window.toLowerCase();
@@ -133,7 +134,10 @@ export class PreviewData {
       count: texts?.size ?? 0,
       restore: () => {
         if (texts === undefined) return;
-        this.hand.set(key, texts);
+        const since = this.hand.get(key);
+        const restored = new Map(texts);
+        for (const [path, typed] of since ?? []) restored.set(path, typed);
+        this.hand.set(key, restored);
         this.keepHand();
       },
     };
