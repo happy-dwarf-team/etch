@@ -1,7 +1,7 @@
 // The naval doctrine choice the military tab opens (docs/window-profiles.md). The tab's code holds
 // it (Steam 1.37.5 0xFAEDC0, at this+0x668) and, with Cradle of
 // Civilization, moves it down by army_professionalism's height as it moves the tab
-// (UpdateArmyProfessionalism, 0xFBC0A0): the survey's capture shows it and every widget in it 16 px
+// (the update of its professionalism bar, 0xFBC0A0): the survey's capture shows it and every widget in it 16 px
 // below the .gui's place.
 {
   "formatVersion": 1,
