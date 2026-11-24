@@ -36,7 +36,7 @@ data: what Compare with Live Game compares (spec/v3.md section 4), through the s
 Captures the survey's manifest lists but no record has: anbennar-alone 1280x720 1 (anbennar-alone-save-s55), proper-2k-ui-enhanced 2560x1440 1 (vanilla-save-s61), anbennar 2560x1440 1 (anbennar-alone-save-s16).
 
 <!-- other countries: start -->
-### The geometry fixes of 25 November 2026
+### The geometry fixes of 24 November 2026
 
 Twelve changes to the profiles, their rules and the layout, each measured on its branch and then
 together on `main` (`c34df38`), under the lab's game lock, over the same captures as the section
