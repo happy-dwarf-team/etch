@@ -203,6 +203,23 @@ describe('PreviewData', () => {
     expect(kept).toEqual({ provinceview: { 'provinceview/b': 'Typed' } });
     d.clearHand('provinceview');
     expect(kept).toEqual({});
+    // A text typed after a Clear stays when the Clear is undone; the cleared ones come back.
+    d.setHandText('provinceview', 'provinceview/c', 'One');
+    d.setHandText('provinceview', 'provinceview/b', 'Two');
+    const second = d.clearHand('provinceview');
+    expect(second.count).toBe(2);
+    d.setHandText('provinceview', 'provinceview/d', 'After');
+    d.setHandText('provinceview', 'provinceview/c', 'Changed');
+    second.restore();
+    expect(kept).toEqual({
+      provinceview: {
+        'provinceview/b': 'Two',
+        'provinceview/c': 'Changed',
+        'provinceview/d': 'After',
+      },
+    });
+    d.clearHand('provinceview');
+    expect(kept).toEqual({});
     expect(d.handTexts('topbar').text('topbar/x')).toBeUndefined();
 
     expect(d.entryCounts('provinceview')('list')).toBeUndefined();
@@ -212,7 +229,7 @@ describe('PreviewData', () => {
     expect(d.entryCounts('provinceview')('list')).toBe(100);
     d.setEntries('provinceview', 'list', undefined);
     expect(d.entryCounts('provinceview')('list')).toBeUndefined();
-    expect(changed).toHaveBeenCalledTimes(8);
+    expect(changed).toHaveBeenCalledTimes(15);
   });
 });
 
