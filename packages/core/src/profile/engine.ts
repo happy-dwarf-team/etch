@@ -27,7 +27,7 @@ export interface EngineMove {
  * What a country view's code does at its size steps (`…_scaling_large_min_inc` and
  * `…_scaling_huge_min_inc`: from the screen height of the step's `x`, by its `y`): the widgets it
  * moves down by `y` and those it makes `y` taller, by top-level window (lowercase). Read from each
- * view's `SetupLargeOrHuge` in the GOG build's `eu4.pdb` (the same code as Steam's); the layout
+ * view's code in the GOG build (the same code as Steam's); the layout
  * applies them (etch#274).
  */
 export interface EngineSteps {

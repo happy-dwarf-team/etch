@@ -194,7 +194,7 @@ view's `area_name` and `states_tab_button` show the chosen province's area ("Oka
 and `region_name` its area's region ("Russia"). A repeater's field has no `map` source.
 
 Any entry may also take `sizedBy`, a localisation key, for a fixed-size text box (`fixedsize`) the
-game's code first sets to that text with its height left open (`ChangeString` with `true`): the
+game's code first sets to that text with its height left open (eu4.exe `0x15F42C0`): the
 box keeps that text's height as its `maxHeight`, and the texts shown after it are fitted into it.
 The rebels' `onsiegewon_desc` is sized by `REB_NO_EFFECT`, one line, so a long description is cut
 after one line with " ...", though its `.gui` gives room for two.

@@ -12,7 +12,7 @@
  *   one of them crashed the game on the first day, though no country met its `potential`.
  * - The others crash only when their tooltip or description is built, for example when a player
  *   hovers over a decision, a mission or an event option that uses them: the game's
- *   `PostValidate` of these keys looks the name up again but logs nothing, and the validation
+ *   check of these keys after loading looks the name up again but logs nothing, and the validation
  *   passes ignore what it returns. Inside a `custom_trigger_tooltip`, which shows its own text,
  *   they are not checked. Their names are compared ignoring case, because whether these lookups
  *   are case-sensitive was not read.

@@ -13,7 +13,7 @@
   },
   "rules": {
     "cradle-moves-the-tab": {
-      "note": "army_professionalism is 19 px high here: the tab moves down by it, and CoCbackground, the close button and the title stay (UpdateArmyProfessionalism, Steam 0xFBC0A0).",
+      "note": "army_professionalism is 19 px high here: the tab moves down by it, and CoCbackground, the close button and the title stay (Steam 0xFBC0A0).",
       "when": { "cradle": "yes" },
       "offset": {
         "countrymilitaryview": { "y": 19 },
