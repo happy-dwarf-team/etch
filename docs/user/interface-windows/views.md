@@ -123,6 +123,9 @@ code does to the window in that case:
   their `hide_position`.
 - `frame` and `sprite`: the frame or the sprite the game's code puts on a widget in place of the
   `.gui` file's.
+- `text` (added in 2.15.0): the text the game's code writes in a text box in that case, by its
+  localisation key, such as the description of the age the ages view shows. The preview shows that
+  text from the game's files until a live game or your own text replaces it.
 - `chartSize` (added in 2.14.0): the size the game's code gives a chart, such as the estates
   view's pie chart at 32 × 32, in place of its sprite's size.
 - `slider` (added in 2.14.0): a marker the game's code places along a bar from a value, such as

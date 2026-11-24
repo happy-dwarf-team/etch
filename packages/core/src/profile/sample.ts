@@ -215,6 +215,13 @@ export function sampleData(
       }
     }
   }
+  // A rule's text: the localisation key the game's code sets in the view's case (the age's
+  // description), over the content's source.
+  for (const widget of pathOf.keys()) {
+    const key = view?.widgets.get(widget)?.text;
+    if (key === undefined) continue;
+    texts.set(widget, { text: input.localise(key) ?? key, layer: 'files', detail: key });
+  }
   // A live snapshot fills every text the game showed, not only the profile's sources.
   if (input.live !== undefined) {
     for (const [widget, path] of pathOf) {

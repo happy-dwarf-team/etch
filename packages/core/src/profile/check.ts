@@ -178,6 +178,7 @@ export function checkProfile(profile: WindowProfile, input: ProfileCheckInput): 
       ...rule.position,
       ...rule.frame,
       ...(rule.sprite ?? []),
+      ...(rule.text ?? []),
       ...(rule.chartSize ?? []),
       ...(rule.slider ?? []).flatMap((s) => [s, s.low, s.high, ...(s.value ? [s.value] : [])]),
       ...rule.offset,

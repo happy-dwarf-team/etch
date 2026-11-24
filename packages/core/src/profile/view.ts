@@ -71,6 +71,8 @@ export interface WidgetState {
   readonly frame?: number;
   /** The sprite the game's code sets in place of the `.gui` one. */
   readonly sprite?: string;
+  /** The localisation key of the text the game's code sets (a rule's `text`). */
+  readonly text?: string;
   /** The size the game's code gives a chart in place of its sprite's. */
   readonly chartSize?: { readonly width: number; readonly height: number };
   /** Where the game's code places it along a slider (a rule's `slider`): the marker or its value. */
@@ -174,6 +176,9 @@ export function evaluateView(
     }
     for (const ref of rule.sprite ?? []) {
       for (const w of widgetsAt(window, ref.path)) update(w, { sprite: ref.sprite });
+    }
+    for (const ref of rule.text ?? []) {
+      for (const w of widgetsAt(window, ref.path)) update(w, { text: ref.loc });
     }
     for (const ref of rule.chartSize ?? []) {
       for (const w of widgetsAt(window, ref.path)) {

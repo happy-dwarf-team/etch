@@ -192,7 +192,7 @@ describe('reading a profile file', () => {
     );
     expect(diagnostics.map((d) => d.message)).toEqual([
       'Only a resolution value has bounds.',
-      'Rule "r" has no effect: show, hide, notCreated, position, frame, sprite, chartSize, slider, offset, hidePosition or adopt.',
+      'Rule "r" has no effect: show, hide, notCreated, position, frame, sprite, text, chartSize, slider, offset, hidePosition or adopt.',
     ]);
   });
 });
@@ -446,6 +446,7 @@ describe('the JSON Schema', () => {
       'show',
       'slider',
       'sprite',
+      'text',
       'when',
     ]);
     expect(keys('view')).toEqual(['label', 'set', 'toggles']);

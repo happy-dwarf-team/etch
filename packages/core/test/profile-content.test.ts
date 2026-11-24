@@ -646,6 +646,46 @@ describe('sampleData', () => {
     expect(sample.counts.hand).toBe(3);
   });
 
+  it("fills a rule's text from the files in its case, under a live snapshot and a typed text", () => {
+    const { profile, diagnostics } = profileOf(`{ "formatVersion": 1, "window": "provinceview",
+      "selectors": { "kind": { "kind": "ui", "values": { "own": "Own", "other": "Other" } } },
+      "rules": {
+        "own-title": { "when": { "kind": "own" }, "text": { "provinceview/title": "PROVINCE_TITLE" } },
+        "other-title": { "when": { "kind": "other" }, "text": { "provinceview/title": "SWE" } },
+        "culture": { "text": { "provinceview/culture": "NO_SUCH_KEY" } }
+      },
+      "content": { "provinceview/title": { "generated": "text" } } }`);
+    expect(diagnostics).toEqual([]);
+    const screen = { width: 1920, height: 1080 };
+    const viewOf = (kind: string) => evaluateView(profile, WINDOW, screen, { set: { kind } });
+    const own = sampleData(profile, WINDOW, viewOf('own'), input());
+    // Over the content's generated text, from the playset's localisation.
+    expect(own.text(named('title'))).toEqual({
+      text: 'Province',
+      layer: 'files',
+      detail: 'PROVINCE_TITLE',
+    });
+    expect(sampleData(profile, WINDOW, viewOf('other'), input()).text(named('title'))?.text).toBe(
+      'Sweden',
+    );
+    // A key the playset does not localise shows as the key, as the game writes it.
+    expect(own.text(named('culture'))).toMatchObject({ text: 'NO_SUCH_KEY', layer: 'files' });
+    const live = sampleData(
+      profile,
+      WINDOW,
+      viewOf('own'),
+      input({ live: { text: (path) => (path === 'provinceview/title' ? 'Kalmar' : undefined) } }),
+    );
+    expect(live.text(named('title'))).toMatchObject({ text: 'Kalmar', layer: 'live' });
+    const typed = sampleData(
+      profile,
+      WINDOW,
+      viewOf('own'),
+      input({ hand: { text: (path) => (path === 'provinceview/title' ? 'Mine' : undefined) } }),
+    );
+    expect(typed.text(named('title'))).toMatchObject({ text: 'Mine', layer: 'hand' });
+  });
+
   it("sets the number of a list's entries, the save's first and generated ones after", async () => {
     const { profile } = profileOf(PROFILE);
     const list = named('building_list');
