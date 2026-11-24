@@ -152,7 +152,8 @@ line then says "particles off", then the names. When none of the state's effects
 line says "particles not drawn", then the names, and the box under the bar says why (see below).
 
 Pause the animation and drag the frame slider: a frame always shows the same particles, however
-you got to it.
+you got to it. When the preview could not draw for more than a second (its tab was hidden, the
+computer slept), the animation goes on from where it stopped, as after a pause.
 
 To start a particle, the game needs two definitions:
 

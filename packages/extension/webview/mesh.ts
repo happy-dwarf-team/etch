@@ -113,6 +113,7 @@ import {
   type PlacedBone,
 } from './view-math.ts';
 import { ParticleLayer } from './particles.ts';
+import { FrameRequest, startAfterGap } from './play-clock.ts';
 import { listenForZoomKeys } from './zoom-keys.ts';
 import { attachPopover } from './popover.ts';
 
@@ -466,6 +467,10 @@ let playingKey: string | undefined;
 let playing = false;
 /** While playing: `performance.now()` at the animation's second 0. */
 let started = 0;
+/** While playing: the time of the frame before, `undefined` before the first frame since Play. */
+let lastFrame: number | undefined;
+/** The one pending frame of the view (a second loop would pose and advance twice a frame). */
+const frameRequest = new FrameRequest(draw, (callback) => requestAnimationFrame(callback));
 /** The second of the animation every instance is posed at; playing resumes from it. */
 let position = 0;
 let wireframe = false;
@@ -999,7 +1004,8 @@ function setPlaying(on: boolean): void {
   playButton.textContent = playing ? 'Pause' : 'Play';
   if (playing) {
     started = performance.now() - position * 1000;
-    requestAnimationFrame(draw);
+    lastFrame = undefined;
+    frameRequest.ask();
   }
 }
 
@@ -1020,7 +1026,7 @@ const BACKGROUND = [0.16, 0.17, 0.19] as const;
 /** Draws a frame and asks for the next while an animation plays. */
 function draw(now: number): void {
   render(now);
-  if (playing) requestAnimationFrame(draw);
+  if (playing) frameRequest.ask();
 }
 
 /**
@@ -1066,7 +1072,11 @@ function render(now: number): void {
     canvas.width = width;
     canvas.height = height;
   }
-  if (playing) showAt(gl, (now - started) / 1000);
+  if (playing) {
+    started = startAfterGap(started, lastFrame, now);
+    lastFrame = now;
+    showAt(gl, (now - started) / 1000);
+  }
   gl.viewport(0, 0, width, height);
   gl.clearColor(...BACKGROUND, 1);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -1232,7 +1242,7 @@ function drawSkeleton(
 function redraw(): void {
   // On Auto the level follows the camera, so the bar's level does too.
   if (lodAuto) showFacts();
-  if (!playing) requestAnimationFrame(draw);
+  if (!playing) frameRequest.ask();
 }
 
 function summary(): MeshSummary {
