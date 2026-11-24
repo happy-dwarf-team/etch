@@ -6,6 +6,16 @@
  * on 6,366, 8,212, 21,449, 2,322 and 5,766 lines there (counted on 21.11.2026). Not every such
  * value is a key (a `name` can be a plain word), so a caller keeps only the keys its
  * localisation defines.
+ *
+ * Eight more keys of `common/` come from the fields CWTools' EU4 rules type as `localisation`,
+ * each kept because vanilla 1.37.5's values of it are defined English keys (counted on
+ * 25.11.2026, values defined of values written): `war_name` 87 of 87, `prov_desc` 61 of 62 and
+ * `country_desc` 32 of 32 and `elector_relation` 1 of 1 in `wargoal_types`, `demands_description`
+ * 50 of 50 in `rebel_types`, `mercenary_desc_key` 29 of 29 in `mercenary_companies`,
+ * `custom_ai_explanation` 16 of 16 in `ruler_personalities` and `ancestor_personalities`,
+ * `reform_tooltip` 3 of 3 in `religions`. Rule fields whose vanilla values are not keys are left
+ * out: `dynasty` (8 of 648), `leader` (0 of 145), `leader_dynasty` (0 of 87), achievements'
+ * `localization` (24 of 401), `expire_message_type` and the `expiration_message_*` pair.
  */
 import type { EntryNode, ParsedScript, ScalarNode } from '../script/tree.ts';
 import { keyOf } from './properties.ts';
@@ -29,6 +39,14 @@ const SCRIPT_KEYS: ReadonlySet<string> = new Set([
   'name',
   'tooltip',
   'custom_tooltip',
+  'war_name',
+  'prov_desc',
+  'country_desc',
+  'elector_relation',
+  'demands_description',
+  'mercenary_desc_key',
+  'custom_ai_explanation',
+  'reform_tooltip',
 ]);
 const SCRIPT_FOLDERS = ['events/', 'decisions/', 'missions/', 'common/'];
 

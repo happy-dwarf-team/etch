@@ -66,4 +66,36 @@ describe('localisationReferences', () => {
     expect(isLocalisationReferencePath('interface/etch.gfx')).toBe(false);
     expect(keysOf('history/countries/ETC.txt', 'name = etch')).toEqual([]);
   });
+
+  it('reads the keys of common folders that CWTools types as localisation, not their kin', () => {
+    const WARGOAL = `etch_wargoal = {
+	type = take_province
+	prov_desc = ETCH_PROVINCE
+	country_desc = ETCH_COUNTRY
+	war_name = ETCH_WAR_NAME
+	elector_relation = ETCH_ELECTOR
+}
+`;
+    expect(keysOf('common/wargoal_types/etch.txt', WARGOAL)).toEqual([
+      'ETCH_PROVINCE',
+      'ETCH_COUNTRY',
+      'ETCH_WAR_NAME',
+      'ETCH_ELECTOR',
+    ]);
+    expect(
+      keysOf('common/rebel_types/etch.txt', 'etch = { demands_description = ETCH_DEMANDS }'),
+    ).toEqual(['ETCH_DEMANDS']);
+    expect(
+      keysOf('common/mercenary_companies/etch.txt', 'm = { mercenary_desc_key = ETCH_M }'),
+    ).toEqual(['ETCH_M']);
+    expect(
+      keysOf('common/ruler_personalities/etch.txt', 'p = { custom_ai_explanation = ETCH_AI }'),
+    ).toEqual(['ETCH_AI']);
+    expect(
+      keysOf('common/religions/etch.txt', 'g = { r = { reform_tooltip = ETCH_REFORM } }'),
+    ).toEqual(['ETCH_REFORM']);
+    expect(
+      keysOf('events/etch.txt', 'e = { define_ruler = { dynasty = Etch } leader = etch_rebel }'),
+    ).toEqual([]);
+  });
 });

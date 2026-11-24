@@ -421,7 +421,13 @@ refresh goes out with a 2.x release (v3.md section 7).
   `tooltip`, `tooltipText` and `delayedTooltipText`; in the `.txt` files of
   `events`, `decisions`, `missions` and `common` a `title`, `desc`, `name`,
   `tooltip` or `custom_tooltip` at any depth (vanilla writes them on 6,366,
-  8,212, 21,449, 2,322 and 5,766 lines there). A value that no file defines
+  8,212, 21,449, 2,322 and 5,766 lines there), and also `war_name`,
+  `prov_desc`, `country_desc`, `elector_relation`, `demands_description`,
+  `mercenary_desc_key`, `custom_ai_explanation` and `reform_tooltip`. These
+  eight are the fields CWTools' EU4 rules type as `localisation` whose
+  vanilla values are defined keys: 279 of 280 values, all in `common`
+  (counted on 25.11.2026; `localisation-references.ts` has the counts and
+  the fields left out). A value that no file defines
   gets nothing, so script `name`s that are plain words stay bare. The hint's
   tooltip has the whole text and its file; Go to Definition opens the key's
   line in the winning `.yml`. The localisation is read again after a `.yml`
