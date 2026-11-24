@@ -16,8 +16,8 @@ have a profile.
 | anbennar-alone | 1920x1080 | 60 | 99.6 % | 99.9 % | 88.8 % | 77.0 % | 25 | 99.8 % | 99.9 % | 100.0 % | 100.0 % | 60 | 100.0 % | 100.0 % | 3 of 60 |
 | bigger-ui | 1280x720 | 62 | 99.4 % | 99.6 % | 81.5 % | 87.5 % | 23 | 99.8 % | 99.5 % | 100.0 % | 100.0 % | 62 | 100.0 % | 100.0 % | 3 of 62 |
 | bigger-ui | 1920x1080 | 62 | 99.4 % | 99.6 % | 81.5 % | 87.3 % | 23 | 99.8 % | 99.6 % | 100.0 % | 100.0 % | 62 | 100.0 % | 100.0 % | 3 of 62 |
-| proper-2k-ui-enhanced | 2560x1440 | 61 | 98.5 % | 99.6 % | 79.2 % | 87.5 % | 16 | 99.0 % | 99.6 % | 99.9 % | 100.0 % | 58 | 100.0 % | 100.0 % | 2 of 61 |
-| anbennar | 2560x1440 | 59 | 99.0 % | 99.9 % | 86.9 % | 78.7 % | 19 | 99.3 % | 99.9 % | 99.8 % | 100.0 % | 53 | 100.0 % | 100.0 % | 2 of 59 |
+| proper-2k-ui-enhanced | 2560x1440 | 61 | 98.8 % | 99.6 % | 79.2 % | 87.5 % | 16 | 99.3 % | 99.6 % | 99.9 % | 100.0 % | 58 | 100.0 % | 100.0 % | 2 of 61 |
+| anbennar | 2560x1440 | 59 | 99.2 % | 99.9 % | 86.9 % | 78.7 % | 19 | 99.4 % | 99.9 % | 99.8 % | 100.0 % | 53 | 100.0 % | 100.0 % | 2 of 59 |
 
 "With profiles and live texts" is the same with the snapshot's texts and list rows as sample
 data: what Compare with Live Game compares (spec/v3.md section 4), through the same functions.
@@ -30,16 +30,16 @@ data: what Compare with Live Game compares (spec/v3.md section 4), through the s
 | anbennar-alone | 1920x1080 | 100.0 % | 99.9 % |
 | bigger-ui | 1280x720 | 99.8 % | 99.6 % |
 | bigger-ui | 1920x1080 | 99.8 % | 99.6 % |
-| proper-2k-ui-enhanced | 2560x1440 | 99.5 % | 99.6 % |
-| anbennar | 2560x1440 | 99.7 % | 99.9 % |
+| proper-2k-ui-enhanced | 2560x1440 | 99.8 % | 99.6 % |
+| anbennar | 2560x1440 | 99.8 % | 99.9 % |
 
 Captures the survey's manifest lists but no record has: anbennar-alone 1280x720 1 (anbennar-alone-save-s55), proper-2k-ui-enhanced 2560x1440 1 (vanilla-save-s61), anbennar 2560x1440 1 (anbennar-alone-save-s16).
 
 <!-- other countries: start -->
 ### The geometry fixes of 25 November 2026
 
-Nine changes to the profiles, their rules and the layout, each measured on its branch and then
-together on `main` (`6d2cad0`), under the lab's game lock, over the same captures as the section
+Twelve changes to the profiles, their rules and the layout, each measured on its branch and then
+together on `main` (`c34df38`), under the lab's game lock, over the same captures as the section
 below (no capture was taken again). The generated tables above are this run.
 
 - **The crown land icons and the map mode buttons** (etch#672, `sprite`, `frame`): Tongs 0.37 reports
@@ -76,6 +76,18 @@ below (no capture was taken again). The generated tables above are this run.
   `.gui`'s `GFX_idea_empty`. Proper 2K UI Enhanced's `unknown.dds` is a 77 × 77 DXT5 image, drawn
   80 × 80, so the icons are 40 and 52 px where its `empty.tga` gave 38 and 50. Sixteen rects fewer in
   Proper 2K UI Enhanced.
+- **The minimap** (etch#693, a new effect `size`): eu4.exe sizes `minimap_pic` to the `positionType`
+  `minimap_size` of `menubar.gui` (0x10B67E0), 268 × 98, not to the mod's 321 × 117 texture. A rule's
+  `size` gives a widget a `positionType`'s size, and reaches the definition `minimap_panel` adopts.
+  One rect fewer in Proper 2K UI Enhanced and in the P2KE playset.
+- **Proper 2K UI Enhanced's naval doctrine choice** (etch#694, `offset`): with Cradle of
+  Civilization the military tab moves it down by `army_professionalism`'s height, 19 px in the mod
+  where the base game's is 16. Three rects fewer in Proper 2K UI Enhanced.
+- **Proper 2K UI Enhanced's great projects box** (etch#696, `offset`): the game shows
+  `great_projects_window` with its bottom at `general_buildings_window`'s top, 10 px below its `.gui`
+  place in the base game and 201 px above it in the mod, which overlaps the two windows. Every
+  installed `provinceview.gui` agrees; the code that places it was not read. Six rects fewer in
+  Proper 2K UI Enhanced and three in the P2KE playset.
 
 With the profiles, rects off on `main` against the section below (rules of `b156984`), and every
 change of a view measure was a gain: no view got worse in rects or visibility, in any measure or set.
@@ -86,8 +98,8 @@ change of a view measure was a gain: no view got worse in rects or visibility, i
 | Anbennar alone, 1920×1080 | 7 (19) | 15 (27) | 0 (1) |
 | Anbennar alone, 1280×720 | 7 (18) | 14 (25) | 8 (9) |
 | Bigger UI, 1920×1080 and 1280×720 | 6 (23) | 21 (38) | 0 (9) |
-| Proper 2K UI Enhanced, 2560×1440 | 33 (80) | 54 (101) | 3 (40) |
-| Anbennar with Proper 2K UI Enhanced and P2KE, 2560×1440 | 23 (52) | 33 (62) | 6 (20) |
+| Proper 2K UI Enhanced, 2560×1440 | 23 (80) | 44 (101) | 3 (40) |
+| Anbennar with Proper 2K UI Enhanced and P2KE, 2560×1440 | 19 (52) | 29 (62) | 6 (20) |
 | Austria, the emperor | 2 (12) | 7 (17) | 0 (9) |
 | Aragon, the Pope's controller | 2 (12) | 7 (17) | 0 (9) |
 | C01, a colonial nation | 1 (3) | 4 (6) | 0 (1) |
@@ -104,20 +116,25 @@ On the three countries: the colonisation panel's `region_text` and the leader di
 are texts the game's code fills from the game's state (etch#604): heights, and the width of
 `rebelsize_desc`, which a comment on etch#604 adds to its list. Nothing of etch#606 is left: the pie
 chart (etch#614), the patriarch marker (etch#615), the crown land icons and the map mode buttons
-(etch#672) are fixed.
+(etch#672) and Proper 2K UI Enhanced's minimap (etch#693) are fixed.
 
-In Proper 2K UI Enhanced and the P2KE playset, the same texts are left, and these:
+In Proper 2K UI Enhanced (23 rects) and the P2KE playset (19), by cause:
 
-- the topbar's prestige and power projection, whose sample text is narrower than the game's "+100";
-- the diplomacy view's values and Anbennar's `stability_value`, whose widths come from the game's
-  numbers;
-- the province view's terrain picture, chosen by the province;
-- `regiment_bg`, whose sprite depends on the army's professionalism;
-- the great projects window, about 200 px from its `.gui` place, which needs the game's code read;
-- the naval doctrine choice, 3 px off;
-- `minimap_pic`, which eu4.exe sizes to the `positionType` `minimap_size` (0x10B67E0), 268 × 98,
-  where the mod's texture is 321 × 117. No rule can size it yet, and none reaches an adopted
-  definition (a comment on etch#606).
+- **Texts the game's code fills from the game's state** (etch#604's kind), 22 and 14: the same
+  heights as above, and widths that come from the game's numbers: the topbar's prestige and power
+  projection (the game writes "+100", wider than the sample text), the diplomacy view's
+  `land_forcelimit_value`, `manpower_value`, `reputation_value` and `score_value`, and Anbennar's
+  `stability_value`. Every one of them is exact with the snapshot's texts.
+- **Sprites the game's code picks from the game's state**, 1 and 5: `regiment_bg`, which eu4.exe
+  draws with the sprite of the army's professionalism level (`GFX_ap1_regiment_bg` and on, 10 px
+  taller in the mod than its `regiment_bg.tga`), and in the P2KE playset the province view's
+  `province_terrain`, the picture of the province's terrain. Neither is in a save fact a selector
+  reads today.
+
+The building slots (etch#605) and the peace view's slider stay as they were, in visibility. With
+the snapshot's texts, Proper 2K UI Enhanced has 7 rects off: `regiment_bg`, and the stability
+view's `stability_value` and `stability_progress_threshold` 57 px left of the game's in three
+views, which the profiles alone draw at the game's place. These six were not looked into.
 
 ## Other countries: data the rules were not made from
 
