@@ -172,6 +172,22 @@ describe('the format errors of a window profile', () => {
       '"r": { "slider": { "w/x": { "low": "w/a", "high": "w/b", "at": 1, "valueText": "percent" } } }',
       'A slider with "valueText" names its "value" text box.',
     ],
+    [
+      RULE,
+      '"r": { "text": { "w/x": { "suffix": "\\n" } } }',
+      'A text names its "key" or a "literal".',
+    ],
+    [
+      RULE,
+      '"r": { "text": { "w/x": { "key": "K", "literal": "" } } }',
+      'A text has a "literal" or a "key", not both.',
+    ],
+    [
+      RULE,
+      '"r": { "text": { "w/x": { "key": "K", "suffix": "" } } }',
+      '"suffix" is a text that is not empty.',
+    ],
+    [RULE, '"r": { "text": { "w/x": { "literal": 1 } } }', '"literal" is a text.'],
     [RULE, '"r": { "hide": ["w/x"], "frame": { " ": 2 } }', 'A path is not empty.'],
     [VIEW, '"v": { "set": ["s"] }', '"set" is an object of selector values keyed by selector.'],
     [

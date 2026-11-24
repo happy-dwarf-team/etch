@@ -126,7 +126,10 @@ code does to the window in that case:
   `.gui` file's.
 - `text` (added in 2.15.0): the text the game's code writes in a text box in that case, by its
   localisation key, such as the description of the age the ages view shows. The preview shows that
-  text from the game's files until a live game or your own text replaces it.
+  text from the game's files until a live game or your own text replaces it. A `suffix` adds what
+  the game's code writes after that text, such as the line break at the end of the leader dialog's
+  description. A `literal` is a text the game's code writes itself, which can be empty, such as the
+  estates view's agenda without an agenda.
 - `chartSize` (added in 2.14.0): the size the game's code gives a chart, such as the estates
   view's pie chart at 32 × 32, in place of its sprite's size.
 - `size` (added in 2.15.0): the size the game's code gives a widget from a `positionType` of the

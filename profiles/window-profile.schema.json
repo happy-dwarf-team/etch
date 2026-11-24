@@ -238,9 +238,28 @@
           "additionalProperties": { "type": "string" }
         },
         "text": {
-          "description": "Texts the game's code sets, keyed by path: the localisation key of the text, shown as sample data from the playset's files, under a live snapshot's texts.",
+          "description": "Texts the game's code sets, keyed by path: the localisation key of the text; { key, suffix } for a key the game's code adds a text after; { literal } for a text the game's code writes itself, which may be empty. Shown as sample data from the playset's files, under a live snapshot's texts.",
           "type": "object",
-          "additionalProperties": { "$ref": "#/definitions/text" }
+          "additionalProperties": {
+            "oneOf": [
+              { "$ref": "#/definitions/text" },
+              {
+                "type": "object",
+                "required": ["key"],
+                "additionalProperties": false,
+                "properties": {
+                  "key": { "$ref": "#/definitions/text" },
+                  "suffix": { "type": "string", "minLength": 1 }
+                }
+              },
+              {
+                "type": "object",
+                "required": ["literal"],
+                "additionalProperties": false,
+                "properties": { "literal": { "type": "string" } }
+              }
+            ]
+          }
         },
         "chartSize": {
           "description": "The size the game's code gives a chart in place of its sprite's size, keyed by path: { x, y } in pixels. A pie chart keeps its centre, the widget's lower left corner, so move it by its difference with an offset.",

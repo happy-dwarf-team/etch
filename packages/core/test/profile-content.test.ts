@@ -686,6 +686,25 @@ describe('sampleData', () => {
     expect(typed.text(named('title'))).toMatchObject({ text: 'Mine', layer: 'hand' });
   });
 
+  it("adds a rule's suffix after its key's text and writes a literal text, even an empty one", () => {
+    const { profile, diagnostics } = profileOf(`{ "formatVersion": 1, "window": "provinceview",
+      "rules": {
+        "texts": { "text": {
+          "provinceview/title": { "key": "PROVINCE_TITLE", "suffix": "\\n" },
+          "provinceview/culture": { "literal": "" }
+        } }
+      } }`);
+    expect(diagnostics).toEqual([]);
+    const view = evaluateView(profile, WINDOW, { width: 1920, height: 1080 }, {});
+    const sample = sampleData(profile, WINDOW, view, input());
+    expect(sample.text(named('title'))).toEqual({
+      text: 'Province\n',
+      layer: 'files',
+      detail: 'PROVINCE_TITLE',
+    });
+    expect(sample.text(named('culture'))).toEqual({ text: '', layer: 'files', detail: 'literal' });
+  });
+
   it("sets the number of a list's entries, the save's first and generated ones after", async () => {
     const { profile } = profileOf(PROFILE);
     const list = named('building_list');

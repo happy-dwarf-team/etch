@@ -47,8 +47,10 @@
       ],
     },
     "no-agenda": {
+      "note": "Without an agenda the game's code writes an empty text in agenda_effects, one line high, where the .gui says AGENDA_EFFECTS (Anbennar's 106 px wraps it in three; the coverage survey of 24 November 2026).",
       "when": { "agenda": "none" },
       "hide": ["countryestatesview/agenda_icon", "countryestatesview/agenda_state"],
+      "text": { "countryestatesview/agenda_effects": { "literal": "" } },
     },
   },
 }

@@ -195,6 +195,14 @@
         "country_selection_panel/lobby/right/singleplayer/national_idea7": "GFX_idea_unknown",
       },
     },
+    "version-label": {
+      "note": "eu4.exe writes its version and the playset's checksum in the main menu's version_label, \"EU4 v1.37.5.0 Inca (491d)\" in the coverage survey of 24 November 2026, two lines in the .gui's 147 px. The checksum differs by playset: 0000 stands in for it.",
+      "text": {
+        "country_selection_panel/mainmenu/mainmenu_panel_bottom/version_label": {
+          "literal": "EU4 v1.37.5.0 Inca (0000)",
+        },
+      },
+    },
     "no-game-to-continue": {
       "when": { "page": "main-menu", "continueGame": "no" },
       "hide": ["country_selection_panel/mainmenu/mainmenu_panel_bottom/continue_container"],
