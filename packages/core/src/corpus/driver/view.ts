@@ -249,21 +249,19 @@ async function capture(ctx: ViewContext, view: CorpusView): Promise<ViewCapture>
         `A province step needs Tongs 0.21 or later (province open); the game runs Tongs ${ctx.tongsVersion}.`,
       );
     }
-    const answer = await runStep(ctx, stepCommand(step, window), timing);
+    const command = await stepCommandIn(ctx.tongs, step, window);
+    const answer = await runStep(ctx, command, timing);
     ctx.log({ view: view.id, step, answer: brief(answer) });
     // Tongs answers `clicked` with the path of the widget it clicked.
     if ('click' in step && (answer['clicked'] === undefined || answer['clicked'] === false)) {
-      throw new ViewFailure(`"${stepCommand(step, window)}" did not click.`);
+      throw new ViewFailure(`"${command}" did not click.`);
     }
     if ('province' in step) opened(step.province, answer, view);
     await frame(ctx);
     await ctx.sleep(timing.stepSettleMs);
   }
 
-  const away = await awayPoint(ctx, window);
-  await ask(ctx.tongs, `move ${String(away.x)} ${String(away.y)}`);
-  await ctx.sleep(timing.settleMs);
-  await frame(ctx);
+  await rest(ctx, view, window, timing);
   await checkState(ctx);
 
   const widgets = await readTrees(ctx, view);
@@ -440,6 +438,49 @@ export async function backToStart(ctx: ViewContext, timing: CaptureTiming): Prom
     current = next;
   }
   await checkState(ctx);
+}
+
+/**
+ * Where the pointer rests over a save when a window of the view covers its resting place and shows
+ * a tooltip there (the great powers and the Celestial Empire cover the pause banner at 1280×720):
+ * the client area's bottom-right pixel, taken only where the game hovers the minimap's frame, which
+ * has no tooltip and is no edge of the map.
+ */
+export const SAVE_FALLBACK = {
+  fraction: { x: 1, y: 1 },
+  hovers: 'minimap_panel/minimap_bg',
+} as const;
+
+/** Moves the pointer to its resting place for the shots, or to `SAVE_FALLBACK`. */
+async function rest(
+  ctx: ViewContext,
+  view: CorpusView,
+  window: Screen,
+  timing: CaptureTiming,
+): Promise<void> {
+  const settleAt = async (point: Point): Promise<void> => {
+    await ask(ctx.tongs, `move ${String(point.x)} ${String(point.y)}`);
+    await ctx.sleep(timing.settleMs);
+    await frame(ctx);
+  };
+  await settleAt(await awayPoint(ctx, window));
+  if (ctx.start !== 'save' || (await tooltipWindows(ctx)).length === 0) return;
+  const point = {
+    x: Math.round(SAVE_FALLBACK.fraction.x * (window.width - 1)),
+    y: Math.round(SAVE_FALLBACK.fraction.y * (window.height - 1)),
+  };
+  await settleAt(point);
+  const hovered = (await ask(ctx.tongs, 'cursor'))['widget'];
+  if (hovered !== SAVE_FALLBACK.hovers) {
+    throw new ViewFailure(
+      `A tooltip is shown where the pointer rests, and at ${String(point.x)},${String(point.y)} the game hovers ${String(hovered)}, not ${SAVE_FALLBACK.hovers}.`,
+    );
+  }
+  ctx.log({ view: view.id, rests: point, hovers: hovered });
+}
+
+async function tooltipWindows(ctx: ViewContext): Promise<string[]> {
+  return (await topLevelWindows(ctx.tongs)).filter((path) => TOOLTIP.test(path));
 }
 
 async function noTooltip(ctx: ViewContext): Promise<void> {
@@ -707,9 +748,18 @@ function* visibleWidgets(widgets: readonly CapturedWidget[]): Generator<Captured
   }
 }
 
-/** The Tongs command of a recipe step in a client area of the given size. */
-export function stepCommand(step: RecipeStep, window: Screen): string {
+/**
+ * The Tongs command of a recipe step in a client area of the given size. A `scroll` step needs the
+ * client point of its widget, `at` (`stepCommandIn` finds it).
+ */
+export function stepCommand(step: RecipeStep, window: Screen, at?: Point): string {
   if ('key' in step) return `key ${step.key}`;
+  if ('scroll' in step) {
+    if (at === undefined) {
+      throw new ViewFailure(`A scroll step needs the point of ${step.scroll.widget}.`);
+    }
+    return `scroll ${String(step.scroll.steps)} ${String(at.x)} ${String(at.y)}`;
+  }
   if ('click' in step) return `ui click ${step.click} timeout=10`;
   if ('text' in step) return `text ${step.text}`;
   if ('province' in step) return `province open ${String(step.province)}`;
@@ -729,6 +779,30 @@ export function stepCommand(step: RecipeStep, window: Screen): string {
   const x = Math.round(step.point.x * (window.width - 1));
   const y = Math.round(step.point.y * (window.height - 1));
   return `click ${String(x)} ${String(y)}`;
+}
+
+type Point = { readonly x: number; readonly y: number };
+
+/** `stepCommand` with the point of a `scroll` step's widget, which must be shown exactly once. */
+export async function stepCommandIn(
+  tongs: Tongs,
+  step: RecipeStep,
+  window: Screen,
+): Promise<string> {
+  if (!('scroll' in step)) return stepCommand(step, window);
+  return stepCommand(step, window, await shownOnce(tongs, step.scroll.widget, 'scroll step'));
+}
+
+/** The click point of the one shown widget a pattern matches. */
+async function shownOnce(tongs: Tongs, pattern: string, what: string): Promise<Point> {
+  const found = await ask(tongs, `ui find ${pattern}`);
+  const matches = Array.isArray(found['matches']) ? (found['matches'] as TongsWidget[]) : [];
+  const point = matches.length === 1 ? matches[0]?.['click_point'] : undefined;
+  if (typeof point !== 'object' || point === null) {
+    throw new ViewFailure(`The ${what}'s widget ${pattern} is not shown exactly once.`);
+  }
+  const { x, y } = point as Point;
+  return { x, y };
 }
 
 async function ask(tongs: Tongs, command: string, timeoutMs?: number): Promise<TongsAnswer> {

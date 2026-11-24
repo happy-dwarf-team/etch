@@ -246,7 +246,7 @@ describe('parseCorpusManifest', () => {
       }),
     ).toEqual([
       expect.stringMatching(/^windows\[1\]\.views\[0\]\.recipe\.steps\[0\]\.key: Expected one of /),
-      'windows[1].views[0].recipe.steps[1]: Give one of "key", "click", "point", "text", "map", "wheel" or "province".',
+      'windows[1].views[0].recipe.steps[1]: Give one of "key", "click", "point", "text", "map", "wheel", "province" or "scroll".',
       'windows[1].views[0].recipe.steps[2].click: "a///b" has more than two slashes in a row.',
       'windows[1].views[0].recipe.steps[3].point.y: Expected a fraction from 0 to 1.',
       'windows[1].views[0].roots: A verified recipe names the roots it reads.',
@@ -265,6 +265,8 @@ describe('parseCorpusManifest', () => {
           { map: { x: -3, y: 0 } },
           { wheel: { x: 0.5, y: 0, steps: 0 } },
           { wheel: { x: 0.5, y: 0, steps: -3 } },
+          { scroll: { widget: 'countrymilitaryview//leaderlist', steps: -1 } },
+          { scroll: { widget: 'a///b', steps: 0 } },
         ]);
         set(m, 'windows.1.views.0.selectors', { owner: 'yes', 'bad id!': 'x', tab: 3 });
         set(m, 'windows.1.views.0.byPlayset', {
@@ -280,6 +282,8 @@ describe('parseCorpusManifest', () => {
       'windows[1].views[0].recipe.steps[1].text: "snow ☃" is not Latin-1 text.',
       'windows[1].views[0].recipe.steps[3].map.x: Expected client heights from the centre, from -2 to 2.',
       'windows[1].views[0].recipe.steps[4].wheel.steps: Turn the wheel at least one step.',
+      'windows[1].views[0].recipe.steps[7].scroll.steps: Turn the wheel at least one step.',
+      'windows[1].views[0].recipe.steps[7].scroll.widget: "a///b" has more than two slashes in a row.',
       'windows[1].views[0].selectors.bad id!: Not a selector id.',
       'windows[1].views[0].selectors.tab: Expected a non-empty string.',
       'windows[1].views[0].byPlayset.nowhere.colour: Unknown field "colour".',

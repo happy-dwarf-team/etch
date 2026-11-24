@@ -185,6 +185,11 @@ describe('stepCommand', () => {
     expect(stepCommand({ click: 'menu//a' }, SIZE)).toBe('ui click menu//a timeout=10');
     expect(stepCommand({ text: 'Verne' }, SIZE)).toBe('text Verne');
     expect(stepCommand({ province: 286 }, SIZE)).toBe('province open 286');
+    const scroll = { scroll: { widget: 'military/list', steps: -1 } };
+    expect(stepCommand(scroll, SIZE, { x: 30, y: 40 })).toBe('scroll -1 30 40');
+    expect(() => stepCommand(scroll, SIZE)).toThrow(
+      'A scroll step needs the point of military/list.',
+    );
   });
 
   it('places map points by client heights from the centre, the same place at every size', () => {
@@ -303,8 +308,76 @@ describe('captureView', () => {
     expect(await captureView(ctx, viewOf(manifest, 'ledger'))).toMatchObject({
       ok: false,
       lost: false,
+      reason:
+        'A tooltip is shown where the pointer rests, and at 639,359 the game hovers null, not minimap_panel/minimap_bg.',
+    });
+    // From the main menu there is no fallback: the tooltip fails the view.
+    const menu = new FakeGame(WINDOWS, ['country_selection_panel', 'ToolTip'], folder, SIZE);
+    const menuCtx = context(menu, manifest, 'main-menu', ['country_selection_panel']);
+    expect(await captureView(menuCtx, viewOf(manifest, 'main-menu'))).toMatchObject({
+      ok: false,
       reason: 'A tooltip is shown (ToolTip); the pointer rests on something that has one.',
     });
+    expect(menu.calls).not.toContain('cursor');
+  });
+
+  it('rests the pointer on the minimap when a window of the view covers the resting place', async () => {
+    const folder = await makeTree({});
+    trees.push(folder);
+    const manifest = testManifest(await sha(SAVE_TEXT));
+    const game = new FakeGame(WINDOWS, ['topbar'], folder, SIZE, true);
+    // The resting widget's point (1, 1) is under the view's window, which has a tooltip there.
+    game.tooltipAt = (x, y) => x === 1 && y === 1;
+    game.hovers = (x, y) => (x === 639 && y === 359 ? 'minimap_panel/minimap_bg' : 'ledger/close');
+    const logged: Record<string, unknown>[] = [];
+    const ctx = {
+      ...context(game, manifest, 'save', ['topbar']),
+      log: (e: Record<string, unknown>) => logged.push(e),
+    };
+    const outcome = await captureView(ctx, viewOf(manifest, 'ledger'));
+    expect(outcome).toMatchObject({ ok: true });
+    const first = game.calls.indexOf('move 1 1');
+    expect(game.calls.indexOf('move 639 359')).toBeGreaterThan(first);
+    expect(game.calls.indexOf('cursor')).toBeGreaterThan(game.calls.indexOf('move 639 359'));
+    expect(logged).toContainEqual({
+      view: 'ledger',
+      rests: { x: 639, y: 359 },
+      hovers: 'minimap_panel/minimap_bg',
+    });
+
+    // A scroll step turns the wheel over its widget's click point.
+    game.tooltipAt = () => false;
+    const ledger = viewOf(manifest, 'ledger');
+    const scrolled = {
+      ...ledger,
+      recipe: {
+        ...ledger.recipe,
+        steps: [{ key: 'l' as const }, { scroll: { widget: 'ledger/close', steps: -2 } }],
+      },
+    };
+    const withScroll = {
+      ...manifest,
+      windows: manifest.windows.map((w) => (w.id === 'ledger' ? { ...w, views: [scrolled] } : w)),
+    };
+    const scrollCtx = { ...ctx, manifest: withScroll };
+    expect(await captureView(scrollCtx, scrolled)).toMatchObject({ ok: true });
+    expect(game.calls).toContain('scroll -2 3 1');
+    game.open.splice(1);
+    const hidden = {
+      ...scrolled,
+      recipe: { ...scrolled.recipe, steps: scrolled.recipe.steps.slice(1) },
+    };
+    expect(await captureView(scrollCtx, hidden)).toMatchObject({
+      ok: false,
+      reason: "The scroll step's widget ledger/close is not shown exactly once.",
+    });
+
+    // Without a tooltip at the resting place, the pointer stays there and nothing is asked.
+    game.tooltipAt = () => false;
+    game.calls.splice(0);
+    expect(await captureView(ctx, viewOf(manifest, 'ledger'))).toMatchObject({ ok: true });
+    expect(game.calls).not.toContain('move 639 359');
+    expect(game.calls).not.toContain('cursor');
   });
 
   it('names the first field that differs between two trees by its widget path', () => {

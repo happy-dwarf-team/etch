@@ -104,6 +104,14 @@ export class FakeGame implements Tongs {
     return Promise.resolve(this.answer(command));
   }
 
+  /** Where a tooltip shows: when set, each `move` opens or closes `ToolTip` by it. */
+  tooltipAt: ((x: number, y: number) => boolean) | undefined;
+
+  /** The widget `cursor` names under the pointer. */
+  hovers: (x: number, y: number) => string | null = () => null;
+
+  private pointer = { x: 0, y: 0 };
+
   /** Called with each command before it is answered, for a test to act in the middle of a view. */
   onCall: ((command: string) => void) | undefined;
 
@@ -131,7 +139,17 @@ export class FakeGame implements Tongs {
     if (command === 'window') {
       return ok({ ...this.size, screen_x: 0, screen_y: 0, dpi: 96, minimized: false });
     }
-    if (verb === 'frames' || verb === 'move') return ok(this.state());
+    if (verb === 'move') this.pointer = { x: Number(rest[0]), y: Number(rest[1]) };
+    if (verb === 'move' && this.tooltipAt !== undefined) {
+      const shown = this.open.includes('ToolTip');
+      const wanted = this.tooltipAt(this.pointer.x, this.pointer.y);
+      if (wanted && !shown) this.open.push('ToolTip');
+      if (!wanted && shown) this.open.splice(this.open.indexOf('ToolTip'), 1);
+    }
+    if (verb === 'frames' || verb === 'move' || verb === 'scroll') return ok(this.state());
+    if (command === 'cursor') {
+      return ok({ point: this.pointer, widget: this.hovers(this.pointer.x, this.pointer.y) });
+    }
     if (verb === 'ui' && rest[0] === 'find') {
       const name = rest[1] ?? '';
       const child = this.openChild(name);

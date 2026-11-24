@@ -6,7 +6,13 @@
  * report writes are in the repository.
  */
 import { LED_ELSEWHERE, neverClicked, type CrawlFile, type CrawlRules } from './driver/crawl.ts';
-import type { CorpusManifest, CorpusPlayset, CorpusView, CorpusWindow } from './manifest.ts';
+import type {
+  CorpusManifest,
+  CorpusPlayset,
+  CorpusView,
+  CorpusWindow,
+  RecipeStep,
+} from './manifest.ts';
 
 export const SURVEY_FORMAT_VERSION = 1;
 
@@ -28,6 +34,18 @@ export interface SurveyPlayset {
   readonly resolutions?: readonly string[];
 }
 
+/**
+ * Steps that replace a crawled view's own, for a view whose crawled steps no longer open it from a
+ * fresh game (the row they clicked is another one there, or not shown on a smaller screen).
+ */
+export interface SurveyRecipe {
+  /** The survey view's id (`surveyViewId`). */
+  readonly view: string;
+  readonly steps: readonly RecipeStep[];
+  /** Why the crawled steps were replaced, and where the new ones were seen to work. */
+  readonly evidence: string;
+}
+
 export interface SurveyConfig {
   readonly formatVersion: typeof SURVEY_FORMAT_VERSION;
   readonly playsets: readonly SurveyPlayset[];
@@ -37,6 +55,7 @@ export interface SurveyConfig {
   readonly smallResolution: string;
   readonly starts: readonly ('save' | 'main-menu')[];
   readonly crawl: CrawlRules;
+  readonly recipes?: readonly SurveyRecipe[];
 }
 
 export function readSurveyConfig(text: string): SurveyConfig {
@@ -79,6 +98,8 @@ export function surveyManifest(
 ): CorpusManifest {
   const windows: CorpusWindow[] = [];
   const byPlayset = new Map<string, string[]>();
+  const replaced = new Map((config.recipes ?? []).map((r) => [r.view, r]));
+  const unused = new Set(replaced.keys());
   for (const crawl of crawls) {
     if (crawl.resolution !== config.resolution) continue;
     // A view Escape does not close ends its game when it is captured: such views go last, each
@@ -105,14 +126,18 @@ export function surveyManifest(
         continue;
       }
       const id = surveyViewId(crawl.playset, crawl.start, state.id);
+      const own = replaced.get(id);
+      unused.delete(id);
+      const found = `Found by the coverage crawler in ${crawl.playset} at ${crawl.resolution}.`;
       const view: CorpusView = {
         id,
         title: `${state.roots.join(', ')} (${crawl.start}, ${state.id})`,
         recipe: {
           from: crawl.start,
-          steps: state.steps,
+          steps: own?.steps ?? state.steps,
           verified: false,
-          evidence: `Found by the coverage crawler in ${crawl.playset} at ${crawl.resolution}.`,
+          evidence:
+            own === undefined ? found : `${found} Steps of coverage/survey.json: ${own.evidence}`,
         },
         roots: state.roots,
         codeFilled: [],
@@ -136,6 +161,14 @@ export function surveyManifest(
       });
       byPlayset.set(crawl.playset, [...(byPlayset.get(crawl.playset) ?? []), id]);
     }
+  }
+  // A recipe for a view of a crawl that was read, which that crawl does not have, names no view.
+  const crawled = crawls
+    .filter((c) => c.resolution === config.resolution)
+    .map((c) => surveyViewId(c.playset, c.start, ''));
+  const lost = [...unused].filter((id) => crawled.some((prefix) => id.startsWith(prefix)));
+  if (lost.length > 0) {
+    throw new Error(`coverage/survey.json: recipes for views no crawl has: ${lost.join(', ')}.`);
   }
   const playsets: CorpusPlayset[] = config.playsets.flatMap((p) => {
     const base = p.playset ?? corpus.playsets.find((c) => c.id === p.id);

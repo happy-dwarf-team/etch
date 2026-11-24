@@ -1,4 +1,4 @@
-# How far the v3 gate is (23 November 2026)
+# How far the v3 gate is (24 November 2026)
 
 The distance from `main` to the 3.0.0 gate of the [v3 specification](spec/v3.md), section 3,
 measured on 22 November 2026: the rules of `main` (`438543f`, the content of 2.14.0) run under the
@@ -19,8 +19,17 @@ the game with the same host, at 1920×1080 and 1280×720 for vanilla, Anbennar a
 2560×1440 for the two playsets with Proper 2K UI Enhanced: 441 of the 461 captures the survey's
 manifest lists (gaps 1 to 3). The figures below and the generated tables of
 [coverage-results.md](coverage-results.md) are `main`'s rules on these captures; that page's
-section "The survey taken again, 23 November 2026" has the rest. The fresh Anbennar captures of
-Verne (11 November) were of the same views from the same save, and these replace them.
+section "The survey taken again, 23 November 2026" has the rest. These captures replace the fresh
+Anbennar captures of Verne (11 November), but not all of their views: the crawls behind them were
+of 3 November, which lack nine views the crawls of 10 November found (see the update below).
+
+**Update, 24 November 2026.** Gap 5 is closed as far as the game lets it be. The nine lost views
+are back in the survey, the views at 1280×720 a tooltip covered and vanilla's `s69` are captured,
+and the views that depend on the country are taken again with the same host: 487 of the 490
+captures the survey's manifest now lists, and 119 views on the three countries. The figures below
+and the generated tables of [coverage-results.md](coverage-results.md) are `main`'s rules
+(`b156984`) on these captures; that page's section "Gap 5: the views not yet captured,
+24 November 2026" has the rest.
 
 ## What the gate asks
 
@@ -34,16 +43,16 @@ Every remaining difference must be a bug or a known deviation with an issue and 
 consent (as ADR 0002), never a tolerance. Pixels, the holdout (Bigger UI) and windows not
 reached are reported, not gated. Section 7 adds the media refresh as a step of the release.
 
-The survey has 61 views of vanilla and 52 of Anbennar (`coverage/inventory.json`); 56 and 49 of
-them have at least one profiled root, 38 and 34 only profiled roots.
+The survey has 62 views of vanilla and 60 of Anbennar (`coverage/inventory.json`); 57 and 57 of
+them have at least one profiled root, 38 and 35 only profiled roots.
 
 ## Where `main` stands
 
-| Measure | Target | Measured on `main` at `1392d3e`, captures of 23 November | Met |
+| Measure | Target | Measured on `main` at `b156984`, captures of 23 and 24 November | Met |
 | --- | --- | --- | --- |
-| Live texts, profiled windows | 100 % | 100.0 % on every playset and resolution | yes |
-| Live visibility | 100 % | 100.00 % on every set of the survey (vanilla at 1920×1080: 10280 of 10280, with the built building slots Tongs 0.23 reported hidden) | yes |
-| Geometry offline, with the profiles | 100 % | vanilla 1920×1080 99.32 % (23 of 3364 rects off), vanilla 1280×720 99.32 % (23 of 3360, 57 views), Anbennar 1920×1080 99.56 % (14 of 3192), Anbennar 1280×720 99.72 % (7 of 2471, 45 views). On the stored captures of 22 November: 24, 13 (36 views), 15 and 7 (33 views) | no |
+| Live texts, profiled windows | 100 % | 100.0 % on every playset and resolution, and on the three countries | yes |
+| Live visibility | 100 % | 100.00 % on every set of the survey (vanilla at 1920×1080: 10835 of 10835, with the built building slots Tongs 0.23 reported hidden) and on the three countries | yes |
+| Geometry offline, with the profiles | 100 % | vanilla 1920×1080 99.33 % (23 of 3421 rects off, 62 views), vanilla 1280×720 99.33 % (23 of 3417, 62 views), Anbennar 1920×1080 99.46 % (19 of 3524, 60 views), Anbennar 1280×720 99.55 % (15 of 3369, 59 views). On the captures of 23 November: 23 (60 views), 23 (57), 14 (52) and 7 (45) | no |
 | Known deviations with an issue and consent | every difference | three proposed, etch#604, etch#605, etch#606; consent not given | no |
 
 The geometry row reads "the outline offline" of section 3 as the outline with the profiles'
@@ -83,19 +92,18 @@ hour. They are guesses, not plans.
 | 2 | **P2KE Patch - Anbennar changed on 15 November**: pinned (etch#618), and the survey's set at 2560×1440 captured on 23 November, 51 of 52 views. With the profiles 98.54 % of its rects are exact (45 of 3086 off); it is a mod's playset and is reported, not gated. | lock batch | done |
 | 3 | **Built building slots**: Tongs 0.23 reported a built slot as hidden while the game draws it (tongs#238). With Tongs 0.37 the 29 failures offline in vanilla at 1920×1080 where the preview drew a built slot are gone; what is left of the province view's slots is which slots can build or be destroyed now (37 of the 42 visibility failures offline there), etch#605. | measurement | done |
 | 4 | **The maintainer's consent** to the proposed deviations etch#604, etch#605, etch#606, or a fix for any of them. | decision | the maintainer's time |
-| 5 | **Views of profiled windows not yet captured**: the country views on the emperor, the Pope's controller and a colonial nation (14, 14 and 17 views whose Russian recipes fail), the country shield behind Anbennar's lobby, and the views the manifest lists without a record: at 1280×720 vanilla's `vanilla-save-s4`, `s13` and `s27` and Anbennar's `s2`, `s10`, `s16`, `s19`, `s44`, `s45` and `s46` (a tooltip shows under the pointer the driver rests, every time), and vanilla's `s69` (its recipe no longer opens `multi_unitpanel`). Section 3 lets the other countries' views into the gate once their window has a profile, and most of theirs have one (a reading for the maintainer to confirm). | recipes, lock batches | 2–3 sessions, 2–3 lock batches |
+| 5 | **Views of profiled windows not yet captured**: done on 24 November, with the same host. The 1280×720 views a tooltip covered are captured (the driver rests the pointer on the minimap when a view covers the pause banner, etch#670), vanilla's `s69` scrolls the leader list to a leader with an army, and the country shield behind Anbennar's lobby (`anbennar-alone-menu-s8`) is captured with the other eight views the survey had lost. The countries: 41 views on the emperor, 41 on the Pope's controller and 37 on a colonial nation, with no live visibility failure and the rects off of known kinds (etch#604, etch#606); the 10, 10 and 14 left are views the country does not have (no parliament, Celestial Empire, war, rebels or Orthodox icons, the native policy and buttons it has disabled). Left: Anbennar's disband from the reorganisation at 1280×720, which the game does not let a click open there (the reorganisation covers the disband button), and in reported sets P2K's `s61` and the P2KE playset's achievements button. Section 3 lets the other countries' views into the gate once their window has a profile (a reading for the maintainer to confirm). | recipes, lock batches | done |
 | 6 | **The release**: the media refresh, `Release-As: 3.0.0`, the website and the copies of `docs/team-touchpoints.md` (eu4-engine-lab#109). | release | 1–2 sessions |
 
-Left: about 3–5 sessions and 2–3 lock batches (gaps 5 and 6), and the maintainer's time for 4.
+Left: about 1–2 sessions (gap 6), and the maintainer's time for 4.
 
 ## Is 3.0.0 the next release after 2.14.0?
 
 No. With at most one release per repository every three days, the release after 2.14.0 can go out
 about three days later, and the gate needs more than that: the captures with the current Tongs (1
-to 3) are done, but the maintainer's consent (4) and the views of gap 5 are on the critical path,
-and the lock is shared with the other projects' batches. A realistic target is the second release
-after 2.14.0.
+to 3) and the views of gap 5 are done, but the maintainer's consent (4) is on the critical path. A
+realistic target is the second release after 2.14.0.
 
 Open question for the maintainer, before the gate run: which views count as "of a profiled window" when a view
-has profiled and unprofiled roots (18 of vanilla's 56, 15 of Anbennar's 49): the whole view, or only
+has profiled and unprofiled roots (19 of vanilla's 57, 22 of Anbennar's 57): the whole view, or only
 its profiled roots.

@@ -327,5 +327,19 @@
         "reason": "The outliner's options choose what the outliner lists, which the game keeps beyond the view."
       }
     ]
-  }
+  },
+  "recipes": [
+    {
+      "view": "vanilla-save-s69",
+      "steps": [
+        { "click": "topbar/government_reforms_button" },
+        { "click": "countryview/countryview_tabs/tab_military" },
+        { "scroll": { "widget": "countrymilitaryview/leaderlist_window/leaderlist", "steps": -1 } },
+        {
+          "click": "countrymilitaryview/leaderlist_window/leaderlist/leader_list_entry[3]/leader_types"
+        }
+      ],
+      "evidence": "A leader's type button selects the army the leader commands, which opens the unit panels; a leader without one opens nothing. In Russia's game of 17 March 1719 the first three rows are leaders without an army and the fourth commands the 7th Army, and 1280x720 shows three rows: one step down makes it the third row at either size (seen in the game on 24 November 2026, Tongs 0.37.0)."
+    }
+  ]
 }
