@@ -19,7 +19,7 @@ section 8): **in v3** the profiles for more windows and for Anbennar's own
 countries; **later** the profile skeleton, the headless mode for CI and more in a
 live snapshot; **not planned** a UI scale other than 1.0, editing in the preview,
 ironman saves, faithful offline rendering and checking 3840×2160; the media
-refresh is a step of the 3.0.0 release.
+refresh goes out with a 2.x release (v3.md section 7).
 
 - **Editing in the preview** (drag, an attribute panel writing back to `.gui`).
 - **Headless mode for CI:** diagnostics and precision checks without VS Code.

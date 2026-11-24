@@ -1,6 +1,9 @@
 # How far the v3 gate is (24 November 2026)
 
-The distance from `main` to the 3.0.0 gate of the [v3 specification](spec/v3.md), section 3,
+Since 24 November 2026 the gate holds back no release: v3's work ships in 2.x releases, and the
+gate measures how far `main` is from v3's target ([v3 specification](spec/v3.md), section 7).
+
+The distance from `main` to the gate of the [v3 specification](spec/v3.md), section 3,
 measured on 22 November 2026: the rules of `main` (`438543f`, the content of 2.14.0) run under the
 lab's game lock over the stored captures of the coverage survey (3 November, Tongs 0.23), the
 fresh Anbennar captures of Verne (11 November, Tongs 0.26.1) and the two Anbennar countries held
@@ -113,18 +116,17 @@ hour. They are guesses, not plans.
 | 1 | **Captures with the current Tongs and Anvil**: done on 23 November, with Tongs 0.37.0 and Anvil 1.26.0 on the capture host of etch#618. Left for later: Tongs now reports sprites, which could turn some of etch#606 into fixes. | measurement | done |
 | 2 | **P2KE Patch - Anbennar changed on 15 November**: pinned (etch#618), and the survey's set at 2560×1440 captured on 23 November, 51 of 52 views. With the profiles 98.54 % of its rects are exact (45 of 3086 off); it is a mod's playset and is reported, not gated. | lock batch | done |
 | 3 | **Built building slots**: Tongs 0.23 reported a built slot as hidden while the game draws it (tongs#238). With Tongs 0.37 the 29 failures offline in vanilla at 1920×1080 where the preview drew a built slot are gone; what is left of the province view's slots is which slots can build or be destroyed now (37 of the 42 visibility failures offline there), etch#605. | measurement | done |
-| 4 | **The maintainer's consent** to the proposed deviations etch#604 and etch#605, or a fix for any of them; three texts of etch#604 are fixed, and etch#606 is closed as fixed (etch#672, etch#676, etch#693). | decision | the maintainer's time |
+| 4 | **The maintainer's consent** to the proposed deviations etch#604 and etch#605, or a fix for any of them, which no release waits for; three texts of etch#604 are fixed, and etch#606 is closed as fixed (etch#672, etch#676, etch#693). | decision | the maintainer's time |
 | 5 | **Views of profiled windows not yet captured**: done on 24 November, with the same host. The 1280×720 views a tooltip covered are captured (the driver rests the pointer on the minimap when a view covers the pause banner, etch#670), vanilla's `s69` scrolls the leader list to a leader with an army, and the country shield behind Anbennar's lobby (`anbennar-alone-menu-s8`) is captured with the other eight views the survey had lost. The countries: 41 views on the emperor, 41 on the Pope's controller and 37 on a colonial nation, with no live visibility failure and the rects off of known kinds (etch#604, etch#606); the 10, 10 and 14 left are views the country does not have (no parliament, Celestial Empire, war, rebels or Orthodox icons, the native policy and buttons it has disabled). Left: Anbennar's disband from the reorganisation at 1280×720, which the game does not let a click open there (the reorganisation covers the disband button), and in reported sets P2K's `s61` and the P2KE playset's achievements button. Section 3 lets the other countries' views into the gate once their window has a profile (a reading for the maintainer to confirm). | recipes, lock batches | done |
-| 6 | **The release**: the media refresh, `Release-As: 3.0.0`, the website and the copies of `docs/team-touchpoints.md` (eu4-engine-lab#109). | release | 1–2 sessions |
+| 6 | **The release**: none of its own. The media refresh, the website and the copies of `docs/team-touchpoints.md` go out with a 2.x release, the one that reaches the gate or an earlier one (spec/v3.md section 7; eu4-engine-lab#109 asked for 3.0.0). | release | with a 2.x release |
 
-Left: about 1–2 sessions (gap 6), and the maintainer's time for 4.
+Left: the maintainer's time for 4, and the media refresh with a 2.x release (6).
 
-## Is 3.0.0 the next release after 2.14.0?
+## The release after 2.14.0
 
-No. With at most one release per repository every three days, the release after 2.14.0 can go out
-about three days later, and the gate needs more than that: the captures with the current Tongs (1
-to 3) and the views of gap 5 are done, but the maintainer's consent (4) is on the critical path. A
-realistic target is the second release after 2.14.0.
+2.15.0, from the release pull request release-please keeps open. Nothing since 2.14.0 breaks, so
+the version stays 2.x; the gate holds back no release (spec/v3.md section 7), and the maintainer
+decides when to release it.
 
 Open question for the maintainer, before the gate run: which views count as "of a profiled window" when a view
 has profiled and unprofiled roots (19 of vanilla's 57, 22 of Anbennar's 57): the whole view, or only
