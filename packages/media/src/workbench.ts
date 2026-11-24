@@ -59,7 +59,7 @@ export interface LaunchOptions {
   readonly gamePath: string;
   /** Where Playwright records the window, for a loop recorded with `recordVideo`. */
   readonly videoDir: string | undefined;
-  /** Further extensions to load from folders beside Etch (the live take's helper). */
+  /** Further extensions to load from folders beside Etch (the live take's helper, evidence's `extensions`). */
   readonly helpers?: readonly string[];
   /** Environment variables added to VS Code's, and so to its extension host's. */
   readonly env?: Readonly<Record<string, string>>;

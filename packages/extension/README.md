@@ -31,6 +31,9 @@ of folders such as `common` and `events`. CWTools and ParadoxCode colour them (P
 from the VS Code Marketplace). When you open a script file and neither is installed, a
 notification at the bottom right offers to install one
 ([Coloured text in script files](https://etch.happydwarf.dev/docs/getting-started/install/#coloured-text-in-script-files)).
+CWTools colours a mod's `.txt` files only inside a folder named Europa Universalis IV. For a mod
+kept elsewhere, Etch offers to add a setting to the mod's folder so that CWTools colours them there
+too ([A mod in a folder of its own](https://etch.happydwarf.dev/docs/getting-started/install/#a-mod-in-a-folder-of-its-own)).
 
 If you used Etch 1.x: its game host, a hidden copy of the game that drew the preview, is gone in
 Etch 2, and the live game takes its place. To stay on 1.0.x, see

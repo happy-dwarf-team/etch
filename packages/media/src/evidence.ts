@@ -45,6 +45,11 @@ export interface Scenario {
   readonly open: string;
   /** User settings over the captures' and `EVIDENCE_SETTINGS`. */
   readonly settings: Readonly<Record<string, unknown>>;
+  /**
+   * Folders of other unpacked extensions that VS Code loads beside Etch (absolute), for a change
+   * that meets one, such as CWTools; none by default, as in the captures.
+   */
+  readonly extensions: readonly string[];
   readonly steps: readonly Step[];
 }
 
@@ -154,8 +159,8 @@ function action(step: Record<string, unknown>, kind: string, where: string): Act
 }
 
 /**
- * Reads a scenario file's JSON. `mod` is relative to the file (default: `demoMod`); every step has
- * one action and that action's options, and `until` on any step.
+ * Reads a scenario file's JSON. `mod` and `extensions` are relative to the file (default:
+ * `demoMod`, none); every step has one action and that action's options, and `until` on any step.
  */
 export function parseScenario(json: string, file: string, demoMod: string): Scenario {
   const where = path.basename(file);
@@ -167,12 +172,14 @@ export function parseScenario(json: string, file: string, demoMod: string): Scen
   }
   if (!isRecord(data)) throw new Error(`${where} is not an object`);
   for (const key of Object.keys(data)) {
-    if (!['$comment', 'mod', 'open', 'settings', 'steps'].includes(key)) {
+    if (!['$comment', 'mod', 'open', 'settings', 'extensions', 'steps'].includes(key)) {
       throw new Error(`${where}: unknown key "${key}"`);
     }
   }
   const settings = data['settings'] ?? {};
   if (!isRecord(settings)) throw new Error(`${where}: settings is not an object`);
+  const extensions = data['extensions'] ?? [];
+  if (!Array.isArray(extensions)) throw new Error(`${where}: extensions is not a list`);
   const steps = data['steps'];
   if (!Array.isArray(steps) || steps.length === 0) throw new Error(`${where}: steps is empty`);
   const parsed = steps.map((step: unknown, index): Step => {
@@ -204,6 +211,9 @@ export function parseScenario(json: string, file: string, demoMod: string): Scen
         : path.resolve(path.dirname(file), text(data['mod'], `${where}: mod`)),
     open: text(data['open'], `${where}: open`),
     settings,
+    extensions: extensions.map((folder: unknown, index) =>
+      path.resolve(path.dirname(file), text(folder, `${where}: extensions[${String(index)}]`)),
+    ),
     steps: parsed,
   };
 }
@@ -397,6 +407,7 @@ async function side(
     gamePath: options.gamePath,
     videoDir: options.record ? path.join(shots, 'video') : undefined,
     settings: { ...EVIDENCE_SETTINGS, ...options.scenario.settings },
+    ...(options.scenario.extensions.length === 0 ? {} : { helpers: options.scenario.extensions }),
   });
   const taken: string[] = [];
   const span = { from: 0, to: 0 };

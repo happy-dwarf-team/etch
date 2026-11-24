@@ -357,6 +357,7 @@ scenario for one pull request can stay out of Git.
 | `mod`      | the mod copied into the workspace, relative to the scenario file (default: the demo mod)   |
 | `open`     | the file VS Code opens first, relative to the mod                                            |
 | `settings` | user settings over the captures' ones; hovers are on (`editor.hover.enabled`)                |
+| `extensions` | folders of other unpacked extensions loaded beside Etch, relative to the scenario file, for a change that meets one (CWTools: the folders of `tboby.cwtools-vscode` and `tboby.paradox-syntax` from an extensions folder); none by default |
 | `steps`    | the steps, in order; each has one action                                                     |
 
 | Step                                                   | What it does                                                                     |
