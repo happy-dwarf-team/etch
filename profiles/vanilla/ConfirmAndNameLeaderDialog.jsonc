@@ -16,9 +16,14 @@
   },
   "rules": {
     "ruler-keeps-name": {
-      "note": "The ruler as a general: the game's code writes CONFIRM_LEADER_DESC_RULER in the description (makerulergeneral in the coverage survey, vanilla and Bigger UI).",
+      "note": "The ruler as a general: the game's code writes CONFIRM_LEADER_DESC_RULER in the description and a line break after it, one empty line more (makerulergeneral in the coverage survey of 24 November 2026, vanilla, Bigger UI and Proper 2K UI Enhanced).",
       "when": { "leader": "ruler" },
-      "text": { "ConfirmAndNameLeaderDialog/Description": "CONFIRM_LEADER_DESC_RULER" },
+      "text": {
+        "ConfirmAndNameLeaderDialog/Description": {
+          "key": "CONFIRM_LEADER_DESC_RULER",
+          "suffix": "\n",
+        },
+      },
       "hide": [
         "ConfirmAndNameLeaderDialog/leader_name_editbox",
         "ConfirmAndNameLeaderDialog/leader_name_editbox_bg",

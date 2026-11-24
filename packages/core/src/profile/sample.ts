@@ -218,9 +218,15 @@ export function sampleData(
   // A rule's text: the localisation key the game's code sets in the view's case (the age's
   // description), over the content's source.
   for (const widget of pathOf.keys()) {
-    const key = view?.widgets.get(widget)?.text;
-    if (key === undefined) continue;
-    texts.set(widget, { text: input.localise(key) ?? key, layer: 'files', detail: key });
+    const rule = view?.widgets.get(widget)?.text;
+    if (rule === undefined) continue;
+    if (rule.literal !== undefined) {
+      texts.set(widget, { text: rule.literal, layer: 'files', detail: 'literal' });
+      continue;
+    }
+    const key = rule.loc ?? '';
+    const text = (input.localise(key) ?? key) + (rule.suffix ?? '');
+    texts.set(widget, { text, layer: 'files', detail: key });
   }
   // A slider's value the game's code writes: the save's share, else the profile's `at`.
   for (const widget of pathOf.keys()) {

@@ -12,12 +12,12 @@ have a profile.
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | vanilla | 1280x720 | 62 | 99.4 % | 99.5 % | 81.6 % | 87.5 % | 23 | 99.8 % | 99.5 % | 100.0 % | 100.0 % | 62 | 100.0 % | 100.0 % | 3 of 62 |
 | vanilla | 1920x1080 | 62 | 99.4 % | 99.6 % | 81.5 % | 87.2 % | 23 | 99.8 % | 99.5 % | 100.0 % | 100.0 % | 62 | 100.0 % | 100.0 % | 3 of 62 |
-| anbennar-alone | 1280x720 | 59 | 99.6 % | 99.9 % | 88.7 % | 76.8 % | 25 | 99.7 % | 99.9 % | 99.7 % | 100.0 % | 58 | 100.0 % | 100.0 % | 3 of 59 |
+| anbennar-alone | 1280x720 | 59 | 99.7 % | 99.9 % | 88.7 % | 76.8 % | 25 | 99.8 % | 99.9 % | 99.7 % | 100.0 % | 58 | 100.0 % | 100.0 % | 3 of 59 |
 | anbennar-alone | 1920x1080 | 60 | 99.6 % | 99.9 % | 88.8 % | 77.0 % | 25 | 99.8 % | 99.9 % | 100.0 % | 100.0 % | 60 | 100.0 % | 100.0 % | 3 of 60 |
 | bigger-ui | 1280x720 | 62 | 99.4 % | 99.6 % | 81.5 % | 87.5 % | 23 | 99.8 % | 99.5 % | 100.0 % | 100.0 % | 62 | 100.0 % | 100.0 % | 3 of 62 |
 | bigger-ui | 1920x1080 | 62 | 99.4 % | 99.6 % | 81.5 % | 87.3 % | 23 | 99.8 % | 99.6 % | 100.0 % | 100.0 % | 62 | 100.0 % | 100.0 % | 3 of 62 |
-| proper-2k-ui-enhanced | 2560x1440 | 61 | 98.8 % | 99.6 % | 79.2 % | 87.5 % | 16 | 99.3 % | 99.6 % | 99.9 % | 100.0 % | 58 | 100.0 % | 100.0 % | 2 of 61 |
-| anbennar | 2560x1440 | 59 | 99.2 % | 99.9 % | 86.9 % | 78.7 % | 19 | 99.4 % | 99.9 % | 99.8 % | 100.0 % | 53 | 100.0 % | 100.0 % | 2 of 59 |
+| proper-2k-ui-enhanced | 2560x1440 | 61 | 98.9 % | 99.6 % | 79.2 % | 87.5 % | 16 | 99.4 % | 99.6 % | 99.9 % | 100.0 % | 58 | 100.0 % | 100.0 % | 2 of 61 |
+| anbennar | 2560x1440 | 59 | 99.2 % | 99.9 % | 86.9 % | 78.7 % | 19 | 99.5 % | 99.9 % | 99.8 % | 100.0 % | 53 | 100.0 % | 100.0 % | 2 of 59 |
 
 "With profiles and live texts" is the same with the snapshot's texts and list rows as sample
 data: what Compare with Live Game compares (spec/v3.md section 4), through the same functions.
@@ -88,39 +88,45 @@ below (no capture was taken again). The generated tables above are this run.
   place in the base game and 201 px above it in the mod, which overlaps the two windows. Every
   installed `provinceview.gui` agrees; the code that places it was not read. Six rects fewer in
   Proper 2K UI Enhanced and three in the P2KE playset.
+- **Three texts the game's code writes** (etch#604, `text` with `suffix` and `literal`): the leader
+  dialog for the ruler as general ends its description with a line break, one empty line more; the
+  estates' `agenda_effects` is empty without an agenda, one line high where Anbennar's 106 px wrap
+  `AGENDA_EFFECTS` in three; the main menu's `version_label` is "EU4 v1.37.5.0 Inca" and the
+  playset's checksum, two lines in its 147 px (the profile writes 0000 for the checksum). Two rects
+  fewer in vanilla, Bigger UI and Proper 2K UI Enhanced, three in Anbennar alone and in the P2KE
+  playset, one on the emperor and the Pope's controller.
 
 With the profiles, rects off on `main` against the section below (rules of `b156984`), and every
 change of a view measure was a gain: no view got worse in rects or visibility, in any measure or set.
 
 | Set | With profiles: rects off | Offline preview: rects off | Live: rects off |
 | --- | --- | --- | --- |
-| vanilla, 1920×1080 and 1280×720 | 6 (23) | 21 (38) | 0 (9) |
-| Anbennar alone, 1920×1080 | 7 (19) | 15 (27) | 0 (1) |
-| Anbennar alone, 1280×720 | 7 (18) | 14 (25) | 8 (9) |
-| Bigger UI, 1920×1080 and 1280×720 | 6 (23) | 21 (38) | 0 (9) |
-| Proper 2K UI Enhanced, 2560×1440 | 23 (80) | 44 (101) | 3 (40) |
-| Anbennar with Proper 2K UI Enhanced and P2KE, 2560×1440 | 19 (52) | 29 (62) | 6 (20) |
-| Austria, the emperor | 2 (12) | 7 (17) | 0 (9) |
-| Aragon, the Pope's controller | 2 (12) | 7 (17) | 0 (9) |
+| vanilla, 1920×1080 and 1280×720 | 4 (23) | 19 (38) | 0 (9) |
+| Anbennar alone, 1920×1080 | 4 (19) | 12 (27) | 0 (1) |
+| Anbennar alone, 1280×720 | 4 (18) | 11 (25) | 8 (9) |
+| Bigger UI, 1920×1080 and 1280×720 | 4 (23) | 19 (38) | 0 (9) |
+| Proper 2K UI Enhanced, 2560×1440 | 21 (80) | 42 (101) | 3 (40) |
+| Anbennar with Proper 2K UI Enhanced and P2KE, 2560×1440 | 16 (52) | 26 (62) | 6 (20) |
+| Austria, the emperor | 1 (12) | 6 (17) | 0 (9) |
+| Aragon, the Pope's controller | 1 (12) | 6 (17) | 0 (9) |
 | C01, a colonial nation | 1 (3) | 4 (6) | 0 (1) |
 
 Visibility is unchanged in every set. **What is left with the profiles**, in vanilla and Bigger UI at
 each size: the parliament's `enacted_modifiers_effect`, the peace view's `desc`, the institutions'
-`when_embraced`, the leader dialog's `Description` (the game's added line), the rebels'
-`rebelsize_desc` (the game draws the `fixedsize` box 249 px wide, its `maxWidth` is 246) and the main
-menu's `version_label`, which carries the playset's checksum. In Anbennar alone: `when_embraced`,
-three texts of the magic menu (customizable localisations by whether the ruler, heir, consort or
-estate is a mage, and by the country's magic tradition), the estates' `agenda_effects` (the game
-writes no text without an agenda, the localisation's text wraps in its 106 px) and `version_label`.
-On the three countries: the colonisation panel's `region_text` and the leader dialog. All of them
+`when_embraced` and the rebels' `rebelsize_desc` (the game draws the `fixedsize` box 249 px wide, its
+`maxWidth` is 246). In Anbennar alone: `when_embraced` and three texts of the magic menu
+(customizable localisations by whether the ruler, heir, consort or estate is a mage, and by the
+country's magic tradition). On the three countries: the colonisation panel's `region_text`, two
+lines in the game, a line break and the province's colonial region with who claims it ("Colonial
+Brazil Claimed by Portugal"). All of them
 are texts the game's code fills from the game's state (etch#604): heights, and the width of
 `rebelsize_desc`, which a comment on etch#604 adds to its list. Nothing of etch#606 is left: the pie
 chart (etch#614), the patriarch marker (etch#615), the crown land icons and the map mode buttons
 (etch#672) and Proper 2K UI Enhanced's minimap (etch#693) are fixed.
 
-In Proper 2K UI Enhanced (23 rects) and the P2KE playset (19), by cause:
+In Proper 2K UI Enhanced (21 rects) and the P2KE playset (16), by cause:
 
-- **Texts the game's code fills from the game's state** (etch#604's kind), 22 and 14: the same
+- **Texts the game's code fills from the game's state** (etch#604's kind), 20 and 11: the same
   heights as above, and widths that come from the game's numbers: the topbar's prestige and power
   projection (the game writes "+100", wider than the sample text), the diplomacy view's
   `land_forcelimit_value`, `manpower_value`, `reputation_value` and `score_value`, and Anbennar's

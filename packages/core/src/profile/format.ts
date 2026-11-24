@@ -88,6 +88,16 @@ export interface Condition {
   readonly range: SourceRange;
 }
 
+/**
+ * A text a rule says the game's code sets: a localisation key, with a text the code adds after
+ * it, or a text the code writes itself (`literal`, which may be empty).
+ */
+export interface RuleText {
+  readonly loc?: string;
+  readonly suffix?: string;
+  readonly literal?: string;
+}
+
 /** A rule: when every condition holds, its effects apply to the paths they name. */
 export interface Rule extends Written {
   readonly id: string;
@@ -116,7 +126,7 @@ export interface Rule extends Written {
    * Texts the game's code sets, by the localisation key of the text: the ages view's description,
    * the current age's `<age>_desc`. The sample data's `files` layer, below a live snapshot's.
    */
-  readonly text?: readonly (PathRef & { readonly loc: string })[];
+  readonly text?: readonly (PathRef & RuleText)[];
   /**
    * The size the game's code gives a chart in place of its sprite's `size`: the estates view's
    * development pie chart, 32 × 32 where its `PieChartType` says 128.

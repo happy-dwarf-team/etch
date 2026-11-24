@@ -36,6 +36,7 @@ import {
   type ProfileMod,
   type ProfileOrigin,
   type Rule,
+  type RuleText,
   type Selector,
   type SelectorKind,
   type SelectorSetting,
@@ -831,7 +832,7 @@ function readRule(
       return { frame: value.value };
     }),
     sprite: keyed('sprite', (value) => ({ sprite: text$(value, 'a sprite') })),
-    text: keyed('text', (value) => ({ loc: text$(value, 'a localisation key') })),
+    text: keyed('text', readRuleText),
     chartSize: keyed('chartSize', (value) => {
       const size = object(value, 'a chart size', ['x', 'y']);
       const pixels = (axis: 'x' | 'y'): number => {
@@ -986,6 +987,34 @@ function required(node: JsonNode & { kind: 'object' }, key: string): JsonNode {
   const found = member(node, key);
   if (found === undefined) throw new Faulty(`A window profile has "${key}".`, node);
   return found.value;
+}
+
+/**
+ * A rule's text: a localisation key, or `{ "key", "suffix" }` for a key the game's code adds a
+ * text after (the leader dialog's description ends with a line break), or `{ "literal" }` for a
+ * text the game's code writes itself, which may be empty (an estate without an agenda).
+ */
+function readRuleText(value: JsonNode): RuleText {
+  if (value.kind !== 'object') return { loc: text$(value, 'a localisation key') };
+  const props = object(value, 'a text', ['key', 'suffix', 'literal']);
+  const key = props.get('key');
+  const suffix = props.get('suffix');
+  const literal = props.get('literal');
+  if (literal !== undefined) {
+    if (key !== undefined || suffix !== undefined) {
+      throw new Faulty('A text has a "literal" or a "key", not both.', value);
+    }
+    if (literal.kind !== 'string') throw new Faulty('"literal" is a text.', literal);
+    return { literal: literal.value };
+  }
+  if (key === undefined) throw new Faulty('A text names its "key" or a "literal".', value);
+  if (suffix !== undefined && (suffix.kind !== 'string' || suffix.value === '')) {
+    throw new Faulty('"suffix" is a text that is not empty.', suffix);
+  }
+  return {
+    loc: text$(key, 'a localisation key'),
+    ...(suffix?.kind === 'string' ? { suffix: suffix.value } : {}),
+  };
 }
 
 /** An object's properties by key; any other key is a fault. */
