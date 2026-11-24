@@ -37,7 +37,9 @@ end lists every step.
 - `pnpm install`. The first run downloads the pinned VS Code into the work folder's `vscode`
   (about 1 GB), and the first render Remotion's Chrome Headless Shell. Every window then gets its
   own `run-XXXXXX` folder beside it for the workspace, the profile and the extensions, removed when
-  the window closes, so commands that share a work folder share only the download. A different
+  the window closes, so commands that share a work folder share only the download. A run killed
+  before it closed its window (Ctrl+C, a crash) leaves its folder; the next window removes it, once
+  the process named in its `owner.json` no longer runs (a folder without one, after ten minutes). A different
   `--work` downloads VS Code again and keeps that copy.
 - In the EU4 engine lab, every capture runs under the lab's game lock: its takes and renders load
   the machine.
@@ -131,7 +133,7 @@ with `--reedit` it edits it from its log.
 specification's section 3.2.3). They show VS Code alone: no preview and no game art.
 
 - **`profile`** copies the CSV given with `--profile` into the run's throwaway private profile
-  (`<work>/run/user-data/User/globalStorage/happy-dwarf-team.etch/private-install/profile/logs/`),
+  (`<work>/run-XXXXXX/user-data/User/globalStorage/happy-dwarf-team.etch/private-install/profile/logs/`),
   where **Etch: Show Latest Script Profile** finds it as the newest (your own profile's `logs`
   folder is searched first, so a profile you measured later than the copy would win). The take
   types the command in the palette, waits for the page, clicks a decision's name

@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, readdir, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readdir, readFile, rm, utimes, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -11,7 +11,15 @@ import { LIVE_CLIPS, windowedPdxSettings, windowedSettings } from '../src/live.t
 import { CLIP_IDS, draftManifest, LIVE_CLIP_IDS, OFFLINE_CLIP_IDS } from '../src/manifest.ts';
 import { checkPaint } from '../src/paint.ts';
 import { proxyArgs, proxySize } from '../src/render.ts';
-import { launchArgs, newRunFolder, parseCursor, removeRunFolder } from '../src/workbench.ts';
+import {
+  launchArgs,
+  newRunFolder,
+  ORPHAN_AGE_MS,
+  parseCursor,
+  removeLeftRuns,
+  removeRunFolder,
+  RUN_OWNER,
+} from '../src/workbench.ts';
 
 /** The value after `flag` in an argument list. */
 function after(args: readonly string[], flag: string): string | undefined {
@@ -94,6 +102,43 @@ describe('VS Code', () => {
       await removeRunFolder(first);
       await removeRunFolder(second);
       expect(await readdir(work)).toEqual(['vscode']);
+    } finally {
+      await rm(work, { recursive: true, force: true });
+    }
+  });
+
+  it('removes the run folders of runs that ended without closing, and no one else', async () => {
+    const work = await mkdtemp(path.join(tmpdir(), 'etch-work-'));
+    try {
+      // This process's own run folder, which the next window must not take.
+      const own = await newRunFolder(work);
+      expect(JSON.parse(await readFile(path.join(own, RUN_OWNER), 'utf8'))).toEqual({
+        pid: process.pid,
+      });
+      const folder = async (name: string, pid?: number): Promise<string> => {
+        const run = path.join(work, name);
+        await mkdir(path.join(run, 'user-data'), { recursive: true });
+        if (pid !== undefined) await writeFile(path.join(run, RUN_OWNER), JSON.stringify({ pid }));
+        return run;
+      };
+      const killed = await folder('run-killed', 1001);
+      const running = await folder('run-running', 1002);
+      const making = await folder('run-making');
+      const old = await folder('run-old');
+      const ancient = new Date(Date.now() - 2 * ORPHAN_AGE_MS);
+      await utimes(old, ancient, ancient);
+      await mkdir(path.join(work, 'vscode'));
+      const alive = (pid: number): boolean => pid === 1002 || pid === process.pid;
+      expect((await removeLeftRuns(work, alive)).sort()).toEqual([killed, old].sort());
+      expect((await readdir(work)).sort()).toEqual(
+        [path.basename(own), path.basename(running), path.basename(making), 'vscode'].sort(),
+      );
+      // A new window sweeps with the real check: a dead pid's folder goes, its own stays.
+      await writeFile(path.join(running, RUN_OWNER), JSON.stringify({ pid: 2 ** 31 - 1 }));
+      const next = await newRunFolder(work);
+      expect((await readdir(work)).sort()).toEqual(
+        [path.basename(own), path.basename(making), path.basename(next), 'vscode'].sort(),
+      );
     } finally {
       await rm(work, { recursive: true, force: true });
     }
