@@ -1,4 +1,4 @@
-# How far the v3 gate is (24 November 2026)
+# How far the v3 gate is (25 November 2026)
 
 The distance from `main` to the 3.0.0 gate of the [v3 specification](spec/v3.md), section 3,
 measured on 22 November 2026: the rules of `main` (`438543f`, the content of 2.14.0) run under the
@@ -31,6 +31,14 @@ and the generated tables of [coverage-results.md](coverage-results.md) are `main
 (`b156984`) on these captures; that page's section "Gap 5: the views not yet captured,
 24 November 2026" has the rest.
 
+**Update, 25 November 2026.** Six fixes to the profiles take the geometry with the profiles from 23
+to 6 rects off in vanilla at each size, and from 19 and 18 to 7 in Anbennar (etch#672 to etch#677:
+the sprites Tongs 0.37 reports, the lobby's description, a rule's `text`, the patriarch authority's
+value, Anbennar's achievement texts, and two of Proper 2K UI Enhanced's and P2KE's). No capture was
+taken again. The figures below and the generated tables of [coverage-results.md](coverage-results.md)
+are `main`'s rules (`016919c`) on the captures of 23 and 24 November; that page's section "The
+geometry fixes of 25 November 2026" has the rest. Nothing of etch#606 is left.
+
 ## What the gate asks
 
 Section 3 gates three measures, and only for the views of a profiled window:
@@ -48,12 +56,12 @@ them have at least one profiled root, 38 and 35 only profiled roots.
 
 ## Where `main` stands
 
-| Measure | Target | Measured on `main` at `b156984`, captures of 23 and 24 November | Met |
+| Measure | Target | Measured on `main` at `016919c`, captures of 23 and 24 November | Met |
 | --- | --- | --- | --- |
 | Live texts, profiled windows | 100 % | 100.0 % on every playset and resolution, and on the three countries | yes |
 | Live visibility | 100 % | 100.00 % on every set of the survey (vanilla at 1920×1080: 10835 of 10835, with the built building slots Tongs 0.23 reported hidden) and on the three countries | yes |
-| Geometry offline, with the profiles | 100 % | vanilla 1920×1080 99.33 % (23 of 3421 rects off, 62 views), vanilla 1280×720 99.33 % (23 of 3417, 62 views), Anbennar 1920×1080 99.46 % (19 of 3524, 60 views), Anbennar 1280×720 99.48 % (18 of 3444, 59 views, with the achievements window the profile now draws there). On the captures of 23 November: 23 (60 views), 23 (57), 14 (52) and 7 (45) | no |
-| Known deviations with an issue and consent | every difference | three proposed, etch#604, etch#605, etch#606; consent not given | no |
+| Geometry offline, with the profiles | 100 % | vanilla 1920×1080 99.82 % (6 of 3421 rects off, 62 views), vanilla 1280×720 99.82 % (6 of 3417, 62 views), Anbennar 1920×1080 99.80 % (7 of 3524, 60 views), Anbennar 1280×720 99.80 % (7 of 3444, 59 views). On 24 November, rules of `b156984`: 23, 23, 19 and 18 | no |
+| Known deviations with an issue and consent | every difference | proposed: etch#604 (heights of texts the game's code fills), etch#605 (building slots); etch#606 has nothing left; consent not given | no |
 
 The geometry row reads "the outline offline" of section 3 as the outline with the profiles'
 rules (measure 4 of [coverage.md](coverage.md)), as the results do for profiled windows. Read
@@ -61,17 +69,23 @@ literally as measure 1 (the outline without any profile, 81–88 % of rects), th
 met: the profiles exist because positions depend on the game's state. The maintainer should
 confirm the reading before the gate run.
 
-What the geometry left on `main` is, by kind (vanilla and Anbennar at 1920×1080):
+What the geometry left on `main` is, by kind (vanilla and Anbennar at 1920×1080). The 25 November
+fixes are in the list:
 
-- **Heights of texts the game's code fills** (the confirmation dialogs, the lobby's scenario
-  description, the main menu's version text (its Continue box is hidden since a start from the main menu has no save, etch#618, so the continue text no longer counts), the ages view, institutions, parliament,
-  the peace view, Anbennar's magic menu and achievements): the most rects, all heights only. Proposed
-  as a known deviation, etch#604.
-- **Widgets the game's code sizes or moves from a value**: the estates' crown land modifier icons
-  (the modifier's sprite) and the selected map mode button (the player's map mode in that slot).
-  Proposed as a known deviation, etch#606, each still open to a fix. The development pie chart
-  (etch#614, `chartSize`) and the patriarch authority marker (etch#615, `slider`) are fixed; the
-  marker's value text is at its place, with the height of a text the code fills (etch#604).
+- **Heights of texts the game's code fills**: the most rects, all heights only. Proposed as a known
+  deviation, etch#604. Left: the leader dialog for the ruler as general (the game adds a line after
+  the text), the main menu's version text (it carries the playset's checksum), the institutions'
+  `when_embraced`, the parliament's enacted modifiers, the peace view's terms, and in Anbennar three
+  texts of the magic menu and the estates' `agenda_effects`, which the game leaves empty without an
+  agenda; one width, the rebels' `rebelsize_desc`, which the game draws 249 px wide in its
+  `fixedsize` box of `maxWidth` 246 (added to etch#604 in a comment). Fixed on 25 November: the lobby's scenario description (etch#673), the ages view's
+  description (etch#674), the patriarch authority's value (etch#676) and Anbennar's achievement
+  texts (etch#677).
+- **Widgets the game's code sizes or moves from a value**: all fixed. The development pie chart
+  (etch#614, `chartSize`), the patriarch authority marker (etch#615, `slider`) and its value
+  (etch#676), the estates' crown land modifier icons, which the game draws with `GFX_idea_unknown`
+  and the modifier's picture, and the map mode buttons, with the sprites of their map modes
+  (etch#672). Proposed as etch#606, which has nothing left.
 - **Building slots**: how many a province has and which can build now (visibility, not rects). Proposed
   as a known deviation, etch#605.
 - **Single rects**, fixed since: Anbennar's achievements background, which the preview anchored by
@@ -91,7 +105,7 @@ hour. They are guesses, not plans.
 | 1 | **Captures with the current Tongs and Anvil**: done on 23 November, with Tongs 0.37.0 and Anvil 1.26.0 on the capture host of etch#618. Left for later: Tongs now reports sprites, which could turn some of etch#606 into fixes. | measurement | done |
 | 2 | **P2KE Patch - Anbennar changed on 15 November**: pinned (etch#618), and the survey's set at 2560×1440 captured on 23 November, 51 of 52 views. With the profiles 98.54 % of its rects are exact (45 of 3086 off); it is a mod's playset and is reported, not gated. | lock batch | done |
 | 3 | **Built building slots**: Tongs 0.23 reported a built slot as hidden while the game draws it (tongs#238). With Tongs 0.37 the 29 failures offline in vanilla at 1920×1080 where the preview drew a built slot are gone; what is left of the province view's slots is which slots can build or be destroyed now (37 of the 42 visibility failures offline there), etch#605. | measurement | done |
-| 4 | **The maintainer's consent** to the proposed deviations etch#604, etch#605, etch#606, or a fix for any of them. | decision | the maintainer's time |
+| 4 | **The maintainer's consent** to the proposed deviations etch#604 and etch#605, or a fix for any of them; etch#606 is fixed (etch#672, etch#676). | decision | the maintainer's time |
 | 5 | **Views of profiled windows not yet captured**: done on 24 November, with the same host. The 1280×720 views a tooltip covered are captured (the driver rests the pointer on the minimap when a view covers the pause banner, etch#670), vanilla's `s69` scrolls the leader list to a leader with an army, and the country shield behind Anbennar's lobby (`anbennar-alone-menu-s8`) is captured with the other eight views the survey had lost. The countries: 41 views on the emperor, 41 on the Pope's controller and 37 on a colonial nation, with no live visibility failure and the rects off of known kinds (etch#604, etch#606); the 10, 10 and 14 left are views the country does not have (no parliament, Celestial Empire, war, rebels or Orthodox icons, the native policy and buttons it has disabled). Left: Anbennar's disband from the reorganisation at 1280×720, which the game does not let a click open there (the reorganisation covers the disband button), and in reported sets P2K's `s61` and the P2KE playset's achievements button. Section 3 lets the other countries' views into the gate once their window has a profile (a reading for the maintainer to confirm). | recipes, lock batches | done |
 | 6 | **The release**: the media refresh, `Release-As: 3.0.0`, the website and the copies of `docs/team-touchpoints.md` (eu4-engine-lab#109). | release | 1–2 sessions |
 
