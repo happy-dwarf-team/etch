@@ -35,4 +35,10 @@
       ],
     },
   },
+  "content": {
+    "country_selection_panel/lobby/bottom/scenario_description": {
+      "loc": "CANNOR_DESC",
+      "note": "Anbennar marks two bookmarks default = yes (a_cannor.txt and b_escann.txt); the lobby opens on the first, Cannor (the coverage survey's lobby views of 24 November 2026, Anbennar alone).",
+    },
+  },
 }
