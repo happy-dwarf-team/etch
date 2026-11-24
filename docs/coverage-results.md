@@ -488,7 +488,7 @@ etch#377, before against after both passes:
 | Kobildzan, 1594 | 95.5 → 95.8 % | 96.7 → 99.0 % | 96.3 → 99.1 % | 99.2 → 99.3 % |
 
 The live texts in profiled windows reach 100 % on every set (Verne 1982 → 1989 of 1989), a measure of
-the 3.0.0 gate (spec/v3.md section 3). On the fresh captures of Verne the offline preview gets 30 of the
+the v3 gate (spec/v3.md section 3). On the fresh captures of Verne the offline preview gets 30 of the
 59 views fully right, from 10, and the live preview 53, from 50. Live visibility reaches 100 % (10032 of
 10032) with etch#378's measure fix: the two widgets it missed were the hidden second instance of the
 main menu's settings, which the measure paired with the shown one's layout.
