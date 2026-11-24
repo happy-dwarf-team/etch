@@ -8,9 +8,9 @@
     {
       "id": "anvil",
       "name": "Anvil",
-      "tag": "v1.26.0",
-      "url": "https://github.com/happy-dwarf-team/anvil/releases/download/v1.26.0/anvil-windows-x64.zip",
-      "sha256": "4BA76BEC0D12CF16FB52A4FD66EC886E51C9E39F2913EB415B7B19F68151EC50",
+      "tag": "v1.27.0",
+      "url": "https://github.com/happy-dwarf-team/anvil/releases/download/v1.27.0/anvil-windows-x64.zip",
+      "sha256": "4AC7A810F4226D405B50133CAC83F7253FE541E0CCBA887748017603C9B8A29A",
       "files": [
         "version.dll",
         "anvil/anvil.toml",
