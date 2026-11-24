@@ -8,6 +8,7 @@ import {
   gamePathOf,
   interfaceSources,
   overrideInMod,
+  pickToggleRequest,
   resolvePick,
   spriteLocation,
   type PickSources,
@@ -414,5 +415,12 @@ describe('readEvent', () => {
       expect(readSnapshot({ window: 'panel', widgets: [], ...date }).date).toBeUndefined();
     }
     expect(readEvent({ event: 'unknown' })).toBeUndefined();
+  });
+});
+
+describe('Toggle Pick Mode from VS Code', () => {
+  it('brings the game forward to turn pick mode on, and leaves it behind to turn it off', () => {
+    expect(pickToggleRequest(false)).toEqual({ on: true, front: true });
+    expect(pickToggleRequest(true)).toEqual({ on: false, front: false });
   });
 });

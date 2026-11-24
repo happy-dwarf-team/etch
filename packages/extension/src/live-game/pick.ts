@@ -9,7 +9,15 @@ import { copyFile, mkdir, stat } from 'node:fs/promises';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { parseScript, readGuiFile, type InterfaceIndex, type Widget } from '@etch/core';
 import type { GameFiles } from '@etch/core/playset';
-import type { PickedWidget, PickEvent } from './pipe.ts';
+import type { PickedWidget, PickEvent, PickModeRequest } from './pipe.ts';
+
+/**
+ * The request of Toggle Pick Mode from VS Code: turning pick mode on brings the game to the front, so
+ * the user can pick at once; turning it off leaves the game where it is, behind VS Code.
+ */
+export function pickToggleRequest(on: boolean): PickModeRequest {
+  return { on: !on, front: !on };
+}
 
 /** A place to open: a file of the playset at a line. */
 export interface PickLocation {
