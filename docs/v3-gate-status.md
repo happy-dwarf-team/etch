@@ -34,10 +34,13 @@ and the generated tables of [coverage-results.md](coverage-results.md) are `main
 **Update, 25 November 2026.** Six fixes to the profiles take the geometry with the profiles from 23
 to 6 rects off in vanilla at each size, and from 19 and 18 to 7 in Anbennar (etch#672 to etch#677:
 the sprites Tongs 0.37 reports, the lobby's description, a rule's `text`, the patriarch authority's
-value, Anbennar's achievement texts, and two of Proper 2K UI Enhanced's and P2KE's). No capture was
-taken again. The figures below and the generated tables of [coverage-results.md](coverage-results.md)
-are `main`'s rules (`016919c`) on the captures of 23 and 24 November; that page's section "The
-geometry fixes of 25 November 2026" has the rest. Nothing of etch#606 is left.
+value, Anbennar's achievement texts, and two of Proper 2K UI Enhanced's and P2KE's). Three more
+(etch#684 to etch#686: the pie chart, the ledger's columns and the national idea icons) take
+Proper 2K UI Enhanced from 80 to 33 and the P2KE playset from 52 to 23. No capture was taken again.
+The figures below and the generated tables of [coverage-results.md](coverage-results.md) are
+`main`'s rules (`6d2cad0`) on the captures of 23 and 24 November; that page's section "The geometry
+fixes of 25 November 2026" has the rest. One widget of etch#606's kind is left, the minimap, which a
+comment on that issue describes.
 
 ## What the gate asks
 
@@ -56,7 +59,7 @@ them have at least one profiled root, 38 and 35 only profiled roots.
 
 ## Where `main` stands
 
-| Measure | Target | Measured on `main` at `016919c`, captures of 23 and 24 November | Met |
+| Measure | Target | Measured on `main` at `6d2cad0` (the same as at `016919c`), captures of 23 and 24 November | Met |
 | --- | --- | --- | --- |
 | Live texts, profiled windows | 100 % | 100.0 % on every playset and resolution, and on the three countries | yes |
 | Live visibility | 100 % | 100.00 % on every set of the survey (vanilla at 1920×1080: 10835 of 10835, with the built building slots Tongs 0.23 reported hidden) and on the three countries | yes |
