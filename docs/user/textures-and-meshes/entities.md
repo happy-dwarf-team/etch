@@ -178,8 +178,10 @@ To start a particle, the game needs two definitions:
    `.asset` file. The game's are in `gfx/particles`.
 
 So in the game, an event with `particle = "siege_cannon"` starts the effect `artillery_cannon`
-with the scale 0.8, and so does Etch. The scale makes each particle bigger and makes it fly
-further.
+with the scale 0.8, and so does Etch. The scale makes each particle that many times bigger and
+makes it fly the square of the scale as far: at a scale of 2, twice as big and four times as far.
+The game reads the scale when it starts, so restart it after you change one; `reload assets`
+keeps the old scale.
 The line at the bottom shows the effect and the scale after the name: "siege_cannon
 (artillery_cannon, scale 0.8)". It shows them only when the effect has another name or the
 `pdxparticle` has a scale.

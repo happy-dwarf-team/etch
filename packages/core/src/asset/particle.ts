@@ -461,7 +461,14 @@ export const PARTICLE_KEYS: Readonly<
         'game',
       ),
     ],
-    ['scale', doc('a number', 'The size of the effect.')],
+    [
+      'scale',
+      doc(
+        'a number',
+        'Multiplies the size of each particle and its starting speed, and multiplies each move again, so the particles fly the square of the scale as far: with `scale = 2` they are twice as big and fly four times as far. The game reads it when it starts; `reload assets` keeps the old scale.',
+        'game',
+      ),
+    ],
   ]),
 };
 

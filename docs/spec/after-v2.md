@@ -1143,7 +1143,15 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
      them as the yaw did, `sphere_emitter_radius` in a box spread them along
      x as `box_emitter_x` did, with one log line each). The preview reads the
      six keys into one set, where it kept the two apart, and its warning on
-     the other shape's key names the value it sets.
+     the other shape's key names the value it sets. Step 18 checked the
+     pdxparticle `scale` live, as read in step 2 (size and start speed times
+     the scale, each move times it again): spheres of particles at the
+     sieges, with the same life, reached 0.12 of a fixed distance at scale 1
+     and speed 1 and 0.46 at scale 4 and speed 0.25, so the distance per
+     speed grew with the square of the scale (0.12 against 0.116 per
+     speed · scale²); the tiles grew too. The game reads the scale when it
+     starts (`reload assets` kept the old one). The preview already scaled
+     this way; the key's hover now says so, marked as the game's.
   2. Read the evaluators and the update in the lab's analysis (the research's
      open questions 1–5), checked live with a test mod and `reload particle`.
      Done 23 November 2026 in the lab's analysis. Read: a value is its numbers
