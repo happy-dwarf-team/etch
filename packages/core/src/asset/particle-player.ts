@@ -624,7 +624,9 @@ export class ParticleEffect {
       ? Math.floor(particles.length / (def.slaveParticles + 1)) + 1
       : particles.length;
     const accel = new Float64Array(m * 3);
-    // A subsystem's n-th turbulence force reads the effect's n-th field.
+    // A subsystem's n-th turbulence force reads the effect's n-th field. As in the game, a force
+    // whose amount is 0 at the moment is skipped before it is counted, so the next turbulence
+    // force reads the field the skipped one would have read (etch#725).
     let turbulence = 0;
     for (const index of def.forces) {
       const force = this.system.forces[index];

@@ -406,6 +406,34 @@ describe('a running effect', () => {
     expect(step(first, second)).not.toEqual(step(second, third));
   });
 
+  it('gives the field of a turbulence force of amount 0 to the next one, as the game (etch#725)', () => {
+    // Two turbulence forces, so two fields. A subsystem with both, the first at amount 0, moves
+    // its particle as one with only the second: the game counts a turbulence force towards its
+    // field only when its amount is not 0, so the second force reads field 0 in both.
+    const path = (forces: string): number[][] => {
+      const effect = new ParticleEffect(
+        system(
+          `particle = { name = "p"
+            force = { type = "turbulence" name = "z" amount = 0 }
+            force = { type = "turbulence" name = "f" amount = 2 }
+            subsystem = { max_amount = 1 emission = 100 life = 100 velocity = 0 force = ${forces} } }`,
+          'p',
+        ),
+      );
+      const out: number[][] = [];
+      for (let i = 0; i < 10; i++) {
+        effect.step(0.1, IDENTITY);
+        const q = effect.quads(0)[0];
+        if (q === undefined) throw new Error('no particle');
+        out.push([q.x, q.y, q.z]);
+      }
+      return out;
+    };
+    const alone = path('f');
+    expect(path('z, f')).toEqual(alone);
+    expect(Math.hypot(...(alone[9] ?? []))).toBeGreaterThan(0);
+  });
+
   it('lets a stopped effect finish', () => {
     const effect = new ParticleEffect(
       single('max_amount = 10 duration = -1 emission = 50 life = 1'),
