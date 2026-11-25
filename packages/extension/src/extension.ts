@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { SUPPORTED_GAME_VERSION } from '@etch/core';
 import { registerAssetLinks, type AssetLinks } from './asset-links.ts';
 import { registerSpriteLinks, type SpriteLinks } from './sprite-links.ts';
+import { registerFontLinks, type FontLinks } from './font-links.ts';
 import { registerLocalisationHints, type LocalisationHints } from './localisation-hints.ts';
 import { registerGuiCompletion, type GuiCompletion } from './gui-completion.ts';
 import { registerInterfaceSymbols, type InterfaceSymbols } from './interface-symbols.ts';
@@ -37,6 +38,7 @@ export interface EtchApi {
   readonly entityPreview: EntityPreviewApi;
   readonly assetLinks: AssetLinks;
   readonly spriteLinks: SpriteLinks;
+  readonly fontLinks: FontLinks;
   readonly localisationHints: LocalisationHints;
   readonly guiCompletion: GuiCompletion;
   readonly interfaceSymbols: InterfaceSymbols;
@@ -87,6 +89,7 @@ export function activate(context: vscode.ExtensionContext): EtchApi {
     entityPreview: registerEntityPreview(context, output),
     assetLinks: registerAssetLinks(context, output),
     spriteLinks,
+    fontLinks: registerFontLinks(context, spriteLinks, output),
     localisationHints: registerLocalisationHints(context, output, spriteLinks),
     guiCompletion: registerGuiCompletion(context, spriteLinks),
     interfaceSymbols: registerInterfaceSymbols(context),

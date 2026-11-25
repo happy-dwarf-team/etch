@@ -507,6 +507,20 @@ refresh goes out with a 2.x release (v3.md section 7).
   registers both providers or none, so that with it off another extension's
   answers stand alone.
 
+- **Font hovers and Go to Definition (ADR 0008).** On a font name of a `.gui`
+  file (`font`, `buttonFont`, through an `@constant` and in `if_resolution`
+  too; `guiFontReferences`) and on the `font` of an `objectTypes` entry's
+  `textblock` in a `.gfx` file (vanilla's `animatedmaptext`;
+  `gfxFontReferences`), the hover shows the font `InterfaceIndex.font`
+  resolves (the first definition, as the preview draws), its `.gfx` file and
+  layer, `path`, `color` and `border_color` with a swatch, its `.fnt` file
+  (characters, line height) and texture (size, format), and a line of sample
+  text drawn on the CPU from the atlas as the preview's text shader tints it,
+  at 2× for lines of at most 16 pixels. Go to Definition opens the
+  `bitmapfont`'s `name`, inside its quotes. A missing font gets no hover in a
+  `.gui` file (its diagnostic reports it) and a hover that says so in a `.gfx`
+  file. It has no setting, as the sprite hover has none.
+
 - **Colours in `.gfx` files (ADR 0008).** A swatch and VS Code's colour
   picker on the colours the model reads as colours: each `textcolors` entry of
   `bitmapfonts` and of a `bitmapfont` (`G = { 0 255 0 }`, 0–255 per channel,

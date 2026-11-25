@@ -1,12 +1,12 @@
 ---
 title: Hovers and links
-description: Check and open the textures, meshes, animations and sprites your files name, and pick font colours, from the editor.
+description: Check and open the textures, meshes, animations, sprites and fonts your files name, and pick font colours, from the editor.
 since: 2.13.0
 clip: hovers
 ---
 
-Etch turns the names of textures, meshes, animations and sprites in your files into hovers and
-links. Hover over a name to see what the game will load; <kbd>Ctrl</kbd>+click it to open that
+Etch turns the names of textures, meshes, animations, sprites and fonts in your files into hovers
+and links. Hover over a name to see what the game will load; <kbd>Ctrl</kbd>+click it to open that
 file. Font colours in `.gfx` files get a colour picker.
 
 ## Paths in .gfx and .asset files
@@ -176,6 +176,36 @@ renames sprite names in these files, and you want its answers to stand alone.
 Set it in the **User** tab of Settings: it cannot be set for one folder. To get the commands back,
 tick the checkbox again. You don't need to restart VS Code.
 
+## Fonts in .gui and .gfx files
+
+In `.gui` files, hover over the font name after `font` or `buttonFont` to see the font. For
+`font = "vic_22"` in the base game's `interface/provinceview.gui`, the hover shows:
+
+- the `.gfx` file and the mod that define the font, here `interface/core.gfx` of the game. When
+  several files define it, the hover says how many: Etch uses the first one it loads;
+- its `path`, `gfx/fonts/vic_22`, and its colours: `color`, and `border_color` when it has one,
+  each with a small square of the colour and its `0x` value (see
+  [Font colours in .gfx files](#font-colours-in-gfx-files));
+- its letters file (`.fnt`), with how many characters it has and its line height, and its
+  texture, with its size and format;
+- a line of sample text, `Aa Bb Cc 0123`, drawn in the font and its colour. A small font, with
+  lines at most 16 pixels high, is shown at twice its size (2×). When the font has no letter for
+  some of the sample's characters, a line under the picture says how many.
+
+A font whose `.fnt` file or texture your playset does not have says "Not in the playset" and
+names the file Etch looked for.
+
+To open the `.gfx` file at the font's name, press <kbd>F12</kbd> on the name, or
+<kbd>Ctrl</kbd>+click it (**Go to Definition**).
+
+The same hover and **Go to Definition** work in `.gfx` files, on the `font` of the texts the game
+shows over the map, such as `font = "Main_14_bold"` in an `animatedmaptext` of
+`interface/core.gfx`.
+
+A font name that no `.gfx` file of your playset defines gets no hover in a `.gui` file: the
+[Problems panel](../interface-windows/problems.md) warns about it instead. In a `.gfx` file, its
+hover says there is no font of that name.
+
 ## Font colours in .gfx files
 
 In a `.gfx` file, the `bitmapfonts` block lists the game's fonts. Each font colour in it shows a
@@ -207,10 +237,15 @@ Etch writes only the three numbers and drops any opacity you set.
   A line gets none when Etch finds no texture for its sprite, as with a missing sprite.
 - **Find All References** and **Rename Symbol** work only on sprite names, not on texture paths,
   fonts or widget names.
+- When several `.gfx` files define a font, the font hover and **Go to Definition** use the first
+  one Etch loads, as the preview does. Which one the game uses is not checked yet.
+- The font sample is drawn by Etch, not by the game: it shows the font's letters and colour, not
+  the exact look of a text box in the game.
 - Colours elsewhere in `.gfx` files, such as in `objectTypes` or written as decimals like
   `{ 0.0 0.5 0.0 }`, get no square. A `textcolors` entry with a number above 255 gets none either.
-- Sprite hovers, **Find All References**, **Rename Symbol** and paths with a folder need the game
-  folder. When Etch does not find the game (see
-  [Where Etch finds the game](../getting-started/finding-the-game.md)), sprite names get no hover,
+- Sprite and font hovers, **Find All References**, **Rename Symbol** and paths with a folder need
+  the game folder. When Etch does not find the game (see
+  [Where Etch finds the game](../getting-started/finding-the-game.md)), sprite and font names get
+  no hover,
   Find All References finds nothing, a rename says "Etch cannot read the playset", and a path with
   a folder is "Not in the playset".
