@@ -10,14 +10,14 @@ have a profile.
 
 | Playset | Resolution | Views | Offline preview: rects | Offline preview: visibility | Outline rects | Outline visibility | Full (outline) | With profiles: rects | With profiles: visibility | Live rects | Live visibility | Full (live) | Live texts | Texts, profiled windows | Pixel pass |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| vanilla | 1280x720 | 62 | 99.6 % | 99.5 % | 81.6 % | 87.5 % | 23 | 100.0 % | 99.5 % | 100.0 % | 100.0 % | 62 | 100.0 % | 100.0 % | 3 of 62 |
-| vanilla | 1920x1080 | 62 | 99.6 % | 99.6 % | 81.5 % | 87.2 % | 23 | 100.0 % | 99.5 % | 100.0 % | 100.0 % | 62 | 100.0 % | 100.0 % | 3 of 62 |
-| anbennar-alone | 1280x720 | 59 | 99.8 % | 99.9 % | 88.7 % | 76.8 % | 25 | 100.0 % | 99.9 % | 99.7 % | 100.0 % | 58 | 100.0 % | 100.0 % | 3 of 59 |
-| anbennar-alone | 1920x1080 | 60 | 99.7 % | 99.9 % | 88.8 % | 77.0 % | 25 | 100.0 % | 99.9 % | 100.0 % | 100.0 % | 60 | 100.0 % | 100.0 % | 3 of 60 |
-| bigger-ui | 1280x720 | 62 | 99.5 % | 99.6 % | 81.5 % | 87.5 % | 23 | 100.0 % | 99.5 % | 100.0 % | 100.0 % | 62 | 100.0 % | 100.0 % | 3 of 62 |
-| bigger-ui | 1920x1080 | 62 | 99.6 % | 99.6 % | 81.5 % | 87.3 % | 23 | 100.0 % | 99.6 % | 100.0 % | 100.0 % | 62 | 100.0 % | 100.0 % | 3 of 62 |
-| proper-2k-ui-enhanced | 2560x1440 | 61 | 99.4 % | 99.6 % | 79.2 % | 87.5 % | 16 | 99.9 % | 99.6 % | 99.9 % | 100.0 % | 58 | 100.0 % | 100.0 % | 2 of 61 |
-| anbennar | 2560x1440 | 59 | 99.5 % | 99.9 % | 86.9 % | 78.7 % | 19 | 99.7 % | 99.9 % | 99.8 % | 100.0 % | 53 | 100.0 % | 100.0 % | 2 of 59 |
+| vanilla | 1280x720 | 62 | 99.6 % | 99.9 % | 81.6 % | 87.5 % | 23 | 100.0 % | 99.9 % | 100.0 % | 100.0 % | 62 | 100.0 % | 100.0 % | 3 of 62 |
+| vanilla | 1920x1080 | 62 | 99.6 % | 99.9 % | 81.5 % | 87.2 % | 23 | 100.0 % | 99.9 % | 100.0 % | 100.0 % | 62 | 100.0 % | 100.0 % | 3 of 62 |
+| anbennar-alone | 1280x720 | 59 | 99.8 % | 99.9 % | 88.7 % | 76.8 % | 25 | 100.0 % | 100.0 % | 99.7 % | 100.0 % | 58 | 100.0 % | 100.0 % | 3 of 59 |
+| anbennar-alone | 1920x1080 | 60 | 99.7 % | 99.9 % | 88.8 % | 77.0 % | 25 | 100.0 % | 100.0 % | 100.0 % | 100.0 % | 60 | 100.0 % | 100.0 % | 3 of 60 |
+| bigger-ui | 1280x720 | 62 | 99.6 % | 99.9 % | 81.5 % | 87.5 % | 23 | 100.0 % | 99.9 % | 100.0 % | 100.0 % | 62 | 100.0 % | 100.0 % | 3 of 62 |
+| bigger-ui | 1920x1080 | 62 | 99.6 % | 99.9 % | 81.5 % | 87.3 % | 23 | 100.0 % | 100.0 % | 100.0 % | 100.0 % | 62 | 100.0 % | 100.0 % | 3 of 62 |
+| proper-2k-ui-enhanced | 2560x1440 | 61 | 99.4 % | 99.9 % | 79.2 % | 87.5 % | 16 | 99.9 % | 100.0 % | 99.9 % | 100.0 % | 58 | 100.0 % | 100.0 % | 2 of 61 |
+| anbennar | 2560x1440 | 59 | 99.5 % | 99.9 % | 86.9 % | 78.7 % | 19 | 99.7 % | 100.0 % | 99.8 % | 100.0 % | 53 | 100.0 % | 100.0 % | 2 of 59 |
 
 "With profiles and live texts" is the same with the snapshot's texts and list rows as sample
 data: what Compare with Live Game compares (spec/v3.md section 4), through the same functions.
@@ -133,6 +133,17 @@ below (no capture was taken again). The generated tables above are this run.
   makes of the save's values (the country's score, `0x2C6430`, and the regiments' strength). The
   diplomatic reputation is a modifier the engine works out; its sample has a sign, "+12.3". Fifteen
   rects fewer in Proper 2K UI Enhanced and five in the P2KE playset; the other sets do not change.
+- **Building slots from the save** (etch#605): the province view's building rows are the ones
+  eu4.exe lays out (0x138EF20, 0x138A100), from the capture's save and the playset's files: the
+  construction, the built buildings, the free slots up to the province's slots and one locked slot
+  with its `required_development`, and `building_canbuild`, `building_destroy` and the progress
+  shown where the game shows them. The slots add up as the game adds them
+  (`CProvince::GetAllowedNumberOfBuildings` 0xA02D10), with the province's terrain category picked
+  from the map's bitmaps as the game picks it (checked against the categories of every vanilla
+  province in a running game). With the profiles, no building slot is off any more in the survey
+  or the three countries: visibility failures 43 → 8 and 40 → 5 in vanilla, 38 → 3 and 35 → 0 in
+  Bigger UI, 35 → 0 in Proper 2K UI Enhanced, 6 → 0 in Anbennar at both sizes and in the P2KE
+  playset, and 4 fewer on each country. Rects do not change; no view got worse.
 
 With the profiles, rects off on `main` against the section below (rules of `b156984`). Every
 change of a view measure was a gain.
@@ -165,8 +176,8 @@ In Proper 2K UI Enhanced (2 rects) and the P2KE playset (7), by cause:
   `province_terrain`, the picture of the province's terrain. Neither is in a save fact a selector
   reads today.
 
-The building slots (etch#605) and the peace view's slider stay as they were, in visibility. With
-the snapshot's texts, Proper 2K UI Enhanced has 7 rects off: `regiment_bg`, and the stability
+The peace view's slider stays as it was, in visibility; the building slots are fixed (see above).
+With the snapshot's texts, Proper 2K UI Enhanced has 7 rects off: `regiment_bg`, and the stability
 view's `stability_value` and `stability_progress_threshold` 57 px left of the game's in three
 views, which the profiles alone draw at the game's place. These six were not looked into.
 
