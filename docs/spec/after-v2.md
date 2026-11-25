@@ -1412,8 +1412,8 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
       game's shader the same effect showed the sprites alone. So the preview
       keeps a trail next to sprites when the playset's `particle.shader` has
       its effect (texture `shader` + `Trail`, + `NoBillboard`), still drawn
-      grey. Not settled: a trail without an effect drawn right after one with
-      its own effect would take that effect's shaders by the same reading.
+      grey. A trail without an effect drawn after one with its own effect
+      takes that effect's shaders: point 15.
   14. Settle where the base game's shader draws a `local_space` subsystem
       (item 1, step 19). Done 25 November 2026, checked in the game (Steam
       1.37.5, the lab's run `e631-s23a`, the siege sites near Trier, the
@@ -1426,6 +1426,22 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
       alone in its particle drew nothing anywhere, at two heights and two
       sizes. The warning and the key's hover say both. The preview still
       draws such a subsystem at its node.
+  15. Settle a trail without its effect drawn after a trail with its own
+      effect (point 13). Done 25 November 2026. By the lab's reading of the
+      draw loop, a missing effect sets no shaders but the default blend and
+      rasterizer state, and the loop keeps the last effect it set across the
+      effects it draws. Checked in the game (Steam 1.37.5, the lab's run
+      `e631-s24a`, the siege sites near Trier, the test `particle.shader` of
+      point 13, whose trail effect draws an opaque cyan band): a trail A with
+      `ParticleAlphaBlendTrail` and a trail B with `ParticleAdditive` (no
+      `ParticleAdditiveTrail`), flying opposite ways, drew one cyan band each,
+      in A, B order and in B, A order, where B alone drew the grey band. With
+      red sprites first, A then B drew both bands next to the sprites; B then
+      A drew A's band alone. So the preview keeps a trail without its effect
+      next to sprites when a trail with its own effect, holding particles,
+      comes before it. In B, A order the game took A's effect from the copy
+      of the effect drawn before; the preview, which does not order copies as
+      the game does, still hides B there.
 
 Small unknowns, none worth an issue yet.
 

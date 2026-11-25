@@ -88,4 +88,27 @@ describe('drawOrder (step 11)', () => {
       names(drawOrder([layer('band', true, 5), ownLayer, layer('tiles', false, 3)], own)),
     ).toEqual(['tiles', 'own']);
   });
+
+  it('draws a trail without its effect after a trail with its own effect that holds particles (step 24)', () => {
+    const own = (subsystem: { trail: boolean; name?: string }): boolean => subsystem.name === 'own';
+    const ownLayer = (particles: number) => ({
+      name: 'own',
+      subsystem: { trail: true, name: 'own' },
+      quads: Array.from({ length: particles }),
+    });
+    const tiles = layer('tiles', false, 3);
+    expect(names(drawOrder([tiles, ownLayer(2), layer('after', true, 5)], own))).toEqual([
+      'tiles',
+      'own',
+      'after',
+    ]);
+    expect(names(drawOrder([tiles, layer('before', true, 5), ownLayer(2)], own))).toEqual([
+      'tiles',
+      'own',
+    ]);
+    expect(names(drawOrder([tiles, ownLayer(0), layer('after', true, 5)], own))).toEqual([
+      'tiles',
+      'own',
+    ]);
+  });
 });

@@ -152,7 +152,8 @@ a trail shows only in an effect of trails, or while its other parts have no part
 own shader effect, the band is drawn with the last shader the game used, and after the effect's
 particles that shader draws nothing. Etch does the same. A trail whose shader effect your playset's
 `gfx/FX/particle.shader` has (see [Particle effects](particles.md)) shows next to the other parts,
-in the game and in Etch.
+in the game and in Etch. So does a trail without one that comes after it in the file: the game
+draws it with that trail's shader effect, while that trail has particles on screen.
 
 The `node` is a bone of the mesh, or a named point that the `.mesh` file stores for this. The
 `muzzle` of vanilla's muskets is such a point. If the mesh has neither of that name, the effect
@@ -245,7 +246,7 @@ These parts work as in the game:
   the effect's particles that are not trails, subsystem by subsystem in the file's order. After
   each subsystem come its particles' child systems, parent by parent. The trails come last, in the
   same order. A trail without its own shader effect comes only while the effect's other particles
-  are not on screen (see the trail above).
+  are not on screen, or after a trail with its own effect (see the trail above).
   A subsystem's `sort` changes the order of its particles, and so the order of their child
   systems too. Like the game, Etch sorts a little each frame, so the order settles over a few
   frames after you turn the camera. The game never moves the last particle in its list, which is
@@ -259,8 +260,11 @@ These parts differ:
   sequence from the computer's clock each time an effect starts, so its own shots differ from
   each other too and Etch cannot match any one of them.
 - A trail in a mod that adds its own shader effect for it (see
-  [Particle effects](particles.md)). The game draws the band with that effect. Etch still draws it in
-  grey.
+  [Particle effects](particles.md)). The game draws the band with that effect, and so a trail
+  without its own effect that comes after it. Etch still draws both in grey.
+- A trail without its own shader effect that comes before a trail with one, in an effect that
+  runs more than once on screen. The game draws it with the effect of the copy drawn just before,
+  so it can show next to sprites. Etch hides it.
 - Where a state with a `time_offset` starts. The game adds a random part of its second number;
   Etch starts at the first.
 - How many particles and effects can be alive. Like the game, Etch starts a new copy of an
