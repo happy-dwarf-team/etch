@@ -232,7 +232,12 @@ These parts work as in the game:
 - a `childsystem` block inside a `subsystem`: it takes the keys of a subsystem, and each particle
   of the subsystem sends out its particles from where it is, while it lives. A child with
   `local_space = yes` sends them out from the effect's own place instead. A particle that dies
-  stays, unseen, until its children are gone, so it still counts towards `max_amount`.
+  stays, unseen, until its children are gone, so it still counts towards `max_amount`;
+- the order in which the parts of an effect are drawn, which decides what covers what. First come
+  the effect's particles that are not trails, subsystem by subsystem in the file's order. After
+  each subsystem come its particles' child systems, parent by parent. The trails come last, in the
+  same order. So a trail covers the other particles of its effect, even when its subsystem comes
+  first in the file.
 
 These parts differ:
 

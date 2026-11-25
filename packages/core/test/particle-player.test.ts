@@ -445,9 +445,9 @@ describe('child systems (step 10)', () => {
     const effect = new ParticleEffect(parent(''));
     for (let i = 0; i < 5; i++) effect.step(0.1, IDENTITY);
     const layers = effect.layers();
-    expect(layers.map((l) => l.quads.length)).toEqual([2, 100]);
+    expect(layers.map((l) => l.quads.length)).toEqual([2, 50, 50]);
     // The parents fly along −Z at 10; their children stand where they were dropped.
-    const zs = (layers[1]?.quads ?? []).map((q) => q.z);
+    const zs = layers.slice(1).flatMap((l) => l.quads.map((q) => q.z));
     expect(Math.min(...zs)).toBeLessThan(-3);
     expect(Math.max(...zs)).toBeLessThanOrEqual(0);
     expect(effect.count).toBe(102);
@@ -459,6 +459,8 @@ describe('child systems (step 10)', () => {
     // The parents died after 1 s of life; their last children still live.
     const layers = effect.layers();
     expect(layers[0]?.quads.length).toBe(0);
+    // Each waiting parent's children are still a layer of their own.
+    expect(layers).toHaveLength(3);
     expect(layers[1]?.quads.length).toBeGreaterThan(0);
     expect(effect.finished).toBe(false);
     for (let i = 0; i < 6; i++) effect.step(0.1, IDENTITY);
@@ -469,7 +471,31 @@ describe('child systems (step 10)', () => {
   it('runs a local_space child at the effect origin', () => {
     const effect = new ParticleEffect(parent('local_space = yes'));
     for (let i = 0; i < 5; i++) effect.step(0.1, IDENTITY);
-    for (const q of effect.layers()[1]?.quads ?? []) expect(Math.abs(q.z)).toBeLessThan(1e-9);
+    for (const layer of effect.layers().slice(1)) {
+      for (const q of layer.quads) expect(Math.abs(q.z)).toBeLessThan(1e-9);
+    }
+  });
+
+  it('lists layers as the game draws them: each parent with its children in turn (step 11)', () => {
+    const effect = new ParticleEffect(
+      system(
+        `particle = { name = "p"
+          subsystem = { max_amount = 1 emission = 100 life = 10 velocity = 0 }
+          subsystem = {
+            max_amount = 2 duration = 0.05 emission = 100 life = 10 velocity = 0
+            childsystem = { max_amount = 3 duration = -1 emission = 100 life = 10 velocity = 0 }
+            childsystem = { max_amount = 4 duration = -1 emission = 100 life = 10 velocity = 0
+              childsystem = { max_amount = 5 duration = -1 emission = 100 life = 10 velocity = 0 } }
+          } }`,
+        'p',
+      ),
+    );
+    for (let i = 0; i < 3; i++) effect.step(0.1, IDENTITY);
+    // The first subsystem; the second; then per parent its first child, its second child and
+    // that one's children, parent by parent.
+    expect(effect.layers().map((l) => l.subsystem.maxAmount)).toEqual([
+      1, 2, 3, 4, 5, 5, 5, 5, 3, 4, 5, 5, 5, 5,
+    ]);
   });
 
   it('keeps a slot blocked while a dead parent waits, so no new parent takes it', () => {
