@@ -1077,7 +1077,7 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
   `countrygovernmentview` itself has no choice of mechanic in `View ▾`.
 - **Particles in the entity preview**
   ([etch#631](https://github.com/happy-dwarf-team/etch/issues/631),
-  [research](https://github.com/happy-dwarf-team/etch/blob/research/particles/docs/research/particles.md),
+  research on `research/particles`, now in the team's private archive,
   22 November 2026). A state's `event = { particle = X }` names a `pdxparticle`
   object type (`name`, `type`, `scale`) of an `interface/*.gfx` file, whose
   `type` names the `particle` block of an `.asset` file; a block's
