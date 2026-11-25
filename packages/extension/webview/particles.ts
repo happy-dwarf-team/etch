@@ -21,13 +21,17 @@
 // - An effect draws its sprites first, each subsystem and then its child systems' particles
 //   parent by parent, and then its trails (step 11). The game shows no trail of an effect that
 //   drew a sprite in the same frame, so neither does the preview.
+// - A subsystem's `sort` reorders its particles a little each frame, as the game's one pass a
+//   frame does (`ParticleEffect.sort`, step 20): each drawn frame and each replayed step, for the
+//   camera of the last drawn frame. Its quads and its child systems' particles, parent by parent,
+//   are drawn in that order, which settles over a few frames after the camera turns.
 // - A quad faces the camera: its corners are added in clip space, the size times the
 //   pdxparticle's scale, turned by the particle's roll. Its texture is the subsystem's sprite
 //   sheet tile, times the particle's colour. `ParticleAlphaBlend` blends over what is behind it,
 //   `ParticlePreAlphaBlend` as premultiplied alpha, `ParticleAdditive` adds. Particles test depth
-//   and do not write it, and are drawn after the meshes, each subsystem in its `sort` order.
+//   and do not write it, and are drawn after the meshes.
 // - Paused on a frame, the effects are run again from the state's start to that frame with the
-//   same random numbers, so a frame always draws the same.
+//   same random numbers, so a frame always shows the same particles.
 
 import {
   ParticleEffect,
@@ -119,6 +123,8 @@ export class ParticleLayer {
   private at = 0;
   private state: string | undefined;
   private starts = 0;
+  /** The last drawn frame's camera, in the file's space, which the effects sort for. */
+  private camera: { eye: number[]; forward: number[] } | undefined;
   /** Whether an effect did not start since the state began, the particle budget being full. */
   heldBack = false;
   /** Whether the Particles button is on. */
@@ -249,8 +255,11 @@ export class ParticleLayer {
     if (seconds < this.at || seconds - this.at > 1) {
       this.clear();
       let t = this.at;
+      // Each replayed step is a frame, sorted for the camera now, so a replay keeps the order
+      // and, through it, the child systems' slots and random draws of a frame-by-frame run.
       while (t + REPLAY_STEP < seconds) {
         this.step(events, t, t + REPLAY_STEP, clip, matrix);
+        this.sort();
         t += REPLAY_STEP;
       }
       this.step(events, t, seconds, clip, matrix);
@@ -292,8 +301,22 @@ export class ParticleLayer {
     this.at = to;
   }
 
-  /** Draws the running effects over the meshes drawn so far. */
-  draw(viewProjection: Float32Array, eye: readonly number[], entityScale: number): void {
+  /** One pass of every running effect's sort, for the camera of the last drawn frame. */
+  private sort(): void {
+    if (this.camera === undefined) return;
+    for (const run of this.running) run.effect.sort(this.camera.eye, this.camera.forward);
+  }
+
+  /**
+   * Draws the running effects over the meshes drawn so far, for a camera at `eye` looking at
+   * `target` (both in the drawn space).
+   */
+  draw(
+    viewProjection: Float32Array,
+    eye: readonly number[],
+    target: readonly number[],
+    entityScale: number,
+  ): void {
     if (!this.on || this.running.length === 0) return;
     const { gl } = this;
     gl.useProgram(this.program);
@@ -311,10 +334,12 @@ export class ParticleLayer {
     gl.enable(gl.BLEND);
     gl.bindVertexArray(this.vao);
     gl.activeTexture(gl.TEXTURE0);
-    // The drawn space mirrors the file's Z.
+    // The drawn space mirrors the file's Z; the effects sort in the file's space.
     const [ex = 0, ey = 0, ez = 0] = eye;
-    const distance = (q: ParticleQuad): number =>
-      (q.x - ex) ** 2 + (q.y - ey) ** 2 + (-q.z - ez) ** 2;
+    const [tx = 0, ty = 0, tz = 0] = target;
+    this.camera = { eye: [ex, ey, -ez], forward: [tx - ex, ty - ey, ez - tz] };
+    // One pass of each effect's sort a drawn frame, as the game runs one a frame (step 20).
+    this.sort();
     for (const run of this.running) {
       // As the game: an effect's sprites, each subsystem and then its child systems' particles
       // parent by parent, and then its trails, which the game shows only while the effect
@@ -329,12 +354,6 @@ export class ParticleLayer {
           gl.enable(gl.BLEND);
           continue;
         }
-        if (subsystem.sort === 'depth' || subsystem.sort === 'distance') {
-          quads.sort((a, b) => distance(b) - distance(a));
-        } else if (subsystem.sort === 'age') {
-          quads.sort((a, b) => b.age - a.age);
-        }
-        if (subsystem.invert) quads.reverse();
         const data = new Float32Array(quads.length * STRIDE);
         for (const [i, q] of quads.entries()) {
           data.set(

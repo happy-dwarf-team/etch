@@ -612,3 +612,88 @@ describe('child systems (step 10)', () => {
     expect(parents[7]).toBe(1);
   });
 });
+
+describe('sort (step 20)', () => {
+  const ages = (effect: ParticleEffect): number[] =>
+    effect.quads(0).map((q) => Math.round(q.age * 10));
+  const zs = (effect: ParticleEffect): number[] => effect.quads(0).map((q) => Math.round(q.z));
+  /** One particle a step for five steps, never dying: the first is the oldest. */
+  const five = (lines: string): ParticleEffect => {
+    const effect = new ParticleEffect(
+      single(`max_amount = 5 duration = -1 emission = 10 life = 100 ${lines}`),
+    );
+    for (let i = 0; i < 5; i++) effect.step(0.1, IDENTITY);
+    return effect;
+  };
+
+  it('sorts in place a pass at a time, never moving the last particle', () => {
+    // `invert` puts the youngest first.
+    const effect = five('velocity = 0 sort = "age" invert = yes');
+    expect(ages(effect)).toEqual([4, 3, 2, 1, 0]);
+    // The first pass (gap 1): pairs (0, 1) and (2, 3), then (1, 2); a pair's block must end
+    // before the last particle.
+    effect.sort([0, 0, 0], [0, 0, 1]);
+    expect(ages(effect)).toEqual([3, 1, 4, 2, 0]);
+    for (let i = 0; i < 12; i++) effect.sort([0, 0, 0], [0, 0, 1]);
+    expect(ages(effect)).toEqual([1, 2, 3, 4, 0]);
+  });
+
+  it('leaves two particles as they are', () => {
+    const effect = new ParticleEffect(
+      single(
+        'max_amount = 2 duration = -1 emission = 10 life = 100 velocity = 0 sort = "age" invert = yes',
+      ),
+    );
+    for (let i = 0; i < 2; i++) effect.step(0.1, IDENTITY);
+    for (let i = 0; i < 6; i++) effect.sort([0, 0, 0], [0, 0, 1]);
+    expect(ages(effect)).toEqual([1, 0]);
+  });
+
+  it('draws the farthest first by distance and along the view by depth', () => {
+    // The particles fly along −Z, one unit a step: the oldest is the farthest along −Z.
+    const distance = five('velocity = 10 sort = "distance"');
+    for (let i = 0; i < 12; i++) distance.sort([0, 0, -100], [0, 0, 1]);
+    // Seen from far along −Z the newest is the farthest, but the last stays last.
+    expect(zs(distance)).toEqual([-2, -3, -4, -5, -1]);
+    const depth = five('velocity = 10 sort = "depth"');
+    for (let i = 0; i < 12; i++) depth.sort([0, 0, 100], [0, 0, -1]);
+    expect(zs(depth)).toEqual([-5, -4, -3, -2, -1]);
+  });
+
+  it("draws each parent's children in the parent's sorted order", () => {
+    const effect = new ParticleEffect(
+      system(
+        `particle = { name = "p" subsystem = {
+          max_amount = 5 duration = -1 emission = 10 life = 100 velocity = 10 sort = "distance"
+          childsystem = { max_amount = 1 duration = -1 emission = 100 life = 0.05 velocity = 0 }
+        } }`,
+        'p',
+      ),
+    );
+    for (let i = 0; i < 5; i++) effect.step(0.1, IDENTITY);
+    const order = (): { parents: number[]; children: number[] } => {
+      const [parents, ...children] = effect.layers();
+      return {
+        parents: parents?.quads.map((q) => Math.round(q.z)) ?? [],
+        children: children.map((layer) => Math.round(layer.quads[0]?.z ?? NaN)),
+      };
+    };
+    expect(order()).toEqual({ parents: [-5, -4, -3, -2, -1], children: [-5, -4, -3, -2, -1] });
+    for (let i = 0; i < 12; i++) effect.sort([0, 0, -100], [0, 0, 1]);
+    expect(order()).toEqual({ parents: [-2, -3, -4, -5, -1], children: [-2, -3, -4, -5, -1] });
+  });
+
+  it('keeps the sorted order through a step: the last live particle takes a dead one', () => {
+    const effect = new ParticleEffect(
+      single(
+        'max_amount = 5 duration = 0.45 emission = 10 life = 0.42 velocity = 0 sort = "age" invert = yes',
+      ),
+    );
+    for (let i = 0; i < 5; i++) effect.step(0.1, IDENTITY);
+    for (let i = 0; i < 12; i++) effect.sort([0, 0, 0], [0, 0, 1]);
+    expect(ages(effect)).toEqual([1, 2, 3, 4, 0]);
+    // The oldest dies on the next step; the last one takes its place, the rest keep theirs.
+    effect.step(0.1, IDENTITY);
+    expect(ages(effect)).toEqual([2, 3, 4, 1]);
+  });
+});

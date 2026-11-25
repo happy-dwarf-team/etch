@@ -1186,6 +1186,7 @@ function render(now: number): void {
   particleLayer?.draw(
     viewProjection(camera, width / height),
     eyeOf(camera),
+    camera.target,
     instances[0]?.scale ?? 1,
   );
   drawSkeleton(gl, viewProjection(camera, width / height), ratio);
