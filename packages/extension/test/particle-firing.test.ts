@@ -1,7 +1,7 @@
 // When a state's event starts its particle effect (etch#631, step 4): the rule of the game's code
 // as the EU4 engine lab read it, on the state's time in seconds.
 import { describe, expect, it } from 'vitest';
-import { PARTICLE_BUDGET, fires, withinBudget } from '../webview/particle-firing.ts';
+import { EFFECT_BUDGET, PARTICLE_BUDGET, fires, withinBudget } from '../webview/particle-firing.ts';
 
 /** The times an event at `time` starts in 1/10 s steps from 0 to `until`. */
 function starts(time: number, loop: number | undefined, until: number): number[] {
@@ -59,5 +59,15 @@ describe('how many copies of an effect run', () => {
     expect(started).toBe(40);
     expect(withinBudget(PARTICLE_BUDGET - 1)).toBe(true);
     expect(withinBudget(PARTICLE_BUDGET)).toBe(false);
+  });
+
+  it('stops starting copies that hold almost no particles at a number of effects (etch#725)', () => {
+    // An effect that emits forever but keeps no particle alive, started on every loop of a 1 s
+    // state for an hour: the particle budget never fills, the effect budget does.
+    let running = 0;
+    for (let loop = 0; loop < 3600; loop++) if (withinBudget(0, running)) running++;
+    expect(running).toBe(EFFECT_BUDGET);
+    expect(withinBudget(0, EFFECT_BUDGET - 1)).toBe(true);
+    expect(withinBudget(0, EFFECT_BUDGET)).toBe(false);
   });
 });

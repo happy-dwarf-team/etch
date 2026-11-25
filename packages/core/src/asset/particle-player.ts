@@ -311,7 +311,9 @@ export class ParticleEffect {
     const position: [number, number, number] = [node[12] ?? 0, node[13] ?? 0, node[14] ?? 0];
     const from = this.previous ?? position;
     this.previous = position;
-    if (!(dt > 0)) return;
+    // A step this short is rounding noise, such as the leftover of a replay to a frame: the spin
+    // force divides by dt², which would turn that noise into a throw (etch#725).
+    if (!(dt > MIN_STEP)) return;
     const substep = Math.max(0.1, Math.abs(dt * 0.25));
     let done = 0;
     while (done < dt) {
@@ -896,6 +898,9 @@ function alive(state: SubsystemState): number {
   for (const slot of state.slots) for (const child of slot) n += alive(child);
   return n;
 }
+
+/** The shortest step the effect runs; shorter ones are rounding noise and change nothing. */
+const MIN_STEP = 1e-9;
 
 function normalise(x: number, y: number, z: number): [number, number, number] {
   const length = Math.hypot(x, y, z);
