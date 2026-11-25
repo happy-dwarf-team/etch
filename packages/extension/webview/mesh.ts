@@ -2261,7 +2261,7 @@ if (gl === null) {
     particleLayer = new ParticleLayer(
       gl,
       compile(gl, shaders.vertex, shaders.fragment),
-      compile(gl, shaders.trailVertex, shaders.fragment),
+      compile(gl, shaders.trailVertex, shaders.trailFragment),
     );
     vscode.postMessage({ type: 'ready' });
   } catch (error) {

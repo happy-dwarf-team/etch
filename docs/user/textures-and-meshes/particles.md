@@ -60,7 +60,8 @@ warning shows in VS Code's Problems panel (<kbd>Ctrl+Shift+M</kbd>), with "Etch"
   `gfx/FX/particle.shader`. With `trail = yes` or `billboard = no`, the game adds `Trail` or
   `NoBillboard` to that name. The base game's file has no effect with either ending. So such a
   subsystem needs a `gfx/FX/particle.shader` in your mod with that effect, such as
-  `ParticleAlphaBlendTrail`.
+  `ParticleAlphaBlendTrail`. Without one, the game draws a trail as a flat grey band (see
+  [Entities](entities.md#particles)).
 - **A texture that is missing**: your
   [playset](../reference/glossary.md#playset) (the game, your mod and the mods it depends on) has
   no file at the texture's `file`.

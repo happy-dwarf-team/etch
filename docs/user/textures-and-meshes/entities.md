@@ -136,7 +136,12 @@ As in the game:
   sending out new ones.
 
 A subsystem with `trail = yes` draws a band through its particles, from the oldest to the newest,
-as wide as the particles are big.
+as wide as the particles are big. With `billboard = yes` the band faces the camera; otherwise it
+lies flat. The base game has no shader effect for trails, so the game draws the band in one flat,
+grey colour, solid, whatever the particles' colour, alpha and `texture`, and only the side that
+faces the camera. Etch draws it the same way. A band that faces the camera shows whole. A flat
+band seen from above does not show, except, in the game, for scraps where particles overtake each
+other; Etch shows no such scraps.
 
 The `node` is a bone of the mesh, or a named point that the `.mesh` file stores for this. The
 `muzzle` of vanilla's muskets is such a point. If the mesh has neither of that name, the effect
@@ -218,7 +223,7 @@ These parts work as in the game:
   speed, they spiral outwards and soon fly off. With the siege smoke's scale of 2, `amount = 1`
   throws the particles away within a few seconds;
 - when an event starts its effect, and what happens to it when you pick another state;
-- the shape of a trail.
+- the shape and look of a trail.
 
 These parts differ:
 
@@ -226,9 +231,8 @@ These parts differ:
   force. Etch picks them by the game's rule and in the game's order, but the game starts its
   sequence from the computer's clock each time an effect starts, so its own shots differ from
   each other too and Etch cannot match any one of them.
-- The look of a trail. Etch draws the band with the effect's `texture`. The game draws it with a
-  shader effect whose name ends in `Trail`, and the base game has none (see
-  [Particle effects](particles.md)).
+- A trail in a mod that adds its own shader effect for it (see
+  [Particle effects](particles.md)). The game draws the band with that effect, Etch still in grey.
 - A `childsystem` block. Etch does not start child effects.
 - How many particles can be alive. Like the game, Etch starts a new copy of an event's effect each
   time the event comes round, while the earlier copies still play. But once 100,000 particles are

@@ -14,7 +14,9 @@
 // - A new state ends every effect, except those of `keep_particle` events, which stop emitting and
 //   live out their particles.
 // - A `trail = yes` subsystem is a band through its particles, oldest to newest, 2 × size wide,
-//   facing the camera (or, with `billboard = no`, lying flat), with the texture along it.
+//   facing the camera with `billboard = yes`, otherwise lying flat (`particle-trail.ts`). Like the
+//   game, which has no `Trail` shader effect to draw it with, the preview draws it in one flat,
+//   opaque colour and only where its front faces the camera.
 // - A quad faces the camera: its corners are added in clip space, the size times the
 //   pdxparticle's scale, turned by the particle's roll. Its texture is the subsystem's sprite
 //   sheet tile, times the particle's colour. `ParticleAlphaBlend` blends over what is behind it,
@@ -31,18 +33,21 @@ import {
 } from '@etch/core/asset';
 import type { EntityParticleEffect, MeshTexture } from '../src/mesh-protocol.ts';
 import { fires, withinBudget } from './particle-firing.ts';
+import { TRAIL_COLOUR, trailStrip } from './particle-trail.ts';
 
 const TRAIL_VERTEX = `#version 300 es
 in vec3 position;
-in vec2 uv;
-in vec4 colour;
 uniform mat4 viewProjection;
-out vec2 vUv;
-out vec4 vColour;
 void main() {
-  gl_Position = viewProjection * vec4(position, 1.0);
-  vUv = uv;
-  vColour = colour / 255.0;
+  gl_Position = viewProjection * vec4(position * vec3(1.0, 1.0, -1.0), 1.0);
+}`;
+
+const TRAIL_FRAGMENT = `#version 300 es
+precision highp float;
+uniform vec3 colour;
+out vec4 outColor;
+void main() {
+  outColor = vec4(colour, 1.0);
 }`;
 
 const VERTEX = `#version 300 es
@@ -82,8 +87,6 @@ void main() {
 
 /** Floats per quad: position 3, shape 4, colour 4. */
 const STRIDE = 11;
-/** Floats per trail vertex: position 3, uv 2, colour 4. */
-const TRAIL_STRIDE = 9;
 /** The step the effects are run again with when the preview is paused on a frame. */
 const REPLAY_STEP = 1 / 30;
 
@@ -125,16 +128,9 @@ export class ParticleLayer {
     this.trail = gl.createBuffer();
     gl.bindVertexArray(this.trailVao);
     gl.bindBuffer(gl.ARRAY_BUFFER, this.trail);
-    for (const [name, size, offset] of [
-      ['position', 3, 0],
-      ['uv', 2, 3],
-      ['colour', 4, 5],
-    ] as const) {
-      const location = gl.getAttribLocation(trailProgram, name);
-      if (location < 0) continue;
-      gl.enableVertexAttribArray(location);
-      gl.vertexAttribPointer(location, size, gl.FLOAT, false, TRAIL_STRIDE * 4, offset * 4);
-    }
+    const position = gl.getAttribLocation(trailProgram, 'position');
+    gl.enableVertexAttribArray(position);
+    gl.vertexAttribPointer(position, 3, gl.FLOAT, false, 0, 0);
     gl.bindVertexArray(null);
     this.vao = gl.createVertexArray();
     this.corners = gl.createBuffer();
@@ -172,8 +168,18 @@ export class ParticleLayer {
     );
   }
 
-  static shaders(): { vertex: string; fragment: string; trailVertex: string } {
-    return { vertex: VERTEX, fragment: FRAGMENT, trailVertex: TRAIL_VERTEX };
+  static shaders(): {
+    vertex: string;
+    fragment: string;
+    trailVertex: string;
+    trailFragment: string;
+  } {
+    return {
+      vertex: VERTEX,
+      fragment: FRAGMENT,
+      trailVertex: TRAIL_VERTEX,
+      trailFragment: TRAIL_FRAGMENT,
+    };
   }
 
   /** The entity's effects and their textures; clears what runs. */
@@ -312,6 +318,8 @@ export class ParticleLayer {
           this.drawTrail(quads, subsystem, eye, run.event.scale * entityScale, viewProjection);
           gl.useProgram(this.program);
           gl.bindVertexArray(this.vao);
+          gl.disable(gl.CULL_FACE);
+          gl.enable(gl.BLEND);
           continue;
         }
         if (subsystem.sort === 'depth' || subsystem.sort === 'distance') {
@@ -348,9 +356,9 @@ export class ParticleLayer {
   }
 
   /**
-   * A trail subsystem's band: a strip through its particles in the order they came out, each
-   * giving the two points size away on either side, facing the camera (`billboard`, the default)
-   * or across the path in the ground's plane. The texture runs along it, one repeat a particle.
+   * A trail subsystem's band (`particle-trail.ts`): a strip through its particles in the order
+   * they came out, in one flat, opaque colour, its back faces not drawn, as the game draws a
+   * trail without a `Trail` shader effect.
    */
   private drawTrail(
     quads: readonly ParticleQuad[],
@@ -361,57 +369,32 @@ export class ParticleLayer {
   ): void {
     if (quads.length < 2) return;
     const { gl } = this;
-    // In the drawn space, which mirrors the file's Z.
-    const points = quads.map((q) => [q.x, q.y, -q.z] as const);
-    const data = new Float32Array(quads.length * 2 * TRAIL_STRIDE);
-    let previous: [number, number, number] | undefined;
-    for (const [i, q] of quads.entries()) {
-      const p = points[i] ?? [0, 0, 0];
-      const next = points[i + 1];
-      const before = points[i - 1] ?? p;
-      const d = next === undefined ? sub(p, before) : sub(next, p);
-      let side: [number, number, number];
-      if (subsystem.billboard) {
-        side = unit(cross(sub([eye[0] ?? 0, eye[1] ?? 0, eye[2] ?? 0], p), d));
-      } else {
-        const flat = unit(cross(d, [0, 1, 0]));
-        side = previous === undefined ? flat : unit(add(flat, previous));
-        previous = flat;
-      }
-      // World-space trails are not scaled by the pdxparticle's scale; local-space ones are.
-      const half = q.size * (subsystem.localSpace ? localScale : 1);
-      for (const [k, sign] of [1, -1].entries()) {
-        data.set(
-          [
-            p[0] + sign * half * side[0],
-            p[1] + sign * half * side[1],
-            p[2] + sign * half * side[2],
-            i,
-            k === 0 ? 1 : 0,
-            q.r,
-            q.g,
-            q.b,
-            q.a,
-          ],
-          (i * 2 + k) * TRAIL_STRIDE,
-        );
-      }
-    }
+    // Built in the file's space, as the game builds it, so that its triangles turn the game's way
+    // on the screen; the shader mirrors Z as for the quads. World-space trails are not scaled by
+    // the pdxparticle's scale; local-space ones are.
+    const data = trailStrip(
+      quads.map((q) => [q.x, q.y, q.z] as const),
+      quads.map((q) => q.size * (subsystem.localSpace ? localScale : 1)),
+      subsystem.billboard,
+      [eye[0] ?? 0, eye[1] ?? 0, -(eye[2] ?? 0)],
+    );
     gl.useProgram(this.trailProgram);
-    const uniform = (name: string): WebGLUniformLocation | null =>
-      gl.getUniformLocation(this.trailProgram, name);
-    gl.uniformMatrix4fv(uniform('viewProjection'), false, viewProjection);
-    gl.uniform1i(uniform('sheet'), 0);
-    this.blend(subsystem.texture.shader, uniform('premultiplied'));
+    gl.uniformMatrix4fv(
+      gl.getUniformLocation(this.trailProgram, 'viewProjection'),
+      false,
+      viewProjection,
+    );
+    gl.uniform3f(
+      gl.getUniformLocation(this.trailProgram, 'colour'),
+      ...(TRAIL_COLOUR.map((c) => c / 255) as [number, number, number]),
+    );
+    gl.disable(gl.BLEND);
+    // A front face runs clockwise on the screen, as for the meshes (`gl.frontFace(gl.CW)`).
+    gl.enable(gl.CULL_FACE);
+    gl.cullFace(gl.BACK);
     gl.bindVertexArray(this.trailVao);
     gl.bindBuffer(gl.ARRAY_BUFFER, this.trail);
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STREAM_DRAW);
-    const file = subsystem.texture.file;
-    gl.bindTexture(
-      gl.TEXTURE_2D,
-      (file === undefined ? undefined : this.textures.get(file)) ?? this.white,
-    );
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, quads.length * 2);
   }
 
@@ -423,25 +406,6 @@ export class ParticleLayer {
     } else gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ZERO, gl.ONE);
     gl.uniform1i(premultiplied, shader === 'premultiplied' ? 1 : 0);
   }
-}
-
-type Vector = readonly [number, number, number];
-
-function sub(a: Vector, b: Vector): [number, number, number] {
-  return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
-}
-
-function add(a: Vector, b: Vector): [number, number, number] {
-  return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
-}
-
-function cross(a: Vector, b: Vector): [number, number, number] {
-  return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
-}
-
-function unit(v: Vector): [number, number, number] {
-  const length = Math.hypot(v[0], v[1], v[2]);
-  return length > 0 ? [v[0] / length, v[1] / length, v[2] / length] : [0, 0, 0];
 }
 
 /**

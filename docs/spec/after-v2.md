@@ -1171,7 +1171,8 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
      while the game's stream bends only a little and is gone at π, so the
      preview keeps step 3's turn of `amount` radians a second (settled in
      step 5); the trail's
-     look without a `Trail` shader effect, which vanilla lacks; `childsystem`
+     look without a `Trail` shader effect, which vanilla lacks (settled in
+     step 8); `childsystem`
      (not used in vanilla) and `time_offset` (not used in vanilla), not run.
   5. Settle `spin`. Done 25 November 2026: the preview follows step 4's
      reading. Each step a particle's offset from the axis through the centre
@@ -1216,6 +1217,22 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
      The preview drops its limit of 16 copies per event and starts every
      copy, with one guard of its own: no new effect starts while 100,000
      particles are alive, and the status line then says so.
+  8. Settle a trail's look without a `Trail` shader effect, which vanilla's
+     `gfx/FX/particle.shader` lacks. Done 25 November 2026, checked in the
+     game (Steam 1.37.5, a test mod over Trier, `reload assets`): the band is
+     one flat, opaque colour, the same with grey or red particles and with
+     alpha 0 (118, 112, 124 on screen over the map), with no texture; and
+     only its front faces are drawn. A straight band with `billboard = yes`
+     showed whole; the same band with `billboard = no` (the trail's default),
+     lying flat and seen from above, showed nothing, and only scraps where
+     particles of different speeds overtook each other; a straight vertical
+     one, with no width without billboard, showed nothing either. The preview
+     now builds the strip in the file's space, as the game does, and draws it
+     in that colour, opaque, with back faces culled as for meshes. Left: the
+     scraps of an overtaking flat band do not show in the preview (in exact
+     arithmetic none of its triangles turns round; the game's likely come from
+     a side that passes near zero), and a mod that adds its own `…Trail`
+     effect is still drawn in grey.
 
 Small unknowns, none worth an issue yet.
 
