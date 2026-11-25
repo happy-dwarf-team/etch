@@ -1153,9 +1153,28 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
      differing, listed on the user page: the random numbers; `spin`, whose
      reading (a push along the chord of the turn) runs away at `amount = 1`
      while the game's stream bends only a little and is gone at π, so the
-     preview keeps step 3's turn of `amount` radians a second; the trail's
+     preview keeps step 3's turn of `amount` radians a second (settled in
+     step 5); the trail's
      look without a `Trail` shader effect, which vanilla lacks; `childsystem`
      (not used in vanilla) and `time_offset` (not used in vanilla), not run.
+  5. Settle `spin`. Done 25 November 2026: the preview follows step 4's
+     reading. Each step a particle's offset from the axis through the centre
+     is turned by `amount · dt` radians (radians, not scaled; +X towards +Z
+     about +Y), and the push is mass · ((turned − offset) − dt · (t · v) t) /
+     (scale · dt²), t the direction of the turn at the particle. At scale 1
+     with no other force the velocity always lies along the last chord, so
+     the particle circles at `amount` radians a second; with a scale above 1
+     (the push is divided by it, the move multiplied by it), another force or
+     a start speed, the velocity it keeps across the turn carries it out in a
+     spiral that speeds up, which is the runaway step 4 saw at the siege
+     smoke's scale of 2. Checked in the game (Steam 1.37.5, a test mod over
+     Trier, `reload assets`): particles born at rest beside a spin axis left
+     along an outward spiral arm whose spacing grew along it, in the reading's
+     direction, at `amount = 0.25` and much faster at 1, with and without
+     friction; none stayed on a circle. So step 4's "bends only a little"
+     was the start of that spiral, and step 3's steady turn is gone. Not
+     measured: the spiral's rate on screen, which the camera's perspective
+     and two emitters at the site kept from a number.
 
 Small unknowns, none worth an issue yet.
 

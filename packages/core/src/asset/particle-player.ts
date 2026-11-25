@@ -1,4 +1,4 @@
-// A player of a particle system (etch#631, steps 3 and 4), for the entity preview. It runs a
+// A player of a particle system (etch#631, steps 3 to 5), for the entity preview. It runs a
 // `ParticleSystem` (`particle-system.ts`) the way the EU4 engine lab read EU4 1.37.5's update in
 // the game's code, and gives each frame's camera-facing quads to the renderer.
 //
@@ -24,13 +24,14 @@
 //   not made length 1) and turns round it by its yaw; `friction` is −velocity × amount; a
 //   centre is the force's position × scale, moved by the node's position with `local_force`.
 //   `turbulence` reads the game's field.
+// - `spin` (step 5): each step a particle's place is turned by amount · dt radians about the
+//   axis through the centre, and the push takes it along that chord while cancelling the
+//   velocity it had along the turn. Nothing pulls it back towards the axis, so it spirals
+//   outwards, faster with a larger scale; a test in the game showed the same outward spiral.
 // - A trail subsystem keeps its particles in the order they came out.
 //
 // What differs: the random numbers (the game seeds them from the clock, so no two of its runs
-// match either); child systems, which are not run; and `spin`, which here turns the particles
-// about its axis at amount radians a second. The lab read the game's spin as a push along the
-// turn, but in a test the game's stream bent only a little at amount 1 and was gone at π, which
-// that reading does not give, so the game's rule is not settled.
+// match either); and child systems, which are not run.
 
 import type {
   ParticleCurve,
@@ -476,8 +477,7 @@ export class ParticleEffect {
       ] as const;
       const field = force.type === 'turbulence' ? this.fields[turbulence++] : undefined;
       if (force.type === 'spin') {
-        // Etch's own rule: the game's spin did not behave in a test as the lab read its code.
-        rotateAbout(particles, centre, force.direction, -amount * dt);
+        if (dt > 0) spin(particles, m, accel, centre, force.direction, amount, scale, dt);
         continue;
       }
       for (let i = 0; i < m; i++) {
@@ -686,23 +686,44 @@ function rodrigues(
 }
 
 /**
- * Turns the particles about the axis through the centre by `angle` radians; a positive angle
- * turns +X towards −Z about +Y. Etch's stand-in for a `spin` force.
+ * Adds a `spin` force's push to the first `m` particles' accelerations, as the EU4 engine lab
+ * read the game's code (etch#631 step 5). The particle's place is turned by amount · dt radians
+ * about the axis through the centre (a positive amount turns +X towards +Z about +Y); the push,
+ * with the step's velocity · scale · dt, moves the particle along that chord while cancelling its
+ * velocity along the turn:
+ *
+ *   accel += mass · ((turned − place) − dt · (t · v) t) / (scale · dt²)
+ *
+ * where t is the direction of the turn at the particle. Nothing pulls a particle back towards
+ * the axis, so the velocity it keeps across the turn carries it outwards: particles spiral away
+ * from the axis, faster the larger the scale. A zero direction leaves the axis zero, and the turn
+ * then shrinks the offset by cos(amount · dt), as the game's matrix does.
  */
-function rotateAbout(
-  particles: Particle[],
+function spin(
+  particles: readonly Particle[],
+  m: number,
+  accel: Float64Array,
   centre: readonly number[],
   direction: readonly number[],
-  angle: number,
+  amount: number,
+  scale: number,
+  dt: number,
 ): void {
   const axis = normalise(direction[0] ?? 0, direction[1] ?? 0, direction[2] ?? 0);
-  if (axis[0] === 0 && axis[1] === 0 && axis[2] === 0) return;
   const [cx = 0, cy = 0, cz = 0] = centre;
-  for (const p of particles) {
-    const [x, y, z] = rodrigues([p.x - cx, p.y - cy, p.z - cz], axis, angle);
-    p.x = cx + x;
-    p.y = cy + y;
-    p.z = cz + z;
+  const angle = amount * dt;
+  for (let i = 0; i < m; i++) {
+    const p = particles[i];
+    if (p === undefined) continue;
+    const offset: [number, number, number] = [p.x - cx, p.y - cy, p.z - cz];
+    const ahead = rodrigues(offset, axis, -angle);
+    const behind = rodrigues(offset, axis, angle);
+    const t = normalise(offset[0] - behind[0], offset[1] - behind[1], offset[2] - behind[2]);
+    const along = t[0] * p.vx + t[1] * p.vy + t[2] * p.vz;
+    const k = p.mass / (scale * dt * dt);
+    accel[i * 3] = (accel[i * 3] ?? 0) + (ahead[0] - offset[0] - dt * along * t[0]) * k;
+    accel[i * 3 + 1] = (accel[i * 3 + 1] ?? 0) + (ahead[1] - offset[1] - dt * along * t[1]) * k;
+    accel[i * 3 + 2] = (accel[i * 3 + 2] ?? 0) + (ahead[2] - offset[2] - dt * along * t[2]) * k;
   }
 }
 

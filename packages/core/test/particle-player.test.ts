@@ -248,24 +248,59 @@ describe('a running effect', () => {
     expect(at(1, 1)).toBeCloseTo(at(1, 10), 9);
   });
 
-  it('turns about a spin force at its amount in radians a second (Etch’s own rule)', () => {
-    const effect = new ParticleEffect(
-      system(
-        `particle = { name = "p"
-          force = { type = "spin" name = "f" amount = ${String(Math.PI / 2)} direction = { 0 1 0 } position = { 0 0 0 } }
-          subsystem = { max_amount = 1 emission = 10 life = 100 velocity = 0
-            emitter_type = box box_emitter_x = 1 force = f } }`,
-        'p',
-      ),
-    );
-    effect.step(0.1, IDENTITY);
-    const start = effect.quads(0)[0];
-    for (let i = 0; i < 10; i++) effect.step(0.1, IDENTITY);
-    const end = effect.quads(0)[0];
-    if (start === undefined || end === undefined) throw new Error('no particle');
-    // A quarter turn a second: after 1 s, +X has gone to +Z, at the same distance.
-    expect(Math.atan2(end.z, end.x) - Math.atan2(start.z, start.x)).toBeCloseTo(Math.PI / 2, 1);
-    expect(Math.hypot(end.x, end.z)).toBeCloseTo(1, 1);
+  describe('spin', () => {
+    // A particle born at rest 1 unit from a spin axis along +Y, a quarter turn a second. The box's
+    // x goes through the emitter's default yaw, so it is born on −Z; `angle` is from there.
+    const spun = (scale: number, steps: number, extra = '') => {
+      const effect = new ParticleEffect(
+        system(
+          `particle = { name = "p"
+            force = { type = "spin" name = "f" amount = ${String(Math.PI / 2)} direction = { 0 1 0 } position = { 0 0 0 } }
+            ${extra}
+            subsystem = { max_amount = 1 emission = 10 life = 100 velocity = 0
+              emitter_type = box box_emitter_x = 1 force = f${extra === '' ? '' : ', g'} } }`,
+          'p',
+        ),
+        scale,
+      );
+      for (let i = 0; i < steps; i++) effect.step(0.1, IDENTITY);
+      const q = effect.quads(0)[0];
+      if (q === undefined) throw new Error('no particle');
+      return { radius: Math.hypot(q.x, q.z), angle: Math.atan2(q.z, q.x) + Math.PI / 2, y: q.y };
+    };
+
+    it('moves a particle along the chord of a turn of amount · dt, turning −Z towards +X', () => {
+      // Born in the first step and pushed in it: 0.1 s at π/2 rad/s is a turn of π/20.
+      const first = spun(1, 1);
+      expect(first.angle).toBeCloseTo(Math.PI / 20, 9);
+      expect(first.radius).toBeCloseTo(1, 9);
+      expect(first.y).toBeCloseTo(0, 9);
+    });
+
+    it('turns at amount radians a second when nothing else moves the particle at scale 1', () => {
+      // The velocity stays along the last chord, so the push cancels it all: a circle.
+      const end = spun(1, 11);
+      expect(end.angle).toBeCloseTo((11 * Math.PI) / 20, 9);
+      expect(end.radius).toBeCloseTo(1, 9);
+    });
+
+    it('spirals outwards at a scale above 1', () => {
+      // The push is divided by the scale and the move multiplied by it, so a share of the old
+      // velocity survives each turn and carries the particle away from the axis (values from the
+      // lab's separate simulation of the game's code).
+      const end = spun(2, 11);
+      expect(end.radius).toBeCloseTo(3.270453, 5);
+      expect(end.angle).toBeCloseTo(2.407596, 5);
+    });
+
+    it('spirals outwards when another force moves the particle across the turn', () => {
+      const end = spun(
+        1,
+        11,
+        'force = { type = "planar" name = "g" amount = 1 direction = { 1 0 0 } }',
+      );
+      expect(end.radius).toBeGreaterThan(1.1);
+    });
   });
 
   it('pushes with turbulence at exactly its amount, in a direction that changes over time', () => {

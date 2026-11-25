@@ -211,8 +211,12 @@ These parts work as in the game:
 - how their size, rotation and colour change over their life;
 - the picture from the effect's `texture`, and how it blends with what is behind it;
 - the force blocks (explained in [Particle effects](particles.md)) of `type = "planar"`,
-  `"point"`, `"vortex"`, `"friction"` and `"turbulence"`. A `point` force with a positive
-  `amount` pushes the particles away from its `position`;
+  `"point"`, `"vortex"`, `"friction"`, `"turbulence"` and `"spin"`. A `point` force with a
+  positive `amount` pushes the particles away from its `position`. A `spin` force swings them
+  round its axis, `amount` radians a second (a full turn is about 6.28), but nothing holds them on
+  the circle: in an effect whose pdxparticle `scale` is above 1, or with another force or a start
+  speed, they spiral outwards and soon fly off. With the siege smoke's scale of 2, `amount = 1`
+  throws the particles away within a few seconds;
 - when an event starts its effect, and what happens to it when you pick another state;
 - the shape of a trail.
 
@@ -221,9 +225,6 @@ These parts differ:
 - The exact direction and other chance values of each particle. The game picks new ones for every
   shot, so its own shots differ from each other too. So does the swirl of a `turbulence` force:
   it follows the game's rule, but from other chance values.
-- A `type = "spin"` force. Etch turns the particles round its axis, `amount` radians a second (a
-  full turn is about 6.28). The game turns them much less: in a test, `amount = 1` only bent a
-  stream of smoke a little. How the game does it is not known.
 - The look of a trail. Etch draws the band with the effect's `texture`. The game draws it with a
   shader effect whose name ends in `Trail`, and the base game has none (see
   [Particle effects](particles.md)).

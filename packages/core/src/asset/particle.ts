@@ -334,7 +334,7 @@ export const PARTICLE_KEYS: Readonly<
       'type',
       doc(
         '`planar`, `point`, `vortex`, `friction`, `turbulence` or `spin`',
-        'The kind of force. `planar` pushes along `direction`, such as gravity. `point` pushes away from `position`, as hard at any distance; a negative `amount` pulls. `vortex` pushes out from the line through `position` along `direction` and turns round it by `yaw`. `friction` slows the particles: `amount` times their speed. `turbulence` pushes each particle by `amount` in a direction that changes from place to place and over time. `spin` turns the particles round the line through `position` along `direction`; Etch turns them `amount` radians a second, but how far the game turns them is not known. The base game uses `planar`, `friction` and `turbulence`.',
+        'The kind of force. `planar` pushes along `direction`, such as gravity. `point` pushes away from `position`, as hard at any distance; a negative `amount` pulls. `vortex` pushes out from the line through `position` along `direction` and turns round it by `yaw`. `friction` slows the particles: `amount` times their speed. `turbulence` pushes each particle by `amount` in a direction that changes from place to place and over time. `spin` swings the particles round the line through `position` along `direction`, `amount` radians a second, but nothing holds them on the circle: with a pdxparticle `scale` above 1, another force or a start speed they spiral outwards and fly off. The base game uses `planar`, `friction` and `turbulence`.',
         'game',
       ),
     ],
