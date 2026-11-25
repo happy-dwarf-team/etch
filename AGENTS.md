@@ -10,8 +10,8 @@
   [GLOSSARY.md](GLOSSARY.md), budgets in [docs/budgets.md](docs/budgets.md).
 - [CONTRIBUTING.md](CONTRIBUTING.md) holds the titles and scopes, the `research/*` and
   `prototype/*` branches (pushed, never merged), releases, the repository layout, and the
-  build and tests, including the plugin. Run its checks before finishing a change;
-  the `windows` CI job runs all of them.
+  build and tests, including the plugin. Run `pnpm check` before every push; the plugin,
+  pins and package checks only when you touch them.
 - A change users see or do also changes its user docs page in [docs/user/](docs/user/), in the
   same pull request, written and reviewed as [docs/user/STYLE.md](docs/user/STYLE.md) says.
 - No EU4 or Paradox assets in the repository, and do not imply affiliation with Paradox
