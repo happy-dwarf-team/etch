@@ -1367,9 +1367,9 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
       none of its sprite layers holds a particle (`drawOrder`). Why the game
       loses the band is not known; the lab's guess is that it draws trails with
       no shader state of their own (step 8), so with whatever the sprites
-      left. Not checked: a trail with a mod's own `Trail` shader effect next
-      to sprites. The order of the parents when their subsystem has a `sort`
-      was settled in step 12.
+      left; step 13 settled it and a trail with a mod's own `Trail` shader
+      effect, which shows next to sprites. The order of the parents when
+      their subsystem has a `sort` was settled in step 12.
   12. Settle the order of a sorted subsystem's particles and their child
       systems. Done 25 November 2026, from the lab's reading of the game's
       code: the game keeps a subsystem's live particles in one array, which
@@ -1398,6 +1398,22 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
       each older quad covered the newer one, except the newest, which stayed
       on top of its neighbour. With `sort = "distance"` only on the child,
       or with `invert = yes`, the quads were as unsorted.
+  13. Settle why a trail is lost next to sprites (item 11). Done 25 November
+      2026, from the lab's reading of the game's code: the game sets a part's
+      shader, blend and rasterizer state only when its effect has them, and a
+      trail whose effect the playset's `particle.shader` lacks gets the
+      engine's empty record, so its draw keeps the shaders and vertex layout
+      of the effect's sprites, drawn just before, and shows nothing. A trail
+      with its own effect sets that effect. Checked in the game (Steam 1.37.5,
+      the lab's runs `e631-s22a` and `-s22b`, the siege sites near Trier): with
+      a test `particle.shader` adding `ParticleAlphaBlendTrail` (an opaque
+      cyan band), a billboard trail and a subsystem of red sprites flying the
+      other way showed both, band and sprites, at every site; with the base
+      game's shader the same effect showed the sprites alone. So the preview
+      keeps a trail next to sprites when the playset's `particle.shader` has
+      its effect (texture `shader` + `Trail`, + `NoBillboard`), still drawn
+      grey. Not settled: a trail without an effect drawn right after one with
+      its own effect would take that effect's shaders by the same reading.
 
 Small unknowns, none worth an issue yet.
 

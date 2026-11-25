@@ -559,3 +559,14 @@ function lastScalar(block: BlockNode, key: string): ScalarNode | undefined {
   const value = lastValue(block, key);
   return value?.kind === 'scalar' ? value : undefined;
 }
+
+/**
+ * The shader effect the game looks for to draw a subsystem: the texture's `shader`, plus `Trail`
+ * for a trail and `NoBillboard` when it does not face the camera (step 8). `undefined` without a
+ * `shader`.
+ */
+export function subsystemEffectName(subsystem: ParticleSubsystem): string | undefined {
+  const effect = subsystem.texture.effect;
+  if (effect === undefined || effect === '') return undefined;
+  return `${effect}${subsystem.trail ? 'Trail' : ''}${subsystem.billboard ? '' : 'NoBillboard'}`;
+}

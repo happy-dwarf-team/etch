@@ -38,6 +38,7 @@ import {
   type ParticleQuad,
   type ParticleShader,
   type ParticleSubsystem,
+  subsystemEffectName,
 } from '@etch/core/asset';
 import type { EntityParticleEffect, MeshTexture } from '../src/mesh-protocol.ts';
 import { fires, withinBudget } from './particle-firing.ts';
@@ -117,6 +118,8 @@ export class ParticleLayer {
   private readonly trail: WebGLBuffer;
   private readonly white: WebGLTexture | null;
   private events: readonly EntityParticleEffect[] = [];
+  /** The playset's particle shader effects: a trail with its own effect shows next to sprites. */
+  private shaderEffects: ReadonlySet<string> = new Set();
   private textures = new Map<string, WebGLTexture>();
   private running: Running[] = [];
   /** The state's time the effects were run to, in seconds. */
@@ -197,7 +200,9 @@ export class ParticleLayer {
     events: readonly EntityParticleEffect[],
     textures: Readonly<Record<string, MeshTexture>>,
     upload: (texture: MeshTexture) => WebGLTexture | undefined,
+    shaderEffects?: readonly string[],
   ): void {
+    this.shaderEffects = new Set(shaderEffects ?? []);
     for (const texture of this.textures.values()) this.gl.deleteTexture(texture);
     this.textures = new Map();
     for (const [file, texture] of Object.entries(textures)) {
@@ -344,7 +349,9 @@ export class ParticleLayer {
       // As the game: an effect's sprites, each subsystem and then its child systems' particles
       // parent by parent, and then its trails, which the game shows only while the effect
       // drew no sprite (`drawOrder`).
-      for (const { subsystem, quads } of drawOrder(run.effect.layers())) {
+      const ownEffect = (subsystem: ParticleSubsystem): boolean =>
+        this.shaderEffects.has(subsystemEffectName(subsystem) ?? '');
+      for (const { subsystem, quads } of drawOrder(run.effect.layers(), ownEffect)) {
         if (quads.length === 0) continue;
         if (subsystem.trail) {
           this.drawTrail(quads, subsystem, eye, run.event.scale * entityScale, viewProjection);

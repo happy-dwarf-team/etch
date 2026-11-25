@@ -1787,8 +1787,11 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
         particles: message.particles,
       };
       const context = gl;
-      particleLayer?.load(message.effects, message.particleTextures, (texture) =>
-        textureOf(context, texture),
+      particleLayer?.load(
+        message.effects,
+        message.particleTextures,
+        (texture) => textureOf(context, texture),
+        message.particleShaderEffects,
       );
       particlesButton.hidden = particleLayer?.any !== true;
       tree = undefined;
