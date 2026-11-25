@@ -54,6 +54,10 @@ warning shows in VS Code's Problems panel (<kbd>Ctrl+Shift+M</kbd>), with "Etch"
   `time = "Life"` counts as `spawn`. Then the curve does not follow the life of each particle: by
   Etch's reading, `spawn` is the effect's time when the particle was born.
 - **A curve's `duration` of 0 or less.** The game uses 1 instead.
+- **A force's `type` the game does not know**, such as `gravity`. The game knows `planar`,
+  `point`, `vortex`, `friction`, `turbulence` and `spin`, in any case. It skips any other value.
+  The force then keeps the `type` written before it in the block, or is `planar` without one, and
+  Etch's preview plays it the same way.
 - **A key of the other emitter shape**: `box_emitter_x` with `emitter_type = sphere`, or
   `sphere_emitter_radius` with `emitter_type = box`.
 - **A shader effect the game does not have.** The texture's `shader` must name an effect of
@@ -80,7 +84,8 @@ see [Warnings in the files](entities.md#warnings-in-the-files) on the Entities p
   entity whose state starts it (see [Entities](entities.md#particles)).
 - What many keys do is Etch's reading, not checked in the game. Etch does not know how a value's
   variation (the second number in `{ 1.75 0.4 }`) and its curves add up.
-- It does not check the keys inside `position` and `color` blocks.
+- It does not check the keys inside `position` and `color` blocks, nor the values of `sort`,
+  `emitter_type` and a curve's `op`.
 - The warnings about shader effects and textures need the game folder: without it, Etch gives
   only the others.
 - It does not change your files.
