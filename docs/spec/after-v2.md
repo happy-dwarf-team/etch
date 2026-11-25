@@ -1131,7 +1131,19 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
      a point, `SPHERE` a sphere); `sort` is read only. The preview reads the
      four keys the same way, where it used to take the last value, drop a
      force with an unknown type and multiply by a curve without `op`, and
-     warns on each value the game skips (`particle-skipped-value`).
+     warns on each value the game skips (`particle-skipped-value`). Step 17
+     read where the reader stores the emitter shape keys: each sphere key
+     writes the same value as its box partner (`sphere_emitter_radius` and
+     `box_emitter_x`, the yaw and `box_emitter_y`, the pitch and
+     `box_emitter_z`), the last entry wins, and both shapes draw the three
+     values per particle; the game's check of the other shape's keys only
+     logs. The game showed it with a test mod (`box_emitter_x` in a sphere
+     placed the columns where `sphere_emitter_radius` did, a later
+     `box_emitter_x = 0` put them back on the site, `box_emitter_y` spread
+     them as the yaw did, `sphere_emitter_radius` in a box spread them along
+     x as `box_emitter_x` did, with one log line each). The preview reads the
+     six keys into one set, where it kept the two apart, and its warning on
+     the other shape's key names the value it sets.
   2. Read the evaluators and the update in the lab's analysis (the research's
      open questions 1–5), checked live with a test mod and `reload particle`.
      Done 23 November 2026 in the lab's analysis. Read: a value is its numbers

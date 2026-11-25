@@ -15,6 +15,8 @@
 //   reader's default (`planar`, `none`, `point`, `add`). See `PARTICLE_CHOICES`.
 // - A subsystem's `position` and `color` share one reader: `x`/`r`, `y`/`g`, `z`/`b` and
 //   `w`/`alpha`/`a` fill the same slots, in any case; `position` has no fourth. See `VECTOR_SLOTS`.
+// - The sphere and box emitter keys share three values: `sphere_emitter_radius` and
+//   `box_emitter_x` set the same one, the last entry of either winning. See `SHAPE_SLOTS`.
 //
 // Nothing here depends on the editor or the browser, so the data can be sent to the webview.
 
@@ -102,8 +104,11 @@ export interface ParticleSubsystem {
   readonly mass: ParticleValue;
   readonly color: readonly [ParticleValue, ParticleValue, ParticleValue, ParticleValue];
   readonly emitter: 'point' | 'sphere' | 'box';
-  readonly sphere: readonly [ParticleValue, ParticleValue, ParticleValue];
-  readonly box: readonly [ParticleValue, ParticleValue, ParticleValue];
+  /**
+   * The emitter's three shape values, which the sphere and box keys share (`SHAPE_SLOTS`): a
+   * sphere's radius, yaw and pitch, or a box's x, y and z.
+   */
+  readonly shape: readonly [ParticleValue, ParticleValue, ParticleValue];
   /** Indices into the system's forces. */
   readonly forces: readonly number[];
   readonly localSpace: boolean;
@@ -175,6 +180,8 @@ export function readParticleSystem(block: BlockNode): ParticleSystem {
       value(lastValue(node, key), fallback);
     const part = (key: 'position' | 'color', slot: number, fallback = ZERO): ParticleValue =>
       value(vectorSlot(node, key, slot), fallback);
+    const shapeSlot = (slot: number): ParticleValue =>
+      value(lastValueOf(node, SHAPE_SLOTS[slot] ?? []), ZERO);
     const texture = propertyBlocks(node.entries, 'texture').at(-1);
     const effect = texture === undefined ? undefined : lastScalar(texture, 'shader')?.text;
     const flag = (key: string, fallback = false): boolean => {
@@ -227,12 +234,7 @@ export function readParticleSystem(block: BlockNode): ParticleSystem {
         part('color', 3, constant(255)),
       ],
       emitter: particleChoice(node, 'subsystem', 'emitter_type'),
-      sphere: [
-        get('sphere_emitter_radius'),
-        get('sphere_emitter_yaw'),
-        get('sphere_emitter_pitch'),
-      ],
-      box: [get('box_emitter_x'), get('box_emitter_y'), get('box_emitter_z')],
+      shape: [shapeSlot(0), shapeSlot(1), shapeSlot(2)],
       forces: forceNames(node).flatMap((name) => {
         const index = forceIndex.get(name.toLowerCase());
         return index === undefined ? [] : [index];
@@ -514,6 +516,30 @@ function vectorSlot(
       if (entry.kind === 'property' && entry.value !== undefined && keys.includes(keyOf(entry))) {
         found = entry.value;
       }
+    }
+  }
+  return found;
+}
+
+/**
+ * The keys of an emitter's three shape values, by value: the game stores a sphere's and a box's
+ * keys in the same place, so either shape reads both (etch#631 step 17).
+ */
+export const SHAPE_SLOTS: readonly (readonly string[])[] = [
+  ['sphere_emitter_radius', 'box_emitter_x'],
+  ['sphere_emitter_yaw', 'box_emitter_y'],
+  ['sphere_emitter_pitch', 'box_emitter_z'],
+];
+
+/** The last value of any of `keys` in a block. */
+function lastValueOf(
+  block: BlockNode,
+  keys: readonly string[],
+): ScalarNode | BlockNode | undefined {
+  let found: ScalarNode | BlockNode | undefined;
+  for (const entry of block.entries) {
+    if (entry.kind === 'property' && entry.value !== undefined && keys.includes(keyOf(entry))) {
+      found = entry.value;
     }
   }
   return found;

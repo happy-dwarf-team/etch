@@ -74,7 +74,17 @@ warning shows in VS Code's Problems panel (<kbd>Ctrl+Shift+M</kbd>), with "Etch"
   A `position` has no fourth value: the game reads its `w` and drops it, without a line in its
   error log.
 - **A key of the other emitter shape**: `box_emitter_x` with `emitter_type = sphere`, or
-  `sphere_emitter_radius` with `emitter_type = box`.
+  `sphere_emitter_radius` with `emitter_type = box`. The game stores the two shapes' keys in the
+  same three places, so such a key still sets a value of the shape you have:
+
+  | Sphere | Box |
+  | --- | --- |
+  | `sphere_emitter_radius` | `box_emitter_x` |
+  | `sphere_emitter_yaw` | `box_emitter_y` |
+  | `sphere_emitter_pitch` | `box_emitter_z` |
+
+  With `emitter_type = sphere`, `box_emitter_x = 30` is a radius of 30. When a subsystem has both
+  keys of a row, the last one wins. The preview reads them the same way.
 - **A shader effect the game does not have.** The texture's `shader` must name an effect of
   `gfx/FX/particle.shader`. With `trail = yes` or `billboard = no`, the game adds `Trail` or
   `NoBillboard` to that name. The base game's file has no effect with either ending. So such a

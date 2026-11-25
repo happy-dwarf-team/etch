@@ -238,13 +238,13 @@ describe('checkParticleBlocks', () => {
         code: 'particle-emitter-keys',
         at: 'box_emitter_x',
         message:
-          'This subsystem has emitter_type = sphere, but "box_emitter_x" is a key of a box emitter. The game writes in its error log: Sphere emitter contains box emitter parameters and will probably be wrong.',
+          'This subsystem has emitter_type = sphere, but "box_emitter_x" is a key of a box emitter. The game stores it in the same place as "sphere_emitter_radius", so it sets that value, and writes in its error log: Sphere emitter contains box emitter parameters and will probably be wrong.',
       },
       {
         code: 'particle-emitter-keys',
         at: 'sphere_emitter_yaw',
         message:
-          'This subsystem has emitter_type = box, but "sphere_emitter_yaw" is a key of a sphere emitter. The game writes in its error log: Box emitter contains sphere emitter parameters and will probably be wrong.',
+          'This subsystem has emitter_type = box, but "sphere_emitter_yaw" is a key of a sphere emitter. The game stores it in the same place as "box_emitter_y", so it sets that value, and writes in its error log: Box emitter contains sphere emitter parameters and will probably be wrong.',
       },
     ]);
   });
