@@ -76,8 +76,8 @@ const PROVINCE_KEYS = [
  * Province keys the game's code works out from the playset's files, with the building rules:
  * `terrain`, the province's terrain category, as the game picks it when it loads the map
  * (`terrain_override`, else the map's bitmaps; `province-terrain.ts`). The province view draws
- * `GFX_combat_terrain_<terrain>` in `province_terrain` (`CMap::GetLogicalTerrain`, eu4.exe 1.37.5
- * `0x1347A50`).
+ * `GFX_combat_terrain_<terrain>` in `province_terrain` (the map's terrain category of a province,
+ * eu4.exe 1.37.5 `0x1347A50`).
  */
 export const DERIVED_PROVINCE_KEYS = ['terrain'] as const;
 

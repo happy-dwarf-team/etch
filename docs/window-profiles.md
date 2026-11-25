@@ -366,8 +366,8 @@ snapshot's state still wins, and without a save the parts keep `hide`:
 #### Building slots
 
 `provinces.{province}.building_slots` is the province view's building rows as eu4.exe 1.37.5 lays
-them out (`CProvinceViewBuildings::RebuildAllBuildingEntries` 0x138EF20,
-`CBuildingEntry::RefreshBuilding` 0x138A100, etch#605), seen by the country chosen in `Data ▾`:
+them out (the province view's rebuild of its building rows, 0x138EF20, and the
+refresh of one row, 0x138A100, etch#605), seen by the country chosen in `Data ▾`:
 
 1. the building under construction (the save's `building_construction`);
 2. the built buildings, in the order of `common/buildings` (its files by name), up to the cap:
@@ -396,7 +396,7 @@ its plain values count), and a monument's tier is left out.
 The terrain category is the game's, from the map: a category's `terrain_override`, else the
 province's pixels in `map/terrain.bmp`, with `map/trees.bmp` painted over it, where a land
 province counts its land pixels, a `forest` or `jungle` pixel twice, and the largest share wins
-(`CMap::UpdateTerrainFromTreeDefinition` 0x885D90, `CProvinceTemplate::DetermineTerrainInfo`
+(the map's terrain update from the trees, 0x885D90, and the province's terrain vote,
 0xA42F00; checked against a running game's categories of every vanilla province).
 
 Each row's fields:
@@ -405,7 +405,7 @@ Each row's fields:
 | --- | --- |
 | `kind` | `construction`, `built`, `empty` or `locked` |
 | `building` | the building's name, on a construction or built row |
-| `canbuild` | `yes` where the green frame shows: on an empty row, when the viewer owns and controls the province and something is unlocked by its technology and not built (the game evaluates no trigger here, `CProvince::CalcPossibleBuildings` 0xA035A0); on a built row, when an upgrade is unlocked, nothing is being built and the treasury holds its `cost`; on the locked row, when no slot is free and an unlocked building would add one |
+| `canbuild` | `yes` where the green frame shows: on an empty row, when the viewer owns and controls the province and something is unlocked by its technology and not built (the game evaluates no trigger here, the province's list of possible buildings, 0xA035A0); on a built row, when an upgrade is unlocked, nothing is being built and the treasury holds its `cost`; on the locked row, when no slot is free and an unlocked building would add one |
 | `destroy` | `yes` on a built row of the viewer's own province |
 | `progress` | `yes` on the construction row |
 | `locked`, `required_development` | `yes` on the locked row, and its number: the development the next slot needs, from the province's part alone (0xA03250) |
