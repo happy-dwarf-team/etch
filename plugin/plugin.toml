@@ -4,7 +4,7 @@ version = "2.14.0"          # release-please sets it with package.json in each r
 authors = ["Happy Dwarf Team"]
 description = "The live game of Etch, the VS Code previewer for interface mods: reloads saved interface files into the game's own windows on Etch's request over a private pipe, picks a widget to open its definition (Ctrl+Shift+E), and runs a script the modder selected in Etch through the game's console. Idle unless Etch started the game."
 api = 2
-anvil = ">=1.5.2"
+anvil = ">=1.10.0"
 entry = "etch.dll"
 # Main: Tongs, whose tongs.ui reads the widget tree, is a main-phase plugin,
 # and an early plugin cannot depend on one. The pipe is up within a second.

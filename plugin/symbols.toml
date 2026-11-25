@@ -11,21 +11,24 @@ build = "eu4-1.37.5-steam-win64"
 
 [symbol.console_dispatch]
 rva = 0x1721320
-bytes = "48 89 5C 24 10 48 89 4C 24 08 55 56 57 41 54 41 55 41 56 41 57 48 8D 6C 24 D0 48 81 EC 30 01 00 00 49 8B F0 48 8B FA 4C 8B E1"
+sha256 = "E4CC13A880AE51124F30C516A9734F01F7920CCF073567696AE9AC3F6A2163BB"
+size = 42
 memory = "code"
 signature = "void* (void* manager, void* result, void* tokens)"
 note = "console dispatcher: (manager, result, tokens) -> result; runs one tokenised line"
 
 [symbol.console_manager_get]
 rva = 0x6E74C0
-bytes = "48 83 EC 28 48 8B 05 8D 06 C7 01 48 85 C0 75 3D"
+sha256 = "52E0D56F1825FCE1E7C929F8A42825ED5EEF5D52D094F74BCA761D2163B39650"
+size = 16
 memory = "code"
-values.manager = { at = 7, rip_relative = 11 }
+values.manager = { at = 7, rip_relative = 11, is = 0x2357B58 }
 note = "console manager getter: the singleton pointer"
 
 [symbol.string_free]
 rva = 0x95660
-bytes = "40 53 48 83 EC 20 48 8B 51 18 48 8B D9 48 83 FA 10 72 2C 48 8B 09"
+sha256 = "DC903CD914BB214A13EFAE1C640150B1F9DD18B8ACB197868053E46D7DCBF224"
+size = 22
 memory = "code"
 signature = "void (void* text)"
 note = "the game's std::string destructor, to free the console's result text"
@@ -37,10 +40,11 @@ note = "the game's std::string destructor, to free the console's result text"
 
 [symbol.sdl_dynapi_init]
 rva = 0x17325DD
-bytes = "48 8D 0D AC 45 01 00 48 89 0D D5 DC 87 00"
+sha256 = "13615524E71AA0878877FF206F0013A73B47BDCB2D9C5F4D67C978023CC4E5A1"
+size = 14
 memory = "code"
-values.push_event = { at = 3, rip_relative = 7 }
-values.push_event_slot = { at = 10, rip_relative = 14 }
+values.push_event = { at = 3, rip_relative = 7, is = 0x1746B90 }
+values.push_event_slot = { at = 10, rip_relative = 14, is = 0x1FB02C0 }
 note = "SDL 2.0.4 dynapi init: slot 88 = SDL_PushEvent"
 
 # --- The game's tooltips, hidden in pick mode (docs/spec/after-v2.md, "Pick
@@ -51,14 +55,16 @@ note = "SDL 2.0.4 dynapi init: slot 88 = SDL_PushEvent"
 
 [symbol.tooltip_show]
 rva = 0x1415390
-bytes = "48 89 5C 24 08 55 56 57 41 54 41 55 41 56 41 57 48 8D 6C 24 B0 48 81 EC 50 01 00 00 4C 8B E2 48 8B F1"
+sha256 = "21E0A36167CA43077E91BFC1338B260E6E85DAF9CF355342779A6C0F613292EE"
+size = 34
 memory = "code"
 signature = "void (void* controller, const void* point)"
 note = "tooltip controller: shows the tooltip of the object (or the map) under the point"
 
 [symbol.tooltip_hide]
 rva = 0x1415340
-bytes = "40 53 48 83 EC 20 48 8B D9 48 8B 49 08 48 85 C9 74 09 48 8B 01 FF 90 90 00 00 00"
+sha256 = "40F31EA054956696DB74F42E70D66BBD88EB130ACF58EC1FDA0C57ADA1088E6D"
+size = 27
 memory = "code"
 signature = "void (void* controller)"
 note = "tooltip controller: hides the tooltip window and forgets the object it was for"

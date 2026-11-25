@@ -176,6 +176,12 @@ the pinned `eu4.exe`. After changing `symbols.toml`, run
 `anvil.exe` (its path is in `plugin/build/anvil-tool.txt`) and commit the
 lock; CI, which has no game, only checks that it matches.
 
+**Game code and names.** This repository holds no code of eu4.exe and no names from its debug symbols.
+`symbols.toml` verifies each address with `sha256` and `size`, not with the game's bytes; write `bytes` while you
+work and run Anvil's `tools/symbols-to-digest.py` before you commit. Name the game's functions, classes and
+fields by their address and what they do, unless eu4.exe itself shows the name (its RTTI or its own log and
+assert texts). Our own symbol keys, addresses, offsets and signatures are fine.
+
 The reload budgets and the precision corpus are measured on the maintainer's
 machine, not in CI (ADR 0004): shared runners are too noisy to time, and the
 corpus needs a licensed game. A change that touches the reload path says in the
