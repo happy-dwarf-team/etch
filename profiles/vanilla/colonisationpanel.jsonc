@@ -4,7 +4,42 @@
   "formatVersion": 1,
   "window": "colonisationpanel",
   "checkedWith": "1.37.5",
+  "selectors": {
+    "colonialRegion": {
+      "kind": "data",
+      "label": "Colonial region",
+      "fact": "province.colonialRegion",
+      "values": {
+        "none": "None",
+        "region": "In a region",
+        "claimed": "Claimed by the Pope's grant",
+      },
+      "default": "none",
+      "note": "What the game's code writes in region_text for an uncolonised province (eu4.exe 0xE31A50): nothing outside a colonial region; a line break, the region's name and a space in one; and \"Claimed by\" the country with its flag when the player's religion has a papacy and the Pope has granted the region. The map decides the region, so the save does not set it.",
+    },
+  },
   "rules": {
+    "colonial-region": {
+      "when": { "colonialRegion": "region" },
+      "note": "Cascadia (colonial_alaska) without a grant, as the game writes it for Austria on 15 September 1550, province 978.",
+      "text": {
+        "colonisationpanel/no_colonist_window/region_text": [
+          { "literal": "\n" },
+          { "key": "colonial_alaska", "suffix": " " },
+        ],
+      },
+    },
+    "colonial-region-claimed": {
+      "when": { "colonialRegion": "claimed" },
+      "note": "Brazil granted to Portugal, as the game writes it for Austria, Aragon and C01 on 15 September 1550 (Amapá).",
+      "text": {
+        "colonisationpanel/no_colonist_window/region_text": [
+          { "literal": "\n" },
+          { "key": "colonial_brazil", "suffix": " " },
+          { "key": "PAPAL_GRANT", "vars": { "WHO": { "key": "POR", "suffix": "(@POR)" } } },
+        ],
+      },
+    },
     "hidden": {
       "note": "Hidden in every view of the coverage survey (the base game): the game decides these from its data or a click; show one by hand.",
       "hide": [

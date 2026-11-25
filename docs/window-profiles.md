@@ -112,7 +112,9 @@ release.
 | `game.cradleOfCivilization` | `yes`, `no` | The DLC Cradle of Civilization is active (the save's `dlc_enabled`); the game gates development exploitation on it. |
 | `country.patriarchAuthority` | a number from 0 to 1 | The chosen country's patriarch authority. A number, which a rule's `slider` reads; no selector reads it. |
 | `country.religionIcon` | `none`, `secondary`, `school` | The religion icon the diplomacy view shows by the chosen country's name: its secondary religion, else (with Cradle of Civilization) its religious school, else none; without one the game moves the name and fog labels 20 px left. The lobby's country panel shows only the secondary religion: without one it moves the main religion icon 18 px down. |
+| `country.institution` | `feudalism`, `renaissance`, `new_world_i`, `printing_press`, `global_trade`, `manufactories`, `enlightenment`, `industrialization`, `none` | The institution the technology view's institutions window opens on: the first one the chosen country has not embraced (the save's `institutions`, in the base game's order, which Anbennar keeps), `none` when it has embraced all. |
 | `province.hreIndicator` | `yes`, `no` | The game shows its Holy Roman Empire indicator (the empire exists and the province can be part of it). The map decides that, not the save; it stays at the default until you set it. |
+| `province.colonialRegion` | `none`, `region`, `claimed` | What the colonisation panel writes for an uncolonised province: nothing outside a colonial region, the region's name in one, and also who the Pope granted it to when the player's religion has a papacy. The map decides the region, not the save; it stays at the default until you set it. |
 | `owner.buildsNativeBuildings` | `yes`, `no` | The owner builds native buildings. A save does not say; it stays at the default until you set it. |
 
 ### Exclusive groups

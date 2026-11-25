@@ -112,11 +112,20 @@ below (no capture was taken again). The generated tables above are this run.
   that text, which Etch already counts (the live measure had it right); the box only lacked the
   text. The profile writes the survey's faction of 20k. One rect fewer in vanilla, Bigger UI and
   Proper 2K UI Enhanced (there two lines, 52 px high), none of the other sets changes.
+- **The institution and the colonial region** (etch#604): two facts of the game's state. The
+  institutions window opens on the first institution the country has not embraced (`eu4.exe`
+  `0x1018150`, in the database's order), which a save's `institutions` gives as the fact
+  `country.institution`; the selector `institution` follows it. The colonisation panel's
+  `region_text` (`0xE31A50`) is empty in a province outside a colonial region, and otherwise a line
+  break, the region's name and, when the player's religion has a papacy that granted the region,
+  `PAPAL_GRANT` with the country ("Colonial Brazil Claimed by Portugal(@POR)"); a new selector
+  `colonialRegion` (none, region, claimed) has the three, from the map, not the save. The survey's
+  measure 4 now also fits a selector whose rules only write texts, by the rects of those texts and,
+  on a tie, by the text itself. Two rects fewer on each of the three countries; none of the other
+  sets changes.
 
 With the profiles, rects off on `main` against the section below (rules of `b156984`). Every
-change of a view measure was a gain but one: the three countries' institutions view, whose
-`when_embraced` the game writes for the printing press and the preview, at the selector's default,
-for industrialization.
+change of a view measure was a gain.
 
 | Set | With profiles: rects off | Offline preview: rects off | Live: rects off |
 | --- | --- | --- | --- |
@@ -126,16 +135,12 @@ for industrialization.
 | Bigger UI, 1920×1080 and 1280×720 | 0 (23) | 15 (38) | 0 (9) |
 | Proper 2K UI Enhanced, 2560×1440 | 17 (80) | 38 (101) | 3 (40) |
 | Anbennar with Proper 2K UI Enhanced and P2KE, 2560×1440 | 12 (52) | 22 (62) | 6 (20) |
-| Austria, the emperor | 2 (12) | 7 (17) | 0 (9) |
-| Aragon, the Pope's controller | 2 (12) | 7 (17) | 0 (9) |
-| C01, a colonial nation | 2 (3) | 5 (6) | 0 (1) |
+| Austria, the emperor | 0 (12) | 5 (17) | 0 (9) |
+| Aragon, the Pope's controller | 0 (12) | 5 (17) | 0 (9) |
+| C01, a colonial nation | 0 (3) | 3 (6) | 0 (1) |
 
 Visibility is unchanged in every set. **What is left with the profiles**, in vanilla, Bigger UI and
-Anbennar alone at each size: nothing. On the three countries: the institutions'
-`when_embraced` (the printing press, see above) and the colonisation panel's `region_text`, two
-lines in the game, a line break and the province's colonial region with who claims it ("Colonial
-Brazil Claimed by Portugal"). These are etch#604's: texts the game's code fills from the game's
-state. Nothing of etch#606 is left: the pie
+Anbennar alone at each size and on the three countries: nothing. Nothing of etch#606 is left: the pie
 chart (etch#614), the patriarch marker (etch#615), the crown land icons and the map mode buttons
 (etch#672) and Proper 2K UI Enhanced's minimap (etch#693) are fixed.
 

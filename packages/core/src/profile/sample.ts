@@ -18,6 +18,8 @@ import type { LayoutContent } from '../layout/window.ts';
 import type { GuiFile, Widget } from '../model/gui.ts';
 import { scalarIn, valueIn } from '../save/save.ts';
 import { mapAreaOf, type MapAreas } from '../script/map-areas.ts';
+import type { ValueNode } from '../script/tree.ts';
+import { BASE_INSTITUTIONS } from './facts.ts';
 import type {
   ContentSource,
   GeneratedKind,
@@ -533,6 +535,7 @@ export function saveFacts(choice: SaveChoice): Record<string, string> {
               : cradle === true && scalarIn(country, 'religious_school') !== undefined
                 ? 'school'
                 : 'none',
+          ...institutionFact(valueIn(country, 'institutions')),
           ...numericFact('country.patriarchAuthority', scalarIn(country, 'patriarch_authority')),
         };
   const province = choice.block('province');
@@ -579,6 +582,19 @@ export function saveFacts(choice: SaveChoice): Record<string, string> {
         }),
     ),
   };
+}
+
+/**
+ * `country.institution`: the first institution of the country's `institutions` it has not
+ * embraced, `none` when it has embraced them all; left out when the save lacks the list or it is
+ * not the base game's eight.
+ */
+function institutionFact(value: ValueNode | undefined): Record<string, string> {
+  if (value?.kind !== 'block') return {};
+  const flags = value.entries.map((e) => (e.kind === 'scalar' ? e.text : undefined));
+  if (flags.length !== BASE_INSTITUTIONS.length || flags.some((f) => f === undefined)) return {};
+  const first = flags.findIndex((f) => Number(f) === 0);
+  return { 'country.institution': first === -1 ? 'none' : (BASE_INSTITUTIONS[first] ?? 'none') };
 }
 
 /** A numeric fact as the save writes it, left out when the save lacks it or it is no number. */

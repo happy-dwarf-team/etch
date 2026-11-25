@@ -143,7 +143,7 @@ provinces={
 }
 countries={
 	SWE={ capital=1 trade_port=4 government_name="monarchy" parliament={ } }
-	DAN={ capital=12 trade_port=2 government_name="kingdom" secondary_religion=sunni patriarch_authority=0.462 }
+	DAN={ capital=12 trade_port=2 government_name="kingdom" secondary_religion=sunni patriarch_authority=0.462 institutions={ 1 1 1 0 0 0 0 0 } }
 }
 `;
 
@@ -824,6 +824,7 @@ describe('sampleData', () => {
     });
     expect(saveFacts(new SaveChoice(s, 'DAN', undefined))).toEqual({
       'country.religionIcon': 'secondary',
+      'country.institution': 'printing_press',
       'country.patriarchAuthority': '0.462',
     });
   });

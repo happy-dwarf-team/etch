@@ -45,6 +45,10 @@ The menu stays open while you click in it. Click elsewhere or press <kbd>Esc</kb
    player's capital as the province. The **Data ▾** button then names the province and the save's
    date.
 
+A save also sets the selectors that follow the game's data. For example, the technology view's
+institutions window shows the first institution your country has not embraced, as the game does.
+See [Views](views.md).
+
 Once a save is read, under **Save**:
 
 - **Country…** chooses which country of the save counts as the player. That decides which

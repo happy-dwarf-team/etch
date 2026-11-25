@@ -41,6 +41,7 @@ import {
   liveView,
   profileModMatches,
   readProfile,
+  ruleText,
   sampleData,
   widgetsAt,
   type LiveSnapshot,
@@ -345,45 +346,62 @@ export class CorpusPlaysetFiles {
     };
     const values: Record<string, string> = { ...liveSelectors(profile, window, snapshot).values };
     // A selector whose rules only move widgets (the stability marker, by the country's stability)
-    // leaves the visibility the same at every value, so the snapshot's visibility cannot tell it.
-    // The author who knows the state would set it: take the value that puts the moved widgets
-    // where the game has them, the default on a tie.
+    // or only write their texts (the institution the institutions window shows) leaves the
+    // visibility the same at every value, so the snapshot's visibility cannot tell it. The author
+    // who knows the state would set it: take the value that puts the moved widgets where the game
+    // has them, and gives the written ones the game's rects, the default on a tie.
     for (const selector of profile.selectors) {
       if (selector.kind === 'resolution') continue;
       const rules = profile.rules.filter((r) => r.when.some((c) => c.selector === selector.id));
       const moved = [
         ...new Set(rules.flatMap((r) => [...r.offset, ...r.position].map((ref) => ref.path))),
       ];
+      const written = [...new Set(rules.flatMap((r) => (r.text ?? []).map((ref) => ref.path)))];
       if (
-        moved.length === 0 ||
+        moved.length + written.length === 0 ||
         rules.some((r) => r.show.length + r.hide.length + r.notCreated.length > 0) ||
         profile.groups.some((g) => g.selector === selector.id)
       ) {
         continue;
       }
       const game = new Map(snapshot.widgets.map((w) => [w.path.toLowerCase(), w.rect]));
-      const targets = moved.flatMap((path) => {
+      const targets = [
+        ...moved.map((path) => ({ path, sized: false })),
+        ...written.filter((path) => !moved.includes(path)).map((path) => ({ path, sized: true })),
+      ].flatMap(({ path, sized }) => {
         const rect = game.get(path.toLowerCase());
-        return rect === undefined ? [] : widgetsAt(window, path).map((w) => ({ w, rect }));
+        return rect === undefined ? [] : widgetsAt(window, path).map((w) => ({ w, rect, sized }));
       });
       if (targets.length === 0) continue;
       const order = [
         ...selector.values.filter((v) => v.id === selector.default),
         ...selector.values.filter((v) => v.id !== selector.default),
       ];
-      let best: { value: string; score: number } | undefined;
+      // Values whose rects tie (one line of text each) are told apart by the text itself.
+      const textScore = (set: Readonly<Record<string, string>>): number =>
+        writtenTextsShown(profile, set, snapshot, this.localise);
+      let best: { value: string; score: number; text: number } | undefined;
       for (const value of order) {
-        const layout = await layOut({ ...values, [selector.id]: value.id });
-        const score = targets.filter(({ w, rect }) =>
+        const set = { ...values, [selector.id]: value.id };
+        const layout = await layOut(set);
+        const score = targets.filter(({ w, rect, sized }) =>
           layout.widgets.some(
             (l) =>
               l.widget === w &&
               l.row === undefined &&
               Math.round(l.x) === rect[0] &&
-              Math.round(l.y) === rect[1],
+              Math.round(l.y) === rect[1] &&
+              (!sized || (Math.round(l.width) === rect[2] && Math.round(l.height) === rect[3])),
           ),
         ).length;
-        if (best === undefined || score > best.score) best = { value: value.id, score };
+        const text = written.length === 0 ? 0 : textScore(set);
+        if (
+          best === undefined ||
+          score > best.score ||
+          (score === best.score && text > best.text)
+        ) {
+          best = { value: value.id, score, text };
+        }
       }
       if (best !== undefined) values[selector.id] = best.value;
     }
@@ -484,4 +502,29 @@ async function isDirectory(path: string): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+/**
+ * How many texts the profile's rules write at the selector values `set` (a selector it leaves out at
+ * its default) equal the snapshot's, the game's colour codes left out of both: how the coverage
+ * tells apart values of a selector whose texts give the same rects (etch#604).
+ */
+export function writtenTextsShown(
+  profile: WindowProfile,
+  set: Readonly<Record<string, string>>,
+  snapshot: LiveSnapshot,
+  localise: (key: string) => string | undefined,
+): number {
+  const shown = new Map(snapshot.widgets.map((w) => [w.path.toLowerCase(), w.text]));
+  const plain = (text: string): string => text.replace(/§./g, '');
+  const valueOf = (id: string): string =>
+    set[id] ?? profile.selectors.find((s) => s.id === id)?.default ?? '';
+  return profile.rules
+    .filter((r) => r.when.every((c) => c.values.includes(valueOf(c.selector))))
+    .flatMap((r) => r.text ?? [])
+    .filter((t) => {
+      const game = shown.get(t.path.toLowerCase());
+      const written = t.parts.map((p) => ruleText(p, localise)).join('');
+      return game !== undefined && plain(written) === plain(game);
+    }).length;
 }
