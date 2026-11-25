@@ -137,6 +137,46 @@ export interface CwtoolsGameFolderCase {
   readonly declined: boolean;
 }
 
+/**
+ * The `vscode.env.machineId` that CWTools 0.10.31 takes for its own development host. VS Code gives
+ * it to every extension when its telemetry is off. CWTools then names its cache folder by a
+ * `vscode-userdata:` address instead of a path, and on Windows its server fails on that name and
+ * reports no problems at all (cwtools/cwtools-vscode#167). On Linux and macOS the name is a valid,
+ * if odd, folder name, so CWTools keeps working there.
+ */
+export const CWTOOLS_DEV_MACHINE_ID = 'someValue.machineId';
+
+/** The issue in CWTools' repository about its checks and VS Code's telemetry. */
+export const CWTOOLS_TELEMETRY_ISSUE = 'https://github.com/cwtools/cwtools-vscode/issues/167';
+
+/** What the notice about CWTools and VS Code's telemetry is decided on. */
+export interface CwtoolsTelemetryCase {
+  /** The language of the document that opened: the notice comes with CWTools' `eu4` mode. */
+  readonly languageId: string;
+  /** CWTools is installed. */
+  readonly cwtools: boolean;
+  /** `vscode.env.machineId`, which CWTools tests. */
+  readonly machineId: string;
+  /** `process.platform`. */
+  readonly platform: string;
+  /** The user chose Don't Show Again on this notice. */
+  readonly declined: boolean;
+}
+
+/**
+ * Whether Etch says that CWTools reports no problems: an `eu4` file opened on Windows with CWTools
+ * installed, and VS Code gives CWTools' development machine id, as it does with telemetry off.
+ */
+export function warnsCwtoolsTelemetry(document: CwtoolsTelemetryCase): boolean {
+  return (
+    document.cwtools &&
+    !document.declined &&
+    document.platform === 'win32' &&
+    document.languageId === CWTOOLS_EU4_LANGUAGE &&
+    document.machineId === CWTOOLS_DEV_MACHINE_ID
+  );
+}
+
 /** Whether Etch offers its game folder to CWTools: an `eu4` file opened and CWTools has none. */
 export function offersCwtoolsGameFolder(document: CwtoolsGameFolderCase): boolean {
   return (

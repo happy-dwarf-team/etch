@@ -11,6 +11,10 @@
 // settings that give the mod's script files that language. The setting has window scope, so they
 // go to the workspace (the folder's `.vscode/settings.json`), never to a folder of a multi-root
 // workspace. The notice comes up again after CWTools is installed from the first one.
+//
+// CWTools 0.10.31 reports no problems on Windows while VS Code's telemetry is off
+// (cwtools/cwtools-vscode#167). Once a window, when an `eu4` file opens in that state, Etch says
+// so and can open the setting; it never changes the setting itself.
 import { resolve } from 'node:path';
 import * as vscode from 'vscode';
 import { findGameInSteam, isGameFolder, systemEnvironment } from '@etch/core/playset';
@@ -19,9 +23,11 @@ import {
   CWTOOLS_GAME_FOLDER,
   CWTOOLS_ID,
   CWTOOLS_PARADOX_LANGUAGE,
+  CWTOOLS_TELEMETRY_ISSUE,
   SCRIPT_LANGUAGE_EXTENSIONS,
   offersCwtoolsGameFolder,
   scriptLanguageNotice,
+  warnsCwtoolsTelemetry,
   withScriptAssociations,
 } from './script-language.ts';
 import { ACTIONS, notify } from './notify.ts';
@@ -32,6 +38,8 @@ const DECLINED = 'etch.scriptLanguageNotice.declined';
 const FOLDER_DECLINED = 'etch.scriptLanguageNotice.folderDeclined';
 /** The global state key that Don't Show Again sets on the offer of the game folder to CWTools. */
 const GAME_FOLDER_DECLINED = 'etch.scriptLanguageNotice.cwtoolsGameFolderDeclined';
+/** The global state key that Don't Show Again sets on the notice about CWTools and telemetry. */
+const TELEMETRY_DECLINED = 'etch.scriptLanguageNotice.cwtoolsTelemetryDeclined';
 const DONT_SHOW = "Don't Show Again";
 const USE_FOLDER = 'Use This Folder';
 const COLOUR_FILES = 'Colour Files in This Folder';
@@ -42,6 +50,14 @@ export const FOLDER_DOCS =
 /** The docs section on CWTools and the game folder. */
 export const GAME_FOLDER_DOCS =
   'https://etch.happydwarf.dev/docs/getting-started/install/#cwtools-and-the-game-folder';
+/** The docs section on CWTools with VS Code's telemetry off. */
+export const TELEMETRY_DOCS =
+  'https://etch.happydwarf.dev/docs/getting-started/install/#cwtools-with-telemetry-off';
+const OPEN_TELEMETRY_SETTING = 'Open Telemetry Setting';
+const TELEMETRY_MESSAGE =
+  "CWTools shows no problems while VS Code's telemetry is off. " +
+  `It is a CWTools bug on Windows ([CWTools issue #167](${CWTOOLS_TELEMETRY_ISSUE})): ` +
+  'turn telemetry on and restart VS Code, or wait for a CWTools update that fixes it.';
 
 const MESSAGE =
   'Script files open as Plain Text, without colours: Etch adds none. ' +
@@ -101,9 +117,23 @@ export function registerScriptLanguageNotice(context: vscode.ExtensionContext): 
     if (gameFolder === undefined || !decide(gameFolder)) return;
     await showGameFolderNotice(context, gameFolder);
   };
+  const considerTelemetry = (document: vscode.TextDocument): void => {
+    if (shown.has('telemetry')) return;
+    const warns = warnsCwtoolsTelemetry({
+      languageId: document.languageId,
+      cwtools: vscode.extensions.getExtension(CWTOOLS_ID) !== undefined,
+      machineId: vscode.env.machineId,
+      platform: process.platform,
+      declined: context.globalState.get<boolean>(TELEMETRY_DECLINED, false),
+    });
+    if (!warns) return;
+    shown.add('telemetry');
+    void showTelemetryNotice(context);
+  };
   const consider = (editor: vscode.TextEditor | undefined): void => {
     if (editor === undefined) return;
     const { document } = editor;
+    considerTelemetry(document);
     void considerGameFolder(document);
     const notice = scriptLanguageNotice({
       scheme: document.uri.scheme,
@@ -216,6 +246,30 @@ async function showGameFolderNotice(
   }
   // No restart: CWTools reads cwtools.cache.eu4 when the setting changes, builds its cache of the
   // base game and checks the workspace again.
+}
+
+/**
+ * Says that CWTools shows no problems with telemetry off. Open Telemetry Setting only opens
+ * `telemetry.telemetryLevel` in the Settings editor: the choice stays the user's.
+ */
+async function showTelemetryNotice(context: vscode.ExtensionContext): Promise<void> {
+  const choice = (
+    await notify(
+      'warning',
+      TELEMETRY_MESSAGE,
+      {
+        label: OPEN_TELEMETRY_SETTING,
+        run: () =>
+          vscode.commands.executeCommand(
+            'workbench.action.openSettings',
+            'telemetry.telemetryLevel',
+          ),
+      },
+      { label: LEARN_MORE, run: () => vscode.env.openExternal(vscode.Uri.parse(TELEMETRY_DOCS)) },
+      { label: DONT_SHOW },
+    )
+  )?.label;
+  if (choice === DONT_SHOW) await context.globalState.update(TELEMETRY_DECLINED, true);
 }
 
 /** Adds Etch's `files.associations` entries to the workspace settings. */

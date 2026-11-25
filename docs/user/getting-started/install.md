@@ -201,6 +201,28 @@ the window says **eu4**. If it says **Plain Text** or **paradox**, see
 [A mod in a folder of its own](#a-mod-in-a-folder-of-its-own). Etch cannot hide CWTools' own
 answers: its hover on a sprite stays next to CWTools' hover.
 
+### CWTools with telemetry off
+
+On Windows, CWTools 0.10.31 shows no problems at all while VS Code's telemetry is off. Telemetry
+is the usage and error data VS Code sends to Microsoft, and the setting
+`telemetry.telemetryLevel` turns it off. Your files keep their colours, but the Problems panel
+stays empty, however many mistakes your scripts have. This is a bug in CWTools, not in your mod:
+see [CWTools issue #167](https://github.com/cwtools/cwtools-vscode/issues/167). On Linux and
+macOS, CWTools keeps working.
+
+When you open a file that CWTools checks as an EU4 file, on Windows with telemetry off, Etch
+shows a warning at the bottom right. It says that CWTools shows no problems while telemetry is
+off, and links the CWTools issue. Etch shows it at most once in each VS Code window.
+
+- **Open Telemetry Setting** opens `telemetry.telemetryLevel` in the Settings editor. Etch does
+  not change it for you: whether VS Code sends that data is your choice. To get CWTools' checks
+  back, set it to any value other than `off`, then restart VS Code.
+- **Learn More** opens this section of Etch's docs in your browser.
+- **Don't Show Again**: Etch never shows this warning again, in any window.
+
+If you want to keep telemetry off, wait for a CWTools update that fixes the bug. In an editor
+built without telemetry, such as VSCodium, the setting does not help either.
+
 ## The Get Started page
 
 Once Etch is installed, VS Code opens **Get Started with Etch** on its Welcome page. Six steps
