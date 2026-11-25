@@ -25,7 +25,15 @@ export function fires(time: number, from: number, to: number, loop: number | und
  */
 export const PARTICLE_BUDGET = 100_000;
 
-/** Whether another effect may start while `alive` particles live. */
-export function withinBudget(alive: number): boolean {
-  return alive < PARTICLE_BUDGET;
+/**
+ * The effects the preview keeps running at most before it starts no new one: an effect that
+ * emits forever but keeps almost no particle alive never finishes and adds almost nothing to the
+ * particle count, so a looping state would otherwise pile up copies without bound (etch#725).
+ * The game has no such limit either.
+ */
+export const EFFECT_BUDGET = 1_000;
+
+/** Whether another effect may start while `alive` particles live in `running` effects. */
+export function withinBudget(alive: number, running = 0): boolean {
+  return alive < PARTICLE_BUDGET && running < EFFECT_BUDGET;
 }

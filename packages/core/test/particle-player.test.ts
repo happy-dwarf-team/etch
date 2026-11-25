@@ -331,6 +331,32 @@ describe('a running effect', () => {
       expect(first.y).toBeCloseTo(0, 9);
     });
 
+    it('ignores a step of rounding noise, as a replay after a seek leaves (etch#725)', () => {
+      // One particle 2 from a spin axis along +Y, one radian a second, stepped as the mesh
+      // view's replay steps: 1/30 s, a leftover of about 1e-16 s, then 1/30 s again. Divided by
+      // dt², the leftover's rounding noise threw the particle off its circle.
+      const effect = new ParticleEffect(
+        system(
+          `particle = { name = "p"
+            force = { type = "spin" name = "f" amount = 1 direction = { 0 1 0 } position = { 0 0 0 } }
+            subsystem = { max_amount = 1 emission = 100 life = 100 velocity = 0
+              emitter_type = box box_emitter_x = 2 force = f } }`,
+          'p',
+        ),
+      );
+      const radius = (): number => {
+        const q = effect.quads(0)[0];
+        if (q === undefined) throw new Error('no particle');
+        return Math.hypot(q.x, q.z);
+      };
+      for (let i = 0; i < 30; i++) effect.step(1 / 30, IDENTITY);
+      for (const leftover of [2.8e-17, 1.1e-16, 2.2e-16, 4.4e-16]) {
+        effect.step(leftover, IDENTITY);
+        for (let i = 0; i < 30; i++) effect.step(1 / 30, IDENTITY);
+        expect(radius()).toBeCloseTo(2, 6);
+      }
+    });
+
     it('turns at amount radians a second when nothing else moves the particle at scale 1', () => {
       // The velocity stays along the last chord, so the push cancels it all: a circle.
       const end = spun(1, 11);

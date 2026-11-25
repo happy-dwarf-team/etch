@@ -1235,7 +1235,12 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
      went from 15 to 40 to 48 in about a minute, past 16 and still growing.
      The preview drops its limit of 16 copies per event and starts every
      copy, with one guard of its own: no new effect starts while 100,000
-     particles are alive, and the status line then says so.
+     particles are alive, and the status line then says so. Since etch#725
+     also while 1,000 effects run, since an effect that emits forever but
+     keeps almost no particle alive never finishes and adds almost nothing to
+     the particle count. The same fix runs no step shorter than 1e-9 s: the
+     replay's leftover to a frame is often about 1e-16 s, and the spin force,
+     which divides by dt², turned its rounding noise into a throw.
   8. Settle a trail's look without a `Trail` shader effect, which vanilla's
      `gfx/FX/particle.shader` lacks. Done 25 November 2026, checked in the
      game (Steam 1.37.5, a test mod over Trier, `reload assets`): the band is

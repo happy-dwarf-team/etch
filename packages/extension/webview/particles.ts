@@ -270,7 +270,7 @@ export class ParticleLayer {
       // `trigger_once`: only while the time since the state started is within one loop.
       if (event.triggerOnce && (loop === undefined || to > loop)) continue;
       if (!fires(event.time, from + event.stateStart, to + event.stateStart, loop)) continue;
-      if (!withinBudget(this.count)) {
+      if (!withinBudget(this.count, this.running.length)) {
         this.heldBack = true;
         continue;
       }

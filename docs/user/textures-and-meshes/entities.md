@@ -244,10 +244,13 @@ These parts differ:
   [Particle effects](particles.md)). The game draws the band with that effect, Etch still in grey.
 - Where a state with a `time_offset` starts. The game adds a random part of its second number;
   Etch starts at the first.
-- How many particles can be alive. Like the game, Etch starts a new copy of an event's effect each
-  time the event comes round, while the earlier copies still play. But once 100,000 particles are
-  alive, Etch starts no new copy, and the line at the bottom says so. The game has no limit, so an
-  effect that sends out particles forever, started on every loop of its state, keeps growing there.
+- How many particles and effects can be alive. Like the game, Etch starts a new copy of an
+  event's effect each time the event comes round, while the earlier copies still play. But once
+  100,000 particles are alive, or 1,000 effects are running, Etch starts no new copy, and the line
+  at the bottom says so. The game has no limit, so an effect that sends out particles forever,
+  started on every loop of its state, keeps growing there. The 1,000 effects matter for an effect
+  that runs forever but keeps few particles alive, such as one with a low `emission` or a short
+  `life`.
 
 ## What it doesn't do
 
