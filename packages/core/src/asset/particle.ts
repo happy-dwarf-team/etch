@@ -75,7 +75,8 @@ const SUBSYSTEM: [string, ParticleKeyDoc][] = [
     'sort',
     doc(
       '`depth`, `distance` or `age`, in any case',
-      'The order in which its particles are drawn. Unsorted when the block has none the game knows (it skips one it does not know).',
+      'The order in which its particles, and their child systems, are drawn: the farthest from the camera (`depth` along the view, `distance` in a straight line) or the oldest first. The game sorts a little each frame and never moves the last particle in its list, usually the newest. Unsorted when the block has none the game knows (it skips one it does not know).',
+      'game',
     ),
   ],
   [

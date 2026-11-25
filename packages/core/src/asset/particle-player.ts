@@ -44,7 +44,10 @@
 //   while the parent lives, from the parent's last place to its new one, with no turn (a
 //   world-space child) or at the origin (`local_space`), and a dead parent keeps its slot,
 //   undrawn, until its children are gone.
-// - What is drawn in what order (step 11): see `layers`.
+// - What is drawn in what order (step 11): see `layers`. A subsystem's `sort` reorders its
+//   particles in place, a little each frame, and its child systems follow that order (step 20):
+//   see `sort`. A dead particle's place goes to the last live one, front to back; a dead parent
+//   waits at the front of the waiting ones, and a freed slot is handed out first.
 //
 // What differs: the seed of the random numbers (the game takes it from the clock, so no two of its
 // runs match either), and the order of the draws of an effect with child systems.
@@ -207,10 +210,12 @@ interface SubsystemState {
   readonly offset: [number, number, number];
   /** Per slot (`max_amount` of them), one state for each child subsystem; none without. */
   readonly slots: readonly (readonly SubsystemState[])[];
-  /** Whether a live or waiting parent holds each slot. */
-  readonly used: boolean[];
+  /** The slots no live or waiting parent holds, in the order the game hands them out. */
+  readonly free: number[];
   /** Dead parents that keep their slot until their children are gone, not drawn. */
   readonly waiting: Particle[];
+  /** Which of `SORT_GAPS` the next pass of the sort uses. */
+  sortPass: number;
 }
 
 const DEGREES = Math.PI / 180;
@@ -273,8 +278,9 @@ export class ParticleEffect {
       accumulated: 0,
       offset,
       slots,
-      used: slots.map(() => false),
+      free: slots.map((_, slot) => slot),
       waiting: [],
+      sortPass: 0,
     };
   }
 
@@ -331,17 +337,42 @@ export class ParticleEffect {
     }
   }
 
-  /** The quads of one subsystem, in world space, in its draw order before any camera sort. */
+  /** The quads of one subsystem, in world space, in its draw order. */
   quads(subsystem: number): ParticleQuad[] {
     const state = this.states[subsystem];
     return state === undefined ? [] : this.quadsOf(state);
   }
 
   /**
+   * One pass of the game's `sort` (step 20), which it runs once a frame after the update, for a
+   * camera at `eye` looking along `forward` (in the file's space). Each subsystem with a `sort`
+   * reorders its live particles in place, and the order stays until the next pass, so the
+   * particles and, through them, their child systems keep it. A pass compares each particle with
+   * the one `SORT_GAPS[k]` places on, in blocks of twice that, first from the start and then
+   * from one gap on, and swaps them when the later one is farther (`depth`: along `forward`;
+   * `distance`: from `eye`) or older (`age`); `invert` swaps the other way. Only whole blocks
+   * that end before the last particle take part, so the last particle is never moved by the sort
+   * (and two particles are never sorted). The children of every live and waiting parent are
+   * sorted too, whether or not their parent's subsystem sorts. Positions are the particles' own,
+   * so those of a `local_space` subsystem are compared with the camera as they are.
+   */
+  sort(eye: readonly number[], forward: readonly number[]): void {
+    const visit = (state: SubsystemState): void => {
+      sortPass(state, eye, forward);
+      if (state.slots.length === 0) return;
+      for (const p of [...state.particles, ...state.waiting]) {
+        for (const child of state.slots[p.slot] ?? []) visit(child);
+      }
+    };
+    for (const state of this.states) visit(state);
+  }
+
+  /**
    * What to draw, in the game's order (step 11): each subsystem, then for each of its particles
    * (the live ones, then the dead ones that wait for their children) each child system's own
    * particles, and theirs in turn. A child's particles are one layer per parent. The game draws
-   * an effect's layers that are not trails in this order, then its trails in this order.
+   * an effect's layers that are not trails in this order, then its trails in this order. Both
+   * orders follow the particles' order, which `sort` changes (step 20).
    */
   layers(): { readonly subsystem: ParticleSubsystem; readonly quads: ParticleQuad[] }[] {
     const out: { subsystem: ParticleSubsystem; quads: ParticleQuad[] }[] = [];
@@ -393,28 +424,27 @@ export class ParticleEffect {
     const { def } = state;
     const curves = this.system.curves;
     const particles = state.particles;
-    for (let i = particles.length - 1; i >= 0; i--) {
+    // As the game (step 20): front to back, the last live particle takes a dead one's place and
+    // is looked at next, so the order the sort left is kept but for those moves.
+    let i = 0;
+    while (i < particles.length) {
       const p = particles[i];
-      if (p === undefined) continue;
+      if (p === undefined) break;
       p.age += dt;
-      if (p.age < 0 || p.age > p.life) {
-        // A parent whose children live keeps its slot until they are gone.
-        if (p.slot >= 0) {
-          if ((state.slots[p.slot] ?? []).some((child) => alive(child) > 0)) {
-            state.waiting.push(p);
-          } else {
-            state.used[p.slot] = false;
-          }
-        }
-        // A trail keeps its particles in the order they came out, the band's order.
-        if (def.trail) {
-          particles.splice(i, 1);
-          continue;
-        }
+      if (p.age >= 0 && p.age <= p.life) {
+        i++;
+        continue;
+      }
+      // A trail keeps its particles in the order they came out, the band's order.
+      if (def.trail) particles.splice(i, 1);
+      else {
         const last = particles.pop();
         if (last !== undefined && i < particles.length) particles[i] = last;
       }
+      // A dead parent goes to the front of those that wait for their children.
+      if (p.slot >= 0) state.waiting.unshift(p);
     }
+    this.release(state);
     if (state.duration < 0 && state.pulseDuration > 0 && state.pulseSilence > 0) {
       state.timer += dt;
       if (state.emitting && state.timer > state.pulseDuration) {
@@ -467,7 +497,40 @@ export class ParticleEffect {
     if (state.slots.length > 0) this.updateChildren(state, dt);
   }
 
-  /** Runs the children of each live and each waiting parent, and frees the slots they leave. */
+  /**
+   * Frees the slots of the waiting parents whose children are gone, as the game does at the start
+   * of an update: front to back, the last waiting parent takes a freed one's place and is looked at
+   * next, and a freed slot is the first one handed out again.
+   */
+  private release(state: SubsystemState): void {
+    const { waiting } = state;
+    let i = 0;
+    while (i < waiting.length) {
+      const p = waiting[i];
+      if (p === undefined) break;
+      if ((state.slots[p.slot] ?? []).some((child) => alive(child) > 0)) {
+        i++;
+        continue;
+      }
+      state.free.unshift(p.slot);
+      const last = waiting.pop();
+      if (last !== undefined && i < waiting.length) waiting[i] = last;
+    }
+  }
+
+  /**
+   * The slots of n new parents, as the game hands them out: the first n free ones, and as many
+   * waiting parents as the smaller of n and their number go from the front of the waiting ones to
+   * their back (the game moves their records past the new ones), with their slots turned to match.
+   */
+  private takeSlots(state: SubsystemState, n: number): number[] {
+    const taken = state.free.splice(0, n);
+    const moved = Math.min(taken.length, state.waiting.length);
+    state.waiting.push(...state.waiting.splice(0, moved));
+    return [...taken.slice(taken.length - moved), ...taken.slice(0, taken.length - moved)];
+  }
+
+  /** Runs the children of each live and each waiting parent. */
   private updateChildren(state: SubsystemState, dt: number): void {
     const run = (p: Particle, emits: boolean): void => {
       for (const child of state.slots[p.slot] ?? []) {
@@ -484,13 +547,6 @@ export class ParticleEffect {
     };
     for (const p of state.particles) run(p, true);
     for (const p of state.waiting) run(p, false);
-    for (let i = state.waiting.length - 1; i >= 0; i--) {
-      const p = state.waiting[i];
-      if (p === undefined) continue;
-      if ((state.slots[p.slot] ?? []).some((child) => alive(child) > 0)) continue;
-      state.used[p.slot] = false;
-      state.waiting.splice(i, 1);
-    }
   }
 
   private spawn(
@@ -536,6 +592,7 @@ export class ParticleEffect {
     const local = def.localSpace;
     const node = local ? IDENTITY : emitterNode;
     const scale = local ? 1 : this.scale;
+    const slots = state.slots.length === 0 ? [] : this.takeSlots(state, n);
     for (let i = 0; i < n; i++) {
       const color = colors.map((values) => clamp255(values[i] ?? 0)) as [
         number,
@@ -574,12 +631,9 @@ export class ParticleEffect {
           ];
       const columns = def.texture.columns;
       const rows = def.texture.rows;
-      // A parent takes the first free slot; the blocks there keep their time.
-      const slot = state.used.indexOf(false);
-      if (slot >= 0) {
-        state.used[slot] = true;
-        for (const child of state.slots[slot] ?? []) child.particles.length = 0;
-      }
+      // A parent takes a free slot; the blocks there keep their time.
+      const slot = slots[i] ?? -1;
+      for (const child of state.slots[slot] ?? []) child.particles.length = 0;
       const x = (base[0] ?? 0) + state.offset[0] + ox;
       const y = (base[1] ?? 0) + state.offset[1] + oy;
       const z = (base[2] ?? 0) + state.offset[2] + oz;
@@ -884,6 +938,38 @@ function spin(
     accel[i * 3] = (accel[i * 3] ?? 0) + (ahead[0] - offset[0] - dt * along * t[0]) * k;
     accel[i * 3 + 1] = (accel[i * 3 + 1] ?? 0) + (ahead[1] - offset[1] - dt * along * t[1]) * k;
     accel[i * 3 + 2] = (accel[i * 3 + 2] ?? 0) + (ahead[2] - offset[2] - dt * along * t[2]) * k;
+  }
+}
+
+/** The gap of each pass of the sort, in turn (step 20). */
+export const SORT_GAPS: readonly number[] = [1, 4, 1, 16, 1, 64];
+
+/** One pass of a subsystem's sort (`ParticleEffect.sort`); none without a `sort`. */
+function sortPass(state: SubsystemState, eye: readonly number[], forward: readonly number[]): void {
+  const { def, particles } = state;
+  const n = particles.length;
+  if (def.sort === 'none' || n === 0) return;
+  const gap = SORT_GAPS[state.sortPass] ?? 1;
+  state.sortPass = (state.sortPass + 1) % SORT_GAPS.length;
+  const [ex = 0, ey = 0, ez = 0] = eye;
+  const [fx = 0, fy = 0, fz = 0] = forward;
+  const key = (p: Particle): number => {
+    if (def.sort === 'age') return p.age;
+    if (def.sort === 'depth') return (p.x - ex) * fx + (p.y - ey) * fy + (p.z - ez) * fz;
+    return (p.x - ex) ** 2 + (p.y - ey) ** 2 + (p.z - ez) ** 2;
+  };
+  for (const first of [0, gap]) {
+    for (let start = first; start + 2 * gap < n; start += 2 * gap) {
+      for (let k = start; k < start + gap; k++) {
+        const a = particles[k];
+        const b = particles[k + gap];
+        if (a === undefined || b === undefined) continue;
+        if (def.invert ? key(a) > key(b) : key(a) < key(b)) {
+          particles[k] = b;
+          particles[k + gap] = a;
+        }
+      }
+    }
   }
 }
 

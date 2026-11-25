@@ -242,6 +242,11 @@ These parts work as in the game:
   the effect's particles that are not trails, subsystem by subsystem in the file's order. After
   each subsystem come its particles' child systems, parent by parent. The trails come last, in the
   same order, and only while the effect's other particles are not on screen (see the trail above).
+  A subsystem's `sort` changes the order of its particles, and so the order of their child
+  systems too. Like the game, Etch sorts a little each frame, so the order settles over a few
+  frames after you turn the camera. The game never moves the last particle in its list, which is
+  usually the newest, so that one is drawn last whatever its distance. A subsystem with only two
+  particles is not sorted at all.
 
 These parts differ:
 

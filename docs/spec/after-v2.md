@@ -1367,9 +1367,37 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
       none of its sprite layers holds a particle (`drawOrder`). Why the game
       loses the band is not known; the lab's guess is that it draws trails with
       no shader state of their own (step 8), so with whatever the sprites
-      left. Not checked: the order of the parents when their subsystem has a
-      `sort` (the preview takes the order they came out in), and a trail with
-      a mod's own `Trail` shader effect next to sprites.
+      left. Not checked: a trail with a mod's own `Trail` shader effect next
+      to sprites. The order of the parents when their subsystem has a `sort`
+      was settled in step 12.
+  12. Settle the order of a sorted subsystem's particles and their child
+      systems. Done 25 November 2026, from the lab's reading of the game's
+      code: the game keeps a subsystem's live particles in one array, which
+      its `sort` reorders in place, one pass a frame after the update, and
+      the order stays until the next pass. A pass takes its gap from the
+      list 1, 4, 1, 16, 1, 64 in turn and swaps each particle with the one a
+      gap on when that one is farther (`depth`: along the view; `distance`:
+      from the camera) or older (`age`), the other way with `invert`, in
+      blocks of twice the gap, first from the start and then from one gap
+      on; a block takes part only when it ends before the last particle, so
+      the last particle (usually the newest) is never moved by the sort, and
+      two particles are never sorted. The children of every parent are
+      sorted too, whatever the parent's `sort`. A dead particle's place goes
+      to the last live one, front to back; a dead parent goes to the front
+      of those waiting for their children; a freed slot is the first handed
+      out again. Child systems are drawn parent by parent in the array's
+      order, so they follow the sort. The preview sorted only a subsystem's
+      own quads, fully, at each draw, and drew the children in the order
+      their parents came out; now `ParticleEffect.sort` runs the game's pass
+      once each drawn frame and each replayed step, and the quads and the
+      children follow it. Checked in the game (Steam 1.37.5, the lab's run
+      `e631-s20a`, a test mod over the siege sites near Trier): six unseen
+      parents rose from each siege, each with one child, a large opaque quad
+      showing the whole 2 × 2 tile sheet. Unsorted, each newer quad covered
+      the one before it. With `sort = "distance"` or `"depth"` on the parent
+      each older quad covered the newer one, except the newest, which stayed
+      on top of its neighbour. With `sort = "distance"` only on the child,
+      or with `invert = yes`, the quads were as unsorted.
 
 Small unknowns, none worth an issue yet.
 
