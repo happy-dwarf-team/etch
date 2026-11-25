@@ -4,7 +4,8 @@
 // file starts the effects on their bones at their events' times and draws their quads.
 //
 // - An event starts its effect as the game's code does (read by the EU4 engine lab): on the step
-//   whose time span [from, to) holds the event's `time`, in every loop of the state's animation
+//   whose span [from, to) of the state's time (which starts at the state's `time_offset`, 0
+//   without) holds the event's `time`, in every loop of the state's animation
 //   (or of its `state_time`, for a state with none; once without either). An event timed past
 //   the loop's end, or before 0, starts on each wrap to the loop's start. Each start is a new
 //   effect, even while earlier ones still emit, with no limit on the copies (step 7), until
@@ -222,7 +223,8 @@ export class ParticleLayer {
   }
 
   /**
-   * Runs the state's effects on to `seconds` into the state, each event's clip being `clip(node)`
+   * Runs the state's effects on to `seconds` after the state started (its time being that plus
+   * each event's `stateStart`), each event's clip being `clip(node)`
    * seconds long (`undefined` for a node that plays no animation). Going back, or a jump of more
    * than a second, runs them again from the state's start in steps of 1/30 s.
    */
@@ -265,9 +267,9 @@ export class ParticleLayer {
       const loop =
         clip(event.node) ??
         (event.stateTime !== undefined && event.stateTime > 0 ? event.stateTime : undefined);
-      // `trigger_once`: only while the state's time is within its first loop.
+      // `trigger_once`: only while the time since the state started is within one loop.
       if (event.triggerOnce && (loop === undefined || to > loop)) continue;
-      if (!fires(event.time, from, to, loop)) continue;
+      if (!fires(event.time, from + event.stateStart, to + event.stateStart, loop)) continue;
       if (!withinBudget(this.count)) {
         this.heldBack = true;
         continue;

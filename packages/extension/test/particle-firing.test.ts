@@ -31,6 +31,20 @@ describe('when a state event starts its effect', () => {
     expect(starts(1.5, 1, 3.05)).toEqual([0.9, 1.9, 2.9]);
     expect(starts(-1, 1, 3.05)).toEqual([0.9, 1.9, 2.9]);
   });
+
+  it('with a time_offset, waits for the next loop for an event before it, or never comes (step 9)', () => {
+    // The state's time starts at its `time_offset` of 1 s: the first step is [1, 1.1).
+    const after = (time: number, loop: number | undefined): number[] => {
+      const out: number[] = [];
+      for (let i = 0; i < 30; i++) {
+        if (fires(time, (10 + i) / 10, (11 + i) / 10, loop)) out.push(i / 10);
+      }
+      return out;
+    };
+    expect(after(0.9, undefined)).toEqual([]);
+    expect(after(1.5, undefined)).toEqual([0.5]);
+    expect(after(0.9, 2)).toEqual([1.9]);
+  });
 });
 
 describe('how many copies of an effect run', () => {

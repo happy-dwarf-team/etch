@@ -380,6 +380,8 @@ interface Instance {
   readonly scale: number;
   /** What it plays in each state, by key of `animations` (entity) or file name (mesh). */
   readonly states: Readonly<Record<string, string | undefined>>;
+  /** Where each state's time starts, by state: its `time_offset` (entity; none for a mesh). */
+  readonly stateStarts: Readonly<Record<string, number>>;
   /** Where it is drawn, in the file's space; set by `pose`. */
   model: Float32Array;
   /** Its skinned shapes' bones at the frame shown, in the drawn space; set by `pose`. */
@@ -792,14 +794,25 @@ function animationOf(instance: Instance): PdxAnimation | undefined {
 }
 
 /**
- * Poses every instance `seconds` into the animation: skins its parts and places it, the root at
- * its scale and an attachment on its parent's bone (parents come first).
+ * Where the state playing starts for an instance: its `time_offset`, so the state's time, its
+ * animation and its events begin there (0 without one, and in a mesh's preview).
+ */
+function startOf(instance: Instance | undefined): number {
+  if (entity === undefined || playingKey === undefined || instance === undefined) return 0;
+  return instance.stateStarts[playingKey] ?? 0;
+}
+
+/**
+ * Poses every instance `seconds` into the root's state: skins its parts and places it, the root
+ * at its scale and an attachment on its parent's bone (parents come first). An instance whose
+ * state starts elsewhere than the root's is that much ahead or behind.
  */
 function pose(context: WebGL2RenderingContext, seconds: number): void {
   const worlds = new Map<Instance, Map<string, Float32Array>>();
+  const rootStart = startOf(instances[0]);
   for (const instance of instances) {
     const animation = animationOf(instance);
-    const frame = frameOf(animation, seconds);
+    const frame = frameOf(animation, seconds - rootStart + startOf(instance));
     // Bone matrices in the mesh's space, by bone name, for the attachments on it.
     const bones = new Map<string, Float32Array>();
     const matrices = new Map<MeshShape, Float32Array[]>();
@@ -993,7 +1006,7 @@ function showAt(context: WebGL2RenderingContext, seconds: number): void {
   pose(context, seconds);
   particleLayer?.advance(
     entity === undefined ? undefined : playingKey,
-    seconds,
+    seconds - startOf(instances[0]),
     clipOf,
     nodeMatrix,
   );
@@ -1460,8 +1473,9 @@ const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 function play(key: string | undefined): void {
   playingKey = key;
   playButton.hidden = key === undefined;
-  position = 0;
-  if (gl !== null) showAt(gl, 0);
+  // A state's time starts at its `time_offset`.
+  position = startOf(instances[0]);
+  if (gl !== null) showAt(gl, position);
   setPlaying(key !== undefined && !reducedMotion.matches);
   if (!playing) redraw();
 }
@@ -1487,6 +1501,7 @@ function show(
       bone: node.bone,
       scale: node.scale,
       states: node.states,
+      stateStarts: node.stateStarts,
       model: scaling(node.scale),
       bones: [],
       boneMatrices: new Map(),
@@ -1575,6 +1590,7 @@ window.addEventListener('message', (event: MessageEvent<MeshHostMessage>) => {
             textures: message.textures,
             scale: 1,
             states: {},
+            stateStarts: {},
           },
         ],
         [mesh],

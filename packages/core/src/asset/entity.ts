@@ -4,7 +4,8 @@
 //   .gfx:   objectTypes = { pdxmesh = { name file scale animation = { id type } ... }
 //                           pdxparticle = { name type scale } }
 //   .asset: entity = { name pdxmesh clone scale default_state
-//                      state = { name animation event = { time node particle } state_time }
+//                      state = { name animation event = { time node particle } state_time
+//                                time_offset }
 //                      attach = { name = <group> <bone> = <entity> ... } }
 //           animation = { name file }        (a bare file name beside the `.asset` file)
 //           particle = { name subsystem ... } (a particle system)
@@ -57,6 +58,18 @@ export interface EntityState {
    * again; `undefined` without one.
    */
   readonly stateTime: number | undefined;
+  /**
+   * `time_offset = { base variation }`: the state's time starts at `base` plus a random share of
+   * `variation` seconds, so its animation starts there and an event timed before it waits for
+   * the next loop (none in vanilla 1.37.5); `undefined` without.
+   */
+  readonly timeOffset: TimeOffset | undefined;
+}
+
+/** A state's `time_offset`, in seconds. */
+export interface TimeOffset {
+  readonly base: number;
+  readonly variation: number;
 }
 
 /**
@@ -143,6 +156,19 @@ function lastNumber(block: BlockNode, keys: readonly string[]): number | undefin
     if (Number.isFinite(value)) found = value;
   }
   return found;
+}
+
+/** A state's last `time_offset = { base variation }`, a missing variation being 0. */
+function timeOffsetOf(state: BlockNode): TimeOffset | undefined {
+  const block = blocksOf(state, 'time_offset').at(-1);
+  if (block === undefined) return undefined;
+  const numbers = block.entries.flatMap((entry) => {
+    if (entry.kind !== 'scalar') return [];
+    const value = Number.parseFloat(entry.text);
+    return Number.isFinite(value) ? [value] : [];
+  });
+  const [base, variation = 0] = numbers;
+  return base === undefined ? undefined : { base, variation };
 }
 
 function numberOf(block: BlockNode, key: string): number | undefined {
@@ -250,6 +276,7 @@ export function readAssetFile(
                 triggerOnce: scalarOf(event, 'trigger_once')?.text.toLowerCase() === 'yes',
               })),
               stateTime: lastNumber(state, ['state_time', 'loop_time']),
+              timeOffset: timeOffsetOf(state),
             },
           ];
     });
@@ -343,6 +370,7 @@ export interface ResolvedState {
   readonly problem: string | undefined;
   readonly events: readonly ResolvedEvent[];
   readonly stateTime: number | undefined;
+  readonly timeOffset: TimeOffset | undefined;
 }
 
 /** A state event resolved through the pdxparticle types, and what the game logs when it fails. */
@@ -472,9 +500,16 @@ function resolve(index: EntityIndex, name: string, path: readonly string[]): Res
       if (problem !== undefined && !problems.includes(problem)) problems.push(problem);
       return resolved.event;
     });
-    const stateTime = state.stateTime;
+    const { stateTime, timeOffset } = state;
     if (state.animation === undefined)
-      return { name: state.name, file: undefined, problem: undefined, events, stateTime };
+      return {
+        name: state.name,
+        file: undefined,
+        problem: undefined,
+        events,
+        stateTime,
+        timeOffset,
+      };
     const type = pdxmesh?.animations.get(state.animation);
     if (type === undefined) {
       return {
@@ -483,6 +518,7 @@ function resolve(index: EntityIndex, name: string, path: readonly string[]): Res
         problem: `pdxmesh "${own.pdxmesh ?? ''}" has no animation id "${state.animation}"`,
         events,
         stateTime,
+        timeOffset,
       };
     }
     const animation = index.animations.get(type);
@@ -493,9 +529,17 @@ function resolve(index: EntityIndex, name: string, path: readonly string[]): Res
         problem: `no animation "${type}" in the .asset files`,
         events,
         stateTime,
+        timeOffset,
       };
     }
-    return { name: state.name, file: animation.file, problem: undefined, events, stateTime };
+    return {
+      name: state.name,
+      file: animation.file,
+      problem: undefined,
+      events,
+      stateTime,
+      timeOffset,
+    };
   });
   const attachments: ResolvedEntity['attachments'][number][] = [];
   for (const group of own.attach) {

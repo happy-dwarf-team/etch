@@ -282,6 +282,11 @@ export interface EntityNode {
   readonly scale: number;
   /** For each state the entity has: the key in `animations` of what it plays, if anything. */
   readonly states: Readonly<Record<string, string | undefined>>;
+  /**
+   * For each state with a `time_offset`: where its time starts, the offset's base (the game adds
+   * a random share of the variation; the preview does not).
+   */
+  readonly stateStarts: Readonly<Record<string, number>>;
 }
 
 /** A particle effect a state's `event` starts, read for the preview's approximate player. */
@@ -304,6 +309,8 @@ export interface EntityParticleEffect {
   readonly triggerOnce: boolean;
   /** The state's `state_time`, how long a state with no animation lasts; `undefined` without. */
   readonly stateTime: number | undefined;
+  /** Where the state's time starts: its `time_offset`'s base, 0 without. */
+  readonly stateStart: number;
 }
 
 /** Messages from the mesh webview. */
