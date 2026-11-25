@@ -2,9 +2,10 @@
 // poses (bones without a joint keep their bind pose), the skinning matrix world × inverse bind,
 // and the vertices blended by their weights. Matrices are 4 × 4 by columns.
 //
-// The game binds an animation's joints to the skeleton's bones by index, not by name: EU4 1.37.5's
-// `AnimPlayAnimation` (pdx_anim.cpp) refuses an animation whose joint count is not the mesh's bone
-// count and otherwise writes joint k's pose to bone k. The animation it keeps holds no joint names.
+// The game binds an animation's joints to the skeleton's bones by index, not by name: in EU4 1.37.5
+// the routine that starts an animation on a mesh (0x168A740 in the GOG build 1.37.5.2) refuses an
+// animation whose joint count is not the mesh's bone count and otherwise writes joint k's pose to
+// bone k. The animation it keeps holds no joint names.
 
 import { jointPose, type JointPose, type PdxAnimation } from './anim.ts';
 import type { MeshPart, SkeletonBone } from './mesh.ts';

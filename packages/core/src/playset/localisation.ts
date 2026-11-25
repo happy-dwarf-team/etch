@@ -3,9 +3,10 @@ import { Localisation, isLocalisationPath, type LocalisationFile } from '../loca
 import type { GameFile, GameFiles } from './game-files.ts';
 
 /**
- * The folder the game reads localisation `.yml` files from, at any depth: `PdxLocalizeReadFolder`
- * lists `localisation` recursively and then `localisation/replace` recursively, whose files win
- * (EU4 engine lab, research for eu4-engine-lab#59). A mod's `localisation/english/*.yml` is read.
+ * The folder the game reads localisation `.yml` files from, at any depth: the game's reader of
+ * localisation folders (0x14AE180 in the GOG build 1.37.5.2) lists `localisation` recursively and
+ * then `localisation/replace` recursively, whose files win (EU4 engine lab, research for
+ * eu4-engine-lab#59). A mod's `localisation/english/*.yml` is read.
  */
 const LOCALISATION_FOLDER = 'localisation';
 

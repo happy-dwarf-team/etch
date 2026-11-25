@@ -516,7 +516,8 @@ refresh goes out with a 2.x release (v3.md section 7).
   files) get none: the model does not read them as colours.
 
 - **Localisation from subfolders.** The game lists `localisation` and then
-  `localisation/replace` recursively (`PdxLocalizeReadFolder`; EU4 engine lab,
+  `localisation/replace` recursively (the game's reader of localisation folders,
+  0x14AE180 in the GOG build 1.37.5.2; EU4 engine lab,
   eu4-engine-lab#59), so a mod's `localisation/english/*.yml` is read; the
   preview read only the files directly in the two folders. It now reads the
   whole tree, and a file anywhere under `localisation/replace` wins as one
@@ -896,9 +897,10 @@ refresh goes out with a 2.x release (v3.md section 7).
   light direction is vanilla's `LIGHT_DIRECTION`) and plays an `.anim` beside it
   with as many joints as the mesh has bones, skinned on the CPU
   (`@etch/core/asset`'s `skinningMatrices`, `skinPart`). Joints pose bones by
-  index, not by name, as the game does: EU4 1.37.5's `AnimPlayAnimation`
-  (`pdx_anim.cpp`) refuses an animation whose joint count is not the mesh's
-  bone count and otherwise writes joint k's pose to bone k, with the joint's
+  index, not by name, as the game does: in EU4 1.37.5 the routine that starts an
+  animation on a mesh (0x168A740 in the GOG build 1.37.5.2) refuses an animation
+  whose joint count is not the mesh's bone count and otherwise writes joint k's
+  pose to bone k, with the joint's
   uniform scale (its rest `s`, or the sampled one interpolated); the animation
   it keeps holds no joint names (read in the decompiled game, etch#625). Of
   vanilla's 1,579 pdxmesh × animation pairs all fit, and in 645 a joint's name
