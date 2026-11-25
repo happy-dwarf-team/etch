@@ -98,19 +98,25 @@ such as `Documents/Paradox Interactive/Europa Universalis IV/mod/my_mod`. If you
 somewhere else, for example in a folder of its own for Git, its `.txt` files stay Plain Text with
 CWTools installed.
 
-When you open such a file with CWTools installed, Etch shows a notification at the bottom right.
-It says that CWTools leaves the file Plain Text, and that CWTools colours script files only inside
-a folder named Europa Universalis IV. Etch shows it at most once in each VS Code window.
+There is one exception. Once CWTools runs, for example because you opened a `.gui` file first,
+it colours such files too, but as script files of no particular game: the bottom right of the
+window says `paradox`. CWTools then checks them with no EU4 rules, so it reports none of your
+mistakes.
 
-- **Colour Files in This Folder** adds the setting `files.associations` to the folder you opened in
-  VS Code, in its file `.vscode/settings.json`. VS Code creates that file if the folder has none.
-  The setting tells VS Code that your mod's script files are EU4 files, so CWTools colours and
-  checks them there too. The file you have open gets its colours at once. If CWTools was already
-  running, for example for a `.gui` file you opened before, it still checks the files as files of
-  another game: Etch then shows a second notification with **Reload Window**. Click it, and
-  CWTools starts again for EU4. If `files.associations`
-  there already has a line for one of the patterns below, Etch keeps your line and adds only the
-  missing ones.
+When you open such a file with CWTools installed, Etch shows a notification at the bottom right.
+It says that CWTools leaves the file Plain Text, or checks it with no EU4 rules, and that CWTools
+does better only inside a folder named Europa Universalis IV. Etch shows it at most once in each
+VS Code window.
+
+- **Colour Files in This Folder**, or **Use EU4 Rules in This Folder** for a `paradox` file, adds
+  the setting `files.associations` to the folder you opened in VS Code, in its file
+  `.vscode/settings.json`. VS Code creates that file if the folder has none. The setting tells VS
+  Code that your mod's script files are EU4 files, so CWTools colours and checks them there too.
+  If `files.associations` there already has a line for one of the patterns below, Etch keeps your
+  line and adds only the missing ones.
+  - The file you have open gets its colours at once.
+  - If CWTools was already running, it still checks the files with no EU4 rules. Etch then shows
+    a second notification with **Reload Window**. Click it, and CWTools starts again for EU4.
 - If you opened no folder, or the file is not inside the folder you opened, the first button is
   **Open Folder…**. Open your mod's folder with it: when you next open a script file, the
   notification offers **Colour Files in This Folder**.

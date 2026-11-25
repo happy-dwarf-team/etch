@@ -94,6 +94,21 @@ describe('the notice about CWTools and the mod folder', () => {
   it('stays silent once the file has CWTools’ language', () => {
     expect(scriptLanguageNotice({ ...withCwtools, languageId: 'eu4' })).toBeUndefined();
   });
+
+  it('shows for a file CWTools opened as paradox, after a .gui file started it', () => {
+    const paradox = { ...withCwtools, languageId: 'paradox' };
+    expect(scriptLanguageNotice(paradox)).toBe('folder');
+    expect(scriptLanguageNotice({ ...paradox, folderDeclined: true })).toBeUndefined();
+    const inMods =
+      'C:\\Users\\modder\\Documents\\Paradox Interactive\\Europa Universalis IV\\mod\\a\\events\\a.txt';
+    expect(scriptLanguageNotice({ ...paradox, fileName: inMods })).toBeUndefined();
+  });
+
+  it('never offers the extensions for a file that already has a language', () => {
+    expect(
+      scriptLanguageNotice({ ...plain, languageId: 'paradox', installed: false }),
+    ).toBeUndefined();
+  });
 });
 
 describe('a game-named folder', () => {

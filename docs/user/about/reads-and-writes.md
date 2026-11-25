@@ -65,8 +65,8 @@ Four more requests change a file through VS Code:
   choice in the `etch.previewResolution` setting. It goes into your workspace's settings when the
   setting is already there, and into your user settings otherwise. See
   [Zoom and resolution](../interface-windows/zoom-and-resolution.md).
-- **Colour Files in This Folder**, on the notification that CWTools leaves your mod's files Plain
-  Text, adds the setting `files.associations` to `.vscode/settings.json` in the folder you opened
+- **Colour Files in This Folder** or **Use EU4 Rules in This Folder**, on the notification that
+  CWTools leaves your mod's files Plain Text or checks them with no EU4 rules, adds the setting `files.associations` to `.vscode/settings.json` in the folder you opened
   in VS Code. VS Code creates that file if it is missing. Lines the setting already has stay as
   they are. See
   [A mod in a folder of its own](../getting-started/install.md#a-mod-in-a-folder-of-its-own).

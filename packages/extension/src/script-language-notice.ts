@@ -18,6 +18,7 @@ import {
   CWTOOLS_EU4_LANGUAGE,
   CWTOOLS_GAME_FOLDER,
   CWTOOLS_ID,
+  CWTOOLS_PARADOX_LANGUAGE,
   SCRIPT_LANGUAGE_EXTENSIONS,
   offersCwtoolsGameFolder,
   scriptLanguageNotice,
@@ -52,6 +53,14 @@ const FOLDER_MESSAGE =
 const FOLDER_FIX = ' Etch can add a setting to this folder so that CWTools colours them here too.';
 const NO_FOLDER_FIX =
   " Open your mod's folder, then a script file: Etch then offers a setting so that CWTools colours them.";
+// The same notice for a file CWTools opened as `paradox`: coloured, but checked with no EU4 rules.
+const USE_EU4 = 'Use EU4 Rules in This Folder';
+const PARADOX_MESSAGE =
+  'CWTools checks this file with no EU4 rules. ' +
+  'It uses them only inside a folder named Europa Universalis IV.';
+const PARADOX_FIX = ' Etch can add a setting to this folder so that CWTools uses them here too.';
+const PARADOX_NO_FOLDER_FIX =
+  " Open your mod's folder, then a script file: Etch then offers a setting so that CWTools uses them.";
 const CWTOOLS_OTHER_GAME =
   'CWTools was already running for another game. ' +
   'Reload the window so that it checks these files as EU4 files.';
@@ -156,11 +165,15 @@ async function showFolderNotice(
   document: vscode.TextDocument,
 ): Promise<void> {
   const inFolder = vscode.workspace.getWorkspaceFolder(document.uri) !== undefined;
+  const paradox = document.languageId === CWTOOLS_PARADOX_LANGUAGE;
+  const message = paradox
+    ? PARADOX_MESSAGE + (inFolder ? PARADOX_FIX : PARADOX_NO_FOLDER_FIX)
+    : FOLDER_MESSAGE + (inFolder ? FOLDER_FIX : NO_FOLDER_FIX);
   const choice = (
     await notify(
       'info',
-      FOLDER_MESSAGE + (inFolder ? FOLDER_FIX : NO_FOLDER_FIX),
-      inFolder ? { label: COLOUR_FILES } : ACTIONS.openFolder,
+      message,
+      inFolder ? { label: paradox ? USE_EU4 : COLOUR_FILES } : ACTIONS.openFolder,
       { label: LEARN_MORE, run: () => vscode.env.openExternal(vscode.Uri.parse(FOLDER_DOCS)) },
       { label: DONT_SHOW },
     )
@@ -169,7 +182,7 @@ async function showFolderNotice(
     await context.globalState.update(FOLDER_DECLINED, true);
     return;
   }
-  if (choice === COLOUR_FILES) await addScriptAssociations();
+  if (choice === COLOUR_FILES || choice === USE_EU4) await addScriptAssociations();
 }
 
 /** Offers CWTools the game folder Etch found, and on Use This Folder puts it in CWTools' setting. */
