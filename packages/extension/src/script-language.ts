@@ -138,8 +138,11 @@ export interface CwtoolsGameFolderCase {
 }
 
 /**
- * The `vscode.env.machineId` that CWTools 0.10.31 takes for its own development host. VS Code gives
- * it to every extension when its telemetry is off. CWTools then names its cache folder by a
+ * The `vscode.env.machineId` that CWTools 0.10.31 takes for its own development host. An editor
+ * that runs without telemetry gives it to every extension: VS Code started with
+ * `--disable-telemetry`, or a build whose product has no telemetry, such as VSCodium. The setting
+ * `telemetry.telemetryLevel` does not: VS Code 1.142.0 gave a real id with it at `off`, `crash`,
+ * `error` and `all`, and this one with `--disable-telemetry`. CWTools then names its cache folder by a
  * `vscode-userdata:` address instead of a path, and on Windows its server fails on that name and
  * reports no problems at all (cwtools/cwtools-vscode#167). On Linux and macOS the name is a valid,
  * if odd, folder name, so CWTools keeps working there.
@@ -165,7 +168,7 @@ export interface CwtoolsTelemetryCase {
 
 /**
  * Whether Etch says that CWTools reports no problems: an `eu4` file opened on Windows with CWTools
- * installed, and VS Code gives CWTools' development machine id, as it does with telemetry off.
+ * installed, and the editor gives CWTools' development machine id, as it does without telemetry.
  */
 export function warnsCwtoolsTelemetry(document: CwtoolsTelemetryCase): boolean {
   return (

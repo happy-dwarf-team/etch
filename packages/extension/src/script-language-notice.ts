@@ -12,9 +12,10 @@
 // go to the workspace (the folder's `.vscode/settings.json`), never to a folder of a multi-root
 // workspace. The notice comes up again after CWTools is installed from the first one.
 //
-// CWTools 0.10.31 reports no problems on Windows while VS Code's telemetry is off
+// CWTools 0.10.31 reports no problems on Windows in an editor that runs without telemetry: VS Code
+// started with `--disable-telemetry`, or a build without telemetry such as VSCodium
 // (cwtools/cwtools-vscode#167). Once a window, when an `eu4` file opens in that state, Etch says
-// so and can open the setting; it never changes the setting itself.
+// so. The `telemetry.telemetryLevel` setting does not cause it, so Etch offers no setting.
 import { resolve } from 'node:path';
 import * as vscode from 'vscode';
 import { findGameInSteam, isGameFolder, systemEnvironment } from '@etch/core/playset';
@@ -50,14 +51,14 @@ export const FOLDER_DOCS =
 /** The docs section on CWTools and the game folder. */
 export const GAME_FOLDER_DOCS =
   'https://etch.happydwarf.dev/docs/getting-started/install/#cwtools-and-the-game-folder';
-/** The docs section on CWTools with VS Code's telemetry off. */
+/** The docs section on CWTools in an editor without telemetry. */
 export const TELEMETRY_DOCS =
-  'https://etch.happydwarf.dev/docs/getting-started/install/#cwtools-with-telemetry-off';
-const OPEN_TELEMETRY_SETTING = 'Open Telemetry Setting';
+  'https://etch.happydwarf.dev/docs/getting-started/install/#cwtools-without-telemetry';
 const TELEMETRY_MESSAGE =
-  "CWTools shows no problems while VS Code's telemetry is off. " +
-  `It is a CWTools bug on Windows ([CWTools issue #167](${CWTOOLS_TELEMETRY_ISSUE})): ` +
-  'turn telemetry on and restart VS Code, or wait for a CWTools update that fixes it.';
+  'CWTools shows no problems in this editor. ' +
+  'On Windows it fails when the editor runs without telemetry, as VS Code started with ' +
+  `--disable-telemetry or VSCodium do ([CWTools issue #167](${CWTOOLS_TELEMETRY_ISSUE})). ` +
+  'Start VS Code without that option, or wait for a CWTools update that fixes it.';
 
 const MESSAGE =
   'Script files open as Plain Text, without colours: Etch adds none. ' +
@@ -248,23 +249,12 @@ async function showGameFolderNotice(
   // base game and checks the workspace again.
 }
 
-/**
- * Says that CWTools shows no problems with telemetry off. Open Telemetry Setting only opens
- * `telemetry.telemetryLevel` in the Settings editor: the choice stays the user's.
- */
+/** Says that CWTools shows no problems in an editor without telemetry. */
 async function showTelemetryNotice(context: vscode.ExtensionContext): Promise<void> {
   const choice = (
     await notify(
       'warning',
       TELEMETRY_MESSAGE,
-      {
-        label: OPEN_TELEMETRY_SETTING,
-        run: () =>
-          vscode.commands.executeCommand(
-            'workbench.action.openSettings',
-            'telemetry.telemetryLevel',
-          ),
-      },
       { label: LEARN_MORE, run: () => vscode.env.openExternal(vscode.Uri.parse(TELEMETRY_DOCS)) },
       { label: DONT_SHOW },
     )

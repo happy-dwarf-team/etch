@@ -194,7 +194,7 @@ describe('the offer to hand CWTools the game folder', () => {
   });
 });
 
-describe('the notice about CWTools and VS Code’s telemetry', () => {
+describe('the notice about CWTools without telemetry', () => {
   const off: CwtoolsTelemetryCase = {
     languageId: 'eu4',
     cwtools: true,

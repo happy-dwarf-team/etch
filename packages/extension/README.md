@@ -34,8 +34,8 @@ notification at the bottom right offers to install one
 CWTools colours a mod's `.txt` files only inside a folder named Europa Universalis IV. For a mod
 kept elsewhere, Etch offers to add a setting to the mod's folder so that CWTools colours them there
 too ([A mod in a folder of its own](https://etch.happydwarf.dev/docs/getting-started/install/#a-mod-in-a-folder-of-its-own)).
-On Windows, CWTools shows no problems while VS Code's telemetry is off, and Etch warns you once
-([CWTools with telemetry off](https://etch.happydwarf.dev/docs/getting-started/install/#cwtools-with-telemetry-off)).
+On Windows, CWTools shows no problems in an editor that runs without telemetry, and Etch warns you
+once ([CWTools without telemetry](https://etch.happydwarf.dev/docs/getting-started/install/#cwtools-without-telemetry)).
 
 If you used Etch 1.x: its game host, a hidden copy of the game that drew the preview, is gone in
 Etch 2, and the live game takes its place. To stay on 1.0.x, see
