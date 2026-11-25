@@ -146,7 +146,10 @@ lies flat. The base game has no shader effect for trails, so the game draws the 
 grey colour, solid, whatever the particles' colour, alpha and `texture`, and only the side that
 faces the camera. Etch draws it the same way. A band that faces the camera shows whole. A flat
 band seen from above does not show, except, in the game, for scraps where particles overtake each
-other; Etch shows no such scraps.
+other; Etch shows no such scraps. And the game shows no band at all while another part of the same
+effect has particles on screen, whether that part comes before or after the trail in the file, so
+a trail shows only in an effect of trails, or while its other parts have no particle. Etch does the
+same.
 
 The `node` is a bone of the mesh, or a named point that the `.mesh` file stores for this. The
 `muzzle` of vanilla's muskets is such a point. If the mesh has neither of that name, the effect
@@ -236,8 +239,7 @@ These parts work as in the game:
 - the order in which the parts of an effect are drawn, which decides what covers what. First come
   the effect's particles that are not trails, subsystem by subsystem in the file's order. After
   each subsystem come its particles' child systems, parent by parent. The trails come last, in the
-  same order. So a trail covers the other particles of its effect, even when its subsystem comes
-  first in the file.
+  same order, and only while the effect's other particles are not on screen (see the trail above).
 
 These parts differ:
 
@@ -246,7 +248,9 @@ These parts differ:
   sequence from the computer's clock each time an effect starts, so its own shots differ from
   each other too and Etch cannot match any one of them.
 - A trail in a mod that adds its own shader effect for it (see
-  [Particle effects](particles.md)). The game draws the band with that effect, Etch still in grey.
+  [Particle effects](particles.md)). The game draws the band with that effect, Etch still in grey,
+  and still hides it while the effect's other particles are on screen, which was seen only without
+  such an effect.
 - Where a state with a `time_offset` starts. The game adds a random part of its second number;
   Etch starts at the first.
 - How many particles and effects can be alive. Like the game, Etch starts a new copy of an

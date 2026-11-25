@@ -19,7 +19,8 @@
 //   game, which has no `Trail` shader effect to draw it with, the preview draws it in one flat,
 //   opaque colour and only where its front faces the camera.
 // - An effect draws its sprites first, each subsystem and then its child systems' particles
-//   parent by parent, and then its trails (step 11).
+//   parent by parent, and then its trails (step 11). The game shows no trail of an effect that
+//   drew a sprite in the same frame, so neither does the preview.
 // - A quad faces the camera: its corners are added in clip space, the size times the
 //   pdxparticle's scale, turned by the particle's roll. Its texture is the subsystem's sprite
 //   sheet tile, times the particle's colour. `ParticleAlphaBlend` blends over what is behind it,
@@ -36,7 +37,7 @@ import {
 } from '@etch/core/asset';
 import type { EntityParticleEffect, MeshTexture } from '../src/mesh-protocol.ts';
 import { fires, withinBudget } from './particle-firing.ts';
-import { TRAIL_COLOUR, trailStrip } from './particle-trail.ts';
+import { TRAIL_COLOUR, drawOrder, trailStrip } from './particle-trail.ts';
 
 const TRAIL_VERTEX = `#version 300 es
 in vec3 position;
@@ -316,12 +317,9 @@ export class ParticleLayer {
       (q.x - ex) ** 2 + (q.y - ey) ** 2 + (-q.z - ez) ** 2;
     for (const run of this.running) {
       // As the game: an effect's sprites, each subsystem and then its child systems' particles
-      // parent by parent, and then its trails in the same order.
-      const layers = run.effect.layers();
-      for (const { subsystem, quads } of [
-        ...layers.filter((layer) => !layer.subsystem.trail),
-        ...layers.filter((layer) => layer.subsystem.trail),
-      ]) {
+      // parent by parent, and then its trails, which the game shows only while the effect
+      // drew no sprite (`drawOrder`).
+      for (const { subsystem, quads } of drawOrder(run.effect.layers())) {
         if (quads.length === 0) continue;
         if (subsystem.trail) {
           this.drawTrail(quads, subsystem, eye, run.event.scale * entityScale, viewProjection);

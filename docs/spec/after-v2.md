@@ -1300,9 +1300,18 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
       that are not trails in that order, and then the trails in that order.
       The preview did the same for sprites but drew a trail in its
       subsystem's place and a child's particles of all parents at once; now
-      it follows the game. LIVE11. Not checked: the order of the parents when
-      their subsystem has a `sort` (the preview takes the order they came
-      out in).
+      it follows the game. In the game (Steam 1.37.5, the lab's run
+      `e631-s11`) a trail was not seen at all in an effect that drew sprites:
+      a billboard band that showed whole on its own was gone with a subsystem
+      of sprites listed before or after it, and drawn with a second band or
+      with a second subsystem that never emits. So "trails last" cannot be
+      seen in the game, and the preview draws an effect's trails only while
+      none of its sprite layers holds a particle (`drawOrder`). Why the game
+      loses the band is not known; the lab's guess is that it draws trails with
+      no shader state of their own (step 8), so with whatever the sprites
+      left. Not checked: the order of the parents when their subsystem has a
+      `sort` (the preview takes the order they came out in), and a trail with
+      a mod's own `Trail` shader effect next to sprites.
 
 Small unknowns, none worth an issue yet.
 
