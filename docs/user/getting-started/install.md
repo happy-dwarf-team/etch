@@ -183,11 +183,12 @@ Where they cover a thing, Etch leaves it to CWTools:
 - **Outline.** In the Outline of a `.gfx` file, each `spriteType` sprite is listed once, by
   CWTools. Etch lists only the other kinds of sprite, such as `corneredTileSpriteType`.
 - **Fonts and `.gui` files.** When CWTools' rules cover fonts, the Outline lists each font once
-  too. When they cover the widgets of `.gui` files, the suggestions of widget types and keys as
+  too. When they cover fonts and the widgets of `.gui` files, **Go to Definition** on a font name
+  in a `.gui` file comes from CWTools alone. When they cover the widgets of `.gui` files, the suggestions of widget types and keys as
   you type come from CWTools alone. Etch still suggests the sprite names and fonts after a key,
   with their pictures.
 
-All the rest stays: Etch's hovers with the sprite's picture, the preview's warnings in the
+All the rest stays: Etch's hovers with the sprite's picture and the font's sample, the preview's warnings in the
 Problems panel, the hints beside localisation keys, colours, **Find All References** and
 **Rename Symbol**.
 

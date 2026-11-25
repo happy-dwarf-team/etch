@@ -31,7 +31,9 @@ your playset writes it.
   `smoothListboxType`:** every sprite
   name of your playset's `.gfx` files. Move to a sprite in the list: the box beside it shows its
   kind, its frames, the `.gfx` file that defines it and a small picture of its texture.
-- **After `font` or `buttonFont`:** the fonts of your playset.
+- **After `font` or `buttonFont`:** the fonts of your playset. Hover over a font name you wrote to
+  see the font, with a sample of its letters
+  ([Fonts in .gui and .gfx files](../textures-and-meshes/hovers-and-links.md#fonts-in-gui-and-gfx-files)).
 - **After `orientation`:** the nine points the game can anchor a widget to, such as
   `"UPPER_LEFT"`. The game reads keys in any case, so `Orientation` and `orientation` are the
   same key.

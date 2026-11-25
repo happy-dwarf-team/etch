@@ -85,7 +85,8 @@ the rest:
   script folders whose sprite keys they type as `<sprite>`. It never reads
   CWTools' diagnostics (ADR 0007).
 - **Steps back:** Go to Definition of a sprite whose kind and reference
-  CWTools types; the `.gfx` symbols of those sprite kinds and of fonts; the
+  CWTools types; Go to Definition of a font in a `.gui` file when the rules
+  type `bitmapfont` and check `.gui` widgets; the `.gfx` symbols of those sprite kinds and of fonts; the
   keys of `.gui` completion when the rules check `.gui` widgets.
 - **Keeps:** hovers (Etch's have the picture and the whole text, and CWTools'
   cannot be hidden), sprite and font names in completion (Etch knows the
