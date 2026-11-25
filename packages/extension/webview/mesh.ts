@@ -113,6 +113,7 @@ import {
   type PlacedBone,
 } from './view-math.ts';
 import { ParticleLayer } from './particles.ts';
+import { PARTICLE_BUDGET } from './particle-firing.ts';
 import { FrameRequest, startAfterGap } from './play-clock.ts';
 import { listenForZoomKeys } from './zoom-keys.ts';
 import { attachPopover } from './popover.ts';
@@ -922,7 +923,10 @@ function particleWords(): string {
   if (drawn === 0) return ` · particles not drawn: ${named.join(', ')}`;
   if (particleLayer?.on !== true) return ` · particles off: ${named.join(', ')}`;
   const alive = `${String(particleLayer.count)} alive`;
-  return ` · particles (approximate, ${alive}): ${named.join(', ')}`;
+  const held = particleLayer.heldBack
+    ? ` · no new effects past ${PARTICLE_BUDGET.toLocaleString('en')} particles (the game has no limit)`
+    : '';
+  return ` · particles (approximate, ${alive}): ${named.join(', ')}${held}`;
 }
 
 /**
