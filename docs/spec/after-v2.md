@@ -1240,7 +1240,13 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
      keeps almost no particle alive never finishes and adds almost nothing to
      the particle count. The same fix runs no step shorter than 1e-9 s: the
      replay's leftover to a frame is often about 1e-16 s, and the spin force,
-     which divides by dt², turned its rounding noise into a throw.
+     which divides by dt², turned its rounding noise into a throw. The
+     issue's side note, a turbulence force whose amount is 0 at the moment,
+     was then read in the game's code: the game skips such a force before it
+     counts it towards its field, so the next turbulence force of the
+     subsystem reads the skipped one's field. The preview does the same, and
+     a test now holds it. A live check cannot show it, since the game seeds
+     the fields from the clock.
   8. Settle a trail's look without a `Trail` shader effect, which vanilla's
      `gfx/FX/particle.shader` lacks. Done 25 November 2026, checked in the
      game (Steam 1.37.5, a test mod over Trier, `reload assets`): the band is
