@@ -24,7 +24,7 @@ import type {
   SourceRange,
 } from '../script/tree.ts';
 import { keyOf } from '../model/properties.ts';
-import { PARTICLE_CHOICES, particleChoice } from './particle-system.ts';
+import { PARTICLE_CHOICES, VECTOR_SLOTS, particleChoice } from './particle-system.ts';
 
 /** The blocks whose keys Etch knows: an effect's and its parts', and a `.gfx` pdxparticle type. */
 export type ParticleBlockKind =
@@ -93,15 +93,16 @@ const SUBSYSTEM: [string, ParticleKeyDoc][] = [
   [
     'position',
     doc(
-      '`{ x = … y = … z = … }`, each a value',
+      '`{ x = … y = … z = … }`, each a value; `r`, `g` and `b` work as `x`, `y` and `z`',
       'Where the emitter sits, from the bone of the model where the entity’s event starts the effect.',
     ),
   ],
   [
     'color',
     doc(
-      '`{ r = … g = … b = … alpha = … }`, each a value from 0 to 255',
+      '`{ r = … g = … b = … alpha = … }`, each a value from 0 to 255; `a` and `w` work as `alpha`, and `x`, `y` and `z` as `r`, `g` and `b`',
       'The colour and the opacity of each particle.',
+      'game',
     ),
   ],
   ['start', doc(SECONDS, 'How long the emitter waits before it sends out particles.')],
@@ -531,6 +532,7 @@ export function checkParticleBlocks(
         unknownKeys(texture, 'texture', out);
       }
       skippedChoices(subsystem, 'subsystem', out);
+      vectorKeys(subsystem, out);
       emitterKeys(subsystem, out);
       if (effects !== undefined) shaderEffect(subsystem, effects, out);
     }
@@ -822,6 +824,33 @@ function unknownKeys(
       end: entry.key.end,
       message: `The game does not read "${entry.key.text}" in ${BLOCK_NAMES[kind]} block, so it has no effect.${nearest(entry.key.text, known.keys())} The game writes in its error log: Unexpected token: ${entry.key.text}.`,
     });
+  }
+}
+
+/**
+ * The keys of a subsystem's `position` and `color` blocks: one the game's vector reader does not
+ * know (it logs it), and in `position` one of the fourth slot, which the reader reads and drops.
+ */
+function vectorKeys(subsystem: BlockNode, out: ParticleBlockDiagnostic[]): void {
+  for (const key of ['position', 'color'] as const) {
+    const slots = key === 'position' ? VECTOR_SLOTS.slice(0, 3) : VECTOR_SLOTS;
+    const names = key === 'position' ? 'x, y and z' : 'r, g, b and alpha';
+    for (const group of propertyBlocks(subsystem.entries, key)) {
+      for (const entry of group.entries) {
+        if (entry.kind !== 'property') continue;
+        const name = keyOf(entry);
+        if (slots.some((slot) => slot.includes(name))) continue;
+        const dropped = VECTOR_SLOTS[3]?.includes(name) === true;
+        out.push({
+          code: 'unknown-particle-key',
+          start: entry.key.start,
+          end: entry.key.end,
+          message: dropped
+            ? `A position has no fourth value: the game reads "${entry.key.text}" and drops it, without a line in its error log. It takes ${names}.`
+            : `The game does not read "${entry.key.text}" in a ${key} block, so it has no effect.${nearest(entry.key.text, slots.flat())} It takes ${names}${key === 'color' ? ' (or x, y, z and w or a)' : ' (or r, g and b)'}, and writes in its error log: Unexpected token: ${entry.key.text}.`,
+        });
+      }
+    }
   }
 }
 

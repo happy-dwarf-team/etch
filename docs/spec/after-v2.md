@@ -1106,9 +1106,18 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
      other shape, a shader effect the playset's `gfx/FX/particle.shader` lacks
      (with `Trail` and `NoBillboard` as the game appends them) and a missing
      texture; none in vanilla 1.37.5 or Anbennar. User page
-     `textures-and-meshes/particles.md`. Not checked: keys inside
-     `position` and `color` (those inside `childsystem` are checked as a
-     subsystem's since step 10). A force's `type` is checked since step 14:
+     `textures-and-meshes/particles.md`. The keys inside `childsystem` are
+     checked as a subsystem's since step 10, and those inside `position` and
+     `color` since step 16: the lab read the game's reader of both (one set
+     of four slots, `x`/`r`, `y`/`g`, `z`/`b` and `w`/`alpha`/`a`, in any
+     case; the last entry wins; `position` reads a fourth value and drops it;
+     any other key goes to the error log as `Unexpected token`), and the game
+     showed it with a test mod (`a`, `w` and `A` of 0 hid the particles,
+     `x y z` tinted them, `r = 20` moved a position as `x = 20` did, and two
+     unknown keys gave the two log lines, `w` none). The preview reads both
+     blocks the same way, where it used to take only `x y z` and `r g b
+     alpha`, and warns on the keys the game does not take
+     (`unknown-particle-key`). A force's `type` is checked since step 14:
      the lab read the game's reader (it lowercases the value, sets the type
      only for a value it knows, and starts at `planar`), and the game showed
      it with a test mod (an unknown type pushed like `planar`, `point`

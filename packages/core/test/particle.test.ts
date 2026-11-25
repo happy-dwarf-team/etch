@@ -196,6 +196,36 @@ describe('checkParticleBlocks', () => {
     ]);
   });
 
+  it('warns on the keys of position and color the game does not take', () => {
+    const text = `particle = {
+	name = "x"
+	subsystem = {
+		position = { R = 1 y = 0 zz = 0 w = 5 }
+		color = { x = 255 G = 0 b = 0 A = 255 alfa = 1 }
+	}
+}`;
+    expect(check(text)).toEqual([
+      {
+        code: 'unknown-particle-key',
+        at: 'zz',
+        message:
+          'The game does not read "zz" in a position block, so it has no effect. Did you mean "z"? It takes x, y and z (or r, g and b), and writes in its error log: Unexpected token: zz.',
+      },
+      {
+        code: 'unknown-particle-key',
+        at: 'w',
+        message:
+          'A position has no fourth value: the game reads "w" and drops it, without a line in its error log. It takes x, y and z.',
+      },
+      {
+        code: 'unknown-particle-key',
+        at: 'alfa',
+        message:
+          'The game does not read "alfa" in a color block, so it has no effect. Did you mean "alpha"? It takes r, g, b and alpha (or x, y, z and w or a), and writes in its error log: Unexpected token: alfa.',
+      },
+    ]);
+  });
+
   it('warns on the keys of the other emitter shape', () => {
     const text = `particle = {
 	name = "x"
