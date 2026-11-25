@@ -3,14 +3,14 @@ guiTypes = {
 	containerWindowType = {
 		name = "etch_demo_dialog"
 		position = { x = 160 y = 100 }
-		size = { x = 380 y = 330 }
+		size = { width = 380 height = 330 }
 
 		background = {
 			name = "background"
 			quadTextureSprite = "SandboxFloaterBackground"
 		}
 
-		guiButtonType = {
+		buttonType = {
 			name = "option_strike"
 			position = { x = 40 y = 226 }
 			spriteType = "GFX_etch_demo_option"
@@ -18,7 +18,7 @@ guiTypes = {
 			buttonFont = "vic_18"
 		}
 
-		guiButtonType = {
+		buttonType = {
 			name = "option_rest"
 			position = { x = 40 y = 270 }
 			spriteType = "GFX_etch_demo_option"
@@ -54,10 +54,9 @@ guiTypes = {
 			text = "ETCH_DEMO_DESC"
 			maxWidth = 206
 			maxHeight = 136
-			multiline = yes
 		}
 
-		guiButtonType = {
+		buttonType = {
 			name = "close"
 			position = { x = -46 y = 14 }
 			spriteType = "GFX_close"
@@ -73,7 +72,7 @@ guiTypes = {
 	containerWindowType = {
 		name = "etch_demo_panel"
 		position = { x = 820 y = 100 }
-		size = { x = 280 y = 150 }
+		size = { width = 280 height = 150 }
 
 		background = {
 			name = "background"
@@ -96,7 +95,6 @@ guiTypes = {
 			text = "ETCH_DEMO_PANEL_TEXT"
 			maxWidth = 224
 			maxHeight = 60
-			multiline = yes
 		}
 	}
 }
