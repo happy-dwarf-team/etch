@@ -75,6 +75,16 @@
       "when": { "handleRebels": "closed" },
       "hide": ["countrystabilityview/cv_governmentrebels_handlerebels"],
     },
+    "rebel-size": {
+      "when": { "handleRebels": "open" },
+      "note": "The view's daily update (eu4.exe 0xF9B290) writes REBELSIZE with the faction's total revolt size, or ACTIVE_REBELSIZE with its armies' strength once it has risen; the sample is the coverage survey's faction of 20k (Russia, 17 March 1719). The box grows past maxWidth as the game's font measures the text.",
+      "text": {
+        "countrystabilityview/cv_governmentrebels_handlerebels/rebelsize_desc": {
+          "key": "REBELSIZE",
+          "vars": { "SIZE": { "literal": "20k" } },
+        },
+      },
+    },
     "hidden": {
       "note": "Hidden in every view of the coverage survey (the base game): the game decides these from its data or a click; show one by hand.",
       "hide": [

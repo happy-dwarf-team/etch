@@ -10,13 +10,13 @@ have a profile.
 
 | Playset | Resolution | Views | Offline preview: rects | Offline preview: visibility | Outline rects | Outline visibility | Full (outline) | With profiles: rects | With profiles: visibility | Live rects | Live visibility | Full (live) | Live texts | Texts, profiled windows | Pixel pass |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| vanilla | 1280x720 | 62 | 99.5 % | 99.5 % | 81.6 % | 87.5 % | 23 | 99.9 % | 99.5 % | 100.0 % | 100.0 % | 62 | 100.0 % | 100.0 % | 3 of 62 |
-| vanilla | 1920x1080 | 62 | 99.5 % | 99.6 % | 81.5 % | 87.2 % | 23 | 99.9 % | 99.5 % | 100.0 % | 100.0 % | 62 | 100.0 % | 100.0 % | 3 of 62 |
+| vanilla | 1280x720 | 62 | 99.6 % | 99.5 % | 81.6 % | 87.5 % | 23 | 100.0 % | 99.5 % | 100.0 % | 100.0 % | 62 | 100.0 % | 100.0 % | 3 of 62 |
+| vanilla | 1920x1080 | 62 | 99.6 % | 99.6 % | 81.5 % | 87.2 % | 23 | 100.0 % | 99.5 % | 100.0 % | 100.0 % | 62 | 100.0 % | 100.0 % | 3 of 62 |
 | anbennar-alone | 1280x720 | 59 | 99.8 % | 99.9 % | 88.7 % | 76.8 % | 25 | 100.0 % | 99.9 % | 99.7 % | 100.0 % | 58 | 100.0 % | 100.0 % | 3 of 59 |
 | anbennar-alone | 1920x1080 | 60 | 99.7 % | 99.9 % | 88.8 % | 77.0 % | 25 | 100.0 % | 99.9 % | 100.0 % | 100.0 % | 60 | 100.0 % | 100.0 % | 3 of 60 |
-| bigger-ui | 1280x720 | 62 | 99.5 % | 99.6 % | 81.5 % | 87.5 % | 23 | 99.9 % | 99.5 % | 100.0 % | 100.0 % | 62 | 100.0 % | 100.0 % | 3 of 62 |
-| bigger-ui | 1920x1080 | 62 | 99.5 % | 99.6 % | 81.5 % | 87.3 % | 23 | 99.9 % | 99.6 % | 100.0 % | 100.0 % | 62 | 100.0 % | 100.0 % | 3 of 62 |
-| proper-2k-ui-enhanced | 2560x1440 | 61 | 98.9 % | 99.6 % | 79.2 % | 87.5 % | 16 | 99.4 % | 99.6 % | 99.9 % | 100.0 % | 58 | 100.0 % | 100.0 % | 2 of 61 |
+| bigger-ui | 1280x720 | 62 | 99.5 % | 99.6 % | 81.5 % | 87.5 % | 23 | 100.0 % | 99.5 % | 100.0 % | 100.0 % | 62 | 100.0 % | 100.0 % | 3 of 62 |
+| bigger-ui | 1920x1080 | 62 | 99.6 % | 99.6 % | 81.5 % | 87.3 % | 23 | 100.0 % | 99.6 % | 100.0 % | 100.0 % | 62 | 100.0 % | 100.0 % | 3 of 62 |
+| proper-2k-ui-enhanced | 2560x1440 | 61 | 99.0 % | 99.6 % | 79.2 % | 87.5 % | 16 | 99.5 % | 99.6 % | 99.9 % | 100.0 % | 58 | 100.0 % | 100.0 % | 2 of 61 |
 | anbennar | 2560x1440 | 59 | 99.3 % | 99.9 % | 86.9 % | 78.7 % | 19 | 99.6 % | 99.9 % | 99.8 % | 100.0 % | 53 | 100.0 % | 100.0 % | 2 of 59 |
 
 "With profiles and live texts" is the same with the snapshot's texts and list rows as sample
@@ -105,6 +105,13 @@ below (no capture was taken again). The generated tables above are this run.
   Bigger UI and Proper 2K UI Enhanced, four in Anbennar alone at each size and in the P2KE playset.
   On the three countries one more: their institutions window shows the printing press, which the
   selector has as a value but not as its default.
+- **The rebels' size** (etch#604): the view's daily update (`eu4.exe` `0xF9B290`) writes
+  `rebelsize_desc` from `REBELSIZE` with the faction's total revolt size ("An army of 20k rebels
+  will fight against us."), or `ACTIVE_REBELSIZE` once the faction has risen. The width the game
+  draws, 249 px in a `fixedsize` box of `maxWidth` 246, is the size the game's font measures for
+  that text, which Etch already counts (the live measure had it right); the box only lacked the
+  text. The profile writes the survey's faction of 20k. One rect fewer in vanilla, Bigger UI and
+  Proper 2K UI Enhanced (there two lines, 52 px high), none of the other sets changes.
 
 With the profiles, rects off on `main` against the section below (rules of `b156984`). Every
 change of a view measure was a gain but one: the three countries' institutions view, whose
@@ -113,29 +120,28 @@ for industrialization.
 
 | Set | With profiles: rects off | Offline preview: rects off | Live: rects off |
 | --- | --- | --- | --- |
-| vanilla, 1920×1080 and 1280×720 | 1 (23) | 16 (38) | 0 (9) |
+| vanilla, 1920×1080 and 1280×720 | 0 (23) | 15 (38) | 0 (9) |
 | Anbennar alone, 1920×1080 | 0 (19) | 8 (27) | 0 (1) |
 | Anbennar alone, 1280×720 | 0 (18) | 7 (25) | 8 (9) |
-| Bigger UI, 1920×1080 and 1280×720 | 1 (23) | 16 (38) | 0 (9) |
-| Proper 2K UI Enhanced, 2560×1440 | 18 (80) | 39 (101) | 3 (40) |
+| Bigger UI, 1920×1080 and 1280×720 | 0 (23) | 15 (38) | 0 (9) |
+| Proper 2K UI Enhanced, 2560×1440 | 17 (80) | 38 (101) | 3 (40) |
 | Anbennar with Proper 2K UI Enhanced and P2KE, 2560×1440 | 12 (52) | 22 (62) | 6 (20) |
 | Austria, the emperor | 2 (12) | 7 (17) | 0 (9) |
 | Aragon, the Pope's controller | 2 (12) | 7 (17) | 0 (9) |
 | C01, a colonial nation | 2 (3) | 5 (6) | 0 (1) |
 
-Visibility is unchanged in every set. **What is left with the profiles**, in vanilla and Bigger UI at
-each size: the rebels' `rebelsize_desc` (the game draws the `fixedsize` box 249 px wide, its
-`maxWidth` is 246). In Anbennar alone: nothing. On the three countries: the institutions'
+Visibility is unchanged in every set. **What is left with the profiles**, in vanilla, Bigger UI and
+Anbennar alone at each size: nothing. On the three countries: the institutions'
 `when_embraced` (the printing press, see above) and the colonisation panel's `region_text`, two
 lines in the game, a line break and the province's colonial region with who claims it ("Colonial
 Brazil Claimed by Portugal"). These are etch#604's: texts the game's code fills from the game's
-state, and the width of `rebelsize_desc`, which a comment on etch#604 adds to its list. Nothing of etch#606 is left: the pie
+state. Nothing of etch#606 is left: the pie
 chart (etch#614), the patriarch marker (etch#615), the crown land icons and the map mode buttons
 (etch#672) and Proper 2K UI Enhanced's minimap (etch#693) are fixed.
 
-In Proper 2K UI Enhanced (18 rects) and the P2KE playset (12), by cause:
+In Proper 2K UI Enhanced (17 rects) and the P2KE playset (12), by cause:
 
-- **Texts the game's code fills from the game's state** (etch#604's kind), 17 and 7: the same
+- **Texts the game's code fills from the game's state** (etch#604's kind), 16 and 7: the same
   heights as above, and widths that come from the game's numbers: the topbar's prestige and power
   projection (the game writes "+100", wider than the sample text), the diplomacy view's
   `land_forcelimit_value`, `manpower_value`, `reputation_value` and `score_value`, and Anbennar's
