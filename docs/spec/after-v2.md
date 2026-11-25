@@ -1256,9 +1256,14 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
      whose span of the state's time holds its `time`, so one timed before the
      start waits for the next loop, or never comes in a state that does not
      loop. `trigger_once` still counts the time since the state started.
-     LIVE. The preview starts each state at the base (the variation is
-     chance, listed on the user page), the root's animation and slider at its
-     own, an attached entity at its own.
+     Checked in the game (Steam 1.37.5, a test mod over the siege sites near
+     Trier, the siege smoke as long-lived tiles): with `time_offset = { 1 0 }`
+     on the eight states of the western city that fire it (events at 0.07-0.9
+     s, no loop), a view where the unchanged states showed about eight clusters
+     of tiles (58 to 77) showed none, only about ten stray tiles at one site,
+     which this reading does not explain. The preview starts each state at the
+     base (the variation is chance, listed on the user page), the root's
+     animation and slider at its own, an attached entity at its own.
 
 Small unknowns, none worth an issue yet.
 
