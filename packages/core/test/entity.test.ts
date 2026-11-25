@@ -32,7 +32,7 @@ const UNITS = `entity = {
   pdxmesh = "soldier_mesh"
   state = { name = "idle" animation = "idle" }
   state = { name = "walk" animation = "walk" }
-  state = { name = "death" event = { time = 0.25 node = "muzzle" particle = "musket_flash" keep_particle = yes } event = { particle = "dust" trigger_once = yes } loop_time = 2.0f }
+  state = { name = "death" event = { time = 0.25 node = "muzzle" particle = "musket_flash" keep_particle = yes } event = { particle = "dust" trigger_once = yes } loop_time = 2.0f time_offset = { 0.5 0.25 } }
   attach = { name = "weapon" Right_hand_node = "spear" }
   attach = { Back_node = "flag" }
 }
@@ -155,7 +155,13 @@ describe('resolveEntity', () => {
         problem: undefined,
         events: [],
       },
-      { name: 'walk', file: 'gfx/models/other/walk.anim', problem: undefined, events: [] },
+      {
+        name: 'walk',
+        file: 'gfx/models/other/walk.anim',
+        problem: undefined,
+        events: [],
+        timeOffset: undefined,
+      },
       {
         name: 'death',
         file: undefined,
@@ -179,6 +185,7 @@ describe('resolveEntity', () => {
         ],
         // `loop_time` is a name of `state_time`; the game reads `2.0f` as 2.
         stateTime: 2,
+        timeOffset: { base: 0.5, variation: 0.25 },
       },
     ]);
     expect(

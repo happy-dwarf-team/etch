@@ -1188,7 +1188,8 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
      step 5); the trail's
      look without a `Trail` shader effect, which vanilla lacks (settled in
      step 8); `childsystem`
-     (not used in vanilla) and `time_offset` (not used in vanilla), not run.
+     (not used in vanilla), not run, and `time_offset` (not used in vanilla;
+     settled in step 9).
   5. Settle `spin`. Done 25 November 2026: the preview follows step 4's
      reading. Each step a particle's offset from the axis through the centre
      is turned by `amount · dt` radians (radians, not scaled; +X towards +Z
@@ -1248,6 +1249,21 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
      arithmetic none of its triangles turns round; the game's likely come from
      a side that passes near zero), and a mod that adds its own `…Trail`
      effect is still drawn in grey.
+  9. Settle a state's `time_offset = { base variation }` (none in vanilla).
+     Done 25 November 2026, from step 4's reading of the game's code: when a
+     state starts, its time starts at base plus a random share of the
+     variation; the animation starts there, and an event fires in the step
+     whose span of the state's time holds its `time`, so one timed before the
+     start waits for the next loop, or never comes in a state that does not
+     loop. `trigger_once` still counts the time since the state started.
+     Checked in the game (Steam 1.37.5, a test mod over the siege sites near
+     Trier, the siege smoke as long-lived tiles): with `time_offset = { 1 0 }`
+     on the eight states of the western city that fire it (events at 0.07-0.9
+     s, no loop), a view where the unchanged states showed about eight clusters
+     of tiles (58 to 77) showed none, only about ten stray tiles at one site,
+     which this reading does not explain. The preview starts each state at the
+     base (the variation is chance, listed on the user page), the root's
+     animation and slider at its own, an attached entity at its own.
 
 Small unknowns, none worth an issue yet.
 

@@ -65,6 +65,11 @@ That block's `type` names an `animation` of an `.asset` file, and that one's `fi
 file that plays. For the soldier, `idle` plays `polearm_twohanded_idle.anim`. An attached entity
 with no animation for the state stays on its bone as the bone moves.
 
+A state with `time_offset = { 1 0.5 }` starts 1 second in, plus a random part of the second
+number. Its animation starts at that point, and an `event` timed before it waits for the next
+loop, or never comes in a state that does not loop. The preview starts the state at the first
+number.
+
 The animation moves the mesh's bones by their order, as the game does: joint 1 moves bone 1, joint
 2 bone 2, whatever their names. A musket on `Left_hand_node`, the tenth bone, therefore follows the
 tenth joint of `rifleman_idle.anim`, `attack_L_hand`. An animation with more or fewer joints than
@@ -234,6 +239,8 @@ These parts differ:
 - A trail in a mod that adds its own shader effect for it (see
   [Particle effects](particles.md)). The game draws the band with that effect, Etch still in grey.
 - A `childsystem` block. Etch does not start child effects.
+- Where a state with a `time_offset` starts. The game adds a random part of its second number;
+  Etch starts at the first.
 - How many particles can be alive. Like the game, Etch starts a new copy of an event's effect each
   time the event comes round, while the earlier copies still play. But once 100,000 particles are
   alive, Etch starts no new copy, and the line at the bottom says so. The game has no limit, so an

@@ -244,10 +244,12 @@ async function entityMessage(
       return;
     }
     const states: Record<string, string | undefined> = {};
+    const stateStarts: Record<string, number> = {};
     // The index this node gets below.
     const at = nodes.length;
     for (const state of node.states) {
       states[state.name] = state.file;
+      if (state.timeOffset !== undefined) stateStarts[state.name] = state.timeOffset.base;
       for (const event of state.events) {
         if (event.particle === undefined) continue;
         const where = event.node === undefined ? '' : ` on ${event.node}`;
@@ -268,6 +270,7 @@ async function entityMessage(
           keepParticle: event.keepParticle,
           triggerOnce: event.triggerOnce,
           stateTime: state.stateTime,
+          stateStart: state.timeOffset?.base ?? 0,
         });
       }
       if (state.file !== undefined) animationPaths.add(state.file);
@@ -284,6 +287,7 @@ async function entityMessage(
         textures,
         scale: node.scale,
         states,
+        stateStarts,
       }) - 1;
     for (const attachment of node.attachments) {
       await visit(attachment.entity, index, attachment.bone);
