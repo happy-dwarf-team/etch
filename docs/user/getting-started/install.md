@@ -105,7 +105,10 @@ a folder named Europa Universalis IV. Etch shows it at most once in each VS Code
 - **Colour Files in This Folder** adds the setting `files.associations` to the folder you opened in
   VS Code, in its file `.vscode/settings.json`. VS Code creates that file if the folder has none.
   The setting tells VS Code that your mod's script files are EU4 files, so CWTools colours and
-  checks them there too. The file you have open gets its colours at once. If `files.associations`
+  checks them there too. The file you have open gets its colours at once. If CWTools was already
+  running, for example for a `.gui` file you opened before, it still checks the files as files of
+  another game: Etch then shows a second notification with **Reload Window**. Click it, and
+  CWTools starts again for EU4. If `files.associations`
   there already has a line for one of the patterns below, Etch keeps your line and adds only the
   missing ones.
 - If you opened no folder, or the file is not inside the folder you opened, the first button is
@@ -137,6 +140,25 @@ has `files.associations`, add only the lines inside its braces.
 
 Instead of the setting, you can also keep your mod in the `mod` folder in
 `Documents/Paradox Interactive/Europa Universalis IV`: CWTools then colours its files without it.
+
+### CWTools and the game folder
+
+CWTools checks the names your mod takes from the base game, such as localisation keys. For that
+it needs the game folder, which it keeps in its own setting, `cwtools.cache.eu4`. While that
+setting is empty, CWTools asks you for the folder itself. Its folder dialog takes only a folder
+named Europa Universalis IV.
+
+When you open a script file that CWTools colours, and `cwtools.cache.eu4` is empty, Etch shows a
+notification at the bottom right. It says that CWTools needs the game folder, and shows the
+folder Etch found: the one in `etch.gamePath`, or, when that setting is empty, the one in your
+Steam library (see [Where Etch finds the game](finding-the-game.md)). If Etch has found no game
+folder, it shows nothing. Etch shows this notification at most once in each VS Code window.
+
+- **Use This Folder** puts that folder into `cwtools.cache.eu4` in your user settings. CWTools
+  then reads the base game by itself. The first time, that takes it a minute or two, and you can
+  keep working meanwhile.
+- **Learn More** opens this section of Etch's docs in your browser.
+- **Don't Show Again**: Etch never shows this notification again, in any window.
 
 ## The Get Started page
 

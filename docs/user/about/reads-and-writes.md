@@ -59,7 +59,7 @@ Etch writes into your mod's folder only when you ask it to:
   numbers in that file, in the same form: three numbers in braces, or `0x` and eight digits. See
   [Hovers and links](../textures-and-meshes/hovers-and-links.md#font-colours-in-gfx-files).
 
-Three more requests change a file through VS Code:
+Four more requests change a file through VS Code:
 
 - **Etch: Choose the Preview Resolution**, or the resolution button in the preview, saves your
   choice in the `etch.previewResolution` setting. It goes into your workspace's settings when the
@@ -70,6 +70,9 @@ Three more requests change a file through VS Code:
   in VS Code. VS Code creates that file if it is missing. Lines the setting already has stay as
   they are. See
   [A mod in a folder of its own](../getting-started/install.md#a-mod-in-a-folder-of-its-own).
+- **Use This Folder**, on the notification that offers to give CWTools the game folder Etch
+  found, puts that folder into CWTools' setting `cwtools.cache.eu4` in your user settings. See
+  [CWTools and the game folder](../getting-started/install.md#cwtools-and-the-game-folder).
 - **Save with Encoding…** on an encoding warning opens VS Code's own **Save with Encoding**. Your
   file is saved only when you pick an encoding there. The other fixes, **Reopen as Windows 1252**
   and **Reopen as UTF-8 with BOM**, only open the file again. See

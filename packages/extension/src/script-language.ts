@@ -103,3 +103,36 @@ export function scriptLanguageNotice(
   }
   return undefined;
 }
+
+/**
+ * CWTools' setting, under `cwtools`, that holds EU4's game folder. CWTools builds its cache of the
+ * base game from it, and checks a mod against that cache; while it is empty it asks for the folder
+ * in a notification of its own, whose folder dialog takes only a folder named
+ * `Europa Universalis IV`.
+ */
+export const CWTOOLS_GAME_FOLDER = 'cache.eu4';
+
+/** What the offer to hand CWTools the game folder is decided on. */
+export interface CwtoolsGameFolderCase {
+  /** The language of the document that opened: CWTools uses the folder only in its `eu4` mode. */
+  readonly languageId: string;
+  /** CWTools is installed. */
+  readonly cwtools: boolean;
+  /** `cwtools.cache.eu4` as the user has it, set or not. */
+  readonly cwtoolsGameFolder: string | undefined;
+  /** The game folder Etch found, from `etch.gamePath` or Steam. */
+  readonly gameFolder: string | undefined;
+  /** The user chose Don't Show Again on this offer. */
+  readonly declined: boolean;
+}
+
+/** Whether Etch offers its game folder to CWTools: an `eu4` file opened and CWTools has none. */
+export function offersCwtoolsGameFolder(document: CwtoolsGameFolderCase): boolean {
+  return (
+    document.cwtools &&
+    !document.declined &&
+    document.languageId === CWTOOLS_EU4_LANGUAGE &&
+    document.gameFolder !== undefined &&
+    (document.cwtoolsGameFolder ?? '').trim() === ''
+  );
+}
