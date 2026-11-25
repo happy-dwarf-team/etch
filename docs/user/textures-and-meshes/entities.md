@@ -222,9 +222,10 @@ These parts work as in the game:
 
 These parts differ:
 
-- The exact direction and other chance values of each particle. The game picks new ones for every
-  shot, so its own shots differ from each other too. So does the swirl of a `turbulence` force:
-  it follows the game's rule, but from other chance values.
+- The exact direction and other chance values of each particle, and the swirl of a `turbulence`
+  force. Etch picks them by the game's rule and in the game's order, but the game starts its
+  sequence from the computer's clock each time an effect starts, so its own shots differ from
+  each other too and Etch cannot match any one of them.
 - The look of a trail. Etch draws the band with the effect's `texture`. The game draws it with a
   shader effect whose name ends in `Trail`, and the base game has none (see
   [Particle effects](particles.md)).

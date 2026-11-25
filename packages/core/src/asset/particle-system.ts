@@ -85,6 +85,15 @@ export interface ParticleSubsystem {
   /** Roll on screen, degrees (`rotation` or `particle_roll`). */
   readonly rotation: ParticleValue;
   readonly rotationSpeed: ParticleValue;
+  /**
+   * `particle_yaw`, `particle_pitch`, `rotation_speed_yaw` and `rotation_speed_pitch`: the player
+   * draws them with a camera-facing particle as the game does, only so that the random numbers
+   * after them come out in the game's order.
+   */
+  readonly particleYaw: ParticleValue;
+  readonly particlePitch: ParticleValue;
+  readonly rotationSpeedYaw: ParticleValue;
+  readonly rotationSpeedPitch: ParticleValue;
   readonly mass: ParticleValue;
   readonly color: readonly [ParticleValue, ParticleValue, ParticleValue, ParticleValue];
   readonly emitter: 'point' | 'sphere' | 'box';
@@ -200,6 +209,10 @@ export function readParticleSystem(block: BlockNode): ParticleSystem {
         lastValue(node, 'rotation_speed_roll') === undefined
           ? get('rotation_speed')
           : get('rotation_speed_roll'),
+      particleYaw: get('particle_yaw'),
+      particlePitch: get('particle_pitch'),
+      rotationSpeedYaw: get('rotation_speed_yaw'),
+      rotationSpeedPitch: get('rotation_speed_pitch'),
       mass: get('mass', constant(1)),
       // A colour channel with no value is 255.
       color: [

@@ -1175,6 +1175,21 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
      was the start of that spiral, and step 3's steady turn is gone. Not
      measured: the spiral's rate on screen, which the camera's perspective
      and two emitters at the site kept from a number.
+  6. Settle the random numbers. Done 25 November 2026, from the EU4 engine
+     lab's reading of the game's code: one MSVC `rand()` sequence per effect,
+     seeded from the clock when the effect starts; a draw joins two steps
+     into 30 bits with the second step's 15 bits on top. The order: each
+     subsystem's position x, y, z, duration, start and pulse values; then the
+     turbulence fields; every frame, while a subsystem emits, its emission,
+     and while it has particles, each force's amount; at a spawn of n
+     particles, each value n times before the next (life, size, the
+     particle's yaw and pitch, its roll, the three turn speeds, mass, red,
+     green, blue, alpha), the emitter's yaw and pitch once, the velocity's
+     pitch, yaw and speed, the shape's three values, and per particle two
+     tile draws, the 30-bit number modulo the sheet's columns and rows, even
+     for a sheet of one. A value without variation draws nothing. The preview
+     now draws in that order, so only the seed differs from the game; a
+     `childsystem`, not run, would draw before its parent at the start.
 
 Small unknowns, none worth an issue yet.
 

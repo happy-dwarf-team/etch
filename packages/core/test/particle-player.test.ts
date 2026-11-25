@@ -143,6 +143,60 @@ describe('values', () => {
   });
 });
 
+describe('random numbers (step 6)', () => {
+  it('joins two rand() steps with the second on top, as the game does', () => {
+    // From seed 1 the MSVC sequence gives 41, then 18467.
+    expect(new ParticleRandom(1).next30()).toBe(18467 * 32768 + 41);
+    expect(new ParticleRandom(1).unit()).toBe((18467 * 32768 + 41) / 2 ** 30);
+  });
+
+  it('draws in the game order: the subsystem values, then each value for every particle, then the tiles', () => {
+    const effect = new ParticleEffect(
+      single(`max_amount = 3 emission = 30 life = 5 duration = { 10 1 }
+        position = { x = { 0 1 } }
+        texture = { file = "t.dds" x = 4 y = 4 }
+        size = { 1 0.5 } color = { r = { 100 50 } }`),
+      1,
+      9,
+    );
+    effect.step(0.1, IDENTITY);
+    const random = new ParticleRandom(9);
+    const draw = (base: number, variation: number) => base + (2 * random.unit() - 1) * variation;
+    // Position x, then duration (its draw shifts the rest), then start and the pulses (none drawn).
+    const x = draw(0, 1);
+    draw(10, 1);
+    // Size for the three particles, then red for the three, then two tiles each.
+    const sizes = [draw(1, 0.5), draw(1, 0.5), draw(1, 0.5)];
+    const reds = [draw(100, 50), draw(100, 50), draw(100, 50)];
+    const tiles = [0, 1, 2].map(() => [random.next30() % 4, random.next30() % 4]);
+    const quads = effect.quads(0);
+    expect(quads).toHaveLength(3);
+    quads.forEach((q, i) => {
+      expect(q.x).toBeCloseTo(x, 12);
+      expect(q.size).toBeCloseTo(sizes[i] ?? 0, 12);
+      expect(q.r).toBeCloseTo(reds[i] ?? 0, 12);
+      expect([q.tileX, q.tileY]).toEqual(tiles[i]);
+    });
+  });
+
+  it('draws both tiles of a particle even from a sheet of one', () => {
+    const effect = new ParticleEffect(
+      single('max_amount = 4 emission = 20 duration = -1 life = 5 size = { 1 0.5 }'),
+      1,
+      3,
+    );
+    effect.step(0.1, IDENTITY);
+    effect.step(0.1, IDENTITY);
+    const random = new ParticleRandom(3);
+    const size = () => 1 + (2 * random.unit() - 1) * 0.5;
+    const first = [size(), size()];
+    // Four tile draws, two per particle, come before the second step's sizes.
+    for (let i = 0; i < 4; i++) random.next30();
+    const second = [size(), size()];
+    expect(effect.quads(0).map((q) => q.size)).toEqual([...first, ...second]);
+  });
+});
+
 describe('a running effect', () => {
   it('spawns up to max_amount and lets them die', () => {
     const effect = new ParticleEffect(system(SMOKE, 'etch_smoke'));
