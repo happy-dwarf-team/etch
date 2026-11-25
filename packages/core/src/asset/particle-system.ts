@@ -10,6 +10,9 @@
 //   mapped from 0–1 onto `minValue`–`maxValue`. Its `time` is case-sensitive: any text other than
 //   `life`, `life_abs` and `system` is `spawn`. A `duration` of 0 or less becomes 1.
 // - A subsystem's `force` list names the effect's `force` blocks; unknown names are left out.
+// - A force's `type`, a subsystem's `sort` and `emitter_type` and a curve's `op` are read entry by
+//   entry, in any case: a word the game knows sets the value and another changes nothing, from the
+//   reader's default (`planar`, `none`, `point`, `add`). See `PARTICLE_CHOICES`.
 //
 // Nothing here depends on the editor or the browser, so the data can be sent to the webview.
 
@@ -156,7 +159,7 @@ export function readParticleSystem(block: BlockNode): ParticleSystem {
     forceIndex.set(name.toLowerCase(), forces.length);
     forces.push({
       name,
-      type: forceType(node),
+      type: particleChoice(node, 'force', 'type'),
       amount: value(lastValue(node, 'amount')),
       direction: vector(lastValue(node, 'direction')),
       position: vector(lastValue(node, 'position')),
@@ -178,14 +181,12 @@ export function readParticleSystem(block: BlockNode): ParticleSystem {
       const text = lastScalar(node, key)?.text.toLowerCase();
       return text === undefined ? fallback : text === 'yes';
     };
-    const sort = lastScalar(node, 'sort')?.text.toLowerCase();
-    const emitter = lastScalar(node, 'emitter_type')?.text.toLowerCase();
     const trail = flag('trail');
     return {
       maxAmount: flag('hide')
         ? 0
         : Math.max(0, Math.trunc(numberOf(lastScalar(node, 'max_amount')) ?? 0)),
-      sort: sort === 'depth' || sort === 'distance' || sort === 'age' ? sort : 'none',
+      sort: particleChoice(node, 'subsystem', 'sort'),
       invert: flag('invert'),
       texture: {
         file: texture === undefined ? undefined : lastScalar(texture, 'file')?.text,
@@ -225,7 +226,7 @@ export function readParticleSystem(block: BlockNode): ParticleSystem {
         part('color', 'b', constant(255)),
         part('color', 'alpha', constant(255)),
       ],
-      emitter: emitter === 'sphere' || emitter === 'box' ? emitter : 'point',
+      emitter: particleChoice(node, 'subsystem', 'emitter_type'),
       sphere: [
         get('sphere_emitter_radius'),
         get('sphere_emitter_yaw'),
@@ -248,36 +249,57 @@ export function readParticleSystem(block: BlockNode): ParticleSystem {
   return { name: lastScalar(block, 'name')?.text ?? '', curves, forces, subsystems };
 }
 
-const FORCE_TYPES: readonly ForceType[] = [
-  'planar',
-  'point',
-  'vortex',
-  'friction',
-  'turbulence',
-  'spin',
-];
+/**
+ * The keys whose value is one of a few words, by block: the words the game knows, in lowercase,
+ * and what a block without a known one gets, the reader's default (etch#631 steps 14 and 15).
+ */
+export const PARTICLE_CHOICES = {
+  force: {
+    type: {
+      known: ['planar', 'point', 'vortex', 'friction', 'turbulence', 'spin'],
+      fallback: 'planar',
+    },
+  },
+  subsystem: {
+    sort: { known: ['depth', 'distance', 'age'], fallback: 'none' },
+    emitter_type: { known: ['point', 'sphere', 'box'], fallback: 'point' },
+  },
+  animation: {
+    op: { known: ['mul', 'add', 'abs'], fallback: 'add' },
+  },
+} as const;
+
+type Choices = typeof PARTICLE_CHOICES;
+type Choice<B extends keyof Choices, K extends keyof Choices[B]> = Choices[B][K] extends {
+  readonly known: readonly (infer T)[];
+  readonly fallback: infer F;
+}
+  ? T | F
+  : never;
 
 /**
- * A force's type as the game reads it (etch#631 step 14): each `type` in the block, in any case,
- * sets it when the game knows it, and one it does not know changes nothing; without a known one
- * the force is `planar`, the reader's default.
+ * A key of `PARTICLE_CHOICES` as the game reads it: each entry of the key in the block, in any
+ * case, sets the value when the game knows the word, and one it does not know changes nothing;
+ * without a known one the block keeps the reader's default.
  */
-function forceType(node: BlockNode): ForceType {
-  let type: ForceType = 'planar';
+export function particleChoice<B extends keyof Choices, K extends keyof Choices[B] & string>(
+  node: BlockNode,
+  block: B,
+  key: K,
+): Choice<B, K> {
+  const { known, fallback } = PARTICLE_CHOICES[block][key] as {
+    readonly known: readonly string[];
+    readonly fallback: string;
+  };
+  let value = fallback;
   for (const entry of node.entries) {
-    if (entry.kind !== 'property' || keyOf(entry) !== 'type' || entry.value?.kind !== 'scalar') {
+    if (entry.kind !== 'property' || keyOf(entry) !== key || entry.value?.kind !== 'scalar') {
       continue;
     }
     const text = entry.value.text.toLowerCase();
-    type = FORCE_TYPES.find((known) => known === text) ?? type;
+    value = known.find((word) => word === text) ?? value;
   }
-  return type;
-}
-
-/** Whether the game knows `text` as a force's `type`, in any case. */
-export function isForceType(text: string): boolean {
-  const lower = text.toLowerCase();
-  return FORCE_TYPES.some((known) => known === lower);
+  return value as Choice<B, K>;
 }
 
 function shaderOf(effect: string | undefined): ParticleShader {
@@ -295,7 +317,6 @@ function readCurve(node: BlockNode): ParticleCurve | undefined {
     written === 'life' || written === 'life_abs' || written === 'system' ? written : 'spawn';
   const start = numberOf(lastScalar(node, 'start')) ?? 0;
   const duration = numberOf(lastScalar(node, 'duration')) ?? 1;
-  const op = lastScalar(node, 'op')?.text.toLowerCase();
   const min = numberOf(lastScalar(node, 'minvalue')) ?? 0;
   const max = numberOf(lastScalar(node, 'maxvalue')) ?? 1;
   const curve = lastValue(node, 'curve');
@@ -315,7 +336,8 @@ function readCurve(node: BlockNode): ParticleCurve | undefined {
     start,
     end: start + (duration > 0 ? duration : 1),
     repeat: lastScalar(node, 'repeat')?.text.toLowerCase() === 'yes',
-    op: op === 'add' || op === 'abs' ? op : 'mul',
+    // Without a known `op` the curve adds: the base game writes `op` in every curve.
+    op: particleChoice(node, 'animation', 'op'),
     samples: sampleCurve(points).map((y) => min + (max - min) * y),
   };
 }

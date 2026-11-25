@@ -160,18 +160,38 @@ describe('checkParticleBlocks', () => {
     ]);
   });
 
-  it('warns on a force type the game skips, in any case it knows', () => {
+  it('warns on a word the game skips, in any case it knows', () => {
     const text = `particle = {
 	name = "x"
+	subsystem = { sort = "Depth" sort = "none" emitter_type = "SPHERE" emitter_type = "cone" }
+	animation = { name = "a" op = "MUL" op = "times" curve = { 0 0 1 1 } }
 	force = { name = "a" type = "Point" }
 	force = { name = "b" type = "point" type = "gravity" }
 }`;
     expect(check(text)).toEqual([
       {
-        code: 'particle-force-type',
+        code: 'particle-skipped-value',
+        at: '"none"',
+        message:
+          'The game skips sort = "none": the subsystem keeps the sort written before it, or is not sorted without one. It knows depth, distance, age, in any case.',
+      },
+      {
+        code: 'particle-skipped-value',
+        at: '"cone"',
+        message:
+          'The game skips emitter_type = "cone": the subsystem keeps the emitter_type written before it, or is a point emitter without one. It knows point, sphere, box, in any case.',
+      },
+      {
+        code: 'particle-skipped-value',
+        at: '"times"',
+        message:
+          'The game skips op = "times": the curve keeps the op written before it, or adds to the value without one. It knows mul, add, abs, in any case.',
+      },
+      {
+        code: 'particle-skipped-value',
         at: '"gravity"',
         message:
-          'The game skips type = "gravity": the force keeps the type before it, or is planar without one. It knows planar, point, vortex, friction, turbulence and spin, in any case.',
+          'The game skips type = "gravity": the force keeps the type written before it, or is planar without one. It knows planar, point, vortex, friction, turbulence, spin, in any case.',
       },
     ]);
   });
