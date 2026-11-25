@@ -2,6 +2,7 @@
 // (ADR 0008, "Beside CWTools"): CWTools runs, the document has its `eu4` language, and the rules
 // it loads cover the thing. `etch.cwtools` set to `ignore` keeps every Etch feature.
 import * as vscode from 'vscode';
+import type { ModelDiagnostic } from '@etch/core';
 import { CWTOOLS_EU4_LANGUAGE, CWTOOLS_ID } from './script-language.ts';
 import { NO_COVERAGE, readCoverage, rulesFolder, type CwtoolsCoverage } from './cwtools-rules.ts';
 
@@ -85,6 +86,23 @@ export function cwtoolsTypesFonts(document: vscode.TextDocument): boolean {
 /** CWTools checks the widgets of this `.gui` document and completes their keys. */
 export function cwtoolsChecksGui(document: vscode.TextDocument): boolean {
   return active(document) && coverage.gui;
+}
+
+/**
+ * A `.gui` document's model diagnostics without the missing sprites and fonts that CWTools
+ * reports there itself: its `.gui` rules type the key that names them as `<sprite>` or `<font>`.
+ */
+export function withoutCwtoolsReports(
+  document: vscode.TextDocument | undefined,
+  diagnostics: readonly ModelDiagnostic[],
+): ModelDiagnostic[] {
+  if (document === undefined || !cwtoolsChecksGui(document)) return [...diagnostics];
+  return diagnostics.filter((d) => {
+    if (d.key === undefined) return true;
+    if (d.code === 'missing-sprite') return !coverage.guiSpriteKeys.has(d.key);
+    if (d.code === 'missing-font') return !coverage.guiFontKeys.has(d.key);
+    return true;
+  });
 }
 
 /**

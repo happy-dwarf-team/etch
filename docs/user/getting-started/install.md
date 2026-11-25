@@ -188,7 +188,9 @@ Where they cover a thing, Etch leaves it to CWTools:
   you type come from CWTools alone. Etch still suggests the sprite names and fonts after a key,
   with their pictures. The preview's warnings about
   [keys and values the game does not read](../interface-windows/problems.md#keys-and-values-the-game-does-not-read)
-  then come from CWTools too.
+  then come from CWTools too. So does the warning about a sprite that no `.gfx` file defines,
+  after `spriteType` or `quadTextureSprite`. CWTools does not check the `background` of a
+  `listboxType` or `smoothListboxType`, so Etch still warns about a missing sprite there.
 
 All the rest stays: Etch's hovers with the sprite's picture and the font's sample, the preview's
 other warnings in the Problems panel, the hints beside localisation keys, colours, **Find All References** and
