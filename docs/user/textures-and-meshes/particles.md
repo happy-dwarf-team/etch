@@ -80,7 +80,7 @@ see [Warnings in the files](entities.md#warnings-in-the-files) on the Entities p
   entity whose state starts it (see [Entities](entities.md#particles)).
 - What many keys do is Etch's reading, not checked in the game. Etch does not know how a value's
   variation (the second number in `{ 1.75 0.4 }`) and its curves add up.
-- It does not check the keys inside `childsystem`, `position` and `color` blocks.
+- It does not check the keys inside `position` and `color` blocks.
 - The warnings about shader effects and textures need the game folder: without it, Etch gives
   only the others.
 - It does not change your files.

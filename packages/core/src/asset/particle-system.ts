@@ -105,6 +105,11 @@ export interface ParticleSubsystem {
   readonly trail: boolean;
   readonly billboard: boolean;
   readonly slaveParticles: number;
+  /**
+   * The `childsystem` blocks, read as subsystems: each particle of this one emits them from where
+   * it is, while it lives.
+   */
+  readonly children: readonly ParticleSubsystem[];
 }
 
 export interface ParticleSystem {
@@ -161,7 +166,7 @@ export function readParticleSystem(block: BlockNode): ParticleSystem {
       localForce: lastScalar(node, 'local_force')?.text.toLowerCase() === 'yes',
     });
   }
-  const subsystems = propertyBlocks(block.entries, 'subsystem').map((node) => {
+  const readSubsystem = (node: BlockNode): ParticleSubsystem => {
     const get = (key: string, fallback = ZERO): ParticleValue =>
       value(lastValue(node, key), fallback);
     const part = (key: string, inner: string, fallback = ZERO): ParticleValue => {
@@ -236,8 +241,11 @@ export function readParticleSystem(block: BlockNode): ParticleSystem {
       trail,
       billboard: flag('billboard', !trail),
       slaveParticles: Math.max(0, Math.trunc(numberOf(lastScalar(node, 'slave_particles')) ?? 0)),
+      // The game reads a `childsystem` block with the subsystem's own reader.
+      children: propertyBlocks(node.entries, 'childsystem').map(readSubsystem),
     } satisfies ParticleSubsystem;
-  });
+  };
+  const subsystems = propertyBlocks(block.entries, 'subsystem').map(readSubsystem);
   return { name: lastScalar(block, 'name')?.text ?? '', curves, forces, subsystems };
 }
 

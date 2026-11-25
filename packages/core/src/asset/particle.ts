@@ -194,7 +194,14 @@ const SUBSYSTEM: [string, ParticleKeyDoc][] = [
   ['box_emitter_x', doc(VALUE, 'The size of a box emitter (`emitter_type = box`) along x.')],
   ['box_emitter_y', doc(VALUE, 'The size of a box emitter (`emitter_type = box`) along y.')],
   ['box_emitter_z', doc(VALUE, 'The size of a box emitter (`emitter_type = box`) along z.')],
-  ['childsystem', unknown('a block')],
+  [
+    'childsystem',
+    doc(
+      'a block with the keys of a subsystem',
+      'Another emitter that each particle of this one carries: it sends out its own particles from where the particle is, while the particle lives. A dead particle stays, unseen, until they are gone.',
+      'game',
+    ),
+  ],
   ['slave_particles', unknown('a whole number')],
   [
     'local_space',
@@ -501,7 +508,7 @@ export function checkParticleBlocks(
   for (const block of propertyBlocks(parsed.entries, 'particle')) {
     const effect = readEffect(block);
     unknownKeys(block, 'particle', out);
-    for (const subsystem of propertyBlocks(block.entries, 'subsystem')) {
+    for (const subsystem of subsystemBlocks(block)) {
       unknownKeys(subsystem, 'subsystem', out);
       for (const texture of propertyBlocks(subsystem.entries, 'texture')) {
         unknownKeys(texture, 'texture', out);
@@ -660,7 +667,19 @@ function childKind(kind: ParticleBlockKind, key: string): ParticleBlockKind | un
     if (key === 'force') return 'force';
   }
   if (kind === 'subsystem' && key === 'texture') return 'texture';
+  if (kind === 'subsystem' && key === 'childsystem') return 'subsystem';
   return undefined;
+}
+
+/** An effect's subsystem blocks with their `childsystem` blocks, which the game reads alike. */
+function subsystemBlocks(block: BlockNode): BlockNode[] {
+  const out: BlockNode[] = [];
+  const visit = (node: BlockNode): void => {
+    out.push(node);
+    for (const child of propertyBlocks(node.entries, 'childsystem')) visit(child);
+  };
+  for (const subsystem of propertyBlocks(block.entries, 'subsystem')) visit(subsystem);
+  return out;
 }
 
 function readEffect(block: BlockNode): ParticleEffect {
@@ -676,7 +695,7 @@ function readEffect(block: BlockNode): ParticleEffect {
   }
   const curveUses: NameUse[] = [];
   const forceUses: NameUse[] = [];
-  for (const subsystem of propertyBlocks(block.entries, 'subsystem')) {
+  for (const subsystem of subsystemBlocks(block)) {
     for (const entry of subsystem.entries) {
       if (entry.kind !== 'property' || entry.value === undefined) continue;
       const key = keyOf(entry);

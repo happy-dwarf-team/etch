@@ -228,7 +228,11 @@ These parts work as in the game:
   speed, they spiral outwards and soon fly off. With the siege smoke's scale of 2, `amount = 1`
   throws the particles away within a few seconds;
 - when an event starts its effect, and what happens to it when you pick another state;
-- the shape and look of a trail.
+- the shape and look of a trail;
+- a `childsystem` block inside a `subsystem`: it takes the keys of a subsystem, and each particle
+  of the subsystem sends out its particles from where it is, while it lives. A child with
+  `local_space = yes` sends them out from the effect's own place instead. A particle that dies
+  stays, unseen, until its children are gone, so it still counts towards `max_amount`.
 
 These parts differ:
 
@@ -238,7 +242,6 @@ These parts differ:
   each other too and Etch cannot match any one of them.
 - A trail in a mod that adds its own shader effect for it (see
   [Particle effects](particles.md)). The game draws the band with that effect, Etch still in grey.
-- A `childsystem` block. Etch does not start child effects.
 - Where a state with a `time_offset` starts. The game adds a random part of its second number;
   Etch starts at the first.
 - How many particles can be alive. Like the game, Etch starts a new copy of an event's effect each

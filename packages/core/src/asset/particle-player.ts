@@ -36,9 +36,17 @@
 //   velocity it had along the turn. Nothing pulls it back towards the axis, so it spirals
 //   outwards, faster with a larger scale; a test in the game showed the same outward spiral.
 // - A trail subsystem keeps its particles in the order they came out.
+// - Child systems (step 10): a subsystem's `childsystem` blocks are subsystems of their own that
+//   each of its particles emits from where it is. A parent has one of `max_amount` slots, and
+//   each slot keeps one block per child: its time (from minus its `start`), duration, pulses and
+//   emission, which go on from parent to parent in that slot and are not reset; only its
+//   particles are its own. A child runs while its slot's parent lives or waits: it emits only
+//   while the parent lives, from the parent's last place to its new one, with no turn (a
+//   world-space child) or at the origin (`local_space`), and a dead parent keeps its slot,
+//   undrawn, until its children are gone.
 //
 // What differs: the seed of the random numbers (the game takes it from the clock, so no two of its
-// runs match either); and child systems, which are not run.
+// runs match either), and the order of the draws of an effect with child systems.
 
 import type {
   ParticleCurve,
@@ -177,6 +185,12 @@ interface Particle {
   color: [number, number, number, number];
   tileX: number;
   tileY: number;
+  /** Its slot among the subsystem's, for an effect with child systems; -1 without. */
+  slot: number;
+  /** Where it was before this step's move, which its children emit from. */
+  px: number;
+  py: number;
+  pz: number;
 }
 
 interface SubsystemState {
@@ -190,6 +204,12 @@ interface SubsystemState {
   timer: number;
   accumulated: number;
   readonly offset: [number, number, number];
+  /** Per slot (`max_amount` of them), one state for each child subsystem; none without. */
+  readonly slots: readonly (readonly SubsystemState[])[];
+  /** Whether a live or waiting parent holds each slot. */
+  readonly used: boolean[];
+  /** Dead parents that keep their slot until their children are gone, not drawn. */
+  readonly waiting: Particle[];
 }
 
 const DEGREES = Math.PI / 180;
@@ -214,34 +234,47 @@ export class ParticleEffect {
     this.system = system;
     this.scale = scale;
     this.random = new ParticleRandom(seed);
-    this.states = system.subsystems.map((def) => {
-      const at = (value: ParticleValue): number => spawnValue(value, system.curves, 0, this.random);
-      // The game's order of these draws.
-      const offset: [number, number, number] = [
-        at(def.position[0]),
-        at(def.position[1]),
-        at(def.position[2]),
-      ];
-      const duration = at(def.duration);
-      const start = at(def.start);
-      const pulseDuration = at(def.pulseDuration);
-      const pulseSilence = at(def.pulseSilence);
-      return {
-        def,
-        particles: [],
-        time: -start,
-        duration,
-        pulseDuration,
-        pulseSilence,
-        emitting: true,
-        timer: 0,
-        accumulated: 0,
-        offset,
-      };
-    });
+    this.states = system.subsystems.map((def) => this.newState(def));
     this.fields = system.forces
       .filter((force) => force.type === 'turbulence')
       .map((force) => new TurbulenceField(this.random, force.division));
+  }
+
+  /** A subsystem's state, with its children's blocks for every slot first. */
+  private newState(def: ParticleSubsystem): SubsystemState {
+    const slots =
+      def.children.length === 0
+        ? []
+        : Array.from({ length: def.maxAmount }, () =>
+            def.children.map((child) => this.newState(child)),
+          );
+    const at = (value: ParticleValue): number =>
+      spawnValue(value, this.system.curves, 0, this.random);
+    // The game's order of these draws.
+    const offset: [number, number, number] = [
+      at(def.position[0]),
+      at(def.position[1]),
+      at(def.position[2]),
+    ];
+    const duration = at(def.duration);
+    const start = at(def.start);
+    const pulseDuration = at(def.pulseDuration);
+    const pulseSilence = at(def.pulseSilence);
+    return {
+      def,
+      particles: [],
+      time: -start,
+      duration,
+      pulseDuration,
+      pulseSilence,
+      emitting: true,
+      timer: 0,
+      accumulated: 0,
+      offset,
+      slots,
+      used: slots.map(() => false),
+      waiting: [],
+    };
   }
 
   /**
@@ -257,16 +290,19 @@ export class ParticleEffect {
 
   /** Whether nothing is alive and no subsystem will emit again. */
   get finished(): boolean {
-    return this.states.every(
-      (state) =>
-        state.particles.length === 0 &&
-        (state.def.maxAmount === 0 || (state.duration >= 0 && state.time > state.duration)),
+    return (
+      this.count === 0 &&
+      this.states.every(
+        (state) =>
+          state.waiting.length === 0 &&
+          (state.def.maxAmount === 0 || (state.duration >= 0 && state.time > state.duration)),
+      )
     );
   }
 
-  /** The number of live particles. */
+  /** The number of live particles, children's too. */
   get count(): number {
-    return this.states.reduce((sum, state) => sum + state.particles.length, 0);
+    return this.states.reduce((sum, state) => sum + alive(state), 0);
   }
 
   /** Advances the effect by dt seconds, with the node's world matrix at the end of the step. */
@@ -295,7 +331,36 @@ export class ParticleEffect {
   /** The quads of one subsystem, in world space, in its draw order before any camera sort. */
   quads(subsystem: number): ParticleQuad[] {
     const state = this.states[subsystem];
-    if (state === undefined) return [];
+    return state === undefined ? [] : this.quadsOf(state);
+  }
+
+  /**
+   * What to draw, in order: each subsystem's quads, then its children's. A child's quads are
+   * those of all its parents together, except a trail's, one band per parent.
+   */
+  layers(): { readonly subsystem: ParticleSubsystem; readonly quads: ParticleQuad[] }[] {
+    const out: { subsystem: ParticleSubsystem; quads: ParticleQuad[] }[] = [];
+    const visit = (states: readonly SubsystemState[][]): void => {
+      const first = states[0];
+      if (first === undefined) return;
+      for (const [c, def] of first.map((state) => state.def).entries()) {
+        const blocks = states.flatMap((slot) => (slot[c] === undefined ? [] : [slot[c]]));
+        if (def.trail) {
+          for (const block of blocks) out.push({ subsystem: def, quads: this.quadsOf(block) });
+        } else {
+          out.push({ subsystem: def, quads: blocks.flatMap((block) => this.quadsOf(block)) });
+        }
+        visit(blocks.flatMap((block) => block.slots.map((slot) => [...slot])));
+      }
+    };
+    for (const state of this.states) {
+      out.push({ subsystem: state.def, quads: this.quadsOf(state) });
+      visit(state.slots.map((slot) => [...slot]));
+    }
+    return out;
+  }
+
+  private quadsOf(state: SubsystemState): ParticleQuad[] {
     const local = state.def.localSpace;
     const m = local ? withoutScale(this.node) : IDENTITY;
     return state.particles.map((p) => {
@@ -317,11 +382,17 @@ export class ParticleEffect {
     });
   }
 
+  /**
+   * Runs a subsystem for dt seconds; `emits` is false for a child whose parent is dead, and
+   * `node` turns what it emits (none for a child).
+   */
   private update(
     state: SubsystemState,
     dt: number,
     from: [number, number, number],
     to: [number, number, number],
+    emits = true,
+    node: Matrix4 = this.node,
   ): void {
     const { def } = state;
     const curves = this.system.curves;
@@ -331,6 +402,14 @@ export class ParticleEffect {
       if (p === undefined) continue;
       p.age += dt;
       if (p.age < 0 || p.age > p.life) {
+        // A parent whose children live keeps its slot until they are gone.
+        if (p.slot >= 0) {
+          if ((state.slots[p.slot] ?? []).some((child) => alive(child) > 0)) {
+            state.waiting.push(p);
+          } else {
+            state.used[p.slot] = false;
+          }
+        }
         // A trail keeps its particles in the order they came out, the band's order.
         if (def.trail) {
           particles.splice(i, 1);
@@ -351,15 +430,20 @@ export class ParticleEffect {
         state.time = dt;
       }
     }
-    if (state.time >= 0 && (state.time <= state.duration || state.duration < 0) && state.emitting) {
+    if (
+      emits &&
+      state.time >= 0 &&
+      (state.time <= state.duration || state.duration < 0) &&
+      state.emitting
+    ) {
       const rate = Math.max(0, spawnValue(def.emission, curves, state.time, this.random));
       state.accumulated += rate * dt;
       const n = Math.min(
         Math.floor(state.accumulated),
-        Math.max(0, def.maxAmount - particles.length),
+        Math.max(0, def.maxAmount - particles.length - state.waiting.length),
       );
       state.accumulated -= n;
-      if (n > 0) this.spawn(state, n, from, to);
+      if (n > 0) this.spawn(state, n, from, to, node);
     }
     for (const p of particles) {
       const clock = { system: state.time, age: p.age, life: p.life };
@@ -377,8 +461,40 @@ export class ParticleEffect {
     }
     // Every field turns to this subsystem's time before its forces, as in the game.
     if (particles.length > 0) for (const field of this.fields) field.setTime(state.time);
+    for (const p of particles) {
+      p.px = p.x;
+      p.py = p.y;
+      p.pz = p.z;
+    }
     this.applyForces(state, dt);
     state.time += dt;
+    if (state.slots.length > 0) this.updateChildren(state, dt);
+  }
+
+  /** Runs the children of each live and each waiting parent, and frees the slots they leave. */
+  private updateChildren(state: SubsystemState, dt: number): void {
+    const run = (p: Particle, emits: boolean): void => {
+      for (const child of state.slots[p.slot] ?? []) {
+        const local = child.def.localSpace;
+        this.update(
+          child,
+          dt,
+          local ? [0, 0, 0] : [p.px, p.py, p.pz],
+          local ? [0, 0, 0] : [p.x, p.y, p.z],
+          emits,
+          IDENTITY,
+        );
+      }
+    };
+    for (const p of state.particles) run(p, true);
+    for (const p of state.waiting) run(p, false);
+    for (let i = state.waiting.length - 1; i >= 0; i--) {
+      const p = state.waiting[i];
+      if (p === undefined) continue;
+      if ((state.slots[p.slot] ?? []).some((child) => alive(child) > 0)) continue;
+      state.used[p.slot] = false;
+      state.waiting.splice(i, 1);
+    }
   }
 
   private spawn(
@@ -386,6 +502,7 @@ export class ParticleEffect {
     n: number,
     from: [number, number, number],
     to: [number, number, number],
+    emitterNode: Matrix4,
   ): void {
     const { def } = state;
     const curves = this.system.curves;
@@ -422,7 +539,7 @@ export class ParticleEffect {
     // The emitter's matrix, by columns, and the node's (none in local space) applied after it.
     const emitter = [cy * cp, -sp, sy * cp, cy * sp, cp, sy * sp, -sy, 0, cy];
     const local = def.localSpace;
-    const node = local ? IDENTITY : this.node;
+    const node = local ? IDENTITY : emitterNode;
     const scale = local ? 1 : this.scale;
     for (let i = 0; i < n; i++) {
       const color = colors.map((values) => clamp255(values[i] ?? 0)) as [
@@ -462,10 +579,19 @@ export class ParticleEffect {
           ];
       const columns = def.texture.columns;
       const rows = def.texture.rows;
+      // A parent takes the first free slot; the blocks there keep their time.
+      const slot = state.used.indexOf(false);
+      if (slot >= 0) {
+        state.used[slot] = true;
+        for (const child of state.slots[slot] ?? []) child.particles.length = 0;
+      }
+      const x = (base[0] ?? 0) + state.offset[0] + ox;
+      const y = (base[1] ?? 0) + state.offset[1] + oy;
+      const z = (base[2] ?? 0) + state.offset[2] + oz;
       state.particles.push({
-        x: (base[0] ?? 0) + state.offset[0] + ox,
-        y: (base[1] ?? 0) + state.offset[1] + oy,
-        z: (base[2] ?? 0) + state.offset[2] + oz,
+        x,
+        y,
+        z,
         vx: vx * speed,
         vy: vy * speed,
         vz: vz * speed,
@@ -483,6 +609,10 @@ export class ParticleEffect {
         // The game draws both tiles even for a sheet of one.
         tileX: this.random.next30() % columns,
         tileY: this.random.next30() % rows,
+        slot,
+        px: x,
+        py: y,
+        pz: z,
       });
     }
   }
@@ -758,6 +888,13 @@ function spin(
     accel[i * 3 + 1] = (accel[i * 3 + 1] ?? 0) + (ahead[1] - offset[1] - dt * along * t[1]) * k;
     accel[i * 3 + 2] = (accel[i * 3 + 2] ?? 0) + (ahead[2] - offset[2] - dt * along * t[2]) * k;
   }
+}
+
+/** The live particles of a subsystem and of all its slots' children. */
+function alive(state: SubsystemState): number {
+  let n = state.particles.length;
+  for (const slot of state.slots) for (const child of slot) n += alive(child);
+  return n;
 }
 
 function normalise(x: number, y: number, z: number): [number, number, number] {

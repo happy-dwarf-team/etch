@@ -391,3 +391,79 @@ describe('a running effect', () => {
     expect(effect.finished).toBe(true);
   });
 });
+
+describe('child systems (step 10)', () => {
+  const parent = (child: string, parentLines = ''): ParticleSystem =>
+    system(
+      `particle = { name = "p" subsystem = {
+        max_amount = 2 duration = 0.1 emission = 100 life = 1 velocity = 10 ${parentLines}
+        childsystem = { max_amount = 50 duration = -1 emission = 100 life = 0.5 velocity = 0 ${child} }
+      } }`,
+      'p',
+    );
+
+  it('reads a childsystem block as a subsystem, nested too', () => {
+    const read = system(
+      `particle = { name = "p" subsystem = { max_amount = 1
+        childsystem = { max_amount = 2 childsystem = { max_amount = 3 } }
+        childsystem = { max_amount = 4 } } }`,
+      'p',
+    );
+    const [top] = read.subsystems;
+    expect(top?.children.map((c) => c.maxAmount)).toEqual([2, 4]);
+    expect(top?.children[0]?.children.map((c) => c.maxAmount)).toEqual([3]);
+    expect(top?.children[1]?.children).toEqual([]);
+  });
+
+  it('emits from each parent while it lives, along its path, with its own max_amount per slot', () => {
+    const effect = new ParticleEffect(parent(''));
+    for (let i = 0; i < 5; i++) effect.step(0.1, IDENTITY);
+    const layers = effect.layers();
+    expect(layers.map((l) => l.quads.length)).toEqual([2, 100]);
+    // The parents fly along −Z at 10; their children stand where they were dropped.
+    const zs = (layers[1]?.quads ?? []).map((q) => q.z);
+    expect(Math.min(...zs)).toBeLessThan(-3);
+    expect(Math.max(...zs)).toBeLessThanOrEqual(0);
+    expect(effect.count).toBe(102);
+  });
+
+  it('stops a child with its parent, and keeps the dead parent undrawn until its children die', () => {
+    const effect = new ParticleEffect(parent(''));
+    for (let i = 0; i < 13; i++) effect.step(0.1, IDENTITY);
+    // The parents died after 1 s of life; their last children still live.
+    const layers = effect.layers();
+    expect(layers[0]?.quads.length).toBe(0);
+    expect(layers[1]?.quads.length).toBeGreaterThan(0);
+    expect(effect.finished).toBe(false);
+    for (let i = 0; i < 6; i++) effect.step(0.1, IDENTITY);
+    expect(effect.count).toBe(0);
+    expect(effect.finished).toBe(true);
+  });
+
+  it('runs a local_space child at the effect origin', () => {
+    const effect = new ParticleEffect(parent('local_space = yes'));
+    for (let i = 0; i < 5; i++) effect.step(0.1, IDENTITY);
+    for (const q of effect.layers()[1]?.quads ?? []) expect(Math.abs(q.z)).toBeLessThan(1e-9);
+  });
+
+  it('keeps a slot blocked while a dead parent waits, so no new parent takes it', () => {
+    // One slot: the parent dies at 0.2 s, its children live 0.5 s, the emitter goes on.
+    const effect = new ParticleEffect(
+      system(
+        `particle = { name = "p" subsystem = {
+          max_amount = 1 duration = -1 emission = 100 life = 0.2 velocity = 0
+          childsystem = { max_amount = 10 duration = -1 emission = 100 life = 0.5 velocity = 0 }
+        } }`,
+        'p',
+      ),
+    );
+    const parents: number[] = [];
+    for (let i = 0; i < 8; i++) {
+      effect.step(0.1, IDENTITY);
+      parents.push(effect.layers()[0]?.quads.length ?? 0);
+    }
+    expect(parents.slice(0, 2)).toEqual([1, 1]);
+    expect(parents.slice(3, 6)).toEqual([0, 0, 0]);
+    expect(parents[7]).toBe(1);
+  });
+});
