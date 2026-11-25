@@ -90,9 +90,9 @@ request's notes get the plain-language review of
 
 Until 2.0.0 no store release came from `main` (ADR 0005, v2 specification
 section 13), and 2.0.0 was released with `Release-As: 2.0.0`. Fixes for 1.0.x
-(bugs only) went by pull request to `release/1.x`, cut at `v1.0.1`, which
-released them with its own release-please pull request until 2.0.0 and gets
-none after. [docs/release.md](docs/release.md) has the steps.
+(bugs only) were to go by pull request to a `release/1.x` branch cut at
+`v1.0.1` until 2.0.0; none came, the branch is deleted, and 1.0.1 is the last
+1.x release ([docs/release.md](docs/release.md), "The 1.x line").
 
 ## Repository layout
 

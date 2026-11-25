@@ -13,8 +13,8 @@ the handshake, the ping, the jobs the plugin runs on the game's main thread
 (`reload`, `save`, `run`, `confirm` and `reselect`), pick mode (`pick_mode`, `snapshot`) and the
 plugin's pushes (`pick`, `snapshot`, `pick_mode`). Protocol 1 was Etch 1.x's game host: its preview
 job (`job`, etch#50) and frame capture are gone (ADR 0005), and a `job` now
-gets `unknown_type`; their description is in this page's history on
-`release/1.x`.
+gets `unknown_type`; their description is in this page at the `v1.0.1`
+tag.
 
 ## Finding the pipe
 
