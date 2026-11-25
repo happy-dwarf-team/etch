@@ -250,7 +250,7 @@ describe('layoutWindow: placement', () => {
     expect(rectOf(large, 'i')).toEqual([100, 100, 20, 10]);
   });
 
-  it('reports orientations the game does not list and properties it does not apply', () => {
+  it('anchors an orientation outside the anchors upper left and reports properties it does not apply', () => {
     const { layout } = setUp(`guiTypes = { windowType = { name = "w" size = { x = 100 y = 100 }
       iconType = { name = "odd" spriteType = "GFX_plain" orientation = "UPPERL_LEFT" position = { x = 3 y = 4 } }
       iconType = { name = "turned" spriteType = "GFX_plain" rotation = 1.5708 }
@@ -258,8 +258,8 @@ describe('layoutWindow: placement', () => {
     } }`);
     const l = layout();
     expect(rectOf(l, 'odd')).toEqual([3, 4, 20, 10]);
+    // The orientation is the structure check's (`guiStructureDiagnostics`).
     expect(l.diagnostics.map((d) => [d.code, d.severity])).toEqual([
-      ['unknown-orientation', 'information'],
       ['not-applied', 'information'],
     ]);
   });

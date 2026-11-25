@@ -29,9 +29,17 @@ export type ModelDiagnosticCode =
   | 'unknown-widget-kind'
   /** A named block in `spriteTypes` whose kind vanilla 1.37.5 does not use. */
   | 'unknown-sprite-kind'
+  /** Structure: a key, child widget included, that EU4 1.37.5 does not read in that widget or block. */
+  | 'unknown-key'
+  /** Structure: a key the game reads in that widget only to log that it does nothing there. */
+  | 'ignored-key'
+  /** Structure: a value of another kind than the game reads (a word for a number, a block for a word). */
+  | 'wrong-value-kind'
+  /** Structure: a fraction where the game reads an integer and drops the fraction. */
+  | 'fraction-as-int'
   /** Layout: a sprite's `effectFile` names a shader the renderer does not port; it draws with `default`. */
   | 'unhandled-shader'
-  /** Layout: an `orientation` value the game's token table does not list; Etch anchors it upper left. */
+  /** Structure: an `orientation`, `origo` or grid `format` outside the anchors; the game anchors it upper left. */
   | 'unknown-orientation'
   /** Layout: a property that changes how a widget looks but that Etch does not apply (`rotation`, `origo`). */
   | 'not-applied'

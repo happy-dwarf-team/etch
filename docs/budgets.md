@@ -117,6 +117,21 @@ pnpm --filter etch test
 
 ## Results
 
+### 2026-11-25, completion from the game's key table and the structure check (reported, not gated)
+
+Completion's measures of 21 November below, again with the keys taken from the table of what EU4
+1.37.5 reads for each widget, and the new structure check of `.gui` files, outside VS Code
+(Node 24.21.0, the files in the file cache). The structure check runs with the preview's model
+diagnostics, on the previewed file and on each `.gui` file changed while the preview is open.
+
+| Playset | Interface load | Vocabulary (3 runs) | Context per call, largest files | Structure check, every `.gui` file / slowest file |
+| --- | --- | --- | --- | --- |
+| Vanilla (129 `.gui`) | 197 ms | 29, 26, 28 ms | 1.9 ms (`countrydiplomacyview`), 1.1 ms, 0.6 ms | 16 ms / 1.2 ms (`countrydiplomacyview`) |
+| Anbennar (162 `.gui`) over the game | 292 ms | 34, 26, 26 ms | 1.9 ms (`topbar`, 345,968 characters), 1.4 ms, 1.4 ms | 19 ms / 1.8 ms (`topbar`) |
+
+The context stays well under its budget of 10 ms per call on Anbennar's largest file. The structure
+check adds about 2 ms at most to a reload of the previewed file.
+
 ### 2026-11-23, ADR 0008's measures with the DLC archives (ADR 0009, reported, not gated)
 
 The measures of 21 November below, again with the 129 archives of the game folder's DLCs as

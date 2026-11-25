@@ -5,9 +5,9 @@ since: 2.14.0
 ---
 
 When you type in a `.gui` file, Etch suggests what can come next: a widget type, a key, a
-sprite name, a font or a value. The suggestions come from your
-[playset](../reference/glossary.md#playset): the game, your mod and the mods it depends on. So
-they are the words that the game's and your mods' files really use.
+sprite name, a font or a value. The widget types and keys are exactly the ones EU4 1.37.5 reads
+at that place. Sprite names, fonts and the order of the list come from your
+[playset](../reference/glossary.md#playset): the game, your mod and the mods it depends on.
 
 ## Get suggestions
 
@@ -15,34 +15,44 @@ they are the words that the game's and your mods' files really use.
 2. Start typing, or press <kbd>Ctrl+Space</kbd>: a list of suggestions opens.
 3. Pick one with the arrow keys and press <kbd>Enter</kbd> or <kbd>Tab</kbd>.
 
-The most used words come first. Next to each one, in grey, Etch says what it is and how often
-your playset writes it.
+Widget types come first, then keys. In each group, the words your playset's files use most come
+first. Next to each one, in grey, Etch says what it is and how often your playset's files use it.
 
 ## What Etch suggests where
 
-- **Inside `guiTypes = { … }`:** the widget types that your playset writes inside `guiTypes`,
-  such as `windowType`. Picking one writes the widget with an empty `name = ""`, and the cursor
-  goes into the quotes.
-- **Inside a widget:** the kinds of widget your playset puts inside this kind of widget, and the
-  keys it writes in it. Inside an `iconType`, for example, you get `position`, `name`,
-  `spriteType` and `Orientation` first. A key that takes a block, such as `position`, comes with
-  its `{ }`. After any other key, the suggestions open again for its value.
-- **After `spriteType`, `quadTextureSprite`, or `background` in a `listboxType` or
-  `smoothListboxType`:** every sprite
-  name of your playset's `.gfx` files. Move to a sprite in the list: the box beside it shows its
-  kind, its frames, the `.gfx` file that defines it and a small picture of its texture.
+- **Inside `guiTypes = { … }`:** the widget types the game reads there, such as `windowType`.
+  Picking one writes the widget with an empty `name = ""`, and the cursor goes into the quotes.
+- **Inside a widget:** the kinds of widget the game creates inside this kind of widget, and the
+  keys the game reads in it. Inside a `windowType`, for example, you get `iconType` and
+  `guiButtonType`, but also `browserType`, `tooltip` and `verticalScrollbar`, which few files
+  use. Inside a `containerWindowType` you get `buttonType`, not `guiButtonType`: the game creates
+  only that one there. A key that takes a block, such as `position`, comes with its `{ }`. After
+  any other key, the suggestions open again for its value.
+- **Inside `if_resolution = { … }`:** `min_width`, `max_width`, `min_height` and `max_height`,
+  and the widget's own keys and widgets.
+- **Inside a block such as `position = { … }` or `size = { … }`:** its keys, such as `x` and `y`.
+- **After `spriteType` or `quadTextureSprite`, and after `background` in a `listboxType` or
+  `smoothListboxType`:** every sprite name of your playset's `.gfx` files. Move to a sprite in
+  the list: the box beside it shows its kind (such as `frameAnimatedSpriteType`), its frames, the
+  `.gfx` file that defines it and a small picture of its texture.
 - **After `font` or `buttonFont`:** the fonts of your playset. Hover over a font name you wrote to
   see the font, with a sample of its letters
   ([Fonts in .gui and .gfx files](../textures-and-meshes/hovers-and-links.md#fonts-in-gui-and-gfx-files)).
 - **After `orientation`:** the nine points the game can anchor a widget to, such as
-  `"UPPER_LEFT"`. The game reads keys in any case, so `Orientation` and `orientation` are the
-  same key.
-- **After other keys:** the values your playset writes for that key, when it uses only a few
-  different values. After `alwaysTransparent` you get `yes` and `no`. After `format` in a text
-  box you get `left`, `centre`, `right` and `center`: the game's files use both spellings.
+  `"UPPER_LEFT"`. In a `containerWindowType` you get seven: the game does not take
+  `CENTER_LEFT` or `CENTER_RIGHT` there.
+- **After a key that takes `yes` or `no`,** such as `alwaysTransparent`: `yes` and `no`.
+- **After `format` in a text box:** `left`, `center`, `centre` and `right`. **After
+  `vertical_alignment`:** `top`, `center`, `centre` and `bottom`. The game takes both spellings
+  of centre.
+- **After other keys:** the values your playset's files use for that key, when they use only a
+  few different values, such as `clicksound`.
 
-Sprite names, fonts and the `orientation` values are written in quotes, as the game's files
-write them. If you already typed the opening quote, Etch adds only the closing one.
+The game reads keys in upper or lower case, so `Orientation` and `orientation` are the same
+key. Etch writes a key the way your playset's files write it most, such as `listboxType` rather
+than `listBoxType`. Sprite names, fonts and the
+`orientation` values are written in quotes, as the game's files write them. If you already typed
+the opening quote, Etch adds only the closing one.
 
 ## Turn it off
 
@@ -57,10 +67,10 @@ the other values above. See
 
 ## What it doesn't do
 
-- Etch suggests only what some file of your playset writes. A key the game knows but no file
-  uses is not in the list, and nothing tells you whether a key works in a widget type.
-- A key with many different values, such as `name`, `text` or `clicksound`, gets no value
-  suggestions. Neither does a key whose values are numbers, such as `scale`.
-- Inside a block such as `position = { … }` or `size = { … }`, Etch suggests nothing.
+- A key with many different values, such as `name` or `text`, gets no value suggestions.
+  Neither does a key whose values are numbers, such as `scale`.
+- Inside a widget kind the game does not read at that place, Etch suggests nothing. A
+  [warning in the Problems panel](problems.md#keys-and-values-the-game-does-not-read) marks it
+  while the preview is open.
 - It works in `.gui` files only, not in `.gfx` files or scripts.
 - A sprite or font you add to a `.gfx` file shows up in the suggestions after you save that file.

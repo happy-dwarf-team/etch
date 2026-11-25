@@ -5,6 +5,7 @@
  */
 import type { BlockNode, ParsedScript, PropertyNode, ScalarNode } from '../script/tree.ts';
 import { diagnostic, type ModelDiagnostic } from './diagnostics.ts';
+import { isGuiWidgetKey } from './gui-structure.ts';
 import {
   Properties,
   constantReferences,
@@ -103,6 +104,8 @@ export interface Widget {
 export interface GuiFile {
   /** The top-level widgets of every `guiTypes` block, in file order. */
   readonly definitions: readonly Widget[];
+  /** The file's `guiTypes` blocks as written, for the structure check (`guiStructureDiagnostics`). */
+  readonly guiTypes: readonly PropertyNode[];
   /** Top-level `@name = value` constants (Anbennar's 2K UI uses them for positions). */
   readonly constants: Constants;
   /** Structural problems: duplicate top-level names, unknown kinds and constants. */
@@ -126,9 +129,11 @@ export function readGuiFile(parsed: ParsedScript): GuiFile {
   }
 
   const definitions: Widget[] = [];
+  const guiTypes: PropertyNode[] = [];
   for (const entry of parsed.entries) {
     if (entry.kind !== 'property' || keyOf(entry) !== 'guitypes' || entry.value?.kind !== 'block')
       continue;
+    guiTypes.push(entry);
     for (const child of propertiesOf(entry.value)) {
       const widget = readWidget(child, undefined, diagnostics);
       if (widget !== undefined) definitions.push(widget);
@@ -152,7 +157,7 @@ export function readGuiFile(parsed: ParsedScript): GuiFile {
     }
   }
   diagnostics.sort((a, b) => a.start - b.start);
-  return { definitions, constants, diagnostics };
+  return { definitions, guiTypes, constants, diagnostics };
 }
 
 function readWidget(
@@ -165,13 +170,14 @@ function readWidget(
   const key = keyOf(node);
   const kind = widgetKindOf(key, parentKind);
   if (kind === undefined) {
-    if (looksLikeWidget(key, body, parentKind)) {
+    // A block the game does not read at all is the structure check's `unknown-key`.
+    if (looksLikeWidget(key, body, parentKind) && isGuiWidgetKey(key)) {
       diagnostics.push(
         diagnostic(
           'information',
           'unknown-widget-kind',
           node.key,
-          `${node.key.text} is not a widget kind vanilla EU4 1.37.5 uses; Etch does not draw it.`,
+          `The game reads ${node.key.text}, but vanilla EU4 1.37.5 does not use it and Etch does not draw it.`,
         ),
       );
     }
