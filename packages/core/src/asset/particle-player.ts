@@ -1,4 +1,4 @@
-// A player of a particle system (etch#631, steps 3 to 5), for the entity preview. It runs a
+// A player of a particle system (etch#631, steps 3 to 6), for the entity preview. It runs a
 // `ParticleSystem` (`particle-system.ts`) the way the EU4 engine lab read EU4 1.37.5's update in
 // the game's code, and gives each frame's camera-facing quads to the renderer.
 //
@@ -17,6 +17,13 @@
 // - Forces add up as acceleration; velocity += acceleration · dt / mass, and a particle moves by
 //   velocity · scale · dt, with the start speed also multiplied by the pdxparticle `scale`.
 // - A sprite-sheet tile is drawn at random per particle and kept for its life.
+// - Random numbers (step 6): one MSVC `rand()` sequence per effect, two steps to a 30-bit number
+//   (the second step's 15 bits on top), drawn in the game's order: each subsystem's position,
+//   duration, start and pulse values; then the turbulence fields; every frame a subsystem's
+//   emission and its forces' amounts; and at a spawn of n particles each value n times in turn
+//   (life, size, the particle's yaw, pitch and roll, the three turn speeds, mass, the four
+//   colours), the emitter's yaw and pitch once, the velocity's pitch, yaw and speed, the shape's
+//   three values, and two tile draws per particle. A value without variation draws nothing.
 // - Steps are at least 0.1 s long or a quarter of the frame, whichever is longer.
 //
 // - Forces (step 4): `planar` pushes along its direction; `point` pushes away from its centre for
@@ -30,8 +37,8 @@
 //   outwards, faster with a larger scale; a test in the game showed the same outward spiral.
 // - A trail subsystem keeps its particles in the order they came out.
 //
-// What differs: the random numbers (the game seeds them from the clock, so no two of its runs
-// match either); and child systems, which are not run.
+// What differs: the seed of the random numbers (the game takes it from the clock, so no two of its
+// runs match either); and child systems, which are not run.
 
 import type {
   ParticleCurve,
@@ -75,11 +82,15 @@ export class ParticleRandom {
     return (this.state >>> 16) & 0x7fff;
   }
 
-  /** Uniform in [0, 1), from two draws joined into 30 bits. */
-  unit(): number {
-    const high = this.next15();
+  /** 30 bits from two draws, the second on top, as the game joins them. */
+  next30(): number {
     const low = this.next15();
-    return (high * 32768 + low) / 1073741824;
+    return this.next15() * 32768 + low;
+  }
+
+  /** Uniform in [0, 1): `next30()` / 2^30. */
+  unit(): number {
+    return this.next30() / 1073741824;
   }
 }
 
@@ -205,17 +216,27 @@ export class ParticleEffect {
     this.random = new ParticleRandom(seed);
     this.states = system.subsystems.map((def) => {
       const at = (value: ParticleValue): number => spawnValue(value, system.curves, 0, this.random);
+      // The game's order of these draws.
+      const offset: [number, number, number] = [
+        at(def.position[0]),
+        at(def.position[1]),
+        at(def.position[2]),
+      ];
+      const duration = at(def.duration);
+      const start = at(def.start);
+      const pulseDuration = at(def.pulseDuration);
+      const pulseSilence = at(def.pulseSilence);
       return {
         def,
         particles: [],
-        time: -at(def.start),
-        duration: at(def.duration),
-        pulseDuration: at(def.pulseDuration),
-        pulseSilence: at(def.pulseSilence),
+        time: -start,
+        duration,
+        pulseDuration,
+        pulseSilence,
         emitting: true,
         timer: 0,
         accumulated: 0,
-        offset: [at(def.position[0]), at(def.position[1]), at(def.position[2])],
+        offset,
       };
     });
     this.fields = system.forces
@@ -330,12 +351,7 @@ export class ParticleEffect {
         state.time = dt;
       }
     }
-    if (
-      state.time >= 0 &&
-      (state.time <= state.duration || state.duration < 0) &&
-      state.emitting &&
-      def.maxAmount > 0
-    ) {
+    if (state.time >= 0 && (state.time <= state.duration || state.duration < 0) && state.emitting) {
       const rate = Math.max(0, spawnValue(def.emission, curves, state.time, this.random));
       state.accumulated += rate * dt;
       const n = Math.min(
@@ -374,8 +390,34 @@ export class ParticleEffect {
     const { def } = state;
     const curves = this.system.curves;
     const at = (value: ParticleValue): number => spawnValue(value, curves, state.time, this.random);
+    // The game draws each value for all n particles before the next value.
+    const column = (value: ParticleValue): number[] => Array.from({ length: n }, () => at(value));
+    const life = column(def.life);
+    const size = column(def.size);
+    column(def.particleYaw);
+    column(def.particlePitch);
+    const roll = column(def.rotation);
+    column(def.rotationSpeedYaw);
+    column(def.rotationSpeedPitch);
+    const rollSpeed = column(def.rotationSpeed);
+    const mass = column(def.mass);
+    const colors = [
+      column(def.color[0]),
+      column(def.color[1]),
+      column(def.color[2]),
+      column(def.color[3]),
+    ];
     const yaw = (at(def.emitterYaw) + 90) * -DEGREES;
     const pitch = at(def.emitterPitch) * -DEGREES;
+    const velocityPitch = column(def.velocityPitch);
+    const velocityYaw = column(def.velocityYaw);
+    const velocity = column(def.velocity);
+    const shapes =
+      def.emitter === 'sphere'
+        ? [column(def.sphere[0]), column(def.sphere[1]), column(def.sphere[2])]
+        : def.emitter === 'box'
+          ? [column(def.box[0]), column(def.box[1]), column(def.box[2])]
+          : undefined;
     const [cy, sy, cp, sp] = [Math.cos(yaw), Math.sin(yaw), Math.cos(pitch), Math.sin(pitch)];
     // The emitter's matrix, by columns, and the node's (none in local space) applied after it.
     const emitter = [cy * cp, -sp, sy * cp, cy * sp, cp, sy * sp, -sy, 0, cy];
@@ -383,35 +425,30 @@ export class ParticleEffect {
     const node = local ? IDENTITY : this.node;
     const scale = local ? 1 : this.scale;
     for (let i = 0; i < n; i++) {
-      const life = at(def.life);
-      const size = at(def.size);
-      const roll = at(def.rotation);
-      const rollSpeed = at(def.rotationSpeed);
-      const mass = at(def.mass);
-      const color: [number, number, number, number] = [
-        clamp255(at(def.color[0])),
-        clamp255(at(def.color[1])),
-        clamp255(at(def.color[2])),
-        clamp255(at(def.color[3])),
+      const color = colors.map((values) => clamp255(values[i] ?? 0)) as [
+        number,
+        number,
+        number,
+        number,
       ];
-      const a = at(def.velocityPitch) * DEGREES;
-      const b = at(def.velocityYaw) * DEGREES;
-      const speed = at(def.velocity) * (scale === 1 ? 1 : scale);
+      const a = (velocityPitch[i] ?? 0) * DEGREES;
+      const b = (velocityYaw[i] ?? 0) * DEGREES;
+      const speed = (velocity[i] ?? 0) * (scale === 1 ? 1 : scale);
       const d = [Math.cos(a) * Math.cos(b), Math.sin(a), -Math.cos(a) * Math.sin(b)];
       const e = mul3(emitter, d[0] ?? 0, d[1] ?? 0, d[2] ?? 0);
       const [vx, vy, vz] = transform(node, e[0], e[1], e[2], 0);
       let shape: [number, number, number] = [0, 0, 0];
+      const [s0 = 0, s1 = 0, s2 = 0] = shapes?.map((values) => values[i] ?? 0) ?? [];
       if (def.emitter === 'sphere') {
-        const r = at(def.sphere[0]);
-        const sy2 = at(def.sphere[1]) * -DEGREES;
-        const sp2 = at(def.sphere[2]) * -DEGREES;
+        const sy2 = s1 * -DEGREES;
+        const sp2 = s2 * -DEGREES;
         shape = [
-          r * Math.cos(sp2) * Math.cos(sy2),
-          -r * Math.sin(sp2),
-          r * Math.sin(sy2) * Math.cos(sp2),
+          s0 * Math.cos(sp2) * Math.cos(sy2),
+          -s0 * Math.sin(sp2),
+          s0 * Math.sin(sy2) * Math.cos(sp2),
         ];
       } else if (def.emitter === 'box') {
-        shape = [at(def.box[0]), at(def.box[1]), at(def.box[2])];
+        shape = [s0, s1, s2];
       }
       const s = mul3(emitter, ...shape);
       const [ox, oy, oz] = transform(node, s[0], s[1], s[2], 0);
@@ -433,18 +470,19 @@ export class ParticleEffect {
         vy: vy * speed,
         vz: vz * speed,
         age: 0,
-        life,
-        size0: size,
-        size,
-        roll0: roll,
-        roll,
+        life: life[i] ?? 0,
+        size0: size[i] ?? 0,
+        size: size[i] ?? 0,
+        roll0: roll[i] ?? 0,
+        roll: roll[i] ?? 0,
         spun: 0,
-        rollSpeed,
-        mass: mass === 0 ? 1 : mass,
+        rollSpeed: rollSpeed[i] ?? 0,
+        mass: mass[i] === 0 ? 1 : (mass[i] ?? 1),
         color0: [...color],
         color,
-        tileX: columns > 1 ? this.random.next15() % columns : 0,
-        tileY: rows > 1 ? this.random.next15() % rows : 0,
+        // The game draws both tiles even for a sheet of one.
+        tileX: this.random.next30() % columns,
+        tileY: this.random.next30() % rows,
       });
     }
   }
@@ -574,12 +612,7 @@ class TurbulenceField {
     const buffer = new ArrayBuffer(256 + 256 * 12);
     this.bytes = new Uint8Array(buffer);
     this.gradients = new Float32Array(buffer, 256, 256 * 3);
-    // 30 bits from two draws, the first the low 15.
-    const draw30 = (): number => {
-      const low = random.next15();
-      return random.next15() * 32768 + low;
-    };
-    const unit = (): number => draw30() / 1073741824;
+    const unit = (): number => random.unit();
     const unitVector = (): [number, number, number] => {
       for (;;) {
         const x = (unit() - 0.5) * 2;
@@ -597,7 +630,7 @@ class TurbulenceField {
     }
     this.gradients.set(this.base);
     for (let i = 1; i < 256; i++) {
-      const j = draw30() % (i + 1);
+      const j = random.next30() % (i + 1);
       const swap = this.bytes[i] ?? 0;
       this.bytes[i] = this.bytes[j] ?? 0;
       this.bytes[j] = swap;
