@@ -39,10 +39,13 @@ The entries come in two kinds:
 
 When CWTools is on and its rules check the name after `spriteType` or `quadTextureSprite`,
 CWTools warns about a missing sprite there, and Etch leaves its own warning out, so you see one
-(see
+warning, not two (see
 [Etch and CWTools in the same file](../getting-started/install.md#etch-and-cwtools-in-the-same-file)).
-CWTools reads only your workspace and the game, so it also warns about a sprite that only a mod
-in your `dependencies` defines. Etch does not.
+The same goes for a missing font, after a key whose font name CWTools' rules check.
+
+CWTools reads only the folders open in VS Code and the base game. So it also warns about a sprite
+that only a mod in your `dependencies` defines. The game finds that sprite, so you can ignore this
+warning. Etch gives no warning there.
 
 ## Missing definitions and widgets
 
