@@ -138,7 +138,7 @@ below (no capture was taken again). The generated tables above are this run.
   construction, the built buildings, the free slots up to the province's slots and one locked slot
   with its `required_development`, and `building_canbuild`, `building_destroy` and the progress
   shown where the game shows them. The slots add up as the game adds them
-  (`CProvince::GetAllowedNumberOfBuildings` 0xA02D10), with the province's terrain category picked
+  (the province's allowed number of buildings, 0xA02D10), with the province's terrain category picked
   from the map's bitmaps as the game picks it (checked against the categories of every vanilla
   province in a running game). With the profiles, no building slot is off any more in the survey
   or the three countries: visibility failures 43 → 8 and 40 → 5 in vanilla, 38 → 3 and 35 → 0 in

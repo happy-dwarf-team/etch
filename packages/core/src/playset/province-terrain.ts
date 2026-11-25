@@ -77,15 +77,15 @@ const f32 = Math.fround;
 
 /**
  * The provinces' terrain categories, as eu4.exe 1.37.5 sets them when it loads the map
- * (`CMap::DoPostRead` `0x87B9E0`, `CPdxMap::Load` `0x12DB850`); the rule was checked against the
+ * (the map's step after reading, `0x87B9E0`, and the map's load, `0x12DB850`); the rule was checked against the
  * categories of every province of a running game's vanilla map.
  *
  * 1. A category's `terrain_override` wins, the first in file order that lists the province.
  * 2. Else the trees paint `map/trees.bmp` into the terrain bitmap
- *    (`CMap::UpdateTerrainFromTreeDefinition` `0x885D90`): each tree pixel sets every second row
+ *    (the map's terrain update from the trees, `0x885D90`): each tree pixel sets every second row
  *    of a box of the map's size over the tree map's, odd rows half a box to the right, to the first
  *    colour of the first terrain whose category the tree's `terrain` names.
- * 3. Then the province's pixels vote (`CProvinceTemplate::DetermineTerrainInfo` `0xA42F00`): a
+ * 3. Then the province's pixels vote (the province's terrain vote, `0xA42F00`): a
  *    land province's land pixels, a sea's or lake's water pixels; a `forest` or `jungle` pixel
  *    counts twice. Above 10000 every count is cut to a hundredth. The highest share wins, the
  *    earlier category on a tie; a province without pixels has the first category.

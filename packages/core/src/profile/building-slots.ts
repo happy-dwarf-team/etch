@@ -1,7 +1,7 @@
 /**
  * The province view's building slots as eu4.exe 1.37.5 lays them out (etch#605), from the save
- * and the playset's building rules: `CProvinceViewBuildings::RebuildAllBuildingEntries`
- * (`0x138EF20`) and `CBuildingEntry::RefreshBuilding` (`0x138A100`).
+ * and the playset's building rules: the province view's rebuild of its building
+ * rows (`0x138EF20`) and the refresh of one row (`0x138A100`).
  *
  * The rows, in order: the building under construction; the built buildings in the game's order,
  * up to the province's cap (`MAX_BUILDING_SLOTS`, less `COT_BUILDING_SLOTS` with a center of
@@ -234,7 +234,7 @@ function replacements(rules: BuildingRules, name: string): BuildingDefinition[] 
   return out;
 }
 
-/** `CProvince::CalcPossibleBuildings` (`0xA035A0`): no trigger is evaluated. */
+/** The province's list of possible buildings (`0xA035A0`): no trigger is evaluated. */
 function possibleBuildings(
   province: BlockNode,
   viewer: BlockNode | undefined,

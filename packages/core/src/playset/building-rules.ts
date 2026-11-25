@@ -9,8 +9,8 @@ import { loadProvinceTerrain, type ProvinceTerrain } from './province-terrain.ts
  * What the playset's files say of a province's building slots, for the province view's rows
  * (etch#605), as eu4.exe 1.37.5 reads them. Slot values are in thousandths, the game's fixed
  * point: a province's slots are its `allowed_num_of_buildings` modifier, cut to a whole number,
- * plus its owner's `global_allowed_num_of_buildings`, cut apart (`CProvince::GetAllowedNumberOfBuildings`
- * `0xA02D10`).
+ * plus its owner's `global_allowed_num_of_buildings`, cut apart (the province's allowed number of
+ * buildings, `0xA02D10`).
  */
 export interface BuildingRules {
   /** `NDefines.NEconomy.MAX_BUILDING_SLOTS`: the most slots a province can have. */
@@ -360,8 +360,8 @@ export async function loadBuildingRules(files: GameFiles): Promise<BuildingRules
 }
 
 /**
- * The level of professionalism a country has reached, as `CProfessionalismDatabase::
- * FindHighestEnabledModifier` picks it for the unit panel (eu4.exe 1.37.5 `0x1469250`): the level
+ * The level of professionalism a country has reached, as the game's lookup of the highest level
+ * reached picks it for the unit panel (eu4.exe 1.37.5 `0x1469250`): the level
  * with the highest `army_professionalism` at or below the country's, the first in file order on a
  * tie. Its `trigger` is not evaluated (the base game's and Anbennar's are all `always = yes`).
  */
