@@ -5,7 +5,8 @@
 // `border_color`, its `.fnt` file and texture, and a line of sample text drawn in it; Go to
 // Definition (F12, Ctrl+click) opens that `.gfx` file at the font's name. The font is the one the
 // preview draws with: the first definition in load order (`InterfaceIndex.font`), over the
-// playset the sprite links load.
+// playset the sprite links load. In a `.gui` file whose CWTools rules type fonts and check
+// widgets, Go to Definition is left to CWTools (ADR 0008, "Beside CWTools").
 
 import * as vscode from 'vscode';
 import {
@@ -23,6 +24,7 @@ import {
 } from '@etch/core';
 import { statGamePath, type GameFile, type GameFiles } from '@etch/core/playset';
 import { inspectTexture } from '@etch/renderer/inspect';
+import { cwtoolsChecksGui, cwtoolsTypesFonts } from './cwtools.ts';
 import { pathUri } from './dlc-files.ts';
 import { fontSample } from './font-sample.ts';
 import { encodePng } from './png.ts';
@@ -109,6 +111,8 @@ export class FontLinks implements vscode.HoverProvider, vscode.DefinitionProvide
   ): Promise<vscode.Location | undefined> {
     const found = referenceAt(document, position);
     if (found === undefined) return undefined;
+    // CWTools answers with its own location: two answers open a peek instead of a jump (ADR 0008).
+    if (found.gui && cwtoolsTypesFonts(document) && cwtoolsChecksGui(document)) return undefined;
     const loaded = await this.links.playset();
     const font = loaded?.ui.index.font(found.reference.name);
     if (loaded === undefined || font === undefined) return undefined;

@@ -196,7 +196,8 @@ A font whose `.fnt` file or texture your playset does not have says "Not in the 
 names the file Etch looked for.
 
 To open the `.gfx` file at the font's name, press <kbd>F12</kbd> on the name, or
-<kbd>Ctrl</kbd>+click it (**Go to Definition**).
+<kbd>Ctrl</kbd>+click it (**Go to Definition**). With CWTools on, CWTools may open it instead:
+see [Etch and CWTools in the same file](../getting-started/install.md#etch-and-cwtools-in-the-same-file).
 
 The same hover and **Go to Definition** work in `.gfx` files, on the `font` of the texts the game
 shows over the map, such as `font = "Main_14_bold"` in an `animatedmaptext` of

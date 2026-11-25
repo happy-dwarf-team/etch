@@ -517,7 +517,9 @@ refresh goes out with a 2.x release (v3.md section 7).
   (characters, line height) and texture (size, format), and a line of sample
   text drawn on the CPU from the atlas as the preview's text shader tints it,
   at 2× for lines of at most 16 pixels. Go to Definition opens the
-  `bitmapfont`'s `name`, inside its quotes. A missing font gets no hover in a
+  `bitmapfont`'s `name`, inside its quotes; in a `.gui` file it steps back
+  when CWTools' rules type `bitmapfont` and check `.gui` widgets (ADR 0008,
+  "Beside CWTools"). A missing font gets no hover in a
   `.gui` file (its diagnostic reports it) and a hover that says so in a `.gfx`
   file. It has no setting, as the sprite hover has none.
 
