@@ -13,6 +13,8 @@
 // - A force's `type`, a subsystem's `sort` and `emitter_type` and a curve's `op` are read entry by
 //   entry, in any case: a word the game knows sets the value and another changes nothing, from the
 //   reader's default (`planar`, `none`, `point`, `add`). See `PARTICLE_CHOICES`.
+// - A subsystem's `position` and `color` share one reader: `x`/`r`, `y`/`g`, `z`/`b` and
+//   `w`/`alpha`/`a` fill the same slots, in any case; `position` has no fourth. See `VECTOR_SLOTS`.
 //
 // Nothing here depends on the editor or the browser, so the data can be sent to the webview.
 
@@ -171,10 +173,8 @@ export function readParticleSystem(block: BlockNode): ParticleSystem {
   const readSubsystem = (node: BlockNode): ParticleSubsystem => {
     const get = (key: string, fallback = ZERO): ParticleValue =>
       value(lastValue(node, key), fallback);
-    const part = (key: string, inner: string, fallback = ZERO): ParticleValue => {
-      const group = lastValue(node, key);
-      return group?.kind === 'block' ? value(lastValue(group, inner), fallback) : fallback;
-    };
+    const part = (key: 'position' | 'color', slot: number, fallback = ZERO): ParticleValue =>
+      value(vectorSlot(node, key, slot), fallback);
     const texture = propertyBlocks(node.entries, 'texture').at(-1);
     const effect = texture === undefined ? undefined : lastScalar(texture, 'shader')?.text;
     const flag = (key: string, fallback = false): boolean => {
@@ -207,7 +207,7 @@ export function readParticleSystem(block: BlockNode): ParticleSystem {
       velocity: get('velocity'),
       size: get('size'),
       life: get('life'),
-      position: [part('position', 'x'), part('position', 'y'), part('position', 'z')],
+      position: [part('position', 0), part('position', 1), part('position', 2)],
       rotation:
         lastValue(node, 'particle_roll') === undefined ? get('rotation') : get('particle_roll'),
       rotationSpeed:
@@ -221,10 +221,10 @@ export function readParticleSystem(block: BlockNode): ParticleSystem {
       mass: get('mass', constant(1)),
       // A colour channel with no value is 255.
       color: [
-        part('color', 'r', constant(255)),
-        part('color', 'g', constant(255)),
-        part('color', 'b', constant(255)),
-        part('color', 'alpha', constant(255)),
+        part('color', 0, constant(255)),
+        part('color', 1, constant(255)),
+        part('color', 2, constant(255)),
+        part('color', 3, constant(255)),
       ],
       emitter: particleChoice(node, 'subsystem', 'emitter_type'),
       sphere: [
@@ -485,6 +485,38 @@ function propertyBlocks(entries: readonly EntryNode[], key: string): BlockNode[]
       ? [entry.value]
       : [],
   );
+}
+
+/**
+ * The keys of a subsystem's `position` and `color` blocks, by slot: the game reads both with one
+ * reader, in any case, and `position` has no fourth slot (etch#631 step 16).
+ */
+export const VECTOR_SLOTS: readonly (readonly string[])[] = [
+  ['x', 'r'],
+  ['y', 'g'],
+  ['z', 'b'],
+  ['w', 'alpha', 'a'],
+];
+
+/**
+ * A slot of a subsystem's `position` or `color` as the game reads it: every block of that key in
+ * order, each entry of a slot's keys setting it, so the last one wins.
+ */
+function vectorSlot(
+  node: BlockNode,
+  key: 'position' | 'color',
+  slot: number,
+): ScalarNode | BlockNode | undefined {
+  const keys = VECTOR_SLOTS[slot] ?? [];
+  let found: ScalarNode | BlockNode | undefined;
+  for (const group of propertyBlocks(node.entries, key)) {
+    for (const entry of group.entries) {
+      if (entry.kind === 'property' && entry.value !== undefined && keys.includes(keyOf(entry))) {
+        found = entry.value;
+      }
+    }
+  }
+  return found;
 }
 
 function lastValue(block: BlockNode, key: string): ScalarNode | BlockNode | undefined {

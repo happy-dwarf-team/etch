@@ -112,6 +112,17 @@ describe('reading a particle block', () => {
     expect(p.curves.map((c) => c.op)).toEqual(['add', 'add', 'mul', 'abs']);
   });
 
+  it('reads position and color with one set of slots, in any case, the last entry winning', () => {
+    // Seen in the game (etch#631 step 16): `a`, `w` and `A` set the opacity, `x y z` in a colour
+    // tinted it, `r` in a position moved it like `x`, and `alpha = 0` then `a = 255` stayed opaque.
+    const sub = single(
+      `position = { r = 2 Y = 3 } position = { z = 4 w = 9 }
+       color = { x = 10 g = 20 B = 30 alpha = 0 } color = { a = 40 }`,
+    ).subsystems[0];
+    expect(sub?.position.map((p) => p.base)).toEqual([2, 3, 4]);
+    expect(sub?.color.map((c) => c.base)).toEqual([10, 20, 30, 40]);
+  });
+
   it('gives a missing colour channel 255 and a hidden subsystem no particles', () => {
     const sub = single('hide = yes max_amount = 40 color = { r = 10 }').subsystems[0];
     expect(sub?.maxAmount).toBe(0);

@@ -67,6 +67,12 @@ warning shows in VS Code's Problems panel (<kbd>Ctrl+Shift+M</kbd>), with "Etch"
   It skips any other word. The block then keeps the word written before it, or gets the value in
   the last column, and Etch's preview plays it the same way. A curve without `op` adds to the
   value: write `op = "MUL"` to scale it, as the base game does.
+- **A key the game does not take in a `position` or `color` block**, such as `zz`. The game takes
+  `x`, `y`, `z` and `w`, or `r`, `g`, `b` and `alpha` (or `a`), in any case and in both blocks:
+  `r` is the same as `x`, and `a` the same as `alpha` and `w`. When a block has a key twice, the
+  last one wins. The game skips any other key and writes `Unexpected token` in its error log.
+  A `position` has no fourth value: the game reads its `w` and drops it, without a line in its
+  error log.
 - **A key of the other emitter shape**: `box_emitter_x` with `emitter_type = sphere`, or
   `sphere_emitter_radius` with `emitter_type = box`.
 - **A shader effect the game does not have.** The texture's `shader` must name an effect of
@@ -93,7 +99,6 @@ see [Warnings in the files](entities.md#warnings-in-the-files) on the Entities p
   entity whose state starts it (see [Entities](entities.md#particles)).
 - What many keys do is Etch's reading, not checked in the game. Etch does not know how a value's
   variation (the second number in `{ 1.75 0.4 }`) and its curves add up.
-- It does not check the keys inside `position` and `color` blocks.
 - The warnings about shader effects and textures need the game folder: without it, Etch gives
   only the others.
 - It does not change your files.
