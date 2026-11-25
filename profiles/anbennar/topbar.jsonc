@@ -45,6 +45,12 @@
       "note": "player_shield_glow shows behind the player's shield in every top bar of Bluescale (1472) and Kobildzan (1594), and in none of Verne's (1444); what decides it is not read in the code.",
     },
   },
+  "content": {
+    "topbar/magic_menu_parent/magic_menu_advancement_window/magic_advancement_current_subject": {
+      "loc": "is_overall_not_advancing_magic_tt",
+      "note": "A custom_text_box with the localisation of its name, [Root.getMagicAdvancementCurrent]: Anbennar's defined text writes the current study, project or infrastructure by the country's flags, else its last text, is_overall_not_advancing_magic_tt (\"Not engaged in any Magical Advancement\", every capture of the coverage survey). Etch evaluates no trigger, so the sample is that last text.",
+    },
+  },
   "groups": {
     "magicMenu": {
       "label": "Magic menu page",

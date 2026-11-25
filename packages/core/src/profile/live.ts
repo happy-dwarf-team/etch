@@ -370,6 +370,19 @@ export function liveSelectors(
     const fits = selector.values.find((v) => fitsScreen(v, snapshot.screen));
     if (fits !== undefined) values.set(selector.id, fits.id);
   }
+  // A selector the snapshot names in a text box's text (the stability view's `+3`): no visibility
+  // tells it, so the text does.
+  const read = new Set<string>();
+  for (const selector of profile.selectors) {
+    if (selector.liveText === undefined) continue;
+    const path = selector.liveText.path.toLowerCase();
+    const shown = snapshot.widgets.find((w) => w.path.toLowerCase() === path)?.text;
+    const text = shown?.replace(/§./g, '').trim();
+    const value = selector.values.find((v) => v.label === text);
+    if (value === undefined) continue;
+    values.set(selector.id, value.id);
+    read.add(selector.id);
+  }
   const named = (id: string): Widget[] => {
     const paths = [
       ...profile.rules
@@ -386,7 +399,7 @@ export function liveSelectors(
   for (let pass = 0; pass < 2; pass++) {
     unknown = [];
     for (const selector of profile.selectors) {
-      if (selector.kind === 'resolution') continue;
+      if (selector.kind === 'resolution' || read.has(selector.id)) continue;
       const widgets = named(selector.id);
       const fits = selector.values.filter((value) => {
         const choice: ViewChoice = {

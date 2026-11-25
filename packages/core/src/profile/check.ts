@@ -122,6 +122,7 @@ export function checkProfile(profile: WindowProfile, input: ProfileCheckInput): 
   const selectors = new Map<string, Selector>();
   for (const selector of profile.selectors) {
     if (selectorFails(selector, error)) continue;
+    if (selector.liveText !== undefined) pathFails(selector, selector.liveText);
     selectors.set(selector.id, selector);
   }
   const hasValue = (entry: Written, id: string, value: string, range: SourceRange): boolean => {
@@ -198,11 +199,19 @@ export function checkProfile(profile: WindowProfile, input: ProfileCheckInput): 
       if (widgetsAt(input.window, ref.path).length === 0 && inEntries(ref)) continue;
       ok = !pathFails(rule, ref) && ok;
     }
+    for (const { save } of rule.saveSprite ?? []) {
+      const read = readSavePath(save.path);
+      if ('problem' in read) {
+        error(rule, 'profile-unknown-source', save.range, read.problem);
+        ok = false;
+      }
+    }
     for (const ref of [
       ...rule.notCreated,
       ...rule.position,
       ...rule.frame,
       ...(rule.sprite ?? []),
+      ...(rule.saveSprite ?? []),
       ...(rule.text ?? []),
       ...(rule.chartSize ?? []),
       ...(rule.slider ?? []).flatMap((s) => [s, s.low, s.high, ...(s.value ? [s.value] : [])]),

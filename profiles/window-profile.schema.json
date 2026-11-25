@@ -172,6 +172,7 @@
             "game.cradleOfCivilization",
             "country.religionIcon",
             "country.institution",
+            "country.stability",
             "province.hreIndicator",
             "province.colonialRegion",
             "owner.buildsNativeBuildings"
@@ -180,6 +181,10 @@
         "note": {
           "description": "What decides the value in the game, such as a scripted potential; shown, never evaluated.",
           "$ref": "#/definitions/text"
+        },
+        "liveText": {
+          "description": "A text box whose text in a live snapshot is one of the values' labels: Compare with Live Game takes that value, as no visibility tells it (the stability view's stability_value, +3).",
+          "$ref": "#/definitions/path"
         }
       }
     },
@@ -212,6 +217,7 @@
         { "required": ["position"] },
         { "required": ["frame"] },
         { "required": ["sprite"] },
+        { "required": ["saveSprite"] },
         { "required": ["text"] },
         { "required": ["chartSize"] },
         { "required": ["size"] },
@@ -264,6 +270,20 @@
           "description": "Sprites the game's code sets in place of the .gui one, keyed by path: drawn as named, without the screen size's _large and _huge variants.",
           "type": "object",
           "additionalProperties": { "type": "string" }
+        },
+        "saveSprite": {
+          "description": "Sprites the game's code names from the save, keyed by path: prefix, the value at the save path and suffix ({ \"save\": \"provinces.{province}.terrain\", \"prefix\": \"GFX_combat_terrain_\" }), drawn where the playset defines the sprite, else the .gui's.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["save"],
+            "properties": {
+              "save": { "$ref": "#/definitions/text" },
+              "prefix": { "type": "string" },
+              "suffix": { "type": "string" }
+            }
+          }
         },
         "text": {
           "description": "Texts the game's code sets, keyed by path: the localisation key of the text; { key, suffix, vars } for a key the game's code adds a text after or fills the $NAME$ variables of, each variable's value a text of its own; { literal } for a text the game's code writes itself, which may be empty; or an array of these, which the game's code writes one after another. Shown as sample data from the playset's files, under a live snapshot's texts.",

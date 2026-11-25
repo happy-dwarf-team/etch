@@ -52,9 +52,11 @@ one with another playset, Etch deletes the snapshots of the playset before.
 ## Compare with the live game
 
 **Etch: Compare with the Live Game** came in Etch 2.7.0. It draws the window the preview shows from your
-files alone, as the preview does, but with the game's texts and the view the game showed. Then it
-checks each widget against the game: whether it stands in the same place, and whether it shows or
-hides as in the game.
+files alone, as the preview does, but with the game's texts, the pictures the game set itself and
+the view the game showed. Then it checks each widget against the game: whether it stands in the
+same place, and whether it shows or hides as in the game. A selector that no widget's visibility
+gives can come from a text the game wrote: the stability view's marker stands at the stability the
+game shows.
 
 1. Save the window's file, so that the game has your latest version.
 2. Open the window in the live game, and in the preview.

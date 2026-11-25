@@ -62,6 +62,18 @@ export interface Selector extends Written {
   readonly fact?: string;
   /** What decides the value in the game, such as a scripted `potential`; shown, never evaluated. */
   readonly note?: string;
+  /**
+   * A text box whose text in a live snapshot is one of the values' labels: Compare with Live Game
+   * takes that value (the stability view's `stability_value`, `+3`), as no visibility tells it.
+   */
+  readonly liveText?: PathRef;
+}
+
+/** How a rule names a sprite from the save: `prefix`, the value at `save`, `suffix`. */
+export interface SaveSprite {
+  readonly save: SavePathRef;
+  readonly prefix: string;
+  readonly suffix: string;
 }
 
 /** A widget path pattern as written, with its range: names from the top-level window, `*`, `**`. */
@@ -126,6 +138,12 @@ export interface Rule extends Written {
    * sprite at every height).
    */
   readonly sprite?: readonly (PathRef & { readonly sprite: string })[];
+  /**
+   * Sprites the game's code names from the save, keyed by path: `prefix`, the save value and
+   * `suffix` (`GFX_combat_terrain_` and the province's `terrain`), drawn where the playset defines
+   * the sprite, else the `.gui`'s.
+   */
+  readonly saveSprite?: readonly (PathRef & SaveSprite)[];
   /**
    * Texts the game's code sets, by the localisation key of the text: the ages view's description,
    * the current age's `<age>_desc`. A text of several parts, which the game's code writes one

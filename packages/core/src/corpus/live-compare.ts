@@ -4,9 +4,9 @@
  * apart:
  *
  * - {@link offlinePreviewLayers}: what the offline preview of a window takes from a live snapshot:
- *   with the window's profile, the selectors that fit the snapshot, and the snapshot's texts and
- *   list rows as sample data; never its positions, visibility or toggles, which are what is
- *   compared.
+ *   with the window's profile, the selectors that fit the snapshot, and the snapshot's texts,
+ *   list rows and what the game's code drew (a sprite it set) as sample data; never its
+ *   positions, visibility or toggles, which are what is compared.
  * - {@link snapshotTree} and {@link planSnapshot}: a live snapshot as the game's widget tree, and
  *   the comparison's plan of a laid-out window against it, as the survey plans a capture.
  * - {@link compareLive}: the survey's geometry and visibility over a plan, and every live
@@ -65,6 +65,26 @@ export function offlinePreviewLayers(input: OfflinePreviewInput): OfflinePreview
   const texts: LiveTexts = {
     text: (path) => matched.text(path),
     rows: (list) => matched.rows?.(list),
+    // What the game's code drew (a sprite it set, a modifier's texture), never where or whether:
+    // the snapshot's rect and visibility are what is compared. A list row's state would decide
+    // which parts of the row show, so rows keep the profile's.
+    state: (path) => {
+      if (path.includes('/row[')) return undefined;
+      const state = matched.state?.(path);
+      if (state === undefined) return undefined;
+      const { sprite, frame, flag, texture, rebels, slices } = state;
+      return {
+        visible: true,
+        enabled: true,
+        checked: false,
+        ...(sprite === undefined ? {} : { sprite }),
+        ...(frame === undefined ? {} : { frame }),
+        ...(flag === undefined ? {} : { flag }),
+        ...(texture === undefined ? {} : { texture }),
+        ...(rebels === undefined ? {} : { rebels }),
+        ...(slices === undefined ? {} : { slices }),
+      };
+    },
   };
   if (profile === undefined) {
     return {

@@ -199,7 +199,10 @@ export interface SampleData {
   adopted(widget: Widget, row?: number): readonly LiveAdopted[];
   /** The text the game's code sizes a text box by first (a content's `sizedBy`), localised. */
   sizedBy(widget: Widget): string | undefined;
-  /** The sprite the game's code gives a repeater's entry `row` (its `place.along.sprites`). */
+  /**
+   * The sprite the game's code gives a widget: a rule's `saveSprite` from the save, or a
+   * repeater's entry `row`'s (its `place.along.sprites`).
+   */
   sprite?(widget: Widget, row?: number): string | undefined;
   /** How many texts each layer fills, of the widgets the view draws. */
   readonly counts: Readonly<Record<DataLayer, number>>;
@@ -227,6 +230,18 @@ export function sampleData(
       if (content.sizedBy !== undefined) {
         sizers.set(widget, input.localise(content.sizedBy) ?? content.sizedBy);
       }
+    }
+  }
+  // A sprite a rule says the game's code names from the save: drawn where the playset defines it.
+  const sprites = new Map<Widget, string>();
+  if (input.save !== undefined) {
+    for (const widget of pathOf.keys()) {
+      const from = view?.widgets.get(widget)?.saveSprite;
+      if (from === undefined) continue;
+      const path = readSavePath(from.save.path);
+      const value = 'problem' in path ? undefined : input.save.value(path);
+      const name = value === undefined ? undefined : `${from.prefix}${value}${from.suffix}`;
+      if (name !== undefined && (input.spriteExists?.(name) ?? true)) sprites.set(widget, name);
     }
   }
   // A rule's text: the localisation key the game's code sets in the view's case (the age's
@@ -460,7 +475,8 @@ export function sampleData(
       return (view?.widgets.get(widget)?.adopted ?? []).map((name) => ({ name }));
     },
     sizedBy: (widget) => sizers.get(widget),
-    sprite: (widget, row) => (row === undefined ? undefined : entrySprites.get(widget)?.[row]),
+    sprite: (widget, row) =>
+      row === undefined ? sprites.get(widget) : entrySprites.get(widget)?.[row],
     counts,
     lists,
   };
@@ -568,6 +584,7 @@ export function saveFacts(choice: SaveChoice): Record<string, string> {
                 ? 'school'
                 : 'none',
           ...institutionFact(valueIn(country, 'institutions')),
+          ...stabilityFact(scalarIn(country, 'stability')),
           ...numericFact('country.patriarchAuthority', scalarIn(country, 'patriarch_authority')),
         };
   const province = choice.block('province');
@@ -627,6 +644,16 @@ function institutionFact(value: ValueNode | undefined): Record<string, string> {
   if (flags.length !== BASE_INSTITUTIONS.length || flags.some((f) => f === undefined)) return {};
   const first = flags.findIndex((f) => Number(f) === 0);
   return { 'country.institution': first === -1 ? 'none' : (BASE_INSTITUTIONS[first] ?? 'none') };
+}
+
+const STABILITY = ['minus3', 'minus2', 'minus1', 'zero', 'plus1', 'plus2', 'plus3'] as const;
+
+/** `country.stability`: the whole part of the save's `stability`, -3 to +3. */
+function stabilityFact(text: string | undefined): Record<string, string> {
+  const value = Number(text);
+  if (text === undefined || !Number.isFinite(value)) return {};
+  const whole = Math.max(-3, Math.min(3, Math.trunc(value)));
+  return { 'country.stability': STABILITY[whole + 3] ?? 'zero' };
 }
 
 /** A numeric fact as the save writes it, left out when the save lacks it or it is no number. */

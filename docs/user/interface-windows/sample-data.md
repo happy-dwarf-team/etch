@@ -56,9 +56,13 @@ ideas and privileges. The green frame shows where your country could build now, 
 button on your own buildings. A few slot bonuses that depend on conditions, such as a monument's
 tier, are left out.
 
+A save also sets the pictures the game picks from it: the province view's terrain picture is the
+province's terrain, and an army's panel has the background of your country's army
+professionalism level.
+
 A save also sets the selectors that follow the game's data. For example, the technology view's
-institutions window shows the first institution your country has not embraced, as the game does.
-See [Views](views.md).
+institutions window shows the first institution your country has not embraced, as the game does,
+and the stability view puts its marker at your country's stability. See [Views](views.md).
 
 Once a save is read, under **Save**:
 

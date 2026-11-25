@@ -621,6 +621,15 @@
       "when": { "screen": "small" },
       "hide": ["provinceview/province_terrain"],
     },
+    "terrain-picture": {
+      "note": "The province view draws GFX_combat_terrain_<the province's terrain category> in province_terrain (eu4.exe 0x1347A50, CMap::GetLogicalTerrain): the category the game picks when it loads the map. Anbennar's city_terrain picture is 3 px wider in the P2KE playset than the others.",
+      "saveSprite": {
+        "provinceview/province_terrain": {
+          "save": "provinces.{province}.terrain",
+          "prefix": "GFX_combat_terrain_",
+        },
+      },
+    },
     "no-great-projects": {
       "when": { "greatProjects": "no" },
       "hide": ["provinceview/buildings_window/great_projects_window"],

@@ -19,12 +19,13 @@
  *
  * The keys were read from the province and country blocks of the vanilla corpus save and the
  * Anbennar saves of etch#154: scalar keys the province view and the corpus windows can show,
- * and collections a repeater can list. Two country keys are sums the game's code makes of the
- * save's values, added up as it does (`DERIVED_COUNTRY_KEYS`): `score` and `army_strength`.
+ * and collections a repeater can list. Three country keys are what the game's code makes of the
+ * save's values (`DERIVED_COUNTRY_KEYS`): `score`, `army_strength` and `unit_sprite_start`, and
+ * one province key is what it makes of the playset's map: `terrain` (`DERIVED_PROVINCE_KEYS`).
  * One province collection is laid out as the game's code lays it out from the save and the
  * playset's files: `building_slots`, the province view's building rows (`BUILDING_SLOT_FIELDS`).
  */
-import type { BuildingRules } from '../playset/building-rules.ts';
+import { professionalismLevel, type BuildingRules } from '../playset/building-rules.ts';
 import type { BlockNode, ValueNode } from '../script/tree.ts';
 import type { MapAreas } from '../script/map-areas.ts';
 import { scalarIn, valueIn, type Save } from '../save/save.ts';
@@ -68,7 +69,17 @@ const PROVINCE_KEYS = [
   'missionary_progress',
   'active_trade_company',
   'winter',
+  'terrain',
 ];
+
+/**
+ * Province keys the game's code works out from the playset's files, with the building rules:
+ * `terrain`, the province's terrain category, as the game picks it when it loads the map
+ * (`terrain_override`, else the map's bitmaps; `province-terrain.ts`). The province view draws
+ * `GFX_combat_terrain_<terrain>` in `province_terrain` (`CMap::GetLogicalTerrain`, eu4.exe 1.37.5
+ * `0x1347A50`).
+ */
+export const DERIVED_PROVINCE_KEYS = ['terrain'] as const;
 
 /** Collections of a province block. */
 const PROVINCE_COLLECTIONS = [
@@ -157,6 +168,7 @@ const COUNTRY_KEYS = [
   'average_autonomy',
   'score',
   'army_strength',
+  'unit_sprite_start',
 ];
 
 /**
@@ -170,8 +182,12 @@ const COUNTRY_KEYS = [
  *   the `strength` of every `regiment` of every `army` (the diplomacy view's
  *   `land_forcelimit_value`, `0xEFD450`; a regiment at full strength is 1.000, which the save
  *   leaves out).
+ * - `unit_sprite_start`, the `unit_sprite_start` of the level of `common/professionalism` the
+ *   country's `army_professionalism` has reached (`GFX_ap6_` at 1.0 in the base game), which the
+ *   unit panel's sprites start with (`<start>regiment_bg`, eu4.exe `0x1469250`); it needs the
+ *   building rules, which read the levels.
  */
-export const DERIVED_COUNTRY_KEYS = ['score', 'army_strength'] as const;
+export const DERIVED_COUNTRY_KEYS = ['score', 'army_strength', 'unit_sprite_start'] as const;
 
 /** Collections of a country block. */
 const COUNTRY_COLLECTIONS = [
@@ -328,6 +344,17 @@ export class SaveChoice {
     if (path.scope === 'country' || path.scope === 'owner') {
       if (path.key === 'score') return thousandths(scoreOf(block, this.save));
       if (path.key === 'army_strength') return thousandths(armyStrengthOf(block));
+      if (path.key === 'unit_sprite_start') {
+        const levels = this.rules.buildings?.professionalism;
+        if (levels === undefined) return undefined;
+        const level = professionalismLevel(levels, raw(scalarIn(block, 'army_professionalism')));
+        return level?.unitSpriteStart;
+      }
+    }
+    if (path.scope === 'province' && path.key === 'terrain') {
+      return this.province === undefined
+        ? undefined
+        : this.rules.buildings?.terrain?.category.get(this.province);
     }
     return scalarIn(block, path.key);
   }

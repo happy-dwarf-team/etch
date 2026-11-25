@@ -16,21 +16,21 @@ have a profile.
 | anbennar-alone | 1920x1080 | 60 | 99.7 % | 99.9 % | 88.8 % | 77.0 % | 25 | 100.0 % | 100.0 % | 100.0 % | 100.0 % | 60 | 100.0 % | 100.0 % | 3 of 60 |
 | bigger-ui | 1280x720 | 62 | 99.6 % | 99.9 % | 81.5 % | 87.5 % | 23 | 100.0 % | 99.9 % | 100.0 % | 100.0 % | 62 | 100.0 % | 100.0 % | 3 of 62 |
 | bigger-ui | 1920x1080 | 62 | 99.6 % | 99.9 % | 81.5 % | 87.3 % | 23 | 100.0 % | 100.0 % | 100.0 % | 100.0 % | 62 | 100.0 % | 100.0 % | 3 of 62 |
-| proper-2k-ui-enhanced | 2560x1440 | 61 | 99.4 % | 99.9 % | 79.2 % | 87.5 % | 16 | 99.9 % | 100.0 % | 99.9 % | 100.0 % | 58 | 100.0 % | 100.0 % | 2 of 61 |
-| anbennar | 2560x1440 | 59 | 99.5 % | 99.9 % | 86.9 % | 78.7 % | 19 | 99.7 % | 100.0 % | 99.8 % | 100.0 % | 53 | 100.0 % | 100.0 % | 2 of 59 |
+| proper-2k-ui-enhanced | 2560x1440 | 61 | 99.4 % | 99.9 % | 79.2 % | 87.5 % | 16 | 100.0 % | 100.0 % | 99.9 % | 100.0 % | 58 | 100.0 % | 100.0 % | 2 of 61 |
+| anbennar | 2560x1440 | 59 | 99.7 % | 99.9 % | 86.9 % | 78.7 % | 19 | 100.0 % | 100.0 % | 99.8 % | 100.0 % | 53 | 100.0 % | 100.0 % | 2 of 59 |
 
 "With profiles and live texts" is the same with the snapshot's texts and list rows as sample
 data: what Compare with Live Game compares (spec/v3.md section 4), through the same functions.
 
 | Playset | Resolution | With profiles and live texts: rects | With profiles and live texts: visibility |
 | --- | --- | --- | --- |
-| vanilla | 1280x720 | 99.8 % | 99.6 % |
-| vanilla | 1920x1080 | 99.8 % | 99.6 % |
+| vanilla | 1280x720 | 100.0 % | 99.6 % |
+| vanilla | 1920x1080 | 100.0 % | 99.6 % |
 | anbennar-alone | 1280x720 | 100.0 % | 99.9 % |
 | anbennar-alone | 1920x1080 | 100.0 % | 99.9 % |
-| bigger-ui | 1280x720 | 99.8 % | 99.6 % |
-| bigger-ui | 1920x1080 | 99.8 % | 99.6 % |
-| proper-2k-ui-enhanced | 2560x1440 | 99.8 % | 99.6 % |
+| bigger-ui | 1280x720 | 100.0 % | 99.6 % |
+| bigger-ui | 1920x1080 | 100.0 % | 99.6 % |
+| proper-2k-ui-enhanced | 2560x1440 | 99.9 % | 99.6 % |
 | anbennar | 2560x1440 | 99.8 % | 99.9 % |
 
 Captures the survey's manifest lists but no record has: anbennar-alone 1280x720 1 (anbennar-alone-save-s55), proper-2k-ui-enhanced 2560x1440 1 (vanilla-save-s61), anbennar 2560x1440 1 (anbennar-alone-save-s16).
@@ -144,6 +144,20 @@ below (no capture was taken again). The generated tables above are this run.
   or the three countries: visibility failures 43 → 8 and 40 → 5 in vanilla, 38 → 3 and 35 → 0 in
   Bigger UI, 35 → 0 in Proper 2K UI Enhanced, 6 → 0 in Anbennar at both sizes and in the P2KE
   playset, and 4 fewer on each country. Rects do not change; no view got worse.
+- **The rest of etch#604**: what the game's code picks from the game's state, read as the game
+  reads it. The army panel's `regiment_bg` is `<unit_sprite_start>regiment_bg` of the country's
+  highest army professionalism level (eu4.exe `0x1469250`, `common/professionalism`), a fleet's
+  stays `GFX_regiment_bg`; the province view's `province_terrain` is `GFX_combat_terrain_` and the
+  province's terrain category (`0x1347A50`), both a rule's `saveSprite` from the save. The
+  stability view's marker and value stand at the save's stability (`country.stability`), and
+  Compare with Live Game takes that selector from the stability the game wrote (`liveText`). The
+  lobby's `nation_designer_hint` is `FE_SELECT_CUSTOM_NATION_CAPITAL` in the nation designer, and
+  Anbennar's `magic_advancement_current_subject` the text of `is_overall_not_advancing_magic_tt`.
+  Compare with Live Game takes the sprites the game drew outside list rows, never their place or
+  visibility. With the profiles, Proper 2K UI Enhanced 2 → 0 and the P2KE playset 7 → 0 rects off;
+  with the snapshot's texts, vanilla and Bigger UI 6 → 0, Proper 2K UI Enhanced 7 → 1, the three
+  countries 2 → 0 each; the offline preview 23 → 21 and 17 → 10. Visibility does not change; no
+  view got worse.
 
 With the profiles, rects off on `main` against the section below (rules of `b156984`). Every
 change of a view measure was a gain.
@@ -154,32 +168,21 @@ change of a view measure was a gain.
 | Anbennar alone, 1920×1080 | 0 (19) | 8 (27) | 0 (1) |
 | Anbennar alone, 1280×720 | 0 (18) | 7 (25) | 8 (9) |
 | Bigger UI, 1920×1080 and 1280×720 | 0 (23) | 15 (38) | 0 (9) |
-| Proper 2K UI Enhanced, 2560×1440 | 2 (80) | 23 (101) | 3 (40) |
-| Anbennar with Proper 2K UI Enhanced and P2KE, 2560×1440 | 7 (52) | 17 (62) | 6 (20) |
+| Proper 2K UI Enhanced, 2560×1440 | 0 (80) | 21 (101) | 3 (40) |
+| Anbennar with Proper 2K UI Enhanced and P2KE, 2560×1440 | 0 (52) | 10 (62) | 6 (20) |
 | Austria, the emperor | 0 (12) | 5 (17) | 0 (9) |
 | Aragon, the Pope's controller | 0 (12) | 5 (17) | 0 (9) |
 | C01, a colonial nation | 0 (3) | 3 (6) | 0 (1) |
 
-Visibility is unchanged in every set. **What is left with the profiles**, in vanilla, Bigger UI and
-Anbennar alone at each size and on the three countries: nothing. Nothing of etch#606 is left: the pie
-chart (etch#614), the patriarch marker (etch#615), the crown land icons and the map mode buttons
-(etch#672) and Proper 2K UI Enhanced's minimap (etch#693) are fixed.
-
-In Proper 2K UI Enhanced (2 rects) and the P2KE playset (7), by cause:
-
-- **Texts the game's code fills from the game's state** (etch#604's kind), 1 and 2: two lines in
-  the game where the profile's text has one, the lobby's `nation_designer_hint` and Anbennar's
-  `magic_advancement_current_subject`. The numbers' widths are the game's (see above).
-- **Sprites the game's code picks from the game's state**, 1 and 5: `regiment_bg`, which eu4.exe
-  draws with the sprite of the army's professionalism level (`GFX_ap1_regiment_bg` and on, 10 px
-  taller in the mod than its `regiment_bg.tga`), and in the P2KE playset the province view's
-  `province_terrain`, the picture of the province's terrain. Neither is in a save fact a selector
-  reads today.
+Visibility is unchanged in every set. **What is left with the profiles**, in every set of the
+survey and on the three countries: nothing. Nothing of etch#606 is left: the pie chart (etch#614),
+the patriarch marker (etch#615), the crown land icons and the map mode buttons (etch#672) and
+Proper 2K UI Enhanced's minimap (etch#693) are fixed; nothing of etch#604 either (see above).
 
 The peace view's slider stays as it was, in visibility; the building slots are fixed (see above).
-With the snapshot's texts, Proper 2K UI Enhanced has 7 rects off: `regiment_bg`, and the stability
-view's `stability_value` and `stability_progress_threshold` 57 px left of the game's in three
-views, which the profiles alone draw at the game's place. These six were not looked into.
+With the snapshot's texts, Proper 2K UI Enhanced has 1 rect off and the P2KE playset 5:
+`regiment_bg` and `province_terrain`, whose sprite comes from the save, which that measure does not
+read, and which Tongs does not report for these two widgets.
 
 ## Other countries: data the rules were not made from
 

@@ -123,6 +123,13 @@ export const FACTS: readonly Fact[] = [
     inSave: true,
   },
   {
+    name: 'country.stability',
+    values: ['minus3', 'minus2', 'minus1', 'zero', 'plus1', 'plus2', 'plus3'],
+    description:
+      "The chosen country's stability, from -3 to +3: the whole part of the save's `stability`. The stability view's daily update moves `stability_progress_threshold` and `stability_value` by it (Steam 1.37.5 0xF87E80).",
+    inSave: true,
+  },
+  {
     name: 'country.patriarchAuthority',
     values: [],
     description:

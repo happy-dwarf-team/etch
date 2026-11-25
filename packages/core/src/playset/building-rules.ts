@@ -40,6 +40,20 @@ export interface BuildingRules {
   readonly privileges: ReadonlyMap<string, number>;
   /** The technology level that unlocks a building, by building name. */
   readonly technology: ReadonlyMap<string, { readonly kind: TechKind; readonly level: number }>;
+  /**
+   * The levels of `common/professionalism`, in file order, which the unit panel's background is
+   * drawn by (eu4.exe `0x1469250`); read with the building rules, as the save's other layouts are.
+   */
+  readonly professionalism: readonly ProfessionalismLevel[];
+}
+
+/** A level of `common/professionalism`. */
+export interface ProfessionalismLevel {
+  readonly name: string;
+  /** `army_professionalism`, in thousandths: the level is reached at it. */
+  readonly threshold: number;
+  /** `unit_sprite_start`, the start of the unit panel's sprites at this level (`GFX_ap1_`). */
+  readonly unitSpriteStart: string | undefined;
 }
 
 export type TechKind = 'adm' | 'dip' | 'mil';
@@ -171,6 +185,7 @@ export async function loadBuildingRules(files: GameFiles): Promise<BuildingRules
     techTrees,
     terrainTree,
     mapText,
+    professionalismTrees,
   ] = await Promise.all([
     parseAll(files, buildingFiles),
     (async () => {
@@ -198,6 +213,7 @@ export async function loadBuildingRules(files: GameFiles): Promise<BuildingRules
       const file = await files.find('map/default.map');
       return file === undefined ? undefined : decode(await files.readFile(file));
     })(),
+    parseAll(files, await files.list('common/professionalism', '.txt')),
   ]);
 
   const buildings: BuildingDefinition[] = [];
@@ -298,6 +314,18 @@ export async function loadBuildingRules(files: GameFiles): Promise<BuildingRules
     }
   }
 
+  const professionalism: ProfessionalismLevel[] = [];
+  for (const tree of professionalismTrees) {
+    for (const e of properties(tree.entries)) {
+      if (e.value?.kind !== 'block') continue;
+      professionalism.push({
+        name: e.key.text,
+        threshold: thousandths(scalar(e.value, 'army_professionalism')),
+        unitSpriteStart: scalar(e.value, 'unit_sprite_start'),
+      });
+    }
+  }
+
   const terrainSlots = new Map<string, number>();
   const categories = terrainTree === undefined ? undefined : terrainCategories(terrainTree);
   for (const [name, body] of categories ?? []) {
@@ -327,7 +355,26 @@ export async function loadBuildingRules(files: GameFiles): Promise<BuildingRules
     ideas,
     privileges,
     technology,
+    professionalism,
   };
+}
+
+/**
+ * The level of professionalism a country has reached, as `CProfessionalismDatabase::
+ * FindHighestEnabledModifier` picks it for the unit panel (eu4.exe 1.37.5 `0x1469250`): the level
+ * with the highest `army_professionalism` at or below the country's, the first in file order on a
+ * tie. Its `trigger` is not evaluated (the base game's and Anbennar's are all `always = yes`).
+ */
+export function professionalismLevel(
+  levels: readonly ProfessionalismLevel[],
+  professionalism: number,
+): ProfessionalismLevel | undefined {
+  let best: ProfessionalismLevel | undefined;
+  for (const level of levels) {
+    if (level.threshold > professionalism) continue;
+    if (best === undefined || level.threshold > best.threshold) best = level;
+  }
+  return best;
 }
 
 /** The terrain categories of `map/terrain.txt`, by name, in order. */
