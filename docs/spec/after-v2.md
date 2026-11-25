@@ -1107,7 +1107,8 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
      (with `Trail` and `NoBillboard` as the game appends them) and a missing
      texture; none in vanilla 1.37.5 or Anbennar. User page
      `textures-and-meshes/particles.md`. Not checked: keys inside
-     `childsystem`, `position` and `color`, and the values of `sort`,
+     `position` and `color` (those inside `childsystem` are checked as a
+     subsystem's since step 10), and the values of `sort`,
      `emitter_type`, a force's `type` and `op`, since what the game does with
      other text there is not known.
   2. Read the evaluators and the update in the lab's analysis (the research's
@@ -1188,8 +1189,8 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
      step 5); the trail's
      look without a `Trail` shader effect, which vanilla lacks (settled in
      step 8); `childsystem`
-     (not used in vanilla), not run, and `time_offset` (not used in vanilla;
-     settled in step 9).
+     (not used in vanilla; settled in step 10), and `time_offset` (not used
+     in vanilla; settled in step 9).
   5. Settle `spin`. Done 25 November 2026: the preview follows step 4's
      reading. Each step a particle's offset from the axis through the centre
      is turned by `amount · dt` radians (radians, not scaled; +X towards +Z
@@ -1222,7 +1223,9 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
      tile draws, the 30-bit number modulo the sheet's columns and rows, even
      for a sheet of one. A value without variation draws nothing. The preview
      now draws in that order, so only the seed differs from the game; a
-     `childsystem`, not run, would draw before its parent at the start.
+     `childsystem` draws its start values before its parent, once for each
+     of the parent's `max_amount` slots (step 10). Not checked: where a
+     child's draws fall among its parent's every frame.
   7. Settle the copies of an event's effect. Done 25 November 2026: the game
      makes a new particle effect at every start of an event and never looks
      for or limits earlier ones (step 4's reading); an effect is removed only
@@ -1264,6 +1267,20 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
      which this reading does not explain. The preview starts each state at the
      base (the variation is chance, listed on the user page), the root's
      animation and slider at its own, an attached entity at its own.
+  10. Run a subsystem's `childsystem` blocks (none in vanilla). Done 25
+     November 2026, from step 4's reading of the game's code: the game reads
+     a `childsystem` with the subsystem's reader, nested ones too, and gives
+     each of the parent's `max_amount` slots one block per child, whose
+     time, duration, pulses and emission go on from one parent in the slot to
+     the next; only its particles are cleared when a new parent takes the
+     slot. Each frame, after the parent moves, each child runs once per live
+     or waiting parent, at the parent's place with no turn, spawning along
+     the parent's move from its last place to its new one, and emits only
+     while the parent lives. A dead parent keeps its slot, undrawn, until its
+     children are gone. The editor's hovers and warnings now read a
+     `childsystem` as a subsystem. CHILDLIVE. Not checked: the order the
+     game draws a parent's and a child's particles in (the preview draws the
+     parent's, then each child's).
 
 Small unknowns, none worth an issue yet.
 

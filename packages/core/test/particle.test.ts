@@ -245,6 +245,24 @@ describe('particleHoverAt', () => {
       : { at: text.slice(found.start, found.end), markdown: found.markdown };
   };
 
+  it('checks a childsystem as a subsystem, nested ones too (step 10)', () => {
+    const text = `particle = { name = "x" subsystem = {
+	childsystem = { lifee = 1 force = gravty childsystem = { sizee = 1 } }
+} }`;
+    expect(check(text).map(({ code, at }) => [code, at])).toEqual([
+      ['unknown-particle-key', 'lifee'],
+      ['unknown-particle-force', 'gravty'],
+      ['unknown-particle-key', 'sizee'],
+    ]);
+    expect(hover(text, 'lifee')).toBeUndefined();
+    expect(
+      hover('particle = { subsystem = { childsystem = { life = 1 } } }', 'life')?.markdown,
+    ).toMatch(/^\*\*`life`\*\* in a subsystem block/);
+    expect(hover(text, 'childsystem')?.markdown).toMatch(
+      /^\*\*`childsystem`\*\* in a subsystem block\n\nTakes a block with the keys of a subsystem\./,
+    );
+  });
+
   it('says what a key takes and does, and whether the game confirms it', () => {
     expect(hover(EFFECT, 'life =')).toEqual({
       at: 'life',

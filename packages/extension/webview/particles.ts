@@ -313,8 +313,8 @@ export class ParticleLayer {
     const distance = (q: ParticleQuad): number =>
       (q.x - ex) ** 2 + (q.y - ey) ** 2 + (-q.z - ez) ** 2;
     for (const run of this.running) {
-      for (const [index, subsystem] of run.event.system.subsystems.entries()) {
-        const quads = run.effect.quads(index);
+      // Each subsystem, then its child systems' particles.
+      for (const { subsystem, quads } of run.effect.layers()) {
         if (quads.length === 0) continue;
         if (subsystem.trail) {
           this.drawTrail(quads, subsystem, eye, run.event.scale * entityScale, viewProjection);
