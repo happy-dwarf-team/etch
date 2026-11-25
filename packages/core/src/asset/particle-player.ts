@@ -525,12 +525,11 @@ export class ParticleEffect {
     const velocityPitch = column(def.velocityPitch);
     const velocityYaw = column(def.velocityYaw);
     const velocity = column(def.velocity);
+    // A sphere and a box draw the same three values; only their offset differs.
     const shapes =
-      def.emitter === 'sphere'
-        ? [column(def.sphere[0]), column(def.sphere[1]), column(def.sphere[2])]
-        : def.emitter === 'box'
-          ? [column(def.box[0]), column(def.box[1]), column(def.box[2])]
-          : undefined;
+      def.emitter === 'point'
+        ? undefined
+        : [column(def.shape[0]), column(def.shape[1]), column(def.shape[2])];
     const [cy, sy, cp, sp] = [Math.cos(yaw), Math.sin(yaw), Math.cos(pitch), Math.sin(pitch)];
     // The emitter's matrix, by columns, and the node's (none in local space) applied after it.
     const emitter = [cy * cp, -sp, sy * cp, cy * sp, cp, sy * sp, -sy, 0, cy];

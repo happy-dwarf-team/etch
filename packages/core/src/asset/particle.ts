@@ -203,12 +203,54 @@ const SUBSYSTEM: [string, ParticleKeyDoc][] = [
   ],
   ['emitter_yaw', doc(VALUE, 'The sideways turn of the emitter.')],
   ['emitter_pitch', doc(VALUE, 'The up and down turn of the emitter.')],
-  ['sphere_emitter_radius', doc(VALUE, 'The size of a sphere emitter (`emitter_type = sphere`).')],
-  ['sphere_emitter_yaw', doc(VALUE, 'The sideways turn of a sphere emitter.')],
-  ['sphere_emitter_pitch', doc(VALUE, 'The up and down turn of a sphere emitter.')],
-  ['box_emitter_x', doc(VALUE, 'The size of a box emitter (`emitter_type = box`) along x.')],
-  ['box_emitter_y', doc(VALUE, 'The size of a box emitter (`emitter_type = box`) along y.')],
-  ['box_emitter_z', doc(VALUE, 'The size of a box emitter (`emitter_type = box`) along z.')],
+  [
+    'sphere_emitter_radius',
+    doc(
+      VALUE,
+      'With `emitter_type = sphere`, how far from the emitter each particle starts, drawn for each particle. The game stores it in the same place as `box_emitter_x`: the last of the two wins.',
+      'game',
+    ),
+  ],
+  [
+    'sphere_emitter_yaw',
+    doc(
+      DEGREES,
+      'With `emitter_type = sphere`, the sideways angle at which each particle starts, drawn for each particle: without a variation, they all start at one point. The game stores it in the same place as `box_emitter_y`: the last of the two wins.',
+      'game',
+    ),
+  ],
+  [
+    'sphere_emitter_pitch',
+    doc(
+      DEGREES,
+      'With `emitter_type = sphere`, the up and down angle at which each particle starts, drawn for each particle: without a variation, they all start at one point. The game stores it in the same place as `box_emitter_z`: the last of the two wins.',
+      'game',
+    ),
+  ],
+  [
+    'box_emitter_x',
+    doc(
+      VALUE,
+      'With `emitter_type = box`, how far along x each particle starts from the emitter, drawn for each particle: `{ 0 30 }` spreads them over 30 either side. The game stores it in the same place as `sphere_emitter_radius`: the last of the two wins.',
+      'game',
+    ),
+  ],
+  [
+    'box_emitter_y',
+    doc(
+      VALUE,
+      'With `emitter_type = box`, how far along y each particle starts from the emitter, drawn for each particle. The game stores it in the same place as `sphere_emitter_yaw`: the last of the two wins.',
+      'game',
+    ),
+  ],
+  [
+    'box_emitter_z',
+    doc(
+      VALUE,
+      'With `emitter_type = box`, how far along z each particle starts from the emitter, drawn for each particle. The game stores it in the same place as `sphere_emitter_pitch`: the last of the two wins.',
+      'game',
+    ),
+  ],
   [
     'childsystem',
     doc(
@@ -858,17 +900,20 @@ function emitterKeys(subsystem: BlockNode, out: ParticleBlockDiagnostic[]): void
   const type = particleChoice(subsystem, 'subsystem', 'emitter_type');
   if (type === 'point') return;
   const other = type === 'sphere' ? BOX_KEYS : SPHERE_KEYS;
+  const own = type === 'sphere' ? SPHERE_KEYS : BOX_KEYS;
   const log =
     type === 'sphere'
       ? 'Sphere emitter contains box emitter parameters and will probably be wrong'
       : 'Box emitter contains sphere emitter parameters and will probably be wrong';
   for (const entry of subsystem.entries) {
-    if (entry.kind !== 'property' || !other.includes(keyOf(entry))) continue;
+    if (entry.kind !== 'property') continue;
+    const slot = other.indexOf(keyOf(entry));
+    if (slot < 0) continue;
     out.push({
       code: 'particle-emitter-keys',
       start: entry.key.start,
       end: entry.key.end,
-      message: `This subsystem has emitter_type = ${type}, but "${entry.key.text}" is a key of a ${type === 'sphere' ? 'box' : 'sphere'} emitter. The game writes in its error log: ${log}.`,
+      message: `This subsystem has emitter_type = ${type}, but "${entry.key.text}" is a key of a ${type === 'sphere' ? 'box' : 'sphere'} emitter. The game stores it in the same place as "${own[slot] ?? ''}", so it sets that value, and writes in its error log: ${log}.`,
     });
   }
 }

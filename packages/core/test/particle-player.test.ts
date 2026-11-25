@@ -112,6 +112,20 @@ describe('reading a particle block', () => {
     expect(p.curves.map((c) => c.op)).toEqual(['add', 'add', 'mul', 'abs']);
   });
 
+  it('reads the sphere and box keys into one set of shape values, the last entry winning', () => {
+    // Read in the game's code (etch#631 step 17): `sphere_emitter_radius` and `box_emitter_x` set
+    // the same value, and so do the yaws and y, and the pitches and z.
+    const sub = single(
+      `emitter_type = sphere sphere_emitter_radius = 30 box_emitter_x = 5
+       box_emitter_y = { 0 180 } sphere_emitter_pitch = 2 BOX_EMITTER_Z = 3`,
+    ).subsystems[0];
+    expect(sub?.shape.map((s) => [s.base, s.variation])).toEqual([
+      [5, 0],
+      [0, 180],
+      [3, 0],
+    ]);
+  });
+
   it('reads position and color with one set of slots, in any case, the last entry winning', () => {
     // Seen in the game (etch#631 step 16): `a`, `w` and `A` set the opacity, `x y z` in a colour
     // tinted it, `r` in a position moved it like `x`, and `alpha = 0` then `a = 255` stayed opaque.
