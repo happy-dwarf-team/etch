@@ -5,7 +5,7 @@
  */
 import type { BlockNode, ParsedScript, PropertyNode, ScalarNode } from '../script/tree.ts';
 import { diagnostic, type ModelDiagnostic } from './diagnostics.ts';
-import { isGuiWidgetKey } from './gui-structure.ts';
+import { guiPairFields, isGuiWidgetKey } from './gui-structure.ts';
 import {
   Properties,
   constantReferences,
@@ -279,7 +279,9 @@ export function resolutionApplies(block: ResolutionBlock, screen: Screen): boole
 /**
  * A widget's properties on a screen: its own, with each applying `if_resolution` block's
  * properties taking effect where the block stands in the file, as the game evaluates them while
- * parsing (etch#16). Without a screen no `if_resolution` block applies.
+ * parsing (etch#16). Without a screen no `if_resolution` block applies. A `size` or `position`
+ * is read only in the form the game reads for the widget: `size = { x y }` on a
+ * `containerWindowType` is no size (etch#743).
  */
 export function widgetProperties(
   widget: Widget,
@@ -298,7 +300,7 @@ export function widgetProperties(
       applied.push(...block.entries);
     }
   }
-  return new Properties(applied, constants);
+  return new Properties(applied, constants, (key) => guiPairFields(widget.kind, key));
 }
 
 /** The top-level definition with a name, compared without regard to case; the first one wins. */

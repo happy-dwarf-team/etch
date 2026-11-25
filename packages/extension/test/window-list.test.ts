@@ -7,12 +7,12 @@ const GUI = `guiTypes = {
     name = "etch_bar"
     size = { x = 390 y = 32 }
   }
-  windowType = {
+  containerWindowType = {
     name = "etch_full"
     size = { width = 50% height = 100% }
   }
   containerWindowType = {
-    size = { x = @w y = 10 }
+    size = { width = @w height = 10 }
   }
 }
 `;

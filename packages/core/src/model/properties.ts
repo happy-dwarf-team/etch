@@ -5,6 +5,12 @@ export type Constants = ReadonlyMap<string, ScalarNode>;
 
 const NO_CONSTANTS: Constants = new Map();
 
+/**
+ * The two named fields a pair key is read from (`x` and `y`, or `width` and `height`), or
+ * `undefined` to read any form.
+ */
+export type PairFields = (key: string) => readonly [string, string] | undefined;
+
 export interface Point {
   readonly x: number;
   readonly y: number;
@@ -64,17 +70,24 @@ function parseLength(text: string | undefined): Length | undefined {
  * The properties of a widget, sprite or font block as the game would apply them: in the given
  * order, the last one of a key winning (an assumption; the game's rule for a repeated key is
  * unverified). Values are read through the file's `@name` constants. Accessors return
- * `undefined` for a missing or malformed value.
+ * `undefined` for a missing or malformed value. With `fields`, a pair key such as `size` is
+ * read only from the two named fields the widget takes, as the game reads it (etch#743).
  */
 export class Properties {
   /** The properties in the order they apply. */
   readonly entries: readonly PropertyNode[];
   private readonly constants: Constants;
   private readonly byKey = new Map<string, PropertyNode>();
+  private readonly fields: PairFields | undefined;
 
-  constructor(entries: readonly PropertyNode[], constants: Constants = NO_CONSTANTS) {
+  constructor(
+    entries: readonly PropertyNode[],
+    constants: Constants = NO_CONSTANTS,
+    fields?: PairFields,
+  ) {
     this.entries = entries;
     this.constants = constants;
+    this.fields = fields;
     for (const entry of entries) this.byKey.set(keyOf(entry), entry);
   }
 
@@ -122,7 +135,10 @@ export class Properties {
     return n === undefined ? undefined : n !== 0;
   }
 
-  /** `{ x = … y = … }`, `{ width = … height = … }` or `{ a b }`. */
+  /**
+   * `{ x = … y = … }`, `{ width = … height = … }` or `{ a b }`; only the named fields the widget
+   * takes for the key when the properties have `fields`.
+   */
   point(key: string): Point | undefined {
     const pair = this.pair(key);
     if (pair === undefined) return undefined;
@@ -158,6 +174,13 @@ export class Properties {
     const block = this.block(key);
     if (block === undefined) return undefined;
     const inner = new Properties(propertiesOf(block), this.constants);
+    const named = this.fields?.(key);
+    if (named !== undefined) {
+      const [first, second] = named;
+      return inner.has(first) || inner.has(second)
+        ? [inner.text(first), inner.text(second)]
+        : undefined;
+    }
     if (inner.has('x') || inner.has('y')) return [inner.text('x'), inner.text('y')];
     if (inner.has('width') || inner.has('height'))
       return [inner.text('width'), inner.text('height')];

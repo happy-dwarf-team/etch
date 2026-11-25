@@ -72,6 +72,11 @@ instead, and Etch leaves them out (see
   widget here." The game creates only some kinds of widget inside each kind of widget. Here it
   never creates the button, so it does not show in the game, and the preview leaves it out too,
   with everything inside it. Use the kind the entry names.
+- "The game does not read x in size: it takes width, height, step, min and max." A
+  `containerWindowType` reads its `size` as `{ width = … height = … }`, and most other widgets
+  read theirs, and every `position`, as `{ x = … y = … }`. The game reads no size from the other
+  form, or from two bare numbers. The preview reads none either, so the widget gets no size. Write
+  the fields the entry names.
 - "The game ignores text in iconType." An `iconType` shows no `text`, `font`, `buttonText` or
   `buttonFont`, and an `instantTextBoxType` ignores `size`. Remove the key, or use a widget that
   shows it.
