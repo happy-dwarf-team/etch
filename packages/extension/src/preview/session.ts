@@ -18,10 +18,12 @@ import {
   PlaysetAssets,
   PlaysetInterface,
   findPlayset,
+  loadBuildingRules,
   loadGovernmentMechanics,
   loadMapAreas,
   loadPlaysetLocalisation,
   readPlayerSettings,
+  type BuildingRules,
   type Playset,
   type PlayerSettings,
   type PlaysetMechanics,
@@ -63,6 +65,11 @@ export class PreviewSession {
   readonly mechanics: PlaysetMechanics;
   /** The map's areas and regions, read once per session; `undefined` when they could not be. */
   readonly map: MapAreas | undefined;
+  /**
+   * The building rules, for a save's building slots (etch#605): read in the background once per
+   * session, as only a save needs them; `undefined` when they could not be read.
+   */
+  readonly buildings: Promise<BuildingRules | undefined>;
   readonly notices: readonly Notice[];
 
   private constructor(
@@ -86,6 +93,7 @@ export class PreviewSession {
     this.mechanics = mechanics;
     this.map = map;
     this.notices = notices;
+    this.buildings = loadBuildingRules(playset.files).catch(() => undefined);
   }
 
   /** Finds the playset of a file and reads its interface files and localisation. */

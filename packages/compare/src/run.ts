@@ -258,7 +258,7 @@ async function profileGate(
   const choice =
     save === undefined || data?.province === undefined
       ? undefined
-      : new SaveChoice(save, data.country ?? save.meta.player, data.province);
+      : new SaveChoice(save, data.country ?? save.meta.player, data.province, files.saveRules);
   const texts: SaveTextReport[] = [];
   const profilesFolder = options.profilesFolder ?? join(options.corpusFolder, '..', 'profiles');
   const results: VisibilityResult[] = [];

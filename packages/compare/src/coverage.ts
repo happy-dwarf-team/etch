@@ -40,7 +40,7 @@ import {
 } from '@etch/core/corpus';
 import type { DiscoveryEnvironment } from '@etch/core/playset';
 import type { Widget } from '@etch/core';
-import { defaultSaveChoice, SaveChoice } from '@etch/core/profile';
+import { defaultSaveChoice, SaveChoice, type SaveRules } from '@etch/core/profile';
 import type { Save } from '@etch/core/save';
 import { CorpusPlaysetFiles } from './playset.ts';
 import { saveOf } from './run.ts';
@@ -162,6 +162,7 @@ export function viewChoice(
   save: Save,
   view: CorpusView,
   chosen?: Pick<SurveyData, 'country' | 'province'>,
+  rules?: SaveRules,
 ): SaveChoice {
   const start = defaultSaveChoice(save);
   const opened = view.recipe.steps.flatMap((s) => ('province' in s ? [s.province] : [])).at(-1);
@@ -169,6 +170,7 @@ export function viewChoice(
     save,
     chosen?.country ?? view.data?.country ?? start.country,
     chosen?.province ?? view.data?.province ?? opened ?? start.province,
+    rules,
   );
 }
 
@@ -251,6 +253,7 @@ export async function runCoverage(options: CoverageOptions): Promise<CoverageRes
             (options.data ?? []).find(
               (d) => d.view === key.view && d.window === window && d.save === pinned?.file,
             ),
+            files.saveRules,
           );
     const problems: string[] = [];
     const offlineWindows: PlanWindow[] = [];

@@ -247,7 +247,9 @@ scoring is on) and `army_strength` (the `strength` of every regiment of its armi
 save leaves it out, in thousands of men as the save writes manpower). Collections
 for repeaters: a province's `buildings`, `building_builders`, `cores`, `claims`, `great_projects`,
 `institutions`, `discovered_by`, `modifier`; a country's `active_idea_groups`, `owned_provinces`,
-`core_provinces`, `allies`, `subjects`, `active_policy`.
+`core_provinces`, `allies`, `subjects`, `active_policy`. One province collection Etch lays out
+itself, as the game's code does from the save and the playset's files: `building_slots`, the
+province view's building rows (see "Building slots" below).
 Any other path is an error when the profile loads; a new one needs an Etch release
 (`packages/core/src/profile/save-paths.ts`).
 
@@ -334,6 +336,68 @@ start (19 px left of it in a column of numbers), as wide as the column.
 `hide` lists parts of an entry the preview leaves out, by path in the template, the template's name
 first, for what the game shows only in some entries: `"hide":
 ["building_progress_entry/building_status"]`. A live snapshot's state of an entry wins.
+
+`states` lets the save's entry set a part's state, by path in the template: `visible` is an entry
+path whose `yes` shows the part and `no` hides it, over `hide`; `sprite` is one entry path or a
+list of them, and the first sprite the playset defines is drawn in place of the part's own. A live
+snapshot's state still wins, and without a save the parts keep `hide`:
+
+```jsonc
+"states": {
+  "building_progress_entry/building": { "sprite": ["entry.culture_sprite", "entry.sprite"] },
+  "building_progress_entry/building_canbuild": { "visible": "entry.canbuild" },
+},
+```
+
+#### Building slots
+
+`provinces.{province}.building_slots` is the province view's building rows as eu4.exe 1.37.5 lays
+them out (`CProvinceViewBuildings::RebuildAllBuildingEntries` 0x138EF20,
+`CBuildingEntry::RefreshBuilding` 0x138A100, etch#605), seen by the country chosen in `Data ▾`:
+
+1. the building under construction (the save's `building_construction`);
+2. the built buildings, in the order of `common/buildings` (its files by name), up to the cap:
+   `MAX_BUILDING_SLOTS` (12), less `COT_BUILDING_SLOTS` (2) with a center of trade;
+3. empty rows up to the province's slots;
+4. one locked row while it has fewer slots than its cap.
+
+The slots are the province's `allowed_num_of_buildings`, cut to a whole number, plus its owner's
+`global_allowed_num_of_buildings`, cut apart, at most the cap (0xA02D10). The province's part adds
+up, in thousandths as the game does:
+
+- the `development` static modifier times its development;
+- `city`;
+- its terrain category, and the `arctic`, `tropical` or `arid` static of its climate;
+- its buildings' `modifier`s;
+- `expanded_infrastructure` times the save's `expand_infrastructure`;
+- the save's province `modifier`s and `triggered_modifier`s (`common/event_modifiers`,
+  `common/province_triggered_modifiers`);
+- the `state_modifiers` of the highest center of trade of its area, when the area is the owner's
+  state (the save's `map_area_data`) and the owner controls it.
+
+The owner's part: its country `modifier`s, its idea groups (`start`, the ideas taken, `bonus` when
+all are), and its estates' `granted_privileges`. A modifier's conditions are not evaluated (only
+its plain values count), and a monument's tier is left out.
+
+The terrain category is the game's, from the map: a category's `terrain_override`, else the
+province's pixels in `map/terrain.bmp`, with `map/trees.bmp` painted over it, where a land
+province counts its land pixels, a `forest` or `jungle` pixel twice, and the largest share wins
+(`CMap::UpdateTerrainFromTreeDefinition` 0x885D90, `CProvinceTemplate::DetermineTerrainInfo`
+0xA42F00; checked against a running game's categories of every vanilla province).
+
+Each row's fields:
+
+| Field | Value |
+| --- | --- |
+| `kind` | `construction`, `built`, `empty` or `locked` |
+| `building` | the building's name, on a construction or built row |
+| `canbuild` | `yes` where the green frame shows: on an empty row, when the viewer owns and controls the province and something is unlocked by its technology and not built (the game evaluates no trigger here, `CProvince::CalcPossibleBuildings` 0xA035A0); on a built row, when an upgrade is unlocked, nothing is being built and the treasury holds its `cost`; on the locked row, when no slot is free and an unlocked building would add one |
+| `destroy` | `yes` on a built row of the viewer's own province |
+| `progress` | `yes` on the construction row |
+| `locked`, `required_development` | `yes` on the locked row, and its number: the development the next slot needs, from the province's part alone (0xA03250) |
+| `sprite`, `culture_sprite` | `GFX_<building>` and `GFX_<building>_<graphical culture of the owner>`; `GFX_locked_building_slot` on the locked row, `GFX_building_default` on an empty one |
+
+Without the playset's `common/buildings`, the repeater keeps its `count`.
 
 A rule's `show` and `hide` reach the same parts by the list's path, as the repeater is keyed, and
 the path in the template: while the rule holds, the part is shown or hidden in every entry (a live

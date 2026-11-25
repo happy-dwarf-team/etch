@@ -405,6 +405,34 @@ export function checkProfile(profile: WindowProfile, input: ProfileCheckInput): 
       }
       ok = !saveFails(repeater, field, { entry: repeater.from !== undefined }) && ok;
     }
+    for (const state of repeater.states) {
+      if (template !== undefined && widgetsAt(template, state.path.path).length === 0) {
+        error(
+          repeater,
+          'profile-unknown-path',
+          state.path.range,
+          `No widget of ${repeater.template} has the path "${state.path.path}"; a state's path starts with the template's name.`,
+        );
+        ok = false;
+      }
+      for (const ref of [
+        ...(state.visible === undefined ? [] : [state.visible]),
+        ...(state.sprite ?? []),
+      ]) {
+        const read = readSavePath(ref.path, { entry: true });
+        if ('problem' in read || read.scope !== 'entry') {
+          error(
+            repeater,
+            'profile-unknown-source',
+            ref.range,
+            'problem' in read
+              ? read.problem
+              : `"${ref.path}" is not an entry path: a state reads entry.<key>.`,
+          );
+          ok = false;
+        }
+      }
+    }
     return ok;
   });
 

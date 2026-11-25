@@ -26,6 +26,7 @@ import {
   type Placement,
   type Repeater,
   type RepeaterField,
+  type RepeaterState,
   type SavePathRef,
   type Slider,
   type ValueFormat,
@@ -402,6 +403,7 @@ function readRepeater(
     'count',
     'fields',
     'hide',
+    'states',
     'place',
     'note',
   ]);
@@ -443,6 +445,29 @@ function readRepeater(
   if (hideNode !== undefined && hideNode.kind !== 'array') {
     throw new Faulty('"hide" is an array of paths in the template.', hideNode);
   }
+  const states: RepeaterState[] = [];
+  const statesNode = props.get('states');
+  if (statesNode !== undefined) {
+    if (statesNode.kind !== 'object') {
+      throw new Faulty('"states" is an object keyed by a path in the template.', statesNode);
+    }
+    for (const entry of statesNode.members) {
+      const stateProps = object(entry.value, `state "${entry.key}"`, ['visible', 'sprite']);
+      const visibleNode = stateProps.get('visible');
+      const spriteNode = stateProps.get('sprite');
+      const ref = (n: JsonNode): SavePathRef => ({ path: text$(n, 'an entry path'), range: n });
+      let sprite: SavePathRef[] | undefined;
+      if (spriteNode !== undefined) {
+        if (spriteNode.kind === 'array') sprite = spriteNode.items.map(ref);
+        else sprite = [ref(spriteNode)];
+      }
+      states.push({
+        path: pathKey(entry),
+        ...(visibleNode === undefined ? {} : { visible: ref(visibleNode) }),
+        ...(sprite === undefined ? {} : { sprite }),
+      });
+    }
+  }
   const placeNode = props.get('place');
   const place = placeNode === undefined ? undefined : readPlacement(placeNode);
   return {
@@ -457,6 +482,7 @@ function readRepeater(
     count,
     fields,
     hide: hideNode?.kind === 'array' ? hideNode.items.map(pathOf) : [],
+    states,
     ...written,
   };
 }

@@ -1,3 +1,4 @@
+export * from './building-slots.ts';
 export * from './check.ts';
 export * from './engine.ts';
 export * from './facts.ts';

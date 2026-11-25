@@ -75,7 +75,7 @@ them have at least one profiled root, 38 and 35 only profiled roots.
 | Live texts, profiled windows | 100 % | 100.0 % on every playset and resolution, and on the three countries | yes |
 | Live visibility | 100 % | 100.00 % on every set of the survey (vanilla at 1920×1080: 10835 of 10835, with the built building slots Tongs 0.23 reported hidden) and on the three countries | yes |
 | Geometry offline, with the profiles | 100 % | vanilla 1920×1080 100 % (0 of 3421 rects off, 62 views), vanilla 1280×720 100 % (0 of 3417, 62 views), Anbennar 1920×1080 100 % (0 of 3524, 60 views), Anbennar 1280×720 100 % (0 of 3444, 59 views). On 24 November, rules of `b156984`: 23, 23, 19 and 18 | no |
-| Known deviations with an issue and consent | every difference | proposed: etch#604 (heights of texts the game's code fills), etch#605 (building slots); consent not given. etch#606 is closed as fixed | no |
+| Known deviations with an issue and consent | every difference | proposed: etch#604 (heights of texts the game's code fills); consent not given. etch#605 (building slots) and etch#606 are fixed | no |
 
 The geometry row reads "the outline offline" of section 3 as the outline with the profiles'
 rules (measure 4 of [coverage.md](coverage.md)), as the results do for profiled windows. Read
@@ -100,8 +100,9 @@ fixes are in the list:
   and the modifier's picture, and the map mode buttons, with the sprites of their map modes
   (etch#672), and, off only in Proper 2K UI Enhanced, the minimap, which eu4.exe sizes to the
   `positionType` `minimap_size` (etch#693). Proposed as etch#606, closed as fixed.
-- **Building slots**: how many a province has and which can build now (visibility, not rects). Proposed
-  as a known deviation, etch#605.
+- **Building slots**: how many a province has and which can build now (visibility, not rects).
+  Proposed as a known deviation, etch#605; fixed on 25 November, laid out from the save as the
+  game lays them out.
 - **Single rects**, fixed since: Anbennar's achievements background, which the preview anchored by
   its own orientation where the game puts it at the window's corner (etch#610, etch#611), and the
   lobby's `religion_icon`, which eu4.exe moves 18 px down for a country without a secondary
@@ -118,8 +119,8 @@ hour. They are guesses, not plans.
 | --- | --- | --- | --- |
 | 1 | **Captures with the current Tongs and Anvil**: done on 23 November, with Tongs 0.37.0 and Anvil 1.26.0 on the capture host of etch#618. Left for later: Tongs now reports sprites, which could turn some of etch#606 into fixes. | measurement | done |
 | 2 | **P2KE Patch - Anbennar changed on 15 November**: pinned (etch#618), and the survey's set at 2560×1440 captured on 23 November, 51 of 52 views. With the profiles 98.54 % of its rects are exact (45 of 3086 off); it is a mod's playset and is reported, not gated. | lock batch | done |
-| 3 | **Built building slots**: Tongs 0.23 reported a built slot as hidden while the game draws it (tongs#238). With Tongs 0.37 the 29 failures offline in vanilla at 1920×1080 where the preview drew a built slot are gone; what is left of the province view's slots is which slots can build or be destroyed now (37 of the 42 visibility failures offline there), etch#605. | measurement | done |
-| 4 | **The maintainer's consent** to the proposed deviations etch#604 and etch#605, or a fix for any of them, which no release waits for; etch#604 has no widget left in vanilla, Anbennar and the countries, only two texts of two lines in Proper 2K UI Enhanced and the P2KE playset, and etch#606 is closed as fixed (etch#672, etch#676, etch#693). | decision | the maintainer's time |
+| 3 | **Built building slots**: Tongs 0.23 reported a built slot as hidden while the game draws it (tongs#238). With Tongs 0.37 the 29 failures offline in vanilla at 1920×1080 where the preview drew a built slot are gone; what was left of the province view's slots, which slots can build or be destroyed now (37 of the 42 visibility failures offline there), is fixed by etch#605: the slots come from the save as the game lays them out, and none is off with the profiles. | measurement | done |
+| 4 | **The maintainer's consent** to the proposed deviation etch#604, or a fix for it, which no release waits for; etch#604 has no widget left in vanilla, Anbennar and the countries, only two texts of two lines in Proper 2K UI Enhanced and the P2KE playset, and etch#605 and etch#606 are fixed (etch#672, etch#676, etch#693, the building slots from the save). | decision | the maintainer's time |
 | 5 | **Views of profiled windows not yet captured**: done on 24 November, with the same host. The 1280×720 views a tooltip covered are captured (the driver rests the pointer on the minimap when a view covers the pause banner, etch#670), vanilla's `s69` scrolls the leader list to a leader with an army, and the country shield behind Anbennar's lobby (`anbennar-alone-menu-s8`) is captured with the other eight views the survey had lost. The countries: 41 views on the emperor, 41 on the Pope's controller and 37 on a colonial nation, with no live visibility failure and the rects off of known kinds (etch#604, etch#606); the 10, 10 and 14 left are views the country does not have (no parliament, Celestial Empire, war, rebels or Orthodox icons, the native policy and buttons it has disabled). Left: Anbennar's disband from the reorganisation at 1280×720, which the game does not let a click open there (the reorganisation covers the disband button), and in reported sets P2K's `s61` and the P2KE playset's achievements button. Section 3 lets the other countries' views into the gate once their window has a profile (a reading for the maintainer to confirm). | recipes, lock batches | done |
 | 6 | **The release**: none of its own. The media refresh, the website and the copies of `docs/team-touchpoints.md` go out with a 2.x release, the one that reaches the gate or an earlier one (spec/v3.md section 7; eu4-engine-lab#109 asked for 3.0.0). | release | with a 2.x release |
 

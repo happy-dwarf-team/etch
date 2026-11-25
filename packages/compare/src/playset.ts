@@ -24,6 +24,8 @@ import {
   systemEnvironment,
   workshopFolderFor,
   type DiscoveryEnvironment,
+  loadBuildingRules,
+  loadMapAreas,
 } from '@etch/core/playset';
 import type { Localisation, Widget } from '@etch/core';
 import {
@@ -43,6 +45,7 @@ import {
   readProfile,
   ruleText,
   type SaveChoice,
+  type SaveRules,
   sampleData,
   widgetsAt,
   type LiveSnapshot,
@@ -68,6 +71,8 @@ export class CorpusPlaysetFiles {
   private readonly assets: PlaysetAssets;
   private readonly localisation: Localisation | undefined;
   private readonly mods: readonly PlaysetModKey[];
+  /** The playset's files a save's building slots are laid out with (etch#605). */
+  readonly saveRules: SaveRules;
   private shipped: Promise<ProfileFile[]> | undefined;
 
   private constructor(
@@ -75,12 +80,14 @@ export class CorpusPlaysetFiles {
     ui: PlaysetInterface,
     localisation: Localisation | undefined,
     mods: readonly PlaysetModKey[],
+    saveRules: SaveRules,
   ) {
     this.id = id;
     this.ui = ui;
     this.assets = new PlaysetAssets(ui);
     this.localisation = localisation;
     this.mods = mods;
+    this.saveRules = saveRules;
   }
 
   /**
@@ -137,9 +144,11 @@ export class CorpusPlaysetFiles {
         );
       }
     }
-    const [ui, localisation] = await Promise.all([
+    const [ui, localisation, buildings, map] = await Promise.all([
       PlaysetInterface.load(found.files),
       loadPlaysetLocalisation(found.files, LANGUAGE).catch(() => undefined),
+      loadBuildingRules(found.files).catch(() => undefined),
+      loadMapAreas(found.files).catch(() => undefined),
     ]);
     return new CorpusPlaysetFiles(
       playset.id,
@@ -149,6 +158,7 @@ export class CorpusPlaysetFiles {
         name: m.name,
         ...(m.workshopId === undefined ? {} : { workshopId: m.workshopId }),
       })),
+      { buildings, map },
     );
   }
 
@@ -332,6 +342,7 @@ export class CorpusPlaysetFiles {
         localise: this.localise,
         length: 'typical',
         ...(save === undefined ? {} : { save }),
+        spriteExists: (sprite) => this.ui.index.sprite(sprite) !== undefined,
         template: (template) => {
           const found = this.ui.index.guiType(template);
           const owner = this.ui.index.guiFiles.find((f) => f.path === found?.path)?.file;

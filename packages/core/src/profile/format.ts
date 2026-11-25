@@ -352,6 +352,17 @@ export interface Placement {
  * child of a save collection, or, without a save, `count` generated entries. Keyed by the list
  * box's path. With `place`, the entries go into a window at the places the game's code puts them.
  */
+/**
+ * What a field of a repeater's save entry sets on a part of the entry (etch#605): `visible`, an
+ * entry path whose `yes` shows the part and `no` hides it, and `sprite`, entry paths of sprites,
+ * the first the playset defines drawn in place of the part's own.
+ */
+export interface RepeaterState {
+  readonly path: PathRef;
+  readonly visible?: SavePathRef;
+  readonly sprite?: readonly SavePathRef[];
+}
+
 export interface Repeater extends Written {
   readonly id: string;
   readonly path: PathRef;
@@ -365,6 +376,8 @@ export interface Repeater extends Written {
   readonly fields: readonly RepeaterField[];
   /** Parts of an entry the preview does not draw without a snapshot, by path in the template. */
   readonly hide: readonly PathRef[];
+  /** Parts of an entry whose state the save's entry sets, by path in the template. */
+  readonly states: readonly RepeaterState[];
   /** Where the entries go in a window that is not a list box. */
   readonly place?: Placement;
 }

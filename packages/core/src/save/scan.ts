@@ -109,7 +109,8 @@ export async function indexSave(bytes: Uint8Array, options: IndexOptions = {}): 
     }
     if (c === LBRACE) {
       if (depth === 0) {
-        open0 = eq0 ? key0 : undefined;
+        // The game writes some top-level blocks without `=` (`map_area_data{`).
+        open0 = key0;
         open0Start = key0Start;
         container = open0 === 'countries' ? 1 : open0 === 'provinces' ? 2 : 0;
         key0 = undefined;

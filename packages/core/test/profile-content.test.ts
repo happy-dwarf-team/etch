@@ -733,6 +733,35 @@ describe('sampleData', () => {
     });
   });
 
+  it("sets a part of each entry from the save's entry: shown by yes, its first defined sprite", async () => {
+    const { profile, diagnostics } = profileOf(
+      PROFILE.replace(
+        '"building_entry/builder": { "generated": "text" }\n      }',
+        '"building_entry/builder": { "generated": "text" }\n      },\n' +
+          '      "states": { "building_entry/builder": { "visible": "entry.value", "sprite": ["entry.key", "entry.value"] },' +
+          ' "building_entry/building_name": { "visible": "entry.key" } }',
+      ),
+    );
+    expect(diagnostics).toEqual([]);
+    const builder = named('builder');
+    const sample = sampleData(
+      profile,
+      WINDOW,
+      undefined,
+      input({
+        save: new SaveChoice(await save(), 'SWE', 1),
+        spriteExists: (name) => name === 'marketplace',
+      }),
+    );
+    // temple=yes: shown, and neither sprite defined, so the last; marketplace's own is defined.
+    expect(sample.state(builder, 0)).toMatchObject({ visible: true, sprite: 'yes' });
+    expect(sample.state(builder, 1)).toMatchObject({ visible: true, sprite: 'marketplace' });
+    // A value other than yes hides the part.
+    expect(sample.state(named('building_name'), 0)).toMatchObject({ visible: false });
+    // Without a save the entries are generated and keep the template's state.
+    expect(sampleData(profile, WINDOW, undefined, input()).state(builder, 0)).toBeUndefined();
+  });
+
   it("sets the number of a list's entries, the save's first and generated ones after", async () => {
     const { profile } = profileOf(PROFILE);
     const list = named('building_list');
