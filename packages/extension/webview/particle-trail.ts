@@ -21,7 +21,9 @@ export const TRAIL_COLOUR: readonly [number, number, number] = [118, 112, 124];
  * second band or with a second subsystem that never emits was drawn). The game sets no shader for
  * a trail whose effect the playset's `particle.shader` lacks, so it draws with the sprites' shader
  * and shows nothing (step 22). A trail with its own effect (`ownEffect`) sets it and shows next to
- * the sprites. So the other trails come only while no sprite layer holds a particle.
+ * the sprites, and a trail without one drawn after it keeps that effect's shaders and shows too
+ * (step 24). So the other trails come only while no sprite layer holds a particle, or after a
+ * trail with its own effect that holds one.
  */
 export function drawOrder<
   S extends { readonly trail: boolean },
@@ -30,7 +32,14 @@ export function drawOrder<
   const sprites = layers.filter((layer) => !layer.subsystem.trail);
   const trails = layers.filter((layer) => layer.subsystem.trail);
   if (!sprites.some((layer) => layer.quads.length > 0)) return [...sprites, ...trails];
-  return [...sprites, ...trails.filter((layer) => ownEffect(layer.subsystem))];
+  let shaderSet = false;
+  const shown = trails.filter((layer) => {
+    if (!ownEffect(layer.subsystem)) return shaderSet;
+    // The game sets an effect only for a trail it draws, one with particles.
+    if (layer.quads.length > 0) shaderSet = true;
+    return true;
+  });
+  return [...sprites, ...shown];
 }
 
 type Vector = readonly [number, number, number];

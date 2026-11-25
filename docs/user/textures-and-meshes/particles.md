@@ -90,8 +90,8 @@ warning shows in VS Code's Problems panel (<kbd>Ctrl+Shift+M</kbd>), with "Etch"
   `NoBillboard` to that name. The base game's file has no effect with either ending. So such a
   subsystem needs a `gfx/FX/particle.shader` in your mod with that effect, such as
   `ParticleAlphaBlendTrail`. Without one, the game draws a trail as a flat grey band, and not at
-  all while the effect's other parts have particles on screen (see
-  [Entities](entities.md#particles)).
+  all while the effect's other parts have particles on screen, unless a trail with its own effect
+  comes before it: then it is drawn with that effect (see [Entities](entities.md#particles)).
 - **`local_space = yes` that the shader does not place.** The game passes the effect's place to
   `gfx/FX/particle.shader` in `InstanceWorldMatrix`. The base game's file does not use it. So the
   game draws these particles at their own coordinates on the map: around its south-west corner,
