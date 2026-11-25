@@ -14,6 +14,12 @@ export const CWTOOLS_ID = 'tboby.cwtools-vscode';
 /** CWTools' language for EU4's script files. */
 export const CWTOOLS_EU4_LANGUAGE = 'eu4';
 
+/**
+ * CWTools' language for a script file of no game it recognises. With it, CWTools 0.10.31 runs on
+ * the Stellaris rules and reported nothing on an EU4 event file with an unknown trigger.
+ */
+export const CWTOOLS_PARADOX_LANGUAGE = 'paradox';
+
 /** The game's folders whose `.txt` files are script files. */
 const SCRIPT_FOLDERS = [
   'common',
@@ -90,16 +96,54 @@ export interface ScriptLanguageCase {
  * The notice a document gets, if any. `install`: a script file on disk opens as Plain Text with
  * neither extension, and Etch offers them. `folder`: it opens as Plain Text with CWTools
  * installed, because the file is not under a folder named after the game (etch#704), and Etch
- * says so and offers the `files.associations` entries.
+ * says so and offers the `files.associations` entries. It also opens as CWTools' generic
+ * `paradox` there once CWTools runs, started by a `.gui` file: then CWTools checks it with no EU4
+ * rules, and the same entries help.
  */
 export function scriptLanguageNotice(
   document: ScriptLanguageCase,
 ): 'install' | 'folder' | undefined {
-  if (document.scheme !== 'file' || document.languageId !== 'plaintext') return undefined;
+  const plain = document.languageId === 'plaintext';
+  if (document.scheme !== 'file' || !(plain || document.languageId === CWTOOLS_PARADOX_LANGUAGE)) {
+    return undefined;
+  }
   if (!isScriptFile(document.fileName)) return undefined;
-  if (!document.installed) return document.declined ? undefined : 'install';
+  if (!document.installed) return plain && !document.declined ? 'install' : undefined;
   if (document.cwtools && !document.folderDeclined && !inGameNamedFolder(document.fileName)) {
     return 'folder';
   }
   return undefined;
+}
+
+/**
+ * CWTools' setting, under `cwtools`, that holds EU4's game folder. CWTools builds its cache of the
+ * base game from it, and checks a mod against that cache; while it is empty it asks for the folder
+ * in a notification of its own, whose folder dialog takes only a folder named
+ * `Europa Universalis IV`.
+ */
+export const CWTOOLS_GAME_FOLDER = 'cache.eu4';
+
+/** What the offer to hand CWTools the game folder is decided on. */
+export interface CwtoolsGameFolderCase {
+  /** The language of the document that opened: CWTools uses the folder only in its `eu4` mode. */
+  readonly languageId: string;
+  /** CWTools is installed. */
+  readonly cwtools: boolean;
+  /** `cwtools.cache.eu4` as the user has it, set or not. */
+  readonly cwtoolsGameFolder: string | undefined;
+  /** The game folder Etch found, from `etch.gamePath` or Steam. */
+  readonly gameFolder: string | undefined;
+  /** The user chose Don't Show Again on this offer. */
+  readonly declined: boolean;
+}
+
+/** Whether Etch offers its game folder to CWTools: an `eu4` file opened and CWTools has none. */
+export function offersCwtoolsGameFolder(document: CwtoolsGameFolderCase): boolean {
+  return (
+    document.cwtools &&
+    !document.declined &&
+    document.languageId === CWTOOLS_EU4_LANGUAGE &&
+    document.gameFolder !== undefined &&
+    (document.cwtoolsGameFolder ?? '').trim() === ''
+  );
 }

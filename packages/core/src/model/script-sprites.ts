@@ -32,7 +32,7 @@ export const SCRIPT_SPRITE_KEYS: readonly ScriptSpriteKey[] = [
   { folder: 'common/church_aspects', key: 'sprite', depth: 1 },
   // 8 federation advancements.
   { folder: 'common/federation_advancements', key: 'gfx', depth: 1 },
-  // 26 mechanics' alert icons; 63 icons of their powers, in `powers = { power = { icon … } }`.
+  // 26 mechanics' alert icons; 63 icons of their interactions, in `interactions = { <name> = { icon … } }`.
   { folder: 'common/government_mechanics', key: 'alert_icon_gfx', depth: 1 },
   { folder: 'common/government_mechanics', key: 'icon', depth: 3 },
   // 28 holy orders.

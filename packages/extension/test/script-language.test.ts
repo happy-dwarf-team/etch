@@ -3,8 +3,10 @@ import {
   SCRIPT_ASSOCIATIONS,
   inGameNamedFolder,
   isScriptFile,
+  offersCwtoolsGameFolder,
   scriptLanguageNotice,
   withScriptAssociations,
+  type CwtoolsGameFolderCase,
   type ScriptLanguageCase,
 } from '../src/script-language.ts';
 
@@ -92,6 +94,21 @@ describe('the notice about CWTools and the mod folder', () => {
   it('stays silent once the file has CWTools’ language', () => {
     expect(scriptLanguageNotice({ ...withCwtools, languageId: 'eu4' })).toBeUndefined();
   });
+
+  it('shows for a file CWTools opened as paradox, after a .gui file started it', () => {
+    const paradox = { ...withCwtools, languageId: 'paradox' };
+    expect(scriptLanguageNotice(paradox)).toBe('folder');
+    expect(scriptLanguageNotice({ ...paradox, folderDeclined: true })).toBeUndefined();
+    const inMods =
+      'C:\\Users\\modder\\Documents\\Paradox Interactive\\Europa Universalis IV\\mod\\a\\events\\a.txt';
+    expect(scriptLanguageNotice({ ...paradox, fileName: inMods })).toBeUndefined();
+  });
+
+  it('never offers the extensions for a file that already has a language', () => {
+    expect(
+      scriptLanguageNotice({ ...plain, languageId: 'paradox', installed: false }),
+    ).toBeUndefined();
+  });
 });
 
 describe('a game-named folder', () => {
@@ -143,5 +160,33 @@ describe('the files.associations entries', () => {
 
   it('change nothing when the workspace has them all', () => {
     expect(withScriptAssociations({ ...SCRIPT_ASSOCIATIONS })).toBeUndefined();
+  });
+});
+
+describe('the offer to hand CWTools the game folder', () => {
+  const GAME = 'C:\\Program Files (x86)\\Steam\\steamapps\\common\\Europa Universalis IV';
+  const offer: CwtoolsGameFolderCase = {
+    languageId: 'eu4',
+    cwtools: true,
+    cwtoolsGameFolder: undefined,
+    gameFolder: GAME,
+    declined: false,
+  };
+
+  it('shows for an eu4 file when CWTools has no game folder and Etch has one', () => {
+    expect(offersCwtoolsGameFolder(offer)).toBe(true);
+    expect(offersCwtoolsGameFolder({ ...offer, cwtoolsGameFolder: '  ' })).toBe(true);
+  });
+
+  it('stays silent when CWTools has a folder, Etch has none, or the user declined', () => {
+    expect(offersCwtoolsGameFolder({ ...offer, cwtoolsGameFolder: 'D:\\EU4' })).toBe(false);
+    expect(offersCwtoolsGameFolder({ ...offer, gameFolder: undefined })).toBe(false);
+    expect(offersCwtoolsGameFolder({ ...offer, declined: true })).toBe(false);
+    expect(offersCwtoolsGameFolder({ ...offer, cwtools: false })).toBe(false);
+  });
+
+  it('stays silent outside CWTools eu4 mode, where it does not use the folder', () => {
+    expect(offersCwtoolsGameFolder({ ...offer, languageId: 'plaintext' })).toBe(false);
+    expect(offersCwtoolsGameFolder({ ...offer, languageId: 'paradox' })).toBe(false);
   });
 });
