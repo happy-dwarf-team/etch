@@ -2,7 +2,13 @@ import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { readCoverage, rulesFolder, spriteKindsOf, typesFonts } from '../src/cwtools-rules.ts';
+import {
+  guiKeysTyped,
+  readCoverage,
+  rulesFolder,
+  spriteKindsOf,
+  typesFonts,
+} from '../src/cwtools-rules.ts';
 
 /** `interface/sprites.cwt` of cwtools-eu4-config master at a85622d: one kind on the type. */
 const MASTER_SPRITES = [
@@ -48,6 +54,21 @@ describe("CWTools' rules", () => {
     expect(spriteKindsOf('types = {\n\t## type_key_filter = spriteType\n}').size).toBe(0);
   });
 
+  it('give the .gui keys they type as a sprite or a font, lowercase', () => {
+    // the form of cwtools-eu4-config#448: two sprite keys typed, fonts still scalars
+    const gui = [
+      '\ticonType = {',
+      '\t\tspriteType = <sprite>',
+      '\t\tquadTextureSprite = <sprite>',
+      '\t\tfont = scalar',
+      '\t\t## cardinality = 0..1',
+      '\t\tbuttonFont = <font>',
+      '\t}',
+    ].join('\r\n');
+    expect([...guiKeysTyped(gui, 'sprite')]).toEqual(['spritetype', 'quadtexturesprite']);
+    expect([...guiKeysTyped(gui, 'font')]).toEqual(['buttonfont']);
+  });
+
   it('type fonts only with a font type on bitmapfont', () => {
     expect(typesFonts(FONTS)).toBe(true);
     expect(typesFonts('## type_key_filter = pdxmesh\r\n\ttype[pdxmesh] = {')).toBe(false);
@@ -75,6 +96,8 @@ describe("CWTools' rules", () => {
         spriteKinds: new Set(),
         fonts: false,
         gui: false,
+        guiSpriteKeys: new Set(),
+        guiFontKeys: new Set(),
         scriptFolders: new Set(),
       });
       await mkdir(join(folder, 'interface'));
@@ -82,12 +105,14 @@ describe("CWTools' rules", () => {
       await writeFile(join(folder, 'interface', 'gfx_objects.cwt'), FONTS);
       await writeFile(
         join(folder, 'interface', 'gui_types.cwt'),
-        'types = {\n\ttype[gui_window] = {\n\t}\n}',
+        'types = {\n\ttype[gui_window] = {\n\t}\n}\n\ticonType = {\n\t\tspriteType = <sprite>\n\t}',
       );
       const coverage = await readCoverage(folder);
       expect([...coverage.spriteKinds].sort()).toEqual(['corneredTileSpriteType', 'spriteType']);
       expect(coverage.fonts).toBe(true);
       expect(coverage.gui).toBe(true);
+      expect([...coverage.guiSpriteKeys]).toEqual(['spritetype']);
+      expect(coverage.guiFontKeys.size).toBe(0);
       expect(coverage.scriptFolders.size).toBe(0);
     });
 

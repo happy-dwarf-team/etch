@@ -1,7 +1,7 @@
 // What CWTools' EU4 rules cover in interface files, read from the rules it loads (ADR 0008,
 // "Beside CWTools"). Etch steps back from a feature only where CWTools answers the same, so
-// this reads which sprite kinds the rules type as `sprite`, whether they type fonts, and
-// whether they have rules for `.gui` files. No vscode.
+// this reads which sprite kinds the rules type as `sprite`, whether they type fonts, whether
+// they have rules for `.gui` files, and which `.gui` keys they type as a sprite or font. No vscode.
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
@@ -13,6 +13,10 @@ export interface CwtoolsCoverage {
   readonly fonts: boolean;
   /** The rules check the widgets of `.gui` files. */
   readonly gui: boolean;
+  /** The `.gui` keys, lowercase, whose value the rules type as `<sprite>` (`spritetype`). */
+  readonly guiSpriteKeys: ReadonlySet<string>;
+  /** The `.gui` keys, lowercase, whose value the rules type as `<font>`. */
+  readonly guiFontKeys: ReadonlySet<string>;
   /** The script folders of `SPRITE_SCRIPT_KEYS` whose every sprite key the rules type as `<sprite>`. */
   readonly scriptFolders: ReadonlySet<string>;
 }
@@ -22,6 +26,8 @@ export const NO_COVERAGE: CwtoolsCoverage = {
   spriteKinds: new Set(),
   fonts: false,
   gui: false,
+  guiSpriteKeys: new Set(),
+  guiFontKeys: new Set(),
   scriptFolders: new Set(),
 };
 
@@ -86,6 +92,19 @@ export function typesFonts(text: string): boolean {
   return /##\s*type_key_filter\s*=\s*bitmapfont\s*$\s*type\[font\]/m.test(text);
 }
 
+/**
+ * The keys, lowercase, that a `.gui` rules file types with `<type>` (`spriteType = <sprite>`):
+ * where CWTools reports a name of that type that the mod and the game do not define.
+ */
+export function guiKeysTyped(gui: string, type: 'sprite' | 'font'): Set<string> {
+  const keys = new Set<string>();
+  for (const match of gui.matchAll(new RegExp(`^\\s*([A-Za-z_]\\w*)\\s*=\\s*<${type}>`, 'gm'))) {
+    const key = match[1];
+    if (key !== undefined) keys.add(key.toLowerCase());
+  }
+  return keys;
+}
+
 async function readOrEmpty(path: string): Promise<string> {
   try {
     return await readFile(path, 'utf8');
@@ -115,10 +134,13 @@ export async function readCoverage(folder: string): Promise<CwtoolsCoverage> {
     const text = await read(file);
     if (lines.every((line) => line.test(text))) scriptFolders.add(scriptFolder);
   }
+  const checksGui = /\btype\[\w+\]/.test(gui);
   return {
     spriteKinds: spriteKindsOf(sprites),
     fonts: typesFonts(objects),
-    gui: /\btype\[\w+\]/.test(gui),
+    gui: checksGui,
+    guiSpriteKeys: checksGui ? guiKeysTyped(gui, 'sprite') : new Set(),
+    guiFontKeys: checksGui ? guiKeysTyped(gui, 'font') : new Set(),
     scriptFolders,
   };
 }

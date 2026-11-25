@@ -63,6 +63,8 @@ export interface ModelDiagnostic extends SourceRange {
   readonly severity: ModelDiagnosticSeverity;
   readonly code: ModelDiagnosticCode;
   readonly message: string;
+  /** A `missing-sprite` or `missing-font` of a `.gui` file: the lowercase key that names it (`spritetype`). */
+  readonly key?: string;
 }
 
 export function diagnostic(

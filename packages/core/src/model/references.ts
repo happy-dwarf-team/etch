@@ -130,9 +130,9 @@ function checkWidgetReference(
   out: ModelDiagnostic[],
 ): void {
   if (SPRITE_KEYS.has(key) || (key === 'background' && isList(widget))) {
-    checkSprite(node, name, index, exists, out);
+    checkSprite(node, key, name, index, exists, out);
   } else if (FONT_KEYS.has(key)) {
-    checkFont(node, name, index, exists, out);
+    checkFont(node, key, name, index, exists, out);
   } else if (key === 'texturefile') {
     if (resolveTexture(name, exists) === undefined) {
       out.push(
@@ -194,6 +194,7 @@ function checkChild(
 
 function checkSprite(
   node: ScalarNode,
+  key: string,
   name: string,
   index: InterfaceIndex,
   exists: FileExists,
@@ -201,14 +202,15 @@ function checkSprite(
 ): void {
   const found = index.sprite(name);
   if (found === undefined) {
-    out.push(
-      diagnostic(
+    out.push({
+      ...diagnostic(
         'warning',
         'missing-sprite',
         node,
         `No .gfx file of the playset defines sprite ${name}.`,
       ),
-    );
+      key,
+    });
     return;
   }
   checkCase(node, name, found.item.name, found.path, out);
@@ -228,6 +230,7 @@ function checkSprite(
 
 function checkFont(
   node: ScalarNode,
+  key: string,
   name: string,
   index: InterfaceIndex,
   exists: FileExists,
@@ -235,14 +238,15 @@ function checkFont(
 ): void {
   const found = index.font(name);
   if (found === undefined) {
-    out.push(
-      diagnostic(
+    out.push({
+      ...diagnostic(
         'warning',
         'missing-font',
         node,
         `No .gfx file of the playset defines font ${name}.`,
       ),
-    );
+      key,
+    });
     return;
   }
   checkCase(node, name, found.item.name, found.path, out);

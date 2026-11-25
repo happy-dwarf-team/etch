@@ -80,6 +80,7 @@ import {
 } from '@etch/core/profile';
 import { readGameText, saveEncodingOf } from '../game-text.ts';
 import { guiStructureProblems } from '../gui-structure.ts';
+import { withoutCwtoolsReports } from '../cwtools.ts';
 import {
   pickKeySetting,
   type LiveGame,
@@ -1182,9 +1183,12 @@ export class Preview implements PreviewApi, vscode.Disposable {
     this.renderEmitter.fire(this.render);
 
     const model: ModelDiagnostic[] = [
-      ...(place?.wins === true
-        ? session.ui.diagnostics(place.path)
-        : guiDiagnostics(file, session.ui.index, session.ui.exists)),
+      ...withoutCwtoolsReports(
+        document,
+        place?.wins === true
+          ? session.ui.diagnostics(place.path)
+          : guiDiagnostics(file, session.ui.index, session.ui.exists),
+      ),
       ...guiStructureProblems(document, file),
       ...layout.diagnostics,
     ];
@@ -1195,7 +1199,7 @@ export class Preview implements PreviewApi, vscode.Disposable {
       this.publish(
         other.uri,
         [
-          ...session.ui.diagnostics(other.path),
+          ...withoutCwtoolsReports(other.source.document, session.ui.diagnostics(other.path)),
           ...(otherFile === undefined
             ? []
             : guiStructureProblems(other.source.document, otherFile)),

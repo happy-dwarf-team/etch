@@ -91,12 +91,17 @@ the rest:
   file (`unknown-key`, `ignored-key`, `wrong-value-kind`,
   `unknown-orientation`, `fraction-as-int`) when the rules check `.gui`
   widgets: both come from the same table of what EU4 1.37.5 reads as
-  cwtools-eu4-config#448's rules.
+  cwtools-eu4-config#448's rules. The preview's `missing-sprite` and
+  `missing-font` of a `.gui` file when the rules type the key that names it
+  (`spriteType = <sprite>`): Etch reports a name that no layer of the playset
+  defines, and the playset holds the workspace's mod and the game, so CWTools
+  reports the same name (CW240). A name only a dependency defines is the other
+  way round: Etch is silent and CWTools reports it, which Etch cannot change.
 - **Keeps:** hovers (Etch's have the picture and the whole text, and CWTools'
   cannot be hidden), sprite and font names in completion (Etch knows the
   playset and shows thumbnails), the preview's other problems such as
-  `missing-sprite` (Etch reads the mod's dependencies, CWTools only the
-  workspace and the game), `.gui` symbols, inlay hints, colours, references,
+  `missing-texture` and a missing sprite under a key the rules do not type (a
+  list's `background`), `.gui` symbols, inlay hints, colours, references,
   rename and links, which CWTools does not give.
 - **Setting:** `etch.cwtools`, `auto` by default; `ignore` keeps every Etch
   feature.

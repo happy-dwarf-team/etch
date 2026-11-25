@@ -391,6 +391,17 @@ bitmapfonts = {
     ]);
   });
 
+  it('names the key of a missing sprite or font, for CWTools to report it instead', () => {
+    const keys = guiDiagnostics(file, index, exists)
+      .filter((d) => d.code === 'missing-sprite' || d.code === 'missing-font')
+      .map((d) => `${d.code} ${String(d.key)}`);
+    expect(keys).toEqual([
+      'missing-sprite spritetype',
+      'missing-sprite spritetype',
+      'missing-font font',
+    ]);
+  });
+
   it('checks a .gfx file: texture and font files, shadowed definitions', () => {
     const found = gfxDiagnostics('interface/core.gfx', gfxFile, index, exists).map(
       (d) => `${d.severity} ${d.code} ${gfxText.slice(d.start, d.end)}`,

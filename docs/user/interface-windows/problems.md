@@ -37,6 +37,13 @@ The entries come in two kinds:
   define it.
 - A font whose `.fnt` file or texture is missing gets a warning that names the missing file.
 
+When CWTools is on and its rules check the name after `spriteType` or `quadTextureSprite`,
+CWTools warns about a missing sprite there, and Etch leaves its own warning out, so you see one
+(see
+[Etch and CWTools in the same file](../getting-started/install.md#etch-and-cwtools-in-the-same-file)).
+CWTools reads only your workspace and the game, so it also warns about a sprite that only a mod
+in your `dependencies` defines. Etch does not.
+
 ## Missing definitions and widgets
 
 - "No .gui file of the playset defines my_scrollbar at top level." A `scrollbartype`, or a
