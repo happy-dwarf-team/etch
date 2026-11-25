@@ -38,7 +38,7 @@ a token only when it fails:
   by hand. Azure DevOps retires the global tokens a `VSCE_PAT` would be on
   1 December 2026, so after that date only OIDC or the hand upload are left.
   The job runs in the `vscode-marketplace` environment, which needs a
-  maintainer's approval for each run and allows only `main` and `release/1.x`;
+  maintainer's approval for each run and allows only `main`;
   the policy names that environment.
 - **Open VSX.** `ovsx publish --trusted-publishing` (ovsx 1.1.0 and later) is
   tried first. A trusted publisher can only be registered for an extension
@@ -92,7 +92,7 @@ without it.
    trusted publisher for `happy-dwarf-team.etch` on
    <https://open-vsx.org/user-settings/trusted-publishers>: GitHub Actions,
    owner `happy-dwarf-team`, repository `etch`, workflow `release.yml`, no
-   environment. If the form limits it to a branch, allow `release/1.x` too.
+   environment.
 
 ## Each release
 
@@ -176,18 +176,9 @@ After a release that changes what any media clip shows, do a media refresh
 2. When the `marketplace` summary says the same, delete `VSCE_PAT` if one was
    ever set, and revoke its token in Azure DevOps.
 
-## 1.0.x releases until 2.0.0
+## The 1.x line
 
-`main` builds 2.0.0 and makes no store release before it (ADR 0005): its
-release pull request stays open. 1.x fixes (bugs only) are pull requests to
-`release/1.x`, cut at `v1.0.1`; its `release.yml` runs release-please against
-that branch, so merging its own `chore(release/1.x): release 1.0.x` pull
-request publishes 1.0.x as above. After 2.0.0 the branch gets nothing more.
-
-`release/1.x` is protected by the `main` ruleset, which targets it beside the
-default branch: changes come by pull request only, squash-merged, with the
-`windows` and `conventional-title` checks green, linear history, and no
-deletion or force push. The `vscode-marketplace` environment allows deployments
-from `main` and `release/1.x`, so the `marketplace` job publishes a 1.0.x
-release after the same approval. Before the first one, check that the Open VSX
-trusted publisher (when registered) is not limited to `main`.
+1.0.1 is the last 1.x release. ADR 0005 let 1.x bug fixes come from a
+`release/1.x` branch cut at `v1.0.1` until 2.0.0; none came, and on
+25 November 2026 the branch was deleted and taken out of the `main` ruleset
+and the `vscode-marketplace` environment. The 1.x code is at the `v1.0.1` tag.

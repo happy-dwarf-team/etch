@@ -1,8 +1,8 @@
 # The game host (Etch 1.x)
 
 This is the record of Etch 1.x's game host. 2.0.0 removes it: the live game
-replaces it (ADR 0005), and fixes for 1.x come from the `release/1.x` branch.
-The code this page names is on that branch; on `main` the install, the process,
+replaces it (ADR 0005), and 1.0.1 is the last 1.x release.
+The code this page names is at the `v1.0.1` tag; on `main` the install, the process,
 the watchdog and the `error.log` reading moved to
 `packages/extension/src/live-game/`, the install renamed the **private
 install**. [Section 6 of the v2 specification](spec/v2.md#6-live-game) names
