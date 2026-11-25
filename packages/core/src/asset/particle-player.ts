@@ -44,6 +44,7 @@
 //   while the parent lives, from the parent's last place to its new one, with no turn (a
 //   world-space child) or at the origin (`local_space`), and a dead parent keeps its slot,
 //   undrawn, until its children are gone.
+// - What is drawn in what order (step 11): see `layers`.
 //
 // What differs: the seed of the random numbers (the game takes it from the clock, so no two of its
 // runs match either), and the order of the draws of an effect with child systems.
@@ -337,28 +338,21 @@ export class ParticleEffect {
   }
 
   /**
-   * What to draw, in order: each subsystem's quads, then its children's. A child's quads are
-   * those of all its parents together, except a trail's, one band per parent.
+   * What to draw, in the game's order (step 11): each subsystem, then for each of its particles
+   * (the live ones, then the dead ones that wait for their children) each child system's own
+   * particles, and theirs in turn. A child's particles are one layer per parent. The game draws
+   * an effect's layers that are not trails in this order, then its trails in this order.
    */
   layers(): { readonly subsystem: ParticleSubsystem; readonly quads: ParticleQuad[] }[] {
     const out: { subsystem: ParticleSubsystem; quads: ParticleQuad[] }[] = [];
-    const visit = (states: readonly SubsystemState[][]): void => {
-      const first = states[0];
-      if (first === undefined) return;
-      for (const [c, def] of first.map((state) => state.def).entries()) {
-        const blocks = states.flatMap((slot) => (slot[c] === undefined ? [] : [slot[c]]));
-        if (def.trail) {
-          for (const block of blocks) out.push({ subsystem: def, quads: this.quadsOf(block) });
-        } else {
-          out.push({ subsystem: def, quads: blocks.flatMap((block) => this.quadsOf(block)) });
-        }
-        visit(blocks.flatMap((block) => block.slots.map((slot) => [...slot])));
+    const visit = (state: SubsystemState): void => {
+      out.push({ subsystem: state.def, quads: this.quadsOf(state) });
+      if (state.slots.length === 0) return;
+      for (const p of [...state.particles, ...state.waiting]) {
+        for (const child of state.slots[p.slot] ?? []) visit(child);
       }
     };
-    for (const state of this.states) {
-      out.push({ subsystem: state.def, quads: this.quadsOf(state) });
-      visit(state.slots.map((slot) => [...slot]));
-    }
+    for (const state of this.states) visit(state);
     return out;
   }
 

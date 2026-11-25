@@ -1289,9 +1289,29 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
       children standing behind it; with one parent slot, parents that live 1 s
       and children that live 4 s, a parent showed in 4 of 12 shots 1.6 s apart,
       once every 4.9 s, so a dead parent holds its slot until its children are
-      gone (without that a new one would come within 0.2 s). Not checked: the
-      order the game draws a parent's and a child's particles in (the preview
-      draws the parent's, then each child's).
+      gone (without that a new one would come within 0.2 s).
+      The order the game draws a parent's and a child's particles in was
+      settled in step 11.
+  11. Settle the order an effect's parts are drawn in. Done 25 November
+      2026, from the lab's reading of the game's code: the game lists an
+      effect's draws subsystem by subsystem in the file's order, each followed
+      by, for each of its particles in turn, each child system's own
+      particles and theirs in turn, one draw per parent; it draws the ones
+      that are not trails in that order, and then the trails in that order.
+      The preview did the same for sprites but drew a trail in its
+      subsystem's place and a child's particles of all parents at once; now
+      it follows the game. In the game (Steam 1.37.5, the lab's run
+      `e631-s11`) a trail was not seen at all in an effect that drew sprites:
+      a billboard band that showed whole on its own was gone with a subsystem
+      of sprites listed before or after it, and drawn with a second band or
+      with a second subsystem that never emits. So "trails last" cannot be
+      seen in the game, and the preview draws an effect's trails only while
+      none of its sprite layers holds a particle (`drawOrder`). Why the game
+      loses the band is not known; the lab's guess is that it draws trails with
+      no shader state of their own (step 8), so with whatever the sprites
+      left. Not checked: the order of the parents when their subsystem has a
+      `sort` (the preview takes the order they came out in), and a trail with
+      a mod's own `Trail` shader effect next to sprites.
 
 Small unknowns, none worth an issue yet.
 

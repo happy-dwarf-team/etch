@@ -3,7 +3,7 @@
 // front faces the camera: a straight band facing the camera is drawn whole, a straight flat one
 // seen from above is not drawn at all.
 import { describe, expect, it } from 'vitest';
-import { trailStrip } from '../webview/particle-trail.ts';
+import { drawOrder, trailStrip } from '../webview/particle-trail.ts';
 
 type Vector = [number, number, number];
 
@@ -53,5 +53,31 @@ describe('a trail’s band', () => {
       expect(n[1]).toBeLessThan(0);
       expect(Math.abs(n[0]) + Math.abs(n[2])).toBe(0);
     }
+  });
+});
+
+describe('drawOrder (step 11)', () => {
+  const layer = (name: string, trail: boolean, particles: number) => ({
+    name,
+    subsystem: { trail },
+    quads: Array.from({ length: particles }),
+  });
+  const names = (layers: { name: string }[]): string[] => layers.map((l) => l.name);
+
+  it('draws the sprite layers in order and then the trails while no sprite is drawn', () => {
+    expect(names(drawOrder([layer('band', true, 5), layer('quiet', false, 0)]))).toEqual([
+      'quiet',
+      'band',
+    ]);
+    expect(names(drawOrder([layer('a', true, 5), layer('b', true, 5)]))).toEqual(['a', 'b']);
+  });
+
+  it('draws no trail of an effect that draws a sprite, whichever comes first in the file', () => {
+    expect(names(drawOrder([layer('band', true, 5), layer('tiles', false, 3)]))).toEqual(['tiles']);
+    expect(
+      names(
+        drawOrder([layer('tiles', false, 3), layer('band', true, 5), layer('child', false, 0)]),
+      ),
+    ).toEqual(['tiles', 'child']);
   });
 });

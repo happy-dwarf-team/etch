@@ -13,6 +13,22 @@
 /** The band's colour in the game, over the map (sRGB 0–255). */
 export const TRAIL_COLOUR: readonly [number, number, number] = [118, 112, 124];
 
+/**
+ * The layers of one effect in the order the preview draws them (step 11). The game draws an
+ * effect's sprite layers in their order and then its trail layers, but a trail is not seen
+ * where the same effect drew a sprite in the frame (seen in the game, Steam 1.37.5: a band with
+ * a second subsystem of sprites, listed before or after it, was gone, while the band with a
+ * second band or with a second subsystem that never emits was drawn). So the trails come only
+ * while no sprite layer holds a particle.
+ */
+export function drawOrder<
+  L extends { readonly subsystem: { readonly trail: boolean }; readonly quads: readonly unknown[] },
+>(layers: readonly L[]): L[] {
+  const sprites = layers.filter((layer) => !layer.subsystem.trail);
+  if (sprites.some((layer) => layer.quads.length > 0)) return sprites;
+  return [...sprites, ...layers.filter((layer) => layer.subsystem.trail)];
+}
+
 type Vector = readonly [number, number, number];
 
 /**
