@@ -5,7 +5,11 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { GameFiles } from '../src/playset/game-files.ts';
-import { loadBuildingRules, type BuildingRules } from '../src/playset/building-rules.ts';
+import {
+  loadBuildingRules,
+  professionalismLevel,
+  type BuildingRules,
+} from '../src/playset/building-rules.ts';
 import { loadMapAreas } from '../src/playset/map-areas.ts';
 import { loadProvinceTerrain } from '../src/playset/province-terrain.ts';
 import { buildingSlots, provinceSlots } from '../src/profile/building-slots.ts';
@@ -46,6 +50,11 @@ hub = { level = 3 type = inland state_modifiers = { allowed_num_of_buildings = 1
   'common/ideas/00_ideas.txt': `
 x_ideas = { start = { } bonus = { global_allowed_num_of_buildings = 1 } trigger = { } free = yes
   a = { } b = { global_allowed_num_of_buildings = 1 } }
+`,
+  'common/professionalism/00_modifiers.txt': `
+nothingness_modifier = { hidden = yes army_professionalism = 0.0 unit_sprite_start = "GFX_ap1_" trigger = { always = yes } }
+supply_depot_modifier = { army_professionalism = 0.2 unit_sprite_start = "GFX_ap2_" trigger = { always = yes } }
+general_cost_modifier = { army_professionalism = 1.0 unit_sprite_start = "GFX_ap6_" trigger = { always = yes } }
 `,
   'map/default.map': `max_provinces = 4\nsea_starts = { 3 }\n`,
   'map/area.txt': `a_area = { 1 2 }\n`,
@@ -105,6 +114,7 @@ provinces={
 countries={
 	SWE={
 		treasury=1000.000
+		army_professionalism=0.25000
 		graphical_culture="easterngfx"
 		technology={ adm_tech=3 dip_tech=3 mil_tech=3 }
 		modifier={
@@ -225,6 +235,37 @@ describe('the building rules', () => {
     expect(terrain?.category.get(2)).toBe('forest');
     // A sea counts its water pixels only.
     expect(terrain?.category.get(3)).toBe('ocean');
+  });
+});
+
+describe('what the game makes of the save and the playset for sprites', () => {
+  it("reaches the professionalism level whose army_professionalism the country's is at or above", () => {
+    const levels = rules.professionalism;
+    expect(levels.map((l) => [l.name, l.threshold, l.unitSpriteStart])).toEqual([
+      ['nothingness_modifier', 0, 'GFX_ap1_'],
+      ['supply_depot_modifier', 200, 'GFX_ap2_'],
+      ['general_cost_modifier', 1000, 'GFX_ap6_'],
+    ]);
+    expect(professionalismLevel(levels, 0)?.name).toBe('nothingness_modifier');
+    expect(professionalismLevel(levels, 999)?.name).toBe('supply_depot_modifier');
+    expect(professionalismLevel(levels, 1000)?.name).toBe('general_cost_modifier');
+  });
+
+  it('reads unit_sprite_start and terrain as save values', () => {
+    const value = (choice: SaveChoice, text: string) => {
+      const path = readSavePath(text);
+      if ('problem' in path) throw new Error(path.problem);
+      return choice.value(path);
+    };
+    const choice = new SaveChoice(save, 'SWE', 2, { buildings: rules, map });
+    expect(value(choice, 'countries.{country}.unit_sprite_start')).toBe('GFX_ap2_');
+    // No army_professionalism in the save is none: the first level.
+    expect(value(choice, 'countries.{owner}.unit_sprite_start')).toBe('GFX_ap1_');
+    expect(value(choice, 'provinces.{province}.terrain')).toBe('forest');
+    // Without the playset's rules neither is known.
+    const bare = new SaveChoice(save, 'SWE', 2);
+    expect(value(bare, 'countries.{country}.unit_sprite_start')).toBeUndefined();
+    expect(value(bare, 'provinces.{province}.terrain')).toBeUndefined();
   });
 });
 

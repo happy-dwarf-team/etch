@@ -97,6 +97,12 @@ A selector has a `kind`, a `label`, its `values` (keyed by id, each with a label
 The facts a `data` selector can read are the ones Etch implements; a new fact needs an Etch
 release.
 
+A selector may also name `liveText`, the path of a text box whose text in a live snapshot is one
+of the selector's value labels. Compare with Live Game then takes that value, where no widget's
+visibility tells it: the stability view's `stability_value` writes the stability, `+3`, and the
+selector moves the marker by it (`"liveText": "countrystabilityview/stability_value"`, its values
+labelled `-3` to `+3`).
+
 | Fact | Values | Meaning |
 | --- | --- | --- |
 | `province.ownedByPlayer` | `yes`, `no` | The province's owner is the player's country. |
@@ -110,6 +116,7 @@ release.
 | `province.parliamentSeat` | `seat`, `noSeat`, `none` | It has a seat in its owner's parliament (`seat_in_parliament`), has none, or the owner has no `parliament`. |
 | `province.centerOfTrade` | `yes`, `no` | It is a centre of trade (`center_of_trade` above 0). |
 | `game.cradleOfCivilization` | `yes`, `no` | The DLC Cradle of Civilization is active (the save's `dlc_enabled`); the game gates development exploitation on it. |
+| `country.stability` | `minus3`, `minus2`, `minus1`, `zero`, `plus1`, `plus2`, `plus3` | The chosen country's stability, the whole part of the save's `stability`; the stability view moves its marker by it. |
 | `country.patriarchAuthority` | a number from 0 to 1 | The chosen country's patriarch authority. A number, which a rule's `slider` reads; no selector reads it. |
 | `country.religionIcon` | `none`, `secondary`, `school` | The religion icon the diplomacy view shows by the chosen country's name: its secondary religion, else (with Cradle of Civilization) its religious school, else none; without one the game moves the name and fog labels 20 px left. The lobby's country panel shows only the secondary religion: without one it moves the main religion icon 18 px down. |
 | `country.institution` | `feudalism`, `renaissance`, `new_world_i`, `printing_press`, `global_trade`, `manufactories`, `enlightenment`, `industrialization`, `none` | The institution the technology view's institutions window opens on: the first one the chosen country has not embraced (the save's `institutions`, in the base game's order, which Anbennar keeps), `none` when it has embraced all. |
@@ -148,6 +155,7 @@ values); without `when` it always applies. Its effects:
 | `position` | paths the game's code moves, each to a `positionType` of the window's file; `{ "positionType": …, "axis": "y" }` takes only its `y` (or `x`) |
 | `frame` | paths whose sprite frame (from 1) the game's code sets |
 | `sprite` | paths whose sprite the game's code sets in place of the `.gui`'s, drawn as named without the screen size's `_large` and `_huge` variants: `{ "countryreligionview/religionpanel_bg_top": "GFX_country_religion_view_bg" }` |
+| `saveSprite` | paths whose sprite the game's code names from the save: `prefix`, the value at the `save` path and `suffix`, drawn where the playset defines that sprite and else as the `.gui` has it: `{ "provinceview/province_terrain": { "save": "provinces.{province}.terrain", "prefix": "GFX_combat_terrain_" } }`. Without a save the `.gui`'s sprite stays; a live snapshot's sprite comes first |
 | `text` | paths of texts the game's code sets, each to a localisation key of the playset: `{ "ages_view/desc": "age_of_discovery_desc" }`. `{ "key": …, "suffix": "\n" }` adds the text the game's code writes after the key's (the leader dialog's description ends with a line break); `{ "literal": … }` is a text the game's code writes itself, which may be empty (`agenda_effects` without an agenda). `"vars"` gives the key's `$NAME$` variables their values, each a text of its own (`{ "key": "PEACEOFFER_TRUCE", "vars": { "DATE": { "literal": "01 April 1724" } } }`); a variable's colour format (`$WHO|Y$`) colours its value, and a number's format is left out. An array of texts is written one after another (the peace offer's description, a line for each term). The sample data's **files** layer, over the window's `content`, under a live snapshot's texts and those typed by hand |
 | `chartSize` | paths of charts whose size the game's code sets in place of their sprite's `size`, `{ "x": 32, "y": 32 }`. A pie chart keeps its centre, the widget's lower left corner, so an `offset` moves the widget by the difference. |
 | `size` | paths the game's code sizes to a `positionType` of the window's file, whose `position` is the width and height, over the size of the widget's sprite: `{ "minimap_panel/minimap_pic": "minimap_size" }`. The path may name a definition a rule `adopt`s, after the adopting widget's path, as here; its `positionType` is then of the definition's own file (`menubar.gui`, beside `minimap_pic`). The preview stretches the sprite over that size. |
@@ -231,8 +239,10 @@ A province's keys: `name`, `owner`, `controller`, `previous_controller`, `trade`
 `is_city`, `garrison`, `base_tax`, `original_tax`, `base_production`, `base_manpower`,
 `likely_rebels`, `trade_goods`, `local_autonomy`, `devastation`, `center_of_trade`, `trade_power`,
 `hre`, `unrest`, `nationalism`, `colonysize`, `native_size`, `native_ferocity`,
-`native_hostileness`, `original_coloniser`, `missionary_progress`, `active_trade_company`, `winter`.
-A country's keys: `government_rank`, `government_name`, `capital`, `original_capital`, `trade_port`,
+`native_hostileness`, `original_coloniser`, `missionary_progress`, `active_trade_company`, `winter`,
+and `terrain`, the province's terrain category as the game picks it when it loads the map (its
+category's `terrain_override`, else the trees and terrain of the map's bitmaps; the same rule as
+the building slots' terrain). A country's keys: `government_rank`, `government_name`, `capital`, `original_capital`, `trade_port`,
 `treasury`, `estimated_monthly_income`, `inflation`, `corruption`, `prestige`, `stability`,
 `legitimacy`, `devotion`, `republican_tradition`, `meritocracy`, `horde_unity`, `army_tradition`,
 `navy_tradition`, `army_professionalism`, `mercantilism`, `splendor`, `absolutism`,
@@ -244,7 +254,11 @@ A country's keys: `government_rank`, `government_name`, `capital`, `original_cap
 makes of the save's values, added up as it does: `score` (the country's score, `0x2C6430`: the
 country's `age_score` of every age and its `card_score`, or its `vc_age_score` when the game's age
 scoring is on) and `army_strength` (the `strength` of every regiment of its armies, 1.000 where the
-save leaves it out, in thousands of men as the save writes manpower). Collections
+save leaves it out, in thousands of men as the save writes manpower), and `unit_sprite_start`,
+the `unit_sprite_start` of the highest level of `common/professionalism` its
+`army_professionalism` has reached (`GFX_ap6_` at 1.0 in the base game; a level's `trigger` is not
+evaluated). `terrain` and `unit_sprite_start` need the playset's files, which Etch reads with the
+building slots' rules. Collections
 for repeaters: a province's `buildings`, `building_builders`, `cores`, `claims`, `great_projects`,
 `institutions`, `discovered_by`, `modifier`; a country's `active_idea_groups`, `owned_provinces`,
 `core_provinces`, `allies`, `subjects`, `active_policy`. One province collection Etch lays out

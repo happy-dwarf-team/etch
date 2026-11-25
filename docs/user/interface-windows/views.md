@@ -124,6 +124,9 @@ code does to the window in that case:
   their `hide_position`.
 - `frame` and `sprite`: the frame or the sprite the game's code puts on a widget in place of the
   `.gui` file's.
+- `saveSprite` (added in 2.15.0): a sprite the game's code names from the save, such as the
+  province view's terrain picture, `GFX_combat_terrain_` and the province's terrain. Without a
+  save the `.gui` file's sprite stays.
 - `text` (added in 2.15.0): the text the game's code writes in a text box in that case, by its
   localisation key, such as the description of the age the ages view shows. The preview shows that
   text from the game's files until a live game or your own text replaces it. A `suffix` adds what

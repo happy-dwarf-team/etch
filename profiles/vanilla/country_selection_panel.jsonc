@@ -142,6 +142,13 @@
         "country_selection_panel/lobby/top/nation_designer_hint_bg",
       ],
     },
+    "nation-designer-hint": {
+      "note": "In the nation designer the game's code writes FE_SELECT_CUSTOM_NATION_CAPITAL in nation_designer_hint, whose .gui text NATION_DESIGNER_HINT has no localisation (the coverage survey's nation designer, Proper 2K UI Enhanced and the P2KE playset: two lines in 384 px).",
+      "when": { "page": "nation-designer" },
+      "text": {
+        "country_selection_panel/lobby/top/nation_designer_hint": "FE_SELECT_CUSTOM_NATION_CAPITAL",
+      },
+    },
     "nation-designer": {
       "note": "Hidden in the nation designer in the coverage survey.",
       "when": { "page": "nation-designer" },

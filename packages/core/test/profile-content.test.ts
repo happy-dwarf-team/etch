@@ -143,7 +143,7 @@ provinces={
 }
 countries={
 	SWE={ capital=1 trade_port=4 government_name="monarchy" parliament={ } }
-	DAN={ capital=12 trade_port=2 government_name="kingdom" secondary_religion=sunni patriarch_authority=0.462 institutions={ 1 1 1 0 0 0 0 0 } }
+	DAN={ capital=12 trade_port=2 government_name="kingdom" stability=-1.000 secondary_religion=sunni patriarch_authority=0.462 institutions={ 1 1 1 0 0 0 0 0 } }
 }
 `;
 
@@ -762,6 +762,43 @@ describe('sampleData', () => {
     expect(sampleData(profile, WINDOW, undefined, input()).state(builder, 0)).toBeUndefined();
   });
 
+  it("names a rule's sprite from the save, where the playset defines it", async () => {
+    const { profile, diagnostics } = profileOf(
+      PROFILE.replace(
+        '"groups": {',
+        '"rules": { "flag-sprite": { "when": { "owner": "yes" }, "saveSprite": { "provinceview/flag": ' +
+          '{ "save": "countries.{country}.government_name", "prefix": "GFX_gov_", "suffix": "_flag" } } } }, "groups": {',
+      ),
+    );
+    expect(diagnostics).toEqual([]);
+    const flag = named('flag');
+    const choice = new SaveChoice(await save(), 'SWE', 1);
+    const sprite = (exists: (name: string) => boolean, facts = saveFacts(choice)) => {
+      const view = evaluateView(profile, WINDOW, { width: 1920, height: 1080 }, { facts });
+      return sampleData(
+        profile,
+        WINDOW,
+        view,
+        input({ save: choice, spriteExists: exists }),
+      ).sprite?.(flag);
+    };
+    expect(sprite(() => true)).toBe('GFX_gov_monarchy_flag');
+    // A sprite the playset lacks leaves the .gui's.
+    expect(sprite(() => false)).toBeUndefined();
+    // The rule's conditions hold: a foreign province's view has no such sprite.
+    expect(sprite(() => true, saveFacts(new SaveChoice(await save(), 'SWE', 2)))).toBeUndefined();
+  });
+
+  it("refuses a rule's sprite from a save path Etch does not read", () => {
+    const { diagnostics } = profileOf(
+      PROFILE.replace(
+        '"groups": {',
+        '"rules": { "bad": { "saveSprite": { "provinceview/flag": { "save": "countries.{country}.nope" } } } }, "groups": {',
+      ),
+    );
+    expect(diagnostics.map((d) => d.code)).toContain('profile-unknown-source');
+  });
+
   it("sets the number of a list's entries, the save's first and generated ones after", async () => {
     const { profile } = profileOf(PROFILE);
     const list = named('building_list');
@@ -854,6 +891,7 @@ describe('sampleData', () => {
     expect(saveFacts(new SaveChoice(s, 'DAN', undefined))).toEqual({
       'country.religionIcon': 'secondary',
       'country.institution': 'printing_press',
+      'country.stability': 'minus1',
       'country.patriarchAuthority': '0.462',
     });
   });

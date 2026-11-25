@@ -18,7 +18,14 @@ import {
   LARGE_SUFFIX,
   type EngineRow,
 } from './engine.ts';
-import type { Group, RuleText, Selector, SelectorValue, WindowProfile } from './format.ts';
+import type {
+  Group,
+  RuleText,
+  SaveSprite,
+  Selector,
+  SelectorValue,
+  WindowProfile,
+} from './format.ts';
 import { adoptersAt, widgetsAt, windowPaths } from './paths.ts';
 
 /**
@@ -71,6 +78,8 @@ export interface WidgetState {
   readonly frame?: number;
   /** The sprite the game's code sets in place of the `.gui` one. */
   readonly sprite?: string;
+  /** The sprite the game's code names from the save, which the sample data reads. */
+  readonly saveSprite?: SaveSprite;
   /** The text the game's code sets (a rule's `text`), in its parts. */
   readonly text?: readonly RuleText[];
   /** The size the game's code gives a chart in place of its sprite's. */
@@ -190,6 +199,10 @@ export function evaluateView(
     }
     for (const ref of rule.sprite ?? []) {
       for (const w of widgetsAt(window, ref.path)) update(w, { sprite: ref.sprite });
+    }
+    for (const ref of rule.saveSprite ?? []) {
+      const from = { save: ref.save, prefix: ref.prefix, suffix: ref.suffix };
+      for (const w of widgetsAt(window, ref.path)) update(w, { saveSprite: from });
     }
     for (const ref of rule.text ?? []) {
       const text: readonly RuleText[] = ref.parts;

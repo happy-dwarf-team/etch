@@ -692,6 +692,7 @@ function readSelector(
     'default',
     'fact',
     'note',
+    'liveText',
   ]);
   const kindNode = props.get('kind');
   if (kindNode === undefined) throw new Faulty(`Selector "${id}" has no "kind".`, node);
@@ -719,6 +720,17 @@ function readSelector(
   const defaultValue = optionalText(props.get('default'), 'default');
   const label = optionalText(props.get('label'), 'label') ?? id;
   const note = optionalText(props.get('note'), 'note');
+  const liveTextNode = props.get('liveText');
+  const liveText =
+    liveTextNode === undefined
+      ? undefined
+      : { path: text$(liveTextNode, '"liveText"'), range: liveTextNode };
+  if (kind === 'resolution' && liveText !== undefined) {
+    throw new Faulty(
+      'A resolution selector takes its value from the screen.',
+      liveTextNode ?? node,
+    );
+  }
   return {
     id,
     kind: kind as SelectorKind,
@@ -727,6 +739,7 @@ function readSelector(
     default: defaultValue ?? values[0]?.id ?? '',
     ...(fact === undefined ? {} : { fact }),
     ...(note === undefined ? {} : { note }),
+    ...(liveText === undefined ? {} : { liveText }),
     ...written,
   };
 }
@@ -808,6 +821,7 @@ function readRule(
     'position',
     'frame',
     'sprite',
+    'saveSprite',
     'text',
     'chartSize',
     'size',
@@ -860,6 +874,18 @@ function readRule(
       return { frame: value.value };
     }),
     sprite: keyed('sprite', (value) => ({ sprite: text$(value, 'a sprite') })),
+    saveSprite: keyed('saveSprite', (value) => {
+      const parts = object(value, 'a sprite from the save', ['save', 'prefix', 'suffix']);
+      const saveNode = parts.get('save');
+      if (saveNode === undefined) {
+        throw new Faulty('A sprite from the save names its save path in "save".', value);
+      }
+      return {
+        save: { path: text$(saveNode, 'a save path'), range: saveNode },
+        prefix: optionalText(parts.get('prefix'), 'prefix') ?? '',
+        suffix: optionalText(parts.get('suffix'), 'suffix') ?? '',
+      };
+    }),
     text: keyed('text', (value) => {
       if (value.kind !== 'array') return { parts: [readRuleText(value)] };
       if (value.items.length === 0) throw new Faulty('A text of parts has one at least.', value);
@@ -898,6 +924,7 @@ function readRule(
     rule.position.length +
     rule.frame.length +
     (rule.sprite?.length ?? 0) +
+    (rule.saveSprite?.length ?? 0) +
     (rule.text?.length ?? 0) +
     (rule.chartSize?.length ?? 0) +
     (rule.size?.length ?? 0) +
@@ -907,7 +934,7 @@ function readRule(
     rule.adopt.length;
   if (effects === 0) {
     throw new Faulty(
-      `Rule "${id}" has no effect: show, hide, notCreated, position, frame, sprite, text, chartSize, size, slider, offset, hidePosition or adopt.`,
+      `Rule "${id}" has no effect: show, hide, notCreated, position, frame, sprite, saveSprite, text, chartSize, size, slider, offset, hidePosition or adopt.`,
       node,
     );
   }

@@ -213,6 +213,27 @@ describe('Compare with Live Game', () => {
     expect(layers.unknownSelectors).toEqual(['owner']);
   });
 
+  it('takes the sprite the game drew, never its rect or visibility, for a window with a profile', () => {
+    const { window } = laidOut();
+    const icon = { ...widget('panel/a', 'icon', [15, 25, 12, 12], false), sprite: 'GFX_other' };
+    const live = snapshot([widget('panel', 'window', [10, 20, 100, 50]), icon]);
+    const layers = offlinePreviewLayers({
+      window,
+      screen: SCREEN,
+      snapshot: live,
+      profile: panelProfile(),
+      localise: () => undefined,
+      template: () => undefined,
+    });
+    const [a] = window.children;
+    if (a === undefined) throw new Error('no icon');
+    const state = layers.content.state?.(a, undefined);
+    expect(state?.sprite).toBe('GFX_other');
+    expect(state?.rect).toBeUndefined();
+    // The game hid it: whether it shows is what the comparison compares.
+    expect(state?.visible).toBe(true);
+  });
+
   it('lists a widget the preview draws and the game lacks, and one only the game shows', () => {
     const profile = panelProfile();
     // The preview's view: tab = b and owner = yes, so a and c are hidden.

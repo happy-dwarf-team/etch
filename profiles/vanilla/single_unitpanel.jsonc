@@ -23,6 +23,13 @@
   "rules": {
     "an-army": {
       "when": { "unit": "army" },
+      "note": "An army's panel draws regiment_bg as <unit_sprite_start>regiment_bg, of the highest level of common/professionalism its owner's army_professionalism has reached (eu4.exe 0x1469250, CProfessionalismDatabase::FindHighestEnabledModifier): GFX_ap6_regiment_bg for Russia 1719 at 1.0, GFX_ap1_regiment_bg for Verne 1444 at 0 (the coverage survey). A fleet keeps the .gui's GFX_regiment_bg.",
+      "saveSprite": {
+        "single_unitpanel/regiment_bg": {
+          "save": "countries.{country}.unit_sprite_start",
+          "suffix": "regiment_bg",
+        },
+      },
       "hide": [
         "single_unitpanel/detach_obsolete_ships",
         "single_unitpanel/enable_autotransport_button",

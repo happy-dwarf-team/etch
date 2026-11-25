@@ -6,7 +6,9 @@
   "checkedWith": "1.37.5",
   "selectors": {
     "stability": {
-      "kind": "ui",
+      "kind": "data",
+      "fact": "country.stability",
+      "liveText": "countrystabilityview/stability_value",
       "label": "Stability",
       "values": {
         "minus3": "-3",
@@ -18,7 +20,7 @@
         "plus3": "+3",
       },
       "default": "zero",
-      "note": "The view's daily update (eu4.exe 0xF87E80) moves stability_progress_threshold and stability_value from their .gui place by the x of the positionType stability_progress_threshold_move (16 px here) times the stability (the coverage survey: 0 in Anbennar's Verne at x 84, +3 in Russia 1719 at x 132).",
+      "note": "The view's daily update (eu4.exe 0xF87E80) moves stability_progress_threshold and stability_value from their .gui place by the x of the positionType stability_progress_threshold_move (16 px here) times the stability (the coverage survey: 0 in Anbennar's Verne at x 84, +3 in Russia 1719 at x 132). The save's stability gives it; a live snapshot's stability_value, which the update writes (+3), gives it to Compare with Live Game.",
     },
     "handleRebels": {
       "kind": "ui",

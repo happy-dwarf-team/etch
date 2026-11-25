@@ -362,6 +362,33 @@ describe('liveSelectors', () => {
     expect(live.values).toMatchObject({ owner: 'no', hre: 'yes' });
   });
 
+  it('takes a selector from the text a live snapshot shows in its liveText box', () => {
+    // As the stability view's `stability_value`: the rules only move widgets, so no visibility
+    // tells the stability, and the text the game wrote does.
+    const moved = profile(`
+      "selectors": {
+        "level": { "kind": "ui", "liveText": "provinceview/province_window/culture",
+          "values": { "minus1": "-1", "zero": "0", "plus1": "+1" }, "default": "zero" }
+      },
+      "rules": {
+        "up": { "when": { "level": "plus1" }, "offset": { "provinceview/extra": { "x": 16 } } }
+      }`);
+    const shown = (text: string) =>
+      liveSelectors(
+        moved,
+        WINDOW,
+        snapshot([
+          w('provinceview', true),
+          w('provinceview/province_window', true),
+          w('provinceview/province_window/culture', true, { type: 'text', text }),
+        ]),
+      ).values;
+    expect(shown('+1')).toMatchObject({ level: 'plus1' });
+    expect(shown('§R-1§!')).toMatchObject({ level: 'minus1' });
+    // A text that is no value's label says nothing: the default stays.
+    expect(shown('n/a')).toMatchObject({ level: 'zero' });
+  });
+
   it('takes no evidence from a text box the game keeps shown with nothing in it', () => {
     const empty = FOREIGN.map((x) =>
       x.path.endsWith('queue_window') ? { ...x, visible: true, type: 'text', text: '' } : x,
