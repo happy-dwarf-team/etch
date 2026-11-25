@@ -60,7 +60,8 @@ instead, and Etch leaves them out (see
   no such key. The game skips it. Fix the spelling, or move the key to a widget that takes it.
 - "The game does not read guiButtonType in containerWindowType. It takes buttonType for this
   widget here." The game creates only some kinds of widget inside each kind of widget. Here it
-  never creates the button, so it does not show. Use the kind the entry names.
+  never creates the button, so it does not show in the game, and the preview leaves it out too,
+  with everything inside it. Use the kind the entry names.
 - "The game ignores text in iconType." An `iconType` shows no `text`, `font`, `buttonText` or
   `buttonFont`, and an `instantTextBoxType` ignores `size`. Remove the key, or use a widget that
   shows it.

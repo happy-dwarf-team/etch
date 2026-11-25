@@ -85,6 +85,18 @@ export function isGuiWidgetKey(key: string): boolean {
   return ROOT_BY_KEY.has(lower) || [...CHILDREN_BY_KEY.values()].some((c) => c.has(lower));
 }
 
+/**
+ * Whether the game creates a child widget of key `child` inside a window of key `parent`
+ * (`containerWindowType`, `windowType`, `eu3dialogtype`), both in any case: a
+ * `containerWindowType` creates a `buttonType` but no `guiButtonType`, a `windowType` the other
+ * way round. `true` for a parent the table has no widget of `guiTypes` for.
+ */
+export function guiCreatesChild(parent: string, child: string): boolean {
+  const schema = ROOT_BY_KEY.get(parent.toLowerCase())?.[1];
+  if (schema === undefined) return true;
+  return CHILDREN_BY_KEY.get(schema)?.has(child.toLowerCase()) ?? true;
+}
+
 /** The place inside a `guiTypes` block. */
 export const GUI_ROOT_PLACE: GuiPlace = { kind: 'root' };
 
