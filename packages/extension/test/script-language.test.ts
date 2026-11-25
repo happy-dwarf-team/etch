@@ -1,12 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import {
+  CWTOOLS_DEV_MACHINE_ID,
   SCRIPT_ASSOCIATIONS,
   inGameNamedFolder,
   isScriptFile,
   offersCwtoolsGameFolder,
   scriptLanguageNotice,
+  warnsCwtoolsTelemetry,
   withScriptAssociations,
   type CwtoolsGameFolderCase,
+  type CwtoolsTelemetryCase,
   type ScriptLanguageCase,
 } from '../src/script-language.ts';
 
@@ -188,5 +191,36 @@ describe('the offer to hand CWTools the game folder', () => {
   it('stays silent outside CWTools eu4 mode, where it does not use the folder', () => {
     expect(offersCwtoolsGameFolder({ ...offer, languageId: 'plaintext' })).toBe(false);
     expect(offersCwtoolsGameFolder({ ...offer, languageId: 'paradox' })).toBe(false);
+  });
+});
+
+describe('the notice about CWTools without telemetry', () => {
+  const off: CwtoolsTelemetryCase = {
+    languageId: 'eu4',
+    cwtools: true,
+    machineId: CWTOOLS_DEV_MACHINE_ID,
+    platform: 'win32',
+    declined: false,
+  };
+
+  it('shows for an eu4 file on Windows when VS Code gives CWTools’ development machine id', () => {
+    expect(CWTOOLS_DEV_MACHINE_ID).toBe('someValue.machineId');
+    expect(warnsCwtoolsTelemetry(off)).toBe(true);
+  });
+
+  it('stays silent with a real machine id, without CWTools, or after Don’t Show Again', () => {
+    expect(warnsCwtoolsTelemetry({ ...off, machineId: '3f1c9a0e7b' })).toBe(false);
+    expect(warnsCwtoolsTelemetry({ ...off, cwtools: false })).toBe(false);
+    expect(warnsCwtoolsTelemetry({ ...off, declined: true })).toBe(false);
+  });
+
+  it('stays silent on Linux and macOS, where CWTools keeps working', () => {
+    expect(warnsCwtoolsTelemetry({ ...off, platform: 'linux' })).toBe(false);
+    expect(warnsCwtoolsTelemetry({ ...off, platform: 'darwin' })).toBe(false);
+  });
+
+  it('stays silent outside CWTools’ eu4 mode', () => {
+    expect(warnsCwtoolsTelemetry({ ...off, languageId: 'plaintext' })).toBe(false);
+    expect(warnsCwtoolsTelemetry({ ...off, languageId: 'paradox' })).toBe(false);
   });
 });
