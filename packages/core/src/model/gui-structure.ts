@@ -299,11 +299,7 @@ class StructureCheck {
       return;
     }
     if (schema.ignored.some((k) => k.toLowerCase() === key)) {
-      this.warn(
-        'ignored-key',
-        property.key,
-        `The game reads ${written} in ${place.written} only to log that it does nothing there.`,
-      );
+      this.warn('ignored-key', property.key, `The game ignores ${written} in ${place.written}.`);
       return;
     }
     this.warn(
@@ -440,12 +436,12 @@ class StructureCheck {
     const key = property.key.text;
     if (n !== undefined && Number.isInteger(n)) return;
     if (n === undefined) {
-      this.warn('wrong-value-kind', value, `The game reads ${key} as an integer, not ${text}.`);
+      this.warn('wrong-value-kind', value, `The game reads ${key} as a whole number, not ${text}.`);
     } else {
       this.warn(
         'fraction-as-int',
         value,
-        `The game reads ${key} as an integer: ${text} is read as ${String(Math.trunc(n))}.`,
+        `The game reads ${key} as a whole number: ${text} is read as ${String(Math.trunc(n))}.`,
       );
     }
   }

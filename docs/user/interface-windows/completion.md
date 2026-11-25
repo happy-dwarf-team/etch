@@ -15,8 +15,8 @@ at that place. Sprite names, fonts and the order of the list come from your
 2. Start typing, or press <kbd>Ctrl+Space</kbd>: a list of suggestions opens.
 3. Pick one with the arrow keys and press <kbd>Enter</kbd> or <kbd>Tab</kbd>.
 
-Widget types come first, then keys. In each group, the words your playset writes most come
-first. Next to each one, in grey, Etch says what it is and how often your playset writes it.
+Widget types come first, then keys. In each group, the words your playset's files use most come
+first. Next to each one, in grey, Etch says what it is and how often your playset's files use it.
 
 ## What Etch suggests where
 
@@ -31,10 +31,10 @@ first. Next to each one, in grey, Etch says what it is and how often your playse
 - **Inside `if_resolution = { … }`:** `min_width`, `max_width`, `min_height` and `max_height`,
   and the widget's own keys and widgets.
 - **Inside a block such as `position = { … }` or `size = { … }`:** its keys, such as `x` and `y`.
-- **After `spriteType`, `quadTextureSprite`, or `background` in a `listboxType` or
+- **After `spriteType` or `quadTextureSprite`, and after `background` in a `listboxType` or
   `smoothListboxType`:** every sprite name of your playset's `.gfx` files. Move to a sprite in
-  the list: the box beside it shows its kind, its frames, the `.gfx` file that defines it and a
-  small picture of its texture.
+  the list: the box beside it shows its kind (such as `frameAnimatedSpriteType`), its frames, the
+  `.gfx` file that defines it and a small picture of its texture.
 - **After `font` or `buttonFont`:** the fonts of your playset. Hover over a font name you wrote to
   see the font, with a sample of its letters
   ([Fonts in .gui and .gfx files](../textures-and-meshes/hovers-and-links.md#fonts-in-gui-and-gfx-files)).
@@ -42,13 +42,15 @@ first. Next to each one, in grey, Etch says what it is and how often your playse
   `"UPPER_LEFT"`. In a `containerWindowType` you get seven: the game does not take
   `CENTER_LEFT` or `CENTER_RIGHT` there.
 - **After a key that takes `yes` or `no`,** such as `alwaysTransparent`: `yes` and `no`.
-- **After `format` or `vertical_alignment` in a text box:** the words the game reads, such as
-  `left`, `centre`, `right` and `center`.
-- **After other keys:** the values your playset writes for that key, when it uses only a few
-  different values, such as `clicksound`.
+- **After `format` in a text box:** `left`, `center`, `centre` and `right`. **After
+  `vertical_alignment`:** `top`, `center`, `centre` and `bottom`. The game takes both spellings
+  of centre.
+- **After other keys:** the values your playset's files use for that key, when they use only a
+  few different values, such as `clicksound`.
 
-The game reads keys in any case, so `Orientation` and `orientation` are the same key. Etch writes
-a key as your playset writes it most, such as `listboxType`. Sprite names, fonts and the
+The game reads keys in upper or lower case, so `Orientation` and `orientation` are the same
+key. Etch writes a key the way your playset's files write it most, such as `listboxType` rather
+than `listBoxType`. Sprite names, fonts and the
 `orientation` values are written in quotes, as the game's files write them. If you already typed
 the opening quote, Etch adds only the closing one.
 

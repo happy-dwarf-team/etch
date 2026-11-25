@@ -280,7 +280,11 @@ export class GuiVocabulary {
         words.map((word) => {
           const seen = map?.get(word.toLowerCase());
           return seen === undefined
-            ? { written: word, count: 0, quoted: false }
+            ? {
+                written: word,
+                count: 0,
+                quoted: kind === 'orientation' || kind === 'containerOrientation',
+              }
             : { written: seen.written, count: seen.count, quoted: seen.quoted * 2 > seen.count };
         }),
       );

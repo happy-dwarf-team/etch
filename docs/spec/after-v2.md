@@ -488,7 +488,7 @@ refresh goes out with a 2.x release (v3.md section 7).
 - **The structure check of `.gui` files.** With the preview's model
   diagnostics, from the same table: a key or child widget the game does not
   read there (`unknown-key`), a key it reads only to log that it does nothing
-  (`ignored-key`: `text`, `font`, `buttonText`, `buttonFont` of `iconType`,
+  (`ignored-key`, logged and ignored: `text`, `font`, `buttonText`, `buttonFont` of `iconType`,
   `size` of `instantTextBoxType`), a value of the wrong kind
   (`wrong-value-kind`), an orientation outside the anchors
   (`unknown-orientation`, which the layout no longer reports), and a fraction

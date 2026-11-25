@@ -51,22 +51,23 @@ The entries come in two kinds:
 ## Keys and values the game does not read
 
 Etch checks each widget against the keys EU4 1.37.5 reads for that kind of widget. The game
-reads keys in any case, so `Orientation` and `orientation` are both fine.
+reads keys in upper or lower case, so `Orientation` and `orientation` are both fine.
 
 - "The game does not read sacle in iconType." The key is misspelled, or this kind of widget has
   no such key. The game skips it. Fix the spelling, or move the key to a widget that takes it.
 - "The game does not read guiButtonType in containerWindowType. It takes buttonType for this
   widget here." The game creates only some kinds of widget inside each kind of widget. Here it
   never creates the button, so it does not show. Use the kind the entry names.
-- "The game reads text in iconType only to log that it does nothing there." An `iconType` shows
-  no `text`, `font`, `buttonText` or `buttonFont`, and an `instantTextBoxType` ignores `size`.
-  Remove the key, or use a widget that shows it.
+- "The game ignores text in iconType." An `iconType` shows no `text`, `font`, `buttonText` or
+  `buttonFont`, and an `instantTextBoxType` ignores `size`. Remove the key, or use a widget that
+  shows it.
 - "LEFT is not one of the nine anchors the game reads for orientation; the game puts the widget
-  at the upper left." Use one of the nine anchors, such as `"CENTER_LEFT"`. The base game writes
-  `LEFT` 25 times: those widgets sit at the upper left. A `containerWindowType` takes seven: no
-  `CENTER_LEFT` or `CENTER_RIGHT`.
-- "The game reads spacing as an integer: 2.5 is read as 2." The game drops the part after the
-  point. Write the whole number you want.
+  at the upper left." Use one of the nine anchors: `UPPER_LEFT`, `UPPER_RIGHT`, `LOWER_LEFT`,
+  `LOWER_RIGHT`, `CENTER_LEFT`, `CENTER_RIGHT`, `CENTER`, `CENTER_UP` or `CENTER_DOWN`. A
+  `containerWindowType` takes seven: not `CENTER_LEFT` or `CENTER_RIGHT`. The base game writes
+  `LEFT` 25 times: those widgets sit at the upper left.
+- "The game reads spacing as a whole number: 2.5 is read as 2." The game drops the part after
+  the point. Write the whole number you want.
 - "The game reads alwaystransparent as yes or no, not maybe." The value is the wrong kind for the
   key: a word where the game wants a number, a block `{ … }` where it wants one value, or the
   reverse. The entry says what the game reads.
@@ -98,8 +99,10 @@ of" and the key.
 ## Kinds and files Etch cannot draw
 
 - "The game reads browserType, but vanilla EU4 1.37.5 does not use it and Etch does not draw
-  it." The preview leaves the widget out. A block the game does not read at all gets a warning
-  instead (see above). A sprite kind that the base game does not use gets an entry too: check the
+  it." The game shows the widget; the preview leaves it out. Keep it if you meant it.
+  A block the game does not read at all gets a warning instead: see
+  [Keys and values the game does not read](#keys-and-values-the-game-does-not-read).
+- "my_spriteType is not a sprite kind vanilla EU4 1.37.5 uses; Etch does not draw it." Check the
   spelling of the block's name.
 - "Texture gfx/interface/my_icon.dds cannot be drawn: …" and similar entries mean that a texture
   or `.fnt` file is there, but Etch cannot read it. The entry says why. Save the file again from

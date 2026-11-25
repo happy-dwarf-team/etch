@@ -127,6 +127,6 @@ guiTypes = {
       'wrong-value-kind',
       'wrong-value-kind',
     ]);
-    expect(found[0]?.message).toBe('The game reads spacing as an integer: 2.5 is read as 2.');
+    expect(found[0]?.message).toBe('The game reads spacing as a whole number: 2.5 is read as 2.');
   });
 });
