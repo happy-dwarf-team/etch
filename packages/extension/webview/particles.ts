@@ -7,7 +7,8 @@
 //   whose time span [from, to) holds the event's `time`, in every loop of the state's animation
 //   (or of its `state_time`, for a state with none; once without either). An event timed past
 //   the loop's end, or before 0, starts on each wrap to the loop's start. Each start is a new
-//   effect, even while an earlier one still emits; `trigger_once` events start in the first loop
+//   effect, even while earlier ones still emit, with no limit on the copies (step 7), until
+//   `PARTICLE_BUDGET` particles are alive; `trigger_once` events start in the first loop
 //   only. The effect follows the bone's or locator's matrix as it moves (a musket's `muzzle` is a
 //   locator of its mesh; the entity's origin without either).
 // - A new state ends every effect, except those of `keep_particle` events, which stop emitting and
@@ -29,7 +30,7 @@ import {
   type ParticleSubsystem,
 } from '@etch/core/asset';
 import type { EntityParticleEffect, MeshTexture } from '../src/mesh-protocol.ts';
-import { fires } from './particle-firing.ts';
+import { fires, withinBudget } from './particle-firing.ts';
 
 const TRAIL_VERTEX = `#version 300 es
 in vec3 position;
@@ -85,8 +86,6 @@ const STRIDE = 11;
 const TRAIL_STRIDE = 9;
 /** The step the effects are run again with when the preview is paused on a frame. */
 const REPLAY_STEP = 1 / 30;
-/** At most this many effects of one event alive at once (the game has no limit). */
-const MAX_PER_EVENT = 16;
 
 interface Running {
   readonly effect: ParticleEffect;
@@ -113,6 +112,8 @@ export class ParticleLayer {
   private at = 0;
   private state: string | undefined;
   private starts = 0;
+  /** Whether an effect did not start since the state began, the particle budget being full. */
+  heldBack = false;
   /** Whether the Particles button is on. */
   on = true;
 
@@ -206,6 +207,7 @@ export class ParticleLayer {
     this.running = [];
     this.at = 0;
     this.starts = 0;
+    this.heldBack = false;
   }
 
   /** The particles alive. */
@@ -260,7 +262,10 @@ export class ParticleLayer {
       // `trigger_once`: only while the state's time is within its first loop.
       if (event.triggerOnce && (loop === undefined || to > loop)) continue;
       if (!fires(event.time, from, to, loop)) continue;
-      if (this.running.filter((run) => run.event === event).length >= MAX_PER_EVENT) continue;
+      if (!withinBudget(this.count)) {
+        this.heldBack = true;
+        continue;
+      }
       this.starts++;
       this.running.push({
         event,

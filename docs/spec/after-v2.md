@@ -1190,6 +1190,16 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
      for a sheet of one. A value without variation draws nothing. The preview
      now draws in that order, so only the seed differs from the game; a
      `childsystem`, not run, would draw before its parent at the start.
+  7. Settle the copies of an event's effect. Done 25 November 2026: the game
+     makes a new particle effect at every start of an event and never looks
+     for or limits earlier ones (step 4's reading); an effect is removed only
+     when it has finished. Checked in the game (Steam 1.37.5, a test mod
+     looping the siege states of `westerngfx_city_0` every 0.5 s and making
+     each copy one long-lived particle): the particles round a siege site
+     went from 15 to 40 to 48 in about a minute, past 16 and still growing.
+     The preview drops its limit of 16 copies per event and starts every
+     copy, with one guard of its own: no new effect starts while 100,000
+     particles are alive, and the status line then says so.
 
 Small unknowns, none worth an issue yet.
 

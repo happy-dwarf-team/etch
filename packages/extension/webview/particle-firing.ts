@@ -16,3 +16,16 @@ export function fires(time: number, from: number, to: number, loop: number | und
   const wrap = Math.max(1, Math.floor(from / loop) + 1);
   return wrap * loop <= to;
 }
+
+/**
+ * The particles the preview keeps alive at most before it starts no new effect. The game starts
+ * every event's effect however many copies already run (etch#631 step 7); the preview follows it
+ * up to this many particles, so that an effect that emits forever, started again on every loop,
+ * cannot slow the editor down without bound.
+ */
+export const PARTICLE_BUDGET = 100_000;
+
+/** Whether another effect may start while `alive` particles live. */
+export function withinBudget(alive: number): boolean {
+  return alive < PARTICLE_BUDGET;
+}

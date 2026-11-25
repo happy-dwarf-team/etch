@@ -230,7 +230,10 @@ These parts differ:
   shader effect whose name ends in `Trail`, and the base game has none (see
   [Particle effects](particles.md)).
 - A `childsystem` block. Etch does not start child effects.
-- Etch plays at most 16 copies of one event's effect at a time. The game has no limit.
+- How many particles can be alive. Like the game, Etch starts a new copy of an event's effect each
+  time the event comes round, while the earlier copies still play. But once 100,000 particles are
+  alive, Etch starts no new copy, and the line at the bottom says so. The game has no limit, so an
+  effect that sends out particles forever, started on every loop of its state, keeps growing there.
 
 ## What it doesn't do
 
