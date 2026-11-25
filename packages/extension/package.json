@@ -575,6 +575,19 @@
             "markdownDescription": "Find All References (Shift+F12) and Rename Symbol (F2) on sprite names: in `.gfx` and `.gui` files and in the script files that name sprites: an event's `picture`, a mission's `icon`, an estate privilege's `icon` and the sprite keys of ten `common` folders (see Hovers and links in Etch's guide). A rename changes only your mod's files. Turn it off if another extension already finds or renames these names: Etch then adds neither, and the other extension's answers stand alone.",
             "order": 4
           },
+          "etch.cwtools": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "ignore"
+            ],
+            "enumDescriptions": [
+              "Where CWTools' EU4 rules cover a sprite, font or `.gui` widget, Etch leaves that answer to CWTools, so it does not show twice.",
+              "Etch gives all its answers next to CWTools, so some of them show twice."
+            ],
+            "markdownDescription": "What Etch does when CWTools is on too. With `auto`, in files that CWTools reads as EU4, Etch leaves to CWTools what CWTools' EU4 rules cover: Go to Definition on those sprites, their entries and the fonts in the Outline of a `.gfx` file, and the widget types and keys suggested in `.gui` files. Etch's hovers, its sprite and font suggestions and the preview's warnings in the Problems panel stay. With `ignore`, Etch gives all its answers, so some of them show twice.",
+            "order": 6
+          },
           "etch.editor.spriteThumbnails": {
             "type": "boolean",
             "default": false,

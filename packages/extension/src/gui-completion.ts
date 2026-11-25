@@ -15,6 +15,7 @@ import {
   type Located,
   type Sprite,
 } from '@etch/core';
+import { cwtoolsChecksGui } from './cwtools.ts';
 import { GUI_SELECTOR, type Loaded, type SpriteLinks } from './sprite-links.ts';
 
 /** The setting that turns completion on and off. */
@@ -57,6 +58,8 @@ export class GuiCompletion implements vscode.CompletionItemProvider {
     );
     switch (context.kind) {
       case 'key':
+        // CWTools completes the keys itself when its rules check .gui files (ADR 0008).
+        if (cwtoolsChecksGui(document)) return undefined;
         return this.keys(context, loaded, range);
       case 'sprite':
         return loaded.ui.index.allSprites().map((sprite) => {

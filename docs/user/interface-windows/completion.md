@@ -48,6 +48,11 @@ Suggestions are on by default. To turn them off, open [Settings](../reference/se
 search for `etch.editor.completion` and clear its checkbox. Do this if another extension already
 suggests words in these files and you want only its list.
 
+With CWTools on, its rules may cover the widgets of `.gui` files. Then the widget types and keys
+come from CWTools alone, and Etch suggests only what comes after a key: sprite names, fonts and
+the other values above. See
+[Etch and CWTools in the same file](../getting-started/install.md#etch-and-cwtools-in-the-same-file).
+
 ## What it doesn't do
 
 - Etch suggests only what some file of your playset writes. A key the game knows but no file

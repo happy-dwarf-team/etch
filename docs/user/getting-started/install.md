@@ -166,6 +166,41 @@ folder, it shows nothing. Etch shows this notification at most once in each VS C
 - **Learn More** opens this section of Etch's docs in your browser.
 - **Don't Show Again**: Etch never shows this notification again, in any window.
 
+### Etch and CWTools in the same file
+
+With both extensions on, VS Code shows what each of them gives side by side: two hovers on one
+name, two lists of suggestions in one list. In some places Etch leaves the answer to CWTools,
+so that you do not get the same thing twice.
+
+CWTools knows what the keys of a file mean from its EU4 rules: files that come with CWTools and
+that it updates by itself. Etch reads these rules to find out what CWTools does. Today they
+cover the sprites of `spriteType` and the sprite keys of scripts, such as an event's `picture`.
+Where they cover a thing, Etch leaves it to CWTools:
+
+- **Go to Definition.** In `events/FlavorENG.txt`, press <kbd>F12</kbd> on the sprite name after
+  `picture =`: VS Code opens the `.gfx` file at that sprite. Without this, it would show a small
+  window with two places, one from each extension, for you to pick from.
+- **Outline.** In the Outline of a `.gfx` file, each `spriteType` sprite is listed once, by
+  CWTools. Etch lists only the other kinds of sprite, such as `corneredTileSpriteType`.
+- **Fonts and `.gui` files.** When CWTools' rules cover fonts, the Outline lists each font once
+  too. When they cover the widgets of `.gui` files, the suggestions of widget types and keys as
+  you type come from CWTools alone. Etch still suggests the sprite names and fonts after a key,
+  with their pictures.
+
+All the rest stays: Etch's hovers with the sprite's picture, the preview's warnings in the
+Problems panel, the hints beside localisation keys, colours, **Find All References** and
+**Rename Symbol**.
+
+To choose this, open [Settings](../reference/settings.md) and search for `etch.cwtools`:
+
+- **auto**, the default: Etch leaves to CWTools what its rules cover, as above.
+- **ignore**: Etch gives all its answers, so some of them show twice.
+
+Etch leaves answers to CWTools only in files that CWTools reads as EU4: then the bottom right of
+the window says **eu4**. If it says **Plain Text** or **paradox**, see
+[A mod in a folder of its own](#a-mod-in-a-folder-of-its-own). Etch cannot hide CWTools' own
+answers: its hover on a sprite stays next to CWTools' hover.
+
 ## The Get Started page
 
 Once Etch is installed, VS Code opens **Get Started with Etch** on its Welcome page. Six steps

@@ -5,6 +5,8 @@ November 2026). All of it is built for 2.14.0: localisation inlay hints
 (etch#568), completion (etch#572), symbols
 (etch#573), references and rename (etch#581, etch#584), colours (etch#583),
 images in more scripts (etch#585) and the gutter thumbnail (etch#587).
+Amended on 25 November 2026 with "Beside CWTools": where CWTools answers the
+same thing, Etch steps back.
 
 Etch adds editor features to `.gui` and `.gfx` files, and to the places in
 script and localisation files where they name what Etch already reads:
@@ -17,10 +19,13 @@ textures), so they agree with the preview.
 
 ## Interface files (`.gui`, `.gfx`)
 
-No other tool covers these. CWTools and ParadoxCode bind both extensions to
-the `eu4` language id but check no `.gui` structure for EU4 (etch#4).
-CWTools' EU4 rules hold only `interface/sprites.cwt` (591 bytes) and two
-files of sprite packs.
+When this was written no other tool covered these. CWTools and ParadoxCode
+bind both extensions to the `eu4` language id but check no `.gui` structure
+for EU4 (etch#4). CWTools' EU4 rules held only `interface/sprites.cwt`
+(591 bytes) and two files of sprite packs. Rules for every sprite kind, for
+`.gui` widgets and for `bitmapfonts` are proposed upstream
+(cwtools-eu4-config#447, #448, #454); "Beside CWTools" below says what Etch
+does once CWTools has them.
 
 - **Completion:** widget types; the attributes a widget type takes and
   their known values (`orientation`, `positionType`, `format`), from the
@@ -58,6 +63,44 @@ Etch takes only the features its own indexes can answer:
   these features. Checking script files is CWTools' job, and the game's
   (ADR 0007). The diagnostics of `.gui` and `.gfx` files stay as they are.
 
+## Beside CWTools
+
+VS Code shows the answers of every extension together, and no extension can
+hide another's. Run side by side on a test mod (Etch 2.14.0, CWTools 0.10.31
+in its `eu4` mode, with rules that type sprites, fonts and `.gui` widgets),
+every answer Etch gives alone was still there, and nothing failed. Some came
+twice: a sprite's definition one line apart (CWTools the block, Etch the
+`name`), so Go to Definition opened a peek instead of jumping; the `.gfx`
+outline with each sprite and font twice; the keys of a `.gui` widget twice in
+completion; and a second, nearly empty hover.
+
+So Etch steps back from what CWTools answers itself in a document, and keeps
+the rest:
+
+- **When:** CWTools runs, the document has CWTools' `eu4` language, and the
+  EU4 rules CWTools loads cover it. Etch reads those rules files
+  (`cwtools.rules_folder` with `cwtools.rules_version` `manual`, else
+  CWTools' own copy under its extension folder): the sprite kinds they type as
+  `sprite`, a `font` type on `bitmapfont`, rules for `.gui` widgets, and the
+  script folders whose sprite keys they type as `<sprite>`. It never reads
+  CWTools' diagnostics (ADR 0007).
+- **Steps back:** Go to Definition of a sprite whose kind and reference
+  CWTools types; the `.gfx` symbols of those sprite kinds and of fonts; the
+  keys of `.gui` completion when the rules check `.gui` widgets.
+- **Keeps:** hovers (Etch's have the picture and the whole text, and CWTools'
+  cannot be hidden), sprite and font names in completion (Etch knows the
+  playset and shows thumbnails), the preview's problems such as
+  `missing-sprite` (Etch reads the mod's dependencies, CWTools only the
+  workspace and the game), `.gui` symbols, inlay hints, colours, references,
+  rename and links, which CWTools does not give.
+- **Setting:** `etch.cwtools`, `auto` by default; `ignore` keeps every Etch
+  feature.
+
+The coverage comes from the rules, not from CWTools' version, because the
+rules change without a CWTools release. Until the upstream rules have them,
+Etch keeps everything in `.gui` files and the sprite kinds other than
+`spriteType`.
+
 ## Why
 
 We chose file-pattern selectors over a language id of our own, as v1 and
@@ -74,11 +117,14 @@ would be small next to that risk.
 
 ## Consequences
 
-- CWTools' completion and hover may appear next to Etch's in `eu4` mode.
-  Each feature group has its own setting (`etch.editor.completion`,
-  `etch.editor.localisationHints`, `etch.editor.rename`; not under
-  `etch.language`, which is already the language setting), on by default, so a
-  user can turn off the one that duplicates.
+- CWTools' hover may still appear next to Etch's in `eu4` mode, and so may
+  what "Beside CWTools" keeps. Each feature group has its own setting
+  (`etch.editor.completion`, `etch.editor.localisationHints`,
+  `etch.editor.rename`; not under `etch.language`, which is already the
+  language setting), on by default, so a user can turn off the one that
+  duplicates; `etch.cwtools` turns the stepping back off.
+- Which rules file types which script key is a table in the extension
+  (`cwtools-rules.ts`). A key the rules start to type is a line there.
 - Inlay hints and completion get budgets in [docs/budgets.md](../budgets.md)
   before they ship, measured on Anbennar, the largest corpus playset. They
   wait for the playset's indexes and never block typing.

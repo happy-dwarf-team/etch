@@ -7,6 +7,7 @@ import { registerGuiCompletion, type GuiCompletion } from './gui-completion.ts';
 import { registerInterfaceSymbols, type InterfaceSymbols } from './interface-symbols.ts';
 import { registerSpriteReferences, type SpriteReferences } from './sprite-references.ts';
 import { registerGfxColours, type GfxColours } from './gfx-colours.ts';
+import { registerCwtools } from './cwtools.ts';
 import { registerSpriteGutter, type SpriteGutter } from './sprite-gutter.ts';
 import { BuildCheck } from './build-check.ts';
 import { RUNNING_BUILD } from './build-stamp.ts';
@@ -74,6 +75,7 @@ export function activate(context: vscode.ExtensionContext): EtchApi {
       }),
     );
   }
+  registerCwtools(context);
   const spriteLinks = registerSpriteLinks(context, output);
   return {
     navigation,
