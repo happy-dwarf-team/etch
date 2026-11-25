@@ -303,9 +303,9 @@ async function profileGate(
  * The save the capture's view loads in its playset (`viewSave`) from `savesFolder`, read once per
  * save; `undefined` without the folder, the file, or when the file is not the one the view pins.
  */
-function saveOf(
+export function saveOf(
   manifest: CorpusManifest,
-  options: RunOptions,
+  options: { readonly savesFolder?: string | undefined },
   key: CaptureKey,
   saves: Map<string, Promise<Save | undefined>>,
   log: (line: string) => void,

@@ -19,7 +19,8 @@
  *
  * The keys were read from the province and country blocks of the vanilla corpus save and the
  * Anbennar saves of etch#154: scalar keys the province view and the corpus windows can show,
- * and collections a repeater can list.
+ * and collections a repeater can list. Two country keys are sums the game's code makes of the
+ * save's values, added up as it does (`DERIVED_COUNTRY_KEYS`): `score` and `army_strength`.
  */
 import type { BlockNode, ValueNode } from '../script/tree.ts';
 import { scalarIn, valueIn, type Save } from '../save/save.ts';
@@ -88,6 +89,7 @@ const COUNTRY_KEYS = [
   'inflation',
   'corruption',
   'prestige',
+  'current_power_projection',
   'stability',
   'legitimacy',
   'devotion',
@@ -124,7 +126,23 @@ const COUNTRY_KEYS = [
   'num_of_cities',
   'average_unrest',
   'average_autonomy',
+  'score',
+  'army_strength',
 ];
+
+/**
+ * Country keys that are sums of the save's values, added up as eu4.exe 1.37.5 does, in
+ * thousandths (the game's fixed point):
+ *
+ * - `score`, the diplomacy view's score (`CCountry::GetScore` `0x2C6430`): the country's
+ *   `age_score` of every age, and its `card_score` when the game's age scoring is off (the 29th
+ *   of `gameplaysettings`' `setgameplayoptions` is 0), else its `vc_age_score` of every age.
+ * - `army_strength`, the men of the country's armies, in thousands as the save writes manpower:
+ *   the `strength` of every `regiment` of every `army` (the diplomacy view's
+ *   `land_forcelimit_value`, `0xEFD450`; a regiment at full strength is 1.000, which the save
+ *   leaves out).
+ */
+export const DERIVED_COUNTRY_KEYS = ['score', 'army_strength'] as const;
 
 /** Collections of a country block. */
 const COUNTRY_COLLECTIONS = [
@@ -261,7 +279,12 @@ export class SaveChoice {
       return undefined;
     }
     const block = this.block(path.scope);
-    return block === undefined ? undefined : scalarIn(block, path.key);
+    if (block === undefined) return undefined;
+    if (path.scope === 'country' || path.scope === 'owner') {
+      if (path.key === 'score') return thousandths(scoreOf(block, this.save));
+      if (path.key === 'army_strength') return thousandths(armyStrengthOf(block));
+    }
+    return scalarIn(block, path.key);
   }
 
   /** The entries of a collection, for a repeater. */
@@ -272,6 +295,56 @@ export class SaveChoice {
     if (value?.kind !== 'block') return undefined;
     return entriesOf(value);
   }
+}
+
+/** A number of the save in thousandths, as the game holds it; 0 when it is not one. */
+function raw(text: string | undefined): number {
+  const value = Number(text);
+  return text === undefined || !Number.isFinite(value) ? 0 : Math.round(value * 1000);
+}
+
+/** The thousandths of every number of a list (`age_score={ 1.5 2.0 }`), added up. */
+function listRaw(block: BlockNode, key: string): number {
+  const list = valueIn(block, key);
+  if (list?.kind !== 'block') return 0;
+  return list.entries.reduce((sum, e) => sum + (e.kind === 'scalar' ? raw(e.text) : 0), 0);
+}
+
+function thousandths(value: number): string {
+  return (value / 1000).toFixed(3);
+}
+
+/** `CCountry::GetScore` (`0x2C6430`) from the save, in thousandths. */
+function scoreOf(country: BlockNode, save: Save): number {
+  const settings = save.top('gameplaysettings');
+  const options = settings?.kind === 'block' ? valueIn(settings, 'setgameplayoptions') : undefined;
+  const option =
+    options?.kind === 'block' ? options.entries.filter((e) => e.kind === 'scalar')[28] : undefined;
+  const ageScoring = option?.kind === 'scalar' && option.text !== '0';
+  return (
+    listRaw(country, 'age_score') +
+    (ageScoring ? listRaw(country, 'vc_age_score') : raw(scalarIn(country, 'card_score')))
+  );
+}
+
+/** The men of a country's armies in thousandths of thousands: every regiment's strength. */
+function armyStrengthOf(country: BlockNode): number {
+  let sum = 0;
+  for (const army of country.entries) {
+    if (army.kind !== 'property' || army.key.text !== 'army' || army.value?.kind !== 'block')
+      continue;
+    for (const regiment of army.value.entries) {
+      if (
+        regiment.kind !== 'property' ||
+        regiment.key.text !== 'regiment' ||
+        regiment.value?.kind !== 'block'
+      )
+        continue;
+      // A regiment at full strength has none: the save leaves out the default 1.000.
+      sum += raw(scalarIn(regiment.value, 'strength') ?? '1');
+    }
+  }
+  return sum;
 }
 
 /** One child of a save collection: `key=value`, a bare value, or a block. */

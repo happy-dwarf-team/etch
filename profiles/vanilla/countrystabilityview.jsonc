@@ -95,6 +95,11 @@
     },
   },
   "content": {
+    "countrystabilityview/stability_value": {
+      "save": "countries.{country}.stability",
+      "format": "plus",
+      "note": "The view's daily update (eu4.exe 0xF87E80) writes the whole stability, + above zero, - below: +3, 0.",
+    },
     "countrystabilityview/cv_governmentrebels_handlerebels/onsiegewon_desc": {
       "engine": true,
       "sizedBy": "REB_NO_EFFECT",

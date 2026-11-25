@@ -341,5 +341,21 @@
       ],
       "evidence": "A leader's type button selects the army the leader commands, which opens the unit panels; a leader without one opens nothing. In Russia's game of 17 March 1719 the first three rows are leaders without an army and the fourth commands the 7th Army, and 1280x720 shows three rows: one step down makes it the third row at either size (seen in the game on 24 November 2026, Tongs 0.37.0)."
     }
+  ],
+  "data": [
+    {
+      "view": "vanilla-save-s25",
+      "save": "mp_Russia1719_03_17.eu4",
+      "window": "countrydiplomacyview",
+      "country": "SAV",
+      "evidence": "The Holy Roman Emperor's shield opens the emperor's diplomacy view, and the save's empire has emperor=\"SAV\": the view showed Savoy's score 9 (its ages add up to 9.655), its armies 9k (ten regiments at 0.97) and its manpower 23k (23.822) in the survey's captures of 24 November 2026."
+    },
+    {
+      "view": "anbennar-alone-save-s18",
+      "save": "Verne1444_11_11_corpus.eu4",
+      "window": "countrydiplomacyview",
+      "country": "A30",
+      "evidence": "The Holy Roman Emperor's shield opens the emperor's diplomacy view, and the save's empire has emperor=\"A30\": the view showed its armies 18k (18 regiments at full strength), its manpower 10k (10.401) and its prestige -0 (-0.996) in the survey's captures of 24 November 2026."
+    }
   ]
 }

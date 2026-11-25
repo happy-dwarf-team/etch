@@ -2,7 +2,10 @@
 // survey's local folder and, for the pixels, a `compare --corpus <folder>` run over it first.
 //
 //   $env:ETCH_CORPUS_PATH = '...\work\etch-coverage-survey'
-//   pnpm --filter @etch/compare coverage [--playset ID] [--out FILE] [--inventory FILE]
+//   pnpm --filter @etch/compare coverage [--playset ID] [--saves DIR] [--out FILE] [--inventory FILE]
+//
+// `--saves` names the folder of the playsets' saves (the capture driver's `--saves`): measure 4
+// then takes its texts from each view's save.
 //
 // Writes `coverage.json` and `coverage.md` into the survey folder; `--out` writes the Markdown
 // summary elsewhere too (the repository's docs/coverage-results.md), `--inventory` the views with
@@ -10,7 +13,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { parseArgs } from 'node:util';
-import { localCorpusFolder, type CorpusManifest } from '@etch/core/corpus';
+import { localCorpusFolder, readSurveyConfig, type CorpusManifest } from '@etch/core/corpus';
 import { runCoverage } from './coverage.ts';
 import { coverageMarkdown } from './coverage-report.ts';
 
@@ -20,6 +23,7 @@ const KEPT = { start: '<!-- other countries: start -->', end: '<!-- other countr
 const { values } = parseArgs({
   options: {
     playset: { type: 'string', multiple: true },
+    saves: { type: 'string' },
     out: { type: 'string' },
     inventory: { type: 'string' },
   },
@@ -34,6 +38,8 @@ const result = await runCoverage({
   surveyFolder: folder,
   profilesFolder: join(repository, 'profiles'),
   gamePath: gamePath === undefined || gamePath === '' ? undefined : gamePath,
+  savesFolder: values.saves,
+  data: readSurveyConfig(await readFile(join(repository, 'coverage', 'survey.json'), 'utf8')).data,
   ...(values.playset === undefined
     ? {}
     : { playsets: values.playset.flatMap((p) => p.split(',')).map((p) => p.trim()) }),

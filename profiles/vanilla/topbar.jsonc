@@ -74,4 +74,31 @@
       ],
     },
   },
+  "content": {
+    "topbar/text_gold": {
+      "save": "countries.{country}.treasury",
+      "format": "treasury",
+      "note": "The top bar's refresh (eu4.exe 0x1435530) writes the treasury in whole ducats, in thousands with k from 10000 (0x14341E0): the coverage survey's 1000000 ducats show 1000k.",
+    },
+    "topbar/text_manpower": {
+      "save": "countries.{country}.manpower",
+      "format": "men",
+      "note": "The manpower in men (CRegiment::GetVisualStrength, 0xAE8C10): 45,500, and in thousands with k above 99999 (the survey's 2534.947 shows 2534k).",
+    },
+    "topbar/text_stability": {
+      "save": "countries.{country}.stability",
+      "format": "signedStability",
+      "note": "White with + from zero up, red below (0x1435FD1): +3.",
+    },
+    "topbar/text_prestige": {
+      "save": "countries.{country}.prestige",
+      "format": "signed",
+      "note": "White with + above zero, red below, yellow 0 (0x1436375): +100.",
+    },
+    "topbar/powerprojection_topbar/text_powerprojection": {
+      "save": "countries.{country}.current_power_projection",
+      "format": "signed",
+      "note": "As the prestige (0x1434650), of the power projection the save keeps: +100.",
+    },
+  },
 }

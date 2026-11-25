@@ -325,7 +325,7 @@ function readSource(node: JsonNode, props: Map<string, JsonNode>, what: string):
     ) {
       throw new Faulty('"decimals" is a whole number from 0 to 4.', decimalsNode);
     }
-    if (format === 'text')
+    if (format !== 'number' && format !== 'percent')
       throw new Faulty('"decimals" goes with a number or a percentage.', decimalsNode);
     decimals = decimalsNode.value;
   }
@@ -361,7 +361,9 @@ function readSource(node: JsonNode, props: Map<string, JsonNode>, what: string):
     ...(decimals === undefined ? {} : { decimals }),
     ...(loc === undefined ? {} : { loc }),
     ...(map === undefined ? {} : { map }),
-    generated: generated ?? (format === 'text' ? 'text' : format),
+    generated:
+      generated ??
+      (format === 'text' || format === 'number' || format === 'percent' ? format : 'integer'),
   };
 }
 

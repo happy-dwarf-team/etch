@@ -120,6 +120,7 @@ export {
   surveyManifest,
   surveyViewId,
   type SurveyConfig,
+  type SurveyData,
   type SurveyPlayset,
 } from './survey.ts';
 export {
