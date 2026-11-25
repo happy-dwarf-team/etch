@@ -20,8 +20,9 @@ const RECURSIVE_ROOTS: ReadonlyMap<string, readonly string[]> = new Map([
  * Warnings for a `replace_path` the game mishandles. When a mod's `replace_path` names a subfolder
  * of a folder the game lists recursively (`interface/assets`, `gfx/entities`), the game's listing
  * gives the files directly in that subfolder by their bare name, and the loader looks for them at
- * the listed folder's top: they are not loaded (`EnumerateFilesRecursive`, research for
- * eu4-engine-lab#56). Etch still shows them, so the preview and the game differ.
+ * the listed folder's top: they are not loaded (the game's recursive file listing, 0x1700E70 in the
+ * GOG build 1.37.5.2; research for eu4-engine-lab#56). Etch still shows them, so the preview and
+ * the game differ.
  *
  * Only a subfolder that this mod or a later one fills with a file the game loads from that root
  * is reported: entries such as `gfx/loadingscreens` or `gfx/flags`, which hold no `.asset`, are
