@@ -1151,7 +1151,18 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
      speed grew with the square of the scale (0.12 against 0.116 per
      speed · scale²); the tiles grew too. The game reads the scale when it
      starts (`reload assets` kept the old one). The preview already scaled
-     this way; the key's hover now says so, marked as the game's.
+     this way; the key's hover now says so, marked as the game's. Step 19
+     checked `local_space = yes` on the map: the game simulates such a
+     subsystem around the origin and hands it the effect's place and turn only
+     in the shader constant `InstanceWorldMatrix`, which the base game's
+     `gfx/FX/particle.shader` declares and never reads. A tall local-space
+     column at the sieges drew nothing with that shader, and stood at every
+     siege with a test copy whose vertex shader multiplies the position by
+     the matrix. So the extension warns on each `local_space = yes` when the
+     playset's `particle.shader` does not use the matrix, and the key's hover
+     says so. The preview still draws such a subsystem at its node, as a
+     shader that applies the matrix would; where the base game's shader puts
+     it (around the world origin, by the reading) was not seen.
   2. Read the evaluators and the update in the lab's analysis (the research's
      open questions 1–5), checked live with a test mod and `reload particle`.
      Done 23 November 2026 in the lab's analysis. Read: a value is its numbers

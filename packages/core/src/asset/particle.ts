@@ -264,7 +264,8 @@ const SUBSYSTEM: [string, ParticleKeyDoc][] = [
     'local_space',
     doc(
       YES_NO,
-      'With `yes`, the particles move with the model. Otherwise they stay where they were sent out.',
+      'With `yes`, the particles move with the model. Otherwise they stay where they were sent out. The game passes the model’s place to the shader in `InstanceWorldMatrix`, and the base game’s `gfx/FX/particle.shader` does not use it, so with that shader these particles do not show at the model.',
+      'game',
     ),
   ],
   [
@@ -531,7 +532,8 @@ export type ParticleBlockCode =
   | 'particle-skipped-value'
   | 'particle-curve-without-duration'
   | 'particle-emitter-keys'
-  | 'unknown-particle-shader';
+  | 'unknown-particle-shader'
+  | 'particle-local-space-unplaced';
 
 export interface ParticleBlockDiagnostic extends SourceRange {
   readonly code: ParticleBlockCode;
@@ -564,12 +566,17 @@ interface ParticleEffect {
  *   curve's `op`, which it skips: the block keeps the word before it, or the reader's default;
  * - when `effects` is given (the effect names of the playset's `gfx/FX/particle.shader`), a
  *   subsystem whose texture's `shader`, with `Trail` and `NoBillboard` as the game adds them, names
- *   no effect there.
+ *   no effect there;
+ * - when `localSpacePlaced` is `false` (the playset's `gfx/FX/particle.shader` does not use
+ *   `InstanceWorldMatrix`, see `shaderPlacesLocalSpace`), each `local_space = yes`: the game hands
+ *   such a subsystem the effect's place only through that matrix, so its particles do not show at
+ *   the effect.
  * A missing texture file is the extension's check (`particleTextureFiles`), which needs the disk.
  */
 export function checkParticleBlocks(
   parsed: ParsedScript,
   effects?: ReadonlySet<string>,
+  localSpacePlaced?: boolean,
 ): ParticleBlockDiagnostic[] {
   const out: ParticleBlockDiagnostic[] = [];
   for (const block of propertyBlocks(parsed.entries, 'particle')) {
@@ -584,6 +591,7 @@ export function checkParticleBlocks(
       vectorKeys(subsystem, out);
       emitterKeys(subsystem, out);
       if (effects !== undefined) shaderEffect(subsystem, effects, out);
+      if (localSpacePlaced === false) unplacedLocalSpace(subsystem, out);
     }
     for (const curve of propertyBlocks(block.entries, 'animation')) {
       unknownKeys(curve, 'animation', out);
@@ -647,6 +655,20 @@ export function shaderEffectNames(text: string): Set<string> {
     if (name !== undefined) names.add(name);
   }
   return names;
+}
+
+/**
+ * Whether a particle `.shader` file moves particles by `InstanceWorldMatrix`: true when the name
+ * appears anywhere but in its declaration (`float4x4 InstanceWorldMatrix;`). The game puts a
+ * `local_space` subsystem's place and turn in that matrix and nowhere else; vanilla's
+ * `gfx/FX/particle.shader` declares it and never reads it.
+ */
+export function shaderPlacesLocalSpace(text: string): boolean {
+  const code = text.replace(/#[^\n]*/g, '').replace(/\/\/[^\n]*/g, '');
+  for (const match of code.matchAll(/(\w+)?\s*\bInstanceWorldMatrix\b/g)) {
+    if (!/^float\d(?:x\d)?$/.test(match[1] ?? '')) return true;
+  }
+  return false;
 }
 
 /** A hover in a particle block: what a key does, or the curve or force a name refers to. */
@@ -961,6 +983,18 @@ function shaderEffect(
     start: shader.start,
     end: shader.end,
     message: `gfx/FX/particle.shader has no shader effect "${effect}"${how}${has}`,
+  });
+}
+
+function unplacedLocalSpace(subsystem: BlockNode, out: ParticleBlockDiagnostic[]): void {
+  const flag = lastScalar(subsystem, 'local_space');
+  if (flag?.text.toLowerCase() !== 'yes') return;
+  out.push({
+    code: 'particle-local-space-unplaced',
+    start: flag.start,
+    end: flag.end,
+    message:
+      'With local_space = yes the game hands these particles the place of their effect only through InstanceWorldMatrix, and the playset’s gfx/FX/particle.shader does not use it. So the particles do not show at the effect. Leave local_space out, or ship a particle.shader whose vertex shader multiplies the position by InstanceWorldMatrix.',
   });
 }
 

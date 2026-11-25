@@ -5,6 +5,7 @@ import {
   particleHoverAt,
   particleTextureFiles,
   shaderEffectNames,
+  shaderPlacesLocalSpace,
 } from '../src/asset/index.ts';
 import { parseScript } from '../src/index.ts';
 
@@ -298,6 +299,36 @@ describe('particleTextureFiles and shaderEffectNames', () => {
     const text =
       'Includes = { }\nEffect ParticleAlphaBlend\n{\n\tVertexShader = "x"\n}\n# Effect Commented\n  Effect ParticleAdditive { }\n';
     expect([...shaderEffectNames(text)]).toEqual(['ParticleAlphaBlend', 'ParticleAdditive']);
+  });
+
+  it('tells a shader that moves particles by InstanceWorldMatrix from one that only declares it', () => {
+    const declared = 'ConstantBuffer( 3, 40 )\n{\n\tfloat4x4 InstanceWorldMatrix;\n}\n';
+    const use = 'Out.vPosition = mul( ViewProjectionMatrix, mul( InstanceWorldMatrix, p ) );\n';
+    expect(shaderPlacesLocalSpace(declared)).toBe(false);
+    expect(shaderPlacesLocalSpace(`${declared}# ${use}// ${use}`)).toBe(false);
+    expect(shaderPlacesLocalSpace(`${declared}${use}`)).toBe(true);
+  });
+});
+
+describe('local_space and the particle shader (step 19)', () => {
+  const text = `particle = { name = "x" subsystem = {
+	local_space = yes childsystem = { local_space = YES } } subsystem = { local_space = no } }`;
+  const codes = (placed: boolean | undefined) =>
+    checkParticleBlocks(parseScript(text), EFFECTS, placed).map((d) => [
+      d.code,
+      text.slice(d.start, d.end),
+    ]);
+
+  it('warns on each local_space = yes when the shader does not use InstanceWorldMatrix', () => {
+    expect(codes(false)).toEqual([
+      ['particle-local-space-unplaced', 'yes'],
+      ['particle-local-space-unplaced', 'YES'],
+    ]);
+  });
+
+  it('says nothing when the shader uses it, or when there is no shader to read', () => {
+    expect(codes(true)).toEqual([]);
+    expect(codes(undefined)).toEqual([]);
   });
 });
 
