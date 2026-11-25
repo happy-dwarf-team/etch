@@ -88,6 +88,30 @@ describe('reading a particle block', () => {
     expect(types).toEqual(['planar', 'point', 'point', 'vortex', 'planar']);
   });
 
+  it('reads sort, emitter_type and op as the game: any case, the last known one, the default', () => {
+    // Seen in the game (etch#631 step 15): a curve without `op`, or with only an unknown one,
+    // added to the value; `mul` then an unknown op stayed `mul`; `sphere` then an unknown
+    // emitter_type stayed a sphere, an unknown one alone was a point, and `SPHERE` a sphere.
+    const p = system(
+      `particle = { name = "p"
+        subsystem = { sort = "DEPTH" emitter_type = "SPHERE" }
+        subsystem = { sort = "age" sort = "none" emitter_type = "sphere" emitter_type = "cone" }
+        subsystem = { sort = "back" emitter_type = "cone" }
+        animation = { name = "a" curve = { 0 0 1 1 } }
+        animation = { name = "b" op = "etch_unknown" curve = { 0 0 1 1 } }
+        animation = { name = "c" op = "mul" op = "etch_unknown" curve = { 0 0 1 1 } }
+        animation = { name = "d" op = "ABS" curve = { 0 0 1 1 } }
+      }`,
+      'p',
+    );
+    expect(p.subsystems.map((s) => [s.sort, s.emitter])).toEqual([
+      ['depth', 'sphere'],
+      ['age', 'sphere'],
+      ['none', 'point'],
+    ]);
+    expect(p.curves.map((c) => c.op)).toEqual(['add', 'add', 'mul', 'abs']);
+  });
+
   it('gives a missing colour channel 255 and a hidden subsystem no particles', () => {
     const sub = single('hide = yes max_amount = 40 color = { r = 10 }').subsystems[0];
     expect(sub?.maxAmount).toBe(0);

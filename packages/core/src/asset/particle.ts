@@ -24,7 +24,7 @@ import type {
   SourceRange,
 } from '../script/tree.ts';
 import { keyOf } from '../model/properties.ts';
-import { isForceType } from './particle-system.ts';
+import { PARTICLE_CHOICES, particleChoice } from './particle-system.ts';
 
 /** The blocks whose keys Etch knows: an effect's and its parts', and a `.gfx` pdxparticle type. */
 export type ParticleBlockKind =
@@ -71,7 +71,13 @@ const SUBSYSTEM: [string, ParticleKeyDoc][] = [
       'game',
     ),
   ],
-  ['sort', doc('`depth`, `distance` or `age`', 'The order in which its particles are drawn.')],
+  [
+    'sort',
+    doc(
+      '`depth`, `distance` or `age`, in any case',
+      'The order in which its particles are drawn. Unsorted when the block has none the game knows (it skips one it does not know).',
+    ),
+  ],
   [
     'invert',
     doc(YES_NO, 'With `yes`, the particles are drawn in the reverse order of `sort`.', 'game'),
@@ -186,7 +192,14 @@ const SUBSYSTEM: [string, ParticleKeyDoc][] = [
       'game',
     ),
   ],
-  ['emitter_type', doc('`point`, `sphere` or `box`', 'The shape that particles start in.', 'game')],
+  [
+    'emitter_type',
+    doc(
+      '`point`, `sphere` or `box`, in any case',
+      'The shape that particles start in; `point` when the block has none the game knows (it skips one it does not know).',
+      'game',
+    ),
+  ],
   ['emitter_yaw', doc(VALUE, 'The sideways turn of the emitter.')],
   ['emitter_pitch', doc(VALUE, 'The up and down turn of the emitter.')],
   ['sphere_emitter_radius', doc(VALUE, 'The size of a sphere emitter (`emitter_type = sphere`).')],
@@ -321,8 +334,8 @@ export const PARTICLE_KEYS: Readonly<
     [
       'op',
       doc(
-        '`MUL`, `ADD` or `ABS`',
-        'How the curve changes the value: `MUL` multiplies it, `ADD` adds to it, `ABS` replaces it.',
+        '`MUL`, `ADD` or `ABS`, in any case',
+        'How the curve changes the value: `MUL` multiplies it, `ADD` adds to it, `ABS` replaces it. Without an `op` the game knows (it skips one it does not know), the curve adds: write `op = "MUL"` to scale the value, as the base game does.',
       ),
     ],
     ['minvalue', doc('a number', 'What the curve gives at its lowest point.')],
@@ -465,7 +478,7 @@ export type ParticleBlockCode =
   | 'unknown-particle-curve'
   | 'unknown-particle-force'
   | 'particle-curve-time'
-  | 'particle-force-type'
+  | 'particle-skipped-value'
   | 'particle-curve-without-duration'
   | 'particle-emitter-keys'
   | 'unknown-particle-shader';
@@ -497,8 +510,8 @@ interface ParticleEffect {
  * - a curve `time` the game reads as `spawn`;
  * - a curve `duration` of 0 or less, which the game logs and replaces by 1;
  * - box emitter keys on a sphere emitter, and the reverse, which the game logs;
- * - a force `type` the game does not know, which it skips: the force keeps the type before it, or
- *   is `planar` without one;
+ * - a word the game does not know in a force's `type`, a subsystem's `sort` or `emitter_type`, or a
+ *   curve's `op`, which it skips: the block keeps the word before it, or the reader's default;
  * - when `effects` is given (the effect names of the playset's `gfx/FX/particle.shader`), a
  *   subsystem whose texture's `shader`, with `Trail` and `NoBillboard` as the game adds them, names
  *   no effect there.
@@ -517,17 +530,19 @@ export function checkParticleBlocks(
       for (const texture of propertyBlocks(subsystem.entries, 'texture')) {
         unknownKeys(texture, 'texture', out);
       }
+      skippedChoices(subsystem, 'subsystem', out);
       emitterKeys(subsystem, out);
       if (effects !== undefined) shaderEffect(subsystem, effects, out);
     }
     for (const curve of propertyBlocks(block.entries, 'animation')) {
       unknownKeys(curve, 'animation', out);
       curveTime(curve, out);
+      skippedChoices(curve, 'animation', out);
       curveDuration(curve, out);
     }
     for (const force of propertyBlocks(block.entries, 'force')) {
       unknownKeys(force, 'force', out);
-      forceTypes(force, out);
+      skippedChoices(force, 'force', out);
     }
     for (const use of effect.curveUses) {
       if (effect.curves.has(use.name.toLowerCase())) continue;
@@ -811,8 +826,8 @@ function unknownKeys(
 }
 
 function emitterKeys(subsystem: BlockNode, out: ParticleBlockDiagnostic[]): void {
-  const type = lastScalar(subsystem, 'emitter_type')?.text.toLowerCase();
-  if (type !== 'sphere' && type !== 'box') return;
+  const type = particleChoice(subsystem, 'subsystem', 'emitter_type');
+  if (type === 'point') return;
   const other = type === 'sphere' ? BOX_KEYS : SPHERE_KEYS;
   const log =
     type === 'sphere'
@@ -868,18 +883,33 @@ function shaderEffect(
   });
 }
 
-function forceTypes(force: BlockNode, out: ParticleBlockDiagnostic[]): void {
-  for (const entry of force.entries) {
-    if (entry.kind !== 'property' || keyOf(entry) !== 'type' || entry.value?.kind !== 'scalar') {
-      continue;
-    }
-    const type = entry.value;
-    if (isForceType(type.text)) continue;
+/** What a block of `PARTICLE_CHOICES` is called, and what it does without a known word. */
+const CHOICE_WORDING: Record<string, { readonly noun: string; readonly fallback: string }> = {
+  type: { noun: 'force', fallback: 'is planar' },
+  sort: { noun: 'subsystem', fallback: 'is not sorted' },
+  emitter_type: { noun: 'subsystem', fallback: 'is a point emitter' },
+  op: { noun: 'curve', fallback: 'adds to the value' },
+};
+
+function skippedChoices(
+  block: BlockNode,
+  kind: keyof typeof PARTICLE_CHOICES,
+  out: ParticleBlockDiagnostic[],
+): void {
+  const choices: Record<string, { readonly known: readonly string[] }> = PARTICLE_CHOICES[kind];
+  for (const entry of block.entries) {
+    if (entry.kind !== 'property' || entry.value?.kind !== 'scalar') continue;
+    const key = keyOf(entry);
+    const known = choices[key]?.known;
+    const wording = CHOICE_WORDING[key];
+    if (known === undefined || wording === undefined) continue;
+    const value = entry.value;
+    if (known.includes(value.text.toLowerCase())) continue;
     out.push({
-      code: 'particle-force-type',
-      start: type.start,
-      end: type.end,
-      message: `The game skips type = "${type.text}": the force keeps the type before it, or is planar without one. It knows planar, point, vortex, friction, turbulence and spin, in any case.`,
+      code: 'particle-skipped-value',
+      start: value.start,
+      end: value.end,
+      message: `The game skips ${entry.key.text} = "${value.text}": the ${wording.noun} keeps the ${key} written before it, or ${wording.fallback} without one. It knows ${known.join(', ')}, in any case.`,
     });
   }
 }
