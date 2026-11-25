@@ -51,7 +51,10 @@ The entries come in two kinds:
 ## Keys and values the game does not read
 
 Etch checks each widget against the keys EU4 1.37.5 reads for that kind of widget. The game
-reads keys in upper or lower case, so `Orientation` and `orientation` are both fine.
+reads keys in upper or lower case, so `Orientation` and `orientation` are both fine. When
+CWTools is on and its rules cover the widgets of `.gui` files, CWTools gives these warnings
+instead, and Etch leaves them out (see
+[Etch and CWTools in the same file](../getting-started/install.md#etch-and-cwtools-in-the-same-file)).
 
 - "The game does not read sacle in iconType." The key is misspelled, or this kind of widget has
   no such key. The game skips it. Fix the spelling, or move the key to a widget that takes it.

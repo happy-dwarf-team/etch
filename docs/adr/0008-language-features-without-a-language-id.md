@@ -87,10 +87,14 @@ the rest:
 - **Steps back:** Go to Definition of a sprite whose kind and reference
   CWTools types; Go to Definition of a font in a `.gui` file when the rules
   type `bitmapfont` and check `.gui` widgets; the `.gfx` symbols of those sprite kinds and of fonts; the
-  keys of `.gui` completion when the rules check `.gui` widgets.
+  keys of `.gui` completion and the preview's structure warnings of a `.gui`
+  file (`unknown-key`, `ignored-key`, `wrong-value-kind`,
+  `unknown-orientation`, `fraction-as-int`) when the rules check `.gui`
+  widgets: both come from the same table of what EU4 1.37.5 reads as
+  cwtools-eu4-config#448's rules.
 - **Keeps:** hovers (Etch's have the picture and the whole text, and CWTools'
   cannot be hidden), sprite and font names in completion (Etch knows the
-  playset and shows thumbnails), the preview's problems such as
+  playset and shows thumbnails), the preview's other problems such as
   `missing-sprite` (Etch reads the mod's dependencies, CWTools only the
   workspace and the game), `.gui` symbols, inlay hints, colours, references,
   rename and links, which CWTools does not give.

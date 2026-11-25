@@ -186,10 +186,12 @@ Where they cover a thing, Etch leaves it to CWTools:
   too. When they cover fonts and the widgets of `.gui` files, **Go to Definition** on a font name
   in a `.gui` file comes from CWTools alone. When they cover the widgets of `.gui` files, the suggestions of widget types and keys as
   you type come from CWTools alone. Etch still suggests the sprite names and fonts after a key,
-  with their pictures.
+  with their pictures. The preview's warnings about
+  [keys and values the game does not read](../interface-windows/problems.md#keys-and-values-the-game-does-not-read)
+  then come from CWTools too.
 
-All the rest stays: Etch's hovers with the sprite's picture and the font's sample, the preview's warnings in the
-Problems panel, the hints beside localisation keys, colours, **Find All References** and
+All the rest stays: Etch's hovers with the sprite's picture and the font's sample, the preview's
+other warnings in the Problems panel, the hints beside localisation keys, colours, **Find All References** and
 **Rename Symbol**.
 
 To choose this, open [Settings](../reference/settings.md) and search for `etch.cwtools`:
