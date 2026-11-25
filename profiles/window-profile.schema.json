@@ -171,7 +171,9 @@
             "province.centerOfTrade",
             "game.cradleOfCivilization",
             "country.religionIcon",
+            "country.institution",
             "province.hreIndicator",
+            "province.colonialRegion",
             "owner.buildsNativeBuildings"
           ]
         },

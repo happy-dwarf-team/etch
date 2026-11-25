@@ -10,24 +10,104 @@
   },
   "selectors": {
     "institution": {
-      "kind": "ui",
+      "kind": "data",
       "label": "Institution",
-      "values": { "renaissance": "Renaissance" },
+      "fact": "country.institution",
+      "values": {
+        "feudalism": "Feudalism",
+        "renaissance": "Renaissance",
+        "new_world_i": "Colonialism",
+        "printing_press": "Printing Press",
+        "global_trade": "Global Trade",
+        "manufactories": "Manufactories",
+        "enlightenment": "Enlightenment",
+        "industrialization": "Industrialization",
+        "none": "All embraced",
+      },
       "default": "renaissance",
-      "note": "The institution the window shows, as in the base game; the value is the institution whose text a capture shows (Verne, 11 November 1444). Another one needs its text by hand.",
+      "note": "As in the base game, with Anbennar's bonuses; the default is the institution Verne on 11 November 1444 opens on. Manufactories show no line for the artificers' influence, which Verne's estates lack.",
     },
   },
   "rules": {
-    "when-embraced-industrialization": null,
-    "when-embraced-printing-press": null,
+    "when-embraced-feudalism": {
+      "when": { "institutions": "open", "institution": "feudalism" },
+      "note": "Feudalism's bonus, as the game writes it when the window shows it (Anbennar alone, Verne on 11 November 1444, each icon clicked).",
+      "text": {
+        "countrytechnologyview/institutions_window/when_embraced": [
+          { "key": "MODIFIER_FREE_LEADER_POOL", "suffix": ": +1\n" },
+          { "key": "monarch_spell_levels", "suffix": ": +1.00" },
+        ],
+      },
+    },
     "when-embraced-renaissance": {
       "when": { "institutions": "open", "institution": "renaissance" },
-      "note": "The renaissance's bonus of Anbennar's common/institutions, its modifiers in the game's order, as the coverage survey's institutions views show it (Verne, 11 November 1444, Anbennar alone and the Anbennar playset).",
+      "note": "Renaissance's bonus, as the game writes it when the window shows it (Anbennar alone, Verne on 11 November 1444, each icon clicked).",
       "text": {
         "countrytechnologyview/institutions_window/when_embraced": [
           { "key": "BUILD_COST", "suffix": ": -5.0%\n" },
           { "key": "DEVELOPMENT_COST", "suffix": ": -5.0%\n" },
           { "key": "monarch_spell_levels", "suffix": ": +1.00" },
+        ],
+      },
+    },
+    "when-embraced-new-world-i": {
+      "when": { "institutions": "open", "institution": "new_world_i" },
+      "note": "Colonialism's bonus, as the game writes it when the window shows it (Anbennar alone, Verne on 11 November 1444, each icon clicked).",
+      "text": {
+        "countrytechnologyview/institutions_window/when_embraced": [
+          { "key": "GLOBAL_PROV_TRADE_POWER_MODIFIER", "suffix": ": +10.0%\n" },
+          { "key": "monarch_spell_levels", "suffix": ": +1.00" },
+        ],
+      },
+    },
+    "when-embraced-printing-press": {
+      "when": { "institutions": "open", "institution": "printing_press" },
+      "note": "Printing Press's bonus, as the game writes it when the window shows it (Anbennar alone, Verne on 11 November 1444, each icon clicked).",
+      "text": {
+        "countrytechnologyview/institutions_window/when_embraced": [
+          { "key": "STABILITY_COST_MODIFIER", "suffix": ": -5.0%\n" },
+          { "key": "monarch_spell_levels", "suffix": ": +1.00" },
+        ],
+      },
+    },
+    "when-embraced-global-trade": {
+      "when": { "institutions": "open", "institution": "global_trade" },
+      "note": "Global Trade's bonus, as the game writes it when the window shows it (Anbennar alone, Verne on 11 November 1444, each icon clicked).",
+      "text": {
+        "countrytechnologyview/institutions_window/when_embraced": [
+          { "key": "YEARLY_MERCHANTS", "suffix": ": +1\n" },
+          { "key": "monarch_spell_levels", "suffix": ": +1.00" },
+        ],
+      },
+    },
+    "when-embraced-manufactories": {
+      "when": { "institutions": "open", "institution": "manufactories" },
+      "note": "Manufactories's bonus, as the game writes it when the window shows it (Anbennar alone, Verne on 11 November 1444, each icon clicked).",
+      "text": {
+        "countrytechnologyview/institutions_window/when_embraced": [
+          { "key": "MODIFIER_GLOBAL_TRADE_GOODS_SIZE_MODIFIER", "suffix": ": +10.0%\n" },
+          { "key": "monarch_spell_levels", "suffix": ": +1.00" },
+        ],
+      },
+    },
+    "when-embraced-enlightenment": {
+      "when": { "institutions": "open", "institution": "enlightenment" },
+      "note": "Enlightenment's bonus, as the game writes it when the window shows it (Anbennar alone, Verne on 11 November 1444, each icon clicked).",
+      "text": {
+        "countrytechnologyview/institutions_window/when_embraced": [
+          { "key": "MODIFIER_CULTURE_CONVERSION_COST", "suffix": ": -25.0%\n" },
+          { "key": "monarch_spell_levels", "suffix": ": +1.00" },
+        ],
+      },
+    },
+    "when-embraced-industrialization": {
+      "when": { "institutions": "open", "institution": "industrialization" },
+      "note": "Industrialization's bonus, as the game writes it when the window shows it (Anbennar alone, Verne on 11 November 1444, each icon clicked).",
+      "text": {
+        "countrytechnologyview/institutions_window/when_embraced": [
+          { "key": "GLOBAL_TAX_MODIFIER", "suffix": ": +15.0%\n" },
+          { "key": "GLOBAL_MANPOWER", "suffix": ": +25.0%\n" },
+          { "key": "MODIFIER_ALLOWED_RAJPUT_FRACTION", "suffix": ": +10.0%" },
         ],
       },
     },

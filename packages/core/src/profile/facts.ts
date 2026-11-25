@@ -17,6 +17,21 @@ export interface Fact {
   readonly numeric?: boolean;
 }
 
+/**
+ * The base game's institutions in the order of its `common/institutions`, which the save's
+ * `institutions` of a country follows; Anbennar keeps the same eight.
+ */
+export const BASE_INSTITUTIONS = [
+  'feudalism',
+  'renaissance',
+  'new_world_i',
+  'printing_press',
+  'global_trade',
+  'manufactories',
+  'enlightenment',
+  'industrialization',
+] as const;
+
 export const FACTS: readonly Fact[] = [
   {
     name: 'province.ownedByPlayer',
@@ -101,6 +116,13 @@ export const FACTS: readonly Fact[] = [
     inSave: true,
   },
   {
+    name: 'country.institution',
+    values: [...BASE_INSTITUTIONS, 'none'],
+    description:
+      "The institution the technology view's institutions window opens on: the first one the chosen country has not embraced, by the save's `institutions` (one 0 or 1 an institution, in the order of `common/institutions`, which the base game and Anbennar share), `none` when it has embraced them all. `eu4.exe` walks the institutions in that order when the window opens and selects the first one not embraced (Steam 1.37.5 0x1018150), which writes its bonus in `when_embraced` (0x1017C50); a click on another institution's icon selects that one.",
+    inSave: true,
+  },
+  {
     name: 'country.patriarchAuthority',
     values: [],
     description:
@@ -113,6 +135,13 @@ export const FACTS: readonly Fact[] = [
     values: ['yes', 'no'],
     description:
       "Whether the game shows the province's Holy Roman Empire indicator: the empire exists and the province can be part of it (in the Anbennar playset, its Empire). The map decides that, not the save, so it stays at the selector's default.",
+    inSave: false,
+  },
+  {
+    name: 'province.colonialRegion',
+    values: ['none', 'region', 'claimed'],
+    description:
+      "What the colonisation panel writes in `region_text` for an uncolonised province: `none` outside a colonial region (no text), `region` in one (a line break, the region's name and a space), `claimed` when the player's religion has a papacy and the Pope has granted the region to a country (then also `PAPAL_GRANT` with the country's name and flag). `eu4.exe` decides it from the map's colonial regions and the papacy's `colony_claim` (Steam 1.37.5 0xE31A50); the save does not hold the province's region, so it stays at the selector's default.",
     inSave: false,
   },
   {

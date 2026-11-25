@@ -13,11 +13,22 @@
       "note": "show_institutions opens institutions_window over the tab (the coverage survey, vanilla and Anbennar: closed as the tab opens, open after the click).",
     },
     "institution": {
-      "kind": "ui",
+      "kind": "data",
       "label": "Institution",
-      "values": { "industrialization": "Industrialization", "printingPress": "Printing Press" },
+      "fact": "country.institution",
+      "values": {
+        "feudalism": "Feudalism",
+        "renaissance": "Renaissance",
+        "new_world_i": "Colonialism",
+        "printing_press": "Printing Press",
+        "global_trade": "Global Trade",
+        "manufactories": "Manufactories",
+        "enlightenment": "Enlightenment",
+        "industrialization": "Industrialization",
+        "none": "All embraced",
+      },
       "default": "industrialization",
-      "note": "The institution the window shows, whose bonus the game's code writes in when_embraced, a modifier a line. It opens on the country's first institution not yet embraced, as far as the survey shows (Russia industrialization; Austria, Aragon and C01 the printing press); another one needs its text by hand. The values are the institutions whose text a capture shows.",
+      "note": "The institution the window shows, whose bonus the game's code writes in when_embraced, a modifier a line (eu4.exe 0x1017C50). It opens on the first institution the country has not embraced (0x1018150), which a save tells; a click on another icon shows that one. All embraced, the game leaves the text as it was, empty in a new game.",
     },
   },
   "rules": {
@@ -25,24 +36,84 @@
       "when": { "institutions": "closed" },
       "hide": ["countrytechnologyview/institutions_window"],
     },
-    "when-embraced-industrialization": {
-      "when": { "institutions": "open", "institution": "industrialization" },
-      "note": "Industrialization's bonus, as the coverage survey's institutions views show it (Russia, 17 March 1719, vanilla, Bigger UI and Proper 2K UI Enhanced).",
+    "when-embraced-feudalism": {
+      "when": { "institutions": "open", "institution": "feudalism" },
+      "note": "Feudalism's bonus, as the game writes it when the window shows it (the base game, Russia on 17 March 1719, each icon clicked).",
+      "text": {
+        "countrytechnologyview/institutions_window/when_embraced": {
+          "key": "MODIFIER_FREE_LEADER_POOL",
+          "suffix": ": +1",
+        },
+      },
+    },
+    "when-embraced-renaissance": {
+      "when": { "institutions": "open", "institution": "renaissance" },
+      "note": "Renaissance's bonus, as the game writes it when the window shows it (the base game, Russia on 17 March 1719, each icon clicked).",
       "text": {
         "countrytechnologyview/institutions_window/when_embraced": [
-          { "key": "GLOBAL_TAX_MODIFIER", "suffix": ": +15.0%\n" },
-          { "key": "GLOBAL_MANPOWER", "suffix": ": +25.0%" },
+          { "key": "BUILD_COST", "suffix": ": -5.0%\n" },
+          { "key": "DEVELOPMENT_COST", "suffix": ": -5.0%" },
         ],
       },
     },
+    "when-embraced-new-world-i": {
+      "when": { "institutions": "open", "institution": "new_world_i" },
+      "note": "Colonialism's bonus, as the game writes it when the window shows it (the base game, Russia on 17 March 1719, each icon clicked).",
+      "text": {
+        "countrytechnologyview/institutions_window/when_embraced": {
+          "key": "GLOBAL_PROV_TRADE_POWER_MODIFIER",
+          "suffix": ": +10.0%",
+        },
+      },
+    },
     "when-embraced-printing-press": {
-      "when": { "institutions": "open", "institution": "printingPress" },
-      "note": "The printing press's bonus, as the country views of the survey show it (Austria, Aragon and C01, 17 March 1719).",
+      "when": { "institutions": "open", "institution": "printing_press" },
+      "note": "Printing Press's bonus, as the game writes it when the window shows it (the base game, Russia on 17 March 1719, each icon clicked).",
       "text": {
         "countrytechnologyview/institutions_window/when_embraced": {
           "key": "STABILITY_COST_MODIFIER",
           "suffix": ": -5.0%",
         },
+      },
+    },
+    "when-embraced-global-trade": {
+      "when": { "institutions": "open", "institution": "global_trade" },
+      "note": "Global Trade's bonus, as the game writes it when the window shows it (the base game, Russia on 17 March 1719, each icon clicked).",
+      "text": {
+        "countrytechnologyview/institutions_window/when_embraced": {
+          "key": "YEARLY_MERCHANTS",
+          "suffix": ": +1",
+        },
+      },
+    },
+    "when-embraced-manufactories": {
+      "when": { "institutions": "open", "institution": "manufactories" },
+      "note": "Manufactories's bonus, as the game writes it when the window shows it (the base game, Russia on 17 March 1719, each icon clicked).",
+      "text": {
+        "countrytechnologyview/institutions_window/when_embraced": {
+          "key": "MODIFIER_GLOBAL_TRADE_GOODS_SIZE_MODIFIER",
+          "suffix": ": +10.0%",
+        },
+      },
+    },
+    "when-embraced-enlightenment": {
+      "when": { "institutions": "open", "institution": "enlightenment" },
+      "note": "Enlightenment's bonus, as the game writes it when the window shows it (the base game, Russia on 17 March 1719, each icon clicked).",
+      "text": {
+        "countrytechnologyview/institutions_window/when_embraced": {
+          "key": "MODIFIER_CULTURE_CONVERSION_COST",
+          "suffix": ": -25.0%",
+        },
+      },
+    },
+    "when-embraced-industrialization": {
+      "when": { "institutions": "open", "institution": "industrialization" },
+      "note": "Industrialization's bonus, as the game writes it when the window shows it (the base game, Russia on 17 March 1719, each icon clicked).",
+      "text": {
+        "countrytechnologyview/institutions_window/when_embraced": [
+          { "key": "GLOBAL_TAX_MODIFIER", "suffix": ": +15.0%\n" },
+          { "key": "GLOBAL_MANPOWER", "suffix": ": +25.0%" },
+        ],
       },
     },
     "institutions-window": {

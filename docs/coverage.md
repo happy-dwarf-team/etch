@@ -174,7 +174,10 @@ the playset's files (`packages/compare/src/coverage.ts`):
    profile: the window laid out offline with the profile's rules, its
    selectors at the values that fit the game (as an author who knows the
    state would set `View ▾`), without the snapshot's texts, toggles or
-   positions. Geometry and visibility as in 1: what the profiles alone get
+   positions. A selector that visibility cannot tell takes the value that
+   puts the widgets its rules move where the game has them, and gives the
+   texts its rules write the game's rects; values that tie there are told
+   apart by the text itself, without colour codes (etch#604). Geometry and visibility as in 1: what the profiles alone get
    right without a game.
    - *With the snapshot's texts*: the same, with the snapshot's texts and its
      lists' row counts as sample data, so that the boxes the game sizes to

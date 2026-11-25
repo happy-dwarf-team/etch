@@ -9,6 +9,17 @@
     "name": "Anbennar: A Fantasy Total Conversion",
   },
   "rules": {
+    "colonial-region": {
+      "when": { "colonialRegion": "region" },
+      "note": "Anbennar's first colonial region (colonial_endralliande) without a grant, written as the game's code writes the base game's; no capture shows it.",
+      "text": {
+        "colonisationpanel/no_colonist_window/region_text": [
+          { "literal": "\n" },
+          { "key": "colonial_endralliande", "suffix": " " },
+        ],
+      },
+    },
+    "colonial-region-claimed": null,
     "hidden": {
       "note": "Hidden in every view of the coverage survey (Anbennar alone): the game decides these from its data or a click; show one by hand.",
       "hide": [

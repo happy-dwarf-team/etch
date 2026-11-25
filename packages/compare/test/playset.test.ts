@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { hashModFolder, type CorpusManifest, type CorpusPlayset } from '@etch/core/corpus';
 import type { LiveSnapshot } from '@etch/core/profile';
 import type { DiscoveryEnvironment } from '@etch/core/playset';
-import { CorpusPlaysetFiles } from '../src/playset.ts';
+import { CorpusPlaysetFiles, writtenTextsShown } from '../src/playset.ts';
 
 const EXE = 'not really eu4.exe';
 const EXE_SHA256 = createHash('sha256').update(EXE).digest('hex').toUpperCase();
@@ -95,6 +95,34 @@ const SHIFT_PROFILE = JSON.stringify({
       note: 'A test.',
       when: { shift: 'yes' },
       offset: { 'test_window/title': { x: 20 } },
+    },
+  },
+});
+
+/** A profile whose `word` selector only writes the title's text. */
+const WORD_PROFILE = JSON.stringify({
+  formatVersion: 1,
+  window: 'test_window',
+  checkedWith: '1.37.5',
+  selectors: {
+    word: {
+      kind: 'ui',
+      label: 'Word',
+      values: { first: 'First', second: 'Second' },
+      default: 'first',
+      note: 'A test.',
+    },
+  },
+  rules: {
+    first: {
+      note: 'A test.',
+      when: { word: 'first' },
+      text: { 'test_window/title': { literal: 'One' } },
+    },
+    second: {
+      note: 'A test.',
+      when: { word: 'second' },
+      text: { 'test_window/title': [{ literal: '§YTwo§!' }, { key: 'TEST_TITLE', suffix: '!' }] },
     },
   },
 });
@@ -295,6 +323,29 @@ describe('CorpusPlaysetFiles', () => {
     expect(
       await files.profilePreview('no_such_window', screen, snapshot(15), loaded),
     ).toBeUndefined();
+  });
+
+  it("tells apart a selector's values whose texts give the same rects by the game's text", async () => {
+    const files = await open();
+    const profiles = join(root, 'profiles');
+    await addFiles(profiles, { 'vanilla/test_window.jsonc': WORD_PROFILE });
+    const loaded = await files.profile(profiles, 'test_window');
+    if (loaded === undefined) throw new Error('no profile');
+    const localise = (key: string): string | undefined =>
+      key === 'TEST_TITLE' ? 'Title' : undefined;
+    const shown = (word: string | undefined, text: string): number =>
+      writtenTextsShown(
+        loaded.profile,
+        word === undefined ? {} : { word },
+        snapshot(15, text),
+        localise,
+      );
+    // Colour codes are left out of both, and a selector left out is at its default.
+    expect(shown('second', 'TwoTitle!')).toBe(1);
+    expect(shown('second', '§GTwo§!Title!')).toBe(1);
+    expect(shown('first', 'TwoTitle!')).toBe(0);
+    expect(shown(undefined, 'One')).toBe(1);
+    expect(shown('second', 'One')).toBe(0);
   });
 
   it('lays out the offline preview of Compare with Live Game, with and without a profile', async () => {
