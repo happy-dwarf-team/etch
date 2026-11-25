@@ -241,7 +241,7 @@ A country's keys: `government_rank`, `government_name`, `capital`, `original_cap
 `primary_culture`, `dominant_culture`, `technology_group`, `unit_type`, `national_focus`,
 `base_tax`, `development`, `raw_development`, `realm_development`, `num_of_cities`,
 `average_unrest`, `average_autonomy`, `current_power_projection`, and two sums the game's code
-makes of the save's values, added up as it does: `score` (`CCountry::GetScore` `0x2C6430`, the
+makes of the save's values, added up as it does: `score` (the country's score, `0x2C6430`: the
 country's `age_score` of every age and its `card_score`, or its `vc_age_score` when the game's age
 scoring is on) and `army_strength` (the `strength` of every regiment of its armies, 1.000 where the
 save leaves it out, in thousands of men as the save writes manpower). Collections

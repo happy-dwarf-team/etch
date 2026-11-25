@@ -45,7 +45,7 @@ export function treasuryText(raw: number): string {
 }
 
 /**
- * The top bar's manpower, a value in thousands of men (`CRegiment::GetVisualStrength`
+ * The top bar's manpower, a value in thousands of men (the regiment's shown strength,
  * `0xAE8C10`): `750`, `45,500`, `2534k` above 99999 men.
  */
 export function menText(raw: number): string {
@@ -63,7 +63,7 @@ export function menShortText(raw: number): string {
 
 /**
  * A count of men given in thousands, as the diplomacy view writes its armies' strength
- * (`CreateSIValueNoColor` `0x14BF2E0`, no decimals): up to 999, then `9k`, `2M`, `1G`, each
+ * (the game's short number text without colour, `0x14BF2E0`, no decimals): up to 999, then `9k`, `2M`, `1G`, each
  * suffix from 1000 of the one below, truncated. The game multiplies the men by 1000 in 32 bits.
  */
 export function menSiText(raw: number): string {
