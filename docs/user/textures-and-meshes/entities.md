@@ -148,8 +148,11 @@ faces the camera. Etch draws it the same way. A band that faces the camera shows
 band seen from above does not show, except, in the game, for scraps where particles overtake each
 other; Etch shows no such scraps. And the game shows no band at all while another part of the same
 effect has particles on screen, whether that part comes before or after the trail in the file, so
-a trail shows only in an effect of trails, or while its other parts have no particle. Etch does the
-same.
+a trail shows only in an effect of trails, or while its other parts have no particle. Without its
+own shader effect, the band is drawn with the last shader the game used, and after the effect's
+particles that shader draws nothing. Etch does the same. A trail whose shader effect your playset's
+`gfx/FX/particle.shader` has (see [Particle effects](particles.md)) shows next to the other parts,
+in the game and in Etch.
 
 The `node` is a bone of the mesh, or a named point that the `.mesh` file stores for this. The
 `muzzle` of vanilla's muskets is such a point. If the mesh has neither of that name, the effect
@@ -241,7 +244,8 @@ These parts work as in the game:
 - the order in which the parts of an effect are drawn, which decides what covers what. First come
   the effect's particles that are not trails, subsystem by subsystem in the file's order. After
   each subsystem come its particles' child systems, parent by parent. The trails come last, in the
-  same order, and only while the effect's other particles are not on screen (see the trail above).
+  same order. A trail without its own shader effect comes only while the effect's other particles
+  are not on screen (see the trail above).
   A subsystem's `sort` changes the order of its particles, and so the order of their child
   systems too. Like the game, Etch sorts a little each frame, so the order settles over a few
   frames after you turn the camera. The game never moves the last particle in its list, which is
@@ -255,9 +259,8 @@ These parts differ:
   sequence from the computer's clock each time an effect starts, so its own shots differ from
   each other too and Etch cannot match any one of them.
 - A trail in a mod that adds its own shader effect for it (see
-  [Particle effects](particles.md)). The game draws the band with that effect, Etch still in grey,
-  and still hides it while the effect's other particles are on screen, which was seen only without
-  such an effect.
+  [Particle effects](particles.md)). The game draws the band with that effect. Etch still draws it in
+  grey.
 - Where a state with a `time_offset` starts. The game adds a random part of its second number;
   Etch starts at the first.
 - How many particles and effects can be alive. Like the game, Etch starts a new copy of an

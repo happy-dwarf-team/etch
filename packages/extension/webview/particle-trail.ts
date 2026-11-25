@@ -18,15 +18,19 @@ export const TRAIL_COLOUR: readonly [number, number, number] = [118, 112, 124];
  * effect's sprite layers in their order and then its trail layers, but a trail is not seen
  * where the same effect drew a sprite in the frame (seen in the game, Steam 1.37.5: a band with
  * a second subsystem of sprites, listed before or after it, was gone, while the band with a
- * second band or with a second subsystem that never emits was drawn). So the trails come only
- * while no sprite layer holds a particle.
+ * second band or with a second subsystem that never emits was drawn). The game sets no shader for
+ * a trail whose effect the playset's `particle.shader` lacks, so it draws with the sprites' shader
+ * and shows nothing (step 22). A trail with its own effect (`ownEffect`) sets it and shows next to
+ * the sprites. So the other trails come only while no sprite layer holds a particle.
  */
 export function drawOrder<
-  L extends { readonly subsystem: { readonly trail: boolean }; readonly quads: readonly unknown[] },
->(layers: readonly L[]): L[] {
+  S extends { readonly trail: boolean },
+  L extends { readonly subsystem: S; readonly quads: readonly unknown[] },
+>(layers: readonly L[], ownEffect: (subsystem: S) => boolean = () => false): L[] {
   const sprites = layers.filter((layer) => !layer.subsystem.trail);
-  if (sprites.some((layer) => layer.quads.length > 0)) return sprites;
-  return [...sprites, ...layers.filter((layer) => layer.subsystem.trail)];
+  const trails = layers.filter((layer) => layer.subsystem.trail);
+  if (!sprites.some((layer) => layer.quads.length > 0)) return [...sprites, ...trails];
+  return [...sprites, ...trails.filter((layer) => ownEffect(layer.subsystem))];
 }
 
 type Vector = readonly [number, number, number];

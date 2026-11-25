@@ -16,6 +16,7 @@ import {
   readMesh,
   readParticleSystem,
   resolveEntity,
+  shaderEffectNames,
   type ParticleSystem,
   type ResolvedEntity,
   type ResolvedEvent,
@@ -316,6 +317,7 @@ async function entityMessage(
     }
   }
   const states = entity.states.map((state) => state.name);
+  const shader = await files.read('gfx/FX/particle.shader').catch(() => undefined);
   return {
     type: 'entity',
     name: entity.name,
@@ -327,6 +329,10 @@ async function entityMessage(
     particles,
     effects,
     particleTextures,
+    particleShaderEffects:
+      shader === undefined
+        ? undefined
+        : [...shaderEffectNames(new TextDecoder('latin1').decode(shader))],
   };
 }
 

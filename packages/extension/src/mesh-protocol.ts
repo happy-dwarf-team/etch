@@ -379,4 +379,9 @@ export type MeshHostMessage =
       readonly effects: readonly EntityParticleEffect[];
       /** Their subsystems' textures, decoded, by game-relative path as the subsystem writes it. */
       readonly particleTextures: Readonly<Record<string, MeshTexture>>;
+      /**
+       * The shader effects of the playset's `gfx/FX/particle.shader`; `undefined` without one. A
+       * trail whose effect is there is drawn next to its effect's sprites.
+       */
+      readonly particleShaderEffects?: readonly string[] | undefined;
     };

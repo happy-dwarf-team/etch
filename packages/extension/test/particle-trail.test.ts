@@ -80,4 +80,12 @@ describe('drawOrder (step 11)', () => {
       ),
     ).toEqual(['tiles', 'child']);
   });
+
+  it('draws a trail with its own shader effect next to the sprites (step 22)', () => {
+    const own = (subsystem: { trail: boolean; name?: string }): boolean => subsystem.name === 'own';
+    const ownLayer = { name: 'own', subsystem: { trail: true, name: 'own' }, quads: [1, 2] };
+    expect(
+      names(drawOrder([layer('band', true, 5), ownLayer, layer('tiles', false, 3)], own)),
+    ).toEqual(['tiles', 'own']);
+  });
 });
