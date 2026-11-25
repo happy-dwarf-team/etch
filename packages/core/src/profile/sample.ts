@@ -150,6 +150,8 @@ export interface SampleInput {
   readonly hand?: LiveTexts;
   /** The number of entries the user set for a repeater, by its id; the save's or the profile's otherwise. */
   readonly count?: (repeater: string) => number | undefined;
+  /** Whether the playset defines a sprite, for a repeater's `states`; every one when not given. */
+  readonly spriteExists?: (name: string) => boolean;
 }
 
 /** A widget's sample text and the layer it comes from. */
@@ -379,6 +381,27 @@ export function sampleData(
                   shown.set(widget, { visible, enabled: true, checked: false });
               }
             }
+          }
+        }
+        const entry = entries?.[row];
+        for (const state of entry === undefined ? [] : repeater.states) {
+          const value = (ref: { readonly path: string }) => {
+            const path = readSavePath(ref.path, { entry: true });
+            return 'problem' in path ? undefined : input.save?.value(path, entry);
+          };
+          const visible = state.visible === undefined ? undefined : value(state.visible);
+          const candidates = (state.sprite ?? []).flatMap((ref) => value(ref) ?? []);
+          const sprite =
+            candidates.find((name) => input.spriteExists?.(name) ?? true) ?? candidates.at(-1);
+          for (const widget of widgetsAt(template.widget, state.path.path)) {
+            if (fromLive.has(widget)) continue;
+            const was = shown.get(widget);
+            shown.set(widget, {
+              visible: visible === undefined ? (was?.visible ?? true) : visible === 'yes',
+              enabled: was?.enabled ?? true,
+              checked: was?.checked ?? false,
+              ...(sprite === undefined ? {} : { sprite }),
+            });
           }
         }
         for (const field of repeater.fields) {

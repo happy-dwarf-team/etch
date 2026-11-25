@@ -21,9 +21,14 @@
  * Anbennar saves of etch#154: scalar keys the province view and the corpus windows can show,
  * and collections a repeater can list. Two country keys are sums the game's code makes of the
  * save's values, added up as it does (`DERIVED_COUNTRY_KEYS`): `score` and `army_strength`.
+ * One province collection is laid out as the game's code lays it out from the save and the
+ * playset's files: `building_slots`, the province view's building rows (`BUILDING_SLOT_FIELDS`).
  */
+import type { BuildingRules } from '../playset/building-rules.ts';
 import type { BlockNode, ValueNode } from '../script/tree.ts';
+import type { MapAreas } from '../script/map-areas.ts';
 import { scalarIn, valueIn, type Save } from '../save/save.ts';
+import { buildingSlots, type BuildingSlot } from './building-slots.ts';
 
 export type SaveScope = 'province' | 'country' | 'owner' | 'meta';
 
@@ -75,7 +80,31 @@ const PROVINCE_COLLECTIONS = [
   'institutions',
   'discovered_by',
   'modifier',
+  'building_slots',
 ];
+
+/**
+ * The fields of a `building_slots` entry, the province view's building rows as eu4.exe 1.37.5
+ * lays them out (`building-slots.ts`), seen by the country chosen in `Data ▾`:
+ *
+ * - `kind`: `construction`, `built`, `empty` or `locked`; `building`, the building's name;
+ * - `canbuild`, `destroy`, `progress` (a construction) and `locked`: `yes` or `no`;
+ * - `required_development`, the locked row's number;
+ * - `sprite`, the building's icon (`GFX_temple`, `GFX_locked_building_slot`), and
+ *   `culture_sprite`, its owner's graphical culture's (`GFX_temple_easterngfx`), which the game
+ *   draws where the playset defines it.
+ */
+export const BUILDING_SLOT_FIELDS = [
+  'kind',
+  'building',
+  'canbuild',
+  'destroy',
+  'progress',
+  'locked',
+  'required_development',
+  'sprite',
+  'culture_sprite',
+] as const;
 
 /** Scalar keys of a country block. */
 const COUNTRY_KEYS = [
@@ -229,6 +258,14 @@ export function knownSavePaths(): {
   return [...SCOPES].map(([prefix, scope]) => ({ scope: prefix, ...KEYS[scope] }));
 }
 
+/** The playset's files a save collection is laid out with, when it is not the save's own. */
+export interface SaveRules {
+  /** The building rules, for `building_slots`; without them the collection is not read. */
+  readonly buildings?: BuildingRules | undefined;
+  /** The areas, for a state's center of trade. */
+  readonly map?: MapAreas | undefined;
+}
+
 /**
  * The chosen save, country and province, with their blocks parsed once and kept while the choice
  * holds, so that a warm reload does not parse them again.
@@ -238,12 +275,20 @@ export class SaveChoice {
   /** The country tag, as chosen; `undefined` when the save has none. */
   readonly country: string | undefined;
   readonly province: number | undefined;
+  readonly rules: SaveRules;
   private readonly blocks = new Map<SaveScope, BlockNode | undefined>();
+  private slots: readonly RepeaterEntry[] | undefined;
 
-  constructor(save: Save, country: string | undefined, province: number | undefined) {
+  constructor(
+    save: Save,
+    country: string | undefined,
+    province: number | undefined,
+    rules: SaveRules = {},
+  ) {
     this.save = save;
     this.country = country;
     this.province = province;
+    this.rules = rules;
   }
 
   /** The province's owner tag, `undefined` for an uncolonised one. */
@@ -290,11 +335,57 @@ export class SaveChoice {
   /** The entries of a collection, for a repeater. */
   entries(path: SavePath): readonly RepeaterEntry[] | undefined {
     if (path.scope === 'entry' || path.scope === 'meta') return undefined;
+    if (path.scope === 'province' && path.key === 'building_slots') return this.buildingSlots();
     const block = this.block(path.scope);
     const value = block === undefined ? undefined : valueIn(block, path.key);
     if (value?.kind !== 'block') return undefined;
     return entriesOf(value);
   }
+
+  private buildingSlots(): readonly RepeaterEntry[] | undefined {
+    const rules = this.rules.buildings;
+    if (rules === undefined || this.province === undefined) return undefined;
+    if (this.slots !== undefined) return this.slots;
+    const owner = this.owner;
+    const country = owner === undefined ? undefined : this.save.country(owner);
+    const culture = country === undefined ? undefined : scalarIn(country, 'graphical_culture');
+    const rows = buildingSlots(this.save, this.province, this.country, rules, this.rules.map);
+    this.slots = rows.map((row) => slotEntry(row, culture));
+    return this.slots;
+  }
+}
+
+const NO_NODE = { start: 0, end: 0, quoted: false } as const;
+
+function slotEntry(row: BuildingSlot, culture: string | undefined): RepeaterEntry {
+  const yes = (b: boolean) => (b ? 'yes' : 'no');
+  const sprite =
+    row.building !== undefined
+      ? `GFX_${row.building}`
+      : row.kind === 'locked'
+        ? 'GFX_locked_building_slot'
+        : 'GFX_building_default';
+  const fields = new Map<string, string>([
+    ['kind', row.kind],
+    ['canbuild', yes(row.canbuild)],
+    ['destroy', yes(row.destroy)],
+    ['progress', yes(row.kind === 'construction')],
+    ['locked', yes(row.kind === 'locked')],
+    ['sprite', sprite],
+    [
+      'culture_sprite',
+      row.building !== undefined && culture !== undefined ? `${sprite}_${culture}` : sprite,
+    ],
+  ]);
+  if (row.building !== undefined) fields.set('building', row.building);
+  if (row.requiredDevelopment !== undefined) {
+    fields.set('required_development', String(row.requiredDevelopment));
+  }
+  return {
+    key: row.kind,
+    value: { kind: 'scalar', text: row.building ?? row.kind, ...NO_NODE },
+    fields,
+  };
 }
 
 /** A number of the save in thousandths, as the game holds it; 0 when it is not one. */
@@ -351,6 +442,8 @@ function armyStrengthOf(country: BlockNode): number {
 export interface RepeaterEntry {
   readonly key?: string;
   readonly value: ValueNode;
+  /** Values Etch lays out itself (`building_slots`), read before the block's keys. */
+  readonly fields?: ReadonlyMap<string, string>;
 }
 
 function entriesOf(block: BlockNode): RepeaterEntry[] {
@@ -366,6 +459,8 @@ function entriesOf(block: BlockNode): RepeaterEntry[] {
 }
 
 function entryValue(entry: RepeaterEntry, key: string): string | undefined {
+  const field = entry.fields?.get(key);
+  if (field !== undefined) return field;
   const scalar = entry.value.kind === 'scalar' ? entry.value.text : undefined;
   if (key === 'key') return entry.key;
   if (key === 'value') return scalar;

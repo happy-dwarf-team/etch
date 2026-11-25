@@ -67,11 +67,13 @@ import {
   liveTextures,
   liveView,
   sampleData,
+  SaveChoice,
   screenLayoutView,
   windowPaths,
   withView,
   type LiveSnapshot,
   type SampleInput,
+  type SaveRules,
   type ProfileDiagnostic,
   type SampleData,
   type WindowView,
@@ -984,9 +986,16 @@ export class Preview implements PreviewApi, vscode.Disposable {
           });
     const matched = live === undefined ? undefined : liveMatch(live, window, loaded?.profile);
     const localiseKey = (key: string): string | undefined => session.localisation?.get(key);
-    const choiceOfSave = this.data.choice;
+    const choiceOfSave =
+      this.data.choice === undefined
+        ? undefined
+        : withSaveRules(this.data.choice, {
+            buildings: await session.buildings,
+            map: session.map,
+          });
     const sampleInput = (name: string): SampleInput => ({
       ...(choiceOfSave === undefined ? {} : { save: choiceOfSave }),
+      spriteExists: (sprite) => session.ui.index.sprite(sprite) !== undefined,
       ...(session.map === undefined ? {} : { map: session.map }),
       localise: localiseKey,
       length: this.data.length,
@@ -2693,4 +2702,25 @@ function sessionPlaysetKey(session: PreviewSession): string {
     session.playset.gameFolder,
     session.playset.mods.map((m) => m.name),
   );
+}
+
+/**
+ * The chosen save with the session's playset rules, for the collections Etch lays out from the
+ * playset's files (`building_slots`): made once per choice and rules, so a warm reload keeps its
+ * parsed blocks.
+ */
+const withRules = new WeakMap<SaveChoice, { rules: SaveRules; choice: SaveChoice }>();
+
+function withSaveRules(choice: SaveChoice, rules: SaveRules): SaveChoice {
+  const found = withRules.get(choice);
+  if (
+    found !== undefined &&
+    found.rules.buildings === rules.buildings &&
+    found.rules.map === rules.map
+  ) {
+    return found.choice;
+  }
+  const made = new SaveChoice(choice.save, choice.country, choice.province, rules);
+  withRules.set(choice, { rules, choice: made });
+  return made;
 }

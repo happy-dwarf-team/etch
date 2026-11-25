@@ -481,6 +481,7 @@ describe('the JSON Schema', () => {
       'hide',
       'note',
       'place',
+      'states',
       'template',
     ]);
     expect(keys('link')).toEqual(['label', 'when', 'window']);

@@ -516,6 +516,24 @@
           "type": "array",
           "items": { "$ref": "#/definitions/path" }
         },
+        "states": {
+          "description": "Parts of an entry whose state a field of the save's entry sets, by path in the template: visible, an entry path whose yes shows the part and no hides it; sprite, entry paths of sprites, the first the playset defines drawn in place of the part's own.",
+          "type": "object",
+          "propertyNames": { "$ref": "#/definitions/path" },
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "visible": { "$ref": "#/definitions/text" },
+              "sprite": {
+                "oneOf": [
+                  { "$ref": "#/definitions/text" },
+                  { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/text" } }
+                ]
+              }
+            }
+          }
+        },
         "place": {
           "description": "For a window the game's code puts entries in, or a list box whose first rows have another template: the first entry's start, the step to the next (the template's size by default) and, with columns, how many to a row; each a positionType of the window's file, which the game reads, or pixels.",
           "type": "object",

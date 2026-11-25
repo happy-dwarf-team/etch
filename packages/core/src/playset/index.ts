@@ -44,6 +44,8 @@ export { parseVdf, type VdfObject } from './vdf.ts';
 export { hostPathFromWindows, isWindowsDrivePath, winePrefixOf } from './wine.ts';
 export { definedIds, loadProvinceIds, type PlaysetProvinceIds } from './province-ids.ts';
 export { loadMapAreas } from './map-areas.ts';
+export { loadBuildingRules, type BuildingRules, type BuildingDefinition } from './building-rules.ts';
+export { loadProvinceTerrain, type ProvinceTerrain } from './province-terrain.ts';
 export {
   checkScriptValues,
   findScriptValueProblems,

@@ -48,6 +48,14 @@ The menu stays open while you click in it. Click elsewhere or press <kbd>Esc</kb
 Numbers from the save are written as the game writes them in that box: the top bar shows
 "+100" prestige and "2534k" manpower, the diplomacy view "2M" men in the armies.
 
+With a save, the province view's building slots are the ones the game shows for that province:
+the building under construction, the built buildings, the free slots and one locked slot with the
+development the next slot needs. Etch works them out as the game does, from the save and your
+playset's files: the province's development, terrain, buildings and modifiers, and its owner's
+ideas and privileges. The green frame shows where your country could build now, and the destroy
+button on your own buildings. A few slot bonuses that depend on conditions, such as a monument's
+tier, are left out.
+
 A save also sets the selectors that follow the game's data. For example, the technology view's
 institutions window shows the first institution your country has not embraced, as the game does.
 See [Views](views.md).

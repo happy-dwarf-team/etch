@@ -313,9 +313,24 @@
       "count": 3,
     },
     "provinceview/buildings_window/general_buildings_window": {
-      "note": "The building slots, filled and free (building_progress_entry, eu4.exe 0x13899F0): from building_start, building_offset apart, building_max_per_row to a row (the corpus captures).",
+      "note": "The building slots, filled and free (building_progress_entry, eu4.exe 0x13899F0): from building_start, building_offset apart, building_max_per_row to a row (the corpus captures). With a save, the rows the game lays out (0x138EF20, etch#605): the construction, the built buildings, the free slots and one locked slot, each part shown as 0x138A100 shows it.",
       "template": "building_progress_entry",
+      "from": "provinces.{province}.building_slots",
       "count": 8,
+      "fields": {
+        "building_progress_entry/required_development": {
+          "save": "entry.required_development",
+          "generated": "integer",
+        },
+      },
+      "states": {
+        "building_progress_entry/building": { "sprite": ["entry.culture_sprite", "entry.sprite"] },
+        "building_progress_entry/building_canbuild": { "visible": "entry.canbuild" },
+        "building_progress_entry/building_destroy": { "visible": "entry.destroy" },
+        "building_progress_entry/building_progress": { "visible": "entry.progress" },
+        "building_progress_entry/building_currentlybuilding": { "visible": "entry.progress" },
+        "building_progress_entry/required_development": { "visible": "entry.locked" },
+      },
       "hide": [
         "building_progress_entry/building_canbuild",
         "building_progress_entry/building_currentlybuilding",
