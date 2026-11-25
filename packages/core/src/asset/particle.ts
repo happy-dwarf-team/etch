@@ -24,6 +24,7 @@ import type {
   SourceRange,
 } from '../script/tree.ts';
 import { keyOf } from '../model/properties.ts';
+import { isForceType } from './particle-system.ts';
 
 /** The blocks whose keys Etch knows: an effect's and its parts', and a `.gfx` pdxparticle type. */
 export type ParticleBlockKind =
@@ -340,8 +341,8 @@ export const PARTICLE_KEYS: Readonly<
     [
       'type',
       doc(
-        '`planar`, `point`, `vortex`, `friction`, `turbulence` or `spin`',
-        'The kind of force. `planar` pushes along `direction`, such as gravity. `point` pushes away from `position`, as hard at any distance; a negative `amount` pulls. `vortex` pushes out from the line through `position` along `direction` and turns round it by `yaw`. `friction` slows the particles: `amount` times their speed. `turbulence` pushes each particle by `amount` in a direction that changes from place to place and over time. `spin` swings the particles round the line through `position` along `direction`, `amount` radians a second, but nothing holds them on the circle: with a pdxparticle `scale` above 1, another force or a start speed they spiral outwards and fly off. The base game uses `planar`, `friction` and `turbulence`.',
+        '`planar`, `point`, `vortex`, `friction`, `turbulence` or `spin`, in any case',
+        'The kind of force; `planar` when the block has none the game knows (it skips one it does not know). `planar` pushes along `direction`, such as gravity. `point` pushes away from `position`, as hard at any distance; a negative `amount` pulls. `vortex` pushes out from the line through `position` along `direction` and turns round it by `yaw`. `friction` slows the particles: `amount` times their speed. `turbulence` pushes each particle by `amount` in a direction that changes from place to place and over time. `spin` swings the particles round the line through `position` along `direction`, `amount` radians a second, but nothing holds them on the circle: with a pdxparticle `scale` above 1, another force or a start speed they spiral outwards and fly off. The base game uses `planar`, `friction` and `turbulence`.',
         'game',
       ),
     ],
@@ -464,6 +465,7 @@ export type ParticleBlockCode =
   | 'unknown-particle-curve'
   | 'unknown-particle-force'
   | 'particle-curve-time'
+  | 'particle-force-type'
   | 'particle-curve-without-duration'
   | 'particle-emitter-keys'
   | 'unknown-particle-shader';
@@ -495,6 +497,8 @@ interface ParticleEffect {
  * - a curve `time` the game reads as `spawn`;
  * - a curve `duration` of 0 or less, which the game logs and replaces by 1;
  * - box emitter keys on a sphere emitter, and the reverse, which the game logs;
+ * - a force `type` the game does not know, which it skips: the force keeps the type before it, or
+ *   is `planar` without one;
  * - when `effects` is given (the effect names of the playset's `gfx/FX/particle.shader`), a
  *   subsystem whose texture's `shader`, with `Trail` and `NoBillboard` as the game adds them, names
  *   no effect there.
@@ -521,7 +525,10 @@ export function checkParticleBlocks(
       curveTime(curve, out);
       curveDuration(curve, out);
     }
-    for (const force of propertyBlocks(block.entries, 'force')) unknownKeys(force, 'force', out);
+    for (const force of propertyBlocks(block.entries, 'force')) {
+      unknownKeys(force, 'force', out);
+      forceTypes(force, out);
+    }
     for (const use of effect.curveUses) {
       if (effect.curves.has(use.name.toLowerCase())) continue;
       out.push({
@@ -859,6 +866,22 @@ function shaderEffect(
     end: shader.end,
     message: `gfx/FX/particle.shader has no shader effect "${effect}"${how}${has}`,
   });
+}
+
+function forceTypes(force: BlockNode, out: ParticleBlockDiagnostic[]): void {
+  for (const entry of force.entries) {
+    if (entry.kind !== 'property' || keyOf(entry) !== 'type' || entry.value?.kind !== 'scalar') {
+      continue;
+    }
+    const type = entry.value;
+    if (isForceType(type.text)) continue;
+    out.push({
+      code: 'particle-force-type',
+      start: type.start,
+      end: type.end,
+      message: `The game skips type = "${type.text}": the force keeps the type before it, or is planar without one. It knows planar, point, vortex, friction, turbulence and spin, in any case.`,
+    });
+  }
 }
 
 function curveTime(curve: BlockNode, out: ParticleBlockDiagnostic[]): void {

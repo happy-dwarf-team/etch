@@ -160,6 +160,22 @@ describe('checkParticleBlocks', () => {
     ]);
   });
 
+  it('warns on a force type the game skips, in any case it knows', () => {
+    const text = `particle = {
+	name = "x"
+	force = { name = "a" type = "Point" }
+	force = { name = "b" type = "point" type = "gravity" }
+}`;
+    expect(check(text)).toEqual([
+      {
+        code: 'particle-force-type',
+        at: '"gravity"',
+        message:
+          'The game skips type = "gravity": the force keeps the type before it, or is planar without one. It knows planar, point, vortex, friction, turbulence and spin, in any case.',
+      },
+    ]);
+  });
+
   it('warns on the keys of the other emitter shape', () => {
     const text = `particle = {
 	name = "x"

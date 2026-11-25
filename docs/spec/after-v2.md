@@ -1108,9 +1108,15 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
      texture; none in vanilla 1.37.5 or Anbennar. User page
      `textures-and-meshes/particles.md`. Not checked: keys inside
      `position` and `color` (those inside `childsystem` are checked as a
-     subsystem's since step 10), and the values of `sort`,
-     `emitter_type`, a force's `type` and `op`, since what the game does with
-     other text there is not known.
+     subsystem's since step 10), and the values of `sort`, `emitter_type`
+     and `op`, since what the game does with other text there is not known.
+     A force's `type` is checked since step 14: the lab read the game's
+     reader (it lowercases the value, sets the type only for a value it
+     knows, and starts at `planar`), and the game showed it with a test mod
+     (an unknown type pushed like `planar`, `point` followed by an unknown
+     type stayed a point, `POINT` was a point). The preview reads it the same
+     way, where it used to drop such a force, and warns on each value the
+     game skips (`particle-force-type`).
   2. Read the evaluators and the update in the lab's analysis (the research's
      open questions 1–5), checked live with a test mod and `reload particle`.
      Done 23 November 2026 in the lab's analysis. Read: a value is its numbers

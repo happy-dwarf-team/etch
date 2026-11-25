@@ -45,7 +45,7 @@ export type ForceType = 'planar' | 'point' | 'vortex' | 'friction' | 'turbulence
 
 export interface ParticleForce {
   readonly name: string;
-  readonly type: ForceType | undefined;
+  readonly type: ForceType;
   readonly amount: ParticleValue;
   readonly direction: readonly [number, number, number];
   readonly position: readonly [number, number, number];
@@ -153,11 +153,10 @@ export function readParticleSystem(block: BlockNode): ParticleSystem {
   const forceIndex = new Map<string, number>();
   for (const node of propertyBlocks(block.entries, 'force')) {
     const name = lastScalar(node, 'name')?.text ?? '';
-    const type = lastScalar(node, 'type')?.text.toLowerCase();
     forceIndex.set(name.toLowerCase(), forces.length);
     forces.push({
       name,
-      type: FORCE_TYPES.find((known) => known === type),
+      type: forceType(node),
       amount: value(lastValue(node, 'amount')),
       direction: vector(lastValue(node, 'direction')),
       position: vector(lastValue(node, 'position')),
@@ -257,6 +256,29 @@ const FORCE_TYPES: readonly ForceType[] = [
   'turbulence',
   'spin',
 ];
+
+/**
+ * A force's type as the game reads it (etch#631 step 14): each `type` in the block, in any case,
+ * sets it when the game knows it, and one it does not know changes nothing; without a known one
+ * the force is `planar`, the reader's default.
+ */
+function forceType(node: BlockNode): ForceType {
+  let type: ForceType = 'planar';
+  for (const entry of node.entries) {
+    if (entry.kind !== 'property' || keyOf(entry) !== 'type' || entry.value?.kind !== 'scalar') {
+      continue;
+    }
+    const text = entry.value.text.toLowerCase();
+    type = FORCE_TYPES.find((known) => known === text) ?? type;
+  }
+  return type;
+}
+
+/** Whether the game knows `text` as a force's `type`, in any case. */
+export function isForceType(text: string): boolean {
+  const lower = text.toLowerCase();
+  return FORCE_TYPES.some((known) => known === lower);
+}
 
 function shaderOf(effect: string | undefined): ParticleShader {
   const name = effect?.toLowerCase() ?? '';

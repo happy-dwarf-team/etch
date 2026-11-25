@@ -72,6 +72,22 @@ describe('reading a particle block', () => {
     expect(sub?.mass.base).toBe(1);
   });
 
+  it('reads a force type as the game: any case, the last known one, planar without one', () => {
+    // Seen in the game (etch#631 step 14): an unknown type pushed like planar, `point` then an
+    // unknown type stayed a point, and `POINT` was a point.
+    const types = system(
+      `particle = { name = "p"
+        force = { name = "a" type = "etch_unknown" }
+        force = { name = "b" type = "POINT" }
+        force = { name = "c" type = "point" type = "etch_unknown" }
+        force = { name = "d" type = "etch_unknown" type = "Vortex" }
+        force = { name = "e" }
+      }`,
+      'p',
+    ).forces.map((f) => f.type);
+    expect(types).toEqual(['planar', 'point', 'point', 'vortex', 'planar']);
+  });
+
   it('gives a missing colour channel 255 and a hidden subsystem no particles', () => {
     const sub = single('hide = yes max_amount = 40 color = { r = 10 }').subsystems[0];
     expect(sub?.maxAmount).toBe(0);
