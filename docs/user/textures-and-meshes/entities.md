@@ -262,6 +262,12 @@ These parts differ:
   started on every loop of its state, keeps growing there. The 1,000 effects matter for an effect
   that runs forever but keeps few particles alive, such as one with a low `emission` or a short
   `life`.
+- A subsystem or child with `local_space = yes`. Etch draws it at the model. The game passes the
+  model's place to `gfx/FX/particle.shader` in `InstanceWorldMatrix`, and the base game's shader
+  does not use it, so in the game these particles do not show at the model. Etch warns on
+  `local_space = yes` when your playset's `particle.shader` does not use `InstanceWorldMatrix`.
+  To keep the particles at the model, leave `local_space` out, or ship a `particle.shader` whose
+  vertex shader multiplies the position by `InstanceWorldMatrix`.
 
 ## What it doesn't do
 

@@ -91,13 +91,17 @@ warning shows in VS Code's Problems panel (<kbd>Ctrl+Shift+M</kbd>), with "Etch"
   subsystem needs a `gfx/FX/particle.shader` in your mod with that effect, such as
   `ParticleAlphaBlendTrail`. Without one, the game draws a trail as a flat grey band (see
   [Entities](entities.md#particles)).
+- **`local_space = yes` that the shader does not place.** The game passes the effect's place to
+  `gfx/FX/particle.shader` in `InstanceWorldMatrix`. The base game's file does not use it, so these
+  particles do not show at the effect. Leave `local_space` out, or ship a `particle.shader` in
+  your mod whose vertex shader multiplies the position by `InstanceWorldMatrix`.
 - **A texture that is missing**: your
   [playset](../reference/glossary.md#playset) (the game, your mod and the mods it depends on) has
   no file at the texture's `file`.
 
 When the game writes a line to its error log for a case, the warning quotes it.
 
-The warnings update as you type. For shader effects and textures, Etch looks at the files saved on
+The warnings update as you type. For shader effects, `local_space` and textures, Etch looks at the files saved on
 disk. After you add one, save its file, and the warnings update.
 
 An entity's `event` names the particle that it starts. Those names have warnings of their own:
@@ -109,6 +113,6 @@ see [Warnings in the files](entities.md#warnings-in-the-files) on the Entities p
   entity whose state starts it (see [Entities](entities.md#particles)).
 - What many keys do is Etch's reading, not checked in the game. Etch does not know how a value's
   variation (the second number in `{ 1.75 0.4 }`) and its curves add up.
-- The warnings about shader effects and textures need the game folder: without it, Etch gives
+- The warnings about shader effects, `local_space` and textures need the game folder: without it, Etch gives
   only the others.
 - It does not change your files.

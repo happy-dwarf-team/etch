@@ -5,8 +5,8 @@
 // the entity preview lists (`checkAssetParticles`, `checkGfxParticles` in core). In the `.asset`
 // files also the warnings of their `particle` blocks (`checkParticleBlocks`): unknown keys, curve
 // and force names the effect does not define, curve times and durations the game changes, emitter
-// keys of the other shape, a shader effect the playset's `gfx/FX/particle.shader` does not have and
-// a texture the playset does not have. The playset's definitions are read from disk; saving an
+// keys of the other shape, a shader effect the playset's `gfx/FX/particle.shader` does not have, a
+// `local_space = yes` that shader does not place, and a texture the playset does not have. The playset's definitions are read from disk; saving an
 // `.asset`, `.gfx` or `.shader` file reads them again. Hovers on the keys of particle blocks and of
 // `.gfx` pdxparticle types say what they do (`particleHoverAt`), in any `.asset` or `.gfx` file.
 import * as vscode from 'vscode';
@@ -17,6 +17,7 @@ import {
   particleHoverAt,
   particleTextureFiles,
   shaderEffectNames,
+  shaderPlacesLocalSpace,
   type EntityIndex,
 } from '@etch/core/asset';
 import { normaliseGamePath, parseScript, textureCandidates, type SourceRange } from '@etch/core';
@@ -42,6 +43,8 @@ interface Playset {
   readonly index: EntityIndex;
   /** The effects of the playset's `gfx/FX/particle.shader`; `undefined` when it has none. */
   readonly effects: ReadonlySet<string> | undefined;
+  /** Whether that shader uses `InstanceWorldMatrix`; `undefined` when the playset has none. */
+  readonly localSpacePlaced?: boolean | undefined;
 }
 
 /** A warning of a particle file, with the code the Problems panel shows. */
@@ -66,7 +69,7 @@ export async function diagnoseParticles(
     const parsed = parseScript(text);
     const found: ParticleWarning[] = [
       ...checkAssetParticles(parsed, playset.index),
-      ...checkParticleBlocks(parsed, playset.effects),
+      ...checkParticleBlocks(parsed, playset.effects, playset.localSpacePlaced),
     ];
     for (const node of particleTextureFiles(parsed)) {
       const candidates = textureCandidates(normaliseGamePath(node.text));
@@ -87,12 +90,17 @@ export async function diagnoseParticles(
   return undefined;
 }
 
-/** The effect names of the playset's `gfx/FX/particle.shader`, or `undefined` without one. */
-async function particleEffects(files: GameFiles): Promise<ReadonlySet<string> | undefined> {
+/**
+ * The effect names of the playset's `gfx/FX/particle.shader` and whether it uses
+ * `InstanceWorldMatrix`, or both `undefined` without one.
+ */
+async function particleShader(
+  files: GameFiles,
+): Promise<Pick<Playset, 'effects' | 'localSpacePlaced'>> {
   const shader = await files.read('gfx/FX/particle.shader');
-  return shader === undefined
-    ? undefined
-    : shaderEffectNames(new TextDecoder('latin1').decode(shader));
+  if (shader === undefined) return { effects: undefined, localSpacePlaced: undefined };
+  const text = new TextDecoder('latin1').decode(shader);
+  return { effects: shaderEffectNames(text), localSpacePlaced: shaderPlacesLocalSpace(text) };
 }
 
 /** Hovers on the keys of particle blocks and on the curve and force names they use. */
@@ -163,7 +171,7 @@ export class ParticleDiagnostics implements vscode.Disposable {
           : {
               files: linked.files,
               index: await loadEntityIndex(linked.files),
-              effects: await particleEffects(linked.files),
+              ...(await particleShader(linked.files)),
             },
       )
       .catch((error: unknown) => {

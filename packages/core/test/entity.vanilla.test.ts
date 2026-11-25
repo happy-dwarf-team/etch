@@ -18,6 +18,7 @@ import {
   readMesh,
   resolveEntity,
   shaderEffectNames,
+  shaderPlacesLocalSpace,
   type PdxMesh,
   type ResolvedEntity,
 } from '../src/asset/index.ts';
@@ -221,7 +222,10 @@ describe.skipIf(gamePath === undefined)('entities of the installed game', () => 
     ];
     const shader = await files.find('gfx/FX/particle.shader');
     expect(shader).toBeDefined();
-    const effects = shaderEffectNames(readFileSync(shader?.absolutePath ?? '', 'latin1'));
+    const shaderText = readFileSync(shader?.absolutePath ?? '', 'latin1');
+    const effects = shaderEffectNames(shaderText);
+    // Vanilla declares InstanceWorldMatrix and never reads it: local_space particles miss the effect.
+    expect(shaderPlacesLocalSpace(shaderText)).toBe(false);
     expect([...effects].sort()).toEqual([
       'ParticleAdditive',
       'ParticleAlphaBlend',
