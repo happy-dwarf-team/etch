@@ -12,6 +12,7 @@ import {
   type Widget,
   type WidgetKind,
 } from '@etch/core';
+import { cwtoolsTypesFonts, cwtoolsTypesSprite } from './cwtools.ts';
 
 export const INTERFACE_SELECTOR: vscode.DocumentSelector = [
   { scheme: 'file', pattern: '**/*.gui' },
@@ -39,17 +40,19 @@ export class InterfaceSymbols implements vscode.DocumentSymbolProvider {
     if (/\.gfx$/i.test(document.fileName)) {
       const file = readGfxFile(parsed);
       const symbols = [
-        ...file.sprites.map((sprite) => {
-          const symbol = new vscode.DocumentSymbol(
-            sprite.name,
-            sprite.kind,
-            vscode.SymbolKind.Constant,
-            range(sprite.node.start, sprite.node.end),
-            range(sprite.nameNode.start, sprite.nameNode.end),
-          );
-          return { start: sprite.node.start, symbol };
-        }),
-        ...file.fonts.map((font) => {
+        ...file.sprites
+          .filter((sprite) => !cwtoolsTypesSprite(document, sprite.kind))
+          .map((sprite) => {
+            const symbol = new vscode.DocumentSymbol(
+              sprite.name,
+              sprite.kind,
+              vscode.SymbolKind.Constant,
+              range(sprite.node.start, sprite.node.end),
+              range(sprite.nameNode.start, sprite.nameNode.end),
+            );
+            return { start: sprite.node.start, symbol };
+          }),
+        ...(cwtoolsTypesFonts(document) ? [] : file.fonts).map((font) => {
           const symbol = new vscode.DocumentSymbol(
             font.name,
             'bitmapfont',

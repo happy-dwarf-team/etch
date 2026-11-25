@@ -22,6 +22,7 @@ import {
   type SpriteReference,
 } from '@etch/core';
 import { PlaysetInterface, type GameFile, type GameFiles } from '@etch/core/playset';
+import { cwtoolsDefinesSprite } from './cwtools.ts';
 import { linkedFiles } from './script-profile-view.ts';
 import { TextureThumbnails } from './texture-thumbnail.ts';
 import { readGamePath } from '@etch/core/playset';
@@ -151,6 +152,9 @@ export class SpriteLinks implements vscode.HoverProvider, vscode.DefinitionProvi
     if (loaded === undefined) return undefined;
     const sprite = loaded.ui.index.sprite(found.reference.name);
     if (sprite === undefined) return undefined;
+    // CWTools answers with its own location: two answers open a peek instead of a jump (ADR 0008).
+    const scriptPath = found.script ? spriteScriptPath(document.fileName) : undefined;
+    if (cwtoolsDefinesSprite(document, sprite.item.kind, scriptPath)) return undefined;
     return this.locationOf(loaded.files, sprite);
   }
 

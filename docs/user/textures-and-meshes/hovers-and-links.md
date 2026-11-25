@@ -73,7 +73,8 @@ In `.gui` files, hover over the sprite name after `spriteType`, `quadTextureSpri
     its pixels kept sharp. A frame over 128 pixels is shown smaller.
 
 To open the `.gfx` file at the sprite's name, press <kbd>F12</kbd> on the name, or
-<kbd>Ctrl</kbd>+click it (**Go to Definition**).
+<kbd>Ctrl</kbd>+click it (**Go to Definition**). With CWTools on, CWTools may open it instead:
+see [Etch and CWTools in the same file](../getting-started/install.md#etch-and-cwtools-in-the-same-file).
 
 A sprite name that no `.gfx` file of your playset defines gets no hover in a `.gui` file: the
 [Problems panel](../interface-windows/problems.md) warns about it instead.
