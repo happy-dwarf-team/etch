@@ -141,7 +141,7 @@ describe('layoutWindow: placement', () => {
       iconType = { name = "centre" spriteType = "GFX_plain" orientation = "CENTER" position = { x = -10 y = -5 } }
       iconType = { name = "lr" spriteType = "GFX_plain" Orientation = lower_right position = { x = -20 y = -10 } }
       iconType = { name = "cd" spriteType = "GFX_plain" orientation = center_down position = { x = 0 y = -10 } }
-      windowType = { name = "inner" position = { x = 0 y = 50 } size = { width = 50% height = 100% }
+      windowType = { name = "inner" position = { x = 0 y = 50 } size = { x = 100 y = 100 }
         iconType = { name = "inner_icon" spriteType = "GFX_plain" orientation = upper_right position = { x = -20 y = 0 } }
       }
     } }`);
@@ -214,6 +214,31 @@ describe('layoutWindow: placement', () => {
     const w = layout('w');
     expect(w.widgets.map((x) => x.widget.name)).toEqual(['w', 'gui_button']);
     expect(rectOf(w, 'gui_button')).toEqual([8, 0, 20, 10]);
+  });
+
+  it('reads a size only in the form the game reads for the widget', () => {
+    // A containerWindowType's size is { width height }, with percentages of the parent; a
+    // windowType's or listboxType's is { x y }. The other form, or bare numbers, is no size
+    // (etch#743).
+    const { layout } = setUp(`guiTypes = {
+      containerWindowType = { name = "c" size = { width = 50% height = 100% }
+        containerWindowType = { name = "c_xy" size = { x = 30 y = 40 } }
+        listboxType = { name = "l_wh" size = { width = 30 height = 40 } }
+        listboxType = { name = "l_bare" size = { 30 40 } }
+        listboxType = { name = "l_xy" size = { x = 30 y = 40 } }
+        iconType = { name = "i_wh" spriteType = "GFX_plain" position = { width = 5 height = 6 } }
+      }
+      windowType = { name = "w_wh" size = { width = 50% height = 100% } }
+    }`);
+    const c = layout('c');
+    expect(rectOf(c, 'c')).toEqual([0, 0, 400, 600]);
+    expect(rectOf(c, 'c_xy')).toEqual([0, 0, 0, 0]);
+    expect(rectOf(c, 'l_wh')).toEqual([0, 0, 0, 0]);
+    expect(rectOf(c, 'l_bare')).toEqual([0, 0, 0, 0]);
+    expect(rectOf(c, 'l_xy')).toEqual([0, 0, 30, 40]);
+    // A position is { x y } everywhere.
+    expect(rectOf(c, 'i_wh')).toEqual([0, 0, 20, 10]);
+    expect(rectOf(layout('w_wh'), 'w_wh')).toEqual([0, 0, 0, 0]);
   });
 
   it('gives a full-screen window the screen size and uses show_position', () => {

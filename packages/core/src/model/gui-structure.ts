@@ -97,6 +97,32 @@ export function guiCreatesChild(parent: string, child: string): boolean {
   return CHILDREN_BY_KEY.get(schema)?.has(child.toLowerCase()) ?? true;
 }
 
+/** Each widget key's schema, in `guiTypes` or in a parent: the same one wherever the key stands. */
+const SCHEMA_BY_WIDGET_KEY = new Map<string, GuiSchemaName>();
+for (const map of [ROOT_BY_KEY, ...CHILDREN_BY_KEY.values()]) {
+  for (const [key, [, schema]] of map) {
+    if (!SCHEMA_BY_WIDGET_KEY.has(key)) SCHEMA_BY_WIDGET_KEY.set(key, schema);
+  }
+}
+
+const PAIR_FIELDS: Partial<Record<BlockKind, readonly [string, string]>> = {
+  point: ['x', 'y'],
+  position: ['x', 'y'],
+  size: ['width', 'height'],
+};
+
+/**
+ * The two named fields the game reads a pair key of a widget from (any case): `x` and `y` for a
+ * `position`, `width` and `height` for a `containerWindowType`'s `size`, `x` and `y` for a
+ * `buttonType`'s. `undefined` for a widget or key the table has no pair for.
+ */
+export function guiPairFields(widget: string, key: string): readonly [string, string] | undefined {
+  const schema = SCHEMA_BY_WIDGET_KEY.get(widget.toLowerCase());
+  if (schema === undefined) return undefined;
+  const kind = KEYS_BY_KEY.get(schema)?.get(key.toLowerCase())?.[1];
+  return kind !== undefined && isBlockKind(kind) ? PAIR_FIELDS[kind] : undefined;
+}
+
 /** The place inside a `guiTypes` block. */
 export const GUI_ROOT_PLACE: GuiPlace = { kind: 'root' };
 
