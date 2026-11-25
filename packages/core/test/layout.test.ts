@@ -193,6 +193,29 @@ describe('layoutWindow: placement', () => {
     expect(rectOf(l, 'icon')).toEqual([8, 0, 20, 10]);
   });
 
+  it('lays out no child the game does not create in that window', () => {
+    // A containerWindowType creates buttonType and no guiButtonType; a windowType the other way
+    // round. Neither the skipped child nor what it holds is drawn.
+    const { layout } = setUp(`guiTypes = {
+      containerWindowType = { name = "c" size = { width = 400 height = 100 }
+        guiButtonType = { name = "gui_button" spriteType = "GFX_plain" }
+        buttonType = { name = "button" spriteType = "GFX_plain" position = { x = 8 y = 0 } }
+        windowType = { name = "inner" iconType = { name = "inner_icon" spriteType = "GFX_plain" } }
+      }
+      windowType = { name = "w" size = { x = 400 y = 100 }
+        BUTTONTYPE = { name = "button" spriteType = "GFX_plain" }
+        guiButtonType = { name = "gui_button" spriteType = "GFX_plain" position = { x = 8 y = 0 } }
+      }
+    }`);
+    const c = layout('c');
+    expect(c.widgets.map((w) => w.widget.name)).toEqual(['c', 'button']);
+    expect(rectOf(c, 'button')).toEqual([8, 0, 20, 10]);
+    expect(c.drawList.draws).toHaveLength(1);
+    const w = layout('w');
+    expect(w.widgets.map((x) => x.widget.name)).toEqual(['w', 'gui_button']);
+    expect(rectOf(w, 'gui_button')).toEqual([8, 0, 20, 10]);
+  });
+
   it('gives a full-screen window the screen size and uses show_position', () => {
     const { layout } = setUp(`guiTypes = { windowType = {
       name = "full" fullScreen = yes size = { x = 10 y = 10 }
@@ -492,7 +515,7 @@ describe('layoutWindow: sprites', () => {
   });
 
   it('draws a shield as its overlay alone and a chart as nothing', () => {
-    const { layout } = setUp(`guiTypes = { windowType = { name = "w"
+    const { layout } = setUp(`guiTypes = { eu3dialogtype = { name = "w"
       shieldtype = { name = "shield" spriteType = "GFX_shield" position = { x = 5 y = 5 } }
       guiButtonType = { name = "flag" quadTextureSprite = "GFX_shield" scale = 0.5 }
       iconType = { name = "pie" spriteType = "GFX_pie" }

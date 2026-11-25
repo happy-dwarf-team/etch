@@ -30,6 +30,7 @@ import {
 import { diagnostic, type ModelDiagnostic } from '../model/diagnostics.ts';
 import type { FontDefinition, Sprite } from '../model/gfx.ts';
 import { widgetProperties, type GuiFile, type Screen, type Widget } from '../model/gui.ts';
+import { guiCreatesChild } from '../model/gui-structure.ts';
 import type { InterfaceIndex } from '../model/interface-index.ts';
 import type { Constants, Properties, Size } from '../model/properties.ts';
 import { resolveFontFiles, resolveTexture, type FileExists } from '../model/references.ts';
@@ -1217,7 +1218,10 @@ class Layout {
    * names the child that is painted behind the others), then the rest in file order (later on top).
    */
   private paintOrder(widget: Widget, props: Properties): { widget: Widget; background: boolean }[] {
-    const children = widget.children;
+    // A child the game does not create in this window (a `guiButtonType` in a
+    // `containerWindowType`, which takes `buttonType`) is neither laid out nor drawn, as in the
+    // game; the structure check reports it in Problems.
+    const children = widget.children.filter((c) => guiCreatesChild(widget.kind, c.kind));
     if (children.length === 0) return [];
     let background: Widget | undefined;
     if (widget.kind === 'containerWindowType') {
