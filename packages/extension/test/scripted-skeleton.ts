@@ -152,6 +152,6 @@ export async function testScriptedSkeleton(api: EtchApi): Promise<void> {
   } finally {
     await settings.update('gamePath', undefined, vscode.ConfigurationTarget.Global);
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
-    await rm(root, { recursive: true, force: true });
+    await rm(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
   }
 }

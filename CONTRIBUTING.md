@@ -124,17 +124,32 @@ into it unchanged, with their licence texts, and writes
 ## Building and testing
 
 Node.js 22.18 or later (build scripts are TypeScript run by Node directly) and
-the pnpm version in `package.json`:
+the pnpm version in `package.json`. Run `pnpm check` before every push: it runs
+everything the `windows` CI job checks for TypeScript, in the order below, and
+stops at the first failure. The plugin, pins and package checks run only when a
+change touches them.
 
 ```powershell
 pnpm install
-pnpm typecheck
-pnpm lint
-pnpm format:check
-pnpm test:unit       # Vitest
 pnpm --filter @etch/renderer exec playwright install chromium   # once
+pnpm check           # format:check, lint, typecheck and test, as below
+```
+
+The steps of `pnpm check`, to run one of them alone:
+
+```powershell
+pnpm format:check    # Prettier, with its cache in node_modules/.cache/prettier
+pnpm lint            # ESLint, with its cache in node_modules/.cache/eslint
+pnpm typecheck
+pnpm test            # test:unit, test:renderer and test:extension
+pnpm test:unit       # Vitest
 pnpm test:renderer   # Playwright: WebGL2 in Chromium (renderer and corpus comparison)
 pnpm test:extension  # @vscode/test-electron: downloads VS Code into .vscode-test
+```
+
+The other checks:
+
+```powershell
 pnpm pins            # download and check the pinned builds, stage them, write the notices
 pnpm pins:check      # the same checks without the plugin build, staging nothing
 pnpm package         # packages/extension/dist/etch-win32-x64-<version>.vsix (runs pnpm pins)
@@ -142,6 +157,19 @@ pnpm package         # packages/extension/dist/etch-win32-x64-<version>.vsix (ru
 
 `pnpm format` rewrites files with Prettier. Markdown is not formatted; keep its
 line breaks and tables as they are.
+
+`ETCH_TEST_ONLY` runs only the extension tests whose name it matches, a
+case-insensitive regular expression (a plain substring works too). The names
+are those `packages/extension/test/suite.ts` passes to `test(...)`; the
+extension still activates first and the tests keep their order, so a test that
+needs an earlier one's state needs that one in the pattern too. A pattern that
+matches no test fails the run and lists the names:
+
+```powershell
+$env:ETCH_TEST_ONLY = 'scriptedSkeleton|provinceIds'
+pnpm test:extension
+Remove-Item Env:ETCH_TEST_ONLY
+```
 
 ### The plugin
 
