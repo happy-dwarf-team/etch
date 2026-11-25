@@ -395,7 +395,8 @@ its plain values count), and a monument's tier is left out.
 
 The terrain category is the game's, from the map: a category's `terrain_override`, else the
 province's pixels in `map/terrain.bmp`, with `map/trees.bmp` painted over it, where a land
-province counts its land pixels, a `forest` or `jungle` pixel twice, and the largest share wins
+province counts its land pixels, a `forest` or `jungle` pixel twice, and the largest share wins;
+a province none of whose pixels count has the first category of `map/terrain.txt`
 (the map's terrain update from the trees, 0x885D90, and the province's terrain vote,
 0xA42F00; checked against a running game's categories of every vanilla province).
 

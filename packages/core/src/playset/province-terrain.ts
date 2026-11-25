@@ -261,5 +261,9 @@ export async function loadProvinceTerrain(files: GameFiles): Promise<ProvinceTer
     });
     category.set(p, categories[best >= 0 ? best : 0]?.name ?? '');
   }
+  // A province no pixel voted for (all of them water in a land province, or none on the map)
+  // keeps the first category.
+  const first = categories[0]?.name ?? '';
+  for (const id of idOf.values()) if (!category.has(id)) category.set(id, first);
   return { category };
 }

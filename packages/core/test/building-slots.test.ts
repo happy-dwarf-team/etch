@@ -56,7 +56,7 @@ nothingness_modifier = { hidden = yes army_professionalism = 0.0 unit_sprite_sta
 supply_depot_modifier = { army_professionalism = 0.2 unit_sprite_start = "GFX_ap2_" trigger = { always = yes } }
 general_cost_modifier = { army_professionalism = 1.0 unit_sprite_start = "GFX_ap6_" trigger = { always = yes } }
 `,
-  'map/default.map': `max_provinces = 4\nsea_starts = { 3 }\n`,
+  'map/default.map': `max_provinces = 6\nsea_starts = { 3 }\n`,
   'map/area.txt': `a_area = { 1 2 }\n`,
   'map/climate.txt': `arctic = { 2 }\n`,
   'map/terrain.txt': `
@@ -74,7 +74,7 @@ terrain = {
 }
 tree = { }
 `,
-  'map/definition.csv': `province;red;green;blue;x;x\n1;10;0;0;a;x\n2;20;0;0;b;x\n3;30;0;0;c;x\n`,
+  'map/definition.csv': `province;red;green;blue;x;x\n1;10;0;0;a;x\n2;20;0;0;b;x\n3;30;0;0;c;x\n4;40;0;0;d;x\n5;50;0;0;e;x\n`,
 };
 
 const SAVE_TEXT = `EU4txt
@@ -178,22 +178,24 @@ beforeAll(async () => {
     await mkdir(dirname(join(folder, path)), { recursive: true });
     await writeFile(join(folder, path), text, 'latin1');
   }
-  // Province 2: 3 grassland pixels and 2 forest ones, which count twice; province 3 is sea.
+  // Province 2: 3 grassland pixels and 2 forest ones, which count twice; province 3 is sea;
+  // province 4 is land on ocean pixels only, and province 5 has no pixels.
   const p1 = [10, 0, 0];
   const p2 = [20, 0, 0];
   const p3 = [30, 0, 0];
+  const p4 = [40, 0, 0];
   await writeFile(
     join(folder, 'map/provinces.bmp'),
-    bitmap(4, [
-      [p1, p2, p2, p2],
-      [p3, p2, p2, p3],
+    bitmap(5, [
+      [p1, p2, p2, p2, p4],
+      [p3, p2, p2, p3, p4],
     ]),
   );
   await writeFile(
     join(folder, 'map/terrain.bmp'),
-    bitmap(4, [
-      [0, 0, 0, 12],
-      [15, 0, 12, 15],
+    bitmap(5, [
+      [0, 0, 0, 12, 15],
+      [15, 0, 12, 15, 15],
     ]),
   );
   const files = new GameFiles([{ name: 'game', root: folder, replacePaths: [] }]);
@@ -235,6 +237,9 @@ describe('the building rules', () => {
     expect(terrain?.category.get(2)).toBe('forest');
     // A sea counts its water pixels only.
     expect(terrain?.category.get(3)).toBe('ocean');
+    // A province no pixel voted for keeps the first category.
+    expect(terrain?.category.get(4)).toBe('pti');
+    expect(terrain?.category.get(5)).toBe('pti');
   });
 });
 
