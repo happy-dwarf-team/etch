@@ -48,9 +48,10 @@ describe.skipIf(gamePath === undefined)('layout on the installed game', () => {
       }
     }
     console.log(`${String(windows)} definitions, ${String(draws)} draws`, counts);
-    // Vanilla 1.37.5 in English: rotated icons and one `origo`, the orientations `left`, `right`
-    // and `UPPERL_LEFT`, and `gui_rendertarget` sprites; every texture header and font reads.
-    expect(counts).toEqual({ 'not-applied': 16, 'unknown-orientation': 29, 'unhandled-shader': 5 });
+    // Vanilla 1.37.5 in English: rotated icons and one `origo`, and `gui_rendertarget` sprites;
+    // every texture header and font reads. Its 29 orientations outside the anchors are the
+    // structure check's (gui-structure.vanilla.test.ts).
+    expect(counts).toEqual({ 'not-applied': 16, 'unhandled-shader': 5 });
     expect(windows).toBe(858);
   });
 

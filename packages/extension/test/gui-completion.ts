@@ -115,20 +115,31 @@ export async function testGuiCompletion(): Promise<void> {
 
     const anchors = await complete(2);
     assert.equal(labels(anchors)[0], 'UPPER_LEFT', 'the anchor the playset writes first');
-    assert.equal(anchors.length, 9, "the exe's nine anchors");
+    assert.equal(anchors.length, 9, 'the nine anchors the game reads');
     assert.equal(insert(anchors[0]), '"UPPER_LEFT"');
 
-    assert.deepEqual(labels(await complete(3)), ['yes']);
+    assert.deepEqual(labels(await complete(3)), ['yes', 'no'], 'a key the game reads as yes or no');
 
     const keys = await complete(4);
     const kinds = keys.filter((item) => item.kind === vscode.CompletionItemKind.Class);
-    assert.deepEqual(labels(kinds), ['iconType', 'instantTextBoxType'], "a window's children");
+    assert.deepEqual(
+      labels(kinds).slice(0, 2),
+      ['iconType', 'instantTextBoxType'],
+      "a window's children, the playset's first",
+    );
+    assert.equal(kinds.length, 18, 'every widget the game creates in a window');
+    assert.ok(labels(kinds).includes('browserType'), 'also those the playset does not write');
     assert.match(insert(kinds[0]) ?? '', /^iconType = \{\n\tname = "\$1"/);
     const properties = keys.filter((item) => item.kind === vscode.CompletionItemKind.Property);
-    assert.deepEqual(labels(properties), ['name', 'position']);
+    assert.deepEqual(labels(properties).slice(0, 2), ['name', 'position']);
+    for (const key of ['tooltip', 'tint', 'parent', 'scripted', 'verticalScrollbar']) {
+      assert.ok(labels(properties).includes(key), `the game reads ${key} in a window`);
+    }
     assert.equal(insert(properties[1]), 'position = { $0 }', 'a block key gets its braces');
 
-    assert.deepEqual(labels(await complete(5)), ['windowType'], 'inside guiTypes');
+    const top = labels(await complete(5));
+    assert.equal(top[0], 'windowType', "inside guiTypes, the playset's first");
+    assert.equal(top.length, 20, 'every widget the game reads in guiTypes');
 
     await settings.update('editor.completion', false, vscode.ConfigurationTarget.Global);
     assert.deepEqual(await complete(0), [], 'the setting turns it off');

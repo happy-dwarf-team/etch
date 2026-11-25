@@ -48,6 +48,29 @@ The entries come in two kinds:
 - "Constant @my_width is not defined in this file." A `@name` value needs its `@name = …` line in
   the same file.
 
+## Keys and values the game does not read
+
+Etch checks each widget against the keys EU4 1.37.5 reads for that kind of widget. The game
+reads keys in any case, so `Orientation` and `orientation` are both fine.
+
+- "The game does not read sacle in iconType." The key is misspelled, or this kind of widget has
+  no such key. The game skips it. Fix the spelling, or move the key to a widget that takes it.
+- "The game does not read guiButtonType in containerWindowType. It takes buttonType for this
+  widget here." The game creates only some kinds of widget inside each kind of widget. Here it
+  never creates the button, so it does not show. Use the kind the entry names.
+- "The game reads text in iconType only to log that it does nothing there." An `iconType` shows
+  no `text`, `font`, `buttonText` or `buttonFont`, and an `instantTextBoxType` ignores `size`.
+  Remove the key, or use a widget that shows it.
+- "LEFT is not one of the nine anchors the game reads for orientation; the game puts the widget
+  at the upper left." Use one of the nine anchors, such as `"CENTER_LEFT"`. The base game writes
+  `LEFT` 25 times: those widgets sit at the upper left. A `containerWindowType` takes seven: no
+  `CENTER_LEFT` or `CENTER_RIGHT`.
+- "The game reads spacing as an integer: 2.5 is read as 2." The game drops the part after the
+  point. Write the whole number you want.
+- "The game reads alwaystransparent as yes or no, not maybe." The value is the wrong kind for the
+  key: a word where the game wants a number, a block `{ … }` where it wants one value, or the
+  reverse. The entry says what the game reads.
+
 ## Names written twice
 
 - "Top-level name my_window is already defined in this file …" Rename one of the two. At startup
@@ -74,8 +97,10 @@ of" and the key.
 
 ## Kinds and files Etch cannot draw
 
-- "my_widgetType is not a widget kind vanilla EU4 1.37.5 uses; Etch does not draw it." The same
-  goes for a sprite kind. Check the spelling of the block's name.
+- "The game reads browserType, but vanilla EU4 1.37.5 does not use it and Etch does not draw
+  it." The preview leaves the widget out. A block the game does not read at all gets a warning
+  instead (see above). A sprite kind that the base game does not use gets an entry too: check the
+  spelling of the block's name.
 - "Texture gfx/interface/my_icon.dds cannot be drawn: …" and similar entries mean that a texture
   or `.fnt` file is there, but Etch cannot read it. The entry says why. Save the file again from
   your image editor.
@@ -85,7 +110,6 @@ of" and the key.
 These are information entries. They tell you where the preview may differ from the game:
 
 - a sprite whose shader Etch does not have is drawn with Etch's default shader;
-- a widget whose `orientation` is not one the game lists is anchored at the upper left;
 - a widget's `rotation` and `origo` are not applied;
 - a name that matches only when upper and lower case are ignored: Etch does not know whether the
   game ignores case there.

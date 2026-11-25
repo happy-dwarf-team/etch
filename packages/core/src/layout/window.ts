@@ -1239,24 +1239,14 @@ class Layout {
   /**
    * The anchor in the parent's box. Verified: `orientation` picks a point of the parent's box and
    * `position` is the offset of the widget's top-left corner from it (etch#3); a widget without
-   * `orientation` anchors upper left, not to its parent's orientation (etch#9). Hypothesis: centres
-   * round down.
+   * `orientation` anchors upper left, not to its parent's orientation (etch#9), and so does a word
+   * outside the anchors, which the structure check reports (`unknown-orientation`). Hypothesis:
+   * centres round down.
    */
   private anchor(props: Properties, box: Rect): { x: number; y: number } {
     const written = props.text('orientation');
-    let fractions = ANCHORS.get('upper_left') ?? [0, 0];
-    if (written !== undefined) {
-      const found = ANCHORS.get(written.toLowerCase());
-      if (found !== undefined) fractions = found;
-      else {
-        this.report(
-          'information',
-          'unknown-orientation',
-          props.scalar('orientation') ?? props.property('orientation'),
-          `Orientation ${written} is not one the game lists; Etch anchors it upper left, which is unverified.`,
-        );
-      }
-    }
+    const fractions = (written === undefined ? undefined : ANCHORS.get(written.toLowerCase())) ??
+      ANCHORS.get('upper_left') ?? [0, 0];
     return {
       x: box.x + Math.floor(box.width * fractions[0]),
       y: box.y + Math.floor(box.height * fractions[1]),

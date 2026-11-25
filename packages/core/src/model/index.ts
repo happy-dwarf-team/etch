@@ -2,6 +2,8 @@ export type * from './diagnostics.ts';
 export * from './gfx.ts';
 export * from './gfx-colours.ts';
 export * from './gui.ts';
+export * from './gui-schema.ts';
+export * from './gui-structure.ts';
 export * from './interface-index.ts';
 export * from './properties.ts';
 export * from './references.ts';

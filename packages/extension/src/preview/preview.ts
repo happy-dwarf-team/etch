@@ -79,6 +79,7 @@ import {
   type WindowView,
 } from '@etch/core/profile';
 import { readGameText, saveEncodingOf } from '../game-text.ts';
+import { guiStructureProblems } from '../gui-structure.ts';
 import {
   pickKeySetting,
   type LiveGame,
@@ -1184,12 +1185,23 @@ export class Preview implements PreviewApi, vscode.Disposable {
       ...(place?.wins === true
         ? session.ui.diagnostics(place.path)
         : guiDiagnostics(file, session.ui.index, session.ui.exists)),
+      ...guiStructureProblems(document, file),
       ...layout.diagnostics,
     ];
     this.publish(uri, model, source);
     for (const other of touched) {
       if (other.uri.toString() === uri.toString()) continue;
-      this.publish(other.uri, session.ui.diagnostics(other.path), other.source);
+      const otherFile = session.guiFile(other.path);
+      this.publish(
+        other.uri,
+        [
+          ...session.ui.diagnostics(other.path),
+          ...(otherFile === undefined
+            ? []
+            : guiStructureProblems(other.source.document, otherFile)),
+        ],
+        other.source,
+      );
     }
   }
 

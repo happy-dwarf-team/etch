@@ -471,15 +471,30 @@ refresh goes out with a 2.x release (v3.md section 7).
   too). Lines that name neither go to the output. Problems source
   "Etch game check"; `etch.liveGame.checkOnSave` (off) checks on save.
 
-- **Completion in `.gui` files (ADR 0008).** Its words come from the playset,
-  counted, not from a schema: the widget types written inside `guiTypes` and
-  inside each widget type, the keys each widget type is written with (a key
-  the playset mostly writes with a block gets `{ }`), the sprite names and
-  fonts of the `.gfx` files (a sprite's entry shows its hover with the
-  thumbnail), the exe's nine anchors for `orientation`, and for any other key
+- **Completion in `.gui` files (ADR 0008).** Its keys are the table of what
+  EU4 1.37.5 reads for each widget (`packages/core/src/model/gui-schema.ts`,
+  as in cwtools-eu4-config#448): the widgets `guiTypes` holds, each widget's
+  keys and the child widgets it creates, `if_resolution`'s bounds, and the
+  fields of `position`, `size` and the other value blocks. The playset's
+  files rank them and give their spelling (a key the game reads as a block
+  gets `{ }`). Values: the sprite names and fonts of the `.gfx` files (a
+  sprite's entry shows its hover with the thumbnail), an enum's words
+  (`orientation`, the seven of a `containerWindowType`, `format`,
+  `vertical_alignment`), `yes` and `no`, and for a key the game reads as text
   the playset's values when they are at most 16 words and none a number
-  (`alwaysTransparent`, `fixedsize`, `format`). Nothing is offered in a nested
-  block (`position`), in a comment or outside `guiTypes`. Vanilla offers 6,829
+  (`clicksound`). Nothing is offered in a comment, outside `guiTypes`, or in a
+  block the game does not read there.
+
+- **The structure check of `.gui` files.** With the preview's model
+  diagnostics, from the same table: a key or child widget the game does not
+  read there (`unknown-key`), a key it reads only to log that it does nothing
+  (`ignored-key`: `text`, `font`, `buttonText`, `buttonFont` of `iconType`,
+  `size` of `instantTextBoxType`), a value of the wrong kind
+  (`wrong-value-kind`), an orientation outside the anchors
+  (`unknown-orientation`, which the layout no longer reports), and a fraction
+  where the game reads an integer (`fraction-as-int`; a whole `1.0` is not
+  reported). All are warnings. Vanilla 1.37.5 gives 29 orientations and 17
+  list spacings, as CWTools does with cwtools-eu4-config#448's rules. Vanilla offers 6,829
   sprites and 47 fonts, Anbennar 15,118 sprites; the context takes about 2 ms
   on the largest files (budgets.md). `etch.editor.completion` turns it off.
 
