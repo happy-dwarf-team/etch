@@ -45,6 +45,9 @@ The menu stays open while you click in it. Click elsewhere or press <kbd>Esc</kb
    player's capital as the province. The **Data ▾** button then names the province and the save's
    date.
 
+Numbers from the save are written as the game writes them in that box: the top bar shows
+"+100" prestige and "2534k" manpower, the diplomacy view "2M" men in the armies.
+
 A save also sets the selectors that follow the game's data. For example, the technology view's
 institutions window shows the first institution your country has not embraced, as the game does.
 See [Views](views.md).
@@ -103,7 +106,8 @@ more. **Reset** goes back to the save's or the profile's number.
 ## What it doesn't do
 
 - Etch never works out a value the game's engine computes, such as income or a modifier. Such a
-  value comes from the live snapshot, or is made up.
+  value comes from the live snapshot, or is made up. A few numbers the game only adds up from the
+  save are taken from it, as the game adds them up: a country's score and the men in its armies.
 - It cannot read ironman saves or other binary saves: it reads only saves written as text,
   compressed or not. Choose a save of a game that is not ironman.
 - It never tests a trigger to decide what a window shows. A window profile picks no save, country

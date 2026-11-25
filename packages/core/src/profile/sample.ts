@@ -26,8 +26,10 @@ import type {
   Link,
   Placement,
   RuleText,
+  ValueFormat,
   WindowProfile,
 } from './format.ts';
+import { fixedPoint, GAME_NUMBER_FORMATS } from './game-numbers.ts';
 import { entryPath, widgetsAt, windowPaths } from './paths.ts';
 import { readSavePath, type RepeaterEntry, type SaveChoice } from './save-paths.ts';
 import type { WindowView } from './view.ts';
@@ -50,6 +52,7 @@ const GENERATED: Readonly<Record<GeneratedKind, Readonly<Record<TextLength, stri
       'The Most Serene Grand Duchy of the Western Marches, the Northern Isles and the Lands Beyond the Sea',
   },
   number: { short: '7', typical: '12.3', long: '-1234.56', overflow: '123456789.01' },
+  signed: { short: '+1.00', typical: '+12.3', long: '-1234.56', overflow: '+123456789.01' },
   integer: { short: '1', typical: '3', long: '12', overflow: '123456789' },
   percent: { short: '5%', typical: '12.5%', long: '-45.25%', overflow: '1234567.89%' },
   date: {
@@ -504,12 +507,18 @@ function saveValue(
   return Number.isFinite(number) ? formatNumber(number, source.format, source.decimals) : value;
 }
 
-/** A number as a profile formats it: fixed decimals, else at most two with trailing zeros dropped. */
+/**
+ * A number as a profile formats it: one of the game's formatters, or fixed decimals, else at most
+ * two with trailing zeros dropped.
+ */
 export function formatNumber(
   value: number,
-  format: 'text' | 'number' | 'percent',
+  format: ValueFormat,
   decimals: number | undefined,
 ): string {
+  if (format !== 'text' && format !== 'number' && format !== 'percent') {
+    return GAME_NUMBER_FORMATS[format](fixedPoint(value));
+  }
   const text =
     decimals === undefined ? String(Math.round(value * 100) / 100) : value.toFixed(decimals);
   return format === 'percent' ? `${text}%` : text;

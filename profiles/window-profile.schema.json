@@ -389,15 +389,27 @@
         },
         "generated": {
           "description": "What the generated layer fills the text with; by default text, or the save value's format.",
-          "enum": ["text", "number", "integer", "percent", "date"]
+          "enum": ["text", "number", "signed", "integer", "percent", "date"]
         },
         "transform": {
           "description": "sum adds up several save paths; localise shows the localisation of the save value (a culture, a religion, a tag).",
           "enum": ["sum", "localise"]
         },
         "format": {
-          "description": "How a save value is written: as it is (text), as a number, or as a number with %.",
-          "enum": ["text", "number", "percent"]
+          "description": "How a save value is written: as it is (text), as a number, as a number with %, or as one of the game's formatters: whole, plus, signed and signedStability (the top bar's prestige and stability), treasury, men and menShort (manpower in thousands), menSi (men in thousands, 9k, 2M).",
+          "enum": [
+            "text",
+            "number",
+            "percent",
+            "whole",
+            "plus",
+            "signed",
+            "signedStability",
+            "treasury",
+            "men",
+            "menShort",
+            "menSi"
+          ]
         },
         "decimals": {
           "description": "Decimals of a number or percentage; at most two, trailing zeros dropped, when not given.",
@@ -443,15 +455,27 @@
         },
         "generated": {
           "description": "What the generated layer fills the text with; by default text, or the save value's format.",
-          "enum": ["text", "number", "integer", "percent", "date"]
+          "enum": ["text", "number", "signed", "integer", "percent", "date"]
         },
         "transform": {
           "description": "sum adds up several save paths; localise shows the localisation of the save value (a culture, a religion, a tag).",
           "enum": ["sum", "localise"]
         },
         "format": {
-          "description": "How a save value is written: as it is (text), as a number, or as a number with %.",
-          "enum": ["text", "number", "percent"]
+          "description": "How a save value is written: as it is (text), as a number, as a number with %, or as one of the game's formatters: whole, plus, signed and signedStability (the top bar's prestige and stability), treasury, men and menShort (manpower in thousands), menSi (men in thousands, 9k, 2M).",
+          "enum": [
+            "text",
+            "number",
+            "percent",
+            "whole",
+            "plus",
+            "signed",
+            "signedStability",
+            "treasury",
+            "men",
+            "menShort",
+            "menSi"
+          ]
         },
         "decimals": {
           "description": "Decimals of a number or percentage; at most two, trailing zeros dropped, when not given.",

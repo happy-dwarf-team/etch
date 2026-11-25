@@ -16,8 +16,8 @@ have a profile.
 | anbennar-alone | 1920x1080 | 60 | 99.7 % | 99.9 % | 88.8 % | 77.0 % | 25 | 100.0 % | 99.9 % | 100.0 % | 100.0 % | 60 | 100.0 % | 100.0 % | 3 of 60 |
 | bigger-ui | 1280x720 | 62 | 99.5 % | 99.6 % | 81.5 % | 87.5 % | 23 | 100.0 % | 99.5 % | 100.0 % | 100.0 % | 62 | 100.0 % | 100.0 % | 3 of 62 |
 | bigger-ui | 1920x1080 | 62 | 99.6 % | 99.6 % | 81.5 % | 87.3 % | 23 | 100.0 % | 99.6 % | 100.0 % | 100.0 % | 62 | 100.0 % | 100.0 % | 3 of 62 |
-| proper-2k-ui-enhanced | 2560x1440 | 61 | 99.0 % | 99.6 % | 79.2 % | 87.5 % | 16 | 99.5 % | 99.6 % | 99.9 % | 100.0 % | 58 | 100.0 % | 100.0 % | 2 of 61 |
-| anbennar | 2560x1440 | 59 | 99.3 % | 99.9 % | 86.9 % | 78.7 % | 19 | 99.6 % | 99.9 % | 99.8 % | 100.0 % | 53 | 100.0 % | 100.0 % | 2 of 59 |
+| proper-2k-ui-enhanced | 2560x1440 | 61 | 99.4 % | 99.6 % | 79.2 % | 87.5 % | 16 | 99.9 % | 99.6 % | 99.9 % | 100.0 % | 58 | 100.0 % | 100.0 % | 2 of 61 |
+| anbennar | 2560x1440 | 59 | 99.5 % | 99.9 % | 86.9 % | 78.7 % | 19 | 99.7 % | 99.9 % | 99.8 % | 100.0 % | 53 | 100.0 % | 100.0 % | 2 of 59 |
 
 "With profiles and live texts" is the same with the snapshot's texts and list rows as sample
 data: what Compare with Live Game compares (spec/v3.md section 4), through the same functions.
@@ -123,6 +123,16 @@ below (no capture was taken again). The generated tables above are this run.
   measure 4 now also fits a selector whose rules only write texts, by the rects of those texts and,
   on a tie, by the text itself. Two rects fewer on each of the three countries; none of the other
   sets changes.
+- **Numbers from the save** (etch#604): measure 4 takes its texts from the capture's save, with
+  the view's country and province, as an author who opened the save in `Data ▾` sees them
+  (`coverage --saves`; `coverage/survey.json`'s `data` picks the Holy Roman Emperor for the
+  emperor's diplomacy view). The top bar's treasury, manpower, stability, prestige and power
+  projection, and the diplomacy view's stability, prestige, score, manpower and armies, come from
+  the save through the game's own formatters (eu4.exe `0x1435530`, `0xEFD450`): "+100", "16343",
+  "2534k", "2M", truncated as the game does. The score and the armies are sums the game's code
+  makes of the save's values (`CCountry::GetScore` `0x2C6430`, the regiments' strength). The
+  diplomatic reputation is a modifier the engine works out; its sample has a sign, "+12.3". Fifteen
+  rects fewer in Proper 2K UI Enhanced and five in the P2KE playset; the other sets do not change.
 
 With the profiles, rects off on `main` against the section below (rules of `b156984`). Every
 change of a view measure was a gain.
@@ -133,8 +143,8 @@ change of a view measure was a gain.
 | Anbennar alone, 1920×1080 | 0 (19) | 8 (27) | 0 (1) |
 | Anbennar alone, 1280×720 | 0 (18) | 7 (25) | 8 (9) |
 | Bigger UI, 1920×1080 and 1280×720 | 0 (23) | 15 (38) | 0 (9) |
-| Proper 2K UI Enhanced, 2560×1440 | 17 (80) | 38 (101) | 3 (40) |
-| Anbennar with Proper 2K UI Enhanced and P2KE, 2560×1440 | 12 (52) | 22 (62) | 6 (20) |
+| Proper 2K UI Enhanced, 2560×1440 | 2 (80) | 23 (101) | 3 (40) |
+| Anbennar with Proper 2K UI Enhanced and P2KE, 2560×1440 | 7 (52) | 17 (62) | 6 (20) |
 | Austria, the emperor | 0 (12) | 5 (17) | 0 (9) |
 | Aragon, the Pope's controller | 0 (12) | 5 (17) | 0 (9) |
 | C01, a colonial nation | 0 (3) | 3 (6) | 0 (1) |
@@ -144,13 +154,11 @@ Anbennar alone at each size and on the three countries: nothing. Nothing of etch
 chart (etch#614), the patriarch marker (etch#615), the crown land icons and the map mode buttons
 (etch#672) and Proper 2K UI Enhanced's minimap (etch#693) are fixed.
 
-In Proper 2K UI Enhanced (17 rects) and the P2KE playset (12), by cause:
+In Proper 2K UI Enhanced (2 rects) and the P2KE playset (7), by cause:
 
-- **Texts the game's code fills from the game's state** (etch#604's kind), 16 and 7: the same
-  heights as above, and widths that come from the game's numbers: the topbar's prestige and power
-  projection (the game writes "+100", wider than the sample text), the diplomacy view's
-  `land_forcelimit_value`, `manpower_value`, `reputation_value` and `score_value`, and Anbennar's
-  `stability_value`. Every one of them is exact with the snapshot's texts.
+- **Texts the game's code fills from the game's state** (etch#604's kind), 1 and 2: two lines in
+  the game where the profile's text has one, the lobby's `nation_designer_hint` and Anbennar's
+  `magic_advancement_current_subject`. The numbers' widths are the game's (see above).
 - **Sprites the game's code picks from the game's state**, 1 and 5: `regiment_bg`, which eu4.exe
   draws with the sprite of the army's professionalism level (`GFX_ap1_regiment_bg` and on, 10 px
   taller in the mod than its `regiment_bg.tga`), and in the P2KE playset the province view's

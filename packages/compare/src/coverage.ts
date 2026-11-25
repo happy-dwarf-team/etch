@@ -26,7 +26,11 @@ import {
   snapshotOf,
   splitWidgetPath,
   textAgreement,
+  viewInPlayset,
+  viewSave,
   visibilityAgreement,
+  type CorpusView,
+  type SurveyData,
   type CaptureComparison,
   type GeometryCounts,
   type LiveComparison,
@@ -36,7 +40,10 @@ import {
 } from '@etch/core/corpus';
 import type { DiscoveryEnvironment } from '@etch/core/playset';
 import type { Widget } from '@etch/core';
+import { defaultSaveChoice, SaveChoice } from '@etch/core/profile';
+import type { Save } from '@etch/core/save';
 import { CorpusPlaysetFiles } from './playset.ts';
+import { saveOf } from './run.ts';
 
 export interface CoverageOptions {
   /** The survey's local folder: its `manifest.json`, `captures/` and, after `compare`, `reports/`. */
@@ -45,6 +52,13 @@ export interface CoverageOptions {
   readonly gamePath?: string | undefined;
   readonly environment?: DiscoveryEnvironment;
   readonly playsets?: readonly string[];
+  /**
+   * Where the playsets' saves are: measure 4 then takes its texts from the capture's save, as the
+   * preview's save layer does, with the view's country and province (`viewChoice`).
+   */
+  readonly savesFolder?: string | undefined;
+  /** The survey's choices of a window's country or province (`coverage/survey.json`, `data`). */
+  readonly data?: readonly SurveyData[] | undefined;
   readonly log?: (line: string) => void;
 }
 
@@ -139,6 +153,25 @@ export function confirmedConstruct(c: ConstructCount): boolean {
   return c.seen >= CONFIRMED.seen && c.exact / c.seen >= CONFIRMED.exactShare;
 }
 
+/**
+ * The country and province a window of a view shows of its save, as its author would choose them
+ * in `Data ▾`: the survey's choice for the window, else the view's `data`, else the province its
+ * recipe opened last, and the save's player and its capital.
+ */
+export function viewChoice(
+  save: Save,
+  view: CorpusView,
+  chosen?: Pick<SurveyData, 'country' | 'province'>,
+): SaveChoice {
+  const start = defaultSaveChoice(save);
+  const opened = view.recipe.steps.flatMap((s) => ('province' in s ? [s.province] : [])).at(-1);
+  return new SaveChoice(
+    save,
+    chosen?.country ?? view.data?.country ?? start.country,
+    chosen?.province ?? view.data?.province ?? opened ?? start.province,
+  );
+}
+
 /** Top-level kinds that are windows a view can show; the others are parts and positions. */
 const WINDOW_KINDS = new Set(['windowType', 'eu3dialogtype', 'containerWindowType']);
 
@@ -169,6 +202,7 @@ export async function runCoverage(options: CoverageOptions): Promise<CoverageRes
     return opening;
   };
 
+  const saves = new Map<string, Promise<Save | undefined>>();
   const views: ViewCoverage[] = [];
   const notCaptured: string[] = [];
   const constructs: Record<string, Record<string, ConstructCount>> = {};
@@ -201,6 +235,23 @@ export async function runCoverage(options: CoverageOptions): Promise<CoverageRes
     }
     log(`${name}: measuring`);
     const files = await open(key.playset);
+    const save = await saveOf(manifest, options, key, saves, log);
+    const found = findView(manifest, key.view);
+    const own = manifest.playsets.find((p) => p.id === key.playset);
+    const shown =
+      found === undefined || own === undefined ? undefined : viewInPlayset(found.view, own);
+    const pinned =
+      shown === undefined || own === undefined ? undefined : (viewSave(shown, own) ?? own.save);
+    const choiceOf = (window: string): SaveChoice | undefined =>
+      save === undefined || shown === undefined
+        ? undefined
+        : viewChoice(
+            save,
+            shown,
+            (options.data ?? []).find(
+              (d) => d.view === key.view && d.window === window && d.save === pinned?.file,
+            ),
+          );
     const problems: string[] = [];
     const offlineWindows: PlanWindow[] = [];
     const liveWindows: PlanWindow[] = [];
@@ -214,7 +265,7 @@ export async function runCoverage(options: CoverageOptions): Promise<CoverageRes
     const command: LiveComparison[] = [];
     const profiledRoots: (typeof record.widgets)[number][] = [];
     const rootResults: RootCoverage[] = [];
-    const codeSized = findView(manifest, key.view)?.view.codeSized ?? [];
+    const codeSized = found?.view.codeSized ?? [];
     for (const root of record.widgets) {
       const top = splitWidgetPath(root.path)?.[0]?.name ?? root.path;
       // A window whose size the game's code sets is laid out at the game's size, as in `compare`.
@@ -255,7 +306,14 @@ export async function runCoverage(options: CoverageOptions): Promise<CoverageRes
       const withProfile =
         loaded === undefined
           ? undefined
-          : await files.profilePreview(top, record.resolution, snapshot, loaded, size);
+          : await files.profilePreview(
+              top,
+              record.resolution,
+              snapshot,
+              loaded,
+              size,
+              choiceOf(top),
+            );
       if (withProfile !== undefined) {
         const withTexts = await files.offlinePreview(
           top,

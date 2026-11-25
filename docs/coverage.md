@@ -177,8 +177,12 @@ the playset's files (`packages/compare/src/coverage.ts`):
    positions. A selector that visibility cannot tell takes the value that
    puts the widgets its rules move where the game has them, and gives the
    texts its rules write the game's rects; values that tie there are told
-   apart by the text itself, without colour codes (etch#604). Geometry and visibility as in 1: what the profiles alone get
-   right without a game.
+   apart by the text itself, without colour codes (etch#604). With `--saves`, the texts are the
+   save layer's of the capture's save, as the author who opened it in `Data ▾` would see them: the
+   view's country and province are the save's player and the province its recipe opened last, or
+   what `coverage/survey.json`'s `data` chooses for one window of a view (the Holy Roman
+   Emperor's diplomacy view shows the emperor). Geometry and visibility as in 1: what the profiles
+   alone get right without a game.
    - *With the snapshot's texts*: the same, with the snapshot's texts and its
      lists' row counts as sample data, so that the boxes the game sizes to
      their text have the game's text; still no positions, visibility or
@@ -218,7 +222,7 @@ node packages/core/src/corpus/driver/cli.ts run --manifest $env:ETCH_CORPUS_PATH
   --records $env:ETCH_CORPUS_PATH --all --resolution 1920x1080 --lab <lab> --host <host> `
   --monitor 3440x1440 --settings-baseline <settings.txt> --saves <saves>
 pnpm --filter @etch/compare compare --corpus $env:ETCH_CORPUS_PATH --gpu
-pnpm --filter @etch/compare coverage --out docs/coverage-results.md --inventory coverage/inventory.json
+pnpm --filter @etch/compare coverage --saves <saves> --out docs/coverage-results.md --inventory coverage/inventory.json
 ```
 
 The survey's local folder keeps the crawls, the manifest, the captures, the

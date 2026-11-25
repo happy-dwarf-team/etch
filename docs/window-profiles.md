@@ -180,15 +180,31 @@ data** there (spec section 5). Each entry has one source:
 | `generated` | `{ "generated": "percent" }` | generated text only |
 
 Every entry also falls through to the **generated** layer when its source has no value: text,
-a number, a whole number (`integer`: a level or a count), a percentage or a date (`generated`; by default `text`, or the save value's
-format) at the length chosen in `Data ▾`. A save source takes:
+a number, a number with its sign (`signed`: a modifier, `+12.3`), a whole number (`integer`: a
+level or a count), a percentage or a date (`generated`; by default `text`, or the save value's
+format, `integer` for one of the game's) at the length chosen in `Data ▾`. A save source takes:
 
 - `format`: `text` (as the save writes it, the default), `number` (at most two decimals,
-  trailing zeros dropped, or `decimals` from 0 to 4) or `percent` (the number and `%`; the
-  save's `local_autonomy=12.500` shows `12.5%`).
+  trailing zeros dropped, or `decimals` from 0 to 4), `percent` (the number and `%`; the
+  save's `local_autonomy=12.500` shows `12.5%`), or one of the game's own formatters below.
 - `transform`: `sum` adds up several save paths (`"save": [ … ]`, a number), `localise`
   shows the localisation of the value (`culture=swedish` shows "Swedish", `owner="SWE"` shows
   "Sweden"). These are the only transforms: Etch never works a value out as the engine would.
+
+The game's formatters, as eu4.exe 1.37.5 writes a number into a text box (read from the top
+bar's refresh `0x1435530` and the diplomacy view's daily update `0xEFD450`). The game keeps a
+value in thousandths and truncates, never rounds; colour codes take no width:
+
+| `format` | Writes | The game's use |
+| --- | --- | --- |
+| `whole` | the whole part, `-` below zero (`-0` for -0.5) | the diplomacy view's score and prestige |
+| `plus` | the whole part, `+` above zero, `-` below (`+3`, `0`) | the diplomacy and stability views' stability |
+| `signed` | `§W+100`, `§R-5`, `§Y0` | the top bar's prestige and power projection |
+| `signedStability` | `§W+` from zero up (`§W+0`), `§R-1` | the top bar's stability |
+| `treasury` | whole ducats, `k` from 10000 (`9999`, `1000k`) | the top bar's treasury |
+| `men` | a value in thousands as men: `750`, `45,500`, `2534k` above 99999 | the top bar's manpower |
+| `menShort` | a value in thousands: `0`, else `23k` | the diplomacy view's manpower |
+| `menSi` | a value in thousands as men, each suffix from 1000 of the one below: `999`, `9k`, `2M` | the diplomacy view's armies |
 
 A `map` source reads the playset's map files once per session: the area file and the region file
 that the winning `map/default.map` names (`area.txt` and `region.txt` by default). The province
@@ -224,7 +240,11 @@ A country's keys: `government_rank`, `government_name`, `capital`, `original_cap
 `max_manpower`, `sailors`, `max_sailors`, `religion`, `dominant_religion`, `religious_unity`,
 `primary_culture`, `dominant_culture`, `technology_group`, `unit_type`, `national_focus`,
 `base_tax`, `development`, `raw_development`, `realm_development`, `num_of_cities`,
-`average_unrest`, `average_autonomy`. Collections
+`average_unrest`, `average_autonomy`, `current_power_projection`, and two sums the game's code
+makes of the save's values, added up as it does: `score` (`CCountry::GetScore` `0x2C6430`, the
+country's `age_score` of every age and its `card_score`, or its `vc_age_score` when the game's age
+scoring is on) and `army_strength` (the `strength` of every regiment of its armies, 1.000 where the
+save leaves it out, in thousands of men as the save writes manpower). Collections
 for repeaters: a province's `buildings`, `building_builders`, `cores`, `claims`, `great_projects`,
 `institutions`, `discovered_by`, `modifier`; a country's `active_idea_groups`, `owned_provinces`,
 `core_provinces`, `allies`, `subjects`, `active_policy`.

@@ -42,6 +42,7 @@ import {
   profileModMatches,
   readProfile,
   ruleText,
+  type SaveChoice,
   sampleData,
   widgetsAt,
   type LiveSnapshot,
@@ -308,7 +309,8 @@ export class CorpusPlaysetFiles {
    * A profiled window laid out offline, as the preview draws it without a live game, with the
    * profile's selectors at the values that fit the game (a snapshot of the same capture tells
    * them, as `View ▾` would be set by the author who knows the state): the profile's rules alone,
-   * no texts, toggles or positions from the game.
+   * no texts, toggles or positions from the game. With a save, its texts are the save layer's, as
+   * the author who opened the capture's save in `Data ▾` sees them.
    */
   async profilePreview(
     name: string,
@@ -316,6 +318,7 @@ export class CorpusPlaysetFiles {
     snapshot: LiveSnapshot,
     loaded: { profile: WindowProfile; window: Widget },
     size?: Screen,
+    save?: SaveChoice,
   ): Promise<PlanWindow | undefined> {
     const definition = this.ui.index.guiTypeDefinitions(name)[0];
     const file = this.ui.index.guiFiles.find((f) => f.path === definition?.path)?.file;
@@ -328,6 +331,7 @@ export class CorpusPlaysetFiles {
       const sample = sampleData(profile, window, view, {
         localise: this.localise,
         length: 'typical',
+        ...(save === undefined ? {} : { save }),
         template: (template) => {
           const found = this.ui.index.guiType(template);
           const owner = this.ui.index.guiFiles.find((f) => f.path === found?.path)?.file;

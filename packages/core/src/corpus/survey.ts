@@ -46,6 +46,25 @@ export interface SurveyRecipe {
   readonly evidence: string;
 }
 
+/**
+ * The country or province of its save that one window of a view shows, as its author would choose
+ * them in `Data ▾`, when it is not the save's player or the province the recipe opened: the
+ * diplomacy view of the Holy Roman Emperor shows the emperor, while the top bar beside it shows
+ * the player. Measure 4 takes the window's texts from that country and province.
+ */
+export interface SurveyData {
+  /** The survey view's id (`surveyViewId`). */
+  readonly view: string;
+  /** The save's file, as the playset's `save` names it: the choice holds in that save only. */
+  readonly save: string;
+  /** The top-level window. */
+  readonly window: string;
+  readonly country?: string;
+  readonly province?: number;
+  /** Where the game was seen to show it. */
+  readonly evidence: string;
+}
+
 export interface SurveyConfig {
   readonly formatVersion: typeof SURVEY_FORMAT_VERSION;
   readonly playsets: readonly SurveyPlayset[];
@@ -56,6 +75,7 @@ export interface SurveyConfig {
   readonly starts: readonly ('save' | 'main-menu')[];
   readonly crawl: CrawlRules;
   readonly recipes?: readonly SurveyRecipe[];
+  readonly data?: readonly SurveyData[];
 }
 
 export function readSurveyConfig(text: string): SurveyConfig {

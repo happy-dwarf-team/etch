@@ -2,6 +2,7 @@ export * from './check.ts';
 export * from './engine.ts';
 export * from './facts.ts';
 export * from './format.ts';
+export * from './game-numbers.ts';
 export * from './jsonc.ts';
 export * from './layers.ts';
 export * from './paths.ts';

@@ -8,6 +8,7 @@
  * reader checks it itself and the two are kept in step by a test.
  */
 import type { SourceRange } from '../script/tree.ts';
+import { GAME_NUMBER_FORMATS, type GameNumberFormat } from './game-numbers.ts';
 
 /** The format version this Etch reads; a file with a newer one is skipped with a notice. */
 export const PROFILE_FORMAT_VERSION = 1;
@@ -222,23 +223,32 @@ export type MapSource = 'area' | 'region';
 export const MAP_SOURCES: readonly MapSource[] = ['area', 'region'];
 
 /**
- * What the generated layer writes: a text, a number, a whole number (a level, a count), a
- * percentage or a date.
+ * What the generated layer writes: a text, a number, a number with its sign (a modifier such as
+ * the diplomatic reputation), a whole number (a level, a count), a percentage or a date.
  */
-export type GeneratedKind = 'text' | 'number' | 'integer' | 'percent' | 'date';
+export type GeneratedKind = 'text' | 'number' | 'signed' | 'integer' | 'percent' | 'date';
 
 export const GENERATED_KINDS: readonly GeneratedKind[] = [
   'text',
   'number',
+  'signed',
   'integer',
   'percent',
   'date',
 ];
 
-/** How a save value is written: as it is, as a number, or as a number with `%`. */
-export type ValueFormat = 'text' | 'number' | 'percent';
+/**
+ * How a save value is written: as it is, as a number, as a number with `%`, or as one of the
+ * game's own formatters (`game-numbers.ts`).
+ */
+export type ValueFormat = 'text' | 'number' | 'percent' | GameNumberFormat;
 
-export const VALUE_FORMATS: readonly ValueFormat[] = ['text', 'number', 'percent'];
+export const VALUE_FORMATS: readonly ValueFormat[] = [
+  'text',
+  'number',
+  'percent',
+  ...(Object.keys(GAME_NUMBER_FORMATS) as GameNumberFormat[]),
+];
 
 /**
  * The only transforms (ADR 0006): `sum` adds the values of several save paths, `localise` shows

@@ -208,6 +208,36 @@
     },
   },
   "content": {
+    "countrydiplomacyview/stability_value": {
+      "save": "countries.{country}.stability",
+      "format": "plus",
+      "note": "The view's daily update (eu4.exe 0xEFD450) writes the whole stability, + above zero, no colour: +3.",
+    },
+    "countrydiplomacyview/prestige_value": {
+      "save": "countries.{country}.prestige",
+      "format": "whole",
+      "note": "The whole prestige, - below zero and no + (the survey's -0.5 in Anbennar shows -0, 100 shows 100).",
+    },
+    "countrydiplomacyview/score_value": {
+      "save": "countries.{country}.score",
+      "format": "whole",
+      "note": "The country's score (CCountry::GetScore, 0x2C6430), its whole part: Russia's ages add up to 16343.119 and show 16343, Savoy's 9.655 show 9.",
+    },
+    "countrydiplomacyview/manpower_value": {
+      "save": "countries.{country}.manpower",
+      "format": "menShort",
+      "note": "The manpower in thousands with k, 0 without any (0xAE9170); the game adds the men of the regiments in its build queue, which the save's manpower lacks.",
+    },
+    "countrydiplomacyview/land_forcelimit_value": {
+      "save": "countries.{country}.army_strength",
+      "format": "menSi",
+      "note": "Not the force limit: the men of the country's armies (CreateSIValueNoColor, 0x14BF2E0), 9k for Savoy's ten regiments at 0.97, 2M for Russia's 2063.",
+    },
+    "countrydiplomacyview/reputation_value": {
+      "engine": true,
+      "generated": "signed",
+      "note": "The diplomatic reputation, a modifier the engine works out, with its sign and two decimals below 10, one from 10 (CreateGreenRedValueDiff, 0x14BCA50): +10.0, +2.00.",
+    },
     "countrydiplomacyview/num_relations_value": {
       "engine": true,
       "generated": "integer",
