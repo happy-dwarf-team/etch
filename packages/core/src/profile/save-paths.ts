@@ -134,7 +134,7 @@ const COUNTRY_KEYS = [
  * Country keys that are sums of the save's values, added up as eu4.exe 1.37.5 does, in
  * thousandths (the game's fixed point):
  *
- * - `score`, the diplomacy view's score (`CCountry::GetScore` `0x2C6430`): the country's
+ * - `score`, the diplomacy view's score (the country's score, `0x2C6430`): the country's
  *   `age_score` of every age, and its `card_score` when the game's age scoring is off (the 29th
  *   of `gameplaysettings`' `setgameplayoptions` is 0), else its `vc_age_score` of every age.
  * - `army_strength`, the men of the country's armies, in thousands as the save writes manpower:
@@ -314,7 +314,7 @@ function thousandths(value: number): string {
   return (value / 1000).toFixed(3);
 }
 
-/** `CCountry::GetScore` (`0x2C6430`) from the save, in thousandths. */
+/** The country's score (`0x2C6430`) from the save, in thousandths. */
 function scoreOf(country: BlockNode, save: Save): number {
   const settings = save.top('gameplaysettings');
   const options = settings?.kind === 'block' ? valueIn(settings, 'setgameplayoptions') : undefined;

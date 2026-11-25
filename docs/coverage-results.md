@@ -130,7 +130,7 @@ below (no capture was taken again). The generated tables above are this run.
   projection, and the diplomacy view's stability, prestige, score, manpower and armies, come from
   the save through the game's own formatters (eu4.exe `0x1435530`, `0xEFD450`): "+100", "16343",
   "2534k", "2M", truncated as the game does. The score and the armies are sums the game's code
-  makes of the save's values (`CCountry::GetScore` `0x2C6430`, the regiments' strength). The
+  makes of the save's values (the country's score, `0x2C6430`, and the regiments' strength). The
   diplomatic reputation is a modifier the engine works out; its sample has a sign, "+12.3". Fifteen
   rects fewer in Proper 2K UI Enhanced and five in the P2KE playset; the other sets do not change.
 
