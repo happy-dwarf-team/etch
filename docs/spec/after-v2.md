@@ -1267,20 +1267,26 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
      which this reading does not explain. The preview starts each state at the
      base (the variation is chance, listed on the user page), the root's
      animation and slider at its own, an attached entity at its own.
-  10. Run a subsystem's `childsystem` blocks (none in vanilla). Done 25
-     November 2026, from step 4's reading of the game's code: the game reads
-     a `childsystem` with the subsystem's reader, nested ones too, and gives
-     each of the parent's `max_amount` slots one block per child, whose
-     time, duration, pulses and emission go on from one parent in the slot to
-     the next; only its particles are cleared when a new parent takes the
-     slot. Each frame, after the parent moves, each child runs once per live
-     or waiting parent, at the parent's place with no turn, spawning along
-     the parent's move from its last place to its new one, and emits only
-     while the parent lives. A dead parent keeps its slot, undrawn, until its
-     children are gone. The editor's hovers and warnings now read a
-     `childsystem` as a subsystem. CHILDLIVE. Not checked: the order the
-     game draws a parent's and a child's particles in (the preview draws the
-     parent's, then each child's).
+  10. Run a subsystem's `childsystem` blocks (none in vanilla). Done 25 November
+      2026, from step 4's reading of the game's code: the game reads a
+      `childsystem` with the subsystem's reader, nested ones too, and gives each
+      of the parent's `max_amount` slots one block per child, whose time,
+      duration, pulses and emission go on from one parent in the slot to the
+      next; only its particles are cleared when a new parent takes the slot. Each
+      frame, after the parent moves, each child runs once per live or waiting
+      parent, at the parent's place with no turn, spawning along the parent's
+      move from its last place to its new one, and emits only while the parent
+      lives. A dead parent keeps its slot, undrawn, until its children are gone.
+      The editor's hovers and warnings now read a `childsystem` as a subsystem.
+      Checked in the game (Steam 1.37.5, a test mod over the siege sites near
+      Trier, the siege smoke as a subsystem with a `childsystem`, `reload
+      assets`): each red parent flying out of a city left a line of small blue
+      children standing behind it; with one parent slot, parents that live 1 s
+      and children that live 4 s, a parent showed in 4 of 12 shots 1.6 s apart,
+      once every 4.9 s, so a dead parent holds its slot until its children are
+      gone (without that a new one would come within 0.2 s). Not checked: the
+      order the game draws a parent's and a child's particles in (the preview
+      draws the parent's, then each child's).
 
 Small unknowns, none worth an issue yet.
 
