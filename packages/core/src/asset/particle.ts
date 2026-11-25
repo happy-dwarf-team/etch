@@ -265,7 +265,7 @@ const SUBSYSTEM: [string, ParticleKeyDoc][] = [
     'local_space',
     doc(
       YES_NO,
-      'With `yes`, the particles move with the model. Otherwise they stay where they were sent out. The game passes the model’s place to the shader in `InstanceWorldMatrix`, and the base game’s `gfx/FX/particle.shader` does not use it, so with that shader these particles do not show at the model.',
+      'With `yes`, the particles move with the model. Otherwise they stay where they were sent out. The game passes the model’s place to the shader in `InstanceWorldMatrix`, and the base game’s `gfx/FX/particle.shader` does not use it. With that shader the game draws these particles at their own coordinates on the map, around its south-west corner (moved by the subsystem’s `position`), not at the model. When every subsystem of the particle has `local_space = yes`, it draws none of them.',
       'game',
     ),
   ],
@@ -570,8 +570,9 @@ interface ParticleEffect {
  *   no effect there;
  * - when `localSpacePlaced` is `false` (the playset's `gfx/FX/particle.shader` does not use
  *   `InstanceWorldMatrix`, see `shaderPlacesLocalSpace`), each `local_space = yes`: the game hands
- *   such a subsystem the effect's place only through that matrix, so its particles do not show at
- *   the effect.
+ *   such a subsystem the effect's place only through that matrix, so it draws the particles at their
+ *   own coordinates around the map's origin, and draws none of a particle whose subsystems all have
+ *   it (etch#631 step 23).
  * A missing texture file is the extension's check (`particleTextureFiles`), which needs the disk.
  */
 export function checkParticleBlocks(
@@ -583,7 +584,9 @@ export function checkParticleBlocks(
   for (const block of propertyBlocks(parsed.entries, 'particle')) {
     const effect = readEffect(block);
     unknownKeys(block, 'particle', out);
-    for (const subsystem of subsystemBlocks(block)) {
+    const subsystems = subsystemBlocks(block);
+    const allLocal = subsystems.length > 0 && subsystems.every(isLocalSpace);
+    for (const subsystem of subsystems) {
       unknownKeys(subsystem, 'subsystem', out);
       for (const texture of propertyBlocks(subsystem.entries, 'texture')) {
         unknownKeys(texture, 'texture', out);
@@ -592,7 +595,7 @@ export function checkParticleBlocks(
       vectorKeys(subsystem, out);
       emitterKeys(subsystem, out);
       if (effects !== undefined) shaderEffect(subsystem, effects, out);
-      if (localSpacePlaced === false) unplacedLocalSpace(subsystem, out);
+      if (localSpacePlaced === false) unplacedLocalSpace(subsystem, allLocal, out);
     }
     for (const curve of propertyBlocks(block.entries, 'animation')) {
       unknownKeys(curve, 'animation', out);
@@ -987,15 +990,25 @@ function shaderEffect(
   });
 }
 
-function unplacedLocalSpace(subsystem: BlockNode, out: ParticleBlockDiagnostic[]): void {
+function isLocalSpace(subsystem: BlockNode): boolean {
+  return lastScalar(subsystem, 'local_space')?.text.toLowerCase() === 'yes';
+}
+
+function unplacedLocalSpace(
+  subsystem: BlockNode,
+  allLocal: boolean,
+  out: ParticleBlockDiagnostic[],
+): void {
   const flag = lastScalar(subsystem, 'local_space');
-  if (flag?.text.toLowerCase() !== 'yes') return;
+  if (flag === undefined || !isLocalSpace(subsystem)) return;
+  const where = allLocal
+    ? 'Every subsystem of this particle has local_space = yes, and then the game draws none of them.'
+    : 'So the game draws the particles at their own coordinates on the map, around its south-west corner (moved by the subsystem’s position), not at the effect.';
   out.push({
     code: 'particle-local-space-unplaced',
     start: flag.start,
     end: flag.end,
-    message:
-      'With local_space = yes the game hands these particles the place of their effect only through InstanceWorldMatrix, and the playset’s gfx/FX/particle.shader does not use it. So the particles do not show at the effect. Leave local_space out, or ship a particle.shader whose vertex shader multiplies the position by InstanceWorldMatrix.',
+    message: `With local_space = yes the game hands these particles the place of their effect only through InstanceWorldMatrix, and the playset’s gfx/FX/particle.shader does not use it. ${where} Leave local_space out, or ship a particle.shader whose vertex shader multiplies the position by InstanceWorldMatrix.`,
   });
 }
 

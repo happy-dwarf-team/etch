@@ -330,6 +330,19 @@ describe('local_space and the particle shader (step 19)', () => {
     expect(codes(true)).toEqual([]);
     expect(codes(undefined)).toEqual([]);
   });
+
+  it('says where the game draws them, and that it draws none when every subsystem has it (step 23)', () => {
+    const messages = (source: string) =>
+      checkParticleBlocks(parseScript(source), EFFECTS, false).map((d) => d.message);
+    const mixed = messages(text);
+    expect(mixed).toHaveLength(2);
+    for (const message of mixed) expect(message).toContain('around its south-west corner');
+    const only = messages(
+      'particle = { name = "y" subsystem = { local_space = yes childsystem = { local_space = yes } } }',
+    );
+    expect(only).toHaveLength(2);
+    for (const message of only) expect(message).toContain('the game draws none of them');
+  });
 });
 
 describe('particleHoverAt', () => {

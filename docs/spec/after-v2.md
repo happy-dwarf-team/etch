@@ -1162,7 +1162,7 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
      playset's `particle.shader` does not use the matrix, and the key's hover
      says so. The preview still draws such a subsystem at its node, as a
      shader that applies the matrix would; where the base game's shader puts
-     it (around the world origin, by the reading) was not seen.
+     it is point 14.
   2. Read the evaluators and the update in the lab's analysis (the research's
      open questions 1–5), checked live with a test mod and `reload particle`.
      Done 23 November 2026 in the lab's analysis. Read: a value is its numbers
@@ -1414,6 +1414,18 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
       its effect (texture `shader` + `Trail`, + `NoBillboard`), still drawn
       grey. Not settled: a trail without an effect drawn right after one with
       its own effect would take that effect's shaders by the same reading.
+  14. Settle where the base game's shader draws a `local_space` subsystem
+      (item 1, step 19). Done 25 November 2026, checked in the game (Steam
+      1.37.5, the lab's run `e631-s23a`, the siege sites near Trier, the
+      smoke's `pdxparticle` at scale 1): a `local_space` subsystem of tiles
+      with `position` set to Trier's map coordinates drew one cluster of
+      tiles over Trier and none at the sieges, next to a second subsystem
+      without `local_space` that drew tiles at every siege. So the game reads
+      the particles' local coordinates as map coordinates: with no
+      `position`, around the map's south-west corner. The same subsystem
+      alone in its particle drew nothing anywhere, at two heights and two
+      sizes. The warning and the key's hover say both. The preview still
+      draws such a subsystem at its node.
 
 Small unknowns, none worth an issue yet.
 
