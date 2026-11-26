@@ -558,7 +558,7 @@
             "type": "boolean",
             "default": true,
             "scope": "resource",
-            "markdownDescription": "Show the text of a localisation key, in `#etch.language#`, in grey after the key: in `.gui` files after `text`, `tooltip`, `tooltipText` and `delayedTooltipText`; in the scripts of `events`, `decisions`, `missions` and `common` after `title`, `desc`, `name`, `tooltip` and `custom_tooltip`, and in `common` also after `war_name`, `prov_desc`, `country_desc`, `elector_relation`, `demands_description`, `mercenary_desc_key`, `custom_ai_explanation` and `reform_tooltip`. Ctrl+click a key to open its line in the `.yml` file.",
+            "markdownDescription": "Show the text of a localisation key, in `#etch.language#`, in grey after the key: in `.gui` files after `text`, `tooltip`, `tooltipText` and `delayedTooltipText`; in the scripts of `events`, `decisions`, `missions` and `common` after `title`, `desc`, `name`, `tooltip` and `custom_tooltip`, and in `common` also after `war_name`, `prov_desc`, `country_desc`, `elector_relation`, `demands_description`, `mercenary_desc_key`, `custom_ai_explanation`, `reform_tooltip`, `alert_tooltip`, `crusade_name` and `cooldown_desc`. Ctrl+click a key to open its line in the `.yml` file.",
             "order": 2
           },
           "etch.editor.provinceNames": {
