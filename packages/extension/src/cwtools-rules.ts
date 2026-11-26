@@ -2,7 +2,7 @@
 // "Beside CWTools"). Etch steps back from a feature only where CWTools answers the same, so
 // this reads which sprite kinds the rules type as `sprite`, whether they type fonts, whether
 // they have rules for `.gui` files, and which `.gui` keys they type as a sprite or font. No vscode.
-import { readdir, readFile } from 'node:fs/promises';
+import { readdir, readFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
 /** What a folder of CWTools' EU4 rules covers in interface files. */
@@ -189,4 +189,89 @@ export async function hasRules(folder: string): Promise<boolean> {
     }
   }
   return false;
+}
+
+/** The most entries `folderStamp` reads; a clone of the rules in progress has far fewer. */
+const STAMP_ENTRIES = 5000;
+
+/**
+ * What changes in `folder` while something writes into it: the number of entries under it
+ * (`.git` included), their total size and the latest change time. Empty for a missing folder.
+ */
+export async function folderStamp(folder: string): Promise<string> {
+  let count = 0;
+  let bytes = 0;
+  let latest = 0;
+  const walk = async (path: string): Promise<void> => {
+    let entries;
+    try {
+      entries = await readdir(path, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      if (count >= STAMP_ENTRIES) return;
+      count += 1;
+      const child = join(path, entry.name);
+      try {
+        const info = await stat(child);
+        bytes += info.isFile() ? info.size : 0;
+        latest = Math.max(latest, info.mtimeMs);
+      } catch {
+        // An entry removed while it is read: the next stamp differs anyway.
+      }
+      if (entry.isDirectory()) await walk(child);
+    }
+  };
+  try {
+    latest = (await stat(folder)).mtimeMs;
+  } catch {
+    return '';
+  }
+  await walk(folder);
+  return `${String(count)}:${String(bytes)}:${String(latest)}`;
+}
+
+/** One look at CWTools' rules folder; undefined when CWTools does not run or names no folder. */
+export interface RulesLook {
+  rules: boolean;
+  stamp: string;
+}
+
+/** How long `waitForRules` gives CWTools' first clone of its rules. */
+export interface RulesWait {
+  /** Before the first look: CWTools starts the clone after it starts. */
+  firstMs: number;
+  /** Between later looks. */
+  againMs: number;
+  /** After this, a folder that still changes is left undecided. */
+  giveUpMs: number;
+}
+
+export const RULES_WAIT: RulesWait = { firstMs: 60_000, againMs: 30_000, giveUpMs: 600_000 };
+
+/**
+ * Whether CWTools' rules folder stays without rules: `empty` once two looks in a row find no
+ * rules and the same folder, so a clone still writing (slower than the first wait) is not taken
+ * for a failed one. `rules` when they are there, `unknown` when CWTools stops running, `sleep`
+ * says the wait was cancelled (it resolves false), or the folder still changes after `giveUpMs`.
+ */
+export async function waitForRules(
+  look: () => Promise<RulesLook | undefined>,
+  sleep: (ms: number) => Promise<boolean>,
+  wait: RulesWait = RULES_WAIT,
+): Promise<'rules' | 'empty' | 'unknown'> {
+  let waited = wait.firstMs;
+  if (!(await sleep(wait.firstMs))) return 'unknown';
+  let previous: string | undefined;
+  for (;;) {
+    const seen = await look();
+    if (seen === undefined) return 'unknown';
+    if (seen.rules) return 'rules';
+    if (seen.stamp === previous) return 'empty';
+    previous = seen.stamp;
+    if (waited >= wait.giveUpMs) return 'unknown';
+    waited += wait.againMs;
+    if (!(await sleep(wait.againMs))) return 'unknown';
+  }
 }

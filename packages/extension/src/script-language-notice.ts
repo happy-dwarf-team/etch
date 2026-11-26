@@ -38,7 +38,13 @@ import {
   warnsCwtoolsTelemetry,
   withScriptAssociations,
 } from './script-language.ts';
-import { hasRules, rulesFolder } from './cwtools-rules.ts';
+import {
+  folderStamp,
+  hasRules,
+  rulesFolder,
+  waitForRules,
+  type RulesLook,
+} from './cwtools-rules.ts';
 import { ACTIONS, notify } from './notify.ts';
 
 /** The global state key that Don't Show Again sets on the notice that offers the extensions. */
@@ -51,8 +57,6 @@ const GAME_FOLDER_DECLINED = 'etch.scriptLanguageNotice.cwtoolsGameFolderDecline
 const TELEMETRY_DECLINED = 'etch.scriptLanguageNotice.cwtoolsTelemetryDeclined';
 /** The global state key that Don't Show Again sets on the notice about CWTools without rules. */
 const NO_RULES_DECLINED = 'etch.scriptLanguageNotice.cwtoolsNoRulesDeclined';
-/** How long CWTools has for the first clone of its rules, as Etch's reading of them waits. */
-const NO_RULES_WAIT_MS = 60_000;
 const DONT_SHOW = "Don't Show Again";
 const USE_FOLDER = 'Use This Folder';
 const COLOUR_FILES = 'Colour Files in This Folder';
@@ -156,6 +160,31 @@ export function registerScriptLanguageNotice(context: vscode.ExtensionContext): 
     void showTelemetryNotice(context);
   };
   let noRulesTimer: ReturnType<typeof setTimeout> | undefined;
+  let disposed = false;
+  let wake: ((go: boolean) => void) | undefined;
+  // Resolves true after `ms`, false at once when the window closes.
+  const sleep = (ms: number): Promise<boolean> =>
+    new Promise<boolean>((done) => {
+      if (disposed) {
+        done(false);
+        return;
+      }
+      wake = done;
+      noRulesTimer = setTimeout(() => {
+        done(true);
+      }, ms);
+    });
+  const lookAtRules = async (): Promise<RulesLook | undefined> => {
+    const extension = vscode.extensions.getExtension(CWTOOLS_ID);
+    if (extension?.isActive !== true) return undefined;
+    const config = vscode.workspace.getConfiguration('cwtools');
+    const folder = rulesFolder(extension.extensionPath, {
+      rulesVersion: config.get<string>('rules_version'),
+      rulesFolder: config.get<string>('rules_folder'),
+    });
+    if (folder === undefined) return undefined;
+    return { rules: await hasRules(folder), stamp: await folderStamp(folder) };
+  };
   const considerNoRules = async (document: vscode.TextDocument): Promise<void> => {
     if (shown.has('noRules')) return;
     const decide = (cwtoolsActive: boolean, rules: boolean | undefined): boolean =>
@@ -167,21 +196,15 @@ export function registerScriptLanguageNotice(context: vscode.ExtensionContext): 
         declined: context.globalState.get<boolean>(NO_RULES_DECLINED, false),
       });
     // CWTools starts when the first `eu4` file opens, so it may not run yet: it is installed now,
-    // and decided on again once it has had time to start and clone its rules.
+    // and decided on again once it has had time to start and clone its rules. A clone slower than
+    // the first wait is still writing into the folder, so the folder must also stop changing.
     if (vscode.extensions.getExtension(CWTOOLS_ID) === undefined || !decide(true, undefined))
       return;
     shown.add('noRules');
-    await new Promise<void>((done) => {
-      noRulesTimer = setTimeout(done, NO_RULES_WAIT_MS);
-    });
-    const extension = vscode.extensions.getExtension(CWTOOLS_ID);
-    if (extension?.isActive !== true) return;
-    const config = vscode.workspace.getConfiguration('cwtools');
-    const folder = rulesFolder(extension.extensionPath, {
-      rulesVersion: config.get<string>('rules_version'),
-      rulesFolder: config.get<string>('rules_folder'),
-    });
-    if (folder === undefined || !decide(true, await hasRules(folder))) return;
+    const verdict = await waitForRules(lookAtRules, sleep);
+    // Undecided (CWTools not running, the folder still changing): the next file decides again.
+    if (verdict === 'unknown') shown.delete('noRules');
+    if (verdict !== 'empty' || !decide(true, false)) return;
     await showNoRulesNotice(context);
   };
   const consider = (editor: vscode.TextEditor | undefined): void => {
@@ -216,7 +239,9 @@ export function registerScriptLanguageNotice(context: vscode.ExtensionContext): 
     }),
     {
       dispose: () => {
+        disposed = true;
         clearTimeout(noRulesTimer);
+        wake?.(false);
       },
     },
   );

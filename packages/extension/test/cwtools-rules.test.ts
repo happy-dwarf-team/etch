@@ -3,12 +3,15 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
+  folderStamp,
   guiKeysTyped,
   hasRules,
   readCoverage,
   rulesFolder,
   spriteKindsOf,
   typesFonts,
+  waitForRules,
+  type RulesLook,
 } from '../src/cwtools-rules.ts';
 
 /** `interface/sprites.cwt` of cwtools-eu4-config master at a85622d: one kind on the type. */
@@ -153,6 +156,65 @@ describe("CWTools' rules", () => {
       folder = await mkdtemp(join(tmpdir(), 'etch-cwtools-'));
       await writeFile(join(folder, 'triggers.cwt'), '');
       expect(await hasRules(folder)).toBe(true);
+    });
+
+    it('change their stamp while a clone writes into the folder', async () => {
+      folder = await mkdtemp(join(tmpdir(), 'etch-cwtools-'));
+      expect(await folderStamp(join(folder, 'eu4'))).toBe('');
+      const before = await folderStamp(folder);
+      expect(await folderStamp(folder)).toBe(before);
+      await mkdir(join(folder, '.git'));
+      await writeFile(join(folder, '.git', 'pack.tmp'), 'x');
+      const grown = await folderStamp(folder);
+      expect(grown).not.toBe(before);
+      await writeFile(join(folder, '.git', 'pack.tmp'), 'xyz');
+      expect(await folderStamp(folder)).not.toBe(grown);
+    });
+  });
+
+  describe('waited for (etch#755)', () => {
+    const wait = { firstMs: 60, againMs: 30, giveUpMs: 150 };
+    /** Runs `waitForRules` over the looks in order; the result and the waits it slept. */
+    const run = async (
+      looks: (RulesLook | undefined)[],
+      cancelAt = Infinity,
+    ): Promise<[string, number[]]> => {
+      const slept: number[] = [];
+      let next = 0;
+      const verdict = await waitForRules(
+        () => Promise.resolve(looks[next++]),
+        (ms) => {
+          slept.push(ms);
+          return Promise.resolve(slept.length < cancelAt);
+        },
+        wait,
+      );
+      return [verdict, slept];
+    };
+    const empty = (stamp: string): RulesLook => ({ rules: false, stamp });
+
+    it('find the folder empty once two looks in a row see it unchanged', async () => {
+      expect(await run([empty('a'), empty('a')])).toEqual(['empty', [60, 30]]);
+    });
+
+    it('do not take a clone slower than the first wait for a failed one', async () => {
+      const looks = [empty('a'), empty('b'), empty('c'), { rules: true, stamp: 'd' }];
+      expect(await run(looks)).toEqual(['rules', [60, 30, 30, 30]]);
+    });
+
+    it('find the rules at the first look', async () => {
+      expect(await run([{ rules: true, stamp: 'a' }])).toEqual(['rules', [60]]);
+    });
+
+    it('leave a folder that keeps changing undecided after the last wait', async () => {
+      const looks = ['a', 'b', 'c', 'd', 'e', 'f'].map(empty);
+      expect(await run(looks)).toEqual(['unknown', [60, 30, 30, 30]]);
+    });
+
+    it('stop when CWTools no longer runs, or the wait is cancelled', async () => {
+      expect(await run([empty('a'), undefined])).toEqual(['unknown', [60, 30]]);
+      expect(await run([empty('a'), empty('a')], 1)).toEqual(['unknown', [60]]);
+      expect(await run([empty('a'), empty('a')], 2)).toEqual(['unknown', [60, 30]]);
     });
   });
 });

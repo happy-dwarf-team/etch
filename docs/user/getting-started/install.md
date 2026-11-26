@@ -248,8 +248,9 @@ rules: the Problems panel stays empty and it completes nothing. It does not say 
 download often fails because the path of the folder is too long, for example when your user
 folder or the folder VS Code keeps its extensions in has a long name.
 
-A minute after you open a file that CWTools checks as an EU4 file, Etch looks at that folder. When
-it has no rules, Etch shows a warning at the bottom right. Etch shows it at most once in each
+A minute after you open a file that CWTools checks as an EU4 file, Etch looks at that folder, and
+again every half minute while CWTools is still writing into it, as a slow download does. When the
+folder has no rules and has stopped changing, Etch shows a warning at the bottom right. Etch shows it at most once in each
 VS Code window, and not when you chose a rules folder yourself (`cwtools.rules_version` set to
 `manual`).
 
