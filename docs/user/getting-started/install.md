@@ -60,7 +60,9 @@ either of them together with Etch:
 
 - CWTools colours the files and checks your scripts for mistakes. It colours your mod's `.txt`
   files only when the mod is inside a folder named Europa Universalis IV: see
-  [A mod in a folder of its own](#a-mod-in-a-folder-of-its-own).
+  [A mod in a folder of its own](#a-mod-in-a-folder-of-its-own). CWTools still works with EU4
+  1.37.5, but its EU4 support gets no more updates: see
+  [Etch and CWTools in the same file](#etch-and-cwtools-in-the-same-file).
 - ParadoxCode colours the files, checks them and adds its own hovers. It is only on the VS Code
   Marketplace, not on Open VSX, the extension store some other editors use.
 
@@ -172,9 +174,13 @@ With both extensions on, VS Code shows what each of them gives side by side: two
 name, two lists of suggestions in one list. In some places Etch leaves the answer to CWTools,
 so that you do not get the same thing twice.
 
-CWTools knows what the keys of a file mean from its EU4 rules: files that come with CWTools and
-that it updates by itself. Etch reads these rules to find out what CWTools does. Today they
-cover the sprites of `spriteType` and the sprite keys of scripts, such as an event's `picture`.
+CWTools knows what the keys of a file mean from its EU4 rules: files that come with CWTools.
+Etch reads these rules to find out what CWTools does. They cover the sprites of `spriteType` and
+the sprite keys of scripts, such as an event's `picture`, and no more: the people behind CWTools
+have stopped updating its EU4 support, so these rules stay as they are
+([cwtools-eu4-config#452](https://github.com/cwtools/cwtools-eu4-config/pull/452)). If you load
+other EU4 rules in CWTools, with its settings `cwtools.rules_folder` and `cwtools.rules_version`
+set to `manual`, Etch reads those instead.
 Where they cover a thing, Etch leaves it to CWTools:
 
 - **Go to Definition.** In `events/FlavorENG.txt`, press <kbd>F12</kbd> on the sprite name after

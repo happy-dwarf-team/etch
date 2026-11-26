@@ -6,7 +6,9 @@ November 2026). All of it is built for 2.14.0: localisation inlay hints
 (etch#573), references and rename (etch#581, etch#584), colours (etch#583),
 images in more scripts (etch#585) and the gutter thumbnail (etch#587).
 Amended on 25 November 2026 with "Beside CWTools": where CWTools answers the
-same thing, Etch steps back.
+same thing, Etch steps back. Amended on 26 November 2026: CWTools' EU4 rules
+get no more updates (cwtools-eu4-config#452), so the rules proposed upstream
+will not come from CWTools.
 
 Etch adds editor features to `.gui` and `.gfx` files, and to the places in
 script and localisation files where they name what Etch already reads:
@@ -23,9 +25,10 @@ When this was written no other tool covered these. CWTools and ParadoxCode
 bind both extensions to the `eu4` language id but check no `.gui` structure
 for EU4 (etch#4). CWTools' EU4 rules held only `interface/sprites.cwt`
 (591 bytes) and two files of sprite packs. Rules for every sprite kind, for
-`.gui` widgets and for `bitmapfonts` are proposed upstream
-(cwtools-eu4-config#447, #448, #454); "Beside CWTools" below says what Etch
-does once CWTools has them.
+`.gui` widgets and for `bitmapfonts` were proposed upstream
+(cwtools-eu4-config#447, #448, #454) and closed unmerged when support for
+CWTools EU4 stopped; "Beside CWTools" below says what Etch does when the rules
+CWTools loads have them.
 
 - **Completion:** widget types; the attributes a widget type takes and
   their known values (`orientation`, `positionType`, `format`), from the
@@ -107,9 +110,11 @@ the rest:
   feature.
 
 The coverage comes from the rules, not from CWTools' version, because the
-rules change without a CWTools release. Until the upstream rules have them,
-Etch keeps everything in `.gui` files and the sprite kinds other than
-`spriteType`.
+rules change without a CWTools release. CWTools' own EU4 rules type only
+`spriteType` and get no more updates, so with them Etch keeps everything in
+`.gui` files and the sprite kinds other than `spriteType`. The stepping back
+still applies to rules a user loads instead (`cwtools.rules_folder` with
+`cwtools.rules_version` `manual`).
 
 ## Why
 
