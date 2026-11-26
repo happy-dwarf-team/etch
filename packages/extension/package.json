@@ -586,7 +586,7 @@
               "Where CWTools' EU4 rules cover a sprite, font or `.gui` widget, Etch leaves that answer to CWTools, so it does not show twice.",
               "Etch gives all its answers next to CWTools, so some of them show twice."
             ],
-            "markdownDescription": "What Etch does when CWTools is on too. With `auto`, in files that CWTools reads as EU4, Etch leaves to CWTools what CWTools' EU4 rules cover: Go to Definition on those sprites, their entries and the fonts in the Outline of a `.gfx` file, and the widget types and keys suggested in `.gui` files. Etch's hovers, its sprite and font suggestions and the preview's warnings in the Problems panel stay. With `ignore`, Etch gives all its answers, so some of them show twice.",
+            "markdownDescription": "What Etch does when CWTools is on too. With `auto`, in files that CWTools reads as EU4, Etch leaves to CWTools what CWTools' EU4 rules cover: Go to Definition on those sprites, their entries and the fonts in the Outline of a `.gfx` file, and the widget types and keys suggested in `.gui` files. Etch's warnings about `.gui` keys and values the game does not read, and about a missing sprite or font after a key those rules check, then come from CWTools too. Etch's hovers, its sprite and font suggestions and the preview's other warnings in the Problems panel stay. With `ignore`, Etch gives all its answers, so some of them show twice.",
             "order": 6
           },
           "etch.editor.spriteThumbnails": {
