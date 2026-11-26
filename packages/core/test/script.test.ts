@@ -277,6 +277,41 @@ guiTypes = {
       expect(shape(parsed.entries)).toEqual([{ a: '"x"' }, { b: '"open"' }, { c: '2' }]);
     });
 
+    it('reports a missing quote where the quotes start to pair up wrongly, not at the end', () => {
+      // A province_names file of a Workshop mod: one quote missing on line 2.
+      const text = 'a = { "x" "y" }\nb = { "Oise" "Beauvais }\nc = { "p" "q" }\nd = { "r" }\n';
+      const parsed = parseAsScript(text);
+      const unclosed = parsed.diagnostics.filter((d) => d.code === 'unterminated-string');
+      const start = text.indexOf('"Beauvais');
+      expect(unclosed).toMatchObject([{ start, end: text.indexOf('\n', start) }]);
+      expect(unclosed[0]?.message).toContain('on line 4, never closes');
+      // The tokens stay the game's: only where the problem shows changes.
+      expect(shape(parsed.entries)).toEqual(shape(parseScript(text, { script: true }).entries));
+    });
+
+    it('passes over strings that hold script on several lines when it looks for the fault', () => {
+      const text =
+        'a = {\n\teffect = "add_modifier = {\n\t\tname = x\n\t}"\n}\n' +
+        'b = { "Oise" "Beauvais }\nc = 1\nd = "z"\n';
+      const [problem] = parseAsScript(text).diagnostics.filter(
+        (d) => d.code === 'unterminated-string',
+      );
+      const start = text.indexOf('"Beauvais');
+      expect(problem).toMatchObject({ start, end: text.indexOf('\n', start) });
+      expect(problem?.message).toContain('on line 8, never closes');
+    });
+
+    it('keeps the problem on the last string when no string before it runs over lines', () => {
+      const text = 'a = "x"\nb = { "p" "q" }\nc = "open\n';
+      expect(parseAsScript(text).diagnostics).toMatchObject([
+        {
+          code: 'unterminated-string',
+          start: text.indexOf('"open'),
+          message: 'This string is never closed; it ends at its line end.',
+        },
+      ]);
+    });
+
     it('keeps backslashes, which a script string does not escape', () => {
       const [entry] = parseAsScript('a = "x\\"\nb = 1').entries;
       expect(entry).toMatchObject({ value: { text: 'x\\', quoted: true } });

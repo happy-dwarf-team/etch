@@ -85,7 +85,10 @@ than once, Problems shows it once, with "(×2)".
 - It does not check a scripted effect or trigger with `$` or `[[` in it, such as `$amount$`: the
   game reads those only where they are used.
 - It does not check a file whose `{` and `}` do not match, or with a `"` that is not closed. The
-  notice of the command names the line.
+  notice of the command names the line. The game reads a quoted text up to the next `"`, even on a
+  later line, so one missing `"` leaves only the file's last text open. The notice then names the
+  first line where a quoted text runs on over lines and holds no script, which is usually the line
+  that misses the `"`.
 - If you edit the file while the game reads it, the check shows nothing: run it again.
 - It works only in the live game, with a game loaded: not in the main menu, and not in ironman or
   multiplayer games.
