@@ -89,9 +89,62 @@ export interface ParseOptions {
    * Anbennar's parliament issues an `effect = "add_country_modifier = {` closed by `}"` lines
    * later; cut at the line end, its braces would close the wrong block. No escapes, as in
    * interface files. A string that never closes is cut at its line end, so that the rest of the
-   * file still parses.
+   * file still parses; its problem goes where the quotes start to pair up wrongly
+   * (`unclosedScriptString`).
    */
   readonly script?: boolean;
+}
+
+/** The 1-based line of `offset`, with line ends counted as VS Code counts them. */
+function lineAt(text: string, offset: number): number {
+  let line = 1;
+  for (let k = 0; k < offset; k++) {
+    const c = text.charCodeAt(k);
+    if (c === LF || (c === CR && text.charCodeAt(k + 1) !== LF)) line++;
+  }
+  return line;
+}
+
+/**
+ * The problem for a script file's string that never closes, `start` to `end` cut at its line
+ * end. The game reads a string up to the next quote, across lines, so one missing quote pairs
+ * every later quote with the wrong one, and only the file's last string is left open, often
+ * hundreds of lines below the fault. So the problem goes on the first string before it that runs
+ * over several lines and whose text is not script (vanilla's strings over several lines hold
+ * script, `first_effect = "…"`): that is where the quotes start to pair up wrongly. Without one,
+ * it stays on the last string. `spanning` holds the strings over several lines, start and end.
+ */
+function unclosedScriptString(
+  text: string,
+  start: number,
+  end: number,
+  spanning: readonly number[],
+): SyntaxDiagnostic {
+  for (let k = 0; k < spanning.length; k += 2) {
+    const from = spanning[k] ?? 0;
+    const to = spanning[k + 1] ?? 0;
+    if (parseScript(text.slice(from + 1, to - 1), { script: true }).diagnostics.length === 0) {
+      continue;
+    }
+    let lineEnd = from + 1;
+    while (lineEnd < to && text.charCodeAt(lineEnd) !== LF && text.charCodeAt(lineEnd) !== CR) {
+      lineEnd++;
+    }
+    return diagnostic(
+      'unterminated-string',
+      from,
+      lineEnd,
+      'A quote is probably missing here: this string runs over several lines to the next quote, ' +
+        'as the game reads it, and what it holds is not script. From here on the quotes pair up ' +
+        `wrongly, and the file's last string, on line ${String(lineAt(text, start))}, never closes.`,
+    );
+  }
+  return diagnostic(
+    'unterminated-string',
+    start,
+    end,
+    'This string is never closed; it ends at its line end.',
+  );
 }
 
 function tokenize(
@@ -103,6 +156,8 @@ function tokenize(
   const n = text.length;
   // Vanilla interface files average about one token per 7 characters.
   const tokens = new Tokens(Math.max(16, n >> 3));
+  /** A script file's closed strings that run over several lines: start and end, in pairs. */
+  const spanning: number[] = [];
   let i = 0;
   while (i < n) {
     const c = text.charCodeAt(i);
@@ -145,9 +200,14 @@ function tokenize(
       // on its line is cut at the line end and the rest of the file still parses. A script file's
       // string runs to the next quote (`ParseOptions.script`).
       let j = i + 1;
+      let spans = false;
       for (; j < n; j++) {
         const d = text.charCodeAt(j);
-        if (d === QUOTE || (!script && (d === LF || d === CR))) break;
+        if (d === QUOTE) break;
+        if (d === LF || d === CR) {
+          if (!script) break;
+          spans = true;
+        }
       }
       if (script && j >= n) {
         // Never closed: cut at the line end, as an interface file's string is.
@@ -155,17 +215,11 @@ function tokenize(
           const d = text.charCodeAt(j);
           if (d === LF || d === CR) break;
         }
-        diagnostics.push(
-          diagnostic(
-            'unterminated-string',
-            i,
-            j,
-            'This string is never closed; it ends at its line end.',
-          ),
-        );
+        diagnostics.push(unclosedScriptString(text, i, j, spanning));
         tokens.push(STRING, i, j);
         i = j;
       } else if (j < n && text.charCodeAt(j) === QUOTE) {
+        if (spans) spanning.push(i, j + 1);
         tokens.push(STRING, i, j + 1);
         i = j + 1;
       } else {

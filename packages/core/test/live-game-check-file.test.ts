@@ -236,6 +236,18 @@ describe('planCheck, as the review of etch#579 found', () => {
     });
   });
 
+  it('names the line that misses a quote, not the last string left open', () => {
+    const text =
+      'etch_a = {\n\ttag = "FRA\n}\n' +
+      'etch_b = {\n\ttag = "ENG"\n}\n' +
+      'etch_c = {\n\ttag = "CAS"\n}\n';
+    expect(planCheck(text, 'scripted_triggers', 1 << 20)).toMatchObject({
+      kind: 'refused',
+      code: 'syntax',
+      line: 2,
+    });
+  });
+
   it('leaves out a scripted block with a [[PARAMETER] block', () => {
     expect(
       planCheck('etch = {\n\t[[amount] add_treasury = 5 ]\n}\n', 'scripted_effects', 1 << 20),
