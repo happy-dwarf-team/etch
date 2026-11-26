@@ -240,6 +240,32 @@ CWTools issue. Etch shows it at most once in each VS Code window.
 To get CWTools' checks back, start VS Code without `--disable-telemetry`. In VSCodium, wait for a
 CWTools update that fixes the bug.
 
+### CWTools without its EU4 rules
+
+CWTools downloads its EU4 rules when it first starts, into a folder inside its own extension
+folder. When the download fails, CWTools still colours your files, but it checks them with no
+rules: the Problems panel stays empty and it completes nothing. It does not say so. On Windows the
+download often fails because the path of the folder is too long, for example when your user
+folder or the folder VS Code keeps its extensions in has a long name.
+
+A minute after you open a file that CWTools checks as an EU4 file, Etch looks at that folder. When
+it has no rules, Etch shows a warning at the bottom right. Etch shows it at most once in each
+VS Code window, and not when you chose a rules folder yourself (`cwtools.rules_version` set to
+`manual`).
+
+- **Learn More** opens this section of Etch's docs in your browser.
+- **Don't Show Again**: Etch never shows this warning again, in any window.
+
+To give CWTools its rules, download them into a folder with a short path yourself, and point
+CWTools at it:
+
+1. Download the rules from the
+   [cwtools-eu4-config repository](https://github.com/cwtools/cwtools-eu4-config), for example
+   with `git clone https://github.com/cwtools/cwtools-eu4-config C:\cwtools-eu4`.
+2. In your user settings, set `cwtools.rules_version` to `manual` and `cwtools.rules_folder` to
+   that folder.
+3. Run **Developer: Reload Window**.
+
 ## The Get Started page
 
 Once Etch is installed, VS Code opens **Get Started with Etch** on its Welcome page. Six steps

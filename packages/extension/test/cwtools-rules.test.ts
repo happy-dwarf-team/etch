@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
   guiKeysTyped,
+  hasRules,
   readCoverage,
   rulesFolder,
   spriteKindsOf,
@@ -132,6 +133,26 @@ describe("CWTools' rules", () => {
       await writeFile(join(folder, 'common', 'estates.cwt'), '\ticon = <sprite>\n');
       const coverage = await readCoverage(folder);
       expect([...coverage.scriptFolders].sort()).toEqual(['common/estate_privileges', 'events']);
+    });
+
+    it('hold rules when a .cwt file is in the folder or right under it (etch#755)', async () => {
+      folder = await mkdtemp(join(tmpdir(), 'etch-cwtools-'));
+      expect(await hasRules(folder)).toBe(false);
+      expect(await hasRules(join(folder, 'eu4'))).toBe(false);
+      // A clone that failed under a long path leaves .git and no rules.
+      await mkdir(join(folder, '.git'));
+      await writeFile(join(folder, '.git', 'x.cwt'), '');
+      await writeFile(join(folder, 'README.md'), '');
+      expect(await hasRules(folder)).toBe(false);
+      await mkdir(join(folder, 'interface'));
+      await writeFile(join(folder, 'interface', 'sprites.cwt'), 'types = {}');
+      expect(await hasRules(folder)).toBe(true);
+    });
+
+    it('hold rules with a .cwt file at the top', async () => {
+      folder = await mkdtemp(join(tmpdir(), 'etch-cwtools-'));
+      await writeFile(join(folder, 'triggers.cwt'), '');
+      expect(await hasRules(folder)).toBe(true);
     });
   });
 });

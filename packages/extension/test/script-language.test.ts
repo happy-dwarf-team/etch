@@ -7,9 +7,11 @@ import {
   offersCwtoolsGameFolder,
   scriptLanguageNotice,
   keptScriptAssociations,
+  warnsCwtoolsNoRules,
   warnsCwtoolsTelemetry,
   withScriptAssociations,
   type CwtoolsGameFolderCase,
+  type CwtoolsNoRulesCase,
   type CwtoolsTelemetryCase,
   type ScriptLanguageCase,
 } from '../src/script-language.ts';
@@ -209,6 +211,38 @@ describe('the offer to hand CWTools the game folder', () => {
   it('stays silent outside CWTools eu4 mode, where it does not use the folder', () => {
     expect(offersCwtoolsGameFolder({ ...offer, languageId: 'plaintext' })).toBe(false);
     expect(offersCwtoolsGameFolder({ ...offer, languageId: 'paradox' })).toBe(false);
+  });
+});
+
+describe('the notice about CWTools without its EU4 rules (etch#755)', () => {
+  const empty: CwtoolsNoRulesCase = {
+    languageId: 'eu4',
+    cwtoolsActive: true,
+    rulesVersion: 'stable',
+    rules: false,
+    declined: false,
+  };
+
+  it('shows when CWTools runs on an eu4 file and the rules folder it clones has no rules', () => {
+    expect(warnsCwtoolsNoRules(empty)).toBe(true);
+    expect(warnsCwtoolsNoRules({ ...empty, rulesVersion: 'latest' })).toBe(true);
+    expect(warnsCwtoolsNoRules({ ...empty, rulesVersion: undefined })).toBe(true);
+  });
+
+  it('is worth reading the folder for before it is read', () => {
+    expect(warnsCwtoolsNoRules({ ...empty, rules: undefined })).toBe(true);
+  });
+
+  it('stays silent with rules, with rules the user picked, or after Don’t Show Again', () => {
+    expect(warnsCwtoolsNoRules({ ...empty, rules: true })).toBe(false);
+    expect(warnsCwtoolsNoRules({ ...empty, rulesVersion: 'manual' })).toBe(false);
+    expect(warnsCwtoolsNoRules({ ...empty, declined: true })).toBe(false);
+  });
+
+  it('stays silent when CWTools does not run, or outside its eu4 mode', () => {
+    expect(warnsCwtoolsNoRules({ ...empty, cwtoolsActive: false })).toBe(false);
+    expect(warnsCwtoolsNoRules({ ...empty, languageId: 'paradox' })).toBe(false);
+    expect(warnsCwtoolsNoRules({ ...empty, languageId: 'plaintext' })).toBe(false);
   });
 });
 

@@ -2,7 +2,7 @@
 // "Beside CWTools"). Etch steps back from a feature only where CWTools answers the same, so
 // this reads which sprite kinds the rules type as `sprite`, whether they type fonts, whether
 // they have rules for `.gui` files, and which `.gui` keys they type as a sprite or font. No vscode.
-import { readFile } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 /** What a folder of CWTools' EU4 rules covers in interface files. */
@@ -165,4 +165,28 @@ export function rulesFolder(
     return folder ? folder : undefined;
   }
   return join(extensionPath, '.cwtools', 'eu4');
+}
+
+/**
+ * Whether `folder` holds rules: a `.cwt` file in it or in a folder right under it, as a clone of
+ * cwtools-eu4-config has (`common/`, `interface/`…). `.git` is not read. False for a missing folder.
+ */
+export async function hasRules(folder: string): Promise<boolean> {
+  let entries;
+  try {
+    entries = await readdir(folder, { withFileTypes: true });
+  } catch {
+    return false;
+  }
+  if (entries.some((entry) => entry.isFile() && entry.name.endsWith('.cwt'))) return true;
+  for (const entry of entries) {
+    if (!entry.isDirectory() || entry.name.startsWith('.')) continue;
+    try {
+      const inner = await readdir(join(folder, entry.name));
+      if (inner.some((name) => name.endsWith('.cwt'))) return true;
+    } catch {
+      // A folder that cannot be read holds no rules CWTools loads.
+    }
+  }
+  return false;
 }
