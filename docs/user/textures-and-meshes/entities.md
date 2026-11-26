@@ -277,8 +277,9 @@ These parts differ:
 - A subsystem or child with `local_space = yes`. Etch draws it at the model. The game passes the
   model's place to `gfx/FX/particle.shader` in `InstanceWorldMatrix`, and the base game's shader
   does not use it. So in the game these particles show around the map's south-west corner, moved by
-  the subsystem's `position`, and not at the model. When all the subsystems of a particle have
-  `local_space = yes`, the game draws none of them. Etch warns on
+  the subsystem's `position`, and not at the model. The game draws nothing of the particle, children
+  included, unless a top-level subsystem without `local_space = yes` sends out particles. Etch
+  warns on
   `local_space = yes` when your playset's `particle.shader` does not use `InstanceWorldMatrix`.
   To keep the particles at the model, leave `local_space` out, or ship a `particle.shader` whose
   vertex shader multiplies the position by `InstanceWorldMatrix`.
