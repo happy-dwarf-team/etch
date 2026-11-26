@@ -214,7 +214,11 @@ export function registerScriptLanguageNotice(context: vscode.ExtensionContext): 
     vscode.extensions.onDidChange(() => {
       consider(vscode.window.activeTextEditor);
     }),
-    { dispose: () => clearTimeout(noRulesTimer) },
+    {
+      dispose: () => {
+        clearTimeout(noRulesTimer);
+      },
+    },
   );
 }
 
