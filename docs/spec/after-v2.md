@@ -1455,6 +1455,13 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
       particles; the warning now says so, where it counted children before.
       The lab's reading of the update and draw code found no test that
       explains it. The preview still draws such particles at their node.
+      The lab's run `e631-s26a` (26 November 2026) added a time: the game
+      spawns and moves the `local_space` particles all along, but shows them
+      only in frames where such a world-space subsystem has particles alive.
+      With a world-space subsystem that emitted for 3 s with `life = 2`, the
+      `local_space` tiles vanished with its last particles; with one that
+      started 20 s late, they appeared when it began, already spread out. The
+      hover and the user docs say so; the warning is unchanged.
 
 Small unknowns, none worth an issue yet.
 
