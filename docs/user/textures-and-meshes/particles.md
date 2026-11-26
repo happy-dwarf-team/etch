@@ -98,7 +98,9 @@ warning shows in VS Code's Problems panel (<kbd>Ctrl+Shift+M</kbd>), with "Etch"
   moved by the subsystem's `position`, and not at the effect. The game draws nothing of a
   `particle`, children included, unless one of its top-level `subsystem` blocks has no
   `local_space = yes` and sends out particles. A child without it does not count, and neither does
-  a subsystem whose `emission` is 0. The warning says when that happens. Leave
+  a subsystem whose `emission` is 0. The warning says when that happens. With such a subsystem, the
+  `local_space` particles still show only while it has particles alive: if it starts late
+  (`start`), stops (`duration`) or its particles die young (`life`), they vanish meanwhile. Leave
   `local_space` out, or ship a `particle.shader` in your mod whose vertex shader multiplies the
   position by `InstanceWorldMatrix`.
 - **A texture that is missing**: your

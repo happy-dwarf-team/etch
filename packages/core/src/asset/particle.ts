@@ -265,7 +265,7 @@ const SUBSYSTEM: [string, ParticleKeyDoc][] = [
     'local_space',
     doc(
       YES_NO,
-      'With `yes`, the particles move with the model. Otherwise they stay where they were sent out. The game passes the model’s place to the shader in `InstanceWorldMatrix`, and the base game’s `gfx/FX/particle.shader` does not use it. With that shader the game draws these particles at their own coordinates on the map, around its south-west corner (moved by the subsystem’s `position`), not at the model. When no subsystem at the top of the particle emits without `local_space = yes`, it draws none of the particle, children included.',
+      'With `yes`, the particles move with the model. Otherwise they stay where they were sent out. The game passes the model’s place to the shader in `InstanceWorldMatrix`, and the base game’s `gfx/FX/particle.shader` does not use it. With that shader the game draws these particles at their own coordinates on the map, around its south-west corner (moved by the subsystem’s `position`), not at the model. It shows them only while a subsystem at the top of the particle without `local_space = yes` has particles alive. When no such subsystem emits, it draws none of the particle, children included.',
       'game',
     ),
   ],
