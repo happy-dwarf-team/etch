@@ -95,8 +95,10 @@ warning shows in VS Code's Problems panel (<kbd>Ctrl+Shift+M</kbd>), with "Etch"
 - **`local_space = yes` that the shader does not place.** The game passes the effect's place to
   `gfx/FX/particle.shader` in `InstanceWorldMatrix`. The base game's file does not use it. So the
   game draws these particles at their own coordinates on the map: around its south-west corner,
-  moved by the subsystem's `position`, and not at the effect. When all the subsystems of a
-  `particle` have `local_space = yes`, it draws none of them, and the warning says so. Leave
+  moved by the subsystem's `position`, and not at the effect. The game draws nothing of a
+  `particle`, children included, unless one of its top-level `subsystem` blocks has no
+  `local_space = yes` and sends out particles. A child without it does not count, and neither does
+  a subsystem whose `emission` is 0. The warning says when that happens. Leave
   `local_space` out, or ship a `particle.shader` in your mod whose vertex shader multiplies the
   position by `InstanceWorldMatrix`.
 - **A texture that is missing**: your

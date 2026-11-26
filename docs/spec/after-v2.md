@@ -1442,6 +1442,19 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
       comes before it. In B, A order the game took A's effect from the copy
       of the effect drawn before; the preview, which does not order copies as
       the game does, still hides B there.
+  16. Settle which `local_space` particles the game draws at all (point
+      14). Done 26 November 2026, checked in the game (Steam 1.37.5, the
+      lab's run `e631-s25a`, the setup of point 14: large `local_space`
+      tiles placed over Trier, small world-space tiles at the sieges). The
+      `local_space` tiles showed with a world-space subsystem before or after
+      them, and with a world-space parent whose child had `local_space`. They
+      showed nothing alone, next to a second `local_space` subsystem, or next
+      to a world-space subsystem with `emission = { 0 }`. A `local_space`
+      parent with a world-space child drew neither of them. So a particle
+      draws only when a top-level subsystem without `local_space` sends out
+      particles; the warning now says so, where it counted children before.
+      The lab's reading of the update and draw code found no test that
+      explains it. The preview still draws such particles at their node.
 
 Small unknowns, none worth an issue yet.
 

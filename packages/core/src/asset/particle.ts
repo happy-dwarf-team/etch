@@ -265,7 +265,7 @@ const SUBSYSTEM: [string, ParticleKeyDoc][] = [
     'local_space',
     doc(
       YES_NO,
-      'With `yes`, the particles move with the model. Otherwise they stay where they were sent out. The game passes the model’s place to the shader in `InstanceWorldMatrix`, and the base game’s `gfx/FX/particle.shader` does not use it. With that shader the game draws these particles at their own coordinates on the map, around its south-west corner (moved by the subsystem’s `position`), not at the model. When every subsystem of the particle has `local_space = yes`, it draws none of them.',
+      'With `yes`, the particles move with the model. Otherwise they stay where they were sent out. The game passes the model’s place to the shader in `InstanceWorldMatrix`, and the base game’s `gfx/FX/particle.shader` does not use it. With that shader the game draws these particles at their own coordinates on the map, around its south-west corner (moved by the subsystem’s `position`), not at the model. When no subsystem at the top of the particle emits without `local_space = yes`, it draws none of the particle, children included.',
       'game',
     ),
   ],
@@ -571,8 +571,8 @@ interface ParticleEffect {
  * - when `localSpacePlaced` is `false` (the playset's `gfx/FX/particle.shader` does not use
  *   `InstanceWorldMatrix`, see `shaderPlacesLocalSpace`), each `local_space = yes`: the game hands
  *   such a subsystem the effect's place only through that matrix, so it draws the particles at their
- *   own coordinates around the map's origin, and draws none of a particle whose subsystems all have
- *   it (etch#631 step 23).
+ *   own coordinates around the map's origin, and draws none of a particle with no top-level
+ *   subsystem that emits without it (etch#631 steps 23 and 25).
  * A missing texture file is the extension's check (`particleTextureFiles`), which needs the disk.
  */
 export function checkParticleBlocks(
@@ -585,7 +585,9 @@ export function checkParticleBlocks(
     const effect = readEffect(block);
     unknownKeys(block, 'particle', out);
     const subsystems = subsystemBlocks(block);
-    const allLocal = subsystems.length > 0 && subsystems.every(isLocalSpace);
+    const noneDrawn = !propertyBlocks(block.entries, 'subsystem').some(
+      (subsystem) => !isLocalSpace(subsystem) && !neverEmits(subsystem),
+    );
     for (const subsystem of subsystems) {
       unknownKeys(subsystem, 'subsystem', out);
       for (const texture of propertyBlocks(subsystem.entries, 'texture')) {
@@ -595,7 +597,7 @@ export function checkParticleBlocks(
       vectorKeys(subsystem, out);
       emitterKeys(subsystem, out);
       if (effects !== undefined) shaderEffect(subsystem, effects, out);
-      if (localSpacePlaced === false) unplacedLocalSpace(subsystem, allLocal, out);
+      if (localSpacePlaced === false) unplacedLocalSpace(subsystem, noneDrawn, out);
     }
     for (const curve of propertyBlocks(block.entries, 'animation')) {
       unknownKeys(curve, 'animation', out);
@@ -994,15 +996,34 @@ function isLocalSpace(subsystem: BlockNode): boolean {
   return lastScalar(subsystem, 'local_space')?.text.toLowerCase() === 'yes';
 }
 
+/** A subsystem whose `emission` is only zeros, so it never has particles of its own. */
+function neverEmits(subsystem: BlockNode): boolean {
+  let emission: ScalarNode | BlockNode | undefined;
+  for (const entry of subsystem.entries) {
+    if (entry.kind === 'property' && keyOf(entry) === 'emission') emission = entry.value;
+  }
+  if (emission === undefined) return false;
+  const items = valueNames(emission).length === 0 ? numbersOf(emission) : [];
+  return items.length > 0 && items.every((item) => Number(item) === 0);
+}
+
+function numbersOf(value: ScalarNode | BlockNode): string[] {
+  const scalars =
+    value.kind === 'scalar'
+      ? [value]
+      : value.entries.filter((entry): entry is ScalarNode => entry.kind === 'scalar');
+  return scalars.flatMap((scalar) => names(scalar).map((use) => use.name));
+}
+
 function unplacedLocalSpace(
   subsystem: BlockNode,
-  allLocal: boolean,
+  noneDrawn: boolean,
   out: ParticleBlockDiagnostic[],
 ): void {
   const flag = lastScalar(subsystem, 'local_space');
   if (flag === undefined || !isLocalSpace(subsystem)) return;
-  const where = allLocal
-    ? 'Every subsystem of this particle has local_space = yes, and then the game draws none of them.'
+  const where = noneDrawn
+    ? 'This particle has no subsystem at its top level without local_space that emits particles, and then the game draws none of its particles, children included.'
     : 'So the game draws the particles at their own coordinates on the map, around its south-west corner (moved by the subsystem’s position), not at the effect.';
   out.push({
     code: 'particle-local-space-unplaced',

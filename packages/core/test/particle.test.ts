@@ -341,7 +341,36 @@ describe('local_space and the particle shader (step 19)', () => {
       'particle = { name = "y" subsystem = { local_space = yes childsystem = { local_space = yes } } }',
     );
     expect(only).toHaveLength(2);
-    for (const message of only) expect(message).toContain('the game draws none of them');
+    for (const message of only) expect(message).toContain('the game draws none of its particles');
+  });
+
+  it('counts only a top-level subsystem without local_space that emits (step 25)', () => {
+    const noneDrawn = (source: string) =>
+      checkParticleBlocks(parseScript(source), EFFECTS, false)
+        .filter((d) => d.code === 'particle-local-space-unplaced')
+        .map((d) => d.message.includes('the game draws none of its particles'));
+    // A world-space child under a local_space parent drew nothing in the game.
+    expect(
+      noneDrawn('particle = { name = "a" subsystem = { local_space = yes childsystem = { } } }'),
+    ).toEqual([true]);
+    // A world-space subsystem that never emits did not help either.
+    expect(
+      noneDrawn(
+        'particle = { name = "b" subsystem = { local_space = yes } subsystem = { emission = { 0 } } }',
+      ),
+    ).toEqual([true]);
+    // A world-space parent with a local_space child drew both.
+    expect(
+      noneDrawn(
+        'particle = { name = "c" subsystem = { emission = { 10 } childsystem = { local_space = yes } } }',
+      ),
+    ).toEqual([false]);
+    // Emission from a curve counts, whatever the curve gives.
+    expect(
+      noneDrawn(
+        'particle = { name = "d" subsystem = { local_space = yes } subsystem = { emission = { puff } } }',
+      ),
+    ).toEqual([false]);
   });
 });
 
