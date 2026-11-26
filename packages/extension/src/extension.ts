@@ -4,6 +4,7 @@ import { registerAssetLinks, type AssetLinks } from './asset-links.ts';
 import { registerSpriteLinks, type SpriteLinks } from './sprite-links.ts';
 import { registerFontLinks, type FontLinks } from './font-links.ts';
 import { registerLocalisationHints, type LocalisationHints } from './localisation-hints.ts';
+import { registerSemanticPrototype } from './semantic-prototype.ts';
 import { registerGuiCompletion, type GuiCompletion } from './gui-completion.ts';
 import { registerInterfaceSymbols, type InterfaceSymbols } from './interface-symbols.ts';
 import { registerSpriteReferences, type SpriteReferences } from './sprite-references.ts';
@@ -78,6 +79,7 @@ export function activate(context: vscode.ExtensionContext): EtchApi {
     );
   }
   registerCwtools(context);
+  registerSemanticPrototype(context);
   const spriteLinks = registerSpriteLinks(context, output);
   return {
     navigation,
