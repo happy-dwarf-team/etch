@@ -139,7 +139,7 @@ The steps of `pnpm check`, to run one of them alone:
 
 ```powershell
 pnpm format:check    # Prettier, with its cache in node_modules/.cache/prettier
-pnpm lint            # ESLint, with its cache in node_modules/.cache/eslint
+pnpm lint            # ESLint, without a cache, as CI runs it
 pnpm typecheck
 pnpm test            # test:unit, test:renderer and test:extension
 pnpm test:unit       # Vitest
@@ -154,6 +154,11 @@ pnpm pins            # download and check the pinned builds, stage them, write t
 pnpm pins:check      # the same checks without the plugin build, staging nothing
 pnpm package         # packages/extension/dist/etch-win32-x64-<version>.vsix (runs pnpm pins)
 ```
+
+`pnpm lint:fast` runs ESLint with its cache in `node_modules/.cache/eslint`, for a quick
+look while you work. It is not the check: the cache keys each result on the file's own text, so a
+typed rule whose answer changes through another file (a type changed elsewhere) can pass from the
+cache and fail in CI. `pnpm lint` and `pnpm check` lint without it.
 
 `pnpm format` rewrites files with Prettier. Markdown is not formatted; keep its
 line breaks and tables as they are.
