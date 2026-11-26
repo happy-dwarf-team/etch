@@ -74,6 +74,20 @@ export function withScriptAssociations(
   return added ? merged : undefined;
 }
 
+/**
+ * The patterns of Etch's entries that the workspace's `files.associations` already maps to another
+ * language than CWTools' `eu4`, with that language. {@link withScriptAssociations} keeps them, so
+ * their files stay as they are.
+ */
+export function keptScriptAssociations(
+  current: Readonly<Record<string, string>> | undefined,
+): [pattern: string, language: string][] {
+  return Object.keys(SCRIPT_ASSOCIATIONS).flatMap((pattern): [string, string][] => {
+    const language = current?.[pattern];
+    return language === undefined || language === CWTOOLS_EU4_LANGUAGE ? [] : [[pattern, language]];
+  });
+}
+
 /** What the notice is decided on: an opened document, and the user's setup. */
 export interface ScriptLanguageCase {
   readonly scheme: string;

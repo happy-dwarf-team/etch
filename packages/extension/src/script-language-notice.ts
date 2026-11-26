@@ -26,6 +26,7 @@ import {
   CWTOOLS_PARADOX_LANGUAGE,
   CWTOOLS_TELEMETRY_ISSUE,
   SCRIPT_LANGUAGE_EXTENSIONS,
+  keptScriptAssociations,
   offersCwtoolsGameFolder,
   scriptLanguageNotice,
   warnsCwtoolsTelemetry,
@@ -78,9 +79,14 @@ const PARADOX_MESSAGE =
 const PARADOX_FIX = ' Etch can add a setting to this folder so that CWTools uses them here too.';
 const PARADOX_NO_FOLDER_FIX =
   " Open your mod's folder, then a script file: Etch then offers a setting so that CWTools uses them.";
-const CWTOOLS_OTHER_GAME =
-  'CWTools was already running for another game. ' +
-  'Reload the window so that it checks these files as EU4 files.';
+// CWTools does not say which game it runs for. Started for another game, or as `paradox`, it keeps
+// that mode after the setting; started as EU4, it checks the files without a reload.
+const CWTOOLS_RUNNING =
+  'CWTools was already running. If it started for another game, it still checks these files ' +
+  'with no EU4 rules: reload the window so that it checks them as EU4 files.';
+const ALREADY_EU4 =
+  "This folder's settings already give your mod's script files CWTools' EU4 language.";
+const OPEN_SETTINGS = 'Open Settings';
 
 /** Whether CWTools or ParadoxCode is installed and turned on. */
 export function scriptLanguageInstalled(): boolean {
@@ -262,12 +268,45 @@ async function showTelemetryNotice(context: vscode.ExtensionContext): Promise<vo
   if (choice === DONT_SHOW) await context.globalState.update(TELEMETRY_DECLINED, true);
 }
 
-/** Adds Etch's `files.associations` entries to the workspace settings. */
+/** The message that the workspace keeps some of its own entries, which give the files another language. */
+function keptMessage(kept: readonly [string, string][], changed: boolean): string {
+  const list = kept.map(([pattern, language]) => `${pattern} (${language})`).join(', ');
+  return (
+    `${changed ? 'Etch kept' : 'Etch changed nothing: it keeps'} the lines of files.associations in ` +
+    `this folder's settings that give these files another language: ${list}. ` +
+    'CWTools checks them as EU4 files only if you set them to eu4.'
+  );
+}
+
+/** Offers the workspace's settings file, where `files.associations` is. */
+function noteKept(kept: readonly [string, string][], changed: boolean): void {
+  void notify('info', keptMessage(kept, changed), {
+    label: OPEN_SETTINGS,
+    run: () => vscode.commands.executeCommand('workbench.action.openWorkspaceSettingsFile'),
+  });
+}
+
+/**
+ * Adds Etch's `files.associations` entries to the workspace settings. When the workspace keeps
+ * entries of its own for the same patterns, or has them all, it says so instead of nothing
+ * (etch#726).
+ */
 async function addScriptAssociations(): Promise<void> {
   const files = vscode.workspace.getConfiguration('files');
   const current = files.inspect<Record<string, string>>('associations')?.workspaceValue;
   const merged = withScriptAssociations(current);
-  if (merged === undefined) return;
+  const kept = keptScriptAssociations(current);
+  if (merged === undefined) {
+    if (kept.length > 0) {
+      noteKept(kept, false);
+    } else if (vscode.extensions.getExtension(CWTOOLS_ID)?.isActive === true) {
+      void notify('info', `${ALREADY_EU4} ${CWTOOLS_RUNNING}`, ACTIONS.reloadWindow);
+    } else {
+      void notify('info', ALREADY_EU4);
+    }
+    return;
+  }
+  if (kept.length > 0) noteKept(kept, true);
   try {
     await files.update('associations', merged, vscode.ConfigurationTarget.Workspace);
   } catch (error) {
@@ -282,6 +321,6 @@ async function addScriptAssociations(): Promise<void> {
   // by itself when a file becomes `eu4`. CWTools 0.10.31's own restart command fails while its
   // server runs ("command 'pretriggerThisFile' already exists"), so a window reload restarts it.
   if (vscode.extensions.getExtension(CWTOOLS_ID)?.isActive === true) {
-    void notify('info', CWTOOLS_OTHER_GAME, ACTIONS.reloadWindow);
+    void notify('info', CWTOOLS_RUNNING, ACTIONS.reloadWindow);
   }
 }

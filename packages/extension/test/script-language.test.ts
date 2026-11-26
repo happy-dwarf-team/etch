@@ -6,6 +6,7 @@ import {
   isScriptFile,
   offersCwtoolsGameFolder,
   scriptLanguageNotice,
+  keptScriptAssociations,
   warnsCwtoolsTelemetry,
   withScriptAssociations,
   type CwtoolsGameFolderCase,
@@ -163,6 +164,23 @@ describe('the files.associations entries', () => {
 
   it('change nothing when the workspace has them all', () => {
     expect(withScriptAssociations({ ...SCRIPT_ASSOCIATIONS })).toBeUndefined();
+  });
+
+  it('change nothing when the workspace maps them all to another language (etch#726)', () => {
+    const paradox = Object.fromEntries(
+      Object.keys(SCRIPT_ASSOCIATIONS).map((pattern) => [pattern, 'paradox']),
+    );
+    expect(withScriptAssociations(paradox)).toBeUndefined();
+    expect(keptScriptAssociations(paradox)).toHaveLength(Object.keys(SCRIPT_ASSOCIATIONS).length);
+    expect(keptScriptAssociations(paradox)[0]).toEqual(['**/common/**/*.txt', 'paradox']);
+  });
+
+  it('name the workspace’s own entries for the same patterns, not its eu4 or other ones', () => {
+    expect(keptScriptAssociations(undefined)).toEqual([]);
+    expect(keptScriptAssociations({ ...SCRIPT_ASSOCIATIONS })).toEqual([]);
+    expect(
+      keptScriptAssociations({ '*.gui': 'plaintext', '*.gfx': 'eu4', '*.yml': 'yaml' }),
+    ).toEqual([['*.gui', 'plaintext']]);
   });
 });
 

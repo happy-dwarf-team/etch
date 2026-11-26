@@ -577,6 +577,7 @@
           },
           "etch.cwtools": {
             "type": "string",
+            "default": "auto",
             "enum": [
               "auto",
               "ignore"

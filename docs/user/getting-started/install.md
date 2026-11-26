@@ -117,8 +117,13 @@ VS Code window.
   If `files.associations` there already has a line for one of the patterns below, Etch keeps your
   line and adds only the missing ones.
   - The file you have open gets its colours at once.
-  - If CWTools was already running, it still checks the files with no EU4 rules. Etch then shows
-    a second notification with **Reload Window**. Click it, and CWTools starts again for EU4.
+  - If CWTools was already running, Etch shows a second notification with **Reload Window**.
+    CWTools that started for another game, or for files of no particular game, still checks the
+    files with no EU4 rules. Click **Reload Window**, and CWTools starts again for EU4.
+  - If one of your lines gives these files another language, for example `"*.gui": "paradox"`,
+    those files keep it. Etch says so in a notification that names the lines. **Open Settings**
+    opens the file, where you can change them to `eu4`. If all of them are your own lines, Etch
+    adds nothing.
 - If you opened no folder, or the file is not inside the folder you opened, the first button is
   **Open Folder…**. Open your mod's folder with it: when you next open a script file, the
   notification offers **Colour Files in This Folder**.
