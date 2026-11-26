@@ -4,7 +4,7 @@
  * becomes a diagnostic.
  */
 import type { BlockNode, ParsedScript, PropertyNode, ScalarNode } from '../script/tree.ts';
-import { diagnostic, type ModelDiagnostic } from './diagnostics.ts';
+import { diagnostic, syntaxDiagnostics, type ModelDiagnostic } from './diagnostics.ts';
 import { guiPairFields, isGuiWidgetKey } from './gui-structure.ts';
 import {
   Properties,
@@ -116,7 +116,7 @@ const RESOLUTION_BOUNDS = new Set(['min_width', 'max_width', 'min_height', 'max_
 
 /** Builds the model of a parsed `.gui` file. */
 export function readGuiFile(parsed: ParsedScript): GuiFile {
-  const diagnostics: ModelDiagnostic[] = [];
+  const diagnostics: ModelDiagnostic[] = syntaxDiagnostics(parsed);
   const constants = new Map<string, ScalarNode>();
   for (const entry of parsed.entries) {
     if (

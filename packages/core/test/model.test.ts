@@ -247,6 +247,45 @@ bitmapfonts = {
   });
 });
 
+describe('syntax errors in interface files (etch#757)', () => {
+  const syntax = (file: GuiFile | GfxFile) =>
+    file.diagnostics
+      .filter((d) => d.code === 'syntax-error')
+      .map(({ severity, start, end, message }) => ({ severity, start, end, message }));
+
+  it('warns at a { that a .gui file never closes', () => {
+    const text = 'guiTypes = {\n  windowType = {\n    name = "w"\n}\n';
+    const found = syntax(gui(text));
+    expect(found).toHaveLength(1);
+    expect(found[0]?.severity).toBe('warning');
+    expect(text.slice(found[0]?.start, found[0]?.end)).toBe('{');
+    expect(found[0]?.start).toBe(text.indexOf('{'));
+    expect(found[0]?.message).toMatch(/never closed/);
+  });
+
+  it('warns at a } that closes no block in a .gfx file', () => {
+    const text = 'spriteTypes = {\n  spriteType = { name = "GFX_a" }\n}\n}\n';
+    const found = syntax(gfx(text));
+    expect(found).toHaveLength(1);
+    expect(found[0]?.start).toBe(text.lastIndexOf('}'));
+    expect(found[0]?.message).toMatch(/closes no block/);
+  });
+
+  it('warns at a string without its closing quote, and at an operator with no value', () => {
+    // The string runs to the line end and takes the `}` with it, so the blocks stay open too.
+    const messages = syntax(gui('guiTypes = {\n  iconType = { name = "a }\n}\n')).map(
+      (d) => d.message,
+    );
+    expect(messages.some((m) => /quote/.test(m))).toBe(true);
+    expect(syntax(gfx('spriteTypes = {\n  spriteType = { name = }\n}\n'))).toHaveLength(1);
+  });
+
+  it('gives a well-formed file none, also a block written without = as the game reads it', () => {
+    expect(syntax(gui('guiTypes = {\n  windowType\n  {\n    name = "w"\n  }\n}\n'))).toEqual([]);
+    expect(syntax(gfx('spriteTypes = { spriteType = { name = "GFX_a" } }'))).toEqual([]);
+  });
+});
+
 describe('InterfaceIndex', () => {
   it('orders files as the game loads them: files of a folder, then its subfolders', () => {
     const paths = ['interface/b/a.gui', 'interface/Z.gui', 'interface/a.gui', 'interface/a/z.gui'];

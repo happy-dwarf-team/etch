@@ -25,6 +25,23 @@ The entries come in two kinds:
 - an **information** entry, marked with an "i": something Etch draws differently from the game,
   or does not know for sure.
 
+## Braces and quotes
+
+These warnings mean that the file's text is broken, so what comes after the mistake may not be
+read as you meant:
+
+- "This { is never closed; the block runs to the end of the file." A `}` is missing. Everything
+  after the `{` counts as inside that block. Add the `}` where the block ends.
+- "This } closes no block and is ignored." A `}` too many, or one whose `{` is missing. Remove it,
+  or add the `{`.
+- A string without its closing `"` runs to the end of the line. Add the closing `"`.
+- An `=` with no value after it, or with no key before it. Write the missing part, or remove the
+  `=`.
+
+Etch reads the rest of the file as the entry says. Whether the game reads it the same way has not
+been checked. Writing a block without `=`, as `windowType` on one line and `{` on the next, is not
+a mistake: the game reads it, and so does Etch.
+
 ## Missing sprites, textures and fonts
 
 - "No .gfx file of the playset defines sprite GFX_my_icon." The name is misspelled, or the `.gfx`
