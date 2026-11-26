@@ -17,7 +17,9 @@ it, in grey. You read what the player will see without opening the `.yml` file. 
 - In a few folders of `common`, also after the keys that name a text there: `war_name`,
   `prov_desc`, `country_desc` and `elector_relation` in `wargoal_types`, `demands_description`
   in `rebel_types`, `mercenary_desc_key` in `mercenary_companies`, `custom_ai_explanation` in
-  `ruler_personalities` and `ancestor_personalities`, and `reform_tooltip` in `religions`.
+  `ruler_personalities` and `ancestor_personalities`, `reform_tooltip` and `crusade_name` in
+  `religions`, `alert_tooltip` in `new_diplomatic_actions`, and `cooldown_desc` in
+  `government_mechanics`.
 
 Only a key that your [playset](../reference/glossary.md#playset) (the game, your mod and the mods
 it depends on) defines gets a text. A `name` that is a plain word, not a key, gets none.

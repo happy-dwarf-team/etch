@@ -95,6 +95,16 @@ describe('localisationReferences', () => {
       keysOf('common/religions/etch.txt', 'g = { r = { reform_tooltip = ETCH_REFORM } }'),
     ).toEqual(['ETCH_REFORM']);
     expect(
+      keysOf('common/new_diplomatic_actions/etch.txt', 'a = { alert_tooltip = ETCH_ALERT }'),
+    ).toEqual(['ETCH_ALERT']);
+    expect(
+      keysOf('common/religions/etch.txt', 'g = { r = { crusade_name = ETCH_CRUSADE } }'),
+    ).toEqual(['ETCH_CRUSADE']);
+    expect(
+      keysOf('common/government_mechanics/etch.txt', 'm = { i = { cooldown_desc = ETCH_CD } }'),
+    ).toEqual(['ETCH_CD']);
+    expect(keysOf('missions/etch.txt', 'slot = { m = { key = etch_mission } }')).toEqual([]);
+    expect(
       keysOf('events/etch.txt', 'e = { define_ruler = { dynasty = Etch } leader = etch_rebel }'),
     ).toEqual([]);
   });

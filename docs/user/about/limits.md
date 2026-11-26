@@ -128,7 +128,7 @@ in one place, grouped by where you meet them.
 - Etch shows the text of a localisation key after it only on these lines: `text`, `tooltip`,
   `tooltipText` and `delayedTooltipText` in `.gui` files, and `title`, `desc`, `name`, `tooltip`
   and `custom_tooltip` in the script files of `events`, `decisions`, `missions` and `common`,
-  and eight more keys in a few `common` folders, such as `war_name` in `wargoal_types`. A
+  and eleven more keys in a few `common` folders, such as `war_name` in `wargoal_types`. A
   value that no `.yml` file of your playset defines gets no text. See
   [Localisation texts](../scripts/localisation-texts.md).
 - A change to a `.yml` file shows in these texts only after you save the file. When Etch cannot
