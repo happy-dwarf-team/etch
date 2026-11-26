@@ -16,6 +16,11 @@
 // started with `--disable-telemetry`, or a build without telemetry such as VSCodium
 // (cwtools/cwtools-vscode#167). Once a window, when an `eu4` file opens in that state, Etch says
 // so. The `telemetry.telemetryLevel` setting does not cause it, so Etch offers no setting.
+//
+// CWTools clones its EU4 rules into its own folder when it starts. When that fails, as git does
+// under a deep folder on Windows ("path too long"), CWTools checks EU4 files with no rules and says
+// nothing (etch#755). Once a window, a minute after an `eu4` file opens, when CWTools runs with the
+// rules it clones itself and its rules folder has none, Etch says so.
 import { resolve } from 'node:path';
 import * as vscode from 'vscode';
 import { findGameInSteam, isGameFolder, systemEnvironment } from '@etch/core/playset';
@@ -29,9 +34,11 @@ import {
   keptScriptAssociations,
   offersCwtoolsGameFolder,
   scriptLanguageNotice,
+  warnsCwtoolsNoRules,
   warnsCwtoolsTelemetry,
   withScriptAssociations,
 } from './script-language.ts';
+import { hasRules, rulesFolder } from './cwtools-rules.ts';
 import { ACTIONS, notify } from './notify.ts';
 
 /** The global state key that Don't Show Again sets on the notice that offers the extensions. */
@@ -42,6 +49,10 @@ const FOLDER_DECLINED = 'etch.scriptLanguageNotice.folderDeclined';
 const GAME_FOLDER_DECLINED = 'etch.scriptLanguageNotice.cwtoolsGameFolderDeclined';
 /** The global state key that Don't Show Again sets on the notice about CWTools and telemetry. */
 const TELEMETRY_DECLINED = 'etch.scriptLanguageNotice.cwtoolsTelemetryDeclined';
+/** The global state key that Don't Show Again sets on the notice about CWTools without rules. */
+const NO_RULES_DECLINED = 'etch.scriptLanguageNotice.cwtoolsNoRulesDeclined';
+/** How long CWTools has for the first clone of its rules, as Etch's reading of them waits. */
+const NO_RULES_WAIT_MS = 60_000;
 const DONT_SHOW = "Don't Show Again";
 const USE_FOLDER = 'Use This Folder';
 const COLOUR_FILES = 'Colour Files in This Folder';
@@ -60,6 +71,13 @@ const TELEMETRY_MESSAGE =
   'On Windows it fails when the editor runs without telemetry, as VS Code started with ' +
   `--disable-telemetry or VSCodium do ([CWTools issue #167](${CWTOOLS_TELEMETRY_ISSUE})). ` +
   'Start VS Code without that option, or wait for a CWTools update that fixes it.';
+/** The docs section on CWTools without its EU4 rules. */
+export const NO_RULES_DOCS =
+  'https://etch.happydwarf.dev/docs/getting-started/install/#cwtools-without-its-eu4-rules';
+const NO_RULES_MESSAGE =
+  'CWTools checks EU4 files with no rules, so it shows no problems in them. ' +
+  'Its folder of EU4 rules is empty: downloading them failed, on Windows often because the ' +
+  "path of CWTools' folder is too long.";
 
 const MESSAGE =
   'Script files open as Plain Text, without colours: Etch adds none. ' +
@@ -137,10 +155,40 @@ export function registerScriptLanguageNotice(context: vscode.ExtensionContext): 
     shown.add('telemetry');
     void showTelemetryNotice(context);
   };
+  let noRulesTimer: ReturnType<typeof setTimeout> | undefined;
+  const considerNoRules = async (document: vscode.TextDocument): Promise<void> => {
+    if (shown.has('noRules')) return;
+    const decide = (cwtoolsActive: boolean, rules: boolean | undefined): boolean =>
+      warnsCwtoolsNoRules({
+        languageId: document.languageId,
+        cwtoolsActive,
+        rulesVersion: vscode.workspace.getConfiguration('cwtools').get<string>('rules_version'),
+        rules,
+        declined: context.globalState.get<boolean>(NO_RULES_DECLINED, false),
+      });
+    // CWTools starts when the first `eu4` file opens, so it may not run yet: it is installed now,
+    // and decided on again once it has had time to start and clone its rules.
+    if (vscode.extensions.getExtension(CWTOOLS_ID) === undefined || !decide(true, undefined))
+      return;
+    shown.add('noRules');
+    await new Promise<void>((done) => {
+      noRulesTimer = setTimeout(done, NO_RULES_WAIT_MS);
+    });
+    const extension = vscode.extensions.getExtension(CWTOOLS_ID);
+    if (extension?.isActive !== true) return;
+    const config = vscode.workspace.getConfiguration('cwtools');
+    const folder = rulesFolder(extension.extensionPath, {
+      rulesVersion: config.get<string>('rules_version'),
+      rulesFolder: config.get<string>('rules_folder'),
+    });
+    if (folder === undefined || !decide(true, await hasRules(folder))) return;
+    await showNoRulesNotice(context);
+  };
   const consider = (editor: vscode.TextEditor | undefined): void => {
     if (editor === undefined) return;
     const { document } = editor;
     considerTelemetry(document);
+    void considerNoRules(document);
     void considerGameFolder(document);
     const notice = scriptLanguageNotice({
       scheme: document.uri.scheme,
@@ -166,6 +214,11 @@ export function registerScriptLanguageNotice(context: vscode.ExtensionContext): 
     vscode.extensions.onDidChange(() => {
       consider(vscode.window.activeTextEditor);
     }),
+    {
+      dispose: () => {
+        clearTimeout(noRulesTimer);
+      },
+    },
   );
 }
 
@@ -266,6 +319,19 @@ async function showTelemetryNotice(context: vscode.ExtensionContext): Promise<vo
     )
   )?.label;
   if (choice === DONT_SHOW) await context.globalState.update(TELEMETRY_DECLINED, true);
+}
+
+/** Says that CWTools checks EU4 files with no rules, because its folder of rules is empty. */
+async function showNoRulesNotice(context: vscode.ExtensionContext): Promise<void> {
+  const choice = (
+    await notify(
+      'warning',
+      NO_RULES_MESSAGE,
+      { label: LEARN_MORE, run: () => vscode.env.openExternal(vscode.Uri.parse(NO_RULES_DOCS)) },
+      { label: DONT_SHOW },
+    )
+  )?.label;
+  if (choice === DONT_SHOW) await context.globalState.update(NO_RULES_DECLINED, true);
 }
 
 /** The message that the workspace keeps some of its own entries, which give the files another language. */

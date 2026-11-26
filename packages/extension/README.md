@@ -36,6 +36,8 @@ kept elsewhere, Etch offers to add a setting to the mod's folder so that CWTools
 too ([A mod in a folder of its own](https://etch.happydwarf.dev/docs/getting-started/install/#a-mod-in-a-folder-of-its-own)).
 On Windows, CWTools shows no problems in an editor that runs without telemetry, and Etch warns you
 once ([CWTools without telemetry](https://etch.happydwarf.dev/docs/getting-started/install/#cwtools-without-telemetry)).
+When CWTools could not download its EU4 rules and checks your files with none, Etch says so once
+([CWTools without its EU4 rules](https://etch.happydwarf.dev/docs/getting-started/install/#cwtools-without-its-eu4-rules)).
 
 If you used Etch 1.x: its game host, a hidden copy of the game that drew the preview, is gone in
 Etch 2, and the live game takes its place. To stay on 1.0.x, see

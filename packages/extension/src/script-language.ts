@@ -204,3 +204,34 @@ export function offersCwtoolsGameFolder(document: CwtoolsGameFolderCase): boolea
     (document.cwtoolsGameFolder ?? '').trim() === ''
   );
 }
+
+/** What the notice about CWTools running as EU4 without its rules is decided on (etch#755). */
+export interface CwtoolsNoRulesCase {
+  /** The language of the document that opened: the notice comes with CWTools' `eu4` mode. */
+  readonly languageId: string;
+  /** CWTools is installed and running. */
+  readonly cwtoolsActive: boolean;
+  /** `cwtools.rules_version`: with `manual` the user picked the folder, and CWTools clones nothing. */
+  readonly rulesVersion: string | undefined;
+  /** The folder CWTools loads its EU4 rules from has rules (undefined while not read yet). */
+  readonly rules: boolean | undefined;
+  /** The user chose Don't Show Again on this notice. */
+  readonly declined: boolean;
+}
+
+/**
+ * Whether Etch says that CWTools checks EU4 files with no rules: an `eu4` file opened, CWTools runs
+ * with rules it clones itself, and its folder has none. CWTools clones them into
+ * `<extension>/.cwtools` when it starts; under a deep folder git fails with "path too long", and
+ * CWTools then checks nothing and says nothing. With `rules` undefined, whether the folder is worth
+ * reading.
+ */
+export function warnsCwtoolsNoRules(document: CwtoolsNoRulesCase): boolean {
+  return (
+    document.cwtoolsActive &&
+    !document.declined &&
+    document.languageId === CWTOOLS_EU4_LANGUAGE &&
+    document.rulesVersion !== 'manual' &&
+    document.rules !== true
+  );
+}
