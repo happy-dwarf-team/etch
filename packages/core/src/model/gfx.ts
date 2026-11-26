@@ -4,7 +4,7 @@
  */
 import type { Rgb } from '../text/markup.ts';
 import type { ParsedScript, PropertyNode, ScalarNode } from '../script/tree.ts';
-import { diagnostic, type ModelDiagnostic } from './diagnostics.ts';
+import { diagnostic, syntaxDiagnostics, type ModelDiagnostic } from './diagnostics.ts';
 import { Properties, keyOf, parseNumber, propertiesOf } from './properties.ts';
 
 /**
@@ -88,7 +88,7 @@ export function readGfxFile(parsed: ParsedScript): GfxFile {
   const sprites: Sprite[] = [];
   const fonts: FontDefinition[] = [];
   const textColours: Record<string, Rgb> = {};
-  const diagnostics: ModelDiagnostic[] = [];
+  const diagnostics: ModelDiagnostic[] = syntaxDiagnostics(parsed);
 
   for (const top of parsed.entries) {
     if (top.kind !== 'property' || top.value?.kind !== 'block') continue;

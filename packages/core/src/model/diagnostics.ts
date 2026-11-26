@@ -1,8 +1,13 @@
-import type { SourceRange } from '../script/tree.ts';
+import type { ParsedScript, SourceRange } from '../script/tree.ts';
 
 export type ModelDiagnosticSeverity = 'error' | 'warning' | 'information';
 
 export type ModelDiagnosticCode =
+  /**
+   * A syntax error the parser recovered from: a `{` never closed, a `}` that closes no block, a
+   * string without its closing quote, an operator with no key or no value (etch#757).
+   */
+  | 'syntax-error'
   /** A top-level name defined twice in one `.gui` file (etch#16). */
   | 'duplicate-top-level-name'
   /** A sprite name defined again; the first definition is used (unverified). */
@@ -74,4 +79,12 @@ export function diagnostic(
   message: string,
 ): ModelDiagnostic {
   return { severity, code, message, start: range.start, end: range.end };
+}
+
+/**
+ * The parser's syntax errors of an interface file as warnings: the parse always completes, and each
+ * message says how the parser recovered. Whether the game recovers the same way was not checked.
+ */
+export function syntaxDiagnostics(parsed: ParsedScript): ModelDiagnostic[] {
+  return parsed.diagnostics.map((d) => diagnostic('warning', 'syntax-error', d, d.message));
 }
