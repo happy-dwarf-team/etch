@@ -1463,6 +1463,30 @@ snapshot and stay open for the offline outline or their rest (v3.md, section
       `local_space` tiles vanished with its last particles; with one that
       started 20 s late, they appeared when it began, already spread out. The
       hover and the user docs say so; the warning is unchanged.
+  17. Check points 14 and 16 against the particles' place in memory.
+      Done 27 November 2026 (Steam 1.37.5, the lab's runs `e631-s28a`,
+      `e631-s28b`, `e631-s29b` and `e631-s29c`, the setup of point 14, the
+      game paused). The lab read the game's vector reader for `position`
+      and `color` (Steam `0x15FCC90`): `z` (or `b`) fills its first value
+      and `x` (or `r`) its last, and a subsystem takes the first value as
+      its x. A read-only look at the running game's particles agreed: the
+      test file's `x = 2911 … z = 1483` put the `local_space` particles at
+      map x 1483, z 2911, north of the map's top edge, alive and never on
+      screen. With `x` and `z` exchanged, they drew over Trier, alone in
+      their particle and next to a world-space subsystem, and the lab's
+      reading of the draw found nothing that waits for another
+      subsystem. So the tiles of points 14 and 16 were not the `local_space`
+      ones, and the rule of point 16 does not hold: the warning, the hover
+      and the user docs drop it and say how `position` moves such
+      particles. The cluster those runs saw stood at Trier's city and came
+      and went with the world-space subsystem: most likely it was that
+      subsystem's tiles in an effect at the pdxparticle
+      `devastation_smoke_particle` (scale 3.5), whose scale grows the tiles
+      and their spread (item 1). The later runs had no effect at that
+      scale and no cluster. The preview now swaps a subsystem's `x` and
+      `z` as the game does. A `position` without keys, `{ 2911 40 1483 }`,
+      made the game log `Unexpected token: 2911` and load none of the
+      particle; the extension now warns on it.
 
 Small unknowns, none worth an issue yet.
 

@@ -197,6 +197,22 @@ describe('checkParticleBlocks', () => {
     ]);
   });
 
+  it('warns on a position written without keys, which the game cannot read (step 29)', () => {
+    const text = 'particle = { subsystem = { position = { 2911 40 1483 } color = { r = 255 } } }';
+    const found = checkParticleBlocks(parseScript(text)).filter(
+      (d) => d.code === 'particle-position-without-keys',
+    );
+    expect(found.map((d) => text.slice(d.start, d.end))).toEqual(['2911 40 1483']);
+    expect(found[0]?.message).toContain('Unexpected token: 2911');
+    expect(found[0]?.message).toContain('loads none of it');
+    const keyed = 'particle = { subsystem = { position = { x = 1 y = 2 z = 3 } } }';
+    expect(
+      checkParticleBlocks(parseScript(keyed)).filter(
+        (d) => d.code === 'particle-position-without-keys',
+      ),
+    ).toEqual([]);
+  });
+
   it('warns on the keys of position and color the game does not take', () => {
     const text = `particle = {
 	name = "x"
@@ -331,46 +347,19 @@ describe('local_space and the particle shader (step 19)', () => {
     expect(codes(undefined)).toEqual([]);
   });
 
-  it('says where the game draws them, and that it draws none when every subsystem has it (step 23)', () => {
+  it('says where the game draws them, with or without a subsystem in world space (steps 23 and 28)', () => {
     const messages = (source: string) =>
       checkParticleBlocks(parseScript(source), EFFECTS, false).map((d) => d.message);
-    const mixed = messages(text);
-    expect(mixed).toHaveLength(2);
-    for (const message of mixed) expect(message).toContain('around its south-west corner');
+    // Seen in the game (step 28): a local_space subsystem alone drew at its coordinates on the map.
     const only = messages(
       'particle = { name = "y" subsystem = { local_space = yes childsystem = { local_space = yes } } }',
     );
-    expect(only).toHaveLength(2);
-    for (const message of only) expect(message).toContain('the game draws none of its particles');
-  });
-
-  it('counts only a top-level subsystem without local_space that emits (step 25)', () => {
-    const noneDrawn = (source: string) =>
-      checkParticleBlocks(parseScript(source), EFFECTS, false)
-        .filter((d) => d.code === 'particle-local-space-unplaced')
-        .map((d) => d.message.includes('the game draws none of its particles'));
-    // A world-space child under a local_space parent drew nothing in the game.
-    expect(
-      noneDrawn('particle = { name = "a" subsystem = { local_space = yes childsystem = { } } }'),
-    ).toEqual([true]);
-    // A world-space subsystem that never emits did not help either.
-    expect(
-      noneDrawn(
-        'particle = { name = "b" subsystem = { local_space = yes } subsystem = { emission = { 0 } } }',
-      ),
-    ).toEqual([true]);
-    // A world-space parent with a local_space child drew both.
-    expect(
-      noneDrawn(
-        'particle = { name = "c" subsystem = { emission = { 10 } childsystem = { local_space = yes } } }',
-      ),
-    ).toEqual([false]);
-    // Emission from a curve counts, whatever the curve gives.
-    expect(
-      noneDrawn(
-        'particle = { name = "d" subsystem = { local_space = yes } subsystem = { emission = { puff } } }',
-      ),
-    ).toEqual([false]);
+    expect([...messages(text), ...only]).toHaveLength(4);
+    for (const message of [...messages(text), ...only]) {
+      expect(message).toContain('around its south-west corner');
+      expect(message).toContain('its x towards the north and its z towards the east');
+      expect(message).not.toContain('draws none');
+    }
   });
 });
 

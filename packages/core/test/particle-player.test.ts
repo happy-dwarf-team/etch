@@ -129,11 +129,12 @@ describe('reading a particle block', () => {
   it('reads position and color with one set of slots, in any case, the last entry winning', () => {
     // Seen in the game (etch#631 step 16): `a`, `w` and `A` set the opacity, `x y z` in a colour
     // tinted it, `r` in a position moved it like `x`, and `alpha = 0` then `a = 255` stayed opaque.
+    // A position's `x` and `z` change places (step 29): `z` is the first value, `x` the last.
     const sub = single(
       `position = { r = 2 Y = 3 } position = { z = 4 w = 9 }
        color = { x = 10 g = 20 B = 30 alpha = 0 } color = { a = 40 }`,
     ).subsystems[0];
-    expect(sub?.position.map((p) => p.base)).toEqual([2, 3, 4]);
+    expect(sub?.position.map((p) => p.base)).toEqual([4, 3, 2]);
     expect(sub?.color.map((c) => c.base)).toEqual([10, 20, 30, 40]);
   });
 
@@ -227,8 +228,9 @@ describe('random numbers (step 6)', () => {
     effect.step(0.1, IDENTITY);
     const random = new ParticleRandom(9);
     const draw = (base: number, variation: number) => base + (2 * random.unit() - 1) * variation;
-    // Position x, then duration (its draw shifts the rest), then start and the pulses (none drawn).
-    const x = draw(0, 1);
+    // Position x (which the game puts on the z axis), then duration (its draw shifts the rest),
+    // then start and the pulses (none drawn).
+    const z = draw(0, 1);
     draw(10, 1);
     // Size for the three particles, then red for the three, then two tiles each.
     const sizes = [draw(1, 0.5), draw(1, 0.5), draw(1, 0.5)];
@@ -237,7 +239,8 @@ describe('random numbers (step 6)', () => {
     const quads = effect.quads(0);
     expect(quads).toHaveLength(3);
     quads.forEach((q, i) => {
-      expect(q.x).toBeCloseTo(x, 12);
+      expect(q.x).toBe(0);
+      expect(q.z).toBeCloseTo(z, 12);
       expect(q.size).toBeCloseTo(sizes[i] ?? 0, 12);
       expect(q.r).toBeCloseTo(reds[i] ?? 0, 12);
       expect([q.tileX, q.tileY]).toEqual(tiles[i]);
